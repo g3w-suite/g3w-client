@@ -1,1 +1,1 @@
-QClient
+G3W Web Client
