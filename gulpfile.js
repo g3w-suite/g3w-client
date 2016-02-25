@@ -1,5 +1,5 @@
 var path = require('path')
-var configuration_path = path.join(__dirname,'configuration')
+var configuration_path = path.join(__dirname,'config')
 //Gulp
 var gulp = require('gulp');
 var gutil = require("gulp-util");
