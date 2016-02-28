@@ -1,0 +1,21 @@
+{
+  "name": "g3w-client",
+  "description": "Gis3W Qclient",
+  "main": "index.js",
+  "authors": [
+    "gis3w"
+  ],
+  "license": "ISC",
+  "moduleType": [],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6"
+  }
+}
