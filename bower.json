@@ -16,6 +16,16 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "^3.3.6"
+    "bootstrap": "^3.3.6",
+    "vue": "^1.0.17"
+  },
+  "overrides":{
+    "bootstrap" : {
+         "main": [
+            "less/bootstrap.less",
+            "dist/css/bootstrap.css",
+            "dist/js/bootstrap.js"
+          ]
+    }
   }
 }

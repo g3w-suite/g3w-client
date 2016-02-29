@@ -9,7 +9,7 @@ module.exports = {
     },
     output: {
         path: './dist/js/',
-        filename: "app.bundle.js"
+        filename: "app.min.js"
         //chunkFilename: "[id].chunk.js"
     },
 
@@ -33,13 +33,23 @@ module.exports = {
             { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,    loader: "file?name=bootstrap/[name].[ext]" },
             { test: /\.png$/, loader: "file?name=img/[name].[ext]" },
             //html loader
-            { test: /\.html$/,   loader: "html"}
+            { test: /\.html$/,   loader: "html"},
+            ///uglify
+//            {
+//            // I want to uglify with mangling only app files, not thirdparty libs
+//            {
+//                test: /.*\/src\/.*\.js$/,
+//                //exclude: /.spec.js/, // excluding .spec files
+//                loader: "uglify"
+//            }
         ]
     },
 
     plugins: [
-
+        //plugin uglify
+        new webpack.optimize.UglifyJsPlugin()
         //new webpack.optimize.CommonsChunkPlugin('common.js'),
+
     ],
 
 };
