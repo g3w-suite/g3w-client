@@ -18,42 +18,15 @@ var lib    = require('bower-files')();
 var gutil = require("gulp-util");
 //webpack
 var webpack = require('webpack');
+//gulp less
+var less = require('gulp-less');
+
 //configuration file webpack
 var webpackConfiguration = require(configuration_path + '/webpack.config.js');
 //Karma
 var Server = require('karma').Server;
 
-// note that we're grabbing the stream function
-var wiredep = require('wiredep').stream;
 
-//esempio wiredep
-
-gulp.task('wiredep', function () {
-  gulp.src('./src/index.html')
-    .pipe(wiredep({
-      directory: './libs/',
-      bowerJson: require('./bower.json'),
-      exclude:['./libs/gislib']
-    }))
-    .pipe(gulp.dest('./dist'));
-});
-
-//esempio minify bower libs e librerie generiche JS
-
-gulp.task('minify_libs_js', function () {
-  gulp.src(lib.ext('js').files)
-    .pipe(concat('libs.min.js'))
-    .pipe(uglify())
-    .pipe(gulp.dest('dist/js'));
-});
-//esempio minify bower libs e librerie generiche CSS
-
-gulp.task('minify_libs_css', function () {
-  gulp.src(lib.ext('css').files)
-    .pipe(concat('libs.min.css'))
-    .pipe(cleanCSS())
-    .pipe(gulp.dest('dist/css'));
-});
 
 
 /* configuration files directory dove ci sono
@@ -72,6 +45,14 @@ gulp.task("webpack", function() {
 
     })
 
+});
+
+gulp.task('less', function () {
+  return gulp.src('./src/app/**/*.less')
+    .pipe(less({
+      paths: [ path.join(__dirname, 'less', 'includes') ]
+    }))
+    .pipe(gulp.dest('./dist'));
 });
 
 //Karma
@@ -94,5 +75,5 @@ gulp.task('karma_tdd', function (done) {
   }, done).start();
 });
 
-
-gulp.task('default',['minify_libs_js', 'minify_libs_css', 'webpack']) // development
+gulp.task('dev',['watchless','webpack'])
+gulp.task('default',['webpack']) // development

@@ -5,7 +5,7 @@ module.exports = {
 
 
     entry: {
-        pagina1: "./src/main",// "./src/pagina1/index2", "./src/pagina1/index_css"],
+        pagina1: "./src/app/index.js",// "./src/pagina1/index2", "./src/pagina1/index_css"],
     },
     output: {
         path: './dist/js/',
