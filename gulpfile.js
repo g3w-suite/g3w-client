@@ -89,10 +89,9 @@ gulp.task('production', function(){
 })
 
 gulp.task('serve', ['browser-sync','browserify','watch']);
+gulp.task('dist', ['production','browserify','less','html']);
 
-gulp.task('dist', ['production','browserify','less','html'])
-
-gulp.task('default',['serve']) // development
+gulp.task('default',['serve']); // development
 
 
 //Karma
