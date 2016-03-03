@@ -1,59 +1,99 @@
-var path = require('path')
-var configuration_path = path.join(__dirname,'config')
-//array ordine js
-var ordine_js = require('./config/app_config').ordine_js;
-//array ordine css
-var ordine_css = require('./config/app_config').ordine_css;
+var path = require('path');
+var configuration_path = path.join(__dirname,'config');
 //Gulp
 var gulp   = require('gulp');
-//conatena
 var concat = require('gulp-concat');
-//uglify
+var streamify = require('gulp-streamify');
+var rename = require('gulp-rename');
+var source = require('vinyl-source-stream');
+var flatten = require('gulp-flatten');
+var useref = require('gulp-useref');
+var filter = require('gulp-filter');
+var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
-//cleanCSS
 var cleanCSS = require('gulp-clean-css');
-//bower files
-var lib    = require('bower-files')();
-//gulp util
 var gutil = require("gulp-util");
-//webpack
-var webpack = require('webpack');
-//gulp less
 var less = require('gulp-less');
-
-//configuration file webpack
-var webpackConfiguration = require(configuration_path + '/webpack.config.js');
-//Karma
+var browserify = require('browserify');
+var watchify = require('watchify');
+var browserSync = require('browser-sync');
 var Server = require('karma').Server;
 
+var production = false;
 
-
-
-/* configuration files directory dove ci sono
- * i file di configurazione dei vari moduli usati da gulp
-*/
-
-//webpack
-gulp.task("webpack", function() {
-    var webdavConfig = Object.create(webpackConfiguration);
-    webpack(webdavConfig, function(err, stats) {
-
-        if(err) throw new gutil.PluginError("webpack", err);
-        gutil.log("[webpack]", stats.toString({
-            // output options
-        }));
-
-    })
-
+gulp.task('browserify', [], function() {
+    var bundler = browserify('./src/js/index.js', {
+      debug: !production,
+      cache: {},
+      packageCache: {}
+    });
+    if (!production) {
+      bundler = watchify(bundler);
+    }
+    var rebundle = function() {
+      return bundler.bundle()
+        //.on('error', handleError('Browserify'))
+        .pipe(source('build.js'))
+        //.pipe(gulpif(production, streamify(uglify())))
+        .pipe(rename('app.js'))
+        .pipe(gulp.dest('build/js/'));
+    };
+    bundler.on('update', rebundle);
+    return rebundle();
 });
 
 gulp.task('less', function () {
-  return gulp.src('./src/app/**/*.less')
+  return gulp.src('./src/styles/less/app.less')
     .pipe(less({
-      paths: [ path.join(__dirname, 'less', 'includes') ]
+      paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./build/style/'));
 });
+
+gulp.task('fonts', function () {
+  return gulp.src(['./libs/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
+    .pipe(flatten())
+    .pipe(gulp.dest('./dist/fonts/'));
+});
+
+gulp.task('browser-sync', function() {
+    browserSync.init({
+        server: {
+            baseDir: "./"
+        },
+        startPath: "./src/index.html"
+    });
+});
+
+gulp.task('html', ['fonts'], function () {
+    return gulp.src('./src/index.html')
+        .pipe(useref())
+        .pipe(gulpif(production,gulpif('*.js', uglify())))
+        .pipe(gulpif(production,gulpif('*.css', cleanCSS({processImport: false}))))
+        .pipe(gulp.dest('dist'));
+});
+
+
+gulp.task('watch',function() {
+    gulp.watch('./build/js/**/*.js', function(){
+        browserSync.reload();
+    });
+    gulp.watch('.src/**/*.less', ['less']);
+    gulp.watch('./build/style/**/*.css', function(){
+        browserSync.reload();
+    });
+});
+
+gulp.task('production', function(){
+    production = true;
+})
+
+gulp.task('serve', ['browser-sync','browserify','watch']);
+
+gulp.task('dist', ['production','browserify','less','html'])
+
+gulp.task('default',['serve']) // development
+
 
 //Karma
 /**
@@ -75,5 +115,4 @@ gulp.task('karma_tdd', function (done) {
   }, done).start();
 });
 
-gulp.task('dev',['watchless','webpack'])
-gulp.task('default',['webpack']) // development
+

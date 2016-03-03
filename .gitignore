@@ -2,7 +2,5 @@
 /node_modules
 /bower_components
 /dist
-/dist/css
-/dist/js
-/index.html
+/build
 .idea
