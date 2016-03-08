@@ -1,6 +1,6 @@
 {
-  "name": "G3W Client",
-  "version": "0.1",
+  "name": "g3w-client",
+  "version": "0.0.1",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
   "homepage": "https://bitbucket.org/gis3w/g3w-client#readme",
   "dependencies": {},
   "devDependencies": {
+    "browser-sync": "^2.11.1",
     "browserify": "^13.0.0",
     "chai": "^3.5.0",
     "del": "^2.2.0",
