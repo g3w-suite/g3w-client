@@ -1,4 +1,5 @@
 var path = require('path');
+var del = require('del');
 var configuration_path = path.join(__dirname,'config');
 //Gulp
 var gulp   = require('gulp');
@@ -6,6 +7,7 @@ var concat = require('gulp-concat');
 var streamify = require('gulp-streamify');
 var rename = require('gulp-rename');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
 var flatten = require('gulp-flatten');
 var useref = require('gulp-useref');
 var filter = require('gulp-filter');
@@ -16,12 +18,13 @@ var gutil = require("gulp-util");
 var less = require('gulp-less');
 var browserify = require('browserify');
 var watchify = require('watchify');
+var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
 var Server = require('karma').Server;
 
 var production = false;
 
-gulp.task('browserify', [], function() {
+gulp.task('browserify', [], function(cb) {
     var bundler = browserify('./src/js/index.js', {
       debug: !production,
       cache: {},
@@ -32,9 +35,20 @@ gulp.task('browserify', [], function() {
     }
     var rebundle = function() {
       return bundler.bundle()
-        //.on('error', handleError('Browserify'))
+        .on('error', function(err){
+          console.log(err.message);
+          //browserSync.notify(err.message, 3000);
+          //browserSync.reload();
+          this.emit('end');
+          del(['build/**']).then(function(){
+            process.exit();
+          });
+        })
         .pipe(source('build.js'))
-        //.pipe(gulpif(production, streamify(uglify())))
+        .pipe(buffer())
+        .pipe(sourcemaps.init({ loadMaps: true }))
+        .pipe(gulpif(production, uglify()))
+        .pipe(sourcemaps.write())
         .pipe(rename('app.js'))
         .pipe(gulp.dest('build/js/'));
     };
@@ -42,12 +56,20 @@ gulp.task('browserify', [], function() {
     return rebundle();
 });
 
-gulp.task('less', function () {
-  return gulp.src('./src/styles/less/app.less')
+gulp.task('less',['fonts'], function () {
+  return gulp.src('./src/style/less/app.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
     .pipe(gulp.dest('./build/style/'));
+});
+
+gulp.task('less-skins', function () {
+  return gulp.src('./src/style/less/skins/*.less')
+    .pipe(less({
+      paths: [ path.join(__dirname) ]
+    }))
+    .pipe(gulp.dest('./build/style/skins/'));
 });
 
 gulp.task('fonts', function () {
@@ -61,6 +83,7 @@ gulp.task('browser-sync', function() {
         server: {
             baseDir: "./"
         },
+        open: false,
         startPath: "./src/index.html"
     });
 });
@@ -73,7 +96,6 @@ gulp.task('html', ['fonts'], function () {
         .pipe(gulp.dest('dist'));
 });
 
-
 gulp.task('watch',function() {
     gulp.watch('./build/js/**/*.js', function(){
         browserSync.reload();
@@ -82,13 +104,16 @@ gulp.task('watch',function() {
     gulp.watch('./build/style/**/*.css', function(){
         browserSync.reload();
     });
+    gulp.watch('./src/index.html', function(){
+        browserSync.reload();
+    });
 });
 
 gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','watch']);
+gulp.task('serve', ['browser-sync','browserify','less','watch']);
 gulp.task('dist', ['production','browserify','less','html']);
 
 gulp.task('default',['serve']); // development
