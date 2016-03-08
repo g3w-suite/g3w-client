@@ -18,6 +18,7 @@ var gutil = require("gulp-util");
 var less = require('gulp-less');
 var browserify = require('browserify');
 var watchify = require('watchify');
+var stringify = require('stringify');
 var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
 var Server = require('karma').Server;
@@ -33,6 +34,9 @@ gulp.task('browserify', [], function(cb) {
     if (!production) {
       bundler = watchify(bundler);
     }
+    bundler.transform(stringify, {
+      appliesTo: { includeExtensions: ['.html'] }
+    });
     var rebundle = function() {
       return bundler.bundle()
         .on('error', function(err){
@@ -100,8 +104,8 @@ gulp.task('watch',function() {
     gulp.watch('./build/js/**/*.js', function(){
         browserSync.reload();
     });
-    gulp.watch('./src/**/*.less', ['less']);
-    gulp.watch('./build/style/*.css', function(){
+    gulp.watch('.src/**/*.less', ['less']);
+    gulp.watch('./build/style/**/*.css', function(){
         browserSync.reload();
     });
     gulp.watch('./src/index.html', function(){
