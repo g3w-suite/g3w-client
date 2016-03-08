@@ -9,3 +9,4 @@ i18next
 
 $('.content-wrapper').html(i18next.t('text1'));
 var layout = require('./layout/layout.js').setup();
+
