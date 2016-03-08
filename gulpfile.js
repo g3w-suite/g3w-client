@@ -100,8 +100,8 @@ gulp.task('watch',function() {
     gulp.watch('./build/js/**/*.js', function(){
         browserSync.reload();
     });
-    gulp.watch('.src/**/*.less', ['less']);
-    gulp.watch('./build/style/**/*.css', function(){
+    gulp.watch('./src/**/*.less', ['less']);
+    gulp.watch('./build/style/*.css', function(){
         browserSync.reload();
     });
     gulp.watch('./src/index.html', function(){

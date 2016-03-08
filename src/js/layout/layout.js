@@ -130,103 +130,13 @@ $.AdminLTE.options = {
   }
 };
 
-/* ------------------
- * - Implementation -
- * ------------------
- * The next block of code implements AdminLTE's
- * functions and plugins as specified by the
- * options above.
- */
-$(function () {
-  "use strict";
-
-  //Fix for IE page transitions
-  $("body").removeClass("hold-transition");
-
-  //Extend options if external options exist
-  if (typeof AdminLTEOptions !== "undefined") {
-    $.extend(true,
-            $.AdminLTE.options,
-            AdminLTEOptions);
-  }
-
-  //Easy access to options
-  var o = $.AdminLTE.options;
-
-  //Set up the object
-  _init();
-
-  //Activate the layout maker
-  $.AdminLTE.layout.activate();
-
-  //Enable sidebar tree view controls
-  $.AdminLTE.tree('.sidebar');
-
-  //Enable control sidebar
-  if (o.enableControlSidebar) {
-    $.AdminLTE.controlSidebar.activate();
-  }
-
-  //Add slimscroll to navbar dropdown
-  if (o.navbarMenuSlimscroll && typeof $.fn.slimscroll != 'undefined') {
-    $(".navbar .menu").slimscroll({
-      height: o.navbarMenuHeight,
-      alwaysVisible: false,
-      size: o.navbarMenuSlimscrollWidth
-    }).css("width", "100%");
-  }
-
-  //Activate sidebar push menu
-  if (o.sidebarPushMenu) {
-    $.AdminLTE.pushMenu.activate(o.sidebarToggleSelector);
-  }
-
-  //Activate Bootstrap tooltip
-  if (o.enableBSToppltip) {
-    $('body').tooltip({
-      selector: o.BSTooltipSelector
-    });
-  }
-
-  //Activate box widget
-  if (o.enableBoxWidget) {
-    $.AdminLTE.boxWidget.activate();
-  }
-
-  //Activate fast click
-  if (o.enableFastclick && typeof FastClick != 'undefined') {
-    FastClick.attach(document.body);
-  }
-
-  //Activate direct chat widget
-  if (o.directChat.enable) {
-    $(document).on('click', o.directChat.contactToggleSelector, function () {
-      var box = $(this).parents('.direct-chat').first();
-      box.toggleClass('direct-chat-contacts-open');
-    });
-  }
-
-  /*
-   * INITIALIZE BUTTON TOGGLE
-   * ------------------------
-   */
-  $('.btn-group[data-toggle="btn-toggle"]').each(function () {
-    var group = $(this);
-    $(this).find(".btn").on('click', function (e) {
-      group.find(".btn.active").removeClass("active");
-      $(this).addClass("active");
-      e.preventDefault();
-    });
-
-  });
-});
 
 /* ----------------------------------
  * - Initialize the AdminLTE Object -
  * ----------------------------------
  * All AdminLTE functions are implemented below.
  */
-function _init() {
+$.AdminLTE._init = function() {
   'use strict';
   /* Layout
    * ======
@@ -586,6 +496,8 @@ function _init() {
       box.slideUp(this.animationSpeed);
     }
   };
+  
+  return $.AdminLTE;
 }
 
 /* ------------------
@@ -603,8 +515,7 @@ function _init() {
  * @type plugin
  * @usage $("#box-widget").boxRefresh( options );
  */
-(function ($) {
-
+$.AdminLTE.addRefreshButton = function () {
   "use strict";
 
   $.fn.boxRefresh = function (options) {
@@ -669,8 +580,8 @@ function _init() {
     }
 
   };
-
-})(jQuery);
+  return $.AdminLTE;
+};
 
 /*
  * EXPLICIT BOX ACTIVATION
@@ -681,15 +592,15 @@ function _init() {
  * @type plugin
  * @usage $("#box-widget").activateBox();
  */
-(function ($) {
-
+$.AdminLTE.activateBox = function () {
   'use strict';
 
   $.fn.activateBox = function () {
     $.AdminLTE.boxWidget.activate(this);
   };
-
-})(jQuery);
+  
+  return $.AdminLTE;
+};
 
 /*
  * TODO LIST CUSTOM PLUGIN
@@ -699,50 +610,149 @@ function _init() {
  * @type plugin
  * @usage $("#todo-widget").todolist( options );
  */
-(function ($) {
 
-  'use strict';
+$.AdminLTE.listCustomPlugin = function () {
 
-  $.fn.todolist = function (options) {
-    // Render options
-    var settings = $.extend({
-      //When the user checks the input
-      onCheck: function (ele) {
-        return ele;
-      },
-      //When the user unchecks the input
-      onUncheck: function (ele) {
-        return ele;
-      }
-    }, options);
+	  'use strict';
 
-    return this.each(function () {
+	  $.fn.todolist = function (options) {
+	    // Render options
+	    var settings = $.extend({
+	      //When the user checks the input
+	      onCheck: function (ele) {
+	        return ele;
+	      },
+	      //When the user unchecks the input
+	      onUncheck: function (ele) {
+	        return ele;
+	      }
+	    }, options);
 
-      if (typeof $.fn.iCheck != 'undefined') {
-        $('input', this).on('ifChecked', function () {
-          var ele = $(this).parents("li").first();
-          ele.toggleClass("done");
-          settings.onCheck.call(ele);
-        });
+	    return this.each(function () {
 
-        $('input', this).on('ifUnchecked', function () {
-          var ele = $(this).parents("li").first();
-          ele.toggleClass("done");
-          settings.onUncheck.call(ele);
-        });
-      } else {
-        $('input', this).on('change', function () {
-          var ele = $(this).parents("li").first();
-          ele.toggleClass("done");
-          if ($('input', ele).is(":checked")) {
-            settings.onCheck.call(ele);
-          } else {
-            settings.onUncheck.call(ele);
-          }
-        });
-      }
-    });
-  };
-}(jQuery));
+	      if (typeof $.fn.iCheck != 'undefined') {
+	        $('input', this).on('ifChecked', function () {
+	          var ele = $(this).parents("li").first();
+	          ele.toggleClass("done");
+	          settings.onCheck.call(ele);
+	        });
+
+	        $('input', this).on('ifUnchecked', function () {
+	          var ele = $(this).parents("li").first();
+	          ele.toggleClass("done");
+	          settings.onUncheck.call(ele);
+	        });
+	      } else {
+	        $('input', this).on('change', function () {
+	          var ele = $(this).parents("li").first();
+	          ele.toggleClass("done");
+	          if ($('input', ele).is(":checked")) {
+	            settings.onCheck.call(ele);
+	          } else {
+	            settings.onUncheck.call(ele);
+	          }
+	        });
+	      }
+	    });
+	  };
+	  return $.AdminLTE;
+	};
+	
+	/* ------------------
+	 * - Implementation -
+	 * ------------------
+	 * The next block of code implements AdminLTE's
+	 * functions and plugins as specified by the
+	 * options above.
+	 */
+	$.AdminLTE.setup = function ()
+	{
+	  "use strict";
+
+	  //Fix for IE page transitions
+	  $("body").removeClass("hold-transition");
+
+	  //Extend options if external options exist
+	  if (typeof AdminLTEOptions !== "undefined") {
+	    $.extend(true,
+	            $.AdminLTE.options,
+	            AdminLTEOptions);
+	  }
+
+	  //Easy access to options
+	  var o = $.AdminLTE.options;
+
+	  //Set up the object
+	  $.AdminLTE._init();
+
+	  //Activate the layout maker
+	  $.AdminLTE.layout.activate();
+
+	  //Enable sidebar tree view controls
+	  $.AdminLTE.tree('.sidebar');
+
+	  //Enable control sidebar
+	  if (o.enableControlSidebar) {
+	    $.AdminLTE.controlSidebar.activate();
+	  }
+
+	  //Add slimscroll to navbar dropdown
+	  if (o.navbarMenuSlimscroll && typeof $.fn.slimscroll != 'undefined') {
+	    $(".navbar .menu").slimscroll({
+	      height: o.navbarMenuHeight,
+	      alwaysVisible: false,
+	      size: o.navbarMenuSlimscrollWidth
+	    }).css("width", "100%");
+	  }
+
+	  //Activate sidebar push menu
+	  if (o.sidebarPushMenu) {
+	    $.AdminLTE.pushMenu.activate(o.sidebarToggleSelector);
+	  }
+
+	  //Activate Bootstrap tooltip
+	  if (o.enableBSToppltip) {
+	    $('body').tooltip({
+	      selector: o.BSTooltipSelector
+	    });
+	  }
+
+	  //Activate box widget
+	  if (o.enableBoxWidget) {
+	    $.AdminLTE.boxWidget.activate();
+	  }
+
+	  //Activate fast click
+	  if (o.enableFastclick && typeof FastClick != 'undefined') {
+	    FastClick.attach(document.body);
+	  }
+
+	  //Activate direct chat widget
+	  if (o.directChat.enable) {
+	    $(document).on('click', o.directChat.contactToggleSelector, function () {
+	      var box = $(this).parents('.direct-chat').first();
+	      box.toggleClass('direct-chat-contacts-open');
+	    });
+	  }
+
+	  /*
+	   * INITIALIZE BUTTON TOGGLE
+	   * ------------------------
+	   */
+	  $('.btn-group[data-toggle="btn-toggle"]').each(function () {
+	    var group = $(this);
+	    $(this).find(".btn").on('click', function (e) {
+	      group.find(".btn.active").removeClass("active");
+	      $(this).addClass("active");
+	      e.preventDefault();
+	    });
+
+	  });
+	  
+	  return $.AdminLTE
+	  	.addRefreshButton()
+	  	.activateBox()
+	  	.listCustomPlugin();
+	};	
 
 module.exports = $.AdminLTE;
