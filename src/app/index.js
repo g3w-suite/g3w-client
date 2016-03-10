@@ -8,16 +8,6 @@ i18next
     });
 
 $('.content-wrapper').html(i18next.t('text1'));
-var layout = require('layout/layout.js');
 
-//$("body").toggleClass('fixed');
-//layout.layout.fixSidebar();
-//layout.layout.activate();
-
-var app = new Vue({
-    el: "body",
-    ready: function(){
-        layout.setup();
-    }
-})
-
+var appUi = require('./js/app.ui.js');
+var appService = require('./js/app.gui.js');
