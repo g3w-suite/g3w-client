@@ -10,4 +10,4 @@ i18next
 $('.content-wrapper').html(i18next.t('text1'));
 
 var appUi = require('./js/app.ui.js');
-var appService = require('./js/app.gui.js');
+var appService = require('./js/app.service.js');
