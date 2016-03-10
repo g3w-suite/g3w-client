@@ -27,7 +27,7 @@ $.AdminLTE.options = {
   //This requires you to load the slimscroll plugin
   //in every page before app.js
   navbarMenuSlimscroll: true,
-  navbarMenuSlimscrollWidth: "3px", //The width of the scroll bar
+  navbarMenuSlimscrollWidth: "0px", //The width of the scroll bar
   navbarMenuHeight: "200px", //The height of the inner menu
   //General animation speed for JS animated elements such as box collapse/expand and
   //sidebar treeview slide up/down. This options accepts an integer as milliseconds,

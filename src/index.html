@@ -47,7 +47,30 @@
   </header>
   <!-- Left side column. contains the logo and sidebar -->
   
-  <sidebar></sidebar>
+  <aside v-if="sidebar" class="main-sidebar" >
+		<!-- sidebar: style can be found in sidebar.less -->
+	    <section class="sidebar">
+        <ul class="sidebar-menu">
+	        <li class="header">
+	         <span class="pull-right" data-toggle="offcanvas"><i class="fa fa-remove"></i></span>
+	         {{sidebar.header}}
+	         <span class="pull-left"><i class="fa fa-chevron-left"></i></span>
+          </li>
+	        <li v-for="(mIndex, module) in sidebar.modules" :class="{'active': (sidebar.activeModuleIndex===mIndex), 'treeview': module.tree}" >
+	          <a href="#" v-on:click="activeModule(mIndex)">
+	            <i v-if="module.icon" v-bind:class="module.icon"></i> <span v-if="module.label">{{module.label}}</span> <i v-if="module.tree" class="fa fa-angle-left pull-right"></i>
+	          </a>
+	          <ul v-if="module.tree" class="treeview-menu">
+	            <li v-for="node in module.tree">
+               <a :href="node.href"><i v-if="node.icon" :class="node.icon"></i> {{node.label}}</a>
+              </li>
+	          </ul>
+	          <div v-if="module.inlinePanel" v-show="sidebar.activeModuleIndex===mIndex">{{{module.inlinePanel}}}</div>
+	        </li>
+	      </ul>
+	    </section>
+		<!-- /.sidebar -->
+  </aside>
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
