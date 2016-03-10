@@ -1,13 +1,6 @@
-i18next
-    .use(i18nextXHRBackend)
-    .init({ 
-        lng: 'it',
-        ns: 'app',
-        fallbackLng: 'it',
-        resources: require('./locales/it/app.json')
-    });
+var t = require('i18n.service.js');
 
-$('.content-wrapper').html(i18next.t('text1'));
+$('.content-wrapper').html(t('text1'));
 
-var appUi = require('./js/app.ui.js');
-var appService = require('./js/app.service.js');
+var appUi = require('app.ui.js');
+var appService = require('app.service.js');
