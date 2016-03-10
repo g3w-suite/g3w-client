@@ -26,7 +26,8 @@ var Server = require('karma').Server;
 var production = false;
 
 gulp.task('browserify', [], function(cb) {
-    var bundler = browserify('./src/js/index.js', {
+    var bundler = browserify('./src/app/index.js', {
+      paths: ["./src/app/js/","./src/app/modules/"],
       debug: !production,
       cache: {},
       packageCache: {}
@@ -44,7 +45,7 @@ gulp.task('browserify', [], function(cb) {
           //browserSync.notify(err.message, 3000);
           //browserSync.reload();
           this.emit('end');
-          del(['build/**']).then(function(){
+          del(['build/js/app.js','build/style/app.css']).then(function(){
             process.exit();
           });
         })
@@ -61,7 +62,7 @@ gulp.task('browserify', [], function(cb) {
 });
 
 gulp.task('less',['fonts'], function () {
-  return gulp.src('./src/style/less/app.less')
+  return gulp.src('./src/app/style/app.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
@@ -69,11 +70,11 @@ gulp.task('less',['fonts'], function () {
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/style/less/skins/*.less')
+  return gulp.src('./src/app/style/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/style/skins/'));
+    .pipe(gulp.dest('./build/app/style/skins/'));
 });
 
 gulp.task('fonts', function () {
@@ -85,7 +86,8 @@ gulp.task('fonts', function () {
 gulp.task('browser-sync', function() {
     browserSync.init({
         server: {
-            baseDir: "./"
+            baseDir: "./",
+            index: "./src/index.html"
         },
         open: false,
         startPath: "./src/index.html"
@@ -104,8 +106,8 @@ gulp.task('watch',function() {
     gulp.watch('./build/js/**/*.js', function(){
         browserSync.reload();
     });
-    gulp.watch('.src/**/*.less', ['less']);
-    gulp.watch('./build/style/**/*.css', function(){
+    gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
+    gulp.watch('./build/style/app.css', function(){
         browserSync.reload();
     });
     gulp.watch('./src/index.html', function(){

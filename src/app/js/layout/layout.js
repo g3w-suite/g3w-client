@@ -1,15 +1,5 @@
-/*! AdminLTE app.js
- * ================
- * Main JS application file for AdminLTE v2. This file
- * should be included in all pages. It controls some layout
- * options and implements exclusive AdminLTE plugins.
- *
- * @Author  Almsaeed Studio
- * @Support <http://www.almsaeedstudio.com>
- * @Email   <support@almsaeedstudio.com>
- * @version 2.3.0
- * @license MIT <http://opensource.org/licenses/MIT>
- */
+require('./sidebar/sidebar.js');
+require('./floatbar/floatbar.js');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {
@@ -203,7 +193,7 @@ $.AdminLTE._init = function() {
           //Add slimscroll
           $(".sidebar").slimscroll({
             height: ($(window).height() - $(".main-header").height()) + "px",
-            color: "rgba(0,0,0,0.2)",
+            color: "rgba(255,255,255,0.7)",
             size: "3px"
           });
         }
