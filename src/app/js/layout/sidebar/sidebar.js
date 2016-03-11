@@ -7,6 +7,7 @@ Vue.component('sidebar',{
         	bOpen: true,
     		bPageMode: false,
     		header: t('main navigation'),
+            panel: 'main',
         };
     },
     methods: {
@@ -16,7 +17,10 @@ Vue.component('sidebar',{
     			return false;
     		}
     		this.currentModule = index;
-    	}
+    	},
+        showPanel: function(panel){
+            return (this.panel == 'main' || this.panel == panel);
+        }
 	}
 });
 
@@ -25,7 +29,7 @@ Vue.component('sidebar-item',{
     template: require('./sidebar-item.html'),
     data: function() {
     	return {
-        	
+        	main: true
         };
     },
     methods: {

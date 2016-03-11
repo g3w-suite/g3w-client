@@ -7,7 +7,13 @@
 	     {{header}}
 	     <span v-if="bPageMode" class="btn pull-left"><i class="fa fa-chevron-left"></i></span>
 	    </li>
-	    <slot></slot>
+	    <sidebar-item v-show="showPanel(search)" data-icon="fa fa-search" data-label="search" data-content="inline">
+          <search></search>
+        </sidebar-item>
+        <sidebar-item v-show="showPanel(catalog)" data-icon="fa fa-database" data-label="catalog" data-content="inline">
+          <catalog></catalog>
+        </sidebar-item>
+        <sidebar-item v-show="showPanel('tools')" data-icon="fa fa-gears" data-label="tools" data-content="exclusive"></sidebar-item>
 	  </ul>
 	</section>
 	<!-- /.sidebar -->

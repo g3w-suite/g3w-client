@@ -4,7 +4,7 @@ var layout = require('layout/layout.js');
 var app = new Vue({
 	el: 'body',
 	data: {
-		
+        
 	},
 	methods: {
 		
