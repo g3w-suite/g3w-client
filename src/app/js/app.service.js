@@ -1,7 +1,7 @@
 /*var config = {
     baseUrl: ""
     group: {
-        name: '',
+        name: 'Verde Firenze',
         minscale:,
         maxscale:,
         crs: epsg,
@@ -30,12 +30,13 @@
                             type: ""
                         },
                     ],
+                    scalebasedvisibility: true|false
                     minscale: 100000,
                     maxscale: 1000,
                     infourl: "",: "",
                     inforformat: "",
-                    capabilities: ["visible","queryable","editable"]
-                    metalayer: id
+                    capabilities: ["visible","queryable","editable"],
+                    metalayer: id | null
                 },
             ],
             search: 
