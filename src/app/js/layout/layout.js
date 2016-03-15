@@ -302,6 +302,8 @@ $.AdminLTE._init = function() {
           //_this.layout.fix();
         });
         checkElement.parent("li").removeClass("active");
+        checkElement.parent("li").css({'height':'44px' });
+        //console.log(checkElement.parent("li"));
       }
       //If the menu is not visible
       else if ((checkElement.is('.treeview-menu')) && (!checkElement.is(':visible'))) {
@@ -313,13 +315,20 @@ $.AdminLTE._init = function() {
         ul.removeClass('menu-open');
         //Get the parent li
         var parent_li = $this.parent("li");
+        var parent_find_active;
 
         //Open the target menu and add the menu-open class
         checkElement.slideDown(animationSpeed, function () {
           //Add the class active to the parent li
           checkElement.addClass('menu-open');
-          parent.find('li.active').removeClass('active');
+
+          parent_find_active = parent.find('li.active');
+          parent_find_active.removeClass('active');
+          parent_find_active.css({'height':'44px' });
+
           parent_li.addClass('active');
+          var sidebar_content_height = $('.sidebar').height() - $('.sidebar-menu li.header').height();
+          parent_li.css({'height':(sidebar_content_height - 132) + 'px' });
           //Fix the layout in case the sidebar stretches over the height of the window
           _this.layout.fix();
         });
