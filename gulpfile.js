@@ -74,7 +74,7 @@ gulp.task('less-skins', function () {
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/app/style/skins/'));
+    .pipe(gulp.dest('./build/style/skins/'));
 });
 
 gulp.task('fonts', function () {
