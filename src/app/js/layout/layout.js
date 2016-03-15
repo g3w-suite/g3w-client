@@ -1,5 +1,5 @@
-require('./sidebar/sidebar.js');
-require('./floatbar/floatbar.js');
+require('./sidebar/sidebar');
+require('./floatbar/floatbar');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {

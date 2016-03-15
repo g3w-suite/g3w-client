@@ -83,6 +83,7 @@
 
 // Sidebar menu
 .sidebar-menu {
+  height: 100%;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -150,6 +151,39 @@
         > .fa-angle-left,
         > .fa-angle-down {
           width: auto;
+        }
+      }
+    }
+  }
+  
+  .sidebar-tool {
+    .tool-box {
+      display: block;
+      height: 50px;
+      width: 100%;
+      margin: 10px 0px 10px 0px;
+      .tool-box-icon {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        height: 50px;
+        width: 50px;
+        text-align: center;
+        font-size: 35px;
+        line-height: 50px;
+        background: rgba(0,0,0,0.2);
+        > img {
+          max-width: 100%;
+        }
+      }
+      .tool-box-content {
+        height: 20px;
+        width: 100%;
+        text-align: center;
+        .tool-box-name {
+          font-size: 14px;
+          color: white;
+          text-transform: uppercase;
         }
       }
     }

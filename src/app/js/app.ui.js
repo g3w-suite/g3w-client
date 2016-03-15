@@ -1,10 +1,9 @@
-var t = require('i18n.service.js');
-var layout = require('layout/layout.js');
+var t = require('i18n.service');
+var layout = require('layout/layout');
 
 var app = new Vue({
 	el: 'body',
 	data: {
-        
 	},
 	methods: {
 		

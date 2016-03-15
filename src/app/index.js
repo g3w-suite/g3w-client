@@ -1,6 +1,6 @@
-var t = require('i18n.service.js');
+var t = require('i18n.service');
 
 $('.content-wrapper').html(t('text1'));
 
-var appUi = require('app.ui.js');
-var appService = require('app.service.js');
+var appUi = require('app.ui');
+var appService = require('app.service');

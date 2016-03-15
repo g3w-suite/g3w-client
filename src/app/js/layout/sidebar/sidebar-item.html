@@ -1,8 +1,10 @@
 <li class="treeview">
   <a href="#">
-    <i :class="dataIcon"></i> <span>{{dataLabel}}</span> <i v-if="(dataContent === 'inline')" class="fa fa-angle-left pull-right"></i>
+    <i :class="dataIcon"></i>
+    <span>{{dataLabel}}</span> 
+    <i v-if="(dataType === 'inline')" class="fa fa-angle-left pull-right"></i>
   </a>
-  <ul v-if="(dataContent === 'inline')" class="treeview-menu">
-	  <slot></slot>
-	</ul>
+  <ul v-if="(dataType === 'inline')" class="treeview-menu">
+    <slot></slot>
+  </ul>
 </li>

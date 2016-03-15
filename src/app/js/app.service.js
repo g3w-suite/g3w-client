@@ -1,13 +1,26 @@
 /*var config = {
     baseUrl: ""
-    projects: {
-        list: [],
+    group: {
+        name: '',
+        minscale:,
+        maxscale:,
+        crs: epsg,
+        list: [
+            {
+                id: num
+                name: '',
+            },
+        ],
+        initproject: id,
+        overvieproject: id,
         active: {
             id: <num>,
             name: "",
+            extent: "",
             layers: [
                 {
                     title: "",
+                    name: ""
                     crs: "espg:",
                     bbox: [xmin,ymin,xmax,ymax],
                     style: "",
@@ -17,14 +30,12 @@
                             type: ""
                         },
                     ],
-                    visible: true,
-                    queryable: true,
-                    queryurl: "",
                     minscale: 100000,
                     maxscale: 1000,
-                    infourl: "",
+                    infourl: "",: "",
                     inforformat: "",
-                    capabilities: ["editable",etc.]
+                    capabilities: ["visible","queryable","editable"]
+                    metalayer: id
                 },
             ],
             search: 

@@ -48,6 +48,13 @@
   <!-- Left side column. contains the logo and sidebar -->
   
   <sidebar>
+    <sidebar-item v-show="main" data-icon="fa fa-search" data-label="search" data-content="inline">
+      <search></search>
+    </sidebar-item>
+    <sidebar-item v-show="main" data-icon="fa fa-database" data-label="catalog" data-content="inline">
+      <catalog></catalog>
+    </sidebar-item>
+    <sidebar-item v-show="main || exclusive=='tools'" data-icon="fa fa-gears" data-label="tools" data-content="exclusive"></sidebar-item>
   </sidebar>
 
   <!-- Content Wrapper. Contains page content -->

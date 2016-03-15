@@ -27,7 +27,7 @@ var production = false;
 
 gulp.task('browserify', [], function(cb) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/app/modules/"],
+      paths: ["./src/app/js/","./src/modules/"],
       debug: !production,
       cache: {},
       packageCache: {}
@@ -103,14 +103,8 @@ gulp.task('html', ['fonts'], function () {
 });
 
 gulp.task('watch',function() {
-    gulp.watch('./build/js/**/*.js', function(){
-        browserSync.reload();
-    });
     gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
-    gulp.watch('./build/style/app.css', function(){
-        browserSync.reload();
-    });
-    gulp.watch('./src/index.html', function(){
+    gulp.watch(['./build/js/**/*.js','./build/style/app.css','./src/index.html','./src/**/*.html'], function(){
         browserSync.reload();
     });
 });
