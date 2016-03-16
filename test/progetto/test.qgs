@@ -2177,14 +2177,26 @@ def my_form_open(dialog, layer, feature):
     <WMSAccessConstraints type="QString">None</WMSAccessConstraints>
     <WMSContactMail type="QString"></WMSContactMail>
     <WMSImageQuality type="int">95</WMSImageQuality>
+    <WFSLayersPrecision>
+      <alberi20160316112747010 type="int">8</alberi20160316112747010>
+      <farmacie20160316113417025 type="int">8</farmacie20160316113417025>
+      <musei20160316112726261 type="int">8</musei20160316112726261>
+    </WFSLayersPrecision>
     <WMSRestrictedComposers type="QStringList"/>
     <WMSRootName type="QString">open_data_firenze</WMSRootName>
     <WMSServiceTitle type="QString">Open Data Firenze</WMSServiceTitle>
     <WMSContactPhone type="QString"></WMSContactPhone>
     <WFSTLayers>
-      <Insert type="QStringList"/>
-      <Update type="QStringList"/>
-      <Delete type="QStringList"/>
+      <Insert type="QStringList">
+        <value>alberi20160316112747010</value>
+      </Insert>
+      <Update type="QStringList">
+        <value>alberi20160316112747010</value>
+        <value>farmacie20160316113417025</value>
+      </Update>
+      <Delete type="QStringList">
+        <value>alberi20160316112747010</value>
+      </Delete>
     </WFSTLayers>
     <WCSLayers type="QStringList"/>
     <WMSRestrictedLayers type="QStringList"/>
@@ -2287,7 +2299,11 @@ def my_form_open(dialog, layer, feature):
       <Ellipsoid type="QString">NONE</Ellipsoid>
     </Measure>
     <WMSServiceAbstract type="QString"></WMSServiceAbstract>
-    <WFSLayers type="QStringList"/>
+    <WFSLayers type="QStringList">
+      <value>alberi20160316112747010</value>
+      <value>farmacie20160316113417025</value>
+      <value>musei20160316112726261</value>
+    </WFSLayers>
     <WFSUrl type="QString"></WFSUrl>
     <WMSServiceCapabilities type="bool">true</WMSServiceCapabilities>
     <WMSUseLayerIDs type="bool">false</WMSUseLayerIDs>
