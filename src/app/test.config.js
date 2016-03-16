@@ -32,13 +32,134 @@ var config = {
                       type: ""
                   },
               ],
-              scalebasedvisibility: true|false
-              minscale: 100000,
-              maxscale: 1000,
-              infourl: "",: "",
+              scalebasedvisibility: false,
+              minscale: null,
+              maxscale: null,
+              infourl: "",
               inforformat: "",
-              capabilities: ["visible","queryable","editable"],
-              metalayer: id | null
+              capabilities: 1, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: null, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1 // oppure null per layers non QGIS
+          },
+          {
+              title: "Alberi",
+              name: "alberi"
+              crs: 3857,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: true,
+              minscale: 10000,
+              maxscale: 1,
+              infourl: "",
+              inforformat: "",
+              capabilities: 2, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: 7, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
+          },
+          {
+              title: "Farmacie",
+              name: "farmacie"
+              crs: 3857,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: false,
+              minscale: null,
+              maxscale: null,
+              infourl: "",
+              inforformat: "",
+              capabilities: 2, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: 2, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
+          },
+          {
+              title: "Musei",
+              name: "musei"
+              crs: 3003,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: false,
+              minscale: null,
+              maxscale: null,
+              infourl: "",
+              inforformat: "",
+              capabilities: 1, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: null, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
+          },
+          {
+              title: "Strade",
+              name: "strade"
+              crs: 3857,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: false,
+              minscale: null,
+              maxscale: null,
+              infourl: "",
+              inforformat: "",
+              capabilities: 1, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: null, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
+          },
+          {
+              title: "Grandi strutture",
+              name: "grandi_strutture"
+              crs: 3003,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: false
+              minscale: null,
+              maxscale: null,
+              infourl: "",
+              inforformat: "",
+              capabilities: 1, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: null, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
+          },
+          {
+              title: "Tracciato tram",
+              name: "tracciato_tram"
+              crs: 3003,
+              style: "",
+              attributes: [
+                  {
+                      name: "",
+                      type: ""
+                  },
+              ],
+              scalebasedvisibility: false
+              minscale: null,
+              maxscale: null,
+              infourl: "",
+              inforformat: "",
+              capabilities: 1, // OR BITS: 1=QUERYABLE, 2=EDITABLE -> QUERYABLE e EDITABLE = 1|2 = 3
+              editops: null, // OR BITS: 1=INSERT, 2=UPDATE, 4=DELETE -> INSERT + UPDATE + DELETE = 1|2|4 = 7
+              metalayer: 1
           },
       ],
       layerstree: [
@@ -47,39 +168,39 @@ var config = {
           expanded: true
           nodes: [
             { 
-              name: 'farmacie',
+              id: 'strutture20160316113225408',
               visible: false
             },
             { 
-              name: 'musei',
+              id: 'alberi20160316112747010',
               visible: false
             },
             { 
-              name: 'strutture',
+              id: 'farmacie20160316113417025',
               visible: true
             },
             { 
-              name: 'alberi',
+              name: 'musei20160316112726261',
               visible: true
             }
           ]
         },
         { 
-          name: 'viabilita', 
+          name: 'linee', 
           expanded: false,
           nodes: [
             { 
-              name: 'tram',
+              id: 'tracciato_tram20160316113305421',
               visible: true
             },
             { 
-              name: 'strade',
+              id: 'strade20160316113013257',
               visible: true
             }
           ]
         },
         { 
-          name: 'utc',
+          id: 'Unioni_Comuni_Toscana20160316113324322',
           visible: true
         }
       ],
