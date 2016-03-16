@@ -10,7 +10,7 @@ function service(){
     });
   };
   this.getLayersStore = function(){
-    return _service.layersStore();
+    return _service.layersStore;
   }
 };
 
