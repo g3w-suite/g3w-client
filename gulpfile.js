@@ -80,7 +80,7 @@ gulp.task('less-skins', function () {
 gulp.task('fonts', function () {
   return gulp.src(['./libs/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
-    .pipe(gulp.dest('./dist/fonts/'));
+    .pipe(gulp.dest('./dist/g3w-client/fonts/'));
 });
 
 gulp.task('browser-sync', function() {
