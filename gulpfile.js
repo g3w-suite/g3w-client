@@ -113,7 +113,7 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','less','watch']);
+gulp.task('serve', ['browser-sync','browserify','less','less-skins', 'watch']);
 gulp.task('dist', ['production','browserify','less','html']);
 
 gulp.task('default',['serve']); // development
