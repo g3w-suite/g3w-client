@@ -9,7 +9,7 @@ i18next
     
 var t = function(text){
     var trad = i18next.t(text);
-    return trad
-}
+    return trad;
+};
     
 module.exports = t;

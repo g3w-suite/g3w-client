@@ -243,9 +243,7 @@ $.AdminLTE._init = function() {
       });
 
       //Enable expand on hover for sidebar mini
-      if ($.AdminLTE.options.sidebarExpandOnHover
-              || ($('body').hasClass('fixed')
-                      && $('body').hasClass('sidebar-mini'))) {
+      if ($.AdminLTE.options.sidebarExpandOnHover || ($('body').hasClass('fixed') && $('body').hasClass('sidebar-mini'))) {
         this.expandOnHover();
       }
     },
@@ -254,15 +252,11 @@ $.AdminLTE._init = function() {
       var screenWidth = $.AdminLTE.options.screenSizes.sm - 1;
       //Expand sidebar on hover
       $('.main-sidebar').hover(function () {
-        if ($('body').hasClass('sidebar-mini')
-                && $("body").hasClass('sidebar-collapse')
-                && $(window).width() > screenWidth) {
+        if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > screenWidth) {
           _this.expand();
         }
       }, function () {
-        if ($('body').hasClass('sidebar-mini')
-                && $('body').hasClass('sidebar-expanded-on-hover')
-                && $(window).width() > screenWidth) {
+        if ($('body').hasClass('sidebar-mini') && $('body').hasClass('sidebar-expanded-on-hover') && $(window).width() > screenWidth) {
           _this.collapse();
         }
       });
@@ -304,7 +298,7 @@ $.AdminLTE._init = function() {
           checkElement.removeClass('menu-open');
           //Fix the layout in case the sidebar stretches over the height of the window
           //_this.layout.fix();
-        })
+        });
 
       }
       //If the menu is not visible
@@ -334,7 +328,7 @@ $.AdminLTE._init = function() {
           parent_li.addClass('active');
           //Fix the layout in case the sidebar stretches over the height of the window
           _this.layout.fix();
-        })
+        });
       }
       //if this isn't a link, prevent the page from being redirected
       if (checkElement.is('.treeview-menu')) {
@@ -366,8 +360,7 @@ $.AdminLTE._init = function() {
       btn.on('click', function (e) {
         e.preventDefault();
         //If the sidebar is not open
-        if (!sidebar.hasClass('control-sidebar-open')
-                && !$('body').hasClass('control-sidebar-open')) {
+        if (!sidebar.hasClass('control-sidebar-open') && !$('body').hasClass('control-sidebar-open')) {
           //Open the sidebar
           _this.open(sidebar, o.slide);
         } else {
@@ -500,7 +493,7 @@ $.AdminLTE._init = function() {
   };
   
   return $.AdminLTE;
-}
+};
 
 /* ------------------
  * - Custom Plugins -

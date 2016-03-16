@@ -13,9 +13,11 @@ var useref = require('gulp-useref');
 var filter = require('gulp-filter');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
+var watch = require('gulp-watch');
 var cleanCSS = require('gulp-clean-css');
 var gutil = require("gulp-util");
 var less = require('gulp-less');
+var jshint = require('gulp-jshint');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var stringify = require('stringify');
@@ -55,10 +57,17 @@ gulp.task('browserify', [], function(cb) {
         .pipe(gulpif(production, uglify()))
         .pipe(sourcemaps.write())
         .pipe(rename('app.js'))
-        .pipe(gulp.dest('build/js/'));
+        .pipe(gulp.dest('build/js/'))
+        .pipe(browserSync.reload({stream: true, once: true}));
     };
     bundler.on('update', rebundle);
     return rebundle();
+});
+
+gulp.task('jshint', function() {
+  return gulp.src('./src/**/*.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('less',['fonts'], function () {
@@ -104,8 +113,12 @@ gulp.task('html', ['fonts'], function () {
 
 gulp.task('watch',function() {
     gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
-    gulp.watch(['./build/js/**/*.js','./build/style/app.css','./src/index.html','./src/**/*.html'], function(){
+    gulp.watch(['./build/style/app.css','./src/index.html','./src/**/*.html'], function(){
         browserSync.reload();
+    });
+    // uso gulp-watch così jshint viene eseguito anche su file nuovi (che gulp.watch non traccia)
+    watch('./src/**/*.js' ,function(){
+      gulp.start('jshint');
     });
 });
 
@@ -113,8 +126,8 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','less','less-skins', 'watch']);
-gulp.task('dist', ['production','browserify','less','html']);
+gulp.task('serve', ['jshint','browser-sync','browserify','less','less-skins', 'watch']);
+gulp.task('dist', ['jshint','production','browserify','less','html']);
 
 gulp.task('default',['serve']); // development
 

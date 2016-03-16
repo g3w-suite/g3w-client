@@ -1,3 +1,4 @@
+var inherit = require('core/utils').inherit;
 var LayersStore = require('./layers.store');
 
 // Public interface
@@ -11,11 +12,11 @@ function service(){
   };
   this.getLayersStore = function(){
     return _service.layersStore;
-  }
-};
+  };
+}
 
 // Make the public service en Event Emitter
-heir.inherit(service,EventEmitter);
+inherit(service,EventEmitter);
 
 // Private
 var _service = {
@@ -36,15 +37,15 @@ var _service = {
       var self = this;
       return this.getProjectConfig(id)
       .then(function(projectConfig){
-        this.currentProject = projectConfig;
-        this.layersStore = LayersStore({
+        self.currentProject = projectConfig;
+        self.layersStore = new LayersStore({
           layers: projectConfig.layers,
           layersTree: projectConfig.layerstree
-        })
-        this.initialized = true;
+        });
+        self.initialized = true;
         // test
-        console.log(this.currentProject.name);
-        var layers = this.layersStore.getLayers();
+        console.log(self.currentProject.name);
+        var layers = self.layersStore.getLayers();
         console.log(layers[0].name);
       });
     }
@@ -66,9 +67,9 @@ var _service = {
     setTimeout(function(){
         var projectConfig = require('./test.project_config');
         deferred.resolve(projectConfig);
-    },100)
+    },100);
     return deferred.promise;
   }
-}
+};
 
 module.exports = new service();

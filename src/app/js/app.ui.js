@@ -6,4 +6,4 @@ Vue.component('app',{
     ready: function(){
 		layout.setup();
 	}
-})
+});

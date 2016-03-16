@@ -4,7 +4,7 @@ var geoService = require('geo/service');
 function service(){
     this.config = config;
     this.projectConfig = null;
-};
+}
 
 geoService.on('loaded',function(){
     console.log("Caricato");
