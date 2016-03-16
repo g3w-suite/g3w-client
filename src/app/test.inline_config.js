@@ -14,7 +14,7 @@ var config = {
       },
     ],
     initproject: 'open_data_firenze',
-    overvieproject: null
+    overviewproject: null
   }
 };
 
