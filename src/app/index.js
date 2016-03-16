@@ -9,9 +9,6 @@ var app = new Vue({
 	el: 'body'
 });
 
-appService.setup()
-.then(function(config){
-  console.log("Group name: "+config.group.name);
-})
+appService.setup();
 
 module.exports = app;

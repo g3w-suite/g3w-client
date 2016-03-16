@@ -1,21 +1,13 @@
-var config = require('../test.config.js');
+var config = require('../test.inline_config');
+var geoService = require('geo/service');
 
 function service(){
-    this.config = null;
+    this.config = config;
+    this.projectConfig = null;
 };
 
-service.prototype.getConfig = function(){
-    return config;
-}
-
 service.prototype.setup = function(){
-    var self = this;
-    var deferred = Q.defer();
-    setTimeout(function(){
-        self.config = self.getConfig();
-        deferred.resolve(config);
-    },100)
-    return deferred.promise;
+    geoService.setup(config.group);
 };
 
 module.exports = new service();
