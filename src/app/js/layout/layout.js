@@ -290,10 +290,12 @@ $.AdminLTE._init = function() {
     var animationSpeed = $.AdminLTE.options.animationSpeed;
     //click event //
     $(document).on('click', menu + ' li a', function (e) {
+
       //Get the clicked link and the next element
       var $this = $(this);
       //is the content of the "accordion" ul //
       var checkElement = $this.next();
+
       //Check if the next element is a menu and is visible
       if ((checkElement.is('.treeview-menu')) && (checkElement.is(':visible'))) {
         //Close the menu
@@ -310,21 +312,19 @@ $.AdminLTE._init = function() {
         //Get the parent menu
         var parent = $this.parents('ul').first();
         var parent_li = $this.parent("li");
+        var li_siblings = parent_li.siblings();
         var parent_find_active;
+        var sidebar_content_height = parent.height() - parent.find('li.header').outerHeight();
+        var treeviewHeight = parent_li.outerHeight();
+        li_siblings.not('.header').each(function(index, el) {
+                treeviewHeight+=$(el).find('a').outerHeight();
+        });
+        checkElement.css({'height':(sidebar_content_height - treeviewHeight) + 'px' });
         //Close all open menus within the parent
         var ul = parent.find('ul:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent
         ul.removeClass('menu-open');
         //Get the parent li
-        var sidebar_content_height = $('.sidebar').height() - $('.sidebar-menu li.header').outerHeight();
-        var treeviewHeight = 0;
-        $('.treeview').each(function(index, el) {
-
-            treeviewHeight+=$(el).outerHeight();
-
-
-        });
-        checkElement.css({'height':(sidebar_content_height - treeviewHeight) + 'px' });
         //Open the target menu and add the menu-open class
         checkElement.slideDown(animationSpeed, function () {
           //Add the class active to the parent li
