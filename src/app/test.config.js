@@ -10,7 +10,7 @@ var config = {
       {
           type: 'qdjango',
           name: 'Open Data Firenze',
-          id: 'open_data_firenze'
+          id: 'open_data_firenze',
       },
     ],
     initproject: 'open_data_firenze',
@@ -22,7 +22,7 @@ var config = {
       layers: [
           {
               title: "Unioni Comuni Toscana",
-              name: "uct"
+              name: "uct",
               crs: 32632,
               //bbox: [], //il bbox di un layer non è presente nel progetto di QGIS, mentre GetProjectSettings (ovvero GetCapabilities) lo fornisce (http://parcoapuane.gis3w.it/ows.fcgi?map=/home/walter/app/qdjango_parcoapuane/www/media/projects/cartografia-generale_perimetrazione-di-dettaglio-aree-estrattive.qgs&&SERVICE=WMS&VERSION=1.3&REQUEST=GetProjectSettings)
               style: "",
@@ -43,7 +43,7 @@ var config = {
           },
           {
               title: "Alberi",
-              name: "alberi"
+              name: "alberi",
               crs: 3857,
               style: "",
               attributes: [
@@ -63,7 +63,7 @@ var config = {
           },
           {
               title: "Farmacie",
-              name: "farmacie"
+              name: "farmacie",
               crs: 3857,
               style: "",
               attributes: [
@@ -83,7 +83,7 @@ var config = {
           },
           {
               title: "Musei",
-              name: "musei"
+              name: "musei",
               crs: 3003,
               style: "",
               attributes: [
@@ -103,7 +103,7 @@ var config = {
           },
           {
               title: "Strade",
-              name: "strade"
+              name: "strade",
               crs: 3857,
               style: "",
               attributes: [
@@ -123,7 +123,7 @@ var config = {
           },
           {
               title: "Grandi strutture",
-              name: "grandi_strutture"
+              name: "grandi_strutture",
               crs: 3003,
               style: "",
               attributes: [
@@ -132,7 +132,7 @@ var config = {
                       type: ""
                   },
               ],
-              scalebasedvisibility: false
+              scalebasedvisibility: false,
               minscale: null,
               maxscale: null,
               infourl: "",
@@ -143,7 +143,7 @@ var config = {
           },
           {
               title: "Tracciato tram",
-              name: "tracciato_tram"
+              name: "tracciato_tram",
               crs: 3003,
               style: "",
               attributes: [
@@ -152,7 +152,7 @@ var config = {
                       type: ""
                   },
               ],
-              scalebasedvisibility: false
+              scalebasedvisibility: false,
               minscale: null,
               maxscale: null,
               infourl: "",
@@ -165,7 +165,7 @@ var config = {
       layerstree: [
         { 
           name: 'punti',
-          expanded: true
+          expanded: true,
           nodes: [
             { 
               id: 'strutture20160316113225408',
@@ -208,3 +208,5 @@ var config = {
     }
   }
 }
+
+module.exports = config;

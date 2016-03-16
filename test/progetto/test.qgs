@@ -123,7 +123,7 @@
   <projectlayers>
     <maplayer minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>Unioni_Comuni_Toscana20160316113324322</id>
-      <datasource>./unione_comuni/Unioni_Comuni_Toscana.shp</datasource>
+      <datasource>./data/unione_comuni/Unioni_Comuni_Toscana.shp</datasource>
       <shortname>utc</shortname>
       <title></title>
       <abstract></abstract>
@@ -411,7 +411,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="1" maximumScale="10000" simplifyDrawingHints="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Point" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="1" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>alberi20160316112747010</id>
-      <datasource>./alberi/alberi.shp</datasource>
+      <datasource>./data/alberi/alberi.shp</datasource>
       <shortname>alberi</shortname>
       <title></title>
       <abstract></abstract>
@@ -690,7 +690,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Point" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>farmacie20160316113417025</id>
-      <datasource>./farmacie/farmacie.shp</datasource>
+      <datasource>./data/farmacie/farmacie.shp</datasource>
       <shortname>farmacie</shortname>
       <title></title>
       <abstract></abstract>
@@ -972,7 +972,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Point" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>musei20160316112726261</id>
-      <datasource>./musei/musei.shp</datasource>
+      <datasource>./data/musei/musei.shp</datasource>
       <shortname>musei</shortname>
       <title></title>
       <abstract></abstract>
@@ -1275,7 +1275,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Line" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>strade20160316113013257</id>
-      <datasource>./strade/strade.shp</datasource>
+      <datasource>./data/strade/strade.shp</datasource>
       <shortname>strade</shortname>
       <title></title>
       <abstract></abstract>
@@ -1555,7 +1555,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Point" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>strutture20160316113225408</id>
-      <datasource>./strutture/strutture.shp</datasource>
+      <datasource>./data/strutture/strutture.shp</datasource>
       <shortname>grandi_strutture</shortname>
       <title></title>
       <abstract></abstract>
@@ -1849,7 +1849,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer minimumScale="-4.65661e-10" maximumScale="1e+08" simplifyDrawingHints="1" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Line" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
       <id>tracciato_tram20160316113305421</id>
-      <datasource>./tram/tracciato_tram.shp</datasource>
+      <datasource>./data/tram/tracciato_tram.shp</datasource>
       <shortname>tracciato_tram</shortname>
       <title></title>
       <abstract></abstract>
