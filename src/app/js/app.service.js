@@ -4,10 +4,18 @@ function service(){
     this.config = null;
 };
 
-service.prototype.bootstrap = function(){
-    this.config = config;
+service.prototype.getConfig = function(){
+    return config;
+}
+
+service.prototype.setup = function(){
+    var self = this;
+    var deferred = Q.defer();
+    setTimeout(function(){
+        self.config = self.getConfig();
+        deferred.resolve(config);
+    },100)
+    return deferred.promise;
 };
 
-heir.inherit(service, EventEmitter);
-
-module.exports = service;
+module.exports = new service();
