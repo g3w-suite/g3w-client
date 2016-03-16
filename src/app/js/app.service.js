@@ -1,3 +1,4 @@
-var service = {};
+function service(){
+};
 
 module.exports = service;
