@@ -4,6 +4,7 @@ var config = {
     extent: [680146.26655817439313978,4849613.36099641863256693,680654.92818519228603691,4850025.21881435159593821],
     layers: [
         {
+            id: 'Unioni_Comuni_Toscana20160316113324322',
             title: "Unioni Comuni Toscana",
             name: "uct",
             crs: 32632,
@@ -25,6 +26,7 @@ var config = {
             metalayer: 1 // oppure null per layers non QGIS
         },
         {
+            id: 'alberi20160316112747010',
             title: "Alberi",
             name: "alberi",
             crs: 3857,
@@ -45,6 +47,7 @@ var config = {
             metalayer: 1
         },
         {
+            id: 'farmacie20160316113417025',
             title: "Farmacie",
             name: "farmacie",
             crs: 3857,
@@ -65,6 +68,7 @@ var config = {
             metalayer: 1
         },
         {
+            id: 'musei20160316112726261',
             title: "Musei",
             name: "musei",
             crs: 3003,
@@ -85,6 +89,7 @@ var config = {
             metalayer: 1
         },
         {
+            id: 'strade20160316113013257',
             title: "Strade",
             name: "strade",
             crs: 3857,
@@ -105,6 +110,7 @@ var config = {
             metalayer: 1
         },
         {
+            id: 'strutture20160316113225408',
             title: "Grandi strutture",
             name: "grandi_strutture",
             crs: 3003,
@@ -125,6 +131,7 @@ var config = {
             metalayer: 1
         },
         {
+            id: 'tracciato_tram20160316113305421',
             title: "Tracciato tram",
             name: "tracciato_tram",
             crs: 3003,
