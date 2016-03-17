@@ -29,7 +29,7 @@ var production = false;
 
 gulp.task('browserify', [], function(cb) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/modules/"],
+      paths: ["./src/app/js/","./src/modules/","./src/libs/"],
       debug: !production,
       cache: {},
       packageCache: {}
@@ -87,7 +87,7 @@ gulp.task('less-skins', function () {
 });
 
 gulp.task('fonts', function () {
-  return gulp.src(['./libs/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
+  return gulp.src(['./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
     .pipe(gulp.dest('./dist/g3w-client/fonts/'));
 });
