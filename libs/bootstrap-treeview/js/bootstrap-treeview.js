@@ -593,13 +593,13 @@
 				treeItem
 					.append($(_this.template.link)
 						.attr('href', node.href)
-						.append(node.name)
+						.append(node.title)
 					);
 			}
 			else {
 				// otherwise just text
 				treeItem
-					.append(node.name);
+					.append(node.title);
 			}
 
 			// Add tags as badges
@@ -1178,7 +1178,7 @@
 	Tree.prototype.findNodes = function (pattern, modifier, attribute) {
 
 		modifier = modifier || 'g';
-		attribute = attribute || 'name';
+		attribute = attribute || 'title';
 
 		var _this = this;
 		return $.grep(this.nodes, function (node) {

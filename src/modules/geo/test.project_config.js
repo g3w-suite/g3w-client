@@ -158,15 +158,15 @@ var config = {
         expanded: true,
         nodes: [
           { 
-            name: 'strutture20160316113225408',
+            id: 'strutture20160316113225408',
             visible: false
           },
           { 
-            name: 'alberi20160316112747010',
+            id: 'alberi20160316112747010',
             visible: false
           },
           { 
-            name: 'farmacie20160316113417025',
+            id: 'farmacie20160316113417025',
             visible: true
           },
           { 
@@ -180,17 +180,17 @@ var config = {
         expanded: false,
         nodes: [
           { 
-            name: 'tracciato_tram20160316113305421',
+            id: 'tracciato_tram20160316113305421',
             visible: true
           },
           { 
-            name: 'strade20160316113013257',
+            id: 'strade20160316113013257',
             visible: true
           }
         ]
       },
       { 
-        name: 'Unioni_Comuni_Toscana20160316113324322',
+        id: 'Unioni_Comuni_Toscana20160316113324322',
         visible: true
       }
     ],
