@@ -18,9 +18,9 @@ function LayersStore(config){
 
 function _store(config){
   var layers = this.makeLayersObj(config.layers);
-  //var layersTree = this.fillLayersTree(config.layersTree, layers);
+  var layersTree = this.fillLayersTree(config.layersTree, layers);
   this.layers = layers;
-  this.layersTree = config.layersTree;
+  this.layersTree = layersTree;
 };
 
 _store.prototype.makeLayersObj = function(layersConfig){
@@ -34,10 +34,11 @@ _store.prototype.fillLayersTree = function(layersTree,layers){
     _.forIn(obj, function (val, key) {
         if (!_.isNil(val.id)) {
             // extend layers tree leafs with a direct reference to the layer object
-            val['layer'] = layers[val.id];
+            val['text'] = layers[val.id].title;
             
         }
         if (!_.isNil(val.nodes)) {
+            val['text'] = val.name;
             traverse(val.nodes);
         }
     });
