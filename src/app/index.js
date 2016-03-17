@@ -6,7 +6,7 @@ Vue.config.debug = true;
 
 Vue.filter('t', function (value) {
   return t(value);
-})
+});
 
 function run(){
   app = new Vue({

@@ -1,27 +1,15 @@
 <p style="color:white">{{layerstree.length}} nodes tree</p>
-<li>
-  <a href="#"><i class="fa fa-circle-o"></i> Level One <i class="fa fa-angle-left pull-right"></i></a>
-  <ul class="treeview-menu">
-    <li><a href="#"><i class="fa fa-circle-o"></i> Level Two</a></li>
-    <li>
-      <a href="#"><i class="fa fa-circle-o"></i> Level Two <i class="fa fa-angle-left pull-right"></i></a>
-      <ul class="treeview-menu">
-        <li><a data-toggle="control-sidebar" href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
-        <li><a data-toggle="control-sidebar" href="#"><i class="fa fa-circle-o"></i> Level Three</a></li>
-      </ul>
-    </li>
-  </ul>
-</li>
-<li>
-  <a href="#"><i class="fa fa-circle-o"></i> Level One <i class="fa fa-angle-left pull-right"></i></a>
-  <ul class="treeview-menu">
-    <li><a href="#"><i class="fa fa-circle-o"></i> Level Two</a></li>
-    <li>
-      <a href="#"><i class="fa fa-circle-o"></i> Level Two <i class="fa fa-angle-left pull-right"></i></a>
-      <ul class="treeview-menu">
-        <li><a data-toggle="control-sidebar" href="#"><i  class="fa fa-circle-o"></i> Level Three</a></li>
-        <li><a data-toggle="control-sidebar" href="#"><i  class="fa fa-circle-o"></i> Level Three</a></li>
-      </ul>
-    </li>
-  </ul>
-</li>
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#tree">Tree</a></li>
+    <!--Necessario per controllare le variazioni della lista tree layers-->
+    <span style="display:none">{{ catalog_tree }}</span>
+    <!-------------------------------------------------------------------->
+    <li><a data-toggle="tab" href="#legend">Legend</a></li>
+
+</ul>
+<div class="tab-content">
+    <div id="tree" class="tab-pane fade in active">
+    </div>
+    <div id="legend" class="tab-pane fade">
+    </div>
+</div>

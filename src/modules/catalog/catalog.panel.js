@@ -5,10 +5,22 @@ Vue.component('catalog',{
     template: require('./catalog.html'),
     data: function() {
     	return {
-        layerstree: service.getLayersTree()
-      };
+            layerstree: service.getLayersTree()
+        };
     },
     methods: {
-    	
+        createlayerstree : function() {
+            $('#tree').treeview({data: this.layerstree, showIcon: false});
+        }
+    },
+    computed : {
+        catalog_tree : function() {
+             this.createlayerstree();
+             return this.layerstree;
+        }
+
+    },
+    ready: function() {
+        this.createlayerstree();
     }
 });
