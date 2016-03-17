@@ -34,11 +34,11 @@ _store.prototype.fillLayersTree = function(layersTree,layers){
     _.forIn(obj, function (val, key) {
         if (!_.isNil(val.id)) {
             // extend layers tree leafs with a direct reference to the layer object
-            val['text'] = layers[val.id].title;
+            val['title'] = layers[val.id].title;
             
         }
         if (!_.isNil(val.nodes)) {
-            val['text'] = val.name;
+            val['title'] = val.name;
             traverse(val.nodes);
         }
     });
