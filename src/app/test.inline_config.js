@@ -6,6 +6,7 @@ var config = {
     minscale:100000000,
     maxscale:1,
     crs: 32632,
+    baselayers: [], // "OSM", "BING_TERRAIN", "BING_SATELLITE", "BING_HYBRID", "BING_ROADS"
     projects: [
       {
           type: 'qdjango',
