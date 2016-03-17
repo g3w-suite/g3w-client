@@ -1,12 +1,9 @@
 {
     "it": {
         "translation": {
-            "text1": "Testo prova",
-            "text2": {
-                "with": {
-                "sub": "Testo 2"
-                }
-            }
+            "search": "Ricerca",
+            "catalog": "Catalogo dati",
+            "tools": "Strumenti"
         }
     }
 }

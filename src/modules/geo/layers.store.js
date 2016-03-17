@@ -18,9 +18,9 @@ function LayersStore(config){
 
 function _store(config){
   var layers = this.makeLayersObj(config.layers);
-  var layersTree = this.fillLayersTree(config.layersTree, layers);
+  //var layersTree = this.fillLayersTree(config.layersTree, layers);
   this.layers = layers;
-  this.layersTree = layersTree;
+  this.layersTree = config.layersTree;
 };
 
 _store.prototype.makeLayersObj = function(layersConfig){

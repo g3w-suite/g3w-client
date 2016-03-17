@@ -1,7 +1,7 @@
 <li class="treeview">
   <a href="#">
     <i :class="dataIcon"></i>
-    <span>{{dataLabel}}</span> 
+    <span>{{dataLabel | t}}</span> 
     <i v-if="(dataType === 'inline')" class="fa fa-angle-left pull-right"></i>
   </a>
   <ul v-if="(dataType === 'inline')" class="treeview-menu">

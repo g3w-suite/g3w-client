@@ -14,7 +14,11 @@ function service(){
     return _service.layersStore;
   };
   this.getLayersTree = function(){
-    return _service.layersStore.getLayersTree();
+    var layersTree = _service.layersStore.getLayersTree();
+    if (_.isNull(layersTree)){
+      layersTree = [];
+    }
+    return layersTree;
   };
 }
 
