@@ -13,6 +13,9 @@ function service(){
   this.getLayersStore = function(){
     return _service.layersStore;
   };
+  this.getLayersTree = function(){
+    return _service.layersStore.getLayersTree();
+  };
 }
 
 // Make the public service en Event Emitter
@@ -43,10 +46,6 @@ var _service = {
           layersTree: projectConfig.layerstree
         });
         self.initialized = true;
-        // test
-        console.log(self.currentProject.name);
-        var layers = self.layersStore.getLayers();
-        console.log(layers[0].name);
       });
     }
   },

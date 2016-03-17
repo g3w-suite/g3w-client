@@ -8,12 +8,43 @@ function LayersStore(config){
   this.getLayersTree =function(){
     return instance.getLayersTree();
   };
+  
+  /* test inserimento nuovo layer e cambiamento automatico nel catalog panel
+  setTimeout(function(){
+    instance.layersTree.push({});
+  },5000)
+  */
 }
 
 function _store(config){
-  this.layers = config.layers;
-  this.layersTree = config.layersTree;
-}
+  var layers = this.makeLayersObj(config.layers);
+  var layersTree = this.fillLayersTree(config.layersTree, layers);
+  this.layers = layers;
+  this.layersTree = layersTree;
+};
+
+_store.prototype.makeLayersObj = function(layersConfig){
+  // transform layers array to objects tracked by id
+  return _.keyBy(layersConfig,'id');
+};
+
+_store.prototype.fillLayersTree = function(layersTree,layers){
+  var _layersTree = _.cloneDeep(layersTree);
+  function traverse(obj){
+    _.forIn(obj, function (val, key) {
+        if (!_.isNil(val.id)) {
+            // extend layers tree leafs with a direct reference to the layer object
+            val['layer'] = layers[val.id];
+            
+        }
+        if (!_.isNil(val.nodes)) {
+            traverse(val.nodes);
+        }
+    });
+  }
+  traverse(_layersTree);
+  return _layersTree;
+};
 
 _store.prototype.getLayers = function(){
   return this.layers;

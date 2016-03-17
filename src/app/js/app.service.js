@@ -1,17 +1,19 @@
+var inherit = require('core/utils').inherit;
 var config = require('../test.inline_config');
-var geoService = require('geo/service');
+var geoService = require('geo/geo.service');
 
 function service(){
-    this.config = config;
+    var self = this;
     this.projectConfig = null;
+    
+    this.setup = function(){
+        geoService.once('loaded',function(){
+            self.emit('ready');
+        });
+        geoService.setup(config.group);
+    };
 }
 
-geoService.on('loaded',function(){
-    console.log("Caricato");
-});
-
-service.prototype.setup = function(){
-    geoService.setup(config.group);
-};
+inherit(service,EventEmitter);
 
 module.exports = new service();
