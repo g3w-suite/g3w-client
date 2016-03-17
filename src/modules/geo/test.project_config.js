@@ -170,7 +170,7 @@ var config = {
             visible: true
           },
           { 
-            name: 'musei20160316112726261',
+            id: 'musei20160316112726261',
             visible: true
           }
         ]
