@@ -21,7 +21,7 @@ function _store(config){
   var layersTree = this.fillLayersTree(config.layersTree, layers);
   this.layers = layers;
   this.layersTree = layersTree;
-};
+}
 
 _store.prototype.makeLayersObj = function(layersConfig){
   // transform layers array to objects tracked by id
@@ -34,11 +34,11 @@ _store.prototype.fillLayersTree = function(layersTree,layers){
     _.forIn(obj, function (val, key) {
         if (!_.isNil(val.id)) {
             // extend layers tree leafs with a direct reference to the layer object
-            val['title'] = layers[val.id].title;
+            val.title = layers[val.id].title;
             
         }
         if (!_.isNil(val.nodes)) {
-            val['title'] = val.name;
+            val.title = val.name;
             traverse(val.nodes);
         }
     });
