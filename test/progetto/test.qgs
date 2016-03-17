@@ -18,7 +18,7 @@
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
-    <layer-tree-group expanded="0" checked="Qt::Checked" name="linee">
+    <layer-tree-group expanded="1" checked="Qt::Checked" name="linee">
       <customproperties/>
       <layer-tree-layer expanded="1" checked="Qt::Checked" id="tracciato_tram20160316113305421" name="Tracciato tram">
         <customproperties/>
@@ -35,10 +35,10 @@
   <mapcanvas>
     <units>meters</units>
     <extent>
-      <xmin>1679486.25194928701967001</xmin>
-      <ymin>4847754.05251288134604692</ymin>
-      <xmax>1683509.33344377484172583</xmax>
-      <ymax>4851039.90845706034451723</ymax>
+      <xmin>1672587.77365800878033042</xmin>
+      <ymin>4843403.68475192133337259</ymin>
+      <xmax>1688680.09963596286252141</xmax>
+      <ymax>4856547.10852864291518927</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -102,7 +102,7 @@
         </filegroup>
       </legendlayer>
     </legendgroup>
-    <legendgroup open="false" checked="Qt::Checked" name="linee">
+    <legendgroup open="true" checked="Qt::Checked" name="linee">
       <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Tracciato tram" showFeatureCount="0">
         <filegroup open="true" hidden="false">
           <legendlayerfile isInOverview="0" layerid="tracciato_tram20160316113305421" visible="1"/>
