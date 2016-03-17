@@ -10,7 +10,9 @@ Vue.component('catalog',{
     },
     methods: {
         createlayerstree : function() {
-            $('#tree').treeview({data: this.layerstree, showIcon: false});
+            var tree = $('#tree');
+            tree.treeview({data: this.layerstree, showIcon: false});
+            tree.treeview('collapseAll', { silent: true });
         }
     },
     computed : {

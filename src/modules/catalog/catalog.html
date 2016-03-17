@@ -1,15 +1,13 @@
-<p style="color:white">{{layerstree.length}} nodes tree</p>
-<ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#tree">Tree</a></li>
-    <!--Necessario per controllare le variazioni della lista tree layers-->
-    <span style="display:none">{{ catalog_tree }}</span>
-    <!-------------------------------------------------------------------->
-    <li><a data-toggle="tab" href="#legend">Legend</a></li>
-
-</ul>
-<div class="tab-content">
-    <div id="tree" class="tab-pane fade in active">
-    </div>
-    <div id="legend" class="tab-pane fade">
+<p style="color:white; margin-bottom:0px;">{{layerstree.length}} nodes tree</p>
+<div class="tabbable-panel">
+    <div class="tabbable-line">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#tree" aria-controls="tree" role="tab" data-toggle="tab">Tree</a></li>
+            <li role="presentation"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab">Legend</a></li>
+        </ul>
+        <div  class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="tree"></div>
+            <div role="tabpanel" class="tab-pane" id="legend"></div>
+        </div>
     </div>
 </div>
