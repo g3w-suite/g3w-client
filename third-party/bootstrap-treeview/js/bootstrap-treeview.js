@@ -33,8 +33,8 @@
 
 		levels: 2,
 
-		expandIcon: 'fa-angle-down pull-right',
-		collapseIcon: 'fa-angle-left pull-right',
+		expandIcon: 'fa-angle-right pull-right',
+		collapseIcon: 'fa-angle-down pull-right',
 		emptyIcon: 'glyphicon',
 		nodeIcon: '',
 		selectedIcon: '',
@@ -518,9 +518,9 @@
 
 
 
-			/*for (var i = 0; i < (level - 1); i++) {
+			for (var i = 0; i < (level - 1); i++) {
 				treeItem.append(_this.template.indent);
-			}*/
+			}
 
 
 
@@ -576,7 +576,7 @@
 				}
 
 				treeItem
-					.append($(_this.template.icon)
+					.prepend($(_this.template.icon)
 						.addClass(classList.join(' '))
 					);
 			}
