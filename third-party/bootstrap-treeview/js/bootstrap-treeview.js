@@ -318,31 +318,24 @@
 
 		if (!this.options.enableLinks) event.preventDefault();
 
+
+
 		var target = $(event.target);
 		var node = this.findNode(target);
 		if (!node || node.state.disabled) return;
 
 		var classList = target.attr('class') ? target.attr('class').split(' ') : [];
-		if ((classList.indexOf('expand-icon') !== -1)) {
+		this.toggleExpandedState(node, _default.options);
 
-			this.toggleExpandedState(node, _default.options);
-			this.render();
-		}
-		else if ((classList.indexOf('check-icon') !== -1)) {
+		if (node.selectable) {
 
-			this.toggleCheckedState(node, _default.options);
-			this.render();
-		}
-		else {
+                    this.toggleSelectedState(node, _default.options);
+        } else {
 
-			if (node.selectable) {
-				this.toggleSelectedState(node, _default.options);
-			} else {
-				this.toggleExpandedState(node, _default.options);
-			}
+                    this.toggleExpandedState(node, _default.options);
+        }
 
-			this.render();
-		}
+        this.render();
 	};
 
 	// Looks up the DOM for the closest parent list item to retrieve the
