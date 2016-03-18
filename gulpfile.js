@@ -128,6 +128,10 @@ gulp.task('production', function(){
 
 gulp.task('serve', ['jshint','browser-sync','browserify','less','less-skins', 'watch']);
 gulp.task('dist', ['jshint','production','browserify','less','html']);
+gulp.task('g3w-admin', ['dist'],function(){
+  gulp.src('./dist/g3w-client/**/*.*')
+  .pipe(gulp.dest('../g3w-admin/g3w-admin/client/static/g3w-client'))
+});
 
 gulp.task('default',['serve']); // development
 
