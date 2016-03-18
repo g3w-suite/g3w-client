@@ -33,14 +33,14 @@
 
 		levels: 2,
 
-		expandIcon: 'fa-angle-right pull-right',
-		collapseIcon: 'fa-angle-down pull-right',
+		expandIcon: 'fa-angle-right pull-left',
+		collapseIcon: 'fa-angle-down pull-left',
 		emptyIcon: 'glyphicon',
 		nodeIcon: '',
 		selectedIcon: '',
-		checkedIcon: 'fa-check-square-o pull-right',
-		uncheckedIcon: 'fa-square-o pull-right',
-		fullcheckedIcon: 'fa-square pull-right',
+		checkedIcon: 'fa-check-square-o pull-left',
+		uncheckedIcon: 'fa-square-o pull-left',
+		fullcheckedIcon: 'fa-square pull-left',
 
 		color: undefined, // '#000000',
 		backColor: undefined, // '#FFFFFF',
@@ -576,7 +576,7 @@
 				}
 
 				treeItem
-					.prepend($(_this.template.icon)
+					.append($(_this.template.icon)
 						.addClass(classList.join(' '))
 					);
 			}
