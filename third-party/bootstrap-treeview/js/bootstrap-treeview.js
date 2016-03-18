@@ -518,9 +518,9 @@
 
 
 
-			/*for (var i = 0; i < (level - 1); i++) {
+			for (var i = 0; i < (level - 1); i++) {
 				treeItem.append(_this.template.indent);
-			}*/
+			}
 
 
 
