@@ -1,16 +1,17 @@
 var inherit = require('g3w/core/utils').inherit;
+var layersRegistry = require('g3w/core/layers/layersregistry');
 var config = require('../test.inline_config');
-var geoService = require('geo/geo.service');
 
 function service(){
     var self = this;
+    this.title = "G3W Client";
     this.projectConfig = null;
     
     this.setup = function(){
-        geoService.once('loaded',function(){
+        layersRegistry.once('loaded',function(){
             self.emit('ready');
         });
-        geoService.setup(config.group);
+        layersRegistry.setup(config.group);
     };
 }
 

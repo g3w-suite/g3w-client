@@ -3,10 +3,10 @@
 	<section class="sidebar">
 	  <ul class="sidebar-menu">
 	    <sidebar-item data-icon="fa fa-search" data-label="search" data-type="inline">
-          <search></search>
+          <g3w-search :layersservice="iface.layersService"></g3w-search>
         </sidebar-item>
         <sidebar-item data-icon="fa fa-database" data-label="catalog" data-type="inline">
-          <catalog></catalog>
+          <g3w-catalog :layersservice="iface.layersService"></g3w-catalog>
         </sidebar-item>
         <sidebar-item data-icon="fa fa-gears" data-label="tools" data-type="inline">
             <sidebar-tool data-icon="fa fa-database">

@@ -1,6 +1,6 @@
 var t = require('i18n.service');
 
-Vue.component('search',{
+Vue.component('g3w-search',{
     template: require('./search.html'),
     data: function() {
     	return {

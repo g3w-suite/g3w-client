@@ -1,5 +1,5 @@
 var inherit = require('g3w/core/utils').inherit;
-var LayersStore = require('./layers.store');
+var LayersStore = require('./layersstore');
 
 // Public interface
 function service(){

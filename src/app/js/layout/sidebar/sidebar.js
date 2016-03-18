@@ -1,12 +1,17 @@
 var t = require('i18n.service');
-require('catalog/catalog.panel');
-require('search/search.panel');
+require('g3w/gui/catalog/catalog');
+require('g3w/gui/search/search');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
+    props: ['iface'],
+    ready: function(){
+      console.log(this.iface.title);
+    },
     data: function() {
     	return {
-        	bOpen: true,
+        layersService: this.iface.layersService,
+        bOpen: true,
     		bPageMode: false,
     		header: t('main navigation')
         };

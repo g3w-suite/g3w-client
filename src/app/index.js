@@ -10,18 +10,23 @@ Vue.filter('t', function (value) {
 
 function run(){
   app = new Vue({
-    el: 'body'
+    el: 'body',
+    data: {
+      iface: appService
+    }
   });
+  
+  // test aggiornamento albero
+  setTimeout(function(){
+    var layersRegistry = require('g3w/core/layers/layersregistry');
+    var tree = layersRegistry.getLayersTree();
+    tree[0].title = "POI";
+  },5000)
 }
 
-function initServices(){
+(function (){
   appService.setup();
   appService.on('ready',function(){
     run();
   });
-}
-
-initServices();
-
-
-
+})();

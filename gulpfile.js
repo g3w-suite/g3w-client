@@ -29,7 +29,7 @@ var production = false;
 
 gulp.task('browserify', [], function(cb) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/modules/","./src/libs/"],
+      paths: ["./src/app/js/","./src/libs/"],
       debug: !production,
       cache: {},
       packageCache: {}

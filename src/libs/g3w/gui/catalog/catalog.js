@@ -1,12 +1,13 @@
 var t = require('i18n.service');
-var service = require('./catalog.service');
+var layersRegistry = require('g3w/core/layers/layersregistry');
 
-Vue.component('catalog',{
+Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
+    props: ['layersservice'],
     data: function() {
-    	return {
-            layerstree: service.getLayersTree()
-        };
+      return {
+        layerstree: layersRegistry.getLayersTree()
+      }
     },
     methods: {
         createlayerstree : function() {
@@ -21,6 +22,14 @@ Vue.component('catalog',{
              return this.layerstree;
         }
 
+    },
+    watch: {
+      'layerstree': {
+        handler: function(val, old){
+          this.createlayerstree();
+        },
+        deep: true
+      }
     },
     ready: function() {
         this.createlayerstree();
