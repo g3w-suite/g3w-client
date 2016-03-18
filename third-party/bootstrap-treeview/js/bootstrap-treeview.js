@@ -33,13 +33,14 @@
 
 		levels: 2,
 
-		expandIcon: 'glyphicon glyphicon-plus',
-		collapseIcon: 'glyphicon glyphicon-minus',
+		expandIcon: 'fa-angle-down pull-right',
+		collapseIcon: 'fa-angle-left pull-right',
 		emptyIcon: 'glyphicon',
 		nodeIcon: '',
 		selectedIcon: '',
-		checkedIcon: 'glyphicon glyphicon-check',
-		uncheckedIcon: 'glyphicon glyphicon-unchecked',
+		checkedIcon: 'fa-check-square-o pull-right',
+		uncheckedIcon: 'fa-square-o pull-right',
+		fullcheckedIcon: 'fa-square pull-right',
 
 		color: undefined, // '#000000',
 		backColor: undefined, // '#FFFFFF',
@@ -55,7 +56,7 @@
 		highlightSearchResults: true,
 		showBorder: true,
 		showIcon: true,
-		showCheckbox: false,
+		showCheckbox: true,
 		showTags: false,
 		multiSelect: false,
 
@@ -329,10 +330,10 @@
 
 		if (node.selectable) {
 
-                    this.toggleSelectedState(node, _default.options);
+                    //this.toggleSelectedState(node, _default.options);
         } else {
 
-                    this.toggleExpandedState(node, _default.options);
+                    //this.toggleExpandedState(node, _default.options);
         }
 
         this.render();
@@ -689,7 +690,7 @@
 		list: '<ul class="list-group"></ul>',
 		item: '<li class="list-group-item"></li>',
 		indent: '<span class="indent"></span>',
-		icon: '<span class="icon"></span>',
+		icon: '<span class="fa"></span>',
 		link: '<a href="#" style="color:inherit;"></a>',
 		badge: '<span class="badge"></span>'
 	};

@@ -1,9 +1,19 @@
 var inherit = require('g3w/core/utils').inherit;
+//oggetto che restituisce layers e layerstree
 var LayersStore = require('./layersstore');
+
+/* service
+Funzione costruttore contentente tre proprieta':
+    setup: metodo di inizializzazione
+    getLayersStore: ritorna l'oggetto LayersStore
+    getLayersTree: ritorna l'array layersTree dall'oggetto LayersStore
+*/
 
 // Public interface
 function service(){
   var self = this;
+  //config e' un oggetto JSON passato dal server che contiene informazioni
+  // sui progetti all'interno del gruppo
   this.setup = function(config){
     _service.setup(config)
     .then(function(){
