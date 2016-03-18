@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * ========================================================= */
-
+var pippo;
 ;(function ($, window, document, undefined) {
 
 	/*global jQuery, console*/
@@ -35,7 +35,7 @@
 
 		expandIcon: 'fa-angle-right pull-left',
 		collapseIcon: 'fa-angle-down pull-left',
-		emptyIcon: 'glyphicon',
+		//emptyIcon: 'glyphicon',
 		nodeIcon: '',
 		selectedIcon: '',
 		checkedIcon: 'fa-check-square-o pull-left',
@@ -55,7 +55,7 @@
 		highlightSelected: true,
 		highlightSearchResults: true,
 		showBorder: true,
-		showIcon: true,
+		showIcon: false,
 		showCheckbox: true,
 		showTags: false,
 		multiSelect: false,
@@ -257,6 +257,7 @@
 	*/
 	Tree.prototype.setInitialStates = function (node, level) {
 
+
 		if (!node.nodes) return;
 		level += 1;
 
@@ -315,30 +316,66 @@
 		});
 	};
 
+    /* customizzata il comportamento del click */
+
 	Tree.prototype.clickHandler = function (event) {
 
+	    function changeParentNodeClass(parentId,newClass) {
+             var element_class;
+	         var classes = ['fa-check-square-o', 'fa-square-o', 'fa-square'];
+	         $("li[data-nodeid="+parentId+"] span").each(function(index, el){
+	           var classList = $(el).attr('class').split(' ');
+               var inter = _.intersection(classes, classList);
+               if (inter.length > 0) {
+                element_class = inter[0];
+                return true
+               }
+
+	         });
+	         console.log($("li[data-nodeid="+parentId+"] span."+element_class));
+	         $("li[data-nodeid="+parentId+"] span."+element_class).removeClass(element_class).addClass(newClass)
+
+
+	    }
+
 		if (!this.options.enableLinks) event.preventDefault();
-
-
-
 		var target = $(event.target);
 		var node = this.findNode(target);
 		if (!node || node.state.disabled) return;
-
-		var classList = target.attr('class') ? target.attr('class').split(' ') : [];
+		var classList = target.children().attr('class') ? target.children().attr('class').split(' ') : [];
 		this.toggleExpandedState(node, _default.options);
+		if (!classList.length) {
+		    var isLeaftTargetCheckBox = target.siblings('span.expand-icon');
+		    isLeaftTargetCheckBox = !isLeaftTargetCheckBox.length;
+		} else {
+		    isLeaftTargetCheckBox = false
+		}
+		if ((classList.indexOf('check-icon') !== -1) || isLeaftTargetCheckBox) {
+            var parentId = target.attr('parent-node');
+			var isChecked = this.toggleCheckedState(node, _default.options);
+			if (parentId !== undefined) {
+                var siblings =  target.siblings("[parent-node="+parentId+"]");
+                var l_siblings = siblings.length + 1;
+                var count = isChecked ? 1: 0;
+			    target.siblings("[parent-node="+parentId+"]").each(function(index, el) {
+                  count+= $(el).hasClass('node-checked') ? 1 : 0;
+			    })
+			    console.log(count)
+			    //caso tutti selezionati
+			    if (count == l_siblings) {
+			      changeParentNodeClass(parentId,'fa-check-square-o');
+			    }else if (count > 0){ //caso non tutti selezionati
+			      changeParentNodeClass(parentId,'fa-square');
+			    }else { //caso nessuno selezionato
+			      changeParentNodeClass(parentId,'fa-square-o');
+			    }
 
-		if (node.selectable) {
-
-                    //this.toggleSelectedState(node, _default.options);
-        } else {
-
-                    //this.toggleExpandedState(node, _default.options);
-        }
+			}
+		}
 
         this.render();
 	};
-
+    /*     -------- */
 	// Looks up the DOM for the closest parent list item to retrieve the
 	// data attribute nodeid, which is used to lookup the node in the flattened structure.
 	Tree.prototype.findNode = function (target) {
@@ -422,7 +459,7 @@
 
 	Tree.prototype.toggleCheckedState = function (node, options) {
 		if (!node) return;
-		this.setCheckedState(node, !node.state.checked, options);
+		return this.setCheckedState(node, !node.state.checked, options);
 	};
 
 	Tree.prototype.setCheckedState = function (node, state, options) {
@@ -437,6 +474,7 @@
 			if (!options.silent) {
 				this.$element.trigger('nodeChecked', $.extend(true, {}, node));
 			}
+			return true
 		}
 		else {
 
@@ -445,6 +483,7 @@
 			if (!options.silent) {
 				this.$element.trigger('nodeUnchecked', $.extend(true, {}, node));
 			}
+			return false
 		}
 	};
 
@@ -513,18 +552,9 @@
 				.addClass(node.searchResult ? 'search-result' : '')
 				.attr('data-nodeid', node.nodeId)
 				.attr('style', _this.buildStyleOverride(node));
-
-			// Add indent/spacer to mimic tree structure
-
-
-
-			for (var i = 0; i < (level - 1); i++) {
-				treeItem.append(_this.template.indent);
-			}
-
-
-
-
+            if(node.parentId !== undefined){
+              treeItem.attr('parent-node',node.parentId);
+            }
 			// Add expand, collapse or empty spacer icons
 			var classList = [];
 			if (node.nodes) {
@@ -535,15 +565,11 @@
 				else {
 					classList.push(_this.options.expandIcon);
 				}
-			}
-			else {
-				//classList.push(_this.options.emptyIcon);
-			}
-
-			treeItem
+				treeItem
 				.append($(_this.template.icon)
 					.addClass(classList.join(' '))
 				);
+			}
 
 
 			// Add node icon
@@ -558,10 +584,6 @@
 									node.icon || _this.options.nodeIcon);
 				}
 
-				treeItem
-					.append($(_this.template.icon)
-						.addClass(classList.join(' '))
-					);
 			}
 
 			// Add check / unchecked icon
@@ -689,13 +711,12 @@
 	Tree.prototype.template = {
 		list: '<ul class="list-group"></ul>',
 		item: '<li class="list-group-item"></li>',
-		indent: '<span class="indent"></span>',
 		icon: '<span class="fa"></span>',
 		link: '<a href="#" style="color:inherit;"></a>',
 		badge: '<span class="badge"></span>'
 	};
 
-	Tree.prototype.css = '.treeview .list-group-item{cursor:pointer}.treeview span.indent{margin-left:10px;margin-right:10px}.treeview span.icon{width:12px;margin-right:5px}.treeview .node-disabled{color:silver;cursor:not-allowed}'
+	Tree.prototype.css = '.treeview .list-group-item{cursor:pointer}.treeview span.icon{width:12px;margin-right:5px}.treeview .node-disabled{color:silver;cursor:not-allowed}'
 
 
 	/**
