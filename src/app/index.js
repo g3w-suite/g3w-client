@@ -9,7 +9,7 @@ var app = null;
 var config = {
   client: {
     debug: true,
-    local: false
+    local: true
   },
   server: {
       urls: {
