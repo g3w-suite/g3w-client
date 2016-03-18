@@ -3,9 +3,6 @@ var appUi = require('app.ui');
 var appService = require('app.service');
 var app = null;
 
-/* example of configuration in line */
-
-
 var config = {
   client: {
     debug: true,
@@ -43,13 +40,6 @@ function run(){
       iface: appService
     }
   });
-  
-  // test aggiornamento albero
-  setTimeout(function(){
-    var layersRegistry = require('g3w/core/layers/layersregistry');
-    var tree = layersRegistry.getLayersTree();
-    tree[0].title = "POI";
-  },5000)
 }
 
 (function (){
