@@ -106,7 +106,7 @@ gulp.task('browser-sync', function() {
 gulp.task('html', ['fonts'], function () {
     return gulp.src('./src/index.html')
         .pipe(useref())
-        .pipe(gulpif(production,gulpif('*.js', uglify())))
+        //.pipe(gulpif(production,gulpif('*.js', uglify())))
         .pipe(gulpif(production,gulpif('*.css', cleanCSS({processImport: false}))))
         .pipe(gulp.dest('dist'));
 });

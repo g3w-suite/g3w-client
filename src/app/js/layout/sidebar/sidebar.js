@@ -5,9 +5,6 @@ require('g3w/gui/search/search');
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
     props: ['iface'],
-    ready: function(){
-      console.log(this.iface.title);
-    },
     data: function() {
     	return {
         layersService: this.iface.layersService,

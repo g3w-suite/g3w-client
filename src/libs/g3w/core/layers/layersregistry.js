@@ -12,8 +12,7 @@ Funzione costruttore contentente tre proprieta':
 // Public interface
 function service(){
   var self = this;
-  //config e' un oggetto JSON passato dal server che contiene informazioni
-  // sui progetti all'interno del gruppo
+  //config generale
   this.setup = function(config){
     _service.setup(config)
     .then(function(){
@@ -38,21 +37,21 @@ inherit(service,EventEmitter);
 // Private
 var _service = {
   initialized: false,
-  groupConfig: null,
+  config: null,
   currentProject: null,
   layersStore: null,
   
-  setup: function(groupConfig){
+  setup: function(config){
     if (!this.initialized){
-      this.groupConfig = groupConfig;
-      return this.loadProject(groupConfig.initproject);
+      this.config = config;
+      return this.loadProject(config.group.initproject);
     }
   },
   
-  loadProject: function(id){
-    if (this.projectAvailable(id)) {
+  loadProject: function(project){
+    if (this.projectAvailable(project)) {
       var self = this;
-      return this.getProjectConfig(id)
+      return this.getProjectConfig(project)
       .then(function(projectConfig){
         self.currentProject = projectConfig;
         self.layersStore = new LayersStore({
@@ -64,23 +63,31 @@ var _service = {
     }
   },
   
-  projectAvailable: function(id){
+  projectAvailable: function(project){
     var exists = false;
-    _.forEach(this.groupConfig.projects,function(project){
-      if (project.id == id){
+    _.forEach(this.config.group.projects,function(val){
+      if (val.type == project.type && val.id == project.id){
         exists = true;
       }
     });
     return exists;
   },
   
-  getProjectConfig: function(id){
+  getProjectConfig: function(project){
     var self = this;
     var deferred = Q.defer();
-    setTimeout(function(){
+    if (this.config.client.local){
+      setTimeout(function(){
         var projectConfig = require('./test.project_config');
         deferred.resolve(projectConfig);
-    },100);
+      },100);
+    }
+    else {
+      var url = this.config.server.urls.config+'/'+this.config.group.id+'/'+project.type+'/'+project.id;
+      $.get(url).done(function(projectConfig){
+        deferred.resolve(projectConfig);
+      })
+    }
     return deferred.promise;
   }
 };

@@ -15,12 +15,6 @@ function LayersStore(config){
   this.getLayersTree =function(){
     return instance.getLayersTree();
   };
-  
-  /* test inserimento nuovo layer e cambiamento automatico nel catalog panel
-  setTimeout(function(){
-    instance.layersTree.push({});
-  },5000)
-  */
 }
 
 function _store(config){
