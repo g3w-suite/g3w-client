@@ -16,13 +16,6 @@ Vue.component('g3w-catalog',{
             tree.treeview('collapseAll', { silent: true });
         }
     },
-    computed : {
-        catalog_tree : function() {
-             this.createlayerstree();
-             return this.layerstree;
-        }
-
-    },
     watch: {
       'layerstree': {
         handler: function(val, old){
