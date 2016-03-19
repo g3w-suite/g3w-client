@@ -312,7 +312,13 @@ $.AdminLTE._init = function() {
         li_siblings.not('.header').each(function(index, el) {
                 treeviewHeight+=$(el).find('a').outerHeight();
         });
-        checkElement.css({'height':(sidebar_content_height - treeviewHeight) + 'px' });
+        var section_height = (sidebar_content_height - treeviewHeight);
+        checkElement.css({
+          'height': section_height + 'px',
+          'max-height':section_height + 'px',
+          'overflow-y': 'auto'
+        });
+
         //Close all open menus within the parent
         var ul = parent.find('ul:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent

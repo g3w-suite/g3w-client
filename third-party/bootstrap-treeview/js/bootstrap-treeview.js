@@ -35,7 +35,6 @@ var pippo;
 
 		expandIcon: 'fa-angle-right pull-left',
 		collapseIcon: 'fa-angle-down pull-left',
-		//emptyIcon: 'glyphicon',
 		nodeIcon: '',
 		selectedIcon: '',
 		checkedIcon: 'fa-check-square-o pull-left',
@@ -132,6 +131,7 @@ var pippo;
 			checkNode: $.proxy(this.checkNode, this),
 			uncheckAll: $.proxy(this.uncheckAll, this),
 			uncheckNode: $.proxy(this.uncheckNode, this),
+			fullcheckNode: $.proxy(this.fullcheckNode, this),
 			toggleNodeChecked: $.proxy(this.toggleNodeChecked, this),
 
 			// Disable / enable methods
@@ -159,6 +159,8 @@ var pippo;
 			this.tree = $.extend(true, [], options.data);
 			delete options.data;
 		}
+		//oggetto contenente tutte le opzioni date e di default
+
 		this.options = $.extend({}, _default.settings, options);
 
 		this.destroy();
@@ -257,10 +259,9 @@ var pippo;
 	*/
 	Tree.prototype.setInitialStates = function (node, level) {
 
-
+        //verifica se il nodo non contiene figli
 		if (!node.nodes) return;
 		level += 1;
-
 		var parent = node;
 		var _this = this;
 		$.each(node.nodes, function checkStates(index, node) {
@@ -320,24 +321,6 @@ var pippo;
 
 	Tree.prototype.clickHandler = function (event) {
 
-	    function changeParentNodeClass(parentId,newClass) {
-             var element_class;
-	         var classes = ['fa-check-square-o', 'fa-square-o', 'fa-square'];
-	         $("li[data-nodeid="+parentId+"] span").each(function(index, el){
-	           var classList = $(el).attr('class').split(' ');
-               var inter = _.intersection(classes, classList);
-               if (inter.length > 0) {
-                element_class = inter[0];
-                return true
-               }
-
-	         });
-	         console.log($("li[data-nodeid="+parentId+"] span."+element_class));
-	         $("li[data-nodeid="+parentId+"] span."+element_class).removeClass(element_class).addClass(newClass)
-
-
-	    }
-
 		if (!this.options.enableLinks) event.preventDefault();
 		var target = $(event.target);
 		var node = this.findNode(target);
@@ -345,34 +328,41 @@ var pippo;
 		var classList = target.children().attr('class') ? target.children().attr('class').split(' ') : [];
 		this.toggleExpandedState(node, _default.options);
 		if (!classList.length) {
-		    var isLeaftTargetCheckBox = target.siblings('span.expand-icon');
-		    isLeaftTargetCheckBox = !isLeaftTargetCheckBox.length;
+		    if (target.hasClass('expand-icon')) {
+		      isLeaftTargetCheckBox = false
+		    } else {
+		      var isLeaftTargetCheckBox = target.siblings('.expand-icon');
+		      isLeaftTargetCheckBox = !isLeaftTargetCheckBox.length;
+		    }
 		} else {
 		    isLeaftTargetCheckBox = false
 		}
 		if ((classList.indexOf('check-icon') !== -1) || isLeaftTargetCheckBox) {
-            var parentId = target.attr('parent-node');
+		    if (!isLeaftTargetCheckBox) {
+              var parentId = target.attr('parent-node');
+              var siblings =  target.siblings("[parent-node="+parentId+"]");
+            } else {
+              var parentId = target.parent().attr('parent-node');
+              var siblings =  target.parent().siblings("[parent-node="+parentId+"]");
+            }
+            //toogle check/uncheck delle foglie del sotto nodo
 			var isChecked = this.toggleCheckedState(node, _default.options);
 			if (parentId !== undefined) {
-                var siblings =  target.siblings("[parent-node="+parentId+"]");
                 var l_siblings = siblings.length + 1;
                 var count = isChecked ? 1: 0;
-			    target.siblings("[parent-node="+parentId+"]").each(function(index, el) {
+			    siblings.each(function(index, el) {
                   count+= $(el).hasClass('node-checked') ? 1 : 0;
 			    })
-			    console.log(count)
 			    //caso tutti selezionati
 			    if (count == l_siblings) {
-			      changeParentNodeClass(parentId,'fa-check-square-o');
+			      this.toggleCheckedState(this.getParent(node), _default.options);
 			    }else if (count > 0){ //caso non tutti selezionati
-			      changeParentNodeClass(parentId,'fa-square');
+			      this.fullCheckedState(this.getParent(node), _default.options);
 			    }else { //caso nessuno selezionato
-			      changeParentNodeClass(parentId,'fa-square-o');
+			      this.toggleUnCheckedState(this.getParent(node), _default.options);
 			    }
-
 			}
 		}
-
         this.render();
 	};
     /*     -------- */
@@ -457,16 +447,32 @@ var pippo;
 		}
 	};
 
+     Tree.prototype.togglefillCheckState = function (node, options) {
+		if (!node) return;
+		return this.setCheckedState(node, false, options);
+	};
+
+    Tree.prototype.toggleUnCheckedState = function (node, options) {
+		if (!node) return;
+		if (node.state.checked === 'full'){node.state.checked = true};
+		return this.setCheckedState(node, !node.state.checked, options);
+	};
+
 	Tree.prototype.toggleCheckedState = function (node, options) {
 		if (!node) return;
+		if (node.state.checked === 'full'){node.state.checked = false};
 		return this.setCheckedState(node, !node.state.checked, options);
+	};
+
+	Tree.prototype.fullCheckedState = function (node, options) {
+		if (!node) return;
+		return this.setCheckedState(node, 'full', options);
 	};
 
 	Tree.prototype.setCheckedState = function (node, state, options) {
 
 		if (state === node.state.checked) return;
-
-		if (state) {
+		if (state === true) {
 
 			// Check node
 			node.state.checked = true;
@@ -476,7 +482,7 @@ var pippo;
 			}
 			return true
 		}
-		else {
+		else if (state === false) {
 
 			// Uncheck node
 			node.state.checked = false;
@@ -484,6 +490,16 @@ var pippo;
 				this.$element.trigger('nodeUnchecked', $.extend(true, {}, node));
 			}
 			return false
+		}
+		else if (state === 'full') {
+
+		    node.state.checked = 'full';
+
+			if (!options.silent) {
+				this.$element.trigger('nodeFullchecked', $.extend(true, {}, node));
+			}
+			return 'full'
+
 		}
 	};
 
@@ -514,7 +530,7 @@ var pippo;
 			}
 		}
 	};
-
+    //funzione che viene chiamata quando si fa una variazione di proprietà
 	Tree.prototype.render = function () {
 
 		if (!this.initialized) {
@@ -586,15 +602,18 @@ var pippo;
 
 			}
 
-			// Add check / unchecked icon
+			// Add check / unchecked icon / full
 			if (_this.options.showCheckbox) {
 
 				var classList = ['check-icon'];
-				if (node.state.checked) {
+				if (node.state.checked === true ) {
 					classList.push(_this.options.checkedIcon);
 				}
-				else {
+				else if (node.state.checked === false) {
 					classList.push(_this.options.uncheckedIcon);
+				}
+				else if (node.state.checked === 'full') {
+					classList.push(_this.options.fullcheckedIcon);
 				}
 
 				treeItem
@@ -969,6 +988,19 @@ var pippo;
 		var identifiers = this.findNodes('false', 'g', 'state.checked');
 		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
 			this.setCheckedState(node, true, options);
+		}, this));
+
+		this.render();
+	};
+
+	/**
+		full Check a given tree node for the tristate
+		@param {Object|Number} identifiers - A valid node, node id or array of node identifiers
+		@param {optional Object} options
+	*/
+	Tree.prototype.fullcheckNode = function (identifiers, options) {
+		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+			this.setCheckedState(node, 'full', options);
 		}, this));
 
 		this.render();

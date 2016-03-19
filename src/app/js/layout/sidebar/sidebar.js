@@ -4,7 +4,7 @@ require('g3w/gui/search/search');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
-    props: ['iface'],
+    props: ['iface'],//iface proprietà ereditata dall'elemento padre app contenente info del progetto/i
     data: function() {
     	return {
         layersService: this.iface.layersService,

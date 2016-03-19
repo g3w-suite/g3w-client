@@ -15,7 +15,7 @@ function service(){
   //config generale
   this.setup = function(config){
     _service.setup(config)
-    .then(function(){
+    .then(function(){ //si risolve quando è stato caricato il progetto
       self.emit("loaded");
     });
   };
@@ -44,6 +44,7 @@ var _service = {
   setup: function(config){
     if (!this.initialized){
       this.config = config;
+      //carica il progetto della proprietà initiproject
       return this.loadProject(config.group.initproject);
     }
   },
@@ -62,7 +63,7 @@ var _service = {
       });
     }
   },
-  
+  //verifica se il progetto è all'interno dei projects
   projectAvailable: function(project){
     var exists = false;
     _.forEach(this.config.group.projects,function(val){
@@ -72,16 +73,17 @@ var _service = {
     });
     return exists;
   },
-  
+  //ritorna una promises
   getProjectConfig: function(project){
     var self = this;
     var deferred = Q.defer();
+    //nel caso di test locale
     if (this.config.client.local){
       setTimeout(function(){
         var projectConfig = require('./test.project_config');
         deferred.resolve(projectConfig);
       },100);
-    }
+    }//altrimenti nella realtà fa una chiamata al server e una volta ottenuto il progetto risolve l'oggetto defer
     else {
       var url = this.config.server.urls.config+'/'+this.config.group.id+'/'+project.type+'/'+project.id;
       $.get(url).done(function(projectConfig){

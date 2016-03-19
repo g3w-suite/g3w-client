@@ -25,7 +25,7 @@ function _store(config){
 }
 
 _store.prototype.makeLayersObj = function(layersConfig){
-  // transform layers array to objects tracked by id
+  // transforma layers array in objects tracked by id
   return _.keyBy(layersConfig,'id');
 };
 
