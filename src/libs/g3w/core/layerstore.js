@@ -19,7 +19,7 @@ function LayersStore(config){
 
 function _store(config){
   var layers = this.makeLayersObj(config.layers); // oggetto dove le chiavi sono i nomi dei layers
-  var layersTree = this.fillLayersTree(config.layersTree, layers);
+  var layersTree = this.fillLayersTree(config.layerstree, layers);
   this.layers = layers;
   this.layersTree = layersTree;
 }

@@ -1,12 +1,11 @@
 var t = require('i18n.service');
-var layersRegistry = require('g3w/core/layers/layersregistry');
+var projectsregistry = require('g3w/core/projectsregistry');
 
 Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
-    props: ['layersservice'],
     data: function() {
       return {
-        layerstree: layersRegistry.getLayersTree()
+        layerstree: projectsregistry.getCurrentProject().getLayersTree()
       }
     },
     methods: {

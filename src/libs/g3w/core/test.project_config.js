@@ -1,5 +1,7 @@
 var config = {
     id: 'open_data_firenze',
+    type: 'qdjango',
+    gid: 'qdjango:open_data_firenze',
     name: "Open Data Firenze",
     extent: [680146.26655817439313978,4849613.36099641863256693,680654.92818519228603691,4850025.21881435159593821],
     layers: [
