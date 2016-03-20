@@ -1,5 +1,6 @@
 var t = require('i18n.service');
 var layersRegistry = require('g3w/core/layers/layersregistry');
+
 Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     props: ['layersservice'],
@@ -15,41 +16,46 @@ Vue.component('g3w-catalog',{
       //
     }
 });
-
-Vue.component('tree',{
-    template: require('./tree.html'),
-    props: ['layerstree'],
-    data: function() {
-      return {
-        layerstree: layersRegistry.getLayersTree()
-      }
-    },
-    methods: {
-      createlayerstree : function() {
-        var tree = $('#tree');
-        tree.treeview({data: this.layerstree, showIcon: false});
-        tree.treeview('collapseAll', { silent: true });
-      }
-    },
-    watch: {
+// tree component
+Vue.component('tree', {
+  template: require('./tree.html'),
+  props: {
+    layerstree: Object
+  },
+  data: function () {
+    return {
+      expanded: this.layerstree.expanded
+    }
+  },
+  watch: {
       'layerstree': {
         handler: function(val, old){
-          this.createlayerstree();
+          //codice qui
         },
         deep: true
       }
-    },
-    ready: function() {
-      this.createlayerstree();
+  },
+  computed: {
+    isFolder: function () {
+      return this.layerstree.nodes &&
+        this.layerstree.nodes.length
     }
-});
+  },
+  methods: {
+    toggle: function () {
+      if (this.isFolder) {
+        this.layerstree.expanded = !this.layerstree.expanded
+      }
+    }
+  }
+})
 
 Vue.component('legend',{
     template: require('./legend.html'),
     props: ['layerstree'],
     data: function() {
       return {
-        //dati qui
+        //data qui
       }
     },
     methods: {

@@ -1,3 +1,4 @@
+<!-- item template -->
 <div id="catalog" class="tabbable-panel">
   <div class="tabbable-line">
     <ul class="nav nav-tabs" role="tablist">
@@ -5,7 +6,12 @@
       <li role="presentation"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab">Legend</a></li>
     </ul>
     <div  class="tab-content">
-      <tree></tree>
+      <div role="tabpanel" class="tab-pane active" id="tree">
+        <ul>
+          <tree :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
+          </tree>
+        </ul>
+      </div>
       <legend></legend>
     </div>
   </div>
