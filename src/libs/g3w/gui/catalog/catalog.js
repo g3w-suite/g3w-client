@@ -19,11 +19,16 @@ Vue.component('g3w-catalog',{
 Vue.component('tree', {
   template: require('./tree.html'),
   props: {
-    layerstree: Object
+    layerstree: [],
+    //eredito il numero di childs dal parent
+    n_parentChilds : 0
   },
   data: function () {
     return {
-      expanded: this.layerstree.expanded
+      expanded: this.layerstree.expanded,
+      checked: false,
+      //proprieta che server per fare confronto per il tristate
+      n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
   },
   watch: {
@@ -36,14 +41,34 @@ Vue.component('tree', {
   },
   computed: {
     isFolder: function () {
-      return this.layerstree.nodes &&
-        this.layerstree.nodes.length
+      var isFolder = this.layerstree.nodes &&  this.layerstree.nodes.length;
+      if (isFolder) {
+        this.n_parentChilds = this.layerstree.nodes.length;
+      }
+      return isFolder
     }
   },
   methods: {
     toggle: function () {
       if (this.isFolder) {
-        this.layerstree.expanded = !this.layerstree.expanded
+        this.layerstree.expanded = !this.layerstree.expanded;
+      }
+      else {
+        this.checked = !this.checked;
+        if (this.checked) {
+          this.n_parentChilds-=1;
+        } else {
+          this.n_parentChilds+=1;
+        }
+      }
+    },
+    triClass: function () {
+      if (!this.n_parentChilds) {
+        return 'fa-check-square-o';
+      } else if ((this.n_parentChilds > 0) && (this.n_parentChilds < this.n_childs)) {
+        return 'fa-square';
+      } else {
+        return 'fa-square-o';
       }
     }
   }
