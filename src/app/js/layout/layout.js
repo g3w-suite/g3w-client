@@ -38,7 +38,7 @@ $.AdminLTE.options = {
   //Activate sidebar push menu
   sidebarPushMenu: true,
   //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
-  sidebarSlimScroll: true,
+  sidebarSlimScroll: false,
   //Enable sidebar expand on hover effect for sidebar mini
   //This option is forced to true if both the fixed layout and sidebar mini
   //are used together
@@ -197,6 +197,9 @@ $.AdminLTE._init = function() {
           });
         }
       }
+      else {
+         $(".sidebar").css({'height': ($(window).height() - $(".main-header").height()) + "px"})
+      }
     }
   };
 
@@ -318,7 +321,6 @@ $.AdminLTE._init = function() {
           'max-height':section_height + 'px',
           'overflow-y': 'auto'
         });
-
         //Close all open menus within the parent
         var ul = parent.find('ul.treeview-menu:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent
