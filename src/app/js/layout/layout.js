@@ -38,7 +38,7 @@ $.AdminLTE.options = {
   //Activate sidebar push menu
   sidebarPushMenu: true,
   //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
-  sidebarSlimScroll: true,
+  sidebarSlimScroll: false,
   //Enable sidebar expand on hover effect for sidebar mini
   //This option is forced to true if both the fixed layout and sidebar mini
   //are used together
@@ -197,6 +197,9 @@ $.AdminLTE._init = function() {
           });
         }
       }
+      else {
+         $(".sidebar").css({'height': ($(window).height() - $(".main-header").height()) + "px"})
+      }
     }
   };
 
@@ -293,7 +296,7 @@ $.AdminLTE._init = function() {
       if ((checkElement.is('.treeview-menu')) && (checkElement.is(':visible'))) {
         //Close the menu
         checkElement.slideUp(animationSpeed, function () {
-          checkElement.parent("li").removeClass("active");
+          checkElement.parent("li.treeview").removeClass("active");
           checkElement.removeClass('menu-open');
           //Fix the layout in case the sidebar stretches over the height of the window
           //_this.layout.fix();
@@ -318,7 +321,6 @@ $.AdminLTE._init = function() {
           'max-height':section_height + 'px',
           'overflow-y': 'auto'
         });
-
         //Close all open menus within the parent
         var ul = parent.find('ul.treeview-menu:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent
@@ -328,8 +330,8 @@ $.AdminLTE._init = function() {
         checkElement.slideDown(animationSpeed, function () {
           //Add the class active to the parent li
           checkElement.addClass('menu-open');
-          parent_find_active = parent.find('li.active');
-          parent_find_active.removeClass('active');
+          //parent_find_active = parent.find('li.active');
+          //parent_find_active.removeClass('active');
           parent_li.addClass('active');
           //Fix the layout in case the sidebar stretches over the height of the window
           _this.layout.fix();
