@@ -14,6 +14,12 @@ var config = {
           id: 'open_data_firenze',
           gid: 'qdjango:open_data_firenze',
       },
+      {
+          type: 'qdjango',
+          name: 'Open Data Firenze',
+          id: 'open_data_firenze_2',
+          gid: 'qdjango:open_data_firenze_2',
+      },
     ],
     initproject: 'qdjango:open_data_firenze',
     overviewproject: null

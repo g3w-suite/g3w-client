@@ -23,4 +23,8 @@ function service(){
 //lo fa diventare un oggetto emitter
 inherit(service,EventEmitter);
 
+setTimeout(function(){
+    projectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
+},2000)
+
 module.exports = new service();

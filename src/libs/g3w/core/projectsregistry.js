@@ -12,12 +12,14 @@ Funzione costruttore contentente tre proprieta':
 // Public interface
 function ProjectsRegistry(){
   var self = this;
+  this.currentProject = null;
   
   this.mainProject = null;
   //config generale
   this.setup = function(config){
     _registry.setup(config)
     .then(function(){ //si risolve quando è stato caricato il progetto
+      self.currentProject = _registry.currentProject;
       self.emit("loaded");
     });
   };
@@ -27,11 +29,15 @@ function ProjectsRegistry(){
   };
   
   this.getProject = function(projectGid){
-    _registry.getProject(projectGid);
+    return _registry.getProject(projectGid);
   };
   
   this.getCurrentProject = function(){
-    return _registry.currentProject;
+    return this.getProject(_registry.currentProject.gid);
+  };
+  
+  this.setCurrentProject = function(projectGid){
+    _registry.setCurrentProject(projectGid);
   }
 }
 
@@ -43,7 +49,9 @@ var _registry = {
   initialized: false,
   config: null,
   projects: [],
-  currentProject: null,
+  currentProject: {
+    gid: null
+  },
   //config generale
   setup: function(config){
     if (!this.initialized){
@@ -62,7 +70,7 @@ var _registry = {
         var project = new Project(projectFullConfig);
         self.projects.push(project);
         if (setAsCurrent) {
-          self.currentProject = project;
+          self.currentProject.gid = project.gid;
         }
         self.initialized = true;
       });
@@ -70,9 +78,37 @@ var _registry = {
   },
   
   getProject: function(projectGid){
-    this.projects.some(function(project){
-      if (project.gid == projectGid) return project;
+    var project = null;
+    this.projects.forEach(function(projectInstance){
+      if (projectInstance.gid == projectGid) {
+        project = projectInstance;
+      }
     })
+    return project;
+  },
+  
+  projectExists: function(projectGid){
+    var exists = false;
+    this.config.group.projects.forEach(function(project){
+      if (project.gid == projectGid) {
+        exists = true;
+      }
+    })
+    return exists;
+  },
+  
+  setCurrentProject: function(projectGid){
+    var self = this;
+    if(!this.projectExists(projectGid)){
+      return;
+    }
+    var project = this.getProject(projectGid)
+    if (project){
+      this.currentProject.gid = project.gid;
+    }
+    else{
+      this.addProject(projectGid,true);
+    }
   },
   
   getProjectBaseConfig: function(projectGid){
@@ -92,7 +128,13 @@ var _registry = {
     //nel caso di test locale
     if (this.config.client.local){
       setTimeout(function(){
-        var projectFullConfig = require('./test.project_config');
+        var projectFullConfig;
+        if (projectBaseConfig.id == 'open_data_firenze'){
+          projectFullConfig = require('./test.project_config');
+        }
+        else{
+          projectFullConfig = require('./test.project_config_2');
+        }
         deferred.resolve(projectFullConfig);
       },100);
     }//altrimenti nella realtà fa una chiamata al server e una volta ottenuto il progetto risolve l'oggetto defer
@@ -103,7 +145,7 @@ var _registry = {
       })
     }
     return deferred.promise;
-  }
+  },
 };
 
 module.exports = new ProjectsRegistry();

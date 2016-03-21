@@ -5,7 +5,13 @@ Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     data: function() {
       return {
+        project: projectsregistry.currentProject,
         layerstree: projectsregistry.getCurrentProject().getLayersTree()
+      }
+    },
+    watch: {
+      'project.gid': function(val){
+        this.layerstree = projectsregistry.getCurrentProject().getLayersTree();
       }
     },
     methods: {
