@@ -320,7 +320,7 @@ $.AdminLTE._init = function() {
         });
 
         //Close all open menus within the parent
-        var ul = parent.find('ul:visible').slideUp(animationSpeed);
+        var ul = parent.find('ul.treeview-menu:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent
         ul.removeClass('menu-open');
         //Get the parent li
