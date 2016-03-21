@@ -6,14 +6,19 @@ Vue.component('g3w-catalog',{
     data: function() {
       return {
         project: projectsregistry.currentProject,
-        layerstree: projectsregistry.getCurrentProject().getLayersTree()
+        //layerstree: projectsregistry.getCurrentProject().getLayersTree()
       }
     },
-    watch: {
+    computed: {
+      layerstree: function(){
+        return projectsregistry.getCurrentProject().getLayersTree();
+      }
+    },
+    /*watch: {
       'project.gid': function(val){
         this.layerstree = projectsregistry.getCurrentProject().getLayersTree();
       }
-    },
+    },*/
     methods: {
       //codice qui
     },

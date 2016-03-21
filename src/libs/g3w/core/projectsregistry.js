@@ -49,6 +49,7 @@ var _registry = {
   initialized: false,
   config: null,
   projects: [],
+  // oggetto costante, necessario per watch detection nei componenti (migliorabile?)
   currentProject: {
     gid: null
   },
@@ -70,7 +71,7 @@ var _registry = {
         var project = new Project(projectFullConfig);
         self.projects.push(project);
         if (setAsCurrent) {
-          self.currentProject.gid = project.gid;
+          self.setCurrentProject(project.gid);
         }
         self.initialized = true;
       });
@@ -102,7 +103,7 @@ var _registry = {
     if(!this.projectExists(projectGid)){
       return;
     }
-    var project = this.getProject(projectGid)
+    var project = this.getProject(projectGid);
     if (project){
       this.currentProject.gid = project.gid;
     }
