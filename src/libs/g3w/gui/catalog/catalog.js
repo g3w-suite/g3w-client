@@ -21,6 +21,7 @@ Vue.component('g3w-catalog',{
       //
     }
 });
+
 // tree component
 Vue.component('tree', {
   template: require('./tree.html'),
