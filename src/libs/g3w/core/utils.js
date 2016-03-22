@@ -36,6 +36,12 @@ var utils = {
   mixin: function mixin(destination, source) {
       return utils.merge(destination.prototype, source);
   },
+  
+  mixininstance: function mixininstance(destination,source){
+      var sourceInstance = new source;
+      utils.merge(destination, sourceInstance);
+      utils.merge(destination.prototype, source.prototype);
+  },
 
   /**
    * Merges one object into another, change the object in place.

@@ -11,7 +11,7 @@ Funzione costruttore contentente tre proprieta':
 // Public interface
 function ProjectsRegistry(){
   var self = this;
-  this.store = _registry.tore;
+  this.store = _registry.store;
   //config generale
   this.setup = function(config){
     _registry.setup(config).then(function(){

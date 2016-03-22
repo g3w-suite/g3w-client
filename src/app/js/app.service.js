@@ -26,4 +26,14 @@ setTimeout(function(){
   ProjectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
 },2000);
 
+var ProjectService = require('g3w/core/projectservice');
+ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
+  console.log("Ok, puoi cambiare "+oldVal+" in "+val);
+  return true;
+});
+
+setTimeout(function(){
+  ProjectService.storeSet('layersTree[0].title','POI 2')
+},4000);
+
 module.exports = new service();

@@ -1,13 +1,10 @@
 var inherit = require('./utils').inherit;
+var StoreProvider = require('./storeprovider');
 
 function ProjectService(){
   this.store = {
-    layersTree: {}
-  };
-  
-  this.setProject = function(project){
-    this.store.layers = this.makeLayersObj(project.layers);
-    this.store.layersTree = this.fillLayersTree(project.layerstree);
+    layers: [],
+    layersTree: []
   };
   
   this.makeLayersObj = function(layersConfig){
@@ -38,7 +35,12 @@ function ProjectService(){
     return layersTree;
   };
   
+  this.setProject = function(project){
+    this.store.layers = this.makeLayersObj(project.layers);
+    this.store.layersTree = this.fillLayersTree(project.layerstree);
+  };
 };
-inherit(ProjectService,EventEmitter);
+
+inherit(ProjectService,StoreProvider);
 
 module.exports = new ProjectService
