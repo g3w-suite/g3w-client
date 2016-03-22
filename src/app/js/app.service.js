@@ -28,7 +28,7 @@ setTimeout(function(){
 
 var ProjectService = require('g3w/core/projectservice');
 ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
-  console.log("Ok, puoi cambiare "+oldVal+" in "+val);
+  console.log("Per me puoi cambiare "+oldVal+" in "+val);
   return true;
 });
 
@@ -40,7 +40,7 @@ setTimeout(function(){
 var unlisten;
 setTimeout(function(){
     unlisten = ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
-      console.log("Ora no, non puoi cambiare "+oldVal+" in "+val);
+      console.log("Per me NON puoi cambiare "+oldVal+" in "+val);
       return false;
     });
   ProjectService.storeSet('layersTree[0].title','POI 3')
