@@ -2,6 +2,7 @@
 var inherit = require('g3w/core/utils').inherit;
 //ogetto contiene metodi di setup, getLayerStore, getLayersTree
 var projectsRegistry = require('g3w/core/projectsregistry');
+window.projectsRegistry = projectsRegistry;
 
 function service(){
   var self = this;
@@ -24,7 +25,11 @@ function service(){
 inherit(service,EventEmitter);
 
 setTimeout(function(){
-    projectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
-},2000)
+  projectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
+},2000);
+
+/*setTimeout(function(){
+  projectsRegistry.setCurrentProject('qdjango:open_data_firenze');
+},5000);*/
 
 module.exports = new service();

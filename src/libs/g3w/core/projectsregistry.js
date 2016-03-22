@@ -1,6 +1,5 @@
-var inherit = require('g3w/core/utils').inherit;
-//oggetto che restituisce layers e layerstree
-var Project = require('./project');
+var inherit = require('./utils').inherit;
+var ProjectService = require('./projectservice');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -12,16 +11,12 @@ Funzione costruttore contentente tre proprieta':
 // Public interface
 function ProjectsRegistry(){
   var self = this;
-  this.currentProject = null;
-  
-  this.mainProject = null;
+  this.store = _registry.tore;
   //config generale
   this.setup = function(config){
-    _registry.setup(config)
-    .then(function(){ //si risolve quando è stato caricato il progetto
-      self.currentProject = _registry.currentProject;
-      self.emit("loaded");
-    });
+    _registry.setup(config).then(function(){
+      self.emit('loaded');
+    })
   };
   
   this.addProject = function(projectGid){
@@ -33,6 +28,7 @@ function ProjectsRegistry(){
   };
   
   this.getCurrentProject = function(){
+    var a = this.a;
     return this.getProject(_registry.currentProject.gid);
   };
   
@@ -48,78 +44,58 @@ inherit(ProjectsRegistry,EventEmitter);
 var _registry = {
   initialized: false,
   config: null,
-  projects: [],
-  // oggetto costante, necessario per watch detection nei componenti (migliorabile?)
-  currentProject: {
-    gid: null
+  testing: true,
+  store: {
+    currentProject:'',
+    common: {},
+    projects: []
   },
   //config generale
   setup: function(config){
     if (!this.initialized){
-      this.config = config;
-      //carica il progetto della proprietà initiproject
-      return this.addProject(config.group.initproject,true);
+      testing = config.client.local;
+      this.setupStore(config);
+      return this.setCurrentProject(config.group.initproject);
     }
   },
   
-  addProject: function(projectGid, setAsCurrent){
-    var projectBaseConfig = this.getProjectBaseConfig(projectGid);
-    if (projectBaseConfig) {
-      var self = this;
-      return this.getProjectFullConfig(projectBaseConfig)
+  setupStore: function(config){
+    this.store.common.baseLayers = config.group.baselayers;
+    this.store.common.minScale = config.group.minscale;
+    this.store.common.maxScale = config.group.maxscale;
+    this.store.common.crs = config.group.crs;
+    this.store.projects = config.group.projects;
+  },
+  
+  setCurrentProject: function(projectGid){
+    var project = this.getProject(projectGid);
+    if(!project){
+      return Q.reject("Project doesn't exist");
+    }
+    var isFullFilled = !_.isNil(project.layers);
+    if (isFullFilled){
+      this.currentProject = project.gid;
+      ProjectService.setProject(project);
+      return Q(project);
+    }
+    else{
+      return this.getProjectFullConfig(project)
       .then(function(projectFullConfig){
-        var project = new Project(projectFullConfig);
-        self.projects.push(project);
-        if (setAsCurrent) {
-          self.setCurrentProject(project.gid);
-        }
-        self.initialized = true;
+        project = _.merge(project,projectFullConfig);
+        this.currentProject = project.gid;
+        ProjectService.setProject(project);
       });
     }
   },
   
   getProject: function(projectGid){
     var project = null;
-    this.projects.forEach(function(projectInstance){
-      if (projectInstance.gid == projectGid) {
-        project = projectInstance;
+    this.store.projects.forEach(function(_project){
+      if (_project.gid == projectGid) {
+        project = _project;
       }
     })
     return project;
-  },
-  
-  projectExists: function(projectGid){
-    var exists = false;
-    this.config.group.projects.forEach(function(project){
-      if (project.gid == projectGid) {
-        exists = true;
-      }
-    })
-    return exists;
-  },
-  
-  setCurrentProject: function(projectGid){
-    var self = this;
-    if(!this.projectExists(projectGid)){
-      return;
-    }
-    var project = this.getProject(projectGid);
-    if (project){
-      this.currentProject.gid = project.gid;
-    }
-    else{
-      this.addProject(projectGid,true);
-    }
-  },
-  
-  getProjectBaseConfig: function(projectGid){
-    var projectBaseConfig = null;
-    _.forEach(this.config.group.projects,function(project){
-      if (project.gid == projectGid){
-        projectBaseConfig = project;
-      }
-    });
-    return projectBaseConfig;
   },
   
   //ritorna una promises
@@ -127,7 +103,7 @@ var _registry = {
     var self = this;
     var deferred = Q.defer();
     //nel caso di test locale
-    if (this.config.client.local){
+    if (this.testing){
       setTimeout(function(){
         var projectFullConfig;
         if (projectBaseConfig.id == 'open_data_firenze'){

@@ -1,24 +1,19 @@
 var t = require('i18n.service');
-var projectsregistry = require('g3w/core/projectsregistry');
+var ProjectService = require('g3w/core/projectservice');
 
 Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     data: function() {
       return {
-        project: projectsregistry.currentProject,
-        //layerstree: projectsregistry.getCurrentProject().getLayersTree()
+        store: ProjectService.store
       }
     },
     computed: {
       layerstree: function(){
-        return projectsregistry.getCurrentProject().getLayersTree();
+        console.log("watcher");
+        return this.store.layersTree;
       }
     },
-    /*watch: {
-      'project.gid': function(val){
-        this.layerstree = projectsregistry.getCurrentProject().getLayersTree();
-      }
-    },*/
     methods: {
       //codice qui
     },
