@@ -3,16 +3,18 @@ var inherit = require('./utils').inherit;
 function StoreProvider(){}
 inherit(StoreProvider,EventEmitter);
 
-StoreProvider.prototype.storeSet = function(path,value){
+var proto = StoreProvider.prototype;
+
+proto.storeSet = function(path,value){
   var oldValue = _.get(this.store,path,null);
   if(!oldValue){
     return;
   }
   var pathKey = this.getPathKey(path);
   var storeSetListeners = this.getStoreSetListeners();
-  var listeners = storeSetListeners.pathKey;
+  var listeners = storeSetListeners[pathKey];
   var canSet = true;
-  _.forEach(listeners,function(listener){
+  _.forEach(listeners,function(listener, key){
     canSet &= listener.apply(this,[value,oldValue]);
   })
   if(canSet){
@@ -21,20 +23,31 @@ StoreProvider.prototype.storeSet = function(path,value){
   }
 };
 
-StoreProvider.prototype.addStoreSetListener = function(path,listener){
+proto.addStoreSetListener = function(path,listener){
   var storeSetListeners = this.getStoreSetListeners();
   var pathKey = this.getPathKey(path);
-  if (_.isUndefined(storeSetListeners.pathKey)){
-    storeSetListeners.pathKey = [];
+  if (_.isUndefined(storeSetListeners[pathKey])){
+    storeSetListeners[pathKey] = {};
   }
-  storeSetListeners.pathKey.push(listener);
+  var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
+  storeSetListeners[pathKey][listenerKey] = listener;
+  return this.generateUnListener(pathKey,listenerKey);
 };
 
-StoreProvider.prototype.getStoreSetListeners = function(){
+proto.getStoreSetListeners = function(){
   return this._storeSetListeners || (this._storeSetListeners = {});
+};
+
+proto.generateUnListener = function(pathKey,listenerKey){
+  self = this;
+  return function(){
+    var storeSetListeners = self.getStoreSetListeners();
+    storeSetListeners[pathKey][listenerKey] = null;
+    delete storeSetListeners[pathKey][listenerKey];
+  }
 }
 
-StoreProvider.prototype.getPathKey = function(path){
+proto.getPathKey = function(path){
   return 'id:'+path;
 };
 

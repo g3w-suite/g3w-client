@@ -37,13 +37,18 @@ setTimeout(function(){
 },4000);
 
 
-
+var unlisten;
 setTimeout(function(){
-    ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
-    console.log("Ora no, non puoi cambiare "+oldVal+" in "+val);
-    return false;
-  });
+    unlisten = ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
+      console.log("Ora no, non puoi cambiare "+oldVal+" in "+val);
+      return false;
+    });
   ProjectService.storeSet('layersTree[0].title','POI 3')
 },6000);
+
+setTimeout(function(){
+  unlisten();
+  ProjectService.storeSet('layersTree[0].title','POI 4')
+},8000);
 
 module.exports = new service();
