@@ -28,12 +28,13 @@ Vue.component('tree', {
   props: {
     layerstree: [],
     //eredito il numero di childs dal parent
-    n_parentChilds : 0
+    n_parentChilds : 0,
+    checked: false
   },
   data: function () {
     return {
       expanded: this.layerstree.expanded,
-      checked: false,
+      parentChecked: false,
       //proprieta che server per fare confronto per il tristate
       n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
@@ -44,29 +45,44 @@ Vue.component('tree', {
           //codice qui
         },
         deep: true
-      }
+      },
+      'checked': function (val){
+        if (val) {
+          this.n_parentChilds-=1;
+        } else {
+          this.n_parentChilds+=1;
+        }
+      },
   },
   computed: {
     isFolder: function () {
-      var isFolder = this.layerstree.nodes &&  this.layerstree.nodes.length;
+      var isFolder = this.n_childs ? true : false;
       if (isFolder) {
-        this.n_parentChilds = this.layerstree.nodes.length;
+        this.n_parentChilds = this.n_childs;
       }
       return isFolder
     }
   },
   methods: {
-    toggle: function () {
-      if (this.isFolder) {
+    toggle: function (checkAll) {
+      var checkAll = checkAll == 'true' ? true : false;
+      if (this.isFolder && !checkAll) {
         this.layerstree.expanded = !this.layerstree.expanded;
+      }
+      else if (checkAll){
+        console.log(this.parentChecked);
+        console.log(this.n_parentChilds)
+        if (this.parentChecked && !this.n_parentChilds){
+          this.parentChecked = false;
+        } else if (this.parentChecked && !this.n_parentChilds) {
+          this.parentChecked = true;
+        }
+        else {
+          this.parentChecked = !this.parentChecked;
+        }
       }
       else {
         this.checked = !this.checked;
-        if (this.checked) {
-          this.n_parentChilds-=1;
-        } else {
-          this.n_parentChilds+=1;
-        }
       }
     },
     triClass: function () {
