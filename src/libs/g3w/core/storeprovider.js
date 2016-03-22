@@ -13,7 +13,7 @@ StoreProvider.prototype.storeSet = function(path,value){
   var listeners = storeSetListeners.pathKey;
   var canSet = true;
   _.forEach(listeners,function(listener){
-    canSet |= listener.apply(this,[value,oldValue]);
+    canSet &= listener.apply(this,[value,oldValue]);
   })
   if(canSet){
     console.log("Setting: "+path+"="+value);
