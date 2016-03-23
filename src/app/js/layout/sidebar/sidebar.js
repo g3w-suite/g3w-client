@@ -1,6 +1,8 @@
 var t = require('i18n.service');
 require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
+require('g3w/gui/tools/tools');
+var PluginRegistry = require('g3w/core/pluginsregistry');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
@@ -38,14 +40,12 @@ Vue.component('sidebar-item',{
 });
 
 Vue.component('sidebar-tool',{
-	props: ['data-icon','data-label','data-content','data-component'],
     template: require('./sidebar-tool.html'),
     data: function() {
     	return {
-        	main: true
-        };
+        store: PluginRegistry.store
+      };
     },
     methods: {
-    	
-	}
+	  }
 });
