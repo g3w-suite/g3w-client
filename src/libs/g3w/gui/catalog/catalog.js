@@ -64,17 +64,16 @@ Vue.component('tree', {
     }
   },
   methods: {
-    toggle: function (checkAll) {
-      var checkAll = checkAll == 'true' ? true : false;
+    toggle: function (checkAllLayers) {
+      var checkAll = checkAllLayers == 'true' ? true : false;
       if (this.isFolder && !checkAll) {
         this.layerstree.expanded = !this.layerstree.expanded;
       }
       else if (checkAll){
-        console.log(this.parentChecked);
-        console.log(this.n_parentChilds)
         if (this.parentChecked && !this.n_parentChilds){
           this.parentChecked = false;
-        } else if (this.parentChecked && !this.n_parentChilds) {
+        } else if (this.parentChecked && this.n_parentChilds) {
+          this.parentChecked = false;
           this.parentChecked = true;
         }
         else {

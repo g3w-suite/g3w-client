@@ -91,7 +91,7 @@ var _registry = {
       });
     }
   },
-  
+
   getProject: function(projectGid){
     var project = null;
     this.store.projects.forEach(function(_project){

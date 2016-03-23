@@ -1,6 +1,7 @@
 /*library inherit tools */
 var inherit = require('g3w/core/utils').inherit;
 var ProjectsRegistry = require('g3w/core/projectsregistry');
+var PluginsRegistry = require('g3w/core/pluginsregistry')
 
 function service(){
   var self = this;
@@ -12,7 +13,10 @@ function service(){
     //una volta che la configurazione e' stata terminata (evento loadend) emesso
     //dall'oggetto layersRegistry dopo aver trminato il setup
     ProjectsRegistry.once('loaded',function(){
-      self.emit('ready');
+      PluginsRegistry.once('loaded',function(){
+        self.emit('ready');
+      });
+      PluginsRegistry.setup();
     });
     //inizializza la configurazione basata sul gruppo di progetti
     //una volta caricato il file di configurazione emette l'evento loadend
