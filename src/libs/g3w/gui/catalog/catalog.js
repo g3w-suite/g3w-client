@@ -5,13 +5,13 @@ Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     data: function() {
       return {
-        store: ProjectService.store
+        project: ProjectService.store
       }
     },
     computed: {
       layerstree: function(){
         console.log("watcher");
-        return this.store.layersTree;
+        return this.project.layersTree;
       }
     },
     methods: {

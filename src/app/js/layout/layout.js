@@ -156,6 +156,7 @@ $.AdminLTE._init = function() {
       //the height of the document.
       if ($("body").hasClass("fixed")) {
         $(".content-wrapper, .right-side").css('min-height', window_height - $('.main-footer').outerHeight());
+        $(".content-wrapper, .right-side").css('height', window_height - $('.main-footer').outerHeight());
       } else {
         var postSetWidth;
         if (window_height >= sidebar_height) {

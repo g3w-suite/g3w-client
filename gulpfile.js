@@ -48,7 +48,7 @@ gulp.task('browserify', [], function(cb) {
           //browserSync.reload();
           this.emit('end');
           del(['build/js/app.js','build/style/app.css']).then(function(){
-            process.exit();
+            //process.exit();
           });
         })
         .pipe(source('build.js'))
@@ -117,7 +117,7 @@ gulp.task('watch',function() {
         browserSync.reload();
     });
     // uso gulp-watch così jshint viene eseguito anche su file nuovi (che gulp.watch non traccia)
-    watch('./src/**/*.js' ,function(){
+    watch(['./src/app/**/*.js','./src/libs/g3w/**/*.js','./src/libs/g3w-ol3/src/**/*.js'] ,function(){
       gulp.start('jshint');
     });
 });

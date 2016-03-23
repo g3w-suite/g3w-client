@@ -21,12 +21,12 @@ function service(){
 }
 //lo fa diventare un oggetto emitter
 inherit(service,EventEmitter);
-
+var ProjectService = require('g3w/core/projectservice');
 setTimeout(function(){
   ProjectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
 },2000);
 
-var ProjectService = require('g3w/core/projectservice');
+
 ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
   console.log("Per me puoi cambiare "+oldVal+" in "+val);
   return true;

@@ -4,7 +4,7 @@ var StoreProvider = require('./storeprovider');
 function ProjectService(){
   this.store = {
     layers: [],
-    layersTree: []
+    layersTree: [],
   };
   
   this.makeLayersObj = function(layersConfig){
@@ -36,8 +36,10 @@ function ProjectService(){
   };
   
   this.setProject = function(project){
+    this.store.name = project.name;
     this.store.layers = this.makeLayersObj(project.layers);
     this.store.layersTree = this.fillLayersTree(project.layerstree);
+    this.emit('projectset');
   };
 };
 

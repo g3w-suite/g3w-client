@@ -28,7 +28,6 @@ function ProjectsRegistry(){
   };
   
   this.getCurrentProject = function(){
-    var a = this.a;
     return this.getProject(_registry.currentProject.gid);
   };
   
@@ -46,7 +45,6 @@ var _registry = {
   config: null,
   testing: true,
   store: {
-    currentProject:'',
     common: {},
     projects: []
   },
@@ -60,11 +58,19 @@ var _registry = {
   },
   
   setupStore: function(config){
+    var self = this;
     this.store.common.baseLayers = config.group.baselayers;
     this.store.common.minScale = config.group.minscale;
     this.store.common.maxScale = config.group.maxscale;
     this.store.common.crs = config.group.crs;
-    this.store.projects = config.group.projects;
+    config.group.projects.forEach(function(project){
+      project.baseLayers = config.group.baselayers;
+      project.minScale = config.group.minscale;
+      project.maxScale = config.group.maxscale;
+      project.crs = config.group.crs;
+      self.store.projects.push(project);
+    })
+    //this.store.projects = config.group.projects;
   },
   
   setCurrentProject: function(projectGid){
@@ -74,7 +80,6 @@ var _registry = {
     }
     var isFullFilled = !_.isNil(project.layers);
     if (isFullFilled){
-      this.currentProject = project.gid;
       ProjectService.setProject(project);
       return Q(project);
     }
@@ -82,7 +87,6 @@ var _registry = {
       return this.getProjectFullConfig(project)
       .then(function(projectFullConfig){
         project = _.merge(project,projectFullConfig);
-        this.currentProject = project.gid;
         ProjectService.setProject(project);
       });
     }
@@ -101,7 +105,7 @@ var _registry = {
   //ritorna una promises
   getProjectFullConfig: function(projectBaseConfig){
     var self = this;
-    var deferred = Q.defer();
+    var deferred = $.Deferred();
     //nel caso di test locale
     if (this.testing){
       setTimeout(function(){
@@ -121,7 +125,7 @@ var _registry = {
         deferred.resolve(projectFullConfig);
       })
     }
-    return deferred.promise;
+    return deferred.promise();
   },
 };
 
