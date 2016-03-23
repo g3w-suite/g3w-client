@@ -1,5 +1,6 @@
 var inherit = require('./utils').inherit;
 var StoreProvider = require('./storeprovider');
+var ProjectsRegistry = require('g3w/core/projectsregistry');
 var ProjectService = require('g3w/core/projectservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 

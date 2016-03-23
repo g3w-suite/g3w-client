@@ -6,11 +6,6 @@ var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 
 Vue.component('g3w-map',{
   template: require('./map.html'),
-  data: function() {
-    return {
-      project: ProjectService.store,
-    }
-  },
   ready: function(){
     MapService.showViewer(this.$el.id);
   }

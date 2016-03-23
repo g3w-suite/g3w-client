@@ -48,7 +48,7 @@ gulp.task('browserify', [], function(cb) {
           //browserSync.reload();
           this.emit('end');
           del(['build/js/app.js','build/style/app.css']).then(function(){
-            //process.exit();
+            process.exit();
           });
         })
         .pipe(source('build.js'))
