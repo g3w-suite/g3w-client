@@ -38,7 +38,7 @@ function MapService(){
       name: 'Test',
       opacity: 1.0,
       source: new ol.source.ImageWMS({
-        url: 'http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Dev/G3W/g3w-client/test/progetto/test.qgs',
+        url: owstestproject,
         params: {
           LAYERS: [layerName],
           VERSION: '1.3.0',

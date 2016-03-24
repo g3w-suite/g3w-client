@@ -59,6 +59,7 @@ var _registry = {
   
   setupState: function(config){
     var self = this;
+    this.serverUrls = config.server.urls;
     this.state.common.baseLayers = config.group.baselayers;
     this.state.common.minScale = config.group.minscale;
     this.state.common.maxScale = config.group.maxscale;
