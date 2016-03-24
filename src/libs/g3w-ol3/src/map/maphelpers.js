@@ -12,6 +12,7 @@ var _Viewer = function(opts){
       collapsible: false
     }
   }).extend([new ol.control.Zoom()]);
+  var view = new ol.View(opts.view);
   var options = {
     controls: controls,
     interactions: ol.interaction.defaults().extend([
@@ -19,7 +20,7 @@ var _Viewer = function(opts){
     ]),
     ol3Logo: false,
     //
-    view: new ol.View(opts.view)
+    view: view
   };
   if (opts.id){
     options.target = opts.id;

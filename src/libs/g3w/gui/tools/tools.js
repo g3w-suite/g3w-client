@@ -6,7 +6,7 @@ Vue.component('g3w-tools',{
     template: require('./tools.html'),
     data: function() {
       return {
-        store: PluginsRegistry.store
+        store: PluginsRegistry.state
       }
     },
     methods: {

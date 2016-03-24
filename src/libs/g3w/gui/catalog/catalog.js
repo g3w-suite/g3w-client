@@ -5,7 +5,7 @@ Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     data: function() {
       return {
-        project: ProjectService.store
+        project: ProjectService.state
       }
     },
     computed: {

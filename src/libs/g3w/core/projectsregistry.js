@@ -4,14 +4,14 @@ var ProjectService = require('./projectservice');
 /* service
 Funzione costruttore contentente tre proprieta':
     setup: metodo di inizializzazione
-    getLayersStore: ritorna l'oggetto LayersStore
-    getLayersTree: ritorna l'array layersTree dall'oggetto LayersStore
+    getLayersState: ritorna l'oggetto LayersState
+    getLayersTree: ritorna l'array layersTree dall'oggetto LayersState
 */
 
 // Public interface
 function ProjectsRegistry(){
   var self = this;
-  this.store = _registry.store;
+  this.state = _registry.state;
   //config generale
   this.setup = function(config){
     _registry.setup(config).then(function(){
@@ -44,7 +44,7 @@ var _registry = {
   initialized: false,
   config: null,
   testing: true,
-  store: {
+  state: {
     common: {},
     projects: []
   },
@@ -52,25 +52,25 @@ var _registry = {
   setup: function(config){
     if (!this.initialized){
       testing = config.client.local;
-      this.setupStore(config);
+      this.setupState(config);
       return this.setCurrentProject(config.group.initproject);
     }
   },
   
-  setupStore: function(config){
+  setupState: function(config){
     var self = this;
-    this.store.common.baseLayers = config.group.baselayers;
-    this.store.common.minScale = config.group.minscale;
-    this.store.common.maxScale = config.group.maxscale;
-    this.store.common.crs = config.group.crs;
+    this.state.common.baseLayers = config.group.baselayers;
+    this.state.common.minScale = config.group.minscale;
+    this.state.common.maxScale = config.group.maxscale;
+    this.state.common.crs = config.group.crs;
     config.group.projects.forEach(function(project){
       project.baseLayers = config.group.baselayers;
       project.minScale = config.group.minscale;
       project.maxScale = config.group.maxscale;
       project.crs = config.group.crs;
-      self.store.projects.push(project);
+      self.state.projects.push(project);
     })
-    //this.store.projects = config.group.projects;
+    //this.state.projects = config.group.projects;
   },
   
   setCurrentProject: function(projectGid){
@@ -94,7 +94,7 @@ var _registry = {
 
   getProject: function(projectGid){
     var project = null;
-    this.store.projects.forEach(function(_project){
+    this.state.projects.forEach(function(_project){
       if (_project.gid == projectGid) {
         project = _project;
       }

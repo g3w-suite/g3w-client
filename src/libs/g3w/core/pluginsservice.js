@@ -1,14 +1,14 @@
 var inherit = require('./utils').inherit;
 
 function PluginsService(){
-  this.store = {
+  this.state = {
     activePlugin: ''
   };
   this.setActivePlugin = function(pluginName) {
-    this.store.activePlugin = pluginName
+    this.state.activePlugin = pluginName
   };
   this.getActivePlugin = function(project){
-    return this.store.activePlugin
+    return this.state.activePlugin
   };
 };
 

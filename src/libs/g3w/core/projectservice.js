@@ -1,8 +1,8 @@
 var inherit = require('./utils').inherit;
-var StoreProvider = require('./storeprovider');
+var StateProvider = require('./stateprovider');
 
 function ProjectService(){
-  this.store = {
+  this.state = {
     layers: [],
     layersTree: [],
   };
@@ -22,7 +22,7 @@ function ProjectService(){
               // extend layers tree leafs with a direct reference to the layer object
               //aggiungo la proprieta' title che serve a bootstrap-tree per visulaizzare i nomi
               // all'interno del catalog
-              val.title = self.store.layers[val.id].title;
+              val.title = self.state.layers[val.id].title;
           }
           if (!_.isNil(val.nodes)) {
               val.title = val.name;
@@ -36,13 +36,15 @@ function ProjectService(){
   };
   
   this.setProject = function(project){
-    this.store.name = project.name;
-    this.store.layers = this.makeLayersObj(project.layers);
-    this.store.layersTree = this.fillLayersTree(project.layerstree);
+    this.state.name = project.name;
+    this.state.crs = project.crs;
+    this.state.extent = project.extent;
+    this.state.layers = this.makeLayersObj(project.layers);
+    this.state.layersTree = this.fillLayersTree(project.layerstree);
     this.emit('projectset');
   };
 };
 
-inherit(ProjectService,StoreProvider);
+inherit(ProjectService,StateProvider);
 
 module.exports = new ProjectService

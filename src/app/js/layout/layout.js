@@ -3,26 +3,17 @@ require('./floatbar/floatbar');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {
-  throw new Error("AdminLTE requires jQuery");
+  throw new Error("LayoutManager requires jQuery");
 }
 
-/* AdminLTE
- *
- * @type Object
- * @description $.AdminLTE is the main object for the template's app.
- *              It's used for implementing functions and options related
- *              to the template. Keeping everything wrapped in an object
- *              prevents conflict with other plugins and is a better
- *              way to organize our code.
- */
-$.AdminLTE = {};
+$.LayoutManager = {};
 
 /* --------------------
- * - AdminLTE Options -
+ * - LayoutManager Options -
  * --------------------
  * Modify these options to suit your implementation
  */
-$.AdminLTE.options = {
+$.LayoutManager.options = {
   //Add slimscroll to navbar menus
   //This requires you to load the slimscroll plugin
   //in every page before app.js
@@ -51,7 +42,7 @@ $.AdminLTE.options = {
   //Enable Fast Click. Fastclick.js creates a more
   //native touch experience with touch devices. If you
   //choose to enable the plugin, make sure you load the script
-  //before AdminLTE's app.js
+  //before LayoutManager's app.js
   enableFastclick: true,
   //Control Sidebar Options
   enableControlSidebar: true,
@@ -122,22 +113,22 @@ $.AdminLTE.options = {
 
 
 /* ----------------------------------
- * - Initialize the AdminLTE Object -
+ * - Initialize the LayoutManager Object -
  * ----------------------------------
- * All AdminLTE functions are implemented below.
+ * All LayoutManager functions are implemented below.
  */
-$.AdminLTE._init = function() {
+$.LayoutManager._init = function() {
   'use strict';
   /* Layout
    * ======
    * Fixes the layout height in case min-height fails.
    *
    * @type Object
-   * @usage $.AdminLTE.layout.activate()
-   *        $.AdminLTE.layout.fix()
-   *        $.AdminLTE.layout.fixSidebar()
+   * @usage $.LayoutManager.layout.activate()
+   *        $.LayoutManager.layout.fix()
+   *        $.LayoutManager.layout.fixSidebar()
    */
-  $.AdminLTE.layout = {
+  $.LayoutManager.layout = {
     activate: function () {
       var _this = this;
       _this.fix();
@@ -167,7 +158,7 @@ $.AdminLTE._init = function() {
           postSetWidth = sidebar_height;
         }
         //Fix for the control sidebar height
-        var controlSidebar = $($.AdminLTE.options.controlSidebarOptions.selector);
+        var controlSidebar = $($.LayoutManager.options.controlSidebarOptions.selector);
         if (typeof controlSidebar !== "undefined") {
           if (controlSidebar.height() > postSetWidth)
             $(".content-wrapper, .right-side").css('min-height', controlSidebar.height());
@@ -186,7 +177,7 @@ $.AdminLTE._init = function() {
         window.console.error("Error: the fixed layout requires the slimscroll plugin!");
       }
       //Enable slimscroll for fixed layout
-      if ($.AdminLTE.options.sidebarSlimScroll) {
+      if ($.LayoutManager.options.sidebarSlimScroll) {
         if (typeof $.fn.slimScroll != 'undefined') {
           //Destroy if it exists
           $(".sidebar").slimScroll({destroy: true}).height("auto");
@@ -209,12 +200,12 @@ $.AdminLTE._init = function() {
    * Adds the push menu functionality to the sidebar.
    *
    * @type Function
-   * @usage: $.AdminLTE.pushMenu("[data-toggle='offcanvas']")
+   * @usage: $.LayoutManager.pushMenu("[data-toggle='offcanvas']")
    */
-  $.AdminLTE.pushMenu = {
+  $.LayoutManager.pushMenu = {
     activate: function (toggleBtn) {
       //Get the screen sizes
-      var screenSizes = $.AdminLTE.options.screenSizes;
+      var screenSizes = $.LayoutManager.options.screenSizes;
 
       //Enable sidebar toggle
       $(toggleBtn).on('click', function (e) {
@@ -246,13 +237,13 @@ $.AdminLTE._init = function() {
       });
 
       //Enable expand on hover for sidebar mini
-      if ($.AdminLTE.options.sidebarExpandOnHover || ($('body').hasClass('fixed') && $('body').hasClass('sidebar-mini'))) {
+      if ($.LayoutManager.options.sidebarExpandOnHover || ($('body').hasClass('fixed') && $('body').hasClass('sidebar-mini'))) {
         this.expandOnHover();
       }
     },
     expandOnHover: function () {
       var _this = this;
-      var screenWidth = $.AdminLTE.options.screenSizes.sm - 1;
+      var screenWidth = $.LayoutManager.options.screenSizes.sm - 1;
       //Expand sidebar on hover
       $('.main-sidebar').hover(function () {
         if ($('body').hasClass('sidebar-mini') && $("body").hasClass('sidebar-collapse') && $(window).width() > screenWidth) {
@@ -280,11 +271,11 @@ $.AdminLTE._init = function() {
    * tree view menu.
    *
    * @type Function
-   * @Usage: $.AdminLTE.tree('.sidebar')
+   * @Usage: $.LayoutManager.tree('.sidebar')
    */
-  $.AdminLTE.tree = function (menu) {
+  $.LayoutManager.tree = function (menu) {
     var _this = this;
-    var animationSpeed = $.AdminLTE.options.animationSpeed;
+    var animationSpeed = $.LayoutManager.options.animationSpeed;
     //click event //
     $(document).on('click', menu + ' li a', function (e) {
 
@@ -350,15 +341,15 @@ $.AdminLTE._init = function() {
    * Adds functionality to the right sidebar
    *
    * @type Object
-   * @usage $.AdminLTE.controlSidebar.activate(options)
+   * @usage $.LayoutManager.controlSidebar.activate(options)
    */
-  $.AdminLTE.controlSidebar = {
+  $.LayoutManager.controlSidebar = {
     //instantiate the object
     activate: function () {
       //Get the object
       var _this = this;
       //Update options
-      var o = $.AdminLTE.options.controlSidebarOptions;
+      var o = $.LayoutManager.options.controlSidebarOptions;
       //Get the sidebar
       var sidebar = $(o.selector);
       //The toggle button
@@ -443,13 +434,13 @@ $.AdminLTE._init = function() {
    * removing boxes from the screen.
    *
    * @type Object
-   * @usage $.AdminLTE.boxWidget.activate()
-   *        Set all your options in the main $.AdminLTE.options object
+   * @usage $.LayoutManager.boxWidget.activate()
+   *        Set all your options in the main $.LayoutManager.options object
    */
-  $.AdminLTE.boxWidget = {
-    selectors: $.AdminLTE.options.boxWidgetOptions.boxWidgetSelectors,
-    icons: $.AdminLTE.options.boxWidgetOptions.boxWidgetIcons,
-    animationSpeed: $.AdminLTE.options.animationSpeed,
+  $.LayoutManager.boxWidget = {
+    selectors: $.LayoutManager.options.boxWidgetOptions.boxWidgetSelectors,
+    icons: $.LayoutManager.options.boxWidgetOptions.boxWidgetIcons,
+    animationSpeed: $.LayoutManager.options.animationSpeed,
     activate: function (_box) {
       var _this = this;
       if (!_box) {
@@ -500,7 +491,7 @@ $.AdminLTE._init = function() {
     }
   };
   
-  return $.AdminLTE;
+  return $.LayoutManager;
 };
 
 /* ------------------
@@ -518,7 +509,7 @@ $.AdminLTE._init = function() {
  * @type plugin
  * @usage $("#box-widget").boxRefresh( options );
  */
-$.AdminLTE.addRefreshButton = function () {
+$.LayoutManager.addRefreshButton = function () {
   "use strict";
 
   $.fn.boxRefresh = function (options) {
@@ -583,7 +574,7 @@ $.AdminLTE.addRefreshButton = function () {
     }
 
   };
-  return $.AdminLTE;
+  return $.LayoutManager;
 };
 
 /*
@@ -595,14 +586,14 @@ $.AdminLTE.addRefreshButton = function () {
  * @type plugin
  * @usage $("#box-widget").activateBox();
  */
-$.AdminLTE.activateBox = function () {
+$.LayoutManager.activateBox = function () {
   'use strict';
 
   $.fn.activateBox = function () {
-    $.AdminLTE.boxWidget.activate(this);
+    $.LayoutManager.boxWidget.activate(this);
   };
   
-  return $.AdminLTE;
+  return $.LayoutManager;
 };
 
 /*
@@ -614,7 +605,7 @@ $.AdminLTE.activateBox = function () {
  * @usage $("#todo-widget").todolist( options );
  */
 
-$.AdminLTE.listCustomPlugin = function () {
+$.LayoutManager.listCustomPlugin = function () {
 
 	  'use strict';
 
@@ -658,17 +649,17 @@ $.AdminLTE.listCustomPlugin = function () {
 	      }
 	    });
 	  };
-	  return $.AdminLTE;
+	  return $.LayoutManager;
 	};
 	
 	/* ------------------
 	 * - Implementation -
 	 * ------------------
-	 * The next block of code implements AdminLTE's
+	 * The next block of code implements LayoutManager's
 	 * functions and plugins as specified by the
 	 * options above.
 	 */
-	$.AdminLTE.setup = function ()
+	$.LayoutManager.setup = function ()
 	{
 	  "use strict";
 
@@ -676,27 +667,27 @@ $.AdminLTE.listCustomPlugin = function () {
 	  $("body").removeClass("hold-transition");
 
 	  //Extend options if external options exist
-	  if (typeof AdminLTEOptions !== "undefined") {
+	  if (typeof LayoutManagerOptions !== "undefined") {
 	    $.extend(true,
-	            $.AdminLTE.options,
-	            AdminLTEOptions);
+	            $.LayoutManager.options,
+	            LayoutManagerOptions);
 	  }
 
 	  //Easy access to options
-	  var o = $.AdminLTE.options;
+	  var o = $.LayoutManager.options;
 
 	  //Set up the object
-	  $.AdminLTE._init();
+	  $.LayoutManager._init();
 
 	  //Activate the layout maker
-	  $.AdminLTE.layout.activate();
+	  $.LayoutManager.layout.activate();
 
 	  //Enable sidebar tree view controls
-	  $.AdminLTE.tree('.sidebar');
+	  $.LayoutManager.tree('.sidebar');
 
 	  //Enable control sidebar
 	  if (o.enableControlSidebar) {
-	    $.AdminLTE.controlSidebar.activate();
+	    $.LayoutManager.controlSidebar.activate();
 	  }
 
 	  //Add slimscroll to navbar dropdown
@@ -710,7 +701,7 @@ $.AdminLTE.listCustomPlugin = function () {
 
 	  //Activate sidebar push menu
 	  if (o.sidebarPushMenu) {
-	    $.AdminLTE.pushMenu.activate(o.sidebarToggleSelector);
+	    $.LayoutManager.pushMenu.activate(o.sidebarToggleSelector);
 	  }
 
 	  //Activate Bootstrap tooltip
@@ -722,7 +713,7 @@ $.AdminLTE.listCustomPlugin = function () {
 
 	  //Activate box widget
 	  if (o.enableBoxWidget) {
-	    $.AdminLTE.boxWidget.activate();
+	    $.LayoutManager.boxWidget.activate();
 	  }
 
 	  //Activate fast click
@@ -752,10 +743,10 @@ $.AdminLTE.listCustomPlugin = function () {
 
 	  });
 	  
-	  return $.AdminLTE
+	  return $.LayoutManager
 	  	.addRefreshButton()
 	  	.activateBox()
 	  	.listCustomPlugin();
 	};	
 
-module.exports = $.AdminLTE;
+module.exports = $.LayoutManager;

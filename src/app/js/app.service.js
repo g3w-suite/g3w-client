@@ -25,7 +25,7 @@ function service(){
 }
 //lo fa diventare un oggetto emitter
 inherit(service,EventEmitter);
-var ProjectService = require('g3w/core/projectservice');
+/*var ProjectService = require('g3w/core/projectservice');
 setTimeout(function(){
   ProjectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
 },2000);
@@ -53,6 +53,6 @@ setTimeout(function(){
 setTimeout(function(){
   unlisten();
   ProjectService.storeSet('layersTree[0].title','POI 4')
-},8000);
+},8000);*/
 
 module.exports = new service();
