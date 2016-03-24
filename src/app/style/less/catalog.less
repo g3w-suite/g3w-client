@@ -4,32 +4,6 @@ A component of Metronic Theme - #1 Selling Bootstrap 3 Admin Theme in Themefores
 Licensed under MIT
 ***/
 @color-white : #ffffff;
-
-.item {
-  cursor: pointer;
-}
-.item > div {
-  display:inline-block;
-}
-.bold {
-  font-weight: bold;
-  color: @color-white;
-}
-ul {
-  padding-left: 1em;
-  line-height: 1.5em;
-  list-style-type: none;
-}
-#tree  {
-
-  color: @color-white;
-
-}
-#catalog {
-
-  padding:3px;
-
-}
 /* Tabs panel */
 .tabbable-panel {
   padding: 10px;
@@ -40,6 +14,11 @@ ul {
   border: none;
   margin: 0px;
 }
+
+.tabbable-line .nav-tabs ul li {
+  color: @color-white;
+}
+
 .tabbable-line > .nav-tabs > li {
   margin-right: 2px;
   border-bottom: 4px solid transparent;
@@ -114,25 +93,41 @@ ul {
   padding-bottom: 15px;
 }
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
-
-    color: @color-white;
-    background-color:@sidebar-dark-submenu-bg;
-
-
+  color: @color-white;
+  background-color:@sidebar-dark-submenu-bg;
 }
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
-
-    color: @color-white;
+  color: @color-white;
 }
 
-.list-group-item {
-
-    color: @color-white;
-
-    background-color:@sidebar-dark-submenu-bg;
+.catalog ul {
+  padding-left: 1em;
+  line-height: 1.5em;
+  list-style-type: none;
 }
-.nav-tabs ul li {
 
-    color: @color-white;
+.catalog .list-group-item {
+  color: @color-white;
+  background-color:@sidebar-dark-submenu-bg;
+}
 
+.catalog .tree-item{
+  padding-left: 0.8em;
+}
+
+.catalog .tree-root{
+  padding-left: 0px;
+}
+
+.bold {
+  font-weight: bold;
+  color: @color-white;
+}
+
+.catalog {
+  padding:3px;
+}
+
+.catalog .tree  {
+  color: @color-white;
 }
