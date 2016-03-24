@@ -1,5 +1,4 @@
 var t = require('i18n.service');
-/* layout contains AdminLTE code startup */
 require('g3w/gui/map/map');
 var layout = require('layout/layout');
 

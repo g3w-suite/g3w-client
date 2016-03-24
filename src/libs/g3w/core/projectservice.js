@@ -2,6 +2,7 @@ var inherit = require('./utils').inherit;
 var StateProvider = require('./stateprovider');
 
 function ProjectService(){
+  var self = this;
   this.state = {
     layers: [],
     layersTree: [],
@@ -42,6 +43,22 @@ function ProjectService(){
     this.state.layers = this.makeLayersObj(project.layers);
     this.state.layersTree = this.fillLayersTree(project.layerstree);
     this.emit('projectset');
+  };
+  
+  this.toggleLayer = function(layerId){
+    function traverse(obj){
+      _.forIn(obj, function (layer, key) {
+            //verifica che il valore dell'id non sia nullo
+            if (!_.isNil(layer.id) && layer.id == layerId) {
+                layer.visible = !layer.visible;
+                self.emit('layertoggled',layer);
+            }
+            if (!_.isNil(layer.nodes)) {
+                traverse(layer.nodes);
+            }
+        });
+      };
+    traverse(this.state.layersTree);
   };
 };
 

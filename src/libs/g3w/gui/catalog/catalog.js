@@ -35,30 +35,26 @@ Vue.component('tree', {
     return {
       expanded: this.layerstree.expanded,
       parentChecked: false,
-      //proprieta che server per fare confronto per il tristate
+      //proprieta che serve per fare confronto per il tristate
       n_childs: this.layerstree.nodes ? this.layerstree.nodes.length : 0
     }
   },
   watch: {
-      'layerstree': {
-        handler: function(val, old){
-          //codice qui
-        },
-        deep: true
-      },
       'checked': function (val){
-        if (val) {
-          this.n_parentChilds-=1;
-        } else {
-          this.n_parentChilds+=1;
-        }
-      },
+        this.layerstree.visible = val;
+      }
   },
   computed: {
     isFolder: function () {
       var isFolder = this.n_childs ? true : false;
       if (isFolder) {
-        this.n_parentChilds = this.n_childs;
+        var _visibleChilds = 0;
+        _.forEach(this.layerstree.nodes,function(layer){
+          if (layer.visible){
+            _visibleChilds += 1;
+          }
+        });
+        this.n_parentChilds = this.n_childs - _visibleChilds;
       }
       return isFolder
     }
@@ -73,7 +69,6 @@ Vue.component('tree', {
         if (this.parentChecked && !this.n_parentChilds){
           this.parentChecked = false;
         } else if (this.parentChecked && this.n_parentChilds) {
-          this.parentChecked = false;
           this.parentChecked = true;
         }
         else {
@@ -81,7 +76,7 @@ Vue.component('tree', {
         }
       }
       else {
-        this.checked = !this.checked;
+        ProjectService.toggleLayer(this.layerstree.id);
       }
     },
     triClass: function () {

@@ -1,16 +1,28 @@
 var inherit = require('./utils').inherit;
+var deferredValue = require('./utils').deferredValue;
+var Context = require('g3w/core/context');
 var StoreProvider = require('./stateprovider');
-var ProjectsRegistry = require('g3w/core/projectsregistry');
-var ProjectService = require('g3w/core/projectservice');
+var ProjectsRegistry = require('./projectsregistry');
+var ProjectService = require('./projectservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+var MapLayer = require('./maplayer');
 
 function MapService(){
   var self = this;
   this.viewer;
+  this.mapLayers = {};
   this.state = {};
   
   ProjectService.on('projectset',function(){
-    self.setupViewer();
+    if (!self.viewer){
+      self.setupViewer();
+    }
+    self.setupLayers();
+  });
+  
+  ProjectService.on('layertoggled',function(layer){
+    var mapLayer = self.getMapLayerForLayer(layer);
+    mapLayer.toggleLayer(layer);
   });
   
   this.setupViewer = function(config){
@@ -27,7 +39,63 @@ function MapService(){
       }
     });
     
-    this.addTestLayer()
+    //this.addTestLayer()
+  };
+  
+  this.setupLayers = function(){
+    var layersArray = this.traverseLayersTree(ProjectService.state.layersTree);
+    layersArray.forEach(function(layerBaseConfig){
+      // è un layer vero, non un folder
+      if(!_.get(layerBaseConfig,'nodes')){
+        // per evitare di interferire con il config originale
+        var layer = {};
+        _.merge(layer,layerBaseConfig);
+        // prendo la definizione completa del layer
+        _.merge(layer,ProjectService.state.layers[layer.id]);
+        var layerId = 'layer_'+layer.metalayer;
+        var mapLayer = _.get(self.mapLayers,layerId);
+        if (!mapLayer){
+          if (Context.client.local){
+            url = owstestproject;
+          }
+          else{
+            url = Context.server.url.ows;
+          }
+          mapLayer = self.mapLayers[layerId] = new MapLayer({
+            id: layerId,
+            url: url
+          });
+          self.viewer.map.addLayer(mapLayer.getOlLayer());
+        }
+        mapLayer.addLayer(layer);
+      }
+    });
+    
+    _.forEach(this.mapLayers,function(mapLayer){
+      mapLayer.update();
+    })
+  };
+  
+  this.getMapLayerForLayer = function(layer){
+    var layer = ProjectService.state.layers[layer.id];
+    return this.mapLayers['layer_'+layer.metalayer];
+  };
+  
+  this.traverseLayersTree = function(layersTree){
+    var self = this;
+    var layersArray = [];
+    function traverse(obj){
+      _.forIn(obj, function (val, key) {
+          if (!_.isNil(val.id)) {
+              layersArray.unshift(val);
+          }
+          if (!_.isNil(val.nodes)) {
+              traverse(val.nodes);
+          }
+      });
+    }
+    traverse(layersTree);
+    return layersArray;
   };
   
   this.addTestLayer = function(){

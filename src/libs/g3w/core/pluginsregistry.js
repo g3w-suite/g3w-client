@@ -1,4 +1,5 @@
 var inherit = require('./utils').inherit;
+var Context = require('g3w/core/context');
 var PluginsService = require('./pluginsservice');
 
 // Public interface
@@ -7,7 +8,7 @@ function PluginsRegistry(){
   this.state = _registry.state;
   //config generale
   this.setup = function(config){
-    _registry.setup(config).then(function(){
+    return _registry.setup(config).then(function(){
       self.emit('loaded');
     })
   };

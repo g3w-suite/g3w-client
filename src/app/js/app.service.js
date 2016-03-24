@@ -1,7 +1,8 @@
 /*library inherit tools */
 var inherit = require('g3w/core/utils').inherit;
+var Context = require('g3w/core/context');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
-var PluginsRegistry = require('g3w/core/pluginsregistry')
+var PluginsRegistry = require('g3w/core/pluginsregistry');
 
 function service(){
   var self = this;
@@ -10,17 +11,16 @@ function service(){
   this.projectConfig = null;
   this.setup = function(config){
     this.config = config;
-    //una volta che la configurazione e' stata terminata (evento loadend) emesso
-    //dall'oggetto layersRegistry dopo aver trminato il setup
-    ProjectsRegistry.once('loaded',function(){
-      PluginsRegistry.once('loaded',function(){
-        self.emit('ready');
-      });
-      PluginsRegistry.setup();
-    });
+    Context.setup(config);
     //inizializza la configurazione basata sul gruppo di progetti
-    //una volta caricato il file di configurazione emette l'evento loadend
-    ProjectsRegistry.setup(config);
+    //una volta caricato il file di configurazione emette l'evento ready
+    
+    $.when(
+      ProjectsRegistry.setup(config),
+      PluginsRegistry.setup(config)
+    ).then(function(){
+      self.emit('ready');
+    });
   };
 }
 //lo fa diventare un oggetto emitter

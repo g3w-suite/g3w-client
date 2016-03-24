@@ -1,4 +1,5 @@
 var inherit = require('./utils').inherit;
+var Context = require('g3w/core/context');
 var ProjectService = require('./projectservice');
 
 /* service
@@ -14,7 +15,7 @@ function ProjectsRegistry(){
   this.state = _registry.state;
   //config generale
   this.setup = function(config){
-    _registry.setup(config).then(function(){
+    return _registry.setup(config).then(function(){
       self.emit('loaded');
     })
   };
@@ -42,16 +43,17 @@ inherit(ProjectsRegistry,EventEmitter);
 // Private
 var _registry = {
   initialized: false,
-  config: null,
   testing: true,
+  group: null,
   state: {
-    common: {},
+    group: {},
     projects: []
   },
   //config generale
   setup: function(config){
     if (!this.initialized){
-      testing = config.client.local;
+      this.group = config.group
+      this.testing = Context.client.local;
       this.setupState(config);
       return this.setCurrentProject(config.group.initproject);
     }
@@ -59,11 +61,11 @@ var _registry = {
   
   setupState: function(config){
     var self = this;
-    this.serverUrls = config.server.urls;
-    this.state.common.baseLayers = config.group.baselayers;
-    this.state.common.minScale = config.group.minscale;
-    this.state.common.maxScale = config.group.maxscale;
-    this.state.common.crs = config.group.crs;
+    
+    this.state.group.baseLayers = config.group.baselayers;
+    this.state.group.minScale = config.group.minscale;
+    this.state.group.maxScale = config.group.maxscale;
+    this.state.group.crs = config.group.crs;
     config.group.projects.forEach(function(project){
       project.baseLayers = config.group.baselayers;
       project.minScale = config.group.minscale;
@@ -121,7 +123,7 @@ var _registry = {
       },100);
     }//altrimenti nella realtà fa una chiamata al server e una volta ottenuto il progetto risolve l'oggetto defer
     else {
-      var url = this.config.server.urls.config+'/'+this.config.group.id+'/'+projectBaseConfig.type+'/'+projectBaseConfig.id;
+      var url = Context.server.urls.config+'/'+this.group.id+'/'+projectBaseConfig.type+'/'+projectBaseConfig.id;
       $.get(url).done(function(projectFullConfig){
         deferred.resolve(projectFullConfig);
       })

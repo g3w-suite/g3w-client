@@ -1,7 +1,7 @@
 <li class="tree-item">
   <span :class="{bold: isFolder, 'fa-chevron-down': layerstree.expanded, 'fa-chevron-right': !layerstree.expanded}" @click="toggle" v-if="isFolder" class="fa"></span>
   <span v-if="isFolder" @click="toggle('true')" :class="[triClass()]" class="fa"></span>
-  <span v-else @click="toggle" :class="[checked  ? 'fa-check-square-o': 'fa-square-o']" class="fa"></span>
+  <span v-else @click="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o']" class="fa"></span>
   <span :class="{bold: isFolder}" @click="toggle">{{layerstree.title}}</span>
   <ul v-show="layerstree.expanded" v-if="isFolder">
     <tree :n_parent-childs.sync="n_parentChilds" :layerstree="layerstree" :checked="parentChecked" v-for="layerstree in layerstree.nodes">
