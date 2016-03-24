@@ -3,6 +3,6 @@
 /bower_components
 /dist
 /build
-/third_party/test.config.js
+/src/app/test.ows_config.js
 .idea
 *~
