@@ -3,6 +3,8 @@ require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
 require('g3w/gui/tools/tools');
 require('g3w/gui/tools-panel/tools-panel');
+require('g3w/gui/plugins/plugins');
+
 var PluginRegistry = require('g3w/core/pluginsregistry');
 var PluginsService = require('g3w/core/pluginsservice');
 
