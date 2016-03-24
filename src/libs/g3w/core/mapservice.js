@@ -13,9 +13,6 @@ function MapService(){
     self.setupViewer();
   });
   
-  //var extent = [674924.743397614569403,4846825.835552713833749,680958.251534413546324,4849743.050419669598341];
-  
-  
   this.setupViewer = function(config){
     var extent = ProjectService.state.extent;
     var projection = new ol.proj.Projection({
@@ -42,7 +39,6 @@ function MapService(){
       opacity: 1.0,
       source: new ol.source.ImageWMS({
         url: 'http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Dev/G3W/g3w-client/test/progetto/test.qgs',
-        //url: 'http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/aaaa.qgs',
         params: {
           LAYERS: [layerName],
           VERSION: '1.3.0',
