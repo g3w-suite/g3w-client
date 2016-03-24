@@ -93,7 +93,7 @@ var config = {
         {
             id: 'strade20160316113013257',
             title: "Strade",
-            name: "Strade",
+            name: "strade",
             crs: 3857,
             style: "",
             attributes: [
