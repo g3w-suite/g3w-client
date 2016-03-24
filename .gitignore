@@ -3,5 +3,6 @@
 /bower_components
 /dist
 /build
+/third_party/test.config.js
 .idea
 *~
