@@ -2,13 +2,20 @@ var inherit = require('./utils').inherit;
 
 function PluginsService(){
   this.state = {
-    activePlugin: ''
+    activePlugin: '',
+    activePanel: {}
   };
   this.setActivePlugin = function(pluginName) {
-    this.state.activePlugin = pluginName
+    this.state.activePlugin = pluginName;
   };
-  this.getActivePlugin = function(project){
-    return this.state.activePlugin
+  this.getActivePlugin = function(){
+    return this.state.activePlugin;
+  };
+  this.setActivePanel = function(panelComponent) {
+    this.state.activePanel = panelComponent;
+  };
+  this.getActivePanel = function(){
+    return this.state.activePanel;
   };
 };
 

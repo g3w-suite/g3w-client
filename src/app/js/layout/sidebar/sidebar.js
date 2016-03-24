@@ -2,7 +2,9 @@ var t = require('i18n.service');
 require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
 require('g3w/gui/tools/tools');
+require('g3w/gui/tools-panel/tools-panel');
 var PluginRegistry = require('g3w/core/pluginsregistry');
+var PluginsService = require('g3w/core/pluginsservice');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
@@ -12,7 +14,8 @@ Vue.component('sidebar',{
         layersService: this.iface.layersService,
         bOpen: true,
     		bPageMode: false,
-    		header: t('main navigation')
+    		header: t('main navigation'),
+    		activePlugin: PluginsService.state
         };
     },
     methods: {
@@ -23,6 +26,7 @@ Vue.component('sidebar',{
     		}
     		this.currentModule = index;
     	}
+
 	}
 });
 

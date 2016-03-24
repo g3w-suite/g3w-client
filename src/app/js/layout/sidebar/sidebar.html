@@ -1,7 +1,8 @@
 <aside class="main-sidebar">
   <!-- sidebar: style can be found in sidebar.less -->
 	<section class="sidebar">
-	  <ul class="sidebar-menu">
+    <g3w-tools-panel></g3w-tools-panel>
+	  <ul v-if="activePlugin.activePlugin == ''" class="sidebar-menu">
 	    <sidebar-item data-icon="fa fa-search" data-label="search" data-type="inline">
           <g3w-search></g3w-search>
         </sidebar-item>
