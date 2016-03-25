@@ -1,14 +1,11 @@
-var PluginMixin = require('g3w/core/pluginmixin');
+var PluginMixin = require('g3w/gui/plugins/pluginmixin');
 // define a component that uses this mixin
-var toolPlugin = Vue.component('plugin',{
+var toolPlugin = PluginMixin.extend({
     template: require('./plugin.html'),
     data: function (){
       return {
           name:'info'
       }
-    },
-    mixins: [PluginMixin]
-
+    }
 });
-
 module.exports = toolPlugin;

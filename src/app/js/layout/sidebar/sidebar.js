@@ -1,7 +1,6 @@
 var t = require('i18n.service');
 require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
-require('g3w/gui/plugins/tools-panel');
 require('g3w/gui/plugins/plugins');
 
 var PluginRegistry = require('g3w/core/pluginsregistry');
