@@ -1,22 +1,10 @@
 var PluginsService = require('g3w/core/pluginsservice');
 var PluginsRegistry = require('g3w/core/pluginsregistry');
+var PanelMixin = require('g3w/core/panelmixin');
 
-var Panel = Vue.component('panel',{
-    template: require('./panel.html'),
-    data: function() {
-      return {
-        state: PluginsService.state
-      }
-    },
-    computed: {
-      //
-    },
-    methods: {
-      //codice qui
-    },
-    ready: function() {
-      //
-    }
+var toolPanel = Vue.component('panel',{
+    template : require('./panel.html'),
+    mixins: [PanelMixin]
 })
 
-module.exports = new Panel();
+module.exports = toolPanel;

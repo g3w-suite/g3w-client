@@ -12,7 +12,7 @@ function PluginsService(){
     return this.state.activePlugin;
   };
   this.setActivePanel = function(panelComponent) {
-    this.state.activePanel = panelComponent;
+    this.state.activePanel = new panelComponent;
   };
   this.getActivePanel = function(){
     return this.state.activePanel;

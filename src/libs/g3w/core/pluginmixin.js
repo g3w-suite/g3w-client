@@ -1,13 +1,15 @@
 var t = require('i18n.service');
-var PluginsService = require('g3w/core/pluginsservice');
-var PluginsRegistry = require('g3w/core/pluginsregistry');
+var PluginsService = require('./pluginsservice');
+var PluginsModule = require('./pluginsmodules');
+
 // define a mixin object
 var pluginMixin = {
-
   methods: {
     activePlugin: function(pluginName){
+      console.log(pluginName)
       PluginsService.setActivePlugin(pluginName);
-      var panel = new toolsPanel[pluginName];
+      var panel = PluginsModule.getPluginPanel(pluginName);
+      panel = new panel();
       panel.$mount().$appendTo('#g3w-panel');
       PluginsService.setActivePanel(panel);
     }
