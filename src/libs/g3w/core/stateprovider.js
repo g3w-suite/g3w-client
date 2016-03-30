@@ -1,5 +1,8 @@
 var inherit = require('./utils').inherit;
 
+// Una classe che eredita da StateProvider fornirà uno stato (utilizzato ad es. dalle componenti della GUI).
+// Se fornisce dei metodi setters, all'interno di un oggetto "setters", è possibile registrare dei listeners PRIMA e/o DOPO l'esecuzione di tali metodi.
+// Quando viene eseguito un setter viene anche emesso un evento "stateChanged".
 function StateProvider(){}
 inherit(StateProvider,EventEmitter);
 
@@ -11,8 +14,8 @@ proto.stateSet = function(path,value){
     return;
   }
   var pathKey = this.getPathKey(path);
-  var stateSetListeners = this.getStateSetListeners();
-  var listeners = stateSetListeners[pathKey];
+  var settersListeners = this.getsettersListeners();
+  var listeners = settersListeners[pathKey];
   var canSet = true;
   _.forEach(listeners,function(listener, key){
     canSet &= listener.apply(this,[value,oldValue]);
@@ -23,32 +26,65 @@ proto.stateSet = function(path,value){
   }
 };
 
-proto.addStateSetListener = function(path,listener){
-  var stateSetListeners = this.getStateSetListeners();
-  var pathKey = this.getPathKey(path);
-  if (_.isUndefined(stateSetListeners[pathKey])){
-    stateSetListeners[pathKey] = {};
-  }
-  var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
-  stateSetListeners[pathKey][listenerKey] = listener;
-  return this.generateUnListener(pathKey,listenerKey);
+// un listener può registrarsi in modo da essere eseguito DOPO l'esecuzione del metodo setter.
+proto.onafter = function(setter,listener){
+  this.onsetter('after',setter,listener);
 };
 
-proto.getStateSetListeners = function(){
-  return this._stateSetListeners || (this._stateSetListeners = {});
-};
-
-proto.generateUnListener = function(pathKey,listenerKey){
-  self = this;
-  return function(){
-    var stateSetListeners = self.getStateSetListeners();
-    stateSetListeners[pathKey][listenerKey] = null;
-    delete stateSetListeners[pathKey][listenerKey];
-  }
+// un listener può registrarsi in modo da essere eseguito PRIMA dell'esecuzione del metodo setter. Può ritornare true/false per
+// votare a favore o meno dell'esecuzione del setter. Se non ritorna nulla o undefined, non viene considerato votante
+proto.onbefore = function(setter,listener){
+  this.onsetter('before',setter,listener);
 }
 
-proto.getPathKey = function(path){
-  return 'id:'+path;
+proto.onsetter = function(when,setter,listener){
+  var settersListeners = this.settersListeners[when];
+  if (_.isUndefined(settersListeners[setter])){
+    settersListeners[setter] = {};
+  }
+  var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
+  settersListeners[setter][listenerKey] = listener;
+  return this.generateUnListener(setter,listenerKey);
+};
+
+proto.generateUnListener = function(settersListeners,setter,listenerKey){
+  var self = this;
+  return function(){
+    settersListeners[setter][listenerKey] = null;
+    delete settersListeners[setter][listenerKey];
+  }
+};
+
+// inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
+proto.initSetters = function(setters){
+  var self = this;
+  this.settersListeners = {after:{},before:{}};
+  this.setters = setters;
+  _.forEach(setters,function(setterFnc,setter){
+    self[setter] = function(){
+      var args = arguments;
+      // eseguo i listener registrati per il before
+      var beforeListeners = this.settersListeners['before'][setter];
+      var canSet = true;
+      _.forEach(beforeListeners,function(listener, key){
+        var vote = listener.apply(this,args);
+        if (!_.isNil(vote)){
+          canSet &= vote;
+        }
+      })
+      if(!canSet){
+        return;
+      }
+      // eseguo la funzione
+      setterFnc.apply(self,args);
+      // eseguo i listener registrati per l'after
+      var afterListeners = this.settersListeners['after'][setter];
+      _.forEach(afterListeners,function(listener, key){
+        listener.apply(this,args);
+      })
+      self.emit("stateChanged");
+    }
+  })
 };
 
 module.exports = StateProvider;

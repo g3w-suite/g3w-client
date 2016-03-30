@@ -10,8 +10,7 @@ Vue.component('g3w-catalog',{
     },
     computed: {
       layerstree: function(){
-        console.log("watcher");
-        return this.project.layersTree;
+        return this.project.layerstree;
       }
     },
     methods: {
@@ -74,9 +73,10 @@ Vue.component('tree', {
         else {
           this.parentChecked = !this.parentChecked;
         }
+        ProjectService.toggleLayers(this.layerstree.nodes,this.parentChecked);
       }
       else {
-        ProjectService.toggleLayer(this.layerstree.id);
+        ProjectService.toggleLayer(this.layerstree);
       }
     },
     triClass: function () {

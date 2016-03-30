@@ -1,58 +1,74 @@
 /*library inherit tools */
 var inherit = require('g3w/core/utils').inherit;
-var Context = require('g3w/core/context');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsRegistry = require('g3w/core/pluginsregistry');
 
 function service(){
   var self = this;
+  this.initialized = false;
   this.title = "G3W Client";
   this.config = null;
   this.projectConfig = null;
   this.setup = function(config){
     this.config = config;
-    Context.setup(config);
-    //inizializza la configurazione basata sul gruppo di progetti
-    //una volta caricato il file di configurazione emette l'evento ready
-    
-    $.when(
-      ProjectsRegistry.setup(config),
-      PluginsRegistry.setup(config)
-    ).then(function(){
-      self.emit('ready');
-    });
+    if (this.config.group){
+      this.bootstrap();
+    }
+  };
+  
+  this.setGroup = function(group){
+    if (this.config){
+      this.config.group = group;
+      this.bootstrap();
+    }
+  };
+  
+  // il contesto viene passato a tutti i servizi e serve per la loro configurazione, per fornirgli metodi di contesto e l'interfaccia all'applicazione
+  this.createContext = function(){
+    var context = {
+      debug: true,
+      // richiesto da ProjectService
+      getWmsServiceUrl: function(project){
+        return self.config.server.urls.ows+'/'+self.config.group.id+'/'+project.type+'/'+project.id;
+      },
+      // richiesto da ProjectsRegistry
+      getProjectConfigUrl(project){
+        return self.config.server.urls.config+'/'+self.config.group.id+'/'+project.type+'/'+project.id;
+      },
+      // iface fornirà i metodi per comunicare con la GUI dell'applicazione, utilizzati dai plugin
+      iface: self,
+      // le seguenti proprietà sono utilizzate da ProjectsRegistry
+      projects: self.config.group.projects,
+      initproject: self.config.group.initproject,
+      baselayers: self.config.group.baselayers,
+      crs: self.config.group.crs,
+      minscale: self.config.group.minscale,
+      maxscale: self.config.group.maxscale
+    }
+    return context;
+  };
+  
+  this.bootstrap = function(){
+    if (!this.initialized){
+      var ctx = this.createContext();
+      
+      //inizializza la configurazione dei servizi. Ognungo percherà dal context quello di cui avrà bisogno
+      //una volta finita la configurazione emette l'evento ready
+      $.when(
+        ProjectsRegistry.init(ctx),
+        PluginsRegistry.init(ctx)
+      ).then(function(){
+        self.emit('ready');
+        this.initialized = true;
+        var ProjectService = require('g3w/core/projectservice');
+        ProjectService.on("aftertoggleLayer",function(){
+            console.log("after togglelayer"+arguments);
+        })
+      });
+    }
   };
 }
 //lo fa diventare un oggetto emitter
 inherit(service,EventEmitter);
-/*var ProjectService = require('g3w/core/projectservice');
-setTimeout(function(){
-  ProjectsRegistry.setCurrentProject('qdjango:open_data_firenze_2');
-},2000);
-
-
-ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
-  console.log("Per me puoi cambiare "+oldVal+" in "+val);
-  return true;
-});
-
-setTimeout(function(){
-  ProjectService.storeSet('layersTree[0].title','POI 2')
-},4000);
-
-
-var unlisten;
-setTimeout(function(){
-    unlisten = ProjectService.addStoreSetListener('layersTree[0].title',function(val,oldVal){
-      console.log("Per me NON puoi cambiare "+oldVal+" in "+val);
-      return false;
-    });
-  ProjectService.storeSet('layersTree[0].title','POI 3')
-},6000);
-
-setTimeout(function(){
-  unlisten();
-  ProjectService.storeSet('layersTree[0].title','POI 4')
-},8000);*/
 
 module.exports = new service();

@@ -1,7 +1,6 @@
 var inherit = require('./utils').inherit;
 var deferredValue = require('./utils').deferredValue;
-var Context = require('g3w/core/context');
-var StoreProvider = require('./stateprovider');
+var StateProvider = require('./stateprovider');
 var ProjectsRegistry = require('./projectsregistry');
 var ProjectService = require('./projectservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
@@ -20,12 +19,14 @@ function MapService(){
     self.setupLayers();
   });
   
-  ProjectService.on('layertoggled',function(layer){
-    var mapLayer = self.getMapLayerForLayer(layer);
-    mapLayer.toggleLayer(layer);
+  ProjectService.onafter('setLayersVisible',function(layers){
+    _.forEach(layers,function(layer){
+      var mapLayer = self.getMapLayerForLayer(layer);
+      mapLayer.update();
+    })
   });
   
-  this.setupViewer = function(config){
+  this.setupViewer = function(){
     var extent = ProjectService.state.extent;
     var projection = new ol.proj.Projection({
       code: "EPSG:"+ProjectService.state.crs,
@@ -34,33 +35,21 @@ function MapService(){
     this.viewer = ol3helpers.createViewer({
       view: {
         projection: projection,
-        center: [680484,4849720],
+        center: ol.extent.getCenter(ProjectService.state.extent),
         zoom: 1 
       }
     });
-    
-    //this.addTestLayer()
   };
   
   this.setupLayers = function(){
-    var layersArray = this.traverseLayersTree(ProjectService.state.layersTree);
-    layersArray.forEach(function(layerBaseConfig){
+    var layersArray = this.traverseLayersTree(ProjectService.state.layerstree);
+    layersArray.forEach(function(layer){
       // è un layer vero, non un folder
-      if(!_.get(layerBaseConfig,'nodes')){
-        // per evitare di interferire con il config originale
-        var layer = {};
-        _.merge(layer,layerBaseConfig);
-        // prendo la definizione completa del layer
-        _.merge(layer,ProjectService.state.layers[layer.id]);
+      if(!_.get(layer,'nodes')){
         var layerId = 'layer_'+layer.metalayer;
         var mapLayer = _.get(self.mapLayers,layerId);
         if (!mapLayer){
-          if (Context.client.local){
-            url = owstestproject;
-          }
-          else{
-            url = Context.server.url.ows;
-          }
+          url = ProjectService.getWmsServiceUrl();
           mapLayer = self.mapLayers[layerId] = new MapLayer({
             id: layerId,
             url: url
@@ -77,7 +66,6 @@ function MapService(){
   };
   
   this.getMapLayerForLayer = function(layer){
-    var layer = ProjectService.state.layers[layer.id];
     return this.mapLayers['layer_'+layer.metalayer];
   };
   
@@ -98,31 +86,11 @@ function MapService(){
     return layersArray;
   };
   
-  this.addTestLayer = function(){
-    var id = ProjectService.state.layersTree[1].nodes[1].id;
-    var layerName = ProjectService.state.layers[id].name;
-    //this.viewer.addBaseLayer('OSM');
-    var layer = new ol.layer.Image({
-      name: 'Test',
-      opacity: 1.0,
-      source: new ol.source.ImageWMS({
-        url: owstestproject,
-        params: {
-          LAYERS: [layerName],
-          VERSION: '1.3.0',
-          TRANSPARENT: true
-        }
-      }),
-      visible:true
-    });
-    this.viewer.map.addLayer(layer);
-  };
-  
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);
   };
 };
 
-inherit(ProjectService,StoreProvider);
+inherit(ProjectService,StateProvider);
 
 module.exports = new MapService

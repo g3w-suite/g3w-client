@@ -39,9 +39,15 @@ var utils = {
       return Object.prototype.hasOwnProperty.call(object, key);
   },
   
-  deferredValue: function(value){
+  resolvedValue: function(value){
     var deferred = $.Deferred();
     deferred.resolve(value);
+    return deferred.promise();
+  },
+  
+  rejectedValue: function(value){
+    var deferred = $.Deferred();
+    deferred.reject(value);
     return deferred.promise();
   }
 };

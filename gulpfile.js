@@ -1,6 +1,7 @@
+var conf = require('./config');
 var path = require('path');
 var del = require('del');
-var configuration_path = path.join(__dirname,'config');
+var url = require('url');
 //Gulp
 var gulp   = require('gulp');
 var concat = require('gulp-concat');
@@ -13,6 +14,7 @@ var useref = require('gulp-useref');
 var filter = require('gulp-filter');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
+var chalk = require('chalk');
 var watch = require('gulp-watch');
 var cleanCSS = require('gulp-clean-css');
 var gutil = require("gulp-util");
@@ -23,6 +25,7 @@ var watchify = require('watchify');
 var stringify = require('stringify');
 var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
+var httpProxy = require('http-proxy');
 var Server = require('karma').Server;
 
 var production = false;
@@ -92,14 +95,35 @@ gulp.task('fonts', function () {
     .pipe(gulp.dest('./dist/g3w-client/fonts/'));
 });
 
+var proxy = httpProxy.createProxyServer({
+  target: conf.proxy.url
+});
+
+function proxyMiddleware(urls) {
+	return function(req, res, next){
+    var doproxy = false;
+    for(var i in urls){
+      if (req.url.indexOf(urls[i]) > -1){
+        doproxy = true;
+      }
+    }
+    if (doproxy){
+      proxy.web(req,res);
+    }
+    else{
+      next();
+    }
+  }
+}
+
 gulp.task('browser-sync', function() {
     browserSync.init({
         server: {
-            baseDir: "./",
-            index: "./src/index.html"
+            baseDir: ["src","."],
+            middleware: [proxyMiddleware(conf.proxy.urls)]
         },
         open: false,
-        startPath: "./src/index.html"
+        startPath: "/"
     });
 });
 
@@ -127,10 +151,10 @@ gulp.task('production', function(){
 })
 
 gulp.task('serve', ['jshint','browser-sync','browserify','less','less-skins', 'watch']);
-gulp.task('dist', ['jshint','production','browserify','less','html']);
+gulp.task('dist', ['production','browserify','less','html']);
 gulp.task('g3w-admin', ['dist'],function(){
   gulp.src('./dist/g3w-client/**/*.*')
-  .pipe(gulp.dest('../g3w-admin/g3w-admin/client/static/g3w-client'))
+  .pipe(gulp.dest(conf.g3w_admin_dest));
 });
 
 gulp.task('default',['serve']); // development
@@ -142,7 +166,7 @@ gulp.task('default',['serve']); // development
  */
 gulp.task('karma_test', function (done) {
   new Server({
-    configFile: configuration_path + '/karma.conf.js',
+    configFile: './karma.conf.js',
     singleRun: true
   }, done).start();
 });
@@ -152,7 +176,7 @@ gulp.task('karma_test', function (done) {
  */
 gulp.task('karma_tdd', function (done) {
   new Server({
-    configFile: configuration_path + '/karma.conf.js'
+    configFile: './karma.conf.js'
   }, done).start();
 });
 

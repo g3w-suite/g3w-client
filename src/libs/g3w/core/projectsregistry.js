@@ -1,5 +1,6 @@
 var inherit = require('./utils').inherit;
-var Context = require('g3w/core/context');
+var resolvedValue = require('./utils').resolvedValue;
+var rejectedValue = require('./utils').rejectedValue;
 var ProjectService = require('./projectservice');
 
 /* service
@@ -14,8 +15,8 @@ function ProjectsRegistry(){
   var self = this;
   this.state = _registry.state;
   //config generale
-  this.setup = function(config){
-    return _registry.setup(config).then(function(){
+  this.init = function(config){
+    return _registry.init(config).then(function(){
       self.emit('loaded');
     })
   };
@@ -42,57 +43,83 @@ inherit(ProjectsRegistry,EventEmitter);
 
 // Private
 var _registry = {
+  ctx: null,
   initialized: false,
-  testing: true,
-  group: null,
   state: {
-    group: {},
+    baseLayers: {},
+    minScale: null,
+    maxscale: null,
     projects: []
   },
   //config generale
-  setup: function(config){
+  init: function(ctx){
     if (!this.initialized){
-      this.group = config.group
-      this.testing = Context.client.local;
-      this.setupState(config);
-      return this.setCurrentProject(config.group.initproject);
+      this.ctx = ctx;
+      this.setupState();
+      ProjectService.init(ctx);
+      return this.setCurrentProject(ctx.initproject);
     }
   },
   
-  setupState: function(config){
+  setupState: function(){
     var self = this;
     
-    this.state.group.baseLayers = config.group.baselayers;
-    this.state.group.minScale = config.group.minscale;
-    this.state.group.maxScale = config.group.maxscale;
-    this.state.group.crs = config.group.crs;
-    config.group.projects.forEach(function(project){
-      project.baseLayers = config.group.baselayers;
-      project.minScale = config.group.minscale;
-      project.maxScale = config.group.maxscale;
-      project.crs = config.group.crs;
+    self.state.baseLayers = self.ctx.baselayers;
+    self.state.minScale = self.ctx.minscale;
+    self.state.maxScale = self.ctx.maxscale;
+    self.state.crs = self.ctx.crs;
+    self.ctx.projects.forEach(function(project){
+      project.baseLayers = self.ctx.baselayers;
+      project.minScale = self.ctx.minscale;
+      project.maxScale = self.ctx.maxscale;
+      project.crs = self.ctx.crs;
       self.state.projects.push(project);
     })
     //this.state.projects = config.group.projects;
   },
   
   setCurrentProject: function(projectGid){
+    var self = this;
     var project = this.getProject(projectGid);
     if(!project){
-      return Q.reject("Project doesn't exist");
+      return rejectedValue("Project doesn't exist");
     }
     var isFullFilled = !_.isNil(project.layers);
     if (isFullFilled){
       ProjectService.setProject(project);
-      return Q(project);
+      return resolvedValue(project);
     }
     else{
       return this.getProjectFullConfig(project)
       .then(function(projectFullConfig){
         project = _.merge(project,projectFullConfig);
+        self.buildProjectTree(project);
         ProjectService.setProject(project);
       });
     }
+  },
+  
+  buildProjectTree: function(project){
+    var layers = _.keyBy(project.layers,'id');
+    var layersTree = _.cloneDeep(project.layerstree);
+    
+    function traverse(obj){
+      _.forIn(obj, function (layer, key) {
+          //verifica che il nodo sia un layer e non un folder
+          if (!_.isNil(layer.id)) {
+              var fulllayer = _.merge(layer,layers[layer.id]);
+              obj[parseInt(key)] = fulllayer;
+              var a =1;
+          }
+          if (!_.isNil(layer.nodes)){
+            // aggiungo proprietà title per l'albero
+            layer.title = layer.name;
+            traverse(layer.nodes);
+          }
+        });
+      };
+    traverse(layersTree);
+    project.layerstree = layersTree;
   },
 
   getProject: function(projectGid){
@@ -109,25 +136,10 @@ var _registry = {
   getProjectFullConfig: function(projectBaseConfig){
     var self = this;
     var deferred = $.Deferred();
-    //nel caso di test locale
-    if (this.testing){
-      setTimeout(function(){
-        var projectFullConfig;
-        if (projectBaseConfig.id == 'open_data_firenze'){
-          projectFullConfig = require('./test.project_config');
-        }
-        else{
-          projectFullConfig = require('./test.project_config_2');
-        }
+    var url = this.ctx.getProjectConfigUrl(projectBaseConfig);
+    $.get(url).done(function(projectFullConfig){
         deferred.resolve(projectFullConfig);
-      },100);
-    }//altrimenti nella realtà fa una chiamata al server e una volta ottenuto il progetto risolve l'oggetto defer
-    else {
-      var url = Context.server.urls.config+'/'+this.group.id+'/'+projectBaseConfig.type+'/'+projectBaseConfig.id;
-      $.get(url).done(function(projectFullConfig){
-        deferred.resolve(projectFullConfig);
-      })
-    }
+    })
     return deferred.promise();
   },
 };

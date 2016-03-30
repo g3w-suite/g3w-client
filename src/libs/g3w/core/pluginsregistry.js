@@ -1,5 +1,4 @@
 var inherit = require('./utils').inherit;
-var Context = require('g3w/core/context');
 var PluginsService = require('./pluginsservice');
 
 // Public interface
@@ -7,8 +6,8 @@ function PluginsRegistry(){
   var self = this;
   this.state = _registry.state;
   //config generale
-  this.setup = function(config){
-    return _registry.setup(config).then(function(){
+  this.init = function(config){
+    return _registry.init(config).then(function(){
       self.emit('loaded');
     })
   };
@@ -29,20 +28,21 @@ inherit(PluginsRegistry,EventEmitter);
 // Private
 var _registry = {
   initialized: false,
+  ctx: null,
   config: null,
   testing: true,
   state: {
     plugins: []
   },
   //config generale
-  setup: function(config){
+  init: function(ctx){
     if (!this.initialized){
-      return this.setupState(config);
+      return this.setupState();
     }
   },
-  setupState: function(config){
+  setupState: function(){
      var self = this;
-     var pluginFullConfiguration = this.getPluginsFullConfig(config);
+     var pluginFullConfiguration = this.getPluginsFullConfig();
      return pluginFullConfiguration.then(function(plugins){
         plugins.forEach(function(_plugin){
           if(_plugin.active){
@@ -85,7 +85,7 @@ var _registry = {
   },
 
   //ritorna una promises
-  getPluginsFullConfig: function(pluginsConfig){
+  getPluginsFullConfig: function(){
     var self = this;
     var deferred = $.Deferred();
     //nel caso di test locale

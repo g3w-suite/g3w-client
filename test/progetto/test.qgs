@@ -3,7 +3,7 @@
   <title>TEST</title>
   <layer-tree-group expanded="1" checked="Qt::PartiallyChecked" name="">
     <customproperties/>
-    <layer-tree-group expanded="1" checked="Qt::Unchecked" name="punti">
+    <layer-tree-group expanded="1" checked="Qt::PartiallyChecked" name="punti">
       <customproperties/>
       <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="strutture20160316113225408" name="Grandi strutture">
         <customproperties/>
@@ -11,10 +11,10 @@
       <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="alberi20160316112747010" name="Alberi">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="farmacie20160316113417025" name="Farmacie">
+      <layer-tree-layer expanded="1" checked="Qt::Checked" id="farmacie20160316113417025" name="Farmacie">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="musei20160316112726261" name="Musei">
+      <layer-tree-layer expanded="1" checked="Qt::Checked" id="musei20160316112726261" name="Musei">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -59,6 +59,8 @@
       <layer_coordinate_transform destAuthId="EPSG:32632" srcAuthId="EPSG:32632" srcDatumTransform="-1" destDatumTransform="-1" layerid="Unioni_Comuni_Toscana20160316113324322"/>
       <layer_coordinate_transform destAuthId="EPSG:32632" srcAuthId="EPSG:3003" srcDatumTransform="-1" destDatumTransform="-1" layerid="tracciato_tram20160316113305421"/>
       <layer_coordinate_transform destAuthId="EPSG:32632" srcAuthId="EPSG:3857" srcDatumTransform="-1" destDatumTransform="-1" layerid="strade20160316113013257"/>
+      <layer_coordinate_transform destAuthId="EPSG:32632" srcAuthId="EPSG:3003" srcDatumTransform="-1" destDatumTransform="-1" layerid="musei20160316112726261"/>
+      <layer_coordinate_transform destAuthId="EPSG:32632" srcAuthId="EPSG:3857" srcDatumTransform="-1" destDatumTransform="-1" layerid="farmacie20160316113417025"/>
     </layer_coordinate_transform_info>
   </mapcanvas>
   <layer-tree-canvas>
@@ -73,7 +75,7 @@
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
-    <legendgroup open="true" checked="Qt::Unchecked" name="punti">
+    <legendgroup open="true" checked="Qt::PartiallyChecked" name="punti">
       <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="Grandi strutture" showFeatureCount="0">
         <filegroup open="true" hidden="false">
           <legendlayerfile isInOverview="0" layerid="strutture20160316113225408" visible="0"/>
@@ -84,14 +86,14 @@
           <legendlayerfile isInOverview="0" layerid="alberi20160316112747010" visible="0"/>
         </filegroup>
       </legendlayer>
-      <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="Farmacie" showFeatureCount="0">
+      <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Farmacie" showFeatureCount="0">
         <filegroup open="true" hidden="false">
-          <legendlayerfile isInOverview="0" layerid="farmacie20160316113417025" visible="0"/>
+          <legendlayerfile isInOverview="0" layerid="farmacie20160316113417025" visible="1"/>
         </filegroup>
       </legendlayer>
-      <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="Musei" showFeatureCount="0">
+      <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="Musei" showFeatureCount="0">
         <filegroup open="true" hidden="false">
-          <legendlayerfile isInOverview="0" layerid="musei20160316112726261" visible="0"/>
+          <legendlayerfile isInOverview="0" layerid="musei20160316112726261" visible="1"/>
         </filegroup>
       </legendlayer>
     </legendgroup>

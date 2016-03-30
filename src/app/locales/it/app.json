@@ -3,7 +3,9 @@
         "translation": {
             "search": "Ricerca",
             "catalog": "Catalogo dati",
-            "tools": "Strumenti"
+            "tools": "Strumenti",
+            "tree": "Dati",
+            "legend": "Legenda"
         }
     }
 }

@@ -3,63 +3,75 @@ var StateProvider = require('./stateprovider');
 
 function ProjectService(){
   var self = this;
+  this.ctx = null;
+  this.layers = {};
   this.state = {
-    layers: [],
-    layersTree: [],
+    layerstree: []
   };
   
-  this.makeLayersObj = function(layersConfig){
-    // transforma layers array in objects tracked by id
-    return _.keyBy(layersConfig,'id');
+  this.init = function(ctx){
+    this.ctx = ctx;
   };
   
-  this.fillLayersTree = function(layersTree){
-    var self = this;
-    //var _layersTree = _.cloneDeep(layersTree);//crea un clone nuovo dell'array layersTree
-    function traverse(obj){
-      _.forIn(obj, function (val, key) {
-          //verifica che il valore dell'id non sia nullo
-          if (!_.isNil(val.id)) {
-              // extend layers tree leafs with a direct reference to the layer object
-              //aggiungo la proprieta' title che serve a bootstrap-tree per visulaizzare i nomi
-              // all'interno del catalog
-              val.title = self.state.layers[val.id].title;
-          }
-          if (!_.isNil(val.nodes)) {
-              val.title = val.name;
-              // ricorsiva faccio stesso controllo per i nodi del layertree
-              traverse(val.nodes);
-          }
-      });
-    }
-    traverse(layersTree);
-    return layersTree;
-  };
-  
-  this.setProject = function(project){
-    this.state.name = project.name;
-    this.state.crs = project.crs;
-    this.state.extent = project.extent;
-    this.state.layers = this.makeLayersObj(project.layers);
-    this.state.layersTree = this.fillLayersTree(project.layerstree);
-    this.emit('projectset');
-  };
-  
-  this.toggleLayer = function(layerId){
+  // genera l'oggetto layers (per riferimento), per semplificare gli aggiornamenti dello stato del layerstree
+  this.makeLayersObj = function(layerstree){
     function traverse(obj){
       _.forIn(obj, function (layer, key) {
             //verifica che il valore dell'id non sia nullo
-            if (!_.isNil(layer.id) && layer.id == layerId) {
-                layer.visible = !layer.visible;
-                self.emit('layertoggled',layer);
+            if (!_.isNil(layer.id)) {
+                self.layers[layer.id] = layer;
             }
             if (!_.isNil(layer.nodes)) {
                 traverse(layer.nodes);
             }
         });
       };
-    traverse(this.state.layersTree);
+    traverse(layerstree);
   };
+  
+  this.setProject = function(project){
+    /* struttura oggetto 'project'
+    {
+      id,
+      type,
+      gid,
+      name,
+      crs,
+      extent,
+      layerstree
+    }
+    */
+    this.state = project;
+    this.makeLayersObj(project.layerstree);
+    this.emit('projectset');
+  };
+  
+  var setters = {
+    setLayersVisible: function(layers,visible){
+      _.forEach(layers,function(layer){
+        self.layers[layer.id].visible = visible;
+      })
+    }
+  };
+  
+  this.initSetters(setters);
+  
+  this.getLayer = function(id){
+    return this.layers[id];
+  };
+  
+  this.toggleLayer = function(layer,visible){
+    var visible = visible || !layer.visible;
+    self.setLayersVisible([layer],visible);
+  };
+  
+  this.toggleLayers = function(layers,visible){
+    self.setLayersVisible(layers,visible);
+  };
+  
+  this.getWmsServiceUrl = function(){
+    return this.ctx.getWmsServiceUrl(this.state);
+  }
 };
 
 inherit(ProjectService,StateProvider);
