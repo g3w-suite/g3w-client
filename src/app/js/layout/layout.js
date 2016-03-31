@@ -1,6 +1,3 @@
-require('./sidebar/sidebar');
-require('./floatbar/floatbar');
-
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {
   throw new Error("LayoutManager requires jQuery");
@@ -343,7 +340,7 @@ $.LayoutManager._init = function() {
    * @type Object
    * @usage $.LayoutManager.controlSidebar.activate(options)
    */
-  $.LayoutManager.controlSidebar = {
+  $.LayoutManager.floatBar = $.LayoutManager.controlSidebar = {
     //instantiate the object
     activate: function () {
       //Get the object

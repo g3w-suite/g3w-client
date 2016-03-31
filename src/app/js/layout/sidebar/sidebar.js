@@ -8,10 +8,8 @@ var PluginsService = require('g3w/core/pluginsservice');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
-    props: ['iface'],//iface proprietà ereditata dall'elemento padre app contenente info del progetto/i
     data: function() {
     	return {
-        layersService: this.iface.layersService,
         bOpen: true,
     		bPageMode: false,
     		header: t('main navigation'),

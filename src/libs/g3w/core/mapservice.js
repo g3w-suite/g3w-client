@@ -13,6 +13,7 @@ function MapService(){
   this.state = {};
   
   ProjectService.on('projectset',function(){
+    $script("http://epsg.io/"+ProjectService.state.crs+".js");
     if (!self.viewer){
       self.setupViewer();
     }
@@ -49,7 +50,7 @@ function MapService(){
         var layerId = 'layer_'+layer.metalayer;
         var mapLayer = _.get(self.mapLayers,layerId);
         if (!mapLayer){
-          url = ProjectService.getWmsServiceUrl();
+          url = ProjectService.getWmsUrl();
           mapLayer = self.mapLayers[layerId] = new MapLayer({
             id: layerId,
             url: url
@@ -88,6 +89,16 @@ function MapService(){
   
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);
+  };
+  
+  this.goTo = function(coordinates,zoom){
+    var zoom = zoom || 5;
+    this.viewer.goTo(coordinates,zoom);
+  };
+  
+  this.goToWGS84 = function(coordinates,zoom){
+    var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.crs);
+    this.goTo(coordinates,zoom);
   };
 };
 

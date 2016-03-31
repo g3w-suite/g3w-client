@@ -1,7 +1,7 @@
 var PluginsService = require('g3w/core/pluginsservice');
 var PluginsRegistry = require('g3w/core/pluginsregistry');
 
-var PanelMixinComponent = Vue.extend({
+var PanelComponent = Vue.extend({
     data: function() {
       return {
         state: PluginsService.state
@@ -9,4 +9,4 @@ var PanelMixinComponent = Vue.extend({
     }
 })
 
-module.exports = PanelMixinComponent;
+module.exports = PanelComponent;

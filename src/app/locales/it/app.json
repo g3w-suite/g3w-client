@@ -5,7 +5,8 @@
             "catalog": "Catalogo dati",
             "tools": "Strumenti",
             "tree": "Dati",
-            "legend": "Legenda"
+            "legend": "Legenda",
+            "street_search": "Cerca indirizzo"
         }
     }
 }

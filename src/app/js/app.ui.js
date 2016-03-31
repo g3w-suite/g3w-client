@@ -1,15 +1,25 @@
 var t = require('i18n.service');
 require('g3w/gui/map/map');
+require('g3w/gui/geocoding/geocoding');
 var layout = require('layout/layout');
-
+require('layout/sidebar/sidebar');
+var FloatBar = require('layout/floatbar/floatbar');
 var MapService = require('g3w/core/mapservice');
 
 Vue.component('app',{
     template: require('./app.html'),
-    props: ['iface'],
     ready: function(){
       /* start to render LayoutManager layout */
       layout.setup();
+      $("body").toggleClass("fixed");
+      layout.layout.fixSidebar();
+      //Fix the problem with right sidebar and layout boxed
+      layout.pushMenu.expandOnHover();
+      layout.layout.activate();
+      layout.controlSidebar._fix($(".control-sidebar-bg"));
+      layout.controlSidebar._fix($(".control-sidebar"));
+      
+      FloatBar.init(layout);
       
       /* map resize calculations */
       function setMapDivHeight(){

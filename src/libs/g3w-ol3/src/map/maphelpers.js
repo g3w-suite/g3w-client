@@ -41,7 +41,7 @@ _Viewer.prototype.setTarget = function(id){
   this.map.setTarget(id);
 };
 
-_Viewer.prototype.setCenter = function(coordinates, zoom){
+_Viewer.prototype.goTo = function(coordinates, zoom){
   var view = this.map.getView();
   view.setCenter(coordinates);
   view.setZoom(zoom);

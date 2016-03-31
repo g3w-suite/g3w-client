@@ -1,4 +1,6 @@
-var inherit = require('./utils').inherit;
+var inherit = require('g3w/core/utils').inherit;
+var base = require('g3w/core/utils').base;
+var G3WObject = require('g3w/core/g3wobject');
 var PluginsService = require('./pluginsservice');
 
 // Public interface
@@ -19,23 +21,22 @@ function PluginsRegistry(){
   };
   this.removePlugin = function(pluginName){
     return _registry.removePlugin(pluginName);
-  }
+  };
+  
+  base(this);
 }
-
-// Make the public service en Event Emitter
-inherit(PluginsRegistry,EventEmitter);
+inherit(PluginsRegistry,G3WObject);
 
 // Private
 var _registry = {
   initialized: false,
-  ctx: null,
   config: null,
   testing: true,
   state: {
     plugins: []
   },
   //config generale
-  init: function(ctx){
+  init: function(config){
     if (!this.initialized){
       return this.setupState();
     }

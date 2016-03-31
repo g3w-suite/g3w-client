@@ -1,74 +1,59 @@
-/*library inherit tools */
 var inherit = require('g3w/core/utils').inherit;
+var base = require('g3w/core/utils').base;
+var G3WObject = require('g3w/core/g3wobject');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsRegistry = require('g3w/core/pluginsregistry');
+var Nominatim = require('g3w/core/geocodingservice').Nominatim;
+var GeocodeListing = require('g3w/gui/geocoding/geocode.listing');
 
-function service(){
+var GUI = require('g3w/gui/gui');
+
+var FloatBar = require('layout/floatbar/floatbar');
+
+var AppService = function(){
   var self = this;
   this.initialized = false;
-  this.title = "G3W Client";
-  this.config = null;
-  this.projectConfig = null;
-  this.setup = function(config){
-    this.config = config;
-    if (this.config.group){
-      this.bootstrap();
-    }
-  };
+  this.config = {};
   
-  this.setGroup = function(group){
-    if (this.config){
-      this.config.group = group;
-      this.bootstrap();
-    }
-  };
-  
-  // il contesto viene passato a tutti i servizi e serve per la loro configurazione, per fornirgli metodi di contesto e l'interfaccia all'applicazione
-  this.createContext = function(){
-    var context = {
-      debug: true,
-      // richiesto da ProjectService
-      getWmsServiceUrl: function(project){
-        return self.config.server.urls.ows+'/'+self.config.group.id+'/'+project.type+'/'+project.id;
-      },
-      // richiesto da ProjectsRegistry
-      getProjectConfigUrl(project){
-        return self.config.server.urls.config+'/'+self.config.group.id+'/'+project.type+'/'+project.id;
-      },
-      // iface fornirà i metodi per comunicare con la GUI dell'applicazione, utilizzati dai plugin
-      iface: self,
-      // le seguenti proprietà sono utilizzate da ProjectsRegistry
-      projects: self.config.group.projects,
-      initproject: self.config.group.initproject,
-      baselayers: self.config.group.baselayers,
-      crs: self.config.group.crs,
-      minscale: self.config.group.minscale,
-      maxscale: self.config.group.maxscale
-    }
-    return context;
-  };
-  
-  this.bootstrap = function(){
-    if (!this.initialized){
-      var ctx = this.createContext();
-      
-      //inizializza la configurazione dei servizi. Ognungo percherà dal context quello di cui avrà bisogno
-      //una volta finita la configurazione emette l'evento ready
-      $.when(
-        ProjectsRegistry.init(ctx),
-        PluginsRegistry.init(ctx)
-      ).then(function(){
-        self.emit('ready');
-        this.initialized = true;
-        var ProjectService = require('g3w/core/projectservice');
-        ProjectService.on("aftertoggleLayer",function(){
-            console.log("after togglelayer"+arguments);
-        })
-      });
-    }
-  };
-}
-//lo fa diventare un oggetto emitter
-inherit(service,EventEmitter);
+  // chiama il costruttore di G3WObject (che in questo momento non fa niente)
+  base(this);
+};
+inherit(AppService,G3WObject);
 
-module.exports = new service();
+var proto = AppService.prototype;
+
+proto.init = function(config){
+  this.config = config;
+  this._bootstrap();
+  
+  Nominatim.on("results",function(results){
+    var gl = new GeocodeListing();
+    gl.results = results;
+    FloatBar.insert(gl);
+  })
+};
+
+proto.showForm = function(){
+  FloatBar.open();
+};
+
+proto._bootstrap = function(){
+  var self = this;
+  if (!this.initialized){
+    
+    // definisco (implemento) i metodi dell'API globale della GUI
+    GUI.showForm = this.showForm;
+    
+    //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
+    //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
+    $.when(
+      ProjectsRegistry.init(this.config),
+      PluginsRegistry.init(this.config)
+    ).then(function(){
+      self.emit('ready');
+      this.initialized = true;
+    });
+  };
+};
+
+module.exports = new AppService;

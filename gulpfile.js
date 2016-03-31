@@ -30,7 +30,7 @@ var Server = require('karma').Server;
 
 var production = false;
 
-gulp.task('browserify', [], function(cb) {
+gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
       paths: ["./src/app/js/","./src/libs/"],
       debug: !production,
@@ -57,11 +57,12 @@ gulp.task('browserify', [], function(cb) {
         .pipe(source('build.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init({ loadMaps: true }))
-        .pipe(gulpif(production, uglify()))
+        .pipe(gulpif(production, uglify().on('error', gutil.log)))
         .pipe(sourcemaps.write())
         .pipe(rename('app.js'))
         .pipe(gulp.dest('build/js/'))
         .pipe(browserSync.reload({stream: true, once: true}));
+      done();
     };
     bundler.on('update', rebundle);
     return rebundle();
@@ -150,7 +151,7 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['jshint','browser-sync','browserify','less','less-skins', 'watch']);
+gulp.task('serve', ['browser-sync','browserify','less','less-skins', 'watch']);
 gulp.task('dist', ['production','browserify','less','html']);
 gulp.task('g3w-admin', ['dist'],function(){
   gulp.src('./dist/g3w-client/**/*.*')

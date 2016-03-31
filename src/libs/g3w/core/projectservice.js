@@ -3,14 +3,14 @@ var StateProvider = require('./stateprovider');
 
 function ProjectService(){
   var self = this;
-  this.ctx = null;
+  this.config = null;
   this.layers = {};
   this.state = {
     layerstree: []
   };
   
-  this.init = function(ctx){
-    this.ctx = ctx;
+  this.init = function(config){
+    this.config = config;
   };
   
   // genera l'oggetto layers (per riferimento), per semplificare gli aggiornamenti dello stato del layerstree
@@ -69,9 +69,13 @@ function ProjectService(){
     self.setLayersVisible(layers,visible);
   };
   
-  this.getWmsServiceUrl = function(){
-    return this.ctx.getWmsServiceUrl(this.state);
-  }
+  this.getWmsUrl = function(){
+    return this.config.getWmsUrl(this.state);
+  };
+  
+  this.getLegendUrl = function(layer){
+    return this.getWmsUrl(this.state)+'?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
+  };
 };
 
 inherit(ProjectService,StateProvider);

@@ -1,10 +1,11 @@
 var inherit = require('./utils').inherit;
+var G3WObject = require('g3w/core/g3wobject');
 
 // Una classe che eredita da StateProvider fornirà uno stato (utilizzato ad es. dalle componenti della GUI).
 // Se fornisce dei metodi setters, all'interno di un oggetto "setters", è possibile registrare dei listeners PRIMA e/o DOPO l'esecuzione di tali metodi.
 // Quando viene eseguito un setter viene anche emesso un evento "stateChanged".
 function StateProvider(){}
-inherit(StateProvider,EventEmitter);
+inherit(StateProvider,G3WObject);
 
 var proto = StateProvider.prototype;
 

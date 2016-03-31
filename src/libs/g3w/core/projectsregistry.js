@@ -1,4 +1,6 @@
 var inherit = require('./utils').inherit;
+var base = require('g3w/core/utils').base;
+var G3WObject = require('g3w/core/g3wobject');
 var resolvedValue = require('./utils').resolvedValue;
 var rejectedValue = require('./utils').rejectedValue;
 var ProjectService = require('./projectservice');
@@ -35,15 +37,17 @@ function ProjectsRegistry(){
   
   this.setCurrentProject = function(projectGid){
     _registry.setCurrentProject(projectGid);
-  }
+  };
+  
+  base(this);
 }
 
 // Make the public service en Event Emitter
-inherit(ProjectsRegistry,EventEmitter);
+inherit(ProjectsRegistry,G3WObject);
 
 // Private
 var _registry = {
-  ctx: null,
+  config: null,
   initialized: false,
   state: {
     baseLayers: {},
@@ -52,27 +56,27 @@ var _registry = {
     projects: []
   },
   //config generale
-  init: function(ctx){
+  init: function(config){
     if (!this.initialized){
-      this.ctx = ctx;
+      this.config = config;
       this.setupState();
-      ProjectService.init(ctx);
-      return this.setCurrentProject(ctx.initproject);
+      ProjectService.init(config);
+      return this.setCurrentProject(config.initproject);
     }
   },
   
   setupState: function(){
     var self = this;
     
-    self.state.baseLayers = self.ctx.baselayers;
-    self.state.minScale = self.ctx.minscale;
-    self.state.maxScale = self.ctx.maxscale;
-    self.state.crs = self.ctx.crs;
-    self.ctx.projects.forEach(function(project){
-      project.baseLayers = self.ctx.baselayers;
-      project.minScale = self.ctx.minscale;
-      project.maxScale = self.ctx.maxscale;
-      project.crs = self.ctx.crs;
+    self.state.baseLayers = self.config.baselayers;
+    self.state.minScale = self.config.minscale;
+    self.state.maxScale = self.config.maxscale;
+    self.state.crs = self.config.crs;
+    self.config.projects.forEach(function(project){
+      project.baseLayers = self.config.baselayers;
+      project.minScale = self.config.minscale;
+      project.maxScale = self.config.maxscale;
+      project.crs = self.config.crs;
       self.state.projects.push(project);
     })
     //this.state.projects = config.group.projects;
@@ -136,7 +140,7 @@ var _registry = {
   getProjectFullConfig: function(projectBaseConfig){
     var self = this;
     var deferred = $.Deferred();
-    var url = this.ctx.getProjectConfigUrl(projectBaseConfig);
+    var url = this.config.getProjectConfigUrl(projectBaseConfig);
     $.get(url).done(function(projectFullConfig){
         deferred.resolve(projectFullConfig);
     })

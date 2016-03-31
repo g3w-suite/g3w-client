@@ -1,4 +1,5 @@
 var t = require('i18n.service');
+var GUI = require('g3w/gui/gui');
 var ProjectService = require('g3w/core/projectservice');
 
 Vue.component('g3w-catalog',{
@@ -99,8 +100,24 @@ Vue.component('legend',{
         //data qui
       }
     },
-    methods: {
-        //codice qui
+    computed: {
+      visiblelayers: function(){
+        var _visiblelayers = [];
+        var layerstree = this.layerstree;
+        function traverse(obj){
+        _.forIn(obj, function (layer, key) {
+              //verifica che il valore dell'id non sia nullo
+              if (!_.isNil(layer.id) && layer.visible) {
+                  _visiblelayers.push(layer);
+              }
+              if (!_.isNil(layer.nodes)) {
+                  traverse(layer.nodes);
+              }
+          });
+        }
+        traverse(layerstree);
+        return _visiblelayers;
+      }
     },
     watch: {
       'layerstree': {
@@ -114,3 +131,22 @@ Vue.component('legend',{
       //codice qui
     }
 });
+
+Vue.component('legend-item',{
+  template: require('./legend_item.html'),
+  props: ['layer'],
+  computed: {
+    legendurl: function(){
+      // in attesa di risolvere lo schianto di QGSI Server...
+      //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
+      return ProjectService.getLegendUrl(this.layer);
+    }
+  },
+  methods: {
+    // esempio utilizzo del servizio GUI
+    openform: function(){
+      //GUI.notify.success("Apro un form");
+      //GUI.showForm();
+    }
+  }
+})
