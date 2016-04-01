@@ -1,0 +1,15 @@
+<div class="g3w-tools">
+  <ul>
+    <li v-for="tool in tools">
+      <div data-toggle="collapse" data-target="#iternet-tools" class="tool-header">
+        <span style="">{{ tool.name }}</span>
+      </div>
+      <div id="iternet-tools" class="tool-box collapse">
+        <template v-for="action in tool.actions">
+          <i class="glyphicon glyphicon-cog"></i>
+          <span @click="fireAction(action.id)">{{ action.name }}</span>
+        </template>
+      </div>
+    </li>
+  </ul>
+</div>

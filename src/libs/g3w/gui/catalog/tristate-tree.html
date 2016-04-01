@@ -4,8 +4,8 @@
   <span v-else @click="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o']" class="fa"></span>
   <span :class="{bold: isFolder}" @click="toggle">{{layerstree.title}}</span>
   <ul v-show="layerstree.expanded" v-if="isFolder">
-    <tree :n_parent-childs.sync="n_parentChilds" :layerstree="layerstree" :checked="parentChecked" v-for="layerstree in layerstree.nodes">
-    </tree>
+    <tristate-tree :n_parent-childs.sync="n_parentChilds" :layerstree="layerstree" :checked="parentChecked" v-for="layerstree in layerstree.nodes">
+    </tristate-tree>
   </ul>
 </li>
 

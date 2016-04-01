@@ -21,7 +21,7 @@ function FloatBar(){
     this.layout.floatBar.close(this.sidebarEl,true);
   };
   
-  this.insert = function(vm){
+  this.insertVM = function(vm){
     this.child = vm;
     this.child.$mount("#floatbar-content-wrapper");
     this.open();

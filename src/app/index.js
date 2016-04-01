@@ -12,7 +12,8 @@
         urls: {
           ows: '/ows',
           api: '/api',
-          config: '/api/config'
+          config: '/api/config',
+          staticurl: ''
         }
     },
     group: null
@@ -22,6 +23,7 @@
   function createConfig(config){
     return {
       debug: true,
+      assetsurl: baseconfig.server.urls.staticurl,
       projects: baseconfig.group.projects,
       initproject: baseconfig.group.initproject,
       baselayers: baseconfig.group.baselayers,
@@ -63,6 +65,7 @@
   
   // se sto caricando dal client g3w-admin initconfig è già inlined
   if (window.initConfig) {
+    baseconfig.server.urls.staticurl = initconfig.staticurl;
     baseconfig.group = window.initConfig.group; // config is inlined by g3w-admin inside the index template as a <script> tag
     var config = createConfig(config);
     appService.init(config);// emette evento ready dopo aver letto la configurazione
@@ -70,6 +73,7 @@
   // altrimenti devo aspettare che local.initconfig.js abbia caricato l'initconfig
   else{
     $(document).on('initconfigReady',function(e,initconfig){
+      baseconfig.server.urls.staticurl = initconfig.staticurl;
       baseconfig.group = initconfig.group;
       var config = createConfig(config);
       appService.init(config);

@@ -1,10 +1,7 @@
 var t = require('i18n.service');
 require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
-require('g3w/gui/plugins/plugins');
-
-var PluginRegistry = require('g3w/core/pluginsregistry');
-var PluginsService = require('g3w/core/pluginsservice');
+require('g3w/gui/tools/tools');
 
 Vue.component('sidebar',{
     template: require('./sidebar.html'),
@@ -13,19 +10,8 @@ Vue.component('sidebar',{
         bOpen: true,
     		bPageMode: false,
     		header: t('main navigation'),
-    		activePlugin: PluginsService.state
         };
-    },
-    methods: {
-    	activeModule: function(index) {
-    		if (this.currentModule === index) {
-    			this.currentModule = undefined;
-    			return false;
-    		}
-    		this.currentModule = index;
-    	}
-
-	}
+    }
 });
 
 Vue.component('sidebar-item',{
@@ -39,15 +25,4 @@ Vue.component('sidebar-item',{
     methods: {
     	
 	}
-});
-
-Vue.component('sidebar-tool',{
-    template: require('./sidebar-tool.html'),
-    data: function() {
-    	return {
-        store: PluginRegistry.store
-      };
-    },
-    methods: {
-	  }
 });

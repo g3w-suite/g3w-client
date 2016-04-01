@@ -8,8 +8,8 @@
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane active tree" id="tree">
         <ul class="tree-root">
-          <tree :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
-          </tree>
+          <tristate-tree :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
+          </tristate-tree>
         </ul>
       </div>
       <legend :layerstree="layerstree"></legend>

@@ -1,25 +1,32 @@
 var inherit = require('./utils').inherit;
+var StateProvider = require('./stateprovider');
+
+var plugins = {
+  "g3w-iternet": require("g3w-iternet/plugin")
+};
 
 function PluginsService(){
+  var self = this;
+  this.config = null;
+  // un domani questo sarà dinamico
+  this.availablePlugins = plugins;
   this.state = {
-    activePlugin: '',
-    activePanel: {}
+    activeplugins: ['g3w-iternet'],
+    toolsproviders: []
   };
-  this.setActivePlugin = function(pluginName) {
-    this.state.activePlugin = pluginName;
-  };
-  this.getActivePlugin = function(){
-    return this.state.activePlugin;
-  };
-  this.setActivePanel = function(panelComponent) {
-    this.state.activePanel = new panelComponent;
-  };
-  this.getActivePanel = function(){
-    return this.state.activePanel;
+  
+  this.init = function(config){
+    this.config = config;
+    _.forEach(this.state.activeplugins,function(key){
+      var plugin = self.availablePlugins[key];
+      if (plugin.providesTools()){
+        self.state.toolsproviders.push(plugin);
+      }
+    })
+    this.emit("initend");
   };
 };
 
-// Make the public service en Event Emitter
-inherit(PluginsService,EventEmitter);
+inherit(PluginsService,StateProvider);
 
 module.exports = new PluginsService

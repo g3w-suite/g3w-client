@@ -23,8 +23,8 @@ Vue.component('g3w-catalog',{
 });
 
 // tree component
-Vue.component('tree', {
-  template: require('./tree.html'),
+Vue.component('tristate-tree', {
+  template: require('./tristate-tree.html'),
   props: {
     layerstree: [],
     //eredito il numero di childs dal parent

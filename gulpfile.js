@@ -79,22 +79,32 @@ gulp.task('less',['fonts'], function () {
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/style/'));
+    .pipe(gulp.dest('./build/css/'));
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/app/style/less/skins/*.less')
+  return gulp.src('./src/app/css/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/style/skins/'));
+    .pipe(gulp.dest('./build/css/skins/'));
 });
 
 gulp.task('fonts', function () {
   return gulp.src(['./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
+    .pipe(gulp.dest('./build/fonts/'))
     .pipe(gulp.dest('./dist/g3w-client/fonts/'));
 });
+
+gulp.task('images', function () {
+  return gulp.src(['./third-party/**/*.{png,jpg}}','./src/**/*.{png,jpg}'])
+    .pipe(flatten())
+    .pipe(gulp.dest('./build/images/'))
+    .pipe(gulp.dest('./dist/g3w-client/images/'));
+});
+
+gulp.task('assets',['fonts','images','less']);
 
 var proxy = httpProxy.createProxyServer({
   target: conf.proxy.url
@@ -137,8 +147,14 @@ gulp.task('html', ['fonts'], function () {
 });
 
 gulp.task('watch',function() {
-    gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
-    gulp.watch(['./build/style/app.css','./src/index.html','./src/**/*.html'], function(){
+    //gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
+    watch(['./src/app/style/*.less','./src/app/style/**/*.less'],function(){
+      gulp.start('less');
+    });
+    watch('./src/**/*.{png,jpg}',function(){
+      gulp.start('images');
+    });
+    gulp.watch(['./build/css/app.css','./src/index.html','./src/**/*.html'], function(){
         browserSync.reload();
     });
     // uso gulp-watch così jshint viene eseguito anche su file nuovi (che gulp.watch non traccia)
@@ -151,8 +167,8 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','less','less-skins', 'watch']);
-gulp.task('dist', ['production','browserify','less','html']);
+gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch']);
+gulp.task('dist', ['production','browserify','assets','html']);
 gulp.task('g3w-admin', ['dist'],function(){
   gulp.src('./dist/g3w-client/**/*.*')
   .pipe(gulp.dest(conf.g3w_admin_dest));
