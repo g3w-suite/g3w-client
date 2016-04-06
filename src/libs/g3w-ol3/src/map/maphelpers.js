@@ -52,6 +52,20 @@ _Viewer.prototype.getZoom = function(){
   return view.getZoom();
 };
 
+_Viewer.prototype.getResolution = function(){
+  var view = this.map.getView();
+  return view.getResolution();
+};
+
+_Viewer.prototype.getCenter = function(){
+  var view = this.map.getView();
+  return view.getCenter();
+};
+
+_Viewer.prototype.getBBOX = function(){
+  return this.map.getView().calculateExtent(this.map.getSize());
+};
+
 _Viewer.prototype.getLayerByName = function(layerName) {
   var layers = this.map.getLayers();
   var length = layers.getLength();
@@ -63,11 +77,11 @@ _Viewer.prototype.getLayerByName = function(layerName) {
   return null;
 };
 
-/* REMOVE NAME BY NAME */
 _Viewer.prototype.removeLayerByName = function(layerName){
   var layer = this.getLayerByName(layerName);
   if (layer){
     this.map.removeLayer(layer);
+    delete layer;
   }
 };
 

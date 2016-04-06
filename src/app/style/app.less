@@ -1,7 +1,16 @@
 @import "./less/main.less";
+
+.box-shadow(@h: 1px;@v: 1px;@blur: 1px;@color: rgba(0,0,0,.25)) {
+  -webkit-box-shadow: @h @v @blur @color;
+     -moz-box-shadow: @h @v @blur @color;
+          box-shadow: @h @v @blur @color;
+}
+
 @import "./catalog.less";
 @import "./tools.less";
 
 .toast-top-center {
   top: 60px;
 }
+
+@import "./iternet.less";

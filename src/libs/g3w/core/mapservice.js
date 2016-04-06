@@ -4,13 +4,17 @@ var StateProvider = require('./stateprovider');
 var ProjectsRegistry = require('./projectsregistry');
 var ProjectService = require('./projectservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var MapLayer = require('./maplayer');
+var WMSLayer = require('./wmslayer');
 
 function MapService(){
   var self = this;
   this.viewer;
   this.mapLayers = {};
-  this.state = {};
+  this.state = {
+      bbox: [],
+      resoution: null,
+      center: null
+  };
   
   ProjectService.on('projectset',function(){
     $script("http://epsg.io/"+ProjectService.state.crs+".js");
@@ -27,6 +31,20 @@ function MapService(){
     })
   });
   
+  var setters = {
+    setViewBBOX: function(bbox){
+      self.state.bbox = bbox;
+    },
+    setResolution: function(resolution){
+      self.state.resolution = resolution;
+    },
+    setCenter: function(center){
+      self.state.center = center;
+    }
+  };
+  
+  this.initSetters(setters);
+  
   this.setupViewer = function(){
     var extent = ProjectService.state.extent;
     var projection = new ol.proj.Projection({
@@ -40,6 +58,17 @@ function MapService(){
         zoom: 1 
       }
     });
+    
+    var view = this.viewer.map.getView();
+    view.on('change:resolution',function(e){
+      self.setViewBBOX(self.viewer.getBBOX());
+      self.setResolution(self.viewer.getResolution());
+    });
+    
+    view.on('change:center',function(e){
+      self.setViewBBOX(self.viewer.getBBOX());
+      self.setCenter(self.viewer.getCenter());
+    })
   };
   
   this.setupLayers = function(){
@@ -51,7 +80,7 @@ function MapService(){
         var mapLayer = _.get(self.mapLayers,layerId);
         if (!mapLayer){
           url = ProjectService.getWmsUrl();
-          mapLayer = self.mapLayers[layerId] = new MapLayer({
+          mapLayer = self.mapLayers[layerId] = new WMSLayer({
             id: layerId,
             url: url
           });
@@ -89,6 +118,10 @@ function MapService(){
   
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);
+    var map = this.viewer.map;
+    this.setViewBBOX(this.viewer.getBBOX());
+    this.setResolution(this.viewer.getResolution());
+    this.setCenter(this.viewer.getCenter());
   };
   
   this.goTo = function(coordinates,zoom){
@@ -102,6 +135,6 @@ function MapService(){
   };
 };
 
-inherit(ProjectService,StateProvider);
+inherit(MapService,StateProvider);
 
 module.exports = new MapService

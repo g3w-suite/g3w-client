@@ -1,0 +1,27 @@
+.g3w-iternet-editing-panel {
+  .panel-heading {
+    padding: 5px 10px 5px 10px
+  }
+  .editbtn {
+    padding: 3px 3px 3px 3px;
+    margin: 0px 5px 0px 5px;
+    border: 1px solid darken(grey, 15%);
+    .border-radius( 5px );
+    .box-shadow();
+    display: inline-block;
+    opacity: .4;
+    cursor: not-allowed;
+    &.enabled {
+      opacity: 1;
+      cursor: pointer;
+      &:hover {
+        //.box-shadow(0px,0px,1px);
+        background-color: #dddddd;
+      }
+    }
+  }
+  .message {
+    margin-top: 10px;
+    font-size: 1.1em;
+  }
+}

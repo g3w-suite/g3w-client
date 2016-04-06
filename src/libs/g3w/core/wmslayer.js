@@ -1,6 +1,6 @@
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function MapLayer(options){
+function WMSLayer(options){
   var _mapLayer = new _MapLayer(options);
   
   this.getOlLayer = function(){
@@ -69,5 +69,5 @@ proto.updateLayers = function(){
   });
 };
 
-module.exports = MapLayer;
+module.exports = WMSLayer;
 

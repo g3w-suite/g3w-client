@@ -79,15 +79,17 @@ gulp.task('less',['fonts'], function () {
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/css/'));
+    .pipe(gulp.dest('./build/css/'))
+    .pipe(gulp.dest('./dist/g3w-client/css/'));
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/app/css/less/skins/*.less')
+  return gulp.src('./src/app/style/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    .pipe(gulp.dest('./build/css/skins/'));
+    .pipe(gulp.dest('./build/css/skins/'))
+    .pipe(gulp.dest('./dist/g3w-client/css/skins/'));
 });
 
 gulp.task('fonts', function () {
@@ -98,7 +100,7 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('images', function () {
-  return gulp.src(['./third-party/**/*.{png,jpg}}','./src/**/*.{png,jpg}'])
+  return gulp.src(['./third-party/**/*.{png,jpg,gif}}','./src/**/*.{png,jpg,gif}'])
     .pipe(flatten())
     .pipe(gulp.dest('./build/images/'))
     .pipe(gulp.dest('./dist/g3w-client/images/'));
@@ -108,6 +110,10 @@ gulp.task('assets',['fonts','images','less']);
 
 var proxy = httpProxy.createProxyServer({
   target: conf.proxy.url
+});
+
+proxy.on('error',function(e){
+  gutil.log(e);
 });
 
 function proxyMiddleware(urls) {
@@ -148,19 +154,22 @@ gulp.task('html', ['fonts'], function () {
 
 gulp.task('watch',function() {
     //gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
-    watch(['./src/app/style/*.less','./src/app/style/**/*.less'],function(){
+    watch(['./src/app/style/*.less','./src/app/style/less/*.less'],function(){
       gulp.start('less');
+    });
+    watch(['./src/app/style/less/skins/*.less'],function(){
+      gulp.start('less-skins');
     });
     watch('./src/**/*.{png,jpg}',function(){
       gulp.start('images');
     });
-    gulp.watch(['./build/css/app.css','./src/index.html','./src/**/*.html'], function(){
+    gulp.watch(['./build/**/*.css','./src/index.html','./src/**/*.html'], function(){
         browserSync.reload();
     });
     // uso gulp-watch così jshint viene eseguito anche su file nuovi (che gulp.watch non traccia)
-    watch(['./src/app/**/*.js','./src/libs/g3w/**/*.js','./src/libs/g3w-ol3/src/**/*.js'] ,function(){
-      gulp.start('jshint');
-    });
+    //watch(['./src/app/**/*.js','./src/libs/g3w/**/*.js','./src/libs/g3w-ol3/src/**/*.js'] ,function(){
+    //  gulp.start('jshint');
+    //});
 });
 
 gulp.task('production', function(){

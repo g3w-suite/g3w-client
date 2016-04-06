@@ -2,7 +2,7 @@ var t = require('i18n.service');
 require('g3w/gui/map/map');
 require('g3w/gui/geocoding/geocoding');
 var layout = require('layout/layout');
-require('layout/sidebar/sidebar');
+var SideBar = require('layout/sidebar/sidebar');
 var FloatBar = require('layout/floatbar/floatbar');
 var MapService = require('g3w/core/mapservice');
 

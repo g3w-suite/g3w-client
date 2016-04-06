@@ -23,7 +23,7 @@
   function createConfig(config){
     return {
       debug: true,
-      assetsurl: baseconfig.server.urls.staticurl,
+      resourcesurl: baseconfig.server.urls.staticurl,
       projects: baseconfig.group.projects,
       initproject: baseconfig.group.initproject,
       baselayers: baseconfig.group.baselayers,
@@ -37,7 +37,8 @@
       // richiesto da ProjectsRegistry
       getProjectConfigUrl: function(project){
         return baseconfig.server.urls.config+'/'+baseconfig.group.id+'/'+project.type+'/'+project.id;
-      }
+      },
+      plugins: baseconfig.group.plugins
     }
   };
   
@@ -65,7 +66,7 @@
   
   // se sto caricando dal client g3w-admin initconfig è già inlined
   if (window.initConfig) {
-    baseconfig.server.urls.staticurl = initconfig.staticurl;
+    baseconfig.server.urls.staticurl = initConfig.staticurl;
     baseconfig.group = window.initConfig.group; // config is inlined by g3w-admin inside the index template as a <script> tag
     var config = createConfig(config);
     appService.init(config);// emette evento ready dopo aver letto la configurazione

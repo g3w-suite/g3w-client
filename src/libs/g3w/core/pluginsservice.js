@@ -2,28 +2,42 @@ var inherit = require('./utils').inherit;
 var StateProvider = require('./stateprovider');
 
 var plugins = {
-  "g3w-iternet": require("g3w-iternet/plugin")
+  "iternet": require("g3w-iternet/plugin")
 };
 
 function PluginsService(){
   var self = this;
   this.config = null;
   // un domani questo sarà dinamico
-  this.availablePlugins = plugins;
+  this.availablePlugins = {};
   this.state = {
-    activeplugins: ['g3w-iternet'],
     toolsproviders: []
   };
   
   this.init = function(config){
     this.config = config;
-    _.forEach(this.state.activeplugins,function(key){
-      var plugin = self.availablePlugins[key];
+    this._setAvailablePlugins(config);
+    
+    _.forEach(this.availablePlugins,function(plugin){
       if (plugin.providesTools()){
         self.state.toolsproviders.push(plugin);
       }
     })
     this.emit("initend");
+  };
+  
+  this._setAvailablePlugins = function(config){
+    if (_.has(config,"plugins")){
+      _.forEach(plugins,function(plugin){
+        _.forEach(config.plugins,function(pluginConfig,name){
+          if (plugin.name == name) {
+            // inizializzo il plugin
+            plugin.init(pluginConfig);
+            self.availablePlugins[name] = plugin;
+          }
+        })
+      })
+    }
   };
 };
 

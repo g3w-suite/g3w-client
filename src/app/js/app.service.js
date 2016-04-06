@@ -11,6 +11,7 @@ var GeocodeListing = require('g3w/gui/geocoding/geocode.listing');
 
 var GUI = require('g3w/gui/gui');
 
+var SideBar = require('layout/sidebar/sidebar');
 var FloatBar = require('layout/floatbar/floatbar');
 
 var AppService = function(){
@@ -41,9 +42,11 @@ proto._bootstrap = function(){
   if (!this.initialized){
     
     // definisco (implemento) i metodi dell'API globale della GUI
-    GUI.showForm = FloatBar.open;
-    GUI.showVMForm = FloatBar.insertVM;
-    //GUI.showVMPanel = ...;
+    GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
+    GUI.showForm = _.bind(FloatBar.open,FloatBar);
+    GUI.showVMForm = _.bind(FloatBar.insertVM,FloatBar);
+    // mostra un pannello (Vue) nella sidebar
+    GUI.showPanel = _.bind(SideBar.showPanel,SideBar);
     
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale

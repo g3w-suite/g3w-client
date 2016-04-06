@@ -1,7 +1,19 @@
 <aside class="main-sidebar">
   <!-- sidebar: style can be found in sidebar.less -->
 	<section class="sidebar">
-	  <ul class="sidebar-menu">
+    
+    <div v-show="panelsinstack" class="g3w-sidebarpanel">
+      <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12">
+          <button class="glyphicon glyphicon-remove pull-right close-panel-button" @click="closePanel"></button></div>
+      </div>
+      <div>
+        <h4>{{ panelname }}</h2>
+      </div>
+      <div id="g3w-sidebarpanel-placeholder" class="g3w-sidebarpanel-placeholder"></div>
+    </div>
+    
+	  <ul v-show="!panelsinstack" class="sidebar-menu">
 	    <!--<sidebar-item data-icon="fa fa-search" data-label="search" data-type="inline">
         <g3w-search></g3w-search>
       </sidebar-item>-->
