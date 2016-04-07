@@ -59,6 +59,10 @@ function ProjectService(){
     return this.layers[id];
   };
   
+  this.getLayerAttributes = function(id){
+    return this.layers[id].attributes;
+  };
+  
   this.toggleLayer = function(layer,visible){
     var visible = visible || !layer.visible;
     self.setLayersVisible([layer],visible);

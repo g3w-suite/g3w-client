@@ -16,7 +16,12 @@ function SideBar(){
   };
   
   this.closePanel = function(){
-    this.stack.pop();
+    var panel = this.stack.pop();
+    if (panel){
+      if (_.hasIn(panel,"$destroy")){
+        panel.$destroy();
+      }
+    }
   }
 }
 

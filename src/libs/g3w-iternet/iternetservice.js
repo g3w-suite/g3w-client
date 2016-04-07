@@ -4,6 +4,9 @@ var ProjectService = require('g3w/core/projectservice');
 var MapService = require('g3w/core/mapservice');
 var VectorLayer = require('g3w/core/vectorlayer');
 
+var GUI = require('g3w/gui/gui');
+var FormPanel = require('g3w/gui/formpanel');
+
 var Editor = require('./editors/editor');
 var AttributesEditor = require('./editors/attributeseditor');
 
@@ -20,14 +23,17 @@ function IternetService(){
     // test listener su transizione editor
     self._editors.accessi.onbeforeasync('addFeature',function(feature,next){
         console.log("Prima di aggiungere una nuova feature...");
-        var attreditor = new(AttributesEditor);
+        var form = new FormPanel();
+        GUI.showForm(form);
+        /*var attreditor = new(AttributesEditor);
         attreditor.editFeature(feature)
         .done(function(){
           next()
         })
         .fail(function(){
           next(false);
-        });
+        });*/
+        next();
     });
   })
   
@@ -123,13 +129,15 @@ function IternetService(){
         id: layerStrade.id,
         name: layerStrade.name,        
       });
+      var fields = self._getLayerFields('strade');
+      vectorStrade.setFields(fields);
       vectorStrade.setStyle({
         stroke: new ol.style.Stroke({
           width: 3,
           color: '#ff7d2d'
         })
       });
-      vectorStrade.addData(strade.vector.data,strade.vector.format);
+      vectorStrade.setData(strade.vector.data,strade.vector.format);
       var layerAccessi = self.config.layers.accessi;
       var vectorAccessi = vectors.accessi = self._createVector({
         geometrytype: accessi.vector.geometrytype,
@@ -138,6 +146,8 @@ function IternetService(){
         id: layerAccessi.id,
         name: layerAccessi.name
       });
+      var fields = self._getLayerFields('accessi');
+      vectorAccessi.setFields(fields);
       vectorAccessi.setStyle({
         image: new ol.style.Circle({
           radius: 5,
@@ -146,7 +156,7 @@ function IternetService(){
           })
         })
       });
-      vectorAccessi.addData(accessi.vector.data,accessi.vector.format);
+      vectorAccessi.setData(accessi.vector.data,accessi.vector.format);
       var layerGiunzioni = self.config.layers.giunzioni;
       var vectorGiunzioni = vectors.giunzioni = self._createVector({
         geometrytype: giunzioni.vector.geometrytype,
@@ -155,6 +165,8 @@ function IternetService(){
         id: layerGiunzioni.id,
         name: layerGiunzioni.name
       });
+      var fields = self._getLayerFields('giunzioni');
+      vectorGiunzioni.setFields(fields);
       vectorGiunzioni.setStyle({
         image: new ol.style.Circle({
           radius: 5,
@@ -163,7 +175,7 @@ function IternetService(){
           })
         })
       });
-      vectorGiunzioni.addData(giunzioni.vector.data,giunzioni.vector.format);
+      vectorGiunzioni.setData(giunzioni.vector.data,giunzioni.vector.format);
       self.state.retrievingData = false;
     })
     .fail(function(){
@@ -187,6 +199,55 @@ function IternetService(){
       d.reject();
     })
     return d.promise();
+  };
+  
+  this._getLayerFields = function(layerCode){
+    var layerConfig = self.config.layers[layerCode];
+    var attributes = ProjectService.getLayerAttributes(layerConfig.id);
+    var formFields = self.config.forms[layerCode].fields;
+    var formFieldsByName = _.keyBy(formFields,'name');
+    var fields = [];
+    _.forEach(attributes,function(attribute){
+      var field = {};
+      var nativeType = attribute.type;
+      var type = null;
+      
+      // mappatura tipo di attributo hard coded per ITERNET
+      if (nativeType == 'INTEGER'){
+        type = 'integer';
+      }
+      else if (nativeType.indexOf("VARCHAR") > -1){
+        type = 'string';
+      }
+      
+      // se il tipo di campo è riconosciuto
+      if (type){
+        field.type = type;
+        field.name = attribute.name;
+        var formField = formFieldsByName[field.name];
+        var input = {};
+        input.type = null;
+        if (formField && formField.inputType){
+          input.type = formField.inputType;
+          input.options = {};
+          if (formField.inputType == 'select'){
+            var list = []
+            _.forEach(formField.values,function(value){
+              list.push({
+                key: value[0],
+                value: value[1]
+              });
+            })
+            input.options.values = list;
+          }
+        }
+        input.label = (formField && formField.label) ? formField.label : field.name;
+        
+        field.input = input;
+        fields.push(field);
+      }
+    }); 
+    return fields;
   };
 }
 inherit(IternetService,G3WObject);

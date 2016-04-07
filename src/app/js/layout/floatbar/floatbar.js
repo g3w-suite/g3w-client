@@ -1,46 +1,58 @@
+var t = require('i18n.service');
+var Stack = require('../barstack.js');
+
 function FloatBar(){
-  this.state = {};
-  this.layout = null;
-  this.sidebarEl = null;
-  this.child = null;
+  this.stack = new Stack();
   
   this.init = function(layout){
     this.layout = layout;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);
   };
   
-  this.open = function(){
+  this.showPanel = function(panel){
+    this.stack.push(panel,"#g3w-floatbarpanel-placeholder");
     this.layout.floatBar.open(this.sidebarEl,true);
   };
   
-  this.close = function(){
-    if (this.child && _.hasIn(this.child,"$destroy")){
-      this.child.$destroy();
-      this.child = null;
+  this.closePanel = function(){
+    var panel = this.stack.pop();
+    if (panel){
+      if (_.hasIn(panel,"$destroy")){
+        panel.$destroy();
+      }
     };
-    this.layout.floatBar.close(this.sidebarEl,true);
-  };
-  
-  this.insertVM = function(vm){
-    this.child = vm;
-    this.child.$mount("#floatbar-content-wrapper");
-    this.open();
-  };
+    if (!this.stack.length) {
+      this.layout.floatBar.close(this.sidebarEl,true);
+    }
+  }
 }
 
-var floatBar = new FloatBar;
+var floatBar = new FloatBar();
 module.exports = floatBar;
 
 Vue.component('floatbar',{
     template: require('./floatbar.html'),
-    data: function(){
-      return  { 
-        content: "Contenuto"
+    data: function() {
+    	return {
+        panels: floatBar.stack.state.panels,
+      };
+    },
+    computed: {
+      // quanti pannelli sono attivi nello stack
+      panelsinstack: function(){
+        return this.panels.length>0;
+      },
+      panelname: function(){
+        var name = "";
+        if (this.panels.length){
+          name = this.panels.slice(-1)[0].name;
+        }
+        return name;
       }
     },
     methods: {
-      close: function(){
-        floatBar.close();
+      closePanel: function(){
+        floatBar.closePanel();
       }
     }
 });

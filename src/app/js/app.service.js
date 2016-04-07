@@ -43,9 +43,9 @@ proto._bootstrap = function(){
     
     // definisco (implemento) i metodi dell'API globale della GUI
     GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
-    GUI.showForm = _.bind(FloatBar.open,FloatBar);
-    GUI.showVMForm = _.bind(FloatBar.insertVM,FloatBar);
-    // mostra un pannello (Vue) nella sidebar
+    // mostra un pannello nella floatbar
+    GUI.showForm = _.bind(FloatBar.showPanel,FloatBar);
+    // mostra un pannello nella sidebar
     GUI.showPanel = _.bind(SideBar.showPanel,SideBar);
     
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
