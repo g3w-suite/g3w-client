@@ -7,6 +7,7 @@ var MapService = require('g3w/core/mapservice');
 function AddPointFeatureTool(editor){
   var self = this;
   this.editor = editor;
+  this.isPausable = true;
   this.drawInteraction = null;
   
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
@@ -56,6 +57,15 @@ proto.run = function(){
   });
   map.addInteraction(this.drawInteraction);
   this.drawInteraction.setActive(true);
+};
+
+proto.pause = function(pause){
+  if (_.isUndefined(pause) || pause){
+    this.drawInteraction.setActive(false);
+  }
+  else {
+    this.drawInteraction.setActive(true);
+  }
 };
 
 // metodo eseguito alla disattivazione del tool

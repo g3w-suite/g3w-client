@@ -22,9 +22,18 @@ function IternetService(){
     };
     // test listener su transizione editor
     self._editors.accessi.onbeforeasync('addFeature',function(feature,next){
+        var tool = this;
         console.log("Prima di aggiungere una nuova feature...");
+        if (tool.isPausable){
+          tool.pause();
+        }
         var form = new FormPanel();
         GUI.showForm(form);
+        setTimeout(function(){
+          if (tool.isPausable){
+            tool.pause(false);
+          }
+        },2000)
         /*var attreditor = new(AttributesEditor);
         attreditor.editFeature(feature)
         .done(function(){
