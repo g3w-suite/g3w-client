@@ -1,77 +1,12 @@
 var inherit = require('g3w/core/utils').inherit;
 
 /**
- * Un oggetto base in grado di gestire eventuali setter e relativi listeners.
+ * Un oggetto base in grado di gestire eventuali setter e relativa catena di listeners.
  * @constructor
  */
 var G3WObject = function(){
   if (this.setters){
-    // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
-    var self = this;
-    this.settersListeners = {
-      after:{},
-      before:{}
-    };
-    // per ogni setter viene definito l'array dei listeners e fiene sostituito il metodo originale con la funzioni che gestisce la coda di listeners
-    _.forEach(this.setters,function(setterFnc,setter){
-      self.settersListeners.after[setter] = [];
-      self.settersListeners.before[setter] = [];
-      // setter sostituito
-      self[setter] = function(){
-        var args = arguments;
-        // eseguo i listener registrati per il before
-        var deferred = $.Deferred();
-        var returnVal = null;
-        var counter = 0;
-        var canSet = true;
-        
-        // richiamata alla fine della catena di listeners
-        function done(){
-          if(canSet){
-            // eseguo la funzione
-            returnVal = setterFnc.apply(self,args);
-            // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
-            deferred.resolve(returnVal);
-            
-            var afterListeners = self.settersListeners.after[setter];
-            _.forEach(afterListeners,function(listener, key){
-              listener.fnc.apply(self,args);
-            })
-            self.emit("stateChanged");
-          }
-          else {
-            // se non posso proseguire rigetto la promessa
-            deferred.reject();
-          }
-        }
-        
-        var beforeListeners = this.settersListeners['before'][setter];
-        // contatore dei listener che verrà decrementato ad ogni chiamata a next()
-        counter = beforeListeners.length;
-        
-        // funzione passata come ultimo parametro ai listeners, che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
-        function next(bool){
-          var _canSet = true;
-          if (_.isBoolean(bool)){
-            _canSet = bool;
-          }
-          canSet = (canSet && _canSet);
-          if (counter == 0){
-            done.apply(self);
-          }
-          else {
-            counter -= 1;
-            var _args = Array.prototype.slice.call(args);
-            // aggiungo next come ulitmo parametro
-            _args.push(next);
-            beforeListeners[counter].fnc.apply(self,_args)
-          }
-        }
-        
-        next();
-        return deferred.promise();
-      }
-    })
+    this._setupListenersChain(this.setters);
   }
 };
 inherit(G3WObject,EventEmitter);
@@ -134,6 +69,75 @@ proto._makeChainable = function(listener){
     }
     next(canSet);
   }
+};
+
+proto._setupListenersChain = function(setters){
+  // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
+  var self = this;
+  this.settersListeners = {
+    after:{},
+    before:{}
+  };
+  // per ogni setter viene definito l'array dei listeners e fiene sostituito il metodo originale con la funzioni che gestisce la coda di listeners
+  _.forEach(setters,function(setterFnc,setter){
+    self.settersListeners.after[setter] = [];
+    self.settersListeners.before[setter] = [];
+    // setter sostituito
+    self[setter] = function(){
+      var args = arguments;
+      // eseguo i listener registrati per il before
+      var deferred = $.Deferred();
+      var returnVal = null;
+      var counter = 0;
+      var canSet = true;
+      
+      // richiamata alla fine della catena di listeners
+      function done(){
+        if(canSet){
+          // eseguo la funzione
+          returnVal = setterFnc.apply(self,args);
+          // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
+          deferred.resolve(returnVal);
+          
+          var afterListeners = self.settersListeners.after[setter];
+          _.forEach(afterListeners,function(listener, key){
+            listener.fnc.apply(self,args);
+          })
+          self.emit("stateChanged");
+        }
+        else {
+          // se non posso proseguire rigetto la promessa
+          deferred.reject();
+        }
+      }
+      
+      var beforeListeners = this.settersListeners['before'][setter];
+      // contatore dei listener che verrà decrementato ad ogni chiamata a next()
+      counter = beforeListeners.length;
+      
+      // funzione passata come ultimo parametro ai listeners, che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
+      function next(bool){
+        var _canSet = true;
+        if (_.isBoolean(bool)){
+          _canSet = bool;
+        }
+        canSet = (canSet && _canSet);
+        if (counter == 0){
+          done.apply(self);
+        }
+        else {
+          counter -= 1;
+          var _args = Array.prototype.slice.call(args);
+          // aggiungo next come ulitmo parametro
+          _args.push(next);
+          beforeListeners[counter].fnc.apply(self,_args)
+        }
+      }
+      
+      next();
+      return deferred.promise();
+    }
+  })
 };
 
 /*
