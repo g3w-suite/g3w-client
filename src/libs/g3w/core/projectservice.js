@@ -1,5 +1,6 @@
 var inherit = require('./utils').inherit;
-var StateProvider = require('./stateprovider');
+var base = require('./utils').base;
+var G3WObject = require('g3w/core/g3wobject');
 
 function ProjectService(){
   var self = this;
@@ -7,6 +8,14 @@ function ProjectService(){
   this.layers = {};
   this.state = {
     layerstree: []
+  };
+  
+  this.setters = {
+    setLayersVisible: function(layers,visible){
+      _.forEach(layers,function(layer){
+        self.layers[layer.id].visible = visible;
+      })
+    }
   };
   
   this.init = function(config){
@@ -46,16 +55,6 @@ function ProjectService(){
     this.emit('projectset');
   };
   
-  var setters = {
-    setLayersVisible: function(layers,visible){
-      _.forEach(layers,function(layer){
-        self.layers[layer.id].visible = visible;
-      })
-    }
-  };
-  
-  this.initSetters(setters);
-  
   this.getLayer = function(id){
     return this.layers[id];
   };
@@ -76,8 +75,10 @@ function ProjectService(){
   this.getLegendUrl = function(layer){
     return this.getWmsUrl(this.state)+'?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
   };
+  
+  base(this);
 };
 
-inherit(ProjectService,StateProvider);
+inherit(ProjectService,G3WObject);
 
 module.exports = new ProjectService

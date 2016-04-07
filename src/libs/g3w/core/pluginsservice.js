@@ -1,5 +1,5 @@
 var inherit = require('./utils').inherit;
-var StateProvider = require('./stateprovider');
+var G3WObject = require('g3w/core/g3wobject');
 
 var plugins = {
   "iternet": require("g3w-iternet/plugin")
@@ -41,6 +41,6 @@ function PluginsService(){
   };
 };
 
-inherit(PluginsService,StateProvider);
+inherit(PluginsService,G3WObject);
 
 module.exports = new PluginsService

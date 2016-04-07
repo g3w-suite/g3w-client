@@ -1,6 +1,8 @@
 var inherit = require('./utils').inherit;
+var base = require('./utils').base;
 var deferredValue = require('./utils').deferredValue;
-var StateProvider = require('./stateprovider');
+var G3WObject = require('g3w/core/g3wobject');
+var GUI = require('g3w/gui/gui');
 var ProjectsRegistry = require('./projectsregistry');
 var ProjectService = require('./projectservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
@@ -16,22 +18,7 @@ function MapService(){
       center: null
   };
   
-  ProjectService.on('projectset',function(){
-    $script("http://epsg.io/"+ProjectService.state.crs+".js");
-    if (!self.viewer){
-      self.setupViewer();
-    }
-    self.setupLayers();
-  });
-  
-  ProjectService.onafter('setLayersVisible',function(layers){
-    _.forEach(layers,function(layer){
-      var mapLayer = self.getMapLayerForLayer(layer);
-      mapLayer.update();
-    })
-  });
-  
-  var setters = {
+  this.setters = {
     setViewBBOX: function(bbox){
       self.state.bbox = bbox;
     },
@@ -43,7 +30,21 @@ function MapService(){
     }
   };
   
-  this.initSetters(setters);
+  ProjectService.on('projectset',function(){
+    $script("http://epsg.io/"+ProjectService.state.crs+".js");
+    if (!self.viewer){
+      self.setupViewer();
+    }
+    self.setupLayers();
+    self.emit('viewerset');
+  });
+  
+  ProjectService.onafter('setLayersVisible',function(layers){
+    _.forEach(layers,function(layer){
+      var mapLayer = self.getMapLayerForLayer(layer);
+      mapLayer.update();
+    })
+  });
   
   this.setupViewer = function(){
     var extent = ProjectService.state.extent;
@@ -55,7 +56,8 @@ function MapService(){
       view: {
         projection: projection,
         center: ol.extent.getCenter(ProjectService.state.extent),
-        zoom: 1 
+        //zoom: 1
+        zoom:8 
       }
     });
     
@@ -119,9 +121,11 @@ function MapService(){
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);
     var map = this.viewer.map;
-    this.setViewBBOX(this.viewer.getBBOX());
-    this.setResolution(this.viewer.getResolution());
-    this.setCenter(this.viewer.getCenter());
+    GUI.on('guiready',function(){
+      self.setViewBBOX(self.viewer.getBBOX());
+      self.setResolution(self.viewer.getResolution());
+      self.setCenter(self.viewer.getCenter());
+    });
   };
   
   this.goTo = function(coordinates,zoom){
@@ -133,8 +137,10 @@ function MapService(){
     var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.crs);
     this.goTo(coordinates,zoom);
   };
+  
+  base(this);
 };
 
-inherit(MapService,StateProvider);
+inherit(MapService,G3WObject);
 
 module.exports = new MapService

@@ -7,7 +7,7 @@
       <div class="panel-body">
         <template v-for="tool in toolbar.tools">
           <div class="editbtn" :class="{'enabled' : state.editingOn}">
-            <img height="30px" width="30px" :alt.once="tool.title" :title.once="tool.title" :src.once="resourcesurl+'images/'+tool.icon"></img>
+            <img height="30px" width="30px" @click="edit(tool.action)" :alt.once="tool.title" :title.once="tool.title" :src.once="resourcesurl+'images/'+tool.icon"></img>
           </div>
         </template>
       </div>

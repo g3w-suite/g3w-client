@@ -1,5 +1,5 @@
 var inherit = require('g3w/core/utils').inherit;
-var StateProvider = require('g3w/core/stateprovider');
+var G3WObject = require('g3w/core/g3wobject');
 
 function BarStack(){
   this._panels = [];
@@ -7,7 +7,7 @@ function BarStack(){
     panels: []
   };
 }
-inherit(BarStack,StateProvider);
+inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 

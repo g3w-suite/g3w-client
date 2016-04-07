@@ -91,6 +91,11 @@ var PanelComponent = Vue.extend({
   methods: {
     toggleEditing: function(){
       Service.togglEditing();
+    },
+    edit: function(what){
+      if (Service[what]()){
+        
+      }
     }
   },
   computed: {

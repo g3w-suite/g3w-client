@@ -1,5 +1,5 @@
 var inherit = require('./utils').inherit;
-var StateProvider = require('./stateprovider');
+var G3WObject = require('g3w/core/g3wobject');
 var PluginsService = require('./pluginsservice');
 
 function ToolsService(){
@@ -51,6 +51,6 @@ function ToolsService(){
 };
 
 // Make the public service en Event Emitter
-inherit(ToolsService,StateProvider);
+inherit(ToolsService,G3WObject);
 
 module.exports = new ToolsService

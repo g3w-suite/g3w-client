@@ -6,6 +6,8 @@ var SideBar = require('layout/sidebar/sidebar');
 var FloatBar = require('layout/floatbar/floatbar');
 var MapService = require('g3w/core/mapservice');
 
+var GUI = require('g3w/gui/gui.js');
+
 Vue.component('app',{
     template: require('./app.html'),
     ready: function(){
@@ -71,6 +73,8 @@ Vue.component('app',{
             drawing = false;
         }
       }
+      
+      GUI.ready();
       /* end map resize calculations */
     }
 });
