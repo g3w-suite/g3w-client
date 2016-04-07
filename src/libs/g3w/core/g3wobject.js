@@ -111,7 +111,7 @@ proto._onsetter = function(when,setter,listener,async){ /*when=before|after, typ
   var settersListeners = this.settersListeners[when];
   var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
   if ((when == 'before') && !async){
-    listener = this._makeAsync(listener);
+    listener = this._makeChainable(listener);
   }
   settersListeners[setter].push({
     key: listenerKey,
@@ -121,7 +121,7 @@ proto._onsetter = function(when,setter,listener,async){ /*when=before|after, typ
 };
 
 // trasformo un listener sincrono in modo da poter essere usato nella catena di listeners (richiamando next col valore di ritorno del listener)
-proto._makeAsync = function(listener){
+proto._makeChainable = function(listener){
   var self = this
   return function(){
     var args = Array.prototype.slice.call(arguments);
