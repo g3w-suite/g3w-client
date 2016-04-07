@@ -5,7 +5,7 @@ var MapService = require('g3w/core/mapservice');
 var VectorLayer = require('g3w/core/vectorlayer');
 
 var Editor = require('./editors/editor');
-var LineEditor = require('./editors/lineeditor');
+var AttributesEditor = require('./editors/attributeseditor');
 
 function IternetService(){
   var self = this;
@@ -18,8 +18,16 @@ function IternetService(){
       strade: new Editor
     };
     // test listener su transizione editor
-    self._editors.accessi.onbefore('addFeature',function(feature){
+    self._editors.accessi.onbeforeasync('addFeature',function(feature,next){
         console.log("Prima di aggiungere una nuova feature...");
+        var attreditor = new(AttributesEditor);
+        attreditor.editFeature(feature)
+        .done(function(){
+          next()
+        })
+        .fail(function(){
+          next(false);
+        });
     });
   })
   

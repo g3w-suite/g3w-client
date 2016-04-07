@@ -81,18 +81,36 @@ proto.getActiveTool = function(){
   return this._activeTool;
 };
 
-// permette di inserire un setter listener prima che venga effettuata una operazione da un tool (es. addfeature)
+// permette di inserire un setter listener sincrono prima che venga effettuata una operazione da un tool (es. addfeature)
 proto.onbefore = function(setter,listener){
+  this._onbeforetoolaction(setter,listener,false);
+};
+
+// come onbefore() ma per listener asincroni
+proto.onbeforeasync = function(setter,listener){
+  this._onbeforetoolaction(setter,listener,true);
+};
+
+proto._onbeforetoolaction = function(setter,listener,async){
   if (!_.get(this._setterslisteners,setter)){
     this._setterslisteners[setter] = [];
   }
-  this._setterslisteners[setter].push(listener);
-};
+  this._setterslisteners[setter].push({
+    fnc: listener,
+    how: async ? 'async' : 'sync'
+  });
+}
 
+// una volta istanziato il tool aggiungo a questo tutti i listener definiti a livello di editor
 proto._setToolListeners = function(tool,settersListeners){
   _.forEach(settersListeners,function(listeners,setter){
     _.forEach(listeners,function(listener){
-      tool.onbefore(setter,listener);
+      if (listener.how == 'sync'){
+        tool.onbefore(setter,listener.fnc);
+      }
+      else {
+        tool.onbeforeasync(setter,listener.fnc);
+      }
     })
   })
 };
@@ -148,10 +166,15 @@ proto.run = function(){
   source.on('addfeature',function(e){
     console.log("Disegnata nuova potenziale feature");
     try {
-      var res = self.addFeature(e.feature);
-      if (res){
+      // richiamo il setter e se la promessa viene risolta proseguo
+      self.addFeature(e.feature)
+      .then(function(res){
         console.log("Feature inserita");
-      }
+      })
+      .fail(function(){
+        console.log("Qualcuno ha bloccato l'inserimento della feature. La rimuovo");
+        source.removeFeature(e.feature);
+      });
     }
     catch (error){
       console.log(error);
@@ -177,7 +200,7 @@ proto.stop = function(){
   map.removeInteraction(this.drawInteraction);
 };
 
-proto._addFeature = function(){
+proto._addFeature = function(feature){
   console.log("Ok, allora aggiuno una nuova feature");
   return true;
 };
