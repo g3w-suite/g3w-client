@@ -10,7 +10,7 @@ var EditBuffer = require('./editbuffer');
 
 // Editor di vettori puntuali
 function Editor(options){
-  this._vector = null;
+  this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
   this._running = false;
@@ -48,16 +48,27 @@ proto.setVectorLayer = function(vectorLayer){
     throw Error("Vector geometry type "+geometrytype+" is not valid for editing");
   }
   this._setToolsForVectorType(geometrytype);
-  this.vectorLayer = vectorLayer;
+  this._vectorLayer = vectorLayer;
 };
 
 // avvia l'editazione con un determinato tool (es. addfeature)
 proto.start = function(toolType){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
-  if (this.vectorLayer){
+  // se è stato settato il vectorLayer
+  if (this._vectorLayer){
     var toolClass = this._tools[toolType];
+    // se esiste il tool richiesto
     if (toolClass){
+      // istanzio l'editVectorLayer
+      this._editVectorLayer = new VectorLayer({
+        name: "editvector"
+      })
+      MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
+      
+      // istanzio l'EditBuffer
+      this._editBuffer = new EditBuffer(this._vectorLayer,this._editVectorLayer);
+      
       var tool = this._activeTool = new toolClass(this);
       this._setToolListeners(tool,this._setterslisteners);
       tool.run();
@@ -153,11 +164,5 @@ proto.deleteFeature = function(feature){
 };
 
 proto.getEditVectorLayer = function(){
-  if (!this._editVectorLayer){
-    this._editVectorLayer = new VectorLayer({
-      name: "editvector"
-    })
-    MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
-  }
   return this._editVectorLayer;
 };

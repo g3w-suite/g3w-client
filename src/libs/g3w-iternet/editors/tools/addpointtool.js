@@ -77,5 +77,6 @@ proto.stop = function(){
 
 proto._addFeature = function(feature){
   console.log("Ok, allora aggiuno una nuova feature");
+  this.editor.addFeature(feature);
   return true;
 };

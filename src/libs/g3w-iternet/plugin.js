@@ -12,7 +12,7 @@ function IternetPlugin(){
     {
       name: "ITERNET",
       actions: [
-        {id: "iternet:startEditing", name: "Avvio editing"}
+        {id: "iternet:startEditing", name: "Gestione dati"}
       ]
     }
   ];
