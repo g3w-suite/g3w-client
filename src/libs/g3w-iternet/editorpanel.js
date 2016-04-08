@@ -9,98 +9,110 @@ var PanelComponent = Vue.extend({
     return {
       state: Service.state,
       resourcesurl: GUI.getResourcesUrl(),
-      editorstoolbars: {
-        accessi: {
+      editorstoolbars: [
+        {
           name: "Accessi",
+          layercode: "accessi",
           tools:[
             {
               title: "Aggiungi accesso",
-              action: 'addPoint',
+              tooltype: 'addfeature',
               icon: 'iternetAddPoint.png'
             },
             {
               title: "Modifica accesso",
-              action: 'movePoint',
+              tooltype: '',
               icon: 'iternetMovePoint.png'
             },
             {
               title: "Rimuovi accesso",
-              action: 'deletePoint',
+              tooltype: '',
               icon: 'iternetDeletePoint.png'
             },
             {
               title: "Edita attributi",
-              action: 'editAttributes',
+              tooltype: '',
               icon: 'editAttributes.png'
             }
           ]
         },
-        giunzioni: {
+        {
           name: "Giunzioni stradali",
+          layercode: "giunzioni",
           tools:[
             {
               title: "Aggiungi giunzione",
-              action: 'addPoint',
+              tooltype: '',
               icon: 'iternetAddPoint.png'
             },
             {
               title: "Modifica giunzione",
-              action: 'movePoint',
+              tooltype: '',
               icon: 'iternetMovePoint.png'
             },
             {
               title: "Rimuovi giunzione",
-              action: 'deletePoint',
+              tooltype: '',
               icon: 'iternetDeletePoint.png'
             },
             {
               title: "Edita attributi",
-              action: 'editAttributes',
+              tooltype: '',
               icon: 'editAttributes.png'
             }
           ]
         },
-        strade: {
+        {
           name: "Elementi stradali",
+          layercode: "strade",
           tools:[
             {
               title: "Aggiungi strada",
-              action: 'addPoint',
+              tooltype: '',
               icon: 'iternetAddLine.png'
             },
             {
               title: "Modifica vertice strada",
-              action: 'movePoint',
+              tooltype: '',
               icon: 'iternetMoveVertex.png'
             },
             {
               title: "Rimuovi strada",
-              action: 'deletePoint',
+              tooltype: '',
               icon: 'iternetDeleteLine.png'
             },
             {
               title: "Edita attributi",
-              action: 'editAttributes',
+              tooltype: '',
               icon: 'editAttributes.png'
             }
           ]
         }
-      }
+      ]
     }
   },
   methods: {
     toggleEditing: function(){
       Service.togglEditing();
     },
-    edit: function(what){
-      if (Service[what]()){
-        
+    toggleEditTool: function(layerCode,toolType){
+      if (toolType == ''){
+        return;
       }
+      if (_.isNil(this.state.editingToolRunning.toolType)){
+        Service.startEditTool(layerCode,toolType);
+      }
+      else {
+        Service.stopEditTool(layerCode);
+      }
+    },
+    editingtoolbtnToggled: function(layerCode,toolType){
+      return (this.state.editingToolRunning.layerCode == layerCode && this.state.editingToolRunning.toolType == toolType);
     }
   },
   computed: {
     editingbtnlabel: function(){
-      return this.state.editingOn ? "Termina attivo" : "Avvia editing";
+      return this.state.editingOn ? "Termina editing" : "Avvia editing";
     },
     editingbtnEnabled: function(){
       return this.state.editingEnabled ? "" : "disabled";

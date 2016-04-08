@@ -27,7 +27,7 @@ proto.run = function(){
   console.log("Avvio inserimento nuova feature");
   var self = this;
   var map = MapService.viewer.map;
-  var source = this.editor.getEditVector().getLayer().getSource();;
+  var source = this.editor.getEditVectorLayer().getLayer().getSource();;
   
   source.on('addfeature',function(e){
     console.log("Disegnata nuova potenziale feature");

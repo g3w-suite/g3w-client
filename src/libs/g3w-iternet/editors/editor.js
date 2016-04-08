@@ -11,25 +11,28 @@ var EditBuffer = require('./editbuffer');
 // Editor di vettori puntuali
 function Editor(options){
   this._vector = null;
-  this._editVector = null;
+  this._editVectorLayer = null;
   this._editBuffer = null;
   this._running = false;
-  this._sequencer = null;
   
-  var options = options || {};
-  
-  if (options.editattributesonadd) {
-    this._editattributesonadd = options.editattributesonadd;
-  }
+  this._setterslisteners = {};
+  this._geometrytypes = [
+    'Point',
+    //'MultiPoint',
+    'LineString',
+    'MultiLineString',
+    //'Polygon',
+    //'MultiPolygon'
+  ];
   
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
-  this._tools = {
-      addfeature: {
-        'Point': AddPointTool,
+  this._toolsForTypes = {
+      'Point': {
+        addfeature: AddPointTool
       }
   };
   
-  this._setterslisteners = {};
+  this._tools = {};
   
   base(this);
 }
@@ -39,23 +42,30 @@ module.exports = Editor;
 var proto = Editor.prototype;
 
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
-proto.setVector = function(vector){
-  this.vector = vector;
+proto.setVectorLayer = function(vectorLayer){
+  var geometrytype = vectorLayer.geometrytype;
+  if (!geometrytype || ! this._isCompatibleType(geometrytype)){
+    throw Error("Vector geometry type "+geometrytype+" is not valid for editing");
+  }
+  this._setToolsForVectorType(geometrytype);
+  this.vectorLayer = vectorLayer;
 };
 
 // avvia l'editazione con un determinato tool (es. addfeature)
 proto.start = function(toolType){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
-  if (this.vector && this.vector.geometrytype){
-    var geometrytype = this.vector.geometrytype;
-    var toolClass = _.get(this._tools[toolType],geometrytype)
+  var res = false;
+  if (this.vectorLayer){
+    var toolClass = this._tools[toolType];
     if (toolClass){
       var tool = this._activeTool = new toolClass(this);
       this._setToolListeners(tool,this._setterslisteners);
       tool.run();
       this._setRunning(true);
+      res = true
     }
   }
+  return res;
 };
 
 // termina l'editazione
@@ -66,11 +76,12 @@ proto.stop = function(){
       this._activeTool = null;
     }
     this.removeAllListeners();
-    if (this._editVector){
-      MapService.viewer.removeLayerByName(this._editVector.name);
+    if (this._editVectorLayer){
+      MapService.viewer.removeLayerByName(this._editVectorLayer.name);
     }
     this._setRunning(false);
   }
+  return true;
 };
 
 proto.isRunning = function(){
@@ -89,6 +100,18 @@ proto.onbefore = function(setter,listener){
 // come onbefore() ma per listener asincroni
 proto.onbeforeasync = function(setter,listener){
   this._onbeforetoolaction(setter,listener,true);
+};
+
+proto._isCompatibleType = function(geometrytype){
+  return this._geometrytypes.indexOf(geometrytype) > -1;
+};
+
+proto._setToolsForVectorType = function(geometrytype){
+  var self = this;
+  var tools = this._toolsForTypes[geometrytype];
+  _.forEach(tools,function(toolClass,tool){
+    self._tools[tool] = toolClass;
+  })
 };
 
 proto._onbeforetoolaction = function(setter,listener,async){
@@ -129,12 +152,12 @@ proto.updateFeature = function(feature){
 proto.deleteFeature = function(feature){
 };
 
-proto.getEditVector = function(){
-  if (!this._editVector){
-    this._editVector = new VectorLayer({
+proto.getEditVectorLayer = function(){
+  if (!this._editVectorLayer){
+    this._editVectorLayer = new VectorLayer({
       name: "editvector"
     })
-    MapService.viewer.map.addLayer(this._editVector.getLayer());
+    MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
   }
-  return this._editVector;
+  return this._editVectorLayer;
 };
