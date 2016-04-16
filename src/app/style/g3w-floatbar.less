@@ -1,0 +1,44 @@
+.control-sidebar {
+  overflow-y: auto;
+  overflow-x: hidden;
+  .g3w-sidebarpanel {
+    padding: 10px 10px 10px 10px;
+    .g3w-floatbarpanel-name{
+      font-weight: bold
+    }
+  }
+  background-color: lighten(@sidebar-dark-bg, 70%);
+  border: 0px !important;
+}
+
+.g3w-form{
+  button{
+    margin: 0px 5px 0px 5px
+  }
+  .g3w-relationname{
+    text-align: center;
+    border-top: 1px solid darken(@gray,10%);
+    margin-bottom: 10px;
+    font-weight: bold;
+    margin-top: 20px;
+    padding-top: 5px;
+  }
+}
+
+.control-sidebar-bg{
+  background-color: lighten(@sidebar-dark-bg, 70%) !important;
+}
+
+.control-sidebar-bg-shadow{
+  .box-shadow(-1px,0px,15px,rgba(0,0,0,.7))
+}
+
+.expand-transition {
+  transition: all .3s ease;
+}
+
+/* .expand-enter è lo stato iniziale del elemento */
+/* .expand-leave è lo stato finale del elemento */
+.expand-enter, .expand-leave {
+  opacity: 0;
+}

@@ -18,11 +18,44 @@ function AttributesEditor(options){
    * }
   */
   
-  this.editFeature = function(feature){
-    var deferred = $.Deferred();
-    console.log("Pronto ad editare gli attributi della feature "+feature);
-    deferred.resolve();
-    return deferred.promise();
+  this.setForLayer = function(iternetLayer){
+    iternetLayer.editor.onbeforeasync('addFeature',function(feature,next){
+      var fields = self._layers.accessi.vector.getFieldsWithAttributes();
+      var relations = self._layers.accessi.vector.getRelationsAsArray();
+      console.log("Prima di aggiungere una nuova feature...");
+      var form = new Form({
+        name: "Inserisci attributi",
+        id: "attributes-edit",
+        dataid: "accessi",
+        fields: fields,
+        relations: relations,
+        buttons:[
+          {
+            title: "Salva",
+            class: "btn-danger",
+            cbk: function(fields){
+              next(true);
+            }
+          },
+          {
+            title: "Cancella",
+            class: "btn-primary",
+            cbk: function(fields){
+              next(false);
+            }
+          }
+        ]
+      });
+      GUI.showForm(form,true);
+      /*var attreditor = new(AttributesEditor);
+      attreditor.editFeature(feature)
+      .done(function(){
+        next()
+      })
+      .fail(function(){
+        next(false);
+      });*/
+    });
   };
 }
 

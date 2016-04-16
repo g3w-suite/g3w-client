@@ -1,8 +1,6 @@
 var GUI = require('g3w/gui/gui');
 var Service = require('./iternetservice');
 
-require('g3w/gui/vue.disabled');
-
 var PanelComponent = Vue.extend({
   template: require('./editorpanel.html'),
   data: function(){
@@ -21,17 +19,17 @@ var PanelComponent = Vue.extend({
             },
             {
               title: "Modifica accesso",
-              tooltype: '',
+              tooltype: 'movefeature',
               icon: 'iternetMovePoint.png'
             },
             {
               title: "Rimuovi accesso",
-              tooltype: '',
+              tooltype: 'deletefeature',
               icon: 'iternetDeletePoint.png'
             },
             {
               title: "Edita attributi",
-              tooltype: '',
+              tooltype: 'pickfeature',
               icon: 'editAttributes.png'
             }
           ]
@@ -99,15 +97,15 @@ var PanelComponent = Vue.extend({
       if (toolType == ''){
         return;
       }
-      if (_.isNil(this.state.editingToolRunning.toolType)){
-        Service.startEditTool(layerCode,toolType);
-      }
-      else {
-        Service.stopEditTool(layerCode);
+      if (this.state.editingOn) {
+        Service.toggleEditTool(layerCode,toolType);
       }
     },
     editingtoolbtnToggled: function(layerCode,toolType){
       return (this.state.editingToolRunning.layerCode == layerCode && this.state.editingToolRunning.toolType == toolType);
+    },
+    editingtoolbtnEnabled: function(tool){
+      return tool.tooltype != '';
     }
   },
   computed: {
@@ -115,7 +113,7 @@ var PanelComponent = Vue.extend({
       return this.state.editingOn ? "Termina editing" : "Avvia editing";
     },
     editingbtnEnabled: function(){
-      return this.state.editingEnabled ? "" : "disabled";
+      return (this.state.editingEnabled) ? "" : "disabled";
     },
     message: function(){
       var message = "";

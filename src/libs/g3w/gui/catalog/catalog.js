@@ -1,6 +1,6 @@
 var t = require('i18n.service');
 var GUI = require('g3w/gui/gui');
-var ProjectService = require('g3w/core/projectservice');
+var ProjectService = require('g3w/core/projectservice').ProjectService;
 
 Vue.component('g3w-catalog',{
     template: require('./catalog.html'),

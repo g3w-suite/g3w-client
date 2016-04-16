@@ -1,14 +1,21 @@
 var GUI = require('g3w/gui/gui');
 
 var FormPanel = Vue.extend({
-  template: "<div>Edit form</div>"
+  template: require('./formpanel.html'),
+  methods: {
+    exec: function(cbk){
+      cbk();
+      GUI.closeForm();
+    }
+  }
 });
 
-function Form(){
+function Form(options){
   // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
-  this.id = "form-panel";
-  this.name = "";
   this.panelComponent = null;
+  this.options =  options || {};
+  this.id = options.id;
+  this.name = options.name
 }
 
 var proto = Form.prototype;
@@ -16,6 +23,9 @@ var proto = Form.prototype;
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.onShow = function(container){
   var panel = this.panelComponent = new FormPanel();
+  if (this.options.buttons) {
+    panel.buttons = this.options.buttons;
+  }
   panel.$mount().$appendTo(container);
   return panel;
 };

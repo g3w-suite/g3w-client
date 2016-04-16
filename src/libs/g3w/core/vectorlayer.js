@@ -1,4 +1,6 @@
 var inherit = require('g3w/core/utils').inherit;
+var resolvedValue = require('g3w/core/utils').resolvedValue;
+var rejectedValue = require('g3w/core/utils').rejectedValue;
 var G3WObject = require('g3w/core/g3wobject');
 
 function VectorLayer(options){
@@ -30,32 +32,149 @@ function VectorLayer(options){
    *  }
    * }
   */
+  this._PKinAttributes = false;
   this._fields = null
+  this.lazyRelations = true;
+  this._relations = null;
 }
 inherit(VectorLayer,G3WObject);
 module.exports = VectorLayer;
 
 var proto = VectorLayer.prototype;
 
-proto.setData = function(features,format){
+proto.setData = function(features){
   var features;
-  switch (format){
-    case "GeoJSON":
-      var geojson = new ol.format.GeoJSON({
-        defaultDataProjection: this.crs,
-        geometryName: "geometry"
-      });
-      features = geojson.readFeatures(features);
-      break;
+  if (this.format) {
+    switch (this.format){
+      case "GeoJSON":
+        var geojson = new ol.format.GeoJSON({
+          defaultDataProjection: this.crs,
+          geometryName: "geometry"
+        });
+        features = geojson.readFeatures(features);
+        break;
+    }
+    
+    if (features) {
+      this._olSource.addFeatures(features);
+      
+      // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
+      var attributes = this.getSource().getFeatures()[0].getProperties();
+      this._PKinAttributes = _.get(attributes,this.pk) ? true : false;
+    }
   }
-  
-  if (features) {
-    this._olSource.addFeatures(features);
+  else {
+    console.log("VectorLayer format not defined");
   }
 };
 
 proto.setFields = function(fields){
   this._fields = fields;
+};
+
+proto.setPkField = function(){
+  var self = this;
+  var pkfieldSet = false;
+  _.forEach(this._fields,function(field){
+    if (field.name == self.pk ){
+      pkfieldSet = true;
+    }
+  });
+  
+  if (!pkfieldSet){
+    this._fields
+  }
+};
+
+proto.getFields = function(){
+  return _.cloneDeep(this._fields);
+};
+
+proto.getFieldsWithAttributes = function(fid){
+  var self = this;
+  /*var fields = _.cloneDeep(_.filter(this._fields,function(field){
+    return ((field.name != self.pk) && field.editable);
+  }));*/
+  var fields = _.cloneDeep(this._fields);
+  
+  var feature, attributes;
+  if (fid){
+    feature = this.getSource().getFeatureById(fid);
+    attributes = feature.getProperties();
+  }
+  
+  _.forEach(fields,function(field){
+    if (feature){
+      if (!this._PKinAttributes && field.name == self.pk){
+        field.value = fid;
+      }
+      else{
+        field.value = attributes[field.name];
+      }
+    }
+    else{
+      field.value = null;
+    }
+  });
+  return fields;
+};
+
+proto.setRelations = function(relations){
+  _.forEach(relations,function(relation,relationKey){
+    relation.name = relationKey;
+  });
+  this._relations = relations;
+};
+
+proto.getRelations = function(){
+  return this._relations;
+};
+
+proto.getRelationsWithAttributes = function(fid){
+  var relations = _.cloneDeep(this._relations);
+  var self = this;
+  if (!fid){
+    _.forEach(relations,function(relation,relationKey){
+        // inizialmente setto a null i valori
+      _.forEach(relation.fields,function(field){
+        field.value = null;
+      })
+    });
+    return resolvedValue(relations);
+  }
+  else {
+    if (this.lazyRelations){
+      var deferred = $.Deferred();
+      var relationsRequests = [];
+      var attributes = this.getFeatureById(fid).getProperties();
+      _.forEach(relations,function(relation,relationKey){
+        var url = relation.url;
+        var keyVals = [];
+        _.forEach(relation.fk,function(fkKey){
+          var fkValue = attributes[fkKey];
+          keyVals.push(fkKey+"="+fkValue);
+        });
+        var fkParams = _.join(keyVals,"&");
+        url += "?"+fkParams;
+        relationsRequests.push($.get(url)
+          .then(function(relationAttributes){
+            _.forEach(relation.fields,function(field){
+              field.value = relationAttributes[0][field.name];
+            });
+          })
+        )
+      })
+      
+      $.when.apply(this,relationsRequests)
+      .then(function(){
+        deferred.resolve(relations);
+      })
+      .fail(function(){
+        deferred.reject();
+      });
+      return deferred.promise();
+    }
+  }
 };
 
 proto.setStyle = function(options){
@@ -65,6 +184,14 @@ proto.setStyle = function(options){
 
 proto.getLayer = function(){
   return this._olLayer;
+};
+
+proto.getSource = function(){
+  return this._olLayer.getSource();
+};
+
+proto.getFeatureById = function(id){
+  return this._olLayer.getSource().getFeatureById(id);
 };
 
 proto.addToMap = function(map){

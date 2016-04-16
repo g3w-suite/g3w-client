@@ -1,11 +1,12 @@
 <aside class="control-sidebar control-sidebar-light" >
   <div v-show="panelsinstack" class="g3w-sidebarpanel">
-    <div class="row">
+    <!--<div class="row">
       <div class="col-xs-12 col-sm-12 col-md-12">
-        <button class="glyphicon glyphicon-remove pull-right close-panel-button" @click="closePanel"></button></div>
-    </div>
+        <button class="glyphicon glyphicon-remove pull-right close-panel-button" @click="closePanel"></button>
+      </div>
+    </div>-->
     <div>
-      <h4>{{ panelname }}</h2>
+      <h4 class="g3w-floatbarpanel-name">{{ panelname }}</h2>
     </div>
     <div id="g3w-floatbarpanel-placeholder" class="g3w-floatbarpanel-placeholder"></div>
   </div>

@@ -20,7 +20,8 @@ var _Viewer = function(opts){
     ]),
     ol3Logo: false,
     //
-    view: view
+    view: view,
+    keyboardEventTarget: document
   };
   if (opts.id){
     options.target = opts.id;

@@ -1,10 +1,14 @@
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
 function WMSLayer(options){
-  var _mapLayer = new _MapLayer(options);
+  var _mapLayer = new _WMSLayer(options);
   
-  this.getOlLayer = function(){
+  this.getLayer = function(){
     return _mapLayer.olLayer;
+  };
+  
+  this.getSource = function(){
+    return _mapLayer.olLayer.getSource();
   };
   
   this.getLayerId = function(){
@@ -29,7 +33,7 @@ function WMSLayer(options){
   }
 }
 
-function _MapLayer(options){
+function _WMSLayer(options){
   this.LAYERTYPE = {
     LAYER: 'layer',
     METALAYER: 'metalayer'
@@ -46,7 +50,7 @@ function _MapLayer(options){
   this.olLayer = new RasterLayers.WMSLayer(wmsConfig);
 }
 
-var proto = _MapLayer.prototype;
+var proto = _WMSLayer.prototype;
 
 proto.addLayer = function(layerConfig){
   this.layers.push(layerConfig);

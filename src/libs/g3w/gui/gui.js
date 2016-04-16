@@ -8,10 +8,10 @@ var G3WObject = require('g3w/core/g3wobject');
 function GUI(){
   // url delle risorse
   this.getResourcesUrl = noop;
-  // show an HTML form
+  // show a Vue form
   this.showForm = noop;
-  // show a Vue instance form
-  this.showVMForm = noop
+  this.closeForm = noop;
+
   this.showPanel = noop;
   
   this.ready = function(){
@@ -21,6 +21,7 @@ function GUI(){
   toastr.options.positionClass = 'toast-top-center';
   // proxy della libreria toastr
   this.notify = toastr;
+  this.dialog = bootbox;
 }
 inherit(GUI,G3WObject);
 

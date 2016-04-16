@@ -6,7 +6,7 @@
       </div>
       <div class="panel-body">
         <template v-for="tool in toolbar.tools">
-          <div class="editbtn" :class="{'enabled' : state.editingOn, 'toggled' : editingtoolbtnToggled(toolbar.layercode,tool.tooltype)}">
+          <div class="editbtn" :class="{'enabled' : (state.editingOn && editingtoolbtnEnabled(tool)), 'toggled' : editingtoolbtnToggled(toolbar.layercode,tool.tooltype)}">
             <img height="30px" width="30px" @click="toggleEditTool(toolbar.layercode,tool.tooltype)" :alt.once="tool.title" :title.once="tool.title" :src.once="resourcesurl+'images/'+tool.icon"></img>
           </div>
         </template>

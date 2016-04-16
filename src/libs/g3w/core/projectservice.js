@@ -2,6 +2,17 @@ var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var G3WObject = require('g3w/core/g3wobject');
 
+var ProjectTypes = {
+  QDJANGO: 'qdjango',
+  OGR: 'ogr'
+};
+
+var GeometryTypes = {
+  POINT: "Point",
+  LINESTRING: "Line",
+  POLYGON: "Polygon"
+};
+
 function ProjectService(){
   var self = this;
   this.config = null;
@@ -63,6 +74,16 @@ function ProjectService(){
     return this.layers[id].attributes;
   };
   
+  this.getLayerAttributeLabel = function(id,name){
+    var label = '';
+    _.forEach(this.layers[id].attributes,function(attribute){
+      if (attribute.name == name){
+        label = attribute.label;
+      }
+    })
+    return label;
+  };
+  
   this.toggleLayer = function(layer,visible){
     var visible = visible || !layer.visible;
     self.setLayersVisible([layer],visible);
@@ -85,4 +106,8 @@ function ProjectService(){
 
 inherit(ProjectService,G3WObject);
 
-module.exports = new ProjectService
+module.exports = {
+  ProjectService: new ProjectService,
+  ProjectTypes: ProjectTypes,
+  GeometryTypes: GeometryTypes
+};

@@ -1,4 +1,5 @@
 var t = require('i18n.service');
+require('g3w/gui/vue.directives');
 require('g3w/gui/map/map');
 require('g3w/gui/geocoding/geocoding');
 var layout = require('layout/layout');
@@ -23,9 +24,13 @@ Vue.component('app',{
       
       FloatBar.init(layout);
       
+      function mainHeight(){
+        return $(window).innerHeight()-$(".navbar").innerHeight();
+      }
+      
       /* map resize calculations */
       function setMapDivHeight(){
-        $("#map").height($(window).innerHeight()-$(".navbar").innerHeight());
+        $("#map").height(mainHeight());
         MapService.viewer.map.updateSize();
       }
       
@@ -47,6 +52,21 @@ Vue.component('app',{
       });
       setMapDivHeight();
       
+      var controlsidebarEl = layout.options.controlSidebarOptions.selector;
+      
+      function setFloatBarMaxHeight(){
+        $(controlsidebarEl).css('max-height',$(window).innerHeight());
+      }
+      setFloatBarMaxHeight();
+      
+      function setModalHeight(){
+        $('#g3w-modal-overlay').height($(window).innerHeight());
+      }
+      
+      /*$(controlsidebarEl).slimScroll({
+          height: mainHeight()
+      });*/
+      
       var drawing = false;
       var resizeFired = false;
       
@@ -56,6 +76,8 @@ Vue.component('app',{
             resizeFired = true;
             drawResize();
         }
+        setFloatBarMaxHeight();
+        setModalHeight();
       });
 
       function drawResize() {

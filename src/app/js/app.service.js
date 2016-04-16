@@ -17,6 +17,7 @@ var FloatBar = require('layout/floatbar/floatbar');
 var AppService = function(){
   var self = this;
   this.initialized = false;
+  this._modalOverlay = null;
   this.config = {};
   
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
@@ -45,8 +46,11 @@ proto._bootstrap = function(){
     GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
     // mostra un pannello nella floatbar
     GUI.showForm = _.bind(FloatBar.showPanel,FloatBar);
+    GUI.closeForm = _.bind(FloatBar.closePanel,FloatBar);
     // mostra un pannello nella sidebar
     GUI.showPanel = _.bind(SideBar.showPanel,SideBar);
+    
+    GUI.setModal = _.bind(this._showModalOverlay,this);
     
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
@@ -59,6 +63,21 @@ proto._bootstrap = function(){
       this.initialized = true;
     });
   };
+};
+
+proto._showModalOverlay = function(bool){
+  if (!this._modalOverlay){
+    this._modalOverlay = $('<div id="g3w-modal-overlay" style="background-color: #000000; opacity: 0.7;z-index:4000;position:fixed;top:0px;left:0px"></div>');
+    $("body").append(this._modalOverlay);
+    this._modalOverlay.width($(window).innerWidth());
+    this._modalOverlay.height($(window).innerHeight());
+  }
+  if (_.isUndefined(bool) || bool === true){
+    this._modalOverlay.show();
+  }
+  else {
+    this._modalOverlay.hide();
+  }
 };
 
 module.exports = new AppService;

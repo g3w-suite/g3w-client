@@ -1,4 +1,5 @@
 var inherit = require('g3w/core/utils').inherit;
+var noop = require('g3w/core/utils').noop;
 
 /**
  * Un oggetto base in grado di gestire eventuali setter e relativa catena di listeners.
@@ -79,7 +80,16 @@ proto._setupListenersChain = function(setters){
     before:{}
   };
   // per ogni setter viene definito l'array dei listeners e fiene sostituito il metodo originale con la funzioni che gestisce la coda di listeners
-  _.forEach(setters,function(setterFnc,setter){
+  _.forEach(setters,function(setterOption,setter){
+    var setterFnc = noop;
+    var setterFallback = noop;
+    if (_.isFunction(setterOption)){
+      setterFnc = setterOption
+    }
+    else {
+      setterFnc = setterOption.fnc;
+      setterFallback = setterOption.fallback || noop;
+    }
     self.settersListeners.after[setter] = [];
     self.settersListeners.before[setter] = [];
     // setter sostituito
@@ -106,7 +116,10 @@ proto._setupListenersChain = function(setters){
           self.emit("stateChanged");
         }
         else {
-          // se non posso proseguire rigetto la promessa
+          // se non posso proseguire 
+          // chiamo l'eventuale funzione di fallback
+          setterFallback.apply(self,args);
+          // e rigetto la promessa
           deferred.reject();
         }
       }
@@ -123,7 +136,7 @@ proto._setupListenersChain = function(setters){
         }
         canSet = (canSet && _canSet);
         if (counter == 0){
-          done.apply(self);
+          done.apply(self,args);
         }
         else {
           counter -= 1;

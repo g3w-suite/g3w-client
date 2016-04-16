@@ -3,7 +3,7 @@ var base = require('g3w/core/utils').base;
 var G3WObject = require('g3w/core/g3wobject');
 var resolvedValue = require('./utils').resolvedValue;
 var rejectedValue = require('./utils').rejectedValue;
-var ProjectService = require('./projectservice');
+var ProjectService = require('./projectservice').ProjectService;
 
 /* service
 Funzione costruttore contentente tre proprieta':
