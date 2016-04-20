@@ -3,12 +3,9 @@ var PickCoordinatesEventType = {
 };
 
 var PickCoordinatesEvent = function(type, coordinate) {
-
-  ol.events.Event.call(this, type);
-
+  this.type = type;
   this.coordinate = coordinate;
 };
-ol.inherits(PickCoordinatesEvent, ol.events.Event);
 
 var PickCoordinatesInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
@@ -28,6 +25,10 @@ PickCoordinatesInteraction.handleUpEvent_ = function(event) {
               PickCoordinatesEventType.PICKED,
               event.coordinate));
   return true;
+};
+
+PickCoordinatesInteraction.prototype.shouldStopEvent = function(){
+  return false;
 };
 
 module.exports = PickCoordinatesInteraction;

@@ -27,6 +27,7 @@ function Editor(options){
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
+  this._dirty = false;
   
   this._withFeatureLocks = false;
   this._featureLocks = null;
@@ -52,10 +53,12 @@ function Editor(options){
         addfeature: AddPointTool,
         movefeature: MoveFeatureTool,
         deletefeature: DeleteFeatureTool,
-        pickfeature: PickFeatureTool
+        editattributes: PickFeatureTool
       },
       'LineString': {
-        movefeature: MoveFeatureTool
+        movefeature: MoveFeatureTool,
+        deletefeature: DeleteFeatureTool,
+        editattributes: PickFeatureTool
       }
   };
   
@@ -78,17 +81,14 @@ proto.setVectorLayer = function(vectorLayer){
   this._vectorLayer = vectorLayer;
 };
 
-proto.setFeatureLocks = function(featureLocks){
-  this._withFeatureLocks = true;
-  this._featureLocks = featureLocks;
-};
-
 // avvia la sessione di editazione con un determinato tool (es. addfeature)
 proto.start = function(){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
   // se è stato settato il vectorLayer
   if (this._vectorLayer){
+    // nel caso non sia già avviato prima lo stoppo;
+    this.stop();
     
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
@@ -97,7 +97,7 @@ proto.start = function(){
     MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
     
     // istanzio l'EditBuffer
-    this._editBuffer = new EditBuffer(this._vectorLayer,this._editVectorLayer);
+    this._editBuffer = new EditBuffer(this);
     this._setStarted(true);
     res = true;
   }
@@ -108,9 +108,10 @@ proto.start = function(){
 proto.stop = function(){
   if (this.isStarted()){
     if (this.stopTool()) {
+      this._editBuffer.destroy();
+      this._editBuffer = null;
       this.removeAllListeners();
       MapService.viewer.removeLayerByName(this._editVectorLayer.name);
-      this._editBuffer = null;
       this._setStarted(false);
       return true;
     }
@@ -119,8 +120,92 @@ proto.stop = function(){
   return true;
 };
 
+proto.setTool = function(toolType){
+  if (!this.stopTool()){
+    return false;
+  }
+  var toolClass = this._tools[toolType];
+  
+  // se esiste il tool richiesto
+  if (toolClass ){
+    var tool = this._activeTool = new toolClass(this);
+    this._setToolSettersListeners(tool,this._setterslisteners);
+    tool.run();
+    return true;
+  }
+};
+
+proto.stopTool = function(){
+  if (this._activeTool && !this._activeTool.stop()){
+    return false;
+  }
+  this._activeTool = false;
+  return true;
+};
+
+proto.isStarted = function(){
+  return this._started;
+};
+
+proto.getActiveTool = function(){
+  return this._activeTool;
+};
+
+proto.commit = function(){
+  this._editBuffer.commit();
+};
+
+proto.undoAll = function(){
+  this._editBuffer.undoAll();
+};
+
+proto.setFeatureLocks = function(featureLocks){
+  this._withFeatureLocks = true;
+  this._featureLocks = featureLocks;
+};
+
+proto.getFeatureLocks = function(featureLocks){
+  return this._featureLocks;
+};
+
+proto.getFeatureLockIds = function(){
+  return _.map(this._featureLocks,function(featurelock){
+    return featurelock.lockid;
+  });
+};
+
+proto.getFeatureLocksLockIds = function(featureLocks){
+  var featureLocks = featureLocks || this._featureLocks;
+  return _.map(featureLocks,function(featurelock){
+    return featurelock.lockid;
+  });
+};
+
+proto.getFeatureLocksFeatureIds = function(featureLocks){
+  var featureLocks = featureLocks || this._featureLocks;
+  return _.map(featureLocks,function(featurelock){
+    return featurelock.featureid;
+  });
+};
+
+proto.getFeatureLockIdsForFeatureIds = function(fids){
+  var featurelocksForFids = _.filter(this._featureLocks,function(featurelock){
+    return _.includes(fids,featurelock.featureid);
+  });
+  
+  return this.getFeatureLocksLockIds(featurelocksForFids);
+};
+
 proto.getEditedFeatures = function(){
-  return this._editBuffer.getFeatures();
+  var modifiedFids = this._editBuffer.collectFeatureIds();
+  var lockIds = this.getFeatureLockIdsForFeatureIds(modifiedFids);
+  return {
+    add: this._editBuffer.collectFeatures('new',true),
+    update: this._editBuffer.collectFeatures('updated',true),
+    delete: this._editBuffer.collectFeatures('deleted',true),
+    relationsattributes: this._editBuffer.collectRelationsAttributes(),
+    lockids: lockIds
+  }
 };
 
 proto.getFieldsWithAttributes = function(fid){
@@ -171,38 +256,7 @@ proto.getRelationsWithAttributes = function(fid){
 };
 
 proto.isDirty = function(){
-  return this._editBuffer ? this._editBuffer.isDirty() : false;
-};
-
-proto.setTool = function(toolType){
-  if (!this.stopTool()){
-    return false;
-  }
-  var toolClass = this._tools[toolType];
-  
-  // se esiste il tool richiesto
-  if (toolClass ){
-    var tool = this._activeTool = new toolClass(this);
-    this._setToolListeners(tool,this._setterslisteners);
-    tool.run();
-    return true;
-  }
-};
-
-proto.stopTool = function(){
-  if (this._activeTool && !this._activeTool.stop()){
-    return false;
-  }
-  this._activeTool = false;
-  return true;
-};
-
-proto.isStarted = function(){
-  return this._started;
-};
-
-proto.getActiveTool = function(){
-  return this._activeTool;
+  return this._dirty;
 };
 
 proto.onafter = function(setter,listener){
@@ -217,6 +271,34 @@ proto.onbefore = function(setter,listener){
 // come onbefore() ma per listener asincroni
 proto.onbeforeasync = function(setter,listener){
   this._onbeforetoolaction(setter,listener,true);
+};
+
+proto.addFeature = function(feature){
+  this._editBuffer.addFeature(feature);
+};
+
+proto.updateFeature = function(feature){
+  this._editBuffer.updateFeature(feature);
+};
+
+proto.deleteFeature = function(feature){
+  this._editBuffer.deleteFeature(feature);
+};
+
+proto.getVectorLayer = function(){
+  return this._vectorLayer;
+};
+
+proto.getEditVectorLayer = function(){
+  return this._editVectorLayer;
+};
+
+proto.isNewFeature = function(fid){
+  if(!fid){
+    return true;
+  }
+  var feature = this._editVectorLayer.getFeatureById(fid);
+  return !_.isNil(feature);
 };
 
 proto._isCompatibleType = function(geometrytype){
@@ -251,7 +333,7 @@ proto._onbeforetoolaction = function(setter,listener,async){
 }
 
 // una volta istanziato il tool aggiungo a questo tutti i listener definiti a livello di editor
-proto._setToolListeners = function(tool,settersListeners){
+proto._setToolSettersListeners = function(tool,settersListeners){
   _.forEach(settersListeners.before,function(listeners,setter){
     if (_.hasIn(tool.setters,setter)){
       _.forEach(listeners,function(listener){
@@ -278,6 +360,16 @@ proto._setStarted = function(bool){
   this._started = bool;
 };
 
+proto._setDirty = function(bool){
+  if (_.isNil(bool)){
+    this._dirty = true;
+  }
+  else {
+    this._dirty = bool;
+  }
+  this.emit("dirty",this._dirty);
+};
+
 proto.setFieldsWithAttributes = function(feature,fields,relations){
   var attributes = {};
   _.forEach(fields,function(field){
@@ -297,25 +389,4 @@ proto.setFieldsWithAttributes = function(feature,fields,relations){
   }
   
   this._editBuffer.setAttributes(feature,attributes,relationsAttributes);
-};
-
-
-proto.addFeature = function(feature){
-  this._editBuffer.addFeature(feature);
-};
-
-proto.updateFeature = function(feature){
-  this._editBuffer.updateFeature(feature);
-};
-
-proto.deleteFeature = function(feature){
-  this._editBuffer.deleteFeature(feature);
-};
-
-proto.getVectorLayer = function(){
-  return this._vectorLayer;
-};
-
-proto.getEditVectorLayer = function(){
-  return this._editVectorLayer;
 };

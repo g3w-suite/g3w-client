@@ -1,4 +1,5 @@
 var inherit = require('g3w/core/utils').inherit;
+var truefnc = require('g3w/core/utils').truefnc;
 var resolvedValue = require('g3w/core/utils').resolvedValue;
 var rejectedValue = require('g3w/core/utils').rejectedValue;
 var G3WObject = require('g3w/core/g3wobject');
@@ -33,6 +34,7 @@ function VectorLayer(options){
    * }
   */
   this._PKinAttributes = false;
+  this._featuresFilter = null;
   this._fields = null
   this.lazyRelations = true;
   this._relations = null;
@@ -42,7 +44,8 @@ module.exports = VectorLayer;
 
 var proto = VectorLayer.prototype;
 
-proto.setData = function(features){
+proto.setData = function(featuresData){
+  var self = this;
   var features;
   if (this.format) {
     switch (this.format){
@@ -51,11 +54,16 @@ proto.setData = function(features){
           defaultDataProjection: this.crs,
           geometryName: "geometry"
         });
-        features = geojson.readFeatures(features);
+        features = geojson.readFeatures(featuresData);
         break;
     }
     
-    if (features) {
+    if (features && features.length) {
+      if (!_.isNull(this._featuresFilter)){
+        var features = _.map(features,function(feature){
+          return self._featuresFilter(feature);
+        });
+      }
       this._olSource.addFeatures(features);
       
       // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
@@ -66,6 +74,10 @@ proto.setData = function(features){
   else {
     console.log("VectorLayer format not defined");
   }
+};
+
+proto.setFeaturesFilter = function(featuresFilter){
+  this._featuresFilter = featuresFilter;
 };
 
 proto.setFields = function(fields){
@@ -177,8 +189,7 @@ proto.getRelationsWithAttributes = function(fid){
   }
 };
 
-proto.setStyle = function(options){
-  var style = new ol.style.Style(options);
+proto.setStyle = function(style){
   this._olLayer.setStyle(style);
 };
 

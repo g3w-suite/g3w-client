@@ -14,8 +14,8 @@ var FormPanel = Vue.extend({
       cbk(this.state.fields,relations);
       GUI.closeForm();
     },
-    isNotEditable: function(field){
-      return !this.editable;
+    isEditable: function(field){
+      return this.$options.form._isEditable(field);
     },
     isSimple: function(field){
       return this.$options.form._isSimple(field);
@@ -33,7 +33,7 @@ var FormPanel = Vue.extend({
       this.$options.form._pickLayer(field);
     },
     isVisible: function(field){
-      return this.$options.form._isFieldVisible(field);
+      return this.$options.form._isVisible(field);
     },
     showRelation: function(relation){
       return this.$options.form._shouldShowRelation(relation);
@@ -65,6 +65,7 @@ function Form(options){
   this.name = options.name; // nome del form
   this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
   this.pk = options.pk || null, // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
+  this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   
   this.state = {
     // i dati del form possono avere o meno una primary key
@@ -93,18 +94,19 @@ proto.onClose = function(){
   return true;
 };
 
-// se c'è una chiave primaria, e il suo valore è vuoto o null, suppongo si tratti di un form per un nuovo inserimento
-proto._isNewInsertForm = function(){
-  var pk = this.pk;
-  var pkField = this._getField(pk);
-  return (pk && _.isNull(pkField.value));
+proto._isNew = function(){
+  return this.isnew;
 };
 
-proto._isFieldVisible = function(field){
+proto._isVisible = function(field){
   if(!field.editable && (field.value == "" || _.isNull(field.value))){
     return false
   }
   return true;
+};
+
+proto._isEditable = function(field){
+  return field.editable;
 };
 
 proto._isSimple = function(field){
@@ -177,9 +179,11 @@ proto._setupFields = function(){
   });
   
   _.forEach(fields,function(field){
-    var defaultValue = self._getDefaultValue(field);
-    if (defaultValue){
-      field.value = defaultValue;
+    if(_.isNil(field.value)){
+      var defaultValue = self._getDefaultValue(field);
+      if (defaultValue){
+        field.value = defaultValue;
+      }
     }
   });
   
@@ -187,9 +191,11 @@ proto._setupFields = function(){
     var relations = this.state.relations;
     _.forEach(relations,function(relation){
       _.forEach(relation.fields,function(field){
-        var defaultValue = self._getDefaultValue(field);
-        if (defaultValue){
-          field.value = defaultValue;
+        if(_.isNil(field.value)){
+          var defaultValue = self._getDefaultValue(field);
+          if (defaultValue){
+            field.value = defaultValue;
+          }
         }
       });
     })

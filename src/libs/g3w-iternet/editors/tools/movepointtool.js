@@ -48,6 +48,7 @@ proto.run = function(){
   this._translateInteraction.on('translatestart',function(e){
     var feature = e.features.getArray()[0];
     self._origGeometry = feature.getGeometry().clone();
+    self.editor.emit('movestart',feature);
   });
   
   this._translateInteraction.on('translateend',function(e){
@@ -93,6 +94,7 @@ proto.stop = function(){
 };
 
 proto._moveFeature = function(feature){
+  this.editor.emit('moveend',feature);
   this.editor.updateFeature(feature);
   this._selectInteraction.getFeatures().clear();
   this._busy = false;

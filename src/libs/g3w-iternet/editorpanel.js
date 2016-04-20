@@ -18,7 +18,7 @@ var PanelComponent = Vue.extend({
               icon: 'iternetAddPoint.png'
             },
             {
-              title: "Modifica accesso",
+              title: "Sposta accesso",
               tooltype: 'movefeature',
               icon: 'iternetMovePoint.png'
             },
@@ -29,7 +29,7 @@ var PanelComponent = Vue.extend({
             },
             {
               title: "Edita attributi",
-              tooltype: 'pickfeature',
+              tooltype: 'editattributes',
               icon: 'editAttributes.png'
             }
           ]
@@ -44,8 +44,8 @@ var PanelComponent = Vue.extend({
               icon: 'iternetAddPoint.png'
             },
             {
-              title: "Modifica giunzione",
-              tooltype: '',
+              title: "Sposta giunzione",
+              tooltype: 'movefeature',
               icon: 'iternetMovePoint.png'
             },
             {
@@ -55,7 +55,7 @@ var PanelComponent = Vue.extend({
             },
             {
               title: "Edita attributi",
-              tooltype: '',
+              tooltype: 'editattributes',
               icon: 'editAttributes.png'
             }
           ]
@@ -70,28 +70,42 @@ var PanelComponent = Vue.extend({
               icon: 'iternetAddLine.png'
             },
             {
-              title: "Modifica vertice strada",
+              title: "Sposta vertice strada",
               tooltype: '',
               icon: 'iternetMoveVertex.png'
             },
             {
-              title: "Rimuovi strada",
+              title: "Rimuovi vertice strada",
               tooltype: '',
+              icon: 'iternetDeleteVertex.png'
+            },
+            {
+              title: "Sposta strada",
+              tooltype: 'movefeature',
+              icon: 'iternetMoveLine.png'
+            },
+            {
+              title: "Rimuovi strada",
+              tooltype: 'deletefeature',
               icon: 'iternetDeleteLine.png'
             },
             {
               title: "Edita attributi",
-              tooltype: '',
+              tooltype: 'editattributes',
               icon: 'editAttributes.png'
             }
           ]
         }
-      ]
+      ],
+      savebtnlabel: "Salva"
     }
   },
   methods: {
     toggleEditing: function(){
       Service.togglEditing();
+    },
+    saveEdits: function(){
+      Service.saveEdits();
     },
     toggleEditTool: function(layerCode,toolType){
       if (toolType == ''){
@@ -113,7 +127,7 @@ var PanelComponent = Vue.extend({
       return this.state.editingOn ? "Termina editing" : "Avvia editing";
     },
     editingbtnEnabled: function(){
-      return (this.state.editingEnabled) ? "" : "disabled";
+      return (this.state.editingEnabled || this.state.editingOn) ? "" : "disabled";
     },
     message: function(){
       var message = "";

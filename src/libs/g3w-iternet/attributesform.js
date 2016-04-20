@@ -13,7 +13,7 @@ inherit(IternetForm,Form);
 
 var proto = IternetForm.prototype;
 
-proto._isFieldVisible = function(field){
+proto._isVisible = function(field){
   // nel caso in cui il layer non sia editable e sia vuoto (quindi stiamo inserendo un nuovo elemento) non lo mostro
   /*if(!field.editable && (field.value == "" || _.isNull(field.value))){
     return false
@@ -34,6 +34,13 @@ proto._isFieldVisible = function(field){
       break;
   }
   return ret;
+};
+
+proto._isEditable = function(field){
+  if (field.name == "tip_acc" && !this._isNew()){
+    return false;
+  };
+  return Form.prototype._isEditable.call(this,field);
 };
 
 proto._shouldShowRelation = function(relation){

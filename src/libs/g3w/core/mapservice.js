@@ -234,13 +234,16 @@ function MapService(){
     .then(function(data){
       var x2js = new X2JS();
       var jsonData = x2js.xml2json(data);
-      var attributes = jsonData.GetFeatureInfoResponse.Layer.Feature.Attribute;
-      var attributesObj = {};
-      _.forEach(attributes,function(attribute){
-        attributesObj[attribute._name] = attribute._value; // X2JS aggiunge "_" come prefisso degli attributi
-      })
-      
-      deferred.resolve(attributesObj);
+      if (jsonData.GetFeatureInfoResponse.Layer.Feature){
+        var attributes = jsonData.GetFeatureInfoResponse.Layer.Feature.Attribute;
+        var attributesObj = {};
+        _.forEach(attributes,function(attribute){
+          attributesObj[attribute._name] = attribute._value; // X2JS aggiunge "_" come prefisso degli attributi
+        })
+        
+        deferred.resolve(attributesObj);
+      }
+      deferred.reject();;
     })
     .fail(function(){
       deferred.reject();
@@ -249,6 +252,12 @@ function MapService(){
       //self.viewer.map.removeInteraction(self._pickInteraction);
       self.popInteraction();
       self._pickInteraction = null;
+    })
+  };
+  
+  this.refreshMap = function(){
+    _.forEach(this.mapLayers,function(wmsLayer){
+      wmsLayer.getLayer().getSource().updateParams({"time": Date.now()});
     })
   };
   

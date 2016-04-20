@@ -1,12 +1,9 @@
 var DeleteInteractionEvent = function(type, features, coordinate) {
 
-  ol.events.Event.call(this, type);
-
+  this.type = type;
   this.features = features;
   this.coordinate = coordinate;
 };
-ol.inherits(DeleteInteractionEvent, ol.events.Event);
-
 
 var DeleteInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
@@ -23,7 +20,7 @@ var DeleteInteraction = function(options) {
 ol.inherits(DeleteInteraction, ol.interaction.Pointer);
 
 DeleteInteraction.handleEvent_ = function(mapBrowserEvent) {
-  if (mapBrowserEvent.type == ol.events.EventType.KEYDOWN){
+  if (mapBrowserEvent.type == 'keydown'){
     if(this.features_.getArray().length && mapBrowserEvent.originalEvent.keyCode == 46){
       this.dispatchEvent(
           new DeleteInteractionEvent(
@@ -78,7 +75,7 @@ DeleteInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
       });
 
   if (this.features_ &&
-      ol.array.includes(this.features_.getArray(), intersectingFeature)) {
+     _.includes(this.features_.getArray(), intersectingFeature)) {
     found = intersectingFeature;
   }
 

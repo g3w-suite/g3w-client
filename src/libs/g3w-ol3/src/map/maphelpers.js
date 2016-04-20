@@ -12,12 +12,17 @@ var _Viewer = function(opts){
       collapsible: false
     }
   }).extend([new ol.control.Zoom()]);
+  
+  var interactions = ol.interaction.defaults()
+    .extend([
+      new ol.interaction.DragRotate()
+    ]);
+  interactions.removeAt(1) // rimuoveo douclickzoom
+  
   var view = new ol.View(opts.view);
   var options = {
     controls: controls,
-    interactions: ol.interaction.defaults().extend([
-      new ol.interaction.DragRotate()
-    ]),
+    interactions: interactions,
     ol3Logo: false,
     //
     view: view,

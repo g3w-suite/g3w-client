@@ -10,7 +10,6 @@ var GUI = require('g3w/gui/gui');
 
 
 var Editor = require('./editors/editor');
-var AttributesEditor = require('./editors/attributeseditor');
 var Form = require('./attributesform');
 
 function IternetService(){
@@ -29,38 +28,59 @@ function IternetService(){
     layerCode: layerCodes.ACCESSI,
     vector: null,
     editor: null,
-    style: {
-      image: new ol.style.Circle({
-        radius: 5,
-        fill: new ol.style.Fill({
-          color: '#ffcc33'
+    ol3ListenersKeys: [],
+    style: function(feature){
+      var color = '#d9b581';
+      switch (feature.get('tip_acc')){
+        case "0101":
+          color = '#d9b581';
+          break;
+        case "0102":
+          color = '#d9bc29';
+          break;
+        case "0501":
+          color = '#68aad9';
+          break;
+        default:
+          color = '#d9b581';
+      }
+      return [
+        new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({
+              color: color
+            })
+          })
         })
-      })
+      ]
     }
   };
   this._layers[layerCodes.GIUNZIONI] = {
     layerCode: layerCodes.GIUNZIONI,
     vector: null,
     editor: null,
-    style: {
+    ol3ListenersKeys: [],
+    style: new ol.style.Style({
       image: new ol.style.Circle({
         radius: 5,
         fill: new ol.style.Fill({
           color: '#0000ff'
         })
       })
-    }
+    })
   };
   this._layers[layerCodes.STRADE] = {
     layerCode: layerCodes.STRADE,
     vector: null,
     editor: null,
-    style: {
+    ol3ListenersKeys: [],
+    style: new ol.style.Style({
       stroke: new ol.style.Stroke({
         width: 3,
         color: '#ff7d2d'
       })
-    }
+    })
   };
   
   this.state = {
@@ -70,7 +90,8 @@ function IternetService(){
       layerCode: null,
       toolType: null
     },
-    retrievingData: false
+    retrievingData: false,
+    hasEdits: false
   };
   
   // vincoli alla possibilità di attivare l'editing
@@ -88,48 +109,25 @@ function IternetService(){
   
   // avvio o termino la sessione di editing generale
   this.togglEditing = function(){
+    var self = this;
     if (this.state.editingEnabled && !this.state.editingOn){
       this._startEditing();
     }
     else if (this.state.editingOn) {
-      this._stopOrSave();
+      this._cancelOrSave()
+      .then(function(){
+        self._stopEditing();
+      });
     }
   };
   
-  // avvia uno dei tool di editing tra quelli supportati da Editor (addfeature, ecc.)
-  /*this.toggleEditTool = function(layerCode,toolType){
-    var layer = this._layers[layerCode];
-    if (layer) {
-      var currentEditingLayerCode = this._getCurrentEditingLayerCode();
-      var currentEditLayer = this._layers[currentEditingLayerCode];
-      
-      // se sto chiedendo di editare un layer diverso da quello attualmente in editing
-      if (layerCode != currentEditingLayerCode) {
-        // provo a stoppare l'EDITOR (NON SOLO IL TOOL) già attivo, se no non vado avanti
-        if (currentEditLayer){
-          this._stopOrSave(currentEditLayer.editor);
-        }
-      }
-      // avvio quindi il tool richiesto
-      if (this._getCurrentEditingToolType() != toolType){
-        // se l'EDITOR non è ancora avviato lo avvio
-        if (!layer.editor.isStarted()){
-          layer.editor.start();
-          this._setupEditToolsListeners(layerCode);
-        }
-        if(layer.editor.setTool(toolType)){
-          this._setEditinToolRunning(layerCode,toolType);
-        }
-      }
-      // oppure SALVO/STOPPO l'EDITOR e fine
-      else{
-        this._stopOrSave(currentEditLayer.editor);
-      }
-    }
-  };*/
+  this.saveEdits = function(){
+    this._cancelOrSave(2);
+  };
   
   // avvia uno dei tool di editing tra quelli supportati da Editor (addfeature, ecc.)
   this.toggleEditTool = function(layerCode,toolType){
+    var self = this;
     var layer = this._layers[layerCode];
     if (layer) {
       var currentEditingLayerCode = this._getCurrentEditingLayerCode();
@@ -139,7 +137,7 @@ function IternetService(){
       if (layerCode == currentEditingLayerCode){
         // e lo stesso tool allora disattivo l'editor (untoggle)
         if (toolType == currentEditingToolType){
-          if(layer.editor.stop()){
+          if(layer.editor.stopTool()){
             this._setEditinToolRunning();
           }
         }
@@ -152,35 +150,89 @@ function IternetService(){
       }
       // altrimenti
       else {
-        var canStart = true;
         // nel caso sia già attivo un editor verifico di poterlo stoppare
         if (currentEditingLayerCode){
           var currentLayer = this._layers[currentEditingLayerCode];
-          if (!currentLayer.editor.stop()){
-            canStart = false;
-          }
+          // se la terminazione dell'editing sarà andata a buon fine, setto il tool
+          // provo a stoppare
+          this._cancelOrSave(2)
+          .then(function(){
+            if(currentLayer.editor.stop()){
+              self._startEditTool(layerCode,toolType);
+            }
+          })
         }
-        if (canStart){
-          // avvio l'editor 
-          layer.editor.start();
-          // e registro i listeners
-          this._setupEditToolsListeners(layerCode);
-          if(layer.editor.setTool(toolType)){
-            this._setEditinToolRunning(layerCode,toolType);
-          }
+        else {
+          this._startEditTool(layerCode,toolType);
         }
       }
+    }
+  };  
+  
+  this.getLayerCodes = function(){
+    return _.values(this.layerCodes);
+  };
+  
+  /* METODI PRIVATI */
+  
+  this._startEditing = function(){
+    //try {
+      this.state.retrievingData = true;
+      this._setupVectors()
+      .then(function(data){
+        // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
+        self._addToMap();
+        self.state.editingOn = true;
+        self.emit("editingstarted");
+      })
+    //}
+    /*catch(e) {
+      console.log(e);
+      this.state.retrievingData = false;
+    }*/
+  };
+  
+  this._startEditTool = function(layerCode,toolType){
+    //rimuovo eventuali listeners OL3
+    var currentIternetLayer = this._layers[this._getCurrentEditingLayerCode()];
+    if(currentIternetLayer){
+      _.forEach(currentIternetLayer.ol3ListenersKeys,function(listenerKey){
+        ol.Observable.unByKey(listenerKey);
+      })
+    }
+    
+    var layer = this._layers[layerCode];
+    // avvio l'editor 
+    layer.editor.start();
+    // e registro i listeners
+    this._setupEditToolsListeners(layerCode);
+    if(layer.editor.setTool(toolType)){
+      this._setEditinToolRunning(layerCode,toolType);
+    }
+  };
+  
+  this._stopEditing = function(reset){
+    // se posso stoppare tutti gli editor...    
+    if (this._stopEditors(reset)){
+      _.forEach(this._layers,function(layer, layerCode){
+        var vector = layer.vector;
+        MapService.viewer.removeLayerByName(vector.name);
+        layer.vector= null;
+        self._unlockLayer(self.config.layers[layerCode]);
+      });
+      self.state.editingOn = false;
+      self.emit("editingstopped");
     }
   };
   
   // fermo tutti gli eventuali editor accesi
-  this.stopEditTools = function(){
+  this._stopEditors = function(reset){
     var canStop = true;
     var self = this;
     _.forEach(this._layers,function(layer){
       var _canStop = true;
       if (layer.editor && layer.editor.isStarted()){
-        _canStop = layer.editor.stop()
+        _canStop = layer.editor.stop(reset)
         canStop = canStop && _canStop;
       }
     })
@@ -190,87 +242,171 @@ function IternetService(){
     return canStop;
   };
   
-  this.getLayerCodes = function(){
-    return _.values(this.layerCodes);
-  };
-  
-  
-  /* METODI PRIVATI */
-  
-  this._startEditing = function(){
+  this._cancelOrSave = function(type){
+    var deferred = $.Deferred();
+    // per sicurezza tengo tutto dentro un grosso try/catch, per non rischiare di provocare inconsistenze nei dati durante il salvataggio
     try {
-      this.state.retrievingData = true;
-      this._setupVectors()
-      .then(function(data){
-        // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
-        self._addToMap();
-        self.state.editingOn = true;
-      })
-    }
-    catch(e) {
-      console.log(e);
-      this.state.retrievingData = false;
-    }
-  };
-  
-  this._stopEditing = function(){
-    // se posso stoppare tutti gli editor...    
-    if (this.stopEditTools()){
-      _.forEach(this._layers,function(layer, layerCode){
-        var vector = layer.vector;
-        MapService.viewer.removeLayerByName(vector.name);
-        layer.vector= null;
-      });
-      self.state.editingOn = false;
-    }
-  };
-  
-  this._stopOrSave = function(editor){
-    var self = this;
-    var choice = "cancel";
-    
-    var dirtyEditors = {};
-    _.forEach(this._layers,function(layer,layerCode){
-      if (layer.editor.isDirty()){
-        dirtyEditors[layerCode] = layer.editor;
+      var _askType = 1;
+      if (type){
+        _askType = type
       }
-    });
-
-    if(_.keys(dirtyEditors).length){
-      GUI.dialog.dialog({
-        message: "Vuoi salvare definitivamente le modifiche?",
-        title: "Salvataggio modifica",
-        buttons: {
-          save: {
-            label: "Salva",
-            className: "btn-danger",
-            callback: function(){
-              self._saveAndStop(dirtyEditors)
-            }
-          },
-          cancel: {
-            label: "Annulla",
-            className: "btn-primary",
-            callback: function(){}
-          }
+      var self = this;
+      var choice = "cancel";
+      var dirtyEditors = {};
+      _.forEach(this._layers,function(layer,layerCode){
+        if (layer.editor.isDirty()){
+          dirtyEditors[layerCode] = layer.editor;
         }
       });
+
+      if(_.keys(dirtyEditors).length){
+        this._askCancelOrSave(_askType).
+        then(function(action){
+          if (action === 'save'){
+            self._saveEdits(dirtyEditors).
+            then(function(result){
+              deferred.resolve();
+            })
+            .fail(function(result){
+              deferred.reject();
+            })
+          }
+          else if (action == 'nosave') {
+            deferred.resolve();
+          }
+          else if (action == 'cancel') {
+            deferred.reject();
+          }
+        })
+      }
+      else {
+        deferred.resolve();
+      }
     }
-    else {
-      this._stopEditing();
+    catch (e) {
+      deferred.reject();
     }
+    return deferred.promise();
   };
   
-  this._saveAndStop = function(dirtyEditors){
-    var editsToPush = {};
-    _.forEach(dirtyEditors,function(editor,layerCode){
-      var editedFeatures = editor.getEditedFeatures();
-      editsToPush[layerCode] = editedFeatures;
+  this._askCancelOrSave = function(type){
+    var deferred = $.Deferred();
+    var buttonTypes = {
+      SAVE: {
+        label: "Salva",
+        className: "btn-success",
+        callback: function(){
+          deferred.resolve('save');
+        }
+      },
+      NOSAVE: {
+        label: "Termina senza salvare",
+        className: "btn-danger",
+        callback: function(){
+          deferred.resolve('nosave');
+        }
+      },
+      CANCEL: {
+        label: "Annulla",
+        className: "btn-primary",
+        callback: function(){
+          deferred.resolve('cancel');
+        }
+      }
+    };
+    switch (type){
+      case 1:
+        buttons = {
+          save: buttonTypes.SAVE,
+          nosave: buttonTypes.NOSAVE,
+          cancel: buttonTypes.CANCEL
+        };
+        break;
+      case 2:
+       buttons = {
+          save: buttonTypes.SAVE,
+          cancel: buttonTypes.CANCEL
+        };
+        break;
+    }
+    GUI.dialog.dialog({
+        message: "Vuoi salvare definitivamente le modifiche?",
+        title: "Salvataggio modifica",
+        buttons: buttons
+      });
+    return deferred.promise();
+  };
+  
+  this._saveEdits = function(dirtyEditors){
+    var deferred = $.Deferred();
+    this._sendEdits(dirtyEditors)
+    .then(function(){
+      GUI.notify.success("I dati sono stati salvati correttamente"); 
+      self._commitEdits(dirtyEditors);
+      MapService.refreshMap();
+      deferred.resolve();
     })
-    console.log(editsToPush);
-    console.log("Wants to save");
-    this._stopEditing();
+    .fail(function(errors){
+      GUI.notify.error("Errore nel salvataggio sul server"); 
+      deferred.resolve();
+    })
+    return deferred.promise();
+  };
+  
+  this._sendEdits = function(dirtyEditors){
+    var self = this;
+    var deferred = $.Deferred();
+    var postRequests = [];
+    _.forEach(dirtyEditors,function(editor,layerCode){
+      var postRequest = self._sendEditsForLayer(editor,layerCode);
+      postRequests.push(postRequest);
+    });
     
+    $.when.apply(this,postRequests)
+    .then(function(){
+      // nel caso when sia stato chiamato con richieste multiple, l'argomento è l'array dei ritorni (a loro volta array) delle singole richieste
+      if(postRequests.length>1){
+        var postRequestReturns = Array.prototype.slice.call(arguments);
+        var allResultsOk = _.reduce(postRequestReturns,function(ok,postRequestReturn){
+          var result = postRequestReturn[0];
+          var _ok = ok && result.result;
+          return _ok;
+        });
+      }
+      // altrimenti l'array E' il ritorno (come array) della singola richiesta
+      else {
+        allResultsOk = arguments[0].result;
+      }
+      
+      if(allResultsOk){
+        deferred.resolve();
+      }
+      else {
+        deferred.reject([]);
+      }
+    })
+    .fail(function(e){
+      deferred.reject([]);
+    });
+    return deferred.promise();
+  };
+  
+  this._sendEditsForLayer = function(editor,layerCode){
+    editsToPush = editor.getEditedFeatures();
+    //console.log(editsToPush);
+    return this._postData(self.config.layers[layerCode],editsToPush)
+  };
+  
+  this._commitEdits = function(editors){
+    _.forEach(editors,function(editor){
+      editor.commit();
+    });
+  };
+  
+  this._undoEdits = function(dirtyEditors){
+    var currentEditingLayerCode = this._getCurrentEditingLayerCode();
+    var editor = dirtyEditors[currentEditingLayerCode];
+    this._stopEditing(true);
   };
   
   this._getCurrentEditingLayerCode = function(){
@@ -295,6 +431,10 @@ function IternetService(){
   this._setupEditToolsListeners = function(layerCode){
     this._setupAddFeatureAttributesEditingListeners(layerCode);
     this._setupEditAttributesListeners(layerCode);
+    
+    if(this.layerCodes.GIUNZIONI == layerCode){
+      this._setupMoveGiunzioniListener(layerCode);
+    }
   };
   
   // apre form attributi per inserimento
@@ -314,9 +454,10 @@ function IternetService(){
   };
   
   this._openEditorForm = function(isNew,feature,layerCode,next){
+    var editor = self._layers[layerCode].editor;
     var fid = feature.getId();
-    var fields = self._layers[layerCode].editor.getFieldsWithAttributes(fid);
-    var relationsPromise = self._layers[layerCode].editor.getRelationsWithAttributes(fid);
+    var fields = editor.getFieldsWithAttributes(fid);
+    var relationsPromise = editor.getRelationsWithAttributes(fid);
     relationsPromise
     .then(function(relations){
       var form = new Form({
@@ -324,6 +465,7 @@ function IternetService(){
         id: "attributes-edit-"+layerCode,
         dataid: layerCode,
         pk: self._layers[layerCode].vector.pk,
+        isnew: editor.isNewFeature(feature.getId()),
         fields: fields,
         relations: relations,
         buttons:[
@@ -331,7 +473,7 @@ function IternetService(){
             title: "Salva",
             class: "btn-danger",
             cbk: function(fields,relations){
-              self._layers[layerCode].editor.setFieldsWithAttributes(feature,fields,relations);
+              editor.setFieldsWithAttributes(feature,fields,relations);
               if (next){
                 next(true);
               }
@@ -355,6 +497,54 @@ function IternetService(){
         next(false);
       }
     })
+  };
+  
+  this._setupMoveGiunzioniListener = function(layerCode){
+    var self = this;
+    self._layers[layerCode].editor.on('movestart',function(feature){
+      self._startMovingGiunzione(feature,layerCode);
+    });
+  };
+  
+  this._startMovingGiunzione = function(feature){
+    var self = this;
+    var giunzione = feature;
+    var cod_gnz = giunzione.get('cod_gnz');
+    var stradeToUpdate = [];
+    // devo avviare l'editor delle strade
+    var stradeEditor = this._layers[this.layerCodes.STRADE].editor;
+    var strade = this._layers[this.layerCodes.STRADE].vector.getSource().getFeatures();
+    _.forEach(strade,function(strada){
+      var nod_ini = strada.get('nod_ini');
+      var nod_fin = strada.get('nod_fin');
+      var ini = (nod_ini == cod_gnz);
+      var fin = (nod_fin == cod_gnz);
+      if (ini || fin){
+        var initial = ini ? true : false;
+        stradeToUpdate.push(strada);
+        self._startGiunzioniStradeTopologicalEditing(giunzione,strada,initial)
+      }
+    })
+    self._layers[this.layerCodes.GIUNZIONI].editor.on('moveend',function(feature){
+      if (stradeToUpdate.length){
+        stradeEditor.start();
+        _.forEach(stradeToUpdate,function(strada){
+          stradeEditor.updateFeature(strada);
+        })
+      }
+    });
+  };
+  
+  this._startGiunzioniStradeTopologicalEditing = function(giunzione,strada,initial){
+    var stradaGeom = strada.getGeometry();
+    var stradaCoords = strada.getGeometry().getCoordinates();
+    var coordIndex = initial ? 0 : stradaCoords.length-1;
+    var giunzioneGeom = giunzione.getGeometry();
+    var listenerKey = giunzioneGeom.on('change',function(e){
+      stradaCoords[coordIndex] = e.target.getCoordinates();
+      stradaGeom.setCoordinates(stradaCoords);
+    });
+    this._layers[this.layerCodes.GIUNZIONI].ol3ListenersKeys.push(listenerKey);
   };
   
   this._addToMap = function(){
@@ -414,6 +604,9 @@ function IternetService(){
         
         // istanzio l'editor
         var editor = new Editor;
+        editor.on("dirty",function(dirty){
+          self.state.hasEdits = dirty;
+        })
         editor.setVectorLayer(vectorLayer);
         if (layerWithData.featurelocks){
           editor.setFeatureLocks(layerWithData.featurelocks);
@@ -436,7 +629,7 @@ function IternetService(){
   // ottiene la configurazione del vettoriale (qui richiesto solo per la definizione degli input)
   this._getLayerConfig = function(layerConfig){
     var d = $.Deferred();
-    $.get("/it/iternet/api/editing/"+layerConfig.name+"/?config")
+    $.get(this.config.baseurl+layerConfig.name+"/?config")
     .done(function(data){
       d.resolve(data);
     })
@@ -450,7 +643,7 @@ function IternetService(){
   this._getLayerData = function(layerConfig){
     var d = $.Deferred();
     var bbox = MapService.state.bbox;
-    $.get("/it/iternet/api/editing/"+layerConfig.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
+    $.get(this.config.baseurl+layerConfig.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
     .done(function(data){
       d.resolve(data);
     })
@@ -458,6 +651,27 @@ function IternetService(){
       d.reject();
     })
     return d.promise();
+  };
+  
+  this._postData = function(layerConfig,editsToPush){
+    var jsonData = JSON.stringify(editsToPush);
+    return $.post({
+      url: this.config.baseurl+layerConfig.name+"/",
+      data: jsonData,
+      contentType: "application/json"
+    });
+  };
+  
+  this._unlock = function(){
+    var layerCodes = this.getLayerCodes();
+    // eseguo le richieste delle configurazioni e mi tengo le promesse
+    var unlockRequests = _.map(layerCodes,function(layerCode){
+      return self._unlockLayer(self.config.layers[layerCode]);
+    });
+  };
+  
+  this._unlockLayer = function(layerConfig){
+    $.get(this.config.baseurl+layerConfig.name+"/?unlock");
   };
   
   this._createVector = function(options,data){

@@ -14,7 +14,8 @@
     </div>
   </template>
   <div>
-    <button class="btn btn-primary" v-disabled="editingbtnEnabled" :class="{'btn-danger' : state.editingOn}" @click="toggleEditing">{{ editingbtnlabel }}</button>
+    <button class="btn btn-primary" v-disabled="editingbtnEnabled" :class="{'btn-success' : state.editingOn}" @click="toggleEditing">{{ editingbtnlabel }}</button>
+    <button class="btn btn-danger" v-disabled="!state.hasEdits" @click="saveEdits">{{ savebtnlabel }}</button>
     <img v-show="state.retrievingData" :src="resourcesurl +'images/loader.svg'">
   </div>
   <div class="message">

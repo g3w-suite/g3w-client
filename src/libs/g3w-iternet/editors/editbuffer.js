@@ -1,9 +1,13 @@
 var inherit = require('g3w/core/utils').inherit;
 var G3WObject = require('g3w/core/g3wobject');
 
-function EditBuffer(vectorLayer,editVectorLayer){
-  this._vectorLayer = vectorLayer;
-  this._editVectorLayer = editVectorLayer;
+function EditBuffer(editor){
+  this._editor = editor;
+  
+  this._origVectorLayer = new ol.layer.Vector({
+    source: new ol.source.Vector()
+  });
+  this._cloneLayer();
   
   //buffer delle geometrie
   this._geometriesBuffer = {};
@@ -17,6 +21,24 @@ inherit(EditBuffer,G3WObject);
 module.exports = EditBuffer;
 
 var proto = EditBuffer.prototype;
+
+proto.commit = function(){
+  var vectorLayer = this._editor._vectorLayer;
+  var newFeatures = this.collectFeatures('new');
+  this._editor._editVectorLayer.getSource().clear();
+  this._editor._vectorLayer.getSource().addFeatures(newFeatures);
+  this._clearBuffers();
+  this._cloneLayer();
+};
+
+proto.undoAll = function(){
+  this._resetVectorLayer();
+  this._clearBuffers();
+};
+
+proto.destroy = function(){
+  this._clearBuffers();
+};
 
 proto.addFeature = function(feature){
   if(!feature.getId()){
@@ -66,40 +88,39 @@ proto.areFeatureRelationsEdited = function(fid){
   return false;
 };
 
-
-proto.getFeatures = function(){
-  return {
-    added: this._collectFeatures('new'),
-    updated: this._collectFeatures('updated'),
-    deleted: this._collectFeatures('deleted'),
-    relationsattributes: this._collectRelationsAttributes()
-  }
-};
-
-proto._collectFeatures = function(state){
-  var self = this;
+proto.collectFeatureIds = function(){
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
-  var GeoJSONFormat = new ol.format.GeoJSON();
   
   var modifiedFids = [];
 
   modifiedFids = _.concat(modifiedFids,_.keys(geometriesBuffers));
   modifiedFids = _.concat(modifiedFids,_.keys(attributesBuffers));
   
-  modifiedFids = _.uniq(modifiedFids);
+  return _.uniq(modifiedFids);
+};
+
+proto.collectFeatures = function(state,asGeoJSON){
+  var self = this;
+  var geometriesBuffers = this._geometriesBuffer;
+  var attributesBuffers = this._attributesBuffer;
+  var asGeoJSON = asGeoJSON || false;
+  var GeoJSONFormat = new ol.format.GeoJSON();
+  
+  var modifiedFids = this.collectFeatureIds();
   
   var features = [];
   _.forEach(modifiedFids,function(fid){
     
     var isNew = self._isNewFeature(fid);
     
-    var vectorLayer = isNew ? self._editVectorLayer : self._vectorLayer;
+    var vectorLayer = isNew ? self._editor._editVectorLayer : self._editor._vectorLayer;
     var fid = fid;
     
     var geometry = null;
     // se presente anche nel buffer delle geometrie allora pesco dal buffer
-    if(_.get(geometriesBuffers,fid)){
+    var geometryBuffer = geometriesBuffers[fid];
+    if(geometryBuffer){
       var geometryBuffer = geometriesBuffers[fid];
       geometry = geometryBuffer[geometryBuffer.length-1];
     }
@@ -110,13 +131,14 @@ proto._collectFeatures = function(state){
     
     var attributes = {};
     // se presente anche nel buffer delle geometrie allora pesco dal buffer
-    if(_.get(attributesBuffers,fid)){
-      attributes = attributesBuffers[attributesBuffers.length-1];
+    var attributesBuffer = attributesBuffers[fid];
+    if(attributesBuffer){
+      attributes = attributesBuffer[attributesBuffer.length-1];
     }
     // altrimenti prendo la geometria originale
     else {
       if (isNew){
-        var fields = self._vectorLayer.getFields();
+        var fields = self._editor._vectorLayer.getFields();
         _.forEach(fields,function(field){
           attributes[field.name] = "";
         })
@@ -139,8 +161,10 @@ proto._collectFeatures = function(state){
       feature.setId(fid);
       feature.setGeometry(geometry);
       feature.setProperties(attributes);
-      var geoJSONFeature = GeoJSONFormat.writeFeatureObject(feature);
-      features.push(geoJSONFeature);
+      if (asGeoJSON){
+        var feature = GeoJSONFormat.writeFeatureObject(feature);
+      }
+      features.push(feature);
     }
     else if (deletedFeature) {
       features.push(fid);
@@ -149,7 +173,7 @@ proto._collectFeatures = function(state){
   return features;
 };
 
-proto._collectRelationsAttributes = function(){
+proto.collectRelationsAttributes = function(){
   var relationsAttributes = {};
   _.forEach(this._relationsAttributesBuffer,function(relationsBuffer,fid){
     lastRelationsAttributes = relationsBuffer[relationsBuffer.length-1];
@@ -166,7 +190,7 @@ proto._addEditToGeometryBuffer = function(feature,operation){
   
   if (operation == 'delete'){
       geometry = null;
-      var layer = this._isNewFeature(id) ? this._editVectorLayer : this._vectorLayer;
+      var layer = this._isNewFeature(id) ? this._editor._editVectorLayer : this._editor._vectorLayer;
       layer.getSource().removeFeature(feature);
   } 
   
@@ -174,6 +198,7 @@ proto._addEditToGeometryBuffer = function(feature,operation){
     geometriesBuffer[id] = [];
   }
   geometriesBuffer[id].push(geometry);
+  this._setDirty();
 };
 
 proto._addEditToAttributesBuffer = function(feature,attributes,relationsAttributes){
@@ -191,15 +216,35 @@ proto._addEditToAttributesBuffer = function(feature,attributes,relationsAttribut
   }
     this._relationsAttributesBuffer[fid].push(relationsAttributes);
   }
+  this._setDirty();
 };
 
 // guardo se è una feature già presente nel buffer delle nuove geometrie
-proto._isNewFeature = function(id){
-  return id.toString().indexOf('_new_') > -1;
+proto._isNewFeature = function(fid){
+  //return id.toString().indexOf('_new_') > -1;
+  return this._editor.isNewFeature(fid);
 };
 
-proto.isDirty = function(){
-  var geometriesDirty = _.keys(this._geometriesBuffer).length > 0;
-  var attributesDirty = _.keys(this._attributesBuffer).length > 0;
-  return (geometriesDirty || attributesDirty);
+proto._setDirty = function(){
+  this._editor._setDirty();
+};
+
+proto._resetVectorLayer = function(){
+  this._editor.vectoLayer = this._origVectorLayer;
+  this._origVectorLayer.getSource().clear();
+};
+
+proto._clearBuffers = function(){
+  this._geometriesBuffer = {};
+  this._attributesBuffer = {};
+  this._relationsAttributesBuffer = {};
+  this._editor._setDirty(false);
+};
+
+proto._cloneLayer = function(){
+  var clonedFeatures = [];
+  this._editor._vectorLayer.getSource().forEachFeature(function(feature){
+    clonedFeatures.push(feature.clone());
+  },this);
+  this._origVectorLayer.getSource().addFeatures(clonedFeatures);
 };

@@ -3,11 +3,12 @@ var PickFeatureEventType = {
 };
 
 var PickFeatureEvent = function(type, feature, coordinate) {
-  ol.events.Event.call(this, type);
+  this.type = type;
   this.feature = feature;
   this.coordinate = coordinate;
 };
-ol.inherits(PickFeatureEvent, ol.events.Event);
+
+
 
 var PickFeatureInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
@@ -20,24 +21,23 @@ var PickFeatureInteraction = function(options) {
   this.pickedFeature_ = null;
   
   this.layerFilter_ = function(layer) {
-    return ol.array.includes(options.layers, layer);
+    return _.includes(options.layers, layer);
   };
 };
 ol.inherits(PickFeatureInteraction, ol.interaction.Pointer);
 
 PickFeatureInteraction.handleDownEvent_ = function(event) {
   this.pickedFeature_ = this.featuresAtPixel_(event.pixel, event.map);
-  if (this.pickedFeature_) {
-    return true;
-  }
-  return false;
+  return true;
 };
 
 PickFeatureInteraction.handleUpEvent_ = function(event) {
-  this.dispatchEvent(
-          new PickFeatureEvent(
-              PickFeatureEventType.PICKED, this.pickedFeature_,
-              event.coordinate));
+  if(this.pickedFeature_){
+    this.dispatchEvent(
+            new PickFeatureEvent(
+                PickFeatureEventType.PICKED, this.pickedFeature_,
+                event.coordinate));
+  }
   return true;
 };
 
@@ -69,6 +69,10 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
     found = intersectingFeature;
   }
   return found;
+};
+
+PickFeatureInteraction.prototype.shouldStopEvent = function(){
+  return false;
 };
 
 module.exports = PickFeatureInteraction;

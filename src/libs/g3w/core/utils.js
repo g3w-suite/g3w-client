@@ -66,6 +66,10 @@ var utils = {
   
   noop: function(){},
   
+  truefnc: function(){return true},
+  
+  falsefnc: function(){return true},
+  
   resolvedValue: function(value){
     var deferred = $.Deferred();
     deferred.resolve(value);

@@ -27,18 +27,57 @@ module.exports = DeleteFeatureTool;
 
 var proto = DeleteFeatureTool.prototype;
 
-var styles = ol.style.createDefaultEditingStyles();
+/* BRUTTISSIMO! Tocca ridefinire tutte le parti interne di OL3 non esposte dalle API */
 
+ol.geom.GeometryType = {
+  POINT: 'Point',
+  LINE_STRING: 'LineString',
+  LINEAR_RING: 'LinearRing',
+  POLYGON: 'Polygon',
+  MULTI_POINT: 'MultiPoint',
+  MULTI_LINE_STRING: 'MultiLineString',
+  MULTI_POLYGON: 'MultiPolygon',
+  GEOMETRY_COLLECTION: 'GeometryCollection',
+  CIRCLE: 'Circle'
+};
+
+var styles = {};
+var white = [255, 255, 255, 1];
 var blue = [0, 153, 255, 1];
 var red = [255, 0, 0, 1];
-var white = [255, 255, 255, 1];
 var width = 3;
-styles[ol.geom.GeometryType.LINE_STRING][1] = new ol.style.Style({
-  stroke: new ol.style.Stroke({
-    color: red,
-    width: width
+styles[ol.geom.GeometryType.POLYGON] = [
+  new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: [255, 255, 255, 0.5]
+    })
   })
-});
+];
+styles[ol.geom.GeometryType.MULTI_POLYGON] =
+    styles[ol.geom.GeometryType.POLYGON];
+
+styles[ol.geom.GeometryType.LINE_STRING] = [
+  new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: white,
+      width: width + 2
+    })
+  }),
+  new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: red,
+      width: width
+    })
+  })
+];
+styles[ol.geom.GeometryType.MULTI_LINE_STRING] =
+    styles[ol.geom.GeometryType.LINE_STRING];
+
+styles[ol.geom.GeometryType.CIRCLE] =
+    styles[ol.geom.GeometryType.POLYGON].concat(
+        styles[ol.geom.GeometryType.LINE_STRING]
+    );
+
 
 styles[ol.geom.GeometryType.POINT] = [
   new ol.style.Style({
@@ -55,11 +94,20 @@ styles[ol.geom.GeometryType.POINT] = [
     zIndex: Infinity
   })
 ];
+styles[ol.geom.GeometryType.MULTI_POINT] =
+    styles[ol.geom.GeometryType.POINT];
 
-ol.array.extend(styles[ol.geom.GeometryType.POLYGON],
-    styles[ol.geom.GeometryType.LINE_STRING]);
-ol.array.extend(styles[ol.geom.GeometryType.GEOMETRY_COLLECTION],
-    styles[ol.geom.GeometryType.LINE_STRING]);
+styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] =
+    styles[ol.geom.GeometryType.POLYGON].concat(
+        styles[ol.geom.GeometryType.LINE_STRING],
+        styles[ol.geom.GeometryType.POINT]
+    );
+
+
+styles[ol.geom.GeometryType.POLYGON] = _.concat(styles[ol.geom.GeometryType.POLYGON],styles[ol.geom.GeometryType.LINE_STRING]);
+styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] = _.concat(styles[ol.geom.GeometryType.GEOMETRY_COLLECTION],styles[ol.geom.GeometryType.LINE_STRING]);
+    
+/* FINE BRUTTISSIMO! */
 
 proto.run = function(){
   var self = this;
@@ -91,7 +139,7 @@ proto.run = function(){
   this._deleteInteraction.on('deleteend',function(e){
     var feature = e.features.getArray()[0];
     var isNew = self._isNew(feature);
-    try {
+    //try {
       if (!self._busy){
         self._busy = true;
         self.pause(true);
@@ -103,11 +151,11 @@ proto.run = function(){
           feature.setGeometry(origGeometry);
         });
       }
-    }
-    catch (error){
+    //}
+    /*catch (error){
       console.log(error);
       feature.setGeometry(origGeometry);
-    }
+    }*/
   });
 
 };
