@@ -196,9 +196,7 @@ function IternetService(){
     //rimuovo eventuali listeners OL3
     var currentIternetLayer = this._layers[this._getCurrentEditingLayerCode()];
     if(currentIternetLayer){
-      _.forEach(currentIternetLayer.ol3ListenersKeys,function(listenerKey){
-        ol.Observable.unByKey(listenerKey);
-      })
+      this._clearLayerOl3Listeners(currentIternetLayer);
     }
     
     var layer = this._layers[layerCode];
@@ -240,6 +238,19 @@ function IternetService(){
       self._setEditinToolRunning();
     }
     return canStop;
+  };
+  
+  this._clearLayerOl3Listeners = function(layerCode){
+    var layer = this._layers[layerCode];
+    _.forEach(layer.ol3ListenersKeys,function(listenerKey){
+      ol.Observable.unByKey(listenerKey);
+    });
+    layer.ol3ListenersKeys = [];
+  };
+  
+  this._trackOl3Listeners = function(layerCode,listenerKey){
+    var layer = this._layers[layerCode];
+    layer.ol3ListenersKeys.push(listenerKey);
   };
   
   this._cancelOrSave = function(type){
@@ -501,17 +512,22 @@ function IternetService(){
   
   this._setupMoveGiunzioniListener = function(layerCode){
     var self = this;
-    self._layers[layerCode].editor.on('movestart',function(feature){
+    var layer = self._layers[layerCode];
+    layer.editor.on('movestart',function(feature){
+      // rimuovo eventuali precedenti listeners
+      self._clearLayerOl3Listeners(layerCode);
       self._startMovingGiunzione(feature,layerCode);
     });
   };
+  
+  this._stradeToUpdate = [];
   
   this._startMovingGiunzione = function(feature){
     var self = this;
     var giunzione = feature;
     var cod_gnz = giunzione.get('cod_gnz');
-    var stradeToUpdate = [];
     // devo avviare l'editor delle strade
+    this._stradeToUpdate = [];
     var stradeEditor = this._layers[this.layerCodes.STRADE].editor;
     var strade = this._layers[this.layerCodes.STRADE].vector.getSource().getFeatures();
     _.forEach(strade,function(strada){
@@ -521,14 +537,16 @@ function IternetService(){
       var fin = (nod_fin == cod_gnz);
       if (ini || fin){
         var initial = ini ? true : false;
-        stradeToUpdate.push(strada);
+        self._stradeToUpdate.push(strada);
         self._startGiunzioniStradeTopologicalEditing(giunzione,strada,initial)
       }
     })
-    self._layers[this.layerCodes.GIUNZIONI].editor.on('moveend',function(feature){
-      if (stradeToUpdate.length){
-        stradeEditor.start();
-        _.forEach(stradeToUpdate,function(strada){
+    self._layers[this.layerCodes.GIUNZIONI].editor.once('moveend',function(feature){
+      if ( self._stradeToUpdate.length){
+        if (!stradeEditor.isStarted()){
+          stradeEditor.start();
+        }
+        _.forEach( self._stradeToUpdate,function(strada){
           stradeEditor.updateFeature(strada);
         })
       }
@@ -544,7 +562,7 @@ function IternetService(){
       stradaCoords[coordIndex] = e.target.getCoordinates();
       stradaGeom.setCoordinates(stradaCoords);
     });
-    this._layers[this.layerCodes.GIUNZIONI].ol3ListenersKeys.push(listenerKey);
+    this._trackOl3Listeners(this.layerCodes.GIUNZIONI,listenerKey);
   };
   
   this._addToMap = function(){

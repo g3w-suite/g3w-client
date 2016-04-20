@@ -20,7 +20,7 @@ var proto = G3WObject.prototype;
  * @param {function} listener - Una funzione listener (solo sincrona)
  */
 proto.onafter = function(setter,listener){
-  this._onsetter('after',setter,listener,false);
+  return this._onsetter('after',setter,listener,false);
 };
 
 // un listener può registrarsi in modo da essere eseguito PRIMA dell'esecuzione del metodo setter. Può ritornare true/false per
@@ -31,7 +31,7 @@ proto.onafter = function(setter,listener){
  * @param {function} listener - Una funzione listener, a cui viene passato una funzione "next" come ultimo parametro, da usare nel caso di listener asincroni
  */
 proto.onbefore = function(setter,listener){
-  this._onsetter('before',setter,listener,false);
+  return this._onsetter('before',setter,listener,false);
 };
 
 /**
@@ -40,7 +40,17 @@ proto.onbefore = function(setter,listener){
  * @param {function} listener - Una funzione listener, a cui 
  */
 proto.onbeforeasync = function(setter,listener){
-  this._onsetter('before',setter,listener,true);
+  return this._onsetter('before',setter,listener,true);
+};
+
+proto.un = function(setter,key){
+  _.forEach(this.settersListeners,function(settersListeners,when){
+    _.forEach(settersListeners[setter],function(setterListener){
+      if(setterListener.key == key){
+        delete setterListener;
+      }
+    })
+  })
 };
 
 proto._onsetter = function(when,setter,listener,async){ /*when=before|after, type=sync|async*/
@@ -53,6 +63,7 @@ proto._onsetter = function(when,setter,listener,async){ /*when=before|after, typ
     key: listenerKey,
     fnc: listener
   });
+  return listenerKey;
   //return this.generateUnListener(setter,listenerKey);
 };
 
