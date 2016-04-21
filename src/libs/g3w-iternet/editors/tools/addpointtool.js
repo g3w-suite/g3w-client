@@ -56,9 +56,6 @@ proto.run = function(){
   this.drawInteraction = new ol.interaction.Draw({
     type: 'Point',
     source: source,
-    geometryFunction: function(coordinates, geometry){
-      return new ol.geom.Point(coordinates);
-    }
   });
   map.addInteraction(this.drawInteraction);
   this.drawInteraction.setActive(true);

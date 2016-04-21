@@ -64,7 +64,13 @@ proto.setData = function(featuresData){
           return self._featuresFilter(feature);
         });
       }
-      this._olSource.addFeatures(features);
+      
+      var alreadyLoadedIds = this.getFeatureIds();
+      var featuresToLoad = _.filter(features,function(feature){
+        return !_.includes(alreadyLoadedIds,feature.getId());
+      })
+      
+      this._olSource.addFeatures(featuresToLoad);
       
       // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
       var attributes = this.getSource().getFeatures()[0].getProperties();
@@ -96,6 +102,13 @@ proto.setPkField = function(){
   if (!pkfieldSet){
     this._fields
   }
+};
+
+proto.getFeatureIds = function(){
+  var featureIds = _.map(this.getSource().getFeatures(),function(feature){
+    return feature.getId();
+  })
+  return featureIds
 };
 
 proto.getFields = function(){

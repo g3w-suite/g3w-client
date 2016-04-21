@@ -83,6 +83,8 @@ function IternetService(){
     })
   };
   
+  this._loadDataOnMapViewChangeListener = null;
+  
   this.state = {
     editingEnabled: false,
     editingOn: false,
@@ -99,7 +101,7 @@ function IternetService(){
     resolution: 1 // vincolo di risoluzione massima
   }
   
-  MapService.onafter('setResolution',function(resolution){
+  MapService.onafter('setMapView',function(bbox,resolution,center){
     self.state.editingEnabled = (resolution < editingConstraints.resolution) ? true : false;
   });
   
@@ -133,6 +135,7 @@ function IternetService(){
       var currentEditingLayerCode = this._getCurrentEditingLayerCode();
       var currentEditingToolType = this._getCurrentEditingToolType();
       
+      var options = this._getOptionsForEditTool(layerCode,toolType);
       // se si sta chiedendo lo stesso editor
       if (layerCode == currentEditingLayerCode){
         // e lo stesso tool allora disattivo l'editor (untoggle)
@@ -143,7 +146,7 @@ function IternetService(){
         }
         // altrimenti attivo il tool richiesto
         else {
-          if(layer.editor.setTool(toolType)){
+          if(layer.editor.setTool(toolType,options)){
             this._setEditinToolRunning(layerCode,toolType);
           }
         }
@@ -158,12 +161,12 @@ function IternetService(){
           this._cancelOrSave(2)
           .then(function(){
             if(currentLayer.editor.stop()){
-              self._startEditTool(layerCode,toolType);
+              self._startEditTool(layerCode,toolType,options);
             }
           })
         }
         else {
-          this._startEditTool(layerCode,toolType);
+          this._startEditTool(layerCode,toolType,options);
         }
       }
     }
@@ -176,14 +179,23 @@ function IternetService(){
   /* METODI PRIVATI */
   
   this._startEditing = function(){
+    var self = this;
     //try {
       this.state.retrievingData = true;
-      this._setupVectors()
+      this._loadData()
       .then(function(data){
         // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
         self._addToMap();
         self.state.editingOn = true;
         self.emit("editingstarted");
+        
+        if (!self._loadDataOnMapViewChangeListener){
+          self._loadDataOnMapViewChangeListener = MapService.onafter('setMapView',function(){
+            if (self.state.editingOn && self.state.editingEnabled){
+              self._loadData();
+            }
+          });
+        }
       })
     //}
     /*catch(e) {
@@ -192,11 +204,11 @@ function IternetService(){
     }*/
   };
   
-  this._startEditTool = function(layerCode,toolType){
+  this._startEditTool = function(layerCode,toolType,options){
     //rimuovo eventuali listeners OL3
-    var currentIternetLayer = this._layers[this._getCurrentEditingLayerCode()];
-    if(currentIternetLayer){
-      this._clearLayerOl3Listeners(currentIternetLayer);
+    var currentIternetLayerCode = this._getCurrentEditingLayerCode();
+    if(currentIternetLayerCode){
+      this._clearLayerOl3Listeners(currentIternetLayerCode);
     }
     
     var layer = this._layers[layerCode];
@@ -204,7 +216,7 @@ function IternetService(){
     layer.editor.start();
     // e registro i listeners
     this._setupEditToolsListeners(layerCode);
-    if(layer.editor.setTool(toolType)){
+    if(layer.editor.setTool(toolType,options)){
       this._setEditinToolRunning(layerCode,toolType);
     }
   };
@@ -216,6 +228,7 @@ function IternetService(){
         var vector = layer.vector;
         MapService.viewer.removeLayerByName(vector.name);
         layer.vector= null;
+        layer.editor= null;
         self._unlockLayer(self.config.layers[layerCode]);
       });
       self.state.editingOn = false;
@@ -439,13 +452,37 @@ function IternetService(){
     }
   };
   
+  this._getOptionsForEditTool = function(layerCode,toolType){
+    var options;
+    
+    switch (layerCode){
+      case this.layerCodes.STRADE:
+        if (toolType=='addfeature'){
+          options = {
+            snap: {
+              vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
+            },
+            finishFunction: this._getStradaVertexSnapped
+          }
+        }
+        break;
+      default:
+        options = null
+    }
+    return options;
+  };
+  
   this._setupEditToolsListeners = function(layerCode){
+    switch (layerCode){
+      case this.layerCodes.GIUNZIONI:
+        this._setupMoveGiunzioniListener(layerCode);
+        break;
+      case this.layerCodes.STRADE:
+        this._setupDrawStradeConstraints();
+    }
+    
     this._setupAddFeatureAttributesEditingListeners(layerCode);
     this._setupEditAttributesListeners(layerCode);
-    
-    if(this.layerCodes.GIUNZIONI == layerCode){
-      this._setupMoveGiunzioniListener(layerCode);
-    }
   };
   
   // apre form attributi per inserimento
@@ -468,6 +505,19 @@ function IternetService(){
     var editor = self._layers[layerCode].editor;
     var fid = feature.getId();
     var fields = editor.getFieldsWithAttributes(fid);
+    
+    // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
+    // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
+    var pk = self._layers[layerCode].vector.pk;
+    if (pk && _.isNull(editor.getField(pk))){
+      _.forEach(feature.getProperties(),function(value,attribute){
+        var field = editor.getField(attribute,fields);
+        if(field){
+          field.value = value;
+        }
+      });
+    }
+    
     var relationsPromise = editor.getRelationsWithAttributes(fid);
     relationsPromise
     .then(function(relations){
@@ -509,6 +559,8 @@ function IternetService(){
       }
     })
   };
+  
+  /* INIZIO MODIFICA TOPOLOGICA DELLE GIUNZIONI */
   
   this._setupMoveGiunzioniListener = function(layerCode){
     var self = this;
@@ -565,6 +617,61 @@ function IternetService(){
     this._trackOl3Listeners(this.layerCodes.GIUNZIONI,listenerKey);
   };
   
+  /* FINE MODIFICA TOPOLOGICA GIUNZIONI */
+  
+  /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
+  
+  this._setupDrawStradeConstraints = function(){
+    var map = MapService.viewer.map;
+    var editor = self._layers[this.layerCodes.STRADE].editor;
+    var startSnappedFeature = null;
+    var endSnappedFeature = null;
+    editor.onbefore('addFeature',function(feature){
+      if (startSnappedFeature && endSnappedFeature){
+        feature.set('nod_ini',startSnappedFeature.get('cod_gnz'));
+        feature.set('nod_fin',endSnappedFeature.get('cod_gnz'));
+        return true;
+      }
+      return false;
+    });
+    
+    editor.on('drawstart',function(e){
+      var sketchfeatureCoords = e.feature.getGeometry().getCoordinates();
+      var coordinate = sketchfeatureCoords[0];
+      e.pixel = map.getPixelFromCoordinate(coordinate);
+      startSnappedFeature = self._getStradaVertexSnapped(e);
+      if (startSnappedFeature){
+        console.log("Inizio snappato a: "+startSnappedFeature.getId());
+      }
+      else {
+        var tool = editor.getActiveTool();
+        tool.abortDrawing();
+      }
+    });
+    editor.on('drawend',function(e){
+      var sketchfeatureCoords = e.feature.getGeometry().getCoordinates();
+      var coordinate = sketchfeatureCoords[sketchfeatureCoords.length-1];
+      e.pixel = map.getPixelFromCoordinate(coordinate);
+      endSnappedFeature = self._getStradaVertexSnapped(e);
+      if (endSnappedFeature){
+        console.log("Fine snappata a: "+endSnappedFeature.getId());
+      }
+    });
+  };
+  
+  this._getStradaVertexSnapped = function(e){
+    var map = MapService.viewer.map;
+    var snappedFeature = map.forEachFeatureAtPixel(e.pixel,
+        function(feature) {
+          return feature;
+        },self,function(layer){
+          return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
+        },self);
+    return snappedFeature;
+  };
+  
+  /* FINE VINCOLO SNAP DELLE STRADE */
+  
   this._addToMap = function(){
     var map = MapService.viewer.map;
     var layerCodes = this.getLayerCodes();
@@ -574,68 +681,97 @@ function IternetService(){
   };
   
   this._setupVectors = function(){
+    var deferred = $.Deferred();
     var layerCodes = this.getLayerCodes();
-    // eseguo le richieste delle configurazioni e mi tengo le promesse
-    var configRequests = _.map(layerCodes,function(layerCode){
-      return self._getLayerConfig(self.config.layers[layerCode]);
+    var layersReady = _.reduce(layerCodes,function(ready,layerCode){
+      return !_.isNull(self._layers[layerCode].vector);
     });
-    // eseguo le richieste de dati e mi tengo le promesse
-    var dataRequests = _.map(layerCodes,function(layerCode){
-      return self._getLayerData(self.config.layers[layerCode]);
-    }); 
-    var requests = _.concat(configRequests,dataRequests);
-    // aspetto tutte le promesse
-    return $.when.apply(this,requests)
-    .then(function(){
-      var args = Array.prototype.slice.call(arguments);
-      // mi creo un oggetto avente per chiave il layerCode e per valore un array con i risultati
-      // delle richieste di configurazioni nel primo elemento e i dati nel secondo
-      var layersResults = _.zipObject(layerCodes,_.zip(args.slice(0,3),args.slice(3)));
-      _.forEach(layersResults,function(layerResult,layerCode){
-        var layerWithConfig = layerResult[0];
-        var layerWithData = layerResult[1];
-        var vector = layerWithData.vector;
-        var layerBaseConfig = self.config.layers[layerCode];
-        // instanzio il VectorLayer
-        var vectorLayer = self._layers[layerCode].vector = self._createVector({
-          geometrytype: vector.geometrytype,
-          format: vector.format,
-          crs: "EPSG:3003",
-          id: layerBaseConfig.id,
-          name: layerBaseConfig.name,
-          pk: vector.pk  
-        });
-        // ottengo la definizione dei campi
-        vectorLayer.setFields(layerWithConfig.vector.fields);
-        
-        var relations = layerWithConfig.vector.relations;
-        
-        if(relations){
-          // per dire a vectorLayer che i dati delle relazioni verranno caricati solo quando richiesti (es. aperture form di editing)
-          vectorLayer.lazyRelations = true;
-          vectorLayer.setRelations(relations);
-        }
-        // setto lo stile del layer OL
-        vectorLayer.setStyle(self._layers[layerCode].style);
-        // inserisco i dati delle feature
-        self._setVectorData(vectorLayer,vector.data);
-        
-        // istanzio l'editor
-        var editor = new Editor;
-        editor.on("dirty",function(dirty){
-          self.state.hasEdits = dirty;
+    if (!layersReady){
+      // eseguo le richieste delle configurazioni e mi tengo le promesse
+      var configRequests = _.map(layerCodes,function(layerCode){
+        return self._getLayerConfig(self.config.layers[layerCode]);
+      });
+      // aspetto tutte le promesse
+      $.when.apply(this,configRequests)
+      .then(function(){
+        var args = Array.prototype.slice.call(arguments);
+        // mi creo un oggetto avente per chiave il layerCode e per valore un array con i risultati
+        // delle richieste di configurazioni nel primo elemento e i dati nel secondo
+        var layersResults = _.zipObject(layerCodes,args);
+        _.forEach(layersResults,function(layerConfig,layerCode){
+          var layerBaseConfig = self.config.layers[layerCode];
+          // instanzio il VectorLayer
+          var vectorLayer = self._layers[layerCode].vector = self._createVector({
+            geometrytype: layerConfig.vector.geometrytype,
+            format: layerConfig.vector.format,
+            crs: "EPSG:3003",
+            id: layerBaseConfig.id,
+            name: layerBaseConfig.name,
+            pk: layerConfig.pk  
+          });
+          // ottengo la definizione dei campi
+          vectorLayer.setFields(layerConfig.vector.fields);
+          
+          var relations = layerConfig.vector.relations;
+          
+          if(relations){
+            // per dire a vectorLayer che i dati delle relazioni verranno caricati solo quando richiesti (es. aperture form di editing)
+            vectorLayer.lazyRelations = true;
+            vectorLayer.setRelations(relations);
+          }
+          // setto lo stile del layer OL
+          vectorLayer.setStyle(self._layers[layerCode].style);
+          
+          // istanzio l'editor
+          var editor = new Editor;
+          editor.setVectorLayer(vectorLayer);
+          editor.on("dirty",function(dirty){
+            self.state.hasEdits = dirty;
+          })        
+          // e lo metto nella configurazione globale
+          self._layers[layerCode].editor = editor;
         })
-        editor.setVectorLayer(vectorLayer);
-        if (layerWithData.featurelocks){
-          editor.setFeatureLocks(layerWithData.featurelocks);
-        }
-        
-        // e lo metto nella configurazione globale
-        self._layers[layerCode].editor = editor;
+        self.state.retrievingData = false;
+        deferred.resolve();
       })
-      self.state.retrievingData = false;
+      .fail(function(){
+        self.state.retrievingData = false;
+        deferred.reject();
+      })
+    }
+    else{
+      deferred.resolve();
+    }
+    return deferred.promise();
+  };
+  
+  this._loadData = function(){
+    var self = this;
+    var layerCodes = this.getLayerCodes();
+    self.state.retrievingData = true;
+    return this._setupVectors()
+    .then(function(){
+      // eseguo le richieste de dati e mi tengo le promesse
+      var dataRequests = _.map(layerCodes,function(layerCode){
+        return self._getLayerData(self.config.layers[layerCode]);
+      }); 
+      
+      return $.when.apply(this,dataRequests)
+      .then(function(){
+        var args = Array.prototype.slice.call(arguments);
+        // mi creo un oggetto avente per chiave il layerCode e per valore un array con i risultati
+        // delle richieste di configurazioni nel primo elemento e i dati nel secondo
+        var layersResults = _.zipObject(layerCodes,args);
+        _.forEach(layersResults,function(layerData,layerCode){
+          var iternetLayer = self._layers[layerCode];
+          self._setVectorData(iternetLayer.vector,layerData.vector.data);
+          if (layerData.featurelocks){
+            iternetLayer.editor.setFeatureLocks(layerData.featurelocks);
+          }
+        });
+      });
     })
-    .fail(function(){
+    .always(function(){
       self.state.retrievingData = false;
     })
   };

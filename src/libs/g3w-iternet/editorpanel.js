@@ -66,7 +66,7 @@ var PanelComponent = Vue.extend({
           tools:[
             {
               title: "Aggiungi strada",
-              tooltype: '',
+              tooltype: 'addfeature',
               icon: 'iternetAddLine.png'
             },
             {

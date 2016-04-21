@@ -36,14 +36,10 @@ function MapService(){
   this._interactionsStack = [];
   
   this.setters = {
-    setViewBBOX: function(bbox){
-      self.state.bbox = bbox;
-    },
-    setResolution: function(resolution){
-      self.state.resolution = resolution;
-    },
-    setCenter: function(center){
-      self.state.center = center;
+    setMapView: function(bbox,resoution,center){
+      this.state.bbox = bbox;
+      this.state.resolution = resoution;
+      this.state.resolutin = center
     }
   };
   
@@ -74,19 +70,18 @@ function MapService(){
         projection: projection,
         center: ol.extent.getCenter(ProjectService.state.extent),
         //zoom: 1
-        zoom:8 
+        zoom:4 
       }
     });
     
     var view = this.viewer.map.getView();
-    view.on('change:resolution',function(e){
+    /*view.on('change:resolution',function(e){
       self.setViewBBOX(self.viewer.getBBOX());
       self.setResolution(self.viewer.getResolution());
-    });
+    });*/
     
-    view.on('change:center',function(e){
-      self.setViewBBOX(self.viewer.getBBOX());
-      self.setCenter(self.viewer.getCenter());
+    this.viewer.map.on('moveend',function(e){
+      self._setMapView();
     })
   };
   
@@ -142,9 +137,7 @@ function MapService(){
     this.viewer.setTarget(elId);
     var map = this.viewer.map;
     GUI.on('guiready',function(){
-      self.setViewBBOX(self.viewer.getBBOX());
-      self.setResolution(self.viewer.getResolution());
-      self.setCenter(self.viewer.getCenter());
+      self._setMapView();
     });
   };
   
@@ -262,6 +255,13 @@ function MapService(){
   };
   
   base(this);
+  
+  this._setMapView = function(){
+    var bbox = this.viewer.getBBOX();
+    var resolution = this.viewer.getResolution();
+    var center = this.viewer.getCenter();
+    this.setMapView(bbox,resolution,center);
+  };
 };
 
 inherit(MapService,G3WObject);

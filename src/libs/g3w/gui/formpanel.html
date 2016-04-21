@@ -8,8 +8,8 @@
           <select v-if="isSelect(field)" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
             <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
           </select>
-          <div v-if="isLayerPicker(field)" v-disabled="!isEditable(field)">
-            <input class="form-control" @click="pickLayer(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+          <div v-if="isLayerPicker(field)">
+            <input class="form-control" @click="pickLayer(field)" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
             <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
           </div>
         </div>
@@ -26,8 +26,8 @@
               <select v-if="isSelect(relfield)" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
                 <option v-for="relvalue in relfield.input.options.values" value="{{ relvalue.key }}">{{ relvalue.value }}</option>
               </select>
-              <div v-if="isLayerPicker(relfield)" v-disabled="!isEditable(relfield)">
-                <input class="form-control" @click="pickLayer(relfield)" onfocus="blur()" style="cursor:pointer" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(relfield) }}'" v-model="relfield.value" :id="relfield.name" :placeholder="'['+layerPickerPlaceHolder(relfield)+']'">
+              <div v-if="isLayerPicker(relfield)">
+                <input class="form-control" @click="pickLayer(relfield)" v-disabled="!isEditable(relfield)" onfocus="blur()" style="cursor:pointer" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(relfield) }}'" v-model="relfield.value" :id="relfield.name" :placeholder="'['+layerPickerPlaceHolder(relfield)+']'">
                 <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
               </div>
             </div>

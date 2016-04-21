@@ -56,19 +56,20 @@ proto.un = function(setter,key){
 proto._onsetter = function(when,setter,listener,async){ /*when=before|after, type=sync|async*/
   var settersListeners = this.settersListeners[when];
   var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
-  if ((when == 'before') && !async){
+  /*if ((when == 'before') && !async){
     listener = this._makeChainable(listener);
-  }
+  }*/
   settersListeners[setter].push({
     key: listenerKey,
-    fnc: listener
+    fnc: listener,
+    async: async
   });
   return listenerKey;
   //return this.generateUnListener(setter,listenerKey);
 };
 
 // trasformo un listener sincrono in modo da poter essere usato nella catena di listeners (richiamando next col valore di ritorno del listener)
-proto._makeChainable = function(listener){
+/*proto._makeChainable = function(listener){
   var self = this
   return function(){
     var args = Array.prototype.slice.call(arguments);
@@ -81,7 +82,7 @@ proto._makeChainable = function(listener){
     }
     next(canSet);
   }
-};
+};*/
 
 proto._setupListenersChain = function(setters){
   // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
@@ -124,7 +125,6 @@ proto._setupListenersChain = function(setters){
           _.forEach(afterListeners,function(listener, key){
             listener.fnc.apply(self,args);
           })
-          self.emit("stateChanged");
         }
         else {
           // se non posso proseguire 
@@ -133,28 +133,65 @@ proto._setupListenersChain = function(setters){
           // e rigetto la promessa
           deferred.reject();
         }
+      };
+      
+      function complete(){
+        // eseguo la funzione
+        returnVal = setterFnc.apply(self,args);
+        // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
+        deferred.resolve(returnVal);
+        
+        var afterListeners = self.settersListeners.after[setter];
+        _.forEach(afterListeners,function(listener, key){
+          listener.fnc.apply(self,args);
+        })
+      }
+      
+      function abort(){
+          // se non posso proseguire ...
+          // chiamo l'eventuale funzione di fallback
+          setterFallback.apply(self,args);
+          // e rigetto la promessa
+          deferred.reject();
       }
       
       var beforeListeners = this.settersListeners['before'][setter];
       // contatore dei listener che verrà decrementato ad ogni chiamata a next()
-      counter = beforeListeners.length;
+      counter = 0;
       
       // funzione passata come ultimo parametro ai listeners, che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
       function next(bool){
-        var _canSet = true;
+        var cont = true;
         if (_.isBoolean(bool)){
-          _canSet = bool;
+          cont = bool;
         }
-        canSet = (canSet && _canSet);
-        if (counter == 0){
-          done.apply(self,args);
+        var _args = Array.prototype.slice.call(args);
+        // se la catena è stata bloccata o se siamo arrivati alla fine dei beforelisteners
+        if (cont === false || (counter == beforeListeners.length)){
+          if(cont === false)
+            abort.apply(self,args);
+          else{
+            completed = complete.apply(self,args);
+            if(_.isUndefined(completed) || completed === true){
+              self.emitEvent('set:'+setter,args);
+            }
+          }
         }
         else {
-          counter -= 1;
-          var _args = Array.prototype.slice.call(args);
-          // aggiungo next come ulitmo parametro
-          _args.push(next);
-          beforeListeners[counter].fnc.apply(self,_args)
+          if (cont){
+            var listenerFnc = beforeListeners[counter].fnc;
+            if (beforeListeners[counter].async){
+              // aggiungo next come ulitmo parametro
+              _args.push(next);
+              counter += 1;
+              listenerFnc.apply(self,_args)
+            }
+            else {
+              var _cont = listenerFnc.apply(self,_args);
+              counter += 1;
+              next(_cont);
+            }
+          }
         }
       }
       

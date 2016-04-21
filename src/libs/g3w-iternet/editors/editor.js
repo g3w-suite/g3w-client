@@ -7,7 +7,7 @@ var MapService = require('g3w/core/mapservice');
 var VectorLayer = require('g3w/core/vectorlayer');
 
 //var Sequencer = require('./stepsequencer');
-var AddPointTool = require('./tools/addpointtool');
+var AddFeatureTool = require('./tools/addfeaturetool');
 var MoveFeatureTool = require('./tools/movepointtool');
 var DeleteFeatureTool = require('./tools/deletefeaturetool');
 var PickFeatureTool = require('./tools/pickfeaturetool');
@@ -50,12 +50,13 @@ function Editor(options){
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForTypes = {
       'Point': {
-        addfeature: AddPointTool,
+        addfeature: AddFeatureTool,
         movefeature: MoveFeatureTool,
         deletefeature: DeleteFeatureTool,
         editattributes: PickFeatureTool
       },
       'LineString': {
+        addfeature: AddFeatureTool,
         movefeature: MoveFeatureTool,
         deletefeature: DeleteFeatureTool,
         editattributes: PickFeatureTool
@@ -92,7 +93,8 @@ proto.start = function(){
     
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
-      name: "editvector"
+      name: "editvector",
+      geometrytype: this._vectorLayer.geometrytype
     })
     MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
     
@@ -120,7 +122,7 @@ proto.stop = function(){
   return true;
 };
 
-proto.setTool = function(toolType){
+proto.setTool = function(toolType,options){
   if (!this.stopTool()){
     return false;
   }
@@ -128,7 +130,7 @@ proto.setTool = function(toolType){
   
   // se esiste il tool richiesto
   if (toolClass ){
-    var tool = this._activeTool = new toolClass(this);
+    var tool = this._activeTool = new toolClass(this,options);
     this._setToolSettersListeners(tool,this._setterslisteners);
     tool.run();
     return true;
@@ -141,6 +143,10 @@ proto.stopTool = function(){
   }
   this._activeTool = false;
   return true;
+};
+
+proto.getActiveTool = function(){
+  return this._activeTool;
 };
 
 proto.isStarted = function(){
@@ -255,6 +261,17 @@ proto.getRelationsWithAttributes = function(fid){
   return fieldsPromise;
 };
 
+proto.getField = function(name,fields){
+  var fields = fields || this.getFieldsWithAttributes();
+  var field = null;
+  _.forEach(fields,function(f){
+    if (f.name == name){
+      field = f;
+    }
+  })
+  return field;
+};
+
 proto.isDirty = function(){
   return this._dirty;
 };
@@ -314,7 +331,7 @@ proto._setToolsForVectorType = function(geometrytype){
 };
 
 proto._onaftertoolaction = function(setter,listener){
-  if (!_.get(this._setterslisteners,setter)){
+  if (!_.get(this._setterslisteners.after,setter)){
     this._setterslisteners.after[setter] = [];
   }
   this._setterslisteners.after[setter].push({
@@ -323,7 +340,7 @@ proto._onaftertoolaction = function(setter,listener){
 }
 
 proto._onbeforetoolaction = function(setter,listener,async){
-  if (!_.get(this._setterslisteners,setter)){
+  if (!_.get(this._setterslisteners.before,setter)){
     this._setterslisteners.before[setter] = [];
   }
   this._setterslisteners.before[setter].push({
