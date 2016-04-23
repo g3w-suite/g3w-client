@@ -40,7 +40,7 @@ var PanelComponent = Vue.extend({
           tools:[
             {
               title: "Aggiungi giunzione",
-              tooltype: '',
+              tooltype: 'addfeature',
               icon: 'iternetAddPoint.png'
             },
             {
@@ -111,12 +111,12 @@ var PanelComponent = Vue.extend({
       if (toolType == ''){
         return;
       }
-      if (this.state.editingOn) {
+      if (this.state.editing.on) {
         Service.toggleEditTool(layerCode,toolType);
       }
     },
     editingtoolbtnToggled: function(layerCode,toolType){
-      return (this.state.editingToolRunning.layerCode == layerCode && this.state.editingToolRunning.toolType == toolType);
+      return (this.state.editing.layerCode == layerCode && this.state.editing.toolType == toolType);
     },
     editingtoolbtnEnabled: function(tool){
       return tool.tooltype != '';
@@ -124,14 +124,14 @@ var PanelComponent = Vue.extend({
   },
   computed: {
     editingbtnlabel: function(){
-      return this.state.editingOn ? "Termina editing" : "Avvia editing";
+      return this.state.editing.on ? "Termina editing" : "Avvia editing";
     },
     editingbtnEnabled: function(){
-      return (this.state.editingEnabled || this.state.editingOn) ? "" : "disabled";
+      return (this.state.editing.enabled || this.state.editing.on) ? "" : "disabled";
     },
     message: function(){
       var message = "";
-      if (!this.state.editingEnabled){
+      if (!this.state.editing.enabled){
         message = '<span style="color: red">Aumentare il livello di zoom per abilitare l\'editing';
       }
       else {

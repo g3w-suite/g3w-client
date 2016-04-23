@@ -19,6 +19,7 @@ function GUI(){
   }
   
   toastr.options.positionClass = 'toast-top-center';
+  toastr.options.preventDuplicates = true;
   // proxy della libreria toastr
   this.notify = toastr;
   this.dialog = bootbox;

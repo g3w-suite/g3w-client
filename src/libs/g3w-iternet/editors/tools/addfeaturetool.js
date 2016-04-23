@@ -10,13 +10,48 @@ function AddFeatureTool(editor,options){
   this._running = false;
   this._busy = false;
   this.editor = editor;
+  this.source = editor.getEditVectorLayer().getLayer().getSource();
   this.isPausable = true;
   
   this.drawInteraction = null;
   this._snap = options.snap || null;
   this._snapInteraction = null; 
   
-  this._finishFunction = options.finishFunction || _.constant(true);
+  this.finishCondition_ = options.finishCondition || _.constant(true);
+  
+  // TODO: Monkey patching in attesa della pull request https://github.com/openlayers/ol3/pull/#5261
+  (function(self){
+    ol.interaction.Draw.handleUpEvent_ = function(event){
+      this.freehand_ = false;
+      var downPx = this.downPx_;
+      var clickPx = event.pixel;
+      var dx = downPx[0] - clickPx[0];
+      var dy = downPx[1] - clickPx[1];
+      var squaredDistance = dx * dx + dy * dy;
+      var pass = true;
+      if (squaredDistance <= this.squaredClickTolerance_) {
+        this.handlePointerMove_(event);
+        if (!this.finishCoordinate_) {
+          this.startDrawing_(event);
+          if (this.mode_ === ol.interaction.DrawMode.POINT) {
+            this.finishDrawing();
+          }
+        } else if (this.mode_ === ol.interaction.DrawMode.CIRCLE) {
+          this.finishDrawing();
+        } else if (this.atFinish_(event)) {
+          if(self.finishCondition_(event)){
+            this.finishDrawing();
+          }
+        } else {
+          this.addToDrawing_(event);
+        }
+        pass = false;
+      }
+      return pass;
+    }
+  })(this);
+  
+  this._condition = options.condition || _.constant(true);
   
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
   this.setters = {
@@ -37,10 +72,9 @@ var proto = AddFeatureTool.prototype;
 proto.run = function(){
   var self = this;
   var map = MapService.viewer.map;
-  var source = this.editor.getEditVectorLayer().getLayer().getSource();
   
-  source.on('addfeature',function(e){
-    //try {
+  /*source.on('addfeature',function(e){
+    try {
       // richiamo il setter e se la promessa viene risolta proseguo
       if (!self._busy){
         self._busy = true;
@@ -53,49 +87,17 @@ proto.run = function(){
           source.removeFeature(e.feature);
         });
       }
-    //}
-    /*catch (error){
+    }
+    catch (error){
       console.log(error);
       source.removeFeature(e.feature);
-    }*/
-  });
-  
-  
-  // TODO: Monkey patching in attesa della pull request https://github.com/openlayers/ol3/pull/5258
-  (function(self){
-    ol.interaction.Draw.handleUpEvent_ = function(event){
-      this.freehand_ = false;
-      var downPx = this.downPx_;
-      var clickPx = event.pixel;
-      var dx = downPx[0] - clickPx[0];
-      var dy = downPx[1] - clickPx[1];
-      var squaredDistance = dx * dx + dy * dy;
-      var pass = true;
-      if (squaredDistance <= this.squaredClickTolerance_) {
-        this.handlePointerMove_(event);
-        if (!this.finishCoordinate_) {
-          this.startDrawing_(event);
-          if (this.mode_ === ol.interaction.DrawMode.POINT) {
-            this.finishDrawing();
-          }
-        } else if (this.mode_ === ol.interaction.DrawMode.CIRCLE) {
-          this.finishDrawing();
-        } else if (this.atFinish_(event)) {
-          if(self._finishFunction(event)){
-            this.finishDrawing();
-          }
-        } else {
-          this.addToDrawing_(event);
-        }
-        pass = false;
-      }
-      return pass;
     }
-  })(this);
+  });*/
   
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
-    source: source,
+    source: this.source,
+    condition: this._condition
   });
   map.addInteraction(this.drawInteraction);
   this.drawInteraction.setActive(true);
@@ -106,6 +108,11 @@ proto.run = function(){
   
   this.drawInteraction.on('drawend',function(e){
     self.editor.emit('drawend',e);
+    if (!self._busy){
+      self._busy = true;
+      self.pause();
+      self.addFeature(e.feature);
+    }
   });
   
   if (this._snap){
@@ -135,8 +142,8 @@ proto.pause = function(pause){
 proto.stop = function(){
   var map = MapService.viewer.map;
   if (this._snapInteraction){
-       map.removeInteraction(this._snapInteraction);
-    }
+     map.removeInteraction(this._snapInteraction);
+  }
   map.removeInteraction(this.drawInteraction);
   return true;
 };
@@ -144,12 +151,6 @@ proto.stop = function(){
 proto.removeLastPoint = function(){
   if (this.drawInteraction){
     this.drawInteraction.removeLastPoint();
-  }
-};
-
-proto.abortDrawing = function(){
-  if (this.drawInteraction){
-    this.drawInteraction.abortDrawing_();
   }
 };
 
@@ -162,5 +163,7 @@ proto._addFeature = function(feature){
 
 proto._fallBack = function(feature){
   this._busy = false;
+  // rimuovo l'ultima feature inserita, ovvero quella disegnata ma che non si vuole salvare
+  this.source.getFeaturesCollection().pop();
   this.pause(false);
 };

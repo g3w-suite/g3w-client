@@ -27,6 +27,7 @@ function Editor(options){
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
+  this._activeTool = null;
   this._dirty = false;
   
   this._withFeatureLocks = false;
@@ -48,7 +49,7 @@ function Editor(options){
   ];
   
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
-  this._toolsForTypes = {
+  this._toolsForGeometryTypes = {
       'Point': {
         addfeature: AddFeatureTool,
         movefeature: MoveFeatureTool,
@@ -62,6 +63,29 @@ function Editor(options){
         editattributes: PickFeatureTool
       }
   };
+  
+  this._activeTool = new function(){
+    this.type = null;
+    this.instance = null;
+    
+    this.setTool = function(type,instance){
+      this.type = type;
+      this.instance = instance;
+    };
+    
+    this.getType = function(){
+      return this.type;
+    };
+    
+    this.getTool = function(){
+      return this.instance;
+    };
+    
+    this.clear = function(){
+      this.type = null;
+      this.instance = null;
+    };
+  }
   
   this._tools = {};
   
@@ -94,7 +118,7 @@ proto.start = function(){
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
-      geometrytype: this._vectorLayer.geometrytype
+      geometrytype: this._vectorLayer.geometrytype,
     })
     MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
     
@@ -130,18 +154,19 @@ proto.setTool = function(toolType,options){
   
   // se esiste il tool richiesto
   if (toolClass ){
-    var tool = this._activeTool = new toolClass(this,options);
-    this._setToolSettersListeners(tool,this._setterslisteners);
-    tool.run();
+    var toolInstance = new toolClass(this,options);
+    this._activeTool.setTool(toolType,toolInstance);
+    this._setToolSettersListeners(toolInstance,this._setterslisteners);
+    toolInstance.run();
     return true;
   }
 };
 
 proto.stopTool = function(){
-  if (this._activeTool && !this._activeTool.stop()){
+  if (this._activeTool.instance && !this._activeTool.instance.stop()){
     return false;
   }
-  this._activeTool = false;
+  this._activeTool.clear();
   return true;
 };
 
@@ -153,8 +178,15 @@ proto.isStarted = function(){
   return this._started;
 };
 
-proto.getActiveTool = function(){
-  return this._activeTool;
+proto.hasActiveTool = function(){
+  return !_.isNull(this._activeTool.instance);
+};
+
+proto.isToolActive = function(toolType){
+   if (this._activeTool.toolType){
+    return this._activeTool.toolType == toolType;
+   };
+   return false;
 };
 
 proto.commit = function(){
@@ -324,7 +356,7 @@ proto._isCompatibleType = function(geometrytype){
 
 proto._setToolsForVectorType = function(geometrytype){
   var self = this;
-  var tools = this._toolsForTypes[geometrytype];
+  var tools = this._toolsForGeometryTypes[geometrytype];
   _.forEach(tools,function(toolClass,tool){
     self._tools[tool] = toolClass;
   })

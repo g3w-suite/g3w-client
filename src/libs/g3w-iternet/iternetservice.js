@@ -85,10 +85,12 @@ function IternetService(){
   
   this._loadDataOnMapViewChangeListener = null;
   
+  this._currentEditingLayer = null;
+  
   this.state = {
-    editingEnabled: false,
-    editingOn: false,
-    editingToolRunning: {
+    editing: {
+      on: false,
+      enabled: false,
       layerCode: null,
       toolType: null
     },
@@ -102,7 +104,7 @@ function IternetService(){
   }
   
   MapService.onafter('setMapView',function(bbox,resolution,center){
-    self.state.editingEnabled = (resolution < editingConstraints.resolution) ? true : false;
+    self.state.editing.enabled = (resolution < editingConstraints.resolution) ? true : false;
   });
   
   this.init = function(config){
@@ -112,10 +114,10 @@ function IternetService(){
   // avvio o termino la sessione di editing generale
   this.togglEditing = function(){
     var self = this;
-    if (this.state.editingEnabled && !this.state.editingOn){
+    if (this.state.editing.enabled && !this.state.editing.on){
       this._startEditing();
     }
-    else if (this.state.editingOn) {
+    else if (this.state.editing.on) {
       this._cancelOrSave()
       .then(function(){
         self._stopEditing();
@@ -132,41 +134,35 @@ function IternetService(){
     var self = this;
     var layer = this._layers[layerCode];
     if (layer) {
-      var currentEditingLayerCode = this._getCurrentEditingLayerCode();
-      var currentEditingToolType = this._getCurrentEditingToolType();
+      var toolOptions = this._getOptionsForEditTool(layer,toolType);
+      var currentEditingLayer = this._getCurrentEditingLayer();
       
-      var options = this._getOptionsForEditTool(layerCode,toolType);
       // se si sta chiedendo lo stesso editor
-      if (layerCode == currentEditingLayerCode){
+      if (currentEditingLayer && layerCode == currentEditingLayer.layerCode){
         // e lo stesso tool allora disattivo l'editor (untoggle)
-        if (toolType == currentEditingToolType){
-          if(layer.editor.stopTool()){
-            this._setEditinToolRunning();
-          }
+        if (toolType == currentEditingLayer.editor.getActiveTool().getType()){
+          this._stopEditingTool();
         }
         // altrimenti attivo il tool richiesto
         else {
-          if(layer.editor.setTool(toolType,options)){
-            this._setEditinToolRunning(layerCode,toolType);
-          }
+          this._startEditingTool(currentEditingLayer,toolType,toolOptions);
         }
       }
       // altrimenti
       else {
         // nel caso sia già attivo un editor verifico di poterlo stoppare
-        if (currentEditingLayerCode){
-          var currentLayer = this._layers[currentEditingLayerCode];
+        if (currentEditingLayer && currentEditingLayer.editor.isStarted()){
           // se la terminazione dell'editing sarà andata a buon fine, setto il tool
           // provo a stoppare
           this._cancelOrSave(2)
           .then(function(){
-            if(currentLayer.editor.stop()){
-              self._startEditTool(layerCode,toolType,options);
+            if(self._stopEditor()){
+              self._startEditingTool(layer,toolType,toolOptions);
             }
           })
         }
         else {
-          this._startEditTool(layerCode,toolType,options);
+          this._startEditingTool(layer,toolType,toolOptions);
         }
       }
     }
@@ -186,7 +182,7 @@ function IternetService(){
       .then(function(data){
         // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
         self._addToMap();
-        self.state.editingOn = true;
+        self.state.editing.on = true;
         self.emit("editingstarted");
         
         if (!self._loadDataOnMapViewChangeListener){
@@ -204,26 +200,9 @@ function IternetService(){
     }*/
   };
   
-  this._startEditTool = function(layerCode,toolType,options){
-    //rimuovo eventuali listeners OL3
-    var currentIternetLayerCode = this._getCurrentEditingLayerCode();
-    if(currentIternetLayerCode){
-      this._clearLayerOl3Listeners(currentIternetLayerCode);
-    }
-    
-    var layer = this._layers[layerCode];
-    // avvio l'editor 
-    layer.editor.start();
-    // e registro i listeners
-    this._setupEditToolsListeners(layerCode);
-    if(layer.editor.setTool(toolType,options)){
-      this._setEditinToolRunning(layerCode,toolType);
-    }
-  };
-  
   this._stopEditing = function(reset){
     // se posso stoppare tutti gli editor...    
-    if (this._stopEditors(reset)){
+    if (this._stopEditor(reset)){
       _.forEach(this._layers,function(layer, layerCode){
         var vector = layer.vector;
         MapService.viewer.removeLayerByName(vector.name);
@@ -231,38 +210,68 @@ function IternetService(){
         layer.editor= null;
         self._unlockLayer(self.config.layers[layerCode]);
       });
-      self.state.editingOn = false;
+      this._updateEditingState();
+      self.state.editing.on = false;
       self.emit("editingstopped");
     }
   };
   
-  // fermo tutti gli eventuali editor accesi
-  this._stopEditors = function(reset){
-    var canStop = true;
-    var self = this;
-    _.forEach(this._layers,function(layer){
-      var _canStop = true;
-      if (layer.editor && layer.editor.isStarted()){
-        _canStop = layer.editor.stop(reset)
-        canStop = canStop && _canStop;
-      }
-    })
-    if (canStop) {
-      self._setEditinToolRunning();
+  this._startEditor = function(layer){
+    // avvio l'editor 
+    if (layer.editor.start()){
+      // e registro i listeners
+      this._setupEditToolsListeners(layer);
+      this._setCurrentEditingLayer(layer);
+      return true;
     }
-    return canStop;
+    return false;
   };
   
-  this._clearLayerOl3Listeners = function(layerCode){
-    var layer = this._layers[layerCode];
+  this._startEditingTool = function(layer,toolType,options){
+    var canStartTool = true;
+    if (!layer.editor.isStarted()){
+      canStartTool = this._startEditor(layer);
+    }
+    if(canStartTool && layer.editor.setTool(toolType,options)){
+      this._updateEditingState();
+      return true;
+    }
+    return false;
+  };
+  
+  this._stopEditor = function(reset){
+    var ret = true;
+    var layer = this._getCurrentEditingLayer();
+    if (layer) {
+      this._clearLayerOl3Listeners(layer);
+      ret = layer.editor.stop(reset);
+      if (ret){
+        this._setCurrentEditingLayer();
+      }
+    }
+    return ret;
+  };
+  
+  this._stopEditingTool = function(){
+    var ret = true;
+    var layer = this._getCurrentEditingLayer();
+    if(layer){
+      ret = layer.editor.stopTool();
+      if (ret){
+        this._updateEditingState();
+      }
+    }
+    return ret;
+  };
+  
+  this._clearLayerOl3Listeners = function(layer){
     _.forEach(layer.ol3ListenersKeys,function(listenerKey){
       ol.Observable.unByKey(listenerKey);
     });
     layer.ol3ListenersKeys = [];
   };
   
-  this._trackOl3Listeners = function(layerCode,listenerKey){
-    var layer = this._layers[layerCode];
+  this._trackOl3Listeners = function(layer,listenerKey){
     layer.ol3ListenersKeys.push(listenerKey);
   };
   
@@ -428,41 +437,54 @@ function IternetService(){
   };
   
   this._undoEdits = function(dirtyEditors){
-    var currentEditingLayerCode = this._getCurrentEditingLayerCode();
+    var currentEditingLayerCode = this._getCurrentEditingLayer().layerCode;
     var editor = dirtyEditors[currentEditingLayerCode];
     this._stopEditing(true);
   };
   
-  this._getCurrentEditingLayerCode = function(){
-    return this.state.editingToolRunning.layerCode;
-  };
+  this._getCurrentEditingLayerCode = null;
   
-  this._getCurrentEditingToolType = function(){
-    return this.state.editingToolRunning.toolType;
-  };
+  this._getCurrentEditingToolType = null;
   
-  this._setEditinToolRunning = function(layerCode, toolType){
-    if (arguments) {
-      this.state.editingToolRunning.layerCode = layerCode;
-      this.state.editingToolRunning.toolType = toolType;
+  this._setEditinToolRunning = null;
+  
+  this._updateEditingState = function(){
+    var layer = this._getCurrentEditingLayer();
+    if (layer){
+      this.state.editing.layerCode = layer.layerCode;
+      this.state.editing.toolType = layer.editor.getActiveTool().getType();
     }
     else {
-      this.state.editingToolRunning.layerCode = null;
-      this.state.editingToolRunning.toolType = null;
+      this.state.editing.layerCode = null;
+      this.state.editing.toolType = null;
     }
   };
   
-  this._getOptionsForEditTool = function(layerCode,toolType){
+  this._getCurrentEditingLayer = function(){
+    return this._currentEditingLayer;
+  };
+  
+  this._setCurrentEditingLayer = function(layer){
+    if (!layer){
+      this._currentEditingLayer = null;
+    }
+    else {
+      this._currentEditingLayer = layer;
+    }
+  };
+  
+  this._getOptionsForEditTool = function(layer,toolType){
     var options;
     
-    switch (layerCode){
+    switch (layer.layerCode){
       case this.layerCodes.STRADE:
         if (toolType=='addfeature'){
           options = {
             snap: {
               vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
             },
-            finishFunction: this._getStradaVertexSnapped
+            finishCondition: this._getCheckSnapsCondition(this._stradeSnaps),
+            condition: this._getStradaIsSnappedCondition(this._stradeSnaps)
           }
         }
         break;
@@ -472,32 +494,32 @@ function IternetService(){
     return options;
   };
   
-  this._setupEditToolsListeners = function(layerCode){
-    switch (layerCode){
+  this._setupEditToolsListeners = function(layer){
+    switch (layer.layerCode){
       case this.layerCodes.GIUNZIONI:
-        this._setupMoveGiunzioniListener(layerCode);
+        this._setupMoveGiunzioniListener(layer);
         break;
       case this.layerCodes.STRADE:
         this._setupDrawStradeConstraints();
     }
     
-    this._setupAddFeatureAttributesEditingListeners(layerCode);
-    this._setupEditAttributesListeners(layerCode);
+    this._setupAddFeatureAttributesEditingListeners(layer);
+    this._setupEditAttributesListeners(layer);
   };
   
   // apre form attributi per inserimento
-  this._setupAddFeatureAttributesEditingListeners = function(layerCode){
+  this._setupAddFeatureAttributesEditingListeners = function(layer){
     var self = this;
-    self._layers[layerCode].editor.onbeforeasync('addFeature',function(feature,next){
-      self._openEditorForm('new',feature,layerCode,next)
+    layer.editor.onbeforeasync('addFeature',function(feature,next){
+      self._openEditorForm('new',feature,layer.layerCode,next)
     });
   };
   
   // apre form attributi per editazione
-  this._setupEditAttributesListeners = function(layerCode){
+  this._setupEditAttributesListeners = function(layer){
     var self = this;
-    self._layers[layerCode].editor.onafter('pickFeature',function(feature){
-      self._openEditorForm('old',feature,layerCode)
+    layer.editor.onafter('pickFeature',function(feature){
+      self._openEditorForm('old',feature,layer.layerCode)
     });
   };
   
@@ -562,13 +584,12 @@ function IternetService(){
   
   /* INIZIO MODIFICA TOPOLOGICA DELLE GIUNZIONI */
   
-  this._setupMoveGiunzioniListener = function(layerCode){
+  this._setupMoveGiunzioniListener = function(layer){
     var self = this;
-    var layer = self._layers[layerCode];
     layer.editor.on('movestart',function(feature){
       // rimuovo eventuali precedenti listeners
-      self._clearLayerOl3Listeners(layerCode);
-      self._startMovingGiunzione(feature,layerCode);
+      self._clearLayerOl3Listeners(layer);
+      self._startMovingGiunzione(feature);
     });
   };
   
@@ -614,60 +635,102 @@ function IternetService(){
       stradaCoords[coordIndex] = e.target.getCoordinates();
       stradaGeom.setCoordinates(stradaCoords);
     });
-    this._trackOl3Listeners(this.layerCodes.GIUNZIONI,listenerKey);
+    this._trackOl3Listeners(this._layers[this.layerCodes.GIUNZIONI],listenerKey);
   };
   
   /* FINE MODIFICA TOPOLOGICA GIUNZIONI */
   
   /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
   
+  this._stradeSnaps = new function(){
+    var snaps = [];
+    this.length = 0;
+    
+    this.push = function(feature){
+      snaps.push(feature);
+      this.length += 1;
+    };
+    
+    this.getLast = function(){
+      return snaps[snaps.length-1];
+    };
+    
+    this.getFirst = function(){
+      return snaps[0];
+    };
+    
+    this.clear = function(){
+      snaps.splice(0,snaps.length);
+      this.length = 0;
+    };
+    
+    this.getSnaps = function(){
+      return snaps;
+    };
+  };
+  
   this._setupDrawStradeConstraints = function(){
+    var mapId = MapService.viewer.map.getTargetElement().id;
+    $(document).on('keypress',function(e){
+      console.log(e.which);
+    });
+    var self = this;
     var map = MapService.viewer.map;
     var editor = self._layers[this.layerCodes.STRADE].editor;
-    var startSnappedFeature = null;
-    var endSnappedFeature = null;
+    this._stradeSnaps.clear();
     editor.onbefore('addFeature',function(feature){
-      if (startSnappedFeature && endSnappedFeature){
-        feature.set('nod_ini',startSnappedFeature.get('cod_gnz'));
-        feature.set('nod_fin',endSnappedFeature.get('cod_gnz'));
+      var snaps = self._stradeSnaps.getSnaps();
+      if (snaps.length == 2){
+        feature.set('nod_ini',snaps[0].get('cod_gnz'));
+        feature.set('nod_fin',snaps[1].get('cod_gnz'));
+        self._stradeSnaps.clear();
         return true;
       }
       return false;
     });
-    
-    editor.on('drawstart',function(e){
-      var sketchfeatureCoords = e.feature.getGeometry().getCoordinates();
-      var coordinate = sketchfeatureCoords[0];
-      e.pixel = map.getPixelFromCoordinate(coordinate);
-      startSnappedFeature = self._getStradaVertexSnapped(e);
-      if (startSnappedFeature){
-        console.log("Inizio snappato a: "+startSnappedFeature.getId());
-      }
-      else {
-        var tool = editor.getActiveTool();
-        tool.abortDrawing();
-      }
-    });
-    editor.on('drawend',function(e){
-      var sketchfeatureCoords = e.feature.getGeometry().getCoordinates();
-      var coordinate = sketchfeatureCoords[sketchfeatureCoords.length-1];
-      e.pixel = map.getPixelFromCoordinate(coordinate);
-      endSnappedFeature = self._getStradaVertexSnapped(e);
-      if (endSnappedFeature){
-        console.log("Fine snappata a: "+endSnappedFeature.getId());
-      }
-    });
   };
   
-  this._getStradaVertexSnapped = function(e){
+  this._getCheckSnapsCondition = function(snaps){
+    // ad ogni click controllo se ci sono degli snap con le giunzioni
+    return function(e){
+      if (snaps.length == 2){
+        return true;
+      }
+      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
+      return false;
+    }
+  };
+  
+  // ad ogni click controllo se ci sono degli snap con le giunzioni
+  this._getStradaIsSnappedCondition = function(snaps){
     var map = MapService.viewer.map;
-    var snappedFeature = map.forEachFeatureAtPixel(e.pixel,
-        function(feature) {
-          return feature;
-        },self,function(layer){
-          return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
-        },self);
-    return snappedFeature;
+    
+    return function(e){
+      snappedFeature = map.forEachFeatureAtPixel(e.pixel,
+          function(feature) {
+            return feature;
+          },self,function(layer){
+            return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
+          },self);
+      
+      // se ho già due snap e questo click non è su un'altra giunzione, oppure se ho più di 2 snap, non posso inserire un ulteriore vertice
+      if ((snaps.length == 2 && (!snappedFeature || snappedFeature != snaps.getSnaps()[1]))){
+        var lastSnapped
+        GUI.notify.error("Una strada non può avere vertici intermedi in corrispondenza di giunzioni.<br> Premere <b>CANC</b> per rimuovere l'ultimo vertice.");
+        return false;
+      }
+      
+      if (snappedFeature && snaps.length < 2){
+        snaps.push(snappedFeature);
+      }
+      
+      // se non ci sono snap, vuol dire che sono ancora al primo click e non ho snappato con la giunzione iniziale
+      if (snaps.length == 0){
+        GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
+        return false;
+      }
+      return true;
+    }
   };
   
   /* FINE VINCOLO SNAP DELLE STRADE */

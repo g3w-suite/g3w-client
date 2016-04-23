@@ -13,7 +13,9 @@ function VectorLayer(options){
   this.name = options.name || "";
   this.pk = options.pk || "id"; // TODO: il GeoJSON setta l'id della feature da sé, e nasconde il campo PK dalle properties. In altri formati va verificato, e casomai usare feature.setId()
   
-  this._olSource = new ol.source.Vector();
+  this._olSource = new ol.source.Vector({
+    features: new ol.Collection()
+  });
   this._olLayer = new ol.layer.Vector({
     name: this.name,
     source: this._olSource
