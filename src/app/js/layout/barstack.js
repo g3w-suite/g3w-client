@@ -12,21 +12,26 @@ inherit(BarStack,G3WObject);
 var proto = BarStack.prototype;
 
 proto.push = function(panel,container){
-  panel.onShow(container);
-  this._panels.push(panel);
-  this.state.panels.push({
-    id: panel.id,
-    name: panel.name
+  var self = this;
+  panel.onShow(container)
+  .then(function(){
+    self._panels.push(panel);
+    self.state.panels.push({
+      id: panel.id,
+      name: panel.name
+    });
   });
 };
 
 proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
+  var self = this;
   var panel = this._panels.slice(-1)[0];
-  if (panel.onClose()) {
-    this.state.panels.pop();
-    this._panels.pop();
-  }
+  panel.onClose()
+  .then(function(){
+    self.state.panels.pop();
+    self._panels.pop();
+  });
 };
 
 module.exports = BarStack;

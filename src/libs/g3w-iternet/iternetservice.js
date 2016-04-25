@@ -111,8 +111,28 @@ function IternetService(){
     this.config = config;
   };
   
+  this.stop = function(){
+    var deferred = $.Deferred();
+    if (this.state.editing.on) {
+      this._cancelOrSave()
+      .then(function(){
+        self._stopEditing();
+        self._cleanUp();
+        deferred.resolve();
+      })
+      .fail(function(){
+        deferred.reject();
+      })
+    }
+    else {
+      deferred.resolve();
+    };
+    return deferred.promise();
+  };
+  
   // avvio o termino la sessione di editing generale
-  this.togglEditing = function(){
+  this.toggleEditing = function(){
+    var deferred = $.Deferred();
     var self = this;
     if (this.state.editing.enabled && !this.state.editing.on){
       this._startEditing();
@@ -121,8 +141,13 @@ function IternetService(){
       this._cancelOrSave()
       .then(function(){
         self._stopEditing();
-      });
+        deferred.resolve();
+      })
+      .fail(function(){
+        deferred.reject();
+      })
     }
+    return deferred.promise();
   };
   
   this.saveEdits = function(){
@@ -134,6 +159,7 @@ function IternetService(){
     var self = this;
     var layer = this._layers[layerCode];
     if (layer) {
+      this._cleanUpListeners();
       var toolOptions = this._getOptionsForEditTool(layer,toolType);
       var currentEditingLayer = this._getCurrentEditingLayer();
       
@@ -177,7 +203,6 @@ function IternetService(){
   this._startEditing = function(){
     var self = this;
     //try {
-      this.state.retrievingData = true;
       this._loadData()
       .then(function(data){
         // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
@@ -187,7 +212,7 @@ function IternetService(){
         
         if (!self._loadDataOnMapViewChangeListener){
           self._loadDataOnMapViewChangeListener = MapService.onafter('setMapView',function(){
-            if (self.state.editingOn && self.state.editingEnabled){
+            if (self.state.editing.on && self.state.editing.enabled){
               self._loadData();
             }
           });
@@ -213,6 +238,25 @@ function IternetService(){
       this._updateEditingState();
       self.state.editing.on = false;
       self.emit("editingstopped");
+    }
+  };
+  
+  this._cleanUp = function(){
+    this._clearLayerOl3Listeners();
+    this._cleanUpListeners();
+  };
+  
+  this._cleanUpListeners = function(){
+    $('body').off('keypress',this._removeLastPoint);
+  };
+  
+  this._clearLayerOl3Listeners = function(layer){
+    var layer = layer || this._getCurrentEditingLayer();
+    if (layer){
+      _.forEach(layer.ol3ListenersKeys,function(listenerKey){
+        ol.Observable.unByKey(listenerKey);
+      });
+      layer.ol3ListenersKeys = [];
     }
   };
   
@@ -262,13 +306,6 @@ function IternetService(){
       }
     }
     return ret;
-  };
-  
-  this._clearLayerOl3Listeners = function(layer){
-    _.forEach(layer.ol3ListenersKeys,function(listenerKey){
-      ol.Observable.unByKey(listenerKey);
-    });
-    layer.ol3ListenersKeys = [];
   };
   
   this._trackOl3Listeners = function(layer,listenerKey){
@@ -373,9 +410,9 @@ function IternetService(){
   this._saveEdits = function(dirtyEditors){
     var deferred = $.Deferred();
     this._sendEdits(dirtyEditors)
-    .then(function(){
+    .then(function(response){
       GUI.notify.success("I dati sono stati salvati correttamente"); 
-      self._commitEdits(dirtyEditors);
+      self._commitEdits(dirtyEditors,response);
       MapService.refreshMap();
       deferred.resolve();
     })
@@ -387,51 +424,41 @@ function IternetService(){
   };
   
   this._sendEdits = function(dirtyEditors){
-    var self = this;
     var deferred = $.Deferred();
-    var postRequests = [];
-    _.forEach(dirtyEditors,function(editor,layerCode){
-      var postRequest = self._sendEditsForLayer(editor,layerCode);
-      postRequests.push(postRequest);
+
+    var editsToPush = _.map(dirtyEditors,function(editor){
+      return {
+        layername: editor.getVectorLayer().name,
+        edits: editor.getEditedFeatures()
+      }
     });
-    
-    $.when.apply(this,postRequests)
-    .then(function(){
-      // nel caso when sia stato chiamato con richieste multiple, l'argomento è l'array dei ritorni (a loro volta array) delle singole richieste
-      if(postRequests.length>1){
-        var postRequestReturns = Array.prototype.slice.call(arguments);
-        var allResultsOk = _.reduce(postRequestReturns,function(ok,postRequestReturn){
-          var result = postRequestReturn[0];
-          var _ok = ok && result.result;
-          return _ok;
-        });
-      }
-      // altrimenti l'array E' il ritorno (come array) della singola richiesta
-      else {
-        allResultsOk = arguments[0].result;
-      }
-      
-      if(allResultsOk){
-        deferred.resolve();
+
+    this._postData(editsToPush)
+    .then(function(returned){
+      if (returned.result){
+        deferred.resolve(returned.response);
       }
       else {
-        deferred.reject([]);
+        deferred.reject(returned.response);
       }
     })
-    .fail(function(e){
-      deferred.reject([]);
+    .fail(function(returned){
+      deferred.reject(returned.response);
     });
     return deferred.promise();
   };
   
-  this._sendEditsForLayer = function(editor,layerCode){
-    editsToPush = editor.getEditedFeatures();
-    //console.log(editsToPush);
-    return this._postData(self.config.layers[layerCode],editsToPush)
-  };
-  
-  this._commitEdits = function(editors){
+  this._commitEdits = function(editors,response){
+    var self = this;
     _.forEach(editors,function(editor){
+      var newAttributesFromServer = null;
+      if (response && response.new){
+        _.forEach(response.new,function(updatedFeatureAttributes){
+          var oldfid = updatedFeatureAttributes.clientid;
+          var fid = updatedFeatureAttributes.id;
+          editor.getEditVectorLayer().setFeatureData(oldfid,fid,null,updatedFeatureAttributes);
+        })
+      }
       editor.commit();
     });
   };
@@ -441,12 +468,6 @@ function IternetService(){
     var editor = dirtyEditors[currentEditingLayerCode];
     this._stopEditing(true);
   };
-  
-  this._getCurrentEditingLayerCode = null;
-  
-  this._getCurrentEditingToolType = null;
-  
-  this._setEditinToolRunning = null;
   
   this._updateEditingState = function(){
     var layer = this._getCurrentEditingLayer();
@@ -484,7 +505,17 @@ function IternetService(){
               vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
             },
             finishCondition: this._getCheckSnapsCondition(this._stradeSnaps),
-            condition: this._getStradaIsSnappedCondition(this._stradeSnaps)
+            condition: this._getStradaIsBeingSnappedCondition(this._stradeSnaps)
+          }
+        }
+        if (toolType=='modifyvertex'){
+          options = {
+            snap: {
+              vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
+            },
+            deleteCondition: function(mapBrowserEvent){
+              return false;
+            }
           }
         }
         break;
@@ -498,13 +529,26 @@ function IternetService(){
     switch (layer.layerCode){
       case this.layerCodes.GIUNZIONI:
         this._setupMoveGiunzioniListener(layer);
+        this._setupDeleteGiunzioniListener(layer);
         break;
       case this.layerCodes.STRADE:
         this._setupDrawStradeConstraints();
+        this._setupModifyVertexStradeConstraints();
     }
     
     this._setupAddFeatureAttributesEditingListeners(layer);
     this._setupEditAttributesListeners(layer);
+    this._askConfirmToDeleteEditingListener(layer);
+  };
+  
+  // apre form attributi per inserimento
+  this._askConfirmToDeleteEditingListener = function(layer){
+    var self = this;
+    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
+      GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
+        next(result);
+      })
+    });
   };
   
   // apre form attributi per inserimento
@@ -588,7 +632,6 @@ function IternetService(){
     var self = this;
     layer.editor.on('movestart',function(feature){
       // rimuovo eventuali precedenti listeners
-      self._clearLayerOl3Listeners(layer);
       self._startMovingGiunzione(feature);
     });
   };
@@ -640,6 +683,42 @@ function IternetService(){
   
   /* FINE MODIFICA TOPOLOGICA GIUNZIONI */
   
+  /* INIZIO RIMOZIONE GIUNZIONI */
+  
+  /*this._askConfirmToDeleteEditingListener = function(layer){
+    var self = this;
+    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
+      GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
+        next(result);
+      })
+    });
+  };*/
+  
+  this._setupDeleteGiunzioniListener = function(layer){
+    var self = this;
+    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
+      var stopDeletion = false;
+      var stradeVectorLayer = self._layers[self.layerCodes.STRADE].vector;
+      _.forEach(stradeVectorLayer.getFeatures(),function(strada){
+        var cod_gnz = feature.get('cod_gnz');
+        var nod_ini = strada.get('nod_ini');
+        var nod_fin = strada.get('nod_fin');
+        var ini = (nod_ini == cod_gnz);
+        var fin = (nod_fin == cod_gnz);
+        if (ini || fin){
+          stopDeletion = true;
+        }
+      });
+      
+      if (stopDeletion){
+        GUI.notify.error("Non è possibile rimuovere la giunzioni perché risulta connessa ad una o più strade");
+      }
+      next(!stopDeletion);
+    });
+  };
+  
+  /* FINE GESTIONE RIMOZIONE GIUNZIONI */
+  
   /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
   
   this._stradeSnaps = new function(){
@@ -669,14 +748,27 @@ function IternetService(){
     };
   };
   
+  this._removeLastPoint = _.bind(function(e){
+    var editor = this._layers[this.layerCodes.STRADE].editor;
+    var toolType = editor.getActiveTool().getType();
+    // il listener viene attivato per tutti i tool dell'editor strade, per cui devo controllare che sia quello giusto
+    if (toolType == 'addfeature'){
+    // CANC
+      if(e.keyCode==46){
+        e.preventDefault();
+        e.stopPropagation();
+        editor.getActiveTool().getTool().removeLastPoint();
+      }
+    }
+  },this);
+  
   this._setupDrawStradeConstraints = function(){
     var mapId = MapService.viewer.map.getTargetElement().id;
-    $(document).on('keypress',function(e){
-      console.log(e.which);
-    });
     var self = this;
     var map = MapService.viewer.map;
     var editor = self._layers[this.layerCodes.STRADE].editor;
+
+    $('body').keyup(this._removeLastPoint);
     this._stradeSnaps.clear();
     editor.onbefore('addFeature',function(feature){
       var snaps = self._stradeSnaps.getSnaps();
@@ -702,7 +794,7 @@ function IternetService(){
   };
   
   // ad ogni click controllo se ci sono degli snap con le giunzioni
-  this._getStradaIsSnappedCondition = function(snaps){
+  this._getStradaIsBeingSnappedCondition = function(snaps){
     var map = MapService.viewer.map;
     
     return function(e){
@@ -731,6 +823,66 @@ function IternetService(){
       }
       return true;
     }
+  };
+  
+  this._setupModifyVertexStradeConstraints = function(){
+    var self = this;
+    var map = MapService.viewer.map;
+    var editor = self._layers[this.layerCodes.STRADE].editor;
+    this._stradeSnaps.clear();
+    editor.onbefore('modifyFeature',function(feature){
+      return self._checkStradaIsCorrectlySnapped(feature);
+    });
+  };
+  
+  this._checkStradaIsCorrectlySnapped = function(feature){
+    var self = this;
+    var ret = true;
+    var map = MapService.viewer.map;
+    var snaps = this._stradeSnaps;
+    var coordinates = feature.getGeometry().getCoordinates();
+    var pixels = _.map(coordinates,function(coordinate){
+      return map.getPixelFromCoordinate(coordinate);
+    });
+    
+    var firstVertexSnapped = false;
+    var lastVertexSnapped = false;
+    
+    _.forEach(pixels,function(pixel,index){
+      snappedFeature = map.forEachFeatureAtPixel(pixel,
+        function(feature) {
+          return feature;
+        },self,function(layer){
+          return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
+        },self);
+      
+      if (snappedFeature){
+        if (index == 0){
+          firstVertexSnapped = true;
+        }
+        else if (index == (coordinates.length-1)){
+          lastVertexSnapped = true;
+        }
+        snaps.push(snappedFeature);
+      }
+    });
+    
+    if (snaps.length > 2){
+      GUI.notify.error("Una strada non può avere vertici intermedi in corrispondenza di giunzioni");
+      ret = false;
+    }
+    
+    if (!firstVertexSnapped){
+      GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
+      ret = false;
+    }
+    
+    if (!lastVertexSnapped){
+      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
+      ret = false;
+    }
+    this._stradeSnaps.clear();
+    return ret;
   };
   
   /* FINE VINCOLO SNAP DELLE STRADE */
@@ -794,11 +946,9 @@ function IternetService(){
           // e lo metto nella configurazione globale
           self._layers[layerCode].editor = editor;
         })
-        self.state.retrievingData = false;
         deferred.resolve();
       })
       .fail(function(){
-        self.state.retrievingData = false;
         deferred.reject();
       })
     }
@@ -812,6 +962,7 @@ function IternetService(){
     var self = this;
     var layerCodes = this.getLayerCodes();
     self.state.retrievingData = true;
+    this.state.retrievingData = true;
     return this._setupVectors()
     .then(function(){
       // eseguo le richieste de dati e mi tengo le promesse
@@ -870,10 +1021,29 @@ function IternetService(){
     return d.promise();
   };
   
-  this._postData = function(layerConfig,editsToPush){
-    var jsonData = JSON.stringify(editsToPush);
+  this._postData = function(editsToPush){
+    // mando un oggetto come nel caso del batch, ma in questo caso devo prendere solo il primo, e unico, elemento
+    if (editsToPush.length>1){
+      return this._postBatchData(editsToPush);
+    }
+    var layerName = editsToPush[0].layername;
+    var edits = editsToPush[0].edits;
+    var jsonData = JSON.stringify(edits);
     return $.post({
-      url: this.config.baseurl+layerConfig.name+"/",
+      url: this.config.baseurl+layerName+"/",
+      data: jsonData,
+      contentType: "application/json"
+    });
+  };
+  
+  this._postBatchData = function(multiEditsToPush){
+    var edits = {};
+    _.forEach(multiEditsToPush,function(editsToPush){
+      edits[editsToPush.layername] = editsToPush.edits;
+    });
+    var jsonData = JSON.stringify(edits);
+    return $.post({
+      url: this.config.baseurl,
       data: jsonData,
       contentType: "application/json"
     });

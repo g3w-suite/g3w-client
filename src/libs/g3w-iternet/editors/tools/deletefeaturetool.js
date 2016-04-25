@@ -14,10 +14,7 @@ function DeleteFeatureTool(editor){
   this.editingLayer = null;
 
   this.setters = {
-    deleteFeature: {
-      fnc: DeleteFeatureTool.prototype._deleteFeature,
-      fallback: DeleteFeatureTool.prototype._fallBack
-    }
+    deleteFeature: DeleteFeatureTool.prototype._deleteFeature
   };
   
   base(this);
@@ -131,10 +128,10 @@ proto.run = function(){
   
   var origGeometry = null;
   
-  this._deleteInteraction.on('deletestart',function(e){
-    var feature = e.features.getArray()[0];
+  /*this._selectInteraction.on('select',function(e){
+    var feature = e.selected[0];
     origGeometry = feature.getGeometry();
-  });
+  });*/
   
   this._deleteInteraction.on('deleteend',function(e){
     var feature = e.features.getArray()[0];
@@ -144,12 +141,10 @@ proto.run = function(){
         self._busy = true;
         self.pause(true);
         self.deleteFeature(feature,isNew)
-        .then(function(res){
+        .always(function(){
+          self._busy = false;
           self.pause(false);
         })
-        .fail(function(){
-          feature.setGeometry(origGeometry);
-        });
       }
     //}
     /*catch (error){

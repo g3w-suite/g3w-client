@@ -9,6 +9,7 @@ var VectorLayer = require('g3w/core/vectorlayer');
 //var Sequencer = require('./stepsequencer');
 var AddFeatureTool = require('./tools/addfeaturetool');
 var MoveFeatureTool = require('./tools/movepointtool');
+var ModifyFeatureTool = require('./tools/modifyfeaturetool');
 var DeleteFeatureTool = require('./tools/deletefeaturetool');
 var PickFeatureTool = require('./tools/pickfeaturetool');
 var EditBuffer = require('./editbuffer');
@@ -58,6 +59,7 @@ function Editor(options){
       },
       'LineString': {
         addfeature: AddFeatureTool,
+        modifyvertex: ModifyFeatureTool,
         movefeature: MoveFeatureTool,
         deletefeature: DeleteFeatureTool,
         editattributes: PickFeatureTool
@@ -189,8 +191,8 @@ proto.isToolActive = function(toolType){
    return false;
 };
 
-proto.commit = function(){
-  this._editBuffer.commit();
+proto.commit = function(newFeatures){
+  this._editBuffer.commit(newFeatures);
 };
 
 proto.undoAll = function(){
@@ -267,6 +269,28 @@ proto.getFieldsWithAttributes = function(fid){
     return fields;
   }
 };
+
+proto.setFieldsWithAttributes = function(feature,fields,relations){
+  var attributes = {};
+  _.forEach(fields,function(field){
+    attributes[field.name] = field.value;
+  });
+  
+  var relationsAttributes = null;
+  if (relations){
+    var relationsAttributes = {};
+    _.forEach(relations,function(relation,relationKey){
+      var attributes = {};
+      _.forEach(relation.fields,function(field){
+        attributes[field.name] = field.value;
+      });
+      relationsAttributes[relationKey] = attributes;
+    });
+  }
+  feature.setProperties(attributes);
+  this._editBuffer.updateAttributes(feature,relationsAttributes);
+};
+
 
 proto.getRelationsWithAttributes = function(fid){
   var fieldsPromise;
@@ -417,25 +441,4 @@ proto._setDirty = function(bool){
     this._dirty = bool;
   }
   this.emit("dirty",this._dirty);
-};
-
-proto.setFieldsWithAttributes = function(feature,fields,relations){
-  var attributes = {};
-  _.forEach(fields,function(field){
-    attributes[field.name] = field.value;
-  });
-  
-  var relationsAttributes = null;
-  if (relations){
-    var relationsAttributes = {};
-    _.forEach(relations,function(relation,relationKey){
-      var attributes = {};
-      _.forEach(relation.fields,function(field){
-        attributes[field.name] = field.value;
-      });
-      relationsAttributes[relationKey] = attributes;
-    });
-  }
-  
-  this._editBuffer.setAttributes(feature,attributes,relationsAttributes);
 };

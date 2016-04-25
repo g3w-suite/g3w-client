@@ -150,7 +150,13 @@ proto.stop = function(){
 
 proto.removeLastPoint = function(){
   if (this.drawInteraction){
-    this.drawInteraction.removeLastPoint();
+    // provo a rimuovere l'ultimo punto. Nel caso non esista la geometria gestisco silenziosamente l'errore
+    try{
+      this.drawInteraction.removeLastPoint();
+    }
+    catch (e){
+      //
+    }
   }
 };
 

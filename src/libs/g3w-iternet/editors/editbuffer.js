@@ -23,10 +23,9 @@ module.exports = EditBuffer;
 var proto = EditBuffer.prototype;
 
 proto.commit = function(){
-  var vectorLayer = this._editor._vectorLayer;
-  var newFeatures = this.collectFeatures('new');
-  this._editor._editVectorLayer.getSource().clear();
-  this._editor._vectorLayer.getSource().addFeatures(newFeatures);
+  var newFeatures = this._editor.getEditVectorLayer().getFeatures();
+  this._editor.getVectorLayer().addFeatures(newFeatures);
+  this._editor.getEditVectorLayer().clear();
   this._clearBuffers();
   this._cloneLayer();
 };
@@ -58,11 +57,11 @@ proto.deleteFeature = function(feature){
   console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
-proto.setAttributes = function(feature,attributes,relationsAttributes){
+proto.updateAttributes = function(feature,relationsAttributes){
   if(!feature.getId()){
     feature.setId('_new_'+Date.now());
   }
-  this._addEditToAttributesBuffer(feature,attributes,relationsAttributes);
+  this._addEditToAttributesBuffer(feature,relationsAttributes);
   console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
@@ -152,15 +151,12 @@ proto.collectFeatures = function(state,asGeoJSON){
       }
     }
     
-    var feature = new ol.Feature();
     var addedFeature = (state == 'new' && isNew && !_.isNull(geometry));
     var updatedFeature = (state == 'updated' && !isNew && !_.isNull(geometry));
     var deletedFeature = (state == 'deleted' && !isNew && _.isNull(geometry));
    
     if (addedFeature || updatedFeature){
-      feature.setId(fid);
-      feature.setGeometry(geometry);
-      feature.setProperties(attributes);
+      feature = self.createFeature(fid,geometry,attributes);
       if (asGeoJSON){
         var feature = GeoJSONFormat.writeFeatureObject(feature);
       }
@@ -171,6 +167,14 @@ proto.collectFeatures = function(state,asGeoJSON){
     }    
   })
   return features;
+};
+
+proto.createFeature = function(fid,geometry,attributes){
+  var feature = new ol.Feature();
+  feature.setId(fid);
+  feature.setGeometry(geometry);
+  feature.setProperties(attributes);
+  return feature;
 };
 
 proto.collectRelationsAttributes = function(){
@@ -201,8 +205,9 @@ proto._addEditToGeometryBuffer = function(feature,operation){
   this._setDirty();
 };
 
-proto._addEditToAttributesBuffer = function(feature,attributes,relationsAttributes){
+proto._addEditToAttributesBuffer = function(feature,relationsAttributes){
   var fid = feature.getId();
+  var attributes = feature.getProperties();
   var attributesBuffer = this._attributesBuffer;
 
   if (!_.has(attributesBuffer,fid)){

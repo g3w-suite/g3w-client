@@ -84,6 +84,29 @@ proto.setData = function(featuresData){
   }
 };
 
+proto.setFeatureData = function(oldfid,fid,geometry,attributes){
+  var feature = this.getFeatureById(oldfid);
+  if (fid){
+    feature.setId(fid);
+  }
+  
+  if (geometry){
+    feature.setGeometry(geometry);
+  }
+  
+  if (attributes){
+    var oldAttributes = feature.getProperties();
+    var newAttributes =_.assign(oldAttributes,attributes);
+    feature.setProperties(newAttributes);
+  }
+  
+  return feature;
+};
+
+proto.addFeatures = function(features){
+  this.getSource().addFeatures(features);
+};
+
 proto.setFeaturesFilter = function(featuresFilter){
   this._featuresFilter = featuresFilter;
 };
@@ -106,6 +129,10 @@ proto.setPkField = function(){
   }
 };
 
+proto.getFeatures = function(){
+  return this.getSource().getFeatures();
+};
+
 proto.getFeatureIds = function(){
   var featureIds = _.map(this.getSource().getFeatures(),function(feature){
     return feature.getId();
@@ -115,6 +142,12 @@ proto.getFeatureIds = function(){
 
 proto.getFields = function(){
   return _.cloneDeep(this._fields);
+};
+
+proto.getFieldsNames = function(){
+  return _.map(this._fields,function(field){
+    return field.name;
+  });
 };
 
 proto.getFieldsWithAttributes = function(fid){
@@ -155,6 +188,20 @@ proto.setRelations = function(relations){
 
 proto.getRelations = function(){
   return this._relations;
+};
+
+proto.getRelationsNames = function(){
+  return _.keys(this._relations);
+};
+
+proto.getRelationFieldsNames = function(relation){
+  var relationFields = this._relations[relation];
+  if (relationFields){
+    return _.map(relationFields,function(field){
+      return field.name;
+    });
+  }
+  return null;
 };
 
 proto.getRelationsWithAttributes = function(fid){
@@ -218,6 +265,10 @@ proto.getSource = function(){
 
 proto.getFeatureById = function(id){
   return this._olLayer.getSource().getFeatureById(id);
+};
+
+proto.clear = function(){
+  this.getSource().clear();
 };
 
 proto.addToMap = function(map){

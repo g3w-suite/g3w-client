@@ -1,3 +1,5 @@
+var resolvedValue = require('g3w/core/utils').resolvedValue;
+var rejectedValue = require('g3w/core/utils').rejectedValue;
 var GUI = require('g3w/gui/gui');
 var ProjectService = require('g3w/core/projectservice').ProjectService;
 var MapService = require('g3w/core/mapservice');
@@ -84,14 +86,14 @@ proto.onShow = function(container){
   this._setupFields();
   var panel = this._setupPanel();
   this._mountPanel(panel,container);
-  return panel;
+  return resolvedValue(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 proto.onClose = function(){
   this.panelComponent.$destroy(true);
   this.panelComponent = null;
-  return true;
+  return resolvedValue(true);
 };
 
 proto._isNew = function(){

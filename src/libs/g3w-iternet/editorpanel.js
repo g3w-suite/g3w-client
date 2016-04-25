@@ -1,3 +1,4 @@
+var resolvedValue = require('g3w/core/utils').resolvedValue;
 var GUI = require('g3w/gui/gui');
 var Service = require('./iternetservice');
 
@@ -50,7 +51,7 @@ var PanelComponent = Vue.extend({
             },
             {
               title: "Rimuovi giunzione",
-              tooltype: '',
+              tooltype: 'deletefeature',
               icon: 'iternetDeletePoint.png'
             },
             {
@@ -71,7 +72,7 @@ var PanelComponent = Vue.extend({
             },
             {
               title: "Sposta vertice strada",
-              tooltype: '',
+              tooltype: 'modifyvertex',
               icon: 'iternetMoveVertex.png'
             },
             {
@@ -102,7 +103,7 @@ var PanelComponent = Vue.extend({
   },
   methods: {
     toggleEditing: function(){
-      Service.togglEditing();
+      Service.toggleEditing();
     },
     saveEdits: function(){
       Service.saveEdits();
@@ -155,14 +156,24 @@ var proto = Panel.prototype;
 proto.onShow = function(container){
   var panel = this.panelComponent = new PanelComponent();
   panel.$mount().$appendTo(container);
-  return panel;
+  return resolvedValue(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 proto.onClose = function(){
-  this.panelComponent.$destroy(true);
-  this.panelComponent = null;
-  return true;
+  var self = this;
+  var deferred = $.Deferred();
+  Service.stop()
+  .then(function(){
+    self.panelComponent.$destroy(true);
+    self.panelComponent = null;
+    deferred.resolve();
+  })
+  .fail(function(){
+    deferred.reject();
+  })
+  
+  return deferred.promise();
 };
 
 module.exports = Panel;
