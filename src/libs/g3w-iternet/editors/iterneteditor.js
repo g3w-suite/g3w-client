@@ -1,8 +1,8 @@
 var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var GUI = require('g3w/gui/gui');
-var Editor = require('./editor');
-var Form = require('./attributesform');
+var Editor = require('g3w-editing/editor');
+var Form = require('g3w-editing/attributesform');
 
 function IternetEditor(options){
   base(this,options);
