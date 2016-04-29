@@ -58,13 +58,13 @@ Vue.component('sidebar',{
     },
     ready: function(){
       // temporaneo, per avviare direttamente iternet
-      //var iternet = require('g3w-iternet/plugin');
-      //iternet.startEditing();
+      var iternet = require('g3w-iternet/plugin');
+      iternet.startEditing();
     }
 });
 
 Vue.component('sidebar-item',{
-	props: ['data-icon','data-label','data-type','is-active'],
+	props: ['data-icon','data-label','data-type','open-on-start'],
   template: require('./sidebar-item.html'),
   data: function() {
     return {

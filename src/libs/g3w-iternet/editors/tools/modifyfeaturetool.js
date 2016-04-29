@@ -45,7 +45,6 @@ proto.run = function(){
   var origGeometry = null;
   
   this._modifyInteraction.on('modifystart',function(e){
-    console.log("modifystart");
     var feature = e.features.getArray()[0];
     origGeometry = feature.getGeometry().clone();
   });
@@ -118,7 +117,15 @@ proto._modifyFeature = function(feature,isNew){
 };
 
 proto.removePoint = function(coordinate){
-  
+  if (this._modifyInteraction){
+    // provo a rimuovere l'ultimo punto. Nel caso non esista la geometria gestisco silenziosamente l'errore
+    try{
+      this._modifyInteraction.removePoint();
+    }
+    catch (e){
+      console.log(e);
+    }
+  }
 };
 
 proto._fallBack = function(feature){

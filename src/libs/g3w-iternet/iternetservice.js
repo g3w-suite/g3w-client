@@ -8,9 +8,9 @@ var VectorLayer = require('g3w/core/vectorlayer');
 
 var GUI = require('g3w/gui/gui');
 
-
-var Editor = require('./editors/editor');
-var Form = require('./attributesform');
+var AccessiEditor = require('./editors/accessieditor');
+var GiunzioniEditor = require('./editors/giunzionieditor');
+var StradeEditor = require('./editors/stradeeditor');
 
 function IternetService(){
   var self = this;
@@ -23,12 +23,16 @@ function IternetService(){
     ACCESSI: 'accessi' 
   };
   
+  this._editorClasses = {};
+  this._editorClasses[layerCodes.ACCESSI] = AccessiEditor;
+  this._editorClasses[layerCodes.GIUNZIONI] = GiunzioniEditor;
+  this._editorClasses[layerCodes.STRADE] = StradeEditor;
+  
   this._layers = {};
   this._layers[layerCodes.ACCESSI] = {
     layerCode: layerCodes.ACCESSI,
     vector: null,
     editor: null,
-    ol3ListenersKeys: [],
     style: function(feature){
       var color = '#d9b581';
       switch (feature.get('tip_acc')){
@@ -60,7 +64,6 @@ function IternetService(){
     layerCode: layerCodes.GIUNZIONI,
     vector: null,
     editor: null,
-    ol3ListenersKeys: [],
     style: new ol.style.Style({
       image: new ol.style.Circle({
         radius: 5,
@@ -74,7 +77,6 @@ function IternetService(){
     layerCode: layerCodes.STRADE,
     vector: null,
     editor: null,
-    ol3ListenersKeys: [],
     style: new ol.style.Style({
       stroke: new ol.style.Stroke({
         width: 3,
@@ -86,6 +88,8 @@ function IternetService(){
   this._loadDataOnMapViewChangeListener = null;
   
   this._currentEditingLayer = null;
+  
+  this._loadedExtent = null;
   
   this.state = {
     editing: {
@@ -109,6 +113,10 @@ function IternetService(){
   
   this.init = function(config){
     this.config = config;
+    _.forEach(this._layers,function(iternetLayer,layerCode){
+      iternetLayer.name = config.layers[layerCode].name;
+      iternetLayer.id = config.layers[layerCode].id;
+    })
   };
   
   this.stop = function(){
@@ -117,7 +125,6 @@ function IternetService(){
       this._cancelOrSave()
       .then(function(){
         self._stopEditing();
-        self._cleanUp();
         deferred.resolve();
       })
       .fail(function(){
@@ -138,14 +145,7 @@ function IternetService(){
       this._startEditing();
     }
     else if (this.state.editing.on) {
-      this._cancelOrSave()
-      .then(function(){
-        self._stopEditing();
-        deferred.resolve();
-      })
-      .fail(function(){
-        deferred.reject();
-      })
+      return this.stop();
     }
     return deferred.promise();
   };
@@ -159,8 +159,6 @@ function IternetService(){
     var self = this;
     var layer = this._layers[layerCode];
     if (layer) {
-      this._cleanUpListeners();
-      var toolOptions = this._getOptionsForEditTool(layer,toolType);
       var currentEditingLayer = this._getCurrentEditingLayer();
       
       // se si sta chiedendo lo stesso editor
@@ -171,7 +169,7 @@ function IternetService(){
         }
         // altrimenti attivo il tool richiesto
         else {
-          this._startEditingTool(currentEditingLayer,toolType,toolOptions);
+          this._startEditingTool(currentEditingLayer,toolType);
         }
       }
       // altrimenti
@@ -183,12 +181,12 @@ function IternetService(){
           this._cancelOrSave(2)
           .then(function(){
             if(self._stopEditor()){
-              self._startEditingTool(layer,toolType,toolOptions);
+              self._startEditingTool(layer,toolType);
             }
           })
         }
         else {
-          this._startEditingTool(layer,toolType,toolOptions);
+          this._startEditingTool(layer,toolType);
         }
       }
     }
@@ -203,7 +201,7 @@ function IternetService(){
   this._startEditing = function(){
     var self = this;
     //try {
-      this._loadData()
+      this._setupAndLoadAllVectorsData()
       .then(function(data){
         // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
         self._addToMap();
@@ -213,7 +211,7 @@ function IternetService(){
         if (!self._loadDataOnMapViewChangeListener){
           self._loadDataOnMapViewChangeListener = MapService.onafter('setMapView',function(){
             if (self.state.editing.on && self.state.editing.enabled){
-              self._loadData();
+              self._loadAllVectorsData();
             }
           });
         }
@@ -237,34 +235,19 @@ function IternetService(){
       });
       this._updateEditingState();
       self.state.editing.on = false;
+      self._cleanUp()
       self.emit("editingstopped");
     }
   };
   
   this._cleanUp = function(){
-    this._clearLayerOl3Listeners();
-    this._cleanUpListeners();
-  };
-  
-  this._cleanUpListeners = function(){
-    $('body').off('keypress',this._removeLastPoint);
-  };
-  
-  this._clearLayerOl3Listeners = function(layer){
-    var layer = layer || this._getCurrentEditingLayer();
-    if (layer){
-      _.forEach(layer.ol3ListenersKeys,function(listenerKey){
-        ol.Observable.unByKey(listenerKey);
-      });
-      layer.ol3ListenersKeys = [];
-    }
+    this._loadedExtent = null;
   };
   
   this._startEditor = function(layer){
     // avvio l'editor 
-    if (layer.editor.start()){
+    if (layer.editor.start(this)){
       // e registro i listeners
-      this._setupEditToolsListeners(layer);
       this._setCurrentEditingLayer(layer);
       return true;
     }
@@ -287,7 +270,6 @@ function IternetService(){
     var ret = true;
     var layer = this._getCurrentEditingLayer();
     if (layer) {
-      this._clearLayerOl3Listeners(layer);
       ret = layer.editor.stop(reset);
       if (ret){
         this._setCurrentEditingLayer();
@@ -306,10 +288,6 @@ function IternetService(){
       }
     }
     return ret;
-  };
-  
-  this._trackOl3Listeners = function(layer,listenerKey){
-    layer.ol3ListenersKeys.push(listenerKey);
   };
   
   this._cancelOrSave = function(type){
@@ -494,399 +472,6 @@ function IternetService(){
     }
   };
   
-  this._getOptionsForEditTool = function(layer,toolType){
-    var options;
-    
-    switch (layer.layerCode){
-      case this.layerCodes.STRADE:
-        if (toolType=='addfeature'){
-          options = {
-            snap: {
-              vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
-            },
-            finishCondition: this._getCheckSnapsCondition(this._stradeSnaps),
-            condition: this._getStradaIsBeingSnappedCondition(this._stradeSnaps)
-          }
-        }
-        if (toolType=='modifyvertex'){
-          options = {
-            snap: {
-              vectorLayer: this._layers[this.layerCodes.GIUNZIONI].vector
-            },
-            deleteCondition: function(mapBrowserEvent){
-              return false;
-            }
-          }
-        }
-        break;
-      default:
-        options = null
-    }
-    return options;
-  };
-  
-  this._setupEditToolsListeners = function(layer){
-    switch (layer.layerCode){
-      case this.layerCodes.GIUNZIONI:
-        this._setupMoveGiunzioniListener(layer);
-        this._setupDeleteGiunzioniListener(layer);
-        break;
-      case this.layerCodes.STRADE:
-        this._setupDrawStradeConstraints();
-        this._setupModifyVertexStradeConstraints();
-    }
-    
-    this._setupAddFeatureAttributesEditingListeners(layer);
-    this._setupEditAttributesListeners(layer);
-    this._askConfirmToDeleteEditingListener(layer);
-  };
-  
-  // apre form attributi per inserimento
-  this._askConfirmToDeleteEditingListener = function(layer){
-    var self = this;
-    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
-      GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
-        next(result);
-      })
-    });
-  };
-  
-  // apre form attributi per inserimento
-  this._setupAddFeatureAttributesEditingListeners = function(layer){
-    var self = this;
-    layer.editor.onbeforeasync('addFeature',function(feature,next){
-      self._openEditorForm('new',feature,layer.layerCode,next)
-    });
-  };
-  
-  // apre form attributi per editazione
-  this._setupEditAttributesListeners = function(layer){
-    var self = this;
-    layer.editor.onafter('pickFeature',function(feature){
-      self._openEditorForm('old',feature,layer.layerCode)
-    });
-  };
-  
-  this._openEditorForm = function(isNew,feature,layerCode,next){
-    var editor = self._layers[layerCode].editor;
-    var fid = feature.getId();
-    var fields = editor.getFieldsWithAttributes(fid);
-    
-    // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
-    // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
-    var pk = self._layers[layerCode].vector.pk;
-    if (pk && _.isNull(editor.getField(pk))){
-      _.forEach(feature.getProperties(),function(value,attribute){
-        var field = editor.getField(attribute,fields);
-        if(field){
-          field.value = value;
-        }
-      });
-    }
-    
-    var relationsPromise = editor.getRelationsWithAttributes(fid);
-    relationsPromise
-    .then(function(relations){
-      var form = new Form({
-        name: "Edita attributi "+layerCode,
-        id: "attributes-edit-"+layerCode,
-        dataid: layerCode,
-        pk: self._layers[layerCode].vector.pk,
-        isnew: editor.isNewFeature(feature.getId()),
-        fields: fields,
-        relations: relations,
-        buttons:[
-          {
-            title: "Salva",
-            class: "btn-danger",
-            cbk: function(fields,relations){
-              editor.setFieldsWithAttributes(feature,fields,relations);
-              if (next){
-                next(true);
-              }
-            }
-          },
-          {
-            title: "Cancella",
-            class: "btn-primary",
-            cbk: function(){
-              if (next){
-                next(false);
-              }
-            }
-          }
-        ]
-      });
-      GUI.showForm(form,true);
-    })
-    .fail(function(){
-      if (next){
-        next(false);
-      }
-    })
-  };
-  
-  /* INIZIO MODIFICA TOPOLOGICA DELLE GIUNZIONI */
-  
-  this._setupMoveGiunzioniListener = function(layer){
-    var self = this;
-    layer.editor.on('movestart',function(feature){
-      // rimuovo eventuali precedenti listeners
-      self._startMovingGiunzione(feature);
-    });
-  };
-  
-  this._stradeToUpdate = [];
-  
-  this._startMovingGiunzione = function(feature){
-    var self = this;
-    var giunzione = feature;
-    var cod_gnz = giunzione.get('cod_gnz');
-    // devo avviare l'editor delle strade
-    this._stradeToUpdate = [];
-    var stradeEditor = this._layers[this.layerCodes.STRADE].editor;
-    var strade = this._layers[this.layerCodes.STRADE].vector.getSource().getFeatures();
-    _.forEach(strade,function(strada){
-      var nod_ini = strada.get('nod_ini');
-      var nod_fin = strada.get('nod_fin');
-      var ini = (nod_ini == cod_gnz);
-      var fin = (nod_fin == cod_gnz);
-      if (ini || fin){
-        var initial = ini ? true : false;
-        self._stradeToUpdate.push(strada);
-        self._startGiunzioniStradeTopologicalEditing(giunzione,strada,initial)
-      }
-    })
-    self._layers[this.layerCodes.GIUNZIONI].editor.once('moveend',function(feature){
-      if ( self._stradeToUpdate.length){
-        if (!stradeEditor.isStarted()){
-          stradeEditor.start();
-        }
-        _.forEach( self._stradeToUpdate,function(strada){
-          stradeEditor.updateFeature(strada);
-        })
-      }
-    });
-  };
-  
-  this._startGiunzioniStradeTopologicalEditing = function(giunzione,strada,initial){
-    var stradaGeom = strada.getGeometry();
-    var stradaCoords = strada.getGeometry().getCoordinates();
-    var coordIndex = initial ? 0 : stradaCoords.length-1;
-    var giunzioneGeom = giunzione.getGeometry();
-    var listenerKey = giunzioneGeom.on('change',function(e){
-      stradaCoords[coordIndex] = e.target.getCoordinates();
-      stradaGeom.setCoordinates(stradaCoords);
-    });
-    this._trackOl3Listeners(this._layers[this.layerCodes.GIUNZIONI],listenerKey);
-  };
-  
-  /* FINE MODIFICA TOPOLOGICA GIUNZIONI */
-  
-  /* INIZIO RIMOZIONE GIUNZIONI */
-  
-  /*this._askConfirmToDeleteEditingListener = function(layer){
-    var self = this;
-    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
-      GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
-        next(result);
-      })
-    });
-  };*/
-  
-  this._setupDeleteGiunzioniListener = function(layer){
-    var self = this;
-    layer.editor.onbeforeasync('deleteFeature',function(feature,isNew,next){
-      var stopDeletion = false;
-      var stradeVectorLayer = self._layers[self.layerCodes.STRADE].vector;
-      _.forEach(stradeVectorLayer.getFeatures(),function(strada){
-        var cod_gnz = feature.get('cod_gnz');
-        var nod_ini = strada.get('nod_ini');
-        var nod_fin = strada.get('nod_fin');
-        var ini = (nod_ini == cod_gnz);
-        var fin = (nod_fin == cod_gnz);
-        if (ini || fin){
-          stopDeletion = true;
-        }
-      });
-      
-      if (stopDeletion){
-        GUI.notify.error("Non è possibile rimuovere la giunzioni perché risulta connessa ad una o più strade");
-      }
-      next(!stopDeletion);
-    });
-  };
-  
-  /* FINE GESTIONE RIMOZIONE GIUNZIONI */
-  
-  /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
-  
-  this._stradeSnaps = new function(){
-    var snaps = [];
-    this.length = 0;
-    
-    this.push = function(feature){
-      snaps.push(feature);
-      this.length += 1;
-    };
-    
-    this.getLast = function(){
-      return snaps[snaps.length-1];
-    };
-    
-    this.getFirst = function(){
-      return snaps[0];
-    };
-    
-    this.clear = function(){
-      snaps.splice(0,snaps.length);
-      this.length = 0;
-    };
-    
-    this.getSnaps = function(){
-      return snaps;
-    };
-  };
-  
-  this._removeLastPoint = _.bind(function(e){
-    var editor = this._layers[this.layerCodes.STRADE].editor;
-    var toolType = editor.getActiveTool().getType();
-    // il listener viene attivato per tutti i tool dell'editor strade, per cui devo controllare che sia quello giusto
-    if (toolType == 'addfeature'){
-    // CANC
-      if(e.keyCode==46){
-        e.preventDefault();
-        e.stopPropagation();
-        editor.getActiveTool().getTool().removeLastPoint();
-      }
-    }
-  },this);
-  
-  this._setupDrawStradeConstraints = function(){
-    var mapId = MapService.viewer.map.getTargetElement().id;
-    var self = this;
-    var map = MapService.viewer.map;
-    var editor = self._layers[this.layerCodes.STRADE].editor;
-
-    $('body').keyup(this._removeLastPoint);
-    this._stradeSnaps.clear();
-    editor.onbefore('addFeature',function(feature){
-      var snaps = self._stradeSnaps.getSnaps();
-      if (snaps.length == 2){
-        feature.set('nod_ini',snaps[0].get('cod_gnz'));
-        feature.set('nod_fin',snaps[1].get('cod_gnz'));
-        self._stradeSnaps.clear();
-        return true;
-      }
-      return false;
-    });
-  };
-  
-  this._getCheckSnapsCondition = function(snaps){
-    // ad ogni click controllo se ci sono degli snap con le giunzioni
-    return function(e){
-      if (snaps.length == 2){
-        return true;
-      }
-      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
-      return false;
-    }
-  };
-  
-  // ad ogni click controllo se ci sono degli snap con le giunzioni
-  this._getStradaIsBeingSnappedCondition = function(snaps){
-    var map = MapService.viewer.map;
-    
-    return function(e){
-      snappedFeature = map.forEachFeatureAtPixel(e.pixel,
-          function(feature) {
-            return feature;
-          },self,function(layer){
-            return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
-          },self);
-      
-      // se ho già due snap e questo click non è su un'altra giunzione, oppure se ho più di 2 snap, non posso inserire un ulteriore vertice
-      if ((snaps.length == 2 && (!snappedFeature || snappedFeature != snaps.getSnaps()[1]))){
-        var lastSnapped
-        GUI.notify.error("Una strada non può avere vertici intermedi in corrispondenza di giunzioni.<br> Premere <b>CANC</b> per rimuovere l'ultimo vertice.");
-        return false;
-      }
-      
-      if (snappedFeature && snaps.length < 2){
-        snaps.push(snappedFeature);
-      }
-      
-      // se non ci sono snap, vuol dire che sono ancora al primo click e non ho snappato con la giunzione iniziale
-      if (snaps.length == 0){
-        GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
-        return false;
-      }
-      return true;
-    }
-  };
-  
-  this._setupModifyVertexStradeConstraints = function(){
-    var self = this;
-    var map = MapService.viewer.map;
-    var editor = self._layers[this.layerCodes.STRADE].editor;
-    this._stradeSnaps.clear();
-    editor.onbefore('modifyFeature',function(feature){
-      return self._checkStradaIsCorrectlySnapped(feature);
-    });
-  };
-  
-  this._checkStradaIsCorrectlySnapped = function(feature){
-    var self = this;
-    var ret = true;
-    var map = MapService.viewer.map;
-    var snaps = this._stradeSnaps;
-    var coordinates = feature.getGeometry().getCoordinates();
-    var pixels = _.map(coordinates,function(coordinate){
-      return map.getPixelFromCoordinate(coordinate);
-    });
-    
-    var firstVertexSnapped = false;
-    var lastVertexSnapped = false;
-    
-    _.forEach(pixels,function(pixel,index){
-      snappedFeature = map.forEachFeatureAtPixel(pixel,
-        function(feature) {
-          return feature;
-        },self,function(layer){
-          return (layer == self._layers[this.layerCodes.GIUNZIONI].vector.getLayer());
-        },self);
-      
-      if (snappedFeature){
-        if (index == 0){
-          firstVertexSnapped = true;
-        }
-        else if (index == (coordinates.length-1)){
-          lastVertexSnapped = true;
-        }
-        snaps.push(snappedFeature);
-      }
-    });
-    
-    if (snaps.length > 2){
-      GUI.notify.error("Una strada non può avere vertici intermedi in corrispondenza di giunzioni");
-      ret = false;
-    }
-    
-    if (!firstVertexSnapped){
-      GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
-      ret = false;
-    }
-    
-    if (!lastVertexSnapped){
-      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
-      ret = false;
-    }
-    this._stradeSnaps.clear();
-    return ret;
-  };
-  
-  /* FINE VINCOLO SNAP DELLE STRADE */
-  
   this._addToMap = function(){
     var map = MapService.viewer.map;
     var layerCodes = this.getLayerCodes();
@@ -895,109 +480,157 @@ function IternetService(){
     })
   };
   
-  this._setupVectors = function(){
+  this._setupAndLoadAllVectorsData = function(){
+    var self = this;
     var deferred = $.Deferred();
     var layerCodes = this.getLayerCodes();
     var layersReady = _.reduce(layerCodes,function(ready,layerCode){
       return !_.isNull(self._layers[layerCode].vector);
     });
+    self.state.retrievingData = true;
     if (!layersReady){
       // eseguo le richieste delle configurazioni e mi tengo le promesse
-      var configRequests = _.map(layerCodes,function(layerCode){
-        return self._getLayerConfig(self.config.layers[layerCode]);
+      var vectorLayersSetup = _.map(layerCodes,function(layerCode){
+        return self._setupVectorLayer(self._layers[layerCode]);
       });
       // aspetto tutte le promesse
-      $.when.apply(this,configRequests)
+      $.when.apply(this,vectorLayersSetup)
       .then(function(){
-        var args = Array.prototype.slice.call(arguments);
-        // mi creo un oggetto avente per chiave il layerCode e per valore un array con i risultati
-        // delle richieste di configurazioni nel primo elemento e i dati nel secondo
-        var layersResults = _.zipObject(layerCodes,args);
-        _.forEach(layersResults,function(layerConfig,layerCode){
-          var layerBaseConfig = self.config.layers[layerCode];
-          // instanzio il VectorLayer
-          var vectorLayer = self._layers[layerCode].vector = self._createVector({
-            geometrytype: layerConfig.vector.geometrytype,
-            format: layerConfig.vector.format,
-            crs: "EPSG:3003",
-            id: layerBaseConfig.id,
-            name: layerBaseConfig.name,
-            pk: layerConfig.pk  
-          });
-          // ottengo la definizione dei campi
-          vectorLayer.setFields(layerConfig.vector.fields);
-          
-          var relations = layerConfig.vector.relations;
-          
-          if(relations){
-            // per dire a vectorLayer che i dati delle relazioni verranno caricati solo quando richiesti (es. aperture form di editing)
-            vectorLayer.lazyRelations = true;
-            vectorLayer.setRelations(relations);
-          }
-          // setto lo stile del layer OL
-          vectorLayer.setStyle(self._layers[layerCode].style);
-          
-          // istanzio l'editor
-          var editor = new Editor;
+        var vectorLayers = Array.prototype.slice.call(arguments);
+        var layerCodes = self.getLayerCodes();
+        var vectorLayersForIternetCode = _.zipObject(layerCodes,vectorLayers);
+        
+        _.forEach(vectorLayersForIternetCode,function(vectorLayer,layerCode){
+          self._layers[layerCode].vector = vectorLayer;
+          var editor = new self._editorClasses[layerCode];
           editor.setVectorLayer(vectorLayer);
           editor.on("dirty",function(dirty){
             self.state.hasEdits = dirty;
           })        
-          // e lo metto nella configurazione globale
           self._layers[layerCode].editor = editor;
+        });
+
+        self._loadAllVectorsData()
+        .then(function(){
+          deferred.resolve();
         })
-        deferred.resolve();
+        .fail(function(){
+          deferred.reject();
+        })
+        .always(function(){
+          self.state.retrievingData = false;
+        })
       })
       .fail(function(){
         deferred.reject();
       })
     }
     else{
-      deferred.resolve();
+      this._loadAllVectorsData()
+      .then(function(){
+        deferred.resolve();
+      })
+      .fail(function(){
+        deferred.reject();
+      })
+      .always(function(){
+        self.state.retrievingData = false;
+      })
     }
     return deferred.promise();
   };
   
-  this._loadData = function(){
+  this._loadAllVectorsData = function(vectorLayers){
+    
+    // verifico che il BBOX attuale non sia stato già caricato
+    var bbox = MapService.state.bbox;
+    var loadedExtent = this._loadedExtent;
+    if (loadedExtent && ol.extent.containsExtent(loadedExtent,bbox)){
+        return resolvedValue();
+    }
+    if (!loadedExtent){
+      this._loadedExtent = bbox;
+    }
+    else {
+      this._loadedExtent = ol.extent.extend(loadedExtent,bbox);
+    }
+    
+    
+    var deferred = $.Deferred();
     var self = this;
-    var layerCodes = this.getLayerCodes();
-    self.state.retrievingData = true;
-    this.state.retrievingData = true;
-    return this._setupVectors()
+    var vectorDataRequests = _.map(self._layers,function(iternetLayer){
+      return self._loadVectorData(iternetLayer.vector,bbox);
+    });
+    $.when.apply(this,vectorDataRequests)
     .then(function(){
-      // eseguo le richieste de dati e mi tengo le promesse
-      var dataRequests = _.map(layerCodes,function(layerCode){
-        return self._getLayerData(self.config.layers[layerCode]);
-      }); 
-      
-      return $.when.apply(this,dataRequests)
-      .then(function(){
-        var args = Array.prototype.slice.call(arguments);
-        // mi creo un oggetto avente per chiave il layerCode e per valore un array con i risultati
-        // delle richieste di configurazioni nel primo elemento e i dati nel secondo
-        var layersResults = _.zipObject(layerCodes,args);
-        _.forEach(layersResults,function(layerData,layerCode){
-          var iternetLayer = self._layers[layerCode];
-          self._setVectorData(iternetLayer.vector,layerData.vector.data);
-          if (layerData.featurelocks){
-            iternetLayer.editor.setFeatureLocks(layerData.featurelocks);
-          }
-        });
-      });
+      var vectorsDataResponse = Array.prototype.slice.call(arguments);
+      var layerCodes = self.getLayerCodes();
+      var vectorDataResponseForIternetCode = _.zipObject(layerCodes,vectorsDataResponse);
+      _.forEach(vectorDataResponseForIternetCode,function(vectorDataResponse,layerCode){
+        if (vectorDataResponse.featurelocks){
+          self._layers[layerCode].editor.setFeatureLocks(vectorDataResponse.featurelocks);
+        }
+      })
+      deferred.resolve();
     })
-    .always(function(){
-      self.state.retrievingData = false;
-    })
+    .fail(function(){
+      deferred.reject();
+    });
+    
+    return deferred.promise();
   };
   
-  this._setVectorData = function(vectorLayer,data){
-    vectorLayer.setData(data);
+  this._setupVectorLayer = function(layerConfig){
+    var deferred = $.Deferred();
+    // eseguo le richieste delle configurazioni e mi tengo le promesse
+    self._getVectorLayerConfig(layerConfig.name)
+    .then(function(vectorConfigResponse){
+      // instanzio il VectorLayer
+      var vectorConfig = vectorConfigResponse.vector;
+      var vectorLayer = self._createVectorLayer({
+        geometrytype: vectorConfig.geometrytype,
+        format: vectorConfig.format,
+        crs: "EPSG:3003",
+        id: layerConfig.id,
+        name: layerConfig.name,
+        pk: layerConfig.pk  
+      });
+      // ottengo la definizione dei campi
+      vectorLayer.setFields(vectorConfig.fields);
+      
+      var relations = vectorConfig.relations;
+      
+      if(relations){
+        // per dire a vectorLayer che i dati delle relazioni verranno caricati solo quando richiesti (es. aperture form di editing)
+        vectorLayer.lazyRelations = true;
+        vectorLayer.setRelations(relations);
+      }
+      // setto lo stile del layer OL
+      if (layerConfig.style) {
+        vectorLayer.setStyle(layerConfig.style);
+      }
+      deferred.resolve(vectorLayer);
+    })
+    .fail(function(){
+      deferred.reject();
+    })
+    return deferred.promise();
+  };
+  
+  this._loadVectorData = function(vectorLayer,bbox){
+    var self = this;
+    // eseguo le richieste de dati e mi tengo le promesse
+    return self._getVectorLayerData(vectorLayer,bbox)
+    .then(function(vectorDataResponse){
+      vectorLayer.setData(vectorDataResponse.vector.data);
+      return vectorDataResponse;
+    })
   };
   
   // ottiene la configurazione del vettoriale (qui richiesto solo per la definizione degli input)
-  this._getLayerConfig = function(layerConfig){
+  this._getVectorLayerConfig = function(layerName){
     var d = $.Deferred();
-    $.get(this.config.baseurl+layerConfig.name+"/?config")
+    $.get(this.config.baseurl+layerName+"/?config")
     .done(function(data){
       d.resolve(data);
     })
@@ -1008,10 +641,9 @@ function IternetService(){
   };
   
   // ottiene il vettoriale in modalità editing
-  this._getLayerData = function(layerConfig){
+  this._getVectorLayerData = function(vectorLayer,bbox){
     var d = $.Deferred();
-    var bbox = MapService.state.bbox;
-    $.get(this.config.baseurl+layerConfig.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
+    $.get(this.config.baseurl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
     .done(function(data){
       d.resolve(data);
     })
@@ -1061,7 +693,7 @@ function IternetService(){
     $.get(this.config.baseurl+layerConfig.name+"/?unlock");
   };
   
-  this._createVector = function(options,data){
+  this._createVectorLayer = function(options,data){
     var vector = new VectorLayer(options);
     return vector;
   };

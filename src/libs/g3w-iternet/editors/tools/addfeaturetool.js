@@ -17,39 +17,7 @@ function AddFeatureTool(editor,options){
   this._snap = options.snap || null;
   this._snapInteraction = null; 
   
-  this.finishCondition_ = options.finishCondition || _.constant(true);
-  
-  // TODO: Monkey patching in attesa della pull request https://github.com/openlayers/ol3/pull/#5261
-  (function(self){
-    ol.interaction.Draw.handleUpEvent_ = function(event){
-      this.freehand_ = false;
-      var downPx = this.downPx_;
-      var clickPx = event.pixel;
-      var dx = downPx[0] - clickPx[0];
-      var dy = downPx[1] - clickPx[1];
-      var squaredDistance = dx * dx + dy * dy;
-      var pass = true;
-      if (squaredDistance <= this.squaredClickTolerance_) {
-        this.handlePointerMove_(event);
-        if (!this.finishCoordinate_) {
-          this.startDrawing_(event);
-          if (this.mode_ === ol.interaction.DrawMode.POINT) {
-            this.finishDrawing();
-          }
-        } else if (this.mode_ === ol.interaction.DrawMode.CIRCLE) {
-          this.finishDrawing();
-        } else if (this.atFinish_(event)) {
-          if(self.finishCondition_(event)){
-            this.finishDrawing();
-          }
-        } else {
-          this.addToDrawing_(event);
-        }
-        pass = false;
-      }
-      return pass;
-    }
-  })(this);
+  this._finishCondition = options.finishCondition || _.constant(true);
   
   this._condition = options.condition || _.constant(true);
   
@@ -73,31 +41,11 @@ proto.run = function(){
   var self = this;
   var map = MapService.viewer.map;
   
-  /*source.on('addfeature',function(e){
-    try {
-      // richiamo il setter e se la promessa viene risolta proseguo
-      if (!self._busy){
-        self._busy = true;
-        self.pause();
-        
-        self.addFeature(e.feature)
-        .then(function(res){
-        })
-        .fail(function(){
-          source.removeFeature(e.feature);
-        });
-      }
-    }
-    catch (error){
-      console.log(error);
-      source.removeFeature(e.feature);
-    }
-  });*/
-  
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
     source: this.source,
-    condition: this._condition
+    condition: this._condition,
+    finishCondition: this._finishCondition // disponibile da https://github.com/openlayers/ol3/commit/d425f75bea05cb77559923e494f54156c6690c0b
   });
   map.addInteraction(this.drawInteraction);
   this.drawInteraction.setActive(true);
