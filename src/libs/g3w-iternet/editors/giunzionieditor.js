@@ -5,6 +5,7 @@ var IternetEditor = require('./iterneteditor');
 function GiunzioniEditor(options){
   base(this,options);
   
+  this._service = null;
   this._stradeEditor = null;
   this._giunzioneGeomListener = null;
   
@@ -43,7 +44,7 @@ function GiunzioniEditor(options){
     this.once('moveend',function(feature){
       if ( self._stradeToUpdate.length){
         if (!stradeEditor.isStarted()){
-          stradeEditor.start();
+          stradeEditor.start(this._service);
         }
         _.forEach( self._stradeToUpdate,function(strada){
           stradeEditor.updateFeature(strada);
@@ -100,6 +101,7 @@ module.exports = GiunzioniEditor;
 var proto = GiunzioniEditor.prototype;
 
 proto.start = function(iternetService){
+  this._service = iternetService;
   this._stradeEditor = iternetService._layers[iternetService.layerCodes.STRADE].editor;
   this._setupMoveGiunzioniListener();
   this._setupDeleteGiunzioniListener();
@@ -114,3 +116,15 @@ proto.stop = function(){
   }
   return ret;
 };
+
+proto.setTool = function(toolType){
+  var options;
+  if (toolType=='addfeature'){
+    options = {
+      snap: {
+        vectorLayer: this._stradeEditor.getVectorLayer()
+      }
+    }
+  }
+  return IternetEditor.prototype.setTool.call(this,toolType,options);
+}

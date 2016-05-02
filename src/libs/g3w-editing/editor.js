@@ -12,6 +12,7 @@ var MoveFeatureTool = require('./tools/movepointtool');
 var ModifyFeatureTool = require('./tools/modifyfeaturetool');
 var DeleteFeatureTool = require('./tools/deletefeaturetool');
 var PickFeatureTool = require('./tools/pickfeaturetool');
+var CutLineTool = require('./tools/cutlinetool');
 var EditBuffer = require('./editbuffer');
 
 var EditorGeometryTypes = [
@@ -62,7 +63,8 @@ function Editor(options){
         modifyvertex: ModifyFeatureTool,
         movefeature: MoveFeatureTool,
         deletefeature: DeleteFeatureTool,
-        editattributes: PickFeatureTool
+        editattributes: PickFeatureTool,
+        cutline: CutLineTool
       }
   };
   

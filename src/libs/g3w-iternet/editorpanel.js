@@ -76,9 +76,9 @@ var PanelComponent = Vue.extend({
               icon: 'iternetMoveVertex.png'
             },
             {
-              title: "Rimuovi vertice strada",
-              tooltype: '',
-              icon: 'iternetDeleteVertex.png'
+              title: "Taglia su giunzione",
+              tooltype: 'cutline',
+              icon: 'iternetCutOnVertex.png'
             },
             {
               title: "Sposta strada",

@@ -10,29 +10,20 @@ function StradeEditor(options){
   this._service = null;
   this._giunzioniEditor = null;
   
-  /* CONTROLLO GIUNZIONI PER LE STRADE NON COMPLETAMENTE CONTENUTE NELLA VISTA */
+  this._stradeSnaps = null;
   
-  // per le strade presenti nella vista carica le giunzioni eventualmente mancanti (esterne alla vista)
-  this._loadMissingGiunzioniInView = function(){
-    var vectorLayer = this.getVectorLayer();
-    var giunzioniVectorLayer = this._giunzioniEditor.getVectorLayer();
-    
-    var stradeSource = vectorLayer.getSource();
-    var extent = ol.extent.buffer(stradeSource.getExtent(),1);
-    this._service._loadVectorData(giunzioniVectorLayer,extent);
-  };
-  
-  /* FINE */
-  
-  /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
-  
-  this._stradeSnaps = new function(){
+  this._stradeSnapsCollection = function(){
     var snaps = [];
     this.length = 0;
     
     this.push = function(feature){
-      snaps.push(feature);
-      this.length += 1;
+      var pushed = false;
+      if (this.canSnap(feature)){
+        snaps.push(feature);
+        this.length += 1;
+        pushed = true;
+      }
+      return pushed;
     };
     
     this.getLast = function(){
@@ -51,12 +42,41 @@ function StradeEditor(options){
     this.getSnaps = function(){
       return snaps;
     };
+    
+    this.canSnap = function(feature){
+      if (this.isAlreadySnapped(feature)){
+        return false;
+      }
+      var cod_gnz = feature.get('cod_gnz');
+      return (!_.isNil(cod_gnz) && cod_gnz != '');
+    };
+    
+    this.isAlreadySnapped = function(feature){
+      return _.includes(this.snaps,feature);
+    }
   };
   
-  this._isFeatureSnappable = function(feature){
-    var cod_gnz = feature.get('cod_gnz');
-    return (!_.isNil(cod_gnz) && cod_gnz != '');
+  this._updateStradaAttributes = function(feature){
+    var snaps = this._stradeSnaps;
+    feature.set('nod_ini',snaps.getSnaps()[0].get('cod_gnz'));
+    feature.set('nod_fin',snaps.getSnaps()[1].get('cod_gnz'));
   };
+  
+  /* CONTROLLO GIUNZIONI PER LE STRADE NON COMPLETAMENTE CONTENUTE NELLA VISTA */
+  
+  // per le strade presenti nella vista carica le giunzioni eventualmente mancanti (esterne alla vista)
+  this._loadMissingGiunzioniInView = function(){
+    var vectorLayer = this.getVectorLayer();
+    var giunzioniVectorLayer = this._giunzioniEditor.getVectorLayer();
+    
+    var stradeSource = vectorLayer.getSource();
+    var extent = ol.extent.buffer(stradeSource.getExtent(),1);
+    this._service._loadVectorData(giunzioniVectorLayer,extent);
+  };
+  
+  /* FINE */
+  
+  /* INIZIO GESTIONE VINCOLO SNAP SU GIUNZIONI DURANTE IL DISEGNO DELLE STRADE */
   
   this._drawRemoveLastPoint = _.bind(function(e){
     var self = this;
@@ -73,75 +93,46 @@ function StradeEditor(options){
   },this);
   
   this._setupDrawStradeConstraints = function(){
-    var mapId = MapService.viewer.map.getTargetElement().id;
     var self = this;
+    var mapId = MapService.viewer.map.getTargetElement().id;
     var map = MapService.viewer.map;
-
-    $('body').keyup(this._drawRemoveLastPoint);
     
-    var snaps = this._stradeSnaps;
-    snaps.clear();
     var drawingGeometry = null;
     
-    this.on('drawstart',function(e){
-      console.log("inizio");
-      var geometry = e.feature.getGeometry();
-      var coordsLength = null;
-      geometry.on('change',function(e,geometry){
-        self._drawingGeometry = e.target;
-        /*var coordinates = e.target.getCoordinates();
-        if(!coordsLength){  
-          coordsLength = coordinates.length;
-        }
-        if (coordinates.length != coordsLength){
-          console.log(coordinates.length);
-          coordsLength = coordinates.length;
-        }*/
-      })
-    })
-    
     this.onbefore('addFeature',function(feature){
-      var snaps = self._stradeSnaps.getSnaps();
+      var snaps = self._stradeSnaps;
       if (snaps.length == 2){
-        feature.set('nod_ini',snaps[0].get('cod_gnz'));
-        feature.set('nod_fin',snaps[1].get('cod_gnz'));
-        self._stradeSnaps.clear();
+        self._updateStradaAttributes(feature);
+        snaps.clear();
         return true;
       }
       return false;
     });
   };
   
-  this._getCheckSnapsCondition = function(snaps){
+  this._getCheckSnapsCondition = function(){
+    var self = this;
     // ad ogni click controllo se ci sono degli snap con le giunzioni
     return function(e){
-      /*if (snaps.length == 2){
+      var snaps = self._stradeSnaps;
+      if (snaps.length == 2){
         return true;
       }
-      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");*/
+      GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
       return true;
     }
   };
   
   // ad ogni click controllo se ci sono degli snap con le giunzioni
-  this._getStradaIsBeingSnappedCondition = function(snaps){
+  this._getStradaIsBeingSnappedCondition = function(){
     var self = this;
     var map = MapService.viewer.map;
     var giunzioniVectorLayer = this._giunzioniEditor.getVectorLayer();
     
     return function(e){
-      var interaction = this;
-      var coordinates;
-      if(self._drawingGeometry){
-        coordinates = self._drawingGeometry.getCoordinates();
-        //console.log(self._drawingGeometry.getCoordinates().length);
-      }
-      else {
-        coordinates = [map.getCoordinateFromPixel(e.pixel)];
-      }
-
-      /*var c = map.getCoordinateFromPixel(e.pixel);
-      var giunzioniSource = self._layers[self.layerCodes.GIUNZIONI].vector.getSource();
+      var snaps = self._stradeSnaps;
+      var c = map.getCoordinateFromPixel(e.pixel);
+      var giunzioniSource = giunzioniVectorLayer.getSource();
       var extent = ol.extent.buffer([c[0],c[1],c[0],c[1]],1);
       var snappedFeature = giunzioniSource.getFeaturesInExtent(extent)[0];
       
@@ -152,7 +143,7 @@ function StradeEditor(options){
         return false;
       }
       
-      if (snappedFeature && self._isFeatureSnappable(snappedFeature) && snaps.length < 2){
+      if (snappedFeature && snaps.length < 2){
         snaps.push(snappedFeature);
       }
       
@@ -161,61 +152,18 @@ function StradeEditor(options){
         GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
         return false;
       }
-      return true;*/
-      
-
-      var snaps = self._stradeSnaps;
-      snaps.clear();
-      
-      var firstVertexSnapped = false;
-      var lastVertexSnapped = false;  
-      
-      _.forEach(coordinates,function(c,index){      
-        var giunzioniSource = giunzioniVectorLayer.getSource();
-        var extent = ol.extent.buffer([c[0],c[1],c[0],c[1]],1);
-        var snappedFeature = giunzioniSource.getFeaturesInExtent(extent)[0];
-        
-        if (snappedFeature && self._isFeatureSnappable(snappedFeature)){
-          if (snaps.getSnaps()[snaps.length-1] == snappedFeature){
-            interaction.removeLastPoint();
-            coordinates = self._drawingGeometry.getCoordinates();
-          }
-          if (index == 0){
-            firstVertexSnapped = true;
-          }
-          else if (index == (coordinates.length-1)){
-            lastVertexSnapped = true;
-          }
-          snaps.push(snappedFeature);
-        }
-      })
-      console.log("N.snap "+snaps.length+" n.coordinate: "+coordinates.length)
-      
-      if (snaps.length > 2){
-        GUI.notify.error("Una strada non può avere vertici intermedi in corrispondenza di giunzioni.<br> Premere <b>CANC</b> per rimuovere l'ultimo vertice.");
-        return false;
-      }
-      
-      // se non ci sono snap, vuol dire che sono ancora al primo click e non ho snappato con la giunzione iniziale
-      if (!firstVertexSnapped){
-        GUI.notify.error("Il primo vertice deve corrispondere con una giunzione");
-        return false;
-      }
-      
-      if (snaps.length == 2 && !lastVertexSnapped){
-        GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
-        return false;
-      }
       return true;
     }
   };
   
+  /* FINE DISEGNO */
+  
+  /* INIZIO CONTROLLI SU MODIFICA */
+  
   this._modifyRemovePoint = _.bind(function(e){
     var self = this;
-    var toolType = editor.getActiveTool().getType();
-    // il listener viene attivato per tutti i tool dell'editor strade, per cui devo controllare che sia quello giusto
+    var toolType = this.getActiveTool().getType();
     if (toolType == 'modifyvertex'){
-    // CANC
       if(e.keyCode==46){
         e.preventDefault();
         e.stopPropagation();
@@ -227,10 +175,14 @@ function StradeEditor(options){
   this._setupModifyVertexStradeConstraints = function(){
     var self = this;
     var map = MapService.viewer.map;
-    this._stradeSnaps.clear();
-    $('body').keyup(this._modifyRemovePoint);
     this.onbefore('modifyFeature',function(feature){
-      return self._checkStradaIsCorrectlySnapped(feature.getGeometry);
+      var snaps = self._stradeSnaps;
+      var correct = self._checkStradaIsCorrectlySnapped(feature.getGeometry());
+      if (correct){
+        self._updateStradaAttributes(feature);
+        snaps.clear();
+      }
+      return correct;
     });
   };
   
@@ -253,14 +205,14 @@ function StradeEditor(options){
       
       var snappedFeature = giunzioniSource.getFeaturesInExtent(extent)[0];
       
-      if (snappedFeature && self._isFeatureSnappable(snappedFeature)){
-        if (index == 0){
+      if (snappedFeature){
+        if (index == 0 && snaps.push(snappedFeature)){
           firstVertexSnapped = true;
         }
-        else if (index == (coordinates.length-1)){
+        else if (index == (coordinates.length-1) && snaps.push(snappedFeature)){
           lastVertexSnapped = true;
         }
-        snaps.push(snappedFeature);
+        
       }
     });
     
@@ -281,8 +233,8 @@ function StradeEditor(options){
     return ret;
   };
   
-  /* FINE VINCOLO SNAP DELLE STRADE */
-}
+  /* FINE MODIFICA */
+};
 inherit(StradeEditor,IternetEditor);
 module.exports = StradeEditor;
 
@@ -307,8 +259,8 @@ proto.setTool = function(toolType){
       snap: {
         vectorLayer: giunzioniVectorLayer
       },
-      finishCondition: this._getCheckSnapsCondition(this._stradeSnaps),
-      condition: this._getStradaIsBeingSnappedCondition(this._stradeSnaps)
+      finishCondition: this._getCheckSnapsCondition(),
+      condition: this._getStradaIsBeingSnappedCondition()
     }
   }
   if (toolType=='modifyvertex'){
@@ -319,13 +271,32 @@ proto.setTool = function(toolType){
       deleteCondition: _.constant(false)
     }
   }
+  if (toolType=='cutline'){
+    options = {
+      pointLayer: giunzioniVectorLayer.getLayer()
+    }
+  }
   
-  return IternetEditor.prototype.setTool.call(this,toolType,options);
+  var start =  IternetEditor.prototype.setTool.call(this,toolType,options);
+  
+  if (start){
+    this._stradeSnaps = new this._stradeSnapsCollection;
+    $('body').keyup(this._drawRemoveLastPoint);
+    $('body').keyup(this._modifyRemovePoint);
+  };
+  
+  return start;
 };
 
 proto.stopTool = function(){
-  $('body').off('keyup',this._drawRemoveLastPoint);
-  $('body').off('keyup',this._modifyRemovePoint);
+  var stop = false;
+  stop = IternetEditor.prototype.stopTool.call(this);
   
-  return IternetEditor.prototype.stopTool.call(this);
+  if (stop){
+    this._stradeSnaps = null;
+    $('body').off('keyup',this._drawRemoveLastPoint);
+    $('body').off('keyup',this._modifyRemovePoint);
+  }
+  
+  return stop; 
 };

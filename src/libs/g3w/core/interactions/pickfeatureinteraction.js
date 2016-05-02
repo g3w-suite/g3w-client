@@ -2,7 +2,7 @@ var PickFeatureEventType = {
   PICKED: 'picked'
 };
 
-var PickFeatureEvent = function(type, feature, coordinate) {
+var PickFeatureEvent = function(type, coordinate, feature) {
   this.type = type;
   this.feature = feature;
   this.coordinate = coordinate;
@@ -35,8 +35,9 @@ PickFeatureInteraction.handleUpEvent_ = function(event) {
   if(this.pickedFeature_){
     this.dispatchEvent(
             new PickFeatureEvent(
-                PickFeatureEventType.PICKED, this.pickedFeature_,
-                event.coordinate));
+                PickFeatureEventType.PICKED,
+                event.coordinate,
+                this.pickedFeature_));
   }
   return true;
 };
