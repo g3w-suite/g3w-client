@@ -13,7 +13,7 @@ var PickCoordinatesInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
     handleDownEvent: PickCoordinatesInteraction.handleDownEvent_,
     handleUpEvent: PickCoordinatesInteraction.handleUpEvent_,
-    handleMoveEvent: PickFeatureInteraction.handleMoveEvent_,
+    handleMoveEvent: PickCoordinatesInteraction.handleMoveEvent_,
   });
 };
 ol.inherits(PickCoordinatesInteraction, ol.interaction.Pointer);
@@ -32,7 +32,6 @@ PickCoordinatesInteraction.handleUpEvent_ = function(event) {
 
 PickCoordinatesInteraction.handleMoveEvent_ = function(event) {
   var elem = event.map.getTargetElement();
-  this.previousCursor_ = elem.style.cursor;
   elem.style.cursor =  'pointer';
 };
 
@@ -40,10 +39,12 @@ PickCoordinatesInteraction.prototype.shouldStopEvent = function(){
   return false;
 };
 
-PickCoordinatesInteraction.prototype.setActive = function(active){
-  var elem = event.map.getTargetElement();
-  elem.style.cursor = this.previousCursor_;
-  ol.interaction.Pointer.prototype.setActive.call(this,active);
+PickCoordinatesInteraction.prototype.setMap = function(map){
+  if (!map) {
+    var elem = this.getMap().getTargetElement();
+    elem.style.cursor = '';
+  }
+  ol.interaction.Pointer.prototype.setMap.call(this,map);
 };
 
 module.exports = PickCoordinatesInteraction;

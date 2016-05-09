@@ -593,7 +593,7 @@ function IternetService(){
         crs: "EPSG:3003",
         id: layerConfig.id,
         name: layerConfig.name,
-        pk: layerConfig.pk  
+        pk: vectorConfig.pk  
       });
       // ottengo la definizione dei campi
       vectorLayer.setFields(vectorConfig.fields);

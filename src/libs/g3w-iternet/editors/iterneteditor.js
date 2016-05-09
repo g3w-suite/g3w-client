@@ -2,7 +2,7 @@ var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var GUI = require('g3w/gui/gui');
 var Editor = require('g3w-editing/editor');
-var Form = require('g3w-editing/attributesform');
+var Form = require('./attributesform');
 
 function IternetEditor(options){
   base(this,options);
@@ -36,8 +36,8 @@ function IternetEditor(options){
   this._openEditorForm = function(isNew,feature,next){
     var self = this;
     var fid = feature.getId();
-    var fields = this.getFieldsWithAttributes(fid);
     var vectorLayer = this.getVectorLayer();
+    var fields = vectorLayer.getFieldsWithAttributes(feature);
     
     // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
     // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
@@ -51,7 +51,7 @@ function IternetEditor(options){
       });
     }
     
-    var relationsPromise = this.getRelationsWithAttributes(fid);
+    var relationsPromise = this.getRelationsWithAttributes(feature);
     relationsPromise
     .then(function(relations){
       var form = new Form({

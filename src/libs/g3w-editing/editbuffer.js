@@ -39,9 +39,13 @@ proto.destroy = function(){
   this._clearBuffers();
 };
 
+proto.generateId = function(){
+  return '_new_'+Date.now();
+};
+
 proto.addFeature = function(feature){
   if(!feature.getId()){
-    feature.setId('_new_'+Date.now());
+    feature.setId(this.generateId());
   }
   this._addEditToGeometryBuffer(feature,'add');
   console.log("Inserita nuova feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
@@ -59,14 +63,17 @@ proto.deleteFeature = function(feature){
 
 proto.updateAttributes = function(feature,relationsAttributes){
   if(!feature.getId()){
-    feature.setId('_new_'+Date.now());
+    feature.setId(this.generateId());
   }
   this._addEditToAttributesBuffer(feature,relationsAttributes);
   console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
 proto.getFeatureAttributes = function(fid){
-  return this._attributesBuffer[fid].slice(-1)[0];
+  if(this._attributesBuffer[fid]){
+    return this._attributesBuffer[fid].slice(-1)[0];
+  }
+  return null;
 };
 
 proto.areFeatureAttributesEdited = function(fid){

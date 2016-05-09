@@ -193,6 +193,10 @@ proto.isToolActive = function(toolType){
    return false;
 };
 
+proto.generateId = function(){
+  return this._editBuffer.generateId();
+};
+
 proto.commit = function(newFeatures){
   this._editBuffer.commit(newFeatures);
 };
@@ -250,28 +254,6 @@ proto.getEditedFeatures = function(){
   }
 };
 
-proto.getFieldsWithAttributes = function(fid){
-  if (!fid){
-    return this._vectorLayer.getFieldsWithAttributes(fid);
-  }
-  else {
-    var attributes;
-    var fields = this._vectorLayer.getFields();
-    
-    var hasEdits = this._editBuffer.areFeatureAttributesEdited(fid);
-    if (hasEdits){
-      attributes = this._editBuffer.getFeatureAttributes(fid);
-      _.forEach(fields,function(field){
-        field.value = attributes[field.name];
-      });
-    }
-    else{ // se non ha edits allora si sta chiedendo sicuramente una feature vecchia
-      fields = this._vectorLayer.getFieldsWithAttributes(fid);
-    }
-    return fields;
-  }
-};
-
 proto.setFieldsWithAttributes = function(feature,fields,relations){
   var attributes = {};
   _.forEach(fields,function(field){
@@ -293,34 +275,59 @@ proto.setFieldsWithAttributes = function(feature,fields,relations){
   this._editBuffer.updateAttributes(feature,relationsAttributes);
 };
 
+proto.setAttributes = function(feature,attributes){
+  feature.setProperties(attributes);
+  this._editBuffer.updateAttributes(feature);
+};
 
-proto.getRelationsWithAttributes = function(fid){
-  var fieldsPromise;
-  if (!fid){
-    fieldsPromise = this._vectorLayer.getRelationsWithAttributes(fid);
-  }
-  else {    
-    var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
-    if (hasEdits){
-      var relations = this._vectorLayer.getRelations();
-      var relationsAttributes = this._editBuffer.getRelationsAttributes(fid);
-      _.forEach(relationsAttributes,function(relation,relationKey){
-        _.forEach(relations[relationKey].fields,function(field){
-          field.value = relationsAttributes[relationKey][field.name];
+proto.getRelationsWithAttributes = function(feature){
+  var fid = feature.getId();
+  if (this._vectorLayer.hasRelations()){
+    var fieldsPromise;
+    // se non ha fid vuol dire che è nuovo e senza attributi, quindi prendo i fields vuoti
+    if (!fid){
+      fieldsPromise = this._vectorLayer.getRelationsWithAttributes();
+    }
+    // se per caso ha un fid ma è un vettoriale nuovo
+    else if (!this._vectorLayer.getFeatureById(fid)){
+      // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
+      if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
+        var fks = this._vectorLayer.getRelationsFksWithValuesForFeature(feature);
+        fieldsPromise = this._vectorLayer.getRelationsWithAttributesFromFks(fks);
+      }
+      // altrimenti prendo i fields vuoti
+      else {
+        fieldsPromise = this._vectorLayer.getRelationsWithAttributes();
+      }
+    }
+    // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni già editati
+    else {    
+      var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
+      if (hasEdits){
+        var relations = this._vectorLayer.getRelations();
+        var relationsAttributes = this._editBuffer.getRelationsAttributes(fid);
+        _.forEach(relationsAttributes,function(relation,relationKey){
+          _.forEach(relations[relationKey].fields,function(field){
+            field.value = relationsAttributes[relationKey][field.name];
+          });
         });
-      });
-      
-      fieldsPromise = resolvedValue(relations);
+        
+        fieldsPromise = resolvedValue(relations);
+      }
+      // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
+      else {
+        fieldsPromise = this._vectorLayer.getRelationsWithAttributes(fid);
+      }
     }
-    else{ // se non ha edits allora si sta chiedendo sicuramente una feature vecchia
-      fieldsPromise = this._vectorLayer.getRelationsWithAttributes(fid);
-    }
+  }
+  else {
+    fieldsPromise = resolvedValue(null);
   }
   return fieldsPromise;
 };
 
 proto.getField = function(name,fields){
-  var fields = fields || this.getFieldsWithAttributes();
+  var fields = fields || this.getVectorLayer().getFieldsWithAttributes();
   var field = null;
   _.forEach(fields,function(f){
     if (f.name == name){
@@ -369,11 +376,19 @@ proto.getEditVectorLayer = function(){
 };
 
 proto.isNewFeature = function(fid){
-  if(!fid){
-    return true;
+  if (fid) {
+    if(!this.getVectorLayer().getFeatureById(fid)){
+      return true;
+    }
+    return false;
+    /*else {
+      var feature = this._editVectorLayer.getFeatureById(fid);
+      return !_.isNil(feature);
+    }*/
   }
-  var feature = this._editVectorLayer.getFeatureById(fid);
-  return !_.isNil(feature);
+  else {
+    return true
+  }
 };
 
 proto._isCompatibleType = function(geometrytype){

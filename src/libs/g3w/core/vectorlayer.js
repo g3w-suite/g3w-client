@@ -150,7 +150,7 @@ proto.getFieldsNames = function(){
   });
 };
 
-proto.getFieldsWithAttributes = function(fid){
+proto.getFieldsWithAttributes = function(obj){
   var self = this;
   /*var fields = _.cloneDeep(_.filter(this._fields,function(field){
     return ((field.name != self.pk) && field.editable);
@@ -158,15 +158,22 @@ proto.getFieldsWithAttributes = function(fid){
   var fields = _.cloneDeep(this._fields);
   
   var feature, attributes;
-  if (fid){
-    feature = this.getSource().getFeatureById(fid);
+  
+  // il metodo accetta sia feature che fid
+  if (obj instanceof ol.Feature){
+    feature = obj;
+  }
+  else if (obj){
+    feature = this.getFeatureById(obj);
+  }
+  if (feature){
     attributes = feature.getProperties();
   }
   
   _.forEach(fields,function(field){
     if (feature){
       if (!this._PKinAttributes && field.name == self.pk){
-        field.value = fid;
+        field.value = feature.getId();
       }
       else{
         field.value = attributes[field.name];
@@ -190,8 +197,20 @@ proto.getRelations = function(){
   return this._relations;
 };
 
+proto.hasRelations = function(){
+  return !_.isNull(this._relations);
+};
+
 proto.getRelationsNames = function(){
   return _.keys(this._relations);
+};
+
+proto.getRelationsFksKeys = function(){
+  var fks = [];
+  _.forEach(this._relations,function(relation){
+    fks.push(relation.fk);
+  })
+  return fks;
 };
 
 proto.getRelationFieldsNames = function(relation){
@@ -204,10 +223,11 @@ proto.getRelationFieldsNames = function(relation){
   return null;
 };
 
+// ottengo le relazioni a partire dal fid di una feature esistente
 proto.getRelationsWithAttributes = function(fid){
   var relations = _.cloneDeep(this._relations);
   var self = this;
-  if (!fid){
+  if (!fid || !this.getFeatureById(fid)){
     _.forEach(relations,function(relation,relationKey){
         // inizialmente setto a null i valori
       _.forEach(relation.fields,function(field){
@@ -219,29 +239,19 @@ proto.getRelationsWithAttributes = function(fid){
   else {
     if (this.lazyRelations){
       var deferred = $.Deferred();
-      var relationsRequests = [];
       var attributes = this.getFeatureById(fid).getProperties();
+      var fks = {};
       _.forEach(relations,function(relation,relationKey){
         var url = relation.url;
         var keyVals = [];
         _.forEach(relation.fk,function(fkKey){
-          var fkValue = attributes[fkKey];
-          keyVals.push(fkKey+"="+fkValue);
+          fks[fkKey] = attributes[fkKey];
         });
-        var fkParams = _.join(keyVals,"&");
-        url += "?"+fkParams;
-        relationsRequests.push($.get(url)
-          .then(function(relationAttributes){
-            _.forEach(relation.fields,function(field){
-              field.value = relationAttributes[0][field.name];
-            });
-          })
-        )
       })
       
-      $.when.apply(this,relationsRequests)
-      .then(function(){
-        deferred.resolve(relations);
+      this.getRelationsWithAttributesFromFks(fks)
+      .then(function(relationsResponse){
+        deferred.resolve(relationsResponse);
       })
       .fail(function(){
         deferred.reject();
@@ -250,6 +260,36 @@ proto.getRelationsWithAttributes = function(fid){
     }
   }
 };
+
+// ottengo le relazioni valorizzate a partire da un oggetto con le chiavi FK come keys e i loro valori come values
+proto.getRelationsWithAttributesFromFks = function(fks){
+  var self = this;
+  var relations = _.cloneDeep(this._relations);
+  var relationsRequests = [];
+
+  _.forEach(relations,function(relation,relationKey){
+    var url = relation.url;
+    var keyVals = [];
+    _.forEach(relation.fk,function(fkKey){
+      var fkValue = fks[fkKey];
+      keyVals.push(fkKey+"="+fkValue);
+    });
+    var fkParams = _.join(keyVals,"&");
+    url += "?"+fkParams;
+    relationsRequests.push($.get(url)
+      .then(function(relationAttributes){
+        _.forEach(relation.fields,function(field){
+          field.value = relationAttributes[0][field.name];
+        });
+      })
+    )
+  })
+  
+  return $.when.apply(this,relationsRequests)
+  .then(function(){
+    return relations;
+  });
+}
 
 proto.setStyle = function(style){
   this._olLayer.setStyle(style);
@@ -273,4 +313,25 @@ proto.clear = function(){
 
 proto.addToMap = function(map){
   map.addLayer(this._olLayer);
+};
+
+// data una feature verifico se ha tra gli attributi i valori delle FK delle (eventuali) relazioni
+proto.featureHasRelationsFksWithValues = function(feature){
+  var attributes = feature.getProperties();
+  var fksKeys = this.getRelationsFksKeys();
+  return _.every(fksKeys,function(fkKey){
+    var value = attributes[fkKey];
+    return (!_.isNil(value) && value != '');
+  })
+};
+
+// data una feature popolo un oggetto con chiavi/valori delle FK delle (eventuali) relazione
+proto.getRelationsFksWithValuesForFeature = function(feature){
+  var attributes = feature.getProperties();
+  var fks = {};
+  var fksKeys = this.getRelationsFksKeys();
+  _.forEach(fksKeys,function(fkKey){
+    fks[fkKey] = attributes[fkKey];
+  })
+  return fks;
 };

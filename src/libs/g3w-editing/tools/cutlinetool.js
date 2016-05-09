@@ -13,11 +13,15 @@ function CutLineTool(editor,options){
   this.layer = null;
   this.editingLayer = null;
   
+  this._origFeature = null;
   this._origGeometry = null;
+  this._newFeatures = [];
   this._linePickInteraction = null;
   this._pointPickInteraction = null;
+  this._selectLineToKeepInteraction = null;
   this._pointLayer = options.pointLayer || null;
   this._minCutPointDistance = options.minCutPointDistance || Infinity;
+  this._modType = options.modType || 'MODONCUT'; // 'NEWONCUT' | 'MODONCUT'
   
   this._selectedLineOverlay = new ol.layer.Vector({
     source: new ol.source.Vector(),
@@ -28,9 +32,24 @@ function CutLineTool(editor,options){
       })
     })
   });
+  
+  //var cutLineIdx = 0;
+  //var cutLineColors = ['rgb(255,0,0)','rgb(0,0,255)']
+  this._lineToKeepOverlay = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    /*style: function(feature){ 
+      cutLineIdx += 1;
+      return [new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: cutLineColors[cutLineIdx%2],
+          width: 4
+        })
+      })]
+    }*/
+  });
 
   this.setters = {
-    modifyLines: CutLineTool.prototype._modifyLines
+    cutLine: CutLineTool.prototype._cutLine
   };
   
   base(this);
@@ -52,10 +71,12 @@ proto.run = function(){
   
   map.addInteraction(this._linePickInteraction);
   
+  // seleziono la linea da tagliare
   this._linePickInteraction.on('picked',function(e){
-    var feature = e.feature;
-    self._showSelection(feature,300);
-    self._origGeometry = feature.getGeometry();
+    var cutFeature;
+    var feature = self._origFeature = e.feature;
+    self._origGeometry = feature.getGeometry().clone();
+    self._showSelection(self._origGeometry,300);
     map.removeInteraction(this);
 
     
@@ -67,23 +88,108 @@ proto.run = function(){
     else {
       self._pointPickInteraction = new PickCoordinatesInteraction();
     }
+    
+    // pesco coordinata o feature di taglio selezionata
     self._pointPickInteraction.on('picked',function(e){
+      map.removeInteraction(this);
+      var coordinate;
       if (e.feature){
-        
+        cutFeature = e.feature;
+        coordinate = cutFeature.getGeometry().getCoordinates();
       }
-      if (e.coordinate){
-        var closestCoordinate = feature.getGeometry().getClosestPoint(e.coordinate);
-        var distance = geom.distance(e.coordinate,closestCoordinate);
+      else {
+        coordinate = e.coordinate;
+      }
+      if (coordinate){
+        // snappo sulla linea
+        var closestCoordinate = feature.getGeometry().getClosestPoint(coordinate);
+        var distance = geom.distance(coordinate,closestCoordinate);
+        // se lo snap è entro la tolleranza
         if (distance < self._minCutPointDistance){
-          var slicedLines = self._cutLine(feature.getGeometry(),closestCoordinate);
+          // taglio la linea e ottengo l'array con le due nuove feature
+          var slicedLines = self._cut(feature.getGeometry(),closestCoordinate);
           if (slicedLines){
-            self.modifyLines(slicedLines)
-            .fail(function(){
-              self.loop();
-            })
+            var prevLineFeature = slicedLines[0];
+            var nextLineFeature = slicedLines[1];
+            
+            var newId = self.editor.generateId();
+            prevLineFeature.setId(newId+'_1');
+            nextLineFeature.setId(newId+'_2');
+            
+            // prendo le proprietà della feature originale (esclusa la geometria)
+            var origProperties = feature.getProperties();
+            delete origProperties[feature.getGeometryName()];
+            
+            self._showSelection(prevLineFeature.getGeometry(),300);
+            setTimeout(function(){
+              self._showSelection(nextLineFeature.getGeometry(),300);
+            },300)
+            
+            // nel caso di modifica su taglio
+            if (self._modType == 'MODONCUT'){
+              // seleziono la porzione da mantenere/modificare
+              self._selectLineToKeep(prevLineFeature,nextLineFeature)
+              .then(function(featureToKeep){
+                
+                // aggiorno la feature originale con la geometria della feature che si è selezionato da mantenere
+                feature.setGeometry(featureToKeep.getGeometry().clone());
+                
+                var featureToAdd;
+                
+                // rimuovo una delle due nuove feature e mi tengo l'unica feature da aggiungere come nuova
+                if (prevLineFeature.getId() == featureToKeep.getId()){
+                  delete prevLineFeature;
+                  featureToAdd = nextLineFeature;
+                }
+                else if (nextLineFeature.getId() == featureToKeep.getId()){
+                  delete nextLineFeature;
+                  featureToAdd = prevLineFeature;
+                }
+                
+                self._newFeatures.push(featureToAdd);
+                
+                // tramite l'editor assegno alla nuova feature gli stessi attributi dell'altra, originale, modificata
+                featureToAdd.setProperties(origProperties);
+                // e la aggiungo al layer di editing, così mi viene mostrata come nuova feature sulla mappa
+                self.editingLayer.getSource().addFeatures([featureToAdd]);
+                
+                var data = {
+                  added: [featureToAdd],
+                  updated: feature,
+                  cutfeature:cutFeature
+                }
+                
+                // a questo punto avvio il setter, che si occuperò di aggiornare l'editbuffer a seconda del tipo di modifica
+                self.cutLine(data,self._modType)
+                .fail(function(){
+                  self._rollBack();
+                  self.rerun();
+                })
+              })
+            }
+            else {
+              // nel caso la modifica sia aggiungo su taglia, allora rimuovo l'originale e aggiungo le due nuove feature
+              self.layer.getSource().removeFeature(feature);
+              //self.editor.setAttributes(prevLineFeature,origProperties);
+              //self.editor.setAttributes(nextLineFeature,origProperties);
+              self._newFeatures.push(prevLineFeature);
+              self._newFeatures.push(nextLineFeature);
+              self.editingLayer.getSource().addFeatures([featureToAdd,prevLineFeature]);
+              
+              var data = {
+                added: [prevLineFeature,nextLineFeature],
+                removed: feature
+              }
+              
+              self.cutLine(data,self._modType)
+              .fail(function(){
+                self._rollBack();
+                self.rerun();
+              })
+            }
           }
           else {
-            self.loop();
+            self.rerun();
           }
         }
       }
@@ -103,24 +209,84 @@ proto.pause = function(pause){
   }
 };
 
-proto.loop = function(){
+proto.rerun = function(){
   this.stop();
   this.run();
 };
 
 proto.stop = function(){
+  this._cleanUp();
   var map = MapService.viewer.map;
-  map.removeInteraction(this._selectInteraction);
+  map.removeInteraction(this._linePickInteraction);
   map.removeInteraction(this._pointPickInteraction);
+  this._linePickInteraction = null;
+  this._pointPickInteraction = null;
   return true;
 };
 
-proto._modifyLines = function(slicedLines){
-  //this.editor.updateFeature(feature,isNew);
-  console.log("Pronto per inserire le modifiche di "+slicedLines);
+proto._cleanUp = function(){
+  this._origFeature = null;
+  this._origGeometry = null;
+  this._newFeatures = [];
+  this._lineToKeepOverlay.setMap(null);
+  this._selectedLineOverlay.setMap(null);
+};
+
+proto._rollBack = function(){
+  // rimetto la vecchia geometria
+  this._origFeature.setGeometry(this._origGeometry);
+  // rimuovo le feature (nuove) editate dal layer di editazione
+  try {
+    _.forEach(this._newFeatures,function(feature){
+      self.editingLayer.getSource().removeFeature(feature);
+    });
+  }
+  catch (e) {};
+};
+
+proto._cutLine = function(data,modType){
+  // se modifico su taglio aggiorno la vecchia feature e aggiungo la nuova
+  if (modType == 'MODONCUT'){
+    var featureToUpdate = data.updated;
+    var featureToAdd = data.added[0];
+    this.editor.updateFeature(featureToUpdate);
+    this.editor.addFeature(featureToAdd);
+  }
+  // altrimenti rimuovo la vecchia e aggiungo le nuove
+  else{
+    var featureToRemove = data.removed;
+    var featureToAdd1 = data.added[0];
+    var featureToAdd2 = data.added[1];
+    this.editor.deleteFeature(featureToRemove);
+    this.editor.addFeature(featureToAdd1);
+    this.editor.addFeature(featureToAdd2);
+  }
   this._busy = false;
   this.pause(false);
+  this.rerun();
   return true;
+};
+
+proto._selectLineToKeep = function(prevLineFeature,nextLineFeature){
+  var d = $.Deferred();
+  
+  var map = MapService.viewer.map;
+  var layer = this._lineToKeepOverlay;
+  layer.getSource().addFeatures([prevLineFeature,nextLineFeature]);
+  layer.setMap(map);
+  
+  var selectLineInteraction = new PickFeatureInteraction({
+    layers: [this._lineToKeepOverlay],
+  });
+  map.addInteraction(selectLineInteraction);
+  
+  selectLineInteraction.on('picked',function(e){
+    layer.setMap(null);
+    map.removeInteraction(this);
+    d.resolve(e.feature);
+  });
+  
+  return d.promise();
 };
 
 proto._fallBack = function(feature){
@@ -128,7 +294,7 @@ proto._fallBack = function(feature){
   this.pause(false);
 };
 
-proto._cutLine = function(geometry,cutCoordinate){
+proto._cut = function(geometry,cutCoordinate){
   while (cutCoordinate.length < geometry.getStride()) {
     cutCoordinate.push(0);
   }
@@ -136,6 +302,7 @@ proto._cutLine = function(geometry,cutCoordinate){
   var minDistance = Infinity;
   var closestIndex = 0;
   var index = 0;
+  // cerco l'indice del segmento lineare su cui ricade la coordinata di taglio
   geometry.forEachSegment(function(v0,v1){
     var segmentPoint = geom.closestOnSegment(cutCoordinate,[v0,v1]);
     var distance = geom.distance(cutCoordinate,segmentPoint);
@@ -147,20 +314,26 @@ proto._cutLine = function(geometry,cutCoordinate){
   })
   
   var coordinates = geometry.getCoordinates();
+  // prendo la prima porzione di coordinate
   var prevCoords = coordinates.slice(0,closestIndex+1);
+  // aggiungo la coordinata di taglio alla prima porzione
   prevCoords.splice(prevCoords.length,0,cutCoordinate);
+  // prendo la seconda porzione di coordinate
   var nextCoords = coordinates.slice(closestIndex);
+  // aggiungo la coordinata di taglio alla seconda porzione
   nextCoords.splice(0,1,cutCoordinate);
   
   if (prevCoords.length < 2 || nextCoords.length < 2){
     return false;
   }
   
+  // creo le geometrie
   var prevLine = new ol.geom.LineString();
   prevLine.setCoordinates(prevCoords);
   var nextLine = new ol.geom.LineString();
   nextLine.setCoordinates(nextCoords);
-
+  
+  // creo le nuove feature
   var prevLineFeat = new ol.Feature({
     geometry: prevLine
   });
@@ -168,20 +341,19 @@ proto._cutLine = function(geometry,cutCoordinate){
     geometry: nextLine
   });
   
-  var self = this;
-  this._showSelection(prevLineFeat,300);
-  setTimeout(function(){
-    self._showSelection(nextLineFeat,300);
-  },300)
-  
   return [prevLineFeat,nextLineFeat];
 };
 
-proto._showSelection = function(feature,duration){
+
+// TODO questo andrà spostato dentro MapService o comunque in una libreria core
+proto._showSelection = function(geometry,duration){
   var self = this;
   var duration = duration || null;
   var map = MapService.viewer.map;
   var overlay = this._selectedLineOverlay;
+  
+  var feature = new ol.Feature();
+  feature.setGeometry(geometry);
   overlay.getSource().addFeatures([feature]);
   overlay.setMap(map);
   if(duration){

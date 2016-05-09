@@ -241,14 +241,50 @@ function StradeEditor(options){
     var self = this;
     this.onbeforeasync('cutLine',function(data,modType,next){
       if (modType == 'MODONCUT'){
-        var newFeature = data.add[0];
+        // la prima feature in data.add è quella da aggiungere come nuova
+        var newFeature = data.added[0];
+        var newFeatureSnaps = self._getFirstLastSnappedGiunzioni(newFeature.getGeometry());
+        newFeature.set('nod_ini',newFeatureSnaps[0].get('cod_gnz'));
+        newFeature.set('nod_fin',newFeatureSnaps[1].get('cod_gnz'));
+        
+        var updateFeature = data.updated;
+        var updateFeatureSnaps = self._getFirstLastSnappedGiunzioni(updateFeature.getGeometry());
+        updateFeature.set('nod_ini',updateFeatureSnaps[0].get('cod_gnz'));
+        updateFeature.set('nod_fin',updateFeatureSnaps[1].get('cod_gnz'));
+        
         self._openEditorForm('new',newFeature,next);
+        
       }
       else {
         next(true);
       }
     });
   };
+  
+  this._getFirstLastSnappedGiunzioni = function(geometry){
+    var coordinates = geometry.getCoordinates();
+    var giunzioniVectorLayer = this._giunzioniEditor.getVectorLayer();
+    var firstVertexSnapped = null;
+    var lastVertexSnapped = null;
+    
+    _.forEach(coordinates,function(c,index){      
+      var giunzioniSource = giunzioniVectorLayer.getSource();
+      
+      var extent = ol.extent.buffer([c[0],c[1],c[0],c[1]],0.1);
+      
+      var snappedFeature = giunzioniSource.getFeaturesInExtent(extent)[0];
+      
+      if (snappedFeature){
+        if (index == 0){
+          firstVertexSnapped = snappedFeature;
+        }
+        else if (index == (coordinates.length-1)){
+          lastVertexSnapped = snappedFeature;
+        }
+      }
+    });
+    return [firstVertexSnapped,lastVertexSnapped];
+  }
   
   /* FINE TAGLIO */
 };

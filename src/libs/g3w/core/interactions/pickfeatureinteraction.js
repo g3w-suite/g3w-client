@@ -17,11 +17,15 @@ var PickFeatureInteraction = function(options) {
     handleMoveEvent: PickFeatureInteraction.handleMoveEvent_,
   });
   
-  this.layers_ = options.layers;
+  this.features_ = options.features || null;
+  
+  this.layers_ = options.layers || null;
+  
   this.pickedFeature_ = null;
   
+  var self = this;
   this.layerFilter_ = function(layer) {
-    return _.includes(options.layers, layer);
+    return _.includes(self.layers_, layer);
   };
 };
 ol.inherits(PickFeatureInteraction, ol.interaction.Pointer);
@@ -47,14 +51,9 @@ PickFeatureInteraction.handleMoveEvent_ = function(event) {
   var intersectingFeature = this.featuresAtPixel_(event.pixel, event.map);
 
   if (intersectingFeature) {
-    this.previousCursor_ = elem.style.cursor;
-
     elem.style.cursor =  'pointer';
-
   } else {
-    elem.style.cursor = this.previousCursor_ !== undefined ?
-        this.previousCursor_ : '';
-    this.previousCursor_ = undefined;
+    elem.style.cursor = '';
   }
 };
 
@@ -63,6 +62,14 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
 
   var intersectingFeature = map.forEachFeatureAtPixel(pixel,
       function(feature) {
+        if (this.features_) {
+          if (this.features_.indexOf(feature) > -1){
+            return feature
+          }
+          else{
+            return null;
+          }
+        }
         return feature;
       },this,this.layerFilter_);
   
@@ -74,6 +81,14 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
 
 PickFeatureInteraction.prototype.shouldStopEvent = function(){
   return false;
+};
+
+PickFeatureInteraction.prototype.setMap = function(map){
+  if (!map) {
+    var elem = this.getMap().getTargetElement();
+    elem.style.cursor = '';
+  }
+  ol.interaction.Pointer.prototype.setMap.call(this,map);
 };
 
 module.exports = PickFeatureInteraction;

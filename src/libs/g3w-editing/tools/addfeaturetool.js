@@ -109,6 +109,7 @@ proto.removeLastPoint = function(){
 };
 
 proto._addFeature = function(feature){
+  // aggiungo la geometria nell'edit buffer
   this.editor.addFeature(feature);
   this._busy = false;
   this.pause(false);

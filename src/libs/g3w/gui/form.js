@@ -127,6 +127,8 @@ proto._isLayerPicker = function(field){
 };
 
 proto._pickLayer = function(field){
+  // ritorno una promessa, se qualcun altro volesse usare il risultato (es. per settare altri campi in base alla feature selezionata)
+  var d = $.Deferred();
   // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
   GUI.setModal(false);
   var layerId = field.input.options.layerid;
@@ -136,10 +138,13 @@ proto._pickLayer = function(field){
   .then(function(attributes){
     var value = attributes[relFieldName] ? attributes[relFieldName] : attributes[relFieldLabel];
     field.value = value;
+    d.resolve(attributes);
   })
   .always(function(){
     GUI.setModal(true);
+    d.reject();
   });
+  return d.promise();
 };
 
 proto._getDefaultValue = function(field){
@@ -219,11 +224,25 @@ proto._mountPanel = function(panel,container){
   panel.$mount().$appendTo(container);
 };
 
-proto._getField = function(name){
+proto._getField = function(fieldName){
   var field = null;
   _.forEach(this.state.fields,function(f){
-    if (f.name == name){
+    if (f.name == fieldName){
       field = f;
+    }
+  })
+  return field;
+};
+
+proto._getRelationField = function(fieldName,relationName){
+  var field = null;
+  _.forEach(this.state.relations,function(relation,name){
+    if (relationName == name){
+      _.forEach(relation.fields,function(f){
+        if (f.name == fieldName){
+          field = f;
+        }
+      })
     }
   })
   return field;

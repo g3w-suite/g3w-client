@@ -178,7 +178,7 @@ gulp.task('production', function(){
 
 gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch']);
 gulp.task('dist', ['production','browserify','assets','html']);
-gulp.task('g3w-admin', ['dist'],function(){
+gulp.task('g3w-admin', [],function(){
   gulp.src('./dist/g3w-client/**/*.*')
   .pipe(gulp.dest(conf.g3w_admin_dest));
 });

@@ -109,6 +109,7 @@ proto.stop = function(){
 };
 
 proto._modifyFeature = function(feature,isNew){
+  // aggionro la geometria nel buffer di editing
   this.editor.updateFeature(feature,isNew);
   this._selectInteraction.getFeatures().clear();
   this._busy = false;

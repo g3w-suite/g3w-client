@@ -1,5 +1,6 @@
 var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
+var ProjectService = require('g3w/core/projectservice').ProjectService;
 var FormPanel = require('g3w/gui/form').FormPanel;
 var Form = require('g3w/gui/form').Form;
 
@@ -14,10 +15,6 @@ inherit(IternetForm,Form);
 var proto = IternetForm.prototype;
 
 proto._isVisible = function(field){
-  // nel caso in cui il layer non sia editable e sia vuoto (quindi stiamo inserendo un nuovo elemento) non lo mostro
-  /*if(!field.editable && (field.value == "" || _.isNull(field.value))){
-    return false
-  }*/
   var ret = true;
   switch (field.name){
     case "cod_acc_est":
@@ -51,6 +48,32 @@ proto._shouldShowRelation = function(relation){
     }
   }
   return true;
+};
+
+proto._pickLayer = function(field){
+  var self = this;
+  var layerId = field.input.options.layerid;
+  
+  Form.prototype._pickLayer.call(this,field)
+  .then(function(attributes){
+    var linkedField;
+    var linkedFieldAttributeName;
+    
+    switch (field.name) {
+      case 'cod_ele':
+        linkedField = self._getRelationField("cod_top","numero_civico");
+        break;
+      case 'cod_top':
+        linkedField = self._getField("cod_ele");;
+    }
+    
+    if (linkedField) {
+      linkedFieldAttributeName = ProjectService.getLayerAttributeLabel(layerId,linkedField.input.options.field);
+      if (linkedField && attributes[linkedFieldAttributeName]){
+        linkedField.value = attributes[linkedFieldAttributeName];
+      }
+    }
+  })
 };
 
 module.exports = IternetForm;
