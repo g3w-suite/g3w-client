@@ -119,7 +119,7 @@ function StradeEditor(options){
         return true;
       }
       GUI.notify.error("L'ultimo vertice deve corrispondere con una giunzione");
-      return true;
+      return false;
     }
   };
   
@@ -234,6 +234,23 @@ function StradeEditor(options){
   };
   
   /* FINE MODIFICA */
+  
+  /* INIZIO TAGLIO */
+  
+  this._setupStradeCutterPostSelection = function(){
+    var self = this;
+    this.onbeforeasync('cutLine',function(data,modType,next){
+      if (modType == 'MODONCUT'){
+        var newFeature = data.add[0];
+        self._openEditorForm('new',newFeature,next);
+      }
+      else {
+        next(true);
+      }
+    });
+  };
+  
+  /* FINE TAGLIO */
 };
 inherit(StradeEditor,IternetEditor);
 module.exports = StradeEditor;
@@ -247,6 +264,7 @@ proto.start = function(iternetService){
   this._loadMissingGiunzioniInView();
   this._setupDrawStradeConstraints();
   this._setupModifyVertexStradeConstraints();
+  this._setupStradeCutterPostSelection();
         
   return IternetEditor.prototype.start.call(this);
 };
