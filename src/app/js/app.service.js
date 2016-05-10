@@ -7,7 +7,8 @@ var ToolsService = require('g3w/core/toolsservice');
 // per ora la configurazione dei tools è statica dentro /src/app
 var toolsconfig = require('tools.config');
 var Nominatim = require('g3w/core/geocodingservice').Nominatim;
-var GeocodeListing = require('g3w/gui/geocoding/geocode.listing');
+var GeocodingListPanelComponent = require('g3w/gui/geocoding/listpanel');
+var ListPanel = require('g3w/gui/listpanel').ListPanel;
 
 var GUI = require('g3w/gui/gui');
 
@@ -31,10 +32,14 @@ proto.init = function(config){
   this.config = config;
   this._bootstrap();
   
-  Nominatim.on("results",function(results){
-    var gl = new GeocodeListing();
-    gl.results = results;
-    FloatBar.insertVM(gl);
+  Nominatim.on("results",function(result,query){
+    var listPanel = new ListPanel({
+      name: "Risultati ricerca '"+query+"'",
+      id: 'nominatim_results',
+      list: result,
+      listPanelComponent: GeocodingListPanelComponent
+    });
+    GUI.showListing(listPanel);
   })
 };
 
@@ -47,9 +52,11 @@ proto._bootstrap = function(){
     // mostra un pannello nella floatbar
     GUI.showForm = _.bind(FloatBar.showPanel,FloatBar);
     GUI.closeForm = _.bind(FloatBar.closePanel,FloatBar);
+    GUI.showListing = _.bind(FloatBar.showPanel,FloatBar);
+    GUI.closeListing = _.bind(FloatBar.closePanel,FloatBar);
     // mostra un pannello nella sidebar
     GUI.showPanel = _.bind(SideBar.showPanel,SideBar);
-    
+
     GUI.setModal = _.bind(this._showModalOverlay,this);
     
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno

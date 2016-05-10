@@ -102,9 +102,12 @@ proto.stop = function(){
   this._selectInteraction.getFeatures().clear();
   if (this._snapInteraction){
      map.removeInteraction(this._snapInteraction);
+     this._snapInteraction = null;
   }
   map.removeInteraction(this._selectInteraction);
+  this._selectInteraction = null;
   map.removeInteraction(this._modifyInteraction);
+  this._modifyInteraction = null;
   return true;
 };
 

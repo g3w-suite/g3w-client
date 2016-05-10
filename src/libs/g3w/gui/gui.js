@@ -11,6 +11,10 @@ function GUI(){
   // show a Vue form
   this.showForm = noop;
   this.closeForm = noop;
+  
+  // mostra una lista di oggetti (es. lista di risultati)
+  this.showListing = noop;
+  this.closeListing = noop;
 
   this.showPanel = noop;
   

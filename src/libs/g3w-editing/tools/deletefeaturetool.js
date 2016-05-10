@@ -170,7 +170,9 @@ proto.stop = function(){
   var map = MapService.viewer.map;
   this._selectInteraction.getFeatures().clear();
   map.removeInteraction(this._selectInteraction);
+  this._selectInteraction = null;
   map.removeInteraction(this._deleteInteraction);
+  this._deleteInteraction = null;
   return true;
 };
 

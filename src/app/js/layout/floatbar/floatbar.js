@@ -44,6 +44,9 @@ function FloatBar(){
         $('.control-sidebar-bg').css("z-index","");
         this._modal = false;
       }
+      else {
+        this.layout.floatBar.close(this.sidebarEl,true);
+      }
     }
   };
 }

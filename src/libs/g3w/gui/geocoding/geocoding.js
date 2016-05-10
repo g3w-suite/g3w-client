@@ -1,4 +1,5 @@
 var t = require('i18n.service');
+var GUI = require('g3w/gui/gui');
 var GeocodingService = require('g3w/core/geocodingservice');
 
 Vue.component("geocoder",{

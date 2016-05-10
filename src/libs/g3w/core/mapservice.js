@@ -69,8 +69,8 @@ function MapService(){
       view: {
         projection: projection,
         center: ol.extent.getCenter(ProjectService.state.extent),
-        //zoom: 0
-        zoom:4 
+        zoom: 0
+        //zoom:4 
       }
     });
     
@@ -180,13 +180,17 @@ function MapService(){
   };
   
   this.goTo = function(coordinates,zoom){
-    var zoom = zoom || 5;
+    var zoom = zoom || 6;
     this.viewer.goTo(coordinates,zoom);
   };
   
   this.goToWGS84 = function(coordinates,zoom){
     var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.crs);
     this.goTo(coordinates,zoom);
+  };
+  
+  this.extentToWGS84 = function(extent){
+    return ol.proj.transformExtent(extent,'EPSG:'+ProjectService.state.crs,'EPSG:4326');
   };
   
   this.getFeatureInfo = function(layerId){
@@ -246,6 +250,62 @@ function MapService(){
       self.popInteraction();
       self._pickInteraction = null;
     })
+  };
+  
+  this.highlightGeometry = function(geometryObj,duration,fromWGS84){
+    var geometry;
+    if (geometryObj instanceof ol.geom.Geometry){
+      geometry = geometryObj;
+    }
+    else {
+      format = new ol.format.GeoJSON;
+      geometry = format.readGeometry(geometryObj);
+    }
+    
+    if (fromWGS84) {
+      geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.crs);
+    }
+    
+    var feature = new ol.Feature({
+      geometry: geometry
+    });
+    var source = new ol.source.Vector();
+    source.addFeatures([feature]);
+    var layer = new ol.layer.Vector({
+      source: source,
+      style: function(feature){
+        var styles = [];
+        var geometryType = feature.getGeometry().getType();
+        if (geometryType == ol.geom.GeometryType.LINE_STRING) {
+          var style = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgb(255,255,0)',
+              width: 4
+            })
+          })
+          styles.push(style);
+        }
+        else if (geometryType == ol.geom.GeometryType.POINT){
+          var style = new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 6,
+              fill: new ol.style.Fill({
+                color: 'rgb(255,255,0)',
+              })
+            }),
+            zIndex: Infinity
+          });
+          styles.push(style);
+        }
+        
+        return styles;
+      }
+    })
+    layer.setMap(this.viewer.map);
+    
+    setTimeout(function(){
+      layer.setMap(null);
+    },duration);
   };
   
   this.refreshMap = function(){

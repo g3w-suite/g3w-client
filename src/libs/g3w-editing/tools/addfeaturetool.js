@@ -91,8 +91,10 @@ proto.stop = function(){
   var map = MapService.viewer.map;
   if (this._snapInteraction){
      map.removeInteraction(this._snapInteraction);
+     this._snapInteraction = null;
   }
   map.removeInteraction(this.drawInteraction);
+  this.drawInteraction = null;
   return true;
 };
 
