@@ -135,8 +135,12 @@ var PanelComponent = Vue.extend({
       if (!this.state.editing.enabled){
         message = '<span style="color: red">Aumentare il livello di zoom per abilitare l\'editing';
       }
-      else {
-        
+      else if (this.state.editing.toolstep.message){
+        var n = this.state.editing.toolstep.n;
+        var total = this.state.editing.toolstep.total;
+        var stepmessage = this.state.editing.toolstep.message;
+        message = '<div style="margin-top:20px">GUIDA STRUMENTO:</div>' +
+          '<div><span>['+n+'/'+total+'] </span><span style="color: yellow">'+stepmessage+'</span></div>';
       }
       return message;
     }

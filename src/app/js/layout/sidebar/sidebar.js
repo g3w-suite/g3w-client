@@ -58,8 +58,8 @@ Vue.component('sidebar',{
     },
     ready: function(){
       // temporaneo, per avviare direttamente iternet
-      // var iternet = require('g3w-iternet/plugin');
-      // iternet.startEditing();
+      var iternet = require('g3w-iternet/plugin');
+      iternet.startEditing();
     }
 });
 

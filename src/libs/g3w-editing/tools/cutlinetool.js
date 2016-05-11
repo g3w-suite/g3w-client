@@ -1,17 +1,24 @@
 var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var geom = require('g3w/core/geom');
-var G3WObject = require('g3w/core/g3wobject');
 var MapService = require('g3w/core/mapservice');
 var PickCoordinatesInteraction = require('g3w/core/interactions/pickcoordinatesinteraction');
 var PickFeatureInteraction = require('g3w/core/interactions/pickfeatureinteraction');
 
+var EditingTool = require('./tool');
+
+
+
 function CutLineTool(editor,options){
+  this.setters = {
+    cutLine: CutLineTool.prototype._cutLine
+  };
+  
+  base(this,editor,options);
+  
   var self = this;
-  this.editor = editor;
   this.isPausable = true;
-  this.layer = null;
-  this.editingLayer = null;
+  this.steps = new EditingTool.Steps(CutLineTool.steps);
   
   this._origFeature = null;
   this._origGeometry = null;
@@ -48,36 +55,30 @@ function CutLineTool(editor,options){
     }*/
   });
 
-  this.setters = {
-    cutLine: CutLineTool.prototype._cutLine
-  };
   
-  base(this);
 }
-inherit(CutLineTool,G3WObject);
+inherit(CutLineTool,EditingTool);
 module.exports = CutLineTool;
 
 var proto = CutLineTool.prototype;
 
 proto.run = function(){
   var self = this;
-  var map = MapService.viewer.map;
-  this.layer = this.editor.getVectorLayer().getLayer();
-  this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
   this._linePickInteraction = new PickFeatureInteraction({
     layers: [this.layer,this.editingLayer]
   });
   
-  map.addInteraction(this._linePickInteraction);
+  this.map.addInteraction(this._linePickInteraction);
   
   // seleziono la linea da tagliare
+  self.steps.next();
   this._linePickInteraction.on('picked',function(e){
     var cutFeature;
     var feature = self._origFeature = e.feature;
     self._origGeometry = feature.getGeometry().clone();
     self._showSelection(self._origGeometry,300);
-    map.removeInteraction(this);
+    self.map.removeInteraction(this);
 
     
     if (self._pointLayer){
@@ -90,8 +91,9 @@ proto.run = function(){
     }
     
     // pesco coordinata o feature di taglio selezionata
+    self.steps.next();
     self._pointPickInteraction.on('picked',function(e){
-      map.removeInteraction(this);
+      self.map.removeInteraction(this);
       var coordinate;
       if (e.feature){
         cutFeature = e.feature;
@@ -128,9 +130,9 @@ proto.run = function(){
             // nel caso di modifica su taglio
             if (self._modType == 'MODONCUT'){
               // seleziono la porzione da mantenere/modificare
+              self.steps.next();
               self._selectLineToKeep(prevLineFeature,nextLineFeature)
               .then(function(featureToKeep){
-                
                 // aggiorno la feature originale con la geometria della feature che si è selezionato da mantenere
                 feature.setGeometry(featureToKeep.getGeometry().clone());
                 
@@ -194,7 +196,7 @@ proto.run = function(){
         }
       }
     })
-    map.addInteraction(self._pointPickInteraction);
+    self.map.addInteraction(self._pointPickInteraction);
   });
 };
 
@@ -216,12 +218,17 @@ proto.rerun = function(){
 
 proto.stop = function(){
   this._cleanUp();
-  var map = MapService.viewer.map;
-  map.removeInteraction(this._linePickInteraction);
-  map.removeInteraction(this._pointPickInteraction);
-  this._linePickInteraction = null;
-  this._pointPickInteraction = null;
-  return true;
+  
+  var stop = EditingTool.prototype.stop.call(this);
+  
+  if (stop) {
+    this.map.removeInteraction(this._linePickInteraction);
+    this.map.removeInteraction(this._pointPickInteraction);
+    this._linePickInteraction = null;
+    this._pointPickInteraction = null;
+  }
+
+  return stop;
 };
 
 proto._cleanUp = function(){
@@ -263,26 +270,26 @@ proto._cutLine = function(data,modType){
   }
   this._busy = false;
   this.pause(false);
+  this.steps.completed();
   this.rerun();
   return true;
 };
 
 proto._selectLineToKeep = function(prevLineFeature,nextLineFeature){
   var d = $.Deferred();
-  
-  var map = MapService.viewer.map;
+  var self = this;
   var layer = this._lineToKeepOverlay;
   layer.getSource().addFeatures([prevLineFeature,nextLineFeature]);
-  layer.setMap(map);
+  layer.setMap(this.map);
   
   var selectLineInteraction = new PickFeatureInteraction({
     layers: [this._lineToKeepOverlay],
   });
-  map.addInteraction(selectLineInteraction);
+  this.map.addInteraction(selectLineInteraction);
   
   selectLineInteraction.on('picked',function(e){
     layer.setMap(null);
-    map.removeInteraction(this);
+    self.map.removeInteraction(this);
     d.resolve(e.feature);
   });
   
@@ -349,13 +356,12 @@ proto._cut = function(geometry,cutCoordinate){
 proto._showSelection = function(geometry,duration){
   var self = this;
   var duration = duration || null;
-  var map = MapService.viewer.map;
   var overlay = this._selectedLineOverlay;
   
   var feature = new ol.Feature();
   feature.setGeometry(geometry);
   overlay.getSource().addFeatures([feature]);
-  overlay.setMap(map);
+  overlay.setMap(this.map);
   if(duration){
     setTimeout(function(){
       overlay.setMap(null);
@@ -367,3 +373,15 @@ proto._showSelection = function(geometry,duration){
 proto._isNew = function(feature){
   return (!_.isNil(this.editingLayer.getSource().getFeatureById(feature.getId())));
 };
+
+CutLineTool.steps = [
+  {
+    type: "selectline"
+  },
+  {
+    type: "selectcutpoint"
+  },
+  {
+    type: "selectparttokeep"
+  }
+]

@@ -12,6 +12,14 @@ var AccessiEditor = require('./editors/accessieditor');
 var GiunzioniEditor = require('./editors/giunzionieditor');
 var StradeEditor = require('./editors/stradeeditor');
 
+var toolStepsMessages = {
+  'cutline': [
+    "Seleziona la strada da tagliare",
+    "Seleziona la giunzione di taglio",
+    "Seleziona la porizione di strada originale da mantenere"
+  ]
+}
+
 function IternetService(){
   var self = this;
   
@@ -96,7 +104,12 @@ function IternetService(){
       on: false,
       enabled: false,
       layerCode: null,
-      toolType: null
+      toolType: null,
+      toolstep: {
+        n: null,
+        total: null,
+        message: null
+      },
     },
     retrievingData: false,
     hasEdits: false
@@ -169,6 +182,7 @@ function IternetService(){
         }
         // altrimenti attivo il tool richiesto
         else {
+          this._stopEditingTool();
           this._startEditingTool(currentEditingLayer,toolType);
         }
       }
@@ -457,6 +471,57 @@ function IternetService(){
       this.state.editing.layerCode = null;
       this.state.editing.toolType = null;
     }
+    this._updateToolStepsState();
+  };
+  
+  this._updateToolStepsState = function(activeTool){
+    var self = this;
+    var layer = this._getCurrentEditingLayer();
+    var activeTool;
+    
+    if (layer) {
+      activeTool = layer.editor.getActiveTool();
+    }
+    
+    if (activeTool && activeTool.getTool()) {
+      var toolInstance = activeTool.getTool();
+      if (toolInstance.steps){
+        this._setToolStepState(activeTool);
+        toolInstance.steps.on('step',function(index,step){
+          self._setToolStepState(activeTool);
+        })
+        toolInstance.steps.on('complete',function(){
+          self._setToolStepState();
+        })
+      }
+    }
+    else {
+      self._setToolStepState();
+    }
+  };
+  
+  this._setToolStepState = function(activeTool){
+    var index, total, message;
+    if (_.isUndefined(activeTool)){
+      index = null;
+      total = null;
+      message = null;
+    }
+    else {
+      var tool = activeTool.getTool();
+      var messages = toolStepsMessages[activeTool.getType()];
+      index = tool.steps.currentStepIndex();
+      total = tool.steps.totalSteps();
+      message = messages[index];
+      if (_.isUndefined(message)) {
+        index = null;
+        total = null;
+        message = null;
+      }
+    }
+    this.state.editing.toolstep.n = index + 1;
+    this.state.editing.toolstep.total = total;
+    this.state.editing.toolstep.message = message;
   };
   
   this._getCurrentEditingLayer = function(){

@@ -307,6 +307,7 @@ proto.start = function(iternetService){
 
 proto.setTool = function(toolType){
   var giunzioniVectorLayer = this._giunzioniEditor.getVectorLayer();
+  var stepsInfo = [];
   var options;
   if (toolType=='addfeature'){
     options = {
@@ -334,6 +335,7 @@ proto.setTool = function(toolType){
   var start =  IternetEditor.prototype.setTool.call(this,toolType,options);
   
   if (start){
+    //this.toolProgress.setStepsInfo(stepsInfo);
     this._stradeSnaps = new this._stradeSnapsCollection;
     $('body').keyup(this._drawRemoveLastPoint);
     $('body').keyup(this._modifyRemovePoint);
