@@ -1,0 +1,22 @@
+//Navbar toggle button
+.sidebar-aside-toggle {
+  position:absolute;
+  left:@sidebar-width;
+  top: @navbar-height;
+  background-color: @light-blue;
+  color: white;
+  background-image: none;
+  padding: 12.5px;
+  //Add the fontawesome bars icon
+  font-family: fontAwesome;
+  &:before {
+    content: "\f0c9";
+  }
+  &:focus,
+  &:hover {
+    color: #fff;
+  }
+}
+.sidebar-aside-toggle .icon-bar {
+  display: none;
+}

@@ -10,8 +10,9 @@ var _Viewer = function(opts){
   var controls = ol.control.defaults({
     attributionOptions: {
       collapsible: false
-    }
-  }).extend([new ol.control.Zoom()]);
+    },
+    zoom: false
+  });//.extend([new ol.control.Zoom()]);
   
   var interactions = ol.interaction.defaults()
     .extend([
