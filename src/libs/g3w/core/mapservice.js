@@ -69,8 +69,8 @@ function MapService(){
       view: {
         projection: projection,
         center: ol.extent.getCenter(ProjectService.state.extent),
-        //zoom: 0
-        zoom:7 
+        zoom: 0
+        //zoom:7 
       }
     });
     

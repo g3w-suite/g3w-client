@@ -98,7 +98,7 @@ function ProjectService(){
   };
   
   this.getLegendUrl = function(layer){
-    return this.getWmsUrl(this.state)+'?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
+    return this.getWmsUrl(this.state)+'/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
   };
   
   base(this);

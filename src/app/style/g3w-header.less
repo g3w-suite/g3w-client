@@ -16,7 +16,17 @@
   &:hover {
     color: #fff;
   }
+  @media (max-width: @screen-xs-max) {
+      left: @sidebar-width-small;
+  }
 }
 .sidebar-aside-toggle .icon-bar {
   display: none;
+}
+
+//Per evitare che la navbar si allarghi (in altezza) in modalità mobile (override di bootstrap)
+.navbar-form{
+  padding-top:0px;
+  padding-bottom:0-px;
+  margin-bottom:0px
 }

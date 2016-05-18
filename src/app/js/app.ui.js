@@ -36,20 +36,25 @@ Vue.component('app',{
       
       function setMapDivWidth(animating){
         var offset = $(".main-sidebar").offset().left;
+        var width = $(".main-sidebar").innerWidth();
+        var sideBarSpace = width + offset;
         // this is required because during animation I get the offset BEFORE starting to collapse while when not animating I need the offset minus the width
-        if (!animating){
+        /*if (!animating){
           offset = offset - $(".main-sidebar").innerWidth();
-        }
-        $("#map").width($(window).innerWidth() + offset);
+        }*/
+        $("#map").width($(window).innerWidth() - sideBarSpace);
+        console.log("Finestra "+$(window).innerWidth())
+        console.log("Offset "+offset)
+        console.log("Mappa "+($(window).innerWidth() - sideBarSpace));
         MapService.viewer.map.updateSize();
       }
       
-      $("body").on("expanded.pushMenu",function(){
+      /*$("body").on("expanded.pushMenu",function(){
         setMapDivWidth(true);
       });
       $("body").on("collapsed.pushMenu",function(){
         setMapDivWidth(true);
-      });
+      });*/
       setMapDivHeight();
       
       var controlsidebarEl = layout.options.controlSidebarOptions.selector;
@@ -66,6 +71,10 @@ Vue.component('app',{
       /*$(controlsidebarEl).slimScroll({
           height: mainHeight()
       });*/
+      $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
+          $(this).trigger('trans-end');
+          setMapDivWidth(false);
+      });
       
       var drawing = false;
       var resizeFired = false;
@@ -86,7 +95,6 @@ Vue.component('app',{
         if (resizeFired === true) {
             resizeFired = false;
             drawing = true;
-
             setMapDivHeight();
             setMapDivWidth(false);
 
