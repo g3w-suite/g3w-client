@@ -34,18 +34,11 @@ Vue.component('app',{
         MapService.viewer.map.updateSize();
       }
       
-      function setMapDivWidth(animating){
+      function setMapDivWidth(){
         var offset = $(".main-sidebar").offset().left;
         var width = $(".main-sidebar").innerWidth();
         var sideBarSpace = width + offset;
-        // this is required because during animation I get the offset BEFORE starting to collapse while when not animating I need the offset minus the width
-        /*if (!animating){
-          offset = offset - $(".main-sidebar").innerWidth();
-        }*/
         $("#map").width($(window).innerWidth() - sideBarSpace);
-        console.log("Finestra "+$(window).innerWidth())
-        console.log("Offset "+offset)
-        console.log("Mappa "+($(window).innerWidth() - sideBarSpace));
         MapService.viewer.map.updateSize();
       }
       
@@ -73,7 +66,7 @@ Vue.component('app',{
       });*/
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
           $(this).trigger('trans-end');
-          setMapDivWidth(false);
+          setMapDivWidth();
       });
       
       var drawing = false;
@@ -96,7 +89,7 @@ Vue.component('app',{
             resizeFired = false;
             drawing = true;
             setMapDivHeight();
-            setMapDivWidth(false);
+            setMapDivWidth();
 
             requestAnimationFrame(drawResize);
         } else {
