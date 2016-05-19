@@ -744,6 +744,16 @@ $.LayoutManager.listCustomPlugin = function () {
 	  	.addRefreshButton()
 	  	.activateBox()
 	  	.listCustomPlugin();
-	};	
+	};
+
+$.LayoutManager.loading = function(start){
+  var start = _.isBoolean(start) ? start : true;
+  if (start) {
+    $('body').append('<div id="loadspinner" class="loading"></div>');
+  }
+  else {
+    $('#loadspinner').remove();
+  }
+}
 
 module.exports = $.LayoutManager;

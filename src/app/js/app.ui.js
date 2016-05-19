@@ -13,6 +13,7 @@ Vue.component('app',{
     template: require('./app.html'),
     ready: function(){
       /* start to render LayoutManager layout */
+      layout.loading(false);
       layout.setup();
       $("body").toggleClass("fixed");
       layout.layout.fixSidebar();
@@ -25,7 +26,8 @@ Vue.component('app',{
       FloatBar.init(layout);
       
       function mainHeight(){
-        return $(window).innerHeight()-$(".navbar").innerHeight();
+        //return $(window).innerHeight()-$(".navbar").innerHeight();
+        return $(window).innerHeight();
       }
       
       /* map resize calculations */

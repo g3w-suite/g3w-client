@@ -46,7 +46,9 @@ proto.init = function(config){
 proto._bootstrap = function(){
   var self = this;
   if (!this.initialized){
-    
+    $(function(){
+      $("#loading").addClass("loading");;
+    });
     // definisco (implemento) i metodi dell'API globale della GUI
     GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
     // mostra un pannello nella floatbar

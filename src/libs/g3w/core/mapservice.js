@@ -30,8 +30,11 @@ function MapService(){
   this.state = {
       bbox: [],
       resoution: null,
-      center: null
+      center: null,
+      loading: false
   };
+  
+  this._howManyAreLoading = 0;
   
   this._interactionsStack = [];
   
@@ -40,6 +43,22 @@ function MapService(){
       this.state.bbox = bbox;
       this.state.resolution = resoution;
       this.state.resolutin = center
+    },
+    setIsLoading: function(bool){
+      var delta = bool ? 1 : -1;
+      var isFirstIncrement = (this._howManyAreLoading == 0) && (delta == 1);
+      var isLastDecrement = (this._howManyAreLoading == 1) && (delta == -1);
+      this._howManyAreLoading += delta;
+
+      if (isFirstIncrement || isLastDecrement){
+        this.state.loading = bool;
+        if (bool) {
+          this.emit('loadstart');
+        }
+        else {
+          this.emit('loadend');
+        }
+      }
     }
   };
   
@@ -85,6 +104,14 @@ function MapService(){
     })
   };
   
+  this.getViewerElement = function(){
+    this.viewer.map.getTargetElement();
+  };
+  
+  this.getViewport = function(){
+    return this.viewer.map.getViewport();
+  };
+  
   this.setupLayers = function(){
     this.mapLayers = {};
     this.layersAssociation = {};
@@ -101,6 +128,7 @@ function MapService(){
             url: url
           });
           self.viewer.map.addLayer(mapLayer.getLayer());
+          self.registerListeners(mapLayer);
         }
         mapLayer.addLayer(layer);
         self.layersAssociation[layer.id] = layerId;
@@ -132,6 +160,17 @@ function MapService(){
     traverse(layersTree);
     return layersArray;
   };
+  
+  this.registerListeners = function(mapLayer){
+    mapLayer.on('loadstart',function(){
+      self.setIsLoading(true);
+    });
+    mapLayer.on('loadend',function(){
+      self.setIsLoading(false);
+    });
+  };
+  
+  this.layersLoading =
   
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);

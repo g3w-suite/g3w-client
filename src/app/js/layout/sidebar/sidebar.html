@@ -1,11 +1,11 @@
 <aside class="main-sidebar">
   <!-- sidebar: style can be found in sidebar.less -->
   <!-- Sidebar toggle button-->
-  <a href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
+  <!-- Toggle button on the left side of main sidebar only if not mobile -->
+  <a v-if="!isMobile()" href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
     <span class="sr-only">Expand</span>
   </a>
 	<section class="sidebar">
-    
     <div v-show="panelsinstack" class="g3w-sidebarpanel">
       <div class="row">
         <div class="col-xs-12 col-sm-12 col-md-12">

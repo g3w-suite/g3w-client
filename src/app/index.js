@@ -1,8 +1,16 @@
-(function (){
+$(function (){
   var t = require('i18n.service');
-  var appUi = require('app.ui');
-  var appService = require('app.service');
+  var isMobileMixin = require('g3w/gui/vue.mixins').isMobileMixin;
+  var layout = require('layout/layout');
   var app = null;
+
+  //creo un filtro vue che traduce il testo passato
+  Vue.filter('t', function (value) {
+    return t(value);
+  });
+  
+  Vue.mixin(isMobileMixin);
+  
   var baseconfig = {
     client: {
       debug: true,
@@ -18,6 +26,10 @@
     },
     group: null
   };
+  
+  if (baseconfig.client.debug){
+    Vue.config.debug = true;
+  }
   
   // genera il config utilizzato che verrà passato da AppService a tutti i servizi G3W
   function createConfig(config){
@@ -42,13 +54,9 @@
     }
   };
   
-  if (baseconfig.client.debug){
-    Vue.config.debug = true;
-  }
-  //creo un filtro vue che traduce il testo passato
-  Vue.filter('t', function (value) {
-    return t(value);
-  });
+  var appUi = require('app.ui');
+  var appService = require('app.service');
+  
   //inizializza la vue appicazione
   function run(){
     app = new Vue({
@@ -57,7 +65,9 @@
         $(document).localize();
       }
     });
-  }
+  };
+  
+  layout.loading();
   
   // i servizi sono stati inizializzati, posso avviare l'istanza Vue
   appService.on('ready',function(){
@@ -83,4 +93,4 @@
   
   
   
-})();
+});
