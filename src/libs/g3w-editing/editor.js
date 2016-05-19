@@ -31,6 +31,7 @@ function Editor(options){
   this._editBuffer = null;
   this._activeTool = null;
   this._dirty = false;
+  this._newPrefix = '_new_';
   
   this._withFeatureLocks = false;
   this._featureLocks = null;
@@ -375,21 +376,28 @@ proto.getEditVectorLayer = function(){
   return this._editVectorLayer;
 };
 
+proto.generateId = function(){
+  return this._newPrefix+Date.now();
+};
+
 proto.isNewFeature = function(fid){
+  if (fid) {
+    return fid.toString().indexOf(this._newPrefix) == 0;
+  }
+  return true;
+};
+
+/*proto.isNewFeature = function(fid){
   if (fid) {
     if(!this.getVectorLayer().getFeatureById(fid)){
       return true;
     }
     return false;
-    /*else {
-      var feature = this._editVectorLayer.getFeatureById(fid);
-      return !_.isNil(feature);
-    }*/
   }
   else {
     return true
   }
-};
+};*/
 
 proto._isCompatibleType = function(geometrytype){
   return this._geometrytypes.indexOf(geometrytype) > -1;

@@ -15,6 +15,7 @@ function EditBuffer(editor){
   // buffer degli attributi
   this._attributesBuffer = {};
   
+  // buffer degli attributi delle relazioni
   this._relationsAttributesBuffer = {};
 }
 inherit(EditBuffer,G3WObject);
@@ -40,7 +41,7 @@ proto.destroy = function(){
 };
 
 proto.generateId = function(){
-  return '_new_'+Date.now();
+  return this._editor.generateId();
 };
 
 proto.addFeature = function(feature){
@@ -106,7 +107,7 @@ proto.collectFeatureIds = function(){
   return _.uniq(modifiedFids);
 };
 
-proto.collectFeatures = function(state,asGeoJSON){
+/*proto.collectFeatures = function(state,asGeoJSON){
   var self = this;
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
@@ -173,6 +174,45 @@ proto.collectFeatures = function(state,asGeoJSON){
       features.push(fid);
     }    
   })
+  return features;
+};*/
+
+proto.collectFeatures = function(state,asGeoJSON){
+  var self = this;
+  var geometriesBuffers = this._geometriesBuffer;
+  var attributesBuffers = this._attributesBuffer;
+  var asGeoJSON = asGeoJSON || false;
+  var GeoJSONFormat = new ol.format.GeoJSON();
+  
+  var modifiedFids = this.collectFeatureIds();
+  
+  var layer;
+  if (state == 'new') {
+    layer = self._editor.getEditVectorLayer();
+  }
+  else {
+    layer = self._editor.getVectorLayer();
+  }
+  
+  var features = [];
+  _.forEach(modifiedFids,function(fid){
+    
+    var feature = layer.getFeatureById(fid);
+    var isNew = self._isNewFeature(fid);
+    var addedFeature = (state == 'new' && isNew && feature);
+    var updatedFeature = (state == 'updated' && !isNew && feature);
+    var deletedFeature = (state == 'deleted' && !isNew && !feature);
+    
+    if (addedFeature || updatedFeature){
+      if (asGeoJSON){
+        feature = GeoJSONFormat.writeFeatureObject(feature);
+      }
+      features.push(feature);
+    }
+    else if (deletedFeature) {
+      features.push(fid);
+    }
+  });
   return features;
 };
 
