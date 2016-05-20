@@ -27,7 +27,8 @@ RasterLayers.WMSLayer = function(layerObj){
       params: {
         LAYERS: layerObj.layers || '',
         VERSION: '1.3.0',
-        TRANSPARENT: true
+        TRANSPARENT: true,
+        SLD_VERSION: '1.1.0'
       }
     }),
     visible:layerObj.visible

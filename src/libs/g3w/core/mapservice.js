@@ -127,7 +127,6 @@ function MapService(){
             id: layerId,
             url: url
           });
-          self.viewer.map.addLayer(mapLayer.getLayer());
           self.registerListeners(mapLayer);
         }
         mapLayer.addLayer(layer);
@@ -136,6 +135,7 @@ function MapService(){
     });
     
     _.forEach(this.mapLayers,function(mapLayer){
+      self.viewer.map.addLayer(mapLayer.getLayer());
       mapLayer.update();
     })
   };
@@ -169,8 +169,6 @@ function MapService(){
       self.setIsLoading(false);
     });
   };
-  
-  this.layersLoading =
   
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);

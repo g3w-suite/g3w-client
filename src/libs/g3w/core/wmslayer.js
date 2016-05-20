@@ -14,17 +14,7 @@ function WMSLayer(options){
   this._olLayer = null;
   this.layers = [];
   
-  var wmsConfig = {
-    name: this.id,
-    url: options.url
-  }
-  this._olLayer = new RasterLayers.WMSLayer(wmsConfig);
-  this._olLayer.getSource().on('imageloadstart', function() {
-      self.emit("loadstart");
-    });
-  this._olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
-  });
+  this._olLayer = null;
   
   base(this,options);
 }
@@ -32,7 +22,11 @@ inherit(WMSLayer,Layer)
 var proto = WMSLayer.prototype;
 
 proto.getLayer = function(){
-  return this._olLayer;
+  var olLayer;
+  if (!this._olLayer){
+    olLayer = this._olLayer = this._makeOlLayer();
+  }
+  return olLayer;
 };
 
 proto.getSource = function(){
@@ -41,6 +35,25 @@ proto.getSource = function(){
 
 proto.getId = function(){
   return this.id;
+};
+
+proto._makeOlLayer = function(){
+  var self = this;;
+  var wmsConfig = {
+    name: this.id,
+    url: this.options.url
+  };
+  
+  var olLayer = new RasterLayers.WMSLayer(wmsConfig);
+  
+  olLayer.getSource().on('imageloadstart', function() {
+        self.emit("loadstart");
+      });
+  olLayer.getSource().on('imageloadend', function() {
+      self.emit("loadend");
+  });
+  
+  return olLayer
 };
 
 proto.addLayer = function(layer){
@@ -53,11 +66,11 @@ proto.toggleLayer = function(layer){
       _layer.visible = layer.visible;
     }
   });
-  this.updateLayers();
+  this._updateLayers();
 };
   
 proto.update = function(){
-  this.updateLayers();
+  this._updateLayers();
 };
 
 proto.addLayer = function(layerConfig){
@@ -74,11 +87,17 @@ proto.getVisibleLayers = function(){
   return visibleLayers;
 }
 
-proto.updateLayers = function(){
+proto._updateLayers = function(){
   var visibleLayers = this.getVisibleLayers();
-  this._olLayer.getSource().updateParams({
-    layers: _.join(_.map(visibleLayers,'name'),',')
-  });
+  if (visibleLayers.length > 0) {
+    this._olLayer.setVisible(true);
+    this._olLayer.getSource().updateParams({
+      LAYERS: _.join(_.map(visibleLayers,'name'),',')
+    });
+  }
+  else {
+    this._olLayer.setVisible(false);
+  }
 };
 
 module.exports = WMSLayer;
