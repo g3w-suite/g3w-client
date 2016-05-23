@@ -4,6 +4,7 @@
 /dist
 /build
 /src/app/test.ows_config.js
-/src/app/configs/plugins.js
+/src/app/js/plugins.js
+/src/app/js/tools.js
 .idea
 *~

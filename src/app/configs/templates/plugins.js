@@ -1,3 +1,3 @@
-// @include ../local.plugins.js
+// @include ../plugins.config.js
 
 module.exports = plugins;

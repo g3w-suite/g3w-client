@@ -4,8 +4,6 @@ var G3WObject = require('g3w/core/g3wobject');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsService = require('g3w/core/pluginsservice');
 var ToolsService = require('g3w/core/toolsservice');
-// per ora la configurazione dei tools è statica dentro /src/app
-var toolsconfig = require('tools.config');
 var Nominatim = require('g3w/core/geocodingservice').Nominatim;
 var GeocodingListPanelComponent = require('g3w/gui/geocoding/listpanel');
 var ListPanel = require('g3w/gui/listpanel').ListPanel;
@@ -61,17 +59,12 @@ proto._bootstrap = function(){
 
     GUI.setModal = _.bind(this._showModalOverlay,this);
     
-    GUI.showBottomTable = function(){
-      $('#bottom-view').show();
-      GUI.guiResized()
-    };
-    
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
     $.when(
       ProjectsRegistry.init(this.config),
       PluginsService.init(this.config.plugins),
-      ToolsService.init(toolsconfig)
+      ToolsService.init(this.config.tools)
     ).then(function(){
       self.emit('ready');
       this.initialized = true;

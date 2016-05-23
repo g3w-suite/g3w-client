@@ -1,14 +1,16 @@
 var t = require('i18n.service');
+var MapService = require('g3w/core/mapservice');
+var GUI = require('g3w/gui/gui.js');
+var ViewportService = require('g3w/gui/view/viewport');
+var MapView = require('g3w/gui/map/map');
 require('g3w/gui/vue.directives');
-require('g3w/gui/view/view-container');
-require('g3w/gui/map/map');
 require('g3w/gui/geocoding/geocoding');
+
+
 var layout = require('layout/layout');
 var SideBar = require('layout/sidebar/sidebar');
 var FloatBar = require('layout/floatbar/floatbar');
-var MapService = require('g3w/core/mapservice');
 
-var GUI = require('g3w/gui/gui.js');      
 
 Vue.component('app',{
     template: require('./app.html'),
@@ -45,6 +47,8 @@ Vue.component('app',{
       /*$(controlsidebarEl).slimScroll({
           height: mainHeight()
       });*/
+      
+      ViewportService.setView(new MapView());
       
       GUI.ready();
     }

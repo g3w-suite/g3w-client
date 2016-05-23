@@ -33,8 +33,11 @@ var production = false;
 
 gulp.task('preprocess',function(){
   gulp.src('./src/app/configs/templates/plugins.js')
-    .pipe(preprocess()) //To set environment variables in-line 
-    .pipe(gulp.dest('./src/app/configs'))
+    .pipe(preprocess())
+    .pipe(gulp.dest('./src/app/js'));
+  gulp.src('./src/app/configs/templates/tools.js')
+    .pipe(preprocess())
+    .pipe(gulp.dest('./src/app/js'));
 });
 
 gulp.task('browserify', [], function(done) {

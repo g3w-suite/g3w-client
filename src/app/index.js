@@ -11,7 +11,8 @@ $(function (){
   
   Vue.mixin(isMobileMixin);
   
-  var plugins = require('./configs/plugins');
+  var plugins = require('./js/plugins');
+  var tools = require('./js/tools');
   
   var baseconfig = {
     client: {
@@ -55,7 +56,8 @@ $(function (){
       plugins: {
         plugins: plugins,
         configs: baseconfig.group.plugins
-      }
+      },
+      tools: tools
     }
   };
   
