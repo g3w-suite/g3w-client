@@ -61,6 +61,11 @@ proto._bootstrap = function(){
 
     GUI.setModal = _.bind(this._showModalOverlay,this);
     
+    GUI.showBottomTable = function(){
+      $('#bottom-view').show();
+      GUI.guiResized()
+    };
+    
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
     $.when(
