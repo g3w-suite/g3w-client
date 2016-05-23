@@ -1,3 +1,6 @@
 [submodule "src/libs/g3w"]
 	path = src/libs/g3w
 	url = https://giohappy@bitbucket.org/gis3w/g3w-client-base.git
+[submodule "src/libs/g3w-ol3"]
+	path = src/libs/g3w-ol3
+	url = https://giohappy@bitbucket.org/gis3w/g3w-client-ol3.git
