@@ -14,7 +14,10 @@
   "author": "",
   "license": "GPL v.3",
   "homepage": "https://bitbucket.org/gis3w/g3w-client#readme",
-  "dependencies": {},
+  "dependencies": {
+    "gulp-preprocess": "^2.0.0",
+    "preprocess": "^3.1.0"
+  },
   "devDependencies": {
     "browser-sync": "^2.11.1",
     "browserify": "^13.0.0",

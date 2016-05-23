@@ -11,6 +11,7 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var flatten = require('gulp-flatten');
 var useref = require('gulp-useref');
+var preprocess = require('gulp-preprocess');
 var filter = require('gulp-filter');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
@@ -29,6 +30,12 @@ var httpProxy = require('http-proxy');
 var Server = require('karma').Server;
 
 var production = false;
+
+gulp.task('preprocess',function(){
+  gulp.src('./src/app/configs/templates/plugins.js')
+    .pipe(preprocess()) //To set environment variables in-line 
+    .pipe(gulp.dest('./src/app/configs'))
+});
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
@@ -160,6 +167,9 @@ gulp.task('watch',function() {
     watch(['./src/app/style/less/skins/*.less'],function(){
       gulp.start('less-skins');
     });
+    watch('./src/app/configs/*.js',function(){
+      gulp.start('preprocess');
+    });
     watch('./src/**/*.{png,jpg}',function(){
       gulp.start('images');
     });
@@ -176,8 +186,8 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch']);
-gulp.task('dist', ['production','browserify','assets','html']);
+gulp.task('serve', ['browser-sync','preprocess','browserify','assets','less-skins', 'watch']);
+gulp.task('dist', ['production','preprocess','browserify','assets','html']);
 gulp.task('g3w-admin', [],function(){
   gulp.src('./dist/g3w-client/**/*.*')
   .pipe(gulp.dest(conf.g3w_admin_dest));

@@ -65,7 +65,7 @@ proto._bootstrap = function(){
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
     $.when(
       ProjectsRegistry.init(this.config),
-      PluginsService.init(this.config),
+      PluginsService.init(this.config.plugins),
       ToolsService.init(toolsconfig)
     ).then(function(){
       self.emit('ready');

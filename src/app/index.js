@@ -11,6 +11,8 @@ $(function (){
   
   Vue.mixin(isMobileMixin);
   
+  var plugins = require('./configs/plugins');
+  
   var baseconfig = {
     client: {
       debug: true,
@@ -50,7 +52,10 @@ $(function (){
       getProjectConfigUrl: function(project){
         return baseconfig.server.urls.config+'/'+baseconfig.group.id+'/'+project.type+'/'+project.id;
       },
-      plugins: baseconfig.group.plugins
+      plugins: {
+        plugins: plugins,
+        configs: baseconfig.group.plugins
+      }
     }
   };
   
