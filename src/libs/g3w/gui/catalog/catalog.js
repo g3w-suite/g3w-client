@@ -6,12 +6,12 @@ Vue.component('g3w-catalog',{
     template: require('./catalog.html'),
     data: function() {
       return {
-        project: ProjectService.state
+        state: ProjectService.state
       }
     },
     computed: {
       layerstree: function(){
-        return this.project.layerstree;
+        return this.state.project.layerstree;
       }
     },
     methods: {

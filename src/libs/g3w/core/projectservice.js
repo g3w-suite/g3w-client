@@ -18,7 +18,7 @@ function ProjectService(){
   this.config = null;
   this.layers = {};
   this.state = {
-    layerstree: []
+    project: null
   };
   
   this.setters = {
@@ -35,6 +35,7 @@ function ProjectService(){
   
   // genera l'oggetto layers (per riferimento), per semplificare gli aggiornamenti dello stato del layerstree
   this.makeLayersObj = function(layerstree){
+    this.layers = {};
     function traverse(obj){
       _.forIn(obj, function (layer, key) {
             //verifica che il valore dell'id non sia nullo
@@ -61,7 +62,7 @@ function ProjectService(){
       layerstree
     }
     */
-    this.state = project;
+    this.state.project = project;
     this.makeLayersObj(project.layerstree);
     this.emit('projectset');
   };

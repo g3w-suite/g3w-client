@@ -63,7 +63,7 @@ function MapService(){
   };
   
   ProjectService.on('projectset',function(){
-    $script("http://epsg.io/"+ProjectService.state.crs+".js");
+    $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
     if (!self.viewer){
       self.setupViewer();
     }
@@ -79,15 +79,15 @@ function MapService(){
   });
   
   this.setupViewer = function(){
-    var extent = ProjectService.state.extent;
+    var extent = ProjectService.state.project.extent;
     var projection = new ol.proj.Projection({
-      code: "EPSG:"+ProjectService.state.crs,
+      code: "EPSG:"+ProjectService.state.project.crs,
       extent: extent
     });
     this.viewer = ol3helpers.createViewer({
       view: {
         projection: projection,
-        center: ol.extent.getCenter(ProjectService.state.extent),
+        center: ol.extent.getCenter(ProjectService.state.project.extent),
         zoom: 0
         //zoom:7 
       }
@@ -113,9 +113,10 @@ function MapService(){
   };
   
   this.setupLayers = function(){
+    this.viewer.map.getLayers().clear();
     this.mapLayers = {};
     this.layersAssociation = {};
-    var layersArray = this.traverseLayersTree(ProjectService.state.layerstree);
+    var layersArray = this.traverseLayersTree(ProjectService.state.project.layerstree);
     layersArray.forEach(function(layer){
       // è un layer vero, non un folder
       if(!_.get(layer,'nodes')){
@@ -222,12 +223,12 @@ function MapService(){
   };
   
   this.goToWGS84 = function(coordinates,zoom){
-    var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.crs);
+    var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.project.crs);
     this.goTo(coordinates,zoom);
   };
   
   this.extentToWGS84 = function(extent){
-    return ol.proj.transformExtent(extent,'EPSG:'+ProjectService.state.crs,'EPSG:4326');
+    return ol.proj.transformExtent(extent,'EPSG:'+ProjectService.state.project.crs,'EPSG:4326');
   };
   
   this.getFeatureInfo = function(layerId){
@@ -245,11 +246,11 @@ function MapService(){
   
   this._completeGetFeatureInfo = function(layerId,coordinate,deferred){
     var self = this;
-    var projectType = ProjectService.state.type;
+    var projectType = ProjectService.state.project.type;
     
     var mapLayer = this.mapLayers[this.layersAssociation[layerId]];
     var resolution = self.viewer.getResolution();
-    var epsg = "EPSG:"+ProjectService.state.crs;
+    var epsg = "EPSG:"+ProjectService.state.project.crs;
     var params = {
       QUERY_LAYERS: ProjectService.getLayer(layerId).name,
       INFO_FORMAT: "text/xml"
@@ -300,7 +301,7 @@ function MapService(){
     }
     
     if (fromWGS84) {
-      geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.crs);
+      geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
     }
     
     var feature = new ol.Feature({
