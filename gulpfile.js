@@ -11,7 +11,6 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var flatten = require('gulp-flatten');
 var useref = require('gulp-useref');
-var preprocess = require('gulp-preprocess');
 var filter = require('gulp-filter');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
@@ -30,15 +29,6 @@ var httpProxy = require('http-proxy');
 var Server = require('karma').Server;
 
 var production = false;
-
-/*gulp.task('preprocess',function(){
-  gulp.src('./src/app/configs/templates/plugins.js')
-    .pipe(preprocess())
-    .pipe(gulp.dest('./src/app/js'));
-  gulp.src('./src/app/configs/templates/tools.js')
-    .pipe(preprocess())
-    .pipe(gulp.dest('./src/app/js'));
-});*/
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
@@ -94,7 +84,7 @@ gulp.task('less',['fonts'], function () {
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/app/style/less/skins/*.less')
+  return gulp.src('./src/libs/common/g3w-base-app/style/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
