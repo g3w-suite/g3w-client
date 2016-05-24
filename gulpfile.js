@@ -163,11 +163,13 @@ gulp.task('html', ['fonts'], function () {
 });
 
 gulp.task('watch',function() {
-    //gulp.watch(['./src/app/style/*.less','./src/app/style/**/*.less'], ['less']);
-    watch(['./src/app/style/*.less','./src/app/style/less/*.less'],function(){
+    watch(['./src/app/style/*.less','./src/app/style/*.less'],function(){
       gulp.start('less');
     });
-    watch(['./src/app/style/less/skins/*.less'],function(){
+    watch(['./src/libs/common/g3w-base-app/style/*.less','./src/libs/common/g3w-base-app/style/less/*.less'],function(){
+      gulp.start('less');
+    });
+    watch(['./src/libs/common/g3w-base-app/less/skins/*.less'],function(){
       gulp.start('less-skins');
     });
     watch('./src/app/configs/*.js',function(){
