@@ -42,7 +42,7 @@ gulp.task('preprocess',function(){
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/libs/"],
+      paths: ["./src/app/js/","./src/libs/","./src/libs/common/","./src/libs/modules/"],
       debug: !production,
       cache: {},
       packageCache: {}

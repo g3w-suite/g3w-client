@@ -1,0 +1,44 @@
+<div>
+  <form class="form-horizontal g3w-form">
+    <template v-for="field in state.fields">
+      <div v-if="isVisible(field)" class="form-group has-feedback">
+        <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}</label>
+        <div class="col-sm-8">
+          <input v-if="isSimple(field)" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+          <select v-if="isSelect(field)" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+            <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
+          </select>
+          <div v-if="isLayerPicker(field)">
+            <input class="form-control" @click="pickLayer(field)" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+            <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div v-for="relation in state.relations">
+      <div v-if="showRelation(relation)" transition="expand">
+        <div class="g3w-relationname">{{ relation.name | startcase }}</div>
+        <template v-for="relfield in relation.fields">
+          <div v-if="isVisible(relfield)" class="form-group has-feedback">
+            <label :for="relfield.name" class="col-sm-4 control-label">{{ relfield.label }}</label>
+            <div class="col-sm-8">
+              <input v-if="isSimple(relfield)" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
+              <select v-if="isSelect(relfield)" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
+                <option v-for="relvalue in relfield.input.options.values" value="{{ relvalue.key }}">{{ relvalue.value }}</option>
+              </select>
+              <div v-if="isLayerPicker(relfield)">
+                <input class="form-control" @click="pickLayer(relfield)" v-disabled="!isEditable(relfield)" onfocus="blur()" style="cursor:pointer" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(relfield) }}'" v-model="relfield.value" :id="relfield.name" :placeholder="'['+layerPickerPlaceHolder(relfield)+']'">
+                <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-4 col-sm-8">
+        <button v-for="button in buttons" class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)">{{ button.title }}</button>
+      </div>
+    </div>
+  </form>
+</div>
