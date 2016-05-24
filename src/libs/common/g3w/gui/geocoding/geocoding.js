@@ -1,4 +1,4 @@
-var t = require('i18n/i18n.service');
+var t = require('i18n/i18n.service').t;
 var GUI = require('g3w/gui/gui');
 var GeocodingService = require('g3w/core/geocodingservice');
 

@@ -1,4 +1,4 @@
-{
+var translations = {
     "it": {
         "translation": {
             "search": "Ricerca",
@@ -9,4 +9,6 @@
             "street_search": "Cerca indirizzo"
         }
     }
-}
+};
+
+module.exports = translations;

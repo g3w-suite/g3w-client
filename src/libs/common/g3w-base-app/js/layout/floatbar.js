@@ -1,4 +1,4 @@
-var t = require('i18n/i18n.service');
+var t = require('i18n/i18n.service').t;
 var Stack = require('./barstack.js');
 var GUI = require('g3w/gui/gui');
 

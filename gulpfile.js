@@ -31,14 +31,14 @@ var Server = require('karma').Server;
 
 var production = false;
 
-gulp.task('preprocess',function(){
+/*gulp.task('preprocess',function(){
   gulp.src('./src/app/configs/templates/plugins.js')
     .pipe(preprocess())
     .pipe(gulp.dest('./src/app/js'));
   gulp.src('./src/app/configs/templates/tools.js')
     .pipe(preprocess())
     .pipe(gulp.dest('./src/app/js'));
-});
+});*/
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
@@ -56,7 +56,7 @@ gulp.task('browserify', [], function(done) {
     var rebundle = function() {
       return bundler.bundle()
         .on('error', function(err){
-          console.log(err.message);
+          console.log(err);
           //browserSync.notify(err.message, 3000);
           //browserSync.reload();
           this.emit('end');
@@ -191,8 +191,8 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','preprocess','browserify','assets','less-skins', 'watch']);
-gulp.task('dist', ['production','preprocess','browserify','assets','html']);
+gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch']);
+gulp.task('dist', ['production','browserify','assets','html']);
 gulp.task('g3w-admin', [],function(){
   gulp.src('./dist/g3w-client/**/*.*')
   .pipe(gulp.dest(conf.g3w_admin_dest));

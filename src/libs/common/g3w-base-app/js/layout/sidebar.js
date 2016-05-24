@@ -1,4 +1,4 @@
-var t = require('i18n/i18n.service');
+var t = require('i18n/i18n.service').t;
 require('g3w/gui/catalog/catalog');
 require('g3w/gui/search/search');
 require('g3w/gui/tools/tools');

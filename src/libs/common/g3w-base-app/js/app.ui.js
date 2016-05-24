@@ -1,4 +1,4 @@
-var t = require('i18n/i18n.service');
+var t = require('i18n/i18n.service').t;
 var MapService = require('g3w/core/mapservice');
 var GUI = require('g3w/gui/gui.js');
 var ViewportService = require('g3w/gui/view/viewport');
@@ -50,7 +50,7 @@ var BaseUI = Vue.extend({
       ViewportService.setView(new MapView());
       
           // definisco (implemento) i metodi dell'API globale della GUI
-      GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
+      GUI.getResourcesUrl = function(){ return AppService.config.resourcesurl };
       // mostra un pannello nella floatbar
       GUI.showForm = _.bind(FloatbarService.showPanel,FloatbarService);
       GUI.closeForm = _.bind(FloatbarService.closePanel,FloatbarService);

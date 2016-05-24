@@ -1,4 +1,5 @@
-var t = require('i18n/i18n.service');
+var i18ninit = require('i18n/i18n.service').init;
+var t = require('i18n/i18n.service').t;
 require('g3w/gui/vue.directives');
 var isMobileMixin = require('g3w/gui/vue.mixins').isMobileMixin;
 var layout = require('./js/layout/layout');
@@ -6,10 +7,16 @@ var app = null;
 var appService = require('./js/app.service');
 
 var bootstrap = function (baseconfig){
+  i18ninit(baseconfig.i18n);
+  
   //creo un filtro vue che traduce il testo passato
   Vue.filter('t', function (value) {
     return t(value);
   });
+  
+  if (baseconfig.client.debug){
+    Vue.config.debug = true;
+  }
   
   Vue.mixin(isMobileMixin);
   
@@ -35,7 +42,8 @@ var bootstrap = function (baseconfig){
   
   function createConfig(config){
     return {
-      debug: true,
+      debug: baseconfig.client.debug || false,
+      group: null,
       resourcesurl: baseconfig.server.urls.staticurl,
       projects: baseconfig.group.projects,
       initproject: baseconfig.group.initproject,
