@@ -44,13 +44,9 @@ var bootstrap = function (baseconfig){
       minscale: baseconfig.group.minscale,
       maxscale: baseconfig.group.maxscale,
       // richiesto da ProjectService
-      getWmsUrl: function(project){
-        return baseconfig.server.urls.ows+'/'+baseconfig.group.id+'/'+project.type+'/'+project.id;
-      },
+      getWmsUrl: baseconfig.getWmsUrl,
       // richiesto da ProjectsRegistry
-      getProjectConfigUrl: function(project){
-        return baseconfig.server.urls.config+'/'+baseconfig.group.id+'/'+project.type+'/'+project.id;
-      },
+      getProjectConfigUrl: baseconfig.getProjectConfigUrl,
       plugins: {
         plugins: baseconfig.plugins,
         configs: baseconfig.group.plugins

@@ -6,8 +6,10 @@ var MapView = require('g3w/gui/map/map');
 require('g3w/gui/geocoding/geocoding');
 
 var layout = require('./layout/layout');
+var SidebarService = require('./layout/sidebar').SidebarService;
 var FloatbarService = require('./layout/floatbar').FloatbarService;
 
+var AppService = require('./app.service.js')
 
 var BaseUI = Vue.extend({
     ready: function(){
@@ -23,6 +25,7 @@ var BaseUI = Vue.extend({
       layout.controlSidebar._fix($(".control-sidebar"));
       
       FloatbarService.init(layout);
+
       
       var controlsidebarEl = layout.options.controlSidebarOptions.selector;
       
@@ -45,6 +48,18 @@ var BaseUI = Vue.extend({
       });*/
       
       ViewportService.setView(new MapView());
+      
+          // definisco (implemento) i metodi dell'API globale della GUI
+      GUI.getResourcesUrl = function(){ return self.config.resourcesurl };
+      // mostra un pannello nella floatbar
+      GUI.showForm = _.bind(FloatbarService.showPanel,FloatbarService);
+      GUI.closeForm = _.bind(FloatbarService.closePanel,FloatbarService);
+      GUI.showListing = _.bind(FloatbarService.showPanel,FloatbarService);
+      GUI.closeListing = _.bind(FloatbarService.closePanel,FloatbarService);
+      // mostra un pannello nella sidebar
+      GUI.showPanel = _.bind(SidebarService.showPanel,SidebarService);
+
+      GUI.setModal = _.bind(AppService.showModalOverlay,AppService);
       
       GUI.ready();
     }

@@ -10,7 +10,7 @@ function Nominatim(){
   
   this.search = function(query){
     var deferred = $.Deferred();
-    var extent = MapService.extentToWGS84(ProjectService.state.extent);
+    var extent = MapService.extentToWGS84(ProjectService.state.project.extent);
     bboxstring = _.join(extent,',');
     var searchUrl = this.url+"/search?viewboxlbrt="+bboxstring+"&bounded=1&format=json&polygon_geojson=1&q="+query;
     $.get(searchUrl,function(result){
