@@ -10,6 +10,7 @@ var GeometryTypes = require('./projectservice').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var PickCoordinatesInteraction = require('g3w/core/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('./wmslayer');
+var WMSMetaLayer = require('./wmsmetalayer');
 
 var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};
@@ -117,25 +118,34 @@ function MapService(){
     this.mapLayers = {};
     this.layersAssociation = {};
     var layersArray = this.traverseLayersTree(ProjectService.state.project.layerstree);
-    layersArray.forEach(function(layer){
-      // è un layer vero, non un folder
-      if(!_.get(layer,'nodes')){
-        var layerId = 'layer_'+layer.metalayer;
-        var mapLayer = _.get(self.mapLayers,layerId);
-        if (!mapLayer){
-          url = ProjectService.getWmsUrl();
-          mapLayer = self.mapLayers[layerId] = new WMSLayer({
-            id: layerId,
-            url: url
-          });
-          self.registerListeners(mapLayer);
-        }
+    // prendo solo i layer veri e non i folder
+    var leafLayersArray = _.filter(layersArray,function(layer){
+      return !_.get(layer,'nodes');
+    });
+    var metaLayers = _.groupBy(leafLayersArray,function(layer){
+      return layer.metalayer;
+    });
+    _.forEach(metaLayers,function(layers,id){
+      var layerId = 'layer_'+id; 
+      var n = layers.length;
+      var mapLayer = _.get(self.mapLayers,layerId);
+      // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
+      var WMSLayerClass = n>1 ? WMSMetaLayer : WMSLayer;
+      if (!mapLayer){
+        url = ProjectService.getWmsUrl();
+        mapLayer = self.mapLayers[layerId] = new WMSLayerClass({
+          id: layerId,
+          url: url
+        });
+        self.registerListeners(mapLayer);
+      }
+      layers.forEach(function(layer){
         mapLayer.addLayer(layer);
         self.layersAssociation[layer.id] = layerId;
-      }
-    });
+      });
+    })
     
-    _.forEach(this.mapLayers,function(mapLayer){
+    _.forEach(_.values(this.mapLayers).reverse(),function(mapLayer){
       self.viewer.map.addLayer(mapLayer.getLayer());
       mapLayer.update();
     })
