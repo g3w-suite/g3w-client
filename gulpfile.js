@@ -93,14 +93,14 @@ gulp.task('less-skins', function () {
 });
 
 gulp.task('fonts', function () {
-  return gulp.src(['./src/libs/common/third-party/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
+  return gulp.src(['./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
     .pipe(gulp.dest('./build/fonts/'))
     .pipe(gulp.dest('./dist/g3w-client/fonts/'));
 });
 
 gulp.task('images', function () {
-  return gulp.src(['./src/libs/common/third-party/**/*.{png,jpg,gif}}','./src/**/*.{png,jpg,gif}'])
+  return gulp.src(['./src/libs/**/*.{png,jpg,gif}}','./src/**/*.{png,jpg,gif}'])
     .pipe(flatten())
     .pipe(gulp.dest('./build/images/'))
     .pipe(gulp.dest('./dist/g3w-client/images/'));
@@ -148,7 +148,7 @@ gulp.task('html', ['fonts'], function () {
     return gulp.src('./src/index.html')
         .pipe(useref())
         //.pipe(gulpif(production,gulpif('*.js', uglify())))
-        .pipe(gulpif(production,gulpif('*.css', cleanCSS({processImport: false}))))
+        //.pipe(gulpif(production,gulpif('*.css', cleanCSS({processImport: false}))))
         .pipe(gulp.dest('dist'));
 });
 
