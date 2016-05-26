@@ -5,6 +5,8 @@ var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsService = require('g3w/core/pluginsservice');
 var ToolsService = require('g3w/core/toolsservice');
 
+var MapView = require('g3w/gui/map/map');
+
 var AppService = function(){
   var self = this;
   this.initialized = false;
@@ -53,6 +55,17 @@ proto.showModalOverlay = function(bool){
   else {
     this._modalOverlay.hide();
   }
+};
+
+proto.getDefaultView = function(){
+  var view;
+  if (this.config.views && this.config.views.default) {
+    view = this.config.views.default;
+  }
+  else {
+    view = require('g3w/gui/map/map');
+  }
+  return view.getViewComponent();
 };
 
 module.exports = new AppService;

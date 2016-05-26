@@ -30,7 +30,7 @@ function setMapDivWidth(){
   MapService.viewer.map.updateSize();
 }
 
-var MapView = Vue.component('g3w-map',{
+var MapViewComponent = Vue.component('g3w-map',{
   template: require('./map.html'),
   ready: function(){
     var self = this;
@@ -83,12 +83,18 @@ var MapView = Vue.component('g3w-map',{
       }
       
     })
-  },
-  methods: {
-    'opentable': function(){
-      GUI.showBottomTable();
-    }
   }
 });
 
-module.exports = MapView;
+function MapView() {
+  var _viewComponent;
+  
+  this.getViewComponent = function(){
+    if (!_viewComponent) {
+      _viewComponent = new MapViewComponent;
+    }
+    return _viewComponent;
+  };
+}
+
+module.exports = new MapView;

@@ -2,7 +2,6 @@ var t = require('i18n/i18n.service').t;
 var MapService = require('g3w/core/mapservice');
 var GUI = require('g3w/gui/gui.js');
 var ViewportService = require('g3w/gui/view/viewport');
-var MapView = require('g3w/gui/map/map');
 require('g3w/gui/geocoding/geocoding');
 
 var layout = require('./layout/layout');
@@ -47,7 +46,7 @@ var BaseUI = Vue.extend({
           height: mainHeight()
       });*/
       
-      ViewportService.setView(new MapView());
+      ViewportService.setView(AppService.getDefaultView());
       
           // definisco (implemento) i metodi dell'API globale della GUI
       GUI.getResourcesUrl = function(){ return AppService.config.resourcesurl };
