@@ -75,6 +75,10 @@ function ProjectService(){
     return this.layers[id];
   };
   
+  this.getLayers = function(){
+    return this.layers;
+  };
+  
   this.getLayerAttributes = function(id){
     return this.layers[id].attributes;
   };

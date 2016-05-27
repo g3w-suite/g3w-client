@@ -1,6 +1,5 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
-var deferredValue = require('./utils').deferredValue;
 var G3WObject = require('g3w/core/g3wobject');
 var GUI = require('g3w/gui/gui');
 var ProjectsRegistry = require('./projectsregistry');
@@ -9,8 +8,8 @@ var ProjectTypes = require('./projectservice').ProjectTypes;
 var GeometryTypes = require('./projectservice').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var PickCoordinatesInteraction = require('g3w/core/interactions/pickcoordinatesinteraction');
-var WMSLayer = require('./wmslayer');
-var WMSMetaLayer = require('./wmsmetalayer');
+var WMSSingleLayer = require('./wmssinglelayer');
+var WMSMultiLayer = require('./wmsmultilayer');
 
 var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};
@@ -130,7 +129,7 @@ function MapService(){
       var n = layers.length;
       var mapLayer = _.get(self.mapLayers,layerId);
       // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
-      var WMSLayerClass = n>1 ? WMSMetaLayer : WMSLayer;
+      var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
       if (!mapLayer){
         url = ProjectService.getWmsUrl();
         mapLayer = self.mapLayers[layerId] = new WMSLayerClass({
