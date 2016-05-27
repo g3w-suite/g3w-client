@@ -3,18 +3,23 @@ var base = require('./utils').base;
 var Layer = require('./layer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSMultiLayer(config){
-  base(this,config);
-  
+function WMSLayer(options){
   var self = this;
-  this.id = config.id;
+  this.LAYERTYPE = {
+    LAYER: 'layer',
+    METALAYER: 'metalayer'
+  };
+  
+  this.id = options.id;
   this._olLayer = null;
   this.layers = [];
   
   this._olLayer = null;
+  
+  base(this,options);
 }
-inherit(WMSMultiLayer,Layer)
-var proto = WMSMultiLayer.prototype;
+inherit(WMSLayer,Layer)
+var proto = WMSLayer.prototype;
 
 proto.getLayer = function(){
   var olLayer;
@@ -33,10 +38,10 @@ proto.getId = function(){
 };
 
 proto._makeOlLayer = function(){
-  var self = this;
+  var self = this;;
   var wmsConfig = {
-    url: this.config.defaultUrl,
-    id: this.config.id
+    name: this.id,
+    url: this.options.url
   };
   
   var olLayer = new RasterLayers.WMSLayer(wmsConfig);
@@ -51,8 +56,8 @@ proto._makeOlLayer = function(){
   return olLayer
 };
 
-proto.addLayer = function(layerConfig){
-  this.layers.push(layerConfig);
+proto.addLayer = function(layer){
+  this.addLayer(layer);
 };
 
 proto.toggleLayer = function(layer){
@@ -66,6 +71,10 @@ proto.toggleLayer = function(layer){
   
 proto.update = function(){
   this._updateLayers();
+};
+
+proto.addLayer = function(layerConfig){
+  this.layers.push(layerConfig);
 };
 
 proto.getVisibleLayers = function(){
@@ -91,5 +100,5 @@ proto._updateLayers = function(){
   }
 };
 
-module.exports = WMSMultiLayer;
+module.exports = WMSLayer;
 

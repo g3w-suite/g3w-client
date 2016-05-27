@@ -3,6 +3,7 @@ var MapService = require('g3w/core/mapservice');
 var GUI = require('g3w/gui/gui.js');
 var ViewportService = require('g3w/gui/view/viewport');
 require('g3w/gui/geocoding/geocoding');
+require('g3w/gui/vue.directives');
 
 var layout = require('./layout/layout');
 var SidebarService = require('./layout/sidebar').SidebarService;

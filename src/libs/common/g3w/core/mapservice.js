@@ -26,6 +26,7 @@ function MapService(){
   var self = this;
   this.viewer;
   this.mapLayers = {};
+  this.mapBaseLayers = {};
   this.layersAssociation = {};
   this.state = {
       bbox: [],
@@ -78,6 +79,12 @@ function MapService(){
     })
   });
   
+  ProjectService.onafter('setBaseLayer',function(){
+    _.forEach(self.mapBaseLayers,function(mapBaseLayer){
+      mapBaseLayer.update();
+    })
+  })
+  
   this.setupViewer = function(){
     var extent = ProjectService.state.project.extent;
     var projection = new ol.proj.Projection({
@@ -112,8 +119,47 @@ function MapService(){
     return this.viewer.map.getViewport();
   };
   
+  this.setupBaseLayers = function(){
+    if (!ProjectsRegistry.state.baseLayers){
+      return;
+    }
+    var self = this;
+    this.mapBaseLayers = {};
+    
+    var initBaseLayer = ProjectService.config.initbaselayer;
+    var baseLayersArray = ProjectService.state.baseLayers;
+    
+    _.forEach(baseLayersArray,function(baseLayer){
+      var visible = true;
+      if (ProjectService.state.project.initbaselayer) {
+        visible = baseLayer.id == (ProjectService.state.project.initbaselayer);
+      }
+      baseLayer.visible = visible;
+    })
+    
+    baseLayersArray.forEach(function(layer){
+      var mapLayer = new WMSSingleLayer({
+        id: layer.id,
+        url: layer.source.url,
+        layers: layer.source.layers
+      });
+      self.registerListeners(mapLayer);
+      
+      mapLayer.addLayer(layer);
+      self.mapBaseLayers[layer.id] = mapLayer;
+    });
+    
+    _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
+      self.viewer.map.addLayer(mapLayer.getLayer());
+      mapLayer.update();
+    })
+  };
+  
   this.setupLayers = function(){
     this.viewer.removeLayers();
+    
+    this.setupBaseLayers();
+    
     this.mapLayers = {};
     this.layersAssociation = {};
     var layersArray = this.traverseLayersTree(ProjectService.state.project.layerstree);
@@ -125,19 +171,18 @@ function MapService(){
       return layer.metalayer;
     });
     _.forEach(metaLayers,function(layers,id){
-      var layerId = 'layer_'+id; 
       var n = layers.length;
+      var layerId = 'layer_'+id
       var mapLayer = _.get(self.mapLayers,layerId);
       // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
       var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
-      if (!mapLayer){
-        url = ProjectService.getWmsUrl();
-        mapLayer = self.mapLayers[layerId] = new WMSLayerClass({
-          id: layerId,
-          url: url
-        });
-        self.registerListeners(mapLayer);
-      }
+      var config = {
+        defaultUrl: ProjectService.getWmsUrl(),
+        id: layerId
+      };
+      mapLayer = self.mapLayers[layerId] = new WMSLayerClass(config);
+      self.registerListeners(mapLayer);
+      
       layers.forEach(function(layer){
         mapLayer.addLayer(layer);
         self.layersAssociation[layer.id] = layerId;

@@ -8,6 +8,16 @@ Vue.directive("disabled",function(value){
   }
 );
 
+Vue.directive("checked",function(value){
+    if (value){
+      this.el.setAttribute('checked','checked');
+    }
+    else {
+      this.el.removeAttribute('checked');
+    }
+  }
+);
+
 Vue.directive("selected-first",function(value){
     if (value==0){
       this.el.setAttribute('selected','');

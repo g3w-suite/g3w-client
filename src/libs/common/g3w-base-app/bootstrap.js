@@ -59,7 +59,8 @@ var bootstrap = function (baseconfig){
         plugins: baseconfig.plugins,
         configs: baseconfig.group.plugins
       },
-      tools: baseconfig.tools
+      tools: baseconfig.tools,
+      views: baseconfig.views || {}
     }
   };
   

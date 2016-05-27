@@ -4,14 +4,14 @@ var resolvedValue = require('g3w/core/utils').resolvedValue;
 var rejectedValue = require('g3w/core/utils').rejectedValue;
 var G3WObject = require('g3w/core/g3wobject');
 
-function VectorLayer(options){
-  var options = options || {};
-  this.geometrytype = options.geometrytype || null;
-  this.format = options.format || null;
-  this.crs = options.crs  || null;
-  this.id = options.id || null;
-  this.name = options.name || "";
-  this.pk = options.pk || "id"; // TODO: il GeoJSON setta l'id della feature da sé, e nasconde il campo PK dalle properties. In altri formati va verificato, e casomai usare feature.setId()
+function VectorLayer(config){
+  var config = config || {};
+  this.geometrytype = config.geometrytype || null;
+  this.format = config.format || null;
+  this.crs = config.crs  || null;
+  this.id = config.id || null;
+  this.name = config.name || "";
+  this.pk = config.pk || "id"; // TODO: il GeoJSON setta l'id della feature da sé, e nasconde il campo PK dalle properties. In altri formati va verificato, e casomai usare feature.setId()
   
   this._olSource = new ol.source.Vector({
     features: new ol.Collection()

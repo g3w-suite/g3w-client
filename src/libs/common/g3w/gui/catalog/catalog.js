@@ -1,5 +1,6 @@
 var t = require('i18n/i18n.service').t;
 var GUI = require('g3w/gui/gui');
+var ProjectsRegistry = require('g3w/core/projectsregistry');
 var ProjectService = require('g3w/core/projectservice').ProjectService;
 
 Vue.component('g3w-catalog',{
@@ -12,10 +13,18 @@ Vue.component('g3w-catalog',{
     computed: {
       layerstree: function(){
         return this.state.project.layerstree;
+      },
+      baselayers: function(){
+        return this.state.baseLayers;
+      },
+      hasBaseLayers: function(){
+        return this.state.baseLayers.length>0;
       }
     },
     methods: {
-      //codice qui
+      setBaseLayer: function(id) {
+        ProjectService.setBaseLayer(id);
+      }
     },
     ready: function() {
       //

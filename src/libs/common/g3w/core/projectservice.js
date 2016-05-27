@@ -18,13 +18,19 @@ function ProjectService(){
   this.config = null;
   this.layers = {};
   this.state = {
-    project: null
+    project: null,
+    baseLayers: []
   };
   
   this.setters = {
     setLayersVisible: function(layers,visible){
       _.forEach(layers,function(layer){
         self.layers[layer.id].visible = visible;
+      })
+    },
+    setBaseLayer: function(id){
+      _.forEach(self.state.baseLayers,function(baseLayer){
+        baseLayer.visible = (baseLayer.id == id);
       })
     }
   };
@@ -67,6 +73,7 @@ function ProjectService(){
     }
     */
     this.state.project = project;
+    this.state.baseLayers = project.baseLayers;
     this.makeLayersObj(project.layerstree);
     this.emit('projectset');
   };
@@ -109,7 +116,7 @@ function ProjectService(){
   this.getLegendUrl = function(layer){
     var url = this.getWmsUrl(this.state);
     sep = (url.indexOf('?') > -1) ? '&' : '?';
-    return this.getWmsUrl(this.state)+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
+    return this.getWmsUrl(this.state)+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
   };
   
   base(this);

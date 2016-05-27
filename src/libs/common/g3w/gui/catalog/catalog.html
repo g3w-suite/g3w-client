@@ -3,6 +3,7 @@
   <div class="tabbable-line">
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation" class="active"><a href="#tree" aria-controls="tree" role="tab" data-toggle="tab" data-i18n="tree"></a></li>
+      <li v-if="hasBaseLayers" role="presentation"><a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers"></a></li>
       <li role="presentation"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend"></a></li>
     </ul>
     <div  class="tab-content">
@@ -11,6 +12,17 @@
           <tristate-tree :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
           </tristate-tree>
         </ul>
+      </div>
+      <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" id="baselayers">
+        <form>
+          <ul>
+            <li v-for="baselayer in baselayers">
+              <div class="radio">
+                <label><input type="radio" name="baselayer" v-checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">{{ baselayer.title }}</label>
+              </div>
+            </li>
+          </ul>
+        </form>
       </div>
       <legend :layerstree="layerstree"></legend>
     </div>
