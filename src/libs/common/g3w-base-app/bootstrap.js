@@ -60,7 +60,8 @@ var bootstrap = function (baseconfig){
         configs: baseconfig.group.plugins
       },
       tools: baseconfig.tools,
-      views: baseconfig.views || {}
+      views: baseconfig.views || {},
+      map: baseconfig.map
     }
   };
   

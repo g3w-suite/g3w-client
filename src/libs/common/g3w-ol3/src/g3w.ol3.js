@@ -1,3 +1,4 @@
+var utils = require('./utils');
 var maphelpers = require('./map/maphelpers');
 
 (function (name, root, factory) {
@@ -13,14 +14,7 @@ var maphelpers = require('./map/maphelpers');
 })('g3wol3', this, function () {
   'use strict';
   
-  function merge(obj1,obj2){
-    var obj3 = {};
-    for (var attrname in obj1) { obj3[attrname] = obj1[attrname]; }
-    for (var attrname in obj2) { obj3[attrname] = obj2[attrname]; }
-    return obj3;
-  };
-  
-  var helpers = merge({},maphelpers);
+  var helpers = utils.merge({},maphelpers);
   
   return {
     helpers: helpers

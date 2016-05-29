@@ -2,7 +2,7 @@ var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var noop = require('g3w/core/utils').noop;
 var G3WObject = require('g3w/core/g3wobject');
-var PickFeatureInteraction = require('g3w/core/interactions/pickfeatureinteraction');
+var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
 
 var MapService = require('g3w/core/mapservice');
 

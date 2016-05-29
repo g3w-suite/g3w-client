@@ -3,6 +3,7 @@ var base = require('g3w/core/utils').base;
 var G3WObject = require('g3w/core/g3wobject');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsService = require('g3w/core/pluginsservice');
+var MapService = require('g3w/core/mapservice');
 var ToolsService = require('g3w/core/toolsservice');
 
 var MapView = require('g3w/gui/map/map');
@@ -34,6 +35,7 @@ proto._bootstrap = function(){
     $.when(
       ProjectsRegistry.init(this.config),
       PluginsService.init(this.config.plugins),
+      MapService.init(this.config.map),
       ToolsService.init(this.config.tools)
     ).then(function(){
       self.emit('ready');

@@ -7,7 +7,9 @@ var ProjectService = require('./projectservice').ProjectService;
 var ProjectTypes = require('./projectservice').ProjectTypes;
 var GeometryTypes = require('./projectservice').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var PickCoordinatesInteraction = require('g3w/core/interactions/pickcoordinatesinteraction');
+var QueryControl = require('g3w-ol3/src/controls/querycontrol');
+var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
+var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSSingleLayer = require('./wmssinglelayer');
 var WMSMultiLayer = require('./wmsmultilayer');
 
@@ -24,6 +26,7 @@ PickToleranceValues[GeometryTypes.POLYGON] = 5;
 
 function MapService(){
   var self = this;
+  this.config;
   this.viewer;
   this.mapLayers = {};
   this.mapBaseLayers = {};
@@ -34,6 +37,10 @@ function MapService(){
       center: null,
       loading: false
   };
+  
+  this.init = function(config) {
+    this.config = config;
+  }
   
   this._howManyAreLoading = 0;
   
@@ -68,6 +75,7 @@ function MapService(){
     if (!self.viewer){
       self.setupViewer();
     }
+    self.setupControls();
     self.setupLayers();
     self.emit('viewerset');
   });
@@ -117,6 +125,45 @@ function MapService(){
   
   this.getViewport = function(){
     return this.viewer.map.getViewport();
+  };
+  
+  this.setupControls = function(){
+    var self = this;
+    if (this.config && this.config.controls) {
+      _.forEach(this.config.controls,function(controlType){
+        var control;
+        switch (controlType) {
+          case 'zoom':
+            control = new ol.control.Zoom({
+              zoomInLabel: "\ue98a",
+              zoomOutLabel: "\ue98b"
+            });
+            break;
+          
+          case 'zoombox': 
+            control = new ZoomBoxControl();
+            break;
+            
+          case 'zoomtoextent':
+            control = new ol.control.ZoomToExtent({
+              label:  "\ue98c",
+            });
+            break;
+          
+          case 'query':
+            control = new QueryControl();
+            break;
+            
+        }
+        if (control) {
+          self.addControl(control);
+        }
+      });
+    }
+  };
+  
+  this.addControl = function(control){
+    this.viewer.map.addControl(control);
   };
   
   this.setupBaseLayers = function(){

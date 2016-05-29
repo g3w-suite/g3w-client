@@ -11,7 +11,8 @@ var _Viewer = function(opts){
     attributionOptions: {
       collapsible: false
     },
-    zoom: false
+    zoom: false,
+    attribution: false
   });//.extend([new ol.control.Zoom()]);
   
   var interactions = ol.interaction.defaults()

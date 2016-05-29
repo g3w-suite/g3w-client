@@ -2,8 +2,8 @@ var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var geom = require('g3w/core/geom');
 var MapService = require('g3w/core/mapservice');
-var PickCoordinatesInteraction = require('g3w/core/interactions/pickcoordinatesinteraction');
-var PickFeatureInteraction = require('g3w/core/interactions/pickfeatureinteraction');
+var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
+var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 
 var EditingTool = require('./tool');
 
