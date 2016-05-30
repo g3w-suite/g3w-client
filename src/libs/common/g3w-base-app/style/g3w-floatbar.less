@@ -1,13 +1,14 @@
 .control-sidebar {
-  overflow-y: auto;
-  overflow-x: hidden;
   .g3w-sidebarpanel {
+    background: #f9fafc;
+    border-left: 1px solid #d2d6de;
     padding: 10px 10px 10px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
     .g3w-floatbarpanel-name{
       font-weight: bold
     }
   }
-  background-color: lighten(@sidebar-dark-bg, 70%);
   border: 0px !important;
 }
 
@@ -25,10 +26,6 @@
   }
 }
 
-.control-sidebar-bg{
-  background-color: lighten(@sidebar-dark-bg, 70%) !important;
-}
-
 .control-sidebar-bg-shadow{
   .box-shadow(-1px,0px,15px,rgba(0,0,0,.7))
 }
@@ -41,4 +38,38 @@
 /* .expand-leave è lo stato finale del elemento */
 .expand-enter, .expand-leave {
   opacity: 0;
+}
+
+.control-sidebar {
+  .floatbar-aside-toggle {
+    position:absolute;
+    right:(@control-sidebar-width);
+    top: @navbar-height;
+    background-color: @light-blue;
+    color: white;
+    background-image: none;
+    padding: 12.5px;
+    //Add the fontawesome bars icon
+    font-family: fontAwesome;
+    &:before {
+      content: "\f100";
+    }
+    &:focus,
+    &:hover {
+      color: #fff;
+    }
+    @media (max-width: @screen-xs-max) {
+        left: @sidebar-width-small;
+    }
+  }
+  .floatbar-aside-toggle .icon-bar {
+    display: none;
+  }
+  &.control-sidebar-open {
+    .floatbar-aside-toggle {
+      &:before {
+        content: "\f101";
+      }
+    }
+  }
 }

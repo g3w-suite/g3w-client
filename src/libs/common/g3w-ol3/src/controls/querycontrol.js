@@ -17,7 +17,10 @@ var QueryControl = function(options){
   InteractionControl.call(this,options);
   
   this._interaction.on('picked',function(e){
-    console.log(self.name+' ('+self.id+'): '+e.coordinate);
+    self.dispatchEvent({
+      type: 'picked',
+      coordinates: e.coordinate
+    });
   });
 }
 ol.inherits(QueryControl, InteractionControl);

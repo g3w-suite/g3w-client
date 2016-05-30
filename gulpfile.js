@@ -100,7 +100,7 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('images', function () {
-  return gulp.src(['./src/libs/**/*.{png,jpg,gif}}','./src/**/*.{png,jpg,gif}'])
+  return gulp.src(['./src/libs/**/*.{png,jpg,gif,svg}}','./src/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
     .pipe(gulp.dest('./build/images/'))
     .pipe(gulp.dest('./dist/g3w-client/images/'));

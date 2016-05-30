@@ -20,6 +20,7 @@ RasterLayers.TiledWMSLayer = function(layerObj){
 
 RasterLayers.WMSLayer = function(layerObj){
   var layer = new ol.layer.Image({
+    id: layerObj.id,
     name: layerObj.name,
     opacity: layerObj.opacity || 1.0,
     source: new ol.source.ImageWMS({

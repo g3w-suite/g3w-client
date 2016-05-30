@@ -6,7 +6,8 @@ var tools = {
   tools:  []
 };
 
-var mapcontrols = ['zoom','zoombox','query'];
+var mapcontrols = ['zoom'];
+//var mapcontrols = ['zoom','zoombox','zoomtoextent','query'];
 
 var i18n = {
   resources: require('./locales/app.js')

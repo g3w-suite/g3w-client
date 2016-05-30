@@ -7,7 +7,6 @@ function WMSMultiLayer(config){
   base(this,config);
   
   var self = this;
-  this.id = config.id;
   this._olLayer = null;
   this.layers = [];
   
@@ -17,8 +16,8 @@ inherit(WMSMultiLayer,Layer)
 var proto = WMSMultiLayer.prototype;
 
 proto.getLayer = function(){
-  var olLayer;
-  if (!this._olLayer){
+  var olLayer = this._olLayer;
+  if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer();
   }
   return olLayer;
@@ -68,7 +67,11 @@ proto.update = function(){
   this._updateLayers();
 };
 
-proto.getVisibleLayers = function(){
+proto.isVisible = function(){
+  return this._getVisibleLayers().length > 0;
+};
+
+proto._getVisibleLayers = function(){
   var visibleLayers = [];
   _.forEach(this.layers,function(layer){
     if (layer.visible){
@@ -79,7 +82,7 @@ proto.getVisibleLayers = function(){
 }
 
 proto._updateLayers = function(){
-  var visibleLayers = this.getVisibleLayers();
+  var visibleLayers = this._getVisibleLayers();
   if (visibleLayers.length > 0) {
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams({
@@ -89,6 +92,14 @@ proto._updateLayers = function(){
   else {
     this._olLayer.setVisible(false);
   }
+};
+
+proto.getQueryUrl = function(){
+  var layer = this.layers[0];
+  if (layer.infourl && layer.infourl != '') {
+    return layer.infourl;
+  }
+  return this.config.defaultUrl;
 };
 
 module.exports = WMSMultiLayer;

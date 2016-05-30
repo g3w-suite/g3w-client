@@ -12,6 +12,7 @@ var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSSingleLayer = require('./wmssinglelayer');
 var WMSMultiLayer = require('./wmsmultilayer');
+var MapQueryService = require('./mapqueryservice');
 
 var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};
@@ -116,7 +117,11 @@ function MapService(){
     
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
-    })
+    });
+    
+    MapQueryService.init(this.viewer.map);
+    
+    this.emit('ready');
   };
   
   this.getViewerElement = function(){
@@ -129,6 +134,7 @@ function MapService(){
   
   this.setupControls = function(){
     var self = this;
+    var map = self.viewer.map;
     if (this.config && this.config.controls) {
       _.forEach(this.config.controls,function(controlType){
         var control;
@@ -139,22 +145,38 @@ function MapService(){
               zoomOutLabel: "\ue98b"
             });
             break;
-          
           case 'zoombox': 
             control = new ZoomBoxControl();
             break;
-            
           case 'zoomtoextent':
             control = new ol.control.ZoomToExtent({
               label:  "\ue98c",
             });
             break;
-          
           case 'query':
             control = new QueryControl();
+            control.on('picked',function(e){
+              var coordinates = e.coordinates;
+              var visibleMapLayers = _.filter(self.mapLayers,function(mapLayer){ 
+                return mapLayer.isVisible();
+              });
+              MapQueryService.queryPoint(coordinates,visibleMapLayers)
+              .then(function(featuresForLayerNames){
+                var featuresForLayers = [];
+                _.forEach(featuresForLayerNames,function(features,layerName){
+                  var layer = ProjectService.layers[layerName];
+                  featuresForLayers.push({
+                    layer: layer,
+                    features: features
+                  })
+                })
+                
+                self.emit('mapqueryend',featuresForLayers);
+              })
+            });
             break;
-            
         }
+        
         if (control) {
           self.addControl(control);
         }
@@ -351,7 +373,7 @@ function MapService(){
     
     var mapLayer = this.mapLayers[this.layersAssociation[layerId]];
     var resolution = self.viewer.getResolution();
-    var epsg = "EPSG:"+ProjectService.state.project.crs;
+    var epsg = self.viewer.map.getView().getProjection().getCode();
     var params = {
       QUERY_LAYERS: ProjectService.getLayer(layerId).name,
       INFO_FORMAT: "text/xml"

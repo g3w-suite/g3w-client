@@ -19,7 +19,7 @@ var _Viewer = function(opts){
     .extend([
       new ol.interaction.DragRotate()
     ]);
-  interactions.removeAt(1) // rimuoveo douclickzoom
+  interactions.removeAt(1) // rimuovo douclickzoom
   
   var view = new ol.View(opts.view);
   var options = {

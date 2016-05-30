@@ -10,8 +10,7 @@ function WMSSingleLayer(config){
     LAYER: 'layer',
     METALAYER: 'metalayer'
   };
-  
-  this.id = config.id;
+
   this._olLayer = null;
   this.layer = null;
 }
@@ -19,8 +18,8 @@ inherit(WMSSingleLayer,Layer)
 var proto = WMSSingleLayer.prototype;
 
 proto.getLayer = function(){
-  var olLayer;
-  if (!this._olLayer){
+ var olLayer = this._olLayer;
+  if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer();
   }
   return olLayer;
@@ -72,12 +71,15 @@ proto.update = function(){
   this._olLayer.setVisible(this.layer.visible);
 };
 
-proto.getVisibleLayers = function(){
-  var visibleLayers = [];
-  if (this.layer.visible){
-    visibleLayers.push(layer);
+proto.isVisible = function(){
+  return this.layer.visible;
+};
+
+proto.getQueryUrl = function(){
+  if (this.layer.infourl && this.layer.infourl != '') {
+    return this.layer.infourl;
   }
-  return visibleLayers;
+  return this.config.defaultUrl;
 };
 
 module.exports = WMSSingleLayer;
