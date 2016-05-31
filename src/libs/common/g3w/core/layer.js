@@ -15,4 +15,8 @@ proto.getQueryUrl = function(){
   //
 };
 
+proto.getQueryLayers = function(){
+ //
+};
+
 module.exports = Layer;

@@ -26,7 +26,6 @@ var _Viewer = function(opts){
     controls: controls,
     interactions: interactions,
     ol3Logo: false,
-    //
     view: view,
     keyboardEventTarget: document
   };
@@ -53,6 +52,11 @@ _Viewer.prototype.goTo = function(coordinates, zoom){
   var view = this.map.getView();
   view.setCenter(coordinates);
   view.setZoom(zoom);
+};
+
+_Viewer.prototype.fit = function(geometry, options){
+  var view = this.map.getView();
+  view.fit(geometry,this.map.getSize(),options);
 };
 
 _Viewer.prototype.getZoom = function(){

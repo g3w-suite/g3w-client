@@ -31,6 +31,7 @@ var BaseUI = Vue.extend({
       
       function setFloatBarMaxHeight(){
         $(controlsidebarEl).css('max-height',$(window).innerHeight());
+        $('.g3w-sidebarpanel').height($(window).innerHeight()-$('.main-header').innerHeight());
       }
       setFloatBarMaxHeight();
       

@@ -16,7 +16,7 @@
       <div v-if="hasBaseLayers" role="tabpanel" class="tab-pane baselayers" id="baselayers">
         <form>
           <ul>
-            <li v-for="baselayer in baselayers">
+            <li v-if="!baselayer.fixed" v-for="baselayer in baselayers">
               <div class="radio">
                 <label><input type="radio" name="baselayer" v-checked="baselayer.visible" @click="setBaseLayer(baselayer.id)">{{ baselayer.title }}</label>
               </div>

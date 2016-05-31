@@ -32,9 +32,10 @@ function MapService(){
   this.mapLayers = {};
   this.mapBaseLayers = {};
   this.layersAssociation = {};
+  this.layersExtraParams = {};
   this.state = {
       bbox: [],
-      resoution: null,
+      resolution: null,
       center: null,
       loading: false
   };
@@ -48,10 +49,11 @@ function MapService(){
   this._interactionsStack = [];
   
   this.setters = {
-    setMapView: function(bbox,resoution,center){
+    setMapView: function(bbox,resolution,center){
       this.state.bbox = bbox;
-      this.state.resolution = resoution;
-      this.state.resolutin = center
+      this.state.resolution = resolution;
+      this.state.center = center;
+      this.checkLayersDisabled(resolution);
     },
     setIsLoading: function(bool){
       var delta = bool ? 1 : -1;
@@ -68,17 +70,20 @@ function MapService(){
           this.emit('loadend');
         }
       }
+    },
+    setupviewer: function(){
+      $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
+      if (!self.viewer){
+        self.setupViewer();
+      }
+      self.setupControls();
+      self.setupLayers();
+      self.emit('viewerset');
     }
   };
   
   ProjectService.on('projectset',function(){
-    $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
-    if (!self.viewer){
-      self.setupViewer();
-    }
-    self.setupControls();
-    self.setupLayers();
-    self.emit('viewerset');
+    self.setupviewer();
   });
   
   ProjectService.onafter('setLayersVisible',function(layers){
@@ -87,6 +92,26 @@ function MapService(){
       mapLayer.update();
     })
   });
+  
+  this.checkLayerDisabled = function(layer,resolution) {
+    var disabled = layer.disabled || false;
+    if (layer.maxresolution){
+      disabled = layer.maxresolution < resolution;
+    }
+    if (layer.minresolution){
+      layer.disabled = disabled && (layer.minresolution > resolution);
+    }
+    layer.disabled = disabled;
+  };
+  
+  this.checkLayersDisabled = function(resolution){
+    var self = this;
+    _.forEach(this.mapLayers,function(mapLayer){
+      _.forEach(mapLayer.getLayerConfigs(),function(layer){
+        self.checkLayerDisabled(layer,resolution);
+      }); 
+    })
+  };
   
   ProjectService.onafter('setBaseLayer',function(){
     _.forEach(self.mapBaseLayers,function(mapBaseLayer){
@@ -100,16 +125,32 @@ function MapService(){
       code: "EPSG:"+ProjectService.state.project.crs,
       extent: extent
     });
+    
+    var constrain_extent;
+    if (this.config.constraintextent) {
+      var extent = this.config.constraintextent;
+      var dx = extent[2]-extent[0];
+      var dy = extent[3]-extent[1];
+      var dx4 = dx/4;
+      var dy4 = dy/4;
+      var bbox_xmin = extent[0] + dx4;
+      var bbox_xmax = extent[2] - dx4;
+      var bbox_ymin = extent[1] + dy4;
+      var bbox_ymax = extent[3] - dy4;
+      
+      constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
+    }
+    
     this.viewer = ol3helpers.createViewer({
       view: {
         projection: projection,
-        center: ol.extent.getCenter(ProjectService.state.project.extent),
-        zoom: 0
-        //zoom:7 
+        center: this.config.initcenter || ol.extent.getCenter(ProjectService.state.project.extent),
+        zoom: this.config.initzoom | 0,
+        extent: constrain_extent || ProjectService.state.project.extent
       }
     });
     
-    var view = this.viewer.map.getView();
+    //var view = this.viewer.map.getView();
     /*view.on('change:resolution',function(e){
       self.setViewBBOX(self.viewer.getBBOX());
       self.setResolution(self.viewer.getResolution());
@@ -147,6 +188,20 @@ function MapService(){
             break;
           case 'zoombox': 
             control = new ZoomBoxControl();
+            control.on('zoomend',function(e){
+              var pan = ol.animation.pan({
+                duration: 500,
+                source: self.state.center
+              });
+              var zoom = ol.animation.zoom({
+                duration: 500,
+                resolution: self.state.resolution
+              });
+              self.viewer.map.beforeRender(pan,zoom);
+              self.viewer.fit(e.extent,{
+                constrainResolution: false
+              });
+            })
             break;
           case 'zoomtoextent':
             control = new ol.control.ZoomToExtent({
@@ -188,6 +243,11 @@ function MapService(){
     this.viewer.map.addControl(control);
   };
   
+  this.setLayersExtraParams = function(params){
+    this.layersExtraParams = params;
+    this.emit('extraParamsSet',params);
+  };
+  
   this.setupBaseLayers = function(){
     if (!ProjectsRegistry.state.baseLayers){
       return;
@@ -203,15 +263,20 @@ function MapService(){
       if (ProjectService.state.project.initbaselayer) {
         visible = baseLayer.id == (ProjectService.state.project.initbaselayer);
       }
+      if (baseLayer.fixed) {
+        visible = baseLayer.fixed;
+      }
       baseLayer.visible = visible;
     })
     
-    baseLayersArray.forEach(function(layer){
-      var mapLayer = new WMSSingleLayer({
+    baseLayersArray.forEach(function(layer){     
+      var config = {
+        defaultUrl: ProjectService.getWmsUrl(),
         id: layer.id,
-        url: layer.source.url,
-        layers: layer.source.layers
-      });
+        tiled: true
+      };
+      
+      var mapLayer = new WMSSingleLayer(config);
       self.registerListeners(mapLayer);
       
       mapLayer.addLayer(layer);
@@ -249,10 +314,13 @@ function MapService(){
         defaultUrl: ProjectService.getWmsUrl(),
         id: layerId
       };
-      mapLayer = self.mapLayers[layerId] = new WMSLayerClass(config);
+      mapLayer = self.mapLayers[layerId] = new WMSLayerClass(config,self.layersExtraParams);
       self.registerListeners(mapLayer);
       
       layers.forEach(function(layer){
+        // INIETTO QUA LA PROPRIETA' "disabled" per gestire i layer grigiati
+        var resolution = self.viewer.map.getView().getResolution();
+        self.checkLayerDisabled(layer,resolution);
         mapLayer.addLayer(layer);
         self.layersAssociation[layer.id] = layerId;
       });
@@ -292,6 +360,10 @@ function MapService(){
     mapLayer.on('loadend',function(){
       self.setIsLoading(false);
     });
+    
+    this.on('extraParamsSet',function(extraParams){
+      mapLayer.update(extraParams);
+    })
   };
   
   this.showViewer = function(elId){

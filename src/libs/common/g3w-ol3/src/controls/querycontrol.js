@@ -21,6 +21,9 @@ var QueryControl = function(options){
       type: 'picked',
       coordinates: e.coordinate
     });
+    if (self._autountoggle) {
+      self.toggle();
+    }
   });
 }
 ol.inherits(QueryControl, InteractionControl);

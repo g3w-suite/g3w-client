@@ -3,6 +3,7 @@ var InteractionControl = require('./interactioncontrol');
 
 var ZoomBoxControl = function(options){
   var self = this;
+  this._startCoordinate = null;
   var _options = {
       name: "Zoom to box",
       tipLabel: "Zoom to box",
@@ -15,11 +16,21 @@ var ZoomBoxControl = function(options){
   InteractionControl.call(this,options);
   
   this._interaction.on('boxstart',function(e){
-    console.log(self.name+' ('+self.id+'): '+e.coordinate);
+    self._startCoordinate = e.coordinate;
   });
   
   this._interaction.on('boxend',function(e){
-    console.log(self.name+' ('+self.id+'): '+e.coordinate);
+    var start_coordinate = self._startCoordinate;
+    var end_coordinate = e.coordinate;
+    var extent = ol.extent.boundingExtent([start_coordinate,end_coordinate]);
+    self.dispatchEvent({
+      type: 'zoomend',
+      extent: extent
+    });
+    self._startCoordinate = null;
+    if (self._autountoggle) {
+      self.toggle();
+    }
   })
 }
 ol.inherits(ZoomBoxControl, InteractionControl);

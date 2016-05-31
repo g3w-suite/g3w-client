@@ -3,12 +3,13 @@ var base = require('./utils').base;
 var Layer = require('./layer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSMultiLayer(config){
+function WMSMultiLayer(config,extraParams){
   base(this,config);
   
   var self = this;
   this._olLayer = null;
   this.layers = [];
+  this.extraParams = extraParams;
   
   this._olLayer = null;
 }
@@ -21,6 +22,10 @@ proto.getLayer = function(){
     olLayer = this._olLayer = this._makeOlLayer();
   }
   return olLayer;
+};
+
+proto.getLayerConfigs = function(){
+  return this.layers;
 };
 
 proto.getSource = function(){
@@ -38,7 +43,7 @@ proto._makeOlLayer = function(){
     id: this.config.id
   };
   
-  var olLayer = new RasterLayers.WMSLayer(wmsConfig);
+  var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
   
   olLayer.getSource().on('imageloadstart', function() {
         self.emit("loadstart");
@@ -63,8 +68,8 @@ proto.toggleLayer = function(layer){
   this._updateLayers();
 };
   
-proto.update = function(){
-  this._updateLayers();
+proto.update = function(extraParams){
+  this._updateLayers(extraParams);
 };
 
 proto.isVisible = function(){
@@ -81,13 +86,17 @@ proto._getVisibleLayers = function(){
   return visibleLayers;
 }
 
-proto._updateLayers = function(){
+proto._updateLayers = function(extraParams){
   var visibleLayers = this._getVisibleLayers();
   if (visibleLayers.length > 0) {
-    this._olLayer.setVisible(true);
-    this._olLayer.getSource().updateParams({
+    var params = {
       LAYERS: _.join(_.map(visibleLayers,'name'),',')
-    });
+    };
+    if (extraParams) {
+      params = _.assign(extraParams,params);
+    }
+    this._olLayer.setVisible(true);
+    this._olLayer.getSource().updateParams(params);
   }
   else {
     this._olLayer.setVisible(false);
@@ -100,6 +109,20 @@ proto.getQueryUrl = function(){
     return layer.infourl;
   }
   return this.config.defaultUrl;
+};
+
+proto.getQueryLayers = function(){
+  var layer = this.layers[0];
+  var queryLayers = [];
+  _.forEach(this.layers,function(layer){
+    if (layer.infolayer && layer.infolayer != '') {
+      queryLayers.push(layer.infolayer);
+    }
+    else {
+      queryLayers.push(layer.name);
+    }
+  })
+  return queryLayers;
 };
 
 module.exports = WMSMultiLayer;

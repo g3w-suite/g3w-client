@@ -3,7 +3,7 @@ var base = require('./utils').base;
 var Layer = require('./layer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
-function WMSSingleLayer(config){
+function WMSSingleLayer(config,extraParams){
   base(this,config);
   var self = this;
   this.LAYERTYPE = {
@@ -13,6 +13,7 @@ function WMSSingleLayer(config){
 
   this._olLayer = null;
   this.layer = null;
+  this.extraParams = extraParams;
 }
 inherit(WMSSingleLayer,Layer)
 var proto = WMSSingleLayer.prototype;
@@ -23,6 +24,10 @@ proto.getLayer = function(){
     olLayer = this._olLayer = this._makeOlLayer();
   }
   return olLayer;
+};
+
+proto.getLayerConfigs = function(){
+  return [this.layer];
 };
 
 proto.getSource = function(){
@@ -38,7 +43,8 @@ proto._makeOlLayer = function(){
   var wmsConfig = {
     url: this.config.defaultUrl,
     id: this.config.id,
-    layers: this.layer.name
+    layers: this.layer.name,
+    maxResolution: this.layer.maxresolution
   };
   
   if (this.layer.source && this.layer.source.type == 'wms'){
@@ -46,7 +52,15 @@ proto._makeOlLayer = function(){
     wmsConfig.layers = this.layer.source.layers;
   };
 
-  var olLayer = new RasterLayers.WMSLayer(wmsConfig);
+  var WMSLayerClass;
+  if (this.config.tiled) {
+    WMSLayerClass = RasterLayers.TiledWMSLayer;
+  }
+  else {
+    WMSLayerClass = RasterLayers.WMSLayer;
+  }
+
+  var olLayer = new WMSLayerClass(wmsConfig,this.extraParams);
   
   olLayer.getSource().on('imageloadstart', function() {
         self.emit("loadstart");
@@ -67,8 +81,12 @@ proto.toggleLayer = function(layer){
   this._olLayer.setVisible(!visible);
 };
   
-proto.update = function(){
-  this._olLayer.setVisible(this.layer.visible);
+proto.update = function(extraParams){
+  var olLayer = this.getLayer();
+  if (extraParams){
+    olLayer.getSource().updateParams(extraParams);
+  }
+  olLayer.setVisible(this.layer.visible);
 };
 
 proto.isVisible = function(){
@@ -80,6 +98,13 @@ proto.getQueryUrl = function(){
     return this.layer.infourl;
   }
   return this.config.defaultUrl;
+};
+
+proto.getQueryLayers = function(){
+  if (this.layer.infolayer && this.layer.infolayer != '') {
+    return this.layer.infolayer;
+  }
+  return [this.layer.name];
 };
 
 module.exports = WMSSingleLayer;

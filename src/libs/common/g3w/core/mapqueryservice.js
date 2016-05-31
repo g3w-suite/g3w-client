@@ -16,15 +16,17 @@ function MapQueryService() {
     var d = $.Deferred();
     var urlsForLayers = {};
     _.forEach(mapLayers,function(mapLayer){
-      var url = mapLayer.getQueryUrl();
-      var urlHash = url.hashCode().toString();
-      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-        urlsForLayers[urlHash] = {
-          url: url,
-          mapLayers: []
-        };
+      if (mapLayer.layer.visible && !mapLayer.layer.disabled) {
+        var url = mapLayer.getQueryUrl();
+        var urlHash = url.hashCode().toString();
+        if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+          urlsForLayers[urlHash] = {
+            url: url,
+            mapLayers: []
+          };
+        }
+        urlsForLayers[urlHash].mapLayers.push(mapLayer);
       }
-      urlsForLayers[urlHash].mapLayers.push(mapLayer)
     })
     
     var queryUrlsForLayers = [];
@@ -41,9 +43,12 @@ function MapQueryService() {
         queryParams[key] = value;
       });
       
+      var layerNames = [];
       var queryLayers = [];
       _.forEach(urlForLayers.mapLayers,function(mapLayer){
-        var mapLayerQueryLayers = mapLayer.getLayer().getSource().getParams()['LAYERS'];
+        var mapLayerLayersNames = mapLayer.getLayer().getSource().getParams()['LAYERS'];
+        layerNames = _.concat(layerNames,mapLayerLayersNames);
+        var mapLayerQueryLayers = mapLayer.getQueryLayers();
         queryLayers = _.concat(queryLayers,mapLayerQueryLayers);
       })
       
@@ -51,6 +56,7 @@ function MapQueryService() {
       
       queryParams['LAYERS'] = queryLayers;
       queryParams['QUERY_LAYERS'] = queryLayers;
+      queryParams['FEATURE_COUNT'] = 1000;
       
       var getFeatureInfoUrl = queryBase;
       var newQueryPairs = [];
@@ -59,30 +65,36 @@ function MapQueryService() {
       });
       getFeatureInfoUrl = queryBase+'?'+newQueryPairs.join('&')
       
-      queryUrlsForLayers.push([getFeatureInfoUrl,queryLayers]);
+      queryUrlsForLayers.push([getFeatureInfoUrl,queryLayers,layerNames]);
     })
     
     var featuresForLayerNames = {};
-  
-    _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
-      var url = queryUrlForLayers[0];
-      var queryLayers = queryUrlForLayers[1];
+    if (queryUrlsForLayers.length > 0) {
+      _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
+        var url = queryUrlForLayers[0];
+        var queryLayers = queryUrlForLayers[1];
+        var layerNames = queryUrlForLayers[2];
 
-      $.get(url).
-      then(function(response){
-        _.forEach(queryLayers,function(queryLayer){
-          var parser = new ol.format.WMSGetFeatureInfo({
-            layers: [queryLayer]
-          });
-          var features = parser.readFeatures(response);
-          featuresForLayerNames[queryLayer] = features;
+        $.get(url).
+        then(function(response){
+          _.forEach(queryLayers,function(queryLayer,index){
+            var parser = new ol.format.WMSGetFeatureInfo({
+              layers: [queryLayer]
+            });
+            var features = parser.readFeatures(response);
+            var layerName = layerNames[index];
+            featuresForLayerNames[layerName] = features;
+          })
+          d.resolve(featuresForLayerNames);
         })
-        d.resolve(featuresForLayerNames);
-      })
-      .fail(function(e){
-        d.reject(e);
-      })
-    })
+        .fail(function(e){
+          d.reject(e);
+        })
+      });
+    }
+    else {
+      d.resolve(featuresForLayerNames);
+    }
     
     return d.promise();
   };
