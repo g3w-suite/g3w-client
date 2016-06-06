@@ -66,7 +66,7 @@ proto.setupState = function(){
 };
   
 proto.getCurrentProject = function(){
-  return this.getProject(_registry.state.currentProject.gid);
+  return this.state.currentProject;
 };
   
 proto.setProject = function(projectGid){

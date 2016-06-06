@@ -69,7 +69,8 @@ function ProjectService(){
       name,
       crs,
       extent,
-      layerstree
+      layerstree,
+      widgets
     }
     */
     this.state.project = project;
