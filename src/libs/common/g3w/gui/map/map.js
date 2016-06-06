@@ -34,7 +34,13 @@ var MapViewComponent = Vue.component('g3w-map',{
   template: require('./map.html'),
   ready: function(){
     var self = this;
+    
     MapService.showViewer(this.$el.id);
+    
+    // questo serve per quando viene cambiato progetto/vista cartografica, in cui viene ricreato il viewer (e quindi la mappa)
+    MapService.onafter('setupViewer',function(){
+      MapService.showViewer(self.$el.id);
+    });
     
     MapService.on('loadstart',function(){
       $(MapService.getViewport()).prepend('<div id="maploadspinner" class="mapspinner-wrapper"><div class="spinner"></div></div>');

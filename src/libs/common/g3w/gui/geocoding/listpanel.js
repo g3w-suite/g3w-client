@@ -9,7 +9,10 @@ var GeocodingListPanelComponent = Vue.extend({
       var y = parseFloat(item.lat);
       MapService.goToWGS84([x,y]);
       var geojson = item.geojson;
-      MapService.highlightGeometry(geojson,4000,true);
+      MapService.highlightGeometry(geojson,{
+        duration: 4000,
+        fromWGS84: true
+      });
       GUI.closeListing();
     }
   }

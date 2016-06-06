@@ -36,6 +36,13 @@ var _Viewer = function(opts){
   this.map = map;
 };
 
+_Viewer.prototype.destroy = function(){
+  if (this.map) {
+    this.map.dispose();
+    this.map = null
+  }
+};
+
 _Viewer.prototype.updateMap = function(mapObject){};
 
 _Viewer.prototype.updateView = function(){};

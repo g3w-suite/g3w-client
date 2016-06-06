@@ -71,11 +71,13 @@ function MapService(){
         }
       }
     },
-    setupviewer: function(){
+    setupViewer: function(){
       $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
-      if (!self.viewer){
-        self.setupViewer();
+      if (self.viewer) {
+        this.viewer.destroy();
+        this.viewer = null;
       }
+      self._setupViewer();
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
@@ -83,7 +85,7 @@ function MapService(){
   };
   
   ProjectService.on('projectset',function(){
-    self.setupviewer();
+    self.setupViewer();
   });
   
   ProjectService.onafter('setLayersVisible',function(layers){
@@ -119,7 +121,7 @@ function MapService(){
     })
   })
   
-  this.setupViewer = function(){
+  this._setupViewer = function(){
     var extent = ProjectService.state.project.extent;
     var projection = new ol.proj.Projection({
       code: "EPSG:"+ProjectService.state.project.crs,
