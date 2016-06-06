@@ -64,7 +64,7 @@ proto.setupState = function(){
   })
   //this.state.projects = config.group.projects;
 };
-  
+
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };
