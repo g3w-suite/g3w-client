@@ -4,6 +4,8 @@ var G3WObject = require('./g3wobject');
 var GUI = require('../gui/gui');
 var ProjectService = require('./projectservice').ProjectService;
 
+var Layer = require('./layer');
+
 function MapQueryService() {
   base(this);
   
@@ -16,17 +18,15 @@ function MapQueryService() {
     var d = $.Deferred();
     var urlsForLayers = {};
     _.forEach(mapLayers,function(mapLayer){
-      if (mapLayer.layer.visible && !mapLayer.layer.disabled) {
-        var url = mapLayer.getQueryUrl();
-        var urlHash = url.hashCode().toString();
-        if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-          urlsForLayers[urlHash] = {
-            url: url,
-            mapLayers: []
-          };
-        }
-        urlsForLayers[urlHash].mapLayers.push(mapLayer);
+      var url = mapLayer.getQueryUrl();
+      var urlHash = url.hashCode().toString();
+      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+        urlsForLayers[urlHash] = {
+          url: url,
+          mapLayers: []
+        };
       }
+      urlsForLayers[urlHash].mapLayers.push(mapLayer);
     })
     
     var queryUrlsForLayers = [];
@@ -46,46 +46,54 @@ function MapQueryService() {
       var layerNames = [];
       var queryLayers = [];
       _.forEach(urlForLayers.mapLayers,function(mapLayer){
-        var mapLayerLayersNames = mapLayer.getLayer().getSource().getParams()['LAYERS'];
-        layerNames = _.concat(layerNames,mapLayerLayersNames);
+        //var mapLayerLayersNames = mapLayer.getLayer().getSource().getParams()['LAYERS'];
+        //layerNames = _.concat(layerNames,mapLayerLayersNames);
         var mapLayerQueryLayers = mapLayer.getQueryLayers();
-        queryLayers = _.concat(queryLayers,mapLayerQueryLayers);
+        
+        if (mapLayerQueryLayers.length) {
+          queryLayers = _.concat(queryLayers,mapLayerQueryLayers);
+        }
       })
       
-      delete queryParams['STYLES'];
+      if (queryLayers.length) {
+        delete queryParams['STYLES'];
       
-      queryParams['LAYERS'] = queryLayers;
-      queryParams['QUERY_LAYERS'] = queryLayers;
-      queryParams['FEATURE_COUNT'] = 1000;
-      
-      var getFeatureInfoUrl = queryBase;
-      var newQueryPairs = [];
-      _.forEach(queryParams,function(value,key){
-        newQueryPairs.push(key+'='+value);
-      });
-      getFeatureInfoUrl = queryBase+'?'+newQueryPairs.join('&')
-      
-      queryUrlsForLayers.push([getFeatureInfoUrl,queryLayers,layerNames]);
+        queryParams['LAYERS'] = _.map(queryLayers,'queryLayerName');
+        queryParams['QUERY_LAYERS'] = _.map(queryLayers,'queryLayerName');
+        queryParams['FEATURE_COUNT'] = 1000;
+        
+        var getFeatureInfoUrl = queryBase;
+        var newQueryPairs = [];
+        _.forEach(queryParams,function(value,key){
+          newQueryPairs.push(key+'='+value);
+        });
+        getFeatureInfoUrl = queryBase+'?'+newQueryPairs.join('&')
+        
+        queryUrlsForLayers.push({
+          url: getFeatureInfoUrl,
+          queryLayers: queryLayers
+        });
+      }
     })
     
     var featuresForLayerNames = {};
     if (queryUrlsForLayers.length > 0) {
       _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
-        var url = queryUrlForLayers[0];
-        var queryLayers = queryUrlForLayers[1];
-        var layerNames = queryUrlForLayers[2];
+        var url = queryUrlForLayers.url;
+        var queryLayers = queryUrlForLayers.queryLayers;
 
         $.get(url).
         then(function(response){
-          _.forEach(queryLayers,function(queryLayer,index){
+          var nfeatures = 0
+          _.forEach(queryLayers,function(queryLayer){
             var parser = new ol.format.WMSGetFeatureInfo({
-              layers: [queryLayer]
+              layers: [queryLayer.queryLayerName]
             });
             var features = parser.readFeatures(response);
-            var layerName = layerNames[index];
-            featuresForLayerNames[layerName] = features;
+            nfeatures += features.length;
+            featuresForLayerNames[queryLayer.layerName] = features;
           })
-          d.resolve(featuresForLayerNames);
+          d.resolve(coordinates,nfeatures,featuresForLayerNames);
         })
         .fail(function(e){
           d.reject(e);
@@ -93,7 +101,7 @@ function MapQueryService() {
       });
     }
     else {
-      d.resolve(featuresForLayerNames);
+      d.resolve(coordinates,0,featuresForLayerNames);
     }
     
     return d.promise();

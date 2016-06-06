@@ -7,7 +7,7 @@ function WMSLayer(options){
   var self = this;
   this.LAYERTYPE = {
     LAYER: 'layer',
-    METALAYER: 'metalayer'
+    MULTILAYER: 'multilayer'
   };
   
   this.id = options.id;

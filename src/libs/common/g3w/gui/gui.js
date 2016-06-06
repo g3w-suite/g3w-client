@@ -15,6 +15,7 @@ function GUI(){
   // mostra una lista di oggetti (es. lista di risultati)
   this.showListing = noop;
   this.closeListing = noop;
+  this.hideListing = noop;
 
   this.showPanel = noop;
   

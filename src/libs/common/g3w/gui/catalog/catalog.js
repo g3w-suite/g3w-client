@@ -66,6 +66,9 @@ Vue.component('tristate-tree', {
         this.n_parentChilds = this.n_childs - _visibleChilds;
       }
       return isFolder
+    },
+    isHidden: function() {
+      return this.layerstree.hidden && (this.layerstree.hidden === true);
     }
   },
   methods: {

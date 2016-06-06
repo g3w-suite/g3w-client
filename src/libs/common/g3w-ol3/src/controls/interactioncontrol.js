@@ -3,7 +3,7 @@ var Control = require('./control');
 var InteractionControl = function(options){
   this._toggled = false;
   this._interaction = options.interaction || null;
-  this._autountoggle = options.autountoggle || true;
+  this._autountoggle = options.autountoggle || false;
   
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   

@@ -88,6 +88,10 @@ function MapService(){
     self.setupViewer();
   });
   
+  ProjectService.on('projectswitch',function(){
+    self.setupLayers();
+  });
+  
   ProjectService.onafter('setLayersVisible',function(layers){
     _.forEach(layers,function(layer){
       var mapLayer = self.getMapLayerForLayer(layer);
@@ -128,7 +132,7 @@ function MapService(){
       extent: extent
     });
     
-    var constrain_extent;
+    /*var constrain_extent;
     if (this.config.constraintextent) {
       var extent = this.config.constraintextent;
       var dx = extent[2]-extent[0];
@@ -141,14 +145,16 @@ function MapService(){
       var bbox_ymax = extent[3] - dy4;
       
       constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
-    }
+    }*/
     
     this.viewer = ol3helpers.createViewer({
       view: {
         projection: projection,
         center: this.config.initcenter || ol.extent.getCenter(ProjectService.state.project.extent),
-        zoom: this.config.initzoom | 0,
-        extent: constrain_extent || ProjectService.state.project.extent
+        zoom: this.config.initzoom || 0,
+        extent: this.config.constraintextent || extent,
+        minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
+        maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0
       }
     });
     
@@ -189,36 +195,26 @@ function MapService(){
             });
             break;
           case 'zoombox': 
-            control = new ZoomBoxControl();
-            control.on('zoomend',function(e){
-              var pan = ol.animation.pan({
-                duration: 500,
-                source: self.state.center
-              });
-              var zoom = ol.animation.zoom({
-                duration: 500,
-                resolution: self.state.resolution
-              });
-              self.viewer.map.beforeRender(pan,zoom);
-              self.viewer.fit(e.extent,{
-                constrainResolution: false
-              });
-            })
+            if (!isMobile.any) {
+              control = new ZoomBoxControl();
+              control.on('zoomend',function(e){
+                self.viewer.fit(e.extent);
+              })
+            }
             break;
           case 'zoomtoextent':
             control = new ol.control.ZoomToExtent({
               label:  "\ue98c",
+              extent: self.config.constraintextent
             });
             break;
           case 'query':
             control = new QueryControl();
             control.on('picked',function(e){
               var coordinates = e.coordinates;
-              var visibleMapLayers = _.filter(self.mapLayers,function(mapLayer){ 
-                return mapLayer.isVisible();
-              });
-              MapQueryService.queryPoint(coordinates,visibleMapLayers)
-              .then(function(featuresForLayerNames){
+ 
+              MapQueryService.queryPoint(coordinates,self.mapLayers)
+              .then(function(coordinates,nfeatures,featuresForLayerNames){
                 var featuresForLayers = [];
                 _.forEach(featuresForLayerNames,function(features,layerName){
                   var layer = ProjectService.layers[layerName];
@@ -228,7 +224,7 @@ function MapService(){
                   })
                 })
                 
-                self.emit('mapqueryend',featuresForLayers);
+                self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
               })
             });
             break;
@@ -245,9 +241,9 @@ function MapService(){
     this.viewer.map.addControl(control);
   };
   
-  this.setLayersExtraParams = function(params){
-    this.layersExtraParams = params;
-    this.emit('extraParamsSet',params);
+  this.setLayersExtraParams = function(params,update){
+    this.layersExtraParams = _.assign(this.layersExtraParams,params);
+    this.emit('extraParamsSet',params,update);
   };
   
   this.setupBaseLayers = function(){
@@ -303,18 +299,20 @@ function MapService(){
     var leafLayersArray = _.filter(layersArray,function(layer){
       return !_.get(layer,'nodes');
     });
-    var metaLayers = _.groupBy(leafLayersArray,function(layer){
-      return layer.metalayer;
+    var multiLayers = _.groupBy(leafLayersArray,function(layer){
+      return layer.multilayer;
     });
-    _.forEach(metaLayers,function(layers,id){
+    _.forEach(multiLayers,function(layers,id){
       var n = layers.length;
       var layerId = 'layer_'+id
       var mapLayer = _.get(self.mapLayers,layerId);
+      var tiled = layers[0].tiled // BRUTTISSIMO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
       // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
       var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
       var config = {
         defaultUrl: ProjectService.getWmsUrl(),
-        id: layerId
+        id: layerId,
+        tiled: tiled
       };
       mapLayer = self.mapLayers[layerId] = new WMSLayerClass(config,self.layersExtraParams);
       self.registerListeners(mapLayer);
@@ -330,12 +328,12 @@ function MapService(){
     
     _.forEach(_.values(this.mapLayers).reverse(),function(mapLayer){
       self.viewer.map.addLayer(mapLayer.getLayer());
-      mapLayer.update();
+      mapLayer.update(self.layersExtraParams);
     })
   };
   
   this.getMapLayerForLayer = function(layer){
-    return this.mapLayers['layer_'+layer.metalayer];
+    return this.mapLayers['layer_'+layer.multilayer];
   };
   
   this.traverseLayersTree = function(layersTree){
@@ -363,8 +361,10 @@ function MapService(){
       self.setIsLoading(false);
     });
     
-    this.on('extraParamsSet',function(extraParams){
-      mapLayer.update(extraParams);
+    this.on('extraParamsSet',function(extraParams,update){
+      if (update) {
+        mapLayer.update(extraParams);
+      }
     })
   };
   
@@ -487,7 +487,7 @@ function MapService(){
     })
   };
   
-  this.highlightGeometry = function(geometryObj,duration,fromWGS84){
+  this.highlightGeometry = function(geometryObj,options){    
     var geometry;
     if (geometryObj instanceof ol.geom.Geometry){
       geometry = geometryObj;
@@ -497,7 +497,13 @@ function MapService(){
       geometry = format.readGeometry(geometryObj);
     }
     
-    if (fromWGS84) {
+    if (options.zoom) {
+      this.viewer.fit(geometry);
+    }
+    
+    var duration = options.duration || 4000;
+    
+    if (options.fromWGS84) {
       geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
     }
     
@@ -511,7 +517,7 @@ function MapService(){
       style: function(feature){
         var styles = [];
         var geometryType = feature.getGeometry().getType();
-        if (geometryType == ol.geom.GeometryType.LINE_STRING) {
+        if (geometryType == 'LineString') {
           var style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               color: 'rgb(255,255,0)',
@@ -520,7 +526,7 @@ function MapService(){
           })
           styles.push(style);
         }
-        else if (geometryType == ol.geom.GeometryType.POINT){
+        else if (geometryType == 'Point'){
           var style = new ol.style.Style({
             image: new ol.style.Circle({
               radius: 6,

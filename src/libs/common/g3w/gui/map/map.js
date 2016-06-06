@@ -1,5 +1,6 @@
 var t = require('i18n/i18n.service').t;
 var GUI = require('g3w/gui/gui.js');   
+var RouterService = require('g3w/core/router');
 var MapService = require('g3w/core/mapservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 
@@ -93,6 +94,7 @@ var MapViewComponent = Vue.component('g3w-map',{
 });
 
 function MapView() {
+  var self = this;
   var _viewComponent;
   
   this.getViewComponent = function(){
@@ -101,6 +103,24 @@ function MapView() {
     }
     return _viewComponent;
   };
+  
+  this.show = function(path){
+    var view = RouterService.sliceFirst(path)[0];
+    if (view == 'map') {
+      var query = RouterService.getQueryParams(path);
+      if (query['point']) {
+        var coordinates = query['point'].split(',');
+        if (coordinates.length == 2) {
+          MapService.viewer.goToRes(coordinates,0.5);
+          MapService.highlightGeometry(new ol.geom.Point(coordinates),10000);
+        }
+      }
+    }
+  };
+  
+  RouterService.onafter('setRoute',function(path){
+    self.show(path);
+  });
 }
 
 module.exports = new MapView;

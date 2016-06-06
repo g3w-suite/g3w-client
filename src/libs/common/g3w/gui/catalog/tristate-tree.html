@@ -1,4 +1,4 @@
-<li class="tree-item">
+<li v-if="!isHidden" class="tree-item">
   <span :class="{bold: isFolder, 'fa-chevron-down': layerstree.expanded, 'fa-chevron-right': !layerstree.expanded}" @click="toggle" v-if="isFolder" class="fa"></span>
   <span v-if="isFolder" @click="toggle('true')" :class="[triClass()]" class="fa"></span>
   <span v-else @click="toggle" :class="[layerstree.visible  ? 'fa-check-square-o': 'fa-square-o',layerstree.disabled  ? 'disabled': '']" class="fa" style="cursor:default"></span>

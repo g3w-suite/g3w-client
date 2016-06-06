@@ -112,7 +112,10 @@ proto.getQueryUrl = function(){
 };
 
 proto.getQueryLayers = function(){
-  var layer = this.layers[0];
+  
+  // DA REIMPLEMENTARE SULLA BASE DI WMSSingleLayer
+  
+  /*var layer = this.layers[0];
   var queryLayers = [];
   _.forEach(this.layers,function(layer){
     if (layer.infolayer && layer.infolayer != '') {
@@ -122,7 +125,7 @@ proto.getQueryLayers = function(){
       queryLayers.push(layer.name);
     }
   })
-  return queryLayers;
+  return queryLayers;*/
 };
 
 module.exports = WMSMultiLayer;

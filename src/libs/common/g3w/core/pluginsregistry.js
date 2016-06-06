@@ -2,7 +2,9 @@ var base = require('./utils').base;
 var inherit = require('./utils').inherit;
 var G3WObject = require('g3w/core/g3wobject');
 
-function PluginsService(){
+var ToolsService = require('g3w/core/toolsservice');
+
+function PluginsRegistry(){
   var self = this;
   this.config = null;
   // un domani questo sarà dinamico
@@ -25,7 +27,6 @@ function PluginsService(){
     _.forEach(config.plugins,function(plugin){
       self._setup(plugin);
     })
-    this.emit("initend");
   };
   
   // Per permettere la registrazione anche in un secondo momento
@@ -33,23 +34,25 @@ function PluginsService(){
     if (!this.plugins[plugin.name]) {
       this._setup(plugin);
     }
-  }
+  };
   
-  this._setup = function(plugin){
+  this._setup = function(plugin) {
     var self = this;
     var pluginConfig = this.config.configs[plugin.name];
     if (pluginConfig){
-      plugin.init(pluginConfig)
-      .then(function(){
-        self.plugins[name] = plugin;
-        if (plugin.providesTools()){
-          self.setToolsProvider(plugin);
-        }
-      })
+      plugin.init(pluginConfig);
+      self.plugins[name] = plugin;
     }
-  }
+  };
+  
+  this.activate = function(plugin) {
+    var tools = plugin.getTools();
+    if (tools.length) {
+      ToolsService.registerToolsProvider(plugin);
+    }
+  };
 };
 
-inherit(PluginsService,G3WObject);
+inherit(PluginsRegistry,G3WObject);
 
-module.exports = new PluginsService
+module.exports = new PluginsRegistry

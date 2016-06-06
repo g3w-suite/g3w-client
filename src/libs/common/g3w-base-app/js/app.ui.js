@@ -57,6 +57,7 @@ var BaseUI = Vue.extend({
       GUI.closeForm = _.bind(FloatbarService.closePanel,FloatbarService);
       GUI.showListing = _.bind(FloatbarService.showPanel,FloatbarService);
       GUI.closeListing = _.bind(FloatbarService.closePanel,FloatbarService);
+      GUI.hideListing = _.bind(FloatbarService.hidePanel,FloatbarService);
       // mostra un pannello nella sidebar
       GUI.showPanel = _.bind(SidebarService.showPanel,SidebarService);
 

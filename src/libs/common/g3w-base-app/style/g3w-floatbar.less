@@ -61,7 +61,7 @@
       color: #fff;
     }
     @media (max-width: @screen-xs-max) {
-        left: @sidebar-width-small;
+      right: @sidebar-width-small;
     }
   }
   .floatbar-aside-toggle .icon-bar {
@@ -73,5 +73,15 @@
         content: "\f101";
       }
     }
+  }
+  @media (max-width: @screen-xs-max) {
+    padding-top: 50px;
+    width: @sidebar-width-small;
+  }
+}
+
+.control-sidebar-bg {
+  @media (max-width: @screen-xs-max) {
+      width: @sidebar-width-small;
   }
 }

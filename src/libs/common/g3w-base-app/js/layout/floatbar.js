@@ -49,6 +49,10 @@ function FloatbarService(){
       }
     }
   };
+  
+  this.hidePanel = function(){
+    this.layout.floatBar.close(this.sidebarEl,true);
+  };
 }
 
 var floatbarService = new FloatbarService();

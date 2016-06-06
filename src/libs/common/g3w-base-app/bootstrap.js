@@ -44,6 +44,7 @@ var bootstrap = function (baseconfig){
     return {
       debug: baseconfig.client.debug || false,
       group: null,
+      urls: baseconfig.server.urls,
       resourcesurl: baseconfig.server.urls.staticurl,
       projects: baseconfig.group.projects,
       initproject: baseconfig.group.initproject,

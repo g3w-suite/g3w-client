@@ -60,7 +60,7 @@ function ProjectService(){
     return this.state.project;
   };
   
-  this.setProject = function(project){
+  this.setProject = function(project,doswitch){
     /* struttura oggetto 'project'
     {
       id,
@@ -75,7 +75,15 @@ function ProjectService(){
     this.state.project = project;
     this.state.baseLayers = project.baseLayers;
     this.makeLayersObj(project.layerstree);
-    this.emit('projectset');
+    var eventType = 'projectset';
+    if (doswitch && doswitch === true) {
+      eventType = 'projectswitch';
+    }
+    this.emit(eventType);
+  };
+  
+  this.switchProject = function(project) {
+    this.setProject(project,true);
   };
   
   this.getLayer = function(id){

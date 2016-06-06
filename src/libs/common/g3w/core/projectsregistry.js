@@ -15,139 +15,139 @@ Funzione costruttore contentente tre proprieta':
 // Public interface
 function ProjectsRegistry(){
   var self = this;
-  this.state = _registry.state;
-  //config generale
-  this.init = function(config){
-    return _registry.init(config).then(function(){
-      self.emit('loaded');
-    })
+  this.config = null;
+  this.initialized = false;
+  
+  this.setters = {
+    setCurrentProject: function(project){
+      this.state.currentProject = project;
+    }
   };
   
-  this.addProject = function(projectGid){
-    _registry.addProject(projectGid);
-  };
-  
-  this.getProject = function(projectGid){
-    return _registry.getProject(projectGid);
-  };
-  
-  this.getCurrentProject = function(){
-    return this.getProject(_registry.state.currentProject.gid);
-  };
-  
-  this.setCurrentProject = function(projectGid){
-    _registry.setCurrentProject(projectGid);
-  };
-  
-  base(this);
-}
-
-// Make the public service en Event Emitter
-inherit(ProjectsRegistry,G3WObject);
-
-// Private
-var _registry = {
-  config: null,
-  initialized: false,
-  state: {
+  this.state = {
     baseLayers: {},
     minScale: null,
     maxscale: null,
     projects: [],
     currentProject: null
-  },
-  //config generale
-  init: function(config){
-    if (!this.initialized){
-      this.config = config;
-      this.setupState();
-      ProjectService.init(config);
-      return this.setCurrentProject(config.initproject);
-    }
-  },
+  }
   
-  setupState: function(){
-    var self = this;
-    
-    self.state.baseLayers = self.config.baselayers;
-    self.state.minScale = self.config.minscale;
-    self.state.maxScale = self.config.maxscale;
-    self.state.crs = self.config.crs;
-    self.config.projects.forEach(function(project){
-      project.baseLayers = self.config.baselayers;
-      project.minScale = self.config.minscale;
-      project.maxScale = self.config.maxscale;
-      project.crs = self.config.crs;
-      self.state.projects.push(project);
-    })
-    //this.state.projects = config.group.projects;
-  },
-  
-  setCurrentProject: function(projectGid){
-    var self = this;
-    var project = this.getProject(projectGid);
-    if(!project){
-      return rejectedValue("Project doesn't exist");
-    }
-    this.state.currentProject = project;
-    var isFullFilled = !_.isNil(project.layers);
-    if (isFullFilled){
-      ProjectService.setProject(project);
-      return resolvedValue(project);
-    }
-    else{
-      return this.getProjectFullConfig(project)
-      .then(function(projectFullConfig){
-        project = _.merge(project,projectFullConfig);
-        self.buildProjectTree(project);
-        ProjectService.setProject(project);
-      });
-    }
-  },
-  
-  buildProjectTree: function(project){
-    var layers = _.keyBy(project.layers,'id');
-    var layersTree = _.cloneDeep(project.layerstree);
-    
-    function traverse(obj){
-      _.forIn(obj, function (layer, key) {
-          //verifica che il nodo sia un layer e non un folder
-          if (!_.isNil(layer.id)) {
-              var fulllayer = _.merge(layer,layers[layer.id]);
-              obj[parseInt(key)] = fulllayer;
-              var a =1;
-          }
-          if (!_.isNil(layer.nodes)){
-            // aggiungo proprietà title per l'albero
-            layer.title = layer.name;
-            traverse(layer.nodes);
-          }
-        });
-      };
-    traverse(layersTree);
-    project.layerstree = layersTree;
-  },
+  base(this);
+}
+inherit(ProjectsRegistry,G3WObject);
 
-  getProject: function(projectGid){
-    var project = null;
-    this.state.projects.forEach(function(_project){
-      if (_project.gid == projectGid) {
-        project = _project;
-      }
-    })
-    return project;
-  },
+var proto = ProjectsRegistry.prototype;
+
+proto.init = function(config){
+  if (!this.initialized){
+    this.initialized = true;
+    this.config = config;
+    this.setupState();
+    ProjectService.init(config);
+    return this.setProject(config.initproject);
+  }
+};
+  
+proto.setupState = function(){
+  var self = this;
+  
+  self.state.baseLayers = self.config.baselayers;
+  self.state.minScale = self.config.minscale;
+  self.state.maxScale = self.config.maxscale;
+  self.state.crs = self.config.crs;
+  self.config.projects.forEach(function(project){
+    project.baseLayers = self.config.baselayers;
+    project.minScale = self.config.minscale;
+    project.maxScale = self.config.maxscale;
+    project.crs = self.config.crs;
+    self.state.projects.push(project);
+  })
+  //this.state.projects = config.group.projects;
+};
+  
+proto.getCurrentProject = function(){
+  return this.getProject(_registry.state.currentProject.gid);
+};
+  
+proto.setProject = function(projectGid){
+  var self = this;
+  return this.getProject(projectGid).
+  then(function(project){
+    ProjectService.setProject(project);
+    self.setCurrentProject(project);
+  })
+};
+  
+proto.switchProject = function(projectGid) {
+  var self = this;
+  return this.getProject(projectGid).
+  then(function(project){
+    ProjectService.switchProject(project);
+    self.setCurrentProject(project);
+  })
+};
+  
+proto.buildProjectTree = function(project){
+  var layers = _.keyBy(project.layers,'id');
+  var layersTree = _.cloneDeep(project.layerstree);
+  
+  function traverse(obj){
+    _.forIn(obj, function (layer, key) {
+        //verifica che il nodo sia un layer e non un folder
+        if (!_.isNil(layer.id)) {
+            var fulllayer = _.merge(layer,layers[layer.id]);
+            obj[parseInt(key)] = fulllayer;
+            var a =1;
+        }
+        if (!_.isNil(layer.nodes)){
+          // aggiungo proprietà title per l'albero
+          layer.title = layer.name;
+          traverse(layer.nodes);
+        }
+      });
+    };
+  traverse(layersTree);
+  project.layerstree = layersTree;
+};
+
+proto.getProject = function(projectGid){
+  var self = this;
+  var d = $.Deferred();
+  var project = null;
+  this.state.projects.forEach(function(_project){
+    if (_project.gid == projectGid) {
+      project = _project;
+    }
+  })
+  if (!project) {
+    return rejectedValue("Project doesn't exist");
+  }
+
+  var isFullFilled = !_.isNil(project.layers);
+  if (isFullFilled){
+    return d.resolve(project);
+  }
+  else{
+    return this.getProjectFullConfig(project)
+    .then(function(projectFullConfig){
+      project = _.merge(project,projectFullConfig);
+      self.buildProjectTree(project);
+      return d.resolve(project);
+    });
+  }
+  
+  return d.promise();
+};
   
   //ritorna una promises
-  getProjectFullConfig: function(projectBaseConfig){
-    var self = this;
-    var deferred = $.Deferred();
-    var url = this.config.getProjectConfigUrl(projectBaseConfig);
-    $.get(url).done(function(projectFullConfig){
-        deferred.resolve(projectFullConfig);
-    })
-    return deferred.promise();
-  },
+proto.getProjectFullConfig = function(projectBaseConfig){
+  var self = this;
+  var deferred = $.Deferred();
+  var url = this.config.getProjectConfigUrl(projectBaseConfig);
+  $.get(url).done(function(projectFullConfig){
+      deferred.resolve(projectFullConfig);
+  })
+  return deferred.promise();
 };
 
 module.exports = new ProjectsRegistry();

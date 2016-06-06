@@ -1,6 +1,5 @@
 var inherit = require('./utils').inherit;
 var G3WObject = require('g3w/core/g3wobject');
-var PluginsService = require('./pluginsservice');
 
 function ToolsService(){
   var self = this;
@@ -10,13 +9,6 @@ function ToolsService(){
     tools: []
   };
   
-  PluginsService.on("initend",function(){
-    _.forEach(PluginsService.state.toolsproviders,function(plugin){
-      self._mergeTools(plugin.getTools());
-      self._addActions(plugin);
-    })
-  });
-  
   this.init = function(config){
     this.config = config;
     this.setState();
@@ -25,6 +17,11 @@ function ToolsService(){
   this.setState = function(){
     this._mergeTools(this.config.tools);
   };
+  
+  this.registerToolsProvider = function(plugin){
+    self._mergeTools(plugin.getTools());
+    self._addActions(plugin);
+  }
   
   this.fireAction = function(actionid){
     var plugin = this._actions[actionid];

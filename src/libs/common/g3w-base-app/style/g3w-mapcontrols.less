@@ -43,8 +43,8 @@
     left: 0px;
   }
   button:hover {
-    text-decoration: none;
-    background-color: darken(@light-blue,20%);
+      text-decoration: none;
+      background-color: darken(@light-blue,20%);
   }
   button:focus{
     text-decoration: none;
@@ -52,6 +52,17 @@
     outline: none;
     &:hover {
       background-color: darken(@light-blue,20%);
+    }
+  }
+  @media screen and (max-width:768px) {
+    button:hover {
+      background-color: @light-blue;
+    }
+    button:focus{
+      background-color: @light-blue;
+      &:hover {
+        background-color: @light-blue;
+      }
     }
   }
 }

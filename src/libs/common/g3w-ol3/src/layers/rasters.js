@@ -34,7 +34,8 @@ RasterLayers._WMSLayer = function(options){
   
   var sourceOptions = {
     url: layerObj.url,
-    params: params
+    params: params,
+    ratio: 1
   };
   
   var imageOptions = {

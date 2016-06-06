@@ -2,6 +2,7 @@ var inherit = require('g3w/core/utils').inherit;
 var resolvedValue = require('g3w/core/utils').resolvedValue;
 var rejectedValue = require('g3w/core/utils').rejectedValue;
 var ProjectsRegistry = require('g3w/core/projectsregistry');
+var PluginsRegistry = require('g3w/core/pluginsregistry');
 var GUI = require('g3w/gui/gui');
 var G3WPlugin = require('g3w/core/plugin');
 
@@ -10,6 +11,7 @@ var Service = require('./iternetservice');
 var EditingPanel = require('./editorpanel')
 
 function IternetPlugin(){
+  var self = this;
   this.config = null;
   this.name = "iternet"
   this.tools = [
@@ -23,12 +25,14 @@ function IternetPlugin(){
   
   this.init = function(config){
     this.config = config;
-    if (this.isCurrentProjectCompatible(config)) {
-      Service.init(config);
-      return resolvedValue();
-    }
-    return rejectedValue();
   };
+  
+  ProjectsRegistry.onafter('setCurrentProject',function(project){
+    if (self.isCurrentProjectCompatible) {
+      Service.init(self.config);
+      PluginsRegistry.activate(self);
+    }
+  })
   
   this.isCurrentProjectCompatible = function(config){
     var gid = config.gid;
@@ -47,4 +51,4 @@ function IternetPlugin(){
 }
 inherit(IternetPlugin,G3WPlugin);
 
-module.exports = new IternetPlugin
+module.exports = new IternetPlugin;

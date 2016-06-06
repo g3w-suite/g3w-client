@@ -8,7 +8,7 @@ function WMSSingleLayer(config,extraParams){
   var self = this;
   this.LAYERTYPE = {
     LAYER: 'layer',
-    METALAYER: 'metalayer'
+    MULTILAYER: 'multilayer'
   };
 
   this._olLayer = null;
@@ -101,10 +101,30 @@ proto.getQueryUrl = function(){
 };
 
 proto.getQueryLayers = function(){
-  if (this.layer.infolayer && this.layer.infolayer != '') {
-    return this.layer.infolayer;
+  var queryLayers = [];
+  
+  if (Layer.isQueryable(this.layer)) {
+    var queryEnbaled = this.layer.visible && !this.layer.disabled;
+    if (this.layer.infowhennotvisible && (this.layer.infowhennotvisible === true)) {
+      queryEnbaled = true;
+    }
+    
+    if (queryEnbaled) {
+      var queryLayerName;
+      if (this.layer.infolayer && this.layer.infolayer != '') {
+        queryLayerName = this.layer.infolayer;
+      }
+      else {
+        queryLayerName = this.layer.name;
+      }
+      queryLayers.push({
+        layerName: this.layer.name,
+        queryLayerName: queryLayerName
+      });
+    }
   }
-  return [this.layer.name];
+  
+  return queryLayers;
 };
 
 module.exports = WMSSingleLayer;
