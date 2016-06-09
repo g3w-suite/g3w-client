@@ -1,1 +1,1 @@
-G3W Web Client
+G3W Web Client per ITERNET
