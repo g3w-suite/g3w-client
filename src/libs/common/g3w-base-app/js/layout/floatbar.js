@@ -7,13 +7,17 @@ function FloatbarService(){
   
   this.init = function(layout){
     this.layout = layout;
+    this.closable = true;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);
     this._zindex = this.sidebarEl.css("z-index");
     this._modalOverlay = null;
     this._modal = false;
   };
   
-  this.showPanel = function(panel,modal){
+  this.showPanel = function(panel,options){
+    var options = options || {};
+    var modal = options.modal || false;
+    this.closable = options.closable || true;
     this.stack.push(panel,"#g3w-floatbarpanel-placeholder");
     this.layout.floatBar.open(this.sidebarEl,true);
     if (modal){
@@ -74,6 +78,9 @@ var FloatbarComponent = Vue.extend({
           name = this.stack.panels.slice(-1)[0].name;
         }
         return name;
+      },
+      closable: function() {
+        return floatbarService.closable;
       }
     },
     watch: {
