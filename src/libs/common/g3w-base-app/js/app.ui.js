@@ -63,7 +63,34 @@ var BaseUI = Vue.extend({
 
       GUI.setModal = _.bind(AppService.showModalOverlay,AppService);
       
+      GUI.showSpinner = function(options){
+        var container = options.container || 'body';
+        var id = options.id || 'loadspinner';
+        var where = options.where || 'prepend'; // append | prepend
+        var style = options.style || '';
+        var transparent = options.transparent ? 'background-color: transparent' : '';
+        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
+      };
+      
+      GUI.hideSpinner = function(id){
+        $("#"+id).remove();
+      }
+      
       GUI.ready();
+      
+      $(MapService.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>')
+      
+      MapService.on('loadstart',function(){
+        GUI.showSpinner({
+          container: $('#map-spinner'),
+          id: 'maploadspinner',
+          style: 'blue'
+        });
+      });
+      
+      MapService.on('loadend',function(){
+        GUI.hideSpinner('maploadspinner');
+      });
     }
 });
 

@@ -1,6 +1,7 @@
 var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
 var G3WObject = require('g3w/core/g3wobject');
+var ApiService = require('g3w/core/apiservice');
 var ProjectsRegistry = require('g3w/core/projectsregistry');
 var PluginsRegistry = require('g3w/core/pluginsregistry');
 var MapService = require('g3w/core/mapservice');
@@ -33,6 +34,7 @@ proto._bootstrap = function(){
     //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
     //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
     $.when(
+      ApiService.init(this.config),
       ProjectsRegistry.init(this.config),
       PluginsRegistry.init(this.config.plugins),
       MapService.init(this.config.map),

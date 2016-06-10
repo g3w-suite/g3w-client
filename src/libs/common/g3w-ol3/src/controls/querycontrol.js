@@ -6,7 +6,7 @@ var PickCoordinatesInteraction = require('../interactions/pickcoordinatesinterac
 var QueryControl = function(options){
   var self = this;
   var _options = {
-    name: "Query layer",
+    name: "querylayer",
     tipLabel: "Query layer",
     label: "\uea0f",
     interaction: new PickCoordinatesInteraction

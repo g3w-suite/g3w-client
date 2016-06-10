@@ -1,7 +1,7 @@
 var Control = require('./control');
 
 var InteractionControl = function(options){
-  this._toggled = false;
+  this._toggled = this._toggled || false;
   this._interaction = options.interaction || null;
   this._autountoggle = options.autountoggle || false;
   
@@ -20,11 +20,15 @@ proto.toggle = function(toggle){
   var controlButton = $(this.element).find('button').first();
   
   if (toggle) {
-    map.addInteraction(this._interaction);
+    if (this._interaction) {
+      map.addInteraction(this._interaction);
+    }
     controlButton.addClass('g3w-ol-toggled');
   }
   else {
-    map.removeInteraction(this._interaction);
+    if (this._interaction) {
+      map.removeInteraction(this._interaction);
+    }
     controlButton.removeClass('g3w-ol-toggled');
   }
 }

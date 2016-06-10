@@ -5,7 +5,7 @@ var ZoomBoxControl = function(options){
   var self = this;
   this._startCoordinate = null;
   var _options = {
-      name: "Zoom to box",
+      name: "zoombox",
       tipLabel: "Zoom to box",
       label: "\ue900",
       interaction: new ol.interaction.DragBox

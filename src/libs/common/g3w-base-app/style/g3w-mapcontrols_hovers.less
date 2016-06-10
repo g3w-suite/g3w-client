@@ -44,14 +44,25 @@
   }
   button:hover {
       text-decoration: none;
-      background-color: @light-blue;
+      background-color: darken(@light-blue,20%);
   }
   button:focus{
     text-decoration: none;
     background-color: @light-blue;
     outline: none;
     &:hover {
+      background-color: darken(@light-blue,20%);
+    }
+  }
+  @media screen and (max-width:768px) {
+    button:hover {
       background-color: @light-blue;
+    }
+    button:focus{
+      background-color: @light-blue;
+      &:hover {
+        background-color: @light-blue;
+      }
     }
   }
 }

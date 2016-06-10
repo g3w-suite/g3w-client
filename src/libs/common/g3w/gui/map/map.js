@@ -43,14 +43,6 @@ var MapViewComponent = Vue.component('g3w-map',{
       MapService.showViewer(self.$el.id);
     });
     
-    MapService.on('loadstart',function(){
-      $(MapService.getViewport()).prepend('<div id="maploadspinner" class="mapspinner-wrapper"><div class="spinner"></div></div>');
-    });
-    
-    MapService.on('loadend',function(){
-      $("#maploadspinner").remove();
-    });
-    
     GUI.on('guiready',function(){
       setMapDivHeight();
       

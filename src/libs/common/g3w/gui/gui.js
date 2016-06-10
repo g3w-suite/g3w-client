@@ -27,6 +27,9 @@ function GUI(){
     this.emit('guiresized');
   };
   
+  this.showSpinner = noop; // per mostrare un'icona spinner che notifica un caricamento dati in corso
+  this.hideSpinner = noop;
+  
   toastr.options.positionClass = 'toast-top-center';
   toastr.options.preventDuplicates = true;
   // proxy della libreria toastr
