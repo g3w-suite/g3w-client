@@ -8,6 +8,14 @@ Vue.filter('startcase', function (value) {
   return _.startCase(value);
 });
 
+Vue.validator('email', function (val) {
+  return /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(val)
+});
+
+Vue.validator('integer', function (val) {
+  return /^(-?[1-9]\d*|0)$/.test(val);
+})
+
 var FormPanel = Vue.extend({
   template: require('./formpanel.html'),
   methods: {
@@ -15,6 +23,12 @@ var FormPanel = Vue.extend({
       var relations = this.state.relations || null;
       cbk(this.state.fields,relations);
       GUI.closeForm();
+    },
+    btnEnabled: function(button) {
+      return button.type != 'save' || (button.type == 'save' && this.$validation.valid);
+    },
+    hasFieldsRequired: function() {
+      return this.$options.form._hasFieldsRequired();
     },
     isEditable: function(field){
       return this.$options.form._isEditable(field);
@@ -40,6 +54,11 @@ var FormPanel = Vue.extend({
     showRelation: function(relation){
       return this.$options.form._shouldShowRelation(relation);
     }
+  },
+  computed: {
+    isValid: function(field) {
+      return this.$validate(field.name);
+    },
   }
 });
 
@@ -98,6 +117,16 @@ proto.onClose = function(){
 
 proto._isNew = function(){
   return this.isnew;
+};
+
+proto._hasFieldsRequired = function() {
+  var someFieldsRequired = _.some(this.state.fields,function(field){
+    return field.validate && field.validate.required;
+  });
+  var someRelationsRequired = _.some(this.state.relations,function(relation){
+    return relation.validate && relation.validate.required;
+  });
+  return someFieldsRequired || someRelationsRequired;
 };
 
 proto._isVisible = function(field){
