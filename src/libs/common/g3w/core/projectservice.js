@@ -1,6 +1,7 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
-var G3WObject = require('g3w/core/g3wobject');
+var G3WObject = require('./g3wobject');
+var Layer = require('./layer.js');
 
 var ProjectTypes = {
   QDJANGO: 'qdjango',
@@ -93,6 +94,36 @@ function ProjectService(){
   
   this.getLayers = function(){
     return this.layers;
+  };
+  
+  this.getLayerById = function(id) {
+    var layer = null;
+    _.forEach(this.getLayers(),function(_layer){
+      if (_layer.id == id){
+        layer = _layer;
+      }
+    });
+    return layer;
+  };
+  
+  this.getLayerByName = function(name) {
+    var layer = null;
+    _.forEach(this.getLayers(),function(_layer){
+      if (_layer.name == name){
+        layer = _layer;
+      }
+    });
+    return layer;
+  };
+  
+  this.getQueryableLayers = function(){
+    var queryableLayers = [];
+    _.forEach(this.getLayers(),function(layer){
+      if (Layer.isQueryable(layer)){
+        queryableLayers.push(layer);
+      }
+    });
+    return queryableLayers;
   };
   
   this.getLayerAttributes = function(id){

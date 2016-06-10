@@ -104,24 +104,10 @@ proto.getQueryLayers = function(){
   var queryLayers = [];
   
   if (Layer.isQueryable(this.layer)) {
-    var queryEnbaled = this.layer.visible && !this.layer.disabled;
-    if (this.layer.infowhennotvisible && (this.layer.infowhennotvisible === true)) {
-      queryEnbaled = true;
-    }
-    
-    if (queryEnbaled) {
-      var queryLayerName;
-      if (this.layer.infolayer && this.layer.infolayer != '') {
-        queryLayerName = this.layer.infolayer;
-      }
-      else {
-        queryLayerName = this.layer.name;
-      }
-      queryLayers.push({
-        layerName: this.layer.name,
-        queryLayerName: queryLayerName
-      });
-    }
+    queryLayers.push({
+      layerName: this.layer.name,
+      queryLayerName: Layer.getQueryLayerName(this.layer)
+    });
   }
   
   return queryLayers;
