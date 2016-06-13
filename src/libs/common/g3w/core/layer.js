@@ -30,8 +30,25 @@ proto.getQueryLayers = function(){
  //
 };
 
-Layer.isQueryable = function(layerConfig){
-  return (layerConfig.capabilities && (layerConfig.capabilities && CAPABILITIES.QUERY)) ? true : false;
+Layer.isQueryable = function(layerState){
+  var queryEnabled = false;
+  var queryableForCababilities = (layerState.capabilities && (layerState.capabilities && CAPABILITIES.QUERY)) ? true : false;
+  if (queryableForCababilities) {
+    // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
+    var queryEnabled = (layerState.visible && !layerState.disabled) || (layerState.infowhennotvisible && (layerState.infowhennotvisible === true));
+  }
+  return queryEnabled;
+};
+
+Layer.getQueryLayerName = function(layerState) {
+  var queryLayerName;
+  if (layerState.infolayer && layerState.infolayer != '') {
+    queryLayerName = layerState.infolayer;
+  }
+  else {
+    queryLayerName = layerState.name;
+  }
+  return queryLayerName;
 };
 
 module.exports = Layer;

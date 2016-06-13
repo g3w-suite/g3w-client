@@ -7,6 +7,7 @@ var ProjectService = require('./projectservice').ProjectService;
 var ProjectTypes = require('./projectservice').ProjectTypes;
 var GeometryTypes = require('./projectservice').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
@@ -188,6 +189,11 @@ function MapService(){
       _.forEach(this.config.controls,function(controlType){
         var control;
         switch (controlType) {
+          case 'reset':
+            if (!isMobile.any) {
+              control = new ResetControl();
+            }
+            break;
           case 'zoom':
             control = new ol.control.Zoom({
               zoomInLabel: "\ue98a",

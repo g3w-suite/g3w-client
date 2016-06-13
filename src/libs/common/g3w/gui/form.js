@@ -178,7 +178,7 @@ proto._pickLayer = function(field){
 
 proto._getDefaultValue = function(field){
   var defaultValue = null;
-  if (field.input && field.input.options.default){
+  if (field.input && field.input.options && field.input.options.default){
     defaultValue = field.input.options.default;
   }
   else if (this._isSelect(field)){

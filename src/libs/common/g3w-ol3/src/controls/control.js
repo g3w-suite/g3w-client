@@ -16,6 +16,8 @@ var Control = function(options){
   $(options.element).on('click',buttonClickHandler);
   
   ol.control.Control.call(this,options);
+  
+  this._postRender();
 }
 ol.inherits(Control, ol.control.Control);
 
@@ -26,13 +28,22 @@ proto._handleClick = function(){
   var self = this;
   var map = this.getMap();
   
+  var resetControl = null;
   // remove all the other, eventually toggled, interactioncontrols
   var controls = map.getControls();
   controls.forEach(function(control){
     if(control.id && control.toggle && (control.id != self.id)) {
       control.toggle(false);
+      if (control.name == 'reset') {
+        resetControl = control;
+      }
     }
   });
+  if (!self._toggled && resetControl) {
+    resetControl.toggle(true);
+  }
 };
+
+proto._postRender = function(){};
 
 module.exports = Control;
