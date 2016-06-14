@@ -36,6 +36,9 @@ var FormPanel = Vue.extend({
     isSimple: function(field){
       return this.$options.form._isSimple(field);
     },
+    isBoolean: function(field) {
+      return this.$options.form._isBoolean(field);
+    },
     isSelect: function(field){
       return this.$options.form._isSelect(field);
     },
@@ -66,11 +69,13 @@ var Inputs = {};
 Inputs.STRING = 'string';
 Inputs.INTEGER = 'integer';
 Inputs.FLOAT = 'float';
+Inputs.BOOLEAN = 'boolean';
 
 Inputs.defaults = {};
 Inputs.defaults[Inputs.STRING] = "";
 Inputs.defaults[Inputs.INTEGER] = 0;
 Inputs.defaults[Inputs.FLOAT] = 0.0;
+Inputs.defaults[Inputs.BOOLEAN] = false;
 Inputs.simpleFieldTypes = [Inputs.STRING,Inputs.INTEGER,Inputs.FLOAT];
 
 Inputs.SELECT = 'select';
@@ -147,6 +152,10 @@ proto._isSimple = function(field){
   return _.includes(Inputs.simpleFieldTypes,field.type)
 };
 
+proto._isBoolean = function(field) {
+  return field.type == Inputs.BOOLEAN;
+};
+
 proto._isSelect = function(field){
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.SELECT);
 };
@@ -178,12 +187,18 @@ proto._pickLayer = function(field){
 
 proto._getDefaultValue = function(field){
   var defaultValue = null;
-  if (field.input && field.input.options && field.input.options.default){
-    defaultValue = field.input.options.default;
+  if (field.input) {
+    if (field.input.options && field.input.options.default){
+      defaultValue = field.input.options.default;
+    }
+    else if (this._isSelect(field)){
+      defaultValue = field.input.options.values[0].key;
+    }
+    else if (this._isBoolean(field)){
+      defaultValue = this._defaults[Inputs.BOOLEAN];
+    }
   }
-  else if (this._isSelect(field)){
-    defaultValue = field.input.options.values[0].key;
-  }
+  
   /*else {
     defaultValue = this._defaults[field.type];
   }*/

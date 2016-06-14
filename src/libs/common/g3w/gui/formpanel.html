@@ -2,17 +2,20 @@
   <validator name="validation">
     <form novalidate class="form-horizontal g3w-form" :class="[$validation[relfield.name].invalid ? 'has-error': '']">
       <template v-for="field in state.fields">
-        <div v-if="isVisible(field)" class="form-group has-feedback">
+        <div v-if="isVisible(field)" class="form-group has-feedback" :class="[$validation[field.name].invalid ? 'has-error': '']">
           <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
           <div class="col-sm-8">
             <input v-if="isSimple(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
             <select v-if="isSelect(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
               <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
             </select>
+            <div v-if="isBoolean(field)" class="checkbox">
+              <label><input type="checkbox" v-model="field.value" :id="field.name" v-disabled="!isEditable(field)"></label>
+            </div>
             <div v-if="isLayerPicker(field)">
               <input class="form-control" @click="pickLayer(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
               <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
-            </div>
+            </div>  
           </div>
         </div>
       </template>
@@ -27,6 +30,7 @@
                 <select v-if="isSelect(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
                   <option v-for="relvalue in relfield.input.options.values" value="{{ relvalue.key }}">{{ relvalue.value }}</option>
                 </select>
+                <input v-if="isBoolean(relfield)" type="checkbox" v-model="relfield.value" :id="relfield.name" v-disabled="!isEditable(relfield)">
                 <div v-if="isLayerPicker(relfield)">
                   <input class="form-control" @click="pickLayer(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" onfocus="blur()" style="cursor:pointer" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(relfield) }}'" v-model="relfield.value" :id="relfield.name" :placeholder="'['+layerPickerPlaceHolder(relfield)+']'">
                   <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
