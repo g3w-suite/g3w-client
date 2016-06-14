@@ -13,7 +13,7 @@ Vue.validator('email', function (val) {
 });
 
 Vue.validator('integer', function (val) {
-  return /^(-?[1-9]\d*|0)$/.test(val);
+  return /^(-?[1-9]\d*|0)?$/.test(val);
 })
 
 var FormPanel = Vue.extend({

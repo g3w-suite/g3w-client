@@ -1,10 +1,11 @@
 <div>
   <validator name="validation">
-    <form novalidate class="form-horizontal g3w-form" :class="[$validation[relfield.name].invalid ? 'has-error': '']">
+    <form novalidate class="form-horizontal g3w-form">
       <template v-for="field in state.fields">
         <div v-if="isVisible(field)" class="form-group has-feedback" :class="[$validation[field.name].invalid ? 'has-error': '']">
           <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
           <div class="col-sm-8">
+            {{$validation[field.name].errors.length}}
             <input v-if="isSimple(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
             <select v-if="isSelect(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
               <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
