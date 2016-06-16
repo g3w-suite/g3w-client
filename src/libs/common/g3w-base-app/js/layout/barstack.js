@@ -13,7 +13,7 @@ var proto = BarStack.prototype;
 
 proto.push = function(panel,container){
   var self = this;
-  return panel.onShow(container)
+  panel.onShow(container)
   .then(function(){
     self._panels.push(panel);
     self.state.panels.push({
@@ -27,7 +27,7 @@ proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
   var self = this;
   var panel = this._panels.slice(-1)[0];
-  return panel.onClose()
+  panel.onClose()
   .then(function(){
     self.state.panels.pop();
     self._panels.pop();

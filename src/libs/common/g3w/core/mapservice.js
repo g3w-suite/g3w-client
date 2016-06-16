@@ -46,8 +46,22 @@ function MapService(){
   }
   
   this._howManyAreLoading = 0;
+  this._incrementLoaders = function(){
+    if (this._howManyAreLoading == 0){
+      this.emit('loadstart');
+    }
+    this._howManyAreLoading += 1;
+  };
+  
+  this._decrementLoaders = function(){
+    this._howManyAreLoading -= 1;
+    if (this._howManyAreLoading == 0){
+      this.emit('loadend');
+    }
+  };
   
   this._interactionsStack = [];
+  
   
   this.setters = {
     setMapView: function(bbox,resolution,center){
@@ -55,22 +69,6 @@ function MapService(){
       this.state.resolution = resolution;
       this.state.center = center;
       this.checkLayersDisabled(resolution);
-    },
-    setIsLoading: function(bool){
-      var delta = bool ? 1 : -1;
-      var isFirstIncrement = (this._howManyAreLoading == 0) && (delta == 1);
-      var isLastDecrement = (this._howManyAreLoading == 1) && (delta == -1);
-      this._howManyAreLoading += delta;
-
-      if (isFirstIncrement || isLastDecrement){
-        this.state.loading = bool;
-        if (bool) {
-          this.emit('loadstart');
-        }
-        else {
-          this.emit('loadend');
-        }
-      }
     },
     setupViewer: function(){
       $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
@@ -361,10 +359,10 @@ function MapService(){
   
   this.registerListeners = function(mapLayer){
     mapLayer.on('loadstart',function(){
-      self.setIsLoading(true);
+      self._incrementLoaders();
     });
     mapLayer.on('loadend',function(){
-      self.setIsLoading(false);
+      self._decrementLoaders(false);
     });
     
     this.on('extraParamsSet',function(extraParams,update){
