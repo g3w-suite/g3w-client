@@ -17,6 +17,7 @@ var BaseUI = Vue.extend({
       layout.loading(false);
       layout.setup();
       $("body").toggleClass("fixed");
+      
       layout.layout.fixSidebar();
       //Fix the problem with right sidebar and layout boxed
       layout.pushMenu.expandOnHover();

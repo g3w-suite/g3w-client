@@ -24,14 +24,8 @@ var t = function(text){
     var trad = i18next.t(text);
     return trad;
 };
-
-var localize = function(elementSelector){
-  var elementSelector = elementSelector || 'body';
-  $(elementSelector).localize();
-};
     
 module.exports = {
   init: init,
-  t: t,
-  localize: localize
+  t: t
 }
