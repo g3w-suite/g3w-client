@@ -18,12 +18,7 @@ function FloatbarService(){
     var options = options || {};
     var modal = options.modal || false;
     this.closable = options.closable || true;
-    this.stack.push(panel,"#g3w-floatbarpanel-placeholder")
-    .then(function(){
-      /*$('input').iCheck({
-        checkboxClass: 'icheckbox_square-blue'
-      });*/
-    })
+    this.stack.push(panel,"#g3w-floatbarpanel-placeholder");
     this.layout.floatBar.open(this.sidebarEl,true);
     if (modal){
       this._modal = true;

@@ -17,7 +17,6 @@ var BaseUI = Vue.extend({
       layout.loading(false);
       layout.setup();
       $("body").toggleClass("fixed");
-      
       layout.layout.fixSidebar();
       //Fix the problem with right sidebar and layout boxed
       layout.pushMenu.expandOnHover();
@@ -70,7 +69,9 @@ var BaseUI = Vue.extend({
         var where = options.where || 'prepend'; // append | prepend
         var style = options.style || '';
         var transparent = options.transparent ? 'background-color: transparent' : '';
-        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
+        if (!$("#"+id).length) {
+          $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
+        }
       };
       
       GUI.hideSpinner = function(id){

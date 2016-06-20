@@ -14,28 +14,44 @@ function ApiService(){
     this._apiEndpoints = config.urls.apiEndpoints;
   };
   
+  var howManyAreLoading = 0;
+  this._incrementLoaders = function(){
+    if (howManyAreLoading == 0){
+      this.emit('apiquerystart');
+    }
+    howManyAreLoading += 1;
+  };
+  
+  this._decrementLoaders = function(){
+    howManyAreLoading -= 1;
+    if (howManyAreLoading == 0){
+      this.emit('apiqueryend');
+    }
+  };
+  
   this.get = function(api,options) {
     var self = this;
     var apiEndPoint = this._apiEndpoints[api];
     if (apiEndPoint) {
       var completeUrl = this._baseUrl + '/' + apiEndPoint;
       if (options.request) {
-         completeUrl =+ '/' + request
+         completeUrl = completeUrl + '/' + options.request;
       }
       var params = options.params || {};
       
-      self.emit('apiquerystart');
       self.emit(api+'querystart');
+      this._incrementLoaders();
       return $.get(completeUrl,params)
       .done(function(response){
-        self.emit('apiqueryend',response);
         self.emit(api+'queryend',response);
         return response;
       })
       .fail(function(e){
-        self.emit('apiqueryfail',e);
         self.emit(api+'queryfail',e);
         return e;
+      })
+      .always(function(){
+        self._decrementLoaders();
       });
     }
     else {
