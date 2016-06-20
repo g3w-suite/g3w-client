@@ -1,5 +1,6 @@
 var t = require('i18n/i18n.service').t;
 var MapService = require('g3w/core/mapservice');
+var RouterService = require('g3w/core/router');
 var GUI = require('g3w/gui/gui.js');
 var ViewportService = require('g3w/gui/view/viewport');
 require('g3w/gui/geocoding/geocoding');
@@ -79,6 +80,8 @@ var BaseUI = Vue.extend({
       }
       
       GUI.ready();
+      
+      RouterService.initRoute();
       
       $(MapService.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>')
       
