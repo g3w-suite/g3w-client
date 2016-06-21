@@ -50,6 +50,7 @@ var bootstrap = function (baseconfig){
       initproject: baseconfig.group.initproject,
       baselayers: baseconfig.group.baselayers,
       crs: baseconfig.group.crs,
+      proj4: baseconfig.group.proj4,
       minscale: baseconfig.group.minscale,
       maxscale: baseconfig.group.maxscale,
       // richiesto da ProjectService

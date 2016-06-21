@@ -71,7 +71,8 @@ function MapService(){
       this.checkLayersDisabled(resolution);
     },
     setupViewer: function(){
-      $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
+      //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
+      proj4.defs("EPSG:"+ProjectService.state.project.crs,ProjectService.state.project.proj4);
       if (self.viewer) {
         this.viewer.destroy();
         this.viewer = null;
