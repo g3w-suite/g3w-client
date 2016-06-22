@@ -93,7 +93,7 @@ proto._updateLayers = function(extraParams){
       LAYERS: _.join(_.map(visibleLayers,'name'),',')
     };
     if (extraParams) {
-      params = _.assign(extraParams,params);
+      params = _.assign(params,extraParams);
     }
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);
