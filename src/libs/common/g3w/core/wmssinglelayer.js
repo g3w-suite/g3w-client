@@ -23,10 +23,6 @@ proto.getLayerConfigs = function(){
   return [this.layer];
 };
 
-proto.getSource = function(){
-  return this._olLayer.getSource();
-};
-
 proto.addLayer = function(layerConfig){
   this.layer = layerConfig;
 };
@@ -77,7 +73,7 @@ proto._makeOlLayer = function(){
     maxResolution: this.layer.maxresolution
   };
   
-  if (this.layer.source && this.layer.source.type == 'wms'){
+  if (this.layer.source && this.layer.source.type == 'wms' && this.layer.source.url){
     wmsConfig.url = this.layer.source.url;
     wmsConfig.layers = this.layer.source.layers;
   };

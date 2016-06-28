@@ -4,8 +4,6 @@ var G3WObject = require('./g3wobject');
 var GUI = require('../gui/gui');
 var ProjectService = require('./projectservice').ProjectService;
 
-var Layer = require('./layer');
-
 function MapQueryService() {
   base(this);
   

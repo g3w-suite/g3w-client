@@ -21,10 +21,6 @@ proto.getLayerConfigs = function(){
   return this.layers;
 };
 
-proto.getSource = function(){
-  return this._olLayer.getSource();
-};
-
 proto.addLayer = function(layerConfig){
   this.layers.push(layerConfig);
 };

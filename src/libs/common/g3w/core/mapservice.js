@@ -313,7 +313,7 @@ function MapService(){
       var mapLayer = _.get(self.mapLayers,layerId);
       var tiled = layers[0].tiled // BRUTTISSIMO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
       // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
-      var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
+      var WMSLayerClass = n>1 ? WMSMultiLayer : WMSMultiLayer;
       var config = {
         url: ProjectService.getWmsUrl(),
         id: layerId,

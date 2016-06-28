@@ -1,7 +1,7 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var G3WObject = require('./g3wobject');
-var Layer = require('./layer.js');
+var LayerState = require('./layerstate.js');
 
 var ProjectTypes = {
   QDJANGO: 'qdjango',
@@ -119,7 +119,7 @@ function ProjectService(){
   this.getQueryableLayers = function(){
     var queryableLayers = [];
     _.forEach(this.getLayers(),function(layer){
-      if (Layer.isQueryable(layer)){
+      if (LayerState.isQueryable(layer)){
         queryableLayers.push(layer);
       }
     });
