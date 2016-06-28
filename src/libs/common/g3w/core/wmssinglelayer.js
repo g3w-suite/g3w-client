@@ -1,6 +1,6 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
-var Layer = require('./layer');
+var LayerState = require('./layerstate');
 var WMSLayer = require('./wmslayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
@@ -58,10 +58,10 @@ proto.getQueryUrl = function(){
 proto.getQueryLayers = function(){
   var queryLayers = [];
   
-  if (Layer.isQueryable(this.layer)) {
+  if (LayerState.isQueryable(this.layer)) {
     queryLayers.push({
       layerName: this.layer.name,
-      queryLayerName: Layer.getQueryLayerName(this.layer)
+      queryLayerName: LayerState.getQueryLayerName(this.layer)
     });
   }
   

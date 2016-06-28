@@ -13,23 +13,9 @@ var EDITOPS = {
   DELETE: 4
 };
 
-function Layer(config){
-  this.config = config || {};
-  base(this);
-}
-inherit(Layer,G3WObject);
+LayerState = {};
 
-var proto = Layer.prototype;
-
-proto.getQueryUrl = function(){
-  //
-};
-
-proto.getQueryLayers = function(){
- //
-};
-
-Layer.isQueryable = function(layerState){
+LayerState.isQueryable = function(layerState){
   var queryEnabled = false;
   var queryableForCababilities = (layerState.capabilities && (layerState.capabilities && CAPABILITIES.QUERY)) ? true : false;
   if (queryableForCababilities) {
@@ -39,7 +25,7 @@ Layer.isQueryable = function(layerState){
   return queryEnabled;
 };
 
-Layer.getQueryLayerName = function(layerState) {
+LayerState.getQueryLayerName = function(layerState) {
   var queryLayerName;
   if (layerState.infolayer && layerState.infolayer != '') {
     queryLayerName = layerState.infolayer;
@@ -50,4 +36,4 @@ Layer.getQueryLayerName = function(layerState) {
   return queryLayerName;
 };
 
-module.exports = Layer;
+module.exports = LayerState;
