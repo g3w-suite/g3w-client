@@ -1,6 +1,7 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var Layer = require('./layer');
+var WMSLayer = require('./wmslayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
 function WMSSingleLayer(config,extraParams){
@@ -15,16 +16,8 @@ function WMSSingleLayer(config,extraParams){
   this.layer = null;
   this.extraParams = extraParams;
 }
-inherit(WMSSingleLayer,Layer)
+inherit(WMSSingleLayer,WMSLayer)
 var proto = WMSSingleLayer.prototype;
-
-proto.getLayer = function(){
- var olLayer = this._olLayer;
-  if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer();
-  }
-  return olLayer;
-};
 
 proto.getLayerConfigs = function(){
   return [this.layer];
@@ -34,14 +27,51 @@ proto.getSource = function(){
   return this._olLayer.getSource();
 };
 
-proto.getId = function(){
-  return this.id;
+proto.addLayer = function(layerConfig){
+  this.layer = layerConfig;
+};
+
+proto.toggleLayer = function(layer){
+  var visible = this._olLayer.getVisible();
+  this._olLayer.setVisible(!visible);
+};
+  
+proto.update = function(extraParams){
+  var olLayer = this.getOLLayer();
+  if (extraParams){
+    olLayer.getSource().updateParams(extraParams);
+  }
+  olLayer.setVisible(this.layer.visible);
+};
+
+proto.isVisible = function(){
+  return this.layer.visible;
+};
+
+proto.getQueryUrl = function(){
+  if (this.layer.infourl && this.layer.infourl != '') {
+    return this.layer.infourl;
+  }
+  return this.config.url;
+};
+
+proto.getQueryLayers = function(){
+  var queryLayers = [];
+  
+  if (Layer.isQueryable(this.layer)) {
+    queryLayers.push({
+      layerName: this.layer.name,
+      queryLayerName: Layer.getQueryLayerName(this.layer)
+    });
+  }
+  
+  return queryLayers;
 };
 
 proto._makeOlLayer = function(){
   var self = this;
   var wmsConfig = {
-    url: this.config.defaultUrl,
+    url: this.config.url,
     id: this.config.id,
     layers: this.layer.name,
     maxResolution: this.layer.maxresolution
@@ -70,47 +100,6 @@ proto._makeOlLayer = function(){
   });
   
   return olLayer
-};
-
-proto.addLayer = function(layerConfig){
-  this.layer = layerConfig;
-};
-
-proto.toggleLayer = function(layer){
-  var visible = this._olLayer.getVisible();
-  this._olLayer.setVisible(!visible);
-};
-  
-proto.update = function(extraParams){
-  var olLayer = this.getLayer();
-  if (extraParams){
-    olLayer.getSource().updateParams(extraParams);
-  }
-  olLayer.setVisible(this.layer.visible);
-};
-
-proto.isVisible = function(){
-  return this.layer.visible;
-};
-
-proto.getQueryUrl = function(){
-  if (this.layer.infourl && this.layer.infourl != '') {
-    return this.layer.infourl;
-  }
-  return this.config.defaultUrl;
-};
-
-proto.getQueryLayers = function(){
-  var queryLayers = [];
-  
-  if (Layer.isQueryable(this.layer)) {
-    queryLayers.push({
-      layerName: this.layer.name,
-      queryLayerName: Layer.getQueryLayerName(this.layer)
-    });
-  }
-  
-  return queryLayers;
 };
 
 module.exports = WMSSingleLayer;

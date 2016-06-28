@@ -5,7 +5,7 @@ var tools = {
   tools:  []
 };
 
-var mapcontrols = ['zoom','zoombox'];
+var mapcontrols = ['zoom','zoombox','query'];
 //var mapcontrols = ['zoom','zoombox','zoomtoextent','query'];
 
 var i18n = {

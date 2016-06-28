@@ -15,7 +15,6 @@ var EDITOPS = {
 
 function Layer(config){
   this.config = config || {};
-  this.id = config.id;
   base(this);
 }
 inherit(Layer,G3WObject);

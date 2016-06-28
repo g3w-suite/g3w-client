@@ -1,6 +1,7 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var Layer = require('./layer');
+var WMSLayer = require('./wmslayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
 function WMSMultiLayer(config,extraParams){
@@ -13,16 +14,8 @@ function WMSMultiLayer(config,extraParams){
   
   this._olLayer = null;
 }
-inherit(WMSMultiLayer,Layer)
+inherit(WMSMultiLayer,WMSLayer)
 var proto = WMSMultiLayer.prototype;
-
-proto.getLayer = function(){
-  var olLayer = this._olLayer;
-  if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer();
-  }
-  return olLayer;
-};
 
 proto.getLayerConfigs = function(){
   return this.layers;
@@ -30,29 +23,6 @@ proto.getLayerConfigs = function(){
 
 proto.getSource = function(){
   return this._olLayer.getSource();
-};
-
-proto.getId = function(){
-  return this.id;
-};
-
-proto._makeOlLayer = function(){
-  var self = this;
-  var wmsConfig = {
-    url: this.config.defaultUrl,
-    id: this.config.id
-  };
-  
-  var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
-  
-  olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
-  });
-  
-  return olLayer
 };
 
 proto.addLayer = function(layerConfig){
@@ -108,24 +78,40 @@ proto.getQueryUrl = function(){
   if (layer.infourl && layer.infourl != '') {
     return layer.infourl;
   }
-  return this.config.defaultUrl;
+  return this.config.url;
 };
 
-proto.getQueryLayers = function(){
-  
-  // DA REIMPLEMENTARE SULLA BASE DI WMSSingleLayer
-  
-  /*var layer = this.layers[0];
+proto.getQueryLayers = function(){ 
+  var layer = this.layers[0];
   var queryLayers = [];
   _.forEach(this.layers,function(layer){
-    if (layer.infolayer && layer.infolayer != '') {
-      queryLayers.push(layer.infolayer);
-    }
-    else {
-      queryLayers.push(layer.name);
+    if (Layer.isQueryable(layer)) {
+      queryLayers.push({
+        layerName: layer.name,
+        queryLayerName: Layer.getQueryLayerName(layer)
+      });
     }
   })
-  return queryLayers;*/
+  return queryLayers;
+};
+
+proto._makeOlLayer = function(){
+  var self = this;
+  var wmsConfig = {
+    url: this.config.url,
+    id: this.config.id
+  };
+  
+  var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
+  
+  olLayer.getSource().on('imageloadstart', function() {
+        self.emit("loadstart");
+      });
+  olLayer.getSource().on('imageloadend', function() {
+      self.emit("loadend");
+  });
+  
+  return olLayer
 };
 
 module.exports = WMSMultiLayer;

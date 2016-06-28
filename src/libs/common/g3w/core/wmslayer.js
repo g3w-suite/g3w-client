@@ -1,6 +1,6 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
-var Layer = require('./layer');
+var MapLayer = require('./maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
 function WMSLayer(options){
@@ -18,87 +18,41 @@ function WMSLayer(options){
   
   base(this,options);
 }
-inherit(WMSLayer,Layer)
+inherit(WMSLayer,MapLayer)
 var proto = WMSLayer.prototype;
 
-proto.getLayer = function(){
-  var olLayer;
-  if (!this._olLayer){
+proto.getOLLayer = function(){
+  var olLayer = this._olLayer;
+  if (!olLayer){
     olLayer = this._olLayer = this._makeOlLayer();
   }
   return olLayer;
 };
 
 proto.getSource = function(){
-  return this._olLayer.getSource();
+  return this.getOLLayer().getSource();
 };
 
-proto.getId = function(){
-  return this.id;
-};
+proto.toggleLayer = function(layer){};
 
-proto._makeOlLayer = function(){
-  var self = this;;
-  var wmsConfig = {
-    name: this.id,
-    url: this.options.url
-  };
+proto.addLayer = function(layerConfig){};
   
-  var olLayer = new RasterLayers.WMSLayer(wmsConfig);
-  
-  olLayer.getSource().on('imageloadstart', function() {
-        self.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', function() {
-      self.emit("loadend");
-  });
-  
-  return olLayer
+proto.update = function(){};
+
+proto.isVisible = function(){};
+
+proto.getInfoFormat = function() {
+  return 'application/vnd.ogc.gml';
 };
 
-proto.addLayer = function(layer){
-  this.addLayer(layer);
+proto.getGetFeatureInfoUrl = function(coordinate,resolution,epsg,params){
+  return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
 };
 
-proto.toggleLayer = function(layer){
-  _.forEach(this.layers,function(_layer){
-    if (_layer.id == layer.id){
-      _layer.visible = layer.visible;
-    }
-  });
-  this._updateLayers();
-};
-  
-proto.update = function(){
-  this._updateLayers();
-};
+proto.getQueryUrl = function(){};
 
-proto.addLayer = function(layerConfig){
-  this.layers.push(layerConfig);
-};
+proto.getQueryLayers = function(){};
 
-proto.getVisibleLayers = function(){
-  var visibleLayers = [];
-  _.forEach(this.layers,function(layer){
-    if (layer.visible){
-      visibleLayers.push(layer);
-    }    
-  })
-  return visibleLayers;
-}
-
-proto._updateLayers = function(){
-  var visibleLayers = this.getVisibleLayers();
-  if (visibleLayers.length > 0) {
-    this._olLayer.setVisible(true);
-    this._olLayer.getSource().updateParams({
-      LAYERS: _.join(_.map(visibleLayers,'name'),',')
-    });
-  }
-  else {
-    this._olLayer.setVisible(false);
-  }
-};
+proto._makeOlLayer = function(){};
 
 module.exports = WMSLayer;
-

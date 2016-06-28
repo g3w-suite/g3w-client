@@ -126,10 +126,14 @@ function MapQueryService() {
     var resolution = this.map.getView().getResolution();
     var epsg = this.map.getView().getProjection().getCode();
     var params = {
-      QUERY_LAYERS: mapLayer.getLayer().getSource().getParams()['LAYERS'],
-      INFO_FORMAT: 'application/vnd.ogc.gml'
+      QUERY_LAYERS: _.map(mapLayer.getQueryLayers(),'queryLayerName'),
+      INFO_FORMAT: mapLayer.getInfoFormat(),
+      // PARAMETRI DI TOLLERANZA PER QGIS SERVER
+      FI_POINT_TOLERANCE: 10,
+      FI_LINE_TOLERANCE: 10,
+      FI_POLYGON_TOLERANCE: 10      
     }
-    var url = mapLayer.getLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
+    var url = mapLayer.getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
     return url;
   };
 }

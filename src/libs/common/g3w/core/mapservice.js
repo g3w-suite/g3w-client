@@ -315,7 +315,7 @@ function MapService(){
       // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
       var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
       var config = {
-        defaultUrl: ProjectService.getWmsUrl(),
+        url: ProjectService.getWmsUrl(),
         id: layerId,
         tiled: tiled
       };
@@ -332,7 +332,7 @@ function MapService(){
     })
     
     _.forEach(_.values(this.mapLayers).reverse(),function(mapLayer){
-      self.viewer.map.addLayer(mapLayer.getLayer());
+      self.viewer.map.addLayer(mapLayer.getOLLayer());
       mapLayer.update(self.layersExtraParams);
     })
   };
