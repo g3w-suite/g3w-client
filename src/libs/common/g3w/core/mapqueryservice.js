@@ -2,6 +2,7 @@ var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var G3WObject = require('./g3wobject');
 var GUI = require('../gui/gui');
+var Geometry = require('./geometry');
 var ProjectService = require('./projectservice').ProjectService;
 
 function MapQueryService() {
@@ -82,12 +83,34 @@ function MapQueryService() {
 
         $.get(url).
         then(function(response){
+          var jsonresponse;
+          var x2js = new X2JS();
+          try {
+            if (_.isString(response)) {
+              jsonresponse = x2js.xml_str2json(response);
+            }
+            else {
+              jsonresponse = x2js.xml2json(response);
+            }
+          }
+          catch (e) {
+            d.reject(e);
+          }
+          var rootNode = _.keys(jsonresponse)[0];
+          var parser, data;
+          switch (rootNode) {
+            case 'FeatureCollection':
+              parser = self._parseLayerFeatureCollection;
+              data = jsonresponse;
+              break;
+            case "msGMLOutput":
+              parser = self._parseLayermsGMLOutput;
+              data = response;
+              break;
+          }
           var nfeatures = 0
           _.forEach(queryLayers,function(queryLayer){
-            var parser = new ol.format.WMSGetFeatureInfo({
-              layers: [queryLayer.queryLayerName]
-            });
-            var features = parser.readFeatures(response);
+            var features = parser.call(self,queryLayer,data)
             nfeatures += features.length;
             featuresForLayerNames[queryLayer.layerName] = features;
           })
@@ -103,6 +126,36 @@ function MapQueryService() {
     }
     
     return d.promise();
+  };
+  
+  // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection. OL3 li parserizza tutti insieme...
+  this._parseLayerFeatureCollection = function(queryLayer,data){
+    var features = [];
+    var layerName = queryLayer.queryLayerName;
+    var layerData = _.cloneDeep(data);
+    layerData.FeatureCollection.featureMember = [];
+    
+    var featureMembers = data.FeatureCollection.featureMember;
+    _.forEach(featureMembers,function(featureMember){
+      var isLayerMember = _.get(featureMember,layerName)
+
+      if (isLayerMember) {
+        layerData.FeatureCollection.featureMember.push(featureMember);
+      }
+    });
+    
+    var x2js = new X2JS();
+    var layerFeatureCollectionXML = x2js.json2xml_str(layerData);
+    var parser = new ol.format.WMSGetFeatureInfo();
+    return parser.readFeatures(layerFeatureCollectionXML);
+  };
+  
+  // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
+  this._parseLayermsGMLOutput = function(queryLayer,data){
+    var parser = new ol.format.WMSGetFeatureInfo({
+      layers: [queryLayer.queryLayerName]
+    });
+    return parser.readFeatures(data);
   };
   
   this.queryRect = function(rect,layerId) {

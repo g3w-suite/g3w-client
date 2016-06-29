@@ -78,11 +78,13 @@ proto.getQueryLayers = function(){
   _.forEach(this.layers,function(layer){
     if (LayerState.isQueryable(layer)) {
       queryLayers.push({
-        layerName: layer.name,
-        queryLayerName: LayerState.getQueryLayerName(layer)
+        layerName: LayerState.getWMSLayerName(layer),
+        queryLayerName: LayerState.getQueryLayerName(layer),
+        geometryType: LayerState.getGeometryType(layer),
+        attributes: LayerState.getAttributes(layer)
       });
     }
-  })
+  });
   return queryLayers;
 };
 

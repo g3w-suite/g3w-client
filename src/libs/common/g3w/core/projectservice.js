@@ -8,12 +8,6 @@ var ProjectTypes = {
   OGR: 'ogr'
 };
 
-var GeometryTypes = {
-  POINT: "Point",
-  LINESTRING: "Line",
-  POLYGON: "Polygon"
-};
-
 function ProjectService(){
   var self = this;
   this.config = null;
@@ -166,6 +160,5 @@ inherit(ProjectService,G3WObject);
 
 module.exports = {
   ProjectService: new ProjectService,
-  ProjectTypes: ProjectTypes,
-  GeometryTypes: GeometryTypes
+  ProjectTypes: ProjectTypes
 };
