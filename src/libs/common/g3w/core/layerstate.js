@@ -15,6 +15,14 @@ var EDITOPS = {
 
 LayerState = {};
 
+LayerState.ServerTypes = {
+  OGC: "OGC",
+  QGIS: "QGIS",
+  Mapserver: "Mapserver",
+  Geoserver: "Geoserver",
+  ArcGIS: "ArcGIS"
+}
+
 LayerState.isQueryable = function(layerState){
   var queryEnabled = false;
   var queryableForCababilities = (layerState.capabilities && (layerState.capabilities && CAPABILITIES.QUERY)) ? true : false;
@@ -34,6 +42,15 @@ LayerState.getQueryLayerName = function(layerState) {
     queryLayerName = layerState.name;
   }
   return queryLayerName;
+};
+
+LayerState.getServerType = function(layerState) {
+  if (layerState.servertype && layerState.servertype != '') {
+    return layerState.servertype;
+  }
+  else {
+    return LayerState.ServerTypes.QGIS;
+  }
 };
 
 LayerState.isExternalWMS = function(layerState) {
