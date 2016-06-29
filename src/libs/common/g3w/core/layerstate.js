@@ -36,4 +36,24 @@ LayerState.getQueryLayerName = function(layerState) {
   return queryLayerName;
 };
 
+LayerState.isExternalWMS = function(layerState) {
+  return (layerState.source && layerState.source.url);
+};
+
+LayerState.getWMSLayerName = function(layerState) {
+  var layerName = layerState.name;
+  if (layerState.source && layerState.source.layers){
+    layerName = layerState.source.layers
+  };
+  return layerName;
+};
+
+LayerState.getOriginURL = function(layerState) {
+  var url;
+  if (layerState.source && layerState.source.type == 'wms' && layerState.source.url){
+    url = layerState.source.url
+  };
+  return url;
+};
+
 module.exports = LayerState;

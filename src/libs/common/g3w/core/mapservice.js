@@ -11,8 +11,6 @@ var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
-var WMSSingleLayer = require('./wmssinglelayer');
-var WMSMultiLayer = require('./wmsmultilayer');
 var WMSLayer = require('./wmslayer');
 var MapQueryService = require('./mapqueryservice');
 
@@ -101,7 +99,7 @@ function MapService(){
   });
   
   ProjectService.onafter('setBaseLayer',function(){
-    self.updateMapLayers(this.mapBaseLayers);
+    self.updateMapLayers(self.mapBaseLayers);
   });
   
   this.setLayersExtraParams = function(params,update){
@@ -252,7 +250,7 @@ function MapService(){
         tiled: true
       };
       
-      var mapLayer = new WMSSingleLayer(config);
+      var mapLayer = new WMSLayer(config);
       self.registerListeners(mapLayer);
       
       mapLayer.addLayer(layer);
@@ -261,7 +259,7 @@ function MapService(){
     
     _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
       self.viewer.map.addLayer(mapLayer.getOLLayer());
-      mapLayer.update();
+      mapLayer.update(self.state);
     })
   };
   
@@ -281,7 +279,6 @@ function MapService(){
       return layer.multilayer;
     });
     _.forEach(multiLayers,function(layers,id){
-      var n = layers.length;
       var layerId = 'layer_'+id
       var mapLayer = _.get(self.mapLayers,layerId);
       var tiled = layers[0].tiled // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli

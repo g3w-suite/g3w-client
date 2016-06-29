@@ -1,5 +1,6 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
+var LayerState = require('./layerstate');
 var MapLayer = require('./maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
@@ -92,6 +93,12 @@ proto._makeOlLayer = function(){
     id: this.config.id
   };
   
+  var representativeLayer = this.layers[0]; //BRUTTO, DEVO PRENDERE UN LAYER A CASO (IL PRIMO) PER VEDERE SE PUNTA AD UN SOURCE DIVERSO (dovrebbe accadere solo per i layer singoli, WMS esterni)
+  
+  if (representativeLayer.source && representativeLayer.source.type == 'wms' && representativeLayer.source.url){
+    wmsConfig.url = representativeLayer.source.url;
+  };
+  
   var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
   
   olLayer.getSource().on('imageloadstart', function() {
@@ -114,7 +121,7 @@ proto._getVisibleLayers = function(mapState){
     }    
   })
   return visibleLayers;
-}
+};
 
 proto.checkLayerDisabled = function(layer,resolution) {
   var disabled = layer.disabled || false;
@@ -125,7 +132,7 @@ proto.checkLayerDisabled = function(layer,resolution) {
     layer.disabled = disabled && (layer.minresolution > resolution);
   }
   layer.disabled = disabled;
-}
+};
 
 proto.checkLayersDisabled = function(resolution){
   var self = this;
@@ -139,7 +146,9 @@ proto._updateLayers = function(mapState,extraParams){
   var visibleLayers = this._getVisibleLayers(mapState);
   if (visibleLayers.length > 0) {
     var params = {
-      LAYERS: _.join(_.map(visibleLayers,'name'),',')
+      LAYERS: _.join(_.map(visibleLayers,function(layer){
+        return LayerState.getWMSLayerName(layer);
+      }),',')
     };
     if (extraParams) {
       params = _.assign(params,extraParams);
