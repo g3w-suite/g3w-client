@@ -3,8 +3,8 @@ var Geometry = {};
 Geometry.GeometryTypes = {
   POINT: "Point",
   MULTIPOINT: "MultiPoint",
-  LINESTRING: "LineString",
-  MULTILINESTRING: "MultiLineString",
+  LINESTRING: "Line", // per seguire la definizione di QGis.GeometryType, che definisce Line invece di Linestring.
+  MULTILINESTRING: "MultiLine",
   POLYGON: "Polygon",
   MULTIPOLYGON: "MultiPolygon",
   GEOMETRYCOLLECTION: "GeometryCollection"
