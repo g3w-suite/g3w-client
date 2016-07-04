@@ -1,17 +1,11 @@
 var inherit = require('./utils').inherit;
 var base = require('./utils').base;
 var G3WObject = require('./g3wobject');
-var Layer = require('./layer.js');
+var LayerState = require('./layerstate.js');
 
 var ProjectTypes = {
   QDJANGO: 'qdjango',
   OGR: 'ogr'
-};
-
-var GeometryTypes = {
-  POINT: "Point",
-  LINESTRING: "Line",
-  POLYGON: "Polygon"
 };
 
 function ProjectService(){
@@ -119,7 +113,7 @@ function ProjectService(){
   this.getQueryableLayers = function(){
     var queryableLayers = [];
     _.forEach(this.getLayers(),function(layer){
-      if (Layer.isQueryable(layer)){
+      if (LayerState.isQueryable(layer)){
         queryableLayers.push(layer);
       }
     });
@@ -156,7 +150,7 @@ function ProjectService(){
   this.getLegendUrl = function(layer){
     var url = this.getWmsUrl(this.state);
     sep = (url.indexOf('?') > -1) ? '&' : '?';
-    return this.getWmsUrl(this.state)+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
+    return this.getWmsUrl(this.state)+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+layer.name;
   };
   
   base(this);
@@ -166,6 +160,5 @@ inherit(ProjectService,G3WObject);
 
 module.exports = {
   ProjectService: new ProjectService,
-  ProjectTypes: ProjectTypes,
-  GeometryTypes: GeometryTypes
+  ProjectTypes: ProjectTypes
 };

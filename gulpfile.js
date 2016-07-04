@@ -84,7 +84,7 @@ gulp.task('less',['fonts'], function () {
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/libs/common/g3w-base-app/style/less/skins/*.less')
+  return gulp.src('./src/libs/common/g3w-client-common/style/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
@@ -153,13 +153,13 @@ gulp.task('html', ['fonts'], function () {
 });
 
 gulp.task('watch',function() {
-    watch(['./src/app/style/*.less','./src/libs/common/g3w-base-app/style/*.less','./src/libs/common/g3w-base-app/style/less/*.less'],function(){
+    watch(['./src/app/style/*.less','./src/libs/common/g3w-client-common/style/*.less','./src/libs/common/g3w-client-common/style/less/*.less'],function(){
       gulp.start('less');
     });
-    watch(['./src/libs/common/g3w-base-app/less/skins/*.less'],function(){
+    watch(['./src/libs/common/g3w-client-common/less/skins/*.less'],function(){
       gulp.start('less-skins');
     });
-    watch(['./src/libs/common/g3w-base-app/less/skins/*.less'],function(){
+    watch(['./src/libs/common/g3w-client-common/less/skins/*.less'],function(){
       gulp.start('less-skins');
     });
     watch('./src/app/configs/*.js',function(){

@@ -20,9 +20,9 @@ var bootstrap = function (baseconfig){
   
   Vue.mixin(isMobileMixin);
   
-  var SidebarComponent = require('g3w-base-app/js/layout/sidebar').SidebarComponent;
-  var FloatbarComponent = require('g3w-base-app/js/layout/floatbar').FloatbarComponent;
-  var AppUI = require('g3w-base-app/js/app.ui');
+  var SidebarComponent = require('./js/layout/sidebar').SidebarComponent;
+  var FloatbarComponent = require('./js/layout/floatbar').FloatbarComponent;
+  var AppUI = require('./js/app.ui');
   
   var SideBar = SidebarComponent.extend({
     mixins: [isMobileMixin],
@@ -50,6 +50,7 @@ var bootstrap = function (baseconfig){
       initproject: baseconfig.group.initproject,
       baselayers: baseconfig.group.baselayers,
       crs: baseconfig.group.crs,
+      proj4: baseconfig.group.proj4,
       minscale: baseconfig.group.minscale,
       maxscale: baseconfig.group.maxscale,
       // richiesto da ProjectService

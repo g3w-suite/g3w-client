@@ -1,4 +1,4 @@
-var boostrap = require('g3w-base-app/bootstrap');
+var boostrap = require('g3w-client-common/bootstrap');
 var Nominatim = require('g3w/core/geocodingservice').Nominatim;
 var GeocodingListPanelComponent = require('g3w/gui/geocoding/listpanel');
 var ListPanel = require('g3w/gui/listpanel').ListPanel;

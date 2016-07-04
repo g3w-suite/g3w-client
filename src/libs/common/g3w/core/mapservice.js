@@ -5,14 +5,13 @@ var GUI = require('g3w/gui/gui');
 var ProjectsRegistry = require('./projectsregistry');
 var ProjectService = require('./projectservice').ProjectService;
 var ProjectTypes = require('./projectservice').ProjectTypes;
-var GeometryTypes = require('./projectservice').GeometryTypes;
+var GeometryTypes = require('./geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
-var WMSSingleLayer = require('./wmssinglelayer');
-var WMSMultiLayer = require('./wmsmultilayer');
+var WMSLayer = require('./wmslayer');
 var MapQueryService = require('./mapqueryservice');
 
 var PickToleranceParams = {};
@@ -68,10 +67,11 @@ function MapService(){
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
-      this.checkLayersDisabled(resolution);
+      this.updateMapLayers(this.mapLayers);
     },
     setupViewer: function(){
-      $script("http://epsg.io/"+ProjectService.state.project.crs+".js");
+      //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
+      proj4.defs("EPSG:"+ProjectService.state.project.crs,ProjectService.state.project.proj4);
       if (self.viewer) {
         this.viewer.destroy();
         this.viewer = null;
@@ -92,37 +92,20 @@ function MapService(){
   });
   
   ProjectService.onafter('setLayersVisible',function(layers){
-    _.forEach(layers,function(layer){
-      var mapLayer = self.getMapLayerForLayer(layer);
-      mapLayer.update();
+    var mapLayers = _.map(layers,function(layer){
+      return self.getMapLayerForLayer(layer);
     })
+    self.updateMapLayers(mapLayers);
   });
   
-  this.checkLayerDisabled = function(layer,resolution) {
-    var disabled = layer.disabled || false;
-    if (layer.maxresolution){
-      disabled = layer.maxresolution < resolution;
-    }
-    if (layer.minresolution){
-      layer.disabled = disabled && (layer.minresolution > resolution);
-    }
-    layer.disabled = disabled;
-  };
-  
-  this.checkLayersDisabled = function(resolution){
-    var self = this;
-    _.forEach(this.mapLayers,function(mapLayer){
-      _.forEach(mapLayer.getLayerConfigs(),function(layer){
-        self.checkLayerDisabled(layer,resolution);
-      }); 
-    })
-  };
-  
   ProjectService.onafter('setBaseLayer',function(){
-    _.forEach(self.mapBaseLayers,function(mapBaseLayer){
-      mapBaseLayer.update();
-    })
-  })
+    self.updateMapLayers(self.mapBaseLayers);
+  });
+  
+  this.setLayersExtraParams = function(params,update){
+    this.layersExtraParams = _.assign(this.layersExtraParams,params);
+    this.emit('extraParamsSet',params,update);
+  };
   
   this._setupViewer = function(){
     var extent = ProjectService.state.project.extent;
@@ -156,12 +139,6 @@ function MapService(){
         maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0
       }
     });
-    
-    //var view = this.viewer.map.getView();
-    /*view.on('change:resolution',function(e){
-      self.setViewBBOX(self.viewer.getBBOX());
-      self.setResolution(self.viewer.getResolution());
-    });*/
     
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
@@ -245,11 +222,6 @@ function MapService(){
     this.viewer.map.addControl(control);
   };
   
-  this.setLayersExtraParams = function(params,update){
-    this.layersExtraParams = _.assign(this.layersExtraParams,params);
-    this.emit('extraParamsSet',params,update);
-  };
-  
   this.setupBaseLayers = function(){
     if (!ProjectsRegistry.state.baseLayers){
       return;
@@ -273,12 +245,12 @@ function MapService(){
     
     baseLayersArray.forEach(function(layer){     
       var config = {
-        defaultUrl: ProjectService.getWmsUrl(),
+        url: ProjectService.getWmsUrl(),
         id: layer.id,
         tiled: true
       };
       
-      var mapLayer = new WMSSingleLayer(config);
+      var mapLayer = new WMSLayer(config);
       self.registerListeners(mapLayer);
       
       mapLayer.addLayer(layer);
@@ -286,8 +258,8 @@ function MapService(){
     });
     
     _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
-      self.viewer.map.addLayer(mapLayer.getLayer());
-      mapLayer.update();
+      self.viewer.map.addLayer(mapLayer.getOLLayer());
+      mapLayer.update(self.state);
     })
   };
   
@@ -307,32 +279,33 @@ function MapService(){
       return layer.multilayer;
     });
     _.forEach(multiLayers,function(layers,id){
-      var n = layers.length;
       var layerId = 'layer_'+id
       var mapLayer = _.get(self.mapLayers,layerId);
-      var tiled = layers[0].tiled // BRUTTISSIMO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
-      // se ho più layer per un dato metalayer significa... che si tratta effettivamente di un metalyer
-      var WMSLayerClass = n>1 ? WMSMultiLayer : WMSSingleLayer;
+      var tiled = layers[0].tiled // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
       var config = {
-        defaultUrl: ProjectService.getWmsUrl(),
+        url: ProjectService.getWmsUrl(),
         id: layerId,
         tiled: tiled
       };
-      mapLayer = self.mapLayers[layerId] = new WMSLayerClass(config,self.layersExtraParams);
+      mapLayer = self.mapLayers[layerId] = new WMSLayer(config,self.layersExtraParams);
       self.registerListeners(mapLayer);
       
       layers.forEach(function(layer){
-        // INIETTO QUA LA PROPRIETA' "disabled" per gestire i layer grigiati
-        var resolution = self.viewer.map.getView().getResolution();
-        self.checkLayerDisabled(layer,resolution);
         mapLayer.addLayer(layer);
         self.layersAssociation[layer.id] = layerId;
       });
     })
     
     _.forEach(_.values(this.mapLayers).reverse(),function(mapLayer){
-      self.viewer.map.addLayer(mapLayer.getLayer());
-      mapLayer.update(self.layersExtraParams);
+      self.viewer.map.addLayer(mapLayer.getOLLayer());
+      mapLayer.update(self.state,self.layersExtraParams);
+    })
+  };
+  
+  this.updateMapLayers = function(mapLayers) {
+    var self = this;
+    _.forEach(_.values(mapLayers),function(mapLayer){
+      mapLayer.update(self.state,self.layersExtraParams);
     })
   };
   
@@ -367,7 +340,7 @@ function MapService(){
     
     this.on('extraParamsSet',function(extraParams,update){
       if (update) {
-        mapLayer.update(extraParams);
+        mapLayer.update(this.state,extraParams);
       }
     })
   };
