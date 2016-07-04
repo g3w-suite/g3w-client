@@ -32,7 +32,7 @@ var production = false;
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/libs/","./src/libs/common/","./src/libs/modules/"],
+      paths: ["./src/app/js/","./src/g3w-sdk/"],
       debug: !production,
       cache: {},
       packageCache: {}
@@ -147,8 +147,6 @@ gulp.task('browser-sync', function() {
 gulp.task('html', ['fonts'], function () {
     return gulp.src('./src/index.html')
         .pipe(useref())
-        //.pipe(gulpif(production,gulpif('*.js', uglify())))
-        //.pipe(gulpif(production,gulpif('*.css', cleanCSS({processImport: false}))))
         .pipe(gulp.dest('dist'));
 });
 
