@@ -1,8 +1,8 @@
-var base = require('./utils').base;
-var inherit = require('./utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
+var base = require('core/utils/utils').base;
+var inherit = require('core/utils/utils').inherit;
+var G3WObject = require('core/g3wobject');
 
-var ToolsService = require('g3w/core/toolsservice');
+var ToolsService = require('core/plugin/toolsservice');
 
 function PluginsRegistry(){
   var self = this;

@@ -1,7 +1,7 @@
-var inherit = require('./utils/utils').inherit;
-var base = require('./utils/utils').base;
-var G3WObject = require('g3w-sdk/core/g3wobject');
-var rejectedValue = require('./utils/utils').rejectedValue;
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var rejectedValue = require('core/utils/utils').rejectedValue;
 
 function ApiService(){
   this._config = null;

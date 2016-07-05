@@ -1,5 +1,5 @@
-var inherit = require('g3w/core/utils').inherit;
-var noop = require('g3w/core/utils').noop;
+var inherit = require('core/utils/utils').inherit;
+var noop = require('core/utils/utils').noop;
 
 /**
  * Un oggetto base in grado di gestire eventuali setter e relativa catena di listeners.

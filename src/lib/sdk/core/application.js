@@ -1,11 +1,11 @@
-var inherit = require('./utils/utils').inherit;
-var base = require('./utils/utils').base;
-var G3WObject = require('./g3wobject');
-var ApiService = require('./apiservice');
-var ProjectsRegistry = require('./project/projectsregistry');
-var PluginsRegistry = require('./project/pluginsregistry');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var ApiService = require('core/apiservice');
+var ProjectsRegistry = require('core/project/projectsregistry');
+var PluginsRegistry = require('core/plugin/pluginsregistry');
 
-var ApplicationService = function(){
+var AppService = function(){
   var self = this;
   this.initialized = false;
   this._modalOverlay = null;
@@ -39,4 +39,4 @@ proto._bootstrap = function(){
   };
 };
 
-module.exports = new ApplicationService;
+module.exports = new AppService;

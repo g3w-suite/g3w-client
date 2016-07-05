@@ -1,7 +1,7 @@
-var inherit = require('./utils').inherit;
-var base = require('./utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var GeometryTypes = require('./geometry').GeometryTypes;
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 
 var CAPABILITIES = {
   QUERY: 1,

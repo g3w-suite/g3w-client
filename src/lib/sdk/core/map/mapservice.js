@@ -1,18 +1,19 @@
-var inherit = require('./utils').inherit;
-var base = require('./utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var GUI = require('g3w/gui/gui');
-var ProjectsRegistry = require('./projectsregistry');
-var ProjectService = require('./projectservice').ProjectService;
-var ProjectTypes = require('./projectservice').ProjectTypes;
-var GeometryTypes = require('./geometry').GeometryTypes;
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var ProjectsRegistry = require('core/project/projectsregistry');
+var ProjectService = require('core/project/projectservice').ProjectService;
+var ProjectTypes = require('core/project/projectservice').ProjectTypes;
+var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
-var WMSLayer = require('./wmslayer');
-var MapQueryService = require('./mapqueryservice');
+var WMSLayer = require('core/layer/wmslayer');
+var MapQueryService = require('core/map/mapqueryservice');
+
+//var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
 var PickToleranceParams = {};
 PickToleranceParams[ProjectTypes.QDJANGO] = {};

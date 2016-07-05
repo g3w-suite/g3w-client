@@ -1,7 +1,7 @@
-var i18ninit = require('i18n/i18n.service').init;
-var t = require('i18n/i18n.service').t;
-require('g3w-sdk/gui/vue.directives');
-var isMobileMixin = require('g3w-sdk/gui/vue.mixins').isMobileMixin;
+var i18ninit = require('core/i18n/i18n.service').init;
+var t = require('core/i18n/i18n.service').t;
+require('core/g3w-sdk/gui/vue.directives');
+var isMobileMixin = require('core/g3w-sdk/gui/vue.mixins').isMobileMixin;
 var layout = require('./js/layout/layout');
 var app = null;
 var ApplicationService = require('applicationservice');

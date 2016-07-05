@@ -1,5 +1,5 @@
-var inherit = require('./utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
+var inherit = require('core/utils/utils').inherit;
+var G3WObject = require('core/g3wobject');
 
 function Plugin(){
   this.id = "plugin";

@@ -1,9 +1,9 @@
-var inherit = require('./utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var resolvedValue = require('./utils').resolvedValue;
-var rejectedValue = require('./utils').rejectedValue;
-var ProjectService = require('./projectservice').ProjectService;
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var resolvedValue = require('core/utils/utils').resolvedValue;
+var rejectedValue = require('core/utils/utils').rejectedValue;
+var G3WObject = require('core/g3wobject');
+var ProjectService = require('core/project/projectservice').ProjectService;
 
 /* service
 Funzione costruttore contentente tre proprieta':

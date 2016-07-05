@@ -1,7 +1,7 @@
-var inherit = require('./utils').inherit;
-var base = require('./utils').base;
-var LayerState = require('./layerstate');
-var MapLayer = require('./maplayer');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var LayerState = require('core/layer/layerstate');
+var MapLayer = require('core/map/maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
 
 function WMSLayer(options,extraParams){

@@ -1,8 +1,8 @@
-var inherit = require('g3w/core/utils').inherit;
-var truefnc = require('g3w/core/utils').truefnc;
-var resolvedValue = require('g3w/core/utils').resolvedValue;
-var rejectedValue = require('g3w/core/utils').rejectedValue;
-var G3WObject = require('g3w/core/g3wobject');
+var inherit = require('core/utils/utils').inherit;
+var truefnc = require('core/utils/utils').truefnc;
+var resolvedValue = require('core/utils/utils').resolvedValue;
+var rejectedValue = require('core/utils/utils').rejectedValue;
+var G3WObject = require('core/g3wobject');
 
 function VectorLayer(config){
   var config = config || {};

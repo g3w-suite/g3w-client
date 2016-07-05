@@ -1,9 +1,10 @@
-var inherit = require('./utils').inherit;
-var base = require('./utils').base;
-var G3WObject = require('./g3wobject');
-var GUI = require('../gui/gui');
-var Geometry = require('./geometry');
-var ProjectService = require('./projectservice').ProjectService;
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var Geometry = require('core/geometry/geometry');
+var ProjectService = require('core/project/projectservice').ProjectService;
+
+//var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
 function MapQueryService() {
   base(this);
