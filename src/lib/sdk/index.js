@@ -26,7 +26,8 @@ g3w.core = {
 };
 
 g3w.gui = {
-  Geocoding: require('gui/components/geocoding/geocoding')
+  //Geocoding: require('gui/components/geocoding/geocoding'),
+  Search: require('gui/components/search/search')
 }
 
 (function (exports) {

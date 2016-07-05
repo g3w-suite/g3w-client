@@ -1,12 +1,12 @@
 var templateConfig = {
   navbar: [
 	  {
-	    geocode: require('sdk/sdk').gui.Geocoding
+	    //geocode: require('sdk/sdk').gui.Geocoding
 	  }
   ],
 	sidebar: [
 	  {
-	    //search: require('sdk/gui/components/search/search')
+	    search: require('sdk/sdk').gui.Search
 	  },
 	  {
 	    //catalog: require('sdk/gui/components/catalog/catalog')
