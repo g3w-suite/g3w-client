@@ -26,20 +26,24 @@ var server =  {
     }
 };
 
-var templates =  {
+/*var templates =  {
   app:  require('../templates/app.html'),
   sidebar:  require('../templates/sidebar.html'),
   floatbar:  require('../templates/floatbar.html'),
 };
+*/
+
+var templateConfig = require('../template/templateconfig');
+// vado qui eventualmente a customizzare la configurazione del template
 
 module.exports = {
   client: client,
   server: server,
-  templates: templates,
+  template: templateConfig,
   plugins:  plugins,
   tools:  tools,
   map: {
     controls: mapcontrols
   },
-  i18n: i18n
+  i18n: i18n,
 };

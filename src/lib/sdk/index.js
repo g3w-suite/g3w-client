@@ -25,6 +25,10 @@ g3w.core = {
    ToolsService: require('core/plugin/toolsservice')
 };
 
+g3w.gui = {
+  Geocoding: require('gui/components/geocoding/geocoding')
+}
+
 (function (exports) {
     'use strict';
     if (typeof define === 'function' && define.amd) {

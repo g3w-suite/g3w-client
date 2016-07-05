@@ -32,7 +32,7 @@ var production = false;
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/js/","./src/g3w-sdk/"],
+      paths: ["./src/app/js/","./src/lib/"],
       debug: !production,
       cache: {},
       packageCache: {}

@@ -1,8 +1,8 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var ProjectService = require('g3w/core/projectservice').ProjectService;
-var MapService = require('g3w/core/mapservice');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var ProjectService = require('core/project/projectservice').ProjectService;
+var MapService = require('core/map/mapservice');
 
 function Nominatim(){
   var self = this;

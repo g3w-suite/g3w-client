@@ -1,6 +1,6 @@
-noop = require('g3w/core/utils').noop;
-var inherit = require('g3w/core/utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
+noop = require('core/utils/utils').noop;
+var inherit = require('core/utils/utils').inherit;
+var G3WObject = require('core/g3wobject');
 
 // rappresenta l'interfaccia globale dell'API della GUI. 
 // metodi devono essere implementati (definiti) dall'applicazione ospite
