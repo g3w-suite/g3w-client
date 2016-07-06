@@ -28,7 +28,7 @@ var bootstrap = function (baseconfig){
   });
   Vue.component('sidebar',SidebarComponent);
   Vue.component('floatbar',FloatbarComponent);
-  Vue.component('app',AppUI);
+  Vue.component('app', AppUI);
   
   function createConfig(config){
     return {
