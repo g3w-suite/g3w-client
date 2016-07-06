@@ -1,7 +1,7 @@
-var t = require('i18n/i18n.service').t;
-require('g3w/gui/catalog/catalog');
-require('g3w/gui/search/search');
-require('g3w/gui/tools/tools');
+var t = require('sdk/core/i18n/i18n.service').t;
+require('sdk/gui/components/catalog/catalog');
+require('sdk/gui/components/search/search');
+require('sdk/gui/components/tools/tools');
 var Stack = require('./barstack.js');
 
 function SidebarService(){
@@ -28,6 +28,7 @@ function SidebarService(){
 var sidebarService = new SidebarService();
 
 var SidebarComponent = Vue.extend({
+    template: require('../html/sidebar.html'),
     data: function() {
     	return {
         panels: sidebarService.stack.state.panels,
@@ -63,7 +64,7 @@ var SidebarComponent = Vue.extend({
 
 Vue.component('sidebar-item',{
 	props: ['data-icon','data-label','data-type','open-on-start'],
-  template: require('./templates/sidebar-item.html'),
+  template: require('../html/sidebar-item.html'),
   data: function() {
     return {
         main: true,

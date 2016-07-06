@@ -1,5 +1,5 @@
-var t = require('i18n/i18n.service').t;
-var ToolsService = require('g3w/core/toolsservice');
+var t = require('core/i18n/i18n.service').t;
+var ToolsService = require('./toolsservice');
 
 Vue.component('g3w-tools',{
     template: require('./tools.html'),

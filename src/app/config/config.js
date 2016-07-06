@@ -33,9 +33,9 @@ var server =  {
 };
 */
 
-var templateConfig = require('template/template').template.TemplateConfiguration;
+var templateConfig = require('template/js/templateconfiguration');
 //inserisco l'elemento catalog
-//templateConfig.catalog = require('sdk/sdk').gui.Catalog;
+templateConfig.catalog = require('sdk/gui/components/catalog/catalog');
 // vado qui eventualmente a customizzare la configurazione del template
 
 module.exports = {

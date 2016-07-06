@@ -4,7 +4,6 @@ require('sdk/gui/vue.directives');
 var isMobileMixin = require('sdk/gui/vue.mixins').isMobileMixin;
 var layout = require('./layout');
 var app = null;
-//var ApplicationService = require('applicationservice');
 
 var bootstrap = function (baseconfig){
   i18ninit(baseconfig.i18n);
@@ -22,23 +21,14 @@ var bootstrap = function (baseconfig){
   
   var SidebarComponent = require('./sidebar').SidebarComponent;
   var FloatbarComponent = require('./floatbar').FloatbarComponent;
-  var AppUI = require('./js/app.ui');
+  var AppUI = require('./applicationui');
   
   var SideBar = SidebarComponent.extend({
-    mixins: [isMobileMixin],
-    template: baseconfig.templates.sidebar,
+    mixins: [isMobileMixin]
   });
-  Vue.component('sidebar',SideBar);
-  
-  var FloatBar = FloatbarComponent.extend({
-    template: baseconfig.templates.floatbar,
-  });
-  Vue.component('floatbar',FloatBar);
-  
-  var UI = AppUI.extend({
-    template: baseconfig.templates.app,
-  });
-  Vue.component('app',UI);
+  Vue.component('sidebar',SidebarComponent);
+  Vue.component('floatbar',FloatbarComponent);
+  Vue.component('app',AppUI);
   
   function createConfig(config){
     return {
@@ -76,14 +66,7 @@ var bootstrap = function (baseconfig){
       }
     });
   };
-  
   layout.loading();
-  
-  // i servizi sono stati inizializzati, posso avviare l'istanza Vue
-  appService.on('ready',function(){
-    run();
-  });
-  
   // se sto caricando dal client g3w-admin initconfig è già inlined
   if (window.initConfig) {
     baseconfig.server.urls.staticurl = initConfig.staticurl;
@@ -97,7 +80,7 @@ var bootstrap = function (baseconfig){
       baseconfig.server.urls.staticurl = initconfig.staticurl;
       baseconfig.group = initconfig.group;
       var config = createConfig(config);
-      appService.init(config);
+      run()
     })
   }
 };

@@ -1,6 +1,6 @@
-var t = require('i18n/i18n.service').t;
+var t = require('sdk/core/i18n/i18n.service').t;
 var Stack = require('./barstack.js');
-var GUI = require('g3w/gui/gui');
+var GUI = require('sdk/gui/gui');
 
 function FloatbarService(){
   this.stack = new Stack();
@@ -62,6 +62,7 @@ function FloatbarService(){
 var floatbarService = new FloatbarService();
 
 var FloatbarComponent = Vue.extend({
+    template: require('../html/floatbar.html'),
     data: function() {
     	return {
         stack: floatbarService.stack.state,

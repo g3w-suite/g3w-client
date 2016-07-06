@@ -20,20 +20,25 @@
   <script src="./lib/sdk/ext/ol3/ol.js"></script>
   <script src="./lib/sdk/ext/vue/dist/vue.min.js"></script>
   <!-- endbuild -->
-  <script src="./lib/sdk/sdk.js"></script>
-  <!--TEMPLATE-->
-  <script src="./app/template/template.js"></script>
+  <!-- build:js g3w-client/js/template.ext.min.js -->
+  <script src="./app/template/ext/jquery-i18next/jquery-i18next.min.js"></script>
+  <script src="./app/template/ext/jquery-ui/jquery-ui.min.js"></script>
+  <script src="./app/template/ext/bootstrap/js/bootstrap.min.js"></script>
+  <script src="./app/template/ext/ismobile/ismobile.min.js"></script>
+  <script src="./app/template/ext/i18next/i18next.min.js"></script>
+  <script src="./app/template/ext/i18next/i18nextXHRBackend.min.js"></script>
+  <script src="./app/template/ext/icheck/icheck.min.js"></script>
+  <script src="./app/template/ext/bootstrap-treeview/js/bootstrap-treeview.js"></script>
+  <script src="./app/template/ext/slimScroll/jquery.slimscroll.min.js"></script>
+  <script src="./app/template/ext/fastclick/fastclick.js"></script>
+  <script src="./app/template/ext/vue-validator.min.js"></script>
+  <script src="./app/template/ext/script/script.min.js"></script>
+  <!-- endbuild -->
   <!-- build:remove -->
   <script src="./app/config/local.initconfig.js"></script>
   <!-- endbuild -->
   <!-- build:js g3w-client/js/app.min.js -->
   <script src="../build/js/app.js"></script>
   <!-- endbuild -->
-  <script>
-    var mapservice = g3wsdk.core.MapService;
-    console.log(mapservice);
-    var templateconfig = g3wtemplate.template.TemplateConfiguration;
-    console.log(templateconfig);
-  </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
-var inherit = require('g3w/core//utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
-var WidgetsService = require('g3w/core/widgetsservice');
-var GUI = require('g3w/gui/gui');
+var inherit = require('core/utils/utils').inherit;
+var G3WObject = require('core/g3wobject');
+var WidgetsService = require('core/widgetsservice');
+var GUI = require('gui/gui');
 var Panel = require('./searchpanel');
 function SearchesService(){
   var self = this;

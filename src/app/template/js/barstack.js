@@ -1,5 +1,5 @@
-var inherit = require('g3w/core/utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
+var inherit = require('sdk/core/utils/utils').inherit;
+var G3WObject = require('sdk/core/g3wobject');
 
 function BarStack(){
   this._panels = [];

@@ -5,13 +5,10 @@ var GUI = require('g3w/gui/gui.js');
 var ViewportService = require('g3w/gui/view/viewport');
 require('g3w/gui/geocoding/geocoding');
 require('g3w/gui/vue.directives');
-
 var layout = require('./layout/layout');
 var SidebarService = require('./js/sidebar').SidebarService;
 var FloatbarService = require('./js/floatbar').FloatbarService;
-
 var ApplicationService = require('lib/sdk/core/application');
-
 var BaseUI = Vue.extend({
     ready: function(){
       /* start to render LayoutManager layout */
