@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- build:css g3w-client/css/app.min.css -->
+  <link rel="stylesheet" href="../build/css/app.css">
+  <link rel="stylesheet" href="../build/css/skins/skin-blue.css">
+  <!-- endbuild -->
 </head>
 <body class="hold-transition skin-blue">
    <app :iface="iface"></app>
@@ -19,7 +23,12 @@
   <script src="./lib/sdk/sdk.js"></script>
   <!--TEMPLATE-->
   <script src="./app/template/template.js"></script>
-
+  <!-- build:remove -->
+  <script src="./app/config/local.initconfig.js"></script>
+  <!-- endbuild -->
+  <!-- build:js g3w-client/js/app.min.js -->
+  <script src="../build/js/app.js"></script>
+  <!-- endbuild -->
   <script>
     var mapservice = g3wsdk.core.MapService;
     console.log(mapservice);

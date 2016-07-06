@@ -1,10 +1,10 @@
-var i18ninit = require('core/i18n/i18n.service').init;
-var t = require('core/i18n/i18n.service').t;
-require('core/g3w-sdk/gui/vue.directives');
-var isMobileMixin = require('core/g3w-sdk/gui/vue.mixins').isMobileMixin;
-var layout = require('./js/layout/layout');
+var i18ninit = require('sdk/core/i18n/i18n.service').init;
+var t = require('sdk/core/i18n/i18n.service').t;
+require('sdk/gui/vue.directives');
+var isMobileMixin = require('sdk/gui/vue.mixins').isMobileMixin;
+var layout = require('./layout');
 var app = null;
-var ApplicationService = require('applicationservice');
+//var ApplicationService = require('applicationservice');
 
 var bootstrap = function (baseconfig){
   i18ninit(baseconfig.i18n);
@@ -20,8 +20,8 @@ var bootstrap = function (baseconfig){
   
   Vue.mixin(isMobileMixin);
   
-  var SidebarComponent = require('./js/layout/sidebar').SidebarComponent;
-  var FloatbarComponent = require('./js/layout/floatbar').FloatbarComponent;
+  var SidebarComponent = require('./sidebar').SidebarComponent;
+  var FloatbarComponent = require('./floatbar').FloatbarComponent;
   var AppUI = require('./js/app.ui');
   
   var SideBar = SidebarComponent.extend({

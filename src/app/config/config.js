@@ -41,7 +41,7 @@ var templateConfig = require('template/template').template.TemplateConfiguration
 module.exports = {
   client: client,
   server: server,
-  template: templateConfig,
+  templateConfig: templateConfig,
   plugins:  plugins,
   tools:  tools,
   map: {

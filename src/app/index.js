@@ -1,6 +1,11 @@
 var config = require('./config/config.js');
-//var Application = require('sdk/sdk').core.Application;
-var Template = ('./template/template');
+//var ApplicationService = require('sdk/sdk').core.Application;
+var ApplicationService = {};
+var ApplicationTemplate = require('./template/template').template.ApplicationTemplate;
+//istanzio l'appication template
+ApplicationTemplate = new ApplicationTemplate();
+//passo la configurazione del template e l'applicationService che fornisce API del progetto
+ApplicationTemplate.init(config.templateConfig, ApplicationService);
 
 //rimasto da codice precedente. Da togliere?
 

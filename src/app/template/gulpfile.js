@@ -24,8 +24,6 @@ var watchify = require('watchify');
 var stringify = require('stringify');
 var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
-
-
 var production = false;
 
 gulp.task('browserify', [], function(done) {
