@@ -19,6 +19,11 @@ var templateConfiguration = {
     {
       result: {}
     }
+  ],
+  viewport:[
+    {
+      map:
+    }
   ]
 };
 

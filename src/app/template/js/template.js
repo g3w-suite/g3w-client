@@ -8,7 +8,11 @@ var ApplicationTemplate = function(){
   };
   this._buildTemplate = function() {
     bootstrap(this.config);
-    console.log(this.config.templateConfig);
+    var templateConfig = this.config.templateConfig;
+    _.forEach(templateConfig, function(component, placeholder){
+      console.log(placeholder);
+      console.log(component);
+    })
     var app = new Vue({
       el: 'body',
       ready: function(){
