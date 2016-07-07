@@ -1,5 +1,5 @@
 var bootstrap = require('./bootstrap');
-var ApplicationTemplate = function(){
+var ApplicationTemplate = function() {
   this.config = {};
   this.init = function(config, ApplicationService) {
     this.config = config;

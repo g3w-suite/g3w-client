@@ -22,7 +22,7 @@ var templateConfiguration = {
   ],
   viewport:[
     {
-      map:
+      map: {}
     }
   ]
 };
