@@ -1,5 +1,5 @@
-var GUI = require('g3w/gui/gui');
-var MapService = require('g3w/core/mapservice');
+var GUI = require('gui/gui');
+var MapService = require('core/mapservice');
 
 var GeocodingListPanelComponent = Vue.extend({
   template: require('./listpanel.html'),

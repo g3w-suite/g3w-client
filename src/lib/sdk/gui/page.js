@@ -1,8 +1,8 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var GUI = require('g3w/gui/gui.js');
-var RouterService = require('g3w/core/router');
+var inherit = require('core/utils').inherit;
+var base = require('core/utils').base;
+var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
+var RouterService = require('core/router');
 
 var Page = function(parentView,config){
   this.parentView = parentView;

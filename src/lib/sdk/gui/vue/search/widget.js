@@ -1,10 +1,11 @@
-var inherit = require('g3w/core/utils').inherit;
-var resolvedValue = require('g3w/core/utils').resolvedValue;
-var rejectedValue = require('g3w/core/utils').rejectedValue;
-var ProjectsRegistry = require('g3w/core/projectsregistry');
-var GUI = require('g3w/gui/gui');
-var G3WWidget = require('g3w/core/widget');
-var SearchPanel = require('./searchpanel')
+var inherit = require('core/utils').inherit;
+var resolvedValue = require('core/utils').resolvedValue;
+var rejectedValue = require('core/utils').rejectedValue;
+var ProjectsRegistry = require('core/projectsregistry');
+var GUI = require('gui/gui');
+var G3WWidget = require('core/widget');
+
+var SearchPanel = require('./searchpanel');
 
 function SearchWidget() {
   self = this;

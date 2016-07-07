@@ -1,8 +1,8 @@
-var resolvedValue = require('g3w/core/utils').resolvedValue;
-var rejectedValue = require('g3w/core/utils').rejectedValue;
-var GUI = require('g3w/gui/gui');
-var ProjectService = require('g3w/core/projectservice').ProjectService;
-var MapService = require('g3w/core/mapservice');
+var resolvedValue = require('core/utils').resolvedValue;
+var rejectedValue = require('core/utils').rejectedValue;
+var GUI = require('gui/gui');
+var ProjectService = require('core/projectservice').ProjectService;
+var MapService = require('core/mapservice');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);

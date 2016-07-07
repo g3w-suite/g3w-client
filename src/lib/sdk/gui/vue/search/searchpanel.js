@@ -1,10 +1,10 @@
 var localize = require('i18n/i18n.service').t;
-var resolvedValue = require('g3w/core/utils').resolvedValue;
-var GUI = require('g3w/gui/gui');
-var SearchQueryService = require('g3w/core/searchqueryservice');
-var ListPanel = require('g3w/gui/listpanel').ListPanel;
-var SearchResultPanelComponent = require('g3w/gui/search/results/resultpanel');
-var ProjectService = require('g3w/core/projectservice').ProjectService;
+var resolvedValue = require('core/utils').resolvedValue;
+var GUI = require('gui/gui');
+var SearchQueryService = require('core/searchqueryservice');
+var ListPanel = require('gui/listpanel').ListPanel;
+var SearchResultPanelComponent = require('gui/search/results/resultpanel');
+var ProjectService = require('core/projectservice').ProjectService;
 
 function Panel(){
   self = this;
