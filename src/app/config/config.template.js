@@ -2,29 +2,35 @@
 // elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
 //Sarà l'applicazione a scegliere di riempire gli elementi
 var templateConfiguration = {
-  navbar: [
-	  {
+  navbar: {
+	  components: [
 	    geocode: {}
-	  }
-  ],
-	sidebar: [
-	  {
-	    search: {}
-	  },
-	  {
-	    catalog: {}
-	  }
-  ],
-  floatbar: [
-    {
-      result: {}
-    }
-  ],
-  viewport:[
-    {
-      map: {}
-    }
-  ]
+	  ]
+	},
+	sidebar: {
+	  components: [
+      {
+        search: {}
+      },
+      {
+        catalog: {}
+      }
+    ]
+  },
+  floatbar: {
+    components: [
+      {
+        result: {}
+      }
+    ]
+  },
+  viewport:{
+    components: [
+      {
+        map: {}
+      }
+    ]
+  }
 };
 
 module.exports = templateConfiguration;
