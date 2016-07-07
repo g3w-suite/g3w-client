@@ -47,7 +47,7 @@ gulp.task('browserify', [], function(done) {
       //browserSync.notify(err.message, 3000);
       //browserSync.reload();
       this.emit('end');
-      del(['./template.js']).then(function(){
+      del(['./build/template.js']).then(function(){
         process.exit();
       });
     })
