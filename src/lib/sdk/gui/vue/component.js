@@ -1,5 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
-var BaseComponent = require('gui.component');
+var BaseComponent = require('gui/component');
 
 var Component = function() {
   self = this;

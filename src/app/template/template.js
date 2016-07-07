@@ -3,4 +3,4 @@ g3w.template = {
   ApplicationTemplate: require('./js/template'),
 };
 
-module.exports = g3w;
+module.exports = g3w.template;

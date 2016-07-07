@@ -31,4 +31,7 @@ g3w.gui = {
   Catalog: require('gui/components/catalog/catalog')
 };
 
-module.exports = g3w;
+module.exports = {
+  core: g3w.core,
+  gui: g3w.gui
+};
