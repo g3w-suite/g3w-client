@@ -32,10 +32,7 @@ var production = false;
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
-      //aggiunto ./src/app/template e ./src/lib/sdk in modo da poter utilizzare
-      // il require all'internno di template e sdk folder(repo) quando saranno
-      //compilati stand alone -- FATTO CAZZATA?
-      paths: ["./src/app/", "./src/app/template", "./src/lib/", "./src/lib/sdk"],
+      paths: ["./src/app/", "./src/lib/"],
       debug: !production,
       cache: {},
       packageCache: {}
