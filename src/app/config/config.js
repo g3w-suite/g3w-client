@@ -1,3 +1,5 @@
+var apptitle = "G3W Client";
+
 var plugins = {
 };
 
@@ -33,6 +35,7 @@ var server =  {
 };*/
 
 module.exports = {
+  apptitle: apptitle,
   client: client,
   server: server,
   plugins:  plugins,

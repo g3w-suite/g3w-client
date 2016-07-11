@@ -11,18 +11,19 @@ function SidebarService(){
     this.layout = layout;
   };
   
-  this.showPanel = function(panel){
-    this.stack.push(panel,"#g3w-sidebarpanel-placeholder");
+  this.addComponent = function(component){
+    var parent = $("#g3w-sidebarpanel-placeholder");
+    this.stack.push(component,parent);
   };
   
-  this.closePanel = function(){
+  this.removeComponent = function(){
     var panel = this.stack.pop();
     if (panel){
       if (_.hasIn(panel,"$destroy")){
         panel.$destroy();
       }
     }
-  }
+  };
 }
 
 var sidebarService = new SidebarService();

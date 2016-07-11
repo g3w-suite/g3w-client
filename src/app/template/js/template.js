@@ -1,74 +1,135 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 require('sdk/gui/vue/vue.directives');
 var isMobileMixin = require('sdk/gui/vue/vue.mixins').isMobileMixin;
+
+var sidebar = require('./sidebar');
+var floatbar = require('./sidebar');
+var AppUI = require('./applicationui');
 var layout = require('./layout');
 
-
-/* TUTTO QUESTO CODICE ERA NEL BOOTSTRAP. LO DEVE GESTIRE IL TEMPLATE 
-Vue.filter('t', function (value) {
-  return t(value);
-});
-
-if (config.client.debug){
-  Vue.config.debug = true;
-}
-
-Vue.mixin(isMobileMixin);
-
-var SidebarComponent = require('./sidebar').SidebarComponent;
-var FloatbarComponent = require('./floatbar').FloatbarComponent;
-var AppUI = require('./applicationui');
-
-var SideBar = SidebarComponent.extend({
-  mixins: [isMobileMixin]
-});
-Vue.component('sidebar',SidebarComponent);
-Vue.component('floatbar',FloatbarComponent);
-Vue.component('app', AppUI);
-
-
-
-//inizializza la vue appicazione
-function run(){
-  app = new Vue({
-    el: 'body',
-    ready: function(){
-      $(document).localize();
-    }
-  });
-};
+// forse da trovare un posto migliore per attivare lo spinner iniziale...
 layout.loading();
-*/
 
-var ApplicationTemplate = function() {
-  this.config = {};
-  this.init = function(config, ApplicationService) {
-    this.config = config;
-    this.appService = ApplicationService;
-    this._setupLayout();
-    this._buildTemplate();
-  };
+var ApplicationTemplate = function(templateConfig, ApplicationService) {
+  this.templateConfig = templateConfig;
+  this.appService = ApplicationService;
+  this._setupInterface();
+  this._setupLayout();
+  this._buildTemplate();
   
-  this._setupLayout = function(){
-    layout.setup();
-  }
-  
-  this._buildTemplate = function() {
-    bootstrap(this.config);
-    var templateConfig = this.config.templateConfig;
-    _.forEach(templateConfig, function(component, placeholder){
-      console.log(placeholder);
-      console.log(component);
-      var parent = null; // il parent del componente, recuperato in qualche modo, es. via jQuery selector, o altro
-      component.mount(parent);
-    })
+  this._setupLayout = function(){    
+    Vue.filter('t', function (value) {
+      return t(value);
+    });
+
+    if (config.client.debug){
+      Vue.config.debug = true;
+    }
+
+    Vue.mixin(isMobileMixin);
+
+    var SidebarComponent = require('./sidebar').SidebarComponent;
+    var FloatbarComponent = require('./floatbar').FloatbarComponent;
+    var AppUI = require('./applicationui');
+
+    var SideBar = SidebarComponent.extend({
+      mixins: [isMobileMixin]
+    });
+    Vue.component('sidebar',sidebar.SidebarComponent);
+    Vue.component('floatbar',floatbar.FloatbarComponent);
+    Vue.component('app', AppUI);
+
+    //inizializza l'applicazione Vue
     var app = new Vue({
       el: 'body',
       ready: function(){
         $(document).localize();
       }
     });
+  }
+  
+  this._buildTemplate = function() {
+    var self = this;
+    var placeholdersConfig = this.templateConfig.placeholders;
+    _.forEach(placeholdersConfig, function(component, placeholder){
+      self._addComponent(placeholder,component);
+    })
   };
+  
+  this._addComponent = function(placeholder,component) {
+    if (ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1){
+      var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
+      if (placeholderService) {
+        placeholderService.addComponent(component);
+      }
+    }
+  };
+  
+  this._removeComponent = function(plceholder,componentId) {
+  };
+  
+  this._setupinterface = function() {
+    /* DEFINIZIONE INTERFACCIA PUBBLICA */
+    
+    /* Metodi comuni a tutti i template */
+    
+    GUI.addComponent = _.bind(this._addComponent,this);
+    GUI.removeComponent = _.bind(this._removeComponent,this);
+    
+    /* Metodi da definire (tramite binding) */
+    GUI.getResourcesUrl = _.bind(function() {
+      return this.appService.config.resourcesurl;
+    },this);
+    GUI.showForm = function() {};
+    GUI.closeForm = function() {};
+    GUI.showList = function() {};
+    GUI.closeList = function() {};
+    GUI.showTable = function() {};
+    GUI.closeTable = function() {};
+    GUI.showPanel = function() {};
+    
+    toastr.options.positionClass = 'toast-top-center';
+    toastr.options.preventDuplicates = true;
+    // proxy della libreria toastr
+    GUI.notify = toastr;
+    // proxy della libreria bootbox
+    GUI.dialog = bootbox;
+    
+    GUI.showSpinner = function() {};
+    GUI.hideSpinner = function() {};
+    
+    /* fine metodi comuni */
+    
+    
+    /* Metodi specifici del template */
+    
+    GUI.showFloatbar = function() {};
+    GUI.hideFloatbar = function() {};
+    
+    GUI.showSidebar = function() {};
+    GUI.hideSidebar = function() {};
+    
+    /* fine metodi specifici */
+    
+    /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */
+  };
+  
+};
+
+ApplicationTemplate.PLACEHOLDERS = [
+  'navbar',
+  'sidebar',
+  'map',
+  'content',
+  'floatbar'
+];
+
+ApplicationTemplate.PlaceholdersServices = {
+  navbar: null,
+  sidebar: sidebar.SidebarService,
+  map: null,
+  content: null,
+  floatbar: sidebar.FloatbarService,
 };
 
 module.exports =  ApplicationTemplate;

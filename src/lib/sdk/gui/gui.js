@@ -6,7 +6,7 @@ var G3WObject = require('core/g3wobject');
 // metodi devono essere implementati (definiti) dall'applicazione ospite
 // l'app ospite dovrebbe chiamare anche la funzione GUI.ready() quando la UI è pronta
 function GUI(){
-  // url delle risorse
+  // url delle risorse (immagini, ecc.)
   this.getResourcesUrl = noop;
   // show a Vue form
   this.showForm = noop;
@@ -30,11 +30,8 @@ function GUI(){
   this.showSpinner = noop; // per mostrare un'icona spinner che notifica un caricamento dati in corso
   this.hideSpinner = noop;
   
-  toastr.options.positionClass = 'toast-top-center';
-  toastr.options.preventDuplicates = true;
-  // proxy della libreria toastr
-  this.notify = toastr;
-  this.dialog = bootbox;
+  this.notify = noop;
+  this.dialog = noop;
 }
 inherit(GUI,G3WObject);
 

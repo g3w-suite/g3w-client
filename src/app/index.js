@@ -6,6 +6,7 @@ var config = require('./config/config.js');
 
 function createApplicationConfig() {  
   return {
+    apptitle: config.apptitle || '',
     debug: config.client.debug || false,
     group: config.group,
     urls: config.server.urls,
@@ -35,33 +36,31 @@ function createApplicationConfig() {
   };
 };
 
-
+// questa è la configurazione base del template che conterrà tutti gli
+// elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
+// Sarà l'applicazione a scegliere di riempire gli elementi
 function createTemplateConfig(){
   var CatalogComponent = require('sdk').gui.vue.VueCatalogComponent;
   
   return {
-    navbar: {
-      components: []
-    },
-    sidebar: {
-      components: [
-        new CatalogComponent,
-      ]
-    },
-    floatbar: {
-      components: []
-    },
-    viewport:{
-      components: []
+    title: config.apptitle,
+    placeholders: {
+      navbar: {
+        components: []
+      },
+      sidebar: {
+        components: [
+          new CatalogComponent,
+        ]
+      },
+      map: null, // placeholder della mappa principale (view map)  inizialmente Vista Primaria
+      content: null, // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+      floatbar:{
+        components: []
+      }
     }
   };
 }
-
-
-// questo è la configurazione base del template che conterrà tutti gli
-// elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
-//Sarà l'applicazione a scegliere di riempire gli elementi
-
 
 function obtainInitConfig(){
   var d = $.Deferred();

@@ -2,23 +2,23 @@ var inherit = require('sdk/core/utils/utils').inherit;
 var G3WObject = require('sdk/core/g3wobject');
 
 function BarStack(){
-  this._panels = [];
+  this._components = [];
   this.state = {
-    panels: []
+    components: []
   };
 }
 inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 
-proto.push = function(panel,container){
+proto.push = function(component,parent){
   var self = this;
-  panel.onShow(container)
+  component.mount(parent)
   .then(function(){
-    self._panels.push(panel);
-    self.state.panels.push({
-      id: panel.id,
-      name: panel.name
+    self._components.push(panel);
+    self.state.components.push({
+      id: component.getId(),
+      name: component.getName()
     });
   });
 };
@@ -26,11 +26,11 @@ proto.push = function(panel,container){
 proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
   var self = this;
-  var panel = this._panels.slice(-1)[0];
-  panel.onClose()
+  var component = this._components.slice(-1)[0];
+  component.unmount()
   .then(function(){
-    self.state.panels.pop();
-    self._panels.pop();
+    self.state.component.pop();
+    self._components.pop();
   });
 };
 
