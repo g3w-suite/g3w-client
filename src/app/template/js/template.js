@@ -45,8 +45,14 @@ var ApplicationTemplate = function() {
   this.init = function(config, ApplicationService) {
     this.config = config;
     this.appService = ApplicationService;
+    this._setupLayout();
     this._buildTemplate();
   };
+  
+  this._setupLayout = function(){
+    layout.setup();
+  }
+  
   this._buildTemplate = function() {
     bootstrap(this.config);
     var templateConfig = this.config.templateConfig;

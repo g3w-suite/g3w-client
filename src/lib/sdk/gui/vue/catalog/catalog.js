@@ -184,7 +184,7 @@ inherit(CatalogComponent,Component);
 var proto = CatalogComponent.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.mount = function(container){
+proto.mount = function(parent){
   var panel = this.vueComponent = new InternalComponent();
   panel.$mount().$appendTo(container);
   return resolve(true);

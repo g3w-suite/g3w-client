@@ -25,7 +25,7 @@ proto.getTitle() = function(){
  * parentEl: elemento DOM padre, su cui inserirsi; 
  * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
 */
-proto.mount() = function(parentEl){};
+proto.mount() = function(parent){};
 
 /*
  * Metodo richiamato quando si vuole rimuovere il componente.
