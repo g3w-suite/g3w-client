@@ -25,7 +25,13 @@ proto.getTitle() = function(){
  * parentEl: elemento DOM padre, su cui inserirsi; 
  * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
 */
-proto.onMount() = function(parentEl){};
+proto.mount() = function(parentEl){};
+
+/*
+ * Metodo richiamato quando si vuole rimuovere il componente.
+ * Ritorna una promessa che sarà risolta nel momento in cui il componente avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
+*/
+proto.unmount() = function(){};
 
 /* 
  * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
@@ -35,15 +41,5 @@ proto.onMount() = function(parentEl){};
 */
 proto.onResize() = function(parentWidth,parentHeight){};
 
-/* 
- * Metodo richiamato quando il componente viene nascosto
-*/
-proto.onHide() = function(){};
-
-/*
- * Metodo richiamato quando si vuole rimuovere il componente.
- * Ritorna una promessa che sarà risolta nel momento in cui il componente avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
-*/
-proto.onUnmount() = function(){};
 
 module.exports = Component;
