@@ -10,11 +10,11 @@ inherit(Component,G3WObject);
 
 var proto = Component.prototype;
 
-proto.getId() = function(){
+proto.getId = function(){
   return self.id;
 };
 
-proto.getTitle() = function(){
+proto.getTitle = function(){
   return self.title;
 };
 
@@ -25,13 +25,13 @@ proto.getTitle() = function(){
  * parentEl: elemento DOM padre, su cui inserirsi; 
  * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
 */
-proto.mount() = function(parent){};
+proto.mount = function(parent){};
 
 /*
  * Metodo richiamato quando si vuole rimuovere il componente.
  * Ritorna una promessa che sarà risolta nel momento in cui il componente avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
 */
-proto.unmount() = function(){};
+proto.unmount = function(){};
 
 /* 
  * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
@@ -39,7 +39,7 @@ proto.unmount() = function(){};
  * parentWidth: nuova larghezza del parent
  * richiamato ogni volta che il parent subisce un ridimensionamento
 */
-proto.onResize() = function(parentWidth,parentHeight){};
+proto.onResize = function(parentWidth,parentHeight){};
 
 
 module.exports = Component;

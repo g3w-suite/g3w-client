@@ -1,6 +1,6 @@
 var t = require('sdk/core/i18n/i18n.service').t;
-require('sdk/gui/vue.directives');
-var isMobileMixin = require('sdk/gui/vue.mixins').isMobileMixin;
+require('sdk/gui/vue/vue.directives');
+var isMobileMixin = require('sdk/gui/vue/vue.mixins').isMobileMixin;
 var layout = require('./layout');
 
 

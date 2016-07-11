@@ -41,33 +41,18 @@ function createTemplateConfig(){
   
   return {
     navbar: {
-      components: [
-        geocode: {}
-      ]
+      components: []
     },
     sidebar: {
       components: [
-        {
-          search: {}
-        },
-        {
-          catalog: new CatalogComponent
-        }
+        new CatalogComponent,
       ]
     },
     floatbar: {
-      components: [
-        {
-          result: {}
-        }
-      ]
+      components: []
     },
     viewport:{
-      components: [
-        {
-          map: {}
-        }
-      ]
+      components: []
     }
   };
 }

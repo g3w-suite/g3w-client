@@ -1,9 +1,9 @@
 var t = require('core/i18n/i18n.service').t;
 var GUI = require('gui/gui');
-var GeocodingService = require('gui/components/geocoding/geocodingservice');
+var GeocodingService = require('./geocodingservice');
 
 Vue.component("geocoder",{
-  template: require("gui/components/geocoding/geocoding.html"),
+  template: require("./geocoding.html"),
   props: ['type'],
   data: function(){
     return {

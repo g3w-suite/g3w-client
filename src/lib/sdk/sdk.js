@@ -3,7 +3,7 @@ var g3w = g3w || {};
 g3w.core = {
    G3WObject: require('core/g3wobject'),
    utils: require('core/utils/utils'),
-   Application: require('core/application'),
+   ApplicationService: require('core/applicationservice'),
    ApiService: require('core/apiservice'),
    Router: require('core/router'),
    ProjectsRegistry: require('core/project/projectsregistry'),
@@ -26,9 +26,9 @@ g3w.core = {
 };
 
 g3w.gui = {
-  VueGeocodingComponent: require('gui/components/vue/geocoding/geocoding'),
-  VueSearchComponent: require('gui/components/vue/search/search'),
-  VueCatalogComponent: require('gui/components/vue/catalog/catalog')
+  VueGeocodingComponent: require('gui/vue/geocoding/geocoding'),
+  VueSearchComponent: require('gui/vue/search/search'),
+  VueCatalogComponent: require('gui/vue/catalog/catalog')
 };
 
 module.exports = {
