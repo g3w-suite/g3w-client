@@ -1,7 +1,7 @@
 var inherit = require('g3w/core/utils').inherit;
 var base = require('g3w/core/utils').base;
-var resolvedValue = require('g3w/core/utils').resolvedValue;
-var rejectedValue = require('g3w/core/utils').rejectedValue;
+var resolve = require('g3w/core/utils').resolve;
+var reject = require('g3w/core/utils').reject;
 var G3WObject = require('g3w/core/g3wobject');
 var MapService = require('g3w/core/mapservice');
 var VectorLayer = require('g3w/core/vectorlayer');
@@ -313,7 +313,7 @@ proto.getRelationsWithAttributes = function(feature){
           });
         });
         
-        fieldsPromise = resolvedValue(relations);
+        fieldsPromise = resolve(relations);
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
       else {
@@ -322,7 +322,7 @@ proto.getRelationsWithAttributes = function(feature){
     }
   }
   else {
-    fieldsPromise = resolvedValue(null);
+    fieldsPromise = resolve(null);
   }
   return fieldsPromise;
 };

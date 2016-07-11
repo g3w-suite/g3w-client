@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var resolvedValue = require('core/utils/utils').resolvedValue;
-var rejectedValue = require('core/utils/utils').rejectedValue;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var ProjectService = require('core/project/projectservice').ProjectService;
 
@@ -122,7 +122,7 @@ proto.getProject = function(projectGid){
     }
   })
   if (!project) {
-    return rejectedValue("Project doesn't exist");
+    return reject("Project doesn't exist");
   }
 
   var isFullFilled = !_.isNil(project.layers);

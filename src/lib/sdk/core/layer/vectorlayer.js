@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var truefnc = require('core/utils/utils').truefnc;
-var resolvedValue = require('core/utils/utils').resolvedValue;
-var rejectedValue = require('core/utils/utils').rejectedValue;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 
 function VectorLayer(config){
@@ -234,7 +234,7 @@ proto.getRelationsWithAttributes = function(fid){
         field.value = null;
       })
     });
-    return resolvedValue(relations);
+    return resolve(relations);
   }
   else {
     if (this.lazyRelations){

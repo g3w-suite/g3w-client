@@ -131,13 +131,13 @@ var utils = {
   
   falsefnc: function(){return true},
   
-  resolvedValue: function(value){
+  resolve: function(value){
     var deferred = $.Deferred();
     deferred.resolve(value);
     return deferred.promise();
   },
   
-  rejectedValue: function(value){
+  reject: function(value){
     var deferred = $.Deferred();
     deferred.reject(value);
     return deferred.promise();

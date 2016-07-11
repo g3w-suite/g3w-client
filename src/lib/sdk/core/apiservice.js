@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var rejectedValue = require('core/utils/utils').rejectedValue;
+var reject = require('core/utils/utils').reject;
 
 function ApiService(){
   this._config = null;
@@ -55,7 +55,7 @@ function ApiService(){
       });
     }
     else {
-      return rejectedValue();
+      return reject();
     }
   };
   

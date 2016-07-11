@@ -1,5 +1,5 @@
-var resolvedValue = require('core/utils').resolvedValue;
-var rejectedValue = require('core/utils').rejectedValue;
+var resolve = require('core/utils').resolve;
+var reject = require('core/utils').reject;
 var GUI = require('gui/gui');
 var ProjectService = require('core/projectservice').ProjectService;
 var MapService = require('core/mapservice');
@@ -105,14 +105,14 @@ proto.onShow = function(container){
   this._setupFields();
   var panel = this._setupPanel();
   this._mountPanel(panel,container);
-  return resolvedValue(true);
+  return resolve(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 proto.onClose = function(){
   this.panelComponent.$destroy(true);
   this.panelComponent = null;
-  return resolvedValue(true);
+  return resolve(true);
 };
 
 proto._isNew = function(){

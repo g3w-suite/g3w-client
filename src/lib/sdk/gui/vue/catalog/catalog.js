@@ -1,35 +1,43 @@
 var t = require('core/i18n/i18n.service').t;
+var resolve = require('core/utils/utils').resolve;
+var Component = require('gui/vue/component');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectService = require('core/project/projectservice').ProjectService;
 
-Vue.component('g3w-catalog',{
-    template: require('./catalog.html'),
-    data: function() {
-      return {
-        state: ProjectService.state
-      }
-    },
-    computed: {
-      layerstree: function(){
-        return this.state.project.layerstree;
-      },
-      baselayers: function(){
-        return this.state.baseLayers;
-      },
-      hasBaseLayers: function(){
-        return this.state.baseLayers.length>0;
-      }
-    },
-    methods: {
-      setBaseLayer: function(id) {
-        ProjectService.setBaseLayer(id);
-      }
-    },
-    ready: function() {
-      //
+var vueComponentOptions = {
+  template: require('./catalog.html'),
+  data: function() {
+    return {
+      state: ProjectService.state
     }
-});
+  },
+  computed: {
+    layerstree: function(){
+      return this.state.project.layerstree;
+    },
+    baselayers: function(){
+      return this.state.baseLayers;
+    },
+    hasBaseLayers: function(){
+      return this.state.baseLayers.length>0;
+    }
+  },
+  methods: {
+    setBaseLayer: function(id) {
+      ProjectService.setBaseLayer(id);
+    }
+  }
+}
+
+// se lo voglio istanziare manualmente
+var InternalComponent = Vue.extend(vueComponentOptions);
+
+// se lo voglio usare come componente come elemento html
+Vue.component('g3w-catalog',vueComponentOptions);
+
+
+/* COMPONENTI FIGLI */
 
 // tree component
 Vue.component('tristate-tree', {
@@ -161,4 +169,32 @@ Vue.component('legend-item',{
       //GUI.showForm();
     }
   }
-})
+});
+/* FINE COMPONENTI FIGLI */
+
+
+/* INTERFACCIA PUBBLICA */
+function CatalogComponent(options){
+  base(this,options);
+  
+  this.id = "iternet-editing-panel";
+  this.title = "Gestione dati ITERNET";
+}
+inherit(CatalogComponent,Component);
+var proto = CatalogComponent.prototype;
+
+// viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
+proto.mount = function(container){
+  var panel = this.vueComponent = new InternalComponent();
+  panel.$mount().$appendTo(container);
+  return resolve(true);
+};
+
+// richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
+proto.unmount = function(){
+  self.vueComponent.$destroy(true);
+  self.panelComponent = null;
+  return resolve();
+};
+
+module.exports = CatalogComponent;

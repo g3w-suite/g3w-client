@@ -1,6 +1,6 @@
 var inherit = require('core/utils').inherit;
-var resolvedValue = require('core/utils').resolvedValue;
-var rejectedValue = require('core/utils').rejectedValue;
+var resolve = require('core/utils').resolve;
+var reject = require('core/utils').reject;
 var ProjectsRegistry = require('core/projectsregistry');
 var GUI = require('gui/gui');
 var G3WWidget = require('core/widget');
@@ -16,7 +16,7 @@ function SearchWidget() {
     _.forEach(config, function(element){
       self.elements.push(element);
     })
-    return resolvedValue();
+    return resolve();
   };
   //metodo messo come esempio da plugin iternet
   this.showSearchFormPanel = function(){

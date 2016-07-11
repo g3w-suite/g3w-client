@@ -1,5 +1,5 @@
 var localize = require('i18n/i18n.service').t;
-var resolvedValue = require('core/utils').resolvedValue;
+var resolve = require('core/utils').resolve;
 var GUI = require('gui/gui');
 var SearchQueryService = require('core/searchqueryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
@@ -80,7 +80,7 @@ proto.onShow = function(container){
   var panel = this.panelComponent = this.createPanel();
   panel.$mount().$appendTo(container);
   localize();
-  return resolvedValue(true);
+  return resolve(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso

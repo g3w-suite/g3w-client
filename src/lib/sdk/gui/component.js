@@ -3,8 +3,8 @@ var G3WObject = require('core/g3wobject');
 var Component = function(options) {
   self = this;
   
-  self.id = options.id;
-  self.title = options.title;
+  self.id = options.id || null;
+  self.title = options.title || '';
 };
 inherit(Component,G3WObject);
 
