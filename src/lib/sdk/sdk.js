@@ -26,9 +26,9 @@ g3w.core = {
 };
 
 g3w.gui = {
-  Geocoding: require('gui/components/geocoding/geocoding'),
-  Search: require('gui/components/search/search'),
-  Catalog: require('gui/components/catalog/catalog')
+  VueGeocodingComponent: require('gui/components/vue/geocoding/geocoding'),
+  VueSearchComponent: require('gui/components/vue/search/search'),
+  VueCatalogComponent: require('gui/components/vue/catalog/catalog')
 };
 
 module.exports = {

@@ -59,6 +59,8 @@ var ApplicationTemplate = function() {
     _.forEach(templateConfig, function(component, placeholder){
       console.log(placeholder);
       console.log(component);
+      var parent = null; // il parent del componente, recuperato in qualche modo, es. via jQuery selector, o altro
+      component.mount(parent);
     })
     var app = new Vue({
       el: 'body',

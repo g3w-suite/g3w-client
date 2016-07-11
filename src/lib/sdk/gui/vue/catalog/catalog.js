@@ -178,7 +178,7 @@ function CatalogComponent(options){
   base(this,options);
   
   this.id = "iternet-editing-panel";
-  this.title = "Gestione dati ITERNET";
+  this.title = "Catalogo dati";
 }
 inherit(CatalogComponent,Component);
 var proto = CatalogComponent.prototype;
