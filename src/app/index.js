@@ -2,7 +2,7 @@ var i18ninit = require('sdk').core.i18n.i18n.service.init;
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
 
 var config = require('./config/config.js');
-var TemplateConfig = ('./config/config.template.js');
+var templateConfig = ('./config/config.template.js');
 var ApplicationTemplate = require('./template/js/template');
 
 bootstrap = function(){
@@ -69,7 +69,7 @@ ApplicationService.on('ready',function(){
   //istanzio l'appication template
   applicationTemplate = new ApplicationTemplate();
   //passo la configurazione del template e l'applicationService che fornisce API del progetto
-  applicationTemplate.init(ApplicationService,TemplateConfig);
+  applicationTemplate.init(ApplicationService,templateConfig);
 });
 
 bootstrap();

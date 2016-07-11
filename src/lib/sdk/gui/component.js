@@ -1,9 +1,49 @@
 var G3WObject = require('core/g3wobject');
 
-var Component = function() {
+var Component = function(options) {
   self = this;
+  
+  self.id = options.id;
+  self.title = options.title;
+};
+inherit(Component,G3WObject);
+
+var proto = Component.prototype;
+
+proto.getId() = function(){
+  return self.id;
 };
 
-inherit(Component,G3WObject);
+proto.getTitle() = function(){
+  return self.title;
+};
+
+/* HOOKS */
+
+/* 
+ * Il metodo permette al componente di montarsi nel DOM
+ * parentEl: elemento DOM padre, su cui inserirsi; 
+ * ritorna una promise, risolta nel momento in cui sarà terminato il montaggio
+*/
+proto.onMount() = function(parentEl){};
+
+/* 
+ * Metodo (opzionale) che offre l'opportunità di ricalcolare proprietà dipendenti dalle dimensioni del padre
+ * parentHeight: nuova altezza del parent
+ * parentWidth: nuova larghezza del parent
+ * richiamato ogni volta che il parent subisce un ridimensionamento
+*/
+proto.onResize() = function(parentWidth,parentHeight){};
+
+/* 
+ * Metodo richiamato quando il componente viene nascosto
+*/
+proto.onHide() = function(){};
+
+/*
+ * Metodo richiamato quando si vuole rimuovere il componente.
+ * Ritorna una promessa che sarà risolta nel momento in cui il componente avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
+*/
+proto.onUnmount() = function(){};
 
 module.exports = Component;
