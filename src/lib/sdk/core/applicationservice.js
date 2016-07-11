@@ -5,7 +5,7 @@ var ApiService = require('core/apiservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
 
-var AppService = function(){
+var ApplicationService = function(){
   var self = this;
   this.initialized = false;
   this._modalOverlay = null;
@@ -16,7 +16,7 @@ var AppService = function(){
 };
 inherit(AppService,G3WObject);
 
-var proto = AppService.prototype;
+var proto = ApplicationService.prototype;
 
 proto.init = function(config){
   this.config = config;
@@ -39,4 +39,4 @@ proto._bootstrap = function(){
   };
 };
 
-module.exports = new AppService;
+module.exports = new ApplicationService;

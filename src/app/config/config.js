@@ -18,12 +18,12 @@ var client =  {
 };
 
 var server =  {
-    urls:  {
-      ows:  '/ows',
-      api:  '/api',
-      config:  '/api/config',
-      staticurl:  ''
-    }
+  urls:  {
+    ows:  '/ows',
+    api:  '/api',
+    config:  '/api/config',
+    staticurl:  ''
+  }
 };
 
 /*var templates =  {
