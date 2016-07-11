@@ -1,38 +1,8 @@
 var i18ninit = require('sdk').core.i18n.i18n.service.init;
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
-
-var config = require('./config/config.js');
-var templateConfig = ('./config/config.template.js');
 var ApplicationTemplate = require('./template/js/template');
 
-bootstrap = function(){
-  i18ninit(config.i18n);
-
-  obtainInitConfig()
-  .then(function(initConfig){
-    config.server.urls.staticurl = initconfig.staticurl;
-    config.group = initconfig.group;
-    
-      var applicationConfig = createApplicationConfig();
-      
-      ApplicationService.init(applicationConfig);
-  })
-}
-
-function obtainInitConfig(){
-  var d = $.Deferred();
-  if (window.initConfig) {
-    return d.resolve(window.initConfig);
-  }
-  // altrimenti devo aspettare che local.initconfig.js abbia caricato l'initconfig
-  else{
-    $(document).on('initconfigReady',function(e,initconfig){
-      return d.resolve(initconfig);
-    })
-  }
-  return d.promise();
-}
-
+var config = require('./config/config.js');
 
 function createApplicationConfig() {  
   return {
@@ -63,15 +33,84 @@ function createApplicationConfig() {
     views: config.views || {},
     map: config.map
   };
+};
+
+
+function createTemplateConfig(){
+  var CatalogComponent = require('sdk').gui.vue.VueCatalogComponent;
+  
+  return {
+    navbar: {
+      components: [
+        geocode: {}
+      ]
+    },
+    sidebar: {
+      components: [
+        {
+          search: {}
+        },
+        {
+          catalog: new CatalogComponent
+        }
+      ]
+    },
+    floatbar: {
+      components: [
+        {
+          result: {}
+        }
+      ]
+    },
+    viewport:{
+      components: [
+        {
+          map: {}
+        }
+      ]
+    }
+  };
+}
+
+
+// questo è la configurazione base del template che conterrà tutti gli
+// elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
+//Sarà l'applicazione a scegliere di riempire gli elementi
+
+
+function obtainInitConfig(){
+  var d = $.Deferred();
+  if (window.initConfig) {
+    return d.resolve(window.initConfig);
+  }
+  // altrimenti devo aspettare che local.initconfig.js abbia caricato l'initconfig
+  else{
+    $(document).on('initconfigReady',function(e,initconfig){
+      return d.resolve(initconfig);
+    })
+  }
+  return d.promise();
 }
 
 ApplicationService.on('ready',function(){
   //istanzio l'appication template
   applicationTemplate = new ApplicationTemplate();
+  var templateConfig = createTemplateConfig();
   //passo la configurazione del template e l'applicationService che fornisce API del progetto
   applicationTemplate.init(ApplicationService,templateConfig);
 });
 
-bootstrap();
+bootstrap = function(){
+  i18ninit(config.i18n);
+
+  obtainInitConfig()
+  .then(function(initConfig){
+    config.server.urls.staticurl = initconfig.staticurl;
+    config.group = initconfig.group;
+    
+      var applicationConfig = createApplicationConfig();
+      ApplicationService.init(applicationConfig);
+  })
+}();
 
 
