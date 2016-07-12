@@ -15,7 +15,7 @@ var proto = Component.prototype;
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(parent){
   var panel = this.vueComponent = new this.InternalComponent();
-  panel.$mount().$appendTo(container);
+  panel.$mount().$appendTo(parent);
   return resolve(true);
 };
 
