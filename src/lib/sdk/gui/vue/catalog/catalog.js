@@ -43,7 +43,7 @@ var InternalComponent = Vue.extend(vueComponentOptions);
 
 // tree component
 
-/*
+
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props: {
@@ -174,7 +174,7 @@ Vue.component('legend-item',{
     }
   }
 });
-*/
+
 /* FINE COMPONENTI FIGLI */
 
 

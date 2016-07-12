@@ -17,10 +17,10 @@ function SidebarService(){
   };
   
   this.removeComponent = function(){
-    var panel = this.stack.pop();
-    if (panel){
-      if (_.hasIn(panel,"$destroy")){
-        panel.$destroy();
+    var component = this.stack.pop();
+    if (component){
+      if (_.hasIn(component,"$destroy")){
+        component.$destroy();
       }
     }
   };
