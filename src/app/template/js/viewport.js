@@ -46,7 +46,7 @@ var ViewportService = function(){
     this.setPrimaryView('map')
 
     // monto la mappa
-    //mapComponent.mount($(state,views.map.id));
+    mapComponent.mount($(mapView.$el));
     // monto il contentx
     //contentxComponent.mount($(state.views.contentx.id));
   }

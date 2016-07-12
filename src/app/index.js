@@ -40,7 +40,8 @@ function createApplicationConfig() {
 // elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
 // Sarà l'applicazione a scegliere di riempire gli elementi
 function createTemplateConfig(){
-  var CatalogComponent = require('sdk').gui.vue.VueCatalogComponent;
+  var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
+  var MapComponent = require('sdk').gui.vue.MapComponent;
   
   return {
     title: config.apptitle,
@@ -53,15 +54,16 @@ function createTemplateConfig(){
           new CatalogComponent({}),
         ]
       },
-      map: {
+      content: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
         components: []
-      }, // placeholder della mappa principale (view map)  inizialmente Vista Primaria
-      content: {
-        components: []
-      }, // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+      }, 
       floatbar:{
         components: []
       }
+    },
+    viewport: {
+      map: MapComponent,
+      contentx: null
     }
   };
 }

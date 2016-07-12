@@ -3,6 +3,7 @@ var G3WObject = require('core/g3wobject');
 
 var Component = function(options) {
   self = this;
+  var options = options || {};
   self.id = options.id || null;
   self.title = options.title || '';
 };

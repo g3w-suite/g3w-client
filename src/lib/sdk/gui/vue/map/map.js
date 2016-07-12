@@ -1,8 +1,11 @@
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
 var t = require('core/i18n/i18n.service').t;
+var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');   
 var Component = require('gui/vue/component');
 var RouterService = require('core/router');
-var MapService = require('core/mapservice');
+var MapService = require('core/map/mapservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 
 function mainHeight(){
@@ -84,9 +87,7 @@ var InternalComponent = {
       
     })
   }
-
-var MapViewComponent = Vue.component('g3w-map',
-});
+}
 
 function MapComponent(options){
   base(this,options);
@@ -95,5 +96,12 @@ function MapComponent(options){
   this.InternalComponent = InternalComponent;
 }
 inherit(MapComponent, Component);
+
+var proto = MapComponent.prototype;
+
+proto.mount = function(parent) {
+  parent.append($("<div id=map><br><br><br>QUI CI SARA' UNA MAPPA...</div>"));
+  return resolve();
+}
 
 module.exports = new MapComponent;

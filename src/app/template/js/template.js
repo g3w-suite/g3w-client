@@ -58,7 +58,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         self._addComponent(placeholder, component);
       });
     });
-    ViewportService.init()
+    var mapComponent = this.templateConfig.viewport.map;
+    ViewportService.init(mapComponent);
   };
   
   this._addComponent = function(placeholder,component) {

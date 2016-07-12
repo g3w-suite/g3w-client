@@ -4,7 +4,6 @@ var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var BaseComponent = require('gui/component');
 
-
 var Component = function(options) {
   base(this,options);
   this.InternalComponent = null;
