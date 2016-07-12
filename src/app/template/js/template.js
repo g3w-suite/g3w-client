@@ -1,6 +1,5 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 require('sdk/gui/vue/vue.directives');
-var isMobileMixin = require('sdk/gui/vue/vue.mixins').isMobileMixin;
 var GUI = require('sdk/gui/gui');
 // temporaneo per far funzionare le cose
 var config = {
@@ -8,7 +7,7 @@ var config = {
 };
 
 var sidebar = require('./sidebar');
-var floatbar = require('./sidebar');
+var floatbar = require('./floatbar');
 var AppUI = require('./applicationui');
 var layout = require('./layout');
 
@@ -18,38 +17,32 @@ layout.loading();
 var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this.templateConfig = templateConfig;
   this.ApplicationService = ApplicationService;
+  
   this.init = function() {
     this._setupInterface();
     this._setupLayout();
-    this._buildTemplate();
   };
-  this._setupLayout = function(){    
+  
+  this._setupLayout = function(){  
     Vue.filter('t', function (value) {
       return t(value);
     });
-
-    if (config.client.debug){
-      Vue.config.debug = true;
-    }
-
-    Vue.mixin(isMobileMixin);
 
     var SidebarComponent = require('./sidebar').SidebarComponent;
     var FloatbarComponent = require('./floatbar').FloatbarComponent;
     var AppUI = require('./applicationui');
 
-    var SideBar = SidebarComponent.extend({
-      mixins: [isMobileMixin]
-    });
     Vue.component('sidebar',sidebar.SidebarComponent);
     Vue.component('floatbar',floatbar.FloatbarComponent);
     Vue.component('app', AppUI);
 
     //inizializza l'applicazione Vue
+    var template = this;  
     var app = new Vue({
       el: 'body',
       ready: function(){
         $(document).localize();
+        //template._buildTemplate();
       }
     });
   }

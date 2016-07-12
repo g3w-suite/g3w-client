@@ -2,7 +2,6 @@ var i18ninit = require('sdk').core.i18n.init;
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
 var ApplicationTemplate = require('./template/js/template');
 
-
 var config = require('./config/config.js');
 
 function createApplicationConfig() {  

@@ -20,6 +20,9 @@ var proto = ApplicationService.prototype;
 
 proto.init = function(config){
   this.config = config;
+  if (config.debug){
+    Vue.config.debug = true;
+  }
   this._bootstrap();
 };
 

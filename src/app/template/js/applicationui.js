@@ -1,5 +1,6 @@
 var layout = require('./layout');
 var AppUI = Vue.extend({
+  template: require('../html/app.html'),
   ready: function(){
     /* start to render LayoutManager layout */
     layout.loading(false);
@@ -25,7 +26,12 @@ var AppUI = Vue.extend({
       setModalHeight();
     });
    },
-   template: require('../html/app.html'),
+   methods: {
+      closePanel: function(){
+        sidebarService.closePanel();
+      },
+      isMobile: function(){return isMobile.any}
+    },
 });
 
 module.exports = AppUI;

@@ -84,7 +84,7 @@ gulp.task('less',['fonts'], function () {
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/libs/common/g3w-client-common/style/less/skins/*.less')
+  return gulp.src('./src/app/template/style/less/skins/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
@@ -100,7 +100,7 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('images', function () {
-  return gulp.src(['./src/libs/**/*.{png,jpg,gif,svg}}','./src/**/*.{png,jpg,gif,svg}'])
+  return gulp.src(['./src/app/images/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}}'])
     .pipe(flatten())
     .pipe(gulp.dest('./build/images/'))
     .pipe(gulp.dest('./dist/g3w-client/images/'));

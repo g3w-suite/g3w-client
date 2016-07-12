@@ -54,7 +54,8 @@ var SidebarComponent = Vue.extend({
     methods: {
       closePanel: function(){
         sidebarService.closePanel();
-      }
+      },
+      isMobile: function(){return isMobile.any}
     },
     ready: function(){
       // temporaneo, per avviare direttamente iternet
