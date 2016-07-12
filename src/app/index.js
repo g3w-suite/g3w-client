@@ -62,7 +62,7 @@ function createTemplateConfig(){
       }
     },
     viewport: {
-      map: MapComponent,
+      map: new MapComponent({}),
       contentx: null
     }
   };

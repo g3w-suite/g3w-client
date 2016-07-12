@@ -1,7 +1,4 @@
 var t = require('sdk/core/i18n/i18n.service').t;
-require('sdk/gui/vue/catalog/catalog');
-require('sdk/gui/vue/search/search');
-require('sdk/gui/vue/tools/tools');
 var Stack = require('./barstack.js');
 
 function SidebarService(){

@@ -104,4 +104,4 @@ proto.mount = function(parent) {
   return resolve();
 }
 
-module.exports = new MapComponent;
+module.exports =  MapComponent;
