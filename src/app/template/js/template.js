@@ -12,7 +12,7 @@ layout.loading();
 
 var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this.templateConfig = templateConfig;
-  this.appService = ApplicationService;
+  this.ApplicationService = ApplicationService;
   this._setupInterface();
   this._setupLayout();
   this._buildTemplate();
@@ -81,7 +81,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     /* Metodi da definire (tramite binding) */
     GUI.getResourcesUrl = _.bind(function() {
-      return this.appService.config.resourcesurl;
+      return this.ApplicationService.config.resourcesurl;
     },this);
     GUI.showForm = function() {};
     GUI.closeForm = function() {};
