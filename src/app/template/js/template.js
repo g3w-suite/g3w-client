@@ -71,7 +71,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._removeComponent = function(plceholder,componentId) {
   };
   
-  this._setupinterface = function() {
+  this._setupInterface = function() {
     /* DEFINIZIONE INTERFACCIA PUBBLICA */
     
     /* Metodi comuni a tutti i template */

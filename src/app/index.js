@@ -50,7 +50,7 @@ function createTemplateConfig(){
       },
       sidebar: {
         components: [
-          new CatalogComponent,
+          new CatalogComponent({}),
         ]
       },
       map: null, // placeholder della mappa principale (view map)  inizialmente Vista Primaria
@@ -78,6 +78,7 @@ function obtainInitConfig(){
 
 ApplicationService.on('ready',function(){
   //istanzio l'appication template passando la configurazione del template e l'applicationService che fornisce API del progetto
+  var templateConfig = createTemplateConfig();
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
 });
 

@@ -133,11 +133,16 @@ function MapService(){
     this.viewer = ol3helpers.createViewer({
       view: {
         projection: projection,
-        center: this.config.initcenter || ol.extent.getCenter(ProjectService.state.project.extent),
+        /*center: this.config.initcenter || ol.extent.getCenter(extent),
         zoom: this.config.initzoom || 0,
         extent: this.config.constraintextent || extent,
         minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
-        maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0
+        maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
+        center: ol.extent.getCenter(extent),
+        zoom: 0,
+        extent: extent,
+        minZoom: 0, // default di OL3 3.16.0
+        maxZoom: 28 // default di OL3 3.16.0
       }
     });
     

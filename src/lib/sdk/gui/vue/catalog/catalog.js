@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
@@ -177,25 +178,10 @@ Vue.component('legend-item',{
 /* INTERFACCIA PUBBLICA */
 function CatalogComponent(options){
   base(this,options);
-  
   this.id = "iternet-editing-panel";
   this.title = "Catalogo dati";
+  this.InternalComponent = InternalComponent;
 }
-inherit(CatalogComponent,Component);
-var proto = CatalogComponent.prototype;
-
-// viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.mount = function(parent){
-  var panel = this.vueComponent = new InternalComponent();
-  panel.$mount().$appendTo(container);
-  return resolve(true);
-};
-
-// richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
-proto.unmount = function(){
-  self.vueComponent.$destroy(true);
-  self.panelComponent = null;
-  return resolve();
-};
+inherit(CatalogComponent, Component);
 
 module.exports = CatalogComponent;
