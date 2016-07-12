@@ -1,6 +1,11 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 require('sdk/gui/vue/vue.directives');
 var isMobileMixin = require('sdk/gui/vue/vue.mixins').isMobileMixin;
+var GUI = require('sdk/gui/gui');
+// temporaneo per far funzionare le cose
+var config = {
+    client:{}
+};
 
 var sidebar = require('./sidebar');
 var floatbar = require('./sidebar');
@@ -13,10 +18,11 @@ layout.loading();
 var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this.templateConfig = templateConfig;
   this.ApplicationService = ApplicationService;
-  this._setupInterface();
-  this._setupLayout();
-  this._buildTemplate();
-  
+  this.init = function() {
+    this._setupInterface();
+    this._setupLayout();
+    this._buildTemplate();
+  };
   this._setupLayout = function(){    
     Vue.filter('t', function (value) {
       return t(value);
@@ -53,7 +59,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var placeholdersConfig = this.templateConfig.placeholders;
     _.forEach(placeholdersConfig, function(components, placeholder){
       // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
-      _forEach(components, function(component){
+      _.forEach(components, function(component){
         self._addComponent(placeholder, component);
       });
     })
