@@ -1,3 +1,4 @@
+var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 
 var Component = function(options) {

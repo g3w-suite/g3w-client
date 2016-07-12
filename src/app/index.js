@@ -1,4 +1,4 @@
-var i18ninit = require('sdk').core.i18n.i18n.service.init;
+var i18ninit = require('sdk').core.i18n.init;
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
 var ApplicationTemplate = require('./template/js/template');
 
@@ -79,9 +79,8 @@ function obtainInitConfig(){
 ApplicationService.on('ready',function(){
   //istanzio l'appication template
   applicationTemplate = new ApplicationTemplate();
-  var templateConfig = createTemplateConfig();
   //passo la configurazione del template e l'applicationService che fornisce API del progetto
-  applicationTemplate.init(ApplicationService,templateConfig);
+  applicationTemplate.init(this,templateConfig);
 });
 
 bootstrap = function(){
@@ -89,8 +88,8 @@ bootstrap = function(){
 
   obtainInitConfig()
   .then(function(initConfig){
-    config.server.urls.staticurl = initconfig.staticurl;
-    config.group = initconfig.group;
+    config.server.urls.staticurl = initConfig.staticurl;
+    config.group = initConfig.group;
     
       var applicationConfig = createApplicationConfig();
       ApplicationService.init(applicationConfig);

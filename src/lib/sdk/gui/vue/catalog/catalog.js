@@ -1,3 +1,4 @@
+var inherit = require('core/utils/utils').inherit;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');

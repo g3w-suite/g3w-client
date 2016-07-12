@@ -14,7 +14,7 @@ var ApplicationService = function(){
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
 };
-inherit(AppService,G3WObject);
+inherit(ApplicationService,G3WObject);
 
 var proto = ApplicationService.prototype;
 
