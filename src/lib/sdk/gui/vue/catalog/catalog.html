@@ -9,7 +9,7 @@
     <div  class="tab-content">
       <div role="tabpanel" class="tab-pane active tree" id="tree">
         <ul class="tree-root">
-          <tristate-tree :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
+          <tristate-tree  v-if="!isHidden" :layerstree="layerstree" class="item" v-for="layerstree in layerstree">
           </tristate-tree>
         </ul>
       </div>
