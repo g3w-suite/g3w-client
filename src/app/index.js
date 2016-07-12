@@ -53,8 +53,12 @@ function createTemplateConfig(){
           new CatalogComponent({}),
         ]
       },
-      map: null, // placeholder della mappa principale (view map)  inizialmente Vista Primaria
-      content: null, // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+      map: {
+        components: []
+      }, // placeholder della mappa principale (view map)  inizialmente Vista Primaria
+      content: {
+        components: []
+      }, // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
       floatbar:{
         components: []
       }

@@ -12,8 +12,8 @@ function SidebarService(){
   };
   
   this.addComponent = function(component){
-    var parent = $("#g3w-sidebarpanel-placeholder");
-    this.stack.push(component,parent);
+    var parent = $("#g3w-sidebarcomponent-placeholder");
+    this.stack.push(component, parent);
   };
   
   this.removeComponent = function(){
@@ -32,6 +32,7 @@ var SidebarComponent = Vue.extend({
     template: require('../html/sidebar.html'),
     data: function() {
     	return {
+        components: sidebarService.stack.state.components,
         panels: sidebarService.stack.state.panels,
         bOpen: true,
     		bPageMode: false,
@@ -42,6 +43,16 @@ var SidebarComponent = Vue.extend({
       // quanti pannelli sono attivi nello stack
       panelsinstack: function(){
         return this.panels.length>0;
+      },
+      componentsinstack: function(){
+        return this.components.length>0;
+      },
+      componentname: function(){
+        var name = "";
+        if (this.components.length){
+          name = this.components.slice(-1)[0].getName();
+        }
+        return name;
       },
       panelname: function(){
         var name = "";

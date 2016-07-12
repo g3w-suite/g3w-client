@@ -1,6 +1,9 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var BaseComponent = require('gui/component');
+
 
 var Component = function(options) {
   base(this,options);
@@ -14,8 +17,8 @@ var proto = Component.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(parent){
-  var panel = this.vueComponent = new this.InternalComponent();
-  panel.$mount().$appendTo(parent);
+  var component = this.vueComponent = new this.InternalComponent();
+  component.$mount().$appendTo(parent[0]);
   return resolve(true);
 };
 

@@ -14,6 +14,10 @@ proto.getId = function(){
   return self.id;
 };
 
+proto.getName = function() {
+  return self.name;
+};
+
 proto.getTitle = function(){
   return self.title;
 };

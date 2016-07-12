@@ -71,12 +71,12 @@ var FloatbarComponent = Vue.extend({
     computed: {
       // quanti pannelli sono attivi nello stack
       panelsinstack: function(){
-        return this.stack.panels.length>0;
+        return this.stack.components.length>0;
       },
       panelname: function(){
         var name = "";
-        if (this.stack.panels.length){
-          name = this.stack.panels.slice(-1)[0].name;
+        if (this.stack.components.length){
+          name = this.stack.components.slice(-1)[0].name;
         }
         return name;
       },

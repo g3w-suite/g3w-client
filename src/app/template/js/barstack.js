@@ -4,18 +4,19 @@ var G3WObject = require('sdk/core/g3wobject');
 function BarStack(){
   this._components = [];
   this.state = {
-    components: []
+    components: [],
+    panels: []
   };
 }
 inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 
-proto.push = function(component,parent){
+proto.push = function(component, parent){
   var self = this;
   component.mount(parent)
   .then(function(){
-    self._components.push(panel);
+    self._components.push(component);
     self.state.components.push({
       id: component.getId(),
       name: component.getName()

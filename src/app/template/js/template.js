@@ -15,10 +15,12 @@ var layout = require('./layout');
 layout.loading();
 
 var ApplicationTemplate = function(templateConfig, ApplicationService) {
+  self = this;
   this.templateConfig = templateConfig;
   this.ApplicationService = ApplicationService;
   
   this.init = function() {
+
     this._setupInterface();
     this._setupLayout();
   };
@@ -32,8 +34,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var FloatbarComponent = require('./floatbar').FloatbarComponent;
     var AppUI = require('./applicationui');
 
-    Vue.component('sidebar',sidebar.SidebarComponent);
-    Vue.component('floatbar',floatbar.FloatbarComponent);
+    Vue.component('sidebar', SidebarComponent);
+    Vue.component('floatbar', FloatbarComponent);
     Vue.component('app', AppUI);
 
     //inizializza l'applicazione Vue
@@ -42,7 +44,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       el: 'body',
       ready: function(){
         $(document).localize();
-        //template._buildTemplate();
+        self._buildTemplate();
       }
     });
   }
@@ -52,7 +54,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var placeholdersConfig = this.templateConfig.placeholders;
     _.forEach(placeholdersConfig, function(components, placeholder){
       // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
-      _.forEach(components.components, function(component){
+     _.forEach(components.components, function(component){
         self._addComponent(placeholder, component);
       });
     })

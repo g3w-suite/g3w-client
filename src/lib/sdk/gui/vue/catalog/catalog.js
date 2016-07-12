@@ -36,12 +36,14 @@ var vueComponentOptions = {
 var InternalComponent = Vue.extend(vueComponentOptions);
 
 // se lo voglio usare come componente come elemento html
-Vue.component('g3w-catalog',vueComponentOptions);
+//Vue.component('g3w-catalog', vueComponentOptions);
 
 
 /* COMPONENTI FIGLI */
 
 // tree component
+
+/*
 Vue.component('tristate-tree', {
   template: require('./tristate-tree.html'),
   props: {
@@ -172,6 +174,7 @@ Vue.component('legend-item',{
     }
   }
 });
+*/
 /* FINE COMPONENTI FIGLI */
 
 
