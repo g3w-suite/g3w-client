@@ -1,5 +1,6 @@
 var t = require('core/i18n/i18n.service').t;
 var GUI = require('gui/gui');   
+var Component = require('gui/vue/component');
 var RouterService = require('core/router');
 var MapService = require('core/mapservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
@@ -31,7 +32,7 @@ function setMapDivWidth(){
   MapService.viewer.map.updateSize();
 }
 
-var MapViewComponent = Vue.component('g3w-map',{
+var InternalComponent = {
   template: require('./map.html'),
   ready: function(){
     var self = this;
@@ -83,36 +84,16 @@ var MapViewComponent = Vue.component('g3w-map',{
       
     })
   }
+
+var MapViewComponent = Vue.component('g3w-map',
 });
 
-function MapView() {
-  var self = this;
-  var _viewComponent;
-  
-  this.getViewComponent = function(){
-    if (!_viewComponent) {
-      _viewComponent = new MapViewComponent;
-    }
-    return _viewComponent;
-  };
-  
-  this.show = function(path){
-    var view = RouterService.sliceFirst(path)[0];
-    if (view == 'map') {
-      var query = RouterService.getQueryParams(path);
-      if (query['point']) {
-        var coordinates = query['point'].split(',');
-        if (coordinates.length == 2) {
-          MapService.viewer.goToRes(coordinates,0.5);
-          MapService.highlightGeometry(new ol.geom.Point(coordinates),10000);
-        }
-      }
-    }
-  };
-  
-  RouterService.onafter('setRoute',function(path){
-    self.show(path);
-  });
+function MapComponent(options){
+  base(this,options);
+  this.id = "iternet-editing-panel";
+  this.title = "Catalogo dati";
+  this.InternalComponent = InternalComponent;
 }
+inherit(MapComponent, Component);
 
-module.exports = new MapView;
+module.exports = new MapComponent;

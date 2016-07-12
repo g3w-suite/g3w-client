@@ -8,6 +8,7 @@ var config = {
 
 var sidebar = require('./sidebar');
 var floatbar = require('./floatbar');
+var ViewportService = require('./viewport');
 var AppUI = require('./applicationui');
 var layout = require('./layout');
 
@@ -20,7 +21,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this.ApplicationService = ApplicationService;
   
   this.init = function() {
-
     this._setupInterface();
     this._setupLayout();
   };
@@ -57,7 +57,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
      _.forEach(components.components, function(component){
         self._addComponent(placeholder, component);
       });
-    })
+    });
+    ViewportService.init()
   };
   
   this._addComponent = function(placeholder,component) {
