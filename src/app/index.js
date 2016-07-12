@@ -77,10 +77,8 @@ function obtainInitConfig(){
 }
 
 ApplicationService.on('ready',function(){
-  //istanzio l'appication template
-  applicationTemplate = new ApplicationTemplate();
-  //passo la configurazione del template e l'applicationService che fornisce API del progetto
-  applicationTemplate.init(this,templateConfig);
+  //istanzio l'appication template passando la configurazione del template e l'applicationService che fornisce API del progetto
+  applicationTemplate = new ApplicationTemplate(templateConfig, this);
 });
 
 bootstrap = function(){

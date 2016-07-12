@@ -51,8 +51,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._buildTemplate = function() {
     var self = this;
     var placeholdersConfig = this.templateConfig.placeholders;
-    _.forEach(placeholdersConfig, function(component, placeholder){
-      self._addComponent(placeholder,component);
+    _.forEach(placeholdersConfig, function(components, placeholder){
+      // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
+      _forEach(components, function(component){
+        self._addComponent(placeholder, component);
+      });
     })
   };
   
