@@ -41,6 +41,7 @@ function createApplicationConfig() {
 // Sarà l'applicazione a scegliere di riempire gli elementi
 function createTemplateConfig(){
   var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
+  var SearchComponent = require('sdk').gui.vue.SearchComponent;
   var MapComponent = require('sdk').gui.vue.MapComponent;
   
   return {
@@ -51,12 +52,12 @@ function createTemplateConfig(){
       },
       sidebar: {
         components: [
+
           new CatalogComponent({
             openOnStart: true,
             dataIcon: "fa fa-database"
           }),
-          new CatalogComponent({
-            title: 'search',
+           new SearchComponent({
             openOnStart: false,
             dataIcon: "fa fa-search"
           })

@@ -62,7 +62,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     ViewportService.init(mapComponent);
   };
   
-  this._addComponent = function(placeholder,component) {
+  this._addComponent = function(placeholder, component) {
     if (ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1){
       var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
       if (placeholderService) {
