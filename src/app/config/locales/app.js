@@ -1,6 +1,7 @@
 var translations = {
     "it": {
         "translation": {
+            "component": "Componente Generico",
             "search": "Ricerca",
             "catalog": "Catalogo dati",
             "baselayers": "Basi",

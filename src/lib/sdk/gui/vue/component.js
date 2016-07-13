@@ -17,7 +17,9 @@ var proto = Component.prototype;
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(parent){
   var component = this.vueComponent = new this.InternalComponent();
-  component.$mount().$appendTo(parent[0]);
+  //component.$mount().$appendTo(parent[0]);
+  //cambiato in modo che non ci sarà nessun riferimento al g3w-sidebarcomponte-placeholder
+  component.$mount(parent);
   return resolve(true);
 };
 

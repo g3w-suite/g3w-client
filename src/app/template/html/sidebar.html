@@ -16,11 +16,7 @@
       </div>
       <div id="g3w-sidebarpanel-placeholder" class="g3w-sidebarpanel-placeholder"></div>
     </div>
-    
-	  <ul v-show="componentsinstack" class="sidebar-menu">
-      <sidebar-item open-on-start="true" data-icon="fa fa-database" data-label="catalog" data-type="inline">
-        <div id="g3w-sidebarcomponent-placeholder" class="g3w-sidebarpanel-placeholder"></div>
-      </sidebar-item>
+	  <ul id="g3w-sidebarcomponents" v-show="componentsinstack" class="sidebar-menu">
 	    <!--<sidebar-item data-icon="fa fa-search" data-label="search" data-type="inline">
         <g3w-search></g3w-search>
       </sidebar-item>

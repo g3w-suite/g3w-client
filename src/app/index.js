@@ -51,7 +51,15 @@ function createTemplateConfig(){
       },
       sidebar: {
         components: [
-          new CatalogComponent({}),
+          new CatalogComponent({
+            openOnStart: true,
+            dataIcon: "fa fa-database"
+          }),
+          new CatalogComponent({
+            title: 'search',
+            openOnStart: false,
+            dataIcon: "fa fa-search"
+          })
         ]
       },
       content: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)

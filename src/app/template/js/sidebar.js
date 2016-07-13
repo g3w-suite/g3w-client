@@ -1,6 +1,24 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 var Stack = require('./barstack.js');
 
+//sidebar item che non è altro che un li della sidebar dove sarà possobile impostare
+//titolo tipo di icona etc .. customizzata per ogni componente
+
+var SidebarItem = Vue.extend({
+  template: require('../html/sidebar-item.html'),
+  data: function() {
+    return {
+        main: true,
+        component: null,
+        active: false,
+        dataType: 'inline',
+        dataLabel: 'component',
+        dataIcon: null,
+        openOnStart: true
+      };
+  }
+});
+
 function SidebarService(){
   this.stack = new Stack();
   
@@ -9,13 +27,38 @@ function SidebarService(){
   };
   
   this.addComponent = function(component){
-    var parent = $("#g3w-sidebarcomponent-placeholder");
+    //faccio montare il sedebar-item che contiene al suo interno il placeholder del componente vero e proprio
+    //in questo modo il componente non si dovrà occupare di costruire anche l'elemento li della sidebar
+    //ma conterrà solo il contenuto
+    var sidebarItem = new SidebarItem().$mount().$appendTo('#g3w-sidebarcomponents');
+
+    //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
+    sidebarItem.dataLabel = component.title || sidebarItem.dataLabel;
+    sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.dataLabel : component.openOnStart;
+    sidebarItem.dataIcon = component.dataIcon || sidebarItem.dataIcon;
+
+    //var parent = $("#g3w-sidebarcomponent-placeholder");
+    //indico solo il selettore dove montare il componente che risiede all'interno della sidebar-item
+    var parent = "#g3w-sidebarcomponent-placeholder";
     this.stack.push(component, parent);
   };
   
   this.removeComponent = function(){
     var component = this.stack.pop();
     if (component){
+      if (_.hasIn(component,"$destroy")){
+        component.$destroy();
+      }
+    }
+  };
+  this.addPanel = function(panel){
+    var parent = $("#g3w-sidebarpanel-placeholder");
+    this.stack.push(component, parent);
+  };
+
+  this.removePanel = function(){
+    var panel = this.stack.pop();
+    if (panel){
       if (_.hasIn(component,"$destroy")){
         component.$destroy();
       }
@@ -63,16 +106,16 @@ var SidebarComponent = Vue.extend({
       closePanel: function(){
         sidebarService.closePanel();
       },
-      isMobile: function(){return isMobile.any}
+      isMobile: function(){
+        return isMobile.any
+      }
     },
     ready: function(){
-      // temporaneo, per avviare direttamente iternet
-      //var iternet = require('g3w-iternet/plugin');
-      //iternet.startEditing();
     }
 });
 
-Vue.component('sidebar-item',{
+
+/*Vue.component('sidebar-item',{
 	props: ['data-icon','data-label','data-type','open-on-start'],
   template: require('../html/sidebar-item.html'),
   data: function() {
@@ -81,7 +124,7 @@ Vue.component('sidebar-item',{
       };
   }
 });
-
+*/
 module.exports = {
   SidebarService: sidebarService,
   SidebarComponent: SidebarComponent

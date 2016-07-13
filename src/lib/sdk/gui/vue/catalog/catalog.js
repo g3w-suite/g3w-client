@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var merge = require('core/utils/utils').merge;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
@@ -177,14 +178,15 @@ Vue.component('legend-item',{
 
 /* FINE COMPONENTI FIGLI */
 
-
 /* INTERFACCIA PUBBLICA */
 function CatalogComponent(options){
-  base(this,options);
-  this.id = "iternet-editing-panel";
-  this.title = "Catalogo dati";
+  this.id = "catalog-component";
+  this.title = "catalog";
   this.InternalComponent = InternalComponent;
+  //mergio opzioni con proprità di default del componente
+  merge(this, options);
 }
+
 inherit(CatalogComponent, Component);
 
 module.exports = CatalogComponent;

@@ -1,10 +1,10 @@
 <li class="treeview" :class="{'active': openOnStart}">
   <a href="#">
     <i :class="dataIcon"></i>
-    <span class="treeview-label">{{dataLabel | t}}</span> 
+    <span class="treeview-label">{{dataLabel | t}}</span>
     <i v-if="(dataType === 'inline')" class="fa fa-angle-left pull-right"></i>
   </a>
   <ul v-if="(dataType === 'inline')" class="treeview-menu">
-    <slot></slot>
+    <div id="g3w-sidebarcomponent-placeholder" class="g3w-sidebarpanel-placeholder"></div>
   </ul>
 </li>
