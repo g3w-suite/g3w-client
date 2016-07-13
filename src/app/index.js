@@ -52,14 +52,13 @@ function createTemplateConfig(){
       },
       sidebar: {
         components: [
-
-          new CatalogComponent({
+          new SearchComponent({
             openOnStart: true,
-            dataIcon: "fa fa-database"
-          }),
-           new SearchComponent({
-            openOnStart: false,
             dataIcon: "fa fa-search"
+          }),
+          new CatalogComponent({
+            openOnStart: false,
+            dataIcon: "fa fa-database"
           })
         ]
       },

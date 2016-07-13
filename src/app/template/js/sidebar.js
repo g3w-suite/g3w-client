@@ -21,39 +21,40 @@ var SidebarItem = Vue.extend({
 
 function SidebarService(){
   this.stack = new Stack();
+  this.state = {
+    components: []
+  };
   
   this.init = function(layout){
     this.layout = layout;
   };
   
   this.addComponent = function(component){
+    //aggiungo componente
+    this.state.components.push(component);
     //faccio montare il sedebar-item che contiene al suo interno il placeholder del componente vero e proprio
     //in questo modo il componente non si dovrà occupare di costruire anche l'elemento li della sidebar
     //ma conterrà solo il contenuto
+
     var sidebarItem = new SidebarItem().$mount().$appendTo('#g3w-sidebarcomponents');
 
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.dataLabel = component.title || sidebarItem.dataLabel;
     sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.dataLabel : component.openOnStart;
     sidebarItem.dataIcon = component.dataIcon || sidebarItem.dataIcon;
-
+    var parent = "#g3w-sidebarcomponent-placeholder";
+    component.mount("#g3w-sidebarcomponent-placeholder");
     //var parent = $("#g3w-sidebarcomponent-placeholder");
     //indico solo il selettore dove montare il componente che risiede all'interno della sidebar-item
-    var parent = "#g3w-sidebarcomponent-placeholder";
-    this.stack.push(component, parent);
+
   };
   
   this.removeComponent = function(){
-    var component = this.stack.pop();
-    if (component){
-      if (_.hasIn(component,"$destroy")){
-        component.$destroy();
-      }
-    }
+    //da vedere
   };
   this.addPanel = function(panel){
     var parent = $("#g3w-sidebarpanel-placeholder");
-    this.stack.push(component, parent);
+    this.stack.push(panel, parent);
   };
 
   this.removePanel = function(){
@@ -72,7 +73,7 @@ var SidebarComponent = Vue.extend({
     template: require('../html/sidebar.html'),
     data: function() {
     	return {
-        components: sidebarService.stack.state.components,
+        components: sidebarService.state.components,
         panels: sidebarService.stack.state.panels,
         bOpen: true,
     		bPageMode: false,
