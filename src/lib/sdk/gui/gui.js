@@ -17,8 +17,15 @@ function GUI(){
   this.closeListing = noop;
   this.hideListing = noop;
 
+  /* panel */
   this.showPanel = noop;
-  
+  this.hidePanel = noop;
+
+  //metodi componente
+  this.addComponent = noop;
+  this.removeComponent = noop;
+  //fine metodi componente
+
   this.ready = function(){
     this.emit('guiready');
   };
@@ -26,13 +33,15 @@ function GUI(){
   this.guiResized = function(){
     this.emit('guiresized');
   };
-  
+
+  /* spinner */
   this.showSpinner = noop; // per mostrare un'icona spinner che notifica un caricamento dati in corso
   this.hideSpinner = noop;
   
   this.notify = noop;
   this.dialog = noop;
 }
+
 inherit(GUI,G3WObject);
 
 module.exports = new GUI;

@@ -73,19 +73,27 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   
   this._removeComponent = function(plceholder,componentId) {
   };
+
+  this._showSidebar = function() {
+    //codice qui
+  };
+  this._hideSidebar = function() {
+    //codice qui
+  };
   
   this._setupInterface = function() {
     /* DEFINIZIONE INTERFACCIA PUBBLICA */
     
     /* Metodi comuni a tutti i template */
     
-    GUI.addComponent = _.bind(this._addComponent,this);
-    GUI.removeComponent = _.bind(this._removeComponent,this);
+    GUI.addComponent = _.bind(this._addComponent, this);
+    GUI.removeComponent = _.bind(this._removeComponent, this);
     
     /* Metodi da definire (tramite binding) */
     GUI.getResourcesUrl = _.bind(function() {
       return this.ApplicationService.config.resourcesurl;
     },this);
+
     GUI.showForm = function() {};
     GUI.closeForm = function() {};
     GUI.showList = function() {};
@@ -93,27 +101,28 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
     GUI.showPanel = function() {};
-    
+
+    /* ------------------ */
     toastr.options.positionClass = 'toast-top-center';
     toastr.options.preventDuplicates = true;
     // proxy della libreria toastr
     GUI.notify = toastr;
     // proxy della libreria bootbox
     GUI.dialog = bootbox;
-    
+    /* spinner */
     GUI.showSpinner = function() {};
     GUI.hideSpinner = function() {};
-    
+    /* end spinner*/
+
     /* fine metodi comuni */
-    
     
     /* Metodi specifici del template */
     
     GUI.showFloatbar = function() {};
     GUI.hideFloatbar = function() {};
     
-    GUI.showSidebar = function() {};
-    GUI.hideSidebar = function() {};
+    GUI.showSidebar = _.bind(this._showSidebar, this);
+    GUI.hideSidebar = _.bind(this._hideSidebar, this);
     
     /* fine metodi specifici */
     
