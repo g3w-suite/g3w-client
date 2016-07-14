@@ -37,7 +37,7 @@ var vueComponentOptions = {
 var InternalComponent = Vue.extend(vueComponentOptions);
 
 // se lo voglio usare come componente come elemento html
-//Vue.component('g3w-catalog', vueComponentOptions);
+Vue.component('g3w-catalog', vueComponentOptions);
 
 
 /* COMPONENTI FIGLI */

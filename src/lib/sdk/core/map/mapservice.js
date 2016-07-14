@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectService = require('core/project/projectservice').ProjectService;
 var ProjectTypes = require('core/project/projectservice').ProjectTypes;

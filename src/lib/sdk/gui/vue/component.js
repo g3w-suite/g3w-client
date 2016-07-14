@@ -18,7 +18,6 @@ var proto = Component.prototype;
 proto.mount = function(parent){
   var component = this.vueComponent = new this.InternalComponent();
   //component.$mount().$appendTo(parent[0]);
-  //cambiato in modo che non ci sarà nessun riferimento al g3w-sidebarcomponte-placeholder
   component.$mount(parent);
   return resolve(true);
 };

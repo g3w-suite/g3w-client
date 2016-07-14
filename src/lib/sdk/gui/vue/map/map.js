@@ -35,7 +35,7 @@ function setMapDivWidth(){
   MapService.viewer.map.updateSize();
 }
 
-var InternalComponent = {
+var vueComponentOptions = {
   template: require('./map.html'),
   ready: function(){
     var self = this;
@@ -89,6 +89,10 @@ var InternalComponent = {
   }
 }
 
+var InternalComponent = Vue.extend(vueComponentOptions);
+
+Vue.component('g3w-map', vueComponentOptions);
+
 function MapComponent(options){
   base(this,options);
   this.id = "iternet-editing-panel";
@@ -98,10 +102,5 @@ function MapComponent(options){
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
-
-proto.mount = function(parent) {
-  parent.append($("<div id=map><br><br><br>QUI CI SARA' UNA MAPPA...</div>"));
-  return resolve();
-}
 
 module.exports =  MapComponent;
