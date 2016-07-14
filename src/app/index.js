@@ -53,11 +53,11 @@ function createTemplateConfig(){
       sidebar: {
         components: [
           new SearchComponent({
-            openOnStart: true,
+            openOnStart: false,
             dataIcon: "fa fa-search"
           }),
           new CatalogComponent({
-            openOnStart: false,
+            openOnStart: true,
             dataIcon: "fa fa-database"
           })
         ]
