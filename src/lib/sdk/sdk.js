@@ -30,7 +30,7 @@ g3w.gui = {
     GeocodingComponent: require('gui/vue/geocoding/geocoding'),
     SearchComponent: require('gui/search/vue/search'),
     CatalogComponent: require('gui/vue/catalog/catalog'),
-    MapComponent: require('gui/vue/map/map')
+    MapComponent: require('gui/map/vue/map')
   }
 };
 

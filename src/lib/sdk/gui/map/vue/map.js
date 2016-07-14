@@ -5,8 +5,9 @@ var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');   
 var Component = require('gui/vue/component');
 var RouterService = require('core/router');
-var MapService = require('core/map/mapservice');
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
+var MapsRegistry = require('core/map/mapsregistry');
+var MapService = require('../mapservice');
 
 function mainHeight(){
   //return $(window).innerHeight()-$(".navbar").innerHeight();
@@ -21,18 +22,18 @@ function mainHeight(){
 }
 
 /* map resize calculations */
-function setMapDivHeight(){
+function setMapDivHeight(map){
   var height = mainHeight();
   $("#map").height(height);
-  MapService.viewer.map.updateSize();
+  map.updateSize();
 }
 
-function setMapDivWidth(){
+function setMapDivWidth(map){
   var offset = $(".main-sidebar").offset().left;
   var width = $(".main-sidebar").innerWidth();
   var sideBarSpace = width + offset;
   $("#map").width($(window).innerWidth() - sideBarSpace);
-  MapService.viewer.map.updateSize();
+  map.updateSize();
 }
 
 var vueComponentOptions = {
@@ -40,19 +41,21 @@ var vueComponentOptions = {
   ready: function(){
     var self = this;
     
-    MapService.showViewer(this.$el.id);
+    var mapService = new MapService({});
+    
+    mapService.showViewer(this.$el.id);
     
     // questo serve per quando viene cambiato progetto/vista cartografica, in cui viene ricreato il viewer (e quindi la mappa)
-    MapService.onafter('setupViewer',function(){
-      MapService.showViewer(self.$el.id);
+    mapService.onafter('setupViewer',function(){
+      mapService.showViewer(self.$el.id);
     });
     
     GUI.on('guiready',function(){
-      setMapDivHeight();
+      setMapDivHeight(mapService.getMap());
       
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
           $(this).trigger('trans-end');
-          setMapDivWidth();
+          setMapDivWidth(mapService.getMap());
       });
       
       var drawing = false;
@@ -77,8 +80,8 @@ var vueComponentOptions = {
         if (resizeFired === true) {
             resizeFired = false;
             drawing = true;
-            setMapDivHeight();
-            setMapDivWidth();
+            setMapDivHeight(mapService.getMap());
+            setMapDivWidth(mapService.getMap());
             requestAnimationFrame(drawResize);
         } else {
             drawing = false;
@@ -102,5 +105,7 @@ function MapComponent(options){
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
+
+//proto.mount = function(parent){};
 
 module.exports =  MapComponent;

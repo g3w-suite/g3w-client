@@ -21,7 +21,13 @@ var _Viewer = function(opts){
     ]);
   interactions.removeAt(1) // rimuovo douclickzoom
   
-  var view = new ol.View(opts.view);
+  var view;
+  if (opts.view instanceof ol.View) {
+    view = opts.view;
+  }
+  else {
+    view = new ol.View(opts.view);
+  }
   var options = {
     controls: controls,
     interactions: interactions,
@@ -42,6 +48,10 @@ _Viewer.prototype.destroy = function(){
     this.map = null
   }
 };
+
+_Viewer.prototype.getView = function() {
+  return this.map.getView();
+}
 
 _Viewer.prototype.updateMap = function(mapObject){};
 

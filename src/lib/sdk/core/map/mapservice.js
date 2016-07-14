@@ -2,6 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
+var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectService = require('core/project/projectservice').ProjectService;
 var ProjectTypes = require('core/project/projectservice').ProjectTypes;
@@ -41,10 +42,7 @@ function MapService(){
       center: null,
       loading: false
   };
-  
-  this.init = function(config) {
-    this.config = config;
-  }
+  this.config = ApplicationService.getConfig().map;
   
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
@@ -551,4 +549,4 @@ function MapService(){
 
 inherit(MapService,G3WObject);
 
-module.exports = new MapService
+module.exports = MapService

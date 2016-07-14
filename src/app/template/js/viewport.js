@@ -48,7 +48,7 @@ var ViewportService = function(){
     // monto la mappa
     mapComponent.mount('#g3w-contenx-view');
     // monto il contentx
-    //contentxComponent.mount($(state.views.contentx.id));
+    //contentxComponent.mount(#g3w-contenx-view);
   }
   
   this.setPrimaryView = function(viewName) {

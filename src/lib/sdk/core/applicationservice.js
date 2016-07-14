@@ -13,33 +13,35 @@ var ApplicationService = function(){
 
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
-};
-inherit(ApplicationService,G3WObject);
-
-var proto = ApplicationService.prototype;
-
-proto.init = function(config){
-  this.config = config;
-  if (config.debug){
-    Vue.config.debug = true;
-  }
-  this._bootstrap();
-};
-
-proto._bootstrap = function(){
-  var self = this;
-  if (!this.initialized){
-    //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
-    //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
-    $.when(
-      ApiService.init(this.config),
-      ProjectsRegistry.init(this.config),
-      PluginsRegistry.init(this.config.plugins)
-    ).then(function(){
-      self.emit('ready');
-      this.initialized = true;
-    });
+  
+  this.init = function(config){
+    this._config = config;
+    if (config.debug){
+      Vue.config.debug = true;
+    }
+    this._bootstrap();
+  };
+  
+  this.getConfig = function() {
+    return this._config;
+  };
+  
+  this._bootstrap = function(){
+    var self = this;
+    if (!this.initialized){
+      //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
+      //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
+      $.when(
+        ApiService.init(this._config),
+        ProjectsRegistry.init(this._config),
+        PluginsRegistry.init(this._config.plugins)
+      ).then(function(){
+        self.emit('ready');
+        this.initialized = true;
+      });
+    };
   };
 };
+inherit(ApplicationService,G3WObject);
 
 module.exports = new ApplicationService;
