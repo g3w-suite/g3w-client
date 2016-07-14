@@ -7,7 +7,10 @@ var Component = require('gui/vue/component');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectService = require('core/project/projectservice').ProjectService;
-var SearchesService = require('core/search/searchesservice');
+var G3WObject = require('core/g3wobject');
+var SearchPanel = require('gui/search/vue/panel/searchpanel');
+var SearchesService = require('gui/search/searchesservice');
+
 
 var vueComponentOptions = {
    template: require('./search.html'),

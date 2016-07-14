@@ -1,4 +1,3 @@
-
 var SearchResultPanelComponent = Vue.extend({
   template: require('./resultpanel.html'),
   methods: {},
