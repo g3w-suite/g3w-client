@@ -1,11 +1,9 @@
-<form id="search" role="form">
-  <div class="box-body">
-    <div class="form-group">
-      <label for="exampleInputEmail1" style="color: white">Email address</label>
-      <input type="email" class="form-control" id="exampleInputEmail1" placeholder="">
-    </div>
-    <div class="form-group">
-      <button type="button" class="btn btn-primary">Ciao</button>
-    </div>
-  </div>
-</form>
+<div id="g3w-search" class="g3w-search">
+  <ul>
+    <li v-for="search in searches.searches">
+      <div class="search-header">
+        <span @click="showSearchPanel(search)" style="">{{ search.name }}</span>
+      </div>
+    </li>
+  </ul>
+</div>

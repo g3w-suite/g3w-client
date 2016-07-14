@@ -1,8 +1,8 @@
-var resolve = require('core/utils').resolve;
-var reject = require('core/utils').reject;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
-var ProjectService = require('core/projectservice').ProjectService;
-var MapService = require('core/mapservice');
+var ProjectService = require('core/project/projectservice').ProjectService;
+var MapService = require('core/map/mapservice');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);

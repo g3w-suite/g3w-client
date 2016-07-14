@@ -1,11 +1,11 @@
-var inherit = require('core/utils').inherit;
-var resolve = require('core/utils').resolve;
-var reject = require('core/utils').reject;
-var ProjectsRegistry = require('core/projectsregistry');
+var inherit = require('core/utils/utils').inherit;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
+var ProjectsRegistry = require('core/project/projectsregistry');
 var GUI = require('gui/gui');
-var G3WWidget = require('core/widget');
+var G3WWidget = require('core/search/widget');
 
-var SearchPanel = require('./searchpanel');
+var SearchPanel = require('./panel/searchpanel');
 
 function SearchWidget() {
   self = this;

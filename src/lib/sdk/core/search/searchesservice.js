@@ -1,12 +1,16 @@
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
-var WidgetsService = require('core/widgetsservice');
 var GUI = require('gui/gui');
-var Panel = require('./searchpanel');
+var SearchPanel = require('gui/vue/search/panel/searchpanel');
+var ProjectService = require('core/project/projectservice').ProjectService;
+
 function SearchesService(){
   var self = this;
+  this.init = function() {
+    this.state.searches = ProjectService.state.project.search;
+  }
   this.state = {
-    elements: []
+    searches: []
   };
   this.showSearchPanel = function(panelConfig) {
     var panel = new Panel();// creo panello search

@@ -1,10 +1,10 @@
-var localize = require('i18n/i18n.service').t;
-var resolve = require('core/utils').resolve;
+var localize = require('core/i18n/i18n.service').t;
+var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');
-var SearchQueryService = require('core/searchqueryservice');
+var SearchQueryService = require('core/search/searchqueryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
-var SearchResultPanelComponent = require('gui/search/results/resultpanel');
-var ProjectService = require('core/projectservice').ProjectService;
+var SearchResultPanelComponent = require('gui/vue/search/results/resultpanel');
+var ProjectService = require('core/project/projectservice').ProjectService;
 
 function Panel(){
   self = this;

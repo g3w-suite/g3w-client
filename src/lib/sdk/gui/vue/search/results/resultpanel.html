@@ -1,0 +1,16 @@
+<div id="search-results">
+  <table style="width:100px;" id="search-results-table">
+    <thead>
+      <tr>
+        <th v-for="header in state.list.headers"  style="cursor:pointer">{{ header }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="values in state.list.values" style="cursor:pointer">
+        <td v-for="value in values">
+          {{ value }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -44,6 +44,9 @@ function SidebarService(){
     sidebarItem.dataIcon = component.dataIcon || sidebarItem.dataIcon;
     var parent = "#g3w-sidebarcomponent-placeholder";
     component.mount("#g3w-sidebarcomponent-placeholder");
+    if (_.has(component, 'initService')) {
+      component.initService();
+    };
     //var parent = $("#g3w-sidebarcomponent-placeholder");
     //indico solo il selettore dove montare il componente che risiede all'interno della sidebar-item
 

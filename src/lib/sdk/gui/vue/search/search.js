@@ -7,14 +7,21 @@ var Component = require('gui/vue/component');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectService = require('core/project/projectservice').ProjectService;
+var SearchesService = require('core/search/searchesservice');
 
 var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
-    	return {};
+    	return {
+    	  searches: SearchesService.state
+    	};
    },
-   methods: {}
-}
+   methods: {
+    showSearchPanel: function(search) {
+        var panel = SearchesService.showSearchPanel(search);
+    }
+  }
+};
 
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
@@ -30,6 +37,10 @@ function SearchComponent(options){
   this.title = "search";
   this.InternalComponent = InternalComponent;
   merge(this,options);
+  this.initService = function() {
+    //inizializzo il servizio
+    SearchesService.init()
+  };
 }
 inherit(SearchComponent, Component);
 
