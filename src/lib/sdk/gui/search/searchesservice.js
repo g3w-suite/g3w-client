@@ -12,17 +12,11 @@ function SearchesService(){
   };
   this.state = {
     searches: [],
-    panels: {}
+
   };
   this.showSearchPanel = function(panelConfig) {
-    var id = panelConfig.id;
-    var panel = this.state.panels[id];
-    //verifico se già esiste il pannello altrimenti lo creo
-    if (!panel) {
-      panel = new SearchPanel();// creo panello search
-      panel.init(panelConfig);//inizializzo pannello serach
-      this.state.panels[id] = panel;
-    };
+    panel = new SearchPanel();// creo panello search
+    panel.init(panelConfig);//inizializzo pannello serach
     GUI.showPanel(panel);
     return panel;
   };

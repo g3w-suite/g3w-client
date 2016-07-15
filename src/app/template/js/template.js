@@ -103,7 +103,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.closeTable = function() {};
 
     //temporaneo show panel
-    GUI.showPanel = _.bind(sidebar.SidebarService.addPanel, sidebar.SidebarService);
+    GUI.showPanel = _.bind(sidebar.SidebarService.showPanel, sidebar.SidebarService);
+    GUI.closePanel = _.bind(sidebar.SidebarService.closePanel, sidebar.SidebarService);
     /* ------------------ */
 
     toastr.options.positionClass = 'toast-top-center';

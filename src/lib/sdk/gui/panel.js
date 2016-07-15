@@ -3,17 +3,11 @@ var inherit = require('core/utils/utils').inherit;
 var resolvedValue = require('core/utils/utils').resolve;
 var G3WObject = require('core/g3wobject');
 
-var PanelType = [
-  'one', // unico nel senso ci può essere un solo panello alla volta (esempio risultati)
-  'stack' // ci possono essere più pannelli impilati uno sull'altro (esempio editing etc.. modello iternet)
-];
-
 var Panel = function(options) {
   self = this;
   var options = options || {};
   self.id = options.id || null;
   self.title = options.title || '';
-  self.type = options.type || 'one';
 };
 
 inherit(Panel, G3WObject);
@@ -28,18 +22,6 @@ proto.getTitle = function(){
   return self.title;
 };
 
-//setta il tipo di pannello
-proto.setType = function(type) {
-  //soluzione temporanea
-  if (PanelType.indexOf(type) < 0) {
-    type = 'one';
-  };
-  self.type = type;
-};
-//ritorna il tipo di pannello
-proto.getType = function() {
-  return self.type;
-};
 /* HOOKS */
 
 /*
@@ -54,17 +36,8 @@ proto.getType = function() {
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 
 proto.mount = function(parent) {
-  var panel = new this.InternalPanel();
-  switch(this.type) {
-    case 'one':
-      panel.$mount(parent);
-      break;
-    case 'stack':
-      panel.$mount().$appendTo(parent);
-      break;
-    default:
-      break;
-  };
+  var panel = this.InternalPanel;
+  panel.$mount().$appendTo(parent);
   localize();
   return resolvedValue(true);
 };
@@ -74,10 +47,9 @@ proto.mount = function(parent) {
  * Ritorna una promessa che sarà risolta nel momento in cui il pannello avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
 */
 proto.unmount = function(){
-  var self = this;
+  var panel = this.InternalPanel;
   var deferred = $.Deferred();
-  self.panelComponent.$destroy(true);
-  self.panelComponent = null;
+  panel.$destroy(true);
   deferred.resolve();
   return deferred.promise();
 };

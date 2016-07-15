@@ -51,20 +51,13 @@ function SidebarService(){
     //da vedere
   };
 
-  this.addPanel = function(panel){
-    //setto il pannello in modo da essere parte di uno stack
-    panel.setType('stack');
+  this.showPanel = function(panel){
     var parent = "#g3w-sidebarpanel-placeholder";
     this.stack.push(panel, parent);
   };
 
-  this.removePanel = function(){
+  this.closePanel = function(){
     var panel = this.stack.pop();
-    if (panel){
-      if (_.hasIn(component,"$destroy")){
-        component.$destroy();
-      }
-    }
   };
 }
 
@@ -116,17 +109,6 @@ var SidebarComponent = Vue.extend({
     }
 });
 
-
-/*Vue.component('sidebar-item',{
-	props: ['data-icon','data-label','data-type','open-on-start'],
-  template: require('../html/sidebar-item.html'),
-  data: function() {
-    return {
-        main: true,
-      };
-  }
-});
-*/
 module.exports = {
   SidebarService: sidebarService,
   SidebarComponent: SidebarComponent

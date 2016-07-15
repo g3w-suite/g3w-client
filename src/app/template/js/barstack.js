@@ -13,17 +13,21 @@ var proto = BarStack.prototype;
 
 proto.push = function(panel, parent){
   var self = this;
+  var id = panel.getId();
+  _.forEach(self.state.panels, function(panel) {
+    if (panel.id == id) {
+      console.log('esiste g')
+      self._panels[panel.position].unmount();
+      self._panels[panel.position] = panel;
+    };
+  });
   panel.mount(parent)
   .then(function(){
-    if (panel.getType() == 'stack'){
-      self._panels.push(panel);
-    } else {
-      self._panels = [panel];
-      self.state.panels.pop();
-    };
+    var position = self._panels.push(panel) - 1;
     self.state.panels.push({
         id: panel.getId(),
-        title: panel.getTitle()
+        title: panel.getTitle(),
+        position: position
     });
   });
 };

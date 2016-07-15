@@ -35,7 +35,7 @@ function SearchPanel() {
   this.id = null;
   this.querytype = null;
   this.querylayer = null;
-  this.InternalPanel = SearchPanelComponet;
+  this.InternalPanel = new SearchPanelComponet();
   //funzione inizializzazione
   this.init = function(config) {
       this.config = config || {};
