@@ -13,7 +13,7 @@ var SearchPanelComponet = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
-      //forminputs: self.createInputsFormFromFilter()
+      forminputs: []
     }
   },
   methods: {
@@ -44,6 +44,9 @@ function SearchPanel() {
       this.filter = this.config.options.filter || this.filter;
       this.querytype = this.config.options.querytype || this.querytype;
       this.querylayer = this.config.options.querylayer || this.querylayer;
+      _.forEach(this.createInputsFormFromFilter(), function(input) {
+        self.InternalPanel.forminputs.push(input);
+      })
   };
 
   this.createInputsFormFromFilter = function() {
@@ -53,10 +56,13 @@ function SearchPanel() {
         case 'AND':
           if (v.length == 1) {
             inputs.push(v[0].input);
-          } else {}
-          break;
+          } else {
+            _.forEach(this.filter,function(obj){
+              inputs.push(obj.input);
+            })
+          }
       };
-    })
+    });
     return inputs
   };
 };
