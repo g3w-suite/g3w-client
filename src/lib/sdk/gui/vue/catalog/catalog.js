@@ -12,24 +12,34 @@ var vueComponentOptions = {
   template: require('./catalog.html'),
   data: function() {
     return {
-      state: ProjectService.state
+      project: ProjectsRegistry.getCurrentProject()
     }
   },
   computed: {
     layerstree: function(){
-      return this.state.project.layerstree;
+      return this.project.state.layerstree;
     },
     baselayers: function(){
-      return this.state.baseLayers;
+      return this.project.state.baselayers;
     },
     hasBaseLayers: function(){
-      return this.state.baseLayers.length>0;
+      return this.project.state.baselayers.length>0;
     }
   },
   methods: {
     setBaseLayer: function(id) {
-      ProjectService.setBaseLayer(id);
+      this.project.setBaseLayer(id);
     }
+  },
+  ready: function() {
+    var self = this;
+    this.$on('treenodetoogled',function(node){
+      self.project.toggleLayer(node);
+    });
+
+    this.$on('treenodestoogled',function(nodes,parentChecked){
+      self.project.toggleLayers(nodes,parentChecked);
+    });
   }
 }
 
@@ -99,10 +109,10 @@ Vue.component('tristate-tree', {
         else {
           this.parentChecked = !this.parentChecked;
         }
-        ProjectService.toggleLayers(this.layerstree.nodes,this.parentChecked);
+        this.$dispatch('treenodestoogled',this.layerstree.nodes,this.parentChecked);
       }
       else {
-        ProjectService.toggleLayer(this.layerstree);
+        this.$dispatch('treenodetoogled',this.layerstree);
       }
     },
     triClass: function () {
@@ -164,7 +174,7 @@ Vue.component('legend-item',{
     legendurl: function(){
       // in attesa di risolvere lo schianto di QGSI Server...
       //return "http://localhost/cgi-bin/qgis_mapserv.fcgi?map=/home/giohappy/Scrivania/Dev/G3W/g3w-client/test/progetto/test.qgs&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER="+this.layer.name;
-      return ProjectService.getLegendUrl(this.layer);
+      return ProjectsRegistry.getCurrentProject().getLegendUrl(this.layer);
     }
   },
   methods: {

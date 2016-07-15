@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
-var ProjectService = require('core/project/projectservice').ProjectService;
+var Project = require('core/project/project');
 
 /* service
 Funzione costruttore contentente tre proprieta':
@@ -28,9 +28,12 @@ function ProjectsRegistry(){
     baseLayers: {},
     minScale: null,
     maxscale: null,
-    projects: [],
     currentProject: null
-  }
+  };
+  
+  // tutte le configurazioni di base dei progetti, ma di cui non è detto che sia ancora disponibile l'istanza (lazy loading)
+  this._pendingProjects = [];
+  this._projects = {};
   
   base(this);
 }
@@ -39,12 +42,15 @@ inherit(ProjectsRegistry,G3WObject);
 var proto = ProjectsRegistry.prototype;
 
 proto.init = function(config){
+  var self = this;
   if (!this.initialized){
     this.initialized = true;
     this.config = config;
     this.setupState();
-    ProjectService.init(config);
-    return this.setProject(config.initproject);
+    return this.getProject(config.initproject)
+    .then(function(project){
+      self.setCurrentProject(project);
+    });
   }
 };
   
@@ -57,83 +63,51 @@ proto.setupState = function(){
   self.state.crs = self.config.crs;
   self.state.proj4 = self.config.proj4;
   self.config.projects.forEach(function(project){
-    project.baseLayers = self.config.baselayers;
-    project.minScale = self.config.minscale;
-    project.maxScale = self.config.maxscale;
+    project.baselayers = self.config.baselayers;
+    project.minscale = self.config.minscale;
+    project.maxscale = self.config.maxscale;
     project.crs = self.config.crs;
     project.proj4 = self.config.proj4;
-    self.state.projects.push(project);
+    self._pendingProjects.push(project);
   })
   //this.state.projects = config.group.projects;
+};
+
+proto.getPendingProjects = function() {
+  return this._pendingProjects();
 };
 
 proto.getCurrentProject = function(){
   return this.state.currentProject;
 };
-  
-proto.setProject = function(projectGid){
-  var self = this;
-  return this.getProject(projectGid).
-  then(function(project){
-    ProjectService.setProject(project);
-    self.setCurrentProject(project);
-  })
-};
-  
-proto.switchProject = function(projectGid) {
-  var self = this;
-  return this.getProject(projectGid).
-  then(function(project){
-    ProjectService.switchProject(project);
-    self.setCurrentProject(project);
-  })
-};
-  
-proto.buildProjectTree = function(project){
-  var layers = _.keyBy(project.layers,'id');
-  var layersTree = _.cloneDeep(project.layerstree);
-  
-  function traverse(obj){
-    _.forIn(obj, function (layer, key) {
-        //verifica che il nodo sia un layer e non un folder
-        if (!_.isNil(layer.id)) {
-            var fulllayer = _.merge(layer,layers[layer.id]);
-            obj[parseInt(key)] = fulllayer;
-            var a =1;
-        }
-        if (!_.isNil(layer.nodes)){
-          // aggiungo proprietà title per l'albero
-          layer.title = layer.name;
-          traverse(layer.nodes);
-        }
-      });
-    };
-  traverse(layersTree);
-  project.layerstree = layersTree;
-};
 
+// ottengo il progetto dal suo gid; ritorna una promise nel caso non fosse stato ancora scaricato il config completo (e quindi non sia ancora istanziato Project)
 proto.getProject = function(projectGid){
   var self = this;
   var d = $.Deferred();
+  var pendingProject = false;
   var project = null;
-  this.state.projects.forEach(function(_project){
-    if (_project.gid == projectGid) {
-      project = _project;
+  this._pendingProjects.forEach(function(_pendingProject){
+    if (_pendingProject.gid == projectGid) {
+      pendingProject = _pendingProject;
+      project = self._projects[projectGid];
     }
   })
-  if (!project) {
+  if (!pendingProject) {
     return reject("Project doesn't exist");
   }
 
-  var isFullFilled = !_.isNil(project.layers);
-  if (isFullFilled){
+  if (project){
     return d.resolve(project);
   }
   else{
-    return this.getProjectFullConfig(project)
+    return this._getProjectFullConfig(pendingProject)
     .then(function(projectFullConfig){
-      project = _.merge(project,projectFullConfig);
-      self.buildProjectTree(project);
+      var projectConfig = _.merge(pendingProject,projectFullConfig);
+      self._buildProjectTree(projectConfig);
+      var project = new Project(projectConfig);
+      project.setGetWmsUrl(self.config.getWmsUrl); // BRUTTO MA PER ORA SI TIENE COSI'
+      self._projects[projectConfig.gid] = project;
       return d.resolve(project);
     });
   }
@@ -141,8 +115,8 @@ proto.getProject = function(projectGid){
   return d.promise();
 };
   
-  //ritorna una promises
-proto.getProjectFullConfig = function(projectBaseConfig){
+//ritorna una promises
+proto._getProjectFullConfig = function(projectBaseConfig){
   var self = this;
   var deferred = $.Deferred();
   var url = this.config.getProjectConfigUrl(projectBaseConfig);
@@ -150,6 +124,29 @@ proto.getProjectFullConfig = function(projectBaseConfig){
       deferred.resolve(projectFullConfig);
   })
   return deferred.promise();
+};
+
+proto._buildProjectTree = function(project){
+  var layers = _.keyBy(project.layers,'id');
+  var layersTree = _.cloneDeep(project.layerstree);
+  
+  function traverse(obj){
+    _.forIn(obj, function (layer, key) {
+      //verifica che il nodo sia un layer e non un folder
+      if (!_.isNil(layer.id)) {
+          var fulllayer = _.merge(layer,layers[layer.id]);
+          obj[parseInt(key)] = fulllayer;
+          var a =1;
+      }
+      if (!_.isNil(layer.nodes)){
+        // aggiungo proprietà title per l'albero
+        layer.title = layer.name;
+        traverse(layer.nodes);
+      }
+    });
+  }
+  traverse(layersTree);
+  project.layerstree = layersTree;
 };
 
 module.exports = new ProjectsRegistry();

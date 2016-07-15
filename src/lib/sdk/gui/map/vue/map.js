@@ -41,7 +41,7 @@ var vueComponentOptions = {
   ready: function(){
     var self = this;
     
-    var mapService = new MapService({});
+    var mapService = new MapService();
     
     mapService.showViewer(this.$el.id);
     
