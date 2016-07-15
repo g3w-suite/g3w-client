@@ -15,10 +15,15 @@ proto.push = function(panel, parent){
   var self = this;
   panel.mount(parent)
   .then(function(){
-    self._panels.push(component);
+    if (panel.getType() == 'stack'){
+      self._panels.push(panel);
+    } else {
+      self._panels = [panel];
+      self.state.panels.pop();
+    };
     self.state.panels.push({
-      id: panel.getId(),
-      name: panel.getName()
+        id: panel.getId(),
+        title: panel.getTitle()
     });
   });
 };

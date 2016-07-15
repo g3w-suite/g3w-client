@@ -2,19 +2,32 @@ var inherit = require('core/utils/utils').inherit;
 var GUI = require('gui/gui');
 var ProjectService = require('core/project/projectservice').ProjectService;
 var G3WObject = require('core/g3wobject');
+var SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function SearchesService(){
   var self = this;
-  this.init = function() {
-    this.state.searches = ProjectService.state.project.search;
-  }
+  this.init = function(searchesObject) {
+    var searches = searchesObject || ProjectService.state.project.search;
+    this.state.searches = searches;
+  };
   this.state = {
-    searches: []
+    searches: [],
+    panels: {}
   };
   this.showSearchPanel = function(panelConfig) {
-    var panel = new Panel();// creo panello search
-    panel.init(panelConfig);//inizializzo pannello serach
+    var id = panelConfig.id;
+    var panel = this.state.panels[id];
+    //verifico se già esiste il pannello altrimenti lo creo
+    if (!panel) {
+      panel = new SearchPanel();// creo panello search
+      panel.init(panelConfig);//inizializzo pannello serach
+      this.state.panels[id] = panel;
+    };
     GUI.showPanel(panel);
+    return panel;
+  };
+  this.cleanSearchPanels = function() {
+    this.state.panels = {};
   };
   this.stop = function(){
     var deferred = $.Deferred();

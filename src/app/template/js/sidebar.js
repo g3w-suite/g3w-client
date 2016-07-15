@@ -35,28 +35,26 @@ function SidebarService(){
     //faccio montare il sedebar-item che contiene al suo interno il placeholder del componente vero e proprio
     //in questo modo il componente non si dovrà occupare di costruire anche l'elemento li della sidebar
     //ma conterrà solo il contenuto
-
     var sidebarItem = new SidebarItem().$mount().$appendTo('#g3w-sidebarcomponents');
-
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.dataLabel = component.title || sidebarItem.dataLabel;
     sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.dataLabel : component.openOnStart;
     sidebarItem.dataIcon = component.dataIcon || sidebarItem.dataIcon;
-    var parent = "#g3w-sidebarcomponent-placeholder";
+    //monto il componete nella sidebar
     component.mount("#g3w-sidebarcomponent-placeholder");
     if (_.has(component, 'initService')) {
       component.initService();
     };
-    //var parent = $("#g3w-sidebarcomponent-placeholder");
-    //indico solo il selettore dove montare il componente che risiede all'interno della sidebar-item
-
   };
   
   this.removeComponent = function(){
     //da vedere
   };
+
   this.addPanel = function(panel){
-    var parent = $("#g3w-sidebarpanel-placeholder");
+    //setto il pannello in modo da essere parte di uno stack
+    panel.setType('stack');
+    var parent = "#g3w-sidebarpanel-placeholder";
     this.stack.push(panel, parent);
   };
 

@@ -60,7 +60,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     });
     var mapComponent = this.templateConfig.viewport.map;
     ViewportService.init(mapComponent);
-    
     GUI.ready();
   };
   
@@ -102,9 +101,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.closeList = function() {};
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
-    GUI.showPanel = function() {};
 
+    //temporaneo show panel
+    GUI.showPanel = _.bind(sidebar.SidebarService.addPanel, sidebar.SidebarService);
     /* ------------------ */
+
     toastr.options.positionClass = 'toast-top-center';
     toastr.options.preventDuplicates = true;
     // proxy della libreria toastr

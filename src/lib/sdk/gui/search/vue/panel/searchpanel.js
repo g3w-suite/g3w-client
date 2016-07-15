@@ -1,12 +1,33 @@
+var inherit = require('core/utils/utils').inherit;
 var localize = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');
 var SearchQueryService = require('core/search/searchqueryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
+var Panel = require('gui/panel');
 var SearchResultPanelComponent = require('gui/search/vue/results/resultpanel');
 var ProjectService = require('core/project/projectservice').ProjectService;
 
-function Panel(){
+//componente vue pannello search
+var SearchPanelComponet = Vue.extend({
+  template: require('./searchpanel.html'),
+  data: function() {
+    return {
+      //forminputs: self.createInputsFormFromFilter()
+    }
+  },
+  methods: {
+    doSearch: function(event) {
+      event.preventDefault();
+      var filterObject = SearchQueryService.createQueryFilterObject(self.querylayer, self.filter);
+      //passo l'oggetto filter che avrà stessa struttura per tutti i tipi di chiamate dirette
+      //o estratte da configurazione filter del server
+      SearchQueryService.doQuerySearch(filterObject);
+    }
+  }
+});
+
+function SearchPanel() {
   self = this;
   this.config = {};
   this.filter = {};
@@ -14,8 +35,8 @@ function Panel(){
   this.id = null;
   this.querytype = null;
   this.querylayer = null;
-  this.panelComponent = null;
-
+  this.InternalPanel = SearchPanelComponet;
+  //funzione inizializzazione
   this.init = function(config) {
       this.config = config || {};
       this.name = this.config.name || this.name;
@@ -24,7 +45,6 @@ function Panel(){
       this.querytype = this.config.options.querytype || this.querytype;
       this.querylayer = this.config.options.querylayer || this.querylayer;
   };
-
 
   this.createInputsFormFromFilter = function() {
     var inputs = [];
@@ -39,30 +59,11 @@ function Panel(){
     })
     return inputs
   };
+};
 
-  this.createPanel = function() {
-    var PanelComponent = Vue.extend({
-      template: require('./searchpanel.html'),
-      data: function() {
-          return {
-            forminputs: self.createInputsFormFromFilter()
-          }
-      },
-      methods: {
-        doSearch: function(event) {
-          event.preventDefault();
-          console.log(self.querylayer);
-          var filterObject = SearchQueryService.createQueryFilterObject(self.querylayer, self.filter);
-          //passo l'oggetto filter che avrà stessa struttura per tutti i tipi di chiamate dirette
-          //o estratte da configurazione filter del server
-          SearchQueryService.doQuerySearch(filterObject);
-        }
-      }
-    });
-    return new PanelComponent();
-  }
-}
+inherit(SearchPanel, Panel);
 
+//search query
 SearchQueryService.on("searchresults",function(results){
   var listPanel = new ListPanel({
     name: "Risultati ricerca",
@@ -71,26 +72,6 @@ SearchQueryService.on("searchresults",function(results){
     listPanelComponent: SearchResultPanelComponent
   });
   GUI.showListing(listPanel);
-})
+});
 
-var proto = Panel.prototype;
-
-// viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.onShow = function(container){
-  var panel = this.panelComponent = this.createPanel();
-  panel.$mount().$appendTo(container);
-  localize();
-  return resolve(true);
-};
-
-// richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
-proto.onClose = function(){
-  var self = this;
-  var deferred = $.Deferred();
-  self.panelComponent.$destroy(true);
-  self.panelComponent = null;
-  deferred.resolve();
-  return deferred.promise();
-};
-
-module.exports = Panel;
+module.exports = SearchPanel;
