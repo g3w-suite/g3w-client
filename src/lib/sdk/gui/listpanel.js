@@ -1,7 +1,6 @@
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
-var ProjectService = require('core/project/projectservice').ProjectService;
 var MapService = require('core/map/mapservice');
 
 var ListPanelComponent = Vue.extend({

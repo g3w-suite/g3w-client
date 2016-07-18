@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectService = require('core/project/projectservice').ProjectService;
+var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
 
 
@@ -18,7 +18,7 @@ function SearchQueryService(){
   };
 
   this.getLayerInfoFromProjectConfig = function(layerId) {
-    var layerInfo = ProjectService.getLayerById(layerId);
+    var layerInfo = ProjectsRegistry.getCurrentProject().getLayerById(layerId);
     if (layerInfo) {
       console.log(layerInfo);
       if (layerInfo.source && layerInfo.source.url){

@@ -6,7 +6,6 @@ var SearchQueryService = require('core/search/searchqueryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
 var SearchResultPanelComponent = require('gui/search/vue/results/resultpanel');
-var ProjectService = require('core/project/projectservice').ProjectService;
 
 //componente vue pannello search
 var SearchPanelComponet = Vue.extend({

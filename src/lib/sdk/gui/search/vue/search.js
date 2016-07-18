@@ -6,16 +6,16 @@ var resolve = require('core/utils/utils').resolve;
 var Component = require('gui/vue/component');
 var GUI = require('gui/gui');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ProjectService = require('core/project/projectservice').ProjectService;
 var G3WObject = require('core/g3wobject');
 var SearchPanel = require('gui/search/vue/panel/searchpanel');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var SearchesService = require('gui/search/searchesservice');
 
 var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
     	return {
-    	  searches: SearchesService.state
+    	  searches: ProjectsRegistry.getCurrentProject().state
     	};
    },
    methods: {

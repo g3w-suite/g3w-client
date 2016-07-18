@@ -2,13 +2,13 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var Geometry = require('core/geometry/geometry');
-var ProjectService = require('core/project/projectservice').ProjectService;
+var ProjectsRegistry = require('core/project/projectsregistry');
+
 
 //var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
 function MapQueryService() {
   base(this);
-  
   this.init = function(map){
     this.map = map;
   }
@@ -164,12 +164,13 @@ function MapQueryService() {
   };
   
   this._query = function(rect,layerId) {
+    var Project = ProjectsRegistry.getCurrentProject();
     var layers;
     if (layerId) {
-      layers = [ProjectService.getLayer(layerId)];
+      layers = [Project.getLayer(layerId)];
     }
     else {
-      layers = ProjectService.getLayers();
+      layers = Project.getLayers();
     }
   };
   

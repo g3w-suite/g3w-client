@@ -4,8 +4,7 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ProjectService = require('core/project/projectservice').ProjectService;
-var ProjectTypes = require('core/project/projectservice').ProjectTypes;
+var ProjectTypes = require('core/project/projecttypes');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
@@ -459,7 +458,7 @@ proto._completeGetFeatureInfo = function(layerId,coordinate,deferred){
   var resolution = self.viewer.getResolution();
   var epsg = self.viewer.map.getView().getProjection().getCode();
   var params = {
-    QUERY_LAYERS: ProjectService.getLayer(layerId).name,
+    QUERY_LAYERS: Project.getLayer(layerId).name,
     INFO_FORMAT: "text/xml"
   }
   

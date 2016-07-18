@@ -4,8 +4,7 @@ var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
-var ProjectService = require('core/project/projectservice').ProjectService;
-var ProjectTypes = require('core/project/projectservice').ProjectTypes;
+var ProjectTypes = require('core/project/projecttypes');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
@@ -30,6 +29,7 @@ PickToleranceValues[GeometryTypes.POLYGON] = 5;
 
 function MapService(){
   var self = this;
+  var Project = ProjectsRegistry.getCurrentService();
   this.config;
   this.viewer;
   this.mapLayers = {};
@@ -70,8 +70,9 @@ function MapService(){
       this.updateMapLayers(this.mapLayers);
     },
     setupViewer: function(){
+      var Project = ProjectsRegistry.getCurrentService();
       //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
-      proj4.defs("EPSG:"+ProjectService.state.project.crs,ProjectService.state.project.proj4);
+      proj4.defs("EPSG:"+Project.state.project.crs, Project.state.project.proj4);
       if (self.viewer) {
         this.viewer.destroy();
         this.viewer = null;
@@ -83,22 +84,22 @@ function MapService(){
     }
   };
   
-  ProjectService.on('projectset',function(){
+  ProjectsRegistry.on('setCurrentProject',function(){
     self.setupViewer();
   });
   
-  ProjectService.on('projectswitch',function(){
+  Project.on('setCurrentProject',function(){
     self.setupLayers();
   });
   
-  ProjectService.onafter('setLayersVisible',function(layers){
+  Project.onafter('setLayersVisible',function(layers){
     var mapLayers = _.map(layers,function(layer){
       return self.getMapLayerForLayer(layer);
     })
     self.updateMapLayers(mapLayers);
   });
   
-  ProjectService.onafter('setBaseLayer',function(){
+  Project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
   });
   
@@ -108,9 +109,9 @@ function MapService(){
   };
   
   this._setupViewer = function(){
-    var extent = ProjectService.state.project.extent;
+    var extent = Project.state.extent;
     var projection = new ol.proj.Projection({
-      code: "EPSG:"+ProjectService.state.project.crs,
+      code: "EPSG:"+Project.state.crs,
       extent: extent
     });
     
@@ -203,7 +204,7 @@ function MapService(){
               .then(function(coordinates,nfeatures,featuresForLayerNames){
                 var featuresForLayers = [];
                 _.forEach(featuresForLayerNames,function(features,layerName){
-                  var layer = ProjectService.layers[layerName];
+                  var layer = Project.layers[layerName];
                   featuresForLayers.push({
                     layer: layer,
                     features: features
@@ -234,13 +235,13 @@ function MapService(){
     var self = this;
     this.mapBaseLayers = {};
     
-    var initBaseLayer = ProjectService.config.initbaselayer;
-    var baseLayersArray = ProjectService.state.baseLayers;
+    var initBaseLayer = Project.state.initbaselayer;
+    var baseLayersArray = Project.state.baseLayers;
     
     _.forEach(baseLayersArray,function(baseLayer){
       var visible = true;
-      if (ProjectService.state.project.initbaselayer) {
-        visible = baseLayer.id == (ProjectService.state.project.initbaselayer);
+      if (initBaseLayer) {
+        visible = baseLayer.id == (initBaseLayer);
       }
       if (baseLayer.fixed) {
         visible = baseLayer.fixed;
@@ -250,7 +251,7 @@ function MapService(){
     
     baseLayersArray.forEach(function(layer){     
       var config = {
-        url: ProjectService.getWmsUrl(),
+        url: Project.getWmsUrl(),
         id: layer.id,
         tiled: true
       };
@@ -275,7 +276,7 @@ function MapService(){
     
     this.mapLayers = {};
     this.layersAssociation = {};
-    var layersArray = this.traverseLayersTree(ProjectService.state.project.layerstree);
+    var layersArray = this.traverseLayersTree(Project.state.layerstree);
     // prendo solo i layer veri e non i folder
     var leafLayersArray = _.filter(layersArray,function(layer){
       return !_.get(layer,'nodes');
@@ -288,7 +289,7 @@ function MapService(){
       var mapLayer = _.get(self.mapLayers,layerId);
       var tiled = layers[0].tiled // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
       var config = {
-        url: ProjectService.getWmsUrl(),
+        url: Project.getWmsUrl(),
         id: layerId,
         tiled: tiled
       };
@@ -402,12 +403,12 @@ function MapService(){
   };
   
   this.goToWGS84 = function(coordinates,zoom){
-    var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+ProjectService.state.project.crs);
+    var coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+Project.state.crs);
     this.goTo(coordinates,zoom);
   };
   
   this.extentToWGS84 = function(extent){
-    return ol.proj.transformExtent(extent,'EPSG:'+ProjectService.state.project.crs,'EPSG:4326');
+    return ol.proj.transformExtent(extent,'EPSG:'+Project.state.crs,'EPSG:4326');
   };
   
   this.getFeatureInfo = function(layerId){
@@ -425,20 +426,20 @@ function MapService(){
   
   this._completeGetFeatureInfo = function(layerId,coordinate,deferred){
     var self = this;
-    var projectType = ProjectService.state.project.type;
+    var projectType = Project.state.type;
     
     var mapLayer = this.mapLayers[this.layersAssociation[layerId]];
     var resolution = self.viewer.getResolution();
     var epsg = self.viewer.map.getView().getProjection().getCode();
     var params = {
-      QUERY_LAYERS: ProjectService.getLayer(layerId).name,
+      QUERY_LAYERS: Project.getLayer(layerId).name,
       INFO_FORMAT: "text/xml"
     }
     
     if (projectType == ProjectTypes.QDJANGO){
       var toleranceParams = PickToleranceParams[projectType];
       if (toleranceParams){
-        var geometrytype = ProjectService.getLayer(layerId).geometrytype;
+        var geometrytype = Project.getLayer(layerId).geometrytype;
         params[toleranceParams[geometrytype]] = PickToleranceValues[geometrytype];
       }
     }
@@ -486,7 +487,7 @@ function MapService(){
     var duration = options.duration || 4000;
     
     if (options.fromWGS84) {
-      geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
+      geometry.transform('EPSG:4326','EPSG:'+Project.state.crs);
     }
     
     var feature = new ol.Feature({

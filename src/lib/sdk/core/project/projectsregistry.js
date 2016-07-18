@@ -5,6 +5,7 @@ var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var Project = require('core/project/project');
 
+
 /* service
 Funzione costruttore contentente tre proprieta':
     setup: metodo di inizializzazione
@@ -17,6 +18,7 @@ function ProjectsRegistry(){
   var self = this;
   this.config = null;
   this.initialized = false;
+  this.projectType = null;
   
   this.setters = {
     setCurrentProject: function(project){
@@ -46,6 +48,8 @@ proto.init = function(config){
   if (!this.initialized){
     this.initialized = true;
     this.config = config;
+    //aggiunto tipo progetto
+    this.projectType = this.config.group.overviewproject.type;
     this.setupState();
     return this.getProject(config.initproject)
     .then(function(project){
@@ -71,6 +75,10 @@ proto.setupState = function(){
     self._pendingProjects.push(project);
   })
   //this.state.projects = config.group.projects;
+};
+
+proto.getProjectType = function() {
+  return this.projectType;
 };
 
 proto.getPendingProjects = function() {

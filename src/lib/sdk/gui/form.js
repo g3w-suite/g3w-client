@@ -1,7 +1,7 @@
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
-var ProjectService = require('core/project/projectservice').ProjectService;
+var ProjectsRegistry = require('core/project/projectsregistry');
 var MapService = require('core/map/mapservice');
 
 Vue.filter('startcase', function (value) {
@@ -162,7 +162,7 @@ proto._pickLayer = function(field){
   GUI.setModal(false);
   var layerId = field.input.options.layerid;
   var relFieldName = field.input.options.field;
-  var relFieldLabel = ProjectService.getLayerAttributeLabel(layerId,field.input.options.field);
+  var relFieldLabel = ProjectRegistry.getCurrentProject().getLayerAttributeLabel(layerId,field.input.options.field);
   MapService.getFeatureInfo(layerId)
   .then(function(attributes){
     var value = attributes[relFieldName] ? attributes[relFieldName] : attributes[relFieldLabel];
@@ -191,7 +191,7 @@ proto._getDefaultValue = function(field){
 };
 
 proto._getlayerPickerLayerName = function(id){
-  var layer = ProjectService.getLayer(id);
+  var layer = ProjectsRegistry.getCurrentProject().getLayer(id);
   if (layer){
     return layer.name;
   }
