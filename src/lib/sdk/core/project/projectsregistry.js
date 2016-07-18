@@ -39,7 +39,7 @@ function ProjectsRegistry(){
   
   base(this);
 }
-inherit(ProjectsRegistry,G3WObject);
+inherit(ProjectsRegistry, G3WObject);
 
 var proto = ProjectsRegistry.prototype;
 

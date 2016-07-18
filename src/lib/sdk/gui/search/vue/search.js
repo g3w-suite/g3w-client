@@ -11,6 +11,7 @@ var SearchPanel = require('gui/search/vue/panel/searchpanel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var SearchesService = require('gui/search/searchesservice');
 
+
 var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
@@ -25,6 +26,7 @@ var vueComponentOptions = {
   }
 };
 
+
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
 // se lo voglio usare come componente come elemento html
@@ -35,15 +37,18 @@ var InternalComponent = Vue.extend(vueComponentOptions);
 
 /* INTERFACCIA PUBBLICA */
 function SearchComponent(options){
+  self = this;
   this.id = "search-component";
   this.title = "search";
   this.InternalComponent = InternalComponent;
   merge(this,options);
   this.initService = function() {
     //inizializzo il servizio
-    SearchesService.init()
+    SearchesService.init();
   };
-}
+};
+
 inherit(SearchComponent, Component);
+
 
 module.exports = SearchComponent;
