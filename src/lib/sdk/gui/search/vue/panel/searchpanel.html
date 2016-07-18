@@ -1,11 +1,11 @@
 <div class="g3w-search-panel form-group">
   <form id="g3w-search-form">
     <template v-for="forminput in forminputs">
-       <template v-if="forminput.type == 'numberfield'" class="numeric">
-         <label for="forminput.name">{{ forminput.label }}</label>
-         <input type="number"  class="form-control" id="orminput.name">
+       <template v-if="forminput.input.type == 'numberfield'" class="numeric">
+         <label for="{{ forminput.attribute }} ">{{ forminput.label }}</label>
+         <input type="number"  class="form-control" id="{{ forminput.attribute }}">
        </template>
-      <template v-if="forminput.type == 'textfield'" class="text">
+      <template v-if="forminput.input.type == 'textfield'" class="text">
          <label for="forminput.name">{{ forminput.label }}</label>
          <input type="text"  class="form-control" id="forminput.name">
        </template>

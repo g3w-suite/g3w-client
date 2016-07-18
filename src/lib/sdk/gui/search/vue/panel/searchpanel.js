@@ -50,20 +50,32 @@ function SearchPanel() {
 
   this.createInputsFormFromFilter = function() {
     var inputs = [];
-    _.forEach(this.filter,function(v,k,obj){
+    _.forEach(this.filter,function(v,k,obj) {
       switch(k) {
         case 'AND':
           if (v.length == 1) {
-            inputs.push(v[0].input);
+            inputs.push(v[0]);
           } else {
-            _.forEach(this.filter,function(obj){
-              inputs.push(obj.input);
+            _.forEach(v, function(input){
+              inputs.push(input);
             })
           }
       };
     });
     return inputs
   };
+
+
+  this.createQueryFilterObject = function() {
+    // qui andrà l'oggeto ricostruito ad ok per poter essere passato queryWMS Provider
+    var filterObj = {};
+    // un pò di operazioni con this filter
+    return {
+      type : '', // indica il tipo di server ogc, mapserver, etccc..
+      url : '', // url per fare query
+      filterObj : filterObj // oggetto filtro necessario per costruire il filtro alla richiesta
+    }
+  }
 };
 
 inherit(SearchPanel, Panel);
