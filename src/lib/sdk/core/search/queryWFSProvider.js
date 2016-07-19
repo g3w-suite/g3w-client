@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
+var resolve = require('core/utils/utils').resolve;
 //Definisco oggetti filtro per ogni tipologia
 var standardFilterTemplates = function() {
   var common = {
@@ -32,7 +33,7 @@ var standardFilterTemplates = function() {
   }
 }();
 
-var qgisFilterTemplaates = {
+var qgisFilterTemplates = {
   // codice qui
 };
 
@@ -51,38 +52,40 @@ function QueryWMSProvider(){
   var results = {
     headers:[],
     values:[]
-  }
-  this.doSearch = function(request){
-    var ogcservertype = request.type;
-    var url = request.url;
-    var filterObj = request.filterObj;
+  };
+
+  this.doSearch = function(queryFilterObject){
+    var ogcservertype = queryFilterObject.type;
+    var url = queryFilterObject.url;
+    var querylayer = queryFilterObject.querylayer;
+    var filterObj = queryFilterObject.filterObj;
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
         filter = this.createStandardFilter(filterObj);
-        response = this.standardSearch(url, filter);
-        return response
+        response = this.standardSearch(querylayer, url, filter);
+        return resolve(response)
         break;
       case 'qgis':
         filter = this.createQgisFilter(filterObj);
-        response = this.qgisSearch(url, filter);
-        return response
+        response = this.qgisSearch(querylayer, url, filter);
+        return resolve(response)
         break;
       case 'mapserver':
         filter = this.createMapserverFilter(filterObj);
-        response = this.mapserverSearch(url, filter);
-        return response
+        response = this.mapserverSearch(querylayer, url, filter);
+        return resolve(response)
         break;
       case 'geoserver':
         filter = this.createGeoserverFilter(filterObj);
-        response = this.geoserverSearch(url, filter);
-        return response
+        response = this.geoserverSearch(querylayer, url, filter);
+        return resolve(response)
         break;
       default:
         return false
     }
   };
-  this.standardSearch = function(url, filter){
+  this.standardSearch = function(querylayer, url, filter){
     var url = url || 'http://wms.pcn.minambiente.it/ogc?map=/ms_ogc/wfs/Accelerazioni_Confronto_ERS_ENVISAT_Ascending.map&service=wfs&request=getFeature&VERSION=1.1.0&TYPENAME=PI.CONFRONTOERSENVISAT.ASCENDING&MAXFEATURES=1&FILTER=';
     var filter = filter || '<Filter><PropertyIsGreaterThan><PropertyName>indice_var</PropertyName><Literal>1</Literal></PropertyIsGreaterThan></Filter>';
     url = url + filter;
@@ -123,14 +126,14 @@ function QueryWMSProvider(){
     var filter;
     return filter
   };
-  this.mapserverSearch = function(url, filter){
+  this.mapserverSearch = function(querylayer, url, filter){
     return d.promise();
   };
   this.createMapserverFilter = function(filterObj) {
     var filter;
     return filter
   };
-  this.geoserverSearch = function(url, filter){
+  this.geoserverSearch = function(querylayer, url, filter){
     return d.promise();
   };
   this.createGeoserverFilter = function(filterObj) {
