@@ -114,7 +114,8 @@ function QueryWMSProvider(){
     var filter = ['<Filter>'];
     var root;
     var rootKey;
-    var filterElement;
+    var filterElement = '';
+    var filterElements = [];
     _.forEach(filterObject, function(v, k, obj) {
       root = standardFilterTemplates[k];
       rootKey = k;
@@ -123,19 +124,17 @@ function QueryWMSProvider(){
           filterElement = standardFilterTemplates[k];
           _.forEach(input, function(v, k, obj) {
             _.forEach(v, function(v, k, obj) {
-              //console.log(v, k)
               filterElement = filterElement.replace('[PROP]', k);
               filterElement = filterElement.replace('[VALUE]', v);
             });
           });
+          filterElements.push(filterElement);
         });
       });
     });
-    root = root.replace('['+rootKey+']', filterElement);
+    root = root.replace('['+rootKey+']', filterElements.join(''));
     filter.push(root);
-    filter.push(filterElement);
     filter.push('</Filter>');
-    console.log(filter);
     return filter.join('');
   };
   this.qgisSearch = function(urls, filter){
