@@ -28,8 +28,8 @@ var standardFilterTemplates = function() {
     lte: "",
     like: "",
     ilike: "",
-    and: "<And>[AND]</And>",
-    or: "<Or>[OR]</Or>",
+    AND: "<And>[AND]</And>",
+    OR: "<Or>[OR]</Or>",
   }
 }();
 
@@ -111,10 +111,31 @@ function QueryWMSProvider(){
     return d.promise();
   };
   this.createStandardFilter = function(filterObject) {
-    console.log(filterObject);
     var filter = ['<Filter>'];
-    //codice qui
-    filter.push('</Filter>')
+    var root;
+    var rootKey;
+    var filterElement;
+    _.forEach(filterObject, function(v, k, obj) {
+      root = standardFilterTemplates[k];
+      rootKey = k;
+      _.forEach(v, function(input){
+        _.forEach(input, function(v, k, obj) {
+          filterElement = standardFilterTemplates[k];
+          _.forEach(input, function(v, k, obj) {
+            _.forEach(v, function(v, k, obj) {
+              //console.log(v, k)
+              filterElement = filterElement.replace('[PROP]', k);
+              filterElement = filterElement.replace('[VALUE]', v);
+            });
+          });
+        });
+      });
+    });
+    root = root.replace('['+rootKey+']', filterElement);
+    filter.push(root);
+    filter.push(filterElement);
+    filter.push('</Filter>');
+    console.log(filter);
     return filter.join('');
   };
   this.qgisSearch = function(urls, filter){
