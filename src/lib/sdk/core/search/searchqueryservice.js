@@ -4,8 +4,6 @@ var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
 
-var BOOLEANOPERATORS = ['AND', 'OR'];
-
 function SearchQueryService(){
   var self = this;
   this.url = "";
@@ -35,7 +33,7 @@ function SearchQueryService(){
       evalObject = {};
       //verifico che l'oggetto passato non sia a sua volta un oggetto 'BOOLEANO'
       _.forEach(obj, function(v,k) {
-        if (k in BOOLEANOPERATORS) {
+        if (_.isArray(v)) {
           return createBooleanObject(k,v);
         };
       });

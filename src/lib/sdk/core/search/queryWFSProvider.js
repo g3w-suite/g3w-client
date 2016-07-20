@@ -3,6 +3,36 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 //Definisco oggetti filtro per ogni tipologia
+
+var testFilter = {
+  'AND':
+    [
+      {
+        eq:
+          {
+            gid : 10
+          }
+      },
+      {
+        'OR':
+          [
+            {
+              eq: {
+                pippo : 'lallo'
+              }
+            },
+            {
+              gt: {
+                id : 5
+              }
+            }
+
+          ]
+      }
+   ]
+}
+
+
 var standardFilterTemplates = function() {
   var common = {
     propertyName:
@@ -111,30 +141,50 @@ function QueryWMSProvider(){
     return d.promise();
   };
   this.createStandardFilter = function(filterObject) {
+
+    //TEST
+    filterObject = testFilter;
+
     var filter = ['<Filter>'];
-    var root;
-    var rootKey;
-    var filterElement = '';
-    var filterElements = [];
-    _.forEach(filterObject, function(v, k, obj) {
-      root = standardFilterTemplates[k];
-      rootKey = k;
-      _.forEach(v, function(input){
-        _.forEach(input, function(v, k, obj) {
-          filterElement = standardFilterTemplates[k];
+    function createSingleFilter(booleanObject) {
+      var rootKey;
+      var filterElements = [];
+      var filterElement = '';
+      var root;
+      _.forEach(booleanObject, function(v, k, obj) {
+        root = standardFilterTemplates[k];
+        rootKey = k;
+        //qui c'è array degli elementi di un booleano
+        _.forEach(v, function(input){
+          //scorro su oggetto operatore
           _.forEach(input, function(v, k, obj) {
-            _.forEach(v, function(v, k, obj) {
-              filterElement = filterElement.replace('[PROP]', k);
-              filterElement = filterElement.replace('[VALUE]', v);
-            });
+          //è un array e quindi è altro oggetto padre booleano
+            if (_.isArray(v)) {
+              filterElement = createSingleFilter(obj);
+            } else {
+              filterElement = standardFilterTemplates[k];
+              _.forEach(input, function(v, k, obj) {
+                _.forEach(v, function(v, k, obj) {
+                  filterElement = filterElement.replace('[PROP]', k);
+                  filterElement = filterElement.replace('[VALUE]', v);
+                });
+              });
+            };
+            filterElements.push(filterElement);
           });
-          filterElements.push(filterElement);
         });
+        root = root.replace('['+rootKey+']', filterElements.join(''));
       });
+      return root;
+    };
+
+    //scorro su oggetto filtro inziale
+    _.forEach(filterObject, function(v, k, obj) {
+      filter.push(createSingleFilter(obj));
     });
-    root = root.replace('['+rootKey+']', filterElements.join(''));
-    filter.push(root);
+
     filter.push('</Filter>');
+    console.log(filter)
     return filter.join('');
   };
   this.qgisSearch = function(urls, filter){
