@@ -58,26 +58,26 @@ function QueryWMSProvider(){
     var ogcservertype = queryFilterObject.type;
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
-    var filterObj = queryFilterObject.filterObj;
+    var filterObject = queryFilterObject.filterObject;
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
-        filter = this.createStandardFilter(filterObj);
+        filter = this.createStandardFilter(filterObject);
         response = this.standardSearch(querylayer, url, filter);
         return resolve(response)
         break;
       case 'qgis':
-        filter = this.createQgisFilter(filterObj);
+        filter = this.createQgisFilter(filterObject);
         response = this.qgisSearch(querylayer, url, filter);
         return resolve(response)
         break;
       case 'mapserver':
-        filter = this.createMapserverFilter(filterObj);
+        filter = this.createMapserverFilter(filterObject);
         response = this.mapserverSearch(querylayer, url, filter);
         return resolve(response)
         break;
       case 'geoserver':
-        filter = this.createGeoserverFilter(filterObj);
+        filter = this.createGeoserverFilter(filterObject);
         response = this.geoserverSearch(querylayer, url, filter);
         return resolve(response)
         break;
@@ -110,9 +110,10 @@ function QueryWMSProvider(){
     });
     return d.promise();
   };
-  this.createStandardFilter = function(filterObj) {
+  this.createStandardFilter = function(filterObject) {
+    console.log(filterObject);
     var filter = ['<Filter>'];
-
+    //codice qui
     filter.push('</Filter>')
     return filter.join('');
   };
@@ -122,21 +123,21 @@ function QueryWMSProvider(){
     });
     return d.promise();
   };
-  this.createQGisFilter = function(filterObj) {
+  this.createQGisFilter = function(filterObject) {
     var filter;
     return filter
   };
   this.mapserverSearch = function(querylayer, url, filter){
     return d.promise();
   };
-  this.createMapserverFilter = function(filterObj) {
+  this.createMapserverFilter = function(filterObject) {
     var filter;
     return filter
   };
   this.geoserverSearch = function(querylayer, url, filter){
     return d.promise();
   };
-  this.createGeoserverFilter = function(filterObj) {
+  this.createGeoserverFilter = function(filterObject) {
     var filter;
     return filter
   };

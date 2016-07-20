@@ -7,6 +7,9 @@ var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
 var SearchResultPanelComponent = require('gui/search/vue/results/resultpanel');
 
+//Già presente SearchQueryService ma poi deve essere messa in un punto
+var BOOLEANOPERATORS = ['AND', 'OR'];
+
 //componente vue pannello search
 var SearchPanelComponet = Vue.extend({
   template: require('./searchpanel.html'),
@@ -23,19 +26,40 @@ var SearchPanelComponet = Vue.extend({
       event.preventDefault();
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
-      _.forEach(this.filterObject.filterObject, function(v,k){
-        _.forEach(v, function(input, index){
-          _.forEach(input, function(v, k, obj){
-            _.forEach(v, function(v, k, obj){
-              obj[k] = self.formInputValues[index].value;
-            });
-          });
-        });
-      });
+      this.filterObject = fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       SearchQueryService.doQuerySearch(this.filterObject);
     }
   }
 });
+
+//funzione che associa i valori dell'inputs form al relativo oggetto "operazionde del filtro"
+//da migliorare perchè non mi piace e da considerare anche i casi più complessi come operazioni
+//booleani all'interno
+
+function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex) {
+  //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
+  _.forEach(filterObject.filterObject, function(v,k){
+    //scorro attraverso l'array di elementi operazionali da confrontare
+    _.forEach(v, function(input, idx){
+      //elemento operazionale {'=':{}}
+      _.forEach(input, function(v, k, obj){
+        //vado a leggere l'oggetto attributo
+        if (k in BOOLEANOPERATORS) {
+          //richiama la funzione ricorsivamente .. andrà bene ?
+          fillFilterInputsWithValues(input, formInputValues, idx);
+        } else {
+          _.forEach(v, function(v, k, obj){
+            //considero l'index globale in modo che inputs di operazioni booleane interne
+            //vengono considerate
+            index = (globalIndex) ? globalIndex + idx : idx;
+            obj[k] = formInputValues[index].value;
+          });
+        };
+      });
+    });
+  });
+  return filterObject;
+};
 
 //costruttore del pannello e del suo componente vue
 function SearchPanel() {
