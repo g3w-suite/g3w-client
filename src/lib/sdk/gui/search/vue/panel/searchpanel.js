@@ -32,7 +32,6 @@ var SearchPanelComponet = Vue.extend({
           });
         });
       });
-      console.log(this.filterObject.filterObject);
       SearchQueryService.doQuerySearch(this.filterObject);
     }
   }
@@ -69,14 +68,18 @@ function SearchPanel() {
   //'operazionali' del filtro
   this.fillInputsFormFromFilter = function() {
     var id = 0;
-    var formValue = {};
+    var formValue;
     _.forEach(this.filter,function(v,k,obj) {
       _.forEach(v, function(input){
+        //sempre nuovo oggetto
+        formValue = {};
         //inserisco l'id all'input
         input.id = id
         formValue.value = null;
-        //popolo gli inputs
+        //popolo gli inputs:
+        // valori
         self.InternalPanel.formInputValues.push(formValue);
+        //input
         self.InternalPanel.forminputs.push(input);
         id+=1;
       });

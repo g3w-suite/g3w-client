@@ -7,7 +7,7 @@
          <p>Value {{ formInputValues[$index].value }}</p>
        </template>
       <template v-if="forminput.input.type == 'textfield'" class="text">
-         <label for="forminput.name">{{ forminput.label }}</label>
+         <label for="{{ forminput.id }}">{{ forminput.label }}</label>
          <input type="text" v-model="formInputValues[$index].value" class="form-control" id="{{ forminput.id }}">
         <p>Value {{ formInputValues[$index].value }}</p>
        </template>
