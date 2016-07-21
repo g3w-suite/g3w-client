@@ -3,6 +3,8 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 
+var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
+
 //definisco il filtro ol3
 var ol3OGCFilter = ol.format.ogc.filter;
 
@@ -106,10 +108,9 @@ var geoserverFilterTemplates = {
   // codice qui
 };
 
-function QueryWMSProvider(){
+function QueryWFSProvider(){
   var self = this;
   var d = $.Deferred();
-  var parser = new ol.format.WMSGetFeatureInfo();
   var results = {
     headers:[],
     values:[]
@@ -119,10 +120,18 @@ function QueryWMSProvider(){
     var ogcservertype = queryFilterObject.type;
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
-    var filterObject = queryFilterObject.filterObject;
+    //TEST ASSEGNO IL FILTRO CREATO AD HO PRIMA
+    var filterObject = testFilter //queryFilterObject.filterObject;
+    /////////////////////////////
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
+        ///TTEST QGISWMS
+        QueryQGISWMSProvider.doSearch({
+          querylayer: querylayer,
+          filterObject: filterObject
+        });
+        //
         filter = this.createStandardFilter(filterObject, querylayer);
         response = this.standardSearch(url, filter);
         return resolve(response)
@@ -148,36 +157,9 @@ function QueryWMSProvider(){
   };
 
   this.standardSearch = function(url, filter){
-    /*var url = url || 'http://wms.pcn.minambiente.it/ogc?map=/ms_ogc/wfs/Accelerazioni_Confronto_ERS_ENVISAT_Ascending.map&service=wfs&request=getFeature&VERSION=1.1.0&TYPENAME=PI.CONFRONTOERSENVISAT.ASCENDING&MAXFEATURES=1&FILTER=';
-    var filter = filter || '<Filter><PropertyIsGreaterThan><PropertyName>indice_var</PropertyName><Literal>1</Literal></PropertyIsGreaterThan></Filter>';
-    url = url + filter;
-    $.get(url,function(result){
-      var features = parser.readFeatures(result);
-      var fillheaders = true;
-      _.forEach(features, function(feature){
-        var listValuesFeature = [];
-        fillheaders = (results['headers'].length) ? false : true;
-        _.forEach(feature.values_,function(v,k,o){
-          if (k!='boundary' && k!='boundedBy' && k!='lineage') {
-            if (fillheaders) {
-              results['headers'].push(k)
-            };
-            listValuesFeature.push(v);
-          }
-        });
-        results['values'].push(listValuesFeature);
-      });
-      d.resolve(results);
-      self.emit("searchresults",results);
-    });
-    return d.promise();
-    */
     console.log(filter)
   };
   this.createStandardFilter = function(filterObject, querylayer) {
-
-    //TEST ASSEGNO IL FILTRO CREATO AD HO PRIMA
-    filterObject = testFilter;
     /////inserisco il nome del layer (typename) ///
     ol3GetFeatureRequestObject.featureTypes.push(querylayer);
     var filter = [];
@@ -243,7 +225,7 @@ function QueryWMSProvider(){
   };
   base(this);
 }
-inherit(QueryWMSProvider,G3WObject);
+inherit(QueryWFSProvider,G3WObject);
 
-module.exports =  new QueryWMSProvider()
+module.exports =  new QueryWFSProvider()
 
