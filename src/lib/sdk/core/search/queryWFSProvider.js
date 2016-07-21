@@ -2,8 +2,37 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
-//Definisco oggetti filtro per ogni tipologia
 
+//definisco il filtro ol3
+var ol3OGCFilter = ol.format.ogc.filter;
+
+//oggetto che viene passato per effetturare il la search
+var ol3GetFeatureRequestObject = {
+  srsName: 'EPSG:3857',
+  featureNS: '',
+  featurePrefix: '',
+  featureTypes: [],
+  outputFormat: 'application/json',
+  filter: null // esempio filtro composto ol3OGCFilter.and(ol3OGCFilter.bbox('the_geom', [1, 2, 3, 4], 'urn:ogc:def:crs:EPSG::4326'),ol3OGCFilter.like('name', 'New*'))
+};
+
+// FILTRI OL3
+var ol3Filters = {
+  eq: ol3OGCFilter.equalTo,
+  gt: ol3OGCFilter.greaterThan,
+  gte: ol3OGCFilter.greaterThanOrEqualTo,
+  lt: ol3OGCFilter.lessThan,
+  lte: ol3OGCFilter.lessThanOrEqualTo,
+  like: ol3OGCFilter.like,
+  ilike: "",
+  bbox: ol3OGCFilter.bbox,
+  AND: ol3OGCFilter.and,
+  OR: ol3OGCFilter.or,
+  NOT: ol3OGCFilter.not
+};
+
+
+// CREATO UN FILTRO DI ESEMPIO PER VERIFICARE LA CORRETTEZZA DELLA FUNZIONE CREAZIONE FILTRO
 var testFilter = {
   'AND':
     [
@@ -31,8 +60,9 @@ var testFilter = {
       }
    ]
 }
+//////////////
 
-
+///FILTRI CUSTOM
 var standardFilterTemplates = function() {
   var common = {
     propertyName:
@@ -63,6 +93,7 @@ var standardFilterTemplates = function() {
   }
 }();
 
+/////
 var qgisFilterTemplates = {
   // codice qui
 };
@@ -92,8 +123,8 @@ function QueryWMSProvider(){
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
-        filter = this.createStandardFilter(filterObject);
-        response = this.standardSearch(querylayer, url, filter);
+        filter = this.createStandardFilter(filterObject, querylayer);
+        response = this.standardSearch(url, filter);
         return resolve(response)
         break;
       case 'qgis':
@@ -115,8 +146,9 @@ function QueryWMSProvider(){
         return false
     }
   };
-  this.standardSearch = function(querylayer, url, filter){
-    var url = url || 'http://wms.pcn.minambiente.it/ogc?map=/ms_ogc/wfs/Accelerazioni_Confronto_ERS_ENVISAT_Ascending.map&service=wfs&request=getFeature&VERSION=1.1.0&TYPENAME=PI.CONFRONTOERSENVISAT.ASCENDING&MAXFEATURES=1&FILTER=';
+
+  this.standardSearch = function(url, filter){
+    /*var url = url || 'http://wms.pcn.minambiente.it/ogc?map=/ms_ogc/wfs/Accelerazioni_Confronto_ERS_ENVISAT_Ascending.map&service=wfs&request=getFeature&VERSION=1.1.0&TYPENAME=PI.CONFRONTOERSENVISAT.ASCENDING&MAXFEATURES=1&FILTER=';
     var filter = filter || '<Filter><PropertyIsGreaterThan><PropertyName>indice_var</PropertyName><Literal>1</Literal></PropertyIsGreaterThan></Filter>';
     url = url + filter;
     $.get(url,function(result){
@@ -139,21 +171,23 @@ function QueryWMSProvider(){
       self.emit("searchresults",results);
     });
     return d.promise();
+    */
+    console.log(filter)
   };
-  this.createStandardFilter = function(filterObject) {
+  this.createStandardFilter = function(filterObject, querylayer) {
 
-    //TEST
+    //TEST ASSEGNO IL FILTRO CREATO AD HO PRIMA
     filterObject = testFilter;
-
-    var filter = ['<Filter>'];
+    /////inserisco il nome del layer (typename) ///
+    ol3GetFeatureRequestObject.featureTypes.push(querylayer);
+    var filter = [];
     function createSingleFilter(booleanObject) {
-      var rootKey;
       var filterElements = [];
       var filterElement = '';
-      var root;
+      var rootFilter;
       _.forEach(booleanObject, function(v, k, obj) {
-        root = standardFilterTemplates[k];
-        rootKey = k;
+        //creo il filtro root che sarà AND OR
+        rootFilter = ol3Filters[k];
         //qui c'è array degli elementi di un booleano
         _.forEach(v, function(input){
           //scorro su oggetto operatore
@@ -162,31 +196,27 @@ function QueryWMSProvider(){
             if (_.isArray(v)) {
               filterElement = createSingleFilter(obj);
             } else {
-              filterElement = standardFilterTemplates[k];
+              filterElement = ol3Filters[k];
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
-                  filterElement = filterElement.replace('[PROP]', k);
-                  filterElement = filterElement.replace('[VALUE]', v);
+                  filterElement = filterElement(k, v);
                 });
               });
             };
             filterElements.push(filterElement);
           });
         });
-        root = root.replace('['+rootKey+']', filterElements.join(''));
+        rootFilter = rootFilter.apply(this, filterElements);
       });
-      return root;
+      return rootFilter;
     };
-
-    //scorro su oggetto filtro inziale
-    _.forEach(filterObject, function(v, k, obj) {
-      filter.push(createSingleFilter(obj));
-    });
-
-    filter.push('</Filter>');
-    console.log(filter)
-    return filter.join('');
+    //assegno il filtro creato
+    ol3GetFeatureRequestObject.filter = createSingleFilter(filterObject);
+    //creo il filtro utilizzando ol3
+    filter = new ol.format.WFS().writeGetFeature(ol3GetFeatureRequestObject);
+    return filter;
   };
+
   this.qgisSearch = function(urls, filter){
     $.get(searchUrl,function(result){
       self.emit("searchresults",result);
