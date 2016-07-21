@@ -100,7 +100,7 @@ function MapComponent(options){
   base(this,options);
   this.id = "iternet-editing-panel";
   this.title = "Catalogo dati";
-  this.InternalComponent = InternalComponent;
+  this.internalComponent = new InternalComponent;
 }
 inherit(MapComponent, Component);
 

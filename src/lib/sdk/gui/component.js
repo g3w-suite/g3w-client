@@ -2,10 +2,10 @@ var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 
 var Component = function(options) {
-  self = this;
   var options = options || {};
-  self.id = options.id || null;
-  self.title = options.title || '';
+  this.id = options.id || null;
+  this.title = options.title || '';
+  this.internalComponent = null;
 };
 inherit(Component,G3WObject);
 

@@ -82,6 +82,18 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     //codice qui
   };
   
+  this._addToolsGroup = function(groupName) {
+  };
+  
+  this._removeToolsGroup = function(groupName) {
+  };
+  
+  this._addTools = function(group,tools) {
+  };
+  
+  this._removeTool = function(toolId) {
+  };
+  
   this._setupInterface = function() {
     /* DEFINIZIONE INTERFACCIA PUBBLICA */
     
@@ -127,6 +139,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     GUI.showSidebar = _.bind(this._showSidebar, this);
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
+    
+    GUI.addToolsGroup = _.bind(this._addToolsGroup,this);
+    GUI.removeToolsGroup = _.bind(this._removeToolsGroup,this);
+    GUI.addTool = _.bind(this._addTools,this);
+    GUI.removeTool = _.bind(this._removeTool,this);
     
     /* fine metodi specifici */
     

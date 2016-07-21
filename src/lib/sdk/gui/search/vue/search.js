@@ -40,7 +40,7 @@ function SearchComponent(options){
   self = this;
   this.id = "search-component";
   this.title = "search";
-  this.InternalComponent = InternalComponent;
+  this.internalComponent = new InternalComponent;
   merge(this,options);
   this.initService = function() {
     //inizializzo il servizio

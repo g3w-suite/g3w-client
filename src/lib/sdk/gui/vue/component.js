@@ -6,8 +6,6 @@ var BaseComponent = require('gui/component');
 
 var Component = function(options) {
   base(this,options);
-  this.InternalComponent = null;
-  this.vueComponent = null;
 };
 
 inherit(Component, BaseComponent);
@@ -16,16 +14,14 @@ var proto = Component.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(parent){
-  var component = this.vueComponent = new this.InternalComponent();
-  //component.$mount().$appendTo(parent[0]);
-  component.$mount(parent);
+  this.internalComponent.$mount(parent);
   return resolve(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 proto.unmount = function(){
-  self.vueComponent.$destroy(true);
-  self.panelComponent = null;
+  this.internalComponent.$destroy(true);
+  this.internalComponent = null;
   return resolve();
 };
 

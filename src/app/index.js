@@ -42,6 +42,7 @@ function createApplicationConfig() {
 function createTemplateConfig(){
   var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
   var SearchComponent = require('sdk').gui.vue.SearchComponent;
+  var ToolsComponent = require('sdk').gui.vue.ToolsComponent;
   var MapComponent = require('sdk').gui.vue.MapComponent;
   
   return {
@@ -59,6 +60,10 @@ function createTemplateConfig(){
           new CatalogComponent({
             openOnStart: true,
             dataIcon: "fa fa-database"
+          }),
+          new ToolsComponent({
+            openOnStart: false,
+            dataIcon: "fa fa-gear"
           })
         ]
       },

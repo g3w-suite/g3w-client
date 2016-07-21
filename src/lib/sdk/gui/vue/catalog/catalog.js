@@ -191,7 +191,7 @@ Vue.component('legend-item',{
 function CatalogComponent(options){
   this.id = "catalog-component";
   this.title = "catalog";
-  this.InternalComponent = InternalComponent;
+  this.internalComponent = new InternalComponent;
   //mergio opzioni con proprità di default del componente
   merge(this, options);
 }

@@ -38,7 +38,7 @@ function SidebarService(){
     var sidebarItem = new SidebarItem().$mount().$appendTo('#g3w-sidebarcomponents');
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.dataLabel = component.title || sidebarItem.dataLabel;
-    sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.dataLabel : component.openOnStart;
+    sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.openOnStart : component.openOnStart;
     sidebarItem.dataIcon = component.dataIcon || sidebarItem.dataIcon;
     //monto il componete nella sidebar
     component.mount("#g3w-sidebarcomponent-placeholder");
