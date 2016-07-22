@@ -87,7 +87,7 @@ function QueryQGISWMSProvider() {
             if (_.isArray(v)) {
               filterElement = createSingleFilter(obj);
             } else { // è un oggetto operatore
-              if (k == 'like') {
+              if (k == 'like' || k == 'ilike') {
                 valueExtra = "%";
               };
               filterOp = Filters[k];
