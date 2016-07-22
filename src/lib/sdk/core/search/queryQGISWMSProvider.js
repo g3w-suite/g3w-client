@@ -12,8 +12,8 @@ var Filters = {
   gte: '>=',
   lt: '<',
   lte: '=<',
-  like: 'LIKE',
-  ilike: 'ILKE',
+  LIKE: 'LIKE',
+  ILIKE: 'ILKE',
   AND: 'AND',
   OR: 'OR',
   NOT: '!='
@@ -87,7 +87,7 @@ function QueryQGISWMSProvider() {
             if (_.isArray(v)) {
               filterElement = createSingleFilter(obj);
             } else { // è un oggetto operatore
-              if (k == 'like' || k == 'ilike') {
+              if (k == 'LIKE' || k == 'ILIKE') {
                 valueExtra = "%";
               };
               filterOp = Filters[k];
