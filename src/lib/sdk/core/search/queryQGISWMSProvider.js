@@ -30,7 +30,8 @@ function QueryQGISWMSProvider() {
     var filter = options.filter || null;
     var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
     var simpleWmsSearchMaxResults = null;
-    $.get( url, {
+    var crs = options.crs || '4326;'
+    return $.get( url, {
         'SERVICE': 'WMS',
         'VERSION': '1.3.0',
         'REQUEST': 'GetFeatureInfo',
@@ -38,34 +39,31 @@ function QueryQGISWMSProvider() {
         'QUERY_LAYERS': querylayer,
         'FEATURE_COUNT': (typeof simpleWmsSearchMaxResults != 'undefined' ? simpleWmsSearchMaxResults : 10),
         'INFO_FORMAT': 'text/xml',
-        'CRS': 'EPSG:4326',
+        'CRS': 'EPSG:'+ crs,
         'FILTER': filter,
         // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
         'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
       }
-    ).then(function(response){
-      console.log(response);
-      //self.emit('searchdone', response)
-
-    });
+    );
    };
 
   //funzione che fa la ricerca
-  this.doSearch = function(queryFilterObject){
-    var ogcservertype = queryFilterObject.type;
+  this.doSearch = function(queryFilterObject) {
+
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
     var filterObject = queryFilterObject.filterObject;
+    var crs = queryFilterObject.crs;
     //creo il filtro
     var filter = this.createFilter(filterObject, querylayer);
-    console.log(filter);
-    //eseguo la richiesta
-    this.submitGetFeatureInfo({
+    //eseguo la richiesta e restituisco come risposta la promise del $.get
+    var response = this.submitGetFeatureInfo({
       url: url,
+      crs: crs,
       filter: filter,
       querylayer: querylayer
     });
-    //return resolve(response)
+    return response;
   };
 
   this.createFilter = function(filterObject, querylayer) {
@@ -108,7 +106,7 @@ function QueryQGISWMSProvider() {
             filterElements.push(filterElement);
           });
         });
-        rootFilter = filterElements.join(" '"+ rootFilter + "' ");
+        rootFilter = filterElements.join(" "+ rootFilter + " ");
       });
       return rootFilter;
     };

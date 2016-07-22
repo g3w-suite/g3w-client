@@ -11,7 +11,6 @@ var SearchPanel = require('gui/search/vue/panel/searchpanel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var SearchesService = require('gui/search/searchesservice');
 
-
 var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
@@ -25,7 +24,6 @@ var vueComponentOptions = {
     }
   }
 };
-
 
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
@@ -41,7 +39,7 @@ function SearchComponent(options){
   this.id = "search-component";
   this.title = "search";
   this.internalComponent = new InternalComponent;
-  merge(this,options);
+  merge(this, options);
   this.initService = function() {
     //inizializzo il servizio
     SearchesService.init();

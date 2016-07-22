@@ -20,7 +20,6 @@ var SearchPanelComponet = Vue.extend({
   },
   methods: {
     doSearch: function(event) {
-      self = this;
       event.preventDefault();
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
@@ -31,8 +30,6 @@ var SearchPanelComponet = Vue.extend({
 });
 
 //funzione che associa i valori dell'inputs form al relativo oggetto "operazionde del filtro"
-//da migliorare perchè non mi piace e da considerare anche i casi più complessi come operazioni
-//booleani all'interno
 
 function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex) {
   //funzione conversione da valore restituito dall'input (sempre stringa) al vero tipo di valore
@@ -47,17 +44,17 @@ function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex)
     return value;
   }
   //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
-  _.forEach(filterObject.filterObject, function(v,k){
+  _.forEach(filterObject.filterObject, function(v,k) {
     //scorro attraverso l'array di elementi operazionali da confrontare
-    _.forEach(v, function(input, idx){
+    _.forEach(v, function(input, idx) {
       //elemento operazionale {'=':{}}
-      _.forEach(input, function(v, k, obj){
+      _.forEach(input, function(v, k, obj) {
         //vado a leggere l'oggetto attributo
         if (_.isArray(v)) {
           //richiama la funzione ricorsivamente .. andrà bene ?
           fillFilterInputsWithValues(input, formInputValues, idx);
         } else {
-          _.forEach(v, function(v, k, obj){
+          _.forEach(v, function(v, k, obj) {
             //considero l'index globale in modo che inputs di operazioni booleane interne
             //vengono considerate
             index = (globalIndex) ? globalIndex + idx : idx;
@@ -75,26 +72,23 @@ function SearchPanel() {
   self = this;
   this.config = {};
   this.filter = {};
-  this.name = null;
   this.id = null;
-  this.querytype = 'standard';
   this.querylayerid = null;
   this.InternalPanel = new SearchPanelComponet();
   //funzione inizializzazione
   this.init = function(config) {
-      this.config = config || {};
-      this.name = this.config.name || this.name;
-      this.id = this.config.id || this.id;
-      this.filter = this.config.options.filter || this.filter;
-      this.querytype = this.config.options.querytype || this.querytype;
-      this.querylayerid = this.config.options.querylayerid || this.querylayerid;
-      this.url = this.config.options.queryurl || ProjectsRegistry.config.urls.ows;
-      //vado a riempire gli input del form del pannello
-      this.fillInputsFormFromFilter();
-      //creo e assegno l'oggetto filtro
-      var filterObjFromConfig = SearchQueryService.createQueryFilterFromConfig(this.filter);
-      //alla fine creo l'ggetto finale del filtro da passare poi al queryWMSprovider
-      this.InternalPanel.filterObject = SearchQueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
+    this.config = config || {};
+    this.name = this.config.name || this.name;
+    this.id = this.config.id || this.id;
+    this.filter = this.config.options.filter || this.filter;
+    this.querylayerid = this.config.options.querylayerid || this.querylayerid;
+    //vado a riempire gli input del form del pannello
+    this.fillInputsFormFromFilter();
+    //creo e assegno l'oggetto filtro
+    var filterObjFromConfig = SearchQueryService.createQueryFilterFromConfig(this.filter);
+    //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
+    //il filtro che url, il nome del layer il tipo di server etc ..
+    this.InternalPanel.filterObject = SearchQueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
   };
 
   //funzione che popola gli inputs che ci saranno nel form del pannello ricerca

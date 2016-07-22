@@ -124,11 +124,6 @@ function QueryWFSProvider(){
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
-
-        ///TTEST QGISWMS
-        QueryQGISWMSProvider.doSearch(queryFilterObject);
-        //
-
         filter = this.createStandardFilter(filterObject, querylayer);
         response = this.standardSearch(url, filter);
         return resolve(response)

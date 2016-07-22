@@ -3,6 +3,11 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
+var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
+
+var Provider = {
+  'QGIS': QueryQGISWMSProvider
+};
 
 function SearchQueryService(){
   var self = this;
@@ -69,6 +74,8 @@ function SearchQueryService(){
       type: 'standard',
       url: layerInfo.url,
       querylayer: layerInfo.name,
+      servertype: layerInfo.servertype,
+      crs: layerInfo.crs,
       filterObject : filterObject
     }
   };
@@ -79,6 +86,8 @@ function SearchQueryService(){
     var layerInfo = Project.getLayerById(layerId);
     if (layerInfo) {
       layerFilterInfo.name = layerInfo.name;
+      layerFilterInfo.crs = layerInfo.crs;
+      layerFilterInfo.servertype = layerInfo.servertype;
       if (layerInfo.source && layerInfo.source.url){
         layerFilterInfo.url = layerInfo.source.url;
       } else {
@@ -88,9 +97,11 @@ function SearchQueryService(){
     return layerFilterInfo;
   };
 
-  this.doQuerySearch = function(queryFilterObject){
-    QueryWFSProvider.doSearch(queryFilterObject)
+  this.doQuerySearch = function(queryFilterObject) {
+    var provider = Provider[queryFilterObject.servertype];
+    provider.doSearch(queryFilterObject)
     .then(function(result){
+      console.log(result);
       self.emit("searchresults", result)
     });
   };
