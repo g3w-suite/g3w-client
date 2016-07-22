@@ -6,9 +6,7 @@ var SearchQueryService = require('core/search/searchqueryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
 var SearchResultPanelComponent = require('gui/search/vue/results/resultpanel');
-
-//Già presente SearchQueryService ma poi deve essere messa in un punto
-var BOOLEANOPERATORS = ['AND', 'OR'];
+var ProjectsRegistry = require('core/project/projectsregistry');
 
 //componente vue pannello search
 var SearchPanelComponet = Vue.extend({
@@ -37,6 +35,17 @@ var SearchPanelComponet = Vue.extend({
 //booleani all'interno
 
 function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex) {
+  //funzione conversione da valore restituito dall'input (sempre stringa) al vero tipo di valore
+  function convertInputValueToInputType(type, value) {
+    switch(type) {
+      case 'numberfield':
+           value = parseInt(value);
+           break;
+      default:
+           break;
+    }
+    return value;
+  }
   //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
   _.forEach(filterObject.filterObject, function(v,k){
     //scorro attraverso l'array di elementi operazionali da confrontare
@@ -44,7 +53,7 @@ function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex)
       //elemento operazionale {'=':{}}
       _.forEach(input, function(v, k, obj){
         //vado a leggere l'oggetto attributo
-        if (k in BOOLEANOPERATORS) {
+        if (_.isArray(v)) {
           //richiama la funzione ricorsivamente .. andrà bene ?
           fillFilterInputsWithValues(input, formInputValues, idx);
         } else {
@@ -52,7 +61,7 @@ function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex)
             //considero l'index globale in modo che inputs di operazioni booleane interne
             //vengono considerate
             index = (globalIndex) ? globalIndex + idx : idx;
-            obj[k] = formInputValues[index].value;
+            obj[k] = convertInputValueToInputType(formInputValues[index].type, formInputValues[index].value);
           });
         };
       });
@@ -79,6 +88,7 @@ function SearchPanel() {
       this.filter = this.config.options.filter || this.filter;
       this.querytype = this.config.options.querytype || this.querytype;
       this.querylayerid = this.config.options.querylayerid || this.querylayerid;
+      this.url = this.config.options.queryurl || ProjectsRegistry.config.urls.ows;
       //vado a riempire gli input del form del pannello
       this.fillInputsFormFromFilter();
       //creo e assegno l'oggetto filtro
@@ -99,8 +109,12 @@ function SearchPanel() {
         formValue = {};
         //inserisco l'id all'input
         input.id = id
+        //aggiungo il tipo al valore per fare conversione da stringa a tipo input
+        formValue.type = input.input.type;
+        ////TEMPORANEO !!! DEVO PRENDERE IL VERO VALORE DI DEFAULT
         formValue.value = null;
         //popolo gli inputs:
+
         // valori
         self.InternalPanel.formInputValues.push(formValue);
         //input

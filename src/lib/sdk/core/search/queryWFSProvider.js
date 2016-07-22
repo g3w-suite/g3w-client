@@ -120,18 +120,15 @@ function QueryWFSProvider(){
     var ogcservertype = queryFilterObject.type;
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
-    //TEST ASSEGNO IL FILTRO CREATO AD HO PRIMA
-    var filterObject = testFilter //queryFilterObject.filterObject;
-    /////////////////////////////
+    var filterObject = queryFilterObject.filterObject;
     var response, filter;
     switch (ogcservertype) {
       case 'standard':
+
         ///TTEST QGISWMS
-        QueryQGISWMSProvider.doSearch({
-          querylayer: querylayer,
-          filterObject: filterObject
-        });
+        QueryQGISWMSProvider.doSearch(queryFilterObject);
         //
+
         filter = this.createStandardFilter(filterObject, querylayer);
         response = this.standardSearch(url, filter);
         return resolve(response)
@@ -188,7 +185,13 @@ function QueryWFSProvider(){
             filterElements.push(filterElement);
           });
         });
-        rootFilter = rootFilter.apply(this, filterElements);
+        //verifico che ci siano almeno due condizione nel filtro AND. Nel caso di una sola condizione (esempio : un solo input)
+        //estraggo solo l'elemento filtro altrimenti da errore -- DA VERIFICARE SE CAMBIARLO
+        if (filterElements.length > 1) {
+          rootFilter = rootFilter.apply(this, filterElements);
+        } else {
+          rootFilter = filterElements[0];
+        };
       });
       return rootFilter;
     };
@@ -200,8 +203,8 @@ function QueryWFSProvider(){
   };
 
   this.qgisSearch = function(urls, filter){
-    $.get(searchUrl,function(result){
-      self.emit("searchresults",result);
+    $.get(searchUrl).then(function(result){
+      self.emit("searchdone",result);
     });
     return d.promise();
   };

@@ -64,20 +64,21 @@ function SearchQueryService(){
   };
 
   this.createQueryFilterObject = function(layerId, filterObject){
-    var layerFilterInfo = this.getLayerInfoFromProjectConfig(layerId);
+    var layerInfo = this.getLayerInfoUrlFromProjectConfig(layerId);
     return {
       type: 'standard',
-      url: '',
-      querylayer: layerId,
+      url: layerInfo.url,
+      querylayer: layerInfo.name,
       filterObject : filterObject
     }
   };
 
-  this.getLayerInfoFromProjectConfig = function(layerId) {
+  this.getLayerInfoUrlFromProjectConfig = function(layerId) {
     var layerFilterInfo = {};
     var Project = ProjectsRegistry.getCurrentProject();
     var layerInfo = Project.getLayerById(layerId);
     if (layerInfo) {
+      layerFilterInfo.name = layerInfo.name;
       if (layerInfo.source && layerInfo.source.url){
         layerFilterInfo.url = layerInfo.source.url;
       } else {

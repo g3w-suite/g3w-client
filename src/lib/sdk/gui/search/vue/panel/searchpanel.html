@@ -4,12 +4,10 @@
        <template v-if="forminput.input.type == 'numberfield'" class="numeric">
          <label for="{{ forminput.id }} ">{{ forminput.label }}</label>
          <input type="number" v-model="formInputValues[$index].value" class="form-control" id="{{ forminput.id }}">
-         <p>Value {{ formInputValues[$index].value }}</p>
        </template>
       <template v-if="forminput.input.type == 'textfield'" class="text">
          <label for="{{ forminput.id }}">{{ forminput.label }}</label>
          <input type="text" v-model="formInputValues[$index].value" class="form-control" id="{{ forminput.id }}">
-        <p>Value {{ formInputValues[$index].value }}</p>
        </template>
     </template>
     <button class="btn btn-primary" @click="doSearch($event)" data-i18n="dosearch">Search</button>

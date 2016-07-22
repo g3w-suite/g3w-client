@@ -2,6 +2,8 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
+var ProjectsRegistry = require('core/project/projectsregistry');
+
 
 // FILTRI
 var Filters = {
@@ -19,17 +21,51 @@ var Filters = {
 
 function QueryQGISWMSProvider() {
 
+  self = this;
+  //funzione che fa la richiesta vera e propria al server qgis
+  this.submitGetFeatureInfo = function(options) {
+
+    var url = options.url || '';
+    var querylayer = options.querylayer || null;
+    var filter = options.filter || null;
+    var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
+    var simpleWmsSearchMaxResults = null;
+    $.get( url, {
+        'SERVICE': 'WMS',
+        'VERSION': '1.3.0',
+        'REQUEST': 'GetFeatureInfo',
+        'LAYERS': querylayer,
+        'QUERY_LAYERS': querylayer,
+        'FEATURE_COUNT': (typeof simpleWmsSearchMaxResults != 'undefined' ? simpleWmsSearchMaxResults : 10),
+        'INFO_FORMAT': 'text/xml',
+        'CRS': 'EPSG:4326',
+        'FILTER': filter,
+        // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
+        'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
+      }
+    ).then(function(response){
+      console.log(response);
+      //self.emit('searchdone', response)
+
+    });
+   };
+
   //funzione che fa la ricerca
   this.doSearch = function(queryFilterObject){
     var ogcservertype = queryFilterObject.type;
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
     var filterObject = queryFilterObject.filterObject;
-    var response, filter;
-    filter = this.createFilter(filterObject, querylayer);
+    //creo il filtro
+    var filter = this.createFilter(filterObject, querylayer);
     console.log(filter);
-    //response = this.submitGetFeatureInfo(url, filter);
-    return resolve(response)
+    //eseguo la richiesta
+    this.submitGetFeatureInfo({
+      url: url,
+      filter: filter,
+      querylayer: querylayer
+    });
+    //return resolve(response)
   };
 
   this.createFilter = function(filterObject, querylayer) {
@@ -47,12 +83,12 @@ function QueryQGISWMSProvider() {
         rootFilter = Filters[k];
         //qui c'è array degli elementi di un booleano
         _.forEach(v, function(input){
-          //scorro su oggetto operatore
+          //scorro su oggetto
           _.forEach(input, function(v, k, obj) {
-          //è un array e quindi è altro oggetto padre booleano
+          //verifico se il valore dell'oggetto è array e quindi è altro oggetto padre booleano
             if (_.isArray(v)) {
               filterElement = createSingleFilter(obj);
-            } else {
+            } else { // è un oggetto operatore
               if (k == 'like') {
                 valueExtra = "%";
               };
@@ -72,7 +108,7 @@ function QueryQGISWMSProvider() {
             filterElements.push(filterElement);
           });
         });
-        rootFilter = filterElements.join(rootFilter);
+        rootFilter = filterElements.join(" '"+ rootFilter + "' ");
       });
       return rootFilter;
     };
@@ -81,26 +117,8 @@ function QueryQGISWMSProvider() {
     return filter;
   };
 
-  //funzione che fa la richiesta vera e propria al server qgis
-  this.submitGetFeatureInfo = function(filter) {
-
-    $.get( this.url, {
-        'SERVICE': 'WMS',
-        'VERSION': '1.3.0',
-        'REQUEST': 'GetFeatureInfo',
-        'LAYERS': this.querylayer,
-        'QUERY_LAYERS': this.querylayer,
-        'FEATURE_COUNT': (typeof simpleWmsSearchMaxResults != 'undefined' ? simpleWmsSearchMaxResults : 10),
-        'INFO_FORMAT': 'text/xml',
-        'SRS': '4326',
-        'FILTER': filter,
-        // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
-        'BBOX': '' // QUI CI VA IL BBOX DELLA MAPPA
-      }
-    );
-   };
 };
 
 inherit(QueryQGISWMSProvider, G3WObject);
 
-module.exports =  new QueryQGISWMSProvider()
+module.exports =  new QueryQGISWMSProvider();
