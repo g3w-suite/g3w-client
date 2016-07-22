@@ -37,7 +37,7 @@ function QueryQGISWMSProvider() {
         'REQUEST': 'GetFeatureInfo',
         'LAYERS': querylayer,
         'QUERY_LAYERS': querylayer,
-        'FEATURE_COUNT': (typeof simpleWmsSearchMaxResults != 'undefined' ? simpleWmsSearchMaxResults : 10),
+        'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
         'INFO_FORMAT': 'text/xml',
         'CRS': 'EPSG:'+ crs,
         'FILTER': filter,

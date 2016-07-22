@@ -6,7 +6,8 @@ var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
 
 var Provider = {
-  'QGIS': QueryQGISWMSProvider
+  'QGIS': QueryQGISWMSProvider,
+  'OGC': QueryWFSProvider
 };
 
 function SearchQueryService(){
@@ -77,7 +78,7 @@ function SearchQueryService(){
       servertype: layerInfo.servertype,
       crs: layerInfo.crs,
       filterObject : filterObject
-    }
+    };
   };
 
   this.getLayerInfoUrlFromProjectConfig = function(layerId) {

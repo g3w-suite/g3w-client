@@ -2,15 +2,12 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
-
-var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-
 //definisco il filtro ol3
 var ol3OGCFilter = ol.format.ogc.filter;
 
 //oggetto che viene passato per effetturare il la search
 var ol3GetFeatureRequestObject = {
-  srsName: 'EPSG:3857',
+  srsName: 'EPSG:',
   featureNS: '',
   featurePrefix: '',
   featureTypes: [],
@@ -117,13 +114,16 @@ function QueryWFSProvider(){
   };
 
   this.doSearch = function(queryFilterObject){
-    var ogcservertype = queryFilterObject.type;
+    var ogcservertype = queryFilterObject.servertype;
     var url = queryFilterObject.url;
     var querylayer = queryFilterObject.querylayer;
     var filterObject = queryFilterObject.filterObject;
+    var crs = queryFilterObject.crs;
+    //setto il srs
+    ol3GetFeatureRequestObject.srsName+=crs || '4326';
     var response, filter;
     switch (ogcservertype) {
-      case 'standard':
+      case 'OGC':
         filter = this.createStandardFilter(filterObject, querylayer);
         response = this.standardSearch(url, filter);
         return resolve(response)
