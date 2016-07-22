@@ -13,7 +13,7 @@ var Filters = {
   lt: '<',
   lte: '=<',
   LIKE: 'LIKE',
-  ILIKE: 'ILKE',
+  ILIKE: 'ILIKE',
   AND: 'AND',
   OR: 'OR',
   NOT: '!='
