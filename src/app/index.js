@@ -2,6 +2,9 @@ var i18ninit = require('sdk').core.i18n.init;
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
 var ApplicationTemplate = require('./template/js/template');
 
+// SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
+window.g3wsdk = require('sdk');
+
 var config = require('./config/config.js');
 
 function createApplicationConfig() {  
@@ -26,10 +29,7 @@ function createApplicationConfig() {
     getProjectConfigUrl: function(project){
       return config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
-    plugins: {
-      plugins: config.plugins,
-      configs: config.group.plugins
-    },
+    plugins: config.group.plugins,
     tools: config.tools,
     views: config.views || {},
     map: config.map

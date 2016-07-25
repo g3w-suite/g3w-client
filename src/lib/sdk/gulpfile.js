@@ -29,7 +29,7 @@ var browserSync = require('browser-sync');
 var production = false;
 
 gulp.task('browserify', [], function(done) {
-    var bundler = browserify('./index.js', {
+    var bundler = browserify('./sdk.js', {
       basedir: "./",
       paths: ["./"],
       standalone: 'g3wsdk',
@@ -49,7 +49,7 @@ gulp.task('browserify', [], function(done) {
       //browserSync.notify(err.message, 3000);
       //browserSync.reload();
       this.emit('end');
-      del(['.build//sdk.js']).then(function(){
+      del(['.build/sdk.js']).then(function(){
         process.exit();
       });
     })
@@ -59,15 +59,7 @@ gulp.task('browserify', [], function(done) {
     .pipe(gulpif(production, uglify().on('error', gutil.log)))
     .pipe(sourcemaps.write())
     .pipe(rename('sdk.js'))
-    .pipe(gulp.dest('./'));
-});
-
-
-
-gulp.task('html', ['fonts'], function () {
-    return gulp.src('./src/index.html')
-        .pipe(useref())
-        .pipe(gulp.dest('dist'));
+    .pipe(gulp.dest('./build'));
 });
 
 

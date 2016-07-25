@@ -2,18 +2,19 @@
 <html>
 <head>
 </head>
-<body class="hold-transition skin-blue">
-  <script src="../ext/jquery/jquery-2.2.1.min.js"></script>
-  <script src="../ext/x2js/xml2json.min.js"></script>
-  <script src="../ext/lodash/lodash.min.js"></script>
-  <script src="../ext/eventemitter/EventEmitter.min.js"></script>
-  <script src="../ext/history/jquery.history.js"></script>
-  <script src="../ext/ol3/ol.js"></script>
-  <script src="../ext/proj4js/proj4.js"></script>
-  <script src="./sdk.js"></script>
+<body>
+  <script src="../sdk/ext/vue/dist/vue.min.js"></script>
+  <script src="../sdk/ext/jquery/jquery-2.2.1.min.js"></script>
+  <script src="../sdk/ext/x2js/xml2json.min.js"></script>
+  <script src="../sdk/ext/lodash/lodash.min.js"></script>
+  <script src="../sdk/ext/eventemitter/EventEmitter.min.js"></script>
+  <script src="../sdk/ext/history/jquery.history.js"></script>
+  <script src="../sdk/ext/ol3/ol.js"></script>
+  <script src="../sdk/ext/proj4js/proj4.js"></script>
+  <script src="./build/sdk.js"></script>
   <script>
-    var mapservice = g3wsdk.core.MapService;
-    console.log(mapservice);
+    var app = g3wsdk.core.ApplicationService;
+    console.log(app.secret);
   </script>
 </body>
 </html>

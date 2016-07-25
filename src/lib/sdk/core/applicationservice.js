@@ -6,6 +6,7 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
 
 var ApplicationService = function(){
+  this.secret = "### G3W Client Application Service ###";
   var self = this;
   this.initialized = false;
   this._modalOverlay = null;
