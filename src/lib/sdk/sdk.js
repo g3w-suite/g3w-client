@@ -8,7 +8,6 @@ g3w.core = {
    Router: require('core/router'),
    ProjectsRegistry: require('core/project/projectsregistry'),
    Project: require('core/project/project'),
-   MapService: require('core/map/mapservice'),
    MapQueryService: require('core/map/mapqueryservice'),
    MapLayer: require('core/map/maplayer'),
    LayerState: require('core/layer/layerstate'),
@@ -22,7 +21,6 @@ g3w.core = {
    Plugin: require('core/plugin/plugin'),
    PluginsRegistry: require('core/plugin/pluginsregistry'),
    PluginsService: require('core/plugin/pluginsservice'),
-   ToolsService: require('core/plugin/toolsservice')
 };
 
 g3w.gui = {

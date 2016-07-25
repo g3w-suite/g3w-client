@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var merge = require('core/utils/utils').merge;
 var G3WObject = require('core/g3wobject');
 
 var View = Vue.extend({
@@ -43,7 +44,7 @@ var ViewportService = function(){
     });
     this.views['contentx'] = contentxView;
     
-    this.setPrimaryView('map')
+    this.setPrimaryView('map');
 
     // monto la mappa
     mapComponent.mount('#g3w-contenx-view');

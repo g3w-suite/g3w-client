@@ -1,5 +1,6 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 require('sdk/gui/vue/vue.directives');
+var ComponentsRegistry = require('sdk/gui/componentsregistry');
 var GUI = require('sdk/gui/gui');
 // temporaneo per far funzionare le cose
 var config = {
@@ -21,6 +22,10 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this.ApplicationService = ApplicationService;
   
   this.init = function() {
+    var config = ApplicationService.getConfig();
+    if (config.debug){
+      Vue.config.debug = true;
+    }
     this._setupInterface();
     this._setupLayout();
   };
@@ -59,7 +64,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       });
     });
     var mapComponent = this.templateConfig.viewport.map;
-    ViewportService.init(mapComponent);
+    ViewportService.init(mapComponent,null);
     GUI.ready();
   };
   
@@ -68,11 +73,13 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
       if (placeholderService) {
         placeholderService.addComponent(component);
+        ComponentsRegistry.addComponent(component);
       }
     }
   };
   
   this._removeComponent = function(plceholder,componentId) {
+    ComponentsRegistry.removeComponent(component);
   };
 
   this._showSidebar = function() {

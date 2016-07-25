@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var merge = require('core/utils/utils').merge;
 var t = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');   
@@ -41,7 +42,7 @@ var vueComponentOptions = {
   ready: function(){
     var self = this;
     
-    var mapService = new MapService();
+    var mapService = this.$options.mapService;
     
     mapService.showViewer(this.$el.id);
     
@@ -98,14 +99,16 @@ Vue.component('g3w-map', vueComponentOptions);
 
 function MapComponent(options){
   base(this,options);
-  this.id = "iternet-editing-panel";
+  this.id = "map-component";
   this.title = "Catalogo dati";
-  this.internalComponent = new InternalComponent;
+  this.mapService = new MapService;
+  merge(this, options);
+  this.internalComponent = new InternalComponent({
+    mapService: this.mapService
+  });
 }
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
-
-//proto.mount = function(parent){};
 
 module.exports =  MapComponent;

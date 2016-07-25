@@ -1,5 +1,5 @@
-var inherit = require('./utils').inherit;
-var G3WObject = require('g3w/core/g3wobject');
+var inherit = require('core/utils/utils').inherit;
+var G3WObject = require('core/g3wobject');
 
 function ToolsService(){
   var self = this;
@@ -50,4 +50,4 @@ function ToolsService(){
 // Make the public service en Event Emitter
 inherit(ToolsService,G3WObject);
 
-module.exports = new ToolsService
+module.exports = ToolsService

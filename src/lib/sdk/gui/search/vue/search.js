@@ -35,7 +35,7 @@ var InternalComponent = Vue.extend(vueComponentOptions);
 
 /* INTERFACCIA PUBBLICA */
 function SearchComponent(options){
-  self = this;
+  base(this,options);
   this.id = "search-component";
   this.title = "search";
   this.internalComponent = new InternalComponent;

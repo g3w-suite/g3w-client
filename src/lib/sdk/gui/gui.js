@@ -1,6 +1,7 @@
 noop = require('core/utils/utils').noop;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
+var ComponentsRegistry = require('sdk/gui/componentsregistry');
 
 // rappresenta l'interfaccia globale dell'API della GUI. 
 // metodi devono essere implementati (definiti) dall'applicazione ospite
@@ -24,6 +25,9 @@ function GUI(){
   //metodi componente
   this.addComponent = noop;
   this.removeComponent = noop;
+  this.getComponent = function(id) {
+    return ComponentsRegistry.getComponent(id);
+  };
   //fine metodi componente
 
   this.ready = function(){

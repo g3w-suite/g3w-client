@@ -54,14 +54,17 @@ function createTemplateConfig(){
       sidebar: {
         components: [
           new SearchComponent({
+            id: 'search',
             openOnStart: false,
             dataIcon: "fa fa-search"
           }),
           new CatalogComponent({
+            id: 'catalog',
             openOnStart: true,
             dataIcon: "fa fa-database"
           }),
           new ToolsComponent({
+            id: 'tools',
             openOnStart: false,
             dataIcon: "fa fa-gear"
           })
@@ -75,7 +78,9 @@ function createTemplateConfig(){
       }
     },
     viewport: {
-      map: new MapComponent({}),
+      map: new MapComponent({
+        id: 'map'
+      }),
       contentx: null
     }
   };

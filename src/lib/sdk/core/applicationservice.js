@@ -16,9 +16,6 @@ var ApplicationService = function(){
   
   this.init = function(config){
     this._config = config;
-    if (config.debug){
-      Vue.config.debug = true;
-    }
     this._bootstrap();
   };
   
