@@ -24,7 +24,7 @@ var server =  {
     ows:  '/ows',
     api:  '/api',
     config:  '/api/config',
-    staticurl:  ''
+    staticurl:  '',
   }
 };
 

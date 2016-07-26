@@ -2,7 +2,7 @@ var base = require('core/utils/utils').base;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 
-var Plugin = require('./plugin');
+//var Plugin = require('./plugin');
 //var ToolsService = require('core/plugin/toolsservice');
 
 function PluginsRegistry(){
@@ -28,10 +28,11 @@ function PluginsRegistry(){
   
   base(this);
   
-  this.init = function(pluginsConfigs){
+  this.init = function(options){
     var self = this;
-    this.pluginsConfigs = pluginsConfigs;
-    _.forEach(pluginsConfigs,function(pluginConfig,name){
+    this.pluginsBaseUrl = options.plusingBaseUrl
+    this.pluginsConfigs = options.pluginsConfigs;
+    _.forEach(this.pluginsConfigs,function(pluginConfig,name){
       self._setup(name,pluginConfig);
     })
   };
@@ -39,7 +40,7 @@ function PluginsRegistry(){
   this._setup = function(name,pluginConfig) {
     var self = this;
     if (pluginConfig){
-      var url = 'lib/plugins/'+name+'.js';
+      var url = this.pluginsBaseUrl+'/plugins/'+name+'.js';
       $script(url);
     }
   };

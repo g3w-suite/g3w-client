@@ -253,6 +253,7 @@ proto.addControl = function(control){
 };
 
 proto.setupBaseLayers = function(){
+  var self = this;
   if (!this.project.state.baselayers){
     return;
   }
@@ -264,8 +265,8 @@ proto.setupBaseLayers = function(){
   
   _.forEach(baseLayersArray,function(baseLayer){
     var visible = true;
-    if (this.project.state.initbaselayer) {
-      visible = baseLayer.id == (this.project.state.initbaselayer);
+    if (self.project.state.initbaselayer) {
+      visible = baseLayer.id == (self.project.state.initbaselayer);
     }
     if (baseLayer.fixed) {
       visible = baseLayer.fixed;
@@ -275,7 +276,7 @@ proto.setupBaseLayers = function(){
   
   baseLayersArray.forEach(function(layer){     
     var config = {
-      url: this.project.getWmsUrl(),
+      url: self.project.getWmsUrl(),
       id: layer.id,
       tiled: true
     };

@@ -1,5 +1,6 @@
 var IternetPlugin = function(){
   this.name = 'iternet';
+  
 };
 
 (function(plugin){

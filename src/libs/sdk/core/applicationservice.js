@@ -32,7 +32,10 @@ var ApplicationService = function(){
       $.when(
         ApiService.init(this._config),
         ProjectsRegistry.init(this._config),
-        PluginsRegistry.init(this._config.plugins)
+        PluginsRegistry.init({
+          plusingBaseUrl: this._config.urls.staticurl,
+          pluginsConfigs: this._config.plugins
+        })
       ).then(function(){
         self.emit('ready');
         this.initialized = true;

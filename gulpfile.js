@@ -32,7 +32,7 @@ var production = false;
 
 gulp.task('browserify', [], function(done) {
     var bundler = browserify('./src/app/index.js', {
-      paths: ["./src/app/", "./src/lib/", "./src/lib/sdk/"],
+      paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
       debug: !production,
       cache: {},
       packageCache: {}
@@ -66,6 +66,18 @@ gulp.task('browserify', [], function(done) {
     };
     bundler.on('update', rebundle);
     return rebundle();
+});
+
+gulp.task('modules', function() {
+  var destFolder = production ? './dist/g3w-client' : './build';
+  return gulp.src('./src/libs/modules/*')
+    .pipe(gulp.dest(destFolder+'/modules'));
+});
+
+gulp.task('plugins', function() {
+  var destFolder = production ? './dist/g3w-client' : './build';
+  return gulp.src('./src/libs/plugins/*')
+    .pipe(gulp.dest(destFolder+'/plugins'));
 });
 
 gulp.task('jshint', function() {
@@ -154,10 +166,7 @@ gulp.task('watch',function() {
     watch(['./src/app/style/*.less','./src/libs/common/g3w-client-common/style/*.less','./src/libs/common/g3w-client-common/style/less/*.less'],function(){
       gulp.start('less');
     });
-    watch(['./src/libs/common/g3w-client-common/less/skins/*.less'],function(){
-      gulp.start('less-skins');
-    });
-    watch(['./src/libs/common/g3w-client-common/less/skins/*.less'],function(){
+    watch(['./src/app/style/skins/*.less'],function(){
       gulp.start('less-skins');
     });
     watch('./src/app/configs/*.js',function(){
@@ -165,6 +174,12 @@ gulp.task('watch',function() {
     });
     watch('./src/**/*.{png,jpg}',function(){
       gulp.start('images');
+    });
+    watch('./src/libs/plugins/*',function(){
+      gulp.start('plugins');
+    });
+    watch('./src/libs/modules/*',function(){
+      gulp.start('modules');
     });
     gulp.watch(['./build/**/*.css','./src/index.html','./src/**/*.html'], function(){
         browserSync.reload();
@@ -179,8 +194,8 @@ gulp.task('production', function(){
     production = true;
 })
 
-gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch']);
-gulp.task('dist', ['production','browserify','assets','html']);
+gulp.task('serve', ['browser-sync','browserify','assets','less-skins', 'watch','plugins','modules']);
+gulp.task('dist', ['production','browserify','assets','html','plugins','modules']);
 gulp.task('g3w-admin', [],function(){
   gulp.src('./dist/g3w-client/**/*.*')
   .pipe(gulp.dest(conf.g3w_admin_dest));

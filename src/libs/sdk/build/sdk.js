@@ -5446,8 +5446,7 @@ g3w.core = {
    PickFeatureInteraction: require('core/interactions/pickfeatureinteraction'),
    i18n: require('core/i18n/i18n.service'),
    Plugin: require('core/plugin/plugin'),
-   PluginsRegistry: require('core/plugin/pluginsregistry'),
-   PluginsService: require('core/plugin/pluginsservice'),
+   PluginsRegistry: require('core/plugin/pluginsregistry')
 };
 
 g3w.gui = {
