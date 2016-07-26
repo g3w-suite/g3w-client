@@ -14,8 +14,7 @@ function Project(projectConfig) {
     name,
     crs,
     extent,
-    layerstree,
-    widgets
+    layerstree
   }
   */
   this.state = projectConfig;

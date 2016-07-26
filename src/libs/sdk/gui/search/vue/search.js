@@ -15,12 +15,12 @@ var vueComponentOptions = {
    template: require('./search.html'),
    data: function() {
     	return {
-    	  searches: ProjectsRegistry.getCurrentProject().state
+    	  project: ProjectsRegistry.getCurrentProject().state
     	};
    },
    methods: {
     showSearchPanel: function(search) {
-        var panel = SearchesService.showSearchPanel(search);
+        var panel = SearchesService.showSearchPanel(project);
     }
   }
 };

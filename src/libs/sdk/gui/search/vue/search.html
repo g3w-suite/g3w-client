@@ -1,10 +1,9 @@
 <div id="g3w-search" class="g3w-search g3w-tools">
   <ul>
-    <li v-for="search in searches.search">
-      <div style="margin-bottom: 5px;"class="search-header tool-header" @click="showSearchPanel(search)">
+    <li v-for="search in project.search">
+      <div style="margin-bottom: 5px;" class="search-header tool-header" @click="showSearchPanel(search)">
         <span style="">{{ search.name }}</span>
       </div>
     </li>
   </ul>
 </div>
-

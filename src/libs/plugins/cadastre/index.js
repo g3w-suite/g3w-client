@@ -1,6 +1,5 @@
 var IternetPlugin = function(){
-  this.name = 'iternet';
-  
+  this.name = 'cadastre';
 };
 
 (function(plugin){

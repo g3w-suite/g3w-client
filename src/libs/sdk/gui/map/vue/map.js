@@ -101,14 +101,18 @@ function MapComponent(options){
   base(this,options);
   this.id = "map-component";
   this.title = "Catalogo dati";
-  this.mapService = new MapService;
+  this._mapService = new MapService;
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    mapService: this.mapService
+    mapService: this._mapService
   });
 }
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;
+
+proto.getMapService = function() {
+  return this._mapService;
+};
 
 module.exports =  MapComponent;

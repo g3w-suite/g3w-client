@@ -70,13 +70,13 @@ gulp.task('browserify', [], function(done) {
 
 gulp.task('modules', function() {
   var destFolder = production ? './dist/g3w-client' : './build';
-  return gulp.src('./src/libs/modules/*')
+  return gulp.src('./src/libs/modules/**/*')
     .pipe(gulp.dest(destFolder+'/modules'));
 });
 
 gulp.task('plugins', function() {
   var destFolder = production ? './dist/g3w-client' : './build';
-  return gulp.src('./src/libs/plugins/*')
+  return gulp.src('./src/libs/plugins/**/*')
     .pipe(gulp.dest(destFolder+'/plugins'));
 });
 
