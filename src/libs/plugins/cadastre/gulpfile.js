@@ -57,7 +57,7 @@ gulp.task('browserify', [], function(done) {
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(gulpif(production, uglify().on('error', gutil.log)))
     .pipe(sourcemaps.write())
-    .pipe(rename('cadastre.js'))
+    .pipe(rename('plugin.js'))
     .pipe(gulp.dest('.'));
 });
 

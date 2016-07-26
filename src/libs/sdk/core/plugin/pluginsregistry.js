@@ -40,7 +40,7 @@ function PluginsRegistry(){
   this._setup = function(name,pluginConfig) {
     var self = this;
     if (pluginConfig){
-      var url = this.pluginsBaseUrl+'plugins/'+name+'/'+name+'.js';
+      var url = this.pluginsBaseUrl+'plugins/'+name+'/plugin.js';
       $script(url);
     }
   };
