@@ -36,21 +36,13 @@ gulp.task('browserify', [], function(done) {
       cache: {},
       packageCache: {}
     });
-    /*if (!production) {
-      bundler = watchify(bundler);
-    }*/
     bundler.transform(stringify, {
       appliesTo: { includeExtensions: ['.html'] }
     });
     bundler.bundle()
     .on('error', function(err){
       console.log(err);
-      //browserSync.notify(err.message, 3000);
-      //browserSync.reload();
       this.emit('end');
-      del(['.build/sdk.js']).then(function(){
-        process.exit();
-      });
     })
     .pipe(source('build.js'))
     .pipe(buffer())
