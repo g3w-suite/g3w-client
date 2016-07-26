@@ -31,7 +31,7 @@ function GUI(){
   //fine metodi componente
 
   this.ready = function(){
-    this.emit('guiready');
+    this.emit('ready');
   };
   
   this.guiResized = function(){

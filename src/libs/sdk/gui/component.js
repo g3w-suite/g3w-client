@@ -12,15 +12,15 @@ inherit(Component,G3WObject);
 var proto = Component.prototype;
 
 proto.getId = function(){
-  return self.id;
+  return this.id;
 };
 
 proto.getName = function() {
-  return self.name;
+  return this.name;
 };
 
 proto.getTitle = function(){
-  return self.title;
+  return this.title;
 };
 
 /* HOOKS */

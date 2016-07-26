@@ -10,14 +10,8 @@ function PluginsRegistry(){
   this.config = null;
   // un domani questo sarà dinamico
   this._plugins = {};
-  this.state = {
-    toolsproviders: []
-  };
-  
+
   this.setters = {
-    setToolsProvider: function(plugin) {
-      self.state.toolsproviders.push(plugin);
-    },
     registerPlugin: function(plugin){
       if (!self._plugins[plugin.name]) {
         self._plugins[plugin.name] = plugin;

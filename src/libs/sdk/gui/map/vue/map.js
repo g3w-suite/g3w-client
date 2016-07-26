@@ -51,7 +51,7 @@ var vueComponentOptions = {
       mapService.showViewer(self.$el.id);
     });
     
-    GUI.on('guiready',function(){
+    GUI.on('ready',function(){
       setMapDivHeight(mapService.getMap());
       
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {

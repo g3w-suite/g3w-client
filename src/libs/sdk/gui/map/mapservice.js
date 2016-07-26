@@ -381,7 +381,7 @@ proto.showViewer = function(elId){
   var self = this;
   this.viewer.setTarget(elId);
   var map = this.viewer.map;
-  GUI.on('guiready',function(){
+  GUI.on('ready',function(){
     self._setMapView();
   });
 };

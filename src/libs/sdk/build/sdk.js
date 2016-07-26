@@ -1756,7 +1756,7 @@ function MapService(){
   this.showViewer = function(elId){
     this.viewer.setTarget(elId);
     var map = this.viewer.map;
-    GUI.on('guiready',function(){
+    GUI.on('ready',function(){
       self._setMapView();
     });
   };
@@ -3913,7 +3913,7 @@ function GUI(){
   //fine metodi componente
 
   this.ready = function(){
-    this.emit('guiready');
+    this.emit('ready');
   };
   
   this.guiResized = function(){
@@ -4383,7 +4383,7 @@ proto.showViewer = function(elId){
   var self = this;
   this.viewer.setTarget(elId);
   var map = this.viewer.map;
-  GUI.on('guiready',function(){
+  GUI.on('ready',function(){
     self._setMapView();
   });
 };
@@ -4633,7 +4633,7 @@ var vueComponentOptions = {
       mapService.showViewer(self.$el.id);
     });
     
-    GUI.on('guiready',function(){
+    GUI.on('ready',function(){
       setMapDivHeight(mapService.getMap());
       
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
