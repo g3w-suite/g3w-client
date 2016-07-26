@@ -70,13 +70,13 @@ gulp.task('browserify', [], function(done) {
 
 gulp.task('modules', function() {
   var destFolder = production ? './dist/g3w-client' : './build';
-  return gulp.src('./src/libs/modules/**/*')
+  return gulp.src('./src/libs/modules/**/module.js')
     .pipe(gulp.dest(destFolder+'/modules'));
 });
 
 gulp.task('plugins', function() {
   var destFolder = production ? './dist/g3w-client' : './build';
-  return gulp.src('./src/libs/plugins/**/*')
+  return gulp.src('./src/libs/plugins/**/plugin.js')
     .pipe(gulp.dest(destFolder+'/plugins'));
 });
 
@@ -175,10 +175,10 @@ gulp.task('watch',function() {
     watch('./src/**/*.{png,jpg}',function(){
       gulp.start('images');
     });
-    watch('./src/libs/plugins/*',function(){
+    watch('./src/libs/plugins/**/plugin.js',function(){
       gulp.start('plugins');
     });
-    watch('./src/libs/modules/*',function(){
+    watch('./src/libs/modules/**/module.js',function(){
       gulp.start('modules');
     });
     gulp.watch(['./build/**/*.css','./src/index.html','./src/**/*.html'], function(){
