@@ -49,6 +49,11 @@ function Project(projectConfig) {
       _.forEach(self.state.baseLayers,function(baseLayer){
         baseLayer.visible = (baseLayer.id == id);
       })
+    },
+    setLayerSelected: function(layer){
+      _.forEach(this._layers,function(_layer){
+        _layer.selected = (layer.id == _layer.id);
+      })
     }
   };
 
@@ -117,6 +122,10 @@ proto.toggleLayer = function(layer,visible){
 
 proto.toggleLayers = function(layers,visible){
   this.setLayersVisible(layers,visible);
+};
+
+proto.selectLayer = function(layer){
+  this.setLayerSelected(layer);
 };
 
 proto.setGetWmsUrl = function(getWmsUrlFnc){

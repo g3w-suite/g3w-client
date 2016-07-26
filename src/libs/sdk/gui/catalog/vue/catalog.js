@@ -39,6 +39,10 @@ var vueComponentOptions = {
     this.$on('treenodestoogled',function(nodes,parentChecked){
       self.project.toggleLayers(nodes,parentChecked);
     });
+    
+    this.$on('treenodeselected',function(node){
+      self.project.selectLayer(node);
+    });
   }
 }
 
@@ -91,6 +95,10 @@ Vue.component('tristate-tree', {
     },
     isHidden: function() {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
+    },
+    selected: function() {
+      var isSelected = this.layerstree.selected ? "SI" : "NO";
+      return isSelected;
     }
   },
   methods: {
@@ -112,6 +120,11 @@ Vue.component('tristate-tree', {
       }
       else {
         this.$dispatch('treenodetoogled',this.layerstree);
+      }
+    },
+    select: function () {
+      if (!this.isFolder) {
+        this.$dispatch('treenodeselected',this.layerstree);
       }
     },
     triClass: function () {

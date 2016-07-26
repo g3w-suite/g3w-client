@@ -148,7 +148,7 @@ proto._buildProjectTree = function(project){
       if (!_.isNil(layer.id)) {
           var fulllayer = _.merge(layer,layers[layer.id]);
           obj[parseInt(key)] = fulllayer;
-          var a =1;
+          layer.selected = false;
       }
       if (!_.isNil(layer.nodes)){
         // aggiungo proprietà title per l'albero
