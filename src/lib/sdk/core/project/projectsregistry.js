@@ -48,16 +48,20 @@ proto.init = function(config){
   if (!this.initialized){
     this.initialized = true;
     this.config = config;
-    //aggiunto tipo progetto
-    this.projectType = this.config.group.overviewproject.type;
     this.setupState();
     return this.getProject(config.initproject)
     .then(function(project){
       self.setCurrentProject(project);
+      //aggiunto tipo progetto
+      self.setProjectType(project.state.type);
     });
   }
 };
-  
+
+proto.setProjectType = function(projectType) {
+   this.projectType = projectType;
+};
+
 proto.setupState = function(){
   var self = this;
   
