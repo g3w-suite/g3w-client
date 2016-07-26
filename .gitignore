@@ -10,4 +10,5 @@
 *~
 /documento.odt
 src/app/js/
-
+src/libs/plugins/
+src/libs/modules/
