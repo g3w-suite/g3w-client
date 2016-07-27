@@ -9,7 +9,7 @@ var config = {
 
 var sidebar = require('./sidebar');
 var floatbar = require('./floatbar');
-var ViewportService = require('./viewport');
+var viewport = require('./viewport');
 var AppUI = require('./applicationui');
 var layout = require('./layout');
 
@@ -63,8 +63,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         self._addComponent(placeholder, component);
       });
     });
-    var mapComponent = this.templateConfig.viewport.map;
-    ViewportService.init(mapComponent,null);
+    //var mapComponent = this.templateConfig.viewport.map;
+    //ViewportService.init(mapComponent,null);
     GUI.ready();
   };
   
@@ -73,13 +73,13 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
       if (placeholderService) {
         placeholderService.addComponent(component);
-        ComponentsRegistry.addComponent(component);
+        ComponentsRegistry.registerComponent(component);
       }
     }
   };
   
   this._removeComponent = function(plceholder,componentId) {
-    ComponentsRegistry.removeComponent(component);
+    ComponentsRegistry.unregisterComponent(component);
   };
 
   this._showSidebar = function() {
@@ -145,16 +145,14 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
 ApplicationTemplate.PLACEHOLDERS = [
   'navbar',
   'sidebar',
-  'map',
-  'content',
+  'viewport',
   'floatbar'
 ];
 
 ApplicationTemplate.PlaceholdersServices = {
   navbar: null,
   sidebar: sidebar.SidebarService,
-  map: null,
-  content: null,
+  viewport: viewport.ViewportService,
   floatbar: sidebar.FloatbarService,
 };
 

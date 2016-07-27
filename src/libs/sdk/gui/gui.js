@@ -23,8 +23,13 @@ function GUI(){
   this.hidePanel = noop;
 
   //metodi componente
-  this.addComponent = noop;
-  this.removeComponent = noop;
+  // aggiunge (e registra) un componente in un placeholder del template - Metodo implementato dal template
+  this.addComponent = function(component,placeholder) {};
+  this.removeComponent = function(id) {};
+  // registra globalmente un componente (non legato ad uno specifico placeholder. Es. componente per mostrare risultati interrogazion)
+  this.setComponent = function(component) {
+    ComponentsRegistry.registerComponent(component);
+  };
   this.getComponent = function(id) {
     return ComponentsRegistry.getComponent(id);
   };

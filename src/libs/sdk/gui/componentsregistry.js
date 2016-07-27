@@ -5,7 +5,7 @@ var base = require('core/utils/utils').base;
 function ComponentsRegistry() {
   this.components = {};
   
-  this.addComponent = function(component) {
+  this.registerComponent = function(component) {
     var id = component.getId();
     if (!this.components[id]) {
       this.components[id] = component;
@@ -16,7 +16,7 @@ function ComponentsRegistry() {
     return this.components[id];
   };
   
-  this.removeComponent = function(id) {
+  this.unregisterComponent = function(id) {
     var component = this._components[id];
     if (component) {
       if (_.isFunction(component.destroy)) {

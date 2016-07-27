@@ -25,32 +25,39 @@ var ViewportComponent = Vue.component('viewport',{
 
 var ViewportService = function(){  
   this.state = {
-    primaryView: 'map'
+    primaryView: 'one'
   };
   
   this.views = {
-    map: null,
-    contenx: null
-  }
+    one: null,
+    two: null
+  };
 
-  this.init = function(mapComponent, contentxComponent) {
-    var mapView = new View({
-      el: '#g3w-map-view'
-    });
-    this.views['map'] = mapView;
+  this.init = function() {
+  };
+  
+  this.addComponent = function(component) {
+    // la viewport accetta al massimo due viste, ognuna contente un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
+    var spaceAvailable = !(this.views.one && this.views.two);
+    if (!spaceAvailable) {
+      return;
+    }
     
-    var contentxView = new View({
-      el: '#g3w-contenx-view'
+    // il primo componente ad essere aggiunto avrà il tag 'one'
+    var viewtag = this.views.one ? 'one' : 'two';
+    var view = new View({
+      el: '#g3w-view-'+viewtag
     });
-    this.views['contentx'] = contentxView;
+    this.views[viewtag] = view;
     
-    this.setPrimaryView('map');
+    
+    // il primo componente viene settato automaticamente come vista primaria
+    if (viewtag == 'one') {
+      this.setPrimaryView('one');
+    }
 
-    // monto la mappa
-    mapComponent.mount('#g3w-contenx-view');
-    // monto il contentx
-    //contentxComponent.mount(#g3w-contenx-view);
-  }
+    component.mount('#g3w-view-'+viewtag);
+  };
   
   this.setPrimaryView = function(viewName) {
     this.state.primaryView = viewName;
@@ -65,11 +72,9 @@ var ViewportService = function(){
       // 1/2 o 1/3
     }
   };
-  
-  this.getContentView = function() {
-    return this.state,views['contentx'].component;
-  }
 };
 inherit(ViewportService, G3WObject);
 
-module.exports = new ViewportService;
+module.exports = {
+  ViewportService: new ViewportService,
+}

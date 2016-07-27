@@ -70,18 +70,16 @@ function createTemplateConfig(){
           })
         ]
       },
-      content: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
-        components: []
+      viewport: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+        components: [
+          new MapComponent({
+            id: 'map'
+          })
+        ]
       }, 
       floatbar:{
         components: []
       }
-    },
-    viewport: {
-      map: new MapComponent({
-        id: 'map'
-      }),
-      contentx: null
     }
   };
 }
