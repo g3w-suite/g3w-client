@@ -152,7 +152,10 @@ gulp.task('browser-sync', function() {
             middleware: [proxyMiddleware(conf.proxy.urls)]
         },
         open: false,
-        startPath: "/"
+        startPath: "/",
+        socket: {
+          domain: "http://localhost:3000"
+        }
     });
 });
 
@@ -163,7 +166,7 @@ gulp.task('html', ['fonts'], function () {
 });
 
 gulp.task('watch',function() {
-    watch(['./src/app/style/*.less','./src/libs/common/g3w-client-common/style/*.less','./src/libs/common/g3w-client-common/style/less/*.less'],function(){
+    watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],function(){
       gulp.start('less');
     });
     watch(['./src/app/style/skins/*.less'],function(){

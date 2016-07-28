@@ -19,8 +19,8 @@
     "preprocess": "^3.1.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.11.1",
-    "browserify": "^13.0.0",
+    "browser-sync": "^2.13.0",
+    "browserify": "^13.1.0",
     "chai": "^3.5.0",
     "del": "^2.2.0",
     "generator-browserify": "^0.4.1",
@@ -41,6 +41,7 @@
     "gulp-useref": "^3.0.7",
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.5",
+    "http-proxy": "^1.11.0",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "karma": "^0.13.21",
