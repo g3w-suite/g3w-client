@@ -93,7 +93,7 @@ var ViewportService = function(){
   
   this.addComponent = function(component) {
     var self = this;
-    // la viewport accetta al massimo due viste, ognuna contente un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
+    // la viewport ha al massimo due viste, ognuna contente al massimo un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
     var spaceLeft = 2 - _.keys(self._viewsById).length;
     if (spaceLeft <= 0) {
       return;
