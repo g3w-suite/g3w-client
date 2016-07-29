@@ -153,7 +153,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // Mostra i contenuto come vista aside
     GUI.showContentAside = function(content,split,ratio) {
       var contentComponent = ComponentsRegistry.getComponent('content');
-      // contentComponent.setContent(content);  DA IMPLEMENTARE
+      // contentComponent.setContent(content);  DA IMPLEMENTARE: Il secondo componente settato in fase di configurazione (ancora non presente) dovrà implementare il metodo setContent
+      // che accetterà o una stringa HTML, o un elemento DOM, oppure un componente Vue
       viewport.ViewportService.setPrimaryComponent('map');
       viewport.ViewportService.showSecondaryView(split,ratio);
     };
