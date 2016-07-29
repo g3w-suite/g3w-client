@@ -1,6 +1,6 @@
 <div>
-  <div id="g3w-view-one" class="primary-left" :style="{width:state.viewSizes.one.width+'px',height:state.viewSizes.one.height+'px'}"></div>
-  <div v-if="state.secondaryVisible" id="g3w-view-two" class="secondary-right" :style="{width:state.viewSizes.two.width+'px',height:state.viewSizes.two.height+'px'}">
+  <div id="g3w-view-one" class="g3w-view one" :style="{width:state.viewSizes.one.width+'px',height:state.viewSizes.one.height+'px',display:'inline-block'}"></div>
+  <div v-show="state.secondaryVisible" id="g3w-view-two" class="g3w-view two" :style="{width:state.viewSizes.two.width+'px',height:state.viewSizes.two.height+'px',float:'right'}">
     <div>TEST CONTENUTO X</div>
   </div>
 </div>

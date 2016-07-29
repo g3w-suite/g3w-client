@@ -6,8 +6,10 @@ var GUI = require('sdk').gui.GUI;
 
 var ViewportService = function(){  
   this.state = {
-    primaryView: 'one', // di default la vista primaria è la prima
+    primaryViewTag: 'one', // di default la vista primaria è la prima
     secondaryVisible: false,
+    ratioDenom: 2,
+    split: 'h',
     viewSizes: {
       one: {
         width: 0,
@@ -19,6 +21,16 @@ var ViewportService = function(){
       }
     }
   };
+  
+  this.setters = {
+    setPrimaryComponent: function(componentId) {
+      var component = this._viewsByComponentId[componentId];
+      if(component) {
+        var viewTag = component.viewTag;
+        this._setPrimaryView(viewTag);
+      }
+    }
+  }
   
   this._viewsByComponentId = {};
   var _components = null;
@@ -35,11 +47,6 @@ var ViewportService = function(){
     
     // il primo componente ad essere aggiunto avrà il tag 'one'
     var viewTag = (spaceLeft == 2) ? 'one' : 'two';
-    
-    // il primo componente viene settato automaticamente come vista primaria
-    if (viewTag == 'one') {
-      //this.setPrimaryView('one');
-    }
 
     component.mount('#g3w-view-'+viewTag,true).
     then(function(){
@@ -51,45 +58,31 @@ var ViewportService = function(){
     });
   };
   
+  this.showSecondaryView = function(split,ratioDenom) {
+    this.state.secondaryVisible = true;
+    this.state.split = split ? split : this.state.split;
+    this.state.ratioDenom = ratioDenom ? ratioDenom : this.state.ratioDenom;
+    this._layout();
+  };
+  
+  this.hideSecondaryView = function() {
+    this.state.secondaryVisible = false;
+    this._layout();
+  };
+  
   /* FINE INTERFACCIA PUBBLICA */
-  
-  this._calcViewSizes = function() {
-    var self = this;
-    _.forEach(_.keys(this.state.viewSizes),function(viewTag){
-      self._calcViewSize(viewTag)
-    })
-  };
-  
-  this._calcViewSize = function(viewTag) {
-    var isPrimary = this.state.primaryView == viewTag ? true : false;
-    if (isPrimary) {
-      var otherTag = this._otherTag(viewTag);
-      
-      var viewportWidth = this._viewportWidth();
-      var viewportHeight = this._viewportHeight();
-
-      otherWidth = this.state.viewSizes[otherTag].width;
-      otherHeight = this.state.viewSizes[otherTag].height;
-      
-      var viewWidth = viewportWidth - otherWidth;
-      var viewHeight = viewportHeight - otherHeight;
-      
-      this.state.viewSizes[viewTag].width = viewWidth;
-      this.state.viewSizes[viewTag].height = viewHeight;
-    }
-    else {
-      if (!this.state.secondaryVisible) {
-        this.state.viewSizes[viewTag].width = 0;
-        this.state.viewSizes[viewTag].height = 0;
-      }
-    }
-  };
   
   this._otherTag = function(viewTag) {
     return (viewTag == 'one') ? 'two' : 'one';
-  }
+  };
   
   // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
+  
+  this._setPrimaryView = function(viewTag) {
+    this.state.primaryView = viewTag;
+    this._layout();
+  };
+  
   this._prepareLayout = function() {
     var self = this;
     var drawing = false;
@@ -104,32 +97,16 @@ var ViewportService = function(){
       if (resizeFired === true) {
           resizeFired = false;
           drawing = true;
-          layout();
+          self._layout();
           requestAnimationFrame(drawResize);
       } else {
           drawing = false;
       }
     }
     
-    function layout() {
-      if (!_components){
-        _components = _.map(self._viewsByComponentId,function(view){ return view.component; });
-      }
-      //var width = self._viewportWidth();
-      //var height = self._viewportHeight();
-      self._calcViewSizes();
-      _.forEach(_components,function(component){
-        // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
-        var viewTag = self._viewsByComponentId[component.getId()].viewTag;
-        var width = self.state.viewSizes[viewTag].width;
-        var height = self.state.viewSizes[viewTag].height;
-        component.layout(width,height);
-      })
-    }
-    
     GUI.on('ready',function(){
       // primo layout
-      layout();
+      self._layout();
       
       // resize scatenato da GUI
       GUI.on('guiresized',function(){
@@ -152,6 +129,45 @@ var ViewportService = function(){
     });
   };
   
+  this._calcViewSizes = function() {
+    var primaryViewTag = this.state.primaryViewTag;
+    var seondaryViewTag = this._otherTag(primaryViewTag);
+    
+    var viewportWidth = this._viewportWidth();
+    var viewportHeight = this._viewportHeight();
+    
+    var primaryWidth = viewportWidth;
+    var primaryHeight = viewportHeight;
+    var secondaryWidth = 0;
+    var secondaryHeight = 0;
+    
+    if (this.state.secondaryVisible) {
+      var ratio = this.state.ratioDenom;
+      if (ratio > 0) {
+        if (this.state.split == 'h') {
+          secondaryWidth = viewportWidth / ratio;
+          secondaryHeight = viewportHeight;
+          primaryWidth = viewportWidth - secondaryWidth;
+          primaryHeight = viewportHeight;
+        }
+        else {
+          secondaryWidth = viewportWidth;
+          secondaryHeight = viewportHeight / ratio;
+          primaryWidth = viewportWidth;
+          primaryHeight = viewportHeight - secondaryHeight;
+        }
+      }
+      else {
+        this.state.secondaryVisible = false;
+      }
+    }
+    
+    this.state.viewSizes[primaryViewTag].width = primaryWidth;
+    this.state.viewSizes[primaryViewTag].height = primaryHeight;
+    this.state.viewSizes[seondaryViewTag].width = secondaryWidth;
+    this.state.viewSizes[seondaryViewTag].height = secondaryHeight;
+  };
+  
   this._viewportHeight = function() {
       var topHeight = $(".navbar").innerHeight();
       return $(window).innerHeight() - topHeight;
@@ -164,7 +180,25 @@ var ViewportService = function(){
     return $(window).innerWidth() - sideBarSpace;
   };
   
+  this._layout = function() {
+    var self = this;
+      if (!_components){
+        _components = _.map(this._viewsByComponentId,function(view){ return view.component; });
+      }
+      //var width = self._viewportWidth();
+      //var height = self._viewportHeight();
+      this._calcViewSizes();
+      _.forEach(_components,function(component){
+        // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
+        var viewTag = self._viewsByComponentId[component.getId()].viewTag;
+        var width = self.state.viewSizes[viewTag].width;
+        var height = self.state.viewSizes[viewTag].height;
+        component.layout(width,height);
+      })
+    }
+  
   this._prepareLayout();
+  base(this);
 };
 inherit(ViewportService, G3WObject);
 

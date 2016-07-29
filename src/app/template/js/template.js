@@ -139,13 +139,28 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
     
     // Mostra la mappa come vista principale
-    GUI.showMap = function() {};
+    GUI.showMap = function() {
+      viewport.ViewportService.setPrimaryComponent('map');
+    };
     // Mostra la mappa come vista aside, impostando il rapporto vista principale / vista secondaria (es. 2 per 1/2, 3 per vista secondaria 1/ di quella primaria, ecc.)
-    GUI.showMapAside = function() {ratio};
+    GUI.showMapAside = function(split,ratio) {
+      
+    };
     // Mostra il contenuto come vista principale. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue
-    GUI.showContent = function(content) {};
+    GUI.showContent = function(content) {
+      viewport.ViewportService.setPrimaryComponent('content');
+    };
     // Mostra i contenuto come vista aside
-    GUI.showContentAside = function() {content,ratio};
+    GUI.showContentAside = function(content,split,ratio) {
+      var contentComponent = ComponentsRegistry.getComponent('content');
+      // contentComponent.setContent(content);  DA IMPLEMENTARE
+      viewport.ViewportService.setPrimaryComponent('map');
+      viewport.ViewportService.showSecondaryView(split,ratio);
+    };
+    // Nasconde la vista secondaria
+    GUI.hideAside = function() {
+      viewport.ViewportService.hideSecondaryView();
+    }
     
     /* fine metodi specifici */
     
