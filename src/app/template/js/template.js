@@ -148,13 +148,15 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     // Mostra il contenuto come vista principale. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue
     GUI.showContent = function(content) {
+      var contentComponent = ComponentsRegistry.getComponent('content');
+      // contentComponent.setContent(content);  DA IMPLEMENTARE: Il secondo componente settato in fase di configurazione (ancora non presente) dovrà implementare il metodo setContent
+      // che accetterà o una stringa HTML, o un elemento DOM, oppure un componente Vue
       viewport.ViewportService.setPrimaryComponent('content');
     };
     // Mostra i contenuto come vista aside
     GUI.showContentAside = function(content,split,ratio) {
       var contentComponent = ComponentsRegistry.getComponent('content');
-      // contentComponent.setContent(content);  DA IMPLEMENTARE: Il secondo componente settato in fase di configurazione (ancora non presente) dovrà implementare il metodo setContent
-      // che accetterà o una stringa HTML, o un elemento DOM, oppure un componente Vue
+      // contentComponent.setContent(content);
       viewport.ViewportService.setPrimaryComponent('map');
       viewport.ViewportService.showSecondaryView(split,ratio);
     };
