@@ -1,6 +1,6 @@
 <div>
-  <div id="g3w-view-one" class="primary-left"></div>
-  <div id="g3w-view-two" class="secondary-right" style="display:none">
+  <div id="g3w-view-one" class="primary-left" :style="{width:state.viewSizes.one.width+'px',height:state.viewSizes.one.height+'px'}"></div>
+  <div v-if="state.secondaryVisible" id="g3w-view-two" class="secondary-right" :style="{width:state.viewSizes.two.width+'px',height:state.viewSizes.two.height+'px'}">
     <div>TEST CONTENUTO X</div>
   </div>
 </div>

@@ -36,10 +36,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     });
 
     var SidebarComponent = require('./sidebar').SidebarComponent;
+    var ViewportComponent = require('./viewport').ViewportComponent;
     var FloatbarComponent = require('./floatbar').FloatbarComponent;
     var AppUI = require('./applicationui');
 
     Vue.component('sidebar', SidebarComponent);
+    Vue.component('viewport', ViewportComponent);
     Vue.component('floatbar', FloatbarComponent);
     Vue.component('app', AppUI);
 
