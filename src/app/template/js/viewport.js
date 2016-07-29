@@ -1,26 +1,11 @@
-var inherit = require('core/utils/utils').inherit;
-var base = require('core/utils/utils').base;
-var merge = require('core/utils/utils').merge;
-var G3WObject = require('core/g3wobject');
-
-var View = Vue.extend({
-  template: require('../html/view.html'),
-  replace: false,
-  data: function(){
-    return {
-      primary: false,
-      width: 3,
-      visible: false
-    }
-  }
-});
+var inherit = require('sdk').core.utils.inherit;
+var base = require('sdk').core.utils.base;
+var merge = require('sdk').core.utils.merge;
+var G3WObject = require('sdk').core.G3WObject;
+var GUI = require('sdk').gui.GUI;
 
 var ViewportComponent = Vue.component('viewport',{
-  template: require('../html/viewport.html'),
-  components: {
-    map: View,
-    content: View
-  }
+  template: require('../html/viewport.html')
 })
 
 var ViewportService = function(){  
@@ -28,50 +13,111 @@ var ViewportService = function(){
     primaryView: 'one'
   };
   
-  this.views = {
-    one: null,
-    two: null
-  };
+  this._viewsById = {};
 
-  this.init = function() {
-  };
+  // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
+  (function reflow(viewsById) {
+    var drawing = false;
+    var resizeFired = false;
+    
+    var components = null;
+    
+    function triggerResize() {
+      resizeFired = true;
+      drawResize();
+    } 
+    
+    function viewportHeight(){
+      var topHeight = $(".navbar").innerHeight();
+      return $(window).innerHeight() - topHeight;
+    };
+    
+    function viewportWidth() {
+      var offset = $(".main-sidebar").offset().left;
+      var width = $(".main-sidebar").innerWidth();
+      var sideBarSpace = width + offset;
+      return $(window).innerWidth() - sideBarSpace;
+    };
+
+    function drawResize() {
+      if (resizeFired === true) {
+          resizeFired = false;
+          drawing = true;
+          layout();
+          requestAnimationFrame(drawResize);
+      } else {
+          drawing = false;
+      }
+    }
+    
+    function layout() {
+      if (!components){
+        components = _.map(viewsById,function(view){ return view.component; });
+      }
+      var width = viewportWidth();
+      var height = viewportHeight();
+      _.forEach(components,function(component){
+        // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
+        component.layout(width,height);
+      })
+    }
+    
+    GUI.on('ready',function(){
+      // primo layout
+      layout();
+      
+      // resize scatenato da GUI
+      GUI.on('guiresized',function(){
+        triggerResize();
+      });
+      
+      // resize della window
+      $(window).resize(function() {
+        // set resizedFired to true and execute drawResize if it's not already running
+        if (drawing === false) {
+            triggerResize();
+        }
+      });
+      
+      // resize sul ridimensionamento della sidebar
+      $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
+          $(this).trigger('trans-end');
+          triggerResize();
+      });
+    });
+
+  })(this._viewsById);
+  
+  
+  /* INTERFACCIA PUBBLICA */
   
   this.addComponent = function(component) {
+    var self = this;
     // la viewport accetta al massimo due viste, ognuna contente un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
-    var spaceAvailable = !(this.views.one && this.views.two);
-    if (!spaceAvailable) {
+    var spaceLeft = 2 - _.keys(self._viewsById).length;
+    if (spaceLeft <= 0) {
       return;
     }
     
     // il primo componente ad essere aggiunto avrà il tag 'one'
-    var viewtag = this.views.one ? 'one' : 'two';
-    var view = new View({
-      el: '#g3w-view-'+viewtag
-    });
-    this.views[viewtag] = view;
-    
+    var viewtag = (spaceLeft == 2) ? 'one' : 'two';
     
     // il primo componente viene settato automaticamente come vista primaria
     if (viewtag == 'one') {
-      this.setPrimaryView('one');
+      //this.setPrimaryView('one');
     }
 
-    component.mount('#g3w-view-'+viewtag);
-  };
-  
-  this.setPrimaryView = function(viewName) {
-    this.state.primaryView = viewName;
-    _.forEach(this.view,function(view){
-      view.primary = false;
+    component.mount('#g3w-view-'+viewtag,true).
+    then(function(){
+      var componentId = component.getId();
+      self._viewsById[componentId] = {
+        viewTag: viewtag,
+        component: component
+      }
     })
-    this.views[viewName].primary = true;
   };
   
-  this.showSecondaryView = function(widthClass) {
-    if ([2,3].indexOf(widthClass) > -1) {
-      // 1/2 o 1/3
-    }
-  };
+  
 };
 inherit(ViewportService, G3WObject);
 

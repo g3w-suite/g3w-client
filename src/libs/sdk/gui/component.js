@@ -44,7 +44,7 @@ proto.unmount = function(){};
  * parentWidth: nuova larghezza del parent
  * richiamato ogni volta che il parent subisce un ridimensionamento
 */
-proto.onResize = function(parentWidth,parentHeight){};
+proto.layout = function(parentWidth,parentHeight){};
 
 
 module.exports = Component;

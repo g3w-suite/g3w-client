@@ -13,8 +13,13 @@ inherit(Component, BaseComponent);
 var proto = Component.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.mount = function(parent){
-  this.internalComponent.$mount(parent);
+proto.mount = function(parent,append){
+  if(append) {
+    this.internalComponent.$mount().$appendTo(parent);
+  }
+  else {
+    this.internalComponent.$mount(parent);
+  }
   return resolve(true);
 };
 

@@ -101,6 +101,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.getResourcesUrl = _.bind(function() {
       return this.ApplicationService.config.resourcesurl;
     },this);
+       
 
     GUI.showForm = function() {};
     GUI.closeForm = function() {};
@@ -134,6 +135,15 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     GUI.showSidebar = _.bind(this._showSidebar, this);
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
+    
+    // Mostra la mappa come vista principale
+    GUI.showMap = function() {};
+    // Mostra la mappa come vista aside, impostando il rapporto vista principale / vista secondaria (es. 2 per 1/2, 3 per vista secondaria 1/ di quella primaria, ecc.)
+    GUI.showMapAside = function() {ratio};
+    // Mostra il contenuto come vista principale. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue
+    GUI.showContent = function(content) {};
+    // Mostra i contenuto come vista aside
+    GUI.showContentAside = function() {content,ratio};
     
     /* fine metodi specifici */
     
