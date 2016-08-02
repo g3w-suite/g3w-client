@@ -20,7 +20,7 @@ var vueComponentOptions = {
    },
    methods: {
     showSearchPanel: function(search) {
-        var panel = SearchesService.showSearchPanel(project);
+        var panel = SearchesService.showSearchPanel(search);
     }
   }
 };
