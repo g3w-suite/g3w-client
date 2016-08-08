@@ -1,8 +1,7 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-
-var MapService = require('g3w/core/mapservice');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
 
 function AddFeatureTool(editor,options){
   var self = this;
@@ -39,7 +38,7 @@ var proto = AddFeatureTool.prototype;
 // metodo eseguito all'avvio del tool
 proto.run = function(){
   var self = this;
-  var map = MapService.viewer.map;
+  var map = GUI.getComponent('map').getMapService().viewer.map;
   
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
@@ -88,7 +87,7 @@ proto.pause = function(pause){
 
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
-  var map = MapService.viewer.map;
+  var map = GUI.getComponent('map').getMapService().viewer.map;
   if (this._snapInteraction){
      map.removeInteraction(this._snapInteraction);
      this._snapInteraction = null;

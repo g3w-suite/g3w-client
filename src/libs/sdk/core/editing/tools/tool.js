@@ -1,13 +1,12 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-var MapService = require('g3w/core/mapservice');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
 
 function EditingTool(editor,options){
   this.editor = editor;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
-  this.map = MapService.viewer.map;
+  this.map = GUI.getComponent('map').getMapService().viewer.map;
   this.isPausable = false;
   this.options = options || {};
   this.steps = null;

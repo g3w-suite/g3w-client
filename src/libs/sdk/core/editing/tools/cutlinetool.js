@@ -1,13 +1,11 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var geom = require('g3w/core/geom');
-var MapService = require('g3w/core/mapservice');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var geom = require('core/geometry/geom');
 var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
+var GUI = require('gui/gui');
 
 var EditingTool = require('./tool');
-
-
 
 function CutLineTool(editor,options){
   this.setters = {

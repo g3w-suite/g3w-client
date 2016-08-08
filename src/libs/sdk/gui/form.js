@@ -1,6 +1,8 @@
+var inherit = require('core/utils/utils').inherit;
 var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
+var Panel =  require('gui/panel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 //var MapService = require('core/map/mapservice');
 
@@ -80,7 +82,7 @@ Inputs.specialInputs = [Inputs.SELECT,Inputs.LAYERPICKER];
 
 function Form(options){
   // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
-  this.panelComponent = null;
+  this.internalComponent = null;
   this.options =  options || {};
   this.id = options.id; // id del form
   this.name = options.name; // nome del form
@@ -97,11 +99,12 @@ function Form(options){
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
 }
+inherit(Form,Panel);
 
 var proto = Form.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.onShow = function(container){
+proto.mount = function(container){
   this._setupFields();
   var panel = this._setupPanel();
   this._mountPanel(panel,container);
@@ -109,9 +112,9 @@ proto.onShow = function(container){
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
-proto.onClose = function(){
-  this.panelComponent.$destroy(true);
-  this.panelComponent = null;
+proto.unmount = function(){
+  this.internalComponent.$destroy(true);
+  this.internalComponent = null;
   return resolve(true);
 };
 
@@ -239,7 +242,7 @@ proto._setupFields = function(){
 };
 
 proto._setupPanel = function(){
-  var panel = this.panelComponent = new this._formPanel({
+  var panel = this.internalComponent = new this._formPanel({
     form: this
   });
   if (this.options.buttons) {

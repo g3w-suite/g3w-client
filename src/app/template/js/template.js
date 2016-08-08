@@ -35,14 +35,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return t(value);
     });
 
-    var SidebarComponent = require('./sidebar').SidebarComponent;
-    var ViewportComponent = require('./viewport').ViewportComponent;
-    var FloatbarComponent = require('./floatbar').FloatbarComponent;
     var AppUI = require('./applicationui');
 
-    Vue.component('sidebar', SidebarComponent);
-    Vue.component('viewport', ViewportComponent);
-    Vue.component('floatbar', FloatbarComponent);
+    Vue.component('sidebar', sidebar.SidebarComponent);
+    Vue.component('viewport', viewport.ViewportComponent);
+    Vue.component('floatbar', floatbar.FloatbarComponent);
     Vue.component('app', AppUI);
 
     //inizializza l'applicazione Vue
@@ -58,6 +55,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   
   this._buildTemplate = function() {
     var self = this;
+    floatbar.FloatbarService.init(layout);
     var placeholdersConfig = this.templateConfig.placeholders;
     _.forEach(placeholdersConfig, function(components, placeholder){
       // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
@@ -83,6 +81,23 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._removeComponent = function(plceholder,componentId) {
     ComponentsRegistry.unregisterComponent(component);
   };
+  
+  this._showModalOverlay = function(bool){
+    /*if (!this._modalOverlay){
+      this._modalOverlay = $('<div id="g3w-modal-overlay" style="background-color: #000000; opacity: 0.7;z-index:4000;position:fixed;top:0px;left:0px"></div>');
+      $("body").append(this._modalOverlay);
+      this._modalOverlay.width($(window).innerWidth());
+      this._modalOverlay.height($(window).innerHeight());
+    }
+    if (_.isUndefined(bool) || bool === true){
+      this._modalOverlay.width($(window).innerWidth());
+      this._modalOverlay.height($(window).innerHeight());
+      this._modalOverlay.show();
+    }
+    else {
+      this._modalOverlay.hide();
+    }*/
+  };
 
   this._showSidebar = function() {
     //codice qui
@@ -101,14 +116,15 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     /* Metodi da definire (tramite binding) */
     GUI.getResourcesUrl = _.bind(function() {
-      return this.ApplicationService.config.resourcesurl;
+      return this.ApplicationService.getConfig().resourcesurl;
     },this);
-       
-
-    GUI.showForm = function() {};
-    GUI.closeForm = function() {};
-    GUI.showList = function() {};
-    GUI.closeList = function() {};
+    
+    GUI.showForm = _.bind(floatbar.FloatbarService.showPanel,floatbar.FloatbarService);
+    GUI.closeForm = _.bind(floatbar.FloatbarService.closePanel,floatbar.FloatbarService);
+    GUI.showList = _.bind(floatbar.FloatbarService.showPanel,floatbar.FloatbarService);
+    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel,floatbar.FloatbarService);
+    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
+    
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
 
@@ -137,6 +153,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     GUI.showSidebar = _.bind(this._showSidebar, this);
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
+    
+    GUI.setModal = _.bind(this._showModalOverlay,this);
     
     // Mostra la mappa come vista principale
     GUI.showMap = function() {

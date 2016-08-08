@@ -1,10 +1,10 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var resolve = require('g3w/core/utils').resolve;
-var reject = require('g3w/core/utils').reject;
-var G3WObject = require('g3w/core/g3wobject');
-var MapService = require('g3w/core/mapservice');
-var VectorLayer = require('g3w/core/vectorlayer');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
+var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
+var VectorLayer = require('core/layer/vectorlayer');
 
 //var Sequencer = require('./stepsequencer');
 var AddFeatureTool = require('./tools/addfeaturetool');
@@ -125,7 +125,7 @@ proto.start = function(){
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     })
-    MapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
+    GUI.getComponent('map').getMapService().viewer.map.addLayer(this._editVectorLayer.getLayer());
     
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
@@ -142,7 +142,7 @@ proto.stop = function(){
       this._editBuffer.destroy();
       this._editBuffer = null;
       this.removeAllListeners();
-      MapService.viewer.removeLayerByName(this._editVectorLayer.name);
+      GUI.getComponent('map').getMapService().viewer.removeLayerByName(this._editVectorLayer.name);
       this._setStarted(false);
       return true;
     }

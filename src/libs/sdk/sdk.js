@@ -19,11 +19,15 @@ g3w.core = {
    PickFeatureInteraction: require('core/interactions/pickfeatureinteraction'),
    i18n: require('core/i18n/i18n.service'),
    Plugin: require('core/plugin/plugin'),
-   PluginsRegistry: require('core/plugin/pluginsregistry')
+   PluginsRegistry: require('core/plugin/pluginsregistry'),
+   Editor: require('core/editing/editor')
 };
 
 g3w.gui = {
   GUI: require('gui/gui'),
+  Form: require('gui/form').Form,
+  FormPanel: require('gui/form').FormPanel,
+  Panel: require('gui/panel'),
   vue: {
     //GeocodingComponent: require('gui/vue/geocoding/geocoding'),
     SearchComponent: require('gui/search/vue/search'),

@@ -5,6 +5,7 @@ var G3WObject = require('core/g3wobject');
 
 var Panel = function(options) {
   self = this;
+  this.internalPanel = null;
   var options = options || {};
   self.id = options.id || null;
   self.title = options.title || '';
@@ -36,7 +37,7 @@ proto.getTitle = function(){
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
 
 proto.mount = function(parent) {
-  var panel = this.InternalPanel;
+  var panel = this.internalPanel;
   panel.$mount().$appendTo(parent);
   localize();
   return resolvedValue(true);
@@ -47,7 +48,7 @@ proto.mount = function(parent) {
  * Ritorna una promessa che sarà risolta nel momento in cui il pannello avrà completato la propria rimozione (ed eventuale rilascio di risorse dipendenti)
 */
 proto.unmount = function(){
-  var panel = this.InternalPanel;
+  var panel = this.internalPanel;
   var deferred = $.Deferred();
   panel.$destroy(true);
   deferred.resolve();

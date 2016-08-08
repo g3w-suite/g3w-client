@@ -1,6 +1,6 @@
 <div>
   <validator name="validation">
-    <form novalidate class="form-horizontal g3w-form" :class="[$validation[relfield.name].invalid ? 'has-error': '']">
+    <form novalidate class="form-horizontal g3w-form">
       <template v-for="field in state.fields">
         <div v-if="isVisible(field)" class="form-group has-feedback">
           <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
@@ -20,7 +20,7 @@
         <div v-if="showRelation(relation)" transition="expand">
           <div class="g3w-relationname">{{ relation.name | startcase }}</div>
           <template v-for="relfield in relation.fields">
-            <div v-if="isVisible(relfield)" class="form-group has-feedback" :class="[$validation[relfield.name].invalid ? 'has-error': '']">
+            <div v-if="isVisible(relfield)" class="form-group has-feedback">
               <label :for="relfield.name" class="col-sm-4 control-label">{{relfield.label}}<span v-if="relfield.validate && relfield.validate.required">*</span></label>
               <div class="col-sm-8">
                 <input v-if="isSimple(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">

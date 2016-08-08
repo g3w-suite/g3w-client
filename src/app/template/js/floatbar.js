@@ -28,7 +28,6 @@ function FloatbarService(){
       $('.control-sidebar-bg').css("z-index",4999);
       $('.control-sidebar-bg').toggleClass('control-sidebar-bg-shadow');
     }
-    
   };
   
   this.closePanel = function(){

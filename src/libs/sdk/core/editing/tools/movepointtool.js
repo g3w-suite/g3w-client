@@ -1,8 +1,7 @@
-var inherit = require('g3w/core/utils').inherit;
-var base = require('g3w/core/utils').base;
-var G3WObject = require('g3w/core/g3wobject');
-
-var MapService = require('g3w/core/mapservice');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
 
 function MoveFeatureTool(editor){
   var self = this;
@@ -30,7 +29,7 @@ var proto = MoveFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
-  var map = MapService.viewer.map;
+  var map = GUI.getComponent('map').getMapService().viewer.map;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
@@ -86,7 +85,7 @@ proto.pause = function(pause){
 };
 
 proto.stop = function(){
-  var map = MapService.viewer.map;
+  var map = GUI.getComponent('map').getMapService().viewer.map;
   this._selectInteraction.getFeatures().clear();
   map.removeInteraction(this._selectInteraction);
   this._selectInteraction = null;

@@ -1,6 +1,7 @@
 var base = require('core/utils/utils').base;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
+var ApplicationService = require('core/applicationservice');
 
 //var Plugin = require('./plugin');
 //var ToolsService = require('core/plugin/toolsservice');
@@ -15,7 +16,7 @@ function PluginsRegistry(){
     registerPlugin: function(plugin){
       if (!self._plugins[plugin.name]) {
         self._plugins[plugin.name] = plugin;
-        console.log("Registrato plugin "+plugin.name)
+        console.log("Registrato plugin "+plugin.name);
       }
     }
   }
@@ -37,6 +38,10 @@ function PluginsRegistry(){
       var url = this.pluginsBaseUrl+'plugins/'+name+'/plugin.js';
       $script(url);
     }
+  };
+  
+  this.getPluginConfig = function(pluginName) {
+    return this.pluginsConfigs[pluginName];
   };
   
   this.activate = function(plugin) {

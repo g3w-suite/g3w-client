@@ -74,7 +74,7 @@ function SearchPanel() {
   this.filter = {};
   this.id = null;
   this.querylayerid = null;
-  this.InternalPanel = new SearchPanelComponet();
+  this.internalPanel = new SearchPanelComponet();
   //funzione inizializzazione
   this.init = function(config) {
     this.config = config || {};
@@ -88,7 +88,7 @@ function SearchPanel() {
     var filterObjFromConfig = SearchQueryService.createQueryFilterFromConfig(this.filter);
     //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
     //il filtro che url, il nome del layer il tipo di server etc ..
-    this.InternalPanel.filterObject = SearchQueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
+    this.internalPanel.filterObject = SearchQueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
   };
 
   //funzione che popola gli inputs che ci saranno nel form del pannello ricerca
@@ -110,9 +110,9 @@ function SearchPanel() {
         //popolo gli inputs:
 
         // valori
-        self.InternalPanel.formInputValues.push(formValue);
+        self.internalPanel.formInputValues.push(formValue);
         //input
-        self.InternalPanel.forminputs.push(input);
+        self.internalPanel.forminputs.push(input);
         id+=1;
       });
     });

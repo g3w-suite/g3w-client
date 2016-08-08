@@ -31,12 +31,12 @@ var ApplicationService = function(){
       //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
       $.when(
         ApiService.init(this._config),
-        ProjectsRegistry.init(this._config),
-        PluginsRegistry.init({
-          plusingBaseUrl: this._config.urls.staticurl,
-          pluginsConfigs: this._config.plugins
-        })
+        ProjectsRegistry.init(this._config)
       ).then(function(){
+        PluginsRegistry.init({
+          plusingBaseUrl: self._config.urls.staticurl,
+          pluginsConfigs: self._config.plugins
+        });
         self.emit('ready');
         this.initialized = true;
       });

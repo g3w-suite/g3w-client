@@ -7,6 +7,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 // metodi devono essere implementati (definiti) dall'applicazione ospite
 // l'app ospite dovrebbe chiamare anche la funzione GUI.ready() quando la UI è pronta
 function GUI(){
+  this.ready = false;
   // url delle risorse (immagini, ecc.)
   this.getResourcesUrl = noop;
   // show a Vue form
@@ -37,6 +38,7 @@ function GUI(){
 
   this.ready = function(){
     this.emit('ready');
+    this.ready = true;
   };
   
   this.guiResized = function(){

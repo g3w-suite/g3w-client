@@ -63,6 +63,10 @@ inherit(Project,G3WObject);
 
 var proto = Project.prototype;
 
+proto.getGid = function() {
+  return this.state.gid;
+}
+
 proto.getLayer = function(id){
   return this._layers[id];
 };
