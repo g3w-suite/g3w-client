@@ -39,6 +39,7 @@ function SearchComponent(options){
   this.id = "search-component";
   this.title = "search";
   this.internalComponent = new InternalComponent;
+  this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
   merge(this, options);
   this.initService = function() {
     //inizializzo il servizio

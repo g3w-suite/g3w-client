@@ -1,7 +1,7 @@
-<li class="treeview" :class="{'active': openOnStart}">
+<li v-show="state.visible" class="treeview" :class="{'active': openOnStart}">
   <a href="#">
-    <i :class="dataIcon"></i>
-    <span class="treeview-label">{{dataLabel | t}}</span>
+    <i :class="icon"></i>
+    <span class="treeview-label">{{title | t}}</span>
     <i v-if="(dataType === 'inline')" class="fa fa-angle-left pull-right"></i>
   </a>
   <ul v-if="(dataType === 'inline')" class="treeview-menu">

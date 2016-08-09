@@ -202,6 +202,7 @@ Vue.component('legend-item',{
 
 /* INTERFACCIA PUBBLICA */
 function CatalogComponent(options){
+  base(this);
   this.id = "catalog-component";
   this.title = "catalog";
   this.internalComponent = new InternalComponent;

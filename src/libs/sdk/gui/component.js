@@ -3,9 +3,13 @@ var G3WObject = require('core/g3wobject');
 
 var Component = function(options) {
   var options = options || {};
-  this.id = options.id || Math.random() * 1000;
-  this.title = options.title || '';
   this.internalComponent = null;
+  this.id = options.id || Math.random() * 1000;
+  this.title = options.title || ''
+  this.openOnStart = options.openOnStart || false;
+  this.state = {
+    visible: options.visible || true
+  }
 };
 inherit(Component,G3WObject);
 
@@ -15,13 +19,13 @@ proto.getId = function(){
   return this.id;
 };
 
-proto.getName = function() {
-  return this.name;
+proto.getTitle = function(){
+  return this.state.title;
 };
 
-proto.getTitle = function(){
-  return this.title;
-};
+proto.setTitle = function(title) {
+  this.state.title = title;
+}
 
 /* HOOKS */
 
