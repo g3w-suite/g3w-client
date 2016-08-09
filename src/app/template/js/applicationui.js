@@ -1,3 +1,4 @@
+var ApplicationService = require('core/applicationservice');
 var layout = require('./layout');
 var AppUI = Vue.extend({
   template: require('../html/app.html'),
@@ -25,6 +26,15 @@ var AppUI = Vue.extend({
       setFloatBarMaxHeight();
       setModalHeight();
     });
+   },
+   computed: {
+    logo_url: function() {
+      var config = ApplicationService.getConfig();
+      return config.mediaurl+config.logo_img;
+    },
+    logo_link: function() {
+      return ApplicationService.getConfig().logo_link;
+    }
    },
    methods: {
       closePanel: function(){

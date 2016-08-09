@@ -41,7 +41,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     Vue.component('viewport', viewport.ViewportComponent);
     Vue.component('floatbar', floatbar.FloatbarComponent);
     Vue.component('app', AppUI);
-
     //inizializza l'applicazione Vue
     var template = this;  
     var app = new Vue({

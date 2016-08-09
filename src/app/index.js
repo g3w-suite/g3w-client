@@ -10,9 +10,14 @@ var config = require('./config/config.js');
 function createApplicationConfig() {  
   return {
     apptitle: config.apptitle || '',
+    logo_img: config.group.header_logo_img,
+    logo_link: config.group.header_logo_link,
+    terms_of_use_text: config.group.header_terms_of_use_text,
+    terms_of_use_link: config.group.terms_of_use_link,
     debug: config.client.debug || false,
     group: config.group,
     urls: config.server.urls,
+    mediaurl: config.server.urls.mediaurl,
     resourcesurl: config.server.urls.staticurl,
     projects: config.group.projects,
     initproject: config.group.initproject,
@@ -109,14 +114,14 @@ ApplicationService.on('ready',function(){
 
 bootstrap = function(){
   i18ninit(config.i18n);
-
   obtainInitConfig()
   .then(function(initConfig){
     config.server.urls.staticurl = initConfig.staticurl;
+    config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
     
-      var applicationConfig = createApplicationConfig();
-      ApplicationService.init(applicationConfig);
+    var applicationConfig = createApplicationConfig();
+    ApplicationService.init(applicationConfig);
   })
 }();
 
