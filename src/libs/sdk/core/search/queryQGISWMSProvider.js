@@ -38,7 +38,7 @@ function QueryQGISWMSProvider() {
         'LAYERS': querylayer,
         'QUERY_LAYERS': querylayer,
         'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
-        'INFO_FORMAT': 'text/xml',
+        'INFO_FORMAT': 'application/vnd.ogc.gml',
         'CRS': 'EPSG:'+ crs,
         'FILTER': filter,
         // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
