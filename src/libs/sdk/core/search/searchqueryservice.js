@@ -77,7 +77,7 @@ function SearchQueryService(){
       url: layerInfo.url,
       querylayer: layerInfo.name,
       servertype: layerInfo.servertype,
-      crs: project.state.crs,
+      crs: layerInfo.crs,
       filterObject : filterObject
     };
   };
@@ -88,7 +88,7 @@ function SearchQueryService(){
     var layerInfo = project.getLayerById(layerId);
     if (layerInfo) {
       layerFilterInfo.name = layerInfo.name;
-      layerFilterInfo.crs = layerInfo.crs;
+      layerFilterInfo.crs = project.state.crs;
       layerFilterInfo.servertype = layerInfo.servertype;
       if (layerInfo.source && layerInfo.source.url){
         layerFilterInfo.url = layerInfo.source.url;
