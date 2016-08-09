@@ -3,10 +3,10 @@ var translations = {
         "translation": {
             "component": "Componente Generico",
             "search": "Ricerca",
-            "catalog": "Catalogo dati",
+            "catalog": "Mappa",
             "baselayers": "Basi",
             "tools": "Strumenti",
-            "tree": "Dati",
+            "tree": "Strati",
             "legend": "Legenda",
             "street_search": "Cerca indirizzo"
         }
