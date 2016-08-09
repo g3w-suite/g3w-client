@@ -47,8 +47,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var app = new Vue({
       el: 'body',
       ready: function(){
-        $(document).localize();
         self._buildTemplate();
+        $(document).localize();
       }
     });
   }
