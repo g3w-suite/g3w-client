@@ -14,7 +14,7 @@ var SidebarItem = Vue.extend({
         dataType: 'inline',
         title: 'component',
         icon: null,
-        openOnStart: true,
+        open: true,
         state: null
       };
   }
@@ -39,7 +39,7 @@ function SidebarService(){
     var sidebarItem = new SidebarItem();
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.title = component.title || sidebarItem.title;
-    sidebarItem.openOnStart = (component.openOnStart === undefined) ? sidebarItem.openOnStart : component.openOnStart;
+    sidebarItem.open = (component.open === undefined) ? sidebarItem.open : component.open;
     sidebarItem.icon = component.dataIcon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');

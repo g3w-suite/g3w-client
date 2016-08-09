@@ -6,9 +6,9 @@ var Component = function(options) {
   this.internalComponent = null;
   this.id = options.id || Math.random() * 1000;
   this.title = options.title || ''
-  this.openOnStart = options.openOnStart || false;
   this.state = {
-    visible: options.visible || true
+    visible: options.visible || true,
+    open: options.open || false
   }
 };
 inherit(Component,G3WObject);

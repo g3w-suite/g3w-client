@@ -22,9 +22,14 @@ var InternalComponent = Vue.extend({
 
 function ToolsComponent(options){
   base(this,options);
+  var self = this;
+  this._toolsService = new ToolsService();
   this.id = "tools-component";
   this.title = "tools";
-  this._toolsService = new ToolsService();
+  this.state.visible = false;
+  this._toolsService.onafter('addToolGroup',function(){
+    self.state.visible = self._toolsService.state.toolsGroups.length > 0;
+  })
   merge(this, options);
   this.internalComponent = new InternalComponent({
     toolsService: this._toolsService

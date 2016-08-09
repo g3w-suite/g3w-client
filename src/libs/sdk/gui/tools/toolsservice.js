@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
 function ToolsService(){
@@ -9,6 +10,12 @@ function ToolsService(){
     toolsGroups: []
   };
   
+  this.setters = {
+    addToolGroup: function(group) {
+      this.state.toolsGroups.push(group);
+    }
+  }
+  
   this.addTools = function(groupName,tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);
@@ -17,7 +24,7 @@ function ToolsService(){
         name: groupName,
         tools: []
       };
-      this.state.toolsGroups.push(group);
+      this.addToolGroup(group);
     }
     _.forEach(tools,function(tool){
       group.tools.push(tool);
@@ -48,6 +55,8 @@ function ToolsService(){
     tool.actionId = actionId;
     this._actions[actionId] = tool.action;
   }
+  
+  base(this);
 };
 inherit(ToolsService,G3WObject);
 

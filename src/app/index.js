@@ -55,18 +55,18 @@ function createTemplateConfig(){
         components: [
           new SearchComponent({
             id: 'search',
-            openOnStart: false,
-            dataIcon: "fa fa-search"
+            open: false,
+            icon: "fa fa-search"
           }),
           new CatalogComponent({
             id: 'catalog',
-            openOnStart: true,
-            dataIcon: "fa fa-database"
+            open: true,
+            icon: "fa fa-database"
           }),
           new ToolsComponent({
             id: 'tools',
-            openOnStart: false,
-            dataIcon: "fa fa-gear"
+            open: false,
+            icon: "fa fa-gear"
           })
         ]
       },
