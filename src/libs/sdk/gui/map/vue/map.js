@@ -17,11 +17,11 @@ var vueComponentOptions = {
     
     var mapService = this.$options.mapService;
     
-    mapService.showViewer(this.$el.id);
+    mapService.setTarget(this.$el.id);
     
     // questo serve per quando viene cambiato progetto/vista cartografica, in cui viene ricreato il viewer (e quindi la mappa)
     mapService.onafter('setupViewer',function(){
-      mapService.showViewer(self.$el.id);
+      mapService.setTarget(self.$el.id);
     });
   }
 }
@@ -51,7 +51,7 @@ proto.getMapService = function() {
 proto.layout = function(width,height) {
   $("#map").height(height);
   $("#map").width(width);
-  this._mapService.getMap().updateSize();
+  this._mapService.resize(width,height);
 };
 
 module.exports =  MapComponent;

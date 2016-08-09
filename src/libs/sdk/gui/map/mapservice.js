@@ -31,6 +31,7 @@ function MapService(project){
   var self = this;
   this.config;
   this.viewer;
+  this.target;
   this.mapLayers = {};
   this.mapBaseLayers = {};
   this.layersAssociation = {};
@@ -75,21 +76,21 @@ function MapService(project){
       this.state.center = center;
       this.updateMapLayers(this.mapLayers);
     },
-    setupViewer: function(){
+    setupViewer: function(initialResolution){
       //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
       proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
         self.viewer.destroy();
         self.viewer = null;
       }
-      self._setupViewer();
+      self._setupViewer(initialResolution);
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
     }
   };
   
-  this._setupViewer = function(){
+  this._setupViewer = function(initialResolution){
     var extent = this.project.state.extent;
     var projection = new ol.proj.Projection({
       code: "EPSG:"+this.project.state.crs,
@@ -112,6 +113,7 @@ function MapService(project){
     }*/
     
     this.viewer = ol3helpers.createViewer({
+      id: this.target,
       view: {
         projection: projection,
         /*center: this.config.initcenter || ol.extent.getCenter(extent),
@@ -120,12 +122,14 @@ function MapService(project){
         minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
         maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
         center: ol.extent.getCenter(extent),
-        zoom: 0,
         extent: extent,
-        minZoom: 0, // default di OL3 3.16.0
-        maxZoom: 28 // default di OL3 3.16.0
+        //minZoom: 0, // default di OL3 3.16.0
+        //maxZoom: 28 // default di OL3 3.16.0
+        maxResolution: initialResolution
       }
     });
+    
+    this.viewer.map.getView().setResolution(initialResolution);
     
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
@@ -135,10 +139,6 @@ function MapService(project){
     
     this.emit('ready');
   };
-  
-  this.project.on('projectset',function(){
-    self.setupViewer();
-  });
   
   this.project.on('projectswitch',function(){
     self.setupLayers();
@@ -156,8 +156,6 @@ function MapService(project){
   });
   
   base(this);
-  
-  this.setupViewer();
 };
 
 inherit(MapService,G3WObject);
@@ -377,13 +375,8 @@ proto.registerListeners = function(mapLayer){
   })
 };
 
-proto.showViewer = function(elId){
-  var self = this;
-  this.viewer.setTarget(elId);
-  var map = this.viewer.map;
-  GUI.on('ready',function(){
-    self._setMapView();
-  });
+proto.setTarget = function(elId){
+  this.target = elId;
 };
 
 
@@ -563,6 +556,18 @@ proto.refreshMap = function(){
   _.forEach(this.mapLayers,function(wmsLayer){
     wmsLayer.getLayer().getSource().updateParams({"time": Date.now()});
   })
+};
+
+proto.resize = function(width,height) {
+  if (!this.viewer) {
+    var initialExtent = this.project.state.extent;
+    var xRes = ol.extent.getWidth(initialExtent) / width;
+    var yRes = ol.extent.getHeight(initialExtent) / height;
+    var res = Math.max(xRes,yRes);
+    this.setupViewer(res);
+  }
+  this.getMap().updateSize();
+  this._setMapView();
 };
 
 proto._setMapView = function(){
