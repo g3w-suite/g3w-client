@@ -10,7 +10,7 @@ var Provider = {
   'OGC': QueryWFSProvider
 };
 
-function SearchQueryService(){
+function QueryService(){
   var self = this;
   this.url = "";
   this.filterObject = {};
@@ -99,7 +99,7 @@ function SearchQueryService(){
     return layerFilterInfo;
   };
 
-  this.doQuerySearch = function(queryFilterObject) {
+  this.queryByFilter = function(queryFilterObject) {
     var provider = Provider[queryFilterObject.servertype];
     provider.doSearch(queryFilterObject)
     .then(function(result){
@@ -107,9 +107,13 @@ function SearchQueryService(){
       self.emit("searchresults", result)
     });
   };
+  
+  this.queryByLocation = function() {
+    // interrogazione per localizzazione
+  };
   base(this);
 }
-inherit(SearchQueryService,G3WObject);
+inherit(QueryService,G3WObject);
 
-module.exports =  new SearchQueryService
+module.exports =  new QueryService
 

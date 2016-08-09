@@ -2,10 +2,10 @@ var inherit = require('core/utils/utils').inherit;
 var localize = require('core/i18n/i18n.service').t;
 var resolve = require('core/utils/utils').resolve;
 var GUI = require('gui/gui');
-var SearchQueryService = require('core/search/searchqueryservice');
+var QueryService = require('core/query/queryservice');
 var ListPanel = require('gui/listpanel').ListPanel;
 var Panel = require('gui/panel');
-var SearchResultPanelComponent = require('gui/search/vue/results/resultpanel');
+var SearchResultPanelComponent = require('gui/queryresults/vue/resultpanel');
 var ProjectsRegistry = require('core/project/projectsregistry');
 
 //componente vue pannello search
@@ -24,7 +24,7 @@ var SearchPanelComponet = Vue.extend({
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
       this.filterObject = fillFilterInputsWithValues(this.filterObject, this.formInputValues);
-      SearchQueryService.doQuerySearch(this.filterObject);
+      QueryService.queryByFilter(this.filterObject);
     }
   }
 });
@@ -85,10 +85,10 @@ function SearchPanel() {
     //vado a riempire gli input del form del pannello
     this.fillInputsFormFromFilter();
     //creo e assegno l'oggetto filtro
-    var filterObjFromConfig = SearchQueryService.createQueryFilterFromConfig(this.filter);
+    var filterObjFromConfig = QueryService.createQueryFilterFromConfig(this.filter);
     //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
     //il filtro che url, il nome del layer il tipo di server etc ..
-    this.internalPanel.filterObject = SearchQueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
+    this.internalPanel.filterObject = QueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
   };
 
   //funzione che popola gli inputs che ci saranno nel form del pannello ricerca
@@ -122,7 +122,7 @@ function SearchPanel() {
 inherit(SearchPanel, Panel);
 
 //search query
-SearchQueryService.on("searchresults",function(results){
+/*QueryService.on("searchresults",function(results){
   var listPanel = new ListPanel({
     name: "Risultati ricerca",
     id: 'nominatim_results',
@@ -130,6 +130,6 @@ SearchQueryService.on("searchresults",function(results){
     listPanelComponent: SearchResultPanelComponent
   });
   GUI.showListing(listPanel);
-});
+});*/
 
 module.exports = SearchPanel;
