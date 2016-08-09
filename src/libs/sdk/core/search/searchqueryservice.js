@@ -70,21 +70,22 @@ function SearchQueryService(){
   };
 
   this.createQueryFilterObject = function(layerId, filterObject){
+    var project = ProjectsRegistry.getCurrentProject();
     var layerInfo = this.getLayerInfoUrlFromProjectConfig(layerId);
     return {
       type: 'standard',
       url: layerInfo.url,
       querylayer: layerInfo.name,
       servertype: layerInfo.servertype,
-      crs: layerInfo.crs,
+      crs: project.state.crs,
       filterObject : filterObject
     };
   };
 
   this.getLayerInfoUrlFromProjectConfig = function(layerId) {
     var layerFilterInfo = {};
-    var Project = ProjectsRegistry.getCurrentProject();
-    var layerInfo = Project.getLayerById(layerId);
+    var project = ProjectsRegistry.getCurrentProject();
+    var layerInfo = project.getLayerById(layerId);
     if (layerInfo) {
       layerFilterInfo.name = layerInfo.name;
       layerFilterInfo.crs = layerInfo.crs;
@@ -92,7 +93,7 @@ function SearchQueryService(){
       if (layerInfo.source && layerInfo.source.url){
         layerFilterInfo.url = layerInfo.source.url;
       } else {
-        layerFilterInfo.url = Project.getWmsUrl();
+        layerFilterInfo.url = project.getWmsUrl();
       };
     };
     return layerFilterInfo;
