@@ -224,9 +224,10 @@ proto.setupControls = function(){
 
             MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(coordinates,nfeatures,featuresForLayerNames){
+              var projectLayers = self.project.getLayers();
               var featuresForLayers = [];
               _.forEach(featuresForLayerNames,function(features,layerName){
-                var layer = this.project.layers[layerName];
+                var layer = projectLayers[layerName];
                 featuresForLayers.push({
                   layer: layer,
                   features: features
