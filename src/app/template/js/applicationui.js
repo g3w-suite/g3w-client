@@ -30,7 +30,11 @@ var AppUI = Vue.extend({
    computed: {
     logo_url: function() {
       var config = ApplicationService.getConfig();
-      return config.mediaurl+config.logo_img;
+      var logo_url;
+      if (config.logo_img && config.logo_img!='') {
+        logo_url = config.mediaurl+config.logo_img;
+      }
+      return logo_url;
     },
     logo_link: function() {
       return ApplicationService.getConfig().logo_link;
