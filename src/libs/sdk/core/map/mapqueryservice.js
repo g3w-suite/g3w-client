@@ -4,9 +4,6 @@ var G3WObject = require('core/g3wobject');
 var Geometry = require('core/geometry/geometry');
 var ProjectsRegistry = require('core/project/projectsregistry');
 
-
-//var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
-
 function MapQueryService() {
   base(this);
   this.init = function(map){

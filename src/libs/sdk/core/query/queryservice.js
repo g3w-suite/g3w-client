@@ -104,7 +104,7 @@ function QueryService(){
     provider.doSearch(queryFilterObject)
     .then(function(result){
       console.log(result);
-      self.emit("searchresults", result)
+      //self.emit("searchresults", result)
     });
   };
   
