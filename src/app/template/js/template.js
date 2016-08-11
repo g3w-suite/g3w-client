@@ -141,13 +141,16 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
     
-    GUI.showResults = function() {
+    // possibile strutturazione della visualizzazione dei risultati di interrogazione
+    GUI.showQueryResults = function(results) {
       // istanziare il componente queryresults
-      var queryRsults = null;
+      var queryRsultsCompnent = GUI.getComponent('queryresults');
+      queryResultsCompnent.getService().setResults(results); 
       // passarlo a Floatbar
       floatbar.FloatbarService.showPanel(queryRsults);
     };
-
+    
+    GUI.hideQueryResults = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
     //temporaneo show panel
     GUI.showPanel = _.bind(sidebar.SidebarService.showPanel, sidebar.SidebarService);
     GUI.closePanel = _.bind(sidebar.SidebarService.closePanel, sidebar.SidebarService);
