@@ -466,10 +466,10 @@ proto._completeGetFeatureInfo = function(layerId,coordinate,deferred){
   var projectType = this.project.state.type;
   
   var mapLayer = this.mapLayers[this.layersAssociation[layerId]];
-  var resolution = self.viewer.getResolution();
+  var resolution = this.viewer.getResolution();
   var epsg = self.viewer.map.getView().getProjection().getCode();
   var params = {
-    QUERY_LAYERS: Project.getLayer(layerId).name,
+    QUERY_LAYERS: this.project.getLayer(layerId).name,
     INFO_FORMAT: "text/xml"
   }
   
