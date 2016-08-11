@@ -19,8 +19,10 @@ function GUI(){
   this.closeListing = noop;
   this.hideListing = noop;
   
-  this.showResults = noop;
-  this.hideResults = noop;
+  // options conterrà i vari dati sui risultati. Sicuramente avrà la prprietà options.features
+  // nel caso di queryByLocation avrà anche options.coordinate
+  this.showQueryResults = function(options) {};
+  this.hideQueryResults = noop;
 
   /* panel */
   this.showPanel = noop;
