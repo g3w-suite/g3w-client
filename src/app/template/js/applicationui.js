@@ -1,4 +1,5 @@
 var ApplicationService = require('core/applicationservice');
+var ProjectsRegistry = require('core/project/projectsregistry');
 var layout = require('./layout');
 var AppUI = Vue.extend({
   template: require('../html/app.html'),
@@ -43,6 +44,10 @@ var AppUI = Vue.extend({
     logo_link_target: function() {
       var logo_link = this.getLogoLink();
       return logo_link ? "_blank" : "";
+    },
+    project_title: function() {
+      var currentProject = ProjectsRegistry.getCurrentProject();
+      return currentProject.state.name;
     }
    },
    methods: {
