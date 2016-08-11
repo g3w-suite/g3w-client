@@ -27,8 +27,14 @@ function QueryResultsComponent(options){
   this.title = "Query Results";
   this._service = new QueryResultsService();
   this.internalComponent = new InternalComponent({
-    queryResultsService: this._service
+      queryResultsService: this._service
   });
+  //usato quando è stato distrutto
+  this.setInternalComponent = function() {
+    this.internalComponent = new InternalComponent({
+      queryResultsService: this._service
+    });
+  }
   merge(this, options);
 };
 

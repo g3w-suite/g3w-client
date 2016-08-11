@@ -13,18 +13,24 @@ inherit(Component, BaseComponent);
 var proto = Component.prototype;
 
 // viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.mount = function(parent,append){
+proto.mount = function(parent,append) {
+  if (!this.internalComponent) {
+    this.setInternalComponent();
+  };
+
+  //DA RIVEDERE
   if(append) {
     this.internalComponent.$mount().$appendTo(parent);
   }
   else {
-    this.internalComponent.$mount(parent);
+    this.internalComponent.$mount().$appendTo(parent);
   }
   return resolve(true);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
-proto.unmount = function(){
+proto.unmount = function() {
+  // il problema che distruggere
   this.internalComponent.$destroy(true);
   this.internalComponent = null;
   return resolve();
