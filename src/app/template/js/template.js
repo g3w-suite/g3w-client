@@ -140,6 +140,13 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
+    
+    GUI.showResults = function() {
+      // istanziare il componente queryresults
+      var queryRsults = null;
+      // passarlo a Floatbar
+      floatbar.FloatbarService.showPanel(queryRsults);
+    };
 
     //temporaneo show panel
     GUI.showPanel = _.bind(sidebar.SidebarService.showPanel, sidebar.SidebarService);

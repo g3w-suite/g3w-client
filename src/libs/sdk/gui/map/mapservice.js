@@ -254,6 +254,9 @@ proto.setupControls = function(){
             })
           });
           break;
+          case 'scaleline':
+            //control = new ol.control.ScaleLine()
+          break;
       };
       if (control) {
         self.addControl(control);

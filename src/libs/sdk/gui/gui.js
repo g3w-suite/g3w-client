@@ -18,6 +18,9 @@ function GUI(){
   this.showListing = noop;
   this.closeListing = noop;
   this.hideListing = noop;
+  
+  this.showResults = noop;
+  this.hideResults = noop;
 
   /* panel */
   this.showPanel = noop;
