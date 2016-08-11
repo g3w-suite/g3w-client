@@ -4,6 +4,7 @@ var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
+var ComponentsRegistry = require('sdk/gui/componentsregistry');
 
 var Provider = {
   'QGIS': QueryQGISWMSProvider,
@@ -271,6 +272,8 @@ function QueryService(){
     else {
       d.resolve(coordinates,0,featuresForLayerNames);
     }
+    console.log('Registro componenti');
+    console.log(ComponentsRegistry);
     return d.promise();
   };
 
@@ -290,6 +293,13 @@ function QueryService(){
       layers = Project.getLayers();
     }
   };
+
+  this.showQueryResults = function(results) {
+
+      //codice qui
+
+  };
+
 
   base(this);
 }
