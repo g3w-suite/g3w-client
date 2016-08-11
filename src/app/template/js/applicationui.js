@@ -37,14 +37,26 @@ var AppUI = Vue.extend({
       return logo_url;
     },
     logo_link: function() {
-      return ApplicationService.getConfig().logo_link;
+      var logo_link = this.getLogoLink();
+      return logo_link ? logo_link : "#";
+    },
+    logo_link_target: function() {
+      var logo_link = this.getLogoLink();
+      return logo_link ? "_blank" : "";
     }
    },
    methods: {
       closePanel: function(){
         sidebarService.closePanel();
       },
-      isMobile: function(){return isMobile.any}
+      isMobile: function(){return isMobile.any},
+      getLogoLink: function() {
+        var logo_link = null;
+        if (ApplicationService.getConfig().logo_link) {
+          logo_link = ApplicationService.getConfig().logo_link;
+        }
+        return logo_link;
+      }
     },
 });
 
