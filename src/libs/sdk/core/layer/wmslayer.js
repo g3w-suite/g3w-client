@@ -1,5 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
+var geo = require('core/utils/geo');
 var LayerState = require('core/layer/layerstate');
 var MapLayer = require('core/map/maplayer');
 var RasterLayers = require('g3w-ol3/src/layers/rasters');
@@ -126,14 +127,21 @@ proto._getVisibleLayers = function(mapState){
 };
 
 proto.checkLayerDisabled = function(layer,resolution) {
-  var disabled = layer.disabled || false;
+  var scale = geo.resToScale(resolution);
+  var enabled = true;
   if (layer.maxresolution){
-    disabled = layer.maxresolution < resolution;
+    enabled = enabled && (layer.maxresolution > resolution);
   }
   if (layer.minresolution){
-    layer.disabled = disabled && (layer.minresolution > resolution);
+    enabled = enabled && (layer.minresolution < resolution);
   }
-  layer.disabled = disabled;
+  if (layer.minscale) {
+    enabled = enabled && (layer.minscale > scale);
+  }
+  if (layer.maxscale) {
+    enabled = enabled && (layer.maxscale < scale);
+  }
+  layer.disabled = !enabled;
 };
 
 proto.checkLayersDisabled = function(resolution){
