@@ -49,7 +49,7 @@ proto.run = function(){
   
   //map.addInteraction(this.pickFeatureInteraction);
   //this.pickFeatureInteraction.setActive(true);
-  GUI.getComponent('map').getMapService().pushInteraction(this.pickFeatureInteraction);
+  GUI.getComponent('map').getService().pushInteraction(this.pickFeatureInteraction);
 };
 
 proto.pause = function(pause){
@@ -63,7 +63,7 @@ proto.pause = function(pause){
 
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
-  GUI.getComponent('map').getMapService().popInteraction();
+  GUI.getComponent('map').getService().popInteraction();
   return true;
 };
 

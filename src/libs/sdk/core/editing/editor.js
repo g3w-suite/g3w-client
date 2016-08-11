@@ -125,7 +125,7 @@ proto.start = function(){
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     })
-    GUI.getComponent('map').getMapService().viewer.map.addLayer(this._editVectorLayer.getLayer());
+    GUI.getComponent('map').getService().viewer.map.addLayer(this._editVectorLayer.getLayer());
     
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
@@ -142,7 +142,7 @@ proto.stop = function(){
       this._editBuffer.destroy();
       this._editBuffer = null;
       this.removeAllListeners();
-      GUI.getComponent('map').getMapService().viewer.removeLayerByName(this._editVectorLayer.name);
+      GUI.getComponent('map').getService().viewer.removeLayerByName(this._editVectorLayer.name);
       this._setStarted(false);
       return true;
     }

@@ -38,7 +38,7 @@ var proto = AddFeatureTool.prototype;
 // metodo eseguito all'avvio del tool
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getMapService().viewer.map;
+  var map = GUI.getComponent('map').getService().viewer.map;
   
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
@@ -87,7 +87,7 @@ proto.pause = function(pause){
 
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
-  var map = GUI.getComponent('map').getMapService().viewer.map;
+  var map = GUI.getComponent('map').getService().viewer.map;
   if (this._snapInteraction){
      map.removeInteraction(this._snapInteraction);
      this._snapInteraction = null;

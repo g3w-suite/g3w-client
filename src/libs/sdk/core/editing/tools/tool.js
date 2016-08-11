@@ -6,7 +6,7 @@ function EditingTool(editor,options){
   this.editor = editor;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
-  this.map = GUI.getComponent('map').getMapService().viewer.map;
+  this.map = GUI.getComponent('map').getService().viewer.map;
   this.isPausable = false;
   this.options = options || {};
   this.steps = null;

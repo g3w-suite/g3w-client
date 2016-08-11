@@ -144,8 +144,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // possibile strutturazione della visualizzazione dei risultati di interrogazione
     GUI.showQueryResults = function(results) {
       // istanziare il componente queryresults
-      var queryRsultsCompnent = GUI.getComponent('queryresults');
-      queryResultsCompnent.getService().setResults(results); 
+      var queryRsultsComponent = GUI.getComponent('queryresults');
+      queryRsultsComponent.getService().setResults(results);
       // passarlo a Floatbar
       floatbar.FloatbarService.showPanel(queryRsults);
     };

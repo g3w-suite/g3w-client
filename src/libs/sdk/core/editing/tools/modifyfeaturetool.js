@@ -27,7 +27,7 @@ var proto = ModifyFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getMapService().viewer.map;
+  var map = GUI.getComponent('map').getService().viewer.map;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
@@ -98,7 +98,7 @@ proto.pause = function(pause){
 };
 
 proto.stop = function(){
-  var map = GUI.getComponent('map').getMapService().viewer.map;
+  var map = GUI.getComponent('map').getService().viewer.map;
   this._selectInteraction.getFeatures().clear();
   if (this._snapInteraction){
      map.removeInteraction(this._snapInteraction);

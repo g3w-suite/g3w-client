@@ -25,7 +25,20 @@ proto.getTitle = function(){
 
 proto.setTitle = function(title) {
   this.state.title = title;
-}
+};
+
+//implementati due metodi per poter unificare il metodo di recupero del servizio
+//legato al componente
+
+proto.getService = function() {
+  return this._service;
+};
+
+proto.setService = function(serviceInstance) {
+  this._service = serviceInstance;
+};
+
+////////// fine metodi Service Components //////////
 
 /* HOOKS */
 

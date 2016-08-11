@@ -20,7 +20,7 @@ var vueComponentOptions = {
    },
    methods: {
     showSearchPanel: function(search) {
-        var panel = SearchesService.showSearchPanel(search);
+        var panel = this.$options.searchesService.showSearchPanel(search);
     }
   }
 };
@@ -38,16 +38,17 @@ function SearchComponent(options){
   base(this,options);
   this.id = "search-component";
   this.title = "search";
-  this.internalComponent = new InternalComponent;
+  this._service = new SearchesService();
+  this.internalComponent = new InternalComponent({
+    searchesService: this._service
+  });
   this.state.visible = ProjectsRegistry.getCurrentProject().state.search.length > 0;
   merge(this, options);
   this.initService = function() {
     //inizializzo il servizio
-    SearchesService.init();
+    this._service.init();
   };
 };
 
 inherit(SearchComponent, Component);
-
-
 module.exports = SearchComponent;

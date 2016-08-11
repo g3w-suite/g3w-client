@@ -3,7 +3,6 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
-
 var ToolsService = require('gui/tools/toolsservice');
 
 var InternalComponent = Vue.extend({
@@ -23,26 +22,22 @@ var InternalComponent = Vue.extend({
 function ToolsComponent(options){
   base(this,options);
   var self = this;
-  this._toolsService = new ToolsService();
+  this._service = new ToolsService();
   this.id = "tools-component";
   this.title = "tools";
   this.state.visible = false;
-  this._toolsService.onafter('addToolGroup',function(){
-    self.state.visible = self._toolsService.state.toolsGroups.length > 0;
+  this._service.onafter('addToolGroup',function(){
+    self.state.visible = self._service.state.toolsGroups.length > 0;
   })
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    toolsService: this._toolsService
+    toolsService: this._service
   });
-  this.internalComponent.state = this._toolsService.state
-}
+  this.internalComponent.state = this._service.state
+};
 
 inherit(ToolsComponent, Component);
 
 var proto = ToolsComponent.prototype;
-
-proto.getToolsService = function() {
-  return this._toolsService;
-};
 
 module.exports = ToolsComponent;

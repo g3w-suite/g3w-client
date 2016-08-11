@@ -18,4 +18,4 @@ function QueryResultsService(){
 // Make the public service en Event Emitter
 inherit(QueryResultsService, G3WObject);
 
-module.exports = new QueryResultsService();
+module.exports = QueryResultsService;

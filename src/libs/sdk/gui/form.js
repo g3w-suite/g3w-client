@@ -165,7 +165,7 @@ proto._pickLayer = function(field){
   var layerId = field.input.options.layerid;
   var relFieldName = field.input.options.field;
   var relFieldLabel = ProjectsRegistry.getCurrentProject().getLayerAttributeLabel(layerId,field.input.options.field);
-  var mapService = GUI.getComponent('map').getMapService();
+  var mapService = GUI.getComponent('map').getService();
   mapService.getFeatureInfo(layerId)
   .then(function(attributes){
     var value = attributes[relFieldName] ? attributes[relFieldName] : attributes[relFieldLabel];

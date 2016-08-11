@@ -34,24 +34,20 @@ function MapComponent(options){
   base(this,options);
   this.id = "map-component";
   this.title = "Catalogo dati";
-  this._mapService = new MapService;
+  this._service = new MapService;
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    mapService: this._mapService
+    mapService: this._service
   });
 };
+
 inherit(MapComponent, Component);
-
 var proto = MapComponent.prototype;
-
-proto.getMapService = function() {
-  return this._mapService;
-};
 
 proto.layout = function(width,height) {
   $("#map").height(height);
   $("#map").width(width);
-  this._mapService.resize(width,height);
+  this._service.resize(width,height);
 };
 
 module.exports =  MapComponent;

@@ -37,4 +37,4 @@ function SearchesService(){
 // Make the public service en Event Emitter
 inherit(SearchesService, G3WObject);
 
-module.exports = new SearchesService();
+module.exports = SearchesService;
