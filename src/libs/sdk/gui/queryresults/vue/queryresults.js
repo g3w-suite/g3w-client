@@ -5,36 +5,30 @@ var Component = require('gui/vue/component');
 var G3WObject = require('core/g3wobject');
 
 var vueComponentOptions = {
-  template: require('./queryresultpanel.html'),
+  template: require('./queryresults.html'),
   data: function() {
     return {
       results: {}
     }
   },
   methods: {},
-  created: function(){
-    $("#search-results-table").footable({
-      calculateWidthOverride: function(){
-        return {
-          width: $('#search-results').width()
-        }
-      }
-    });
+  created: function() {
+    //codice qui
   }
 };
 
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultPanel(options){
+function QueryResultsComponent(options){
   base(this,options);
-  this.id = "result-component";
-  this.title = "result";
+  this.id = "queryresults";
+  this.title = "Query Results";
   this.internalComponent = new InternalComponent;
   merge(this, options);
 };
 
-inherit(QueryResultPanel, Component);
+inherit(QueryResultsComponent, Component);
 
-module.exports = QueryResultPanel;
+module.exports = QueryResultsComponent;
 

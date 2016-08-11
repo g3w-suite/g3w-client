@@ -33,7 +33,8 @@ g3w.gui = {
     SearchComponent: require('gui/search/vue/search'),
     CatalogComponent: require('gui/catalog/vue/catalog'),
     MapComponent: require('gui/map/vue/map'),
-    ToolsComponent: require('gui/tools/vue/tools')
+    ToolsComponent: require('gui/tools/vue/tools'),
+    QueryResultsComponent : require('gui/queryresults/vue/queryresults')
   }
 };
 

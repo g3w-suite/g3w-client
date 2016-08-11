@@ -62,8 +62,21 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         self._addComponent(placeholder, component);
       });
     });
+    //registro altri componenti che non hanno una collocazione spaziale precisa
+    // come da esempio i risultati che possono essere montati sulla floatbar o altre parti del template
+    this._addOtherComponents();
 
     GUI.ready();
+  };
+
+  //aggiungere compineti non legati ad un placeholder
+  this._addOtherComponents = function() {
+    var self = this;
+    if (this.templateConfig.othercomponents) {
+      _.forEach(this.templateConfig.othercomponents, function(component) {
+        self._addComponent('othercomponents', component);
+      })
+    };
   };
   
   this._addComponent = function(placeholder, component) {
@@ -73,6 +86,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         placeholderService.addComponent(component);
         ComponentsRegistry.registerComponent(component);
       }
+    } else { // caso di componenti non placeholder
+      ComponentsRegistry.registerComponent(component);
     }
   };
   

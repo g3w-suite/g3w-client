@@ -49,6 +49,9 @@ function createTemplateConfig(){
   var SearchComponent = require('sdk').gui.vue.SearchComponent;
   var ToolsComponent = require('sdk').gui.vue.ToolsComponent;
   var MapComponent = require('sdk').gui.vue.MapComponent;
+  //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
+  //ad hoc per i risultati
+  var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
   
   return {
     title: config.apptitle,
@@ -85,7 +88,12 @@ function createTemplateConfig(){
       floatbar:{
         components: []
       }
-    }
+    },
+    othercomponents: [
+      new QueryResultsComponent({
+          id: 'queryresults'
+      })
+    ]
   };
 }
 
