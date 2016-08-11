@@ -39,7 +39,7 @@ function MapComponent(options){
   this.internalComponent = new InternalComponent({
     mapService: this._mapService
   });
-}
+};
 inherit(MapComponent, Component);
 
 var proto = MapComponent.prototype;

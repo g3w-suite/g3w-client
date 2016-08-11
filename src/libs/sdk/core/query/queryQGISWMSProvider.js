@@ -4,7 +4,6 @@ var G3WObject = require('core/g3wobject');
 var resolve = require('core/utils/utils').resolve;
 var ProjectsRegistry = require('core/project/projectsregistry');
 
-
 // FILTRI
 var Filters = {
   eq: '=',

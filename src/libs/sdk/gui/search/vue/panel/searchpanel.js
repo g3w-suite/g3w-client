@@ -23,49 +23,11 @@ var SearchPanelComponet = Vue.extend({
       event.preventDefault();
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
-      this.filterObject = fillFilterInputsWithValues(this.filterObject, this.formInputValues);
+      this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       QueryService.queryByFilter(this.filterObject);
     }
   }
 });
-
-//funzione che associa i valori dell'inputs form al relativo oggetto "operazionde del filtro"
-
-function fillFilterInputsWithValues (filterObject, formInputValues, globalIndex) {
-  //funzione conversione da valore restituito dall'input (sempre stringa) al vero tipo di valore
-  function convertInputValueToInputType(type, value) {
-    switch(type) {
-      case 'numberfield':
-           value = parseInt(value);
-           break;
-      default:
-           break;
-    }
-    return value;
-  }
-  //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
-  _.forEach(filterObject.filterObject, function(v,k) {
-    //scorro attraverso l'array di elementi operazionali da confrontare
-    _.forEach(v, function(input, idx) {
-      //elemento operazionale {'=':{}}
-      _.forEach(input, function(v, k, obj) {
-        //vado a leggere l'oggetto attributo
-        if (_.isArray(v)) {
-          //richiama la funzione ricorsivamente .. andrà bene ?
-          fillFilterInputsWithValues(input, formInputValues, idx);
-        } else {
-          _.forEach(v, function(v, k, obj) {
-            //considero l'index globale in modo che inputs di operazioni booleane interne
-            //vengono considerate
-            index = (globalIndex) ? globalIndex + idx : idx;
-            obj[k] = convertInputValueToInputType(formInputValues[index].type, formInputValues[index].value);
-          });
-        };
-      });
-    });
-  });
-  return filterObject;
-};
 
 //costruttore del pannello e del suo componente vue
 function SearchPanel() {
@@ -89,8 +51,11 @@ function SearchPanel() {
     //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
     //il filtro che url, il nome del layer il tipo di server etc ..
     this.internalPanel.filterObject = QueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
+    //soluzione momentanea assegno  la funzione del SearchPanle ma come pattern è sbagliato
+    //vorrei delegarlo a SearchesService ma lo stesso stanzia questo (loop) come uscirne???
+    //creare un searchpanelservice?
+    this.internalPanel.fillFilterInputsWithValues = this.fillFilterInputsWithValues;
   };
-
   //funzione che popola gli inputs che ci saranno nel form del pannello ricerca
   //oltre costruire un oggetto che legherà i valori degli inputs del form con gli oggetti
   //'operazionali' del filtro
@@ -108,7 +73,6 @@ function SearchPanel() {
         ////TEMPORANEO !!! DEVO PRENDERE IL VERO VALORE DI DEFAULT
         formValue.value = null;
         //popolo gli inputs:
-
         // valori
         self.internalPanel.formInputValues.push(formValue);
         //input
@@ -117,19 +81,43 @@ function SearchPanel() {
       });
     });
   };
+  //funzione che associa i valori dell'inputs form al relativo oggetto "operazionde del filtro"
+  this.fillFilterInputsWithValues = function(filterObject, formInputValues, globalIndex) {
+    //funzione conversione da valore restituito dall'input (sempre stringa) al vero tipo di valore
+    function convertInputValueToInputType(type, value) {
+      switch(type) {
+        case 'numberfield':
+             value = parseInt(value);
+             break;
+        default:
+             break;
+      }
+      return value;
+    }
+    //ciclo sull'oggetto filtro che ha come chiave root 'AND' o 'OR'
+    _.forEach(filterObject.filterObject, function(v,k) {
+      //scorro attraverso l'array di elementi operazionali da confrontare
+      _.forEach(v, function(input, idx) {
+        //elemento operazionale {'=':{}}
+        _.forEach(input, function(v, k, obj) {
+          //vado a leggere l'oggetto attributo
+          if (_.isArray(v)) {
+            //richiama la funzione ricorsivamente .. andrà bene ?
+            fillFilterInputsWithValues(input, formInputValues, idx);
+          } else {
+            _.forEach(v, function(v, k, obj) {
+              //considero l'index globale in modo che inputs di operazioni booleane interne
+              //vengono considerate
+              index = (globalIndex) ? globalIndex + idx : idx;
+              obj[k] = convertInputValueToInputType(formInputValues[index].type, formInputValues[index].value);
+            });
+          };
+        });
+      });
+    });
+    return filterObject;
+  };
 };
 
 inherit(SearchPanel, Panel);
-
-//search query
-/*QueryService.on("searchresults",function(results){
-  var listPanel = new ListPanel({
-    name: "Risultati ricerca",
-    id: 'nominatim_results',
-    list: results,
-    listPanelComponent: SearchResultPanelComponent
-  });
-  GUI.showListing(listPanel);
-});*/
-
 module.exports = SearchPanel;

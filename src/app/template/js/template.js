@@ -62,8 +62,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         self._addComponent(placeholder, component);
       });
     });
-    //var mapComponent = this.templateConfig.viewport.map;
-    //ViewportService.init(mapComponent,null);
+
     GUI.ready();
   };
   

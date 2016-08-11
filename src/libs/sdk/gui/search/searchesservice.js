@@ -6,18 +6,18 @@ var SearchPanel = require('gui/search/vue/panel/searchpanel');
 
 function SearchesService(){
   var self = this;
+  //this._searchPanelService = new SearchPanelService();
   this.init = function(searchesObject) {
     var searches = searchesObject || ProjectsRegistry.getCurrentProject().state.search;
     this.state.searches = searches;
   };
-
   this.state = {
     searches: []
   };
 
   this.showSearchPanel = function(panelConfig) {
-    panel = new SearchPanel();// creo panello search
-    panel.init(panelConfig);//inizializzo pannello serach
+    var panel =  new SearchPanel();// creo panello search
+    panel.init(panelConfig);//inizializzo pannello se
     GUI.showPanel(panel);
     return panel;
   };
@@ -31,6 +31,7 @@ function SearchesService(){
     deferred.resolve();
     return deferred.promise();
   };
+
 };
 
 // Make the public service en Event Emitter

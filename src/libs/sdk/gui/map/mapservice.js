@@ -12,7 +12,8 @@ var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('core/layer/wmslayer');
-var MapQueryService = require('core/map/mapqueryservice');
+//var MapQueryService = require('core/map/mapqueryservice');
+var QueryService = require('core/query/queryservice');
 
 //var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
@@ -60,14 +61,13 @@ function MapService(project){
   };
   
   this._interactionsStack = [];
-  
   if(!_.isNil(project)) {
     this.project = project;
   }
   else {
     this.project = ProjectsRegistry.getCurrentProject();
   }
-  
+
   
   this.setters = {
     setMapView: function(bbox,resolution,center){
@@ -135,8 +135,11 @@ function MapService(project){
       self._setMapView();
     });
     
-    MapQueryService.init(this.viewer.map);
-    
+    //MapQueryService.init(this.viewer.map);
+
+    //AL MOMENTO LASCIO COSÌ POI VEDIAMO
+    QueryService.init(this.viewer.map);
+
     this.emit('ready');
   };
   
@@ -221,28 +224,40 @@ proto.setupControls = function(){
           control = new QueryControl();
           control.on('picked',function(e){
             var coordinates = e.coordinates;
-
-            MapQueryService.queryPoint(coordinates,self.mapLayers)
+            QueryService.queryByLocation(coordinates, self.mapLayers)
+            //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(coordinates,nfeatures,featuresForLayerNames){
               var projectLayers = self.project.getLayers();
               var featuresForLayers = [];
+              var layer;
               _.forEach(featuresForLayerNames,function(features,layerName){
-                var layer = projectLayers[layerName];
+                _.forEach(projectLayers, function(layerObj, layerId) {
+                  // caso layers QGIS
+                  if (layerObj.name == layerName) {
+                    layer = layerObj;
+                    return true;
+                  } else if (layerObj.source) {
+                    //caso WMS layer
+                    if (layerObj.source.layers == layerName) {
+                      layer = layerObj;
+                      return true;
+                    }
+                  }
+                });
                 featuresForLayers.push({
                   layer: layer,
                   features: features
                 })
-              })
-              
+              });
+              console.log(featuresForLayers);
               self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             })
           });
           break;
-      }
-      
+      };
       if (control) {
         self.addControl(control);
-      }
+      };
     });
   }
 };
@@ -297,7 +312,6 @@ proto.setupLayers = function(){
   var self = this;
   this.viewer.removeLayers();
   this.setupBaseLayers();
-  
   this.mapLayers = {};
   this.layersAssociation = {};
   var layersArray = this.traverseLayersTree(this.project.state.layerstree);
@@ -305,13 +319,16 @@ proto.setupLayers = function(){
   var leafLayersArray = _.filter(layersArray,function(layer){
     return !_.get(layer,'nodes');
   });
+  //raggruppo per valore del multilayer con chiave valore multilayer e valore array
   var multiLayers = _.groupBy(leafLayersArray,function(layer){
     return layer.multilayer;
   });
   _.forEach(multiLayers,function(layers,id){
     var layerId = 'layer_'+id
-    var mapLayer = _.get(self.mapLayers,layerId);
-    var tiled = layers[0].tiled // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer). Per ora posso configurare tiled solo i layer singoli
+    var mapLayer = _.get(self.mapLayers, layerId);
+    // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer).
+    //Per ora posso configurare tiled solo i layer singoli.
+    var tiled = layers[0].tiled;
     var config = {
       url: self.project.getWmsUrl(),
       id: layerId,
@@ -319,7 +336,6 @@ proto.setupLayers = function(){
     };
     mapLayer = self.mapLayers[layerId] = new WMSLayer(config,self.layersExtraParams);
     self.registerListeners(mapLayer);
-    
     layers.forEach(function(layer){
       mapLayer.addLayer(layer);
       self.layersAssociation[layer.id] = layerId;
