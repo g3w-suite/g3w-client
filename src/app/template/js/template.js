@@ -141,13 +141,16 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
     
-    // possibile strutturazione della visualizzazione dei risultati di interrogazione
+    // Qui si implementa il metodo per la visualizzazione dei risultati
+    // derivanti da una query
+
     GUI.showQueryResults = function(results) {
       // istanziare il componente queryresults
-      var queryRsultsComponent = GUI.getComponent('queryresults');
-      queryRsultsComponent.getService().setResults(results);
+      var queryResultsComponent = GUI.getComponent('queryresults');
+      var queryResultService = queryResultsComponent.getService();
+      var queryResults = queryResultService.setResults(results);
       // passarlo a Floatbar
-      floatbar.FloatbarService.showPanel(queryRsults);
+      floatbar.FloatbarService.showPanel(queryResultsComponent);
     };
     
     GUI.hideQueryResults = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
@@ -170,10 +173,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     /* fine metodi comuni */
     
     /* Metodi specifici del template */
-    
+    // FLOATBAR //
     GUI.showFloatbar = function() {};
     GUI.hideFloatbar = function() {};
-    
+
+    // SIDEBAR //
     GUI.showSidebar = _.bind(this._showSidebar, this);
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
     

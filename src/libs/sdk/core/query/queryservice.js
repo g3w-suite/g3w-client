@@ -107,7 +107,7 @@ function QueryService(){
 
   // Brutto ma per ora unica soluzione trovata per dividere per layer i risultati di un doc xml wfs.FeatureCollection.
   // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
-  this._parseLayerFeatureCollection = function(queryLayer, data){
+  this._parseLayerFeatureCollection = function(queryLayer, data) {
     var features = [];
     var layerName = queryLayer.queryLayerName;
     var layerData = _.cloneDeep(data);
@@ -156,13 +156,91 @@ function QueryService(){
 
   //INIZO SEZIONE QUERIES ///
 
+  // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
+  // dal server così da avere una risposta coerente in termini di formato risultati da presentare
+  // nel componente QueryResults
+  this.handleQueryResponseFromServer = function(response, queryLayers) {
+    var jsonresponse;
+    var featuresForLayerNames = {};
+    var d = $.Deferred();
+    var x2js = new X2JS();
+    try {
+      if (_.isString(response)) {
+        jsonresponse = x2js.xml_str2json(response);
+      } else {
+        jsonresponse = x2js.xml2json(response);
+      }
+    }
+    catch (e) {
+      d.reject(e);
+    }
+    var rootNode = _.keys(jsonresponse)[0];
+    var parser, data;
+    switch (rootNode) {
+      case 'FeatureCollection':
+        parser = this._parseLayerFeatureCollection;
+        data = jsonresponse;
+        break;
+      case "msGMLOutput":
+        parser = this._parseLayermsGMLOutput;
+        data = response;
+        break;
+    };
+    var nfeatures = 0
+    _.forEach(queryLayers,function(queryLayer) {
+      var features = parser.call(self, queryLayer, data)
+      nfeatures += features.length;
+      featuresForLayerNames[queryLayer.layerName] = features;
+    });
+    var projectLayers = ProjectsRegistry.getCurrentProject().getLayers();
+    var featuresForLayers = [];
+    var layer;
+    _.forEach(featuresForLayerNames,function(features, layerName){
+      _.forEach(projectLayers, function(layerObj, layerId) {
+        // caso layers QGIS
+        if (layerObj.name == layerName) {
+          layer = layerObj;
+          return true;
+        } else if (layerObj.source) {
+          //caso WMS layer
+          if (layerObj.source.layers == layerName) {
+            layer = layerObj;
+            return true;
+          }
+        }
+      });
+      featuresForLayers.push({
+        layer: layer,
+        features: features
+      })
+    });
+    d.resolve(featuresForLayers);
+    return d.promise();
+  };
   // query basato sul filtro
 
   this.queryByFilter = function(queryFilterObject) {
-
+    var self = this;
+    var d = $.Deferred();
+    //parte da rivedere nel filtro
     var provider = Provider[queryFilterObject.servertype];
     //ritorna una promise poi gestita da che la chiede
-    return provider.doSearch(queryFilterObject);
+    provider.doSearch(queryFilterObject).
+    then(function(response) {
+      //al momento qui replico struttura per i parser
+      var queryLayers = [];
+      var queryLayer = {};
+      queryLayer.queryLayerName = queryLayer.layerName = queryFilterObject.querylayer;
+      queryLayers.push(queryLayer);
+      self.handleQueryResponseFromServer(response, queryLayers)
+      .then(function(results) {
+            d.resolve(results);
+      })
+    })
+    .fail(function(e){
+          d.reject(e);
+    })
+    return d.promise();
   };
 
   //query basato click/posizione nella mappa
@@ -202,8 +280,7 @@ function QueryService(){
         if (mapLayerQueryLayers.length) {
           queryLayers = _.concat(queryLayers,mapLayerQueryLayers);
         }
-      })
-
+      });
       if (queryLayers.length) {
 
         delete queryParams['STYLES'];
@@ -224,45 +301,16 @@ function QueryService(){
       }
     });
 
-    var featuresForLayerNames = {};
     if (queryUrlsForLayers.length > 0) {
       _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
         var url = queryUrlForLayers.url;
         var queryLayers = queryUrlForLayers.queryLayers;
         $.get(url).
         then(function(response){
-          var jsonresponse;
-          var x2js = new X2JS();
-          try {
-            if (_.isString(response)) {
-              jsonresponse = x2js.xml_str2json(response);
-            }
-            else {
-              jsonresponse = x2js.xml2json(response);
-            }
-          }
-          catch (e) {
-            d.reject(e);
-          }
-          var rootNode = _.keys(jsonresponse)[0];
-          var parser, data;
-          switch (rootNode) {
-            case 'FeatureCollection':
-              parser = self._parseLayerFeatureCollection;
-              data = jsonresponse;
-              break;
-            case "msGMLOutput":
-              parser = self._parseLayermsGMLOutput;
-              data = response;
-              break;
-          }
-          var nfeatures = 0
-          _.forEach(queryLayers,function(queryLayer){
-            var features = parser.call(self,queryLayer,data)
-            nfeatures += features.length;
-            featuresForLayerNames[queryLayer.layerName] = features;
+          self.handleQueryResponseFromServer(response, queryLayers)
+          .then(function(results){
+            d.resolve(results);
           })
-          d.resolve(coordinates,nfeatures,featuresForLayerNames);
         })
         .fail(function(e){
           d.reject(e);
@@ -270,10 +318,8 @@ function QueryService(){
       });
     }
     else {
-      d.resolve(coordinates,0,featuresForLayerNames);
+      d.resolve(coordinates,0,{});
     }
-    console.log('Registro componenti');
-    console.log(ComponentsRegistry);
     return d.promise();
   };
 

@@ -1,5 +1,9 @@
 <div id="search-results">
-  <div v-for="result in results" style="cursor:pointer">
-    <h3>{{ result.layer.name }}</h3>
+  <div v-for="result in results.results" style="cursor:pointer">
+    <h4>{{ result.layer.name }}</h4>
+    <p>Numero di features: {{ result.features.length }}</p>
+    <!--<div v-for="feature in result.features" style="cursor:pointer">-->
+      <!--<p>Feature</p>-->
+    <!--</div>  -->
   </div>
 </div>

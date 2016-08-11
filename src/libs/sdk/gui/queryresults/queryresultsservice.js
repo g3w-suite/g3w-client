@@ -13,6 +13,9 @@ function QueryResultsService(){
   this.showResults = function() {
     //codice qui
   };
+  this.setResults = function(results) {
+    this.state.results = results;
+  };
 };
 
 // Make the public service en Event Emitter

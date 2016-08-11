@@ -12,7 +12,6 @@ var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('core/layer/wmslayer');
-//var MapQueryService = require('core/map/mapqueryservice');
 var QueryService = require('core/query/queryservice');
 
 //var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
@@ -134,8 +133,6 @@ function MapService(project){
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
     });
-    
-    //MapQueryService.init(this.viewer.map);
 
     //AL MOMENTO LASCIO COSÌ POI VEDIAMO
     QueryService.init(this.viewer.map);
@@ -226,31 +223,9 @@ proto.setupControls = function(){
             var coordinates = e.coordinates;
             QueryService.queryByLocation(coordinates, self.mapLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
-            .then(function(coordinates,nfeatures,featuresForLayerNames){
-              var projectLayers = self.project.getLayers();
-              var featuresForLayers = [];
-              var layer;
-              _.forEach(featuresForLayerNames,function(features,layerName){
-                _.forEach(projectLayers, function(layerObj, layerId) {
-                  // caso layers QGIS
-                  if (layerObj.name == layerName) {
-                    layer = layerObj;
-                    return true;
-                  } else if (layerObj.source) {
-                    //caso WMS layer
-                    if (layerObj.source.layers == layerName) {
-                      layer = layerObj;
-                      return true;
-                    }
-                  }
-                });
-                featuresForLayers.push({
-                  layer: layer,
-                  features: features
-                })
-              });
-              console.log(featuresForLayers);
-              self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
+            .then(function(results){
+              GUI.showQueryResults(results);
+              //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             })
           });
           break;

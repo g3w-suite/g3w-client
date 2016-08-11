@@ -7,6 +7,7 @@ function BarStack(){
     panels: []
   };
 }
+
 inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
@@ -16,7 +17,6 @@ proto.push = function(panel, parent){
   var id = panel.getId();
   _.forEach(self.state.panels, function(panel) {
     if (panel.id == id) {
-      console.log('esiste g')
       self._panels[panel.position].unmount();
       self._panels[panel.position] = panel;
     };

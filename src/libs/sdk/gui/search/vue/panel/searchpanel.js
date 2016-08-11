@@ -23,7 +23,10 @@ var SearchPanelComponet = Vue.extend({
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
-      QueryService.queryByFilter(this.filterObject);
+      QueryService.queryByFilter(this.filterObject)
+      .then(function(results){
+        GUI.showQueryResults(results);
+      })
     }
   }
 });

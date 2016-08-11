@@ -9,7 +9,7 @@ var vueComponentOptions = {
   template: require('./queryresults.html'),
   data: function() {
     return {
-      results: {}
+      results: this.$options.queryResultsService.state
     }
   },
   methods: {},
@@ -26,7 +26,9 @@ function QueryResultsComponent(options){
   this.id = "queryresults";
   this.title = "Query Results";
   this._service = new QueryResultsService();
-  this.internalComponent = new InternalComponent;
+  this.internalComponent = new InternalComponent({
+    queryResultsService: this._service
+  });
   merge(this, options);
 };
 
