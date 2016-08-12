@@ -233,8 +233,13 @@ function QueryService(){
       queryLayer.queryLayerName = queryLayer.layerName = queryFilterObject.querylayer;
       queryLayers.push(queryLayer);
       self.handleQueryResponseFromServer(response, queryLayers)
-      .then(function(results) {
-            d.resolve(results);
+      .then(function(featuresForLayers) {
+            d.resolve({
+              data: featuresForLayers,
+              query: {
+                filter: queryFilterObject
+              }
+            });
       })
     })
     .fail(function(e){
@@ -307,9 +312,14 @@ function QueryService(){
         var queryLayers = queryUrlForLayers.queryLayers;
         $.get(url).
         then(function(response){
-          self.handleQueryResponseFromServer(response, queryLayers)
-          .then(function(results){
-            d.resolve(results);
+          self.handleQueryResponseFromServer(response, queryLayers, coordinates)
+          .then(function(featuresForLayers){
+            d.resolve({
+              data: featuresForLayers,
+              query: {
+                coordinates: coordinates
+              }
+            });
           })
         })
         .fail(function(e){

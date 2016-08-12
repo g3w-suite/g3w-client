@@ -161,9 +161,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var queryResultsComponent = GUI.getComponent('queryresults');
       // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
-      var queryResults = queryResultService.setResults(results);
+      queryResultService.setQueryResponse(results);
       //rimuovo spinner
-      GUI.hideSpinner('loadspinner')
+      GUI.hideSpinner('loadspinner');
       var options = {append: true};
       floatbar.FloatbarService.showPanel(queryResultsComponent, options);
     };

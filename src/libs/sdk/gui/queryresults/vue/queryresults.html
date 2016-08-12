@@ -1,17 +1,14 @@
-<div id="search-results">
-  <div v-for="result in results.results" style="cursor:pointer">
-    <h4>{{ result.layer.name }}</h4>
-    <p>Numero di features: {{ result.features.length }}</p>
-    <!--<div v-for="feature in result.features" style="cursor:pointer">-->
-      <!--<p>Feature</p>-->
-    <!--</div>  -->
+<!--<div id="search-results">
+  <div v-for="layer in state.layers" style="cursor:pointer">
+    <h4>{{ layer.title }}</h4>
+    <p>Numero di features: {{ layer.features.length }}</p>
   </div>
-</div>
+</div>-->
 
-<!--
-<div class="tpl-mapqueryresults-container">
-  <ul class="tpl-mapqueryresults" id="tpl-mapqueryresults">
-    <li v-if="layerHasFeatures(layer) v-for="layer in layers">
+
+<div id="search-results" class="queryresults-container">
+  <ul class="queryresults" id="queryresults">
+    <li v-if="layerHasFeatures(layer)" v-for="layer in state.layers">
       <div class="box box-primary collapsed-box">
         <div class="box-header with-border">
           <h3 class="box-title">{{ layer.title }} ({{layer.features.length}})</h3>
@@ -29,10 +26,11 @@
             <tbody>
               <tr v-for="feature in layer.features">
                 <td v-for="attribute in layer.attributes">
-                  <span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>
-                  <span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>
-                  <img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />
-                  <a v-if="isLink(layer,feature,attribute)" href="layer,feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>
+                  <span>{{feature.attributes[attribute.name]}}</span>
+                  <!--<span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>-->
+                  <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
+                  <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                  <!--<a v-if="isLink(layer,feature,attribute)" href="layer,feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
                 </td>
               </tr>
             </tbody>
@@ -42,4 +40,4 @@
     </li>
   </ul>
 </div>
--->
+

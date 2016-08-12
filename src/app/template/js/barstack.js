@@ -15,21 +15,25 @@ var proto = BarStack.prototype;
 proto.push = function(panel, parent, append){
   var self = this;
   var append = append || false;
+  var substitute = false;
   var id = panel.getId();
-  _.forEach(self.state.panels, function(panel) {
-    if (panel.id == id) {
-      self._panels[panel.position].unmount();
-      self._panels[panel.position] = panel;
+  _.forEach(self.state.panels, function(_panel) {
+    if (_panel.id == id) {
+      substitute = true;
+      self._panels[_panel.position].unmount();
+      self._panels[_panel.position] = panel;
     };
   });
   panel.mount(parent, append)
   .then(function(){
-    var position = self._panels.push(panel) - 1;
-    self.state.panels.push({
-        id: panel.getId(),
-        title: panel.getTitle(),
-        position: position
-    });
+    if (!substitute) {
+      var position = self._panels.push(panel) - 1;
+      self.state.panels.push({
+          id: panel.getId(),
+          title: panel.getTitle(),
+          position: position
+      });
+    }
   });
 };
 

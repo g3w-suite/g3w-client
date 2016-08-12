@@ -1,0 +1,62 @@
+.queryresults-container {
+  > ul {
+    list-style-type: none;
+    padding: 5px;
+    > li {
+      margin-top: 15px;
+      .queryresults-multi {
+        margin-top: 25px;
+      }
+      span.key {
+        color: darken(@light-blue,20%);
+        font-weight: bold;
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .box-title {
+        color: darken(@light-blue,20%);
+        font-weight: bold;
+        font-size: 1.2em;
+      }
+    }
+  }
+  .link {
+    color: @light-blue;
+    cursor: pointer;
+    &.dashboardlink {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  }
+  .queryresults-single {
+    margin-top: 6px;
+    span.key {
+      display: inline-block;
+      font-size: 1.1em;
+      color: darken(@light-blue,20%);
+      font-weight: bold;
+      width: 80px;
+      margin-bottom: 0px;
+    }
+    span.value {
+      display: inline-block;
+      font-size: 1.1em;
+      margin-bottom: 0px;
+    }
+  }
+  
+  .viewer-container {
+    top: 50px;
+  }
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+  background-color: #f3f3f3;
+}
+
+.ol-control {
+  &.tpl-lottocontrol {
+    
+  }
+}
