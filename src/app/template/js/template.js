@@ -189,11 +189,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     /* Metodi specifici del template */
     // FLOATBAR //
     GUI.showFloatbar = function() {
-
       floatbar.FloatbarService.open();
       GUI.showSpinner({container:'#floatbar-spinner',transparent:true,where:'append'});
     };
-    GUI.hideFloatbar = function() {};
+    GUI.hideFloatbar = function() {
+      floatbar.FloatbarService.close();
+    };
 
     // SIDEBAR //
     GUI.showSidebar = _.bind(this._showSidebar, this);

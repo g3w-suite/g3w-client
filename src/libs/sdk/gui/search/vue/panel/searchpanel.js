@@ -22,6 +22,7 @@ var SearchPanelComponet = Vue.extend({
       event.preventDefault();
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
+      GUI.showFloatbar();
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       QueryService.queryByFilter(this.filterObject)
       .then(function(results){
