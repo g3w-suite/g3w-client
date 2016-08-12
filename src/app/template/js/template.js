@@ -147,10 +147,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showQueryResults = function(results) {
       // istanziare il componente queryresults
       var queryResultsComponent = GUI.getComponent('queryresults');
+      // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
       var queryResults = queryResultService.setResults(results);
+      //rimuovo spinner
+      GUI.hideSpinner('loadspinner')
       var options = {append: true};
-      // passarlo a Floatbar
       floatbar.FloatbarService.showPanel(queryResultsComponent, options);
     };
     
@@ -186,7 +188,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     /* Metodi specifici del template */
     // FLOATBAR //
-    GUI.showFloatbar = function() {};
+    GUI.showFloatbar = function() {
+
+      floatbar.FloatbarService.open();
+      GUI.showSpinner({container:'#floatbar-spinner',transparent:true,where:'append'});
+    };
     GUI.hideFloatbar = function() {};
 
     // SIDEBAR //

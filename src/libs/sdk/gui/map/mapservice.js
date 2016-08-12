@@ -221,6 +221,7 @@ proto.setupControls = function(){
           control = new QueryControl();
           control.on('picked',function(e){
             var coordinates = e.coordinates;
+            GUI.showFloatbar();
             QueryService.queryByLocation(coordinates, self.mapLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){

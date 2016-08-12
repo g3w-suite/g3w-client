@@ -4,7 +4,6 @@ var GUI = require('sdk/gui/gui');
 
 function FloatbarService(){
   this.stack = new Stack();
-  
   this.init = function(layout){
     this.layout = layout;
     this.closable = true;
@@ -12,15 +11,32 @@ function FloatbarService(){
     this._zindex = this.sidebarEl.css("z-index");
     this._modalOverlay = null;
     this._modal = false;
+    this._isopen = false;
   };
-  
+
+  this.isOpen = function() {
+    return this._isopen;
+  };
+
+  this.open = function() {
+    this.layout.floatBar.open(this.sidebarEl,true);
+    this._isopen = true;
+  };
+
+  this.close = function() {
+    this.layout.floatBar.close(this.sidebarEl,true);
+    this._isopen = false;
+  };
+
   this.showPanel = function(panel,options){
     var options = options || {};
     var append = options.append || false;
     var modal = options.modal || false;
     this.closable = options.closable || true;
     this.stack.push(panel,"#g3w-floatbarpanel-placeholder", append);
-    this.layout.floatBar.open(this.sidebarEl,true);
+    if (!this._isopen) {
+      this.open();
+    };
     if (modal){
       this._modal = true;
       GUI.setModal();
@@ -41,7 +57,7 @@ function FloatbarService(){
     if (!this.stack.length) {
       if (this._modal){
         GUI.setModal(false);
-        this.layout.floatBar.close(this.sidebarEl,true);
+        this.close();
         $('.control-sidebar-bg').toggleClass('control-sidebar-bg-shadow');
         this.sidebarEl.css("z-index","");
         this.sidebarEl.css("padding-top","50px");
@@ -49,13 +65,13 @@ function FloatbarService(){
         this._modal = false;
       }
       else {
-        this.layout.floatBar.close(this.sidebarEl,true);
+        this.close();
       }
     }
   };
   
   this.hidePanel = function(){
-    this.layout.floatBar.close(this.sidebarEl,true);
+    this.close();
   };
 }
 
