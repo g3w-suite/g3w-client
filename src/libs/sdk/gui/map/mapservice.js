@@ -222,12 +222,15 @@ proto.setupControls = function(){
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showPanelResults = GUI.showResults('query');
+            //verifico se ci sono layers selezionati
             var selectedLayers = self.project.getSelectedLayers();
+            //prendo inatnto i maplayers iniziali
             var mapLayers = self.mapLayers;
             //se sono stati selezionati layers dal catalog allora
             //faccio interrogazione sul layer selezionato
             var mapSelectedLayers = {};
             if (selectedLayers.length) {
+              //faccio un clone dei mapLayer per non sporcarli e quindi mantenerli
               var cloneMapLayers = _.cloneDeep(mapLayers);
               _.forEach(selectedLayers, function(selectedLayer) {
                 _.forEach(cloneMapLayers, function(mapLayerObj, group) {
@@ -247,6 +250,7 @@ proto.setupControls = function(){
               });
               mapLayers = mapSelectedLayers;
             };
+            //faccio query by location su i layers selezionati o tutti
             QueryService.queryByLocation(coordinates, mapLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
