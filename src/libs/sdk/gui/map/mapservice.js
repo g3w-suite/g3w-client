@@ -221,11 +221,11 @@ proto.setupControls = function(){
           control = new QueryControl();
           control.on('picked',function(e){
             var coordinates = e.coordinates;
-            GUI.showFloatbar();
+            var showPanelResults = GUI.showResults('query');
             QueryService.queryByLocation(coordinates, self.mapLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
-              GUI.showQueryResults(results);
+              showPanelResults(results);
               //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             })
           });

@@ -144,6 +144,18 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // Qui si implementa il metodo per la visualizzazione dei risultati
     // derivanti da una query
 
+    //esempio di metodo generico
+    GUI.showResults = function(type) {
+      var showPanelResults;
+      switch (type) {
+        case 'query':
+          GUI.showFloatbar();
+          showPanelResults = GUI.showQueryResults;
+          break;
+      };
+      return showPanelResults
+    };
+
     GUI.showQueryResults = function(results) {
       // istanziare il componente queryresults
       var queryResultsComponent = GUI.getComponent('queryresults');
