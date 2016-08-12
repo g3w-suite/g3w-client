@@ -112,8 +112,9 @@ function QueryService(){
     var layerName = queryLayer.queryLayerName;
     var layerData = _.cloneDeep(data);
     layerData.FeatureCollection.featureMember = [];
-
+    
     var featureMembers = data.FeatureCollection.featureMember;
+    featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
     _.forEach(featureMembers,function(featureMember){
       var isLayerMember = _.get(featureMember,layerName)
 
