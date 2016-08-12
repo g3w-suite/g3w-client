@@ -12,6 +12,7 @@ var vueComponentOptions = {
       results: this.$options.queryResultsService.state
     }
   },
+  replace: false,
   methods: {},
   created: function() {
     //codice qui

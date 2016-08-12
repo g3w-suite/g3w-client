@@ -1,4 +1,4 @@
-noop = require('core/utils/utils').noop;
+var noop = require('core/utils/utils').noop;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');

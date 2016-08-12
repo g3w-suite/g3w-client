@@ -12,8 +12,9 @@ inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 
-proto.push = function(panel, parent){
+proto.push = function(panel, parent, append){
   var self = this;
+  var append = append || false;
   var id = panel.getId();
   _.forEach(self.state.panels, function(panel) {
     if (panel.id == id) {
@@ -21,7 +22,7 @@ proto.push = function(panel, parent){
       self._panels[panel.position] = panel;
     };
   });
-  panel.mount(parent)
+  panel.mount(parent, append)
   .then(function(){
     var position = self._panels.push(panel) - 1;
     self.state.panels.push({

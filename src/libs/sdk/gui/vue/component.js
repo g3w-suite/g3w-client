@@ -17,13 +17,11 @@ proto.mount = function(parent,append) {
   if (!this.internalComponent) {
     this.setInternalComponent();
   };
-
-  //DA RIVEDERE
   if(append) {
     this.internalComponent.$mount().$appendTo(parent);
   }
   else {
-    this.internalComponent.$mount().$appendTo(parent);
+    this.internalComponent.$mount(parent);
   }
   return resolve(true);
 };

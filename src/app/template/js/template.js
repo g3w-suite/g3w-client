@@ -149,8 +149,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var queryResultsComponent = GUI.getComponent('queryresults');
       var queryResultService = queryResultsComponent.getService();
       var queryResults = queryResultService.setResults(results);
+      var options = {append: true};
       // passarlo a Floatbar
-      floatbar.FloatbarService.showPanel(queryResultsComponent);
+      floatbar.FloatbarService.showPanel(queryResultsComponent, options);
     };
     
     GUI.hideQueryResults = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
