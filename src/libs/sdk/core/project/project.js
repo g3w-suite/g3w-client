@@ -132,6 +132,24 @@ proto.selectLayer = function(layer){
   this.setLayerSelected(layer);
 };
 
+proto.unselectLayer = function(layer) {
+  _.forEach(this.getLayers(),function(_layer){
+    if (_layer == layer) {
+      _layer.selected = false;
+    }
+  });
+}
+
+proto.getSelectedLayers = function() {
+  var selectedLayers = [];
+  _.forEach(this.getLayers(),function(_layer){
+    if (_layer.selected) {
+      selectedLayers.push(_layer);
+    }
+  });
+  return selectedLayers;
+}
+
 proto.setGetWmsUrl = function(getWmsUrlFnc){
   this._getWmsUrlFnc = getWmsUrlFnc;
 };

@@ -222,7 +222,32 @@ proto.setupControls = function(){
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showPanelResults = GUI.showResults('query');
-            QueryService.queryByLocation(coordinates, self.mapLayers)
+            var selectedLayers = self.project.getSelectedLayers();
+            var mapLayers = self.mapLayers;
+            //se sono stati selezionati layers dal catalog allora
+            //faccio interrogazione sul layer selezionato
+            var mapSelectedLayers = {};
+            if (selectedLayers.length) {
+              var cloneMapLayers = _.cloneDeep(mapLayers);
+              _.forEach(selectedLayers, function(selectedLayer) {
+                _.forEach(cloneMapLayers, function(mapLayerObj, group) {
+                  var layers = [];
+                  _.forEach(mapLayerObj.layers, function(layer){
+                    //da controllare anche wms  e quindi sorce
+                    if (layer.name == selectedLayer.name) {
+                      layers.push(layer);
+                      return true;
+                    }
+                  });
+                  if (layers.length) {
+                    mapLayerObj.layers = layers;
+                    mapSelectedLayers[group] = mapLayerObj;
+                  }
+                });
+              });
+              mapLayers = mapSelectedLayers;
+            };
+            QueryService.queryByLocation(coordinates, mapLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
               showPanelResults(results);

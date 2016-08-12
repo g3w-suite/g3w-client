@@ -41,7 +41,11 @@ var vueComponentOptions = {
     });
     
     this.$on('treenodeselected',function(node){
-      self.project.selectLayer(node);
+      if (!node.selected) {
+        self.project.selectLayer(node);
+      } else {
+        self.project.unselectLayer(node);
+      }
     });
   }
 }
@@ -98,6 +102,7 @@ Vue.component('tristate-tree', {
     },
     selected: function() {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
+      console.log(isSelected);
       return isSelected;
     }
   },
