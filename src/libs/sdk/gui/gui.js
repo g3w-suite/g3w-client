@@ -51,8 +51,10 @@ function GUI(){
   };
 
   /* spinner */
-  this.showSpinner = noop; // per mostrare un'icona spinner che notifica un caricamento dati in corso
-  this.hideSpinner = noop;
+  GUI.showSpinner = function(options){};
+
+  GUI.hideSpinner = function(id){};
+
   
   this.notify = noop;
   this.dialog = noop;

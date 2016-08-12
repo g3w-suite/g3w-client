@@ -167,8 +167,19 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // proxy della libreria bootbox
     GUI.dialog = bootbox;
     /* spinner */
-    GUI.showSpinner = function() {};
-    GUI.hideSpinner = function() {};
+    GUI.showSpinner = function(options){
+      var container = options.container || 'body';
+      var id = options.id || 'loadspinner';
+      var where = options.where || 'prepend'; // append | prepend
+      var style = options.style || '';
+      var transparent = options.transparent ? 'background-color: transparent' : '';
+      if (!$("#"+id).length) {
+        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
+      }
+    };
+    GUI.hideSpinner = function(id){
+      $("#"+id).remove();
+    };
     /* end spinner*/
 
     /* fine metodi comuni */
