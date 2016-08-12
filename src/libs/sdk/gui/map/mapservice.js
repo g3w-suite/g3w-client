@@ -13,6 +13,7 @@ var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('core/layer/wmslayer');
 var QueryService = require('core/query/queryservice');
+var LayerState = require('core/layer/layerstate');
 
 //var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
@@ -236,8 +237,7 @@ proto.setupControls = function(){
                 _.forEach(cloneMapLayers, function(mapLayerObj, group) {
                   var layers = [];
                   _.forEach(mapLayerObj.layers, function(layer){
-                    //da controllare anche wms  e quindi sorce
-                    if (layer.name == selectedLayer.name) {
+                    if (LayerState.getQueryLayerName(layer) == LayerState.getQueryLayerName(selectedLayer)) {
                       layers.push(layer);
                       return true;
                     }
