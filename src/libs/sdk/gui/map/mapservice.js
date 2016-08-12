@@ -229,24 +229,12 @@ proto.setupControls = function(){
             var mapLayers = self.mapLayers;
             //se sono stati selezionati layers dal catalog allora
             //faccio interrogazione sul layer selezionato
-            var mapSelectedLayers = {};
             if (selectedLayers.length) {
+              var mapSelectedLayers = [];
               //faccio un clone dei mapLayer per non sporcarli e quindi mantenerli
-              var cloneMapLayers = _.cloneDeep(mapLayers);
               _.forEach(selectedLayers, function(selectedLayer) {
-                _.forEach(cloneMapLayers, function(mapLayerObj, group) {
-                  var layers = [];
-                  _.forEach(mapLayerObj.layers, function(layer){
-                    if (LayerState.getQueryLayerName(layer) == LayerState.getQueryLayerName(selectedLayer)) {
-                      layers.push(layer);
-                      return true;
-                    }
-                  });
-                  if (layers.length) {
-                    mapLayerObj.layers = layers;
-                    mapSelectedLayers[group] = mapLayerObj;
-                  }
-                });
+                var mapLayer = self.getMapLayerForLayer(selectedLayer);
+                mapSelectedLayers.push(mapLayer);
               });
               mapLayers = mapSelectedLayers;
             };
