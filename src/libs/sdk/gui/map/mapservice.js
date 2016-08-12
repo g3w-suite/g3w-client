@@ -224,7 +224,7 @@ proto.setupControls = function(){
             var coordinates = e.coordinates;
             var showPanelResults = GUI.showResults('query');
             //Brutto ma reimposto mapLayers tutte le volte
-            var mapLayers = self.setupLayers();
+            var mapLayers = self.mapLayers;
             //verifico se ci sono layers selezionati
             var selectedLayers = self.project.getSelectedLayers();
             if (selectedLayers.length) {
@@ -234,14 +234,16 @@ proto.setupControls = function(){
 						  mapLayer.layers = selectedLayers;
 						  return true
 					  }		
-				  })		
-				})				
-			}
+				  });		
+				});				
+			};
             //faccio query by location su i layers selezionati o tutti
             QueryService.queryByLocation(coordinates, mapLayers, selectedLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
               showPanelResults(results);
+              //ritraccio i Layers
+              self.setupLayers();
               //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             })
           });
