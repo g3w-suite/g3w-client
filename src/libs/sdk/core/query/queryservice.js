@@ -254,9 +254,12 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     var urlsForLayers = {};
-    _.forEach(mapLayers,function(mapLayer){
+    _.forEach(mapLayers, function(mapLayer) {
       var url = mapLayer.getQueryUrl();
       var urlHash = url.hashCode().toString();
+      // creo un oggetto contentente layers che fanno riferimento
+      // ad un uguale url in modo da semplificare la chiamata (farla una sola su più layer
+      // invece di farne n su ogni singolo layer
       if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
         urlsForLayers[urlHash] = {
           url: url,
@@ -264,7 +267,7 @@ function QueryService(){
         };
       }
       urlsForLayers[urlHash].mapLayers.push(mapLayer);
-    })
+    });
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers){
       var firstLayer = urlForLayers.mapLayers[0];
@@ -306,7 +309,6 @@ function QueryService(){
         });
       }
     });
-
     if (queryUrlsForLayers.length > 0) {
       _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
         var url = queryUrlForLayers.url;

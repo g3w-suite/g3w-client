@@ -13,7 +13,7 @@ var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('core/layer/wmslayer');
 var QueryService = require('core/query/queryservice');
-var LayerState = require('core/layer/layerstate');
+
 
 //var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
 
@@ -223,23 +223,22 @@ proto.setupControls = function(){
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showPanelResults = GUI.showResults('query');
+            //Brutto ma reimposto mapLayers tutte le volte
+            var mapLayers = self.setupLayers();
             //verifico se ci sono layers selezionati
             var selectedLayers = self.project.getSelectedLayers();
-            //prendo inatnto i maplayers iniziali
-            var mapLayers = self.mapLayers;
-            //se sono stati selezionati layers dal catalog allora
-            //faccio interrogazione sul layer selezionato
             if (selectedLayers.length) {
-              var mapSelectedLayers = [];
-              //faccio un clone dei mapLayer per non sporcarli e quindi mantenerli
-              _.forEach(selectedLayers, function(selectedLayer) {
-                var mapLayer = self.getMapLayerForLayer(selectedLayer);
-                mapSelectedLayers.push(mapLayer);
-              });
-              mapLayers = mapSelectedLayers;
-            };
+				_.forEach(selectedLayers, function(selectedLayer) {
+				  _.forEach(mapLayers, function(mapLayer) {
+					  if (_.find(mapLayer.layers, selectedLayer))	{
+						  mapLayer.layers = selectedLayers;
+						  return true
+					  }		
+				  })		
+				})				
+			}
             //faccio query by location su i layers selezionati o tutti
-            QueryService.queryByLocation(coordinates, mapLayers)
+            QueryService.queryByLocation(coordinates, mapLayers, selectedLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
               showPanelResults(results);
@@ -342,6 +341,7 @@ proto.setupLayers = function(){
     self.viewer.map.addLayer(mapLayer.getOLLayer());
     mapLayer.update(self.state,self.layersExtraParams);
   })
+  return this.mapLayers;
 };
 
 proto.updateMapLayers = function(mapLayers) {
