@@ -1,4 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
@@ -16,6 +17,15 @@ function QueryResultsService(){
     loading: true
   };
   
+  this.setters = {
+    setQueryResponse: function(queryResponse) {
+      this.state.layers = [];
+      this.state.query = queryResponse.query;
+      this.digestFeaturesForLayers(queryResponse.data);
+      this.state.loading = false;
+    }
+  };
+  
   this.clearState = function() {
     this.state = {
       layers: [],
@@ -23,13 +33,6 @@ function QueryResultsService(){
       querytitle: "",
       loading: true
     };
-  };
-  
-  this.setQueryResponse = function(queryResponse) {
-    this.state.layers = [];
-    this.state.query = queryResponse.query;
-    this.digestFeaturesForLayers(queryResponse.data);
-    this.state.loading = false;
   };
   
   this.setTitle = function(querytitle) {
@@ -61,6 +64,8 @@ function QueryResultsService(){
       self.state.layers.push(layerObj);
     })
   }
+  
+  base(this);
 };
 
 // Make the public service en Event Emitter

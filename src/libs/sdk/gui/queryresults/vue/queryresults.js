@@ -48,6 +48,7 @@ var InternalComponent = Vue.extend(vueComponentOptions);
 
 function QueryResultsComponent(options){
   base(this,options);
+  var self = this;
   this.id = "queryresults";
   this.title = "Query Results";
   this._service = new QueryResultsService();
@@ -59,6 +60,10 @@ function QueryResultsComponent(options){
     this.createLayersFeaturesBoxes();
     this.internalComponent.querytitle = this._service.state.querytitle;
   }
+  
+  this._service.onafter('setQueryResponse',function(){
+    self.createLayersFeaturesBoxes();
+  })
   merge(this, options);
   
   this.createLayersFeaturesBoxes = function() {
