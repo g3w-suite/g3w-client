@@ -222,7 +222,7 @@ proto.setupControls = function(){
           control = new QueryControl();
           control.on('picked',function(e){
             var coordinates = e.coordinates;
-            var showPanelResults = GUI.showResults('query');
+            var showQueryResults = GUI.showResultsFactory('query');
             //Brutto ma reimposto mapLayers tutte le volte
             var mapLayers = self.mapLayers;
             //verifico se ci sono layers selezionati
@@ -238,14 +238,15 @@ proto.setupControls = function(){
               });				
             };
             //faccio query by location su i layers selezionati o tutti
+            var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, mapLayers, selectedLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
-              showPanelResults(results,'interrogazione');
+              queryResultsPanel.setQueryResponse(results);
               //ritraccio i Layers
               self.setupLayers();
               //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
-            })
+            });
           });
           break;
           case 'scaleline':

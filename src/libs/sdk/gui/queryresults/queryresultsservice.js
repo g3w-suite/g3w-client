@@ -6,20 +6,38 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 function QueryResultsService(){
   var self = this;
   this.init = function(options) {
-    //codice qui
+    this.clearState()
   };
   
   this.state = {
     layers: [],
     query: {},
-    querytitle: ""
+    querytitle: "",
+    loading: true
   };
   
-  this.setQueryResponse = function(queryResponse, queryTitle) {
+  this.clearState = function() {
+    this.state = {
+      layers: [],
+      query: {},
+      querytitle: "",
+      loading: true
+    };
+  };
+  
+  this.setQueryResponse = function(queryResponse) {
     this.state.layers = [];
     this.state.query = queryResponse.query;
-    this.state.querytitle = queryTitle || "";
     this.digestFeaturesForLayers(queryResponse.data);
+    this.state.loading = false;
+  };
+  
+  this.setTitle = function(querytitle) {
+    this.state.querytitle = querytitle || "";
+  };
+  
+  this.reset = function() {
+    this.clearState();
   };
   
   this.digestFeaturesForLayers = function(featuresForLayers) {

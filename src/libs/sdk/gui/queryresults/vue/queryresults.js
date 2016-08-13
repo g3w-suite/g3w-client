@@ -11,7 +11,6 @@ var vueComponentOptions = {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
-      querytitle: ""
     }
   },
   replace: false,

@@ -5,7 +5,8 @@
   </div>
 </div>-->
 <div id="search-results" class="queryresults-container">
-  <h3>Risultati {{querytitle | lowercase}}</h3>
+  <h3>Risultati {{state.querytitle | lowercase}}</h3>
+  <div v-show="state.loading" class="bar-loader"></div>
   <ul class="queryresults" id="queryresults">
     <li v-if="layerHasFeatures(layer)" v-for="layer in state.layers">
       <div class="box box-primary">

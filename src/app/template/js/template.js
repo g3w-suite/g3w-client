@@ -145,7 +145,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // derivanti da una query
 
     //esempio di metodo generico
-    GUI.showResults = function(type) {
+    GUI.showResultsFactory = function(type) {
       var showPanelResults;
       switch (type) {
         case 'query':
@@ -153,19 +153,23 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
           showPanelResults = GUI.showQueryResults;
           break;
       };
-      return showPanelResults
+      return showPanelResults;
     };
 
-    GUI.showQueryResults = function(results,title) {
+    GUI.showQueryResults = function(title,results) {
       // istanziare il componente queryresults
       var queryResultsComponent = GUI.getComponent('queryresults');
       // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
-      queryResultService.setQueryResponse(results,title);
+      queryResultService.reset();
+      queryResultService.setTitle = title;
+      if (results) {
+        queryResultService.setQueryResponse(results);
+      }
       //rimuovo spinner
-      GUI.hideSpinner('loadspinner');
       var options = {append: true};
       floatbar.FloatbarService.showPanel(queryResultsComponent, options);
+      return queryResultService;
     };
     
     GUI.hideQueryResults = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
@@ -202,7 +206,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // FLOATBAR //
     GUI.showFloatbar = function() {
       floatbar.FloatbarService.open();
-      GUI.showSpinner({container:'#floatbar-spinner',transparent:true,where:'append'});
     };
     GUI.hideFloatbar = function() {
       floatbar.FloatbarService.close();
