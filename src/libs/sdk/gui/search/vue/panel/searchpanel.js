@@ -12,6 +12,7 @@ var SearchPanelComponet = Vue.extend({
   template: require('./searchpanel.html'),
   data: function() {
     return {
+      title: "",
       forminputs: [],
       filterObject: {},
       formInputValues : []
@@ -19,6 +20,7 @@ var SearchPanelComponet = Vue.extend({
   },
   methods: {
     doSearch: function(event) {
+      var self = this;
       event.preventDefault();
       //al momento molto farragginoso ma da rivedere
       //per associazione valore input
@@ -26,7 +28,7 @@ var SearchPanelComponet = Vue.extend({
       this.filterObject = this.fillFilterInputsWithValues(this.filterObject, this.formInputValues);
       QueryService.queryByFilter(this.filterObject)
       .then(function(results){
-        showPanelResults(results);
+        showPanelResults(results,self.title);
       })
     }
   }
@@ -58,6 +60,7 @@ function SearchPanel() {
     //vorrei delegarlo a SearchesService ma lo stesso stanzia questo (loop) come uscirne???
     //creare un searchpanelservice?
     this.internalPanel.fillFilterInputsWithValues = this.fillFilterInputsWithValues;
+    this.internalPanel.title = this.name;
   };
   //funzione che popola gli inputs che ci saranno nel form del pannello ricerca
   //oltre costruire un oggetto che legherà i valori degli inputs del form con gli oggetti

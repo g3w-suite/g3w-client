@@ -11,12 +11,14 @@ function QueryResultsService(){
   
   this.state = {
     layers: [],
-    query: {}
+    query: {},
+    querytitle: ""
   };
   
-  this.setQueryResponse = function(queryResponse) {
+  this.setQueryResponse = function(queryResponse, queryTitle) {
     this.state.layers = [];
     this.state.query = queryResponse.query;
+    this.state.querytitle = queryTitle || "";
     this.digestFeaturesForLayers(queryResponse.data);
   };
   

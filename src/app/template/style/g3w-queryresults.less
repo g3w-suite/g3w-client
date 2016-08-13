@@ -28,6 +28,10 @@
       font-weight: bold;
       text-decoration: underline;
     }
+    &.morelink {
+      font-weight: bold;
+      text-decoration: none;
+    }
   }
   .queryresults-single {
     margin-top: 6px;
@@ -49,14 +53,17 @@
   .viewer-container {
     top: 50px;
   }
+  
+  .queryresults-featurebox {
+    .attr-label {
+      min-width:80px
+    }
+    .attr-value {
+      font-weight: bold
+    }
+  }
 }
 
 .table-striped>tbody>tr:nth-of-type(odd) {
   background-color: #f3f3f3;
-}
-
-.ol-control {
-  &.tpl-lottocontrol {
-    
-  }
 }

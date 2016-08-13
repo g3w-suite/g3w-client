@@ -9,7 +9,9 @@ var vueComponentOptions = {
   template: require('./queryresults.html'),
   data: function() {
     return {
-      state: this.$options.queryResultsService.state
+      state: this.$options.queryResultsService.state,
+      layersFeaturesBoxes: {},
+      querytitle: ""
     }
   },
   replace: false,
@@ -20,9 +22,25 @@ var vueComponentOptions = {
       }
       return false;
     },
-  },
-  created: function() {
-    //codice qui
+    attributesSubset: function(attributes) {
+      var end = Math.min(3,attributes.length) + 1;
+      return attributes.slice(0,end);
+    },
+    attributesSubsetLength: function(attributes) {
+      return this.attributesSubset(attributes).length;
+    },
+    collapseFeatureBox: function(layer,feature) {
+      var collapsed = true;
+      var boxid = layer.id+'_'+feature.id;
+      if (this.layersFeaturesBoxes[boxid]) {
+        collapsed = this.layersFeaturesBoxes[boxid].collapsed;
+      }
+      return collapsed;
+    },
+    toggleFeatureBox: function(layer,feature) {
+      var boxid = layer.id+'_'+feature.id;
+      this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+    }
   }
 };
 
@@ -34,16 +52,29 @@ function QueryResultsComponent(options){
   this.id = "queryresults";
   this.title = "Query Results";
   this._service = new QueryResultsService();
-  this.internalComponent = new InternalComponent({
-      queryResultsService: this._service
-  });
   //usato quando è stato distrutto
   this.setInternalComponent = function() {
     this.internalComponent = new InternalComponent({
       queryResultsService: this._service
     });
+    this.createLayersFeaturesBoxes();
+    this.internalComponent.querytitle = this._service.state.querytitle;
   }
   merge(this, options);
+  
+  this.createLayersFeaturesBoxes = function() {
+    var layersFeaturesBoxes = {}
+    var layers = this._service.state.layers;
+    _.forEach(layers,function(layer){
+      _.forEach(layer.features,function(feature){
+        var boxid = layer.id+'_'+feature.id
+        layersFeaturesBoxes[boxid] = {
+          collapsed: false
+        }
+      })
+    })
+    this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
+  };
 };
 
 inherit(QueryResultsComponent, Component);

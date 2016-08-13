@@ -156,12 +156,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return showPanelResults
     };
 
-    GUI.showQueryResults = function(results) {
+    GUI.showQueryResults = function(results,title) {
       // istanziare il componente queryresults
       var queryResultsComponent = GUI.getComponent('queryresults');
       // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
-      queryResultService.setQueryResponse(results);
+      queryResultService.setQueryResponse(results,title);
       //rimuovo spinner
       GUI.hideSpinner('loadspinner');
       var options = {append: true};

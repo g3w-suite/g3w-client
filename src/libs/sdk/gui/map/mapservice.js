@@ -228,20 +228,20 @@ proto.setupControls = function(){
             //verifico se ci sono layers selezionati
             var selectedLayers = self.project.getSelectedLayers();
             if (selectedLayers.length) {
-				_.forEach(selectedLayers, function(selectedLayer) {
-				  _.forEach(mapLayers, function(mapLayer) {
-					  if (_.find(mapLayer.layers, selectedLayer))	{
-						  mapLayer.layers = selectedLayers;
-						  return true
-					  }		
-				  });		
-				});				
-			};
+              _.forEach(selectedLayers, function(selectedLayer) {
+                _.forEach(mapLayers, function(mapLayer) {
+                  if (_.find(mapLayer.layers, selectedLayer))	{
+                    mapLayer.layers = selectedLayers;
+                    return true
+                  }		
+                });		
+              });				
+            };
             //faccio query by location su i layers selezionati o tutti
             QueryService.queryByLocation(coordinates, mapLayers, selectedLayers)
             //MapQueryService.queryPoint(coordinates,self.mapLayers)
             .then(function(results){
-              showPanelResults(results);
+              showPanelResults(results,'interrogazione');
               //ritraccio i Layers
               self.setupLayers();
               //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);

@@ -4,9 +4,8 @@
     <p>Numero di features: {{ layer.features.length }}</p>
   </div>
 </div>-->
-
-
 <div id="search-results" class="queryresults-container">
+  <h3>Risultati {{querytitle | lowercase}}</h3>
   <ul class="queryresults" id="queryresults">
     <li v-if="layerHasFeatures(layer)" v-for="layer in state.layers">
       <div class="box box-primary">
@@ -20,19 +19,32 @@
           <table class="table table-striped">
             <thead>
               <tr>
-                <th v-for="attribute in layer.attributes">{{attribute.label}}</th>
+                <th v-for="attribute in attributesSubset(layer.attributes)">{{attribute.label}}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="feature in layer.features">
-                <td v-for="attribute in layer.attributes">
-                  <span>{{feature.attributes[attribute.name]}}</span>
-                  <!--<span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>-->
-                  <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
-                  <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
-                  <!--<a v-if="isLink(layer,feature,attribute)" href="layer,feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
+              <template v-for="feature in layer.features">
+                <tr>
+                  <td v-for="attribute in attributesSubset(layer.attributes)">
+                    <span>{{feature.attributes[attribute.name]}}</span>
+                    <!--<span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>-->
+                    <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
+                    <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                    <!--<a v-if="isLink(layer,feature,attribute)" href="layer.feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
+                  </td>
+                  <td><span @click="toggleFeatureBox(layer,feature)" class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
+              </tr>
+              <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
+                <td :colspan="attributesSubsetLength(layer.attributes)">
+                  <table>
+                    <tr v-for="attribute in layer.attributes">
+                      <td class="attr-label">{{attribute.label}}</td>
+                      <td class="attr-value">{{feature.attributes[attribute.name]}}</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
+              </template>
             </tbody>
           </table>
         </div>
