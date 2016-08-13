@@ -162,7 +162,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
-      queryResultService.setTitle = title;
+      queryResultService.setTitle(title);
       if (results) {
         queryResultService.setQueryResponse(results);
       }
