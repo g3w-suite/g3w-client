@@ -6,8 +6,12 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 
 function QueryResultsService(){
   var self = this;
+  this._actions = {
+    'zoomto': QueryResultsService.zoomToElement
+  };
+  
   this.init = function(options) {
-    this.clearState()
+    this.clearState();
   };
   
   this.state = {
@@ -21,7 +25,7 @@ function QueryResultsService(){
     setQueryResponse: function(queryResponse) {
       this.state.layers = [];
       this.state.query = queryResponse.query;
-      this.digestFeaturesForLayers(queryResponse.data);
+      this._digestFeaturesForLayers(queryResponse.data);
       this.state.loading = false;
     }
   };
@@ -43,29 +47,49 @@ function QueryResultsService(){
     this.clearState();
   };
   
-  this.digestFeaturesForLayers = function(featuresForLayers) {
+  this._digestFeaturesForLayers = function(featuresForLayers) {
     var self = this;
     _.forEach(featuresForLayers,function(featuresForLayer){
       var layer = featuresForLayer.layer;
-      var layerObj = {
-        title: layer.title,
-        id: layer.id,
-        attributes: layer.attributes,
-        features: []
-      };
-      _.forEach(featuresForLayer.features,function(feature){      
-        var featureObj = {
-          id: feature.getId(),
-          attributes: feature.getProperties(),
-          geometry: feature.getGeometry()
-        }
-        layerObj.features.push(featureObj);
-      })
-      self.state.layers.push(layerObj);
+      if (featuresForLayer.features.length) {
+        var layerObj = {
+          title: layer.title,
+          id: layer.id,
+          attributes: self._parseAttributes(layer.attributes,featuresForLayer.features[0].getProperties()), // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+          features: []
+        };
+        _.forEach(featuresForLayer.features,function(feature){      
+          var featureObj = {
+            id: feature.getId(),
+            attributes: feature.getProperties(),
+            geometry: feature.getGeometry()
+          }
+          layerObj.features.push(featureObj);
+        })
+        self.state.layers.push(layerObj);
+      }
+    })
+  };
+  
+  this._parseAttributes = function(layerAttributes,featureAttributes) {
+    var featureAttributesNames = _.keys(featureAttributes);
+    return _.filter(layerAttributes,function(attribute){
+      return featureAttributesNames.indexOf(attribute.name) > -1;
     })
   }
   
+  this.trigger = function(action,layer,feature) {
+    var actionMethod = this._actions[action];
+    if (actionMethod) {
+      actionMethod(layer,feature);
+    }
+  };
+  
   base(this);
+};
+
+QueryResultsService.zoomToElement = function(layer,feature) {
+  console.log(feature.geometry);
 };
 
 // Make the public service en Event Emitter

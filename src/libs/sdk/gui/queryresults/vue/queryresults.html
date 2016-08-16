@@ -25,7 +25,7 @@
             </thead>
             <tbody>
               <template v-for="feature in layer.features">
-                <tr>
+                <tr class="attributes-preview" @click="toggleFeatureBox(layer,feature)">
                   <td v-for="attribute in attributesSubset(layer.attributes)">
                     <span>{{feature.attributes[attribute.name]}}</span>
                     <!--<span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>-->
@@ -33,10 +33,18 @@
                     <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
                     <!--<a v-if="isLink(layer,feature,attribute)" href="layer.feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
                   </td>
-                  <td><span @click="toggleFeatureBox(layer,feature)" class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
+                  <td><span class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
               </tr>
               <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
-                <td :colspan="attributesSubsetLength(layer.attributes)">
+                <td :colspan="attributesSubsetLength(layer.attributes)+1">
+                  <div class="action-buttons-container">
+                    <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
+                      <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('zoomto',layer,feature)"></span>
+                    </div>
+                    <div class="action-button hint--top-right" aria-label="Link all'elemento">
+                      <span class="action-button-icon glyphicon glyphicon-link"></span>
+                    </div>
+                  </div>
                   <table>
                     <tr v-for="attribute in layer.attributes">
                       <td class="attr-label">{{attribute.label}}</td>

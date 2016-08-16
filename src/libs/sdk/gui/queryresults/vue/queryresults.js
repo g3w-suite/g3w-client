@@ -21,8 +21,11 @@ var vueComponentOptions = {
       }
       return false;
     },
+    geometryAvailable: function(feature) {
+      return feature.geometry ? true : false;
+    },
     attributesSubset: function(attributes) {
-      var end = Math.min(3,attributes.length) + 1;
+      var end = Math.min(3,attributes.length);
       return attributes.slice(0,end);
     },
     attributesSubsetLength: function(attributes) {
@@ -39,6 +42,9 @@ var vueComponentOptions = {
     toggleFeatureBox: function(layer,feature) {
       var boxid = layer.id+'_'+feature.id;
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
+    },
+    trigger: function(action,layer,feature) {
+      this.$options.queryResultsService.trigger(action,layer,feature);
     }
   }
 };

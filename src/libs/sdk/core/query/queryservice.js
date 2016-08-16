@@ -116,6 +116,7 @@ function QueryService(){
     var featureMembers = data.FeatureCollection.featureMember;
     featureMembers = _.isArray(featureMembers) ? featureMembers : [featureMembers];
     _.forEach(featureMembers,function(featureMember){
+      layerName = layerName.replace(/ /g,''); // QGIS SERVER rimuove gli spazi dal nome del layer per creare l'elemento FeatureMember
       var isLayerMember = _.get(featureMember,layerName)
 
       if (isLayerMember) {
