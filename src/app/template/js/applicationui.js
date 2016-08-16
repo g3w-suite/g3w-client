@@ -7,11 +7,8 @@ var AppUI = Vue.extend({
     /* start to render LayoutManager layout */
     layout.loading(false);
     layout.setup();
-    $("body").toggleClass("fixed");
-    layout.layout.fixSidebar();
     //Fix the problem with right sidebar and layout boxed
     layout.pushMenu.expandOnHover();
-    layout.layout.activate();
     layout.controlSidebar._fix($(".control-sidebar-bg"));
     layout.controlSidebar._fix($(".control-sidebar"));
     var controlsidebarEl = layout.options.controlSidebarOptions.selector;

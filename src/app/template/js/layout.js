@@ -26,7 +26,7 @@ $.LayoutManager.options = {
   //Activate sidebar push menu
   sidebarPushMenu: true,
   //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
-  sidebarSlimScroll: false,
+  sidebarSlimScroll: true,
   //Enable sidebar expand on hover effect for sidebar mini
   //This option is forced to true if both the fixed layout and sidebar mini
   //are used together
@@ -189,7 +189,32 @@ $.LayoutManager._init = function() {
       else {
          $(".sidebar").css({'height': ($(window).height() - $(".main-header").height()) + "px"})
       }
+      
+      /*$(".sidebar li a").each(function(){
+        var $this = $(this);
+        var checkElement = $this.next();
+        if ((checkElement.is('.treeview-menu')) && (!checkElement.is(':visible'))) {
+          //Get the parent menu
+          var parent = $this.parents('ul').first();
+          var parent_li = $this.parent("li");
+          var li_siblings = parent_li.siblings();
+          var parent_find_active;
+          var sidebar_content_height = parent.height() - parent.find('li.header').outerHeight();
+          var treeviewHeight = parent_li.outerHeight();
+          li_siblings.not('.header').each(function(index, el) {
+                  treeviewHeight+=$(el).find('a').outerHeight();
+          });
+          var section_height = (sidebar_content_height - treeviewHeight);
+          checkElement.css({
+            'height': section_height + 'px',
+            'max-height':section_height + 'px',
+            'overflow-y': 'auto'
+          });
+        }
+      });*/
+      
     }
+    
   };
 
   /* PushMenu()
@@ -305,11 +330,11 @@ $.LayoutManager._init = function() {
                 treeviewHeight+=$(el).find('a').outerHeight();
         });
         var section_height = (sidebar_content_height - treeviewHeight);
-        checkElement.css({
+        /*checkElement.css({
           'height': section_height + 'px',
           'max-height':section_height + 'px',
-          'overflow-y': 'auto'
-        });
+          //'overflow-y': 'auto'
+        });*/
         //Close all open menus within the parent
         var ul = parent.find('ul.treeview-menu:visible').slideUp(animationSpeed);
         //Remove the menu-open class from the parent
@@ -330,6 +355,9 @@ $.LayoutManager._init = function() {
       if (checkElement.is('.treeview-menu')) {
         e.preventDefault();
       }
+      
+      //$.LayoutManager.layout.fix();
+      //$.LayoutManager.layout.fixSidebar();
     });
   };
 
