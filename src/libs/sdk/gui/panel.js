@@ -1,4 +1,3 @@
-var localize = require('core/i18n/i18n.service').t;
 var inherit = require('core/utils/utils').inherit;
 var resolvedValue = require('core/utils/utils').resolve;
 var G3WObject = require('core/g3wobject');
@@ -39,7 +38,7 @@ proto.getTitle = function(){
 proto.mount = function(parent) {
   var panel = this.internalPanel;
   panel.$mount().$appendTo(parent);
-  localize();
+  $(parent).localize();
   return resolvedValue(true);
 };
 

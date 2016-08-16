@@ -3,6 +3,7 @@ var translations = {
         "translation": {
             "component": "Componente Generico",
             "search": "Ricerca",
+            "dosearch": "Cerca",
             "catalog": "Mappa",
             "baselayers": "Basi",
             "tools": "Strumenti",

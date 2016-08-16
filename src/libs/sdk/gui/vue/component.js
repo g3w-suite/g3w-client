@@ -23,6 +23,7 @@ proto.mount = function(parent,append) {
   else {
     this.internalComponent.$mount(parent);
   }
+  $(parent).localize();
   return resolve(true);
 };
 
