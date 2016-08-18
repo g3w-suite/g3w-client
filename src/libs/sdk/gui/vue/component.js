@@ -35,4 +35,8 @@ proto.unmount = function() {
   return resolve();
 };
 
+proto.hide = function() {
+  console.log(this.internalComponent.$el);
+};
+
 module.exports = Component;

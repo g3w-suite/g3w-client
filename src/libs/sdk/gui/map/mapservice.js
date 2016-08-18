@@ -33,6 +33,7 @@ function MapService(project){
   this.config;
   this.viewer;
   this.target;
+  this._mapControls = [],
   this.mapLayers = {};
   this.mapBaseLayers = {};
   this.layersAssociation = {};
@@ -128,6 +129,14 @@ function MapService(project){
         maxResolution: initialResolution
       }
     });
+    
+    /*this.viewer.map.getInteractions().on('add',function(interaction){
+      self._onAddInteraction(interaction);
+    });
+    
+    this.viewer.map.getInteractions().on('remove',function(interaction){
+      self._onRemoveInteraction(interaction);
+    });*/
     
     this.viewer.map.getView().setResolution(initialResolution);
     
@@ -244,7 +253,7 @@ proto.setupControls = function(){
             .then(function(results){
               queryResultsPanel.setQueryResponse(results);
               //ritraccio i Layers
-              self.setupLayers();
+              //self.setupLayers(); ??? a che serve?
               //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             });
           });
@@ -262,6 +271,7 @@ proto.setupControls = function(){
 
 proto.addControl = function(control){
   this.viewer.map.addControl(control);
+  this._mapControls.push(control);
 };
 
 proto.setupBaseLayers = function(){
@@ -399,6 +409,7 @@ proto.setTarget = function(elId){
 // per creare una pila di ol.interaction in cui l'ultimo che si aggiunge disattiva temporaemente i precedenti (per poi togliersi di mezzo con popInteraction!)
 // Usato ad es. da pickfeaturetool e getfeatureinfo
 proto.pushInteraction = function(interaction){
+  this._unsetControls();
   if (this._interactionsStack.length){
     var prevInteraction = this._interactionsStack.slice(-1)[0];
     if (_.isArray(prevInteraction)){
@@ -584,6 +595,14 @@ proto.resize = function(width,height) {
   }
   this.getMap().updateSize();
   this._setMapView();
+};
+
+proto._unsetControls = function() {
+  _.forEach(this._mapControls,function(control){
+    if (control.toggle) {
+      control.toggle(false);
+    }
+  })
 };
 
 proto._setMapView = function(){

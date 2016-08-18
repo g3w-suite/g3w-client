@@ -123,7 +123,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     /* DEFINIZIONE INTERFACCIA PUBBLICA */
     
     /* Metodi comuni a tutti i template */
-    
+    GUI.layout = layout;
     GUI.addComponent = _.bind(this._addComponent, this);
     GUI.removeComponent = _.bind(this._removeComponent, this);
     

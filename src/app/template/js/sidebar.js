@@ -83,20 +83,20 @@ var SidebarComponent = Vue.extend({
       panelsinstack: function(){
         return this.panels.length>0;
       },
-      componentsinstack: function(){
-        return this.components.length>0;
+      showmainpanel: function(){
+        return this.components.length>0 && !this.panelsinstack;
       },
       componentname: function(){
         var name = "";
         if (this.components.length){
-          name = this.components.slice(-1)[0].getName();
+          name = this.components.slice(-1)[0].getTitle();
         }
         return name;
       },
       panelname: function(){
         var name = "";
         if (this.panels.length){
-          name = this.panels.slice(-1)[0].name;
+          name = this.panels.slice(-1)[0].getTitle();
         }
         return name;
       }

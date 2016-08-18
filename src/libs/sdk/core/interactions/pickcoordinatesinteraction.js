@@ -36,7 +36,7 @@ PickCoordinatesInteraction.handleMoveEvent_ = function(event) {
 };
 
 PickCoordinatesInteraction.prototype.shouldStopEvent = function(){
-  return false;
+  return true;
 };
 
 PickCoordinatesInteraction.prototype.setMap = function(map){

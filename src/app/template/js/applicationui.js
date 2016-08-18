@@ -14,11 +14,11 @@ var AppUI = Vue.extend({
     var controlsidebarEl = layout.options.controlSidebarOptions.selector;
     function setFloatBarMaxHeight(){
       $(controlsidebarEl).css('max-height',$(window).innerHeight());
-      $('.g3w-sidebarpanel').height($(window).innerHeight()-$('.main-header').innerHeight());
+      $('.g3w-sidebarpanel').css('height',$(window).height() - $(".main-header").height());
     }
     setFloatBarMaxHeight();
     function setModalHeight(){
-      $('#g3w-modal-overlay').height($(window).innerHeight());
+      $('#g3w-modal-overlay').css('height',$(window).height());
     }
     $(window).resize(function() {
       setFloatBarMaxHeight();

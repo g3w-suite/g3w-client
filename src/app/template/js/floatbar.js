@@ -48,13 +48,8 @@ function FloatbarService(){
   };
   
   this.closePanel = function(){
-    var panel = this.stack.pop();
-    if (panel){
-      if (_.hasIn(panel,"$destroy")){
-        panel.$destroy();
-      }
-    };
-    if (!this.stack.length) {
+    this.stack.pop();
+    if (!this.stack.getLength()) {
       if (this._modal){
         GUI.setModal(false);
         this.close();
@@ -92,7 +87,7 @@ var FloatbarComponent = Vue.extend({
       panelname: function(){
         var name = "";
         if (this.stack.panels.length){
-          name = this.stack.panels.slice(-1)[0].name;
+          name = this.stack.panels.slice(-1)[0].getTitle();
         }
         return name;
       },

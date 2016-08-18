@@ -15,11 +15,11 @@ inherit(Panel, G3WObject);
 var proto = Panel.prototype;
 
 proto.getId = function(){
-  return self.id;
+  return this.id;
 };
 
 proto.getTitle = function(){
-  return self.title;
+  return this.title;
 };
 
 /* HOOKS */
