@@ -8,13 +8,21 @@ var ZoomBoxControl = function(options){
       name: "zoombox",
       tipLabel: "Zoom to box",
       label: "\ue900",
-      interaction: new ol.interaction.DragBox
+      interactionClass: ol.interaction.DragBox
     };
   
   options = utils.merge(options,_options);
   
   InteractionControl.call(this,options);
-  
+}
+ol.inherits(ZoomBoxControl, InteractionControl);
+module.exports = ZoomBoxControl;
+
+var proto = ZoomBoxControl.prototype;
+
+proto.setMap = function(map) {
+  var self = this;
+  InteractionControl.prototype.setMap.call(this,map);
   this._interaction.on('boxstart',function(e){
     self._startCoordinate = e.coordinate;
   });
@@ -32,6 +40,4 @@ var ZoomBoxControl = function(options){
       self.toggle();
     }
   })
-}
-ol.inherits(ZoomBoxControl, InteractionControl);
-module.exports = ZoomBoxControl;
+};

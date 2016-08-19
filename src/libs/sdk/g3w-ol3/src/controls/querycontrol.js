@@ -9,12 +9,23 @@ var QueryControl = function(options){
     name: "querylayer",
     tipLabel: "Query layer",
     label: "\uea0f",
-    interaction: new PickCoordinatesInteraction
+    interactionClass: PickCoordinatesInteraction
   };
   
   options = utils.merge(options,_options);
   
   InteractionControl.call(this,options);
+}
+ol.inherits(QueryControl, InteractionControl);
+
+var proto = QueryControl.prototype;
+
+proto.setMap = function(map) {
+  var self = this;
+  InteractionControl.prototype.setMap.call(this,map);
+  this._interaction.on('boxstart',function(e){
+    self._startCoordinate = e.coordinate;
+  });
   
   this._interaction.on('picked',function(e){
     self.dispatchEvent({
@@ -25,7 +36,6 @@ var QueryControl = function(options){
       self.toggle();
     }
   });
-}
-ol.inherits(QueryControl, InteractionControl);
+};
 
 module.exports = QueryControl;

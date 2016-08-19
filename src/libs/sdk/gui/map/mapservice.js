@@ -130,13 +130,18 @@ function MapService(project){
       }
     });
     
-    /*this.viewer.map.getInteractions().on('add',function(interaction){
-      self._onAddInteraction(interaction);
+    this.viewer.map.getInteractions().forEach(function(interaction){
+      self._watchInteraction(interaction);
     });
     
+    this.viewer.map.getInteractions().on('add',function(interaction){
+      self._watchInteraction(interaction.element);
+    })
+    
     this.viewer.map.getInteractions().on('remove',function(interaction){
-      self._onRemoveInteraction(interaction);
-    });*/
+      //self._onRemoveInteraction(interaction);
+    });
+  
     
     this.viewer.map.getView().setResolution(initialResolution);
     
@@ -442,6 +447,16 @@ proto.popInteraction = function(){
       prevInteraction.setActive(true);
     };
   }
+};
+
+proto._watchInteraction = function(interaction) {
+  var self = this;
+  interaction.on('change:active',function(e){
+    //console.log((e.target instanceof ol.interaction.Pointer) + '-' + e.target.getActive());
+    if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
+      self.emit('pointerInteractionSet',e.target);
+    }
+  })
 };
 
 proto.goTo = function(coordinates,zoom){

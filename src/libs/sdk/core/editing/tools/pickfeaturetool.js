@@ -49,7 +49,8 @@ proto.run = function(){
   
   //map.addInteraction(this.pickFeatureInteraction);
   //this.pickFeatureInteraction.setActive(true);
-  GUI.getComponent('map').getService().pushInteraction(this.pickFeatureInteraction);
+  var mapService = GUI.getComponent('map').getService();
+  mapService.pushInteraction(this.pickFeatureInteraction);
 };
 
 proto.pause = function(pause){
