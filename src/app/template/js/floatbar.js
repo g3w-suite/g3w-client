@@ -47,8 +47,13 @@ function FloatbarService(){
     }
   };
   
-  this.closePanel = function(){
-    this.stack.pop();
+  this.closePanel = function(panel){
+    if (panel) {
+      this.stack.remove(panel);
+    }
+    else {
+      this.stack.pop();
+    }
     if (!this.stack.getLength()) {
       if (this._modal){
         GUI.setModal(false);
