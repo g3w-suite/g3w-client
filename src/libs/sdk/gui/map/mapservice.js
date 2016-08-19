@@ -413,40 +413,14 @@ proto.setTarget = function(elId){
 
 // per creare una pila di ol.interaction in cui l'ultimo che si aggiunge disattiva temporaemente i precedenti (per poi togliersi di mezzo con popInteraction!)
 // Usato ad es. da pickfeaturetool e getfeatureinfo
-proto.pushInteraction = function(interaction){
+proto.addInteraction = function(interaction){
   this._unsetControls();
-  if (this._interactionsStack.length){
-    var prevInteraction = this._interactionsStack.slice(-1)[0];
-    if (_.isArray(prevInteraction)){
-      _.forEach(prevInteraction,function(interaction){
-        interaction.setActive(false);
-      })
-    }
-    else{
-      prevInteraction.setActive(false);
-    };
-  }
-  
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);
-  this._interactionsStack.push(interaction)
 };
 
-proto.popInteraction = function(){
-  var interaction = this._interactionsStack.pop();
+proto.removeInteraction = function(interaction){
   this.viewer.map.removeInteraction(interaction);
-  
-  if (this._interactionsStack.length){
-    var prevInteraction = this._interactionsStack.slice(-1)[0];
-    if (_.isArray(prevInteraction)){
-      _.forEach(prevInteraction,function(interaction){
-        interaction.setActive(true);
-      })
-    }
-    else{
-      prevInteraction.setActive(true);
-    };
-  }
 };
 
 proto._watchInteraction = function(interaction) {

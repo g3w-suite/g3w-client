@@ -1,9 +1,9 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+var DeleteInteraction = require('g3w-ol3/src/interactions//deletefeatureinteraction');
 
-var DeleteInteraction = require('./deletefeatureinteraction');
+var EditingTool = require('./editingtool');
 
 function DeleteFeatureTool(editor){
   var self = this;
@@ -17,9 +17,9 @@ function DeleteFeatureTool(editor){
     deleteFeature: DeleteFeatureTool.prototype._deleteFeature
   };
   
-  base(this);
+  base(this,editor);
 }
-inherit(DeleteFeatureTool,G3WObject);
+inherit(DeleteFeatureTool,EditingTool);
 module.exports = DeleteFeatureTool;
 
 var proto = DeleteFeatureTool.prototype;
@@ -108,7 +108,6 @@ styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] = _.concat(styles[ol.geom.Geome
 
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getService().viewer.map;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
@@ -119,12 +118,12 @@ proto.run = function(){
       return styles[feature.getGeometry().getType()];
     }
   });
-  map.addInteraction(this._selectInteraction);
+  this.addInteraction(this._selectInteraction);
   
   this._deleteInteraction = new DeleteInteraction({
     features: this._selectInteraction.getFeatures()
   });
-  map.addInteraction(this._deleteInteraction);
+  this.addInteraction(this._deleteInteraction);
   
   var origGeometry = null;
   
@@ -169,9 +168,9 @@ proto.pause = function(pause){
 proto.stop = function(){
   var map = GUI.getComponent('map').getService().viewer.map;
   this._selectInteraction.getFeatures().clear();
-  map.removeInteraction(this._selectInteraction);
+  this.removeInteraction(this._selectInteraction);
   this._selectInteraction = null;
-  map.removeInteraction(this._deleteInteraction);
+  this.removeInteraction(this._deleteInteraction);
   this._deleteInteraction = null;
   return true;
 };

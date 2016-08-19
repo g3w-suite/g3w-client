@@ -25,7 +25,8 @@ var EditorGeometryTypes = [
 ];
 
 // Editor di vettori puntuali
-function Editor(options){
+function Editor(mapService,options){
+  this._mapService = mapService;
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
@@ -101,6 +102,10 @@ module.exports = Editor;
 
 var proto = Editor.prototype;
 
+proto.getMapService = function() {
+  return this._mapService;
+};
+
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
 proto.setVectorLayer = function(vectorLayer){
   var geometrytype = vectorLayer.geometrytype;
@@ -125,7 +130,7 @@ proto.start = function(){
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     })
-    GUI.getComponent('map').getService().viewer.map.addLayer(this._editVectorLayer.getLayer());
+    this._mapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
     
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
@@ -142,7 +147,7 @@ proto.stop = function(){
       this._editBuffer.destroy();
       this._editBuffer = null;
       this.removeAllListeners();
-      GUI.getComponent('map').getService().viewer.removeLayerByName(this._editVectorLayer.name);
+      this._mapService.viewer.removeLayerByName(this._editVectorLayer.name);
       this._setStarted(false);
       return true;
     }

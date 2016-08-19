@@ -1,14 +1,14 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+
+var EditingTool = require('./editingtool');
 
 function AddFeatureTool(editor,options){
   var self = this;
   var options = options || {};
   this._running = false;
   this._busy = false;
-  this.editor = editor;
   this.source = editor.getEditVectorLayer().getLayer().getSource();
   this.isPausable = true;
   
@@ -28,9 +28,9 @@ function AddFeatureTool(editor,options){
     }
   };
   
-  base(this);
+  base(this,editor);
 }
-inherit(AddFeatureTool,G3WObject);
+inherit(AddFeatureTool,EditingTool);
 module.exports = AddFeatureTool;
 
 var proto = AddFeatureTool.prototype;
@@ -38,7 +38,6 @@ var proto = AddFeatureTool.prototype;
 // metodo eseguito all'avvio del tool
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getService().viewer.map;
   
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
@@ -46,7 +45,7 @@ proto.run = function(){
     condition: this._condition,
     finishCondition: this._finishCondition // disponibile da https://github.com/openlayers/ol3/commit/d425f75bea05cb77559923e494f54156c6690c0b
   });
-  map.addInteraction(this.drawInteraction);
+  this.addInteraction(this.drawInteraction);
   this.drawInteraction.setActive(true);
   
   this.drawInteraction.on('drawstart',function(e){
@@ -66,7 +65,7 @@ proto.run = function(){
     this._snapInteraction = new ol.interaction.Snap({
       source: this._snap.vectorLayer.getSource()
     });
-    map.addInteraction(this._snapInteraction);
+    this.addInteraction(this._snapInteraction);
   }
 };
 
@@ -87,12 +86,11 @@ proto.pause = function(pause){
 
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
-  var map = GUI.getComponent('map').getService().viewer.map;
   if (this._snapInteraction){
-     map.removeInteraction(this._snapInteraction);
+     this.removeInteraction(this._snapInteraction);
      this._snapInteraction = null;
   }
-  map.removeInteraction(this.drawInteraction);
+  this.removeInteraction(this.drawInteraction);
   this.drawInteraction = null;
   return true;
 };

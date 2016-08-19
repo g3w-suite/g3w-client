@@ -1,13 +1,12 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var noop = require('core/utils/utils').noop;
-var G3WObject = require('core/g3wobject');
 var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
-var GUI = require('gui/gui');
+
+var EditingTool = require('./editingtool');
 
 function PickFeatureTool(editor){
   var self = this;
-  this.editor = editor;
   this.isPausable = true;
   this.pickFeatureInteraction = null;
   this._running = false;
@@ -18,9 +17,9 @@ function PickFeatureTool(editor){
     pickFeature: noop,
   };
   
-  base(this);
+  base(this,editor);
 }
-inherit(PickFeatureTool,G3WObject);
+inherit(PickFeatureTool,EditingTool);
 module.exports = PickFeatureTool;
 
 var proto = PickFeatureTool.prototype;
@@ -47,10 +46,7 @@ proto.run = function(){
     }
   });
   
-  //map.addInteraction(this.pickFeatureInteraction);
-  //this.pickFeatureInteraction.setActive(true);
-  var mapService = GUI.getComponent('map').getService();
-  mapService.pushInteraction(this.pickFeatureInteraction);
+  this.addInteraction(this.pickFeatureInteraction);
 };
 
 proto.pause = function(pause){
@@ -64,7 +60,8 @@ proto.pause = function(pause){
 
 // metodo eseguito alla disattivazione del tool
 proto.stop = function(){
-  GUI.getComponent('map').getService().popInteraction();
+  this.removeInteraction(this.pickFeatureInteraction);
+  this.pickFeatureInteraction = null;
   return true;
 };
 

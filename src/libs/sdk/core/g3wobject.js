@@ -201,14 +201,15 @@ proto._setupListenersChain = function(setters){
   })
 };
 
-/*
-proto.generateUnListener = function(settersListeners,setter,listenerKey){
-  var self = this;
-  return function(){
-    settersListeners[setter][listenerKey] = null;
-    delete settersListeners[setter][listenerKey];
-  }
+proto.un = function(listenerKey) {
+  _.forEach(this.settersListeners,function(setterListeners,setter){
+      _.forEach(setterListeners,function(listener,idx){
+        if (listener.key == listenerKey) {
+          setterListeners.splice(idx,1);
+          delete listener;
+        }
+      })
+  })
 };
-*/
 
 module.exports = G3WObject;

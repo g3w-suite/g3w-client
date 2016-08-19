@@ -1,7 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+
+var EditingTool = require('./editingtool');
 
 function MoveFeatureTool(editor){
   var self = this;
@@ -20,16 +20,15 @@ function MoveFeatureTool(editor){
     }
   };
   
-  base(this);
+  base(this,editor);
 }
-inherit(MoveFeatureTool,G3WObject);
+inherit(MoveFeatureTool,EditingTool);
 module.exports = MoveFeatureTool;
 
 var proto = MoveFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getService().viewer.map;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
@@ -37,12 +36,12 @@ proto.run = function(){
     layers: [this.layer,this.editingLayer],
     condition: ol.events.condition.click
   });
-  map.addInteraction(this._selectInteraction);
+  this.addInteraction(this._selectInteraction);
   
   this._translateInteraction = new ol.interaction.Translate({
     features: this._selectInteraction.getFeatures()
   });
-  map.addInteraction(this._translateInteraction);
+  this.addInteraction(this._translateInteraction);
   
   this._translateInteraction.on('translatestart',function(e){
     var feature = e.features.getArray()[0];
@@ -85,11 +84,10 @@ proto.pause = function(pause){
 };
 
 proto.stop = function(){
-  var map = GUI.getComponent('map').getService().viewer.map;
   this._selectInteraction.getFeatures().clear();
-  map.removeInteraction(this._selectInteraction);
+  this.removeInteraction(this._selectInteraction);
   this._selectInteraction = null;
-  map.removeInteraction(this._translateInteraction);
+  this.removeInteraction(this._translateInteraction);
   this._translateInteraction = null;
   return true;
 };

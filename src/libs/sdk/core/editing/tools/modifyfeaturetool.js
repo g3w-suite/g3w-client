@@ -1,7 +1,8 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
+
+var EditingTool = require('./editingtool');
 
 function ModifyFeatureTool(editor,options){
   var self = this;
@@ -18,29 +19,28 @@ function ModifyFeatureTool(editor,options){
     modifyFeature: ModifyFeatureTool.prototype._modifyFeature
   };
   
-  base(this);
+  base(this,editor);
 }
-inherit(ModifyFeatureTool,G3WObject);
+inherit(ModifyFeatureTool,EditingTool);
 module.exports = ModifyFeatureTool;
 
 var proto = ModifyFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
-  var map = GUI.getComponent('map').getService().viewer.map;
   this.layer = this.editor.getVectorLayer().getLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getLayer();
   
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer,this.editingLayer],
   });
-  map.addInteraction(this._selectInteraction);
+  this.addInteraction(this._selectInteraction);
   
   this._modifyInteraction = new ol.interaction.Modify({
     features: this._selectInteraction.getFeatures(),
     deleteCondition: this._deleteCondition,
   });
-  map.addInteraction(this._modifyInteraction);
+  this.addInteraction(this._modifyInteraction);
   
   var origGeometry = null;
   
@@ -76,7 +76,7 @@ proto.run = function(){
     this._snapInteraction = new ol.interaction.Snap({
       source: this._snap.vectorLayer.getSource()
     });
-    map.addInteraction(this._snapInteraction);
+    this.addInteraction(this._snapInteraction);
   }
 };
 
@@ -98,15 +98,14 @@ proto.pause = function(pause){
 };
 
 proto.stop = function(){
-  var map = GUI.getComponent('map').getService().viewer.map;
   this._selectInteraction.getFeatures().clear();
   if (this._snapInteraction){
-     map.removeInteraction(this._snapInteraction);
+     this.removeInteraction(this._snapInteraction);
      this._snapInteraction = null;
   }
-  map.removeInteraction(this._selectInteraction);
+  this.removeInteraction(this._selectInteraction);
   this._selectInteraction = null;
-  map.removeInteraction(this._modifyInteraction);
+  this.removeInteraction(this._modifyInteraction);
   this._modifyInteraction = null;
   return true;
 };

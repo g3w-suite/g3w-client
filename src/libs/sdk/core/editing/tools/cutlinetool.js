@@ -3,9 +3,8 @@ var base = require('core/utils/utils').base;
 var geom = require('core/geometry/geom');
 var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
-var GUI = require('gui/gui');
 
-var EditingTool = require('./tool');
+var EditingTool = require('./editingtool');
 
 function CutLineTool(editor,options){
   this.setters = {
@@ -67,7 +66,7 @@ proto.run = function(){
     layers: [this.layer,this.editingLayer]
   });
   
-  this.map.addInteraction(this._linePickInteraction);
+  this.addInteraction(this._linePickInteraction);
   
   // seleziono la linea da tagliare
   self.steps.next();
@@ -76,7 +75,7 @@ proto.run = function(){
     var feature = self._origFeature = e.feature;
     self._origGeometry = feature.getGeometry().clone();
     self._showSelection(self._origGeometry,300);
-    self.map.removeInteraction(this);
+    self.removeInteraction(this);
 
     
     if (self._pointLayer){
@@ -91,7 +90,7 @@ proto.run = function(){
     // pesco coordinata o feature di taglio selezionata
     self.steps.next();
     self._pointPickInteraction.on('picked',function(e){
-      self.map.removeInteraction(this);
+      self.removeInteraction(this);
       var coordinate;
       if (e.feature){
         cutFeature = e.feature;
@@ -194,7 +193,7 @@ proto.run = function(){
         }
       }
     })
-    self.map.addInteraction(self._pointPickInteraction);
+    self.addInteraction(self._pointPickInteraction);
   });
 };
 
@@ -220,8 +219,8 @@ proto.stop = function(){
   var stop = EditingTool.prototype.stop.call(this);
   
   if (stop) {
-    this.map.removeInteraction(this._linePickInteraction);
-    this.map.removeInteraction(this._pointPickInteraction);
+    this.removeInteraction(this._linePickInteraction);
+    this.removeInteraction(this._pointPickInteraction);
     this._linePickInteraction = null;
     this._pointPickInteraction = null;
   }
@@ -278,16 +277,16 @@ proto._selectLineToKeep = function(prevLineFeature,nextLineFeature){
   var self = this;
   var layer = this._lineToKeepOverlay;
   layer.getSource().addFeatures([prevLineFeature,nextLineFeature]);
-  layer.setMap(this.map);
+  layer.setMap(this.editor.getMapService().viewer.map);
   
   var selectLineInteraction = new PickFeatureInteraction({
     layers: [this._lineToKeepOverlay],
   });
-  this.map.addInteraction(selectLineInteraction);
+  this.addInteraction(selectLineInteraction);
   
   selectLineInteraction.on('picked',function(e){
     layer.setMap(null);
-    self.map.removeInteraction(this);
+    self.removeInteraction(this);
     d.resolve(e.feature);
   });
   
@@ -359,7 +358,7 @@ proto._showSelection = function(geometry,duration){
   var feature = new ol.Feature();
   feature.setGeometry(geometry);
   overlay.getSource().addFeatures([feature]);
-  overlay.setMap(this.map);
+  overlay.setMap(this.editor.getMapService().viewer.map);
   if(duration){
     setTimeout(function(){
       overlay.setMap(null);
