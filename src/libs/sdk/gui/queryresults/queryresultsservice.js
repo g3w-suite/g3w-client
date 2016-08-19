@@ -73,9 +73,21 @@ function QueryResultsService(){
   
   this._parseAttributes = function(layerAttributes,featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
-    return _.filter(layerAttributes,function(attribute){
-      return featureAttributesNames.indexOf(attribute.name) > -1;
-    })
+    if (layerAttributes.length) {
+      var featureAttributesNames = _.keys(featureAttributes);
+      return _.filter(layerAttributes,function(attribute){
+        return featureAttributesNames.indexOf(attribute.name) > -1;
+      })
+    }
+    // se layer.attributes è vuoto (es. quando l'interrogazione è verso un layer esterno di cui non so i campi) costruisco la struttura "fittizia" usando l'attributo sia ocme name che come label
+    else {
+      return _.map(featureAttributesNames,function(featureAttributesName){
+        return {
+          name: featureAttributesName,
+          label: featureAttributesName
+        }
+      })
+    }
   }
   
   this.trigger = function(action,layer,feature) {

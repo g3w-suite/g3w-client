@@ -137,57 +137,57 @@ function QueryService(){
     });
     return parser.readFeatures(data);
   };
-
-  //// FINE PARSER ////
-
-  this.getGetFeatureInfoUrl = function(mapLayer,coordinate){
-    //var parser = new ol.format.WMSGetFeatureInfo();
-    var resolution = this.map.getView().getResolution();
-    var epsg = this.map.getView().getProjection().getCode();
-    var params = {
-      QUERY_LAYERS: _.map(mapLayer.getQueryLayers(),'queryLayerName'),
-      INFO_FORMAT: mapLayer.getInfoFormat(),
-      // PARAMETRI DI TOLLERANZA PER QGIS SERVER
-      FI_POINT_TOLERANCE: 10,
-      FI_LINE_TOLERANCE: 10,
-      FI_POLYGON_TOLERANCE: 10
-    }
-    var url = mapLayer.getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
-    return url;
+  
+  this._parseLayerGeoJSON = function(queryLayer, data) {
+    var geojson = new ol.format.GeoJSON({
+      defaultDataProjection: this.crs,
+      geometryName: "geometry"
+    });
+    return geojson.readFeatures(data);
   };
+
+  //// FINE PARSER ///
 
   //INIZO SEZIONE QUERIES ///
 
   // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
   // nel componente QueryResults
-  this.handleQueryResponseFromServer = function(response, queryLayers) {
+  this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
     var jsonresponse;
     var featuresForLayerNames = {};
-    var d = $.Deferred();
-    var x2js = new X2JS();
-    try {
-      if (_.isString(response)) {
-        jsonresponse = x2js.xml_str2json(response);
-      } else {
-        jsonresponse = x2js.xml2json(response);
-      }
-    }
-    catch (e) {
-      d.reject(e);
-    }
-    var rootNode = _.keys(jsonresponse)[0];
     var parser, data;
-    switch (rootNode) {
-      case 'FeatureCollection':
-        parser = this._parseLayerFeatureCollection;
-        data = jsonresponse;
+    switch (infoFormat) {
+      case 'json':
+        parser = this._parseLayerGeoJSON;
+        data = response.vector.data;
         break;
-      case "msGMLOutput":
-        parser = this._parseLayermsGMLOutput;
-        data = response;
-        break;
-    };
+      default:
+        var x2js = new X2JS();
+        try {
+          if (_.isString(response)) {
+            jsonresponse = x2js.xml_str2json(response);
+          } else {
+            jsonresponse = x2js.xml2json(response);
+          }
+        }
+        catch (e) {
+          return;
+        }
+        var rootNode = _.keys(jsonresponse)[0];
+        
+        switch (rootNode) {
+          case 'FeatureCollection':
+            parser = this._parseLayerFeatureCollection;
+            data = jsonresponse;
+            break;
+          case "msGMLOutput":
+            parser = this._parseLayermsGMLOutput;
+            data = response;
+            break;
+        };
+    }
+    
     var nfeatures = 0
     _.forEach(queryLayers,function(queryLayer) {
       var features = parser.call(self, queryLayer, data)
@@ -216,8 +216,7 @@ function QueryService(){
         features: features
       })
     });
-    d.resolve(featuresForLayers);
-    return d.promise();
+    return featuresForLayers;
   };
   // query basato sul filtro
 
@@ -234,7 +233,7 @@ function QueryService(){
       var queryLayer = {};
       queryLayer.queryLayerName = queryLayer.layerName = queryFilterObject.querylayer;
       queryLayers.push(queryLayer);
-      self.handleQueryResponseFromServer(response, queryLayers)
+      self.handleQueryResponseFromServer(response, queryLayer.infoFormat, queryLayers)
       .then(function(featuresForLayers) {
             d.resolve({
               data: featuresForLayers,
@@ -250,92 +249,102 @@ function QueryService(){
     return d.promise();
   };
 
-  //query basato click/posizione nella mappa
+  
   this.queryByLocation = function(coordinates, mapLayers) {
     var self = this;
     var d = $.Deferred();
     var urlsForLayers = {};
     _.forEach(mapLayers, function(mapLayer) {
-      var url = mapLayer.getQueryUrl();
-      var urlHash = url.hashCode().toString();
-      // creo un oggetto contentente layers che fanno riferimento
-      // ad un uguale url in modo da semplificare la chiamata (farla una sola su più layer
-      // invece di farne n su ogni singolo layer
-      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-        urlsForLayers[urlHash] = {
-          url: url,
-          mapLayers: []
-        };
-      }
-      urlsForLayers[urlHash].mapLayers.push(mapLayer);
+      var queryableLayers = mapLayer.getQueryableLayers();
+      _.forEach(queryableLayers,function(layer){
+        var queryUrl = layer.queryUrl;
+        var urlHash = queryUrl.hashCode().toString();
+        if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+          urlsForLayers[urlHash] = {
+            url: queryUrl,
+            maplayer: mapLayer,
+            layers: []
+          };
+        }
+        urlsForLayers[urlHash].layers.push(layer);
+      })
     });
+    
+    var resolution = this.map.getView().getResolution();
+    var epsg = this.map.getView().getProjection().getCode();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers){
-      var firstLayer = urlForLayers.mapLayers[0];
-      var _getFeatureInfoUrl = self.getGetFeatureInfoUrl(firstLayer,coordinates);
-      var queryBase = _getFeatureInfoUrl.split('?')[0];
-      var queryString = _getFeatureInfoUrl.split('?')[1];
-      var queryParams = {};
-      _.forEach(queryString.split('&'),function(queryStringPair){
-        var queryPair = queryStringPair.split('=');
-        var key = queryPair[0];
-        var value = queryPair[1];
-        queryParams[key] = value;
-      });
-
-      var layerNames = [];
-      var queryLayers = [];
-      _.forEach(urlForLayers.mapLayers,function(mapLayer){
-        var mapLayerQueryLayers = mapLayer.getQueryLayers();
-        if (mapLayerQueryLayers.length) {
-          queryLayers = _.concat(queryLayers,mapLayerQueryLayers);
-        }
-      });
-      if (queryLayers.length) {
-
-        delete queryParams['STYLES'];
-        queryParams['LAYERS'] = _.map(queryLayers,'queryLayerName');
-        queryParams['QUERY_LAYERS'] = _.map(queryLayers,'queryLayerName');
-        queryParams['FEATURE_COUNT'] = 1000;
-
-        var getFeatureInfoUrl = queryBase;
-        var newQueryPairs = [];
-        _.forEach(queryParams,function(value,key){
-          newQueryPairs.push(key+'='+value);
-        });
-        getFeatureInfoUrl = queryBase+'?'+newQueryPairs.join('&');
-        queryUrlsForLayers.push({
-          url: getFeatureInfoUrl,
-          queryLayers: queryLayers
-        });
+      var queryLayers = urlForLayers.layers;
+      var mapLayer = urlForLayers.maplayer;
+      var infoFormat = queryLayers[0].infoFormat;
+      var params = {
+        LAYERS: _.map(queryLayers,'queryLayerName'),
+        QUERY_LAYERS: _.map(queryLayers,'queryLayerName'),
+        INFO_FORMAT: infoFormat,
+        // PARAMETRI DI TOLLERANZA PER QGIS SERVER
+        FI_POINT_TOLERANCE: 10,
+        FI_LINE_TOLERANCE: 10,
+        FI_POLYGON_TOLERANCE: 10
       }
+      var getFeatureInfoUrl = mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
+      var queryString = getFeatureInfoUrl.split('?')[1];
+      var url = urlForLayers.url+'?'+queryString;
+      queryUrlsForLayers.push({
+        url: url,
+        infoformat: infoFormat,
+        queryLayers: queryLayers
+      });
+
     });
     if (queryUrlsForLayers.length > 0) {
+      var queryRequests = [];
+      var queryRequestsContext = [];
+      var featuresForLayers = [];
       _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
         var url = queryUrlForLayers.url;
         var queryLayers = queryUrlForLayers.queryLayers;
-        $.get(url).
-        then(function(response){
-          self.handleQueryResponseFromServer(response, queryLayers, coordinates)
-          .then(function(featuresForLayers){
-            d.resolve({
-              data: featuresForLayers,
-              query: {
-                coordinates: coordinates
-              }
-            });
-          })
-        })
-        .fail(function(e){
-          d.reject(e);
-        })
+        var infoFormat = queryUrlForLayers.infoformat;
+        var request = self.doRequestAndParse(url,infoFormat,queryLayers);
+        queryRequests.push(request);
       });
+      $.when.apply(this,queryRequests).
+      then(function(){
+        var vectorsDataResponse = Array.prototype.slice.call(arguments);
+        _.forEach(vectorsDataResponse,function(_featuresForLayers,idx){
+          if(featuresForLayers){
+            featuresForLayers = _.concat(featuresForLayers,_featuresForLayers);
+          }
+        });
+        d.resolve({
+          data: featuresForLayers,
+          query: {
+            coordinates: coordinates
+          }
+        });
+      })
+      .fail(function(e){
+        d.reject(e);
+      })
     }
     else {
       d.resolve(coordinates,0,{});
     }
     return d.promise();
   };
+  
+  this.doRequestAndParse = function(url,infoFormat,queryLayers){
+    var self = this;
+    var d = $.Deferred();
+    $.get(url).
+    done(function(response){
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+      d.resolve(featuresForLayers);
+    })
+    .fail(function(){
+      d.reject();
+    });
+    return d;
+  }
 
   //query by BBOX
   this.queryByBoundingBox = function(bbox) {

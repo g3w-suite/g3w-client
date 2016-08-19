@@ -73,13 +73,20 @@ proto.getQueryUrl = function(){
   return this.config.url;
 };
 
-proto.getQueryLayers = function(){ 
+proto.getQueryableLayers = function(){ 
+  var self = this;
   var layer = this.layers[0];
   var queryLayers = [];
   _.forEach(this.layers,function(layer){
     if (LayerState.isQueryable(layer)) {
+      var queryUrl = LayerState.getQueryUrl(layer);
+      var infoFormat = LayerState.getInfoFormat(layer),
+      queryUrl = queryUrl ? queryUrl : self.config.url;
+      infoFormat = infoFormat ? infoFormat : self.getInfoFormat();
       queryLayers.push({
         layerName: LayerState.getWMSLayerName(layer),
+        queryUrl: queryUrl,
+        infoFormat: infoFormat,
         queryLayerName: LayerState.getQueryLayerName(layer),
         geometryType: LayerState.getGeometryType(layer),
         attributes: LayerState.getAttributes(layer)

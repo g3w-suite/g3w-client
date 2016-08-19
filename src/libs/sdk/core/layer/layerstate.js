@@ -80,6 +80,14 @@ LayerState.getWMSLayerName = function(layerState) {
   return layerName;
 };
 
+LayerState.getQueryUrl = function(layerState) {
+  return layerState.infourl;
+};
+
+LayerState.getInfoFormat = function(layerState) {
+  return layerState.infoformat;
+};
+
 LayerState.getOriginURL = function(layerState) {
   var url;
   if (layerState.source && layerState.source.type == 'wms' && layerState.source.url){
