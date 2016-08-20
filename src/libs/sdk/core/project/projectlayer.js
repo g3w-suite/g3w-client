@@ -43,6 +43,10 @@ function ProjectLayer(state) {
   this.state = state;
   
   this._project = null;
+  
+  // in teoria questo non dovrebbe interessare il ProjectLayer, che è indipendente dalla presenza o meno di una mappa, 
+  //ma per comodità in varie parti del codice teniamo anche questo riferimento.
+  this._mapLayer = null;
 };
 
 var proto = ProjectLayer.prototype;
@@ -75,6 +79,14 @@ proto.getAttributes = function() {
   return this.state.attributes;
 };
 
+proto.isSelected = function() {
+  return this.state.selected;
+};
+
+proto.isDisabled = function() {
+  return this.state.disabled;
+};
+
 proto.isQueryable = function(){
   var queryEnabled = false;
   var queryableForCababilities = (this.state.capabilities && (this.state.capabilities && CAPABILITIES.QUERY)) ? true : false;
@@ -104,6 +116,10 @@ proto.getServerType = function() {
     return ProjectLayer.ServerTypes.QGIS;
   }
 };
+
+proto.getCrs = function() {
+  return this.getProject().getCrs();
+}
 
 proto.isExternalWMS = function() {
   return (this.state.source && this.state.source.url);

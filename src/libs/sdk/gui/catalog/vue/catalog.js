@@ -43,9 +43,9 @@ var vueComponentOptions = {
     
     this.$on('treenodeselected',function(node){
       if (!node.selected) {
-        self.project.selectLayer(node);
+        self.project.selectLayer(node.id);
       } else {
-        self.project.unselectLayer(node);
+        self.project.unselectLayer(node.id);
       }
     });
   }

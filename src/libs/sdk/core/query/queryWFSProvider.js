@@ -114,11 +114,10 @@ function QueryWFSProvider(){
   };
 
   this.doSearch = function(queryFilterObject){
-    var ogcservertype = queryFilterObject.servertype;
-    var url = queryFilterObject.url;
-    var querylayer = queryFilterObject.querylayer;
+    var querylayer = queryFilterObject.queryLayer;
+    var url = querylayer.getQueryUrl();
+    var crs = querylayer.getCrs();
     var filterObject = queryFilterObject.filterObject;
-    var crs = queryFilterObject.crs;
     //setto il srs
     ol3GetFeatureRequestObject.srsName+=crs || '4326';
     var response, filter;
@@ -153,7 +152,7 @@ function QueryWFSProvider(){
   };
   this.createStandardFilter = function(filterObject, querylayer) {
     /////inserisco il nome del layer (typename) ///
-    ol3GetFeatureRequestObject.featureTypes.push(querylayer);
+    ol3GetFeatureRequestObject.featureTypes.push(querylayer.getQueryLayerName);
     var filter = [];
     function createSingleFilter(booleanObject) {
       var filterElements = [];

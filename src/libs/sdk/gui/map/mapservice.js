@@ -238,24 +238,15 @@ proto.setupControls = function(){
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showQueryResults = GUI.showResultsFactory('query');
-            //Brutto ma reimposto mapLayers tutte le volte
-            var mapLayers = self.mapLayers;
-            //verifico se ci sono layers selezionati
-            var selectedLayers = self.project.getSelectedLayers();
-            if (selectedLayers.length) {
-              _.forEach(selectedLayers, function(selectedLayer) {
-                _.forEach(mapLayers, function(mapLayer) {
-                  if (_.find(mapLayer.layers, selectedLayer))	{
-                    mapLayer.layers = selectedLayers;
-                    return true
-                  }		
-                });		
-              });				
-            };
+            
+            var layers = self.project.getLayers({
+              QUERYABLE: true,
+              SELECTEDORALL: true
+            });
+            
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
-            QueryService.queryByLocation(coordinates, mapLayers, selectedLayers)
-            //MapQueryService.queryPoint(coordinates,self.mapLayers)
+            QueryService.queryByLocation(coordinates, layers)
             .then(function(results){
               queryResultsPanel.setQueryResponse(results);
               //ritraccio i Layers
@@ -346,7 +337,7 @@ proto.setupLayers = function(){
     };
     mapLayer = self.mapLayers[layerId] = new WMSLayer(config,self.layersExtraParams);
     self.registerListeners(mapLayer);
-    layers.forEach(function(layer){
+    _.forEach(layers.reverse(),function(layer){
       mapLayer.addLayer(layer);
       layer.setMapLayer(mapLayer);
       //self.layersAssociation[layer.state.id] = layerId;

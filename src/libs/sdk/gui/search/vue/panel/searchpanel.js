@@ -49,14 +49,15 @@ function SearchPanel() {
     this.name = this.config.name || this.name;
     this.id = this.config.id || this.id;
     this.filter = this.config.options.filter || this.filter;
-    this.querylayerid = this.config.options.querylayerid || this.querylayerid;
+    var queryLayerId = this.config.options.querylayerid || this.querylayerid;
+    this.queryLayer = ProjectsRegistry.getCurrentProject().getLayerById(queryLayerId);
     //vado a riempire gli input del form del pannello
     this.fillInputsFormFromFilter();
     //creo e assegno l'oggetto filtro
     var filterObjFromConfig = QueryService.createQueryFilterFromConfig(this.filter);
     //alla fine creo l'ggetto finale del filtro da passare poi al provider QGISWMS o WFS etc.. che contiene sia
     //il filtro che url, il nome del layer il tipo di server etc ..
-    this.internalPanel.filterObject = QueryService.createQueryFilterObject(this.querylayerid, filterObjFromConfig);
+    this.internalPanel.filterObject = QueryService.createQueryFilterObject(this.queryLayer, filterObjFromConfig);
     //soluzione momentanea assegno  la funzione del SearchPanle ma come pattern è sbagliato
     //vorrei delegarlo a SearchesService ma lo stesso stanzia questo (loop) come uscirne???
     //creare un searchpanelservice?

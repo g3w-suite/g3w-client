@@ -54,8 +54,8 @@ function Project(projectConfig) {
       })
     },
     setLayerSelected: function(layerId,selected){
-      _.forEach(this._layers,function(_layer){
-        _layer.state.selected = (layerId == layer.state.id);
+      _.forEach(this._layers,function(layer){
+        layer.state.selected = ((layerId == layer.state.id) && selected) || false;
       })
     }
   };
@@ -85,8 +85,43 @@ proto.getLayer = function(id){
   return this._layers[id];
 };
 
-proto.getLayers = function(){
-  return this._layers;
+proto.getLayers = function(options){
+  var options = options || {};
+  var filterQueryable = options.QUERYABLE;
+  
+  var filterSelected = options.SELECTED;
+  var filterSelectedOrAll = options.SELECTEDORALL;
+  
+  if (filterSelectedOrAll) {
+    filterSelected = null;
+  }
+  
+  if (_.isUndefined(filterQueryable) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
+    return this._layers;
+  }
+  
+  var layers = [];
+  
+  if (filterQueryable) {
+    layers = _.filter(this._layers,function(layer){
+      return filterQueryable && layer.isQueryable();
+    });
+  }
+  
+  if (filterSelected) {
+    layers = _.filter(layers,function(layer){
+      return filterSelected && layer.isSelected();
+    });
+  }
+  
+  if (filterSelectedOrAll) {
+    layers = _.filter(layers,function(layer){
+      return layer.isSelected();
+    });
+    layers = layers.length ? layers : this._layers;
+  }
+  
+  return layers;
 };
 
 proto.getLayerById = function(id) {
@@ -107,16 +142,6 @@ proto.getLayerByName = function(name) {
     }
   });
   return layer;
-};
-
-proto.getQueryableLayers = function(){
-  var queryableLayers = [];
-  _.forEach(this.getLayers(),function(layer){
-    if (layer.isQueryable()){
-      queryableLayers.push(layer);
-    }
-  });
-  return queryableLayers;
 };
 
 proto.getLayerAttributes = function(id){
@@ -149,25 +174,11 @@ proto.selectLayer = function(layerId){
 
 proto.unselectLayer = function(layerId) {
   this.setLayerSelected(layerId,false);
-}
-
-proto.getSelectedLayers = function() {
-  var selectedLayers = [];
-  _.forEach(this.getLayers(),function(_layer){
-    if (_layer.selected) {
-      selectedLayers.push(_layer);
-    }
-  });
-  return selectedLayers;
-}
-
-/*proto.setGetWmsUrl = function(getWmsUrlFnc){
-  this._getWmsUrlFnc = getWmsUrlFnc;
 };
 
-proto.getWmsUrl = function(){
-  return this._getWmsUrlFnc(this.state);
-};*/
+proto.getCrs = function() {
+  return this.state.crs;
+}
 
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';

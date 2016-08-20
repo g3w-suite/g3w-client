@@ -73,34 +73,12 @@ function QueryService(){
     return queryFilter;
   };
 
-  this.createQueryFilterObject = function(layerId, filterObject){
-    var project = ProjectsRegistry.getCurrentProject();
-    var layerInfo = this.getLayerInfoUrlFromProjectConfig(layerId);
+  this.createQueryFilterObject = function(layer, filterObject){
     return {
       type: 'standard',
-      url: layerInfo.url,
-      querylayer: layerInfo.name,
-      servertype: layerInfo.servertype,
-      crs: layerInfo.crs,
+      queryLayer: layer,
       filterObject : filterObject
     };
-  };
-
-  this.getLayerInfoUrlFromProjectConfig = function(layerId) {
-    var layerFilterInfo = {};
-    var project = ProjectsRegistry.getCurrentProject();
-    var layerInfo = project.getLayerById(layerId);
-    if (layerInfo) {
-      layerFilterInfo.name = layerInfo.name;
-      layerFilterInfo.crs = project.state.crs;
-      layerFilterInfo.servertype = layerInfo.servertype;
-      if (layerInfo.source && layerInfo.source.url){
-        layerFilterInfo.url = layerInfo.source.url;
-      } else {
-        layerFilterInfo.url = project.getWmsUrl();
-      };
-    };
-    return layerFilterInfo;
   };
 
   /////PARSERS //////////////////
@@ -155,7 +133,7 @@ function QueryService(){
   // nel componente QueryResults
   this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
     var jsonresponse;
-    var featuresForLayerNames = {};
+    var featuresForLayers = [];
     var parser, data;
     switch (infoFormat) {
       case 'json':
@@ -192,30 +170,12 @@ function QueryService(){
     _.forEach(queryLayers,function(queryLayer) {
       var features = parser.call(self, queryLayer, data)
       nfeatures += features.length;
-      featuresForLayerNames[queryLayer.getWMSLayerName()] = features;
-    });
-    var projectLayers = ProjectsRegistry.getCurrentProject().getLayers();
-    var featuresForLayers = [];
-    var layer;
-    _.forEach(featuresForLayerNames,function(features, layerName){
-      _.forEach(projectLayers, function(layerObj, layerId) {
-        // caso layers QGIS
-        if (layerObj.state.name == layerName) {
-          layer = layerObj;
-          return true;
-        } else if (layerObj.state.source) {
-          //caso WMS layer
-          if (layerObj.state.source.layers == layerName) {
-            layer = layerObj;
-            return true;
-          }
-        }
-      });
       featuresForLayers.push({
-        layer: layer,
+        layer: queryLayer,
         features: features
       })
     });
+
     return featuresForLayers;
   };
   // query basato sul filtro
@@ -224,58 +184,46 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     //parte da rivedere nel filtro
-    var provider = Provider[queryFilterObject.servertype];
+    var provider = Provider[queryFilterObject.queryLayer.getServerType()];
     //ritorna una promise poi gestita da che la chiede
     provider.doSearch(queryFilterObject).
     then(function(response) {
       //al momento qui replico struttura per i parser
-      var queryLayers = [];
-      var queryLayer = {};
-      queryLayer.queryLayerName = queryLayer.layerName = queryFilterObject.querylayer;
-      queryLayers.push(queryLayer);
-      self.handleQueryResponseFromServer(response, queryLayer.infoFormat, queryLayers)
-      .then(function(featuresForLayers) {
-            d.resolve({
-              data: featuresForLayers,
-              query: {
-                filter: queryFilterObject
-              }
-            });
-      })
+      var queryLayer = queryFilterObject.queryLayer;
+      var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer])
+      d.resolve({
+        data: featuresForLayers,
+        query: {
+          filter: queryFilterObject
+        }
+      });
     })
     .fail(function(e){
           d.reject(e);
     })
     return d.promise();
   };
-
   
-  this.queryByLocation = function(coordinates, mapLayers) {
+  this.queryByLocation = function(coordinates, layers) {
     var self = this;
     var d = $.Deferred();
     var urlsForLayers = {};
-    _.forEach(mapLayers, function(mapLayer) {
-      var queryableLayers = mapLayer.getQueryableLayers();
-      _.forEach(queryableLayers,function(layer){
-        var queryUrl = layer.getQueryUrl();
-        var urlHash = queryUrl.hashCode().toString();
-        if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
-          urlsForLayers[urlHash] = {
-            url: queryUrl,
-            maplayer: mapLayer,
-            layers: []
-          };
-        }
-        urlsForLayers[urlHash].layers.push(layer);
-      })
+    _.forEach(layers,function(layer){
+      var queryUrl = layer.getQueryUrl();
+      var urlHash = queryUrl.hashCode().toString();
+      if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
+        urlsForLayers[urlHash] = {
+          url: queryUrl,
+          layers: []
+        };
+      }
+      urlsForLayers[urlHash].layers.push(layer);
     });
-    
     var resolution = this.map.getView().getResolution();
     var epsg = this.map.getView().getProjection().getCode();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers){
       var queryLayers = urlForLayers.layers;
-      var mapLayer = urlForLayers.maplayer;
       var infoFormat = queryLayers[0].getInfoFormat();
       var params = {
         LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
@@ -285,8 +233,8 @@ function QueryService(){
         FI_POINT_TOLERANCE: 10,
         FI_LINE_TOLERANCE: 10,
         FI_POLYGON_TOLERANCE: 10
-      }
-      var getFeatureInfoUrl = mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
+      };
+      var getFeatureInfoUrl = queryLayers[0].getMapLayer().getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString;
       queryUrlsForLayers.push({
@@ -294,7 +242,6 @@ function QueryService(){
         infoformat: infoFormat,
         queryLayers: queryLayers
       });
-
     });
     if (queryUrlsForLayers.length > 0) {
       var queryRequests = [];
@@ -324,7 +271,7 @@ function QueryService(){
       })
       .fail(function(e){
         d.reject(e);
-      })
+      });
     }
     else {
       d.resolve(coordinates,0,{});

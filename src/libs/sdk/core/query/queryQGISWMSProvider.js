@@ -23,9 +23,8 @@ function QueryQGISWMSProvider() {
   self = this;
   //funzione che fa la richiesta vera e propria al server qgis
   this.submitGetFeatureInfo = function(options) {
-
     var url = options.url || '';
-    var querylayer = options.querylayer || null;
+    var querylayername = options.querylayername || null;
     var filter = options.filter || null;
     var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
     var simpleWmsSearchMaxResults = null;
@@ -34,8 +33,8 @@ function QueryQGISWMSProvider() {
         'SERVICE': 'WMS',
         'VERSION': '1.3.0',
         'REQUEST': 'GetFeatureInfo',
-        'LAYERS': querylayer,
-        'QUERY_LAYERS': querylayer,
+        'LAYERS': querylayername,
+        'QUERY_LAYERS': querylayername,
         'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
         'INFO_FORMAT': 'application/vnd.ogc.gml',
         'CRS': 'EPSG:'+ crs,
@@ -48,24 +47,23 @@ function QueryQGISWMSProvider() {
 
   //funzione che fa la ricerca
   this.doSearch = function(queryFilterObject) {
-
-    var url = queryFilterObject.url;
-    var querylayer = queryFilterObject.querylayer;
+    var querylayer = queryFilterObject.queryLayer;
+    var url = querylayer.getQueryUrl();
+    var crs = querylayer.getCrs();
     var filterObject = queryFilterObject.filterObject;
-    var crs = queryFilterObject.crs;
     //creo il filtro
-    var filter = this.createFilter(filterObject, querylayer);
+    var filter = this.createFilter(filterObject, querylayer.getQueryLayerName());
     //eseguo la richiesta e restituisco come risposta la promise del $.get
     var response = this.submitGetFeatureInfo({
       url: url,
       crs: crs,
       filter: filter,
-      querylayer: querylayer
+      querylayername: querylayer.getQueryLayerName()
     });
     return response;
   };
 
-  this.createFilter = function(filterObject, querylayer) {
+  this.createFilter = function(filterObject, querylayername) {
 
     /////inserisco il nome del layer (typename) ///
     var filter = [];
@@ -110,7 +108,7 @@ function QueryQGISWMSProvider() {
       return rootFilter;
     };
     //assegno il filtro creato
-    filter = querylayer + ":" + createSingleFilter(filterObject);
+    filter = querylayername + ":" + createSingleFilter(filterObject);
     return filter;
   };
 
