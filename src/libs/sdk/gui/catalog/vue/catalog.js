@@ -33,11 +33,12 @@ var vueComponentOptions = {
   ready: function() {
     var self = this;
     this.$on('treenodetoogled',function(node){
-      self.project.toggleLayer(node);
+      self.project.toggleLayer(node.id);
     });
 
     this.$on('treenodestoogled',function(nodes,parentChecked){
-      self.project.toggleLayers(nodes,parentChecked);
+      var layersIds = _.map(nodes,'id');
+      self.project.toggleLayers(layersIds,parentChecked);
     });
     
     this.$on('treenodeselected',function(node){

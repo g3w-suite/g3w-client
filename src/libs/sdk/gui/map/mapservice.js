@@ -159,8 +159,9 @@ function MapService(project){
     self.setupLayers();
   });
   
-  this.project.onafter('setLayersVisible',function(layers){
-    var mapLayers = _.map(layers,function(layer){
+  this.project.onafter('setLayersVisible',function(layersIds){
+    var mapLayers = _.map(layersIds,function(layerId){
+      var layer = self.project.getLayerById(layerId);
       return self.getMapLayerForLayer(layer);
     })
     self.updateMapLayers(mapLayers);
@@ -327,21 +328,17 @@ proto.setupLayers = function(){
   this.setupBaseLayers();
   this.mapLayers = {};
   this.layersAssociation = {};
-  var layersArray = this.traverseLayersTree(this.project.state.layerstree);
-  // prendo solo i layer veri e non i folder
-  var leafLayersArray = _.filter(layersArray,function(layer){
-    return !_.get(layer,'nodes');
-  });
+  var layers = this.project.getLayers();
   //raggruppo per valore del multilayer con chiave valore multilayer e valore array
-  var multiLayers = _.groupBy(leafLayersArray,function(layer){
-    return layer.multilayer;
+  var multiLayers = _.groupBy(layers,function(layer){
+    return layer.state.multilayer;
   });
   _.forEach(multiLayers,function(layers,id){
     var layerId = 'layer_'+id
     var mapLayer = _.get(self.mapLayers, layerId);
     // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer).
     //Per ora posso configurare tiled solo i layer singoli.
-    var tiled = layers[0].tiled;
+    var tiled = layers[0].state.tiled;
     var config = {
       url: self.project.getWmsUrl(),
       id: layerId,
@@ -351,7 +348,8 @@ proto.setupLayers = function(){
     self.registerListeners(mapLayer);
     layers.forEach(function(layer){
       mapLayer.addLayer(layer);
-      self.layersAssociation[layer.id] = layerId;
+      layer.setMapLayer(mapLayer);
+      //self.layersAssociation[layer.state.id] = layerId;
     });
   })
   
@@ -370,24 +368,7 @@ proto.updateMapLayers = function(mapLayers) {
 };
 
 proto.getMapLayerForLayer = function(layer){
-  return this.mapLayers['layer_'+layer.multilayer];
-};
-
-proto.traverseLayersTree = function(layersTree){
-  var self = this;
-  var layersArray = [];
-  function traverse(obj){
-    _.forIn(obj, function (val, key) {
-        if (!_.isNil(val.id)) {
-            layersArray.unshift(val);
-        }
-        if (!_.isNil(val.nodes)) {
-            traverse(val.nodes);
-        }
-    });
-  }
-  traverse(layersTree);
-  return layersArray;
+  return layer.getMapLayer();
 };
 
 proto.registerListeners = function(mapLayer){

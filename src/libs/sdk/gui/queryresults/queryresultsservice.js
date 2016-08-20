@@ -53,9 +53,9 @@ function QueryResultsService(){
       var layer = featuresForLayer.layer;
       if (featuresForLayer.features.length) {
         var layerObj = {
-          title: layer.title,
-          id: layer.id,
-          attributes: self._parseAttributes(layer.attributes,featuresForLayer.features[0].getProperties()), // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+          title: layer.state.title,
+          id: layer.state.id,
+          attributes: self._parseAttributes(layer.getAttributes(),featuresForLayer.features[0].getProperties()), // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
           features: []
         };
         _.forEach(featuresForLayer.features,function(feature){      

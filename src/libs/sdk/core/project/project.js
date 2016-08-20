@@ -3,6 +3,8 @@ var base = require('core/utils//utils').base;
 var G3WObject = require('core/g3wobject');
 var ApplicationService = require('core/applicationservice');
 
+var ProjectLayer = require('./projectlayer');
+
 function Project(projectConfig) {
   var self = this;
   
@@ -21,13 +23,14 @@ function Project(projectConfig) {
   
   this._layers = {};
   function traverse(obj){
-    _.forIn(obj, function (layer, key) {
+    _.forIn(obj, function (layerConfig, key) {
         //verifica che il valore dell'id non sia nullo
-        if (!_.isNil(layer.id)) {
-            self._layers[layer.id] = layer;
+        if (!_.isNil(layerConfig.id)) {
+            var layer = self.buildProjectLayer(layerConfig);
+            self._layers[layer.getId()] = layer;
         }
-        if (!_.isNil(layer.nodes)) {
-            traverse(layer.nodes);
+        if (!_.isNil(layerConfig.nodes)) {
+            traverse(layerConfig.nodes);
         }
     });
   }
@@ -40,9 +43,9 @@ function Project(projectConfig) {
   this.emit(eventType);*/
   
   this.setters = {
-    setLayersVisible: function(layers,visible){
-      _.forEach(layers,function(layer){
-        self._layers[layer.id].visible = visible;
+    setLayersVisible: function(layersIds,visible){
+      _.forEach(layersIds,function(layerId){
+        self.getLayerById(layerId).state.visible = visible;
       })
     },
     setBaseLayer: function(id){
@@ -50,9 +53,9 @@ function Project(projectConfig) {
         baseLayer.visible = (baseLayer.id == id);
       })
     },
-    setLayerSelected: function(layer){
+    setLayerSelected: function(layerId,selected){
       _.forEach(this._layers,function(_layer){
-        _layer.selected = (layer.id == _layer.id);
+        _layer.state.selected = (layerId == layer.state.id);
       })
     }
   };
@@ -62,6 +65,17 @@ function Project(projectConfig) {
 inherit(Project,G3WObject);
 
 var proto = Project.prototype;
+
+proto.buildProjectLayer = function(layerConfig) {
+  var layer = new ProjectLayer(layerConfig);
+  layer.setProject(this);
+  
+  // aggiungo proprietà non ottenute dalla consfigurazione
+  layer.state.selected = false;
+  layer.state.disabled = false;
+  
+  return layer;
+};
 
 proto.getGid = function() {
   return this.state.gid;
@@ -78,7 +92,7 @@ proto.getLayers = function(){
 proto.getLayerById = function(id) {
   var layer = null;
   _.forEach(this.getLayers(),function(_layer){
-    if (_layer.id == id){
+    if (_layer.state.id == id){
       layer = _layer;
     }
   });
@@ -87,8 +101,8 @@ proto.getLayerById = function(id) {
 
 proto.getLayerByName = function(name) {
   var layer = null;
-  _.forEach(this.getLayers(),function(_layer){
-    if (_layer.name == name){
+  _.forEach(this.getLayers(),function(layer){
+    if (layer.state.name == name){
       layer = _layer;
     }
   });
@@ -98,7 +112,7 @@ proto.getLayerByName = function(name) {
 proto.getQueryableLayers = function(){
   var queryableLayers = [];
   _.forEach(this.getLayers(),function(layer){
-    if (LayerState.isQueryable(layer)){
+    if (layer.isQueryable()){
       queryableLayers.push(layer);
     }
   });
@@ -106,12 +120,12 @@ proto.getQueryableLayers = function(){
 };
 
 proto.getLayerAttributes = function(id){
-  return this._layers[id].attributes;
+  return this._layers[id].state.attributes;
 };
 
-proto.getLayerAttributeLabel = function(id,name){
+proto.getLayerAttributeLabel = function(layerId,name){
   var label = '';
-  _.forEach(this._layers[id].attributes,function(attribute){
+  _.forEach(this.getLayerById(layerId).state.attributes,function(attribute){
     if (attribute.name == name){
       label = attribute.label;
     }
@@ -119,25 +133,22 @@ proto.getLayerAttributeLabel = function(id,name){
   return label;
 };
 
-proto.toggleLayer = function(layer,visible){
-  var visible = visible || !layer.visible;
-  this.setLayersVisible([layer],visible);
+proto.toggleLayer = function(layerId,visible){
+  var layer = this.getLayerById(layerId);
+  var visible = visible || !layer.state.visible;
+  this.setLayersVisible([layerId],visible);
 };
 
-proto.toggleLayers = function(layers,visible){
-  this.setLayersVisible(layers,visible);
+proto.toggleLayers = function(layersIds,visible){
+  this.setLayersVisible(layersIds,visible);
 };
 
-proto.selectLayer = function(layer){
-  this.setLayerSelected(layer);
+proto.selectLayer = function(layerId){
+  this.setLayerSelected(layerId,true);
 };
 
-proto.unselectLayer = function(layer) {
-  _.forEach(this.getLayers(),function(_layer){
-    if (_layer == layer) {
-      _layer.selected = false;
-    }
-  });
+proto.unselectLayer = function(layerId) {
+  this.setLayerSelected(layerId,false);
 }
 
 proto.getSelectedLayers = function() {
@@ -150,12 +161,20 @@ proto.getSelectedLayers = function() {
   return selectedLayers;
 }
 
-proto.setGetWmsUrl = function(getWmsUrlFnc){
+/*proto.setGetWmsUrl = function(getWmsUrlFnc){
   this._getWmsUrlFnc = getWmsUrlFnc;
 };
 
 proto.getWmsUrl = function(){
   return this._getWmsUrlFnc(this.state);
+};*/
+
+proto.getInfoFormat = function() {
+  return 'application/vnd.ogc.gml';
+};
+
+proto.getWmsUrl = function(){
+  return this.state.WMSUrl;
 };
 
 proto.getLegendUrl = function(layer){

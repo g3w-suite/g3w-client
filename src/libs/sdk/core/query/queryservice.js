@@ -109,7 +109,7 @@ function QueryService(){
   // OL3 li parserizza tutti insieme non distinguendo le features dei diversi layers
   this._parseLayerFeatureCollection = function(queryLayer, data) {
     var features = [];
-    var layerName = queryLayer.queryLayerName;
+    var layerName = queryLayer.getWMSLayerName();
     var layerData = _.cloneDeep(data);
     layerData.FeatureCollection.featureMember = [];
     
@@ -192,7 +192,7 @@ function QueryService(){
     _.forEach(queryLayers,function(queryLayer) {
       var features = parser.call(self, queryLayer, data)
       nfeatures += features.length;
-      featuresForLayerNames[queryLayer.layerName] = features;
+      featuresForLayerNames[queryLayer.getWMSLayerName()] = features;
     });
     var projectLayers = ProjectsRegistry.getCurrentProject().getLayers();
     var featuresForLayers = [];
@@ -200,12 +200,12 @@ function QueryService(){
     _.forEach(featuresForLayerNames,function(features, layerName){
       _.forEach(projectLayers, function(layerObj, layerId) {
         // caso layers QGIS
-        if (layerObj.name == layerName) {
+        if (layerObj.state.name == layerName) {
           layer = layerObj;
           return true;
-        } else if (layerObj.source) {
+        } else if (layerObj.state.source) {
           //caso WMS layer
-          if (layerObj.source.layers == layerName) {
+          if (layerObj.state.source.layers == layerName) {
             layer = layerObj;
             return true;
           }
@@ -257,7 +257,7 @@ function QueryService(){
     _.forEach(mapLayers, function(mapLayer) {
       var queryableLayers = mapLayer.getQueryableLayers();
       _.forEach(queryableLayers,function(layer){
-        var queryUrl = layer.queryUrl;
+        var queryUrl = layer.getQueryUrl();
         var urlHash = queryUrl.hashCode().toString();
         if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
           urlsForLayers[urlHash] = {
@@ -276,10 +276,10 @@ function QueryService(){
     _.forEach(urlsForLayers,function(urlForLayers){
       var queryLayers = urlForLayers.layers;
       var mapLayer = urlForLayers.maplayer;
-      var infoFormat = queryLayers[0].infoFormat;
+      var infoFormat = queryLayers[0].getInfoFormat();
       var params = {
-        LAYERS: _.map(queryLayers,'queryLayerName'),
-        QUERY_LAYERS: _.map(queryLayers,'queryLayerName'),
+        LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
+        QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         INFO_FORMAT: infoFormat,
         // PARAMETRI DI TOLLERANZA PER QGIS SERVER
         FI_POINT_TOLERANCE: 10,

@@ -117,8 +117,8 @@ proto.getProject = function(projectGid){
     .then(function(projectFullConfig){
       var projectConfig = _.merge(pendingProject,projectFullConfig);
       self._buildProjectTree(projectConfig);
+      projectConfig.WMSUrl = self.config.getWmsUrl(projectConfig);
       var project = new Project(projectConfig);
-      project.setGetWmsUrl(self.config.getWmsUrl); // BRUTTO MA PER ORA SI TIENE COSI'
       self._projects[projectConfig.gid] = project;
       return d.resolve(project);
     });
@@ -148,8 +148,6 @@ proto._buildProjectTree = function(project){
       if (!_.isNil(layer.id)) {
           var fulllayer = _.merge(layer,layers[layer.id]);
           obj[parseInt(key)] = fulllayer;
-          layer.selected = false;
-          layer.disabled = false;
       }
       if (!_.isNil(layer.nodes)){
         // aggiungo proprietà title per l'albero
