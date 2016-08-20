@@ -4,7 +4,7 @@ var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
-var VectorLayer = require('core/layer/vectorlayer');
+var VectorLayer = require('core/map/layer/vectorlayer');
 
 //var Sequencer = require('./stepsequencer');
 var AddFeatureTool = require('./tools/addfeaturetool');

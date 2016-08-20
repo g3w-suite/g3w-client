@@ -11,7 +11,7 @@ var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
-var WMSLayer = require('core/layer/wmslayer');
+var WMSLayer = require('core/map/layer/wmslayer');
 var QueryService = require('core/query/queryservice');
 
 
