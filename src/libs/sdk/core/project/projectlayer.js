@@ -43,10 +43,6 @@ function ProjectLayer(state) {
   this.state = state;
   
   this._project = null;
-  
-  // in teoria questo non dovrebbe interessare il ProjectLayer, che è indipendente dalla presenza o meno di una mappa, 
-  //ma per comodità in varie parti del codice teniamo anche questo riferimento.
-  this._mapLayer = null;
 };
 
 var proto = ProjectLayer.prototype;
@@ -63,12 +59,8 @@ proto.getId = function() {
   return this.state.id;
 };
 
-proto.getMapLayer = function() {
-  return this._mapLayer;
-}
-
-proto.setMapLayer = function(mapLayer) {
-  this._mapLayer = mapLayer;
+proto.getName = function() {
+  return this.state.name;
 };
 
 proto.getGeometryType = function() {
@@ -77,6 +69,16 @@ proto.getGeometryType = function() {
 
 proto.getAttributes = function() {
   return this.state.attributes;
+};
+
+proto.getAttributeLabel = function(name) {
+  var label;
+  _.forEach(this.getAttributes(),function(attribute){
+    if (attribute.name == name){
+      label = attribute.label;
+    }
+  })
+  return label;
 };
 
 proto.isSelected = function() {

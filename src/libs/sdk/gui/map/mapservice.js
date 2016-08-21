@@ -10,23 +10,8 @@ var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
 var QueryControl = require('g3w-ol3/src/controls/querycontrol');
 var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
-var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var WMSLayer = require('core/map/layer/wmslayer');
 var QueryService = require('core/query/queryservice');
-
-
-//var GUI = require('gui/gui'); // QUESTO NON CI DEVE ESSERE!!!
-
-var PickToleranceParams = {};
-PickToleranceParams[ProjectTypes.QDJANGO] = {};
-PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.POINT] = "FI_POINT_TOLERANCE";
-PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.LINESTRING] = "FI_LINE_TOLERANCE";
-PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.POLYGON] = "FI_POLYGON_TOLERANCE";
-
-var PickToleranceValues = {}
-PickToleranceValues[GeometryTypes.POINT] = 5;
-PickToleranceValues[GeometryTypes.LINESTRING] = 5;
-PickToleranceValues[GeometryTypes.POLYGON] = 5;
 
 function MapService(project){
   var self = this;
@@ -36,7 +21,6 @@ function MapService(project){
   this._mapControls = [],
   this.mapLayers = {};
   this.mapBaseLayers = {};
-  this.layersAssociation = {};
   this.layersExtraParams = {};
   this.state = {
       bbox: [],
@@ -50,6 +34,11 @@ function MapService(project){
   this._incrementLoaders = function(){
     if (this._howManyAreLoading == 0){
       this.emit('loadstart');
+      GUI.showSpinner({
+        container: $('#map-spinner'),
+        id: 'maploadspinner',
+        style: 'blue'
+      });
     }
     this._howManyAreLoading += 1;
   };
@@ -58,6 +47,7 @@ function MapService(project){
     this._howManyAreLoading -= 1;
     if (this._howManyAreLoading == 0){
       this.emit('loadend');
+      GUI.hideSpinner('maploadspinner');
     }
   };
   
@@ -130,6 +120,8 @@ function MapService(project){
       }
     });
     
+    $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
+    
     this.viewer.map.getInteractions().forEach(function(interaction){
       self._watchInteraction(interaction);
     });
@@ -150,7 +142,7 @@ function MapService(project){
     });
 
     //AL MOMENTO LASCIO COSÌ POI VEDIAMO
-    QueryService.init(this.viewer.map);
+    QueryService.setMapService(this);
 
     this.emit('ready');
   };
@@ -189,6 +181,10 @@ proto.setLayersExtraParams = function(params,update){
   this.emit('extraParamsSet',params,update);
 };
 
+proto.getProject = function() {
+  return this.project;
+};
+
 proto.getMap = function() {
   return this.viewer.map;
 };
@@ -199,6 +195,19 @@ proto.getViewerElement = function(){
 
 proto.getViewport = function(){
   return this.viewer.map.getViewport();
+};
+
+proto.getResolution = function() {
+  return this.viewer.map.getView().getResolution();
+};
+
+proto.getEpsg = function() {
+  return this.viewer.map.getView().getProjection().getCode();
+};
+
+proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,params) {
+  var mapLayer = this.getMapLayerForLayer(layer);
+  return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
 proto.setupControls = function(){
@@ -249,9 +258,6 @@ proto.setupControls = function(){
             QueryService.queryByLocation(coordinates, layers)
             .then(function(results){
               queryResultsPanel.setQueryResponse(results);
-              //ritraccio i Layers
-              //self.setupLayers(); ??? a che serve?
-              //self.emit('mapqueryend',featuresForLayers,nfeatures,coordinates,self.state.resolution);
             });
           });
           break;
@@ -318,29 +324,24 @@ proto.setupLayers = function(){
   this.viewer.removeLayers();
   this.setupBaseLayers();
   this.mapLayers = {};
-  this.layersAssociation = {};
   var layers = this.project.getLayers();
   //raggruppo per valore del multilayer con chiave valore multilayer e valore array
   var multiLayers = _.groupBy(layers,function(layer){
     return layer.state.multilayer;
   });
   _.forEach(multiLayers,function(layers,id){
-    var layerId = 'layer_'+id
-    var mapLayer = _.get(self.mapLayers, layerId);
-    // BRUTTO, da sistemare quando riorganizzeremo i metalayer (da far diventare multilayer).
-    //Per ora posso configurare tiled solo i layer singoli.
+    var multilayerId = 'layer_'+id
+    var mapLayer = _.get(self.mapLayers, multilayerId);
     var tiled = layers[0].state.tiled;
     var config = {
       url: self.project.getWmsUrl(),
-      id: layerId,
+      id: multilayerId,
       tiled: tiled
     };
-    mapLayer = self.mapLayers[layerId] = new WMSLayer(config,self.layersExtraParams);
+    mapLayer = self.mapLayers[multilayerId] = new WMSLayer(config,self.layersExtraParams);
     self.registerListeners(mapLayer);
     _.forEach(layers.reverse(),function(layer){
       mapLayer.addLayer(layer);
-      layer.setMapLayer(mapLayer);
-      //self.layersAssociation[layer.state.id] = layerId;
     });
   })
   
@@ -359,7 +360,7 @@ proto.updateMapLayers = function(mapLayers) {
 };
 
 proto.getMapLayerForLayer = function(layer){
-  return layer.getMapLayer();
+  return this.mapLayers['layer_'+layer.state.multilayer];
 };
 
 proto.registerListeners = function(mapLayer){
@@ -382,9 +383,6 @@ proto.setTarget = function(elId){
   this.target = elId;
 };
 
-
-// per creare una pila di ol.interaction in cui l'ultimo che si aggiunge disattiva temporaemente i precedenti (per poi togliersi di mezzo con popInteraction!)
-// Usato ad es. da pickfeaturetool e getfeatureinfo
 proto.addInteraction = function(interaction){
   this._unsetControls();
   this.viewer.map.addInteraction(interaction);
@@ -395,10 +393,10 @@ proto.removeInteraction = function(interaction){
   this.viewer.map.removeInteraction(interaction);
 };
 
+// emetto evento quando viene attivata un interazione di tipo Pointer (utile ad es. per disattivare/riattivare i tool di editing)
 proto._watchInteraction = function(interaction) {
   var self = this;
   interaction.on('change:active',function(e){
-    //console.log((e.target instanceof ol.interaction.Pointer) + '-' + e.target.getActive());
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
       self.emit('pointerInteractionSet',e.target);
     }
@@ -417,65 +415,6 @@ proto.goToWGS84 = function(coordinates,zoom){
 
 proto.extentToWGS84 = function(extent){
   return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
-};
-
-proto.getFeatureInfo = function(layerId){
-  var self = this;
-  var deferred = $.Deferred();
-  this._pickInteraction = new PickCoordinatesInteraction();
-  //this.viewer.map.addInteraction(this._pickInteraction);
-  //this._pickInteraction.setActive(true);
-  this.pushInteraction(this._pickInteraction);
-  this._pickInteraction.on('picked',function(e){
-    self._completeGetFeatureInfo(layerId,e.coordinate,deferred);
-  })
-  return deferred.promise();
-};
-
-proto._completeGetFeatureInfo = function(layerId,coordinate,deferred){
-  var self = this;
-  var projectType = this.project.state.type;
-  
-  var mapLayer = this.mapLayers[this.layersAssociation[layerId]];
-  var resolution = this.viewer.getResolution();
-  var epsg = self.viewer.map.getView().getProjection().getCode();
-  var params = {
-    QUERY_LAYERS: this.project.getLayer(layerId).name,
-    INFO_FORMAT: "text/xml"
-  }
-  
-  if (projectType == ProjectTypes.QDJANGO){
-    var toleranceParams = PickToleranceParams[projectType];
-    if (toleranceParams){
-      var geometrytype = this.project.getLayer(layerId).geometrytype;
-      params[toleranceParams[geometrytype]] = PickToleranceValues[geometrytype];
-    }
-  }
-  
-  var getFeatureInfoUrl = mapLayer.getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
-  $.get(getFeatureInfoUrl)
-  .then(function(data){
-    var x2js = new X2JS();
-    var jsonData = x2js.xml2json(data);
-    if (jsonData.GetFeatureInfoResponse.Layer.Feature){
-      var attributes = jsonData.GetFeatureInfoResponse.Layer.Feature.Attribute;
-      var attributesObj = {};
-      _.forEach(attributes,function(attribute){
-        attributesObj[attribute._name] = attribute._value; // X2JS aggiunge "_" come prefisso degli attributi
-      })
-      
-      deferred.resolve(attributesObj);
-    }
-    deferred.reject();;
-  })
-  .fail(function(){
-    deferred.reject();
-  })
-  .always(function(){
-    //self.viewer.map.removeInteraction(self._pickInteraction);
-    self.popInteraction();
-    self._pickInteraction = null;
-  })
 };
 
 proto.highlightGeometry = function(geometryObj,options){    

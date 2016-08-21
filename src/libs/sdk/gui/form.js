@@ -3,7 +3,8 @@ var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
 var Panel =  require('gui/panel');
-var ProjectsRegistry = require('core/project/projectsregistry');
+var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
+var QueryService = require('core/query/queryservice');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -158,24 +159,40 @@ proto._isLayerPicker = function(field){
 };
 
 proto._pickLayer = function(field){
+  var self = this;
   // ritorno una promessa, se qualcun altro volesse usare il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
   // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
   GUI.setModal(false);
-  var layerId = field.input.options.layerid;
+  mapService = GUI.getComponent('map').getService();
+  var layer = mapService.getProject().getLayerById(field.input.options.layerid);
   var relFieldName = field.input.options.field;
-  var relFieldLabel = ProjectsRegistry.getCurrentProject().getLayerAttributeLabel(layerId,field.input.options.field);
-  var mapService = GUI.getComponent('map').getService();
-  mapService.getFeatureInfo(layerId)
-  .then(function(attributes){
-    var value = attributes[relFieldName] ? attributes[relFieldName] : attributes[relFieldLabel];
-    field.value = value;
-    d.resolve(attributes);
+  var relFieldLabel = layer.getAttributeLabel(field.input.options.field);
+  
+  this._pickInteraction = new PickCoordinatesInteraction();
+  mapService.addInteraction(this._pickInteraction);
+  this._pickInteraction.on('picked',function(e){   
+    QueryService.queryByLocation(e.coordinate, [layer])
+    .then(function(response){
+      var featuresForLayers = response.data;
+      if (featuresForLayers.length && featuresForLayers[0].features.length) { 
+        var attributes = featuresForLayers[0].features[0].getProperties(); // prendo la prima feature del primo (e unico) layer
+        var value = attributes[relFieldName] ? attributes[relFieldName] : attributes[relFieldLabel];
+        field.value = value;
+        d.resolve(attributes);
+      }
+      else {
+        d.reject();
+      }
+    })
+    .fail(function(){
+      d.reject();
+    })
+    .always(function(){
+      mapService.removeInteraction(self._pickInteraction);
+      self._pickInteraction = null;
+    })
   })
-  .always(function(){
-    GUI.setModal(true);
-    d.reject();
-  });
   return d.promise();
 };
 
@@ -193,10 +210,11 @@ proto._getDefaultValue = function(field){
   return defaultValue;
 };
 
-proto._getlayerPickerLayerName = function(id){
-  var layer = ProjectsRegistry.getCurrentProject().getLayer(id);
+proto._getlayerPickerLayerName = function(layerId){
+  mapService = GUI.getComponent('map').getService();
+  var layer = mapService.getProject().getLayerById(layerId);
   if (layer){
-    return layer.name;
+    return layer.getName();
   }
   return "";
 };

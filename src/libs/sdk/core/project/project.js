@@ -81,11 +81,7 @@ proto.getGid = function() {
   return this.state.gid;
 }
 
-proto.getLayer = function(id){
-  return this._layers[id];
-};
-
-proto.getLayers = function(options){
+proto.getLayersDict = function(options){
   var options = options || {};
   var filterQueryable = options.QUERYABLE;
   
@@ -124,38 +120,32 @@ proto.getLayers = function(options){
   return layers;
 };
 
-proto.getLayerById = function(id) {
-  var layer = null;
-  _.forEach(this.getLayers(),function(_layer){
-    if (_layer.state.id == id){
-      layer = _layer;
-    }
-  });
-  return layer;
+// ritorna l'array dei layers (con opzioni di ricerca)
+proto.getLayers = function(options) {
+  var layers = this.getLayersDict(options);
+  return _.values(layers);
+}
+
+proto.getLayerById = function(layerId) {
+  return this.getLayersDict()[layerId];
 };
 
 proto.getLayerByName = function(name) {
   var layer = null;
   _.forEach(this.getLayers(),function(layer){
-    if (layer.state.name == name){
+    if (layer.getName() == name){
       layer = _layer;
     }
   });
   return layer;
 };
 
-proto.getLayerAttributes = function(id){
-  return this._layers[id].state.attributes;
+proto.getLayerAttributes = function(layerId){
+  return this.getLayerById(layerId).getAttributes();
 };
 
 proto.getLayerAttributeLabel = function(layerId,name){
-  var label = '';
-  _.forEach(this.getLayerById(layerId).state.attributes,function(attribute){
-    if (attribute.name == name){
-      label = attribute.label;
-    }
-  })
-  return label;
+  return this.getLayerById(layerId).getAttributeLabel(name);
 };
 
 proto.toggleLayer = function(layerId,visible){

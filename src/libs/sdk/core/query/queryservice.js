@@ -10,6 +10,19 @@ var Provider = {
   'QGIS': QueryQGISWMSProvider,
   'OGC': QueryWFSProvider
 };
+
+/*var PickToleranceParams = {};
+PickToleranceParams[ProjectTypes.QDJANGO] = {};
+PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.POINT] = "FI_POINT_TOLERANCE";
+PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.LINESTRING] = "FI_LINE_TOLERANCE";
+PickToleranceParams[ProjectTypes.QDJANGO][GeometryTypes.POLYGON] = "FI_POLYGON_TOLERANCE";
+
+var PickToleranceValues = {}
+PickToleranceValues[GeometryTypes.POINT] = 5;
+PickToleranceValues[GeometryTypes.LINESTRING] = 5;
+PickToleranceValues[GeometryTypes.POLYGON] = 5;*/
+
+
 //oggetto query service
 function QueryService(){
   var self = this;
@@ -17,8 +30,8 @@ function QueryService(){
   this.filterObject = {};
   this.queryFilterObject = {};
   //me lo porto da mapqueryservice ma vediamo cosa succede
-  this.init = function(map){
-    this.map = map;
+  this.setMapService = function(mapService){
+    this._mapService = mapService;
   }
   this.setFilterObject = function(filterObject){
     this.filterObject = filterObject;
@@ -219,8 +232,7 @@ function QueryService(){
       }
       urlsForLayers[urlHash].layers.push(layer);
     });
-    var resolution = this.map.getView().getResolution();
-    var epsg = this.map.getView().getProjection().getCode();
+
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers){
       var queryLayers = urlForLayers.layers;
@@ -234,7 +246,10 @@ function QueryService(){
         FI_LINE_TOLERANCE: 10,
         FI_POLYGON_TOLERANCE: 10
       };
-      var getFeatureInfoUrl = queryLayers[0].getMapLayer().getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
+      
+      var resolution = self._mapService.getResolution();
+      var epsg = self._mapService.getEpsg();
+      var getFeatureInfoUrl = self._mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString;
       queryUrlsForLayers.push({
@@ -296,24 +311,6 @@ function QueryService(){
   //query by BBOX
   this.queryByBoundingBox = function(bbox) {
     //codice qui
-  };
-
-  //importatta query generica
-  this._query = function(rect,layerId) {
-    var Project = ProjectsRegistry.getCurrentProject();
-    var layers;
-    if (layerId) {
-      layers = [Project.getLayer(layerId)];
-    }
-    else {
-      layers = Project.getLayers();
-    }
-  };
-
-  this.showQueryResults = function(results) {
-
-      //codice qui
-
   };
 
 
