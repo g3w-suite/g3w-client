@@ -39,6 +39,15 @@ PickCoordinatesInteraction.prototype.shouldStopEvent = function(){
   return false;
 };
 
+PickCoordinatesInteraction.prototype.setActive = function(active){
+  var map = this.getMap();
+  if (map) {
+    var elem = map.getTargetElement();
+    elem.style.cursor = '';
+  }
+  ol.interaction.Pointer.prototype.setActive.call(this,active);
+};
+
 PickCoordinatesInteraction.prototype.setMap = function(map){
   if (!map) {
     var elem = this.getMap().getTargetElement();

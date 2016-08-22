@@ -6,6 +6,7 @@
           <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
           <div class="col-sm-8">
             <input v-if="isSimple(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+            <textarea v-if="isTextarea(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label"></textarea>
             <select v-if="isSelect(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
               <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
             </select>
@@ -24,6 +25,7 @@
               <label :for="relfield.name" class="col-sm-4 control-label">{{relfield.label}}<span v-if="relfield.validate && relfield.validate.required">*</span></label>
               <div class="col-sm-8">
                 <input v-if="isSimple(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
+                <textarea v-if="isTextarea(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label"></textarea>
                 <select v-if="isSelect(relfield)" :field="relfield.name" v-validate="relfield.validate" v-disabled="!isEditable(relfield)" class="form-control" v-model="relfield.value" :id="relfield.name" :placeholder="relfield.input.label">
                   <option v-for="relvalue in relfield.input.options.values" value="{{ relvalue.key }}">{{ relvalue.value }}</option>
                 </select>

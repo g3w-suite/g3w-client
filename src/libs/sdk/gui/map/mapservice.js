@@ -7,10 +7,8 @@ var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectTypes = require('core/project/projecttypes');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
-var ResetControl = require('g3w-ol3/src/controls/resetcontrol');
-var QueryControl = require('g3w-ol3/src/controls/querycontrol');
-var ZoomBoxControl = require('g3w-ol3/src/controls/zoomboxcontrol');
 var WMSLayer = require('core/map/layer/wmslayer');
+var ControlsFactory = require('gui/map/control/factory');
 var QueryService = require('core/query/queryservice');
 
 function MapService(project){
@@ -219,31 +217,39 @@ proto.setupControls = function(){
       switch (controlType) {
         case 'reset':
           if (!isMobile.any) {
-            control = new ResetControl();
+            control = ControlsFactory.create({
+              type: controlType
+            });
           }
           break;
         case 'zoom':
-          control = new ol.control.Zoom({
+          control = ControlsFactory.create({
+            type: controlType,
             zoomInLabel: "\ue98a",
             zoomOutLabel: "\ue98b"
           });
           break;
         case 'zoombox': 
           if (!isMobile.any) {
-            control = new ZoomBoxControl();
+            control = ControlsFactory.create({
+              type: controlType
+            });
             control.on('zoomend',function(e){
               self.viewer.fit(e.extent);
             })
           }
           break;
         case 'zoomtoextent':
-          control = new ol.control.ZoomToExtent({
+          control = ControlsFactory.create({
+            type: controlType,
             label:  "\ue98c",
             extent: self.config.constraintextent
           });
           break;
         case 'query':
-          control = new QueryControl();
+          control = ControlsFactory.create({
+            type: controlType
+          });
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showQueryResults = GUI.showResultsFactory('query');
@@ -262,7 +268,10 @@ proto.setupControls = function(){
           });
           break;
           case 'scaleline':
-            //control = new ol.control.ScaleLine()
+            control = ControlsFactory.create({
+            type: controlType,
+            position: 'br'
+          });
           break;
       };
       if (control) {

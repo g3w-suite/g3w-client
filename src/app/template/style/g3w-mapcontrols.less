@@ -9,29 +9,20 @@
     font-style: normal;
 }
 
-.ol-overlaycontainer-stopevent {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-}
-
 .ol-control {
   background-color: transparent;
   border-radius: 0px;
-  position: relative;
   padding: 0px;
-  float: left;
   button {
     display: block;
     margin: 0px;
     margin-left: 2px;
-    //padding: 7px 10px;
     padding: 2px 6px;
     color: #fff;
     text-decoration: none;
     text-align: center;
-    height: auto;
-    width: auto;
+    height: 39px;
+    width: 39px;
     line-height: 1.42857143;
     background-color: @light-blue;
     border: none;
@@ -40,7 +31,6 @@
     font-family: icomoon;
     font-weight: 300;
     float:left;
-    left: 0px;
   }
   button:hover {
       text-decoration: none;
@@ -60,16 +50,38 @@
   background-color: transparent;
 }
 
+.ol-control-tl {
+  top: 7px;
+  left:43px;
+}
+
+.ol-control-bl {
+  bottom: 7px;
+  left:43px;
+}
+
+.ol-control-tr {
+  top: 7px;
+  right:43px;
+}
+
+.ol-control-br {
+  bottom: 7px;
+  right:43px;
+}
+
 .ol-zoom {
-  top: 0px;
-  left: 0px;
-  float:left;
   .ol-zoom-in {
     border-radius: 0;
   }
   .ol-zoom-out {
     border-radius: 0;
   }
+}
+
+.ol-scale-line {
+  background: @light-blue;
+  left: auto;
 }
 
 .ol-zoom-extent {

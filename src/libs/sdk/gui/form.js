@@ -38,6 +38,9 @@ var FormPanel = Vue.extend({
     isSimple: function(field){
       return this.$options.form._isSimple(field);
     },
+    isTextarea: function(field) {
+      return this.$options.form._isTextarea(field);
+    },
     isSelect: function(field){
       return this.$options.form._isSelect(field);
     },
@@ -75,10 +78,11 @@ Inputs.defaults[Inputs.INTEGER] = 0;
 Inputs.defaults[Inputs.FLOAT] = 0.0;
 Inputs.simpleFieldTypes = [Inputs.STRING,Inputs.INTEGER,Inputs.FLOAT];
 
+Inputs.TEXTAREA = 'textarea';
 Inputs.SELECT = 'select';
 Inputs.LAYERPICKER = 'layerpicker';
 
-Inputs.specialInputs = [Inputs.SELECT,Inputs.LAYERPICKER];
+Inputs.specialInputs = [Inputs.TEXTAREA,Inputs.SELECT,Inputs.LAYERPICKER];
 
 function Form(options){
   // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
@@ -148,6 +152,10 @@ proto._isSimple = function(field){
     return false;
   }
   return _.includes(Inputs.simpleFieldTypes,field.type)
+};
+
+proto._isTextarea = function(field) {
+  return (field.input.type == Inputs.TEXTAREA);
 };
 
 proto._isSelect = function(field){
