@@ -23,6 +23,7 @@ function createApplicationConfig() {
     initproject: config.group.initproject,
     overviewproject: config.group.overviewproject,
     baselayers: config.group.baselayers,
+    mapcontrols: config.group.mapcontrols,
     crs: config.group.crs,
     proj4: config.group.proj4,
     minscale: config.group.minscale,
@@ -37,8 +38,7 @@ function createApplicationConfig() {
     },
     plugins: config.group.plugins,
     tools: config.tools,
-    views: config.views || {},
-    map: config.map
+    views: config.views || {}
   };
 };
 

@@ -13,7 +13,7 @@ var EDITOPS = {
 
 function ProjectLayer(state) {
   /*this.state = {
-    attributes: options.attributes,
+    fields: options.fields,
     bbox: options.bbox,
     capabilities: options.capabilities,
     crs: options.crs,
@@ -68,14 +68,14 @@ proto.getGeometryType = function() {
 };
 
 proto.getAttributes = function() {
-  return this.state.attributes;
+  return this.state.fields;
 };
 
 proto.getAttributeLabel = function(name) {
   var label;
-  _.forEach(this.getAttributes(),function(attribute){
-    if (attribute.name == name){
-      label = attribute.label;
+  _.forEach(this.getAttributes(),function(field){
+    if (field.name == name){
+      label = field.label;
     }
   })
   return label;
@@ -98,6 +98,10 @@ proto.isQueryable = function(){
   }
   return queryEnabled;
 };
+
+proto.isVisible = function() {
+  return this.state.visible;
+}
 
 proto.getQueryLayerName = function() {
   var queryLayerName;

@@ -88,7 +88,10 @@ proto.getOverviewProjectGid = function() {
 
 proto.getLayersDict = function(options){
   var options = options || {};
+
   var filterQueryable = options.QUERYABLE;
+  
+  var filterVisible = options.VISIBLE;
   
   var filterSelected = options.SELECTED;
   var filterSelectedOrAll = options.SELECTEDORALL;
@@ -97,7 +100,7 @@ proto.getLayersDict = function(options){
     filterSelected = null;
   }
   
-  if (_.isUndefined(filterQueryable) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
+  if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
   
@@ -106,6 +109,12 @@ proto.getLayersDict = function(options){
   if (filterQueryable) {
     layers = _.filter(this._layers,function(layer){
       return filterQueryable && layer.isQueryable();
+    });
+  }
+  
+  if (filterVisible) {
+    layers = _.filter(this._layers,function(layer){
+      return filterVisible && layer.isVisible();
     });
   }
   

@@ -17,7 +17,7 @@ function MapService(project){
   this.viewer;
   this.target;
   this._mapControls = [],
-  this.mapLayers = {};
+  this._mapLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
   this.state = {
@@ -26,7 +26,7 @@ function MapService(project){
       center: null,
       loading: false
   };
-  this.config = ApplicationService.getConfig().map;
+  this.config = ApplicationService.getConfig();
   
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
@@ -151,7 +151,7 @@ function MapService(project){
       var layer = self.project.getLayerById(layerId);
       return self.getMapLayerForLayer(layer);
     })
-    self.updateMapLayers(mapLayers);
+    self.updateMapLayers(self.getMapLayers());
   });
   
   this.project.onafter('setBaseLayer',function(){
@@ -217,8 +217,8 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
 proto.setupControls = function(){
   var self = this;
   var map = self.viewer.map;
-  if (this.config && this.config.controls) {
-    _.forEach(this.config.controls,function(controlType){
+  if (this.config && this.config.mapcontrols) {
+    _.forEach(this.config.mapcontrols,function(controlType){
       var control;
       switch (controlType) {
         case 'reset':
@@ -293,6 +293,7 @@ proto.setupControls = function(){
             .then(function(project){
               console.log("Progetto di overview arrivato.");
               var overViewMapLayers = self.getOverviewMapLayers(project);
+              console.log(overViewMapLayers[0].getSource().getParams());
               control = ControlsFactory.create({
                 type: controlType,
                 position: 'bl',
@@ -315,6 +316,25 @@ proto.setupControls = function(){
 proto.addControl = function(control){
   this.viewer.map.addControl(control);
   this._mapControls.push(control);
+};
+
+proto.addMapLayer = function(mapLayer) {
+  this._mapLayers.push(mapLayer);
+};
+
+proto.getMapLayers = function() {
+  return this._mapLayers;
+};
+
+proto.getMapLayerForLayer = function(layer){
+  var mapLayer;
+  var multilayerId = 'layer_'+layer.state.multilayer;
+  _.forEach(this.getMapLayers(),function(_mapLayer){
+    if (_mapLayer.getId() == multilayerId) {
+      mapLayer = _mapLayer;
+    }
+  })
+  return mapLayer;
 };
 
 proto.setupBaseLayers = function(){
@@ -363,7 +383,7 @@ proto.setupLayers = function(){
   var self = this;
   this.viewer.removeLayers();
   this.setupBaseLayers();
-  this.mapLayers = {};
+  this._reset();
   var layers = this.project.getLayers();
   //raggruppo per valore del multilayer con chiave valore multilayer e valore array
   var multiLayers = _.groupBy(layers,function(layer){
@@ -371,21 +391,21 @@ proto.setupLayers = function(){
   });
   _.forEach(multiLayers,function(layers,id){
     var multilayerId = 'layer_'+id
-    var mapLayer = _.get(self.mapLayers, multilayerId);
     var tiled = layers[0].state.tiled;
     var config = {
       url: self.project.getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };
-    mapLayer = self.mapLayers[multilayerId] = new WMSLayer(config,self.layersExtraParams);
+    var mapLayer = new WMSLayer(config,self.layersExtraParams);
+    self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
     _.forEach(layers.reverse(),function(layer){
       mapLayer.addLayer(layer);
     });
   })
   
-  _.forEach(_.values(this.mapLayers).reverse(),function(mapLayer){
+  _.forEach(this.getMapLayers().reverse(),function(mapLayer){
     self.viewer.map.addLayer(mapLayer.getOLLayer());
     mapLayer.update(self.state,self.layersExtraParams);
   })
@@ -394,9 +414,11 @@ proto.setupLayers = function(){
 
 proto.getOverviewMapLayers = function(project) {
   var self = this;
-  var layers = project.getLayers();
+  var projectLayers = project.getLayers({
+    'VISIBLE': true
+  });
 
-  var multiLayers = _.groupBy(layers,function(layer){
+  var multiLayers = _.groupBy(projectLayers,function(layer){
     return layer.state.multilayer;
   });
   
@@ -409,25 +431,21 @@ proto.getOverviewMapLayers = function(project) {
       id: multilayerId,
       tiled: tiled
     };
-    mapLayer = new WMSLayer(config,self.layersExtraParams);
+    var mapLayer = new WMSLayer(config);
     _.forEach(layers.reverse(),function(layer){
       mapLayer.addLayer(layer);
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
   })
   
-  return overviewMapLayers;
+  return overviewMapLayers.reverse();
 };
 
 proto.updateMapLayers = function(mapLayers) {
   var self = this;
-  _.forEach(_.values(mapLayers),function(mapLayer){
+  _.forEach(mapLayers,function(mapLayer){
     mapLayer.update(self.state,self.layersExtraParams);
   })
-};
-
-proto.getMapLayerForLayer = function(layer){
-  return this.mapLayers['layer_'+layer.state.multilayer];
 };
 
 proto.registerListeners = function(mapLayer){
@@ -562,6 +580,10 @@ proto.resize = function(width,height) {
   }
   this.getMap().updateSize();
   this._setMapView();
+};
+
+proto._reset = function() {
+  this._mapLayers = [];
 };
 
 proto._unsetControls = function() {

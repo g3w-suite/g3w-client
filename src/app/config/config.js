@@ -7,9 +7,6 @@ var tools = {
   tools:  []
 };
 
-var mapcontrols = ['zoom','zoombox','query','scaleline','overview'];
-//var mapcontrols = ['zoom','zoombox','zoomtoextent','query'];
-
 var i18n = {
   resources: require('./locales/app.js')
 };
@@ -40,8 +37,5 @@ module.exports = {
   server: server,
   plugins:  plugins,
   tools:  tools,
-  map: {
-    controls: mapcontrols
-  },
   i18n: i18n
 };
