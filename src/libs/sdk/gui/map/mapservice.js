@@ -81,10 +81,7 @@ function MapService(project){
   
   this._setupViewer = function(initialResolution){
     var extent = this.project.state.extent;
-    var projection = new ol.proj.Projection({
-      code: "EPSG:"+this.project.state.crs,
-      extent: extent
-    });
+    var projection = this.getProjection();
     
     /*var constrain_extent;
     if (this.config.constraintextent) {
@@ -187,6 +184,15 @@ proto.getMap = function() {
   return this.viewer.map;
 };
 
+proto.getProjection = function() {
+  var extent = this.project.state.extent;
+  var projection = new ol.proj.Projection({
+    code: "EPSG:"+this.project.state.crs,
+    extent: extent
+  });
+  return projection;
+};
+
 proto.getViewerElement = function(){
   return this.viewer.map.getTargetElement();
 };
@@ -221,6 +227,7 @@ proto.setupControls = function(){
               type: controlType
             });
           }
+          self.addControl(control);
           break;
         case 'zoom':
           control = ControlsFactory.create({
@@ -228,6 +235,7 @@ proto.setupControls = function(){
             zoomInLabel: "\ue98a",
             zoomOutLabel: "\ue98b"
           });
+          self.addControl(control);
           break;
         case 'zoombox': 
           if (!isMobile.any) {
@@ -238,6 +246,7 @@ proto.setupControls = function(){
               self.viewer.fit(e.extent);
             })
           }
+          self.addControl(control);
           break;
         case 'zoomtoextent':
           control = ControlsFactory.create({
@@ -245,6 +254,7 @@ proto.setupControls = function(){
             label:  "\ue98c",
             extent: self.config.constraintextent
           });
+          self.addControl(control);
           break;
         case 'query':
           control = ControlsFactory.create({
@@ -266,16 +276,37 @@ proto.setupControls = function(){
               queryResultsPanel.setQueryResponse(results);
             });
           });
+          self.addControl(control);
           break;
-          case 'scaleline':
-            control = ControlsFactory.create({
+        case 'scaleline':
+          control = ControlsFactory.create({
             type: controlType,
             position: 'br'
           });
+          self.addControl(control);
           break;
-      };
-      if (control) {
-        self.addControl(control);
+        case 'overview':
+          var overviewProjectGid = self.project.getOverviewProjectGid();
+          if (overviewProjectGid) {
+            console.log("Setto la mappa di overview: "+overviewProjectGid);
+            ProjectsRegistry.getProject(overviewProjectGid)
+            .then(function(project){
+              console.log("Progetto di overview arrivato.");
+              var overViewMapLayers = self.getOverviewMapLayers(project);
+              control = ControlsFactory.create({
+                type: controlType,
+                position: 'bl',
+                className: 'ol-overviewmap ol-custom-overviewmap',
+                collapsed: false,
+                layers: overViewMapLayers,
+                view: new ol.View({
+                  projection: self.getProjection()
+                })
+              });
+              self.addControl(control);
+            });
+          }
+          break;
       };
     });
   }
@@ -359,6 +390,33 @@ proto.setupLayers = function(){
     mapLayer.update(self.state,self.layersExtraParams);
   })
   return this.mapLayers;
+};
+
+proto.getOverviewMapLayers = function(project) {
+  var self = this;
+  var layers = project.getLayers();
+
+  var multiLayers = _.groupBy(layers,function(layer){
+    return layer.state.multilayer;
+  });
+  
+  var overviewMapLayers = [];
+  _.forEach(multiLayers,function(layers,id){
+    var multilayerId = 'overview_layer_'+id
+    var tiled = layers[0].state.tiled;
+    var config = {
+      url: project.getWmsUrl(),
+      id: multilayerId,
+      tiled: tiled
+    };
+    mapLayer = new WMSLayer(config,self.layersExtraParams);
+    _.forEach(layers.reverse(),function(layer){
+      mapLayer.addLayer(layer);
+    });
+    overviewMapLayers.push(mapLayer.getOLLayer(true));
+  })
+  
+  return overviewMapLayers;
 };
 
 proto.updateMapLayers = function(mapLayers) {

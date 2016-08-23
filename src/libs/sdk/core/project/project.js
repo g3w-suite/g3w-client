@@ -16,7 +16,8 @@ function Project(projectConfig) {
     name,
     crs,
     extent,
-    layerstree
+    layerstree,
+    overviewprojectgid
   }
   */
   this.state = projectConfig;
@@ -79,7 +80,11 @@ proto.buildProjectLayer = function(layerConfig) {
 
 proto.getGid = function() {
   return this.state.gid;
-}
+};
+
+proto.getOverviewProjectGid = function() {
+  return this.state.overviewprojectgid.gid;
+};
 
 proto.getLayersDict = function(options){
   var options = options || {};

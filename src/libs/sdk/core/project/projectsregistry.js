@@ -70,12 +70,16 @@ proto.setupState = function(){
   self.state.maxScale = self.config.maxscale;
   self.state.crs = self.config.crs;
   self.state.proj4 = self.config.proj4;
+
+  var overViewProject = (self.config.overviewproject && self.config.overviewproject.gid) ? self.config.overviewproject : null;
+  
   self.config.projects.forEach(function(project){
     project.baselayers = self.config.baselayers;
     project.minscale = self.config.minscale;
     project.maxscale = self.config.maxscale;
     project.crs = self.config.crs;
     project.proj4 = self.config.proj4;
+    project.overviewprojectgid = overViewProject;
     self._pendingProjects.push(project);
   })
   //this.state.projects = config.group.projects;

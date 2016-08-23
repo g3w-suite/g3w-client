@@ -20,7 +20,8 @@ ControlsFactory.CONTROLS = {
   'zoombox': ZoomBoxControl,
   'query': QueryControl,
   'zoom': OLControl,
-  'scaleline': OLControl
+  'scaleline': OLControl,
+  'overview': OLControl
 };
 
 module.exports = ControlsFactory;

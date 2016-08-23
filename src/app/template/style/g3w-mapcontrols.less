@@ -9,7 +9,7 @@
     font-style: normal;
 }
 
-.ol-control {
+.ol-control, .ol-custom-overviewmap {
   background-color: transparent;
   border-radius: 0px;
   padding: 0px;
@@ -46,6 +46,31 @@
   }
 }
 
+.ol-overviewmap {
+  button {
+    display: inline-block
+  }
+}
+
+.ol-custom-overviewmap:not(.ol-collapsed)  {
+  border: 1px solid black;
+  button {
+    left: -1px;
+    bottom: 0px;
+  }
+}
+
+.ol-custom-overviewmap .ol-overviewmap-map {
+  border: none;
+  height: 200px;
+  width: 300px;
+}
+
+.ol-custom-overviewmap .ol-overviewmap-box {
+  border: 2px solid @light-blue;
+}
+
+
 .ol-control:hover {
   background-color: transparent;
 }
@@ -57,17 +82,17 @@
 
 .ol-control-bl {
   bottom: 7px;
-  left:43px;
+  left:7px;
 }
 
 .ol-control-tr {
   top: 7px;
-  right:43px;
+  right:7px;
 }
 
 .ol-control-br {
   bottom: 7px;
-  right:43px;
+  right:7px;
 }
 
 .ol-zoom {

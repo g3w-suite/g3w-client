@@ -19,10 +19,10 @@ function WMSLayer(options,extraParams){
 inherit(WMSLayer,MapLayer)
 var proto = WMSLayer.prototype;
 
-proto.getOLLayer = function(){
+proto.getOLLayer = function(withLayers){
   var olLayer = this._olLayer;
   if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer();
+    olLayer = this._olLayer = this._makeOlLayer(withLayers);
   }
   return olLayer;
 };
@@ -90,12 +90,18 @@ proto._getVisibleLayers = function(mapState){
   return visibleLayers;
 };
 
-proto._makeOlLayer = function(){
+proto._makeOlLayer = function(withLayers){
   var self = this;
   var wmsConfig = {
     url: this.config.url,
     id: this.config.id
   };
+  
+  if (withLayers) {
+    wmsConfig.layers = _.map(this.layers,function(layer){
+      return layer.getWMSLayerName();
+    });
+  }
   
   var representativeLayer = this.layers[0]; //BRUTTO, DEVO PRENDERE UN LAYER A CASO (IL PRIMO) PER VEDERE SE PUNTA AD UN SOURCE DIVERSO (dovrebbe accadere solo per i layer singoli, WMS esterni)
   

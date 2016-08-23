@@ -21,6 +21,7 @@ function createApplicationConfig() {
     resourcesurl: config.server.urls.staticurl,
     projects: config.group.projects,
     initproject: config.group.initproject,
+    overviewproject: config.group.overviewproject,
     baselayers: config.group.baselayers,
     crs: config.group.crs,
     proj4: config.group.proj4,
