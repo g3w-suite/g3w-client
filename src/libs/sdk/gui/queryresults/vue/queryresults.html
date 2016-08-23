@@ -7,7 +7,7 @@
 <div id="search-results" class="queryresults-container">
   <h3>Risultati {{state.querytitle | lowercase}}</h3>
   <div v-show="state.loading" class="bar-loader"></div>
-  <ul class="queryresults" id="queryresults">
+  <ul v-if="hasResults()" class="queryresults" id="queryresults">
     <li v-if="layerHasFeatures(layer)" v-for="layer in state.layers">
       <div class="box box-primary">
         <div class="box-header with-border">
@@ -60,5 +60,6 @@
       </div>
     </li>
   </ul>
+  <span v-if="!hasResults()">Nessun risultato</span>
 </div>
 

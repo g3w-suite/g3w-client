@@ -21,6 +21,9 @@ var vueComponentOptions = {
       }
       return false;
     },
+    hasResults: function() {
+      return this.state.layers.length;
+    },
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
     },

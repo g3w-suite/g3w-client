@@ -104,16 +104,16 @@ proto.getLayersDict = function(options){
     return this._layers;
   }
   
-  var layers = [];
+  var layers = this._layers;
   
   if (filterQueryable) {
-    layers = _.filter(this._layers,function(layer){
+    layers = _.filter(layers,function(layer){
       return filterQueryable && layer.isQueryable();
     });
   }
   
   if (filterVisible) {
-    layers = _.filter(this._layers,function(layer){
+    layers = _.filter(layers,function(layer){
       return filterVisible && layer.isVisible();
     });
   }
@@ -125,10 +125,11 @@ proto.getLayersDict = function(options){
   }
   
   if (filterSelectedOrAll) {
+    var _layers = layers;
     layers = _.filter(layers,function(layer){
       return layer.isSelected();
     });
-    layers = layers.length ? layers : this._layers;
+    layers = layers.length ? layers : _layers;
   }
   
   return layers;

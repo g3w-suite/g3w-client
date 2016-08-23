@@ -94,7 +94,10 @@ proto.isQueryable = function(){
   var queryableForCababilities = (this.state.capabilities && (this.state.capabilities && CAPABILITIES.QUERY)) ? true : false;
   if (queryableForCababilities) {
     // è interrogabile se visibile e non disabilitato (per scala) oppure se interrogabile comunque (forzato dalla proprietà infowhennotvisible)
-    var queryEnabled = (this.state.visible && !this.state.disabled) || (this.state.infowhennotvisible && (this.state.infowhennotvisible === true));
+    queryEnabled = (this.state.visible && !this.state.disabled);
+    if (!_.isUndefined(this.state.infowhennotvisible) && (this.state.infowhennotvisible === true)) {
+      queryEnabled = true;
+    }
   }
   return queryEnabled;
 };
