@@ -298,6 +298,8 @@ proto.setupControls = function(){
                 type: controlType,
                 position: 'bl',
                 className: 'ol-overviewmap ol-custom-overviewmap',
+                collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
+                label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
                 collapsed: false,
                 layers: overViewMapLayers,
                 view: new ol.View({
