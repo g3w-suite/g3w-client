@@ -61,9 +61,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var placeholdersConfig = this.templateConfig.placeholders;
     _.forEach(placeholdersConfig, function(components, placeholder){
       // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
-     _.forEach(components.components, function(component){
-        self._addComponent(placeholder, component);
-      });
+      self._addComponents(components.components,placeholder);
     });
     //registro altri componenti che non hanno una collocazione spaziale precisa
     // come da esempio i risultati che possono essere montati sulla floatbar o altre parti del template
@@ -76,22 +74,24 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._addOtherComponents = function() {
     var self = this;
     if (this.templateConfig.othercomponents) {
-      _.forEach(this.templateConfig.othercomponents, function(component) {
-        self._addComponent('othercomponents', component);
-      })
+      self._addComponents(this.templateConfig.othercomponents);
     };
   };
   
-  this._addComponent = function(placeholder, component) {
-    if (ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1){
+  this._addComponent = function(component,placeholder) {
+    this._addComponents([component],placeholder);
+  };
+  
+  this._addComponents = function(components,placeholder) {
+    if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1){
       var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
       if (placeholderService) {
-        placeholderService.addComponent(component);
-        ComponentsRegistry.registerComponent(component);
+        placeholderService.addComponents(components);
       }
-    } else { // caso di componenti non placeholder
-      ComponentsRegistry.registerComponent(component);
     }
+    _.forEach(components,function(component){
+      ComponentsRegistry.registerComponent(component);
+    })
   };
   
   this._removeComponent = function(plceholder,componentId) {

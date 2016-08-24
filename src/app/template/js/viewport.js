@@ -37,6 +37,13 @@ var ViewportService = function(){
   
   /* INTERFACCIA PUBBLICA */
   
+  this.addComponents = function(components){
+    var self = this;
+    _.forEach(components,function(component){
+      self.addComponent(component);
+    });
+  };
+  
   this.addComponent = function(component) {
     var self = this;
     // la viewport ha al massimo due viste, ognuna contente al massimo un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati

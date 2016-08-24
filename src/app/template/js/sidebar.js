@@ -30,7 +30,14 @@ function SidebarService(){
     this.layout = layout;
   };
   
-  this.addComponent = function(component){
+  this.addComponents = function(components){
+    var self = this;
+    _.forEach(components,function(component){
+      self.addComponent(component);
+    });
+  };
+  
+  this.addComponent = function(component) {
     //aggiungo componente
     this.state.components.push(component);
     //faccio montare il sedebar-item che contiene al suo interno il placeholder del componente vero e proprio
