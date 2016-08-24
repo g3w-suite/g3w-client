@@ -9,15 +9,19 @@ var PluginsRegistry = require('core/plugin/pluginsregistry');
 var ApplicationService = function(){
   this.secret = "### G3W Client Application Service ###";
   var self = this;
-  this.initialized = false;
+  this.ready = false;
   this._modalOverlay = null;
+  this._acquirePostBoostrap = false;
   this.config = {};
 
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
   
-  this.init = function(config){
+  this.init = function(config,acquirePostBoostrap){
     this._config = config;
+    if (acquirePostBoostrap) {
+      this._acquirePostBoostrap = true;
+    }
     this._bootstrap();
   };
   
@@ -27,11 +31,15 @@ var ApplicationService = function(){
   
   this.getRouterService = function() {
     return RouterService;
-  }
+  };
+  
+  this.postBootstrap = function() {
+    RouterService.init();
+  };
   
   this._bootstrap = function(){
     var self = this;
-    if (!this.initialized){
+    if (!this.ready){
       //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
       //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
       $.when(
@@ -43,6 +51,9 @@ var ApplicationService = function(){
           pluginsConfigs: self._config.plugins
         });
         self.emit('ready');
+        if (!self._acquirePostBoostrap) {
+          self.postBootstrap();
+        }
         this.initialized = true;
       });
     };

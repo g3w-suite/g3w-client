@@ -28,6 +28,14 @@ function MapService(project){
   };
   this.config = ApplicationService.getConfig();
   
+  var routerService = ApplicationService.getRouterService();
+  routerService.addRoute('map/{?query}',function(query){
+    var query = query || {};
+    if (query.center) {
+      console.log('Centra mappa su: '+query.center);
+    }
+  });
+  
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
     if (this._howManyAreLoading == 0){

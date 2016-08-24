@@ -1,5 +1,8 @@
 var t = require('sdk/core/i18n/i18n.service').t;
 require('sdk/gui/vue/vue.directives');
+var inherit = require('core/utils/utils').inherit;
+var base = require('core/utils/utils').base;
+var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('sdk/gui/componentsregistry');
 var GUI = require('sdk/gui/gui');
 // temporaneo per far funzionare le cose
@@ -65,7 +68,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     //registro altri componenti che non hanno una collocazione spaziale precisa
     // come da esempio i risultati che possono essere montati sulla floatbar o altre parti del template
     this._addOtherComponents();
-
+    this.emit('ready');
     GUI.ready();
   };
 
@@ -249,7 +252,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */
   };
   
+  base(this);
 };
+inherit(ApplicationTemplate,G3WObject);
 
 ApplicationTemplate.PLACEHOLDERS = [
   'navbar',

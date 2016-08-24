@@ -191,7 +191,4 @@ proto._stripInitialQuery = function(locationQuery) {
   return locationQuery;
 };
 
-var routerService = new RouterService();
-routerService.init();
-
-module.exports = routerService;
+module.exports = new RouterService;

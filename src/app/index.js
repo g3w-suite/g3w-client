@@ -130,6 +130,9 @@ ApplicationService.on('ready',function(){
   var templateConfig = createTemplateConfig();
   //istanzio l'application Template
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
+  applicationTemplate.on('ready',function(){
+    ApplicationService.postBootstrap();
+  })
   //inizializzo e faccio partire con ilmetodo init
   applicationTemplate.init();
 });
@@ -143,7 +146,7 @@ bootstrap = function(){
     config.group = initConfig.group;
     
     var applicationConfig = createApplicationConfig();
-    ApplicationService.init(applicationConfig);
+    ApplicationService.init(applicationConfig,true); // lancio manualmente il postBootstrp
   })
 }();
 
