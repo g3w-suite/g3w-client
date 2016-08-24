@@ -286,24 +286,24 @@ proto.setAttributes = function(feature,attributes){
   this._editBuffer.updateAttributes(feature);
 };
 
-proto.getRelationsWithAttributes = function(feature){
+proto.getRelationsWithValues = function(feature){
   var fid = feature.getId();
   if (this._vectorLayer.hasRelations()){
     var fieldsPromise;
     // se non ha fid vuol dire che è nuovo e senza attributi, quindi prendo i fields vuoti
     if (!fid){
-      fieldsPromise = this._vectorLayer.getRelationsWithAttributes();
+      fieldsPromise = this._vectorLayer.getRelationsWithValues();
     }
     // se per caso ha un fid ma è un vettoriale nuovo
     else if (!this._vectorLayer.getFeatureById(fid)){
       // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
       if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
         var fks = this._vectorLayer.getRelationsFksWithValuesForFeature(feature);
-        fieldsPromise = this._vectorLayer.getRelationsWithAttributesFromFks(fks);
+        fieldsPromise = this._vectorLayer.getRelationsWithValuesFromFks(fks);
       }
       // altrimenti prendo i fields vuoti
       else {
-        fieldsPromise = this._vectorLayer.getRelationsWithAttributes();
+        fieldsPromise = this._vectorLayer.getRelationsWithValues();
       }
     }
     // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni già editati
@@ -322,7 +322,7 @@ proto.getRelationsWithAttributes = function(feature){
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
       else {
-        fieldsPromise = this._vectorLayer.getRelationsWithAttributes(fid);
+        fieldsPromise = this._vectorLayer.getRelationsWithValues(fid);
       }
     }
   }
@@ -333,7 +333,7 @@ proto.getRelationsWithAttributes = function(feature){
 };
 
 proto.getField = function(name,fields){
-  var fields = fields || this.getVectorLayer().getFieldsWithAttributes();
+  var fields = fields || this.getVectorLayer().getFieldsWithValues();
   var field = null;
   _.forEach(fields,function(f){
     if (f.name == name){

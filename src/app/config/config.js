@@ -20,6 +20,7 @@ var server =  {
   urls:  {
     ows:  '/ows',
     api:  '/api',
+    initconfig:  '/api/initconfig',
     config:  '/api/config',
     staticurl:  '',
   }

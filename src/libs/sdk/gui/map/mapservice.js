@@ -115,6 +115,10 @@ function MapService(project){
       }
     });
     
+    if (this.config.background_color) {
+      $('#'+this.target).css('background-color',this.config.background_color);;
+    }
+    
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
     
     this.viewer.map.getInteractions().forEach(function(interaction){
@@ -288,12 +292,9 @@ proto.setupControls = function(){
         case 'overview':
           var overviewProjectGid = self.project.getOverviewProjectGid();
           if (overviewProjectGid) {
-            console.log("Setto la mappa di overview: "+overviewProjectGid);
             ProjectsRegistry.getProject(overviewProjectGid)
             .then(function(project){
-              console.log("Progetto di overview arrivato.");
               var overViewMapLayers = self.getOverviewMapLayers(project);
-              console.log(overViewMapLayers[0].getSource().getParams());
               control = ControlsFactory.create({
                 type: controlType,
                 position: 'bl',

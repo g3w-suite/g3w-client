@@ -2,6 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var ApiService = require('core/apiservice');
+var RouterService = require('core/router');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
 
@@ -23,6 +24,10 @@ var ApplicationService = function(){
   this.getConfig = function() {
     return this._config;
   };
+  
+  this.getRouterService = function() {
+    return RouterService;
+  }
   
   this._bootstrap = function(){
     var self = this;

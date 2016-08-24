@@ -24,6 +24,7 @@ function createApplicationConfig() {
     overviewproject: config.group.overviewproject,
     baselayers: config.group.baselayers,
     mapcontrols: config.group.mapcontrols,
+    background_color: config.group.background_color,
     crs: config.group.crs,
     proj4: config.group.proj4,
     minscale: config.group.minscale,
@@ -98,16 +99,28 @@ function createTemplateConfig(){
   };
 }
 
-function obtainInitConfig(){
+function obtainInitConfig(initConfigUrl){
+  
   var d = $.Deferred();
   if (window.initConfig) {
     return d.resolve(window.initConfig);
   }
-  // altrimenti devo aspettare che local.initconfig.js abbia caricato l'initconfig
+  // altrimenti devo prenderlo dal server usando il percorso indicato in ?project=<percorso>
   else{
-    $(document).on('initconfigReady',function(e,initconfig){
-      return d.resolve(initconfig);
+    var projectPath;
+    var queryTuples = location.search.substring(1).split('&');
+    _.forEach(queryTuples,function(queryTuple){
+      if (queryTuple.indexOf("project") > -1) {
+        projectPath = queryTuple.split("=")[1];
+      }
     })
+    if (projectPath){
+      var initurl = initConfigUrl+'/'+projectPath;
+      $.get(initurl,function(initconfig){
+        initconfig.staticurl = "../build/"; // in locale forziamo il path degli asset
+        d.resolve(initconfig);
+      })
+    }
   }
   return d.promise();
 }
@@ -123,7 +136,7 @@ ApplicationService.on('ready',function(){
 
 bootstrap = function(){
   i18ninit(config.i18n);
-  obtainInitConfig()
+  obtainInitConfig(config.server.urls.initconfig)
   .then(function(initConfig){
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.mediaurl = initConfig.mediaurl;
