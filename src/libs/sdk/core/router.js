@@ -183,7 +183,6 @@ proto._stripInitialQuery = function(locationQuery) {
   if (previousQuery) {
     var previousQueryLength = previousQuery.length;
     var previousQueryPosition = locationQuery.indexOf(previousQuery);
-    var start = (previousQueryPosition == 0);
     queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
     querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
     querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
