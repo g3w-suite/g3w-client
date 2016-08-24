@@ -10,6 +10,7 @@ var ApplicationService = function(){
   this.secret = "### G3W Client Application Service ###";
   var self = this;
   this.ready = false;
+  this.complete = false;
   this._modalOverlay = null;
   this._acquirePostBoostrap = false;
   this.config = {};
@@ -34,7 +35,11 @@ var ApplicationService = function(){
   };
   
   this.postBootstrap = function() {
-    RouterService.init();
+    if (!this.complete) {
+      RouterService.init();
+      
+      this.complete = true;
+    }
   };
   
   this._bootstrap = function(){
