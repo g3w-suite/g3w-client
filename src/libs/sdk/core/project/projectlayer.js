@@ -63,6 +63,10 @@ proto.getName = function() {
   return this.state.name;
 };
 
+proto.getOrigName = function() {
+  return this.state.origname;
+};
+
 proto.getGeometryType = function() {
   return this.state.geometrytype;
 };
