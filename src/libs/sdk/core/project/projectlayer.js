@@ -168,12 +168,21 @@ proto.setInfoFormat = function(infoFormat) {
   this.state.infoformat = infoFormat;
 };
 
-proto.getOriginURL = function() {
+proto.getWmsUrl = function() {
   var url;
   if (this.state.source && this.state.source.type == 'wms' && this.state.source.url){
     url = this.state.source.url
-  };
+  }
+  else {
+    url = this.getProject().getWmsUrl();
+  }
   return url;
+};
+
+proto.getLegendUrl = function() {
+  var url = this.getWmsUrl();
+  sep = (url.indexOf('?') > -1) ? '&' : '?';
+  return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+this.getWMSLayerName();
 };
 
 ProjectLayer.ServerTypes = {
