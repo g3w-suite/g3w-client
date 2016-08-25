@@ -39,30 +39,33 @@ var ViewportService = function(){
   
   this.addComponents = function(components){
     var self = this;
-    _.forEach(components,function(component){
-      self.addComponent(component);
-    });
+    var regiteredComponents = _.keys(self._viewsByComponentId);
+
+    // la viewport ha al massimo due viste, ognuna contente al massimo un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
+    components = components.slice(0,3);
+    if (regiteredComponents.length == 2) {
+      return false;
+    }
+    
+    var sliceStart = regiteredComponents.length;
+    var sliceEnd = regiteredComponents.length + components.length;
+    var viewTags = ['one','two'].slice(sliceStart,sliceEnd);
+    _.forEach(viewTags, function(viewTag,idx){
+      var component = components[idx];
+      component.mount('#g3w-view-'+viewTag,true).
+      then(function(){
+        var componentId = component.getId();
+        self._viewsByComponentId[componentId] = {
+          viewTag: viewTag,
+          component: component
+        }
+      });
+    })
+    return true;
   };
   
   this.addComponent = function(component) {
-    var self = this;
-    // la viewport ha al massimo due viste, ognuna contente al massimo un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
-    var spaceLeft = 2 - _.keys(self._viewsByComponentId).length;
-    if (spaceLeft <= 0) {
-      return;
-    }
-    
-    // il primo componente ad essere aggiunto avrà il tag 'one'
-    var viewTag = (spaceLeft == 2) ? 'one' : 'two';
-
-    component.mount('#g3w-view-'+viewTag,true).
-    then(function(){
-      var componentId = component.getId();
-      self._viewsByComponentId[componentId] = {
-        viewTag: viewTag,
-        component: component
-      }
-    });
+    return this.addComponents[component];
   };
   
   this.showSecondaryView = function(split,ratioDenom) {

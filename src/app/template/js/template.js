@@ -83,14 +83,17 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   };
   
   this._addComponents = function(components,placeholder) {
+    var register = true;
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1){
       var placeholderService = ApplicationTemplate.PlaceholdersServices[placeholder];
       if (placeholderService) {
-        placeholderService.addComponents(components);
+        register = placeholderService.addComponents(components);
       }
     }
     _.forEach(components,function(component){
-      ComponentsRegistry.registerComponent(component);
+      if (register) {
+        ComponentsRegistry.registerComponent(component);
+      }
     })
   };
   

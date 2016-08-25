@@ -21,4 +21,23 @@
   @media (max-width: @screen-xs-max) {
     .translate(-@sidebar-width-small, 0);
   }
+  .quick-actions-menu {
+    height:46px;
+    width:100%;
+    line-height:46px;
+    background-color:
+    light-grey;
+    text-align:center;
+    .btn {
+      background-color: @sidebar-dark-bg;
+      border: 2px solid #888888;
+      color: white;
+      margin: 0px 10px 0px 10px;
+      &:hover {
+        color: white;
+        border-color: @light-blue;
+        background-color: @sidebar-dark-bg;
+      }
+    }
+  }
 }

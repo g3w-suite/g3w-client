@@ -35,6 +35,7 @@ function SidebarService(){
     _.forEach(components,function(component){
       self.addComponent(component);
     });
+    return true;
   };
   
   this.addComponent = function(component) {
@@ -56,6 +57,7 @@ function SidebarService(){
     if (_.has(component, 'initService')) {
       component.initService();
     };
+    return true;
   };
   
   this.removeComponent = function(){
