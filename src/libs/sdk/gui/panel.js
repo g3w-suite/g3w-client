@@ -3,11 +3,10 @@ var resolvedValue = require('core/utils/utils').resolve;
 var G3WObject = require('core/g3wobject');
 
 var Panel = function(options) {
-  self = this;
   this.internalPanel = null;
   var options = options || {};
-  self.id = options.id || null;
-  self.title = options.title || '';
+  this.id = options.id || null;
+  this.title = options.title || '';
 };
 
 inherit(Panel, G3WObject);

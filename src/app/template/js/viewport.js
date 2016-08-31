@@ -34,6 +34,8 @@ var ViewportService = function(){
   
   this._viewsByComponentId = {};
   var _components = null;
+  this._secondaryViewMinWidth = 300;
+  this._secondaryViewMinHeight = 200;
   
   /* INTERFACCIA PUBBLICA */
   
@@ -90,7 +92,7 @@ var ViewportService = function(){
   
   this._setPrimaryView = function(viewTag) {
     this.state.primaryView = viewTag;
-    this._layout();
+    //this._layout();
   };
   
   this._prepareLayout = function() {
@@ -116,6 +118,19 @@ var ViewportService = function(){
     
     GUI.on('ready',function(){
       // primo layout
+      var primaryViewTag = self.state.primaryViewTag;
+      var seondaryViewTag = self._otherTag(primaryViewTag);
+      var secondaryEl = $(".g3w-viewport ."+seondaryViewTag);
+      
+      var seondaryViewMinWidth = secondaryEl.css('min-width');
+      if ((seondaryViewMinWidth != "") && !_.isNaN(parseFloat(seondaryViewMinWidth))) {
+        self._secondaryViewMinWidth =  parseFloat(seondaryViewMinWidth);
+      }
+      var seondaryViewMinHeight = secondaryEl.css('min-height');
+      if ((seondaryViewMinHeight != "") && !_.isNaN(parseFloat(seondaryViewMinHeight))) {
+        self._secondaryViewMinHeight =  parseFloat(seondaryViewMinHeight);
+      }
+
       self._layout();
       
       // resize scatenato da GUI
@@ -139,7 +154,7 @@ var ViewportService = function(){
     });
   };
   
-  this._calcViewSizes = function() {
+  this._setViewSizes = function() {
     var primaryViewTag = this.state.primaryViewTag;
     var seondaryViewTag = this._otherTag(primaryViewTag);
     
@@ -148,40 +163,37 @@ var ViewportService = function(){
     
     var primaryWidth = viewportWidth;
     var primaryHeight = viewportHeight;
-    var secondaryWidth = 0;
-    var secondaryHeight = 0;
     
-    if (this.state.secondaryVisible) {
-      var ratio = this.state.ratioDenom;
-      if (ratio > 0) {
-        if (this.state.split == 'h') {
-          secondaryWidth = viewportWidth / ratio;
-          secondaryHeight = viewportHeight;
-          primaryWidth = viewportWidth - secondaryWidth;
-          primaryHeight = viewportHeight;
-        }
-        else {
-          secondaryWidth = viewportWidth;
-          secondaryHeight = viewportHeight / ratio;
-          primaryWidth = viewportWidth;
-          primaryHeight = viewportHeight - secondaryHeight;
-        }
+    var ratio = this.state.ratioDenom;
+    if (ratio > 0) {
+      if (this.state.split == 'h') {
+        secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth / ratio),this._secondaryViewMinWidth) : 0;
+        secondaryHeight = viewportHeight;
+        primaryWidth = viewportWidth - secondaryWidth;
+        primaryHeight = viewportHeight;
       }
       else {
-        this.state.secondaryVisible = false;
+        secondaryWidth = viewportWidth;
+        secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight / ratio),this._secondaryViewMinHeight) : 0;
+        primaryWidth = viewportWidth;
+        primaryHeight = viewportHeight - secondaryHeight;
       }
     }
     
     this.state.viewSizes[primaryViewTag].width = primaryWidth;
     this.state.viewSizes[primaryViewTag].height = primaryHeight;
+    //var primaryEl = $(".g3w-viewport ."+primaryViewTag);
+    
+    
     this.state.viewSizes[seondaryViewTag].width = secondaryWidth;
     this.state.viewSizes[seondaryViewTag].height = secondaryHeight;
+    //var secondaryEl = $(".g3w-viewport ."+seondaryViewTag);
   };
   
   this._viewportHeight = function() {
-      var topHeight = $(".navbar").innerHeight();
-      return $(window).innerHeight() - topHeight;
-    };
+    var topHeight = $(".navbar").innerHeight();
+    return $(window).innerHeight() - topHeight;
+  };
     
   this._viewportWidth = function() {
     var offset = $(".main-sidebar").offset().left;
@@ -191,21 +203,28 @@ var ViewportService = function(){
   };
   
   this._layout = function() {
+    var splitClassToAdd = (this.state.split == 'h') ? 'split-h' : 'split-v';
+    var splitClassToRemove =  (this.state.split == 'h') ? 'split-v' : 'split-c';
+    $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
+    $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
+    
+    this._setViewSizes();
+    this._layoutComponents();
+  };
+  
+  this._layoutComponents = function() {
     var self = this;
-      if (!_components){
-        _components = _.map(this._viewsByComponentId,function(view){ return view.component; });
-      }
-      //var width = self._viewportWidth();
-      //var height = self._viewportHeight();
-      this._calcViewSizes();
-      _.forEach(_components,function(component){
-        // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
-        var viewTag = self._viewsByComponentId[component.getId()].viewTag;
-        var width = self.state.viewSizes[viewTag].width;
-        var height = self.state.viewSizes[viewTag].height;
-        component.layout(width,height);
-      })
+    if (!_components){
+      _components = _.map(this._viewsByComponentId,function(view){ return view.component; });
     }
+    _.forEach(_components,function(component){
+      // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
+      var viewTag = self._viewsByComponentId[component.getId()].viewTag;
+      var width = self.state.viewSizes[viewTag].width;
+      var height = self.state.viewSizes[viewTag].height;
+      component.layout(width,height);
+    })
+  };
   
   this._prepareLayout();
   base(this);
@@ -221,7 +240,7 @@ var ViewportComponent = Vue.extend({
       state: viewportService.state
     }
   }
-})
+});
 
 module.exports = {
   ViewportService: viewportService,

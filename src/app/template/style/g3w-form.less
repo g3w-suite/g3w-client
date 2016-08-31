@@ -1,0 +1,49 @@
+.g3w-form{
+  button{
+    margin: 0px 5px 0px 5px
+  }
+  .g3w-relationname{
+    color: @light-blue;
+    font-size: 1.2em;
+    border-top: 1px solid darken(@gray,10%);
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px;
+  }
+  .btn-add {
+    background-color:white;
+    color:@light-blue;
+    font-size:1.8em;
+    right: 18px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+  .link {
+    color: @light-blue;
+    cursor: pointer;
+    &.dashboardlink {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    &.morelink {
+      font-weight: bold;
+      text-decoration: none;
+    }
+    &.trash {
+      color: red;
+      margin-right: 5px;
+    }
+  }
+  tr.attributes-preview {
+    cursor: pointer;
+    &:hover td {
+      background-color: darken(#f3f3f3,5%);
+    }
+  }
+  .showhide-transition {
+    transition: all .3s ease;
+  }
+  .showhide-leave {
+    opacity: 0;
+  }
+}

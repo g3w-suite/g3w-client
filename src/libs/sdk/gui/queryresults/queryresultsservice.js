@@ -2,12 +2,14 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
+var ComponentsRegistry = require('gui/componentsregistry');
 var ProjectsRegistry = require('core/project/projectsregistry');
 
 function QueryResultsService(){
   var self = this;
   this._actions = {
-    'zoomto': QueryResultsService.zoomToElement
+    'zoomto': QueryResultsService.zoomToElement,
+    'gotogeometry': QueryResultsService.goToGeometry
   };
   
   this.init = function(options) {
@@ -102,6 +104,14 @@ function QueryResultsService(){
 
 QueryResultsService.zoomToElement = function(layer,feature) {
   console.log(feature.geometry);
+};
+
+QueryResultsService.goToGeometry = function(layer,feature) {
+  if (feature.geometry) {
+    GUI.hideQueryResults();
+    var mapService = ComponentsRegistry.getComponent('map').getService();
+    mapService.highlightGeometry(feature.geometry);
+  }
 };
 
 // Make the public service en Event Emitter

@@ -188,14 +188,46 @@ proto.getFieldsWithValues = function(obj){
 
 proto.setRelations = function(relations){
   this._relations = relations;
+  _.forEach(relations,function(relation){
+    _.forEach(relation.fields,function(field,idx){
+      if (field.name == relation.pk) {
+        relation.pkFieldIndex = idx
+      }
+    })
+  })
 };
 
 proto.getRelations = function(){
   return this._relations;
 };
 
+proto.getRelation = function(relationName) {
+  var relation;
+  _.forEach(this._relations,function(_relation){
+    if (_relation.name == relationName) {
+      relation = _relation;
+    }
+  })
+  return relation;
+};
+
 proto.hasRelations = function(){
   return !_.isNull(this._relations);
+};
+
+proto.getRelationPkFieldIndex = function(relation) {
+  var pkFieldIndex;
+  _.forEach(relation.fields,function(field,idx){
+    if (field.name == relation.pk) {
+      pkFieldIndex = idx;
+    }
+  })
+  return pkFieldIndex;
+};
+
+proto.getRelationElementPkValue = function(relation,element) {
+  var pkFieldIndex = this.getRelationPkFieldIndex(relation);
+  return element.fields[pkFieldIndex].value;
 };
 
 proto.getRelationsFksKeys = function(){
@@ -206,26 +238,26 @@ proto.getRelationsFksKeys = function(){
   return fks;
 };
 
+proto.getRelationFields = function(relation) {
+  return relation.fields;
+};
+
 proto.getRelationFieldsNames = function(relation){
-  var relationFields = this._relations[relation];
-  if (relationFields){
-    return _.map(relationFields,function(field){
-      return field.name;
-    });
-  }
-  return null;
+  return _.map(relationFields,function(field){
+    return field.name;
+  });
 };
 
 // ottengo le relazioni a partire dal fid di una feature esistente
 proto.getRelationsWithValues = function(fid){
+  if (!this._relations) {
+    resolve([]);
+  }
   var relations = _.cloneDeep(this._relations);
   var self = this;
   if (!fid || !this.getFeatureById(fid)){
-    _.forEach(relations,function(relation,relationKey){
-        // inizialmente setto a null i valori
-      _.forEach(relation.fields,function(field){
-        field.value = null;
-      })
+    _.forEach(relations,function(relation){
+      relation.elements = [];
     });
     return resolve(relations);
   }
@@ -234,8 +266,7 @@ proto.getRelationsWithValues = function(fid){
       var deferred = $.Deferred();
       var attributes = this.getFeatureById(fid).getProperties();
       var fks = {};
-      _.forEach(relations,function(relation,relationKey){
-        var url = relation.url;
+      _.forEach(relations,function(relation){
         var keyVals = [];
         _.forEach(relation.fk,function(fkKey){
           fks[fkKey] = attributes[fkKey];
@@ -260,7 +291,8 @@ proto.getRelationsWithValuesFromFks = function(fks){
   var relations = _.cloneDeep(this._relations);
   var relationsRequests = [];
 
-  _.forEach(relations,function(relation,relationKey){
+  _.forEach(relations,function(relation){
+    relation.elements = []; // creo la proprietà che accoglierà gli elementi della relazione
     var url = relation.url;
     var keyVals = [];
     _.forEach(relation.fk,function(fkKey){
@@ -270,10 +302,21 @@ proto.getRelationsWithValuesFromFks = function(fks){
     var fkParams = _.join(keyVals,"&");
     url += "?"+fkParams;
     relationsRequests.push($.get(url)
-      .then(function(relationAttributes){
-        _.forEach(relation.fields,function(field){
-          field.value = relationAttributes[0][field.name];
-        });
+      .then(function(relationsElements){
+        if (relationsElements.length) {
+          _.forEach(relationsElements,function(relationElement){
+            var element = {};
+            element.fields = _.cloneDeep(relation.fields);
+            _.forEach(element.fields,function(field){
+              field.value = relationElement[field.name];
+              if (field.name == relation.pk) {
+                element.id = field.value // aggiungo element.id dandogli il valore della chiave primaria della relazione
+              }
+            });
+            
+            relation.elements.push(element);
+          })
+        }
       })
     )
   })
@@ -288,7 +331,7 @@ proto.setStyle = function(style){
   this._olLayer.setStyle(style);
 };
 
-proto.getLayer = function(){
+proto.getMapLayer = function(){
   return this._olLayer;
 };
 

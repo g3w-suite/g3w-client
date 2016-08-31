@@ -10,6 +10,14 @@ Vue.filter('startcase', function (value) {
   return _.startCase(value);
 });
 
+Vue.filter('lowerCase', function (value) {
+  return _.lowerCase(value);
+});
+
+Vue.filter('relationplural', function (relation) {
+  return (relation.plural) ? relation.plural : _.startCase(relation.name);
+});
+
 Vue.validator('email', function (val) {
   return /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(val)
 });
@@ -20,6 +28,12 @@ Vue.validator('integer', function (val) {
 
 var FormPanel = Vue.extend({
   template: require('./formpanel.html'),
+  data: function() {
+    return {
+      state: {},
+    }
+  },
+  transitions: {'addremovetransition': 'showhide'},
   methods: {
     exec: function(cbk){
       var relations = this.state.relations || null;
@@ -58,11 +72,61 @@ var FormPanel = Vue.extend({
     },
     showRelation: function(relation){
       return this.$options.form._shouldShowRelation(relation);
+    },
+    relationPkFieldName: function(relation) {
+      return relation.pk;
+    },
+    isRelationElementDeletable: function(relation,element) {
+      var min = 1;
+      if (relation.min) {
+        min = Math.min(min.relation.min);
+      }
+      return min < relation.elements.length;
+    },
+    canAddRelationElements: function(relation) {
+      var canAdd = true;
+      if (relation.type == 'ONE') {
+        canAdd = (relation.elements.length) ? false : true // se è una relazione 1:1 e non ho elementi, lo posso aggiungere, altrimenti no
+      }
+      else {
+        var max = relation.max ? relation.max : Number.POSITIVE_INFINITY;
+        canAdd = relation.elements.length < max; 
+      }
+      return canAdd;
+    },
+    addRelationElement: function(relation) {
+      this.$options.form._addRelationElement(relation);
+    },
+    removeRelationElement: function(relation,element){
+      this.$options.form._removeRelationElement(relation,element);
+    },
+    fieldsSubset: function(fields) {
+      var end = Math.min(3,fields.length);
+      return fields.slice(0,end);
+    },
+    fieldsSubsetLength: function(fields) {
+      return this.fieldsSubset(fields).length;
+    },
+    collapseElementBox: function(relation,element) {
+      var boxid = this.getUniqueRelationElementid(relation,element);
+      if (this.state.elementsBoxes[boxid]) {
+        return this.state.elementsBoxes[boxid].collapsed;
+      }
+    },
+    toggleElementBox: function(relation,element) {
+      var boxid = this.getUniqueRelationElementid(relation,element);
+      this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
+    },
+    getUniqueRelationElementid: function(relation,element){
+      return this.$options.form.getUniqueRelationElementid(relation,element);
     }
   },
   computed: {
     isValid: function(field) {
       return this.$validate(field.name);
+    },
+    hasRelations: function(){
+      return this.state.relations.length
     },
   }
 });
@@ -88,6 +152,7 @@ function Form(options){
   // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   this.internalComponent = null;
   this.options =  options || {};
+  this.provider = options.provider;
   this.id = options.id; // id del form
   this.name = options.name; // nome del form
   this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
@@ -113,6 +178,10 @@ proto.mount = function(container){
   var panel = this._setupPanel();
   this._mountPanel(panel,container);
   return resolve(true);
+};
+
+proto._mountPanel = function(panel,container){
+  panel.$mount().$appendTo(container);
 };
 
 // richiamato quando la GUI chiede di chiudere il pannello. Se ritorna false il pannello non viene chiuso
@@ -255,31 +324,47 @@ proto._setupFields = function(){
   if (this.state.relations){
     var relations = this.state.relations;
     _.forEach(relations,function(relation){
-      _.forEach(relation.fields,function(field){
-        if(_.isNil(field.value)){
-          var defaultValue = self._getDefaultValue(field);
-          if (defaultValue){
-            field.value = defaultValue;
+      _.forEach(relation.elements,function(element){
+        _.forEach(relation.fields,function(field){
+          if(_.isNil(field.value)){
+            var defaultValue = self._getDefaultValue(field);
+            if (defaultValue){
+              field.value = defaultValue;
+            }
           }
-        }
-      });
-    })
+        })
+      })
+    });
   }
 };
 
 proto._setupPanel = function(){
+  var self = this;
   var panel = this.internalComponent = new this._formPanel({
     form: this
   });
   if (this.options.buttons) {
     panel.buttons = this.options.buttons;
   }
+  
+  
+  var elementsBoxes = {};
+  
+  _.forEach(this.state.relations,function(relation){
+    _.forEach(relation.elements,function(element){
+      var boxid = self.getUniqueRelationElementid(relation,element);
+      elementsBoxes[boxid] = {
+        collapsed: true
+      }
+    })
+  })
+  this.state.elementsBoxes = elementsBoxes;
   panel.state = this.state;
-  return panel
+  return panel;
 };
 
-proto._mountPanel = function(panel,container){
-  panel.$mount().$appendTo(container);
+proto.getUniqueRelationElementid = function(relation,element){
+  return relation.name+'_'+element.id;
 };
 
 proto._getField = function(fieldName){
@@ -290,6 +375,23 @@ proto._getField = function(fieldName){
     }
   })
   return field;
+};
+
+proto._addRelationElement = function(relation) {
+  var element = this.provider.createRelationElement(relation);
+  var elementBoxId = this.getUniqueRelationElementid(relation,element);
+  Vue.set(this.state.elementsBoxes,elementBoxId,{collapsed:false});
+  relation.elements.push(element);
+};
+
+proto._removeRelationElement = function(relation,element){
+  var self = this;
+  _.forEach(relation.elements,function(_element,idxToRemove){
+    if (_element.id == element.id) {
+      relation.elements.splice(idxToRemove,1);
+      delete self.state.elementsBoxes.elmentBoxId;
+    }
+  })
 };
 
 proto._getRelationField = function(fieldName,relationName){

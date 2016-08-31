@@ -130,7 +130,7 @@ proto.start = function(){
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     })
-    this._mapService.viewer.map.addLayer(this._editVectorLayer.getLayer());
+    this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
     
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
@@ -199,10 +199,6 @@ proto.isToolActive = function(toolType){
    return false;
 };
 
-proto.generateId = function(){
-  return this._editBuffer.generateId();
-};
-
 proto.commit = function(newFeatures){
   this._editBuffer.commit(newFeatures);
 };
@@ -255,12 +251,12 @@ proto.getEditedFeatures = function(){
     add: this._editBuffer.collectFeatures('new',true),
     update: this._editBuffer.collectFeatures('updated',true),
     delete: this._editBuffer.collectFeatures('deleted',true),
-    relationsattributes: this._editBuffer.collectRelationsAttributes(),
+    relations: this._editBuffer.collectRelationsAttributes(),
     lockids: lockIds
   }
 };
 
-proto.setFieldsWithAttributes = function(feature,fields,relations){
+proto.setFieldsWithValues = function(feature,fields,relations){
   var attributes = {};
   _.forEach(fields,function(field){
     attributes[field.name] = field.value;
@@ -269,21 +265,21 @@ proto.setFieldsWithAttributes = function(feature,fields,relations){
   var relationsAttributes = null;
   if (relations){
     var relationsAttributes = {};
-    _.forEach(relations,function(relation,relationKey){
+    _.forEach(relations,function(relation){
       var attributes = {};
       _.forEach(relation.fields,function(field){
         attributes[field.name] = field.value;
       });
-      relationsAttributes[relationKey] = attributes;
+      relationsAttributes[relation.name] = attributes;
     });
   }
   feature.setProperties(attributes);
-  this._editBuffer.updateAttributes(feature,relationsAttributes);
+  this._editBuffer.updateFields(feature,relationsAttributes);
 };
 
-proto.setAttributes = function(feature,attributes){
-  feature.setProperties(attributes);
-  this._editBuffer.updateAttributes(feature);
+proto.setFields = function(feature,fields){
+  feature.setProperties(fields);
+  this._editBuffer.updateFields(feature);
 };
 
 proto.getRelationsWithValues = function(feature){
@@ -312,9 +308,9 @@ proto.getRelationsWithValues = function(feature){
       if (hasEdits){
         var relations = this._vectorLayer.getRelations();
         var relationsAttributes = this._editBuffer.getRelationsAttributes(fid);
-        _.forEach(relationsAttributes,function(relation,relationKey){
+        _.forEach(relationsAttributes,function(relation){
           _.forEach(relations[relationKey].fields,function(field){
-            field.value = relationsAttributes[relationKey][field.name];
+            field.value = relationsAttributes[relation.name][field.name];
           });
         });
         
@@ -331,6 +327,17 @@ proto.getRelationsWithValues = function(feature){
   }
   return fieldsPromise;
 };
+
+proto.createRelationElement = function(relation) {
+  var element = {}
+  element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
+  element.id = this.generateId();
+  return element;
+};
+
+proto.getRelationPkFieldIndex = function(relationName) {
+  return this._vectorLayer.getRelationPkFieldIndex(relationName);
+}
 
 proto.getField = function(name,fields){
   var fields = fields || this.getVectorLayer().getFieldsWithValues();

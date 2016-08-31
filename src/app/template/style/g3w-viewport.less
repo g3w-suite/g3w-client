@@ -1,9 +1,28 @@
-.g3w-view {
-  &.one {
-    display:inline-block
-  }
-  &.two {
-    float:right;
-    border-left: 1px solid lighten(@sidebar-dark-submenu-bg, 15%);
+.g3w-viewport {
+  overflow:hidden;
+  .g3w-view {
+    &.one {
+      display:inline-block;
+      height:0px;
+      width:0px;
+      -webkit-transition: width 0.3s;
+      transition: width 0.3s;
+      overflow: hidden;
+    }
+    &.two {
+      float:right;
+      height:0px;
+      width:0px;
+      //min-width: 300px;
+      //min-height: 200px;
+      -webkit-transition: width 0.3s;
+      transition: width 0.3s;
+      &.split-h {
+        border-left: 2px solid @light-blue;
+      }
+      &.split-v {
+        border-top: 2px solid @light-blue;
+      }
+    }
   }
 }

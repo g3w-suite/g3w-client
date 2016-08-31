@@ -9,7 +9,7 @@ function AddFeatureTool(editor,options){
   var options = options || {};
   this._running = false;
   this._busy = false;
-  this.source = editor.getEditVectorLayer().getLayer().getSource();
+  this.source = editor.getEditVectorLayer().getMapLayer().getSource();
   this.isPausable = true;
   
   this.drawInteraction = null;

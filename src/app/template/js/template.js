@@ -236,20 +236,21 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var contentComponent = ComponentsRegistry.getComponent('content');
       // contentComponent.setContent(content);  DA IMPLEMENTARE: Il secondo componente settato in fase di configurazione (ancora non presente) dovrà implementare il metodo setContent
       // che accetterà o una stringa HTML, o un elemento DOM, oppure un componente Vue
-      viewport.ViewportService.setPrimaryComponent('content');
+      viewport.ViewportService.setPrimaryComponent('contents');
     };
     // Mostra i contenuto come vista aside
     GUI.showContentAside = function(content,split,ratio) {
-      var contentComponent = ComponentsRegistry.getComponent('content');
-      // contentComponent.setContent(content);
+      var contentComponent = ComponentsRegistry.getComponent('contents');
+      contentComponent.setContent(content);
       viewport.ViewportService.setPrimaryComponent('map');
       viewport.ViewportService.showSecondaryView(split,ratio);
     };
     // Nasconde la vista secondaria
     GUI.hideAside = function() {
       viewport.ViewportService.hideSecondaryView();
-    }
-    
+      var contentComponent = ComponentsRegistry.getComponent('contents');
+      contentComponent.removeContent();
+    };
     /* fine metodi specifici */
     
     /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */

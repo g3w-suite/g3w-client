@@ -1,6 +1,5 @@
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
-var RelationEditBuffer = require('./relationeditbuffer');
 
 function EditBuffer(editor){
   this._editor = editor;
@@ -17,12 +16,7 @@ function EditBuffer(editor){
   this._attributesBuffer = {};
   
   // buffer degli attributi delle relazioni
-  this._relationsBuffers = null;
-  /*var relations = editor.getVectorLayer().getRelations();
-  if (relations) {
-    this._setupRelationsBuffers(relations);
-  }*/
-  
+  this._relationssBuffer = {};
 }
 inherit(EditBuffer,G3WObject);
 module.exports = EditBuffer;
@@ -49,14 +43,6 @@ proto.destroy = function(){
 proto.generateId = function(){
   return this._editor.generateId();
 };
-
-/*proto._setupRelationsBuffers = function(relations) {
-  var self = this;
-  _.forEach(relations,function(relation){
-    var relationBuffer = RelationEditBuffer(this._editor,relation.name);
-    self._relationsBuffers[relation.name] = relationBuffer;
-  })
-}*/
 
 proto.addFeature = function(feature){
   if(!feature.getId()){
@@ -103,12 +89,9 @@ proto.getRelationsAttributes = function(fid){
 };
 
 proto.areFeatureRelationsEdited = function(fid){
-  _.forEach(this._relationsBuffers,function(relationBuffer){
-    if (relationBuffer[fid]){
-      return this._relationsAttributesBuffer[fid].length > -1;
-    }
-  }) 
-  
+  if (this._relationsAttributesBuffer[fid]){
+    return this._relationsAttributesBuffer[fid].length > -1;
+  }
   return false;
 };
 

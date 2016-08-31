@@ -28,7 +28,7 @@ var proto = PickFeatureTool.prototype;
 proto.run = function(){
   var self = this;
   //var map = MapService.viewer.map;
-  var layers = [this.editor.getVectorLayer().getLayer(),this.editor.getEditVectorLayer().getLayer()];
+  var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   
   this.pickFeatureInteraction = new PickFeatureInteraction({
     layers: layers

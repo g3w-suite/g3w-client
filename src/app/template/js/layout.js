@@ -444,7 +444,7 @@ $.LayoutManager._init = function() {
       sidebar.css({
         'position': 'fixed',
         'max-height': '100%',
-        'overflow': 'auto',
+        //'overflow': 'auto',  // non dovrebbe fare danni questo commento, serve per non nascondere il pulsanti "Chiudi pannello"
         'padding-bottom': '50px'
       });
     },
@@ -491,7 +491,7 @@ $.LayoutManager._init = function() {
       var box_content = box.find("> .box-body, > .box-footer, > form  >.box-body, > form > .box-footer");
       if (!box.hasClass("collapsed-box")) {
         //Convert minus into plus
-        element.children(":first")
+        element.find(".btn-collapser")
                 .removeClass(_this.icons.collapse)
                 .addClass(_this.icons.open);
         //Hide the content
@@ -500,7 +500,7 @@ $.LayoutManager._init = function() {
         });
       } else {
         //Convert plus into minus
-        element.children(":first")
+        element.find(".btn-collapser")
                 .removeClass(_this.icons.open)
                 .addClass(_this.icons.collapse);
         //Show the content

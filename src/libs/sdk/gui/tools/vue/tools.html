@@ -1,10 +1,10 @@
 <div class="g3w-tools">
   <ul>
     <li v-for="group in state.toolsGroups">
-      <div data-toggle="collapse" data-target="#{{ group.name }}-tools" class="tool-header">
+      <div class="tool-header">
         <span style="">{{ group.name }}</span>
       </div>
-      <div id="{{ group.name }}-tools" class="tool-box collapse">
+      <div id="{{ group.name }}-tools" class="tool-box">
         <template v-for="tool in group.tools">
           <i class="glyphicon glyphicon-cog"></i>
           <span @click="fireAction(tool.actionId)">{{ tool.name }}</span>

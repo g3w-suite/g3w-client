@@ -6,8 +6,8 @@ function EditingTool(editor,options) {
   var self = this;
   this._interactions = [];
   this.editor = editor;
-  this.layer = this.editor.getVectorLayer().getLayer();
-  this.editingLayer = this.editor.getEditVectorLayer().getLayer();
+  this.layer = this.editor.getVectorLayer().getMapLayer();
+  this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
   this.isPausable = false;
   this.options = options || {};
   this.steps = null;

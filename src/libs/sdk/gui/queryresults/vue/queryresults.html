@@ -39,11 +39,11 @@
                 <td :colspan="attributesSubsetLength(layer.attributes)+1">
                   <div class="action-buttons-container">
                     <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
-                      <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('zoomto',layer,feature)"></span>
+                      <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('gotogeometry',layer,feature)"></span>
                     </div>
-                    <div class="action-button hint--top-right" aria-label="Link all'elemento">
+                    <!--<div class="action-button hint--top-right" aria-label="Link all'elemento">
                       <span class="action-button-icon glyphicon glyphicon-link"></span>
-                    </div>
+                    </div>-->
                   </div>
                   <table>
                     <tr v-for="attribute in layer.attributes">

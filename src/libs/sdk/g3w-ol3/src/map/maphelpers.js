@@ -65,25 +65,28 @@ _Viewer.prototype.setTarget = function(id){
   this.map.setTarget(id);
 };
 
-_Viewer.prototype.goTo = function(coordinates, zoom){
+_Viewer.prototype.goTo = function(coordinates, options){
   var options = options || {};
   var animate = options.animate || true;
+  var zoom = options.zoom || false;
   var view = this.map.getView();
   
   if (animate) {
-    var pan = ol.animation.pan({
+    var panAnimation = ol.animation.pan({
       duration: 500,
       source: view.getCenter()
     });
-    var zoom = ol.animation.zoom({
+    var zoomAnimation = ol.animation.zoom({
       duration: 500,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(pan,zoom);
+    this.map.beforeRender(panAnimation,zoomAnimation);
   }
   
   view.setCenter(coordinates);
-  view.setZoom(zoom);
+  if (zoom) {
+    view.setZoom(zoom);
+  }
 };
 
 _Viewer.prototype.goToRes = function(coordinates, resolution){
@@ -92,15 +95,15 @@ _Viewer.prototype.goToRes = function(coordinates, resolution){
   var view = this.map.getView();
   
   if (animate) {
-    var pan = ol.animation.pan({
-      duration: 500,
+    var panAnimation = ol.animation.pan({
+      duration: 300,
       source: view.getCenter()
     });
-    var zoom = ol.animation.zoom({
-      duration: 500,
+    var zoomAnimation = ol.animation.zoom({
+      duration: 300,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(pan,zoom);
+    this.map.beforeRender(panAnimation,zoomAnimation);
   }
 
   view.setCenter(coordinates);
@@ -114,21 +117,21 @@ _Viewer.prototype.fit = function(geometry, options){
   var animate = options.animate || true;
   
   if (animate) {
-    var pan = ol.animation.pan({
-      duration: 500,
+    var panAnimation = ol.animation.pan({
+      duration: 300,
       source: view.getCenter()
     });
-    var zoom = ol.animation.zoom({
-      duration: 500,
+    var zoomAnimation = ol.animation.zoom({
+      duration: 300,
       resolution: view.getResolution()
     });
-    this.map.beforeRender(pan,zoom);
+    this.map.beforeRender(panAnimation,zoomAnimation);
   }
   
   if (options.animate) {
     delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
   }
-  options.constrainResolution = options.constrainResolution || false;
+  options.constrainResolution = options.constrainResolution || true;
   
   view.fit(geometry,this.map.getSize(),options);
 };

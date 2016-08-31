@@ -513,7 +513,12 @@ proto.extentToWGS84 = function(extent){
   return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
 };
 
-proto.highlightGeometry = function(geometryObj,options){    
+proto.highlightGeometry = function(geometryObj,options){
+  var options = options || {};
+  var zoom = options.zoom || true;
+  
+  var view = this.viewer.map.getView();
+  
   var geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
@@ -523,14 +528,20 @@ proto.highlightGeometry = function(geometryObj,options){
     geometry = format.readGeometry(geometryObj);
   }
   
-  if (options.zoom) {
-    this.viewer.fit(geometry);
+  var geometryType = geometry.getType();
+  if (geometryType == 'Point') {
+    this.viewer.goTo(geometry.getCoordinates());
   }
-  
+  else {
+    if (zoom) {
+      this.viewer.fit(geometry,options);
+    }
+  }
+
   var duration = options.duration || 4000;
   
   if (options.fromWGS84) {
-    geometry.transform('EPSG:4326','EPSG:'+this.project.project.crs);
+    geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
   }
   
   var feature = new ol.Feature({
