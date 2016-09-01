@@ -44,12 +44,12 @@ function PluginsRegistry(){
     return this.pluginsConfigs[pluginName];
   };
   
-  this.activate = function(plugin) {
+  /*this.activate = function(plugin) {
     var tools = plugin.getTools();
     if (tools.length) {
       ToolsService.registerToolsProvider(plugin);
     }
-  };
+  };*/
 };
 
 inherit(PluginsRegistry,G3WObject);

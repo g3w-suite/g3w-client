@@ -7,7 +7,20 @@ window.g3wsdk = require('sdk');
 
 var config = require('./config/config.js');
 
-function createApplicationConfig() {  
+// funzione temporanea che aggiunge il plugin (configurazioni) per caricare
+// il plugin geonodes con il layer accessi
+function aggiungiGeonodesPlugin(plugins) {
+
+  var pluginGeonodeObj = _.cloneDeep(plugins.iternet);
+  pluginGeonodeObj.layers = {};
+  pluginGeonodeObj.layers.geonotes = plugins.iternet.layers.accessi;
+  plugins.geonotes = pluginGeonodeObj;
+  return plugins;
+}
+
+function createApplicationConfig() {
+  //aggiungo temporaneamente il plugin Geodotes
+  aggiungiGeonodesPlugin(config.group.plugins);
   return {
     apptitle: config.apptitle || '',
     logo_img: config.group.header_logo_img,
@@ -120,7 +133,7 @@ function obtainInitConfig(initConfigUrl){
     })
     if (projectPath){
       var initurl = initConfigUrl+'/'+projectPath;
-      $.get(initurl,function(initconfig){
+      $.get(initurl, function(initconfig){
         initconfig.staticurl = "../build/"; // in locale forziamo il path degli asset
         d.resolve(initconfig);
       })
@@ -137,7 +150,7 @@ ApplicationService.on('ready',function(){
   applicationTemplate.on('ready',function(){
     ApplicationService.postBootstrap();
   })
-  //inizializzo e faccio partire con ilmetodo init
+  //inizializzo e faccio partire con il metodo init
   applicationTemplate.init();
 });
 

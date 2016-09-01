@@ -9,7 +9,9 @@ var translations = {
             "tools": "Strumenti",
             "tree": "Strati",
             "legend": "Legenda",
-            "street_search": "Cerca indirizzo"
+            "street_search": "Cerca indirizzo",
+            "Show": "Mostra",
+            "Hide": "Nascondi"
         }
     }
 };
