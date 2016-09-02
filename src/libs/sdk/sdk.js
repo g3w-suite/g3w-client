@@ -12,6 +12,7 @@ g3w.core = {
    MapLayer: require('core/map/layer/maplayer'),
    VectorLayer: require('core/map/layer/vectorlayer'),
    WmsLayer: require('core/map/layer/wmslayer'),
+   VectorLayerLoader: require('core/map/layer/loader/vectorloaderlayer'),
    Geometry: require('core/geometry/geometry'),
    geom: require('core/geometry/geom'),
    PickCoordinatesInteraction: require('g3w-ol3/src/interactions/pickcoordinatesinteraction'),
