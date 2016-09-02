@@ -7,6 +7,7 @@ var LoaderLayerService = require('./loaderlayerservice');
 
 function VectorLoaderLayer() {
 
+
     var self = this;
     this._layer = {};
     this._type = 'vector';
@@ -15,6 +16,7 @@ function VectorLoaderLayer() {
     this._mapService = null;
     this._pluginState = {};
     this._loadedExtent = null;
+
 
     base(this);
     this.init = function(options) {
@@ -26,6 +28,7 @@ function VectorLoaderLayer() {
         _.forEach(this._layers, function(layer, LayerCode){
             self._layerCodes.push(LayerCode);
         });
+
     }
 }
 
@@ -42,7 +45,7 @@ proto.setupAndLoadAllLayersData = function() {
     var layersReady = _.reduce(this._layers, function(ready,layer) {
         return !_.isNull(layer.vector);
     });
-    console.log(layersReady);
+
     //nel caso in cui nessun vector layer è stato caricato
     // quindi la proprietà vector è null
     if (!layersReady){
@@ -95,6 +98,7 @@ proto.setupAndLoadAllLayersData = function() {
     return deferred.promise();
 };
 
+
 proto.loadAllVectorsData = function() {
 
     var self = this;
@@ -117,12 +121,12 @@ proto.loadAllVectorsData = function() {
         return self.loadVectorData(Layer.vector, bbox);
     });
 
-    $.when.apply(this, vectorDataRequests)
+
+    $.when.apply(this,vectorDataRequests)
         .then(function(){
             var vectorsDataResponse = Array.prototype.slice.call(arguments);
             var vectorDataResponseForIternetCode = _.zipObject(self._layerCodes,vectorsDataResponse);
-            _.forEach(vectorDataResponseForIternetCode, function(vectorDataResponse,layerCode) {
-                console.log(vectorDataResponse);
+            _.forEach(vectorDataResponseForIternetCode, function(vectorDataResponse, layerCode){
                 if (vectorDataResponse.featurelocks){
                     self._layers[layerCode].editor.setFeatureLocks(vectorDataResponse.featurelocks);
                 }
@@ -214,8 +218,8 @@ proto.getVectorLayerData = function(vectorLayer, bbox) {
         })
     return d.promise();
 };
-//crea un nuovo vector layer
-proto.createVectorLayer = function(options) {
+
+proto.createVectorLayer = function(options){
 
     var vector = new VectorLayer(options);
     return vector;
