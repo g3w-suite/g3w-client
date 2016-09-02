@@ -41,7 +41,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template v-for="element in relation.elements">
+                  <template v-for="element in visibleElements(relation)">
                     <tr class="attributes-preview" @click="toggleElementBox(relation,element)">
                       <td v-for="relfield in fieldsSubset(element.fields)">
                         <span>{{relfield.value}}</span>

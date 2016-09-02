@@ -70,6 +70,11 @@ var FormPanel = Vue.extend({
     isVisible: function(field){
       return this.$options.form._isVisible(field);
     },
+    visibleElements: function(relation) {
+      return _.filter(relation.elements,function(element){
+        return element.state != 'DELETED';
+      });
+    },
     showRelation: function(relation){
       return this.$options.form._shouldShowRelation(relation);
     },
@@ -77,7 +82,17 @@ var FormPanel = Vue.extend({
       return relation.pk;
     },
     isRelationElementDeletable: function(relation,element) {
-      var min = 1;
+      if (element.new) {
+        return true;
+      }
+      var min;
+      if (relation.type == 'ONE') {
+        min = 1;
+      }
+      else {
+        min = Number.NEGATIVE_INFINITY;
+      }
+
       if (relation.min) {
         min = Math.min(min.relation.min);
       }
@@ -108,17 +123,17 @@ var FormPanel = Vue.extend({
       return this.fieldsSubset(fields).length;
     },
     collapseElementBox: function(relation,element) {
-      var boxid = this.getUniqueRelationElementid(relation,element);
+      var boxid = this.getUniqueRelationElementId(relation,element);
       if (this.state.elementsBoxes[boxid]) {
         return this.state.elementsBoxes[boxid].collapsed;
       }
     },
     toggleElementBox: function(relation,element) {
-      var boxid = this.getUniqueRelationElementid(relation,element);
+      var boxid = this.getUniqueRelationElementId(relation,element);
       this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
     },
-    getUniqueRelationElementid: function(relation,element){
-      return this.$options.form.getUniqueRelationElementid(relation,element);
+    getUniqueRelationElementId: function(relation, element){
+      return this.$options.form.getUniqueRelationElementId(relation,element);
     }
   },
   computed: {
@@ -352,7 +367,7 @@ proto._setupPanel = function(){
   
   _.forEach(this.state.relations,function(relation){
     _.forEach(relation.elements,function(element){
-      var boxid = self.getUniqueRelationElementid(relation,element);
+      var boxid = self.getUniqueRelationElementId(relation,element);
       elementsBoxes[boxid] = {
         collapsed: true
       }
@@ -363,7 +378,7 @@ proto._setupPanel = function(){
   return panel;
 };
 
-proto.getUniqueRelationElementid = function(relation,element){
+proto.getUniqueRelationElementId = function(relation, element){
   return relation.name+'_'+element.id;
 };
 
@@ -379,7 +394,7 @@ proto._getField = function(fieldName){
 
 proto._addRelationElement = function(relation) {
   var element = this.provider.createRelationElement(relation);
-  var elementBoxId = this.getUniqueRelationElementid(relation,element);
+  var elementBoxId = this.getUniqueRelationElementId(relation,element);
   Vue.set(this.state.elementsBoxes,elementBoxId,{collapsed:false});
   relation.elements.push(element);
 };
@@ -388,7 +403,8 @@ proto._removeRelationElement = function(relation,element){
   var self = this;
   _.forEach(relation.elements,function(_element,idxToRemove){
     if (_element.id == element.id) {
-      relation.elements.splice(idxToRemove,1);
+      //relation.elements.splice(idxToRemove,1);
+      element.state = 'DELETED'; // lo marco come elminato
       delete self.state.elementsBoxes.elmentBoxId;
     }
   })

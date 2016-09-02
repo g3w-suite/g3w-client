@@ -14,7 +14,10 @@ function PickFeatureTool(editor){
   
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
   this.setters = {
-    pickFeature: noop,
+    pickFeature: {
+      fnc: noop,
+      fallback: PickFeatureTool.prototype._fallBack
+    },
   };
   
   base(this,editor);

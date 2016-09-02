@@ -251,9 +251,24 @@ proto.getEditedFeatures = function(){
     add: this._editBuffer.collectFeatures('new',true),
     update: this._editBuffer.collectFeatures('updated',true),
     delete: this._editBuffer.collectFeatures('deleted',true),
-    relations: this._editBuffer.collectRelationsAttributes(),
+    //relations: this._editBuffer.collectRelationsAttributes(),
+    relationsedits: this.collectRelations(),
     lockids: lockIds
   }
+};
+
+proto.collectRelations = function() {
+  var relationsEdits = {};
+  relationsEdits = this._editBuffer.collectRelations();
+  /*_.forEach(this._vectorLayer.getRelations(),function(relation){
+    var relationEdits = {
+      add: [],
+      update: [],
+      delete: []
+    }
+    relationsEdits[relation.name] = relationEdits;
+  })*/
+  return relationsEdits;
 };
 
 proto.setFieldsWithValues = function(feature,fields,relations){
@@ -261,25 +276,9 @@ proto.setFieldsWithValues = function(feature,fields,relations){
   _.forEach(fields,function(field){
     attributes[field.name] = field.value;
   });
-  
-  var relationsAttributes = null;
-  if (relations){
-    var relationsAttributes = {};
-    _.forEach(relations,function(relation){
-      var attributes = {};
-      _.forEach(relation.fields,function(field){
-        attributes[field.name] = field.value;
-      });
-      relationsAttributes[relation.name] = attributes;
-    });
-  }
-  feature.setProperties(attributes);
-  this._editBuffer.updateFields(feature,relationsAttributes);
-};
 
-proto.setFields = function(feature,fields){
-  feature.setProperties(fields);
-  this._editBuffer.updateFields(feature);
+  feature.setProperties(attributes);
+  this._editBuffer.updateFields(feature,relations);
 };
 
 proto.getRelationsWithValues = function(feature){
@@ -304,16 +303,13 @@ proto.getRelationsWithValues = function(feature){
     }
     // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni già editati
     else {    
-      var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
+      var hasEdits = this._editBuffer.hasRelationsEdits(fid);
       if (hasEdits){
+        var relationsEdits = this._editBuffer.getRelationsEdits(fid);
         var relations = this._vectorLayer.getRelations();
-        var relationsAttributes = this._editBuffer.getRelationsAttributes(fid);
-        _.forEach(relationsAttributes,function(relation){
-          _.forEach(relations[relationKey].fields,function(field){
-            field.value = relationsAttributes[relation.name][field.name];
-          });
-        });
-        
+        _.forEach(relations,function (relation) {
+          relation.elements = _.cloneDeep(relationsEdits[relation.name]);
+        })
         fieldsPromise = resolve(relations);
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
@@ -332,6 +328,7 @@ proto.createRelationElement = function(relation) {
   var element = {}
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
+  element.state = 'NEW';
   return element;
 };
 
