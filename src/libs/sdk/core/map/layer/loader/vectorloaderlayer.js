@@ -45,7 +45,6 @@ proto.setupAndLoadAllLayersData = function() {
     var layersReady = _.reduce(this._layers, function(ready,layer) {
         return !_.isNull(layer.vector);
     });
-
     //nel caso in cui nessun vector layer è stato caricato
     // quindi la proprietà vector è null
     if (!layersReady){
@@ -65,7 +64,7 @@ proto.setupAndLoadAllLayersData = function() {
                     editor.setVectorLayer(vectorLayer);
                     editor.on("dirty",function(dirty){
                         self._pluginState.hasEdits = dirty;
-                    })
+                    });
                     self._layers[layerCode].editor = editor;
 
                 });
@@ -102,28 +101,27 @@ proto.setupAndLoadAllLayersData = function() {
 proto.loadAllVectorsData = function() {
 
     var self = this;
+    var deferred = $.Deferred();
     // verifico che il BBOX attuale non sia stato già  caricato
     var bbox = this._mapService.state.bbox;
     var loadedExtent = this._loadedExtent;
-    if (loadedExtent && ol.extent.containsExtent(loadedExtent,bbox)){
+    if (loadedExtent && ol.extent.containsExtent(loadedExtent, bbox)) {
         return resolvedValue();
     }
     if (!loadedExtent){
         this._loadedExtent = bbox;
-    }
-    else {
-        this._loadedExtent = ol.extent.extend(loadedExtent,bbox);
+    } else {
+        this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
     }
 
-    var deferred = $.Deferred();
-    var self = this;
     var vectorDataRequests = _.map(self._layers, function(Layer) {
+
         return self.loadVectorData(Layer.vector, bbox);
     });
 
+    $.when.apply(this, vectorDataRequests)
+        .then(function() {
 
-    $.when.apply(this,vectorDataRequests)
-        .then(function(){
             var vectorsDataResponse = Array.prototype.slice.call(arguments);
             var vectorDataResponseForIternetCode = _.zipObject(self._layerCodes,vectorsDataResponse);
             _.forEach(vectorDataResponseForIternetCode, function(vectorDataResponse, layerCode){
