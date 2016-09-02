@@ -4,7 +4,7 @@ var G3WObject = require('core/g3wobject');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-var ComponentsRegistry = require('sdk/gui/componentsregistry');
+var ComponentsRegistry = require('gui/componentsregistry');
 
 var Provider = {
   'QGIS': QueryQGISWMSProvider,
@@ -32,7 +32,8 @@ function QueryService(){
   //me lo porto da mapqueryservice ma vediamo cosa succede
   this.setMapService = function(mapService){
     this._mapService = mapService;
-  }
+  };
+
   this.setFilterObject = function(filterObject){
     this.filterObject = filterObject;
   };
@@ -65,16 +66,16 @@ function QueryService(){
       evalObject[operator] = {};
       evalObject[operator][field] = null;
       return evalObject;
-    };
+    }
     //functione che costruisce oggetti BOOLEANI caso AND OR contenente array di oggetti fornit dalla funzione createOperatorObject
     function createBooleanObject(booleanOperator, operations) {
       booleanObject = {};
       booleanObject[booleanOperator] = [];
       _.forEach(operations, function(operation){
         booleanObject[booleanOperator].push(createOperatorObject(operation));
-      })
+      });
       return booleanObject;
-    };
+    }
     /*
     // vado a creare l'oggetto filtro principale. Questo è un oggetto che contiene l'operatore booleano come root (chiave)
     // come valore un array di oggetti operatori che contengono il tipo di operatore come chiave e come valore un oggetto contenete
