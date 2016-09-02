@@ -12,11 +12,11 @@ function ToolsService(){
   
   this.setters = {
     addToolGroup: function(group) {
-      this.state.toolsGroups.push(group);
+      self.state.toolsGroups.push(group);
     }
-  }
+  };
   
-  this.addTools = function(groupName,tools) {
+  this.addTools = function(groupName, tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);
     if (!group) {
@@ -35,8 +35,8 @@ function ToolsService(){
   this.removeTool = function(toolId) {
   };
   
-  this.fireAction = function(actionid){
-    var action = this._actions[actionid];
+  this.fireAction = function(actionId){
+    var action = this._actions[actionId];
     action();
   };
   
@@ -46,18 +46,19 @@ function ToolsService(){
       if (_group.name == groupName) {
         group = _group;
       }
-    })
+    });
     return group;
-  }
+  };
   
   this._addAction = function(tool) {
     var actionId = Math.floor(Math.random() * 1000000)+1;
     tool.actionId = actionId;
     this._actions[actionId] = tool.action;
-  }
+  };
   
   base(this);
-};
-inherit(ToolsService,G3WObject);
+}
+
+inherit(ToolsService, G3WObject);
 
 module.exports = ToolsService;

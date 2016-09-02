@@ -20,7 +20,7 @@ function aggiungiGeonodesPlugin(plugins) {
 
 function createApplicationConfig() {
   //aggiungo temporaneamente il plugin Geodotes
-  aggiungiGeonodesPlugin(config.group.plugins);
+  //aggiungiGeonodesPlugin(config.group.plugins);
   return {
     apptitle: config.apptitle || '',
     logo_img: config.group.header_logo_img,
@@ -116,9 +116,11 @@ function createTemplateConfig(){
   };
 }
 
-function obtainInitConfig(initConfigUrl){
-  
+function obtainInitConfig(initConfigUrl) {
+
   var d = $.Deferred();
+  //se esiste un oggetto globale initiConfig
+  //risolvo con quell'oggetto
   if (window.initConfig) {
     return d.resolve(window.initConfig);
   }
@@ -126,16 +128,22 @@ function obtainInitConfig(initConfigUrl){
   else{
     var projectPath;
     var queryTuples = location.search.substring(1).split('&');
-    _.forEach(queryTuples,function(queryTuple){
+    _.forEach(queryTuples, function(queryTuple) {
+      //se esiste la parola project nel url
       if (queryTuple.indexOf("project") > -1) {
+        //prendo il valore del path progetto (nomeprogetto/tipoprogetto/idprogetto)
+        //esempio comune-di-capannori/qdjango/22/
         projectPath = queryTuple.split("=")[1];
       }
-    })
+    });
     if (projectPath){
-      var initurl = initConfigUrl+'/'+projectPath;
-      $.get(initurl, function(initconfig){
-        initconfig.staticurl = "../build/"; // in locale forziamo il path degli asset
-        d.resolve(initconfig);
+      var initUrl = initConfigUrl+'/'+projectPath;
+      //recupro dal server la configurazione di quel progetto
+      $.get(initUrl, function(initConfig) {
+        //initConfig è l'oggetto contenete:
+        //group, mediaurl, staticurl, user
+        initConfig.staticurl = "../build/"; // in locale forziamo il path degli asset
+        d.resolve(initConfig);
       })
     }
   }
@@ -157,13 +165,12 @@ ApplicationService.on('ready',function(){
 bootstrap = function(){
   i18ninit(config.i18n);
   obtainInitConfig(config.server.urls.initconfig)
-  .then(function(initConfig){
+  .then(function(initConfig) {
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
-    
     var applicationConfig = createApplicationConfig();
-    ApplicationService.init(applicationConfig,true); // lancio manualmente il postBootstrp
+    ApplicationService.init(applicationConfig, true); // lancio manualmente il postBootstrp
   })
 }();
 

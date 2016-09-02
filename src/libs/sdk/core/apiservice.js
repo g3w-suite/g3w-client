@@ -9,6 +9,7 @@ function ApiService(){
   this._apiUrls = {};
   
   this.init = function(config) {
+
     this._config = config;
     this._baseUrl = config.urls.api;
     this._apiEndpoints = config.urls.apiEndpoints;
@@ -29,7 +30,7 @@ function ApiService(){
     }
   };
   
-  this.get = function(api,options) {
+  this.get = function(api, options) {
     var self = this;
     var apiEndPoint = this._apiEndpoints[api];
     if (apiEndPoint) {

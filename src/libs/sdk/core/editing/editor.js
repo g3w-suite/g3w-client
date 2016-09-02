@@ -1,10 +1,12 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var resolve = require('core/utils/utils').resolve;
+var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 var GUI = require('gui/gui');
 var VectorLayer = require('core/map/layer/vectorlayer');
 
+//var Sequencer = require('./stepsequencer');
 var AddFeatureTool = require('./tools/addfeaturetool');
 var MoveFeatureTool = require('./tools/movepointtool');
 var ModifyFeatureTool = require('./tools/modifyfeaturetool');
@@ -22,34 +24,25 @@ var EditorGeometryTypes = [
   //'MultiPolygon'
 ];
 
-// Editor generico
-function Editor(options) {
-
-  this.options = options || null;
-  // vincoli alla possibilità di attivare l'editing
-  this.constraints = this.options.constraints || {};
-  this._layers = options.layers || [];
-  this._baseurl = options.baseurl || '';
-  this._mapService = null;
+// Editor di vettori puntuali
+function Editor(mapService,options){
+  this._mapService = mapService;
   this._vectorLayer = null;
   this._editVectorLayer = null;
   this._editBuffer = null;
   this._activeTool = null;
   this._dirty = false;
   this._newPrefix = '_new_';
+
   this._withFeatureLocks = false;
   this._featureLocks = null;
+
   this._started = false;
-  this._currentEditingLayer;
-  this._loadDataOnMapViewChangeListener = null;
-  this._currentEditingLayer = null;
-  this._loadedExtent = null;
 
   this._setterslisteners = {
-      before: {},
-      after: {}
+    before: {},
+    after: {}
   };
-
   this._geometrytypes = [
     'Point',
     //'MultiPoint',
@@ -58,103 +51,52 @@ function Editor(options) {
     //'Polygon',
     //'MultiPolygon'
   ];
+
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForGeometryTypes = {
-      'Point': {
-        addfeature: AddFeatureTool,
-        movefeature: MoveFeatureTool,
-        deletefeature: DeleteFeatureTool,
-        editattributes: PickFeatureTool
-      },
-      'LineString': {
-        addfeature: AddFeatureTool,
-        modifyvertex: ModifyFeatureTool,
-        movefeature: MoveFeatureTool,
-        deletefeature: DeleteFeatureTool,
-        editattributes: PickFeatureTool,
-        cutline: CutLineTool
-      }
-  };
-
-  this.state = {
-    editing: {
-      on: false,
-      enabled: false,
-      layerCode: null,
-      toolType: null,
-      startingEditingTool: false,
-      toolstep: {
-        n: null,
-        total: null,
-        message: null
-      },
+    'Point': {
+      addfeature: AddFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool
     },
-    retrievingData: false,
-    hasEdits: false
+    'LineString': {
+      addfeature: AddFeatureTool,
+      modifyvertex: ModifyFeatureTool,
+      movefeature: MoveFeatureTool,
+      deletefeature: DeleteFeatureTool,
+      editattributes: PickFeatureTool,
+      cutline: CutLineTool
+    }
   };
 
-  this.extend = function(tools) {
-    this.tools
-  };
-
-  this.init = function() {
-    //prendo il mapserveice della mappa
-    var self = this;
-    this._mapService = GUI.getComponent('map').getService();
-    // disabilito l'eventuale tool attivo se viene attivata un'interazione di tipo Pointer sulla mappa
-    this._mapService.on('pointerInteractionSet',function(interaction){
-      var currentEditingLayer = this.getCurrentEditingLayer();
-      if (currentEditingLayer) {
-        var activeTool = self.getCurrentEditingLayer().editor.getActiveTool().instance;
-        if(activeTool && !activeTool.ownsInteraction(interaction)){ // devo verificare che non sia un'interazione attivata da uno dei tool di editing di iternet
-          this.stopEditingTool();
-        }
-      }
-    });
-    //verifico se dopo il setMapView posso abilitare o disabilirare l'editing
-    this._mapService.onafter('setMapView', function(bbox,resolution,center) {
-      self.state.editing.enabled = (resolution < self.constraints.resolution) ? true : false;
-    });
-
-    this.state.editing.enabled = (this._mapService.getResolution() < this.constraints.resolution) ? true : false;
-
-    _.forEach(this._layers, function(layer) {
-      var layer = self._mapService.getProject().getLayerById(layer.id);
-      layer.name = layer.getOrigName();
-    });
-
-  };
   this._activeTool = new function(){
     this.type = null;
     this.instance = null;
-    
+
     this.setTool = function(type,instance){
       this.type = type;
       this.instance = instance;
     };
-    
+
     this.getType = function(){
       return this.type;
-    };
-
-    this.getToosl = function() {
-      return this._tools;
     };
 
     this.getTool = function(){
       return this.instance;
     };
-    
+
     this.clear = function(){
       this.type = null;
       this.instance = null;
     };
   }
-  
+
   this._tools = {};
-  
+
   base(this);
-};
+}
 inherit(Editor,G3WObject);
 module.exports = Editor;
 
@@ -164,277 +106,6 @@ proto.getMapService = function() {
   return this._mapService;
 };
 
-//INIZIO metodi importati da IternetService
-
-proto.startEditing = function() {
-  var self = this;
-  this.setupAndLoadAllVectorsData()
-      .then(function(data) {
-        // se tutto è andato a buon fine aggiungo i VectorLayer alla mappa
-        self.addToMap();
-        self.state.editing.on = true;
-        self.emit("editingstarted");
-
-        if (!self._loadDataOnMapViewChangeListener){
-          self._loadDataOnMapViewChangeListener = self._mapService.onafter('setMapView',function(){
-            if (self.state.editing.on && self.state.editing.enabled){
-              self.loadAllVectorsData();
-            }
-          });
-        }
-      })
-};
-
-proto.stopEditing = function(reset) {
-  var self = this;
-  // se posso stoppare tutti gli editor...
-  if (self.stopEditor(reset)){
-    _.forEach(this._layers,function(layer){
-      var vector = layer.vector;
-      self._mapService.viewer.removeLayerByName(vector.name);
-      layer.vector= null;
-      layer.editor= null;
-      self.unlockLayer(layer);
-    });
-    this.updateEditingState();
-    self.state.editing.on = false;
-    self._cleanUp()
-    self.emit("editingstopped");
-  }
-};
-
-proto.cleanUp = function(){
-  this._loadedExtent = null;
-};
-
-proto.startEditor = function(layer){
-  // avvio l'editor
-  if (layer.editor.start(this)){
-    // e registro i listeners
-    this.setCurrentEditingLayer(layer);
-    return true;
-  }
-  return false;
-};
-
-proto.startEditingTool = function(layer,toolType,options){
-  this.state.startingEditingTool = true;
-  var canStartTool = true;
-  if (!layer.editor.isStarted()){
-    canStartTool = this._startEditor(layer);
-  }
-  if(canStartTool && layer.editor.setTool(toolType,options)){
-    this.updateEditingState();
-    this.state.startingEditingTool = false;
-    return true;
-  }
-  this.state.startingEditingTool = false;
-  return false;
-};
-
-proto.stopEditor = function(reset){
-  var ret = true;
-  var layer = this.getCurrentEditingLayer();
-  if (layer) {
-    ret = layer.editor.stop(reset);
-    if (ret){
-      this.setCurrentEditingLayer();
-    }
-  }
-  return ret;
-};
-
-proto.stopEditingTool = function(){
-  var ret = true;
-  var layer = this.getCurrentEditingLayer();
-  if(layer){
-    ret = layer.editor.stopTool();
-    if (ret){
-      this.updateEditingState();
-    }
-  }
-  return ret;
-};
-
-proto.setupAndLoadAllVectorsData = function(){
-  var self = this;
-  var deferred = $.Deferred();
-  var layersReady = _.reduce(self._layers, function(ready, layer) {
-    return  ready || !_.isNull(layer.vector);
-  }, false);
-  self.state.retrievingData = true;
-  if (!layersReady) {
-    // eseguo le richieste delle configurazioni e mi tengo le promesse
-    var vectorLayersSetup = _.map(this._layers, function(layer){
-      return self.setupVectorLayer(layer);
-    });
-    // aspetto tutte le promesse
-    $.when.apply(this,vectorLayersSetup)
-        .then(function(){
-          var vectorLayers = Array.prototype.slice.call(arguments);
-
-          _.forEach(self._layers, function(layer) {
-            _.forEach(vectorLayers, function(vectorLayer){
-              if (layer.id == vectorLayer.id) {
-                layer.vector = vectorLayer;
-                var editor = new layer.editorClasses(self._mapService);
-                editor.setVectorLayer(vectorLayer);
-                editor.on("dirty",function(dirty){
-                  self.state.hasEdits = dirty;
-                })
-                layer.editor = editor;
-                return true;
-              }
-            })
-          });
-
-          self.loadAllVectorsData()
-              .then(function(){
-                deferred.resolve();
-              })
-              .fail(function(){
-                deferred.reject();
-              })
-              .always(function(){
-                self.state.retrievingData = false;
-              })
-        })
-        .fail(function(){
-          deferred.reject();
-        })
-  }
-  else{
-    this.loadAllVectorsData()
-        .then(function(){
-          deferred.resolve();
-        })
-        .fail(function(){
-          deferred.reject();
-        })
-        .always(function(){
-          self.state.retrievingData = false;
-        })
-  }
-  return deferred.promise();
-};
-
-proto.loadAllVectorsData = function(vectorLayers){
-  var self = this;
-  // verifico che il BBOX attuale non sia stato già caricato
-  var bbox = this._mapService.state.bbox;
-  var loadedExtent = this._loadedExtent;
-  if (loadedExtent && ol.extent.containsExtent(loadedExtent,bbox)){
-    return resolve();
-  }
-  if (!loadedExtent){
-    this._loadedExtent = bbox;
-  }
-  else {
-    this._loadedExtent = ol.extent.extend(loadedExtent,bbox);
-  }
-
-  var deferred = $.Deferred();
-  var self = this;
-  var vectorDataRequests = _.map(self._layers,function(Layer){
-    return self.loadVectorData(Layer.vector, bbox);
-  });
-  $.when.apply(this,vectorDataRequests)
-      .then(function(){
-        var vectorsDataResponse = Array.prototype.slice.call(arguments);
-        _.forEach(self._layers,function(layer){
-          _.forEach(vectorsDataResponse, function(vectorDataResponse) {
-            //verifico che ci siano features lock
-            if (vectorDataResponse.featurelocks) {
-              layer.editor.setFeatureLocks(vectorDataResponse.featurelocks);
-            }
-          })
-        });
-        deferred.resolve();
-      })
-      .fail(function(){
-        deferred.reject();
-      });
-
-  return deferred.promise();
-};
-
-proto.setupVectorLayer = function(layer) {
-  var self = this;
-  var deferred = $.Deferred();
-  // eseguo le richieste delle configurazioni e mi tengo le promesse
-  this.getVectorLayerConfig(layer.name)
-      .then(function(vectorConfigResponse) {
-        // instanzio il VectorLayer
-        var vectorConfig = vectorConfigResponse.vector;
-        var vectorLayer = self.createVectorLayer({
-          geometrytype: vectorConfig.geometrytype,
-          format: vectorConfig.format,
-          crs: "EPSG:3003",
-          id: layer.id,
-          name: layer.name,
-          pk: vectorConfig.pk
-        });
-        // ottengo la definizione dei campi
-        vectorLayer.setFields(vectorConfig.fields);
-        var relations = vectorConfig.relations;
-        if(relations){
-          // per dire a vectorLayer che i dati delle relazioni verranno caricati solo quando richiesti (es. aperture form di editing)
-          vectorLayer.lazyRelations = true;
-          vectorLayer.setRelations(relations);
-        }
-        // setto lo stile del layer OL
-        if (layer.style) {
-          vectorLayer.setStyle(layer.style);
-        }
-        deferred.resolve(vectorLayer);
-      })
-      .fail(function(){
-        deferred.reject();
-      })
-  return deferred.promise();
-};
-
-//funzione che carica il layer vettoriale geoJson
-proto.loadVectorData = function(vectorLayer,bbox){
-  var self = this;
-  // eseguo le richieste de dati e mi tengo le promesse
-  return self.getVectorLayerData(vectorLayer,bbox)
-      .then(function(vectorDataResponse){
-        vectorLayer.setData(vectorDataResponse.vector.data);
-        return vectorDataResponse;
-      })
-};
-
-// ottiene la configurazione del vettoriale (qui richiesto solo per la definizione degli input)
-proto.getVectorLayerConfig = function(layerName){
-  var d = $.Deferred();
-  $.get(this._baseurl+layerName+"/?config")
-      .done(function(data){
-        d.resolve(data);
-      })
-      .fail(function(){
-        d.reject();
-      })
-  return d.promise();
-};
-
-// ottiene il vettoriale in modalità editing
-proto.getVectorLayerData = function(vectorLayer,bbox){
-  var self = this;
-  var d = $.Deferred();
-  $.get(this._baseurl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-      .done(function(data){
-        d.resolve(data);
-      })
-      .fail(function(){
-        d.reject();
-      })
-  return d.promise();
-};
-
-proto.unlockLayer = function(layerConfig) {
-  $.get(this._baseurl+layerConfig.name+"/?unlock");
-};
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
 proto.setVectorLayer = function(vectorLayer){
   var geometrytype = vectorLayer.geometrytype;
@@ -445,116 +116,22 @@ proto.setVectorLayer = function(vectorLayer){
   this._vectorLayer = vectorLayer;
 };
 
-proto.createVectorLayer = function(options,data){
-  var vector = new VectorLayer(options);
-  return vector;
-};
-
-proto.getCurrentEditingLayer = function(){
-  return this._currentEditingLayer;
-};
-
-proto.setCurrentEditingLayer = function(layer){
-  if (!layer){
-    this._currentEditingLayer = null;
-  }
-  else {
-    this._currentEditingLayer = layer;
-  }
-};
-
-
-proto.addToMap = function() {
-  var self = this;
-  var map = this._mapService.viewer.map;
-  _.forEach(self._layers,function(layer){
-    layer.vector.addToMap(map);
-  })
-};
-
-proto.saveEdits = function(dirtyEditors) {
-  var self = this;
-  var deferred = $.Deferred();
-  this.sendEdits(dirtyEditors)
-      .then(function(response){
-        GUI.notify.success("I dati sono stati salvati correttamente");
-        self.commitEdits(dirtyEditors,response);
-        self._mapService.refreshMap();
-        deferred.resolve();
-      })
-      .fail(function(errors){
-        GUI.notify.error("Errore nel salvataggio sul server");
-        deferred.resolve();
-      })
-  return deferred.promise();
-};
-
-proto.sendEdits = function(dirtyEditors) {
-
-  var deferred = $.Deferred();
-  var editsToPush = _.map(dirtyEditors,function(editor){
-    return {
-      layername: editor.getVectorLayer().name,
-      edits: editor.getEditedFeatures()
-    }
-  });
-
-  this._postData(editsToPush)
-      .then(function(returned){
-        if (returned.result){
-          deferred.resolve(returned.response);
-        }
-        else {
-          deferred.reject(returned.response);
-        }
-      })
-      .fail(function(returned){
-        deferred.reject(returned.response);
-      });
-  return deferred.promise();
-};
-
-proto.commitEdits = function(editors, response) {
-  var self = this;
-  _.forEach(editors,function(editor){
-    var newAttributesFromServer = null;
-    if (response && response.new){
-      _.forEach(response.new,function(updatedFeatureAttributes){
-        var oldfid = updatedFeatureAttributes.clientid;
-        var fid = updatedFeatureAttributes.id;
-        editor.getEditVectorLayer().setFeatureData(oldfid,fid,null,updatedFeatureAttributes);
-      })
-    }
-    editor.commit();
-  });
-};
-
-proto.undoEdits = function(dirtyEditors) {
-  var currentEditingLayerCode = this.getCurrentEditingLayer().layerCode;
-  var editor = dirtyEditors[currentEditingLayerCode];
-  this.stopEditing(true);
-};
-
-//FINE  metodi importati da IternetService
-
-
-
 // avvia la sessione di editazione con un determinato tool (es. addfeature)
 proto.start = function(){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
-  // se è stato settato il vectorLayer
+  // se Ã¨ stato settato il vectorLayer
   if (this._vectorLayer){
-    // nel caso non sia già avviato prima lo stoppo;
+    // nel caso non sia giÃ  avviato prima lo stoppo;
     this.stop();
-    
+
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     })
     this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
-    
+
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
     this._setStarted(true);
@@ -584,7 +161,7 @@ proto.setTool = function(toolType,options){
     return false;
   }
   var toolClass = this._tools[toolType];
-  
+
   // se esiste il tool richiesto
   if (toolClass ){
     var toolInstance = new toolClass(this,options);
@@ -616,10 +193,10 @@ proto.hasActiveTool = function(){
 };
 
 proto.isToolActive = function(toolType){
-   if (this._activeTool.toolType){
+  if (this._activeTool.toolType){
     return this._activeTool.toolType == toolType;
-   };
-   return false;
+  };
+  return false;
 };
 
 proto.commit = function(newFeatures){
@@ -663,7 +240,7 @@ proto.getFeatureLockIdsForFeatureIds = function(fids){
   var featurelocksForFids = _.filter(this._featureLocks,function(featurelock){
     return _.includes(fids,featurelock.featureid);
   });
-  
+
   return this.getFeatureLocksLockIds(featurelocksForFids);
 };
 
@@ -684,7 +261,7 @@ proto.setFieldsWithValues = function(feature,fields,relations){
   _.forEach(fields,function(field){
     attributes[field.name] = field.value;
   });
-  
+
   var relationsAttributes = null;
   if (relations){
     var relationsAttributes = {};
@@ -709,11 +286,11 @@ proto.getRelationsWithValues = function(feature){
   var fid = feature.getId();
   if (this._vectorLayer.hasRelations()){
     var fieldsPromise;
-    // se non ha fid vuol dire che è nuovo e senza attributi, quindi prendo i fields vuoti
+    // se non ha fid vuol dire che Ã¨ nuovo e senza attributi, quindi prendo i fields vuoti
     if (!fid){
       fieldsPromise = this._vectorLayer.getRelationsWithValues();
     }
-    // se per caso ha un fid ma è un vettoriale nuovo
+    // se per caso ha un fid ma Ã¨ un vettoriale nuovo
     else if (!this._vectorLayer.getFeatureById(fid)){
       // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
       if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
@@ -725,8 +302,8 @@ proto.getRelationsWithValues = function(feature){
         fieldsPromise = this._vectorLayer.getRelationsWithValues();
       }
     }
-    // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni già editati
-    else {    
+    // se invece Ã¨ un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
+    else {
       var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
       if (hasEdits){
         var relations = this._vectorLayer.getRelations();
@@ -736,7 +313,7 @@ proto.getRelationsWithValues = function(feature){
             field.value = relationsAttributes[relation.name][field.name];
           });
         });
-        
+
         fieldsPromise = resolve(relations);
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
@@ -823,16 +400,16 @@ proto.isNewFeature = function(fid){
 };
 
 /*proto.isNewFeature = function(fid){
-  if (fid) {
-    if(!this.getVectorLayer().getFeatureById(fid)){
-      return true;
-    }
-    return false;
-  }
-  else {
-    return true
-  }
-};*/
+ if (fid) {
+ if(!this.getVectorLayer().getFeatureById(fid)){
+ return true;
+ }
+ return false;
+ }
+ else {
+ return true
+ }
+ };*/
 
 proto._isCompatibleType = function(geometrytype){
   return this._geometrytypes.indexOf(geometrytype) > -1;
@@ -879,11 +456,11 @@ proto._setToolSettersListeners = function(tool,settersListeners){
       })
     }
   });
-  
+
   _.forEach(settersListeners.after,function(listeners,setter){
     if (_.hasIn(tool.setters,setter)){
       _.forEach(listeners,function(listener){
-          tool.onafter(setter,listener.fnc);
+        tool.onafter(setter,listener.fnc);
       })
     }
   })
@@ -902,4 +479,3 @@ proto._setDirty = function(bool){
   }
   this.emit("dirty",this._dirty);
 };
-
