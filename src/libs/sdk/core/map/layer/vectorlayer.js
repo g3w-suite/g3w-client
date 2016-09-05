@@ -70,7 +70,7 @@ proto.setData = function(featuresData){
       var alreadyLoadedIds = this.getFeatureIds();
       var featuresToLoad = _.filter(features,function(feature){
         return !_.includes(alreadyLoadedIds,feature.getId());
-      })
+      });
       
       this._olSource.addFeatures(featuresToLoad);
       

@@ -7,16 +7,13 @@ var LoaderLayerService = require('./loaderlayerservice');
 
 function VectorLoaderLayer() {
 
-
     var self = this;
     this._layer = {};
     this._type = 'vector';
     this._layerCodes = [];
     this._baseUrl = '';
     this._mapService = null;
-    this._pluginState = {};
     this._loadedExtent = null;
-
 
     base(this);
     this.init = function(options) {
@@ -24,25 +21,22 @@ function VectorLoaderLayer() {
         this._layers = options.layers || {};
         this._baseUrl = options.baseurl || '';
         this._mapService = options.mapService || null;
-        this._pluginState = options.state || {};
         _.forEach(this._layers, function(layer, LayerCode){
             self._layerCodes.push(LayerCode);
         });
-
-    }
+    };
 }
 
 inherit(VectorLoaderLayer, LoaderLayerService);
 
-module.exports = new VectorLoaderLayer;
-
 var proto = VectorLoaderLayer.prototype;
 
-proto.setupAndLoadAllLayersData = function() {
+proto.loadLayers = function() {
 
     var self = this;
     var deferred = $.Deferred();
-    var layersReady = _.reduce(this._layers, function(ready,layer) {
+    //verifica se sono stati caricati i vettoriali dei layer
+    var layersReady = _.reduce(this._layers, function(ready, layer) {
         return !_.isNull(layer.vector);
     });
     //nel caso in cui nessun vector layer è stato caricato
@@ -50,55 +44,44 @@ proto.setupAndLoadAllLayersData = function() {
     if (!layersReady){
         // eseguo le richieste delle configurazioni e mi tengo le promesse
         var vectorLayersSetup = _.map(this._layerCodes, function(layerCode){
-            return self.setupVectorLayer(self._layers[layerCode]);
+            return self._setupVectorLayer(self._layers[layerCode]);
         });
-        // aspetto tutte le promesse
+        // aspetto tutte le promesse del setup vector
         $.when.apply(this, vectorLayersSetup)
             .then(function() {
-                self._pluginState.retrievingData = true;
                 var vectorLayers = Array.prototype.slice.call(arguments);
-                var vectorLayersForCode = _.zipObject(self._layerCodes, vectorLayers);
-                _.forEach(vectorLayersForCode, function(vectorLayer,layerCode) {
-                    self._layers[layerCode].vector = vectorLayer;
-                    var editor = new self._layers[layerCode].editorClass(self._mapService);
-                    editor.setVectorLayer(vectorLayer);
-                    editor.on("dirty",function(dirty){
-                        self._pluginState.hasEdits = dirty;
-                    });
-                    self._layers[layerCode].editor = editor;
-
-                });
-                self.loadAllVectorsData()
-                    .then(function(){
+                var vectorLayers = _.zipObject(self._layerCodes, vectorLayers);
+                self.emit('retriewdata', true, vectorLayers);
+                self._loadAllVectorsData()
+                    .then(function() {
                         deferred.resolve();
                     })
-                    .fail(function(){
+                    .fail(function() {
                         deferred.reject();
                     })
-                    .always(function(){
-                        self._pluginState.retrievingData = false;
-                    })
+                    .always(function() {
+                        self.emit('retriewdata', false);
+                    });
             })
             .fail(function(){
                 deferred.reject();
-            })
+            });
     } else {
-        this.loadAllVectorsData()
-            .then(function(){
+        this._loadAllVectorsData()
+            .then(function() {
                 deferred.resolve();
             })
-            .fail(function(){
+            .fail(function() {
                 deferred.reject();
             })
-            .always(function(){
-                self._pluginState.retrievingData = false;
-            })
+            .always(function() {
+                self.emit('retriewdata', false);
+            });
     }
     return deferred.promise();
 };
 
-
-proto.loadAllVectorsData = function() {
+proto._loadAllVectorsData = function() {
 
     var self = this;
     var deferred = $.Deferred();
@@ -113,20 +96,17 @@ proto.loadAllVectorsData = function() {
     } else {
         this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
     }
-
     var vectorDataRequests = _.map(self._layers, function(Layer) {
-
-        return self.loadVectorData(Layer.vector, bbox);
+        return self._loadVectorData(Layer.vector, bbox);
     });
 
     $.when.apply(this, vectorDataRequests)
         .then(function() {
-
             var vectorsDataResponse = Array.prototype.slice.call(arguments);
-            var vectorDataResponseForIternetCode = _.zipObject(self._layerCodes,vectorsDataResponse);
-            _.forEach(vectorDataResponseForIternetCode, function(vectorDataResponse, layerCode){
-                if (vectorDataResponse.featurelocks){
-                    self._layers[layerCode].editor.setFeatureLocks(vectorDataResponse.featurelocks);
+            var vectorDataResponseForCode = _.zipObject(self._layerCodes, vectorsDataResponse);
+            _.forEach(vectorDataResponseForCode, function(vectorDataResponse, layerCode){
+                if (vectorDataResponse.featurelocks) {
+                    self.emit('setfeaturelock', layerCode, vectorDataResponse.featurelocks);
                 }
             });
             deferred.resolve();
@@ -138,15 +118,15 @@ proto.loadAllVectorsData = function() {
     return deferred.promise();
 };
 
-proto.setupVectorLayer = function(layerConfig) {
+proto._setupVectorLayer = function(layerConfig) {
     var self = this;
     var deferred = $.Deferred();
     // eseguo le richieste delle configurazioni e mi tengo le promesse
-    this.getVectorLayerConfig(layerConfig.name)
+    this._getVectorLayerConfig(layerConfig.name)
         .then(function(vectorConfigResponse){
             // instanzio il VectorLayer
             var vectorConfig = vectorConfigResponse.vector;
-            var vectorLayer = self.createVectorLayer({
+            var vectorLayer = self._createVectorLayer({
                 geometrytype: vectorConfig.geometrytype,
                 format: vectorConfig.format,
                 crs: "EPSG:3003",
@@ -156,9 +136,7 @@ proto.setupVectorLayer = function(layerConfig) {
             });
             // ottengo la definizione dei campi
             vectorLayer.setFields(vectorConfig.fields);
-
             var relations = vectorConfig.relations;
-
             if(relations){
                 // per dire a vectorLayer che i dati
                 // delle relazioni verranno caricati solo quando
@@ -174,15 +152,15 @@ proto.setupVectorLayer = function(layerConfig) {
         })
         .fail(function(){
             deferred.reject();
-        })
+        });
     return deferred.promise();
 };
-
-proto.loadVectorData = function(vectorLayer, bbox) {
+//in base all bbox e la layer chiedo al server di restituirmi il vettoriale (geojson) del layer
+proto._loadVectorData = function(vectorLayer, bbox) {
     var self = this;
     // eseguo le richieste de dati e mi tengo le promesse
-    return self.getVectorLayerData(vectorLayer,bbox)
-        .then(function(vectorDataResponse){
+    return self._getVectorLayerData(vectorLayer, bbox)
+        .then(function(vectorDataResponse) {
             vectorLayer.setData(vectorDataResponse.vector.data);
             return vectorDataResponse;
         });
@@ -190,7 +168,7 @@ proto.loadVectorData = function(vectorLayer, bbox) {
 
 // ottiene la configurazione del vettoriale
 // (qui richiesto solo per la definizione degli input)
-proto.getVectorLayerConfig = function(layerName) {
+proto._getVectorLayerConfig = function(layerName) {
 
     var d = $.Deferred();
     $.get(this._baseUrl+layerName+"/?config")
@@ -204,7 +182,7 @@ proto.getVectorLayerConfig = function(layerName) {
 };
 
 // ottiene il vettoriale in modalità  editing
-proto.getVectorLayerData = function(vectorLayer, bbox) {
+proto._getVectorLayerData = function(vectorLayer, bbox) {
 
     var d = $.Deferred();
     $.get(this._baseUrl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
@@ -213,12 +191,18 @@ proto.getVectorLayerData = function(vectorLayer, bbox) {
         })
         .fail(function(){
             d.reject();
-        })
+        });
     return d.promise();
 };
 
-proto.createVectorLayer = function(options){
+proto._createVectorLayer = function(options){
 
     var vector = new VectorLayer(options);
     return vector;
 };
+
+proto.cleanUp = function() {
+    this._loadedExtent = null;
+};
+
+module.exports = new VectorLoaderLayer;
