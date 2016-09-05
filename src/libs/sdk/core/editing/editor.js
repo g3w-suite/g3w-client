@@ -126,13 +126,14 @@ proto.start = function() {
   if (this._vectorLayer) {
     //prima di tutto stoppo editor
     this.stop();
-    // istanzio l'editVectorLayer
+    // istanzio l'editVectorLayer che è un vettore di appoggio (nuovo)
+    // dove vado a fare le modifiche
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     });
+    console.log(this._editVectorLayer);
     //this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
-
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
     //assegno all'attributo _started true;
@@ -144,7 +145,7 @@ proto.start = function() {
 
 // termina l'editazione
 proto.stop = function() {
-
+  console.log(this.isStarted());
   if (this.isStarted()) {
     if (this.stopTool()) {
       //distruggo l'edit buffer

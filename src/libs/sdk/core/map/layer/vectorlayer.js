@@ -4,7 +4,7 @@ var resolve = require('core/utils/utils').resolve;
 var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 
-function VectorLayer(config){
+function VectorLayer(config) {
   var config = config || {};
   this.geometrytype = config.geometrytype || null;
   this.format = config.format || null;
