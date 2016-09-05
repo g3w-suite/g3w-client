@@ -1,9 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
-var GUI = require('gui/gui');
 var VectorLayer = require('core/map/layer/vectorlayer');
 
 //var Sequencer = require('./stepsequencer');
@@ -19,13 +17,13 @@ var EditorGeometryTypes = [
   'Point',
   //'MultiPoint',
   'LineString',
-  'MultiLineString',
+  'MultiLineString'
   //'Polygon',
   //'MultiPolygon'
 ];
 
 // Editor di vettori puntuali
-function Editor(mapService,options){
+function Editor(mapService){
   this._mapService = mapService;
   this._vectorLayer = null;
   this._editVectorLayer = null;
@@ -33,8 +31,7 @@ function Editor(mapService,options){
   this._activeTool = null;
   this._dirty = false;
   this._newPrefix = '_new_';
-  
-  this._withFeatureLocks = false;
+
   this._featureLocks = null;
   
   this._started = false;
@@ -47,7 +44,7 @@ function Editor(mapService,options){
     'Point',
     //'MultiPoint',
     'LineString',
-    'MultiLineString',
+    'MultiLineString'
     //'Polygon',
     //'MultiPolygon'
   ];
@@ -91,7 +88,7 @@ function Editor(mapService,options){
       this.type = null;
       this.instance = null;
     };
-  }
+  };
   
   this._tools = {};
   
@@ -128,8 +125,8 @@ proto.start = function(){
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
-      geometrytype: this._vectorLayer.geometrytype,
-    })
+      geometrytype: this._vectorLayer.geometrytype
+    });
     this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
     
     // istanzio l'EditBuffer
@@ -195,7 +192,7 @@ proto.hasActiveTool = function(){
 proto.isToolActive = function(toolType){
    if (this._activeTool.toolType){
     return this._activeTool.toolType == toolType;
-   };
+   }
    return false;
 };
 
@@ -208,11 +205,10 @@ proto.undoAll = function(){
 };
 
 proto.setFeatureLocks = function(featureLocks){
-  this._withFeatureLocks = true;
   this._featureLocks = featureLocks;
 };
 
-proto.getFeatureLocks = function(featureLocks){
+proto.getFeatureLocks = function(){
   return this._featureLocks;
 };
 
@@ -223,14 +219,14 @@ proto.getFeatureLockIds = function(){
 };
 
 proto.getFeatureLocksLockIds = function(featureLocks){
-  var featureLocks = featureLocks || this._featureLocks;
+  featureLocks = featureLocks || this._featureLocks;
   return _.map(featureLocks,function(featurelock){
     return featurelock.lockid;
   });
 };
 
 proto.getFeatureLocksFeatureIds = function(featureLocks){
-  var featureLocks = featureLocks || this._featureLocks;
+  featureLocks = featureLocks || this._featureLocks;
   return _.map(featureLocks,function(featurelock){
     return featurelock.featureid;
   });
@@ -258,7 +254,6 @@ proto.getEditedFeatures = function(){
 };
 
 proto.collectRelations = function() {
-  var relationsEdits = {};
   relationsEdits = this._editBuffer.collectRelations();
   /*_.forEach(this._vectorLayer.getRelations(),function(relation){
     var relationEdits = {
@@ -309,7 +304,7 @@ proto.getRelationsWithValues = function(feature){
         var relations = this._vectorLayer.getRelations();
         _.forEach(relations,function (relation) {
           relation.elements = _.cloneDeep(relationsEdits[relation.name]);
-        })
+        });
         fieldsPromise = resolve(relations);
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
@@ -325,7 +320,7 @@ proto.getRelationsWithValues = function(feature){
 };
 
 proto.createRelationElement = function(relation) {
-  var element = {}
+  var element = {};
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
   element.state = 'NEW';
@@ -334,16 +329,16 @@ proto.createRelationElement = function(relation) {
 
 proto.getRelationPkFieldIndex = function(relationName) {
   return this._vectorLayer.getRelationPkFieldIndex(relationName);
-}
+};
 
 proto.getField = function(name,fields){
-  var fields = fields || this.getVectorLayer().getFieldsWithValues();
+  fields = fields || this.getVectorLayer().getFieldsWithValues();
   var field = null;
   _.forEach(fields,function(f){
     if (f.name == name){
       field = f;
     }
-  })
+  });
   return field;
 };
 
@@ -351,18 +346,18 @@ proto.isDirty = function(){
   return this._dirty;
 };
 
-proto.onafter = function(setter,listener){
-  this._onaftertoolaction(setter,listener);
+proto.onafter = function(setter,listener,priority){
+  this._onaftertoolaction(setter,listener,priority);
 };
 
 // permette di inserire un setter listener sincrono prima che venga effettuata una operazione da un tool (es. addfeature)
-proto.onbefore = function(setter,listener){
-  this._onbeforetoolaction(setter,listener,false);
+proto.onbefore = function(setter,listener,priority){
+  this._onbeforetoolaction(setter,listener,false,priority);
 };
 
 // come onbefore() ma per listener asincroni
-proto.onbeforeasync = function(setter,listener){
-  this._onbeforetoolaction(setter,listener,true);
+proto.onbeforeasync = function(setter,listener,priority){
+  this._onbeforetoolaction(setter,listener,true,priority);
 };
 
 proto.addFeature = function(feature){
@@ -420,24 +415,28 @@ proto._setToolsForVectorType = function(geometrytype){
   })
 };
 
-proto._onaftertoolaction = function(setter,listener){
+proto._onaftertoolaction = function(setter,listener,priority){
+  priority = priority || 0;
   if (!_.get(this._setterslisteners.after,setter)){
     this._setterslisteners.after[setter] = [];
   }
   this._setterslisteners.after[setter].push({
-    fnc: listener
+    fnc: listener,
+    priority: priority
   });
-}
+};
 
-proto._onbeforetoolaction = function(setter,listener,async){
+proto._onbeforetoolaction = function(setter,listener,async,priority){
+  priority = priority || 0;
   if (!_.get(this._setterslisteners.before,setter)){
     this._setterslisteners.before[setter] = [];
   }
   this._setterslisteners.before[setter].push({
     fnc: listener,
-    how: async ? 'async' : 'sync'
+    how: async ? 'async' : 'sync',
+    priority: priority
   });
-}
+};
 
 // una volta istanziato il tool aggiungo a questo tutti i listener definiti a livello di editor
 proto._setToolSettersListeners = function(tool,settersListeners){
@@ -445,10 +444,10 @@ proto._setToolSettersListeners = function(tool,settersListeners){
     if (_.hasIn(tool.setters,setter)){
       _.forEach(listeners,function(listener){
         if (listener.how == 'sync'){
-          tool.onbefore(setter,listener.fnc);
+          tool.onbefore(setter,listener.fnc,listener.priority);
         }
         else {
-          tool.onbeforeasync(setter,listener.fnc);
+          tool.onbeforeasync(setter,listener.fnc,listener.priority);
         }
       })
     }
@@ -457,7 +456,7 @@ proto._setToolSettersListeners = function(tool,settersListeners){
   _.forEach(settersListeners.after,function(listeners,setter){
     if (_.hasIn(tool.setters,setter)){
       _.forEach(listeners,function(listener){
-          tool.onafter(setter,listener.fnc);
+          tool.onafter(setter,listener.fnc,listener.priority);
       })
     }
   })
