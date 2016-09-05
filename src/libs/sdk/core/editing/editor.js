@@ -108,33 +108,34 @@ proto.getMapService = function() {
 };
 
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
-proto.setVectorLayer = function(vectorLayer){
+proto.setVectorLayer = function(vectorLayer) {
   var geometrytype = vectorLayer.geometrytype;
   if (!geometrytype || ! this._isCompatibleType(geometrytype)){
     throw Error("Vector geometry type "+geometrytype+" is not valid for editing");
   }
+  //setta i tools dell'editor relativi al tipo di geometria
   this._setToolsForVectorType(geometrytype);
   this._vectorLayer = vectorLayer;
 };
 
 // avvia la sessione di editazione con un determinato tool (es. addfeature)
-proto.start = function(){
+proto.start = function() {
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
-  // se è stato settato il vectorLayer
-  if (this._vectorLayer){
-    // nel caso non sia già  avviato prima lo stoppo;
+  // se è sia stato settato il vectorLayer
+  if (this._vectorLayer) {
+    //prima di tutto stoppo editor
     this.stop();
-
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
     });
-    this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
+    //this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
 
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
+    //assegno all'attributo _started true;
     this._setStarted(true);
     res = true;
   }
@@ -142,13 +143,19 @@ proto.start = function(){
 };
 
 // termina l'editazione
-proto.stop = function(){
-  if (this.isStarted()){
+proto.stop = function() {
+
+  if (this.isStarted()) {
     if (this.stopTool()) {
+      //distruggo l'edit buffer
       this._editBuffer.destroy();
+      //lo setto a null
       this._editBuffer = null;
+      //rimuovo i listeners
       this.removeAllListeners();
+      //rivuovo il layer dalla mappa
       this._mapService.viewer.removeLayerByName(this._editVectorLayer.name);
+      //setto editor started a false
       this._setStarted(false);
       return true;
     }
@@ -196,7 +203,7 @@ proto.hasActiveTool = function(){
 proto.isToolActive = function(toolType){
   if (this._activeTool.toolType){
     return this._activeTool.toolType == toolType;
-  };
+  }
   return false;
 };
 
@@ -208,12 +215,12 @@ proto.undoAll = function(){
   this._editBuffer.undoAll();
 };
 
-proto.setFeatureLocks = function(featureLocks){
+proto.setFeatureLocks = function(featureLocks) {
   this._withFeatureLocks = true;
   this._featureLocks = featureLocks;
 };
 
-proto.getFeatureLocks = function(featureLocks){
+proto.getFeatureLocks = function() {
   return this._featureLocks;
 };
 
@@ -416,10 +423,10 @@ proto._isCompatibleType = function(geometrytype){
   return this._geometrytypes.indexOf(geometrytype) > -1;
 };
 
-proto._setToolsForVectorType = function(geometrytype){
+proto._setToolsForVectorType = function(geometrytype) {
   var self = this;
   var tools = this._toolsForGeometryTypes[geometrytype];
-  _.forEach(tools,function(toolClass,tool){
+  _.forEach(tools, function(toolClass, tool) {
     self._tools[tool] = toolClass;
   })
 };

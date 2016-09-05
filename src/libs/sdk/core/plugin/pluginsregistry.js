@@ -6,7 +6,7 @@ var ApplicationService = require('core/applicationservice');
 //var Plugin = require('./plugin');
 //var ToolsService = require('core/plugin/toolsservice');
 
-function PluginsRegistry(){
+function PluginsRegistry() {
   var self = this;
   this.config = null;
   // un domani questo sarà dinamico

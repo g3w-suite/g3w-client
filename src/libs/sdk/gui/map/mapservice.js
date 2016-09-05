@@ -65,7 +65,6 @@ function MapService(project){
     this.project = ProjectsRegistry.getCurrentProject();
   }
 
-  
   this.setters = {
     setMapView: function(bbox,resolution,center){
       this.state.bbox = bbox;
@@ -124,7 +123,7 @@ function MapService(project){
     });
     
     if (this.config.background_color) {
-      $('#'+this.target).css('background-color',this.config.background_color);;
+      $('#' + this.target).css('background-color', this.config.background_color);
     }
     
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
@@ -135,13 +134,12 @@ function MapService(project){
     
     this.viewer.map.getInteractions().on('add',function(interaction){
       self._watchInteraction(interaction.element);
-    })
+    });
     
     this.viewer.map.getInteractions().on('remove',function(interaction){
       //self._onRemoveInteraction(interaction);
     });
-  
-    
+
     this.viewer.map.getView().setResolution(initialResolution);
     
     this.viewer.map.on('moveend',function(e){
@@ -162,7 +160,7 @@ function MapService(project){
     var mapLayers = _.map(layersIds,function(layerId){
       var layer = self.project.getLayerById(layerId);
       return self.getMapLayerForLayer(layer);
-    })
+    });
     self.updateMapLayers(self.getMapLayers());
   });
   
@@ -171,8 +169,7 @@ function MapService(project){
   });
   
   base(this);
-};
-
+}
 inherit(MapService,G3WObject);
 
 var proto = MapService.prototype;
@@ -319,7 +316,7 @@ proto.setupControls = function(){
             });
           }
           break;
-      };
+      }
     });
   }
 };
@@ -344,7 +341,7 @@ proto.getMapLayerForLayer = function(layer){
     if (_mapLayer.getId() == multilayerId) {
       mapLayer = _mapLayer;
     }
-  })
+  });
   return mapLayer;
 };
 
@@ -368,7 +365,7 @@ proto.setupBaseLayers = function(){
       visible = baseLayer.fixed;
     }
     baseLayer.visible = visible;
-  })
+  });
   
   baseLayersArray.forEach(function(layer){     
     var config = {
@@ -401,7 +398,7 @@ proto.setupLayers = function(){
     return layer.state.multilayer;
   });
   _.forEach(multiLayers,function(layers,id){
-    var multilayerId = 'layer_'+id
+    var multilayerId = 'layer_'+id;
     var tiled = layers[0].state.tiled;
     var config = {
       url: self.project.getWmsUrl(),
@@ -414,12 +411,12 @@ proto.setupLayers = function(){
     _.forEach(layers.reverse(),function(layer){
       mapLayer.addLayer(layer);
     });
-  })
+  });
   
   _.forEach(this.getMapLayers().reverse(),function(mapLayer){
     self.viewer.map.addLayer(mapLayer.getOLLayer());
     mapLayer.update(self.state,self.layersExtraParams);
-  })
+  });
   return this.mapLayers;
 };
 
@@ -435,7 +432,7 @@ proto.getOverviewMapLayers = function(project) {
   
   var overviewMapLayers = [];
   _.forEach(multiLayers,function(layers,id){
-    var multilayerId = 'overview_layer_'+id
+    var multilayerId = 'overview_layer_'+id;
     var tiled = layers[0].state.tiled;
     var config = {
       url: project.getWmsUrl(),
@@ -447,7 +444,7 @@ proto.getOverviewMapLayers = function(project) {
       mapLayer.addLayer(layer);
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
-  })
+  });
   
   return overviewMapLayers.reverse();
 };
@@ -560,7 +557,7 @@ proto.highlightGeometry = function(geometryObj,options){
             color: 'rgb(255,255,0)',
             width: 4
           })
-        })
+        });
         styles.push(style);
       }
       else if (geometryType == 'Point'){
@@ -578,7 +575,7 @@ proto.highlightGeometry = function(geometryObj,options){
       
       return styles;
     }
-  })
+  });
   layer.setMap(this.viewer.map);
   
   setTimeout(function(){
@@ -623,4 +620,4 @@ proto._setMapView = function(){
   this.setMapView(bbox,resolution,center);
 };
 
-module.exports = MapService
+module.exports = MapService;
