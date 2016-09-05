@@ -106,10 +106,10 @@ styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] = _.concat(styles[ol.geom.Geome
     
 /* FINE BRUTTISSIMO! */
 
-proto.run = function(){
+proto.run = function() {
   var self = this;
-  this.layer = this.editor.getVectorLayer().getLayer();
-  this.editingLayer = this.editor.getEditVectorLayer().getLayer();
+  this.layer = this.editor.getVectorLayer().getMapLayer();
+  this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
   
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer,this.editingLayer],
