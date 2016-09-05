@@ -25,7 +25,7 @@ var EditorGeometryTypes = [
 ];
 
 // Editor di vettori puntuali
-function Editor(mapService,options){
+function Editor(mapService, options) {
   this._mapService = mapService;
   this._vectorLayer = null;
   this._editVectorLayer = null;
@@ -33,21 +33,20 @@ function Editor(mapService,options){
   this._activeTool = null;
   this._dirty = false;
   this._newPrefix = '_new_';
-
   this._withFeatureLocks = false;
   this._featureLocks = null;
-
   this._started = false;
 
   this._setterslisteners = {
     before: {},
     after: {}
   };
+
   this._geometrytypes = [
     'Point',
     //'MultiPoint',
     'LineString',
-    'MultiLineString',
+    'MultiLineString'
     //'Polygon',
     //'MultiPolygon'
   ];
@@ -70,7 +69,7 @@ function Editor(mapService,options){
     }
   };
 
-  this._activeTool = new function(){
+  this._activeTool = new function() {
     this.type = null;
     this.instance = null;
 
@@ -97,7 +96,9 @@ function Editor(mapService,options){
 
   base(this);
 }
-inherit(Editor,G3WObject);
+
+inherit(Editor, G3WObject);
+
 module.exports = Editor;
 
 var proto = Editor.prototype;
@@ -120,16 +121,16 @@ proto.setVectorLayer = function(vectorLayer){
 proto.start = function(){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
-  // se Ã¨ stato settato il vectorLayer
+  // se è stato settato il vectorLayer
   if (this._vectorLayer){
-    // nel caso non sia giÃ  avviato prima lo stoppo;
+    // nel caso non sia già  avviato prima lo stoppo;
     this.stop();
 
     // istanzio l'editVectorLayer
     this._editVectorLayer = new VectorLayer({
       name: "editvector",
       geometrytype: this._vectorLayer.geometrytype,
-    })
+    });
     this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
 
     // istanzio l'EditBuffer
@@ -302,7 +303,7 @@ proto.getRelationsWithValues = function(feature){
         fieldsPromise = this._vectorLayer.getRelationsWithValues();
       }
     }
-    // se invece Ã¨ un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
+    // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
     else {
       var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
       if (hasEdits){
@@ -329,7 +330,7 @@ proto.getRelationsWithValues = function(feature){
 };
 
 proto.createRelationElement = function(relation) {
-  var element = {}
+  var element = {};
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
   return element;
@@ -337,7 +338,7 @@ proto.createRelationElement = function(relation) {
 
 proto.getRelationPkFieldIndex = function(relationName) {
   return this._vectorLayer.getRelationPkFieldIndex(relationName);
-}
+};
 
 proto.getField = function(name,fields){
   var fields = fields || this.getVectorLayer().getFieldsWithValues();
@@ -346,7 +347,7 @@ proto.getField = function(name,fields){
     if (f.name == name){
       field = f;
     }
-  })
+  });
   return field;
 };
 
@@ -430,7 +431,7 @@ proto._onaftertoolaction = function(setter,listener){
   this._setterslisteners.after[setter].push({
     fnc: listener
   });
-}
+};
 
 proto._onbeforetoolaction = function(setter,listener,async){
   if (!_.get(this._setterslisteners.before,setter)){
@@ -440,7 +441,7 @@ proto._onbeforetoolaction = function(setter,listener,async){
     fnc: listener,
     how: async ? 'async' : 'sync'
   });
-}
+};
 
 // una volta istanziato il tool aggiungo a questo tutti i listener definiti a livello di editor
 proto._setToolSettersListeners = function(tool,settersListeners){

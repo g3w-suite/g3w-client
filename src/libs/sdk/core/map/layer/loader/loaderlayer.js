@@ -11,6 +11,10 @@ inherit(LoaderLayerService, G3WObject);
 
 var proto = LoaderLayerService.prototype;
 
+proto.getLoaderType = function() {
+    return this._type;
+};
+
 proto.getLayers = function() {
   return this._layers;
 };
@@ -23,6 +27,10 @@ proto.loadLayer = function(url, options) {
   //TODO
 };
 proto.loadLayers = function() {
+  //TODO
+};
+
+proto.cleanUpLayers = function() {
   //TODO
 };
 

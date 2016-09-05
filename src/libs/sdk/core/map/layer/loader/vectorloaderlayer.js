@@ -3,7 +3,7 @@ var base = require('core/utils/utils').base;
 var resolvedValue = require('core/utils/utils').resolve;
 var rejectedValue = require('core/utils/utils').reject;
 var VectorLayer = require('core/map/layer/vectorlayer');
-var LoaderLayerService = require('./loaderlayerservice');
+var LoaderLayer = require('./loaderlayer');
 
 function VectorLoaderLayer() {
 
@@ -27,7 +27,7 @@ function VectorLoaderLayer() {
     };
 }
 
-inherit(VectorLoaderLayer, LoaderLayerService);
+inherit(VectorLoaderLayer, LoaderLayer);
 
 var proto = VectorLoaderLayer.prototype;
 
@@ -43,7 +43,7 @@ proto.loadLayers = function() {
     // quindi la proprietà vector è null
     if (!layersReady){
         // eseguo le richieste delle configurazioni e mi tengo le promesse
-        var vectorLayersSetup = _.map(this._layerCodes, function(layerCode){
+        var vectorLayersSetup = _.map(this._layerCodes, function(layerCode) {
             return self._setupVectorLayer(self._layers[layerCode]);
         });
         // aspetto tutte le promesse del setup vector
@@ -81,6 +81,8 @@ proto.loadLayers = function() {
     return deferred.promise();
 };
 
+//funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
+//prima si è ottenuta la coinfigurazione, ora si ottengono i dati veri e propri
 proto._loadAllVectorsData = function() {
 
     var self = this;
@@ -96,6 +98,7 @@ proto._loadAllVectorsData = function() {
     } else {
         this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
     }
+    //per ogni layer passato dal plugin vado a caricare i dati del layer vettoriale
     var vectorDataRequests = _.map(self._layers, function(Layer) {
         return self._loadVectorData(Layer.vector, bbox);
     });
@@ -104,9 +107,10 @@ proto._loadAllVectorsData = function() {
         .then(function() {
             var vectorsDataResponse = Array.prototype.slice.call(arguments);
             var vectorDataResponseForCode = _.zipObject(self._layerCodes, vectorsDataResponse);
-            _.forEach(vectorDataResponseForCode, function(vectorDataResponse, layerCode){
+            _.forEach(vectorDataResponseForCode, function(vectorDataResponse, layerCode) {
+                //nel caso ci sono vengono restituiti features locked (è un array di feature locked)
                 if (vectorDataResponse.featurelocks) {
-                    self.emit('setfeaturelock', layerCode, vectorDataResponse.featurelocks);
+                    self.emit('featurelocks', layerCode, vectorDataResponse.featurelocks);
                 }
             });
             deferred.resolve();
@@ -119,11 +123,12 @@ proto._loadAllVectorsData = function() {
 };
 
 proto._setupVectorLayer = function(layerConfig) {
+
     var self = this;
     var deferred = $.Deferred();
     // eseguo le richieste delle configurazioni e mi tengo le promesse
     this._getVectorLayerConfig(layerConfig.name)
-        .then(function(vectorConfigResponse){
+        .then(function(vectorConfigResponse) {
             // instanzio il VectorLayer
             var vectorConfig = vectorConfigResponse.vector;
             var vectorLayer = self._createVectorLayer({
@@ -172,7 +177,7 @@ proto._getVectorLayerConfig = function(layerName) {
 
     var d = $.Deferred();
     $.get(this._baseUrl+layerName+"/?config")
-        .done(function(data){
+        .done(function(data) {
             d.resolve(data);
         })
         .fail(function(){
@@ -186,7 +191,7 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
 
     var d = $.Deferred();
     $.get(this._baseUrl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-        .done(function(data){
+        .done(function(data) {
             d.resolve(data);
         })
         .fail(function(){
@@ -201,8 +206,8 @@ proto._createVectorLayer = function(options){
     return vector;
 };
 
-proto.cleanUp = function() {
+proto.cleanUpLayers = function() {
     this._loadedExtent = null;
 };
 
-module.exports = new VectorLoaderLayer;
+module.exports = VectorLoaderLayer;
