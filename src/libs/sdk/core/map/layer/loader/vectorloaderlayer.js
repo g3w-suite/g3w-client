@@ -7,7 +7,6 @@ var LoaderLayer = require('./loaderlayer');
 
 function VectorLoaderLayer() {
 
-    var self = this;
     this._layer = {};
     this._type = 'vector';
     this._layerCodes = [];
@@ -17,13 +16,10 @@ function VectorLoaderLayer() {
 
     base(this);
     this.init = function(options) {
-
         this._layers = options.layers || {};
         this._baseUrl = options.baseurl || '';
         this._mapService = options.mapService || null;
-        _.forEach(this._layers, function(layer, LayerCode){
-            self._layerCodes.push(LayerCode);
-        });
+        this._layerCodes = _.keys(this._layers);
     };
 }
 
@@ -36,12 +32,14 @@ proto.loadLayers = function() {
     var self = this;
     var deferred = $.Deferred();
     //verifica se sono stati caricati i vettoriali dei layer
+    //È NECESSARIO FORNIRE UN PRIMO VALORE ALTRIMENTI
+    // PRENDE IL PRIMO VALORE DELLA COLLEZIONE
     var layersReady = _.reduce(this._layers, function(ready, layer) {
-        return !_.isNull(layer.vector);
-    });
+        return ready && !_.isNull(layer.vector);
+    }, true);
     //nel caso in cui nessun vector layer è stato caricato
     // quindi la proprietà vector è null
-    if (!layersReady){
+    if (!layersReady) {
         // eseguo le richieste delle configurazioni e mi tengo le promesse
         var vectorLayersSetup = _.map(this._layerCodes, function(layerCode) {
             return self._setupVectorLayer(self._layers[layerCode]);
@@ -52,7 +50,7 @@ proto.loadLayers = function() {
                 var vectorLayers = Array.prototype.slice.call(arguments);
                 var vectorLayers = _.zipObject(self._layerCodes, vectorLayers);
                 self.emit('retriewdata', true, vectorLayers);
-                self._loadAllVectorsData()
+                self.loadAllVectorsData()
                     .then(function() {
                         deferred.resolve();
                     })
@@ -67,7 +65,7 @@ proto.loadLayers = function() {
                 deferred.reject();
             });
     } else {
-        this._loadAllVectorsData()
+        this.loadAllVectorsData()
             .then(function() {
                 deferred.resolve();
             })
@@ -83,7 +81,7 @@ proto.loadLayers = function() {
 
 //funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
 //prima si è ottenuta la coinfigurazione, ora si ottengono i dati veri e propri
-proto._loadAllVectorsData = function() {
+proto.loadAllVectorsData = function() {
 
     var self = this;
     var deferred = $.Deferred();
@@ -129,7 +127,6 @@ proto._setupVectorLayer = function(layerConfig) {
     // eseguo le richieste delle configurazioni e mi tengo le promesse
     this._getVectorLayerConfig(layerConfig.name)
         .then(function(vectorConfigResponse) {
-            // instanzio il VectorLayer
             var vectorConfig = vectorConfigResponse.vector;
             var vectorLayer = self._createVectorLayer({
                 geometrytype: vectorConfig.geometrytype,
@@ -139,7 +136,7 @@ proto._setupVectorLayer = function(layerConfig) {
                 name: layerConfig.name,
                 pk: vectorConfig.pk
             });
-            // ottengo la definizione dei campi
+            // setto i campi del layer
             vectorLayer.setFields(vectorConfig.fields);
             var relations = vectorConfig.relations;
             if(relations){
@@ -188,7 +185,6 @@ proto._getVectorLayerConfig = function(layerName) {
 
 // ottiene il vettoriale in modalità  editing
 proto._getVectorLayerData = function(vectorLayer, bbox) {
-
     var d = $.Deferred();
     $.get(this._baseUrl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
         .done(function(data) {

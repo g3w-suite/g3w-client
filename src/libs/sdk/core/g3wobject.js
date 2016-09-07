@@ -53,7 +53,7 @@ proto.un = function(setter,key){
   })
 };
 
-proto._onsetter = function(when,setter,listener,async){ /*when=before|after, type=sync|async*/
+proto._onsetter = function(when, setter, listener, async) { /*when=before|after, type=sync|async*/
   var settersListeners = this.settersListeners[when];
   var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
   /*if ((when == 'before') && !async){
@@ -65,26 +65,10 @@ proto._onsetter = function(when,setter,listener,async){ /*when=before|after, typ
     async: async
   });
   return listenerKey;
-  //return this.generateUnListener(setter,listenerKey);
 };
 
-// trasformo un listener sincrono in modo da poter essere usato nella catena di listeners (richiamando next col valore di ritorno del listener)
-/*proto._makeChainable = function(listener){
-  var self = this
-  return function(){
-    var args = Array.prototype.slice.call(arguments);
-    // rimuovo next dai parametri prima di chiamare il listener
-    var next = args.pop();
-    var canSet = listener.apply(self,arguments);
-    var _canSet = true;
-    if (_.isBoolean(canSet)){
-      _canSet = canSet;
-    }
-    next(canSet);
-  }
-};*/
 
-proto._setupListenersChain = function(setters){
+proto._setupListenersChain = function(setters) {
   // inizializza tutti i metodi definiti nell'oggetto "setters" della classe figlia.
   var self = this;
   this.settersListeners = {
@@ -92,7 +76,9 @@ proto._setupListenersChain = function(setters){
     before:{}
   };
   // per ogni setter viene definito l'array dei listeners e fiene sostituito il metodo originale con la funzioni che gestisce la coda di listeners
-  _.forEach(setters,function(setterOption,setter){
+  _.forEach(setters, function(setterOption, setter) {
+    //setter : nome della funzione setter
+    //setterOption: funzione(di solito anonima)
     var setterFnc = noop;
     var setterFallback = noop;
     if (_.isFunction(setterOption)){
@@ -105,7 +91,11 @@ proto._setupListenersChain = function(setters){
     self.settersListeners.after[setter] = [];
     self.settersListeners.before[setter] = [];
     // setter sostituito
-    self[setter] = function(){
+    // si sostituisce la propietà setter
+    // con la funzione modificata
+    //in quanto da prevedere i possibili listener (after, before, beoforeasync)
+    self[setter] = function() {
+
       var args = arguments;
       // eseguo i listener registrati per il before
       var deferred = $.Deferred();
@@ -114,16 +104,16 @@ proto._setupListenersChain = function(setters){
       var canSet = true;
       
       // richiamata alla fine della catena di listeners
-      function done(){
-        if(canSet){
-          // eseguo la funzione
-          returnVal = setterFnc.apply(self,args);
+      function done() {
+        if (canSet) {
+          // eseguo la funzione setter definita inizialmente
+          returnVal = setterFnc.apply(self, args);
           // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
           deferred.resolve(returnVal);
-          
+          //eseguo le funzioni after
           var afterListeners = self.settersListeners.after[setter];
-          _.forEach(afterListeners,function(listener, key){
-            listener.fnc.apply(self,args);
+          _.forEach(afterListeners, function(listener, key) {
+            listener.fnc.apply(self, args);
           })
         }
         else {
@@ -133,10 +123,11 @@ proto._setupListenersChain = function(setters){
           // e rigetto la promessa
           deferred.reject();
         }
-      };
+      }
       
-      function complete(){
+      function complete() {
         // eseguo la funzione
+
         returnVal = setterFnc.apply(self,args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
         deferred.resolve(returnVal);
@@ -154,12 +145,14 @@ proto._setupListenersChain = function(setters){
           // e rigetto la promessa
           deferred.reject();
       }
-      
+      // estraggo l'array delle funzioni listener del setter
+      //quelle before (onbefore, onbeforeasync)
       var beforeListeners = this.settersListeners['before'][setter];
       // contatore dei listener che verrà decrementato ad ogni chiamata a next()
       counter = 0;
-      
-      // funzione passata come ultimo parametro ai listeners, che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
+      // funzione passata come ultimo parametro ai listeners,
+      // che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO***
+      // richiamare per poter proseguire la catena
       function next(bool){
         var cont = true;
         if (_.isBoolean(bool)){
@@ -178,23 +171,24 @@ proto._setupListenersChain = function(setters){
           }
         }
         else {
-          if (cont){
+          if (cont) {
+            //funzione che ascolta la chiamata del metodo
             var listenerFnc = beforeListeners[counter].fnc;
-            if (beforeListeners[counter].async){
+            //verifica se è asincrono
+            if (beforeListeners[counter].async) {
               // aggiungo next come ulitmo parametro
               _args.push(next);
               counter += 1;
               listenerFnc.apply(self,_args)
             }
             else {
-              var _cont = listenerFnc.apply(self,_args);
+              var _cont = listenerFnc.apply(self, _args);
               counter += 1;
               next(_cont);
             }
           }
         }
       }
-      
       next();
       return deferred.promise();
     }

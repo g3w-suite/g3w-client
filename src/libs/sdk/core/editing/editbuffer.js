@@ -4,25 +4,25 @@ var RelationEditBuffer = require('./relationeditbuffer');
 
 function EditBuffer(editor){
   this._editor = editor;
-  
+
   this._origVectorLayer = new ol.layer.Vector({
     source: new ol.source.Vector()
   });
   this._cloneLayer();
-  
+
   //buffer delle geometrie
   this._geometriesBuffer = {};
-  
+
   // buffer degli attributi
   this._attributesBuffer = {};
-  
+
   // buffer degli attributi delle relazioni
-  this._relationsBuffers = null;
+  this._relationsBuffers = {};
   /*var relations = editor.getVectorLayer().getRelations();
-  if (relations) {
-    this._setupRelationsBuffers(relations);
-  }*/
-  
+   if (relations) {
+   this._setupRelationsBuffers(relations);
+   }*/
+
 }
 inherit(EditBuffer,G3WObject);
 module.exports = EditBuffer;
@@ -51,12 +51,12 @@ proto.generateId = function(){
 };
 
 /*proto._setupRelationsBuffers = function(relations) {
-  var self = this;
-  _.forEach(relations,function(relation){
-    var relationBuffer = RelationEditBuffer(this._editor,relation.name);
-    self._relationsBuffers[relation.name] = relationBuffer;
-  })
-}*/
+ var self = this;
+ _.forEach(relations,function(relation){
+ var relationBuffer = RelationEditBuffer(this._editor,relation.name);
+ self._relationsBuffers[relation.name] = relationBuffer;
+ })
+ }*/
 
 proto.addFeature = function(feature){
   if(!feature.getId()){
@@ -76,11 +76,11 @@ proto.deleteFeature = function(feature){
   console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
-proto.updateFields = function(feature,relationsAttributes){
+proto.updateFields = function(feature,relations){
   if(!feature.getId()){
     feature.setId(this.generateId());
   }
-  this._addEditToAttributesBuffer(feature,relationsAttributes);
+  this._addEditToValuesBuffers(feature,relations);
   console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
@@ -98,29 +98,31 @@ proto.areFeatureAttributesEdited = function(fid){
   return false;
 };
 
-proto.getRelationsAttributes = function(fid){
-  return this._relationsAttributesBuffer[fid].slice(-1)[0];
+proto.hasRelationsEdits = function(fid){
+  var hasEdits = false;
+  _.forEach(this._relationsBuffers[fid],function(relationBuffer){
+    hasEdits = hasEdits || relationBuffer.hasRelationElements();
+  })
+  return hasEdits;
 };
 
-proto.areFeatureRelationsEdited = function(fid){
-  _.forEach(this._relationsBuffers,function(relationBuffer){
-    if (relationBuffer[fid]){
-      return this._relationsAttributesBuffer[fid].length > -1;
-    }
-  }) 
-  
-  return false;
+proto.getRelationsEdits = function(fid){
+  var relations = {};
+  _.forEach(this._relationsBuffers[fid],function(relationBuffer){
+    relations[relationBuffer.getRelationName()] = relationBuffer.getRelationElements();
+  });
+  return relations;
 };
 
 proto.collectFeatureIds = function(){
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
-  
+
   var modifiedFids = [];
 
   modifiedFids = _.concat(modifiedFids,_.keys(geometriesBuffers));
   modifiedFids = _.concat(modifiedFids,_.keys(attributesBuffers));
-  
+
   return _.uniq(modifiedFids);
 };
 
@@ -130,9 +132,9 @@ proto.collectFeatures = function(state,asGeoJSON){
   var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
   var GeoJSONFormat = new ol.format.GeoJSON();
-  
+
   var modifiedFids = this.collectFeatureIds();
-  
+
   var layer;
   if (state == 'new') {
     layer = self._editor.getEditVectorLayer();
@@ -140,16 +142,16 @@ proto.collectFeatures = function(state,asGeoJSON){
   else {
     layer = self._editor.getVectorLayer();
   }
-  
+
   var features = [];
   _.forEach(modifiedFids,function(fid){
-    
+
     var feature = layer.getFeatureById(fid);
     var isNew = self._isNewFeature(fid);
     var addedFeature = (state == 'new' && isNew && feature);
     var updatedFeature = (state == 'updated' && !isNew && feature);
     var deletedFeature = (state == 'deleted' && !isNew && !feature);
-    
+
     if (addedFeature || updatedFeature){
       if (asGeoJSON){
         feature = GeoJSONFormat.writeFeatureObject(feature);
@@ -171,27 +173,91 @@ proto.createFeature = function(fid,geometry,attributes){
   return feature;
 };
 
-proto.collectRelationsAttributes = function(){
-  var relationsAttributes = {};
-  _.forEach(this._relationsAttributesBuffer,function(relationsBuffer,fid){
-    lastRelationsAttributes = relationsBuffer[relationsBuffer.length-1];
-    relationsAttributes[fid] = lastRelationsAttributes;
-  })
-  return relationsAttributes;
+proto.collectRelations = function(){
+  var relationsEdits = {
+    add: [],
+    delete: [],
+    update: []
+  };
+
+  /*
+   relationedits: {
+   <nome relazione>:
+   }
+   */
+  var relationsElements = {};
+  _.forEach(this._relationsBuffers,function(relationsBuffers,fid){
+
+    var newRelationEdits = {
+      fid: fid,
+      relations: {}
+    };
+    var updatedRelationEdits = {
+      fid: fid,
+      relations: {}
+    };
+    var deletedRelationEdits = {
+      fid: fid,
+      relations: {}
+    };
+
+    _.forEach(relationsBuffers,function (relationBuffer) {
+      var relationName = relationBuffer.getRelationName();
+
+      var newElements = relationBuffer.getRelationElements('NEW');
+      var updatedElements = relationBuffer.getRelationElements('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente affiornati o meno)
+      var deletedElements = relationBuffer.getRelationElements('DELETED');
+
+
+      var newElementsEdits = [];
+      var updatedElementsEdits = [];
+      var deletedElementsEdits = [];
+
+      _.forEach(newElements,function(element){
+        newElementsEdits.push({
+          id: element.id,
+          fields: element.fields
+        })
+      });
+
+      _.forEach(updatedElements,function(element){
+        updatedElementsEdits.push({
+          id: element.id,
+          fields: element.fields
+        })
+      });
+
+      _.forEach(deletedElements,function(element){
+        deletedElementsEdits.push({
+          id: element.id
+        })
+      });
+
+      newRelationEdits.relations[relationName] = newElementsEdits;
+      updatedRelationEdits.relations[relationName] = updatedElementsEdits;
+      deletedRelationEdits.relations[relationName] = deletedElementsEdits;
+
+    });
+    relationsEdits.add.push(newRelationEdits);
+    relationsEdits.update.push(updatedRelationEdits);
+    relationsEdits.delete.push(deletedRelationEdits);
+
+  });
+  return relationsEdits;
 };
 
 proto._addEditToGeometryBuffer = function(feature,operation){
   var geometriesBuffer = this._geometriesBuffer;
-  
+
   var id = feature.getId();
   var geometry = feature.getGeometry();
-  
+
   if (operation == 'delete'){
-      geometry = null;
-      var layer = this._isNewFeature(id) ? this._editor._editVectorLayer : this._editor._vectorLayer;
-      layer.getSource().removeFeature(feature);
-  } 
-  
+    geometry = null;
+    var layer = this._isNewFeature(id) ? this._editor._editVectorLayer : this._editor._vectorLayer;
+    layer.getSource().removeFeature(feature);
+  }
+
   if (!_.has(geometriesBuffer,id)){
     geometriesBuffer[id] = [];
   }
@@ -199,7 +265,8 @@ proto._addEditToGeometryBuffer = function(feature,operation){
   this._setDirty();
 };
 
-proto._addEditToAttributesBuffer = function(feature,relationsAttributes){
+proto._addEditToValuesBuffers = function(feature,relations){
+  var self = this;
   var fid = feature.getId();
   var attributes = feature.getProperties();
   var attributesBuffer = this._attributesBuffer;
@@ -208,17 +275,24 @@ proto._addEditToAttributesBuffer = function(feature,relationsAttributes){
     attributesBuffer[fid] = [];
   }
   attributesBuffer[fid].push(attributes);
-  
-  if (relationsAttributes){
-    if (!_.has(this._relationsAttributesBuffer,fid)){
-    this._relationsAttributesBuffer[fid] = [];
-  }
-    this._relationsAttributesBuffer[fid].push(relationsAttributes);
+
+  if (relations){
+    _.forEach(relations,function(relation){
+      if (!_.has(self._relationsBuffers,fid)){
+        self._relationsBuffers[fid] = {};
+      }
+      if (!_.has(self._relationsBuffers[fid],relation.name)){
+        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self,relation.name);
+      }
+
+      var relationBuffer = self._relationsBuffers[fid][relation.name];
+      relationBuffer.updateRelation(relation);
+    });
   }
   this._setDirty();
 };
 
-// guardo se è una feature già presente nel buffer delle nuove geometrie
+// guardo se Ã¨ una feature giÃ  presente nel buffer delle nuove geometrie
 proto._isNewFeature = function(fid){
   //return id.toString().indexOf('_new_') > -1;
   return this._editor.isNewFeature(fid);

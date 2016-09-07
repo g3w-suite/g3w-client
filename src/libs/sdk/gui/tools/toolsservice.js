@@ -11,12 +11,15 @@ function ToolsService(){
   };
   
   this.setters = {
-    addToolGroup: function(group) {
-      self.state.toolsGroups.push(group);
+    //inserita possibilità di dare ordine al plugin di visualizzazione
+    addToolGroup: function(order, group) {
+      //console.log(order);
+      self.state.toolsGroups.splice(order, 0, group);
+      //console.log(self.state.toolsGroups);
     }
   };
   
-  this.addTools = function(groupName, tools) {
+  this.addTools = function(order, groupName, tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);
     if (!group) {
@@ -24,9 +27,9 @@ function ToolsService(){
         name: groupName,
         tools: []
       };
-      this.addToolGroup(group);
+      this.addToolGroup(order, group);
     }
-    _.forEach(tools,function(tool){
+    _.forEach(tools, function(tool){
       group.tools.push(tool);
       self._addAction(tool);
     });

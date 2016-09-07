@@ -12,15 +12,13 @@ var config = require('./config/config.js');
 function aggiungiGeonodesPlugin(plugins) {
 
   var pluginGeonodeObj = _.cloneDeep(plugins.iternet);
-  pluginGeonodeObj.layers = {};
-  pluginGeonodeObj.layers.geonotes = plugins.iternet.layers.accessi;
   plugins.geonotes = pluginGeonodeObj;
   return plugins;
 }
 
 function createApplicationConfig() {
   //aggiungo temporaneamente il plugin Geodotes
-  //aggiungiGeonodesPlugin(config.group.plugins);
+  aggiungiGeonodesPlugin(config.group.plugins);
   return {
     apptitle: config.apptitle || '',
     logo_img: config.group.header_logo_img,

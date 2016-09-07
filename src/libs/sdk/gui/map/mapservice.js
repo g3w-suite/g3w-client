@@ -476,7 +476,8 @@ proto.setTarget = function(elId){
   this.target = elId;
 };
 
-proto.addInteraction = function(interaction){
+proto.addInteraction = function(interaction) {
+
   this._unsetControls();
   this.viewer.map.addInteraction(interaction);
   interaction.setActive(true);

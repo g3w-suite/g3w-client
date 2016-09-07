@@ -17,9 +17,10 @@ function PickFeatureTool(editor){
     pickFeature: noop,
   };
   
-  base(this,editor);
+  base(this, editor);
 }
-inherit(PickFeatureTool,EditingTool);
+inherit(PickFeatureTool, EditingTool);
+
 module.exports = PickFeatureTool;
 
 var proto = PickFeatureTool.prototype;
@@ -27,9 +28,7 @@ var proto = PickFeatureTool.prototype;
 // metodo eseguito all'avvio del tool
 proto.run = function(){
   var self = this;
-  //var map = MapService.viewer.map;
   var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
-  
   this.pickFeatureInteraction = new PickFeatureInteraction({
     layers: layers
   });

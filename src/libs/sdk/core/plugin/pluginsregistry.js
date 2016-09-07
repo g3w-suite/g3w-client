@@ -19,7 +19,7 @@ function PluginsRegistry() {
         console.log("Registrato plugin "+plugin.name);
       }
     }
-  }
+  };
   
   base(this);
   
@@ -33,7 +33,7 @@ function PluginsRegistry() {
   };
   
   this._setup = function(name,pluginConfig) {
-    var self = this;
+
     if (pluginConfig){
       var url = this.pluginsBaseUrl+'plugins/'+name+'/plugin.js';
       $script(url);
@@ -43,14 +43,8 @@ function PluginsRegistry() {
   this.getPluginConfig = function(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
-  
-  /*this.activate = function(plugin) {
-    var tools = plugin.getTools();
-    if (tools.length) {
-      ToolsService.registerToolsProvider(plugin);
-    }
-  };*/
-};
+
+}
 
 inherit(PluginsRegistry,G3WObject);
 
