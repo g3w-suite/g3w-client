@@ -34,7 +34,6 @@ var proto = AddFeatureTool.prototype;
 
 // metodo eseguito all'avvio del tool
 proto.run = function() {
- console.log('run tool');
   var self = this;
   //definisce l'interazione che deve essere aggiunta
   this.drawInteraction = new ol.interaction.Draw({
@@ -54,12 +53,12 @@ proto.run = function() {
   });
   // viene settato l'evento drawend
   this.drawInteraction.on('drawend', function(e) {
-    console.log('drawend');
     self.editor.emit('drawend',e);
     if (!self._busy) {
       self._busy = true;
       self.pause();
-      //viene chiamato l'addFeatue dell'editor che chiama l'addfeature del buffer
+      //viene chiamato l'addFeature del che  tool (modificata da G3wobject) che
+      // chiama l'addfeature del buffer
       // il metodo (essendo un "setter") scatena gli eventuali listeners
       // dati da onbefore, onafter, onbeforeasync
       self.addFeature(e.feature);
@@ -117,7 +116,7 @@ proto.removeLastPoint = function() {
 // add Feature fnc setter function
 proto._addFeature = function(feature) {
   // aggiungo la geometria nell'edit buffer
-  console.log('sono qui');
+  console.log('add Feature add Feature Tool');
   this.editor.addFeature(feature);
   this._busy = false;
   this.pause(false);

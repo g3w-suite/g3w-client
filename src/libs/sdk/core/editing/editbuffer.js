@@ -58,7 +58,8 @@ proto.generateId = function(){
  })
  }*/
 
-proto.addFeature = function(feature){
+proto.addFeature = function(feature) {
+  console.log('addFeature Editor Buffer')
   if(!feature.getId()){
     feature.setId(this.generateId());
   }

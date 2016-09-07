@@ -191,6 +191,7 @@ proto.setTool = function(toolType, options) {
     return true;
   }
 };
+
 // funzione chiamata da fuori (verosimilmente da pluginservice)
 // al fine di interrompere l'editing sul layer
 proto.stopTool = function() {
@@ -206,6 +207,8 @@ proto.stopTool = function() {
   this._activeTool.clear();
   return true;
 };
+
+
 // ritorna l'activeTool
 proto.getActiveTool = function() {
   return this._activeTool;
@@ -282,6 +285,20 @@ proto.getEditedFeatures = function() {
   }
 };
 
+proto.collectRelations = function() {
+  relationsEdits = this._editBuffer.collectRelations();
+  /*_.forEach(this._vectorLayer.getRelations(),function(relation){
+   var relationEdits = {
+   add: [],
+   update: [],
+   delete: []
+   }
+   relationsEdits[relation.name] = relationEdits;
+   })*/
+  return relationsEdits;
+};
+
+
 proto.setFieldsWithValues = function(feature,fields,relations) {
   var attributes = {};
   _.forEach(fields,function(field) {
@@ -303,23 +320,28 @@ proto.setFieldsWithValues = function(feature,fields,relations) {
   this._editBuffer.updateFields(feature,relationsAttributes);
 };
 
-proto.setFields = function(feature,fields) {
-  feature.setProperties(fields);
-  this._editBuffer.updateFields(feature);
+proto.setFieldsWithValues = function(feature,fields,relations){
+  var attributes = {};
+  _.forEach(fields,function(field){
+    attributes[field.name] = field.value;
+  });
+
+  feature.setProperties(attributes);
+  this._editBuffer.updateFields(feature,relations);
 };
 
-proto.getRelationsWithValues = function(feature) {
+proto.getRelationsWithValues = function(feature){
   var fid = feature.getId();
-  if (this._vectorLayer.hasRelations()) {
+  if (this._vectorLayer.hasRelations()){
     var fieldsPromise;
     // se non ha fid vuol dire che Ã¨ nuovo e senza attributi, quindi prendo i fields vuoti
-    if (!fid) {
+    if (!fid){
       fieldsPromise = this._vectorLayer.getRelationsWithValues();
     }
     // se per caso ha un fid ma Ã¨ un vettoriale nuovo
-    else if (!this._vectorLayer.getFeatureById(fid)) {
+    else if (!this._vectorLayer.getFeatureById(fid)){
       // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
-      if (this._vectorLayer.featureHasRelationsFksWithValues(feature)) {
+      if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
         var fks = this._vectorLayer.getRelationsFksWithValuesForFeature(feature);
         fieldsPromise = this._vectorLayer.getRelationsWithValuesFromFks(fks);
       }
@@ -328,18 +350,15 @@ proto.getRelationsWithValues = function(feature) {
         fieldsPromise = this._vectorLayer.getRelationsWithValues();
       }
     }
-    // se invece è un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
+    // se invece Ã¨ un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
     else {
-      var hasEdits = this._editBuffer.areFeatureRelationsEdited(fid);
-      if (hasEdits) {
+      var hasEdits = this._editBuffer.hasRelationsEdits(fid);
+      if (hasEdits){
+        var relationsEdits = this._editBuffer.getRelationsEdits(fid);
         var relations = this._vectorLayer.getRelations();
-        var relationsAttributes = this._editBuffer.getRelationsAttributes(fid);
-        _.forEach(relationsAttributes,function(relation) {
-          _.forEach(relations[relationKey].fields,function(field) {
-            field.value = relationsAttributes[relation.name][field.name];
-          });
+        _.forEach(relations,function (relation) {
+          relation.elements = _.cloneDeep(relationsEdits[relation.name]);
         });
-
         fieldsPromise = resolve(relations);
       }
       // se non ce li ha vuol dire che devo caricare i dati delle relazioni da remoto
@@ -358,6 +377,7 @@ proto.createRelationElement = function(relation) {
   var element = {};
   element.fields = _.cloneDeep(this._vectorLayer.getRelationFields(relation));
   element.id = this.generateId();
+  element.state = 'NEW';
   return element;
 };
 
@@ -384,38 +404,40 @@ proto.isDirty = function() {
 // _setterslisteners in modo corretto da poter poi essere sfruttata dal metodd
 // _setToolSettersListeners  --- !!!! DA COMPLETARE LA SPIEGAZIONE !!!----
 
-proto.onafter = function(setter,listener) {
-  this._onaftertoolaction(setter,listener);
+proto.onafter = function(setter, listener, priority) {
+  this._onaftertoolaction(setter, listener, priority);
 };
 
 // permette di inserire un setter listener sincrono prima che venga effettuata una operazione da un tool (es. addfeature)
-proto.onbefore = function(setter,listener) {
-  this._onbeforetoolaction(setter,listener, false);
+proto.onbefore = function(setter, listener, priority) {
+  this._onbeforetoolaction(setter, listener, false, priority);
 };
 
 // come onbefore() ma per listener asincroni
-proto.onbeforeasync = function(setter, listener) {
-  this._onbeforetoolaction(setter,listener,true);
+proto.onbeforeasync = function(setter, listener, priority) {
+  this._onbeforetoolaction(setter, listener, true, priority);
 };
 
-proto._onaftertoolaction = function(setter, listener) {
-  if (!_.get(this._setterslisteners.after,setter)) {
+proto._onaftertoolaction = function(setter,listener,priority){
+  priority = priority || 0;
+  if (!_.get(this._setterslisteners.after,setter)){
     this._setterslisteners.after[setter] = [];
   }
   this._setterslisteners.after[setter].push({
-    fnc: listener
+    fnc: listener,
+    priority: priority
   });
 };
 
-proto._onbeforetoolaction = function(setter, listener,async) {
-  // set non è stato creato la proprietà setter del linener before
-  // allora la creo e assegno un array che verrà riepito con la funzione listener
-  if (!_.get(this._setterslisteners.before, setter)) {
+proto._onbeforetoolaction = function(setter, listener, async, priority) {
+  priority = priority || 0;
+  if (!_.get(this._setterslisteners.before,setter)){
     this._setterslisteners.before[setter] = [];
   }
   this._setterslisteners.before[setter].push({
     fnc: listener,
-    how: async ? 'async' : 'sync'
+    how: async ? 'async' : 'sync',
+    priority: priority
   });
 };
 
@@ -427,6 +449,7 @@ proto._setToolSettersListeners = function(tool) {
   // in modo da poter richiamare e settare gli onbefore o onbeefore async o on after
   // nativi dell'oggetto g3wobject sui tool
   //verifico gli on before
+  console.log(this._setterslisteners);
   _.forEach(this._setterslisteners.before, function(listeners, setter) {
     // verifico se il tool in questione ha setters
     if (_.hasIn(tool.setters, setter)) {
@@ -438,10 +461,10 @@ proto._setToolSettersListeners = function(tool) {
         // vado a settare la funzione listeners quando il metodo del tool setter
         // viene chiamato
         if (listener.how == 'sync') {
-          tool.onbefore(setter, listener.fnc);
+          tool.onbefore(setter, listener.fnc, listener.priority);
         }
         else {
-          tool.onbeforeasync(setter, listener.fnc);
+          tool.onbeforeasync(setter,listener.fnc, listener.priority);
         }
       })
     }
@@ -450,13 +473,14 @@ proto._setToolSettersListeners = function(tool) {
   _.forEach(this._setterslisteners.after, function(listeners,setter) {
     if (_.hasIn(tool.setters, setter)) {
       _.forEach(listeners,function(listener) {
-        tool.onafter(setter,listener.fnc);
+        tool.onafter(setter,listener.fnc, listener.priority);
       })
     }
   })
 };
 
 proto.addFeature = function(feature) {
+  console.log('Add Feature Editor');
   this._editBuffer.addFeature(feature);
 };
 
