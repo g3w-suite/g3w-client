@@ -90,54 +90,36 @@ proto._setupListenersChain = function(setters) {
     }
     self.settersListeners.after[setter] = [];
     self.settersListeners.before[setter] = [];
-    // setter sostituito
-    // si sostituisce la propietà setter
-    // con la funzione modificata
+    // viene creata una propietà setter dell'oggetto
+    // avente setters come proprità
+    // la quale è una vesrione modificata della funziona
     //in quanto da prevedere i possibili listener (after, before, beoforeasync)
     self[setter] = function() {
-
       var args = arguments;
       // eseguo i listener registrati per il before
       var deferred = $.Deferred();
+      //valore ritornata dalla funzione setter
       var returnVal = null;
+      //contatore
       var counter = 0;
-      var canSet = true;
-      
-      // richiamata alla fine della catena di listeners
-      function done() {
-        if (canSet) {
-          // eseguo la funzione setter definita inizialmente
-          returnVal = setterFnc.apply(self, args);
-          // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
-          deferred.resolve(returnVal);
-          //eseguo le funzioni after
-          var afterListeners = self.settersListeners.after[setter];
-          _.forEach(afterListeners, function(listener, key) {
-            listener.fnc.apply(self, args);
-          })
-        }
-        else {
-          // se non posso proseguire 
-          // chiamo l'eventuale funzione di fallback
-          setterFallback.apply(self,args);
-          // e rigetto la promessa
-          deferred.reject();
-        }
-      }
-      
+      // estraggo l'array delle funzioni listener del setter
+      //quelle before (onbefore, onbeforeasync)
+      var beforeListeners = this.settersListeners['before'][setter];
+      // contatore dei listener che verrà decrementato ad ogni chiamata a next()
+      counter = 0;
+      // funzione complete
       function complete() {
         // eseguo la funzione
-
-        returnVal = setterFnc.apply(self,args);
+        returnVal = setterFnc.apply(self, args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
         deferred.resolve(returnVal);
-        
+        //lacio tutti gli after
         var afterListeners = self.settersListeners.after[setter];
         _.forEach(afterListeners,function(listener, key){
           listener.fnc.apply(self,args);
         })
       }
-      
+      // funzione abort
       function abort(){
           // se non posso proseguire ...
           // chiamo l'eventuale funzione di fallback
@@ -145,22 +127,20 @@ proto._setupListenersChain = function(setters) {
           // e rigetto la promessa
           deferred.reject();
       }
-      // estraggo l'array delle funzioni listener del setter
-      //quelle before (onbefore, onbeforeasync)
-      var beforeListeners = this.settersListeners['before'][setter];
-      // contatore dei listener che verrà decrementato ad ogni chiamata a next()
-      counter = 0;
       // funzione passata come ultimo parametro ai listeners,
       // che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO***
       // richiamare per poter proseguire la catena
-      function next(bool){
+      function next(bool) {
         var cont = true;
+        //la prima volta(prima chiamata è undefined)
         if (_.isBoolean(bool)){
           cont = bool;
         }
+        //prende gli aromenti passati alla funzione setter
+        // server per "clonare l'array degli argomenti passati in origine alla funzione setter"
         var _args = Array.prototype.slice.call(args);
         // se la catena è stata bloccata o se siamo arrivati alla fine dei beforelisteners
-        if (cont === false || (counter == beforeListeners.length)){
+        if (cont === false || (counter == beforeListeners.length)) {
           if(cont === false)
             abort.apply(self,args);
           else{
@@ -169,12 +149,15 @@ proto._setupListenersChain = function(setters) {
               self.emitEvent('set:'+setter,args);
             }
           }
-        }
-        else {
+        } else {
+          //next(true) o next() prima volta
           if (cont) {
             //funzione che ascolta la chiamata del metodo
             var listenerFnc = beforeListeners[counter].fnc;
             //verifica se è asincrono
+            // in tale caso lascio alla funzione  listener la possibilità di andare
+            // avanti o meno (questo inteso il modo asincrono)
+            // passando la funzione next come argomento della funzione
             if (beforeListeners[counter].async) {
               // aggiungo next come ulitmo parametro
               _args.push(next);

@@ -103,6 +103,8 @@ proto.getMapService = function() {
   return this._mapService;
 };
 
+
+
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
 // inoltre setta i tipi di tools da poter collegare
 // al tipo di layer sempre in base al tipo di geometria del layer
@@ -120,6 +122,23 @@ proto.setVectorLayer = function(vectorLayer) {
   this._vectorLayer = vectorLayer;
 };
 
+// funzione che crea e aggiunge il layer vettoraile di editing alla mappa
+proto.addEditingLayerToMap = function(geometryType) {
+  // istanzio l'editVectorLayer che è un vettore di appoggio (nuovo)
+  // dove vado a fare le modifiche
+  this._editVectorLayer = new VectorLayer({
+    name: "editvector",
+    geometrytype: geometryType
+  });
+  this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
+};
+
+//funzione che rimove il vettore di eding dalla mappa e lo resetta
+proto.removeEditingLayerFromMap = function() {
+  this._mapService.viewer.removeLayerByName(this._editVectorLayer.name);
+  this._editVectorLayer = null;
+};
+
 // avvia la sessione di editazione con un determinato tool (es. addfeature)
 proto.start = function() {
   console.log('start della classe Editor');
@@ -129,13 +148,9 @@ proto.start = function() {
   if (this._vectorLayer) {
     //prima di tutto stoppo editor
     this.stop();
-    // istanzio l'editVectorLayer che è un vettore di appoggio (nuovo)
-    // dove vado a fare le modifiche
-    this._editVectorLayer = new VectorLayer({
-      name: "editvector",
-      geometrytype: this._vectorLayer.geometrytype,
-    });
-    //this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
+    //chiamo la funzione che mi crea il vettoriale di edting dove vendono apportate
+    // tutte le modifice del layer
+    this.addEditingLayerToMap(this._vectorLayer.geometrytype);
     // istanzio l'EditBuffer
     this._editBuffer = new EditBuffer(this);
     //assegno all'attributo _started true;
@@ -156,8 +171,8 @@ proto.stop = function() {
       this._editBuffer = null;
       //rimuovo i listeners
       this.removeAllListeners();
-      //rivuovo il layer dalla mappa
-      this._mapService.viewer.removeLayerByName(this._editVectorLayer.name);
+      //rimuovo il layer dalla mappa
+      this.removeEditingLayerFromMap();
       //setto editor started a false
       this._setStarted(false);
       return true;
@@ -418,9 +433,9 @@ proto.onbeforeasync = function(setter, listener, priority) {
   this._onbeforetoolaction(setter, listener, true, priority);
 };
 
-proto._onaftertoolaction = function(setter,listener,priority){
+proto._onaftertoolaction = function(setter,listener,priority) {
   priority = priority || 0;
-  if (!_.get(this._setterslisteners.after,setter)){
+  if (!_.get(this._setterslisteners.after,setter)) {
     this._setterslisteners.after[setter] = [];
   }
   this._setterslisteners.after[setter].push({
@@ -431,7 +446,7 @@ proto._onaftertoolaction = function(setter,listener,priority){
 
 proto._onbeforetoolaction = function(setter, listener, async, priority) {
   priority = priority || 0;
-  if (!_.get(this._setterslisteners.before,setter)){
+  if (!_.get(this._setterslisteners.before, setter)){
     this._setterslisteners.before[setter] = [];
   }
   this._setterslisteners.before[setter].push({
@@ -449,7 +464,6 @@ proto._setToolSettersListeners = function(tool) {
   // in modo da poter richiamare e settare gli onbefore o onbeefore async o on after
   // nativi dell'oggetto g3wobject sui tool
   //verifico gli on before
-  console.log(this._setterslisteners);
   _.forEach(this._setterslisteners.before, function(listeners, setter) {
     // verifico se il tool in questione ha setters
     if (_.hasIn(tool.setters, setter)) {
@@ -464,7 +478,7 @@ proto._setToolSettersListeners = function(tool) {
           tool.onbefore(setter, listener.fnc, listener.priority);
         }
         else {
-          tool.onbeforeasync(setter,listener.fnc, listener.priority);
+          tool.onbeforeasync(setter, listener.fnc, listener.priority);
         }
       })
     }

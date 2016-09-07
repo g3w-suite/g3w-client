@@ -247,12 +247,11 @@ proto.collectRelations = function(){
   return relationsEdits;
 };
 
-proto._addEditToGeometryBuffer = function(feature,operation){
-  var geometriesBuffer = this._geometriesBuffer;
+proto._addEditToGeometryBuffer = function(feature,operation) {
 
+  var geometriesBuffer = this._geometriesBuffer;
   var id = feature.getId();
   var geometry = feature.getGeometry();
-
   if (operation == 'delete'){
     geometry = null;
     var layer = this._isNewFeature(id) ? this._editor._editVectorLayer : this._editor._vectorLayer;
