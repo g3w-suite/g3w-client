@@ -45,7 +45,7 @@ function ToolsService(){
       })
     })
   };
-};
+}
 
 // Make the public service en Event Emitter
 inherit(ToolsService,G3WObject);

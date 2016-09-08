@@ -130,6 +130,7 @@ proto.addEditingLayerToMap = function(geometryType) {
     name: "editvector",
     geometrytype: geometryType
   });
+  //il getMapLyer non è altro che la versione ol.Vector del vectorLayer oggetto
   this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
 };
 
@@ -312,14 +313,13 @@ proto.collectRelations = function() {
    })*/
   return relationsEdits;
 };
-
-
-proto.setFieldsWithValues = function(feature,fields,relations) {
+// viene chamato quando si preme ad esempio Salva sul Form degli
+// attributi di una
+proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
   _.forEach(fields,function(field) {
     attributes[field.name] = field.value;
   });
-
   var relationsAttributes = null;
   if (relations) {
     var relationsAttributes = {};
@@ -332,7 +332,7 @@ proto.setFieldsWithValues = function(feature,fields,relations) {
     });
   }
   feature.setProperties(attributes);
-  this._editBuffer.updateFields(feature,relationsAttributes);
+  this._editBuffer.updateFields(feature, relationsAttributes);
 };
 
 proto.setFieldsWithValues = function(feature,fields,relations){
@@ -344,16 +344,18 @@ proto.setFieldsWithValues = function(feature,fields,relations){
   feature.setProperties(attributes);
   this._editBuffer.updateFields(feature,relations);
 };
-
-proto.getRelationsWithValues = function(feature){
+//funzione che in base alla feature passata recupera le relazioni associata ad essa
+proto.getRelationsWithValues = function(feature) {
   var fid = feature.getId();
-  if (this._vectorLayer.hasRelations()){
+  //verifica se il layer ha relazioni
+  // restituisce il valore del campo _relation (se esiste è un array) del vectorLayer
+  if (this._vectorLayer.hasRelations()) {
     var fieldsPromise;
-    // se non ha fid vuol dire che Ã¨ nuovo e senza attributi, quindi prendo i fields vuoti
-    if (!fid){
+    // se non ha fid vuol dire che è nuovo e senza attributi, quindi prendo i fields vuoti
+    if (!fid) {
       fieldsPromise = this._vectorLayer.getRelationsWithValues();
     }
-    // se per caso ha un fid ma Ã¨ un vettoriale nuovo
+    // se per caso ha un fid ma è un vettoriale nuovo
     else if (!this._vectorLayer.getFeatureById(fid)){
       // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
       if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
@@ -365,7 +367,8 @@ proto.getRelationsWithValues = function(feature){
         fieldsPromise = this._vectorLayer.getRelationsWithValues();
       }
     }
-    // se invece Ã¨ un vettoriale preesistente controllo intanto se ha dati delle relazioni giÃ  editati
+    // se invece è una feature già presente e quindi non nuova
+    // verifico se ha dati delle relazioni già  editati
     else {
       var hasEdits = this._editBuffer.hasRelationsEdits(fid);
       if (hasEdits){
@@ -383,6 +386,8 @@ proto.getRelationsWithValues = function(feature){
     }
   }
   else {
+    // nel caso di nessuna relazione risolvo la promise
+    // passando il valore null
     fieldsPromise = resolve(null);
   }
   return fieldsPromise;
@@ -400,10 +405,10 @@ proto.getRelationPkFieldIndex = function(relationName) {
   return this._vectorLayer.getRelationPkFieldIndex(relationName);
 };
 
-proto.getField = function(name,fields) {
+proto.getField = function(name, fields) {
   var fields = fields || this.getVectorLayer().getFieldsWithValues();
   var field = null;
-  _.forEach(fields,function(f) {
+  _.forEach(fields, function(f) {
     if (f.name == name) {
       field = f;
     }
@@ -492,16 +497,15 @@ proto._setToolSettersListeners = function(tool) {
     }
   })
 };
-
+// metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {
-  console.log('Add Feature Editor');
   this._editBuffer.addFeature(feature);
 };
-
+// non fa aalctro che aggiornare la feature del buffer
 proto.updateFeature = function(feature) {
   this._editBuffer.updateFeature(feature);
 };
-
+// non fa altro che cancellare la feature dall'edit buffer
 proto.deleteFeature = function(feature) {
   this._editBuffer.deleteFeature(feature);
 };
@@ -543,11 +547,13 @@ proto._setStarted = function(bool) {
 };
 
 proto._setDirty = function(bool) {
+  // se non specificato lo setto a vero
   if (_.isNil(bool)) {
     this._dirty = true;
   }
   else {
     this._dirty = bool;
   }
+  // emetto l'evento dirty dell'editor
   this.emit("dirty",this._dirty);
 };

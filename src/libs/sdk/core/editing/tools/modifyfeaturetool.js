@@ -65,11 +65,6 @@ proto.run = function(){
           self.pause(false);
         })
       }
-    //}
-    //catch (error){
-    //  console.log(error);
-    //  feature.setGeometry(origGeometry);
-    //}
   });
   
   if (this._snap){

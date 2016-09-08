@@ -26,7 +26,7 @@ module.exports = PickFeatureTool;
 var proto = PickFeatureTool.prototype;
 
 // metodo eseguito all'avvio del tool
-proto.run = function(){
+proto.run = function() {
   var self = this;
   var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   this.pickFeatureInteraction = new PickFeatureInteraction({

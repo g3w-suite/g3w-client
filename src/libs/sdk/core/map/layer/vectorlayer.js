@@ -5,6 +5,7 @@ var reject = require('core/utils/utils').reject;
 var G3WObject = require('core/g3wobject');
 
 function VectorLayer(config) {
+
   var config = config || {};
   this.geometrytype = config.geometrytype || null;
   this.format = config.format || null;
@@ -37,7 +38,7 @@ function VectorLayer(config) {
   */
   this._PKinAttributes = false;
   this._featuresFilter = null;
-  this._fields = null
+  this._fields = null;
   this.lazyRelations = true;
   this._relations = null;
 }
@@ -136,7 +137,7 @@ proto.getFeatures = function(){
 proto.getFeatureIds = function(){
   var featureIds = _.map(this.getSource().getFeatures(),function(feature){
     return feature.getId();
-  })
+  });
   return featureIds
 };
 
@@ -186,18 +187,24 @@ proto.getFieldsWithValues = function(obj){
   return fields;
 };
 
-proto.setRelations = function(relations){
+proto.setRelations = function(relations) {
   this._relations = relations;
-  _.forEach(relations,function(relation){
-    _.forEach(relation.fields,function(field,idx){
+  // è un array contenete le relazioni con altri layers
+  _.forEach(relations, function(relation) {
+    // per ogni relazione scorro sull'attributo fields (array) di oggetti
+    // che descrivono  i campi del layer relazione
+    _.forEach(relation.fields, function(field, idx) {
       if (field.name == relation.pk) {
+        // aggiung ll'atributo pkFieldIndex
+        // che mi servirà per recuperare il campo
+        // primary del layer relazione
         relation.pkFieldIndex = idx
       }
     })
   })
 };
-
-proto.getRelations = function(){
+// resituisce le relazioni
+proto.getRelations = function() {
   return this._relations;
 };
 
@@ -207,7 +214,7 @@ proto.getRelation = function(relationName) {
     if (_relation.name == relationName) {
       relation = _relation;
     }
-  })
+  });
   return relation;
 };
 
@@ -221,7 +228,7 @@ proto.getRelationPkFieldIndex = function(relation) {
     if (field.name == relation.pk) {
       pkFieldIndex = idx;
     }
-  })
+  });
   return pkFieldIndex;
 };
 
@@ -234,7 +241,7 @@ proto.getRelationsFksKeys = function(){
   var fks = [];
   _.forEach(this._relations,function(relation){
     fks.push(relation.fk);
-  })
+  });
   return fks;
 };
 
@@ -249,14 +256,18 @@ proto.getRelationFieldsNames = function(relation){
 };
 
 // ottengo le relazioni a partire dal fid di una feature esistente
-proto.getRelationsWithValues = function(fid){
+proto.getRelationsWithValues = function(fid) {
+
   if (!this._relations) {
+    // se non ha nessuna relazione
+    // rirotno array vuoto
     resolve([]);
   }
+  // altrimenti creo un cloe dell'attributo relations
   var relations = _.cloneDeep(this._relations);
-  var self = this;
-  if (!fid || !this.getFeatureById(fid)){
-    _.forEach(relations,function(relation){
+  // -- DA CAPIRE MEGLIO --
+  if (!fid || !this.getFeatureById(fid)) {
+    _.forEach(relations, function(relation) {
       relation.elements = [];
     });
     return resolve(relations);
@@ -266,12 +277,12 @@ proto.getRelationsWithValues = function(fid){
       var deferred = $.Deferred();
       var attributes = this.getFeatureById(fid).getProperties();
       var fks = {};
-      _.forEach(relations,function(relation){
+      _.forEach(relations, function(relation) {
         var keyVals = [];
-        _.forEach(relation.fk,function(fkKey){
+        _.forEach(relation.fk, function(fkKey) {
           fks[fkKey] = attributes[fkKey];
         });
-      })
+      });
       
       this.getRelationsWithValuesFromFks(fks)
       .then(function(relationsResponse){
@@ -310,7 +321,7 @@ proto.getRelationsWithValuesFromFks = function(fks){
             _.forEach(element.fields,function(field){
               field.value = relationElement[field.name];
               if (field.name == relation.pk) {
-                element.id = field.value // aggiungo element.id dandogli il valore della chiave primaria della relazione
+                element.id = field.value; // aggiungo element.id dandogli il valore della chiave primaria della relazione
               }
             });
             
@@ -319,13 +330,13 @@ proto.getRelationsWithValuesFromFks = function(fks){
         }
       })
     )
-  })
+  });
   
   return $.when.apply(this,relationsRequests)
   .then(function(){
     return relations;
   });
-}
+};
 
 proto.setStyle = function(style){
   this._olLayer.setStyle(style);
@@ -368,6 +379,6 @@ proto.getRelationsFksWithValuesForFeature = function(feature){
   var fksKeys = this.getRelationsFksKeys();
   _.forEach(fksKeys,function(fkKey){
     fks[fkKey] = attributes[fkKey];
-  })
+  });
   return fks;
 };

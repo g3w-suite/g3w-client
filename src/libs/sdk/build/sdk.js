@@ -516,9 +516,9 @@ proto.setVectorLayer = function(vectorLayer){
 proto.start = function(){
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
-  // se Ã¨ stato settato il vectorLayer
+  // se è stato settato il vectorLayer
   if (this._vectorLayer){
-    // nel caso non sia giÃ  avviato prima lo stoppo;
+    // nel caso non sia già  avviato prima lo stoppo;
     this.stop();
 
     // istanzio l'editVectorLayer
@@ -735,7 +735,7 @@ proto.getRelationPkFieldIndex = function(relationName) {
   return this._vectorLayer.getRelationPkFieldIndex(relationName);
 }
 
-proto.getField = function(name,fields){
+proto.getField = function(name, fields){
   var fields = fields || this.getVectorLayer().getFieldsWithValues();
   var field = null;
   _.forEach(fields,function(f){
