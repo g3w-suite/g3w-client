@@ -54,17 +54,9 @@ proto.generateId = function() {
   return this._editor.generateId();
 };
 
-/*proto._setupRelationsBuffers = function(relations) {
- var self = this;
- _.forEach(relations,function(relation){
- var relationBuffer = RelationEditBuffer(this._editor,relation.name);
- self._relationsBuffers[relation.name] = relationBuffer;
- })
- }*/
-// funzione chee agginge la feature geometrica nel buffer
+// funzione che agginge la feature geometrica nel buffer
 // geometry
 proto.addFeature = function(feature) {
-  console.log('addFeature Editor Buffer');
   // nel caso non abbia una un id (caso nuova feature) la genero causale
   if(!feature.getId()) {
     feature.setId(this.generateId());
@@ -191,11 +183,6 @@ proto.collectRelations = function(){
     update: []
   };
 
-  /*
-   relationedits: {
-   <nome relazione>:
-   }
-   */
   var relationsElements = {};
   _.forEach(this._relationsBuffers,function(relationsBuffers,fid){
 
@@ -281,7 +268,7 @@ proto._addEditToGeometryBuffer = function(feature, operation) {
     geometriesBuffer[id] = [];
   }
   geometriesBuffer[id].push(geometry);
-  this._setDirty();
+  this._setDirty(true);
 };
 // funzione che mette in relazione feature e relazioni
 proto._addEditToValuesBuffers = function(feature, relations){
@@ -290,7 +277,6 @@ proto._addEditToValuesBuffers = function(feature, relations){
   var fid = feature.getId();
   // prende gli attributi della feature
   var attributes = feature.getProperties();
-  console.log('attributi feature: ',attributes)
   // prendo il buffer degli attributi
   var attributesBuffer = this._attributesBuffer;
   //verifica se l'oggetto attributebuffer ha l'id del layer
@@ -325,7 +311,7 @@ proto._addEditToValuesBuffers = function(feature, relations){
       relationBuffer.updateRelation(relation);
     });
   }
-  this._setDirty();
+  this._setDirty(true);
 };
 
 // guardo se è una feature già  presente nel buffer delle nuove geometrie
@@ -333,17 +319,24 @@ proto._isNewFeature = function(fid){
   //return id.toString().indexOf('_new_') > -1;
   return this._editor.isNewFeature(fid);
 };
-
-proto._setDirty = function(){
-  this._editor._setDirty();
+// funzione edit buffer che chiama il set dirty
+proto._setDirty = function(bool) {
+  // faccio un OR logico tra quello inviato da qualsiasi punto del'edit buffer
+  // o quello dal relationEditBuffer object (che si può verificare)
+  // nel caso in cui faccio un clena dell'editing della relazione
+  // e la verifica sei i vari buffer sono oggetti vuoti
+  var isDirty = bool || !_.isEmpty(this._geometriesBuffer) || !_.isEmpty(this._attributesBuffer) || !_.isEmpty(this._relationsAttributesBuffer);
+  this._editor._setDirty(isDirty);
 };
 
 proto._resetVectorLayer = function(){
   this._editor.vectoLayer = this._origVectorLayer;
   this._origVectorLayer.getSource().clear();
 };
-
-proto._clearBuffers = function(){
+// fa il cela di tutti i buffers
+// e chiama il setDirty dell'edito passanogli false
+// quindi disabilitando il tasto salva per inviare le modifiche
+proto._clearBuffers = function() {
   this._geometriesBuffer = {};
   this._attributesBuffer = {};
   this._relationsAttributesBuffer = {};
