@@ -116,28 +116,26 @@ proto.getRelationsEdits = function(fid){
   });
   return relations;
 };
-
-proto.collectFeatureIds = function(){
+// funzione che colleziona tutti gli (unici) delle featues modificate
+// dei buffer geometry e attribute
+proto.collectFeatureIds = function() {
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
-
   var modifiedFids = [];
-
   modifiedFids = _.concat(modifiedFids,_.keys(geometriesBuffers));
   modifiedFids = _.concat(modifiedFids,_.keys(attributesBuffers));
-
   return _.uniq(modifiedFids);
 };
-
-proto.collectFeatures = function(state,asGeoJSON){
+// che colleziona tutte le modifche fatte quando viene premuto o fatto salva
+// dall'editor o passaggio da un editing di un layer all'altro
+proto.collectFeatures = function(state, asGeoJSON){
   var self = this;
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
+  // prendo il jsono format per poter poi fare il posto verso il server
   var GeoJSONFormat = new ol.format.GeoJSON();
-
   var modifiedFids = this.collectFeatureIds();
-
   var layer;
   if (state == 'new') {
     layer = self._editor.getEditVectorLayer();

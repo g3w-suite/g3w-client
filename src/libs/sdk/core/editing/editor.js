@@ -288,15 +288,17 @@ proto.getFeatureLockIdsForFeatureIds = function(fids) {
 
   return this.getFeatureLocksLockIds(featurelocksForFids);
 };
-
-proto.getEditedFeatures = function() {
+// funzione che prende le feature nuove, aggiornate e cancellate
+//dall'edit buffer
+proto.getEditedFeatures = function(){
   var modifiedFids = this._editBuffer.collectFeatureIds();
   var lockIds = this.getFeatureLockIdsForFeatureIds(modifiedFids);
   return {
     add: this._editBuffer.collectFeatures('new',true),
     update: this._editBuffer.collectFeatures('updated',true),
     delete: this._editBuffer.collectFeatures('deleted',true),
-    relations: this._editBuffer.collectRelationsAttributes(),
+    //relations: this._editBuffer.collectRelationsAttributes(),
+    relationsedits: this.collectRelations(),
     lockids: lockIds
   }
 };
@@ -545,7 +547,9 @@ proto._setToolsForVectorType = function(geometrytype) {
 proto._setStarted = function(bool) {
   this._started = bool;
 };
-
+// funzione setDirty dell'editor che fa si che questo possa emettere
+// l'evento dirty in questo modo psso fare qualcosa quando è stata fatta una modifica
+// nei layers dell'editor
 proto._setDirty = function(bool) {
   // se non specificato lo setto a vero
   if (_.isNil(bool)) {
