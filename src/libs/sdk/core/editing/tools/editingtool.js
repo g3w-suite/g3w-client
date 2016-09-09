@@ -2,33 +2,20 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
-function EditingTool(editor,options) {
-  var self = this;
+// CLASSE PADRE DI TUTTI GLI EDITING TOOL
+function EditingTool(editor, options) {
+
   this._interactions = [];
   this.editor = editor;
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-  this.isPausable = false;
   this.options = options || {};
   this.steps = null;
   
-  /*var mapService = this.editor.getMapService();
-  mapService.on('pointerInteractionSet',function(interaction){
-    var isMineInteraction = false;
-    _.forEach(self._interactions,function(_interaction){
-      if (_interaction == interaction) {
-        isMineInteraction = true;
-      }
-    })
-    if (!isMineInteraction) {
-      console.log("Qualcuno ha preso il controllo");
-      self.editor.stopTool();
-    }
-  });*/
-  
   base(this);
 }
-inherit(EditingTool,G3WObject);
+
+inherit(EditingTool, G3WObject);
 
 var proto = EditingTool.prototype;
 
@@ -51,11 +38,11 @@ proto.removeInteraction = function(interaction) {
 
 proto.ownsInteraction = function(interaction) {
   var owns = false;
-  _.forEach(this._interactions,function(_interaction) {
+  _.forEach(this._interactions, function(_interaction) {
     if (_interaction == interaction) {
       owns = true;
     }
-  })
+  });
   return owns;
 };
 
@@ -64,19 +51,26 @@ proto.stop = function(){
     this.steps.destroy();
   }
   return true;
-}
+};
 
-EditingTool.Steps = function(steps){
+// metodo che deve essere sovrascritto dalle
+// sottoclassi
+proto.run = function() {
+  console.log('Se appare quasto messaggio significa che non è stato sovrascritto il metodo run() dalla sottoclasse');
+};
+
+EditingTool.Steps = function(steps) {
   var index = -1;
+  //ARRAY
   var steps = steps;
   
   this.next = function(){
     index += 1;
     var step = steps[index];
-    this.emit('step',index,step);
+    this.emit('step', index, step);
   };
   
-  this.currentStep = function(){
+  this.currentStep = function() {
     return steps[index];
   };
   
@@ -104,7 +98,8 @@ EditingTool.Steps = function(steps){
   this.insertStepAt = function(idx,step){
     steps.splice(idx,0,step);
   }
-}
+};
+
 inherit(EditingTool.Steps,G3WObject);
 
 module.exports = EditingTool;

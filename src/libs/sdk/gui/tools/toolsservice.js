@@ -11,12 +11,15 @@ function ToolsService(){
   };
   
   this.setters = {
-    addToolGroup: function(group) {
-      this.state.toolsGroups.push(group);
+    //inserita possibilità di dare ordine al plugin di visualizzazione
+    addToolGroup: function(order, group) {
+      //console.log(order);
+      self.state.toolsGroups.splice(order, 0, group);
+      //console.log(self.state.toolsGroups);
     }
-  }
+  };
   
-  this.addTools = function(groupName,tools) {
+  this.addTools = function(order, groupName, tools) {
     var self = this;
     var group = this._getToolsGroup(groupName);
     if (!group) {
@@ -24,9 +27,9 @@ function ToolsService(){
         name: groupName,
         tools: []
       };
-      this.addToolGroup(group);
+      this.addToolGroup(order, group);
     }
-    _.forEach(tools,function(tool){
+    _.forEach(tools, function(tool){
       group.tools.push(tool);
       self._addAction(tool);
     });
@@ -35,8 +38,8 @@ function ToolsService(){
   this.removeTool = function(toolId) {
   };
   
-  this.fireAction = function(actionid){
-    var action = this._actions[actionid];
+  this.fireAction = function(actionId){
+    var action = this._actions[actionId];
     action();
   };
   
@@ -46,18 +49,19 @@ function ToolsService(){
       if (_group.name == groupName) {
         group = _group;
       }
-    })
+    });
     return group;
-  }
+  };
   
   this._addAction = function(tool) {
     var actionId = Math.floor(Math.random() * 1000000)+1;
     tool.actionId = actionId;
     this._actions[actionId] = tool.action;
-  }
+  };
   
   base(this);
-};
-inherit(ToolsService,G3WObject);
+}
+
+inherit(ToolsService, G3WObject);
 
 module.exports = ToolsService;

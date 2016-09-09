@@ -19,7 +19,7 @@ var ApplicationService = function(){
   // chiama il costruttore di G3WObject (che in questo momento non fa niente)
   base(this);
   
-  this.init = function(config,acquirePostBoostrap){
+  this.init = function(config, acquirePostBoostrap){
     this._config = config;
     if (acquirePostBoostrap) {
       this._acquirePostBoostrap = true;
@@ -40,18 +40,22 @@ var ApplicationService = function(){
   }
   
   this.postBootstrap = function() {
+
     if (!this.complete) {
       RouterService.init();
-      
       this.complete = true;
     }
   };
   
   this._bootstrap = function(){
     var self = this;
-    if (!this.ready){
-      //inizializza la configurazione dei servizi. Ognungo cercherà dal config quello di cui avrà bisogno
-      //una volta finita la configurazione emetto l'evento ready. A questo punto potrò avviare l'istanza Vue globale
+    //nel caso in cui (prima volta) l'application service non è pronta
+    //faccio una serie di cose
+    if (!this.ready) {
+      // Inizializza la configurazione dei servizi.
+      // Ognungo cercherà dal config quello di cui avrà bisogno
+      // una volta finita la configurazione emetto l'evento ready.
+      // A questo punto potrò avviare l'istanza Vue globale
       $.when(
         ApiService.init(this._config),
         ProjectsRegistry.init(this._config)

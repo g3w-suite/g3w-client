@@ -1,11 +1,12 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var DeleteInteraction = require('g3w-ol3/src/interactions//deletefeatureinteraction');
+var DeleteInteraction = require('g3w-ol3/src/interactions/deletefeatureinteraction');
+var GUI = require('gui/gui');
 
 var EditingTool = require('./editingtool');
 
-function DeleteFeatureTool(editor){
+function DeleteFeatureTool(editor) {
   var self = this;
   this.editor = editor;
   this.isPausable = true;
@@ -19,12 +20,12 @@ function DeleteFeatureTool(editor){
   
   base(this,editor);
 }
-inherit(DeleteFeatureTool,EditingTool);
+inherit(DeleteFeatureTool, EditingTool);
 module.exports = DeleteFeatureTool;
 
 var proto = DeleteFeatureTool.prototype;
 
-/* BRUTTISSIMO! Tocca ridefinire tutte le parti interne di OL3 non esposte dalle API */
+/* BRUTTISSIMO! Tocca ridefinire tutte le parti internet di OL3 non esposte dalle API */
 
 ol.geom.GeometryType = {
   POINT: 'Point',

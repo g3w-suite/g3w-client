@@ -2,38 +2,42 @@ var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
 var RelationEditBuffer = require('./relationeditbuffer');
 
-function EditBuffer(editor){
+function EditBuffer(editor) {
   this._editor = editor;
-  
+
   this._origVectorLayer = new ol.layer.Vector({
     source: new ol.source.Vector()
   });
   this._cloneLayer();
-  
+
   //buffer delle geometrie
   this._geometriesBuffer = {};
-  
+
   // buffer degli attributi
   this._attributesBuffer = {};
-  
+
   // buffer degli attributi delle relazioni
   this._relationsBuffers = {};
-  /*var relations = editor.getVectorLayer().getRelations();
-  if (relations) {
-    this._setupRelationsBuffers(relations);
-  }*/
-  
+
+
 }
 inherit(EditBuffer,G3WObject);
+
 module.exports = EditBuffer;
 
 var proto = EditBuffer.prototype;
 
-proto.commit = function(){
+//funzione commit
+proto.commit = function() {
+  // prendo tutte le feature dal vettore di editing dell'editor
   var newFeatures = this._editor.getEditVectorLayer().getFeatures();
+  //aggiungo le features nuove al layer vettoriale originale
   this._editor.getVectorLayer().addFeatures(newFeatures);
+  // faccio il clear del layere di editing
   this._editor.getEditVectorLayer().clear();
+  // faccio il clear del buffer
   this._clearBuffers();
+  //faccio il clone del Layer Vector originale della mappa
   this._cloneLayer();
 };
 
@@ -46,28 +50,24 @@ proto.destroy = function(){
   this._clearBuffers();
 };
 
-proto.generateId = function(){
+proto.generateId = function() {
   return this._editor.generateId();
 };
 
-/*proto._setupRelationsBuffers = function(relations) {
-  var self = this;
-  _.forEach(relations,function(relation){
-    var relationBuffer = RelationEditBuffer(this._editor,relation.name);
-    self._relationsBuffers[relation.name] = relationBuffer;
-  })
-}*/
-
-proto.addFeature = function(feature){
-  if(!feature.getId()){
+// funzione che agginge la feature geometrica nel buffer
+// geometry
+proto.addFeature = function(feature) {
+  // nel caso non abbia una un id (caso nuova feature) la genero causale
+  if(!feature.getId()) {
     feature.setId(this.generateId());
   }
-  this._addEditToGeometryBuffer(feature,'add');
+  // aggiungo la feature al buffer (nel cso di nuova feature
+  this._addEditToGeometryBuffer(feature, 'add');
   console.log("Inserita nuova feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
-
-proto.updateFeature = function(feature){
-  this._addEditToGeometryBuffer(feature,'update');
+// funzione chiamata in fase di update della Feature
+proto.updateFeature = function(feature) {
+  this._addEditToGeometryBuffer(feature, 'update');
   console.log("Modificata feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
@@ -75,12 +75,14 @@ proto.deleteFeature = function(feature){
   this._addEditToGeometryBuffer(feature,'delete');
   console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
-
-proto.updateFields = function(feature,relations){
-  if(!feature.getId()){
+// funzione che server per fare update di una feature
+proto.updateFields = function(feature, relations) {
+  // nel caso di una nuova feature
+  if(!feature.getId()) {
+    // genero id random e lo setto alla feature
     feature.setId(this.generateId());
   }
-  this._addEditToValuesBuffers(feature,relations);
+  this._addEditToValuesBuffers(feature, relations);
   console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
@@ -97,10 +99,11 @@ proto.areFeatureAttributesEdited = function(fid){
   }
   return false;
 };
-
+// funzione che se nel buffer delle relazioni
+// è stato inserito già modifiche su relazioni di quella feature
 proto.hasRelationsEdits = function(fid){
   var hasEdits = false;
-  _.forEach(this._relationsBuffers[fid],function(relationBuffer){
+  _.forEach(this._relationsBuffers[fid], function(relationBuffer) {
     hasEdits = hasEdits || relationBuffer.hasRelationElements();
   })
   return hasEdits;
@@ -113,28 +116,26 @@ proto.getRelationsEdits = function(fid){
   });
   return relations;
 };
-
-proto.collectFeatureIds = function(){
+// funzione che colleziona tutti gli (unici) delle featues modificate
+// dei buffer geometry e attribute
+proto.collectFeatureIds = function() {
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
-  
   var modifiedFids = [];
-
   modifiedFids = _.concat(modifiedFids,_.keys(geometriesBuffers));
   modifiedFids = _.concat(modifiedFids,_.keys(attributesBuffers));
-  
   return _.uniq(modifiedFids);
 };
-
-proto.collectFeatures = function(state,asGeoJSON){
+// che colleziona tutte le modifche fatte quando viene premuto o fatto salva
+// dall'editor o passaggio da un editing di un layer all'altro
+proto.collectFeatures = function(state, asGeoJSON){
   var self = this;
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
+  // prendo il jsono format per poter poi fare il posto verso il server
   var GeoJSONFormat = new ol.format.GeoJSON();
-  
   var modifiedFids = this.collectFeatureIds();
-  
   var layer;
   if (state == 'new') {
     layer = self._editor.getEditVectorLayer();
@@ -142,16 +143,16 @@ proto.collectFeatures = function(state,asGeoJSON){
   else {
     layer = self._editor.getVectorLayer();
   }
-  
+
   var features = [];
   _.forEach(modifiedFids,function(fid){
-    
+
     var feature = layer.getFeatureById(fid);
     var isNew = self._isNewFeature(fid);
     var addedFeature = (state == 'new' && isNew && feature);
     var updatedFeature = (state == 'updated' && !isNew && feature);
     var deletedFeature = (state == 'deleted' && !isNew && !feature);
-    
+
     if (addedFeature || updatedFeature){
       if (asGeoJSON){
         feature = GeoJSONFormat.writeFeatureObject(feature);
@@ -180,11 +181,6 @@ proto.collectRelations = function(){
     update: []
   };
 
-  /*
-  relationedits: {
-    <nome relazione>:
-  }
-   */
   var relationsElements = {};
   _.forEach(this._relationsBuffers,function(relationsBuffers,fid){
 
@@ -246,78 +242,111 @@ proto.collectRelations = function(){
   return relationsEdits;
 };
 
-proto._addEditToGeometryBuffer = function(feature,operation){
+proto._addEditToGeometryBuffer = function(feature, operation) {
+  // al momento non prende in considerazione, update , add valori di operation
+  // in quanto verifica se è una nuova feature o no
+  // recupero il buffer delle geometrie
   var geometriesBuffer = this._geometriesBuffer;
-  
+  // recupero l'ide della feature
   var id = feature.getId();
+  // recupero la geometria
   var geometry = feature.getGeometry();
-  
+  // caso operazione delete
   if (operation == 'delete'){
-      geometry = null;
-      var layer = this._isNewFeature(id) ? this._editor._editVectorLayer : this._editor._vectorLayer;
-      layer.getSource().removeFeature(feature);
-  } 
-  
-  if (!_.has(geometriesBuffer,id)){
+    geometry = null;
+    // prendo il layer originale o l'editing Layer
+    var layer = this._isNewFeature(id) ? this._editor.getEditVectorLayer() : this._editor.getVectorLayer();
+    // rimuovo la feature dalla source
+    layer.getSource().removeFeature(feature);
+  }
+  // se non presente nel geometry buffer
+  // creo array riferita a quella feature per monitorare tutte le modifice che avverranno
+  // su quella feature
+  if (!_.has(geometriesBuffer,id)) {
     geometriesBuffer[id] = [];
   }
   geometriesBuffer[id].push(geometry);
-  this._setDirty();
+  this._setDirty(true);
 };
-
-proto._addEditToValuesBuffers = function(feature,relations){
+// funzione che mette in relazione feature e relazioni
+proto._addEditToValuesBuffers = function(feature, relations){
   var self = this;
+  // prende id della feature
   var fid = feature.getId();
+  // prende gli attributi della feature
   var attributes = feature.getProperties();
+  // prendo il buffer degli attributi
   var attributesBuffer = this._attributesBuffer;
-
-  if (!_.has(attributesBuffer,fid)){
+  //verifica se l'oggetto attributebuffer ha l'id del layer
+  if (!_.has(attributesBuffer, fid)) {
+    //nel caso non ci sia crea la chiave e assegna un array vuoto
     attributesBuffer[fid] = [];
   }
+  // a quel punto inserisco una nuova modifica nell'array delle modifiche
+  // che rigurada quella particolare feature identificata dalla chiave id
   attributesBuffer[fid].push(attributes);
-
-  if (relations){
-    _.forEach(relations,function(relation){
-      if (!_.has(self._relationsBuffers,fid)){
+  // se snono state passate relazioni
+  if (relations) {
+    // clico su ognuna di essere
+    _.forEach(relations, function(relation) {
+      //se esiste già nell'oggetto relation buffer legate a quella feature
+      if (!_.has(self._relationsBuffers, fid)) {
+        // atrimenti faccio come ho fatto sopra per il buffer degli attributi
+        // ma ora sul buffer delle relazioni e non più un array ma un ogetto
+        // caratterizzato dal nome della relazione
         self._relationsBuffers[fid] = {};
       }
-      if (!_.has(self._relationsBuffers[fid],relation.name)){
-        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self,relation.name);
+      // verifico oltre alla chiave della feature se contiene il nome della relazione
+      // che non è altro il nome del layer che in relazione con la feature del layer che si sta
+      // editando
+      if (!_.has(self._relationsBuffers[fid], relation.name)) {
+        // se non presente creo una nuova istanza di RelationEditBuffer
+        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self, relation.name);
       }
-
+      // prendo l'istanza di RelationEditBuffer (creata sul momento o esistente)
       var relationBuffer = self._relationsBuffers[fid][relation.name];
+      // chiamo il metodo updateRelation dell'istanza
       relationBuffer.updateRelation(relation);
     });
   }
-  this._setDirty();
+  this._setDirty(true);
 };
 
-// guardo se è una feature già presente nel buffer delle nuove geometrie
+// guardo se è una feature già  presente nel buffer delle nuove geometrie
 proto._isNewFeature = function(fid){
   //return id.toString().indexOf('_new_') > -1;
   return this._editor.isNewFeature(fid);
 };
-
-proto._setDirty = function(){
-  this._editor._setDirty();
+// funzione edit buffer che chiama il set dirty
+proto._setDirty = function(bool) {
+  // faccio un OR logico tra quello inviato da qualsiasi punto del'edit buffer
+  // o quello dal relationEditBuffer object (che si può verificare)
+  // nel caso in cui faccio un clena dell'editing della relazione
+  // e la verifica sei i vari buffer sono oggetti vuoti
+  var isDirty = bool || !_.isEmpty(this._geometriesBuffer) || !_.isEmpty(this._attributesBuffer) || !_.isEmpty(this._relationsAttributesBuffer);
+  this._editor._setDirty(isDirty);
 };
 
 proto._resetVectorLayer = function(){
   this._editor.vectoLayer = this._origVectorLayer;
   this._origVectorLayer.getSource().clear();
 };
-
-proto._clearBuffers = function(){
+// fa il cela di tutti i buffers
+// e chiama il setDirty dell'edito passanogli false
+// quindi disabilitando il tasto salva per inviare le modifiche
+proto._clearBuffers = function() {
   this._geometriesBuffer = {};
   this._attributesBuffer = {};
   this._relationsAttributesBuffer = {};
   this._editor._setDirty(false);
 };
-
-proto._cloneLayer = function(){
+//funzione cloneLayer
+proto._cloneLayer = function() {
   var clonedFeatures = [];
-  this._editor._vectorLayer.getSource().forEachFeature(function(feature){
+  //ciclo sul tutte le feature del layer vettoriale originale
+  this._editor._vectorLayer.getSource().forEachFeature(function(feature) {
     clonedFeatures.push(feature.clone());
-  },this);
+  }, this);
+  // aggiungo tali feature sul layer "originale del buffer"
   this._origVectorLayer.getSource().addFeatures(clonedFeatures);
 };
