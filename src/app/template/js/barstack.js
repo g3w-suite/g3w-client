@@ -28,12 +28,14 @@ proto.push = function(panel, parent, append){
 proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
   var self = this;
-  var panel = this.state.panels.slice(-1)[0];
-  panel.unmount()
-  .then(function(){
-    //self.state.panels.pop();
-    self.state.panels.pop();
-  });
+  if (this.state.panels.length) {
+    var panel = this.state.panels.slice(-1)[0];
+    panel.unmount()
+    .then(function(){
+      //self.state.panels.pop();
+      self.state.panels.pop();
+    });
+  }
 };
 
 proto.remove = function(panel) {

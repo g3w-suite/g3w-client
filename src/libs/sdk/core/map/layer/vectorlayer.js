@@ -39,7 +39,7 @@ function VectorLayer(config) {
   this._PKinAttributes = false;
   this._featuresFilter = null;
   this._fields = null;
-  this._relationsDataLoaded = false;
+  this._relationsDataLoaded = {};
   this.lazyRelations = true;
   this._relations = null;
 }
@@ -258,7 +258,7 @@ proto.getRelationFieldsNames = function(relation){
 
 // ottengo le relazioni a partire dal fid di una feature esistente
 proto.getRelationsWithValues = function(fid) {
-
+  var self = this;
   if (!this._relations) {
     // se non ha nessuna relazione
     // rirotno array vuoto
@@ -274,25 +274,31 @@ proto.getRelationsWithValues = function(fid) {
     return resolve(relations);
   }
   else {
-    if (this.lazyRelations && !this._relationsDataLoaded){
-      var deferred = $.Deferred();
-      var attributes = this.getFeatureById(fid).getProperties();
-      var fks = {};
-      _.forEach(relations, function(relation) {
-        var keyVals = [];
-        _.forEach(relation.fk, function(fkKey) {
-          fks[fkKey] = attributes[fkKey];
+    if (this.lazyRelations){
+      if (!self._relationsDataLoaded[fid]) {
+        var deferred = $.Deferred();
+        var attributes = this.getFeatureById(fid).getProperties();
+        var fks = {};
+        _.forEach(relations, function(relation) {
+          var keyVals = [];
+          _.forEach(relation.fk, function(fkKey) {
+            fks[fkKey] = attributes[fkKey];
+          });
         });
-      });
-      
-      this.getRelationsWithValuesFromFks(fks)
-      .then(function(relationsResponse){
-        deferred.resolve(relationsResponse);
-      })
-      .fail(function(){
-        deferred.reject();
-      });
-      return deferred.promise();
+
+        this.getRelationsWithValuesFromFks(fks)
+          .then(function(relationsResponse){
+            self._relationsDataLoaded[fid] = relationsResponse;
+            deferred.resolve(relationsResponse);
+          })
+          .fail(function(){
+            deferred.reject();
+          });
+        return deferred.promise();
+      }
+      else {
+        return resolve(this._relationsDataLoaded[fid]);
+      }
     }
     else {
       return resolve(this._relations); // vuol dire che gli elementi delle relazioni sono stati già inseriti in fase di creazione del vettoriale
@@ -303,10 +309,10 @@ proto.getRelationsWithValues = function(fid) {
 // ottengo le relazioni valorizzate a partire da un oggetto con le chiavi FK come keys e i loro valori come values
 proto.getRelationsWithValuesFromFks = function(fks){
   var self = this;
-  //var relations = _.cloneDeep(this._relations);
+  var relations = _.cloneDeep(this._relations);
   var relationsRequests = [];
 
-  _.forEach(this._relations,function(relation){
+  _.forEach(relations,function(relation){
 
     relation.elements = []; // creo la proprietà che accoglierà gli elementi della relazione ( e che quindi li cacherà)
     var url = relation.url;
@@ -339,8 +345,7 @@ proto.getRelationsWithValuesFromFks = function(fks){
   
   return $.when.apply(this,relationsRequests)
   .then(function(){
-    self._relationsDataLoaded = true;
-    return _.cloneDeep(self._relations); // le relazioni e i loro elementi sono immutabili; le modifiche vanno nei RelationEditBuffer
+    return relations; // le relazioni e i loro elementi sono immutabili; le modifiche vanno nei RelationEditBuffer
   });
 }
 

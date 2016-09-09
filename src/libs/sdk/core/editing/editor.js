@@ -2,6 +2,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var resolve = require('core/utils/utils').resolve;
 var G3WObject = require('core/g3wobject');
+var GUI = require('gui/gui');
 var VectorLayer = require('core/map/layer/vectorlayer');
 // BASE TOOLS ////
 var AddFeatureTool = require('./tools/addfeaturetool');
@@ -13,6 +14,9 @@ var CutLineTool = require('./tools/cutlinetool');
 /// BUFFER /////
 var EditBuffer = require('./editbuffer');
 
+var Form = require('gui/form');
+var form = null; // brutto ma devo tenerlo esterno sennò si crea un clico di riferimenti che manda in palla Vue
+
 // Editor di vettori puntuali
 function Editor(options) {
 
@@ -21,8 +25,9 @@ function Editor(options) {
   this._editVectorLayer = null;
   this._editBuffer = null;
   this._activeTool = null;
+  this._formClass = options.formClass || Form;
   this._dirty = false;
-  this._newPrefix = '_new_';;
+  this._newPrefix = '_new_';
   this._featureLocks = null;
   this._started = false;
 
@@ -90,6 +95,11 @@ function Editor(options) {
   }
   */
   this._tools = {};
+
+  this._setupAddFeatureAttributesEditingListeners();
+  this._setupEditAttributesListeners();
+  this._askConfirmToDeleteEditingListener();
+
   base(this);
 }
 
@@ -166,6 +176,10 @@ proto.stop = function() {
 
   if (this.isStarted()) {
     if (this.stopTool()) {
+      if (form) {
+        GUI.closeForm(form);
+        this.form = null;
+      }
       //distruggo l'edit buffer
       this._editBuffer.destroy();
       //lo setto a null
@@ -217,6 +231,7 @@ proto.stopTool = function() {
   if (this._activeTool.instance && !this._activeTool.instance.stop()) {
     return false;
   }
+  GUI.closeForm();
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
   // si chiama il metodo clea
   // dell'active Tool che setta il type e l'instace a null (al momento si verifica sempre)
@@ -560,4 +575,95 @@ proto._setDirty = function(bool) {
   }
   // emetto l'evento dirty dell'editor
   this.emit("dirty",this._dirty);
+};
+
+proto._askConfirmToDeleteEditingListener = function() {
+  var self = this;
+  this.onbeforeasync('deleteFeature', function(feature, isNew, next) {
+    GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
+      next(result);
+    })
+  });
+};
+
+// apre form attributi per i  nserimento
+proto._setupAddFeatureAttributesEditingListeners = function(){
+  var self = this;
+  this.onbeforeasync('addFeature',function(feature,next){
+    self._openEditorForm('new',feature,next);
+  },100);
+};
+
+// apre form attributi per editazione
+proto._setupEditAttributesListeners = function() {
+  var self = this;
+  this.onbeforeasync('pickFeature',function(feature,next){
+    self._openEditorForm('old',feature,next);
+  });
+};
+
+proto._openEditorForm = function(isNew, feature, next) {
+  var self = this;
+  var fid = feature.getId();
+  var vectorLayer = this.getVectorLayer();
+  var fields = vectorLayer.getFieldsWithValues(feature);
+
+  // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
+  // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
+  var pk = vectorLayer.pk;
+  if (pk && _.isNull(this.getField(pk))){
+    _.forEach(feature.getProperties(),function(value,attribute){
+      var field = self.getField(attribute,fields);
+      if(field){
+        field.value = value;
+      }
+    });
+  }
+
+  var relationsPromise = this.getRelationsWithValues(feature);
+  relationsPromise
+    .then(function(relations){
+      form = new self._formClass({
+        provider: self,
+        name: "Edita attributi "+vectorLayer.name,
+        id: "attributes-edit-"+vectorLayer.name,
+        dataid: vectorLayer.name,
+        pk: vectorLayer.pk,
+        isnew: self.isNewFeature(feature.getId()),
+        fields: fields,
+        relations: relations,
+        buttons:[
+          {
+            title: "Salva",
+            type: "save",
+            class: "btn-danger",
+            cbk: function(fields,relations){
+              self.setFieldsWithValues(feature,fields,relations);
+              if (next){
+                next(true);
+              }
+            }
+          },
+          {
+            title: "Cancella",
+            type: "cancel",
+            class: "btn-primary",
+            cbk: function(){
+              if (next){
+                next(false);
+              }
+            }
+          }
+        ]
+      });
+      GUI.showForm(form,{
+        modal: true,
+        closable: false
+      });
+    })
+    .fail(function(){
+      if (next){
+        next(false);
+      }
+    })
 };
