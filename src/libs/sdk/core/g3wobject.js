@@ -18,9 +18,10 @@ var proto = G3WObject.prototype;
  * Inserisce un listener dopo che è stato eseguito il setter
  * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
  * @param {function} listener - Una funzione listener (solo sincrona)
+ * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
  */
-proto.onafter = function(setter,listener){
-  return this._onsetter('after',setter,listener,false);
+proto.onafter = function(setter,listener,priority){
+  return this._onsetter('after',setter,listener,false,priority);
 };
 
 // un listener può registrarsi in modo da essere eseguito PRIMA dell'esecuzione del metodo setter. Può ritornare true/false per
@@ -29,41 +30,54 @@ proto.onafter = function(setter,listener){
  * Inserisce un listener prima che venga eseguito il setter. Se ritorna false il setter non viene eseguito
  * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
  * @param {function} listener - Una funzione listener, a cui viene passato una funzione "next" come ultimo parametro, da usare nel caso di listener asincroni
+ * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
  */
-proto.onbefore = function(setter,listener){
-  return this._onsetter('before',setter,listener,false);
+proto.onbefore = function(setter,listener,priority){
+  return this._onsetter('before',setter,listener,false,priority);
 };
 
 /**
  * Inserisce un listener prima che venga eseguito il setter. Al listener viene passato una funzione "next" come ultimo parametro, da chiamare con parametro true/false per far proseguire o meno il setter
  * @param {string} setter - Il nome del metodo su cui si cuole registrare una funzione listener
- * @param {function} listener - Una funzione listener, a cui 
+ * @param {function} listener - Una funzione listener, a cui
+ * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
  */
-proto.onbeforeasync = function(setter,listener){
-  return this._onsetter('before',setter,listener,true);
+proto.onbeforeasync = function(setter,listener,priority){
+  return this._onsetter('before',setter,listener,true,priority);
 };
 
 proto.un = function(setter,key){
-  _.forEach(this.settersListeners,function(settersListeners,when){
-    _.forEach(settersListeners[setter],function(setterListener){
+  _.forEach(this.settersListeners,function(settersListeners){
+    _.forEach(settersListeners[setter],function(setterListener,idx){
       if(setterListener.key == key){
-        delete setterListener;
+        settersListeners[setter].slice(idx,1);
       }
     })
   })
 };
 
-proto._onsetter = function(when,setter,listener,async){ /*when=before|after, type=sync|async*/
+proto._onsetter = function(when,setter,listener,async,priority){ /*when=before|after, type=sync|async*/
   var settersListeners = this.settersListeners[when];
   var listenerKey = ""+Math.floor(Math.random()*1000000)+""+Date.now();
   /*if ((when == 'before') && !async){
     listener = this._makeChainable(listener);
   }*/
-  settersListeners[setter].push({
+
+  priority = priority || 0;
+
+  var settersListeneres = settersListeners[setter];
+
+  settersListeneres.push({
     key: listenerKey,
     fnc: listener,
-    async: async
+    async: async,
+    priority: priority
   });
+
+  settersListeners[setter] = _.sortBy(settersListeneres,function(setterListener){
+    return setterListener.priority;
+  });
+
   return listenerKey;
   //return this.generateUnListener(setter,listenerKey);
 };
@@ -113,28 +127,6 @@ proto._setupListenersChain = function(setters){
       var counter = 0;
       var canSet = true;
       
-      // richiamata alla fine della catena di listeners
-      function done(){
-        if(canSet){
-          // eseguo la funzione
-          returnVal = setterFnc.apply(self,args);
-          // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
-          deferred.resolve(returnVal);
-          
-          var afterListeners = self.settersListeners.after[setter];
-          _.forEach(afterListeners,function(listener, key){
-            listener.fnc.apply(self,args);
-          })
-        }
-        else {
-          // se non posso proseguire 
-          // chiamo l'eventuale funzione di fallback
-          setterFallback.apply(self,args);
-          // e rigetto la promessa
-          deferred.reject();
-        }
-      };
-      
       function complete(){
         // eseguo la funzione
         returnVal = setterFnc.apply(self,args);
@@ -142,7 +134,7 @@ proto._setupListenersChain = function(setters){
         deferred.resolve(returnVal);
         
         var afterListeners = self.settersListeners.after[setter];
-        _.forEach(afterListeners,function(listener, key){
+        _.forEach(afterListeners,function(listener){
           listener.fnc.apply(self,args);
         })
       }
@@ -155,7 +147,7 @@ proto._setupListenersChain = function(setters){
           deferred.reject();
       }
       
-      var beforeListeners = this.settersListeners['before'][setter];
+      var beforeListeners = self.settersListeners['before'][setter];
       // contatore dei listener che verrà decrementato ad ogni chiamata a next()
       counter = 0;
       
@@ -202,11 +194,10 @@ proto._setupListenersChain = function(setters){
 };
 
 proto.un = function(listenerKey) {
-  _.forEach(this.settersListeners,function(setterListeners,setter){
+  _.forEach(this.settersListeners,function(setterListeners){
       _.forEach(setterListeners,function(listener,idx){
         if (listener.key == listenerKey) {
           setterListeners.splice(idx,1);
-          delete listener;
         }
       })
   })

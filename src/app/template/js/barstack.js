@@ -20,6 +20,7 @@ proto.push = function(panel, parent, append){
   this.remove(panel); // nel caso esista già prima lo rimuovo
   panel.mount(parent, append)
   .then(function(){
+    $(parent).localize();
     self.state.panels.push(panel);
   });
 };

@@ -13,9 +13,9 @@
 }
 
 .btn-circle-medium {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
   padding:0px;
   font-size: 1.2em;
 }
@@ -28,6 +28,26 @@
   &.fa-plus, &.fa-minus {
     &:before {
       content: ""
+    }
+  }
+}
+
+.quick-actions-menu {
+  overflow: hidden;
+  height:40px;
+  width:100%;
+  line-height:40px;
+  text-align:center;
+  .btn {
+    color: #888888;
+    background-color: transparent;
+    border: 1px solid #888888;
+    margin: -5px 5px 0px 5px;
+    vertical-align: middle;
+    &:hover {
+      color: #888888;
+      border-color: @light-blue;
+      background-color: transparent;
     }
   }
 }

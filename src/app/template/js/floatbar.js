@@ -37,14 +37,15 @@ function FloatbarService(){
     if (!this._isopen) {
       this.open();
     };
-    if (modal){
+    // TODO: per adesso diabilito il modale
+    /*if (modal){
       this._modal = true;
       GUI.setModal();
       this.sidebarEl.css("z-index",5000);
       this.sidebarEl.css("padding-top","0px");
       $('.control-sidebar-bg').css("z-index",4999);
       $('.control-sidebar-bg').toggleClass('control-sidebar-bg-shadow');
-    }
+    }*/
   };
   
   this.closePanel = function(panel){
@@ -90,7 +91,7 @@ var FloatbarComponent = Vue.extend({
         return this.stack.panels.length>0;
       },
       panelname: function(){
-        var name = "";
+        var name;
         if (this.stack.panels.length){
           name = this.stack.panels.slice(-1)[0].getTitle();
         }

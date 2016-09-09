@@ -254,19 +254,21 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType
             });
-            control.on('zoomend',function(e){
+            control.on('zoomend', function (e) {
               self.viewer.fit(e.extent);
             })
+            self.addControl(control);
           }
-          self.addControl(control);
           break;
         case 'zoomtoextent':
-          control = ControlsFactory.create({
-            type: controlType,
-            label:  "\ue98c",
-            extent: self.config.constraintextent
-          });
-          self.addControl(control);
+          if (!isMobile.any) {
+            control = ControlsFactory.create({
+              type: controlType,
+              label: "\ue98c",
+              extent: self.config.constraintextent
+            });
+            self.addControl(control);
+          }
           break;
         case 'query':
           control = ControlsFactory.create({
@@ -298,25 +300,27 @@ proto.setupControls = function(){
           self.addControl(control);
           break;
         case 'overview':
-          var overviewProjectGid = self.project.getOverviewProjectGid();
-          if (overviewProjectGid) {
-            ProjectsRegistry.getProject(overviewProjectGid)
-            .then(function(project){
-              var overViewMapLayers = self.getOverviewMapLayers(project);
-              control = ControlsFactory.create({
-                type: controlType,
-                position: 'bl',
-                className: 'ol-overviewmap ol-custom-overviewmap',
-                collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
-                label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
-                collapsed: false,
-                layers: overViewMapLayers,
-                view: new ol.View({
-                  projection: self.getProjection()
-                })
+          if (!isMobile.any) {
+            var overviewProjectGid = self.project.getOverviewProjectGid();
+            if (overviewProjectGid) {
+              ProjectsRegistry.getProject(overviewProjectGid)
+              .then(function(project){
+                var overViewMapLayers = self.getOverviewMapLayers(project);
+                control = ControlsFactory.create({
+                  type: controlType,
+                  position: 'bl',
+                  className: 'ol-overviewmap ol-custom-overviewmap',
+                  collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
+                  label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
+                  collapsed: false,
+                  layers: overViewMapLayers,
+                  view: new ol.View({
+                    projection: self.getProjection()
+                  })
+                });
+                self.addControl(control);
               });
-              self.addControl(control);
-            });
+            }
           }
           break;
       };
@@ -524,7 +528,7 @@ proto.highlightGeometry = function(geometryObj,options){
     geometry = geometryObj;
   }
   else {
-    format = new ol.format.GeoJSON;
+    var format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
   

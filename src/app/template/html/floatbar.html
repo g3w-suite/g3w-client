@@ -4,13 +4,13 @@
   </a>
   <div id="floatbar-spinner" style="position:absolute"></div>
   <div v-show="panelsinstack" class="g3w-sidebarpanel">
-    <div class="row">
+    <div v-if="closable" class="row">
       <div class="col-xs-12 col-sm-12 col-md-12">
         <button class="glyphicon glyphicon-remove pull-right close-panel-button" @click="closePanel"></button>
       </div>
     </div>
-    <div>
-      <h4 class="g3w-floatbarpanel-name">{{ panelname }}</h2>
+    <div v-if="panelname">
+      <h4 class="g3w-floatbarpanel-name">{{ panelname }}</h4>
     </div>
     <div id="g3w-floatbarpanel-placeholder" class="g3w-floatbarpanel-placeholder"></div>
   </div>

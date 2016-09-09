@@ -166,7 +166,6 @@ proto.pause = function(pause){
 };
 
 proto.stop = function(){
-  var map = GUI.getComponent('map').getService().viewer.map;
   this._selectInteraction.getFeatures().clear();
   this.removeInteraction(this._selectInteraction);
   this._selectInteraction = null;

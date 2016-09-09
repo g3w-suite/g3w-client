@@ -5,6 +5,7 @@ var ApiService = require('core/apiservice');
 var RouterService = require('core/router');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var PluginsRegistry = require('core/plugin/pluginsregistry');
+var ClipboardService = require('core/clipboardservice');
 
 var ApplicationService = function(){
   this.secret = "### G3W Client Application Service ###";
@@ -33,6 +34,10 @@ var ApplicationService = function(){
   this.getRouterService = function() {
     return RouterService;
   };
+
+  this.getClipboardService = function() {
+    return ClipboardService;
+  }
   
   this.postBootstrap = function() {
     if (!this.complete) {

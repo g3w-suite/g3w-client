@@ -1,3 +1,5 @@
+var t = require('core/i18n/i18n.service').t;
+
 Vue.directive("disabled",function(value){
     if (value){
       this.el.setAttribute('disabled','disabled');
@@ -27,3 +29,7 @@ Vue.directive("selected-first",function(value){
     }
   }
 );
+
+Vue.directive("t",function(text){
+  return t(text);
+})
