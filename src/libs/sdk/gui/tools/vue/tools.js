@@ -33,6 +33,7 @@ function ToolsComponent(options){
   this.internalComponent = new InternalComponent({
     toolsService: this._service
   });
+  //sostituisco lo state del servizio allo state del componente vue interno
   this.internalComponent.state = this._service.state
 };
 
