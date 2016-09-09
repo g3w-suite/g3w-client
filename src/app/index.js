@@ -18,7 +18,7 @@ function aggiungiGeonodesPlugin(plugins) {
 
 function createApplicationConfig() {
   //aggiungo temporaneamente il plugin Geodotes
-  aggiungiGeonodesPlugin(config.group.plugins);
+  //aggiungiGeonodesPlugin(config.group.plugins);
   return {
     apptitle: config.apptitle || '',
     logo_img: config.group.header_logo_img,

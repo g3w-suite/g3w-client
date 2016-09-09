@@ -10,8 +10,8 @@ var translations = {
             "tree": "Strati",
             "legend": "Legenda",
             "street_search": "Cerca indirizzo",
-            "Show": "Mostra",
-            "Hide": "Nascondi"
+            "show": "Mostra",
+            "hide": "Nascondi",
             "street_search": "Cerca indirizzo",
             "copy_form_data": "Copia i dati del modulo",
             "paste_form_data": "Incolla",
