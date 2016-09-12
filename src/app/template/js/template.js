@@ -53,7 +53,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         $(document).localize();
       }
     });
-  }
+  };
   
   this._buildTemplate = function() {
     var self = this;
@@ -101,7 +101,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     ComponentsRegistry.unregisterComponent(component);
   };
   
-  this._showModalOverlay = function(bool){
+  this._showModalOverlay = function(bool) {
+    console.log(bool);
     /*if (!this._modalOverlay){
       this._modalOverlay = $('<div id="g3w-modal-overlay" style="background-color: #000000; opacity: 0.7;z-index:4000;position:fixed;top:0px;left:0px"></div>');
       $("body").append(this._modalOverlay);

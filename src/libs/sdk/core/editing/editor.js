@@ -585,8 +585,8 @@ proto._askConfirmToDeleteEditingListener = function() {
 // apre form attributi per i  nserimento
 proto._setupAddFeatureAttributesEditingListeners = function(){
   var self = this;
-  this.onbeforeasync('addFeature',function(feature,next){
-    self._openEditorForm('new',feature,next);
+  this.onbeforeasync('addFeature', function(feature, next) {
+    self._openEditorForm('new', feature, next);
   },100);
 };
 
