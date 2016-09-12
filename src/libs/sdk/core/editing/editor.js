@@ -105,15 +105,11 @@ function Editor(options) {
 
 inherit(Editor, G3WObject);
 
-module.exports = Editor;
-
 var proto = Editor.prototype;
 
 proto.getMapService = function() {
   return this._mapService;
 };
-
-
 
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing
 // inoltre setta i tipi di tools da poter collegare
@@ -607,7 +603,6 @@ proto._openEditorForm = function(isNew, feature, next) {
   var fid = feature.getId();
   var vectorLayer = this.getVectorLayer();
   var fields = vectorLayer.getFieldsWithValues(feature);
-
   // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
   // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
   var pk = vectorLayer.pk;
@@ -628,17 +623,19 @@ proto._openEditorForm = function(isNew, feature, next) {
         name: "Edita attributi "+vectorLayer.name,
         id: "attributes-edit-"+vectorLayer.name,
         dataid: vectorLayer.name,
+        vectorLayer: vectorLayer,
         pk: vectorLayer.pk,
         isnew: self.isNewFeature(feature.getId()),
         fields: fields,
         relations: relations,
+        editor: self,
         buttons:[
           {
             title: "Salva",
             type: "save",
             class: "btn-danger",
-            cbk: function(fields,relations){
-              self.setFieldsWithValues(feature,fields,relations);
+            cbk: function(fields, relations){
+              self.setFieldsWithValues(feature, fields, relations);
               if (next){
                 next(true);
               }
@@ -648,8 +645,8 @@ proto._openEditorForm = function(isNew, feature, next) {
             title: "Cancella",
             type: "cancel",
             class: "btn-primary",
-            cbk: function(){
-              if (next){
+            cbk: function() {
+              if (next) {
                 next(false);
               }
             }
@@ -667,3 +664,5 @@ proto._openEditorForm = function(isNew, feature, next) {
       }
     })
 };
+
+module.exports = Editor;

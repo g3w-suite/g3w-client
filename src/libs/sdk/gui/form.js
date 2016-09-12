@@ -1,10 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var resolve = require('core/utils/utils').resolve;
-var reject = require('core/utils/utils').reject;
 var GUI = require('gui/gui');
 var Panel =  require('gui/panel');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var QueryService = require('core/query/queryservice');
+var ClipBoard = require('core/clipboardservice');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -24,13 +24,13 @@ Vue.validator('email', function (val) {
 
 Vue.validator('integer', function (val) {
   return /^(-?[1-9]\d*|0)$/.test(val);
-})
+});
 
 var FormPanel = Vue.extend({
   template: require('./formpanel.html'),
   data: function() {
     return {
-      state: {},
+      state: {}
     }
   },
   transitions: {'addremovetransition': 'showhide'},
@@ -128,12 +128,22 @@ var FormPanel = Vue.extend({
         return this.state.elementsBoxes[boxid].collapsed;
       }
     },
-    toggleElementBox: function(relation,element) {
-      var boxid = this.getUniqueRelationElementId(relation,element);
+    toggleElementBox: function(relation, element) {
+      var boxid = this.getUniqueRelationElementId(relation, element);
+      console.log(boxid);
       this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
     },
-    getUniqueRelationElementId: function(relation, element){
-      return this.$options.form.getUniqueRelationElementId(relation,element);
+    getUniqueRelationElementId: function(relation, element) {
+      return this.$options.form.getUniqueRelationElementId(relation, element);
+    },
+    pasteToClipBoard : function() {
+      console.log('Paste');
+    },
+    copyToClipBoard : function() {
+      this.$options.form._copyFormToClipBoard();
+    },
+    pickLayerToClipBoard: function() {
+      this.$options.form._pickLayerToClipBoard();
     }
   },
   computed: {
@@ -141,8 +151,14 @@ var FormPanel = Vue.extend({
       return this.$validate(field.name);
     },
     hasRelations: function(){
-      return this.state.relations.length
+      return this.state.relations.length;
     },
+    canPaste: function() {
+      return !this.state.copied;
+    },
+    cambiatofields: function() {
+      console.log(this.state.fields);
+    }
   }
 });
 
@@ -163,7 +179,7 @@ Inputs.LAYERPICKER = 'layerpicker';
 
 Inputs.specialInputs = [Inputs.TEXTAREA,Inputs.SELECT,Inputs.LAYERPICKER];
 
-function Form(options){
+function Form(options) {
   // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   this.internalComponent = null;
   this.options =  options || {};
@@ -171,31 +187,32 @@ function Form(options){
   this.id = options.id; // id del form
   this.name = options.name; // nome del form
   this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
-  this.pk = options.pk || null, // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
+  this.editor = options.editor || {};
+  this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
-  
   this.state = {
     // i dati del form possono avere o meno una primary key
     fields: options.fields,
     relations: options.relations
-  }
-  
+  };
+  this._clipBoard = ClipBoard.get();
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
 }
-inherit(Form,Panel);
+inherit(Form, Panel);
 
 var proto = Form.prototype;
 
-// viene richiamato dalla toolbar quando il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
+// viene richiamato dalla toolbar quando
+// il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(container){
   this._setupFields();
   var panel = this._setupPanel();
-  this._mountPanel(panel,container);
+  this._mountPanel(panel, container);
   return resolve(true);
 };
 
-proto._mountPanel = function(panel,container){
+proto._mountPanel = function(panel, container) {
   panel.$mount().$appendTo(container);
 };
 
@@ -206,12 +223,17 @@ proto.unmount = function(){
   return resolve(true);
 };
 
+proto._copyFormToClipBoard = function() {
+  var form = _.cloneDeep(this.state);
+  return form;
+};
+
 proto._isNew = function(){
   return this.isnew;
 };
 
 proto._hasFieldsRequired = function() {
-  var someFieldsRequired = _.some(this.state.fields,function(field){
+  var someFieldsRequired = _.some(this.state.fields, function(field){
     return field.validate && field.validate.required;
   });
   var someRelationsRequired = _.some(this.state.relations,function(relation){
@@ -221,10 +243,7 @@ proto._hasFieldsRequired = function() {
 };
 
 proto._isVisible = function(field){
-  if(!field.editable && (field.value == "" || _.isNull(field.value))){
-    return false
-  }
-  return true;
+  return !(!field.editable && (field.value == "" || _.isNull(field.value)));
 };
 
 proto._isEditable = function(field){
@@ -260,7 +279,6 @@ proto._pickLayer = function(field){
   var layer = mapService.getProject().getLayerById(field.input.options.layerid);
   var relFieldName = field.input.options.field;
   var relFieldLabel = layer.getAttributeLabel(field.input.options.field);
-  
   this._pickInteraction = new PickCoordinatesInteraction();
   mapService.addInteraction(this._pickInteraction);
   this._pickInteraction.on('picked',function(e){   
@@ -284,8 +302,60 @@ proto._pickLayer = function(field){
       mapService.removeInteraction(self._pickInteraction);
       self._pickInteraction = null;
     })
-  })
+  });
   return d.promise();
+};
+//funzione che server per poter copiare lo state di una feature identificata
+// sul form attuale di un'altra feature
+proto._pickLayerToClipBoard = function() {
+  //TODO
+  var self = this;
+  // ritorno una promessa, se qualcun altro volesse
+  // usare il risultato (es. per settare altri campi in base alla feature selezionata)
+  var d = $.Deferred();
+  // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
+  GUI.setModal(false);
+  // recupero mapservice perchè mi permette di ineteragire con la mappa
+  mapService = GUI.getComponent('map').getService();
+  var vectorLayer = this.editor.getVectorLayer();
+  var layer = mapService.getProject().getLayerById(vectorLayer.id);
+  // creo il pickCoordinate interaction da permettermi così di interagire con la mappa
+  this._pickInteraction = new PickCoordinatesInteraction();
+  // l'aggiungo alla mappa
+  mapService.addInteraction(this._pickInteraction);
+  // on picked
+  this._pickInteraction.on('picked',function(e) {
+    // qui passo lo stessso layer su cui sto agendo
+    QueryService.queryByLocation(e.coordinate, [layer])
+        .then(function(response) {
+          console.log(response);
+          var featuresForLayers = response.data;
+          // verifico se ci sono features selezionate
+          if (featuresForLayers.length && featuresForLayers[0].features.length) {
+            // rpendo la prima feature
+            var feature = featuresForLayers[0].features[0];
+            var fields = vectorLayer.getFieldsWithValues(feature);
+            var relationsPromise = self.editor.getRelationsWithValues(feature);
+            relationsPromise
+            .then(function(relations) {
+              self.state.fields = fields;
+              self.state.relations = relations;
+              var elementsBoxes = self.getUniqueRelationsElementId();
+              self.state.elementsBoxes = elementsBoxes;
+            });
+          }
+        })
+        .fail(function(){
+          d.reject();
+        })
+        .always(function(){
+          mapService.removeInteraction(self._pickInteraction);
+          self._pickInteraction = null;
+          // riattivo lo strato modale per permettere l'interazione con la mappa
+          GUI.setModal(true);
+        })
+  });
+  console.log('pickClipBoard');
 };
 
 proto._getDefaultValue = function(field){
@@ -316,7 +386,7 @@ proto._shouldShowRelation = function(relation){
 };
 
 // per definire i valori di default nel caso si tratta di un nuovo inserimento
-proto._setupFields = function(){
+proto._setupFields = function() {
   var self = this;
   
   var fields = _.filter(this.state.fields,function(field){
@@ -361,10 +431,15 @@ proto._setupPanel = function(){
   if (this.options.buttons) {
     panel.buttons = this.options.buttons;
   }
-  
-  
+  var elementsBoxes = this.getUniqueRelationsElementId();
+  this.state.elementsBoxes = elementsBoxes;
+  panel.state = this.state;
+  return panel;
+};
+
+proto.getUniqueRelationsElementId = function() {
+  var self = this;
   var elementsBoxes = {};
-  
   _.forEach(this.state.relations,function(relation){
     _.forEach(relation.elements,function(element){
       var boxid = self.getUniqueRelationElementId(relation,element);
@@ -372,10 +447,9 @@ proto._setupPanel = function(){
         collapsed: true
       }
     })
-  })
-  this.state.elementsBoxes = elementsBoxes;
-  panel.state = this.state;
-  return panel;
+  });
+  return elementsBoxes;
+
 };
 
 proto.getUniqueRelationElementId = function(relation, element){
@@ -420,11 +494,11 @@ proto._getRelationField = function(fieldName,relationName){
         }
       })
     }
-  })
+  });
   return field;
 };
 
 module.exports = {
   Form: Form,
   FormPanel: FormPanel
-}
+};

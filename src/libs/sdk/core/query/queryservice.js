@@ -222,8 +222,9 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     var urlsForLayers = {};
-    _.forEach(layers,function(layer){
+    _.forEach(layers, function(layer){
       var queryUrl = layer.getQueryUrl();
+      console.log(queryUrl);
       var urlHash = queryUrl.hashCode().toString();
       if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
         urlsForLayers[urlHash] = {
