@@ -200,9 +200,9 @@ proto.collectRelations = function(){
     _.forEach(relationsBuffers,function (relationBuffer) {
       var relationName = relationBuffer.getRelationName();
 
-      var newElements = relationBuffer.getRelationElements('NEW');
-      var updatedElements = relationBuffer.getRelationElements('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente affiornati o meno)
-      var deletedElements = relationBuffer.getRelationElements('DELETED');
+      var newElements = relationBuffer.getRelationElementsOnlyFieldsValues('NEW');
+      var updatedElements = relationBuffer.getRelationElementsOnlyFieldsValues('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente affiornati o meno)
+      var deletedElements = relationBuffer.getRelationElementsOnlyFieldsValues('DELETED');
 
 
       var newElementsEdits = [];

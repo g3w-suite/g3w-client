@@ -86,7 +86,7 @@ proto._editBuffer = function(element) {
 };
 
 // il filtro può essere 'ALL', 'NEW', 'OLD', 'DELETED'
-proto.getRelationElements = function(filter) {
+proto.getRelationElements = function(filter,onlyfieldsvalues) {
   var elements = [];
   _.forEach(this._elementsBuffer, function(elementBuffer) {
     // element buffer sono gli arry ( e quindi le modifche) di ogni elemento della
@@ -94,12 +94,28 @@ proto.getRelationElements = function(filter) {
     var element = elementBuffer.slice(-1)[0];
     if (element || (filter=='ALL')) { // lo prenso solo se non Ã¨ null
       if (!filter || (filter && element.state==filter)) {
+
+        if(onlyfieldsvalues) {
+          element = _.cloneDeep(element);
+          element.fields = _.map(element.fields,function(field){
+            return {
+              name: field.name,
+              value: field.value
+            }
+          })
+        }
+
         elements.push(element);
       }
     }
   });
   return elements;
 };
+
+proto.getRelationElementsOnlyFieldsValues = function(filter) {
+  return this.getRelationElements(filter,true);
+}
+
 // funzione ha elementi
 proto.hasRelationElements = function(){
   var hasEdits = false;
