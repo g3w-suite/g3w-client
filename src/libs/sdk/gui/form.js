@@ -130,14 +130,13 @@ var FormPanel = Vue.extend({
     },
     toggleElementBox: function(relation, element) {
       var boxid = this.getUniqueRelationElementId(relation, element);
-      console.log(boxid);
       this.state.elementsBoxes[boxid].collapsed = !this.state.elementsBoxes[boxid].collapsed;
     },
     getUniqueRelationElementId: function(relation, element) {
       return this.$options.form.getUniqueRelationElementId(relation, element);
     },
-    pasteToClipBoard : function() {
-      console.log('Paste');
+    pasteClipBoardToForm : function() {
+      this.$options.form._pasteClipBoardToForm();
     },
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
@@ -152,12 +151,6 @@ var FormPanel = Vue.extend({
     },
     hasRelations: function(){
       return this.state.relations.length;
-    },
-    canPaste: function() {
-      return !this.state.copied;
-    },
-    cambiatofields: function() {
-      console.log(this.state.fields);
     }
   }
 });
@@ -195,7 +188,11 @@ function Form(options) {
     fields: options.fields,
     relations: options.relations
   };
-  this._clipBoard = ClipBoard.get();
+  // clipboard
+  this._clipBoard = ClipBoard;
+  //da rivedere
+  this.state.canpaste = _.has(this._clipBoard._data, this.id);
+  ///
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
 }
@@ -224,8 +221,42 @@ proto.unmount = function(){
 };
 
 proto._copyFormToClipBoard = function() {
-  var form = _.cloneDeep(this.state);
-  return form;
+  var formData = _.cloneDeep(this.state);
+  this._clipBoard.set(this.id, formData);
+  this.state.canpaste = true;
+  return true;
+};
+
+proto.pasteStateWithoutPk = function(fields, relations) {
+  //prendo vector layer
+  var self = this;
+  var featureId = null;
+  // recupero il campo id
+  _.forEach(this.state.fields, function(field) {
+    if (self.pk == field.name) {
+      featureId = field.value;
+      return true;
+    }
+  });
+  // setto i nuovi fields e relations
+  this.state.fields = fields;
+  this.state.relations = relations;
+  _.forEach(this.state.fields, function(field) {
+    if (self.pk == field.name) {
+      field.value = featureId;
+      return true;
+    }
+  });
+  var elementsBoxes = this.getUniqueRelationsElementId();
+  this.state.elementsBoxes = elementsBoxes;
+  return true;
+};
+
+proto._pasteClipBoardToForm = function() {
+
+  var formData = this._clipBoard.get(this.id);
+  this.pasteStateWithoutPk(formData.fields, formData.relations);
+  this.state.canpaste = false;
 };
 
 proto._isNew = function(){
@@ -328,7 +359,6 @@ proto._pickLayerToClipBoard = function() {
     // qui passo lo stessso layer su cui sto agendo
     QueryService.queryByLocation(e.coordinate, [layer])
         .then(function(response) {
-          console.log(response);
           var featuresForLayers = response.data;
           // verifico se ci sono features selezionate
           if (featuresForLayers.length && featuresForLayers[0].features.length) {
@@ -338,10 +368,7 @@ proto._pickLayerToClipBoard = function() {
             var relationsPromise = self.editor.getRelationsWithValues(feature);
             relationsPromise
             .then(function(relations) {
-              self.state.fields = fields;
-              self.state.relations = relations;
-              var elementsBoxes = self.getUniqueRelationsElementId();
-              self.state.elementsBoxes = elementsBoxes;
+              self.pasteStateWithoutPk(fields, relations);
             });
           }
         })
@@ -355,7 +382,6 @@ proto._pickLayerToClipBoard = function() {
           GUI.setModal(true);
         })
   });
-  console.log('pickClipBoard');
 };
 
 proto._getDefaultValue = function(field){
@@ -462,7 +488,7 @@ proto._getField = function(fieldName){
     if (f.name == fieldName){
       field = f;
     }
-  })
+  });
   return field;
 };
 

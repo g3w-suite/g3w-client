@@ -1,20 +1,14 @@
-function ClipboardService(){
-  var _data = {};
-  this.set = function(clipBoardId, data) {
-    // id della feature copiata, data sono fileds e relations passate al form
-    _data[clipBoardId] = data;
+function ClipboardService() {
+  this._data = {};
+  this.set = function(formId, data) {
+    // clipBoardId : id del form, data sono fileds e relations passate al form
+    // il clipBoardForm mi serve per capire se attivare o meno la clipboard
+    // se e solo se si riferisce allo stesso id
+    this._data[formId] = data;
   };
 
-  this.get = function(clipBoardId) {
-    if (_data) {
-      var data = _data[clipBoardId];
-      // poi vado a cancellare i dati
-      delete _data[clipBoardId];
-      // retituisce i dati che sono stati salvati
-      return data;
-    } else {
-      return _data
-    }
+  this.get = function(formId) {
+    return this._data[formId] || {};
   }
 }
 module.exports = new ClipboardService;

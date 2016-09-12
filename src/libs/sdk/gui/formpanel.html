@@ -3,7 +3,7 @@
         <div class="pull-right">
             <button class="btn btn-default btn-circle-medium glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
             <button class="btn btn-default btn-circle-medium glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
-            <button class="btn btn-default btn-circle-medium glyphicon glyphicon-paste" data-placement="bottom" @click="pasteToClipBoard" v-disabled="canPaste"> data-i18n="[title]paste_form_data"></button>
+            <button class="btn btn-default btn-circle-medium glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste"> data-i18n="[title]paste_form_data"></button>
         </div>
     </div>
     <div>

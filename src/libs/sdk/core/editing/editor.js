@@ -95,7 +95,7 @@ function Editor(options) {
   }
   */
   this._tools = {};
-
+  // sono i listeners di default per tutti
   this._setupAddFeatureAttributesEditingListeners();
   this._setupEditAttributesListeners();
   this._askConfirmToDeleteEditingListener();
