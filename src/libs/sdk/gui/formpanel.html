@@ -27,7 +27,7 @@
                                         <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
                                     </select>
                                     <div v-if="isLayerPicker(field)">
-                                        <input class="form-control" @click="pickLayer(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                        <input class="form-control picklayerinput" @click="pickLayer(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                         <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
                                     </div>
                                 </div>

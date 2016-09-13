@@ -206,6 +206,7 @@ var proto = Form.prototype;
 // il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(container){
   this._setupFields();
+  this._setupRelationsFields()
   var panel = this._setupPanel();
   this._mountPanel(panel, container);
   return resolve(true);
@@ -303,6 +304,7 @@ proto._isLayerPicker = function(field){
 };
 
 proto._pickLayer = function(field){
+  GUI.notify.info("Seleziona un'elemento dalla mappa per ottenere il valore di "+ field.label);
   var self = this;
   // ritorno una promessa, se qualcun altro volesse usare il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
@@ -390,15 +392,13 @@ proto._pickLayerToClipBoard = function() {
 proto._getDefaultValue = function(field){
   var defaultValue = null;
   if (field.input && field.input.options && field.input.options.default){
-    defaultValue = field.input.options.default;
+    return field.input.options.default;
   }
   else if (this._isSelect(field)){
-    defaultValue = field.input.options.values[0].key;
+    return field.input.options.values[0].key;
   }
-  /*else {
-    defaultValue = this._defaults[field.type];
-  }*/
-  return defaultValue;
+
+  return '';
 };
 
 proto._getlayerPickerLayerName = function(layerId){
@@ -434,23 +434,29 @@ proto._setupFields = function() {
       }
     }
   });
-  
-  if (this.state.relations){
-    var relations = this.state.relations;
+};
+
+proto._setupRelationsFields = function(relations) {
+  var self = this;
+  relations = relations || this.state.relations;
+  if (relations){
     _.forEach(relations,function(relation){
       _.forEach(relation.elements,function(element){
-        _.forEach(relation.fields,function(field){
-          if(_.isNil(field.value)){
-            var defaultValue = self._getDefaultValue(field);
-            if (defaultValue){
-              field.value = defaultValue;
-            }
-          }
-        })
+        self._setupRelationElementFields(element);
       })
     });
   }
 };
+
+proto._setupRelationElementFields = function(element) {
+  var self = this;
+  _.forEach(element.fields,function(field){
+    if(_.isNil(field.value)){
+      field.value = self._getDefaultValue(field);;
+    }
+  })
+};
+
 
 proto._setupPanel = function(){
   var self = this;
@@ -499,6 +505,7 @@ proto._addRelationElement = function(relation) {
   var element = this.provider.createRelationElement(relation);
   var elementBoxId = this.getUniqueRelationElementId(relation,element);
   Vue.set(this.state.elementsBoxes,elementBoxId,{collapsed:false});
+  this._setupRelationElementFields(element);
   relation.elements.push(element);
 };
 
@@ -515,8 +522,8 @@ proto._removeRelationElement = function(relation,element){
 
 proto._getRelationField = function(fieldName,relationName){
   var field = null;
-  _.forEach(this.state.relations,function(relation,name){
-    if (relationName == name){
+  _.forEach(this.state.relations,function(relation){
+    if (relationName == relation.name){
       _.forEach(relation.fields,function(f){
         if (f.name == fieldName){
           field = f;
@@ -524,6 +531,16 @@ proto._getRelationField = function(fieldName,relationName){
       })
     }
   });
+  return field;
+};
+
+proto._getRelationElementField = function(fieldName, element) {
+  var field;
+  _.forEach(element.fields,function(_field){
+    if (_field.name == fieldName) {
+      field = _field;
+    }
+  })
   return field;
 };
 
