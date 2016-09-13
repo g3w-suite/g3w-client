@@ -75,7 +75,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var self = this;
     if (this.templateConfig.othercomponents) {
       self._addComponents(this.templateConfig.othercomponents);
-    };
+    }
   };
   
   this._addComponent = function(component,placeholder) {
@@ -158,6 +158,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showQueryResults = function(title,results) {
       // istanziare il componente queryresults
       // passarlo a Floatbar
+      var queryResultsComponent = GUI.getComponent('queryresults');
       var queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
       queryResultService.setTitle(title);
