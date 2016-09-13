@@ -228,6 +228,7 @@ proto.stopTool = function() {
     return false;
   }
   GUI.closeForm();
+  GUI.setModal(false);
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
   // si chiama il metodo clea
   // dell'active Tool che setta il type e l'instace a null (al momento si verifica sempre)
@@ -313,17 +314,11 @@ proto.getEditedFeatures = function(){
     lockids: lockIds
   }
 };
-
+// chiama la funzione collecRelations dell'edit buffer
+// in modo tale da collezionare tutte le informazioni
+// relative all'edit buffer sulle relazioni
 proto.collectRelations = function() {
   relationsEdits = this._editBuffer.collectRelations();
-  /*_.forEach(this._vectorLayer.getRelations(),function(relation){
-   var relationEdits = {
-   add: [],
-   update: [],
-   delete: []
-   }
-   relationsEdits[relation.name] = relationEdits;
-   })*/
   return relationsEdits;
 };
 // viene chamato quando si preme ad esempio Salva sul Form degli
@@ -519,8 +514,8 @@ proto.updateFeature = function(feature) {
   this._editBuffer.updateFeature(feature);
 };
 // non fa altro che cancellare la feature dall'edit buffer
-proto.deleteFeature = function(feature) {
-  this._editBuffer.deleteFeature(feature);
+proto.deleteFeature = function(feature, relations, isNew) {
+  this._editBuffer.deleteFeature(feature, relations);
 };
 
 proto.getVectorLayer = function() {
@@ -603,8 +598,10 @@ proto._openEditorForm = function(isNew, feature, next) {
   var fid = feature.getId();
   var vectorLayer = this.getVectorLayer();
   var fields = vectorLayer.getFieldsWithValues(feature);
-  // nel caso qualcuno, durante la catena di setterListeners, abbia settato un attributo (solo nel caso di un nuovo inserimento)
-  // usato ad esempio nell'editing delle strade, dove viene settato in fase di inserimento/modifica il codice dei campi nod_ini e nod_fin
+  // nel caso qualcuno, durante la catena di setterListeners,
+  // abbia settato un attributo (solo nel caso di un nuovo inserimento)
+  // usato ad esempio nell'editing delle strade, dove viene settato in fase di
+  // inserimento/modifica il codice dei campi nod_ini e nod_fin
   var pk = vectorLayer.pk;
   if (pk && _.isNull(this.getField(pk))){
     _.forEach(feature.getProperties(),function(value,attribute){
@@ -614,7 +611,6 @@ proto._openEditorForm = function(isNew, feature, next) {
       }
     });
   }
-
   var relationsPromise = this.getRelationsWithValues(feature);
   relationsPromise
     .then(function(relations){

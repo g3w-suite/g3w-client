@@ -116,7 +116,6 @@ proto.removeLastPoint = function() {
 // add Feature fnc setter function
 proto._addFeature = function(feature) {
   // aggiungo la geometria nell'edit buffer
-  console.log('add Feature add Feature Tool');
   this.editor.addFeature(feature);
   this._busy = false;
   this.pause(false);

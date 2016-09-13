@@ -13,7 +13,6 @@ function DeleteFeatureTool(editor) {
   this.drawInteraction = null;
   this.layer = null;
   this.editingLayer = null;
-
   this.setters = {
     deleteFeature: DeleteFeatureTool.prototype._deleteFeature
   };
@@ -106,51 +105,35 @@ styles[ol.geom.GeometryType.POLYGON] = _.concat(styles[ol.geom.GeometryType.POLY
 styles[ol.geom.GeometryType.GEOMETRY_COLLECTION] = _.concat(styles[ol.geom.GeometryType.GEOMETRY_COLLECTION],styles[ol.geom.GeometryType.LINE_STRING]);
     
 /* FINE BRUTTISSIMO! */
-
+// run del tool di delete feature
 proto.run = function() {
   var self = this;
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-  
   this._selectInteraction = new ol.interaction.Select({
-    layers: [this.layer,this.editingLayer],
+    layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
     style: function(feature, resolution) {
       return styles[feature.getGeometry().getType()];
     }
   });
   this.addInteraction(this._selectInteraction);
-  
   this._deleteInteraction = new DeleteInteraction({
     features: this._selectInteraction.getFeatures()
   });
   this.addInteraction(this._deleteInteraction);
-  
-  var origGeometry = null;
-  
-  /*this._selectInteraction.on('select',function(e){
-    var feature = e.selected[0];
-    origGeometry = feature.getGeometry();
-  });*/
-  
   this._deleteInteraction.on('deleteend',function(e){
     var feature = e.features.getArray()[0];
     var isNew = self._isNew(feature);
-    //try {
-      if (!self._busy){
-        self._busy = true;
-        self.pause(true);
-        self.deleteFeature(feature,isNew)
-        .always(function(){
-          self._busy = false;
-          self.pause(false);
-        })
-      }
-    //}
-    /*catch (error){
-      console.log(error);
-      feature.setGeometry(origGeometry);
-    }*/
+    if (!self._busy){
+      self._busy = true;
+      self.pause(true);
+      self.deleteFeature(feature, isNew)
+      .always(function() {
+        self._busy = false;
+        self.pause(false);
+      })
+    }
   });
 
 };
@@ -175,15 +158,21 @@ proto.stop = function(){
   return true;
 };
 
-proto._deleteFeature = function(feature,isNew){
-  this.editor.deleteFeature(feature,isNew);
+proto._deleteFeature = function(feature, isNew) {
+  var relations = [];
+  var relationsPromise = this.editor.getRelationsWithValues(feature);
+  relationsPromise
+  .then(function(relationsArray) {
+    relations = relationsArray;
+  });
+  this.editor.deleteFeature(feature, relations, isNew);
   this._selectInteraction.getFeatures().clear();
   this._busy = false;
   this.pause(false);
   return true;
 };
 
-proto._fallBack = function(feature){
+proto._fallBack = function(feature) {
   this._busy = false;
   this.pause(false);
 };

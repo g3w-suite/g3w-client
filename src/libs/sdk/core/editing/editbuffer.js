@@ -71,10 +71,15 @@ proto.updateFeature = function(feature) {
   console.log("Modificata feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
-proto.deleteFeature = function(feature){
-  this._addEditToGeometryBuffer(feature,'delete');
+proto.deleteFeature = function(feature, relations) {
+  // aggiunge alla editbuffer la geometria della feature cancellata
+  this._addEditToGeometryBuffer(feature, 'delete');
   console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
+  //vado anche ad aggiungere al buffer delle relazioni da cancellare
+  // relative alla feature cancellata
+  this._addEditToValuesBuffers(feature, relations, 'delete');
 };
+
 // funzione che server per fare update di una feature
 proto.updateFields = function(feature, relations) {
   // nel caso di una nuova feature
@@ -111,7 +116,7 @@ proto.hasRelationsEdits = function(fid){
 
 proto.getRelationsEdits = function(fid){
   var relations = {};
-  _.forEach(this._relationsBuffers[fid],function(relationBuffer){
+  _.forEach(this._relationsBuffers[fid], function(relationBuffer){
     relations[relationBuffer.getRelationName()] = relationBuffer.getRelationElements();
   });
   return relations;
@@ -173,17 +178,19 @@ proto.createFeature = function(fid,geometry,attributes){
   feature.setProperties(attributes);
   return feature;
 };
-
-proto.collectRelations = function(){
+// funzione richiamata dall'edior che mmi servono poi per inviarle via post al server
+// Tale funzione riporta tutte le informazioni relative alle relazioni
+proto.collectRelations = function() {
+    // costruisco l'oggetto relations edit
+    // che servirà per separare i tipi di azioni da fare sulle singole relazioni
+    // update, add, delete
   var relationsEdits = {
     add: [],
     delete: [],
     update: []
   };
-
-  var relationsElements = {};
-  _.forEach(this._relationsBuffers,function(relationsBuffers,fid){
-
+  // scorro sul relation buffers
+  _.forEach(this._relationsBuffers, function(relationsBuffers, fid) {
     var newRelationEdits = {
       fid: fid,
       relations: {}
@@ -197,7 +204,7 @@ proto.collectRelations = function(){
       relations: {}
     };
 
-    _.forEach(relationsBuffers,function (relationBuffer) {
+    _.forEach(relationsBuffers, function (relationBuffer) {
       var relationName = relationBuffer.getRelationName();
 
       var newElements = relationBuffer.getRelationElementsOnlyFieldsValues('NEW');
@@ -267,6 +274,33 @@ proto._addEditToGeometryBuffer = function(feature, operation) {
   }
   geometriesBuffer[id].push(geometry);
   this._setDirty(true);
+};
+
+proto._addDeleteRelationsBuffers = function(relations) {
+  // se snono state passate relazioni
+  if (relations) {
+    // clico su ognuna di essere
+    _.forEach(relations, function(relation) {
+      //se esiste già nell'oggetto relation buffer legate a quella feature
+      if (!_.has(self._relationsBuffers, fid)) {
+        // atrimenti faccio come ho fatto sopra per il buffer degli attributi
+        // ma ora sul buffer delle relazioni e non più un array ma un ogetto
+        // caratterizzato dal nome della relazione
+        self._relationsBuffers[fid] = {};
+      }
+      // verifico oltre alla chiave della feature se contiene il nome della relazione
+      // che non è altro il nome del layer che in relazione con la feature del layer che si sta
+      // editando
+      if (!_.has(self._relationsBuffers[fid], relation.name)) {
+        // se non presente creo una nuova istanza di RelationEditBuffer
+        self._relationsBuffers[fid][relation.name] = new RelationEditBuffer(self, relation.name);
+      }
+      // prendo l'istanza di RelationEditBuffer (creata sul momento o esistente)
+      var relationBuffer = self._relationsBuffers[fid][relation.name];
+      // chiamo il metodo updateRelation dell'istanza
+      relationBuffer.updateRelation(relation);
+    });
+  }
 };
 // funzione che mette in relazione feature e relazioni
 proto._addEditToValuesBuffers = function(feature, relations){

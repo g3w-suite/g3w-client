@@ -31,10 +31,10 @@ proto.destroy = function(){
   this._clearBuffers();
 };
 //restituisce il nome della relazione
-proto.getRelationName = function(){
+proto.getRelationName = function() {
   return this._relationName;
 };
-// genar id della relazione (utile quando si crea una nuova relazione)
+// generare id della relazione (utile quando si crea una nuova relazione)
 proto.generateId = function(){
   return this._editor.generateId();
 };
@@ -86,7 +86,7 @@ proto._editBuffer = function(element) {
 };
 
 // il filtro può essere 'ALL', 'NEW', 'OLD', 'DELETED'
-proto.getRelationElements = function(filter,onlyfieldsvalues) {
+proto.getRelationElements = function(filter, onlyfieldsvalues) {
   var elements = [];
   _.forEach(this._elementsBuffer, function(elementBuffer) {
     // element buffer sono gli arry ( e quindi le modifche) di ogni elemento della
@@ -114,7 +114,7 @@ proto.getRelationElements = function(filter,onlyfieldsvalues) {
 
 proto.getRelationElementsOnlyFieldsValues = function(filter) {
   return this.getRelationElements(filter,true);
-}
+};
 
 // funzione ha elementi
 proto.hasRelationElements = function(){
