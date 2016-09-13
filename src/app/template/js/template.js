@@ -102,21 +102,13 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   };
   
   this._showModalOverlay = function(bool) {
-    console.log(bool);
-    /*if (!this._modalOverlay){
-      this._modalOverlay = $('<div id="g3w-modal-overlay" style="background-color: #000000; opacity: 0.7;z-index:4000;position:fixed;top:0px;left:0px"></div>');
-      $("body").append(this._modalOverlay);
-      this._modalOverlay.width($(window).innerWidth());
-      this._modalOverlay.height($(window).innerHeight());
+    var mapService = GUI.getComponent('map').getService();
+    if (bool) {
+      mapService.startDrawGreyCover();
+    } else {
+      mapService.stopDrawGreyCover();
     }
-    if (_.isUndefined(bool) || bool === true){
-      this._modalOverlay.width($(window).innerWidth());
-      this._modalOverlay.height($(window).innerHeight());
-      this._modalOverlay.show();
-    }
-    else {
-      this._modalOverlay.hide();
-    }*/
+
   };
 
   this._showSidebar = function() {
@@ -159,13 +151,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
           GUI.showFloatbar();
           showPanelResults = GUI.showQueryResults;
           break;
-      };
+      }
       return showPanelResults;
     };
 
     GUI.showQueryResults = function(title,results) {
       // istanziare il componente queryresults
-      var queryResultsComponent = GUI.getComponent('queryresults');
       // passarlo a Floatbar
       var queryResultService = queryResultsComponent.getService();
       queryResultService.reset();

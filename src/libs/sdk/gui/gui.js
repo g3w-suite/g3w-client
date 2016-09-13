@@ -6,7 +6,7 @@ var ComponentsRegistry = require('gui/componentsregistry');
 // rappresenta l'interfaccia globale dell'API della GUI. 
 // metodi devono essere implementati (definiti) dall'applicazione ospite
 // l'app ospite dovrebbe chiamare anche la funzione GUI.ready() quando la UI è pronta
-function GUI(){
+function GUI() {
   this.ready = false;
   // url delle risorse (immagini, ecc.)
   this.getResourcesUrl = noop;

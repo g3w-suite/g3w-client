@@ -26,6 +26,7 @@ function MapService(project){
       center: null,
       loading: false
   };
+  this._greyListenerKey = null;
   this.config = ApplicationService.getConfig();
   
   var routerService = ApplicationService.getRouterService();
@@ -145,10 +146,8 @@ function MapService(project){
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
     });
-
     //AL MOMENTO LASCIO COSÌ POI VEDIAMO
     QueryService.setMapService(this);
-
     this.emit('ready');
   };
   
@@ -623,6 +622,52 @@ proto._setMapView = function(){
   var resolution = this.viewer.getResolution();
   var center = this.viewer.getCenter();
   this.setMapView(bbox,resolution,center);
+};
+
+// funzione grigio mappa precompose mapcompose
+proto.startDrawGreyCover = function() {
+  // after rendering the layer, restore the canvas context
+  var map = this.viewer.map;
+  pippo = map;
+  this._greyListenerKey = map.on('postcompose', function(evt) {
+    var ctx = evt.context;
+    var size = this.getSize();
+    // Inner polygon,must be counter-clockwise
+    var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+    var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+    ctx.beginPath();
+    // Outside polygon, must be clockwise
+    ctx.moveTo(0, 0);
+    ctx.lineTo(width, 0);
+    ctx.lineTo(width, height);
+    ctx.lineTo(0, height);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    /*if (bbox) {
+      var minx = bbox[0];
+      var miny = bbox[1];
+      var maxx = bbox[2];
+      var maxy = bbox[3];
+      // Inner polygon,must be counter-clockwise
+      ctx.moveTo(minx, miny);
+      ctx.lineTo(minx, maxy);
+      ctx.lineTo(maxx, maxy);
+      ctx.lineTo(maxx, miny);
+      ctx.lineTo(minx, miny);
+      ctx.closePath();
+    }*/
+    ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
+    ctx.fill();
+    ctx.restore();
+  });
+  map.render();
+};
+
+proto.stopDrawGreyCover = function() {
+  var map = this.viewer.map;
+  map.unByKey(this._greyListenerKey);
+  this._greyListenerKey = null;
+  map.render();
 };
 
 module.exports = MapService;

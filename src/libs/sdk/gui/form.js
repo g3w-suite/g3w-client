@@ -195,6 +195,8 @@ function Form(options) {
   ///
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
+
+  GUI.setModal(true);
 }
 inherit(Form, Panel);
 
@@ -332,6 +334,7 @@ proto._pickLayer = function(field){
     .always(function(){
       mapService.removeInteraction(self._pickInteraction);
       self._pickInteraction = null;
+      GUI.setModal(true);
     })
   });
   return d.promise();
