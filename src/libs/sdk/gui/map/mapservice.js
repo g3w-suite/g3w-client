@@ -252,7 +252,7 @@ proto.setupControls = function(){
             });
             control.on('zoomend', function (e) {
               self.viewer.fit(e.extent);
-            })
+            });
             self.addControl(control);
           }
           break;
@@ -273,7 +273,6 @@ proto.setupControls = function(){
           control.on('picked',function(e){
             var coordinates = e.coordinates;
             var showQueryResults = GUI.showResultsFactory('query');
-            
             var layers = self.project.getLayers({
               QUERYABLE: true,
               SELECTEDORALL: true
@@ -628,42 +627,45 @@ proto._setMapView = function(){
 proto.startDrawGreyCover = function() {
   // after rendering the layer, restore the canvas context
   var map = this.viewer.map;
-  pippo = map;
-  this._greyListenerKey = map.on('postcompose', function(evt) {
-    var ctx = evt.context;
-    var size = this.getSize();
-    // Inner polygon,must be counter-clockwise
-    var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
-    var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
-    ctx.beginPath();
-    // Outside polygon, must be clockwise
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, 0);
-    ctx.lineTo(width, height);
-    ctx.lineTo(0, height);
-    ctx.lineTo(0, 0);
-    ctx.closePath();
-    /*if (bbox) {
-      var minx = bbox[0];
-      var miny = bbox[1];
-      var maxx = bbox[2];
-      var maxy = bbox[3];
+  //verifico che non ci sia già un greyListener
+  if (!this._greyListenerKey) {
+    this._greyListenerKey = map.on('postcompose', function (evt) {
+      var ctx = evt.context;
+      var size = this.getSize();
       // Inner polygon,must be counter-clockwise
-      ctx.moveTo(minx, miny);
-      ctx.lineTo(minx, maxy);
-      ctx.lineTo(maxx, maxy);
-      ctx.lineTo(maxx, miny);
-      ctx.lineTo(minx, miny);
+      var height = size[1] * ol.has.DEVICE_PIXEL_RATIO;
+      var width = size[0] * ol.has.DEVICE_PIXEL_RATIO;
+      ctx.beginPath();
+      // Outside polygon, must be clockwise
+      ctx.moveTo(0, 0);
+      ctx.lineTo(width, 0);
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.lineTo(0, 0);
       ctx.closePath();
-    }*/
-    ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
-    ctx.fill();
-    ctx.restore();
-  });
-  map.render();
+      /*if (bbox) {
+       var minx = bbox[0];
+       var miny = bbox[1];
+       var maxx = bbox[2];
+       var maxy = bbox[3];
+       // Inner polygon,must be counter-clockwise
+       ctx.moveTo(minx, miny);
+       ctx.lineTo(minx, maxy);
+       ctx.lineTo(maxx, maxy);
+       ctx.lineTo(maxx, miny);
+       ctx.lineTo(minx, miny);
+       ctx.closePath();
+       }*/
+      ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
+      ctx.fill();
+      ctx.restore();
+    });
+    map.render();
+  }
 };
 
 proto.stopDrawGreyCover = function() {
+  console.log('stop grey');
   var map = this.viewer.map;
   map.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;

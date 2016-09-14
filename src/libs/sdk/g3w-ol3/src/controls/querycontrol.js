@@ -15,7 +15,7 @@ var QueryControl = function(options){
   options = utils.merge(options,_options);
   
   InteractionControl.call(this,options);
-}
+};
 ol.inherits(QueryControl, InteractionControl);
 
 var proto = QueryControl.prototype;

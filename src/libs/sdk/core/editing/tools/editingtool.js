@@ -46,7 +46,7 @@ proto.ownsInteraction = function(interaction) {
   return owns;
 };
 
-proto.stop = function(){
+proto.stop = function() {
   if (this.steps) {
     this.steps.destroy();
   }

@@ -48,32 +48,35 @@ function QueryResultsService(){
   this.reset = function() {
     this.clearState();
   };
-  
+  // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
     var self = this;
-    _.forEach(featuresForLayers,function(featuresForLayer){
+    _.forEach(featuresForLayers, function(featuresForLayer){
       var layer = featuresForLayer.layer;
       if (featuresForLayer.features.length) {
         var layerObj = {
           title: layer.state.title,
           id: layer.state.id,
-          attributes: self._parseAttributes(layer.getAttributes(),featuresForLayer.features[0].getProperties()), // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+          // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
+          attributes: self._parseAttributes(layer.getAttributes(), featuresForLayer.features[0].getProperties()),
           features: []
         };
-        _.forEach(featuresForLayer.features,function(feature){      
+        _.forEach(featuresForLayer.features, function(feature){
+          console.log(feature.getProperties()); //g3w_relations
           var featureObj = {
             id: feature.getId(),
             attributes: feature.getProperties(),
             geometry: feature.getGeometry()
-          }
+            // aggiungo le relazioni
+          };
           layerObj.features.push(featureObj);
-        })
+        });
         self.state.layers.push(layerObj);
       }
     })
   };
   
-  this._parseAttributes = function(layerAttributes,featureAttributes) {
+  this._parseAttributes = function(layerAttributes, featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
     if (layerAttributes.length) {
       var featureAttributesNames = _.keys(featureAttributes);
@@ -81,16 +84,18 @@ function QueryResultsService(){
         return featureAttributesNames.indexOf(attribute.name) > -1;
       })
     }
-    // se layer.attributes è vuoto (es. quando l'interrogazione è verso un layer esterno di cui non so i campi) costruisco la struttura "fittizia" usando l'attributo sia ocme name che come label
+    // se layer.attributes è vuoto
+    // (es. quando l'interrogazione è verso un layer esterno di cui non so i campi)
+    // costruisco la struttura "fittizia" usando l'attributo sia ocme name che come label
     else {
-      return _.map(featureAttributesNames,function(featureAttributesName){
+      return _.map(featureAttributesNames, function(featureAttributesName){
         return {
           name: featureAttributesName,
           label: featureAttributesName
         }
       })
     }
-  }
+  };
   
   this.trigger = function(action,layer,feature) {
     var actionMethod = this._actions[action];
@@ -100,8 +105,7 @@ function QueryResultsService(){
   };
   
   base(this);
-};
-
+}
 QueryResultsService.zoomToElement = function(layer,feature) {
   console.log(feature.geometry);
 };

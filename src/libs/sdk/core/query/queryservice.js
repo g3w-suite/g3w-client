@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ProjectsRegistry = require('core/project/projectsregistry');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
 var ComponentsRegistry = require('gui/componentsregistry');
@@ -141,6 +140,25 @@ function QueryService(){
   //// FINE PARSER ///
 
   //INIZO SEZIONE QUERIES ///
+  // funzione per il recupero delle relazioni della features se ci sono
+  this.handleResponseFeaturesAndRelations = function(layersResponse) {
+    var relations = null;
+    _.forEach(layersResponse, function(layer) {
+      _.forEach(layer.features, function(feature) {
+        relations = feature.getProperties().g3w_relations;
+        _.forEach(relations, function(elements, relationName) {
+          if (elements.length) {
+            relations = {};
+            relations.name = relationName;
+            relations.elements = elements;
+            feature.set('relations', relations);
+          }
+        });
+      });
+    });
+    //console.log(layersResponse);
+    return layersResponse
+  };
 
   // Messo qui generale la funzione che si prende cura della trasformazione dell'xml di risposta
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
@@ -177,12 +195,12 @@ function QueryService(){
             parser = this._parseLayermsGMLOutput;
             data = response;
             break;
-        };
+        }
     }
     
-    var nfeatures = 0
+    var nfeatures = 0;
     _.forEach(queryLayers,function(queryLayer) {
-      var features = parser.call(self, queryLayer, data)
+      var features = parser.call(self, queryLayer, data);
       nfeatures += features.length;
       featuresForLayers.push({
         layer: queryLayer,
@@ -204,7 +222,8 @@ function QueryService(){
     then(function(response) {
       //al momento qui replico struttura per i parser
       var queryLayer = queryFilterObject.queryLayer;
-      var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer])
+      var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer]);
+      this.handleResponseFeaturesAndRelations(featuresForLayers);
       d.resolve({
         data: featuresForLayers,
         query: {
@@ -214,7 +233,7 @@ function QueryService(){
     })
     .fail(function(e){
           d.reject(e);
-    })
+    });
     return d.promise();
   };
   
@@ -224,7 +243,6 @@ function QueryService(){
     var urlsForLayers = {};
     _.forEach(layers, function(layer){
       var queryUrl = layer.getQueryUrl();
-      console.log(queryUrl);
       var urlHash = queryUrl.hashCode().toString();
       if (_.keys(urlsForLayers).indexOf(urlHash) == -1) {
         urlsForLayers[urlHash] = {
@@ -262,7 +280,6 @@ function QueryService(){
     });
     if (queryUrlsForLayers.length > 0) {
       var queryRequests = [];
-      var queryRequestsContext = [];
       var featuresForLayers = [];
       _.forEach(queryUrlsForLayers,function(queryUrlForLayers){
         var url = queryUrlForLayers.url;
@@ -271,14 +288,15 @@ function QueryService(){
         var request = self.doRequestAndParse(url,infoFormat,queryLayers);
         queryRequests.push(request);
       });
-      $.when.apply(this,queryRequests).
+      $.when.apply(this, queryRequests).
       then(function(){
         var vectorsDataResponse = Array.prototype.slice.call(arguments);
-        _.forEach(vectorsDataResponse,function(_featuresForLayers,idx){
+        _.forEach(vectorsDataResponse, function(_featuresForLayers){
           if(featuresForLayers){
             featuresForLayers = _.concat(featuresForLayers,_featuresForLayers);
           }
         });
+        featuresForLayers = self.handleResponseFeaturesAndRelations(featuresForLayers);
         d.resolve({
           data: featuresForLayers,
           query: {
@@ -300,15 +318,15 @@ function QueryService(){
     var self = this;
     var d = $.Deferred();
     $.get(url).
-    done(function(response){
-      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);
+    done(function(response) {
+      var featuresForLayers = self.handleQueryResponseFromServer(response, infoFormat, queryLayers);;
       d.resolve(featuresForLayers);
     })
     .fail(function(){
       d.reject();
     });
     return d;
-  }
+  };
 
   //query by BBOX
   this.queryByBoundingBox = function(bbox) {

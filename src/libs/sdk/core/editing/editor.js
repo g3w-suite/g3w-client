@@ -169,10 +169,10 @@ proto.start = function() {
 
 // termina l'editazione
 proto.stop = function() {
-
   if (this.isStarted()) {
     if (this.stopTool()) {
       if (form) {
+        console.log('chido il form 1');
         GUI.closeForm(form);
         this.form = null;
       }
@@ -228,6 +228,7 @@ proto.stopTool = function() {
     return false;
   }
   GUI.closeForm();
+  console.log('chido il form 2');
   GUI.setModal(false);
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
   // si chiama il metodo clea
@@ -632,6 +633,7 @@ proto._openEditorForm = function(isNew, feature, next) {
             class: "btn-danger",
             cbk: function(fields, relations){
               self.setFieldsWithValues(feature, fields, relations);
+              GUI.setModal(false);
               if (next){
                 next(true);
               }
@@ -642,6 +644,7 @@ proto._openEditorForm = function(isNew, feature, next) {
             type: "cancel",
             class: "btn-primary",
             cbk: function() {
+              GUI.setModal(false);
               if (next) {
                 next(false);
               }
@@ -654,7 +657,8 @@ proto._openEditorForm = function(isNew, feature, next) {
         closable: false
       });
     })
-    .fail(function(){
+    .fail(function() {
+      GUI.setModal(false);
       if (next){
         next(false);
       }

@@ -10,7 +10,7 @@ var vueComponentOptions = {
   data: function() {
     return {
       state: this.$options.queryResultsService.state,
-      layersFeaturesBoxes: {},
+      layersFeaturesBoxes: {}
     }
   },
   replace: false,
@@ -28,8 +28,8 @@ var vueComponentOptions = {
       return feature.geometry ? true : false;
     },
     attributesSubset: function(attributes) {
-      var end = Math.min(3,attributes.length);
-      return attributes.slice(0,end);
+      var end = Math.min(3, attributes.length);
+      return attributes.slice(0, end);
     },
     attributesSubsetLength: function(attributes) {
       return this.attributesSubset(attributes).length;
@@ -55,7 +55,7 @@ var vueComponentOptions = {
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultsComponent(options){
+function QueryResultsComponent(options) {
   base(this,options);
   var self = this;
   this.id = "queryresults";
@@ -68,28 +68,27 @@ function QueryResultsComponent(options){
     });
     this.createLayersFeaturesBoxes();
     this.internalComponent.querytitle = this._service.state.querytitle;
-  }
+  };
   
   this._service.onafter('setQueryResponse',function(){
     self.createLayersFeaturesBoxes();
-  })
+  });
   merge(this, options);
   
   this.createLayersFeaturesBoxes = function() {
-    var layersFeaturesBoxes = {}
+    var layersFeaturesBoxes = {};
     var layers = this._service.state.layers;
     _.forEach(layers,function(layer){
       _.forEach(layer.features,function(feature){
-        var boxid = layer.id+'_'+feature.id
+        var boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
           collapsed: false
         }
       })
-    })
+    });
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
   };
-};
-
+}
 inherit(QueryResultsComponent, Component);
 
 module.exports = QueryResultsComponent;

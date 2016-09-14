@@ -1,9 +1,3 @@
-<!--<div id="search-results">
-  <div v-for="layer in state.layers" style="cursor:pointer">
-    <h4>{{ layer.title }}</h4>
-    <p>Numero di features: {{ layer.features.length }}</p>
-  </div>
-</div>-->
 <div id="search-results" class="queryresults-container">
   <h3>Risultati {{state.querytitle | lowercase}}</h3>
   <div v-show="state.loading" class="bar-loader"></div>
@@ -34,25 +28,31 @@
                     <!--<a v-if="isLink(layer,feature,attribute)" href="layer.feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
                   </td>
                   <td><span class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
-              </tr>
-              <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
-                <td :colspan="attributesSubsetLength(layer.attributes)+1">
-                  <div class="action-buttons-container">
-                    <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
-                      <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('gotogeometry',layer,feature)"></span>
+                </tr>
+                <tr v-if="feature.attributes.relations">
+                  <td>{{ feature.attributes.relations.name }}</td>
+                  <td>{{ feature.attributes.relations.elements }}</td>
+                </tr>
+                <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
+                  <td :colspan="attributesSubsetLength(layer.attributes)+1">
+                    <div class="action-buttons-container">
+                      <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
+                        <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('gotogeometry',layer,feature)"></span>
+                      </div>
+                      <!--<div class="action-button hint--top-right" aria-label="Link all'elemento">
+                        <span class="action-button-icon glyphicon glyphicon-link"></span>
+                      </div>-->
                     </div>
-                    <!--<div class="action-button hint--top-right" aria-label="Link all'elemento">
-                      <span class="action-button-icon glyphicon glyphicon-link"></span>
-                    </div>-->
-                  </div>
-                  <table>
-                    <tr v-for="attribute in layer.attributes">
-                      <td class="attr-label">{{attribute.label}}</td>
-                      <td class="attr-value">{{feature.attributes[attribute.name]}}</td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+                    <table>
+                      <tr v-for="attribute in layer.attributes">
+                        <td class="attr-label">{{attribute.label}}</td>
+                        <td class="attr-value">{{feature.attributes[attribute.name]}}</td>
+                        <td v-if="attribute.relations">{{attribute.relations.name}}</td>
+                      </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
               </template>
             </tbody>
           </table>
