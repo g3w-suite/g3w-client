@@ -29,10 +29,10 @@
                   </td>
                   <td><span class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
                 </tr>
-                <tr v-if="feature.attributes.relations">
-                  <td>{{ feature.attributes.relations.name }}</td>
-                  <td>{{ feature.attributes.relations.elements }}</td>
-                </tr>
+                <!--<tr v-if="feature.attributes.relations">-->
+                  <!--<td>{{ feature.attributes.relations.name }}</td>-->
+                  <!--<td>{{ feature.attributes.relations.elements }}</td>-->
+                <!--</tr>-->
                 <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
                   <td :colspan="attributesSubsetLength(layer.attributes)+1">
                     <div class="action-buttons-container">

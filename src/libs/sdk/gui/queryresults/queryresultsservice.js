@@ -62,7 +62,7 @@ function QueryResultsService(){
           features: []
         };
         _.forEach(featuresForLayer.features, function(feature){
-          console.log(feature.getProperties()); //g3w_relations
+          //console.log(feature.getProperties()); //g3w_relations
           var featureObj = {
             id: feature.getId(),
             attributes: feature.getProperties(),
