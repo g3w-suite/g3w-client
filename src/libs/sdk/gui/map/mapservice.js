@@ -73,23 +73,32 @@ function MapService(project){
       this.state.center = center;
       this.updateMapLayers(this.mapLayers);
     },
-    setupViewer: function(initialResolution){
+    setupViewer: function(width,height){
       //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
       proj4.defs("EPSG:"+self.project.state.crs,this.project.state.proj4);
       if (self.viewer) {
         self.viewer.destroy();
         self.viewer = null;
       }
-      self._setupViewer(initialResolution);
+      self._setupViewer(width,height);
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');
     }
   };
   
-  this._setupViewer = function(initialResolution){
-    var extent = this.project.state.extent;
+  this._setupViewer = function(width,height){
     var projection = this.getProjection();
+    var initextent = this.project.state.initextent;
+    var extent = this.project.state.extent;
+
+    var maxxRes = ol.extent.getWidth(extent) / width;
+    var minyRes = ol.extent.getHeight(extent) / height;
+    var maxResolution = Math.max(maxxRes,minyRes);
+
+    var initxRes = ol.extent.getWidth(initextent) / width;
+    var inityRes = ol.extent.getHeight(initextent) / height;
+    var initResolution = Math.max(initxRes,inityRes);
     
     /*var constrain_extent;
     if (this.config.constraintextent) {
@@ -115,11 +124,11 @@ function MapService(project){
         extent: this.config.constraintextent || extent,
         minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
         maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
-        center: ol.extent.getCenter(extent),
+        center: ol.extent.getCenter(initextent),
         extent: extent,
         //minZoom: 0, // default di OL3 3.16.0
         //maxZoom: 28 // default di OL3 3.16.0
-        maxResolution: initialResolution
+        maxResolution: maxResolution
       }
     });
     
@@ -141,7 +150,7 @@ function MapService(project){
       //self._onRemoveInteraction(interaction);
     });
 
-    this.viewer.map.getView().setResolution(initialResolution);
+    this.viewer.map.getView().setResolution(initResolution);
     
     this.viewer.map.on('moveend',function(e){
       self._setMapView();
@@ -594,11 +603,7 @@ proto.refreshMap = function(){
 
 proto.resize = function(width,height) {
   if (!this.viewer) {
-    var initialExtent = this.project.state.extent;
-    var xRes = ol.extent.getWidth(initialExtent) / width;
-    var yRes = ol.extent.getHeight(initialExtent) / height;
-    var res = Math.max(xRes,yRes);
-    this.setupViewer(res);
+    this.setupViewer(width,height);
   }
   this.getMap().updateSize();
   this._setMapView();

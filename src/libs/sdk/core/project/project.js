@@ -16,6 +16,7 @@ function Project(projectConfig) {
     name,
     crs,
     extent,
+    initextent,
     layerstree,
     overviewprojectgid
   }
