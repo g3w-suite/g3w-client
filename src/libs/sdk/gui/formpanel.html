@@ -1,9 +1,9 @@
 <div>
     <div class="quick-actions-menu">
         <div class="pull-right">
-            <button class="btn btn-default btn-circle-medium glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
-            <button class="btn btn-default btn-circle-medium glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
-            <button class="btn btn-default btn-circle-medium glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste"> data-i18n="[title]paste_form_data"></button>
+            <button class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
+            <button class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
+            <button class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
         </div>
     </div>
     <div>
@@ -71,7 +71,7 @@
                                                                 <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
                                                             </select>
                                                             <div v-if="isLayerPicker(field)">
-                                                                <input class="form-control" @click="pickLayer(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                                                <input class="form-control picklayerinput" @click="pickLayer(field)" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" onfocus="blur()" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}'" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                                                 <i class="glyphicon glyphicon-screenshot form-control-feedback"></i>
                                                             </div>
                                                         </div>

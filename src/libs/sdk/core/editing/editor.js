@@ -324,26 +324,6 @@ proto.collectRelations = function() {
 };
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una
-proto.setFieldsWithValues = function(feature, fields, relations) {
-  var attributes = {};
-  _.forEach(fields,function(field) {
-    attributes[field.name] = field.value;
-  });
-  var relationsAttributes = null;
-  if (relations) {
-    var relationsAttributes = {};
-    _.forEach(relations,function(relation) {
-      var attributes = {};
-      _.forEach(relation.fields,function(field) {
-        attributes[field.name] = field.value;
-      });
-      relationsAttributes[relation.name] = attributes;
-    });
-  }
-  feature.setProperties(attributes);
-  this._editBuffer.updateFields(feature, relationsAttributes);
-};
-
 proto.setFieldsWithValues = function(feature,fields,relations){
   var attributes = {};
   _.forEach(fields,function(field){
@@ -352,6 +332,9 @@ proto.setFieldsWithValues = function(feature,fields,relations){
 
   feature.setProperties(attributes);
   this._editBuffer.updateFields(feature,relations);
+  if (relations) {
+    this._vectorLayer.setRelationsData(feature.getId(),relations);
+  }
 };
 //funzione che in base alla feature passata recupera le relazioni associata ad essa
 proto.getRelationsWithValues = function(feature) {
@@ -373,7 +356,7 @@ proto.getRelationsWithValues = function(feature) {
       }
       // altrimenti prendo i fields vuoti
       else {
-        fieldsPromise = this._vectorLayer.getRelationsWithValues();
+        fieldsPromise = this._vectorLayer.getRelationsWithValues(fid);
       }
     }
     // se invece è una feature già presente e quindi non nuova

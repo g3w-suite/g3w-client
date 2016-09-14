@@ -229,11 +229,13 @@ proto.stop = function(){
 };
 
 proto._cleanUp = function(){
+  this.steps.completed();
   this._origFeature = null;
   this._origGeometry = null;
   this._newFeatures = [];
   this._lineToKeepOverlay.setMap(null);
   this._selectedLineOverlay.setMap(null);
+  this.editingLayer.getSource().getFeaturesCollection().clear();
 };
 
 proto._rollBack = function(){
@@ -315,7 +317,7 @@ proto._cut = function(geometry,cutCoordinate){
       closestIndex = index;
     }
     index += 1;
-  })
+  });
   
   var coordinates = geometry.getCoordinates();
   // prendo la prima porzione di coordinate

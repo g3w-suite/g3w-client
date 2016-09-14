@@ -596,7 +596,7 @@ proto.highlightGeometry = function(geometryObj,options){
 };
 
 proto.refreshMap = function(){
-  _.forEach(this.mapLayers,function(wmsLayer){
+  _.forEach(this._mapLayers,function(wmsLayer){
     wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
   })
 };

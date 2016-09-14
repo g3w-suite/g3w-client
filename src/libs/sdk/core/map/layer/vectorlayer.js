@@ -267,7 +267,7 @@ proto.getRelationsWithValues = function(fid) {
   // altrimenti creo un cloe dell'attributo relations
   var relations = _.cloneDeep(this._relations);
   // -- DA CAPIRE MEGLIO --
-  if (!fid || !this.getFeatureById(fid)) {
+  if (!fid && !this.getFeatureById(fid)) {
     _.forEach(relations, function(relation) {
       relation.elements = [];
     });
@@ -370,14 +370,9 @@ proto.getRelationsFksWithValuesForFeature = function(feature){
   return fks;
 };
 
-// ancora mai usato, perché in generale i dati delle relazioni vengono caricati in modo lazy su richieste per la singola feature
-proto.setRelationsData = function (relationsData) {
-  var self = this;
-  _.forEach(this._relations,function(relation){
-    // popolare gli elementi delle relazioni
-    self._relationsDataLoaded = true;
-  });
-}
+proto.setRelationsData = function (fid,relationsData) {
+  this._relationsDataLoaded[fid] = relationsData;
+};
 
 proto.setStyle = function(style){
   this._olLayer.setStyle(style);
@@ -391,8 +386,10 @@ proto.getSource = function(){
   return this._olLayer.getSource();
 };
 
-proto.getFeatureById = function(id){
-  return this._olLayer.getSource().getFeatureById(id);
+proto.getFeatureById = function(fid){
+  if (fid) {
+    return this._olLayer.getSource().getFeatureById(fid);
+  }
 };
 
 proto.clear = function(){

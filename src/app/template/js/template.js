@@ -179,6 +179,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
 
     toastr.options.positionClass = 'toast-top-center';
     toastr.options.preventDuplicates = true;
+    toastr.options.timeOut = 2000;
     // proxy della libreria toastr
     GUI.notify = toastr;
     // proxy della libreria bootbox

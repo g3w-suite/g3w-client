@@ -234,7 +234,7 @@ gulp.task('dist', function(done){
 });
 
 gulp.task('g3w-admin', ['dist'],function(){
-  gulp.src([distFolder+'/**/*.*','!'+distFolder+'/index.html'])
+  gulp.src([distFolder+'/**/*.*','!'+distFolder+'/index.html','!'+distFolder+'/css/app.css','!'+distFolder+'/js/app.js'])
   .pipe(gulp.dest(conf.g3w_admin_dest));
 });
 
