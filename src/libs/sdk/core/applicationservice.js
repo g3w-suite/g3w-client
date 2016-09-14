@@ -61,7 +61,7 @@ var ApplicationService = function(){
         ProjectsRegistry.init(this._config)
       ).then(function(){
         PluginsRegistry.init({
-          plusingBaseUrl: self._config.urls.staticurl,
+          pluginsBaseUrl: self._config.urls.staticurl,
           pluginsConfigs: self._config.plugins
         });
         self.emit('ready');

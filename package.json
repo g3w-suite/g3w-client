@@ -54,6 +54,7 @@
     "less": "^2.6.0",
     "mocha": "^2.4.5",
     "node-lessify": "^0.1.1",
+    "run-sequence": "^1.2.2",
     "sinon": "~1.17.3",
     "stringify": "^5.0.0",
     "uglify-js": "^2.6.2",

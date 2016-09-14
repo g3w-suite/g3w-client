@@ -140,7 +140,7 @@ function obtainInitConfig(initConfigUrl) {
       $.get(initUrl, function(initConfig) {
         //initConfig è l'oggetto contenete:
         //group, mediaurl, staticurl, user
-        initConfig.staticurl = "../build/"; // in locale forziamo il path degli asset
+        initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
         d.resolve(initConfig);
       })
     }
