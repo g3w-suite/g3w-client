@@ -227,7 +227,7 @@ function QueryService(){
       //al momento qui replico struttura per i parser
       var queryLayer = queryFilterObject.queryLayer;
       var featuresForLayers = self.handleQueryResponseFromServer(response, queryLayer.getInfoFormat(), [queryLayer]);
-      this.handleResponseFeaturesAndRelations(featuresForLayers);
+      self.handleResponseFeaturesAndRelations(featuresForLayers);
       d.resolve({
         data: featuresForLayers,
         query: {

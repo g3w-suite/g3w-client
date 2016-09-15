@@ -233,23 +233,39 @@ proto._copyFormToClipBoard = function() {
 proto._pasteStateWithoutPk = function(fields, relations) {
   //prendo vector layer
   var self = this;
-  var featureId = null;
-  // recupero il campo id
-  _.forEach(this.state.fields, function(field) {
-    if (self.pk == field.name) {
-      featureId = field.value;
-      return true;
+  var layerFields = [];
+  var copyAndPasteFieldsNotOverwritable = self.editor.getcopyAndPasteFieldsNotOverwritable();
+  var relationFields = {};
+  // verifico se sono stati settati campi che non devono essere sovrascitti dal copia e incolla
+  // è settato dall'editor specifico
+  if (!_.isNil(copyAndPasteFieldsNotOverwritable.layer)) {
+    layerFields = copyAndPasteFieldsNotOverwritable.layer;
+  }
+  if (!_.isNil(copyAndPasteFieldsNotOverwritable.relations)) {
+    relationFields = copyAndPasteFieldsNotOverwritable.relations;
+  }
+  // verifico i filed da non modificare sul layer
+  _.forEach(fields, function(field, index) {
+    if (self.pk == field.name || (layerFields.indexOf(field.name) != -1)) {
+      fields[index].value = self.state.fields[index].value;
     }
   });
-  // setto i nuovi fields e relations
+  // verifico i fileds delle relazioni da non sovrascrivere
+  _.forEach(relations, function(relation, relationIndex) {
+    _.forEach(relationFields[relation.name], function(relationField) {
+      _.forEach(relation.elements, function(element, elementIndex) {
+        _.forEach(element.fields, function(field, fieldIndex) {
+           if (field.name == relationField) {
+             relations[relationIndex].elements[elementIndex].fields[fieldIndex].value = undefined;
+           }
+        });
+      });
+    })
+  });
+  // setto i nuovi fields e relations lasciando quelli vecchi
   this.state.fields = fields;
   this.state.relations = relations;
-  _.forEach(this.state.fields, function(field) {
-    if (self.pk == field.name) {
-      field.value = featureId;
-      return true;
-    }
-  });
+
   var elementsBoxes = this.getUniqueRelationsElementId();
   this.state.elementsBoxes = elementsBoxes;
   return true;

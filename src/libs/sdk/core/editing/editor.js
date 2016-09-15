@@ -31,6 +31,11 @@ function Editor(options) {
   this._featureLocks = null;
   this._started = false;
 
+  // regole copy and paste campi non sovrascrivibili
+
+
+  this._copyAndPasteFieldsNotOverwritable = options.copyAndPasteFieldsNotOverwritable || {};
+
   this._setterslisteners = {
     before: {},
     after: {}
@@ -106,6 +111,14 @@ function Editor(options) {
 inherit(Editor, G3WObject);
 
 var proto = Editor.prototype;
+
+proto.getcopyAndPasteFieldsNotOverwritable = function() {
+  return this._copyAndPasteFieldsNotOverwritable;
+};
+
+proto.setcopyAndPasteFieldsNotOverwritable = function(obj) {
+    this._copyAndPasteFieldsNotOverwritable = obj;
+};
 
 proto.getMapService = function() {
   return this._mapService;
