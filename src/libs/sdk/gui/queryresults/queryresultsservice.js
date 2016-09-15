@@ -3,7 +3,6 @@ var base = require('core/utils/utils').base;
 var GUI = require('gui/gui');
 var G3WObject = require('core/g3wobject');
 var ComponentsRegistry = require('gui/componentsregistry');
-var ProjectsRegistry = require('core/project/projectsregistry');
 
 function QueryResultsService(){
   var self = this;

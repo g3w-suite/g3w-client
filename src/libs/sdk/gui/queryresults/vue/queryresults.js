@@ -54,8 +54,7 @@ var vueComponentOptions = {
       return this.relationsAttributesSubset(elements).length;
     },
     collapseFeatureBox: function(layer, feature, relation_index) {
-      //console.log('collapseBBox');
-      //console.log(this.layersFeaturesBoxes);
+      //console.log('coolapseFeatureBox: ', relation_index);
       var collapsed = true;
       var boxid;
       if (!_.isNil(relation_index)) {
@@ -77,7 +76,6 @@ var vueComponentOptions = {
       } else {
         boxid = layer.id + '_' + feature.id;
       }
-      //console.log('Toggle index:', boxid);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
     trigger: function(action,layer,feature) {
@@ -119,11 +117,14 @@ function QueryResultsComponent(options) {
           collapsed: false
         };
         if (feature.attributes.relations) {
-          _.forEach(feature.attributes.relations, function(relation, index) {
-              boxid = layer.id+'_'+feature.id + '_' + index;
-              layersFeaturesBoxes[boxid] = {
+          boxid = '';
+          _.forEach(feature.attributes.relations, function(relation) {
+            boxid = layer.id + '_' + feature.id + '_' + relation.name;
+            _.forEach(relation.elements, function(element, index){
+              layersFeaturesBoxes[boxid+index] = {
                 collapsed: false
               };
+            });
           })
         }
       })

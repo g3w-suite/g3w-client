@@ -65,7 +65,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr class="attributes-preview" @click="toggleFeatureBox(layer, feature, index)">
+                            <tr class="attributes-preview" @click="toggleFeatureBox(layer, feature, relation.name+index)">
                               <td v-for="attribute in relationsAttributesSubset(element)">
                                 <span>{{attribute.value}}</span>
                               </td>
@@ -73,7 +73,7 @@
                                 <span class="glyphicon glyphicon-option-horizontal link morelink"></span>
                               </td>
                             </tr>
-                            <tr v-show="collapseFeatureBox(layer, feature, index)" class="queryresults-featurebox">
+                            <tr v-show="collapseFeatureBox(layer, feature, relation.name+index)" class="queryresults-featurebox">
                               <td :colspan="relationsAttributesSubsetLength(element)+1">
                                 <table>
                                   <tr v-for="attribute in relationsAttributes(element)">
