@@ -154,13 +154,8 @@ proto.getFieldsNames = function(){
 
 proto.getFieldsWithValues = function(obj){
   var self = this;
-  /*var fields = _.cloneDeep(_.filter(this._fields,function(field){
-    return ((field.name != self.pk) && field.editable);
-  }));*/
   var fields = _.cloneDeep(this._fields);
-  
   var feature, attributes;
-  
   // il metodo accetta sia feature che fid
   if (obj instanceof ol.Feature){
     feature = obj;
@@ -171,8 +166,7 @@ proto.getFieldsWithValues = function(obj){
   if (feature){
     attributes = feature.getProperties();
   }
-  
-  _.forEach(fields,function(field){
+  _.forEach(fields, function(field){
     if (feature){
       if (!this._PKinAttributes && field.name == self.pk){
         field.value = feature.getId();

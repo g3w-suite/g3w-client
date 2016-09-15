@@ -629,11 +629,13 @@ proto._setMapView = function(){
 };
 
 // funzione grigio mappa precompose mapcompose
-proto.startDrawGreyCover = function() {
+proto.startDrawGreyCover = function(bbox) {
   // after rendering the layer, restore the canvas context
   var map = this.viewer.map;
   //verifico che non ci sia già un greyListener
-  if (!this._greyListenerKey) {
+  if (this._greyListenerKey) {
+      this.stopDrawGreyCover();
+  } else {
     this._greyListenerKey = map.on('postcompose', function (evt) {
       var ctx = evt.context;
       var size = this.getSize();
@@ -648,7 +650,7 @@ proto.startDrawGreyCover = function() {
       ctx.lineTo(0, height);
       ctx.lineTo(0, 0);
       ctx.closePath();
-      /*if (bbox) {
+      if (bbox) {
        var minx = bbox[0];
        var miny = bbox[1];
        var maxx = bbox[2];
@@ -660,7 +662,7 @@ proto.startDrawGreyCover = function() {
        ctx.lineTo(maxx, miny);
        ctx.lineTo(minx, miny);
        ctx.closePath();
-       }*/
+       }
       ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
       ctx.fill();
       ctx.restore();
@@ -670,7 +672,7 @@ proto.startDrawGreyCover = function() {
 };
 
 proto.stopDrawGreyCover = function() {
-  console.log('stop grey');
+
   var map = this.viewer.map;
   map.unByKey(this._greyListenerKey);
   this._greyListenerKey = null;

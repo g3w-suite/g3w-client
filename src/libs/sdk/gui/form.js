@@ -224,12 +224,13 @@ proto.unmount = function(){
 
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
+  console.log(formData);
   this._clipBoard.set(this.id, formData);
   this.state.canpaste = true;
   return true;
 };
 
-proto.pasteStateWithoutPk = function(fields, relations) {
+proto._pasteStateWithoutPk = function(fields, relations) {
   //prendo vector layer
   var self = this;
   var featureId = null;
@@ -257,7 +258,7 @@ proto.pasteStateWithoutPk = function(fields, relations) {
 proto._pasteClipBoardToForm = function() {
 
   var formData = this._clipBoard.get(this.id);
-  this.pasteStateWithoutPk(formData.fields, formData.relations);
+  this._pasteStateWithoutPk(formData.fields, formData.relations);
   this.state.canpaste = false;
 };
 
@@ -359,7 +360,7 @@ proto._pickLayerToClipBoard = function() {
   // l'aggiungo alla mappa
   mapService.addInteraction(this._pickInteraction);
   // on picked
-  this._pickInteraction.on('picked',function(e) {
+  this._pickInteraction.on('picked', function(e) {
     // qui passo lo stessso layer su cui sto agendo
     QueryService.queryByLocation(e.coordinate, [layer])
         .then(function(response) {
@@ -368,11 +369,13 @@ proto._pickLayerToClipBoard = function() {
           if (featuresForLayers.length && featuresForLayers[0].features.length) {
             // rpendo la prima feature
             var feature = featuresForLayers[0].features[0];
+            // prendo dal vectorLayer la feature basato sull'id della richiesta
+            feature = vectorLayer.getFeatureById(feature.getId());
             var fields = vectorLayer.getFieldsWithValues(feature);
             var relationsPromise = self.editor.getRelationsWithValues(feature);
             relationsPromise
             .then(function(relations) {
-              self.pasteStateWithoutPk(fields, relations);
+              self._pasteStateWithoutPk(fields, relations);
             });
           }
         })

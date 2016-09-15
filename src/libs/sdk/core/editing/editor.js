@@ -148,7 +148,6 @@ proto.removeEditingLayerFromMap = function() {
 
 // avvia la sessione di editazione con un determinato tool (es. addfeature)
 proto.start = function() {
-  console.log('start della classe Editor');
   // TODO: aggiungere notifica nel caso questo if non si verifichi
   var res = false;
   // se è sia stato settato il vectorLayer
@@ -228,7 +227,6 @@ proto.stopTool = function() {
     return false;
   }
   GUI.closeForm();
-  console.log('chido il form 2');
   GUI.setModal(false);
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
   // si chiama il metodo clea
@@ -583,7 +581,6 @@ proto._setupEditAttributesListeners = function() {
 
 proto._openEditorForm = function(isNew, feature, next) {
   var self = this;
-  var fid = feature.getId();
   var vectorLayer = this.getVectorLayer();
   var fields = vectorLayer.getFieldsWithValues(feature);
   // nel caso qualcuno, durante la catena di setterListeners,

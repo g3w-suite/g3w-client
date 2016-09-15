@@ -41,7 +41,7 @@ proto.run = function() {
       self._busy = true;
       self.pause(true);
       self.pickFeature(e.feature)
-      .then(function(res){
+      .then(function(res) {
         self._busy = false;
         self.pause(false);
       })
