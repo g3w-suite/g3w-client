@@ -31,19 +31,53 @@ var vueComponentOptions = {
       var end = Math.min(3, attributes.length);
       return attributes.slice(0, end);
     },
+    relationsAttributesSubset: function(relationAttributes) {
+      var attributes = [];
+      _.forEach(relationAttributes, function (value, attribute) {
+        attributes.push({label: attribute, value: value})
+      });
+      var end = Math.min(3, attributes.length);
+      //console.log(attributes);
+      return attributes.slice(0, end);
+    },
+    relationsAttributes: function(relationAttributes) {
+      var attributes = [];
+      _.forEach(relationAttributes, function (value, attribute) {
+       attributes.push({label: attribute, value: value})
+      });
+      return attributes;
+    },
     attributesSubsetLength: function(attributes) {
       return this.attributesSubset(attributes).length;
     },
-    collapseFeatureBox: function(layer,feature) {
+    relationsAttributesSubsetLength: function(elements) {
+      return this.relationsAttributesSubset(elements).length;
+    },
+    collapseFeatureBox: function(layer, feature, relation_index) {
+      //console.log('collapseBBox');
+      //console.log(this.layersFeaturesBoxes);
       var collapsed = true;
-      var boxid = layer.id+'_'+feature.id;
+      var boxid;
+      if (!_.isNil(relation_index)) {
+        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
+      } else {
+        boxid = layer.id + '_' + feature.id;
+      }
+      //console.log(boxid);
       if (this.layersFeaturesBoxes[boxid]) {
+        //console.log(boxid);
         collapsed = this.layersFeaturesBoxes[boxid].collapsed;
       }
       return collapsed;
     },
-    toggleFeatureBox: function(layer,feature) {
-      var boxid = layer.id+'_'+feature.id;
+    toggleFeatureBox: function(layer, feature, relation_index) {
+      var boxid;
+      if (!_.isNil(relation_index)) {
+        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
+      } else {
+        boxid = layer.id + '_' + feature.id;
+      }
+      //console.log('Toggle index:', boxid);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
     trigger: function(action,layer,feature) {
@@ -83,6 +117,14 @@ function QueryResultsComponent(options) {
         var boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
           collapsed: false
+        };
+        if (feature.attributes.relations) {
+          _.forEach(feature.attributes.relations, function(relation, index) {
+              boxid = layer.id+'_'+feature.id + '_' + index;
+              layersFeaturesBoxes[boxid] = {
+                collapsed: false
+              };
+          })
         }
       })
     });

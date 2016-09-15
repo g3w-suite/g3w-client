@@ -11,51 +11,89 @@
           </div>
         </div>
         <div class="box-body">
-          <table class="table table-striped">
-            <thead>
+          <template v-for="feature in layer.features">
+            <table class="table table-striped">
+              <thead>
               <tr>
                 <th v-for="attribute in attributesSubset(layer.attributes)">{{attribute.label}}</th>
               </tr>
-            </thead>
-            <tbody>
-              <template v-for="feature in layer.features">
+              </thead>
+              <tbody>
                 <tr class="attributes-preview" @click="toggleFeatureBox(layer,feature)">
                   <td v-for="attribute in attributesSubset(layer.attributes)">
                     <span>{{feature.attributes[attribute.name]}}</span>
-                    <!--<span v-if="isSimple(layer,feature,attribute)">{{feature.attributes[attribute.name]}}</span>-->
-                    <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
-                    <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
-                    <!--<a v-if="isLink(layer,feature,attribute)" href="layer.feature.attributes[attribute.name]" class="glyphicon glyphicon-link"></a>-->
                   </td>
                   <td><span class="glyphicon glyphicon-option-horizontal link morelink"></span></td>
                 </tr>
-                <!--<tr v-if="feature.attributes.relations">-->
-                  <!--<td>{{ feature.attributes.relations.name }}</td>-->
-                  <!--<td>{{ feature.attributes.relations.elements }}</td>-->
-                <!--</tr>-->
                 <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
                   <td :colspan="attributesSubsetLength(layer.attributes)+1">
                     <div class="action-buttons-container">
                       <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
                         <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('gotogeometry',layer,feature)"></span>
                       </div>
-                      <!--<div class="action-button hint--top-right" aria-label="Link all'elemento">
-                        <span class="action-button-icon glyphicon glyphicon-link"></span>
-                      </div>-->
                     </div>
                     <table>
                       <tr v-for="attribute in layer.attributes">
                         <td class="attr-label">{{attribute.label}}</td>
                         <td class="attr-value">{{feature.attributes[attribute.name]}}</td>
-                        <td v-if="attribute.relations">{{attribute.relations.name}}</td>
-                      </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
-              </template>
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+            <!--Relazioni-->
+            <div class="queryresults-container">
+              <ul v-if="feature.attributes.relations" class="queryresults" id="relations">
+                <template v-for="relation in feature.attributes.relations">
+                  <li>
+                    <div class="box box-solid box-default">
+                      <div class="box-header with-border">
+                        <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
+                        <div class="box-tools pull-right">
+                          <button class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                        </div>
+                      </div>
+                      <div class="box-body">
+                        <template v-for="(index, element) in relation.elements">
+                          <table class="table table-striped">
+                            <thead>
+                            <tr>
+                              <th v-for="attribute in relationsAttributesSubset(element)">
+                                {{attribute.label}}
+                              </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="attributes-preview" @click="toggleFeatureBox(layer, feature, index)">
+                              <td v-for="attribute in relationsAttributesSubset(element)">
+                                <span>{{attribute.value}}</span>
+                              </td>
+                              <td>
+                                <span class="glyphicon glyphicon-option-horizontal link morelink"></span>
+                              </td>
+                            </tr>
+                            <tr v-show="collapseFeatureBox(layer, feature, index)" class="queryresults-featurebox">
+                              <td :colspan="relationsAttributesSubsetLength(element)+1">
+                                <table>
+                                  <tr v-for="attribute in relationsAttributes(element)">
+                                    <td class="attr-label">{{attribute.label}}</td>
+                                    <td class="attr-value">{{attribute.value}}</td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            </tbody>
+                          </table>
+                        </template>
+                      </div>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </div>
+            <!--Fine Relazioni-->
+          </template>
         </div>
       </div>
     </li>

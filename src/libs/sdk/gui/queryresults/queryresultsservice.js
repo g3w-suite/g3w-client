@@ -51,7 +51,7 @@ function QueryResultsService(){
   // funzione che serve a far digerire i risultati delle features
   this._digestFeaturesForLayers = function(featuresForLayers) {
     var self = this;
-    _.forEach(featuresForLayers, function(featuresForLayer){
+    _.forEach(featuresForLayers, function(featuresForLayer) {
       var layer = featuresForLayer.layer;
       if (featuresForLayer.features.length) {
         var layerObj = {
@@ -69,6 +69,7 @@ function QueryResultsService(){
             geometry: feature.getGeometry()
             // aggiungo le relazioni
           };
+          //console.log(featureObj);
           layerObj.features.push(featureObj);
         });
         self.state.layers.push(layerObj);

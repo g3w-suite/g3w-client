@@ -195,7 +195,6 @@ function Form(options) {
   ///
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
-
   GUI.setModal(true);
 }
 inherit(Form, Panel);

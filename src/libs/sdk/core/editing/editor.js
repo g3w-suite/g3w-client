@@ -555,9 +555,13 @@ proto._setDirty = function(bool) {
 proto._askConfirmToDeleteEditingListener = function() {
   var self = this;
   this.onbeforeasync('deleteFeature', function(feature, isNew, next) {
-    GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result){
-      next(result);
-    })
+   self._deleteFeatureDialog(next);
+  });
+};
+
+proto._deleteFeatureDialog = function(next) {
+  GUI.dialog.confirm("Vuoi eliminare l'elemento selezionato?",function(result) {
+    next(result);
   });
 };
 
@@ -616,10 +620,10 @@ proto._openEditorForm = function(isNew, feature, next) {
             class: "btn-danger",
             cbk: function(fields, relations){
               self.setFieldsWithValues(feature, fields, relations);
-              GUI.setModal(false);
               if (next){
                 next(true);
               }
+              GUI.setModal(false);
             }
           },
           {
@@ -627,10 +631,10 @@ proto._openEditorForm = function(isNew, feature, next) {
             type: "cancel",
             class: "btn-primary",
             cbk: function() {
-              GUI.setModal(false);
               if (next) {
                 next(false);
               }
+              GUI.setModal(false);
             }
           }
         ]
@@ -641,10 +645,10 @@ proto._openEditorForm = function(isNew, feature, next) {
       });
     })
     .fail(function() {
-      GUI.setModal(false);
       if (next){
         next(false);
       }
+      GUI.setModal(false);
     })
 };
 

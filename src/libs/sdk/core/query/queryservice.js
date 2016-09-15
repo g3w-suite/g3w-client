@@ -3,7 +3,6 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 var QueryWFSProvider = require('./queryWFSProvider');
 var QueryQGISWMSProvider = require('./queryQGISWMSProvider');
-var ComponentsRegistry = require('gui/componentsregistry');
 
 var Provider = {
   'QGIS': QueryQGISWMSProvider,
@@ -140,23 +139,28 @@ function QueryService(){
   //// FINE PARSER ///
 
   //INIZO SEZIONE QUERIES ///
+
   // funzione per il recupero delle relazioni della features se ci sono
+  // nell'attributo g3w_relations
   this.handleResponseFeaturesAndRelations = function(layersResponse) {
     var relations = null;
     _.forEach(layersResponse, function(layer) {
       _.forEach(layer.features, function(feature) {
-        relations = feature.getProperties().g3w_relations;
-        _.forEach(relations, function(elements, relationName) {
+        g3w_relations = feature.getProperties().g3w_relations;
+        //console.log('G3WRelations: ',g3w_relations);
+        relations = [];
+        _.forEach(g3w_relations, function(elements, relationName) {
+          relation = {};
           if (elements.length) {
-            relations = {};
-            relations.name = relationName;
-            relations.elements = elements;
-            feature.set('relations', relations);
+            relation.name = relationName;
+            relation.elements = elements;
+            relations.push(relation);
           }
         });
+        feature.set('relations', relations);
       });
     });
-    //console.log(layersResponse);
+    // console.log(layersResponse);
     return layersResponse
   };
 
