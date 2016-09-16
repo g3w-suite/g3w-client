@@ -38,7 +38,7 @@ proto.toggle = function(toggle){
 };
 
 proto.setMap = function(map) {
-  if (!this._interaction) {
+  if (!this._interaction && this._interactionClass) {
     this._interaction = new this._interactionClass;
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);

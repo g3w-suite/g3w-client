@@ -18,6 +18,7 @@ var ControlsFactory = {
 ControlsFactory.CONTROLS = {
   'reset': ResetControl,
   'zoombox': ZoomBoxControl,
+  'zoomtoextent': OLControl,
   'query': QueryControl,
   'zoom': OLControl,
   'scaleline': OLControl,

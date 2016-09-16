@@ -7,6 +7,9 @@ var OLControl = function(options){
     case 'zoom':
       this._control = new ol.control.Zoom(options);
       break;
+    case 'zoomtoextent':
+      this._control = new ol.control.ZoomToExtent(options);
+      break;
     case 'scaleline':
       this._control = new ol.control.ScaleLine(options);
       break;

@@ -271,7 +271,7 @@ proto.setupControls = function(){
             control = ControlsFactory.create({
               type: controlType,
               label: "\ue98c",
-              extent: self.config.constraintextent
+              extent: self.project.state.initextent
             });
             self.addControl(control);
           }
