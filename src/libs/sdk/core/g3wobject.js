@@ -146,11 +146,9 @@ proto._setupListenersChain = function(setters){
           // e rigetto la promessa
           deferred.reject();
       }
-      
       var beforeListeners = self.settersListeners['before'][setter];
       // contatore dei listener che verrà decrementato ad ogni chiamata a next()
       counter = 0;
-      
       // funzione passata come ultimo parametro ai listeners, che ***SE SONO STATI AGGIUNTI COME ASINCRONI la DEVONO*** richiamare per poter proseguire la catena
       function next(bool){
         var cont = true;

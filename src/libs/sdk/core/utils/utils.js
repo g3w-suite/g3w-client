@@ -94,14 +94,12 @@ var utils = {
   },
   
   base: function(me, opt_methodName, var_args) {
-
     var caller = arguments.callee.caller;
     if (caller.superClass_) {
       // This is a constructor. Call the superclass constructor.
       return caller.superClass_.constructor.apply(
           me, Array.prototype.slice.call(arguments, 1));
     }
-
     var args = Array.prototype.slice.call(arguments, 2);
     var foundCaller = false;
     for (var ctor = me.constructor;

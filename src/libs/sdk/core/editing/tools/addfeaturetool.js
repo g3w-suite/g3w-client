@@ -125,6 +125,8 @@ proto._addFeature = function(feature) {
 proto._fallBack = function(feature) {
   this._busy = false;
   // rimuovo l'ultima feature inserita, ovvero quella disegnata ma che non si vuole salvare
-  this.source.getFeaturesCollection().pop();
-  this.pause(false);
+  if (this.source.getFeaturesCollection().getLength()){
+    this.source.getFeaturesCollection().pop();
+    this.pause(false);
+  }
 };

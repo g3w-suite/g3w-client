@@ -64,8 +64,21 @@ var FormPanel = Vue.extend({
     layerPickerPlaceHolder: function(field){
       return this.$options.form._getlayerPickerLayerName(field.input.options.layerid);
     },
-    pickLayer: function(field){
+    pickLayer: function(field) {
+      this.checkPickLayer();
       this.$options.form._pickLayer(field);
+    },
+    pickLayerToClipBoard: function() {
+      this.checkPickLayer();
+      this.$options.form._pickLayerToClipBoard();
+    },
+    pickLayerInputChange: function() {
+      this.$options.form._cleanUpPickLayer();
+    },
+    checkPickLayer: function() {
+      if (this.$options.form._pickInteraction) {
+        this.$options.form._cleanUpPickLayer();
+      }
     },
     isVisible: function(field){
       return this.$options.form._isVisible(field);
@@ -140,9 +153,6 @@ var FormPanel = Vue.extend({
     },
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
-    },
-    pickLayerToClipBoard: function() {
-      this.$options.form._pickLayerToClipBoard();
     }
   },
   computed: {
@@ -173,7 +183,8 @@ Inputs.LAYERPICKER = 'layerpicker';
 Inputs.specialInputs = [Inputs.TEXTAREA,Inputs.SELECT,Inputs.LAYERPICKER];
 
 function Form(options) {
-  // proprietà necessarie. In futuro le mettermo in una classe Panel da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
+  // proprietà necessarie. In futuro le mettermo in una classe Panel
+  // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   this.internalComponent = null;
   this.options =  options || {};
   this.provider = options.provider;
@@ -195,6 +206,7 @@ function Form(options) {
   ///
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
+  this._pickedPromise = null;
   GUI.setModal(true);
 }
 inherit(Form, Panel);
@@ -224,7 +236,6 @@ proto.unmount = function(){
 
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
-  console.log(formData);
   this._clipBoard.set(this.id, formData);
   this.state.canpaste = true;
   return true;
@@ -311,22 +322,29 @@ proto._isTextarea = function(field) {
   return (field.input.type == Inputs.TEXTAREA);
 };
 
-proto._isSelect = function(field){
+proto._isSelect = function(field) {
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.SELECT);
 };
 
 proto._isLayerPicker = function(field){
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.LAYERPICKER);
 };
+proto._cleanUpPickLayer = function() {
+  var mapService = GUI.getComponent('map').getService();
+  mapService.removeInteraction(this._pickInteraction);
+  this._pickInteraction = null;
+  GUI.setModal(true);
+};
 
-proto._pickLayer = function(field){
-  GUI.notify.info("Seleziona un'elemento dalla mappa per ottenere il valore di "+ field.label);
-  var self = this;
-  // ritorno una promessa, se qualcun altro volesse usare il risultato (es. per settare altri campi in base alla feature selezionata)
+proto._pickLayer = function(field) {
+  // ritorno una promessa, se qualcun altro volesse usare
+  // il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
+  GUI.notify.info("Seleziona un'elemento dalla mappa per ottenere il valore di "+ field.label + " o scrivilo direttamentene");
+  var self = this;
   // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
   GUI.setModal(false);
-  mapService = GUI.getComponent('map').getService();
+  var mapService = GUI.getComponent('map').getService();
   var layer = mapService.getProject().getLayerById(field.input.options.layerid);
   var relFieldName = field.input.options.field;
   var relFieldLabel = layer.getAttributeLabel(field.input.options.field);
@@ -349,10 +367,8 @@ proto._pickLayer = function(field){
     .fail(function(){
       d.reject();
     })
-    .always(function(){
-      mapService.removeInteraction(self._pickInteraction);
-      self._pickInteraction = null;
-      GUI.setModal(true);
+    .always(function() {
+      self._cleanUpPickLayer();
     })
   });
   return d.promise();
@@ -365,10 +381,11 @@ proto._pickLayerToClipBoard = function() {
   // ritorno una promessa, se qualcun altro volesse
   // usare il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
+  if (this._pickedPromise) {return this._pickedPromise};
   // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
   GUI.setModal(false);
   // recupero mapservice perchè mi permette di ineteragire con la mappa
-  mapService = GUI.getComponent('map').getService();
+  var mapService = GUI.getComponent('map').getService();
   var vectorLayer = this.editor.getVectorLayer();
   var layer = mapService.getProject().getLayerById(vectorLayer.id);
   // creo il pickCoordinate interaction da permettermi così di interagire con la mappa
@@ -379,40 +396,37 @@ proto._pickLayerToClipBoard = function() {
   this._pickInteraction.on('picked', function(e) {
     // qui passo lo stessso layer su cui sto agendo
     QueryService.queryByLocation(e.coordinate, [layer])
-        .then(function(response) {
-          var featuresForLayers = response.data;
-          // verifico se ci sono features selezionate
-          if (featuresForLayers.length && featuresForLayers[0].features.length) {
-            // rpendo la prima feature
-            var feature = featuresForLayers[0].features[0];
-            // prendo dal vectorLayer la feature basato sull'id della richiesta
-            feature = vectorLayer.getFeatureById(feature.getId());
-            var fields = vectorLayer.getFieldsWithValues(feature);
-            var relationsPromise = self.editor.getRelationsWithValues(feature);
-            relationsPromise
-            .then(function(relations) {
-              self._pasteStateWithoutPk(fields, relations);
-            });
-          }
-        })
-        .fail(function(){
-          d.reject();
-        })
-        .always(function(){
-          mapService.removeInteraction(self._pickInteraction);
-          self._pickInteraction = null;
-          // riattivo lo strato modale per permettere l'interazione con la mappa
-          GUI.setModal(true);
-        })
+    .then(function(response) {
+      var featuresForLayers = response.data;
+      // verifico se ci sono features selezionate
+      if (featuresForLayers.length && featuresForLayers[0].features.length) {
+        // rpendo la prima feature
+        var feature = featuresForLayers[0].features[0];
+        // prendo dal vectorLayer la feature basato sull'id della richiesta
+        feature = vectorLayer.getFeatureById(feature.getId());
+        var fields = vectorLayer.getFieldsWithValues(feature);
+        var relationsPromise = self.editor.getRelationsWithValues(feature);
+        relationsPromise
+        .then(function(relations) {
+          self._pasteStateWithoutPk(fields, relations);
+        });
+      }
+    })
+    .fail(function() {
+      d.reject();
+    })
+    .always(function() {
+      self._cleanUpPickLayer();
+    })
   });
+  return d.promise();
 };
 
-proto._getDefaultValue = function(field){
-  var defaultValue = null;
-  if (field.input && field.input.options && field.input.options.default){
+proto._getDefaultValue = function(field) {
+  if (field.input && field.input.options && field.input.options.default) {
     return field.input.options.default;
   }
-  else if (this._isSelect(field)){
+  else if (this._isSelect(field)) {
     return field.input.options.values[0].key;
   }
 

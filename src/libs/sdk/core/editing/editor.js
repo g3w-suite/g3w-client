@@ -184,7 +184,6 @@ proto.stop = function() {
   if (this.isStarted()) {
     if (this.stopTool()) {
       if (form) {
-        console.log('chido il form 1');
         GUI.closeForm(form);
         this.form = null;
       }
@@ -502,6 +501,7 @@ proto._setToolSettersListeners = function(tool) {
 };
 // metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {
+  console.log('editor addFeature');
   this._editBuffer.addFeature(feature);
 };
 // non fa aalctro che aggiornare la feature del buffer
@@ -552,6 +552,7 @@ proto._setStarted = function(bool) {
 // l'evento dirty in questo modo psso fare qualcosa quando è stata fatta una modifica
 // nei layers dell'editor
 proto._setDirty = function(bool) {
+  console.log('et Dirty');
   // se non specificato lo setto a vero
   if (_.isNil(bool)) {
     this._dirty = true;
@@ -577,11 +578,12 @@ proto._deleteFeatureDialog = function(next) {
 };
 
 // apre form attributi per i  nserimento
-proto._setupAddFeatureAttributesEditingListeners = function(){
+proto._setupAddFeatureAttributesEditingListeners = function() {
   var self = this;
   this.onbeforeasync('addFeature', function(feature, next) {
+    console.log('listener addFaeture');
     self._openEditorForm('new', feature, next);
-  },100);
+  }, 100);
 };
 
 // apre form attributi per editazione
