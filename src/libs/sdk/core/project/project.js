@@ -51,8 +51,8 @@ function Project(projectConfig) {
       })
     },
     setBaseLayer: function(id){
-      _.forEach(self.state.baseLayers,function(baseLayer){
-        baseLayer.visible = (baseLayer.id == id);
+      _.forEach(self.state.baselayers,function(baseLayer){
+        baseLayer.visible = (baseLayer.id == id || (baseLayer.fixed === true));
       })
     },
     setLayerSelected: function(layerId,selected){

@@ -5,6 +5,7 @@ var GUI = require('gui/gui');
 var ApplicationService = require('core/applicationservice');
 var ProjectsRegistry = require('core/project/projectsregistry');
 var ProjectTypes = require('core/project/projecttypes');
+var ProjectLayer = require('core/project/projectlayer');
 var GeometryTypes = require('core/geometry/geometry').GeometryTypes;
 var ol3helpers = require('g3w-ol3/src/g3w.ol3').helpers;
 var WMSLayer = require('core/map/layer/wmslayer');
@@ -361,41 +362,33 @@ proto.setupBaseLayers = function(){
   if (!this.project.state.baselayers){
     return;
   }
-  var self = this;
+
   this.mapBaseLayers = {};
-  
+
   var initBaseLayer = ProjectsRegistry.config.initbaselayer;
   var baseLayersArray = this.project.state.baselayers;
-  
-  _.forEach(baseLayersArray,function(baseLayer){
-    var visible = true;
-    if (self.project.state.initbaselayer) {
-      visible = baseLayer.id == (self.project.state.initbaselayer);
-    }
-    if (baseLayer.fixed) {
-      visible = baseLayer.fixed;
-    }
-    baseLayer.visible = visible;
-  });
-  
-  baseLayersArray.forEach(function(layer){     
+
+  var baseLayers = this.project.state.baselayers;
+  _.forEach(baseLayers,function(layerConfig){
+    var layer = new ProjectLayer(layerConfig);
+    layer.setProject(this);
+
     var config = {
       url: self.project.getWmsUrl(),
-      id: layer.id,
-      tiled: true
+      id: layer.state.id,
+      tiled: layer.state.tiled
     };
-    
     var mapLayer = new WMSLayer(config);
+    self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
-    
     mapLayer.addLayer(layer);
-    self.mapBaseLayers[layer.id] = mapLayer;
+    self.mapBaseLayers[layer.state.id] = mapLayer;
   });
-  
+
   _.forEach(_.values(this.mapBaseLayers).reverse(),function(mapLayer){
     self.viewer.map.addLayer(mapLayer.getOLLayer());
     mapLayer.update(self.state);
-  })
+  });
 };
 
 proto.setupLayers = function(){

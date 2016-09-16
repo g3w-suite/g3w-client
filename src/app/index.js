@@ -135,7 +135,10 @@ function obtainInitConfig(initConfigUrl) {
       }
     });
     if (projectPath){
-      var initUrl = initConfigUrl+'/'+projectPath;
+      var initUrl = initConfigUrl;
+      if (projectPath) {
+        initUrl = initUrl + '/' + projectPath;
+      }
       //recupro dal server la configurazione di quel progetto
       $.get(initUrl, function(initConfig) {
         //initConfig è l'oggetto contenete:

@@ -176,6 +176,18 @@ proto._buildProjectTree = function(project){
   }
   traverse(layersTree);
   project.layerstree = layersTree;
+
+
+  _.forEach(project.baselayers,function(layerConfig){
+    var visible = false;
+    if (project.initbaselayer) {
+      visible = (layerConfig.id == (project.initbaselayer));
+    }
+    if (layerConfig.fixed) {
+      visible = layerConfig.fixed;
+    }
+    layerConfig.visible = visible;
+  });
 };
 
 module.exports = new ProjectsRegistry();
