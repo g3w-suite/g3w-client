@@ -41,6 +41,13 @@ function ProjectLayer(state) {
   
   // lo stato è sincronizzato con quello del layerstree
   this.state = state;
+
+  /*if (!this.state.selected) {
+    this.state.selected = false;
+  }
+  if (!this.state.disabled) {
+    this.state.disabled = false;
+  }*/
   
   this._project = null;
 };

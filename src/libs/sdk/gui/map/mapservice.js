@@ -82,6 +82,9 @@ function MapService(project){
         self.viewer = null;
       }
       self._setupViewer(width,height);
+      self.state.bbox = this.viewer.getBBOX();
+      self.state.resolution = this.viewer.getResolution();
+      self.state.center = this.viewer.getCenter()
       self.setupControls();
       self.setupLayers();
       self.emit('viewerset');

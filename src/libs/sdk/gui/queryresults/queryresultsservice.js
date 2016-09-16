@@ -78,7 +78,7 @@ function QueryResultsService(){
   
   this._parseAttributes = function(layerAttributes, featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
-    if (layerAttributes.length) {
+    if (layerAttributes && layerAttributes.length) {
       var featureAttributesNames = _.keys(featureAttributes);
       return _.filter(layerAttributes,function(attribute){
         return featureAttributesNames.indexOf(attribute.name) > -1;

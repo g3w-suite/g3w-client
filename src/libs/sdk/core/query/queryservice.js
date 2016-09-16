@@ -123,7 +123,7 @@ function QueryService(){
   // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
   this._parseLayermsGMLOutput = function(queryLayer, data){
     var parser = new ol.format.WMSGetFeatureInfo({
-      layers: [queryLayer.queryLayerName]
+      layers: [queryLayer.getQueryLayerName()]
     });
     return parser.readFeatures(data);
   };
@@ -147,17 +147,21 @@ function QueryService(){
     _.forEach(layersResponse, function(layer) {
       _.forEach(layer.features, function(feature) {
         g3w_relations = feature.getProperties().g3w_relations;
-        //console.log('G3WRelations: ',g3w_relations);
-        relations = [];
-        _.forEach(g3w_relations, function(elements, relationName) {
-          relation = {};
-          if (elements.length) {
-            relation.name = relationName;
-            relation.elements = elements;
-            relations.push(relation);
+        if (g3w_relations) {
+          relations = [];
+          _.forEach(g3w_relations, function(elements, relationName) {
+            relation = {};
+            if (elements.length) {
+              relation.name = relationName;
+              relation.elements = elements;
+              relations.push(relation);
+            }
+          });
+          if(relations.length) {
+            feature.set('relations', relations);
           }
-        });
-        feature.set('relations', relations);
+        }
+        //console.log('G3WRelations: ',g3w_relations);
       });
     });
     // console.log(layersResponse);
