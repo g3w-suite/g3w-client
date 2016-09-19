@@ -20,6 +20,7 @@ PickToleranceValues[GeometryTypes.POINT] = 5;
 PickToleranceValues[GeometryTypes.LINESTRING] = 5;
 PickToleranceValues[GeometryTypes.POLYGON] = 5;*/
 
+var PIXEL_TOLERANCE = 10;
 
 //oggetto query service
 function QueryService(){
@@ -270,9 +271,10 @@ function QueryService(){
         QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         INFO_FORMAT: infoFormat,
         // PARAMETRI DI TOLLERANZA PER QGIS SERVER
-        FI_POINT_TOLERANCE: 10,
-        FI_LINE_TOLERANCE: 10,
-        FI_POLYGON_TOLERANCE: 10
+        FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
+        FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
+        FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
+        G3W_TOLERANCE: PIXEL_TOLERANCE * self._mapService.getResolution()
       };
       
       var resolution = self._mapService.getResolution();
