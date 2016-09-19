@@ -31,20 +31,10 @@ function FloatbarService(){
     var options = options || {};
     var append = options.append || false;
     var modal = options.modal || false;
-    //this.closable = options.closable || true;
     this.stack.push(panel,"#g3w-floatbarpanel-placeholder", options);
     if (!this._isopen) {
       this.open();
     };
-    // TODO: per adesso diabilito il modale
-    /*if (modal){
-      this._modal = true;
-      GUI.setModal();
-      this.sidebarEl.css("z-index",5000);
-      this.sidebarEl.css("padding-top","0px");
-      $('.control-sidebar-bg').css("z-index",4999);
-      $('.control-sidebar-bg').toggleClass('control-sidebar-bg-shadow');
-    }*/
   };
   
   this.closePanel = function(panel){
