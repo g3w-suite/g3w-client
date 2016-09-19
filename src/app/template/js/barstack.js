@@ -3,6 +3,7 @@ var G3WObject = require('sdk/core/g3wobject');
 
 function BarStack(){
   this.state = {
+    closable: true,
     panels: []
   }
   /*this.state = {
@@ -14,9 +15,11 @@ inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 
-proto.push = function(panel, parent, append){
+proto.push = function(panel, parent, options){
   var self = this;
-  var append = append || false;
+  options = options || {};
+  var append = !_.isNil(options.append) ? options.append : false;
+  this.state.closable = !_.isNil(options.closable) ? options.closable : true;
   this.remove(panel); // nel caso esista già prima lo rimuovo
   panel.mount(parent, append)
   .then(function(){

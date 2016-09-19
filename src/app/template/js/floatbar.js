@@ -6,7 +6,6 @@ function FloatbarService(){
   this.stack = new Stack();
   this.init = function(layout){
     this.layout = layout;
-    this.closable = true;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);
     this._zindex = this.sidebarEl.css("z-index");
     this._modalOverlay = null;
@@ -32,8 +31,8 @@ function FloatbarService(){
     var options = options || {};
     var append = options.append || false;
     var modal = options.modal || false;
-    this.closable = options.closable || true;
-    this.stack.push(panel,"#g3w-floatbarpanel-placeholder", append);
+    //this.closable = options.closable || true;
+    this.stack.push(panel,"#g3w-floatbarpanel-placeholder", options);
     if (!this._isopen) {
       this.open();
     };
