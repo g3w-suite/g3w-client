@@ -103,7 +103,6 @@ Vue.component('tristate-tree', {
     },
     selected: function() {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
-      console.log(isSelected);
       return isSelected;
     }
   },

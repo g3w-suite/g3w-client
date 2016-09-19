@@ -364,7 +364,7 @@ proto.getRelationsFksWithValuesForFeature = function(feature){
   return fks;
 };
 
-proto.setRelationsData = function (fid,relationsData) {
+proto.setRelationsData = function (fid, relationsData) {
   this._relationsDataLoaded[fid] = relationsData;
 };
 

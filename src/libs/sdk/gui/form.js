@@ -207,6 +207,8 @@ function Form(options) {
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
   this._pickedPromise = null;
+  // lasncio subito funzione per veitare di copiare campi  che devono essere unici (ad esempio nel cutline)
+  this._pasteStateWithoutPk(this.state.fields, this.state.relations);
   GUI.setModal(true);
 }
 inherit(Form, Panel);
@@ -217,7 +219,7 @@ var proto = Form.prototype;
 // il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
 proto.mount = function(container){
   this._setupFields();
-  this._setupRelationsFields()
+  this._setupRelationsFields();
   var panel = this._setupPanel();
   this._mountPanel(panel, container);
   return resolve(true);
@@ -258,7 +260,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   // verifico i filed da non modificare sul layer
   _.forEach(fields, function(field, index) {
     if (self.pk == field.name || (layerFields.indexOf(field.name) != -1)) {
-      fields[index].value = self.state.fields[index].value;
+      fields[index].value = undefined;
     }
   });
   // verifico i fileds delle relazioni da non sovrascrivere
@@ -276,7 +278,6 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   // setto i nuovi fields e relations lasciando quelli vecchi
   this.state.fields = fields;
   this.state.relations = relations;
-
   var elementsBoxes = this.getUniqueRelationsElementId();
   this.state.elementsBoxes = elementsBoxes;
   return true;
