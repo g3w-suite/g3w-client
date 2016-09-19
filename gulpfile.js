@@ -185,52 +185,54 @@ gulp.task('browser-sync', function() {
     });
 });
 
+gulp.task('browser:reload',function(){
+  if (browserSync) {
+    browserSync.reload()
+  }
+});
+
+function prepareRunSequence() {
+  var _arguments = arguments;
+  return function() {
+    runSequence.apply(null,_arguments);
+  }
+}
+
 gulp.task('watch',function() {
-    watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],function(){
-      gulp.start('less');
-    });
-    watch(['./src/app/style/skins/*.less'],function(){
-      gulp.start('less-skins');
-    });
-    watch('./src/app/configs/*.js',function(){
-      gulp.start('preprocess');
-    });
-    watch('./src/**/*.{png,jpg}',function(){
-      gulp.start('images');
-    });
-    watch('./src/libs/plugins/**/plugin.js',function(){
-      gulp.start('plugins');
+    watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],
+      prepareRunSequence('less','browser:reload')
+    );
+    watch(['./src/app/style/skins/*.less'],
+      prepareRunSequence('less:skins','browser:reload')
+    );
+    watch('./src/**/*.{png,jpg}',
+      prepareRunSequence('images','browser:reload')
+    );
+    watch('./src/libs/plugins/**/plugin.js',
+      prepareRunSequence('plugins','browser:reload')
+    );
+    gulp.watch(['./src/index.html','./src/**/*.html'], function(){
       browserSync.reload();
     });
-    watch('./src/libs/modules/**/module.js',function(){
-      gulp.start('modules');
-    });
-    gulp.watch(['./dist/**/*.css','./src/index.html','./src/**/*.html'], function(){
-        browserSync.reload();
-    });
-    // uso gulp-watch così jshint viene eseguito anche su file nuovi (che gulp.watch non traccia)
-    //watch(['./src/app/**/*.js','./src/libs/g3w/**/*.js','./src/libs/g3w-ol3/src/**/*.js'] ,function(){
-    //  gulp.start('jshint');
-    //});
 });
 
 gulp.task('production', function(){
     production = true;
 });
 
-gulp.task('production-bundle',['production','browserify'])
+gulp.task('production-bundle',['production','browserify']);
 
 gulp.task('clean', function(){
-  return del(['dist/**/*', 'build/**/*'],{force:true});
+  return del(['dist/**/*'],{force:true});
 });
 
 gulp.task('serve', function(done){
-  runSequence('clean','browserify',['assets','watch','plugins','modules'],'browser-sync',
+  runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync',
     done);
 });
 
 gulp.task('dist', function(done){
-    runSequence('clean','production','browserify',['html','plugins','modules'],
+    runSequence('clean','production','browserify',['html','plugins'],
     done);
 });
 
