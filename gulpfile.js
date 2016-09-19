@@ -200,6 +200,7 @@ gulp.task('watch',function() {
     });
     watch('./src/libs/plugins/**/plugin.js',function(){
       gulp.start('plugins');
+      browserSync.reload();
     });
     watch('./src/libs/modules/**/module.js',function(){
       gulp.start('modules');

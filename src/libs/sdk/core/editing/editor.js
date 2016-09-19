@@ -361,7 +361,7 @@ proto.getRelationsWithValues = function(feature) {
       // se questa feature, ancora non presente nel vectorLayer, ha comunque i valori delle FKs popolate, allora le estraggo
       if (this._vectorLayer.featureHasRelationsFksWithValues(feature)){
         var fks = this._vectorLayer.getRelationsFksWithValuesForFeature(feature);
-        fieldsPromise = this._vectorLayer.getRelationsWithValuesFromFks(fks);
+        fieldsPromise = this._vectorLayer.getNewRelationsWithValuesFromFks(fks);
       }
       // altrimenti prendo i fields vuoti
       else {

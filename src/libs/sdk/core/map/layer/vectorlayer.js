@@ -301,7 +301,7 @@ proto.getRelationsWithValues = function(fid) {
 };
 
 // ottengo le relazioni valorizzate a partire da un oggetto con le chiavi FK come keys e i loro valori come values
-proto.getRelationsWithValuesFromFks = function(fks){
+proto.getRelationsWithValuesFromFks = function(fks, newRelation){
   var self = this;
   var relations = _.cloneDeep(this._relations);
   var relationsRequests = [];
@@ -327,7 +327,8 @@ proto.getRelationsWithValuesFromFks = function(fks){
               field.value = relationElement[field.name];
               if (field.name == relation.pk) {
                 element.id = field.value // aggiungo element.id dandogli il valore della chiave primaria della relazione
-                element.state = 'OLD'; // flag usato per identificare elemento: 'NEW', 'OLD', 'DELETED'
+                var state = newRelation ? 'NEW' : 'OLD';
+                element.state = state; // flag usato per identificare elemento: 'NEW', 'OLD', 'DELETED'
               }
             });
             relation.elements.push(element);
@@ -341,6 +342,10 @@ proto.getRelationsWithValuesFromFks = function(fks){
   .then(function(){
     return relations; // le relazioni e i loro elementi sono immutabili; le modifiche vanno nei RelationEditBuffer
   });
+};
+
+proto.getNewRelationsWithValuesFromFks = function(fks){
+  return this.getRelationsWithValuesFromFks(fks, true)
 }
 
 // data una feature verifico se ha tra gli attributi i valori delle FK delle (eventuali) relazioni

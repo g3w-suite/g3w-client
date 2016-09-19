@@ -260,7 +260,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   // verifico i filed da non modificare sul layer
   _.forEach(fields, function(field, index) {
     if (self.pk == field.name || (layerFields.indexOf(field.name) != -1)) {
-      fields[index].value = undefined;
+      fields[index].value = null;
     }
   });
   // verifico i fileds delle relazioni da non sovrascrivere
