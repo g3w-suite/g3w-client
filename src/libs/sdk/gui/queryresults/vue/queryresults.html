@@ -47,7 +47,7 @@
               <ul v-if="feature.attributes.relations" class="queryresults" id="relations">
                 <template v-for="relation in feature.attributes.relations">
                   <li>
-                    <div class="box box-solid box-default">
+                    <div class="box box-solid box-default relationsbox">
                       <div class="box-header with-border">
                         <h3 class="box-title">{{ relation.name }} ({{ relation.elements.length }})</h3>
                         <div class="box-tools pull-right">
