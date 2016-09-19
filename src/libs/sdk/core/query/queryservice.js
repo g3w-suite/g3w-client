@@ -266,6 +266,10 @@ function QueryService(){
     _.forEach(urlsForLayers,function(urlForLayers){
       var queryLayers = urlForLayers.layers;
       var infoFormat = queryLayers[0].getInfoFormat();
+
+      var resolution = self._mapService.getResolution();
+      var epsg = self._mapService.getEpsg();
+
       var params = {
         LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
@@ -274,11 +278,9 @@ function QueryService(){
         FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
         FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
         FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
-        G3W_TOLERANCE: PIXEL_TOLERANCE * self._mapService.getResolution()
+        G3W_TOLERANCE: PIXEL_TOLERANCE * resolution
       };
-      
-      var resolution = self._mapService.getResolution();
-      var epsg = self._mapService.getEpsg();
+
       var getFeatureInfoUrl = self._mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
       var url = urlForLayers.url+'?'+queryString;
