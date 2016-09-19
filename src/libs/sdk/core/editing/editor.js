@@ -317,7 +317,7 @@ proto.getEditedFeatures = function(){
   var modifiedFids = this._editBuffer.collectFeatureIds();
   var lockIds = this.getFeatureLockIdsForFeatureIds(modifiedFids);
   return {
-    add: this._editBuffer.collectFeatures('new',true),
+    add: this._editBuffer.collectFeatures('new', true),
     update: this._editBuffer.collectFeatures('updated',true),
     delete: this._editBuffer.collectFeatures('deleted',true),
     //relations: this._editBuffer.collectRelationsAttributes(),
@@ -334,16 +334,15 @@ proto.collectRelations = function() {
 };
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una
-proto.setFieldsWithValues = function(feature,fields,relations){
+proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
-  _.forEach(fields,function(field){
+  _.forEach(fields, function(field) {
     attributes[field.name] = field.value;
   });
-
   feature.setProperties(attributes);
-  this._editBuffer.updateFields(feature,relations);
+  this._editBuffer.updateFields(feature, relations);
   if (relations) {
-    this._vectorLayer.setRelationsData(feature.getId(),relations);
+    this._vectorLayer.setRelationsData(feature.getId(), relations);
   }
 };
 //funzione che in base alla feature passata recupera le relazioni associata ad essa
@@ -501,7 +500,7 @@ proto._setToolSettersListeners = function(tool) {
 };
 // metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {
-  console.log('editor addFeature');
+
   this._editBuffer.addFeature(feature);
 };
 // non fa aalctro che aggiornare la feature del buffer
@@ -552,7 +551,6 @@ proto._setStarted = function(bool) {
 // l'evento dirty in questo modo psso fare qualcosa quando è stata fatta una modifica
 // nei layers dell'editor
 proto._setDirty = function(bool) {
-  console.log('et Dirty');
   // se non specificato lo setto a vero
   if (_.isNil(bool)) {
     this._dirty = true;
@@ -581,7 +579,6 @@ proto._deleteFeatureDialog = function(next) {
 proto._setupAddFeatureAttributesEditingListeners = function() {
   var self = this;
   this.onbeforeasync('addFeature', function(feature, next) {
-    console.log('listener addFaeture');
     self._openEditorForm('new', feature, next);
   }, 100);
 };
@@ -613,7 +610,7 @@ proto._openEditorForm = function(isNew, feature, next) {
   }
   var relationsPromise = this.getRelationsWithValues(feature);
   relationsPromise
-    .then(function(relations){
+    .then(function(relations) {
       form = new self._formClass({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,

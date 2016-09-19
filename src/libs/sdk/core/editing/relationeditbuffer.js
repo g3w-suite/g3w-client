@@ -57,7 +57,6 @@ proto.updateRelation = function(relation) {
   _.forEach(relation.elements, function(element) {
     //chiama l'aggiornamento dell'elemento nel buffer
     self._editBuffer(element);
-    console.log("Modificata elemento relazione  "+self._relationName +" (ID: "+element.id+" nel buffer");
   })
 };
 // Modifica elemento nel buffer

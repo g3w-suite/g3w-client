@@ -110,7 +110,7 @@ proto.hasRelationsEdits = function(fid){
   var hasEdits = false;
   _.forEach(this._relationsBuffers[fid], function(relationBuffer) {
     hasEdits = hasEdits || relationBuffer.hasRelationElements();
-  })
+  });
   return hasEdits;
 };
 
@@ -132,10 +132,11 @@ proto.collectFeatureIds = function() {
   return _.uniq(modifiedFids);
 };
 // che colleziona tutte le modifche fatte quando viene premuto o fatto salva
-// dall'editor o passaggio da un editing di un layer all'altro
+// dall'editor o passaggio da un editing isNewdi un layer all'altro
 proto.collectFeatures = function(state, asGeoJSON){
   var self = this;
   var geometriesBuffers = this._geometriesBuffer;
+
   var attributesBuffers = this._attributesBuffer;
   var asGeoJSON = asGeoJSON || false;
   // prendo il jsono format per poter poi fare il posto verso il server
@@ -148,17 +149,14 @@ proto.collectFeatures = function(state, asGeoJSON){
   else {
     layer = self._editor.getVectorLayer();
   }
-
   var features = [];
-  _.forEach(modifiedFids,function(fid){
-
+  _.forEach(modifiedFids, function(fid) {
     var feature = layer.getFeatureById(fid);
     var isNew = self._isNewFeature(fid);
     var addedFeature = (state == 'new' && isNew && feature);
     var updatedFeature = (state == 'updated' && !isNew && feature);
     var deletedFeature = (state == 'deleted' && !isNew && !feature);
-
-    if (addedFeature || updatedFeature){
+    if (addedFeature || updatedFeature) {
       if (asGeoJSON){
         feature = GeoJSONFormat.writeFeatureObject(feature);
       }
@@ -203,14 +201,12 @@ proto.collectRelations = function() {
       fid: fid,
       relations: {}
     };
-
     _.forEach(relationsBuffers, function (relationBuffer) {
-      var relationName = relationBuffer.getRelationName();
 
+      var relationName = relationBuffer.getRelationName();
       var newElements = relationBuffer.getRelationElementsOnlyFieldsValues('NEW');
       var updatedElements = relationBuffer.getRelationElementsOnlyFieldsValues('OLD'); // nel buffer vengono inseriti sempre tutti gli elementi preesistenti (che siano effettivamente affiornati o meno)
       var deletedElements = relationBuffer.getRelationElementsOnlyFieldsValues('DELETED');
-
 
       var newElementsEdits = [];
       var updatedElementsEdits = [];
@@ -303,7 +299,7 @@ proto._addDeleteRelationsBuffers = function(relations) {
   }
 };
 // funzione che mette in relazione feature e relazioni
-proto._addEditToValuesBuffers = function(feature, relations){
+proto._addEditToValuesBuffers = function(feature, relations) {
   var self = this;
   // prende id della feature
   var fid = feature.getId();

@@ -6,27 +6,22 @@ var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinat
 
 var EditingTool = require('./editingtool');
 
-function CutLineTool(editor,options){
+function CutLineTool(editor, options){
   this.setters = {
     cutLine: CutLineTool.prototype._cutLine
   };
-  
+
   base(this,editor,options);
-  
-  var self = this;
-  this.isPausable = true;
   this.steps = new EditingTool.Steps(CutLineTool.steps);
-  
   this._origFeature = null;
   this._origGeometry = null;
   this._newFeatures = [];
   this._linePickInteraction = null;
   this._pointPickInteraction = null;
-  this._selectLineToKeepInteraction = null;
   this._pointLayer = options.pointLayer || null;
   this._minCutPointDistance = options.minCutPointDistance || Infinity;
   this._modType = options.modType || 'MODONCUT'; // 'NEWONCUT' | 'MODONCUT'
-  
+  //selected line vecor di overlay
   this._selectedLineOverlay = new ol.layer.Vector({
     source: new ol.source.Vector(),
     style: new ol.style.Style({
@@ -36,60 +31,55 @@ function CutLineTool(editor,options){
       })
     })
   });
-  
-  //var cutLineIdx = 0;
-  //var cutLineColors = ['rgb(255,0,0)','rgb(0,0,255)']
+  // vetoore della line di overlay che è matentuta
+  // ha lo stile di quella originale
   this._lineToKeepOverlay = new ol.layer.Vector({
-    source: new ol.source.Vector(),
-    /*style: function(feature){ 
-      cutLineIdx += 1;
-      return [new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: cutLineColors[cutLineIdx%2],
-          width: 4
-        })
-      })]
-    }*/
+    source: new ol.source.Vector()
   });
-
-  
 }
-inherit(CutLineTool,EditingTool);
+
+inherit(CutLineTool, EditingTool);
+
 module.exports = CutLineTool;
 
 var proto = CutLineTool.prototype;
-
-proto.run = function(){
+// funzione che viene chiamata quando viene eseguita il setTool dell'editor
+proto.run = function() {
   var self = this;
-  
   this._linePickInteraction = new PickFeatureInteraction({
-    layers: [this.layer,this.editingLayer]
+    layers: [this.layer, this.editingLayer]
   });
-  
+  // aggiungo il pick feature interaction
   this.addInteraction(this._linePickInteraction);
-  
-  // seleziono la linea da tagliare
+  // vado al primo step:
+  // In questo caso selzionare la linea da tagliare
   self.steps.next();
-  this._linePickInteraction.on('picked',function(e){
+  // i metto in ascolto dell'evento picked sulla feature
+  this._linePickInteraction.on('picked', function(e) {
     var cutFeature;
+    // prendo la feature selzionata
     var feature = self._origFeature = e.feature;
+    // clono la geometria della feature selezionata
     self._origGeometry = feature.getGeometry().clone();
-    self._showSelection(self._origGeometry,300);
+    // visualizzo lo show selection
+    self._showSelection(self._origGeometry, 300);
+    // viene rimossa l'interazione
     self.removeInteraction(this);
-
-    
-    if (self._pointLayer){
+    if (self._pointLayer) {
+      // se è stato definto il pointLayer (il layer puntuale da utilizzare)
       self._pointPickInteraction = new PickFeatureInteraction({
         layers: [self._pointLayer]
       });
     }
     else {
+      // altrimenti uso il pick layer interaction su se stesso
       self._pointPickInteraction = new PickCoordinatesInteraction();
     }
-    
     // pesco coordinata o feature di taglio selezionata
     self.steps.next();
-    self._pointPickInteraction.on('picked',function(e){
+    // ascolto l'emssione dell'evento picked sul layer puntuale o su se stesso
+    self._pointPickInteraction.on('picked',function(e) {
+      // rimovo l'interazione
       self.removeInteraction(this);
       var coordinate;
       if (e.feature){
@@ -99,6 +89,7 @@ proto.run = function(){
       else {
         coordinate = e.coordinate;
       }
+      // se ci sono le coordinate del punto
       if (coordinate){
         // snappo sulla linea
         var closestCoordinate = feature.getGeometry().getClosestPoint(coordinate);
@@ -122,19 +113,18 @@ proto.run = function(){
             self._showSelection(prevLineFeature.getGeometry(),300);
             setTimeout(function(){
               self._showSelection(nextLineFeature.getGeometry(),300);
-            },300)
+            }, 300);
             
             // nel caso di modifica su taglio
-            if (self._modType == 'MODONCUT'){
+            if (self._modType == 'MODONCUT') {
               // seleziono la porzione da mantenere/modificare
+              // andando al prossimo next
               self.steps.next();
-              self._selectLineToKeep(prevLineFeature,nextLineFeature)
-              .then(function(featureToKeep){
+              self._selectLineToKeep(prevLineFeature, nextLineFeature)
+              .then(function(featureToKeep) {
                 // aggiorno la feature originale con la geometria della feature che si è selezionato da mantenere
                 feature.setGeometry(featureToKeep.getGeometry().clone());
-                
                 var featureToAdd;
-                
                 // rimuovo una delle due nuove feature e mi tengo l'unica feature da aggiungere come nuova
                 if (prevLineFeature.getId() == featureToKeep.getId()){
                   delete prevLineFeature;
@@ -144,26 +134,23 @@ proto.run = function(){
                   delete nextLineFeature;
                   featureToAdd = prevLineFeature;
                 }
-                
                 self._newFeatures.push(featureToAdd);
-                
                 // tramite l'editor assegno alla nuova feature gli stessi attributi dell'altra, originale, modificata
                 featureToAdd.setProperties(origProperties);
                 // e la aggiungo al layer di editing, così mi viene mostrata come nuova feature sulla mappa
+                //self.editor._editVectorLayer.getSource().addFeatures([featureToAdd]);
                 self.editingLayer.getSource().addFeatures([featureToAdd]);
-                
                 var data = {
                   added: [featureToAdd],
                   updated: feature,
                   cutfeature:cutFeature
-                }
-                
+                };
                 // a questo punto avvio il setter, che si occuperò di aggiornare l'editbuffer a seconda del tipo di modifica
-                self.cutLine(data,self._modType)
+                self.cutLine(data, self._modType)
                 .fail(function(){
                   self._rollBack();
                   self.rerun();
-                })
+                });
               })
             }
             else {
@@ -178,9 +165,8 @@ proto.run = function(){
               var data = {
                 added: [prevLineFeature,nextLineFeature],
                 removed: feature
-              }
-              
-              self.cutLine(data,self._modType)
+              };
+              self.cutLine(data, self._modType)
               .fail(function(){
                 self._rollBack();
                 self.rerun();
@@ -192,7 +178,7 @@ proto.run = function(){
           }
         }
       }
-    })
+    });
     self.addInteraction(self._pointPickInteraction);
   });
 };
@@ -215,9 +201,7 @@ proto.rerun = function(){
 
 proto.stop = function(){
   this._cleanUp();
-  
-  var stop = EditingTool.prototype.stop.call(this);
-  
+  var stop = base(this, 'stop');
   if (stop) {
     this.removeInteraction(this._linePickInteraction);
     this.removeInteraction(this._pointPickInteraction);
@@ -235,7 +219,8 @@ proto._cleanUp = function(){
   this._newFeatures = [];
   this._lineToKeepOverlay.setMap(null);
   this._selectedLineOverlay.setMap(null);
-  this.editingLayer.getSource().getFeaturesCollection().clear();
+  // evito di fare il clean up delle editing features
+  //this.editingLayer.getSource().getFeaturesCollection().clear();
 };
 
 proto._rollBack = function(){
@@ -247,12 +232,12 @@ proto._rollBack = function(){
       self.editingLayer.getSource().removeFeature(feature);
     });
   }
-  catch (e) {};
+  catch (e) {}
 };
 
-proto._cutLine = function(data,modType){
+proto._cutLine = function(data, modType) {
   // se modifico su taglio aggiorno la vecchia feature e aggiungo la nuova
-  if (modType == 'MODONCUT'){
+  if (modType == 'MODONCUT') {
     var featureToUpdate = data.updated;
     var featureToAdd = data.added[0];
     this.editor.updateFeature(featureToUpdate);
@@ -269,7 +254,6 @@ proto._cutLine = function(data,modType){
   }
   this._busy = false;
   this.pause(false);
-  this.steps.completed();
   this.rerun();
   return true;
 };
@@ -282,7 +266,7 @@ proto._selectLineToKeep = function(prevLineFeature,nextLineFeature){
   layer.setMap(this.editor.getMapService().viewer.map);
   
   var selectLineInteraction = new PickFeatureInteraction({
-    layers: [this._lineToKeepOverlay],
+    layers: [this._lineToKeepOverlay]
   });
   this.addInteraction(selectLineInteraction);
   
@@ -352,20 +336,28 @@ proto._cut = function(geometry,cutCoordinate){
 
 
 // TODO questo andrà spostato dentro MapService o comunque in una libreria core
-proto._showSelection = function(geometry,duration){
+// funzione show selection
+proto._showSelection = function(geometry, duration){
   var self = this;
   var duration = duration || null;
+  // prendo l'elemento(vettore) overlay
   var overlay = this._selectedLineOverlay;
-  
+  // creo la feature
   var feature = new ol.Feature();
+  // inserisco la geometria della feature precedentemente selezionata
   feature.setGeometry(geometry);
+  // l'aggiungo alla feature di overlay
   overlay.getSource().addFeatures([feature]);
+  // setto la mappa del vettore di overlay
+  // setMap è un metodo del layer di ol3 per far visulizzare temporaneamente un layer
+  // la mappa non può interagire con esso. Il layer biene messo on top alla mappa
   overlay.setMap(this.editor.getMapService().viewer.map);
-  if(duration){
+  if (duration) {
+    // veridfico se è staato settato la duration
     setTimeout(function(){
       overlay.setMap(null);
       self._selectedLineOverlay.getSource().clear();
-    },duration);
+    }, duration);
   }
 };
 
@@ -383,4 +375,4 @@ CutLineTool.steps = [
   {
     type: "selectparttokeep"
   }
-]
+];

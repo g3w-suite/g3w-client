@@ -58,15 +58,18 @@ proto.stop = function() {
 proto.run = function() {
   console.log('Se appare quasto messaggio significa che non è stato sovrascritto il metodo run() dalla sottoclasse');
 };
-
+// classe costruttore dell'istanza steps
 EditingTool.Steps = function(steps) {
+  // metto a -1 in quanto la prima cosa che faccio è
+  // e di fare next() per vedere la prima zione che devo fare
+  // quindi individuare il primo elemento dell'array steps
   var index = -1;
   //ARRAY
   var steps = steps;
-  
-  this.next = function(){
+  this.next = function() {
     index += 1;
     var step = steps[index];
+    // emetto evento step
     this.emit('step', index, step);
   };
   
@@ -90,11 +93,13 @@ EditingTool.Steps = function(steps) {
     this.removeAllListeners();
   };
   
-  this.completed = function(){
+  this.completed = function() {
+    // emetto l'evento complete
     this.emit('complete');
+    // resetto porto a 0 il valore dell'index
     this.reset();
   };
-  
+  // funzione che inserisce qualcosa da fare ad un prciso momento (indice) dell'array
   this.insertStepAt = function(idx,step){
     steps.splice(idx,0,step);
   }
