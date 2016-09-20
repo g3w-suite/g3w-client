@@ -193,7 +193,7 @@ proto.getWmsUrl = function() {
 proto.getLegendUrl = function() {
   var url = this.getWmsUrl();
   sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=False&ITEMFONTSIZE=10&LAYER='+this.getWMSLayerName();
+  return this.getWmsUrl()+sep+'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=1.1.0&FORMAT=image/png&TRANSPARENT=true&ITEMFONTCOLOR=white&LAYERTITLE=False&ITEMFONTSIZE=10&WIDTH=300&LAYER='+this.getWMSLayerName();
 };
 
 ProjectLayer.ServerTypes = {

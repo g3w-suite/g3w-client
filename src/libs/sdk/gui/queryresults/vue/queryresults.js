@@ -5,6 +5,45 @@ var Component = require('gui/vue/component');
 var G3WObject = require('core/g3wobject');
 var QueryResultsService = require('gui/queryresults/queryresultsservice');
 
+//Fields.simpleFieldTypes = [Fields.STRING,Fields.INTEGER,Fields.FLOAT];
+Fields = {};
+Fields.SIMPLE = 'simple';
+Fields.LINK = 'link';
+Fields.PHOTO = 'photo';
+Fields.POINTLINK = 'pointlink';
+Fields.ROUTE = 'route';
+
+function getFieldType(layer,name,value) {
+  var URLPattern = /^(https?:\/\/[^\s]+)/g;
+  var PhotoPattern = /[^\s]+.(png|jpg|jpeg)$/g;
+  if (_.isNil(value)) {
+    return Fields.SIMPLE;
+  }
+
+  value = value.toString();
+
+  var extension = value.split('.').pop();
+  if (value.match(URLPattern)) {
+    return Fields.LINK;
+  }
+
+  if (value.match(PhotoPattern)) {
+    return Fields.PHOTO;
+  }
+
+  return Fields.SIMPLE;
+};
+
+/*function isSimple(layer,feature,attribute) {
+  var fieldType = getFieldType(layer,feature,attribute);
+  return Fields.simpleFieldTypes.indexOf(fieldType) > -1;
+};*/
+
+function fieldIs(TYPE,layer,attributeName,attributeValue) {
+  var fieldType = getFieldType(layer,attributeName,attributeValue);
+  return fieldType === TYPE;
+}
+
 var vueComponentOptions = {
   template: require('./queryresults.html'),
   data: function() {
@@ -15,6 +54,12 @@ var vueComponentOptions = {
   },
   replace: false,
   methods: {
+    isSimple: function(layer,attributeName,attributeValue) {
+      return fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
+    },
+    isLink: function(layer,attributeName,attributeValue) {
+      return fieldIs(Fields.LINK,layer,attributeName,attributeValue);
+    },
     layerHasFeatures: function(layer) {
       if (layer.features) {
         return layer.features.length > 0;

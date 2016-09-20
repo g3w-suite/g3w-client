@@ -35,7 +35,13 @@
                     <table>
                       <tr v-for="attribute in layer.attributes">
                         <td class="attr-label">{{attribute.label}}</td>
-                        <td class="attr-value">{{feature.attributes[attribute.name]}}</td>
+                        <!--<td class="attr-value">{{feature.attributes[attribute.name]}}</td>-->
+                        <td class="attr-value">
+                          <span v-if="isSimple(layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
+                          <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
+                          <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                          <a v-if="isLink(layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank" class="glyphicon glyphicon-link"></a>
+                        </td>
                       </tr>
                     </table>
                   </td>
@@ -76,9 +82,15 @@
                             <tr v-show="collapseFeatureBox(layer, feature, relation.name+index)" class="queryresults-featurebox">
                               <td :colspan="relationsAttributesSubsetLength(element)+1">
                                 <table>
-                                  <tr v-for="attribute in relationsAttributes(element)">
-                                    <td class="attr-label">{{attribute.label}}</td>
-                                    <td class="attr-value">{{attribute.value}}</td>
+                                  <tr v-for="relattribute in relationsAttributes(element)">
+                                    <td class="attr-label">{{relattribute.label}}</td>
+                                    <!--<td class="attr-value">{{attribute.value}}</td>-->
+                                    <td class="attr-value">
+                                      <span v-if="isSimple(layer,relattribute.name,relattribute.value)">{{relattribute.value}}</span>
+                                      <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
+                                      <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
+                                      <a v-if="isLink(layer,relattribute.name,relattribute.value)" :href="relattribute.value" target="_blank" class="glyphicon glyphicon-link"></a>
+                                    </td>
                                   </tr>
                                 </table>
                               </td>
