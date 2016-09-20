@@ -14,7 +14,7 @@ var CutLineTool = require('./tools/cutlinetool');
 /// BUFFER /////
 var EditBuffer = require('./editbuffer');
 
-var Form = require('gui/form');
+var Form = require('gui/form/form');
 var form = null; // brutto ma devo tenerlo esterno sennò si crea un clico di riferimenti che manda in palla Vue
 
 // Editor di vettori puntuali
