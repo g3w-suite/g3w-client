@@ -42,6 +42,10 @@ function VectorLayer(config) {
   this._relationsDataLoaded = {};
   this.lazyRelations = true;
   this._relations = null;
+
+  this._editingMode = config.editing || false;
+  this._featureLocks = null;
+
 }
 inherit(VectorLayer,G3WObject);
 module.exports = VectorLayer;
@@ -50,6 +54,7 @@ var proto = VectorLayer.prototype;
 
 proto.setData = function(featuresData){
   var self = this;
+
   var features;
   if (this.format) {
     switch (this.format){
@@ -61,10 +66,22 @@ proto.setData = function(featuresData){
         features = geojson.readFeatures(featuresData);
         break;
     }
+
+    if (this._editingMode && this._featureLocks) {
+      features = _.filter(features, function(feature){
+        var hasFeatureLock = false;
+        _.forEach(self._featureLocks,function(featureLock){
+          if (featureLock.featureid == feature.getId()) {
+            hasFeatureLock = true;
+          }
+        })
+        return hasFeatureLock;
+      })
+    }
     
     if (features && features.length) {
       if (!_.isNull(this._featuresFilter)){
-        var features = _.map(features,function(feature){
+        features = _.map(features,function(feature){
           return self._featuresFilter(feature);
         });
       }
@@ -85,6 +102,14 @@ proto.setData = function(featuresData){
     console.log("VectorLayer format not defined");
   }
 };
+
+proto.setFeatureLocks = function(featurelocks) {
+  this._featureLocks = featurelocks;
+};
+
+proto.getFeatureLocks = function() {
+  return this._featureLocks;
+}
 
 proto.setFeatureData = function(oldfid,fid,geometry,attributes){
   var feature = this.getFeatureById(oldfid);

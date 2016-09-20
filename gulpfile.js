@@ -35,10 +35,11 @@ var distFolder = conf.distFolder;
 
 gulp.task('browserify', [], function() {
     var bundler = browserify('./src/app/index.js', {
+      basedir: "./",
       paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
       debug: !production,
       cache: {},
-      packageCache: {}
+      packageCache: {},
     });
     if (!production) {
       bundler = watchify(bundler);

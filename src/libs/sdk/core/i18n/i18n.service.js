@@ -28,4 +28,4 @@ var t = function(text){
 module.exports = {
   init: init,
   t: t
-}
+};

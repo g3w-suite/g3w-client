@@ -281,46 +281,52 @@ proto.undoAll = function() {
   this._editBuffer.undoAll();
 };
 
-proto.setFeatureLocks = function(featureLocks) {
+/*proto.setFeatureLocks = function(featureLocks) {
   this._featureLocks = featureLocks;
 };
 
 proto.getFeatureLocks = function() {
   return this._featureLocks;
-};
+};*/
 
 proto.getFeatureLockIds = function() {
-  return _.map(this._featureLocks,function(featurelock) {
+  return _.map(this._vectorLayer.getFeatureLocks(),function(featurelock) {
     return featurelock.lockid;
   });
 };
 
 proto.getFeatureLocksLockIds = function(featureLocks) {
-  var featureLocks = featureLocks || this._featureLocks;
+  var featureLocks = featureLocks || this._vectorLayer.getFeatureLocks();
   return _.map(featureLocks,function(featurelock) {
     return featurelock.lockid;
   });
 };
 
 proto.getFeatureLocksFeatureIds = function(featureLocks) {
-  var featureLocks = featureLocks || this._featureLocks;
+  var featureLocks = featureLocks || this._vectorLayer.getFeatureLocks();
   return _.map(featureLocks,function(featurelock) {
     return featurelock.featureid;
   });
 };
 
 proto.getFeatureLockIdsForFeatureIds = function(fids) {
-  var featurelocksForFids = _.filter(this._featureLocks,function(featurelock) {
+  var featurelocksForFids = _.filter(this._vectorLayer.getFeatureLocks(),function(featurelock) {
     return _.includes(fids,featurelock.featureid);
   });
 
   return this.getFeatureLocksLockIds(featurelocksForFids);
 };
+
+proto.getFeatureLockForFeatureIds = function(fids) {
+  return _.filter(this._vectorLayer.getFeatureLocks(),function(featurelock) {
+    return _.includes(fids,featurelock.featureid);
+  });
+};
 // funzione che prende le feature nuove, aggiornate e cancellate
 //dall'edit buffer
 proto.getEditedFeatures = function(){
   var modifiedFids = this._editBuffer.collectFeatureIds();
-  var lockIds = this.getFeatureLockIdsForFeatureIds(modifiedFids);
+  var lockIds = this.getFeatureLockForFeatureIds(modifiedFids);
   return {
     add: this._editBuffer.collectFeatures('new', true),
     update: this._editBuffer.collectFeatures('updated',true),

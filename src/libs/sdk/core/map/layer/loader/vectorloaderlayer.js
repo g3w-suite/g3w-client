@@ -7,28 +7,29 @@ var LoaderLayer = require('./loaderlayer');
 
 function VectorLoaderLayer() {
 
-    this._layer = {};
-    this._type = 'vector';
-    this._layerCodes = [];
-    this._baseUrl = '';
-    this._mapService = null;
-    this._loadedExtent = null;
+  this._layer = {};
+  this._type = 'vector';
+  this._layerCodes = [];
+  this._baseUrl = '';
+  this._mapService = null;
+  this._loadedExtent = null;
+  this._editingMode = false;
 
-    base(this);
+  base(this);
 
-    //setto le proprià che mi interessano
-    this.init = function(options) {
-        //i layers provenienti dal plugin
-        this._layers = options.layers || {};
-        // il base url per poter fare richieste al server
-        this._baseUrl = options.baseurl || '';
-        // il map service per ineragire con la mappa
-        // recuperando il bbox del layer vettoriale
-        this._mapService = options.mapService || null;
-        // i codice dei layers per poter recuperare le informazioni
-        // dei layers passati dal plugin
-        this._layerCodes = _.keys(this._layers);
-    };
+  //setto le proprià che mi interessano
+  this.init = function(options) {
+    //i layers provenienti dal plugin
+    this._layers = options.layers || {};
+    // il base url per poter fare richieste al server
+    this._baseUrl = options.baseurl || '';
+    // il map service per ineragire con la mappa
+    // recuperando il bbox del layer vettoriale
+    this._mapService = options.mapService || null;
+    // i codice dei layers per poter recuperare le informazioni
+    // dei layers passati dal plugin
+    this._layerCodes = _.keys(this._layers);
+  };
 }
 
 inherit(VectorLoaderLayer, LoaderLayer);
@@ -36,49 +37,49 @@ inherit(VectorLoaderLayer, LoaderLayer);
 var proto = VectorLoaderLayer.prototype;
 // funzione principale, starting point, chiamata dal plugin per
 // il recupero dei vettoriali (chiamata verso il server)
-proto.loadLayers = function() {
+proto.loadLayers = function(mode) {
 
-    var self = this;
-    var deferred = $.Deferred();
-    // tiene conto dei codici dei layer ch enon sono stati caricati come vector
-    var noVectorlayerCodes = [];
-    //verifica se sono stati caricati i vettoriali dei layer
-    // attraverso la proprietà vector del layer passato dal plugin
-    _.forEach(this._layers, function(layer, layerCode) {
-        if (_.isNull(layer.vector)) {
-            noVectorlayerCodes.push(layerCode);
-        }
-    });
-    // eseguo le richieste delle configurazioni e mi tengo le promesse
-    var vectorLayersSetup = _.map(noVectorlayerCodes, function(layerCode) {
-            return self._setupVectorLayer(self._layers[layerCode]);
-    });
-    // aspetto tutte le promesse del setup vector
-    $.when.apply(this, vectorLayersSetup)
-        .then(function() {
-            var arrayVectorLayers = Array.prototype.slice.call(arguments);
-            // lego i  modo chiave valore i layers code ai relativi layer vettoriali
-            var vectorLayers = _.zipObject(noVectorlayerCodes, arrayVectorLayers);
-            self.emit('retriewvectorlayers', true, vectorLayers);
-            self.loadAllVectorsData(noVectorlayerCodes)
-                .then(function(layerCodes) {
-                    self.emit('retriewvectolayersdata', true);
-                    deferred.resolve();
-                })
-                .fail(function() {
-                    self.emit('retriewvectolayersdata', false);
-                    deferred.reject();
-                }).always(function() {
-                    // questa mi server per segnalare che il loadind dei dati è finito
-                    self.emit('retriewvectolayersdata', false);
-                })
-            })
+  var self = this;
+  this._setMode(mode);
+  var deferred = $.Deferred();
+  // tiene conto dei codici dei layer ch enon sono stati caricati come vector
+  var noVectorlayerCodes = [];
+  //verifica se sono stati caricati i vettoriali dei layer
+  // attraverso la proprietà vector del layer passato dal plugin
+  _.forEach(this._layers, function(layer, layerCode) {
+      if (_.isNull(layer.vector)) {
+          noVectorlayerCodes.push(layerCode);
+      }
+  });
+  // eseguo le richieste delle configurazioni e mi tengo le promesse
+  var vectorLayersSetup = _.map(noVectorlayerCodes, function(layerCode) {
+          return self._setupVectorLayer(layerCode);
+  });
+  self.emit('loadingvectorlayersstart');
+  // aspetto tutte le promesse del setup vector
+  $.when.apply(this, vectorLayersSetup)
+    .then(function() {
+      var vectorLayersCodes = Array.prototype.slice.call(arguments);
+      self.emit('loadingvectolayersdatastart');
+      self.loadAllVectorsData(vectorLayersCodes)
+        .then(function(layerCodes) {
+          deferred.resolve(vectorLayersCodes);
+        })
         .fail(function() {
-            self.emit('retriewvectorlayers', false);
-            deferred.reject();
-        });
+          deferred.reject();
+        })
+        .always(function() {
+          // questa mi server per segnalare che il loadind dei dati è finito
+          self.emit('loadingvectorlayersend');
+          self.emit('loadingvectolayersdataend');
+        })
+      })
+    .fail(function() {
+        self.emit('loadingvectorlayersend');
+        deferred.reject();
+    })
 
-    return deferred.promise();
+  return deferred.promise();
 };
 
 //funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
@@ -111,14 +112,14 @@ proto.loadAllVectorsData = function(layerCodes) {
     });
     $.when.apply(this, vectorDataRequests)
         .then(function() {
-            var vectorsDataResponse = Array.prototype.slice.call(arguments);
+            /*var vectorsDataResponse = Array.prototype.slice.call(arguments);
             var vectorDataResponseForCode = _.zipObject(self._layerCodes, vectorsDataResponse);
             _.forEach(vectorDataResponseForCode, function(vectorDataResponse, layerCode) {
                 //nel caso ci sono vengono restituiti features locked (è un array di feature locked)
                 if (vectorDataResponse.featurelocks) {
                     self.emit('featurelocks', layerCode, vectorDataResponse.featurelocks);
                 }
-            });
+            });*/
             deferred.resolve(layerCodes);
         })
         .fail(function(){
@@ -127,11 +128,19 @@ proto.loadAllVectorsData = function(layerCodes) {
 
     return deferred.promise();
 };
+
+proto._setMode = function(mode) {
+  if (mode == 'w') {
+    this._editingMode = true;
+  }
+};
+
 // funzione che dato la configurazione del layer fornito dal plugin (style, editor, vctor etc..)
 // esegue richieste al server al fine di ottenere configurazione vettoriale del layer
-proto._setupVectorLayer = function(layerConfig) {
+proto._setupVectorLayer = function(layerCode) {
 
     var self = this;
+    var layerConfig = this._layers[layerCode];
     var deferred = $.Deferred();
     // eseguo le richieste delle configurazioni
     this._getVectorLayerConfig(layerConfig.name)
@@ -145,7 +154,8 @@ proto._setupVectorLayer = function(layerConfig) {
                 crs: "EPSG:3003",
                 id: layerConfig.id,
                 name: layerConfig.name,
-                pk: vectorConfig.pk
+                pk: vectorConfig.pk,
+                editing: self._editingMode
             });
             // setto i campi del layer
             vectorLayer.setFields(vectorConfig.fields);
@@ -167,7 +177,8 @@ proto._setupVectorLayer = function(layerConfig) {
             if (layerConfig.style) {
                 vectorLayer.setStyle(layerConfig.style);
             }
-            deferred.resolve(vectorLayer);
+            layerConfig.vector = vectorLayer;
+            deferred.resolve(layerCode);
         })
         .fail(function(){
             deferred.reject();
@@ -182,7 +193,11 @@ proto._loadVectorData = function(vectorLayer, bbox) {
     return self._getVectorLayerData(vectorLayer, bbox)
         .then(function(vectorDataResponse) {
             // setto i dati vettoriali del layer vettoriale
+            if (self._editingMode && vectorDataResponse.featurelocks){
+              vectorLayer.setFeatureLocks(vectorDataResponse.featurelocks);
+            }
             vectorLayer.setData(vectorDataResponse.vector.data);
+          if (self._)
             return vectorDataResponse;
         });
 };
