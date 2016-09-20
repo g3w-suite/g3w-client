@@ -25,8 +25,8 @@ g3w.core = {
 
 g3w.gui = {
   GUI: require('gui/gui'),
-  Form: require('gui/form').Form,
-  FormPanel: require('gui/form').FormPanel,
+  Form: require('gui/form/form').Form,
+  FormPanel: require('gui/form/form').FormPanel,
   Panel: require('gui/panel'),
   vue: {
     //GeocodingComponent: require('gui/vue/geocoding/geocoding'),

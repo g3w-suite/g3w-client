@@ -5,6 +5,7 @@ var Panel =  require('gui/panel');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var QueryService = require('core/query/queryservice');
 var ClipBoard = require('core/clipboardservice');
+var Field = require('gui/form/field/field');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -40,6 +41,9 @@ var FormPanel = Vue.extend({
       cbk(this.state.fields,relations);
       GUI.closeForm();
     },
+    createField: function(type, field, elementIndex, relation) {
+      return this.$options.form._createField(type, field, elementIndex, relation);
+    },
     btnEnabled: function(button) {
       return button.type != 'save' || (button.type == 'save' && this.$validation.valid);
     },
@@ -49,7 +53,7 @@ var FormPanel = Vue.extend({
     isEditable: function(field){
       return this.$options.form._isEditable(field);
     },
-    isSimple: function(field){
+    isSimple: function(field) {
       return this.$options.form._isSimple(field);
     },
     isTextarea: function(field) {
@@ -76,7 +80,6 @@ var FormPanel = Vue.extend({
       this.$options.form._pickLayerToClipBoard();
     },
     pickLayerInputChange: function() {
-      console.log('pickLayerInputChange');
       this.$options.form._cleanUpPickLayer();
     },
     checkPickLayer: function() {
@@ -214,6 +217,9 @@ function Form(options) {
   this._pickedPromise = null;
   // lasncio subito funzione per veitare di copiare campi  che devono essere unici (ad esempio nel cutline)
   this._pasteStateWithoutPk(this.state.fields, this.state.relations);
+  // attributo che mantiene riferimento ai fields del form
+  this._layerFields = [];
+  this._relationFields = {};
   GUI.setModal(true);
 }
 inherit(Form, Panel);
@@ -222,7 +228,7 @@ var proto = Form.prototype;
 
 // viene richiamato dalla toolbar quando
 // il plugin chiede di mostrare un proprio pannello nella GUI (GUI.showPanel)
-proto.mount = function(container){
+proto.mount = function(container) {
   this._setupFields();
   this._setupRelationsFields();
   var panel = this._setupPanel();
@@ -241,6 +247,10 @@ proto.unmount = function(){
   return resolve(true);
 };
 
+proto.getFields = function() {
+  return this._fields;
+};
+
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
   this._clipBoard.set(this.id, formData);
@@ -249,7 +259,7 @@ proto._copyFormToClipBoard = function() {
 };
 
 proto._setFieldValueLayerFromToRelationField = function(relation, name) {
-  console.log('Pippo');
+  console.log('questa funzione deve essere sovrascritta dal plugin al momento');
 };
 
 proto._pasteStateWithoutPk = function(fields, relations) {
@@ -266,7 +276,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   if (!_.isNil(copyAndPasteFieldsNotOverwritable.relations)) {
     relationFields = copyAndPasteFieldsNotOverwritable.relations;
   }
-  // verifico i filed da non modificare sul layer
+  // verifico i fields da non modificare sul layer
   _.forEach(fields, function(field, index) {
     if (self.pk == field.name || (layerFields.indexOf(field.name) != -1)) {
       fields[index].value = null;
@@ -313,7 +323,7 @@ proto._hasFieldsRequired = function() {
   return someFieldsRequired || someRelationsRequired;
 };
 
-proto._isVisible = function(field){
+proto._isVisible = function(field) {
   return !(!field.editable && (field.value == "" || _.isNull(field.value)));
 };
 
@@ -321,6 +331,25 @@ proto._isEditable = function(field){
   return field.editable;
 };
 
+// funzione che serve per creare i field sia per le relazioni che per i layer
+proto._createField = function(type, field, elementIndex, relation) {
+  if (type.indexOf(field.type) == -1) {
+    return false
+  }
+  var options = {};
+  options.id = field.name;
+  options.type = field.input.type;
+  if (relation && this._isVisible(field)) {
+    if (!this._relationFields[relation.name]) {
+      this._relationFields[relation.name] = {};
+    }
+    this._relationFields[relation.name][elementIndex] = [];
+    this._relationFields[relation.name][elementIndex].push(new Field(options));
+  } else if (this._isVisible(field)) {
+    this._layerFields.push(new Field(options));
+  }
+  return true
+};
 proto._isSimple = function(field){
   if (_.includes(Inputs.specialInputs,field.input.type)){
     return false;
