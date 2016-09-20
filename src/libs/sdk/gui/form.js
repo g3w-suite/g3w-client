@@ -35,7 +35,7 @@ var FormPanel = Vue.extend({
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
-    exec: function(cbk){
+    exec: function(cbk) {
       var relations = this.state.relations || null;
       cbk(this.state.fields,relations);
       GUI.closeForm();
@@ -64,15 +64,19 @@ var FormPanel = Vue.extend({
     layerPickerPlaceHolder: function(field){
       return this.$options.form._getlayerPickerLayerName(field.input.options.layerid);
     },
-    pickLayer: function(field) {
+    pickLayer: function(field, relation) {
       this.checkPickLayer();
-      this.$options.form._pickLayer(field);
+      this.$options.form._pickLayer(field, relation);
+    },
+    pickLayerInputFieldChange: function(field, relation) {
+      this.$options.form._pickLayerInputFieldChange(field, relation);
     },
     pickLayerToClipBoard: function() {
       this.checkPickLayer();
       this.$options.form._pickLayerToClipBoard();
     },
     pickLayerInputChange: function() {
+      console.log('pickLayerInputChange');
       this.$options.form._cleanUpPickLayer();
     },
     checkPickLayer: function() {
@@ -114,7 +118,7 @@ var FormPanel = Vue.extend({
     canAddRelationElements: function(relation) {
       var canAdd = true;
       if (relation.type == 'ONE') {
-        canAdd = (relation.elements.length) ? false : true // se è una relazione 1:1 e non ho elementi, lo posso aggiungere, altrimenti no
+        canAdd = (relation.elements.length) ? false : true; // se è una relazione 1:1 e non ho elementi, lo posso aggiungere, altrimenti no
       }
       else {
         var max = relation.max ? relation.max : Number.POSITIVE_INFINITY;
@@ -126,7 +130,7 @@ var FormPanel = Vue.extend({
       this.$options.form._addRelationElement(relation);
     },
     removeRelationElement: function(relation,element){
-      this.$options.form._removeRelationElement(relation,element);
+      this.$options.form._removeRelationElement(relation, element);
     },
     fieldsSubset: function(fields) {
       var end = Math.min(3,fields.length);
@@ -159,7 +163,8 @@ var FormPanel = Vue.extend({
     isValid: function(field) {
       return this.$validate(field.name);
     },
-    hasRelations: function(){
+    hasRelations: function() {
+      console.log('hasRealtions');
       return this.state.relations.length;
     }
   }
@@ -187,7 +192,7 @@ function Form(options) {
   // da cui deriveranno tutti i pannelli che vogliono essere mostrati nella sidebar
   this.internalComponent = null;
   this.options =  options || {};
-  this.provider = options.provider;
+  this.provider = options.provider; // è l' editor che lo chiama
   this.id = options.id; // id del form
   this.name = options.name; // nome del form
   this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
@@ -241,6 +246,10 @@ proto._copyFormToClipBoard = function() {
   this._clipBoard.set(this.id, formData);
   this.state.canpaste = true;
   return true;
+};
+
+proto._setFieldValueLayerFromToRelationField = function(relation, name) {
+  console.log('Pippo');
 };
 
 proto._pasteStateWithoutPk = function(fields, relations) {
@@ -337,7 +346,11 @@ proto._cleanUpPickLayer = function() {
   GUI.setModal(true);
 };
 
-proto._pickLayer = function(field) {
+proto._pickLayerInputFieldChange = function(field, relation) {
+  console.log('funzione che deve essere sovrascritta dal plugin');
+};
+
+proto._pickLayer = function(field, relation) {
   // ritorno una promessa, se qualcun altro volesse usare
   // il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
@@ -382,7 +395,9 @@ proto._pickLayerToClipBoard = function() {
   // ritorno una promessa, se qualcun altro volesse
   // usare il risultato (es. per settare altri campi in base alla feature selezionata)
   var d = $.Deferred();
-  if (this._pickedPromise) {return this._pickedPromise};
+  if (this._pickedPromise) {
+    return this._pickedPromise
+  }
   // disabilito temporanemante lo strato modale per permettere l'interazione con la mappa
   GUI.setModal(false);
   // recupero mapservice perchè mi permette di ineteragire con la mappa
@@ -443,7 +458,7 @@ proto._getlayerPickerLayerName = function(layerId){
   return "";
 };
 
-proto._shouldShowRelation = function(relation){
+proto._shouldShowRelation = function(relation) {
   return true;
 };
 
@@ -485,11 +500,10 @@ proto._setupRelationElementFields = function(element) {
   var self = this;
   _.forEach(element.fields,function(field){
     if(_.isNil(field.value)){
-      field.value = self._getDefaultValue(field);;
+      field.value = self._getDefaultValue(field);
     }
   })
 };
-
 
 proto._setupPanel = function(){
   var self = this;
@@ -535,9 +549,10 @@ proto._getField = function(fieldName){
 };
 
 proto._addRelationElement = function(relation) {
+  // chama la funzione editor che crea una relazione
   var element = this.provider.createRelationElement(relation);
-  var elementBoxId = this.getUniqueRelationElementId(relation,element);
-  Vue.set(this.state.elementsBoxes,elementBoxId,{collapsed:false});
+  var elementBoxId = this.getUniqueRelationElementId(relation, element);
+  Vue.set(this.state.elementsBoxes, elementBoxId,{collapsed:false});
   this._setupRelationElementFields(element);
   relation.elements.push(element);
 };
@@ -553,7 +568,7 @@ proto._removeRelationElement = function(relation,element){
   })
 };
 
-proto._getRelationField = function(fieldName,relationName){
+proto._getRelationField = function(fieldName, relationName){
   var field = null;
   _.forEach(this.state.relations,function(relation){
     if (relationName == relation.name){
@@ -573,7 +588,7 @@ proto._getRelationElementField = function(fieldName, element) {
     if (_field.name == fieldName) {
       field = _field;
     }
-  })
+  });
   return field;
 };
 

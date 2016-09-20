@@ -35,6 +35,7 @@ function Editor(options) {
 
 
   this._copyAndPasteFieldsNotOverwritable = options.copyAndPasteFieldsNotOverwritable || {};
+  this._fieldsLayerbindToRelationsFileds = options.fieldsLayerbindToRelationsFileds || {};
 
   this._setterslisteners = {
     before: {},
@@ -118,6 +119,10 @@ proto.getcopyAndPasteFieldsNotOverwritable = function() {
 
 proto.setcopyAndPasteFieldsNotOverwritable = function(obj) {
     this._copyAndPasteFieldsNotOverwritable = obj;
+};
+
+proto.getfieldsLayerbindToRelationsFileds = function() {
+  return this._fieldsLayerbindToRelationsFileds;
 };
 
 proto.getMapService = function() {
