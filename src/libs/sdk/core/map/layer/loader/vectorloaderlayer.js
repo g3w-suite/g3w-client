@@ -112,14 +112,6 @@ proto.loadAllVectorsData = function(layerCodes) {
     });
     $.when.apply(this, vectorDataRequests)
         .then(function() {
-            /*var vectorsDataResponse = Array.prototype.slice.call(arguments);
-            var vectorDataResponseForCode = _.zipObject(self._layerCodes, vectorsDataResponse);
-            _.forEach(vectorDataResponseForCode, function(vectorDataResponse, layerCode) {
-                //nel caso ci sono vengono restituiti features locked (è un array di feature locked)
-                if (vectorDataResponse.featurelocks) {
-                    self.emit('featurelocks', layerCode, vectorDataResponse.featurelocks);
-                }
-            });*/
             deferred.resolve(layerCodes);
         })
         .fail(function(){
