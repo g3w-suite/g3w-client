@@ -38,9 +38,9 @@ function QueryQGISWMSProvider() {
         'FEATURE_COUNT': simpleWmsSearchMaxResults ||  50,
         'INFO_FORMAT': 'application/vnd.ogc.gml',
         'CRS': 'EPSG:'+ crs,
-        'FILTER': filter,
+        'FILTER': filter
         // Temporary fix for https://hub.qgis.org/issues/8656 (fixed in QGIS master)
-        'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
+        //'BBOX': bbox // QUI CI VA IL BBOX DELLA MAPPA
       }
     );
    };

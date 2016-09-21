@@ -155,7 +155,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return showPanelResults;
     };
 
-    GUI.showQueryResults = function(title,results) {
+    GUI.showQueryResults = function(title, results) {
       // istanziare il componente queryresults
       // passarlo a Floatbar
       var queryResultsComponent = GUI.getComponent('queryresults');

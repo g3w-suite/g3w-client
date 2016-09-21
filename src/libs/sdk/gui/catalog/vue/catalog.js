@@ -49,7 +49,7 @@ var vueComponentOptions = {
       }
     });
   }
-}
+};
 
 // se lo voglio istanziare manualmente
 var InternalComponent = Vue.extend(vueComponentOptions);
