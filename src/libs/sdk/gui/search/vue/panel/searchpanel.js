@@ -119,13 +119,13 @@ function SearchPanel() {
               index = (globalIndex) ? globalIndex + idx : idx;
               obj[k] = convertInputValueToInputType(formInputValues[index].type, formInputValues[index].value);
             });
-          };
+          }
         });
       });
     });
     return filterObject;
   };
-};
+}
 
 inherit(SearchPanel, Panel);
 module.exports = SearchPanel;

@@ -58,7 +58,7 @@ function QueryService(){
       _.forEach(obj, function(v,k) {
         if (_.isArray(v)) {
           return createBooleanObject(k,v);
-        };
+        }
       });
       field = obj.attribute;
       operator = obj.op;
@@ -182,6 +182,7 @@ function QueryService(){
         data = response.vector.data;
         break;
       default:
+        // caso gml
         var x2js = new X2JS();
         try {
           if (_.isString(response)) {
@@ -194,7 +195,6 @@ function QueryService(){
           return;
         }
         var rootNode = _.keys(jsonresponse)[0];
-        
         switch (rootNode) {
           case 'FeatureCollection':
             parser = this._parseLayerFeatureCollection;
@@ -222,6 +222,7 @@ function QueryService(){
   // query basato sul filtro
 
   this.queryByFilter = function(queryFilterObject) {
+
     var self = this;
     var d = $.Deferred();
     //parte da rivedere nel filtro

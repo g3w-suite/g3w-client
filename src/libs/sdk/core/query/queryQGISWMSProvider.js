@@ -28,7 +28,7 @@ function QueryQGISWMSProvider() {
     var filter = options.filter || null;
     var bbox = options.bbox || ProjectsRegistry.getCurrentProject().state.extent.join(',');
     var simpleWmsSearchMaxResults = null;
-    var crs = options.crs || '4326;'
+    var crs = options.crs || '4326;';
     return $.get( url, {
         'SERVICE': 'WMS',
         'VERSION': '1.3.0',
@@ -71,7 +71,7 @@ function QueryQGISWMSProvider() {
       var filterElements = [];
       var filterElement = '';
       var valueExtra = "";
-      var valueQuotes = "";
+      var valueQuotes = "'";
       var rootFilter;
       _.forEach(booleanObject, function(v, k, obj) {
         //creo il filtro root che sarà AND OR
@@ -79,6 +79,7 @@ function QueryQGISWMSProvider() {
         //qui c'è array degli elementi di un booleano
         _.forEach(v, function(input){
           //scorro su oggetto
+          valueExtra = "";
           _.forEach(input, function(v, k, obj) {
           //verifico se il valore dell'oggetto è array e quindi è altro oggetto padre booleano
             if (_.isArray(v)) {
@@ -86,34 +87,33 @@ function QueryQGISWMSProvider() {
             } else { // è un oggetto operatore
               if (k == 'LIKE' || k == 'ILIKE') {
                 valueExtra = "%";
-              };
+              }
               filterOp = Filters[k];
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
                   //verifico se il valore non è un numero e quindi aggiungo singolo apice
-                  if(isNaN(v)) {
+                  /*if(isNaN(v)) {
                     valueQuotes = "'";
                   } else {
                     valueQuotes = "";
-                  };
+                  }*/
                   filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
                 });
               });
-            };
+            }
             filterElements.push(filterElement);
           });
         });
         rootFilter = filterElements.join(" "+ rootFilter + " ");
       });
       return rootFilter;
-    };
+    }
     //assegno il filtro creato
     filter = querylayername + ":" + createSingleFilter(filterObject);
     return filter;
   };
 
-};
-
+}
 inherit(QueryQGISWMSProvider, G3WObject);
 
 module.exports =  new QueryQGISWMSProvider();
