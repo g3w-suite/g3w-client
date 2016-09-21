@@ -72,7 +72,7 @@ function MapService(project){
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
-      this.updateMapLayers(this.mapLayers);
+      this.updateMapLayers(this._mapLayers);
     },
     setupViewer: function(width,height){
       //$script("http://epsg.io/"+ProjectService.state.project.crs+".js");
@@ -91,7 +91,8 @@ function MapService(project){
     }
   };
   
-  this._setupViewer = function(width,height){
+  this._setupViewer = function(width,height) {
+    var self = this;
     var projection = this.getProjection();
     var initextent = this.project.state.initextent;
     var extent = this.project.state.extent;
@@ -155,8 +156,7 @@ function MapService(project){
     });
 
     this.viewer.map.getView().setResolution(initResolution);
-    
-    this.viewer.map.on('moveend',function(e){
+    this.viewer.map.on('moveend',function(e) {
       self._setMapView();
     });
     //AL MOMENTO LASCIO COSÌ POI VEDIAMO
@@ -290,7 +290,6 @@ proto.setupControls = function(){
               QUERYABLE: true,
               SELECTEDORALL: true
             });
-            
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)
@@ -404,7 +403,7 @@ proto.setupLayers = function(){
   var multiLayers = _.groupBy(layers,function(layer){
     return layer.state.multilayer;
   });
-  _.forEach(multiLayers,function(layers,id){
+  _.forEach(multiLayers, function(layers,id) {
     var multilayerId = 'layer_'+id;
     var tiled = layers[0].state.tiled;
     var config = {
@@ -412,7 +411,7 @@ proto.setupLayers = function(){
       id: multilayerId,
       tiled: tiled
     };
-    var mapLayer = new WMSLayer(config,self.layersExtraParams);
+    var mapLayer = new WMSLayer(config, self.layersExtraParams);
     self.addMapLayer(mapLayer);
     self.registerListeners(mapLayer);
     _.forEach(layers.reverse(),function(layer){
@@ -458,8 +457,8 @@ proto.getOverviewMapLayers = function(project) {
 
 proto.updateMapLayers = function(mapLayers) {
   var self = this;
-  _.forEach(mapLayers,function(mapLayer){
-    mapLayer.update(self.state,self.layersExtraParams);
+  _.forEach(mapLayers, function(mapLayer) {
+    mapLayer.update(self.state, self.layersExtraParams);
   })
 };
 
@@ -617,11 +616,11 @@ proto._unsetControls = function() {
   })
 };
 
-proto._setMapView = function(){
+proto._setMapView = function() {
   var bbox = this.viewer.getBBOX();
   var resolution = this.viewer.getResolution();
   var center = this.viewer.getCenter();
-  this.setMapView(bbox,resolution,center);
+  this.setMapView(bbox, resolution, center);
 };
 
 // funzione grigio mappa precompose mapcompose

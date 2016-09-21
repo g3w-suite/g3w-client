@@ -100,7 +100,7 @@ proto.isDisabled = function() {
   return this.state.disabled;
 };
 
-proto.isQueryable = function(){
+proto.isQueryable = function() {
   var queryEnabled = false;
   var queryableForCababilities = (this.state.capabilities && (this.state.capabilities && CAPABILITIES.QUERY)) ? true : false;
   if (queryableForCababilities) {
@@ -115,7 +115,7 @@ proto.isQueryable = function(){
 
 proto.isVisible = function() {
   return this.state.visible;
-}
+};
 
 proto.getQueryLayerName = function() {
   var queryLayerName;
@@ -139,7 +139,7 @@ proto.getServerType = function() {
 
 proto.getCrs = function() {
   return this.getProject().getCrs();
-}
+};
 
 proto.isExternalWMS = function() {
   return (this.state.source && this.state.source.url);
@@ -149,7 +149,7 @@ proto.getWMSLayerName = function() {
   var layerName = this.state.name;
   if (this.state.source && this.state.source.layers){
     layerName = this.state.source.layers;
-  };
+  }
   return layerName;
 };
 

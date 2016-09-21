@@ -11,12 +11,12 @@ function WMSLayer(options,extraParams){
     MULTILAYER: 'multilayer'
   };
 
-  this.extraParams = extraParams
+  this.extraParams = extraParams;
   this.layers = [];
   
   base(this,options);
 }
-inherit(WMSLayer,MapLayer)
+inherit(WMSLayer,MapLayer);
 var proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers){
@@ -56,8 +56,8 @@ proto.toggleLayer = function(layer){
   this._updateLayers();
 };
   
-proto.update = function(mapState,extraParams){
-  this._updateLayers(mapState,extraParams);
+proto.update = function(mapState, extraParams) {
+  this._updateLayers(mapState, extraParams);
 };
 
 proto.isVisible = function(){
@@ -86,7 +86,7 @@ proto._getVisibleLayers = function(mapState){
     if (layer.state.visible && resolutionBasedVisibility) {
       visibleLayers.push(layer);
     }    
-  })
+  });
   return visibleLayers;
 };
 
@@ -107,7 +107,7 @@ proto._makeOlLayer = function(withLayers){
   
   if (representativeLayer.state.source && representativeLayer.state.source.type == 'wms' && representativeLayer.state.source.url){
     wmsConfig.url = representativeLayer.state.source.url;
-  };
+  }
   
   var olLayer = new RasterLayers.WMSLayer(wmsConfig,this.extraParams);
   

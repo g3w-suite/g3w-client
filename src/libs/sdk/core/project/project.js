@@ -37,12 +37,7 @@ function Project(projectConfig) {
     });
   }
   traverse(projectConfig.layerstree);
-  
-  /*var eventType = 'projectset';
-  if (doswitch && doswitch === true) {
-    eventType = 'projectswitch';
-  }
-  this.emit(eventType);*/
+
   
   this.setters = {
     setLayersVisible: function(layersIds,visible){
@@ -71,11 +66,11 @@ var proto = Project.prototype;
 proto.buildProjectLayer = function(layerConfig) {
   var layer = new ProjectLayer(layerConfig);
   layer.setProject(this);
-  
+
   // aggiungo proprietà non ottenute dalla consfigurazione
   layer.state.selected = false;
   layer.state.disabled = false;
-  
+
   return layer;
 };
 
@@ -91,16 +86,16 @@ proto.getLayersDict = function(options){
   var options = options || {};
 
   var filterQueryable = options.QUERYABLE;
-  
+
   var filterVisible = options.VISIBLE;
-  
+
   var filterSelected = options.SELECTED;
   var filterSelectedOrAll = options.SELECTEDORALL;
-  
+
   if (filterSelectedOrAll) {
     filterSelected = null;
   }
-  
+
   if (_.isUndefined(filterQueryable) && _.isUndefined(filterVisible) && _.isUndefined(filterSelected) && _.isUndefined(filterSelectedOrAll)) {
     return this._layers;
   }
@@ -140,7 +135,7 @@ proto.getLayersDict = function(options){
 proto.getLayers = function(options) {
   var layers = this.getLayersDict(options);
   return _.values(layers);
-}
+};
 
 proto.getLayerById = function(layerId) {
   return this.getLayersDict()[layerId];
@@ -184,7 +179,7 @@ proto.unselectLayer = function(layerId) {
 
 proto.getCrs = function() {
   return this.state.crs;
-}
+};
 
 proto.getInfoFormat = function() {
   return 'application/vnd.ogc.gml';
