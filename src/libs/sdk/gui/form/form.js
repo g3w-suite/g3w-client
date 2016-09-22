@@ -212,8 +212,6 @@ function Form(options) {
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
   this._pickedPromise = null;
-  // lasncio subito funzione per veitare di copiare campi  che devono essere unici (ad esempio nel cutline)
-  this._pasteStateWithoutPk(this.state.fields, this.state.relations);
   // attributo che mantiene riferimento ai fields del form
   this._layerFields = [];
   this._relationFields = {};
