@@ -20,28 +20,14 @@
                             <div v-if="isVisible(field)" class="form-group has-feedback">
                                 <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
                                 <div class="col-sm-8">
-                                    <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name"
-                                           v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control"
-                                           v-model="field.value" :id="field.name" :placeholder="field.input.label">
-
-                                    <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name"
-                                              v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control"
-                                              v-model="field.value" :id="field.name" :placeholder="field.input.label">
-
+                                    <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                                    <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
                                     </textarea>
-                                    <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate"
-                                            v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name"
-                                            :placeholder="field.input.label">
-                                        <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}
-                                        </option>
+                                    <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                                        <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
                                     </select>
-
                                     <div v-if="isLayerPicker(field)">
-                                        <input class="form-control picklayerinput" @click="pickLayer(field)"
-                                               @change="pickLayerInputChange" :field="field.name" v-validate="field.validate"
-                                               data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui"
-                                               v-disabled="!isEditable(field)" v-model="field.value" :id="field.name"
-                                               :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                        <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                         <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                                     </div>
                                 </div>
@@ -63,7 +49,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <template v-for="(elementIndex, element) in visibleElements(relation)">
+                                    <template v-for="element in visibleElements(relation)">
                                         <tr class="attributes-preview" @click="toggleElementBox(relation,element)">
                                             <td v-for="relfield in fieldsSubset(element.fields)">
                                                 <span>{{relfield.value}}</span>
@@ -79,28 +65,13 @@
                                                     <div v-if="isVisible(field)" class="form-group has-feedback">
                                                         <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
                                                         <div class="col-sm-8">
-                                                            <input v-if="isSimple(field)" @focus="checkPickLayer"
-                                                                   :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)"
-                                                                   class="form-control" v-model="field.value" :id="relation.name+'_'+elementIndex+'_'+field.name" :placeholder="field.input.label">
-
-                                                            <textarea v-if="isTextarea(field)" @focus="checkPickLayer"
-                                                                      :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)"
-                                                                      class="form-control" v-model="field.value" :id="relation.name+'_'+elementIndex+'_'+field.name" :placeholder="field.input.label">
-                                                            </textarea>
-
-                                                            <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name"
-                                                                    v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control"
-                                                                    v-model="field.value" :id="relation.name+'_'+elementIndex+'_'+field.name" :placeholder="field.input.label">
-                                                                <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}
-                                                                </option>
+                                                            <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                                                            <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label"></textarea>
+                                                            <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                                                                <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
                                                             </select>
-
                                                             <div v-if="isLayerPicker(field)">
-                                                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)"
-                                                                       @input="pickLayerInputFieldChange(field, relation)"  :field="field.name"
-                                                                       v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui"
-                                                                       v-disabled="!isEditable(field)" v-model="field.value" :id="relation.name+'_'+elementIndex+'_'+field.name"
-                                                                       :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                                                 <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                                                             </div>
                                                         </div>

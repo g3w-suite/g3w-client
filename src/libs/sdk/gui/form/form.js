@@ -41,9 +41,6 @@ var FormPanel = Vue.extend({
       cbk(this.state.fields,relations);
       GUI.closeForm();
     },
-    createField: function(type, field, elementIndex, relation) {
-      return this.$options.form._createField(type, field, elementIndex, relation);
-    },
     btnEnabled: function(button) {
       return button.type != 'save' || (button.type == 'save' && this.$validation.valid);
     },
@@ -288,7 +285,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
       _.forEach(relation.elements, function(element, elementIndex) {
         _.forEach(element.fields, function(field, fieldIndex) {
            if (field.name == relationField) {
-             relations[relationIndex].elements[elementIndex].fields[fieldIndex].value = undefined;
+             relations[relationIndex].elements[elementIndex].fields[fieldIndex].value = null;
            }
         });
       });

@@ -264,13 +264,18 @@ function QueryService(){
     });
 
     var queryUrlsForLayers = [];
-    _.forEach(urlsForLayers,function(urlForLayers){
+    _.forEach(urlsForLayers,function(urlForLayers) {
+      var sourceParam = urlForLayers.url.split('SOURCE');
+      urlForLayers.url = sourceParam[0];
+      if (sourceParam.length > 1) {
+        sourceParam = '&SOURCE' + sourceParam[1];
+      } else {
+        sourceParam = '';
+      }
       var queryLayers = urlForLayers.layers;
       var infoFormat = queryLayers[0].getInfoFormat();
-
       var resolution = self._mapService.getResolution();
       var epsg = self._mapService.getEpsg();
-
       var params = {
         LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
@@ -284,7 +289,7 @@ function QueryService(){
 
       var getFeatureInfoUrl = self._mapService.getGetFeatureInfoUrlForLayer(queryLayers[0],coordinates,resolution,epsg,params);
       var queryString = getFeatureInfoUrl.split('?')[1];
-      var url = urlForLayers.url+'?'+queryString;
+      var url = urlForLayers.url+'?'+queryString + sourceParam;
       queryUrlsForLayers.push({
         url: url,
         infoformat: infoFormat,

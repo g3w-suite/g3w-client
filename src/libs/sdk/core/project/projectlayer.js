@@ -14,7 +14,7 @@ var EDITOPS = {
 function ProjectLayer(state) {
   /*this.state = {
     fields: options.fields,
-    bbox: options.bbox,
+    bbox: options.bbox,getI
     capabilities: options.capabilities,
     crs: options.crs,
     disabled: options.disabled,
@@ -38,7 +38,7 @@ function ProjectLayer(state) {
     selected: options.selected | false,
     disabled: options.disabled | false
   }*/
-  
+
   // lo stato è sincronizzato con quello del layerstree
   this.state = state;
 
@@ -48,9 +48,9 @@ function ProjectLayer(state) {
   if (!this.state.disabled) {
     this.state.disabled = false;
   }*/
-  
+
   this._project = null;
-};
+}
 
 var proto = ProjectLayer.prototype;
 
@@ -88,7 +88,7 @@ proto.getAttributeLabel = function(name) {
     if (field.name == name){
       label = field.label;
     }
-  })
+  });
   return label;
 };
 
@@ -154,12 +154,17 @@ proto.getWMSLayerName = function() {
 };
 
 proto.getQueryUrl = function() {
+  var infoUrl;
   if (this.state.infourl && this.state.infourl != '') {
-    return this.state.infourl;
+    infoUrl = this.state.infourl;
   }
   else {
-    return this.getProject().getWmsUrl();
+    infoUrl = this.getProject().getWmsUrl();
   }
+  if (this.getServerType() != 'QGIS') {
+    infoUrl+='SOURCE=wms';
+  }
+  return infoUrl;
 };
 
 proto.setQueryUrl = function(queryUrl) {
