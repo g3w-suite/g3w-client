@@ -333,6 +333,7 @@ proto._isEditable = function(field){
 
 // funzione che serve per creare i field sia per le relazioni che per i layer
 proto._createField = function(type, field, elementIndex, relation) {
+
   if (type.indexOf(field.type) == -1) {
     return false
   }
