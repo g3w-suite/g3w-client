@@ -13,9 +13,7 @@ function ToolsService(){
   this.setters = {
     //inserita possibilità di dare ordine al plugin di visualizzazione
     addToolGroup: function(order, group) {
-      //console.log(order);
       self.state.toolsGroups.splice(order, 0, group);
-      //console.log(self.state.toolsGroups);
     }
   };
   

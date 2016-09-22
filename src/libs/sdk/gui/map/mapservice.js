@@ -34,7 +34,6 @@ function MapService(project){
   routerService.addRoute('map/{?query}',function(query){
     var query = query || {};
     if (query.center) {
-      console.log('Centra mappa su: '+query.center);
     }
   });
   

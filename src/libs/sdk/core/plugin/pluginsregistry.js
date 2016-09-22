@@ -12,7 +12,6 @@ function PluginsRegistry() {
     registerPlugin: function(plugin){
       if (!self._plugins[plugin.name]) {
         self._plugins[plugin.name] = plugin;
-        console.log("Registrato plugin "+plugin.name);
       }
     }
   };

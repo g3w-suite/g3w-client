@@ -63,18 +63,15 @@ proto.addFeature = function(feature) {
   }
   // aggiungo la feature al buffer (nel cso di nuova feature
   this._addEditToGeometryBuffer(feature, 'add');
-  console.log("Inserita nuova feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 // funzione chiamata in fase di update della Feature
 proto.updateFeature = function(feature) {
   this._addEditToGeometryBuffer(feature, 'update');
-  console.log("Modificata feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
 proto.deleteFeature = function(feature, relations) {
   // aggiunge alla editbuffer la geometria della feature cancellata
   this._addEditToGeometryBuffer(feature, 'delete');
-  console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
   //vado anche ad aggiungere al buffer delle relazioni da cancellare
   // relative alla feature cancellata
   this._addEditToValuesBuffers(feature, relations, 'delete');
@@ -88,7 +85,6 @@ proto.updateFields = function(feature, relations) {
     feature.setId(this.generateId());
   }
   this._addEditToValuesBuffers(feature, relations);
-  console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
 proto.getFeatureAttributes = function(fid){

@@ -107,7 +107,7 @@ function QueryResultsService(){
   base(this);
 }
 QueryResultsService.zoomToElement = function(layer,feature) {
-  console.log(feature.geometry);
+
 };
 
 QueryResultsService.goToGeometry = function(layer,feature) {

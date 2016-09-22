@@ -162,10 +162,8 @@ function QueryService(){
             feature.set('relations', relations);
           }
         }
-        //console.log('G3WRelations: ',g3w_relations);
       });
     });
-    // console.log(layersResponse);
     return layersResponse
   };
 

@@ -148,7 +148,6 @@ function QueryWFSProvider(){
   };
 
   this.standardSearch = function(url, filter){
-    console.log(filter)
   };
   this.createStandardFilter = function(filterObject, querylayer) {
     /////inserisco il nome del layer (typename) ///

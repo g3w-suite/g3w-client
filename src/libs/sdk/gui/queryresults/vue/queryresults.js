@@ -82,7 +82,6 @@ var vueComponentOptions = {
         attributes.push({label: attribute, value: value})
       });
       var end = Math.min(3, attributes.length);
-      //console.log(attributes);
       return attributes.slice(0, end);
     },
     relationsAttributes: function(relationAttributes) {
@@ -99,7 +98,6 @@ var vueComponentOptions = {
       return this.relationsAttributesSubset(elements).length;
     },
     collapseFeatureBox: function(layer, feature, relation_index) {
-      //console.log('coolapseFeatureBox: ', relation_index);
       var collapsed = true;
       var boxid;
       if (!_.isNil(relation_index)) {
@@ -107,9 +105,7 @@ var vueComponentOptions = {
       } else {
         boxid = layer.id + '_' + feature.id;
       }
-      //console.log(boxid);
       if (this.layersFeaturesBoxes[boxid]) {
-        //console.log(boxid);
         collapsed = this.layersFeaturesBoxes[boxid].collapsed;
       }
       return collapsed;

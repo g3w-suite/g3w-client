@@ -164,7 +164,6 @@ var FormPanel = Vue.extend({
       return this.$validate(field.name);
     },
     hasRelations: function() {
-      console.log('hasRealtions');
       return this.state.relations.length;
     }
   }

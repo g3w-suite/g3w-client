@@ -208,17 +208,14 @@ proto.addFeature = function(feature){
     feature.setId(this.generateId());
   }
   this._addEditToGeometryBuffer(feature,'add');
-  console.log("Inserita nuova feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
 proto.updateFeature = function(feature){
   this._addEditToGeometryBuffer(feature,'update');
-  console.log("Modificata feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
 proto.deleteFeature = function(feature){
   this._addEditToGeometryBuffer(feature,'delete');
-  console.log("Rimossa feature: (ID: "+feature.getId()+" "+feature.getGeometry().getCoordinates()+") nel buffer");
 };
 
 proto.updateFields = function(feature,relationsAttributes){
@@ -226,7 +223,6 @@ proto.updateFields = function(feature,relationsAttributes){
     feature.setId(this.generateId());
   }
   this._addEditToAttributesBuffer(feature,relationsAttributes);
-  console.log("Modificati attributi feature: (ID: "+feature.getId()+")");
 };
 
 proto.getFeatureAttributes = function(fid){
@@ -914,17 +910,14 @@ proto.addElement = function(element){
     element.id = (this.generateId());
   }
   this._addEditToBuffer(element,'add');
-  console.log("Inserita nuovo elemento relazione: (ID: "+element.id+" nel buffer");
 };
 
 proto.updateElement = function(element){
   this._addEditToBuffer(element,'update');
-  console.log("Modificata elemento relazione: (ID: "+element.id+" nel buffer");
 };
 
 proto.deleteElement = function(element){
   this._addEditToBuffer(element,'delete');
-  console.log("Rimossa elemento relazione: (ID: "+element.id+" nel buffer");
 };
 
 proto.getElementAttributes = function(elementId){
@@ -1745,20 +1738,6 @@ function EditingTool(editor,options) {
   this.isPausable = false;
   this.options = options || {};
   this.steps = null;
-  
-  /*var mapService = this.editor.getMapService();
-  mapService.on('pointerInteractionSet',function(interaction){
-    var isMineInteraction = false;
-    _.forEach(self._interactions,function(_interaction){
-      if (_interaction == interaction) {
-        isMineInteraction = true;
-      }
-    })
-    if (!isMineInteraction) {
-      console.log("Qualcuno ha preso il controllo");
-      self.editor.stopTool();
-    }
-  });*/
   
   base(this);
 }
@@ -3399,7 +3378,6 @@ function PluginsRegistry(){
     registerPlugin: function(plugin){
       if (!self._plugins[plugin.name]) {
         self._plugins[plugin.name] = plugin;
-        console.log("Registrato plugin "+plugin.name);
       }
     }
   }
@@ -4306,9 +4284,8 @@ function QueryWFSProvider(){
     }
   };
 
-  this.standardSearch = function(url, filter){
-    console.log(filter)
-  };
+  this.standardSearch = function(url, filter){};
+
   this.createStandardFilter = function(filterObject, querylayer) {
     /////inserisco il nome del layer (typename) ///
     ol3GetFeatureRequestObject.featureTypes.push(querylayer.getQueryLayerName);
@@ -6139,7 +6116,6 @@ Vue.component('tristate-tree', {
     },
     selected: function() {
       var isSelected = this.layerstree.selected ? "SI" : "NO";
-      console.log(isSelected);
       return isSelected;
     }
   },
@@ -6986,7 +6962,7 @@ function MapService(project){
   routerService.addRoute('map/{?query}',function(query){
     var query = query || {};
     if (query.center) {
-      console.log('Centra mappa su: '+query.center);
+
     }
   });
   
@@ -7810,7 +7786,7 @@ function QueryResultsService(){
 };
 
 QueryResultsService.zoomToElement = function(layer,feature) {
-  console.log(feature.geometry);
+
 };
 
 QueryResultsService.goToGeometry = function(layer,feature) {
@@ -8591,7 +8567,7 @@ proto.unmount = function() {
 };
 
 proto.hide = function() {
-  console.log(this.internalComponent.$el);
+
 };
 
 module.exports = Component;
