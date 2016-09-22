@@ -28,8 +28,8 @@
                 <tr v-show="collapseFeatureBox(layer,feature)" class="queryresults-featurebox">
                   <td :colspan="attributesSubsetLength(layer.attributes)+1">
                     <div class="action-buttons-container">
-                      <div v-if="geometryAvailable(feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
-                        <span class="action-button-icon glyphicon glyphicon-map-marker" @click="trigger('gotogeometry',layer,feature)"></span>
+                      <div v-if="geometryAvailable(feature)" @click="trigger('gotogeometry',layer,feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
+                        <span class="action-button-icon glyphicon glyphicon-map-marker"></span>
                       </div>
                     </div>
                     <table>
