@@ -517,7 +517,7 @@ proto.extentToWGS84 = function(extent){
   return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
 };
 
-proto.highlightGeometry = function(geometryObj,options){
+proto.highlightGeometry = function(geometryObj,options) {
   var options = options || {};
   var zoom = options.zoom || true;
   
@@ -567,19 +567,29 @@ proto.highlightGeometry = function(geometryObj,options){
         });
         styles.push(style);
       }
-      else if (geometryType == 'Point'){
+      else if (geometryType == 'Point') {
         var style = new ol.style.Style({
           image: new ol.style.Circle({
             radius: 6,
             fill: new ol.style.Fill({
-              color: 'rgb(255,255,0)',
+              color: 'rgb(255,255,0)'
             })
           }),
           zIndex: Infinity
         });
         styles.push(style);
+      } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
+        var style = new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'rgb(255,255,0)',
+            width: 4
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 0, 0.5)'
+          })
+        });
+        styles.push(style);
       }
-      
       return styles;
     }
   });

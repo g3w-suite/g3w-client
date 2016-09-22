@@ -32,7 +32,7 @@ function getFieldType(layer,name,value) {
   }
 
   return Fields.SIMPLE;
-};
+}
 
 /*function isSimple(layer,feature,attribute) {
   var fieldType = getFieldType(layer,feature,attribute);
