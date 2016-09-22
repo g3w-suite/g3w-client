@@ -124,7 +124,7 @@ function QueryService(){
   // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
   this._parseLayermsGMLOutput = function(queryLayer, data){
     var parser = new ol.format.WMSGetFeatureInfo({
-      layers: [queryLayer.getQueryLayerName()]
+      //layers: [queryLayer.getQueryLayerName()]
     });
     return parser.readFeatures(data);
   };
@@ -171,6 +171,7 @@ function QueryService(){
   // dal server così da avere una risposta coerente in termini di formato risultati da presentare
   // nel componente QueryResults
   this.handleQueryResponseFromServer = function(response, infoFormat, queryLayers) {
+
     var jsonresponse;
     var featuresForLayers = [];
     var parser, data;
@@ -209,6 +210,7 @@ function QueryService(){
     _.forEach(queryLayers,function(queryLayer) {
       var features = parser.call(self, queryLayer, data);
       nfeatures += features.length;
+
       featuresForLayers.push({
         layer: queryLayer,
         features: features
