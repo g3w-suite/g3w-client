@@ -397,30 +397,45 @@ proto.setupLayers = function(){
   this.viewer.removeLayers();
   this.setupBaseLayers();
   this._reset();
+  // recupero i layers dal project
+  // sono di tipo projectLayers
   var layers = this.project.getLayers();
-  //raggruppo per valore del multilayer con chiave valore multilayer e valore array
-  var multiLayers = _.groupBy(layers,function(layer){
+  //raggruppo per valore del multilayer con chiave valore multilayer
+  // e valore array
+  var multiLayers = _.groupBy(layers, function(layer){
     return layer.state.multilayer;
   });
-  _.forEach(multiLayers, function(layers,id) {
+  //una volta raggruppati per multilayer dove la chiave è il valore del multilayer
+  // e il valore è un array di projectLayers
+  _.forEach(multiLayers, function(layers, id) {
     var multilayerId = 'layer_'+id;
+    // prendo il valore tiled del primo layer (dovrebbero essere tutti uguali)
+    // mi server per poter costruire il tipo di wms se tilato o meno
     var tiled = layers[0].state.tiled;
+    // creo configurazione per costruire il layer wms
     var config = {
+      // getWMSUrl funzione creata in fase di inizializzazione dell'applicazione
       url: self.project.getWmsUrl(),
       id: multilayerId,
       tiled: tiled
     };
+    //creo il wms layer
     var mapLayer = new WMSLayer(config, self.layersExtraParams);
+    // lo aggiungo alla lista dei mapLayers
     self.addMapLayer(mapLayer);
+    // registo i listerns sul mapLayer costruito
     self.registerListeners(mapLayer);
-    _.forEach(layers.reverse(),function(layer){
+    _.forEach(layers.reverse(), function(layer) {
+      // per ogni layer appartenete allo stesso multilayer (è un array)
+      // viene aggiunto al mapLayer (WMSLayer) perecedentemente creato
       mapLayer.addLayer(layer);
     });
   });
-  
-  _.forEach(this.getMapLayers().reverse(),function(mapLayer){
+  // una volta creati tutti i mapLayer apparteneti alla mappa
+  _.forEach(this.getMapLayers().reverse(), function(mapLayer) {
+    // scorro sui mapLayer (reverse) e aggiungo alla mappa
     self.viewer.map.addLayer(mapLayer.getOLLayer());
-    mapLayer.update(self.state,self.layersExtraParams);
+    mapLayer.update(self.state, self.layersExtraParams);
   });
   return this.mapLayers;
 };
@@ -460,8 +475,9 @@ proto.updateMapLayers = function(mapLayers) {
     mapLayer.update(self.state, self.layersExtraParams);
   })
 };
+// funzione che registra i listeners sulla creazione del mapLayers
+proto.registerListeners = function(mapLayer) {
 
-proto.registerListeners = function(mapLayer){
   var self = this;
   mapLayer.on('loadstart',function(){
     self._incrementLoaders();

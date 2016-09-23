@@ -146,8 +146,9 @@ proto.isExternalWMS = function() {
 };
 
 proto.getWMSLayerName = function() {
+  // prendo come inizio 'attributo name come nome del layer wms
   var layerName = this.state.name;
-  if (this.state.source && this.state.source.layers){
+  if (this.state.source && this.state.source.layers) {
     layerName = this.state.source.layers;
   }
   return layerName;

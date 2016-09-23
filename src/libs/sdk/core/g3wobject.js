@@ -171,7 +171,7 @@ proto._setupListenersChain = function(setters){
           if (cont){
             var listenerFnc = beforeListeners[counter].fnc;
             if (beforeListeners[counter].async){
-              // aggiungo next come ulitmo parametro
+              // aggiungo next come ulitmo nel caso di onbeforeasync
               _args.push(next);
               counter += 1;
               listenerFnc.apply(self,_args)

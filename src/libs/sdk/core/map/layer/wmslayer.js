@@ -16,7 +16,9 @@ function WMSLayer(options,extraParams){
   
   base(this,options);
 }
+
 inherit(WMSLayer,MapLayer);
+
 var proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers){
@@ -151,7 +153,7 @@ proto._updateLayers = function(mapState,extraParams){
   var visibleLayers = this._getVisibleLayers(mapState);
   if (visibleLayers.length > 0) {
     var params = {
-      LAYERS: _.join(_.map(visibleLayers,function(layer){
+      LAYERS: _.join(_.map(visibleLayers, function(layer) {
         return layer.getWMSLayerName();
       }),',')
     };

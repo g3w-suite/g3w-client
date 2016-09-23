@@ -56,11 +56,11 @@ proto.updateRelation = function(relation) {
   // ciclo sugli emeneti della relazione
   _.forEach(relation.elements, function(element) {
     //chiama l'aggiornamento dell'elemento nel buffer
-    self._editBuffer(element);
+    self._editElementsBuffer(element);
   })
 };
 // Modifica elemento nel buffer
-proto._editBuffer = function(element) {
+proto._editElementsBuffer = function(element) {
   // un elemento con tutti i campi vuoti non lo aggiungo
   var filled = _.some(element.fields, function (field) {
     // verifica se il valore è nullo o undefined

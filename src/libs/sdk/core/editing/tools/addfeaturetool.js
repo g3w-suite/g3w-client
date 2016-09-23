@@ -36,6 +36,7 @@ var proto = AddFeatureTool.prototype;
 proto.run = function() {
   var self = this;
   //definisce l'interazione che deve essere aggiunta
+  // specificando il layer sul quale le feature aggiunte devono essere messe
   this.drawInteraction = new ol.interaction.Draw({
     type: this.editor.getEditVectorLayer().geometrytype,
     source: this.source,
@@ -99,6 +100,7 @@ proto.stop = function() {
   //rimove l'interazione e setta a null drawInteracion
   this.removeInteraction(this.drawInteraction);
   this.drawInteraction = null;
+  // rtirna semprte true
   return true;
 };
 

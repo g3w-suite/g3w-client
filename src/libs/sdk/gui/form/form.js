@@ -166,7 +166,13 @@ var FormPanel = Vue.extend({
     hasRelations: function() {
       return this.state.relations.length;
     }
+  },
+  ready: function() {
+    if (this.$options.form.relationOne) {
+      this.addRelationElement(this.$options.form.relationOne);
+    }
   }
+
 });
 
 var Inputs = {};
@@ -196,6 +202,7 @@ function Form(options) {
   this.name = options.name; // nome del form
   this.dataid = options.dataid; // "accessi", "giunzioni", ecc.
   this.editor = options.editor || {};
+  this.relationOne = options.relationOne || null;
   this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   this.state = {
@@ -280,6 +287,8 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   _.forEach(relations, function(relation, relationIndex) {
     _.forEach(relationFields[relation.name], function(relationField) {
       _.forEach(relation.elements, function(element, elementIndex) {
+        /// aggiungo allo stato della relazione copiata NEW
+        relations[relationIndex].elements[elementIndex].state = 'NEW';
         _.forEach(element.fields, function(field, fieldIndex) {
            if (field.name == relationField) {
              relations[relationIndex].elements[elementIndex].fields[fieldIndex].value = null;

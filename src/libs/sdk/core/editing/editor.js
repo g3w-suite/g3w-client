@@ -220,7 +220,7 @@ proto.setTool = function(toolType, options) {
   // es. toolType = editattributes per editare gli attributi di una featue
   var toolClass = this._tools[toolType];
   // se esiste il tool richiesto
-  if (toolClass ) {
+  if (toolClass) {
     //creo l'istanza della classe Tool
     var toolInstance = new toolClass(this, options);
     // setto le proprità type dell'oggetto acriveTool
@@ -234,7 +234,8 @@ proto.setTool = function(toolType, options) {
   }
 };
 
-// funzione chiamata da fuori (verosimilmente da pluginservice)
+// funzione chiamata da setTool o da latro che
+// verifica se è stata già istanziato un tool
 // al fine di interrompere l'editing sul layer
 proto.stopTool = function() {
   //verifica se esiste l'istanza del tool (come attiva)
@@ -243,7 +244,9 @@ proto.stopTool = function() {
   if (this._activeTool.instance && !this._activeTool.instance.stop()) {
     return false;
   }
+  // fa la chisura del form (penso sempre per sicurezza)
   GUI.closeForm();
+  // chiude in ogni caso il setModal(grigio sopra la mappa)
   GUI.setModal(false);
   // se non è verificata la condizione sopra (dovuta ad esempio alla non istanziazione di nessus tool)
   // si chiama il metodo clea
@@ -318,13 +321,17 @@ proto.getFeatureLockIdsForFeatureIds = function(fids) {
 };
 
 proto.getFeatureLockForFeatureIds = function(fids) {
-  return _.filter(this._vectorLayer.getFeatureLocks(),function(featurelock) {
-    return _.includes(fids,featurelock.featureid);
-  });
+  // ritorna un aray delle feature che sono state editate e che sono locckate
+  //console.log(this._vectorLayer.getFeatureLocks());
+  /*return _.filter(this._vectorLayer.getFeatureLocks(), function(featurelock) {
+    return _.includes(fids, featurelock.featureid);
+  });*/
+  return this._vectorLayer.getFeatureLocks();
 };
 // funzione che prende le feature nuove, aggiornate e cancellate
 //dall'edit buffer
-proto.getEditedFeatures = function(){
+proto.getEditedFeatures = function() {
+  // prende gli id unici delle feature che sono state editate
   var modifiedFids = this._editBuffer.collectFeatureIds();
   var lockIds = this.getFeatureLockForFeatureIds(modifiedFids);
   return {
@@ -350,9 +357,13 @@ proto.setFieldsWithValues = function(feature, fields, relations) {
   _.forEach(fields, function(field) {
     attributes[field.name] = field.value;
   });
+  // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
+  // vado a scrivere neln'edit buffer relativo ai campi
+  // la festure e le relazioni che cono state create o modificate
   this._editBuffer.updateFields(feature, relations);
   if (relations) {
+    // se ci sono relazioni vado a settare i dai delle relazioni nel layervettoriale originale
     this._vectorLayer.setRelationsData(feature.getId(), relations);
   }
 };
@@ -416,7 +427,7 @@ proto.createRelationElement = function(relation) {
 proto.getRelationPkFieldIndex = function(relationName) {
   return this._vectorLayer.getRelationPkFieldIndex(relationName);
 };
-
+// retituisce l'oggetto field
 proto.getField = function(name, fields) {
   var fields = fields || this.getVectorLayer().getFieldsWithValues();
   var field = null;
@@ -602,26 +613,42 @@ proto._setupEditAttributesListeners = function() {
   });
 };
 
+proto._checkIfRelationOne = function(relations) {
+  // overwrite from plugin
+  var relationOne = null;
+  _.forEach(relations, function(relation, index) {
+    if (relation.type == 'ONE') {
+      relationOne = relations[index];
+    }
+  });
+  return relationOne;
+};
+
 proto._openEditorForm = function(isNew, feature, next) {
   var self = this;
+  // viene recuperato il vectorLayer dell'editor
   var vectorLayer = this.getVectorLayer();
+  // vengono recuperati i fields del vectorLayer con i valori
   var fields = vectorLayer.getFieldsWithValues(feature);
-  // nel caso qualcuno, durante la catena di setterListeners,
-  // abbia settato un attributo (solo nel caso di un nuovo inserimento)
-  // usato ad esempio nell'editing delle strade, dove viene settato in fase di
-  // inserimento/modifica il codice dei campi nod_ini e nod_fin
+  // prende il valor pk del vectorLayer
   var pk = vectorLayer.pk;
-  if (pk && _.isNull(this.getField(pk))){
-    _.forEach(feature.getProperties(),function(value,attribute){
-      var field = self.getField(attribute,fields);
-      if(field){
+  // verifico se il valore della chiave primaria e verifica
+  // //se esiste l'oggetto field uguale alla chiave primaria
+  if (pk && _.isNull(this.getField(pk))) {
+    _.forEach(feature.getProperties(), function(value, attribute) {
+      var field = self.getField(attribute, fields);
+      if (field) {
         field.value = value;
       }
     });
   }
+  var relationOne = null;
   var relationsPromise = this.getRelationsWithValues(feature);
   relationsPromise
     .then(function(relations) {
+      if (self.isNewFeature(feature.getId()) && self.checkOneRelation) {
+        relationOne = self._checkIfRelationOne(relations);
+      }
       form = new self._formClass({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,
@@ -632,6 +659,7 @@ proto._openEditorForm = function(isNew, feature, next) {
         isnew: self.isNewFeature(feature.getId()),
         fields: fields,
         relations: relations,
+        relationOne: relationOne,
         editor: self,
         buttons:[
           {
@@ -671,5 +699,6 @@ proto._openEditorForm = function(isNew, feature, next) {
       GUI.setModal(false);
     })
 };
+
 
 module.exports = Editor;

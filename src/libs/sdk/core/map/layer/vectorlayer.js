@@ -13,7 +13,7 @@ function VectorLayer(config) {
   this.id = config.id || null;
   this.name = config.name || "";
   this.pk = config.pk || "id"; // TODO: il GeoJSON setta l'id della feature da sé, e nasconde il campo PK dalle properties. In altri formati va verificato, e casomai usare feature.setId()
-  
+  this._newPrefix = '_new_';
   this._olSource = new ol.source.Vector({
     features: new ol.Collection()
   });
@@ -52,9 +52,9 @@ module.exports = VectorLayer;
 
 var proto = VectorLayer.prototype;
 
-proto.setData = function(featuresData){
-  var self = this;
+proto.setData = function(featuresData) {
 
+  var self = this;
   var features;
   if (this.format) {
     switch (this.format){
@@ -66,7 +66,6 @@ proto.setData = function(featuresData){
         features = geojson.readFeatures(featuresData);
         break;
     }
-
     if (this._editingMode && this._featureLocks) {
       features = _.filter(features, function(feature){
         var hasFeatureLock = false;
@@ -74,7 +73,7 @@ proto.setData = function(featuresData){
           if (featureLock.featureid == feature.getId()) {
             hasFeatureLock = true;
           }
-        })
+        });
         return hasFeatureLock;
       })
     }
@@ -109,7 +108,11 @@ proto.setFeatureLocks = function(featurelocks) {
 
 proto.getFeatureLocks = function() {
   return this._featureLocks;
-}
+};
+
+proto.addLockId = function(lockId) {
+  this._featureLocks.push(lockId);
+};
 
 proto.setFeatureData = function(oldfid,fid,geometry,attributes){
   var feature = this.getFeatureById(oldfid);
@@ -176,9 +179,11 @@ proto.getFieldsNames = function(){
     return field.name;
   });
 };
-
-proto.getFieldsWithValues = function(obj){
+// funzione che serve ad esempio all'openEditorFor per popolare
+// il form con i campi della feature e i relativi valori (nel caso di editing di una feature esistente)
+proto.getFieldsWithValues = function(obj) {
   var self = this;
+  // clono i fields in quanto non voglio modificare i valori originali
   var fields = _.cloneDeep(this._fields);
   var feature, attributes;
   // il metodo accetta sia feature che fid
@@ -193,8 +198,12 @@ proto.getFieldsWithValues = function(obj){
   }
   _.forEach(fields, function(field){
     if (feature){
-      if (!this._PKinAttributes && field.name == self.pk){
-        field.value = feature.getId();
+      if (!this._PKinAttributes && field.name == self.pk) {
+        if (self.isNewFeature(feature.getId())) {
+          field.value = null;
+        } else {
+          field.value = feature.getId();
+        }
       }
       else{
         field.value = attributes[field.name];
@@ -206,8 +215,9 @@ proto.getFieldsWithValues = function(obj){
   });
   return fields;
 };
-
+// funzione che setta e relazione del layer vettoriale
 proto.setRelations = function(relations) {
+  // assegno al valore _relations l'array relazioni
   this._relations = relations;
   // è un array contenete le relazioni con altri layers
   _.forEach(relations, function(relation) {
@@ -218,6 +228,7 @@ proto.setRelations = function(relations) {
         // aggiung ll'atributo pkFieldIndex
         // che mi servirà per recuperare il campo
         // primary del layer relazione
+        // setto indice del campo chiave primaria
         relation.pkFieldIndex = idx
       }
     })
@@ -423,3 +434,11 @@ proto.clear = function(){
 proto.addToMap = function(map){
   map.addLayer(this._olLayer);
 };
+
+proto.isNewFeature = function(fid){
+  if (fid) {
+    return fid.toString().indexOf(this._newPrefix) == 0;
+  }
+  return true;
+};
+

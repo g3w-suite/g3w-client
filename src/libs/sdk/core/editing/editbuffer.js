@@ -83,7 +83,7 @@ proto.updateFields = function(feature, relations) {
   if(!feature.getId()) {
     // genero id random e lo setto alla feature
     feature.setId(this.generateId());
-  }
+  }// vado a chiamare la funzione che mi aggiorna i campi della feature e delle relazioni
   this._addEditToValuesBuffers(feature, relations);
 };
 
@@ -120,6 +120,7 @@ proto.getRelationsEdits = function(fid){
 // funzione che colleziona tutti gli (unici) delle featues modificate
 // dei buffer geometry e attribute
 proto.collectFeatureIds = function() {
+
   var geometriesBuffers = this._geometriesBuffer;
   var attributesBuffers = this._attributesBuffer;
   var modifiedFids = [];
@@ -295,6 +296,7 @@ proto._addDeleteRelationsBuffers = function(relations) {
   }
 };
 // funzione che mette in relazione feature e relazioni
+// e aggiorna i campi della feature nell'editbuffer
 proto._addEditToValuesBuffers = function(feature, relations) {
   var self = this;
   // prende id della feature
@@ -310,10 +312,11 @@ proto._addEditToValuesBuffers = function(feature, relations) {
   }
   // a quel punto inserisco una nuova modifica nell'array delle modifiche
   // che rigurada quella particolare feature identificata dalla chiave id
+  // dentro negli attributi c'è anche la geometria
   attributesBuffer[fid].push(attributes);
   // se snono state passate relazioni
   if (relations) {
-    // clico su ognuna di essere
+    // ciclo su ognuna di esse
     _.forEach(relations, function(relation) {
       //se esiste già nell'oggetto relation buffer legate a quella feature
       if (!_.has(self._relationsBuffers, fid)) {

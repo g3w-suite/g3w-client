@@ -2894,10 +2894,14 @@ proto.getFieldsWithValues = function(obj){
     attributes = feature.getProperties();
   }
   
-  _.forEach(fields,function(field){
+  _.forEach(fields, function(field){
     if (feature){
       if (!this._PKinAttributes && field.name == self.pk){
-        field.value = feature.getId();
+        if (self.isNewFeature(feature.getId())) {
+          field.value = null;
+        } else {
+          field.value = feature.getId();
+        }
       }
       else{
         field.value = attributes[field.name];
@@ -3110,12 +3114,12 @@ function WMSLayer(options,extraParams){
     MULTILAYER: 'multilayer'
   };
 
-  this.extraParams = extraParams
+  this.extraParams = extraParams;
   this.layers = [];
   
   base(this,options);
 }
-inherit(WMSLayer,MapLayer)
+inherit(WMSLayer,MapLayer);
 var proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers){

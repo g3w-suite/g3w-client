@@ -28,6 +28,7 @@ function Project(projectConfig) {
     _.forIn(obj, function (layerConfig, key) {
         //verifica che il valore dell'id non sia nullo
         if (!_.isNil(layerConfig.id)) {
+            //costruisco il project layer per ogni layer
             var layer = self.buildProjectLayer(layerConfig);
             self._layers[layer.getId()] = layer;
         }
@@ -66,7 +67,6 @@ var proto = Project.prototype;
 proto.buildProjectLayer = function(layerConfig) {
   var layer = new ProjectLayer(layerConfig);
   layer.setProject(this);
-
   // aggiungo proprietà non ottenute dalla consfigurazione
   layer.state.selected = false;
   layer.state.disabled = false;
