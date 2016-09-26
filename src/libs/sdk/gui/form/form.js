@@ -5,7 +5,6 @@ var Panel =  require('gui/panel');
 var PickCoordinatesInteraction = require('g3w-ol3/src/interactions/pickcoordinatesinteraction');
 var QueryService = require('core/query/queryservice');
 var ClipBoard = require('core/clipboardservice');
-var Field = require('gui/form/field/field');
 
 Vue.filter('startcase', function (value) {
   return _.startCase(value);
@@ -168,8 +167,13 @@ var FormPanel = Vue.extend({
     }
   },
   ready: function() {
-    if (this.$options.form.relationOne) {
-      this.addRelationElement(this.$options.form.relationOne);
+    var self = this;
+    if (this.$options.form.relationOne && this.$options.form.isnew) {
+      var relationsOne = this.$options.form._getRelationsOne();
+      _.forEach(relationsOne, function(relationOne){
+        self.addRelationElement(relationOne);
+      });
+
     }
   }
 
@@ -250,6 +254,18 @@ proto.unmount = function(){
 
 proto.getFields = function() {
   return this._fields;
+};
+
+proto._getRelationsOne = function() {
+  // overwrite from plugin
+  var self = this;
+  var relationsOne = [];
+  _.forEach(this.state.relations, function(relation, index) {
+    if (relation.type == 'ONE') {
+      relationsOne.push(self.state.relations[index]);
+    }
+  });
+  return relationsOne;
 };
 
 proto._copyFormToClipBoard = function() {
@@ -334,26 +350,6 @@ proto._isEditable = function(field){
   return field.editable;
 };
 
-// funzione che serve per creare i field sia per le relazioni che per i layer
-proto._createField = function(type, field, elementIndex, relation) {
-
-  if (type.indexOf(field.type) == -1) {
-    return false
-  }
-  var options = {};
-  options.id = field.name;
-  options.type = field.input.type;
-  if (relation && this._isVisible(field)) {
-    if (!this._relationFields[relation.name]) {
-      this._relationFields[relation.name] = {};
-    }
-    this._relationFields[relation.name][elementIndex] = [];
-    this._relationFields[relation.name][elementIndex].push(new Field(options));
-  } else if (this._isVisible(field)) {
-    this._layerFields.push(new Field(options));
-  }
-  return true
-};
 proto._isSimple = function(field){
   if (_.includes(Inputs.specialInputs,field.input.type)){
     return false;

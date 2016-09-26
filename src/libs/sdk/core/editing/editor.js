@@ -30,7 +30,8 @@ function Editor(options) {
   this._newPrefix = '_new_';
   this._featureLocks = null;
   this._started = false;
-
+  // verifica se bisogna attivare le relazioni ONE all'aggiunta di una nuova feature
+  this.checkOneRelation = options.checkOneRelation || false;
   // regole copy and paste campi non sovrascrivibili
 
 
@@ -613,17 +614,6 @@ proto._setupEditAttributesListeners = function() {
   });
 };
 
-proto._checkIfRelationOne = function(relations) {
-  // overwrite from plugin
-  var relationOne = null;
-  _.forEach(relations, function(relation, index) {
-    if (relation.type == 'ONE') {
-      relationOne = relations[index];
-    }
-  });
-  return relationOne;
-};
-
 proto._openEditorForm = function(isNew, feature, next) {
   var self = this;
   // viene recuperato il vectorLayer dell'editor
@@ -646,9 +636,6 @@ proto._openEditorForm = function(isNew, feature, next) {
   var relationsPromise = this.getRelationsWithValues(feature);
   relationsPromise
     .then(function(relations) {
-      if (self.isNewFeature(feature.getId()) && self.checkOneRelation) {
-        relationOne = self._checkIfRelationOne(relations);
-      }
       form = new self._formClass({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,
@@ -659,7 +646,7 @@ proto._openEditorForm = function(isNew, feature, next) {
         isnew: self.isNewFeature(feature.getId()),
         fields: fields,
         relations: relations,
-        relationOne: relationOne,
+        relationOne: self.checkOneRelation,
         editor: self,
         buttons:[
           {
