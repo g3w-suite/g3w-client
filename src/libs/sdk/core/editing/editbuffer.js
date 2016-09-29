@@ -3,23 +3,20 @@ var G3WObject = require('core/g3wobject');
 var RelationEditBuffer = require('./relationeditbuffer');
 
 function EditBuffer(editor) {
+  //editor a cui appartiene
   this._editor = editor;
-
+  // clone del vector layer originale
   this._origVectorLayer = new ol.layer.Vector({
     source: new ol.source.Vector()
   });
+  // clona il vector layer originale vecotr layer
   this._cloneLayer();
-
   //buffer delle geometrie
   this._geometriesBuffer = {};
-
   // buffer degli attributi
   this._attributesBuffer = {};
-
   // buffer degli attributi delle relazioni
   this._relationsBuffers = {};
-
-
 }
 inherit(EditBuffer, G3WObject);
 
@@ -167,7 +164,7 @@ proto.collectFeatures = function(state, asGeoJSON){
   return features;
 };
 
-proto.createFeature = function(fid,geometry,attributes){
+proto.createFeature = function(fid, geometry, attributes) {
   var feature = new ol.Feature();
   feature.setId(fid);
   feature.setGeometry(geometry);
@@ -374,7 +371,7 @@ proto._clearBuffers = function() {
 proto._cloneLayer = function() {
   var clonedFeatures = [];
   //ciclo sul tutte le feature del layer vettoriale originale
-  this._editor._vectorLayer.getSource().forEachFeature(function(feature) {
+  this._editor.getVectorLayer().getSource().forEachFeature(function(feature) {
     clonedFeatures.push(feature.clone());
   }, this);
   // aggiungo tali feature sul layer "originale del buffer"

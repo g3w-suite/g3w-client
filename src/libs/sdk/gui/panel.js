@@ -38,6 +38,9 @@ proto.mount = function(parent) {
   var panel = this.internalPanel;
   panel.$mount().$appendTo(parent);
   $(parent).localize();
+  if (panel.onShow) {
+    panel.onShow();
+  }
   return resolvedValue(true);
 };
 
@@ -50,6 +53,9 @@ proto.unmount = function(){
   var deferred = $.Deferred();
   panel.$destroy(true);
   deferred.resolve();
+  if (panel.onClose) {
+    panel.onClose();
+  }
   return deferred.promise();
 };
 
