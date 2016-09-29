@@ -615,10 +615,10 @@ proto.highlightGeometry = function(geometryObj,options) {
   },duration);
 };
 
-proto.refreshMap = function(){
-  _.forEach(this._mapLayers,function(wmsLayer){
+proto.refreshMap = function() {
+  _.forEach(this._mapLayers, function(wmsLayer) {
     wmsLayer.getOLLayer().getSource().updateParams({"time": Date.now()});
-  })
+  });
 };
 
 proto.resize = function(width,height) {

@@ -33,22 +33,21 @@ function Editor(options) {
   // verifica se bisogna attivare le relazioni ONE all'aggiunta di una nuova feature
   this.checkOneRelation = options.checkOneRelation || false;
   // regole copy and paste campi non sovrascrivibili
-
-
+  this._saveFromEditForm = false;
   this._copyAndPasteFieldsNotOverwritable = options.copyAndPasteFieldsNotOverwritable || {};
   this._fieldsLayerbindToRelationsFileds = options.fieldsLayerbindToRelationsFileds || {};
+  // tools del form come ad esempio copypaste etc ..
+  this._formTools = options.formTools || ['copypaste'];
 
   this._setterslisteners = {
     before: {},
     after: {}
   };
-
   this._geometrytypes = [
     'Point',
     'LineString',
     'MultiLineString'
   ];
-
   // elenco dei tool e delle relative classi per tipo di geometria (in base a vector.geometrytype)
   this._toolsForGeometryTypes = {
     'Point': {
@@ -106,6 +105,8 @@ function Editor(options) {
   this._setupAddFeatureAttributesEditingListeners();
   this._setupEditAttributesListeners();
   this._askConfirmToDeleteEditingListener();
+  //this._setupMoveFeatureEditingListeners();
+  //this._setupDeleteFeatureEditingListeners();
 
   base(this);
 }
@@ -285,13 +286,13 @@ proto.undoAll = function() {
   this._editBuffer.undoAll();
 };
 
-/*proto.setFeatureLocks = function(featureLocks) {
+proto.setFeatureLocks = function(featureLocks) {
   this._featureLocks = featureLocks;
 };
 
 proto.getFeatureLocks = function() {
   return this._featureLocks;
-};*/
+};
 
 proto.getFeatureLockIds = function() {
   return _.map(this._vectorLayer.getFeatureLocks(),function(featurelock) {
@@ -449,6 +450,7 @@ proto.isDirty = function() {
 // _setToolSettersListeners  --- !!!! DA COMPLETARE LA SPIEGAZIONE !!!----
 
 proto.onafter = function(setter, listener, priority) {
+  console.log(setter);
   this._onaftertoolaction(setter, listener, priority);
 };
 
@@ -462,9 +464,9 @@ proto.onbeforeasync = function(setter, listener, priority) {
   this._onbeforetoolaction(setter, listener, true, priority);
 };
 
-proto._onaftertoolaction = function(setter,listener,priority) {
+proto._onaftertoolaction = function(setter, listener, priority) {
   priority = priority || 0;
-  if (!_.get(this._setterslisteners.after,setter)) {
+  if (!_.get(this._setterslisteners.after, setter)) {
     this._setterslisteners.after[setter] = [];
   }
   this._setterslisteners.after[setter].push({
@@ -521,14 +523,36 @@ proto._setToolSettersListeners = function(tool) {
     }
   })
 };
+
+proto._transformCoordinateFeature = function(feature) {
+
+  // controlla prima l proiezione
+  var mapProjection = this._mapService.getProjection().getCode();
+  var layerProjection = this._vectorLayer.getCrs();
+  var coord = feature.getGeometry().getCoordinates();
+  coord = ol.proj.transform(coord, mapProjection, layerProjection);
+  feature.getGeometry().setCoordinates(coord);
+  return feature;
+
+};
+
 // metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {
-
+  feature = this._transformCoordinateFeature(feature);
   this._editBuffer.addFeature(feature);
 };
 // non fa aalctro che aggiornare la feature del buffer
 proto.updateFeature = function(feature) {
+  feature = this._transformCoordinateFeature(feature);
   this._editBuffer.updateFeature(feature);
+};
+//edit feature
+proto.pickFeature = function(feature) {
+  this.updateFeature(feature)
+};
+//move feature
+proto.moveFeature = function(feature) {
+  this.updateFeature(feature);
 };
 // non fa altro che cancellare la feature dall'edit buffer
 proto.deleteFeature = function(feature, relations, isNew) {
@@ -614,6 +638,19 @@ proto._setupEditAttributesListeners = function() {
   });
 };
 
+proto._onSaveEditorForm = function(feature, fields, relations, next) {
+  var self = this;
+  var feature = feature;
+  var next = next;
+  return function(field, relations) {;
+    self.setFieldsWithValues(feature, fields, relations);
+    if (next) {
+      next(true);
+    }
+    GUI.setModal(false);
+  };
+};
+
 proto._openEditorForm = function(isNew, feature, next) {
   var self = this;
   // viene recuperato il vectorLayer dell'editor
@@ -632,7 +669,6 @@ proto._openEditorForm = function(isNew, feature, next) {
       }
     });
   }
-  var relationOne = null;
   var relationsPromise = this.getRelationsWithValues(feature);
   relationsPromise
     .then(function(relations) {
@@ -647,19 +683,14 @@ proto._openEditorForm = function(isNew, feature, next) {
         fields: fields,
         relations: relations,
         relationOne: self.checkOneRelation,
+        tools: self._formTools,
         editor: self,
         buttons:[
           {
             title: "Salva",
             type: "save",
             class: "btn-danger",
-            cbk: function(fields, relations){
-              self.setFieldsWithValues(feature, fields, relations);
-              if (next){
-                next(true);
-              }
-              GUI.setModal(false);
-            }
+            cbk: self._onSaveEditorForm(feature, fields, relations, next)
           },
           {
             title: "Cancella",

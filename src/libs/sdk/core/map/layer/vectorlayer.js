@@ -10,6 +10,7 @@ function VectorLayer(config) {
   this.geometrytype = config.geometrytype || null;
   this.format = config.format || null;
   this.crs = config.crs  || null;
+  this.crsLayer = config.crsLayer || this.crs;
   this.id = config.id || null;
   this.name = config.name || "";
   this.pk = config.pk || "id"; // TODO: il GeoJSON setta l'id della feature da sé, e nasconde il campo PK dalle properties. In altri formati va verificato, e casomai usare feature.setId()
@@ -21,7 +22,7 @@ function VectorLayer(config) {
     name: this.name,
     source: this._olSource
   });
-  
+  this._isReady = false;
   /*
    * Array di oggetti:
    * {
@@ -42,9 +43,9 @@ function VectorLayer(config) {
   this._relationsDataLoaded = {};
   this.lazyRelations = true;
   this._relations = null;
-
   this._editingMode = config.editing || false;
   this._featureLocks = null;
+  this._crs = null;
 
 }
 inherit(VectorLayer,G3WObject);
@@ -60,10 +61,12 @@ proto.setData = function(featuresData) {
     switch (this.format){
       case "GeoJSON":
         var geojson = new ol.format.GeoJSON({
-          defaultDataProjection: this.crs,
           geometryName: "geometry"
         });
-        features = geojson.readFeatures(featuresData);
+        features = geojson.readFeatures(featuresData, {
+          dataProjection: self.crsLayer,
+          featureProjection: self.crs
+        });
         break;
     }
     if (this._editingMode && this._featureLocks) {
@@ -89,7 +92,6 @@ proto.setData = function(featuresData) {
       var featuresToLoad = _.filter(features,function(feature){
         return !_.includes(alreadyLoadedIds,feature.getId());
       });
-      
       this._olSource.addFeatures(featuresToLoad);
       
       // verifico, prendendo la prima feature, se la PK è presente o meno tra gli attributi
@@ -100,6 +102,9 @@ proto.setData = function(featuresData) {
   else {
     console.log("VectorLayer format not defined");
   }
+};
+proto.cleanFeatureLocks = function() {
+  this._featureLocks = null;
 };
 
 proto.setFeatureLocks = function(featurelocks) {
@@ -119,21 +124,19 @@ proto.setFeatureData = function(oldfid,fid,geometry,attributes){
   if (fid){
     feature.setId(fid);
   }
-  
   if (geometry){
     feature.setGeometry(geometry);
   }
-  
   if (attributes){
     var oldAttributes = feature.getProperties();
     var newAttributes =_.assign(oldAttributes,attributes);
     feature.setProperties(newAttributes);
   }
-  
   return feature;
 };
 
-proto.addFeatures = function(features){
+proto.addFeatures = function(features) {
+  console.log(features.length);
   this.getSource().addFeatures(features);
 };
 
@@ -143,6 +146,14 @@ proto.setFeaturesFilter = function(featuresFilter){
 
 proto.setFields = function(fields){
   this._fields = fields;
+};
+
+proto.setCrs = function(crs) {
+  this._crs = crs;
+};
+
+proto.getCrs = function() {
+  return this._crs;
 };
 
 proto.setPkField = function(){
@@ -155,7 +166,7 @@ proto.setPkField = function(){
   });
   
   if (!pkfieldSet){
-    this._fields
+    this._fields;
   }
 };
 
@@ -425,6 +436,14 @@ proto.getFeatureById = function(fid){
   if (fid) {
     return this._olLayer.getSource().getFeatureById(fid);
   }
+};
+
+proto.isVisible = function() {
+  return this._olLayer.getVisible();
+};
+
+proto.setVisible = function(bool) {
+  this._olLayer.setVisible(bool);
 };
 
 proto.clear = function(){

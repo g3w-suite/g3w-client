@@ -132,10 +132,9 @@ proto._setupListenersChain = function(setters){
         returnVal = setterFnc.apply(self,args);
         // e risolvo la promessa (eventualmente utilizzata da chi ha invocato il setter
         deferred.resolve(returnVal);
-        
         var afterListeners = self.settersListeners.after[setter];
-        _.forEach(afterListeners,function(listener){
-          listener.fnc.apply(self,args);
+        _.forEach(afterListeners, function(listener) {
+          listener.fnc.apply(self, args);
         })
       }
       

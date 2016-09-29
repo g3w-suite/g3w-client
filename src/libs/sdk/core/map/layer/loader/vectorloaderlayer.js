@@ -14,6 +14,10 @@ function VectorLoaderLayer() {
   this._mapService = null;
   this._loadedExtent = null;
   this._editingMode = false;
+  this._customUrlParameters = '';
+  //mi tengo i vectorLayersCodes dei layer caricati
+  this._vectorLayersCodes = [];
+  this._vectorLayersData = {};
 
   base(this);
 
@@ -37,24 +41,27 @@ inherit(VectorLoaderLayer, LoaderLayer);
 var proto = VectorLoaderLayer.prototype;
 // funzione principale, starting point, chiamata dal plugin per
 // il recupero dei vettoriali (chiamata verso il server)
-proto.loadLayers = function(mode) {
+proto.loadLayers = function(mode, customUrlParameters) {
     // il parametro mode mi di è in scrittura, lettura etc ..
   var self = this;
-  this._setMode(mode);
+  this.setMode(mode);
+  if (customUrlParameters) {
+    this._setCustomUrlParameters(customUrlParameters)
+  }
   var deferred = $.Deferred();
   // tiene conto dei codici dei layer che non sono stati caricati come vector
   var noVectorlayerCodes = [];
   //verifica se sono stati caricati i vettoriali dei layer
   // attraverso la proprietà vector del layer passato dal plugin
   _.forEach(this._layers, function(layer, layerCode) {
-      // verifico se l'attributo vector è nullo
-      if (_.isNull(layer.vector)) {
-          noVectorlayerCodes.push(layerCode);
-      }
+    // verifico se l'attributo vector è nullo
+    if (_.isNull(layer.vector)) {
+      noVectorlayerCodes.push(layerCode);
+    }
   });
   // eseguo le richieste delle configurazioni e mi tengo le promesse
   var vectorLayersSetup = _.map(noVectorlayerCodes, function(layerCode) {
-          return self._setupVectorLayer(layerCode);
+    return self._setupVectorLayer(layerCode);
   });
     // emetto l'evento loadingvectorlayersstart (il pluginservice è in ascolto)
   self.emit('loadingvectorlayersstart');
@@ -64,30 +71,39 @@ proto.loadLayers = function(mode) {
       // sono state prese dal server e dopo aver assegnato all'attributo vector
       // del layer plugin il layer vettoriale costruito con le configurazioni
       // di sopra
+  .then(function() {
+    // le promesse ritornano il layerCode del layer vettoriale appena costuito
+    var vectorLayersCodes = Array.prototype.slice.call(arguments);
+    // emtto evento che inzia il recupero dei dati dei layer vettoriali (geojson)
+    self.emit('loadingvectolayersdatastart');
+    self.loadAllVectorsData(vectorLayersCodes)
     .then(function() {
-      // le promesse ritornano il layerCode del layer vettoriale appena costuito
-      var vectorLayersCodes = Array.prototype.slice.call(arguments);
-      // emtto evento che inzia il recupero dei dati dei layer vettoriali (geojson)
-      self.emit('loadingvectolayersdatastart');
-      self.loadAllVectorsData(vectorLayersCodes)
-        .then(function() {
-          deferred.resolve(vectorLayersCodes);
-        })
-        .fail(function() {
-          deferred.reject();
-        })
-        .always(function() {
-          // questa mi server per segnalare che il loadind dei dati è finito
-          self.emit('loadingvectorlayersend');
-          self.emit('loadingvectolayersdataend');
-        })
-      })
+      self._vectorLayersCodes = vectorLayersCodes;
+      deferred.resolve(vectorLayersCodes);
+    })
     .fail(function() {
-        self.emit('loadingvectorlayersend');
-        deferred.reject();
-    });
-
+      deferred.reject();
+    })
+    .always(function() {
+      // questa mi server per segnalare che il loadind dei dati è finito
+      self.emit('loadingvectorlayersend');
+      self.setReady(true);
+      self.emit('loadingvectolayersdataend');
+    })
+  })
+  .fail(function() {
+    self.emit('loadingvectorlayersend');
+    deferred.reject();
+  });
   return deferred.promise();
+};
+
+proto.setVectorLayersCodes = function(vectorLayersCodes) {
+  this._vectorLayersCodes = vectorLayersCodes;
+};
+
+proto.getVectorLayersCodes = function() {
+  return this._vectorLayersCodes;
 };
 
 //funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
@@ -128,12 +144,9 @@ proto.loadAllVectorsData = function(layerCodes) {
 
     return deferred.promise();
 };
-// setto il modo di caricare il layer
-proto._setMode = function(mode) {
-  // al momento previsto solo w in editing
-  if (mode == 'w') {
-    this._editingMode = true;
-  }
+
+proto._setCustomUrlParameters = function(customUrlParameters) {
+  this._customUrlParameters = customUrlParameters;
 };
 
 // funzione che dato la configurazione del layer fornito dal plugin (style, editor, vctor etc..)
@@ -150,10 +163,12 @@ proto._setupVectorLayer = function(layerCode) {
             var vectorConfig = vectorConfigResponse.vector;
             // una volta ottenuta dal server la configurazione vettoriale,
             // provvedo alla creazione del layer vettoriale
+            var crsLayer = layerConfig.crs || self._mapService.getProjection().getCode();
             var vectorLayer = self._createVectorLayer({
                 geometrytype: vectorConfig.geometrytype,
                 format: vectorConfig.format,
-                crs: "EPSG:3003",
+                crs: self._mapService.getProjection().getCode(),
+                crsLayer : crsLayer,
                 id: layerConfig.id,
                 name: layerConfig.name,
                 pk: vectorConfig.pk,
@@ -161,6 +176,7 @@ proto._setupVectorLayer = function(layerCode) {
             });
             // setto i campi del layer
             vectorLayer.setFields(vectorConfig.fields);
+            vectorLayer.setCrs(crsLayer);
             // questo è la proprietà della configurazione del config layer
             // che specifica se esistono relazioni con altri layer
             // sono array di oggetti che specificano una serie di
@@ -197,18 +213,39 @@ proto._loadVectorData = function(vectorLayer, bbox) {
     // vettoriale, del layer richiesto
     return self._getVectorLayerData(vectorLayer, bbox)
         .then(function(vectorDataResponse) {
+            self.setVectorLayerData(vectorLayer.name, vectorDataResponse);
             // setto i dati vettoriali del layer vettoriale
             // e verifico se siamo in editingMode write e se ci sono featurelocks
-            if (self._editingMode && vectorDataResponse.featurelocks){
+            if (self._editingMode && vectorDataResponse.featurelocks) {
               // nel cso in cui sia in editing (mode w) e che si siano featureLocks
               // setto tale features al layervettoriale
-              vectorLayer.setFeatureLocks(vectorDataResponse.featurelocks);
+              self.setVectorFeaturesLock(vectorLayer, vectorDataResponse.featurelocks);
             }
             //setto i dati del layer vettoriale (geojson)
             vectorLayer.setData(vectorDataResponse.vector.data);
           if (self._)
             return vectorDataResponse;
         });
+};
+
+proto.getVectorLayerData = function(layerCode) {
+  return this._vectorLayersData[layerCode];
+};
+
+proto.getVectorLayersData = function() {
+  return this._vectorLayersData;
+};
+
+proto.setVectorLayerData = function(layerCode, vectorLayerData) {
+  this._vectorLayersData[layerCode] = vectorLayerData;
+};
+
+proto.setVectorFeaturesLock = function(vectorLayer, featureslock) {
+  vectorLayer.setFeatureLocks(featureslock);
+};
+
+proto.cleanVectorFeaturesLock = function(vectorLayer) {
+  vectorLayer.cleanFeatureLocks();
 };
 
 // ottiene la configurazione del vettoriale
@@ -218,7 +255,7 @@ proto._getVectorLayerConfig = function(layerName) {
     var d = $.Deferred();
     // attravercso il layer name e il base url
     // chiedo la server di inviarmi la configurazione editing del laye
-    $.get(this._baseUrl+layerName+"/?config")
+    $.get(this._baseUrl+layerName+"/?config"+ this._customUrlParameters)
         .done(function(data) {
             d.resolve(data);
         })
@@ -231,7 +268,7 @@ proto._getVectorLayerConfig = function(layerName) {
 // ottiene il vettoriale in modalità  editing
 proto._getVectorLayerData = function(vectorLayer, bbox) {
     var d = $.Deferred();
-    $.get(this._baseUrl+vectorLayer.name+"/?editing&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
+    $.get(this._baseUrl+vectorLayer.name+"/?editing"+ this._customUrlParameters+"&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
         .done(function(data) {
             d.resolve(data);
         })
@@ -242,7 +279,6 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
 };
 // funzione per creare il layer vettoriale
 proto._createVectorLayer = function(options){
-
     var vector = new VectorLayer(options);
     return vector;
 };

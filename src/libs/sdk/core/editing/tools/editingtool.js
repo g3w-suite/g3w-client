@@ -11,7 +11,6 @@ function EditingTool(editor, options) {
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
   this.options = options || {};
   this.steps = null;
-  
   base(this);
 }
 

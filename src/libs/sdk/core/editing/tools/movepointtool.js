@@ -94,7 +94,7 @@ proto.stop = function(){
 
 proto._moveFeature = function(feature){
   this.editor.emit('moveend',feature);
-  this.editor.updateFeature(feature);
+  this.editor.moveFeature(feature);
   this._selectInteraction.getFeatures().clear();
   this._busy = false;
   this.pause(false);

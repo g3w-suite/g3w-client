@@ -22,7 +22,7 @@ var server =  {
     api:  '/api',
     initconfig:  '/api/initconfig',
     config:  '/api/config',
-    staticurl:  '',
+    staticurl:  ''
   }
 };
 

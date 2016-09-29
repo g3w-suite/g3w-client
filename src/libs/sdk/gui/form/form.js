@@ -30,14 +30,17 @@ var FormPanel = Vue.extend({
   template: require('./formpanel.html'),
   data: function() {
     return {
-      state: {}
+      state: {},
+      tools : {
+        copypaste: false
+      }
     }
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
     exec: function(cbk) {
       var relations = this.state.relations || null;
-      cbk(this.state.fields,relations);
+      cbk(this.state.fields, relations);
       GUI.closeForm();
     },
     btnEnabled: function(button) {
@@ -60,6 +63,9 @@ var FormPanel = Vue.extend({
     },
     isLayerPicker: function(field){
       return this.$options.form._isLayerPicker(field);
+    },
+    isFile: function(field) {
+      return this.$options.form._isFile(field);
     },
     layerPickerPlaceHolder: function(field){
       return this.$options.form._getlayerPickerLayerName(field.input.options.layerid);
@@ -156,6 +162,25 @@ var FormPanel = Vue.extend({
     },
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
+    },
+    onFileChange: function(e) {
+      var files = e.target.files || e.dataTransfer.files;
+      if (!files.length) {
+        return;
+      }
+      this.createImage(files[0]);
+    },
+    createImage: function(file) {
+      var self = this;
+      var image = new Image();
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        self.state.image = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    removeImage: function() {
+      this.state.image = ''
     }
   },
   computed: {
@@ -173,10 +198,8 @@ var FormPanel = Vue.extend({
       _.forEach(relationsOne, function(relationOne){
         self.addRelationElement(relationOne);
       });
-
     }
   }
-
 });
 
 var Inputs = {};
@@ -193,6 +216,7 @@ Inputs.simpleFieldTypes = [Inputs.STRING,Inputs.INTEGER,Inputs.FLOAT];
 Inputs.TEXTAREA = 'textarea';
 Inputs.SELECT = 'select';
 Inputs.LAYERPICKER = 'layerpicker';
+Inputs.FILE = 'file';
 
 Inputs.specialInputs = [Inputs.TEXTAREA,Inputs.SELECT,Inputs.LAYERPICKER];
 
@@ -210,10 +234,12 @@ function Form(options) {
   this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   this.state = {
-    // i dati del form possono avere o meno una primary key
+
     fields: options.fields,
-    relations: options.relations
+    relations: options.relations,
+    image: ''
   };
+  this.tools = options.tools;
   // clipboard
   this._clipBoard = ClipBoard;
   //da rivedere
@@ -368,6 +394,11 @@ proto._isSelect = function(field) {
 proto._isLayerPicker = function(field){
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.LAYERPICKER);
 };
+
+proto._isFile = function(field) {
+  return (field.input.type == Inputs.FILE);
+};
+
 proto._cleanUpPickLayer = function() {
   var mapService = GUI.getComponent('map').getService();
   mapService.removeInteraction(this._pickInteraction);
@@ -535,7 +566,6 @@ proto._setupRelationElementFields = function(element) {
 };
 
 proto._setupPanel = function(){
-  var self = this;
   var panel = this.internalComponent = new this._formPanel({
     form: this
   });
@@ -544,8 +574,19 @@ proto._setupPanel = function(){
   }
   var elementsBoxes = this.getUniqueRelationsElementId();
   this.state.elementsBoxes = elementsBoxes;
+  // qui associo lo state del pannello allo ste del form
   panel.state = this.state;
+  this._setFormTools(this.tools);
   return panel;
+};
+
+proto._setFormTools = function(tools) {
+  var self = this;
+  _.forEach(tools, function(tool) {
+    if (_.has(self.internalComponent.tools, tool)) {
+      self.internalComponent.tools[tool] = true;
+    }
+  })
 };
 
 proto.getUniqueRelationsElementId = function() {

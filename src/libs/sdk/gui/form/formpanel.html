@@ -1,6 +1,6 @@
 <div>
     <div class="quick-actions-menu">
-        <div class="pull-right">
+        <div v-if="tools.copypaste" class="pull-right">
             <button class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
             <button class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
             <button class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
@@ -29,6 +29,16 @@
                                     <div v-if="isLayerPicker(field)">
                                         <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
                                         <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
+                                    </div>
+                                    <div v-if="isFile(field)">
+                                        <div v-if="!state.image">
+                                            <h2>Select an image</h2>
+                                            <input type="file" @change="onFileChange">
+                                        </div>
+                                        <div v-else>
+                                            <img style="width: 50%; max-width:200px; margin: auto; display: block; margin-bottom: 10px;" :src="state.image" />
+                                            <button @click="removeImage">Remove image</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

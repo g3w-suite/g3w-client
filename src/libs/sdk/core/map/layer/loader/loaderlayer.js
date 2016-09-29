@@ -3,9 +3,10 @@ var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
 
 function LoaderLayerService() {
-    this._layers = {};
-    this._type = 'tipo di layers';
-    base(this);
+  this._layers = {};
+  this._type = 'tipo di layers';
+  this._isReady = false;
+  base(this);
 }
 inherit(LoaderLayerService, G3WObject);
 
@@ -20,7 +21,7 @@ proto.getLayers = function() {
 };
 
 proto.getLayer = function(layerName) {
-    return this._layers[layerName];
+  return this._layers[layerName];
 };
 
 proto.loadLayer = function(url, options) {
@@ -32,6 +33,27 @@ proto.loadLayers = function() {
 
 proto.cleanUpLayers = function() {
   //TODO
+};
+
+proto.setReady = function(bool) {
+  this._isReady = bool;
+};
+
+proto.isReady = function() {
+  return this._isReady;
+};
+
+// setto il modo di caricare il layer
+proto.setMode = function(mode) {
+  switch(mode){
+    case 'w':
+      this._editingMode = true;
+      break;
+    case 'r':
+      this._editingMode = false;
+      break;
+  }
+  this.emit('setmode', mode);
 };
 
 module.exports = LoaderLayerService;

@@ -15,11 +15,10 @@ function PickFeatureTool(editor){
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
   this.setters = {
     pickFeature: {
-      fnc: noop,
+      fnc: PickFeatureTool.prototype._pickFeature,
       fallback: PickFeatureTool.prototype._fallBack
-    },
+    }
   };
-  
   base(this, editor);
 }
 inherit(PickFeatureTool, EditingTool);
@@ -27,6 +26,11 @@ inherit(PickFeatureTool, EditingTool);
 module.exports = PickFeatureTool;
 
 var proto = PickFeatureTool.prototype;
+
+proto._pickFeature = function(feature) {
+  this.editor.pickFeature(feature);
+  console.log('tool picked feature');
+};
 
 // metodo eseguito all'avvio del tool
 proto.run = function() {

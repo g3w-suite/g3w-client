@@ -36,7 +36,7 @@ proto.getPosition = function(positionCode) {
   return position;
 };
 
-proto._handleClick = function(){
+proto._handleClick = function(event){
   event.preventDefault();
   var self = this;
   var map = this.getMap();

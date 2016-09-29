@@ -21,7 +21,7 @@ function EditBuffer(editor) {
 
 
 }
-inherit(EditBuffer,G3WObject);
+inherit(EditBuffer, G3WObject);
 
 module.exports = EditBuffer;
 
@@ -32,6 +32,7 @@ proto.commit = function() {
   // prendo tutte le feature dal vettore di editing dell'editor
   var newFeatures = this._editor.getEditVectorLayer().getFeatures();
   //aggiungo le features nuove al layer vettoriale originale
+  // che vengono visualizzate sul vector layer
   this._editor.getVectorLayer().addFeatures(newFeatures);
   // faccio il clear del layere di editing
   this._editor.getEditVectorLayer().clear();

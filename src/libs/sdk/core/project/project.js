@@ -73,6 +73,15 @@ proto.buildProjectLayer = function(layerConfig) {
 
   return layer;
 };
+// funzione che ritorna id
+proto.getId = function() {
+  return this.state.id;
+};
+
+//funzione che ritorna il tipo
+proto.getType = function() {
+  return this.state.type;
+};
 
 proto.getGid = function() {
   return this.state.gid;
