@@ -1,15 +1,10 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
-var G3WObject = require('core/g3wobject');
 var DeleteInteraction = require('g3w-ol3/src/interactions/deletefeatureinteraction');
-var GUI = require('gui/gui');
-
 var EditingTool = require('./editingtool');
 
 function DeleteFeatureTool(editor) {
-  var self = this;
   this.editor = editor;
-  this.isPausable = true;
   this.drawInteraction = null;
   this.layer = null;
   this.editingLayer = null;
@@ -114,7 +109,8 @@ proto.run = function() {
     layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
     style: function(feature, resolution) {
-      return styles[feature.getGeometry().getType()];
+      var style = self.editor._editingVectorStyle || styles[feature.getGeometry().getType()];
+      return style;
     }
   });
   this.addInteraction(this._selectInteraction);

@@ -31,11 +31,23 @@ proto.run = function(){
   var self = this;
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-  
+  var defaultStyle = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 5,
+      fill: new ol.style.Fill({
+        color: '#1E90FF'
+      })
+    })
+  });
+  var style = this.editor._editingVectorStyle || defaultStyle;
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer,this.editingLayer],
-    condition: ol.events.condition.click
+    condition: ol.events.condition.click,
+    style: [style]
   });
+  if (style) {
+    //this._selectInteraction.setStyle(style);
+  }
   this.addInteraction(this._selectInteraction);
   
   this._translateInteraction = new ol.interaction.Translate({
@@ -63,11 +75,6 @@ proto.run = function(){
           feature.setGeometry(self._origGeometry);
         });
       }
-    //}
-    /*catch (error){
-      console.log(error);
-      feature.setGeometry(self._origGeometry);
-    }*/
   });
 
 };

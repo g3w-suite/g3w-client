@@ -156,6 +156,9 @@ proto.addEditingLayerToMap = function(geometryType) {
     name: "editvector",
     geometrytype: geometryType
   });
+  if (this._editingVectorStyle) {
+    this._editVectorLayer.setStyle(this._editingVectorStyle);
+  }
   //il getMapLyer non è altro che la versione ol.Vector del vectorLayer oggetto
   this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
 };
@@ -524,7 +527,7 @@ proto._setToolSettersListeners = function(tool) {
   })
 };
 
-proto._transformCoordinateFeature = function(feature) {
+proto._transformCoordinateFeatureFromMapToLayer = function(feature) {
 
   // controlla prima l proiezione
   var mapProjection = this._mapService.getProjection().getCode();
@@ -533,17 +536,28 @@ proto._transformCoordinateFeature = function(feature) {
   coord = ol.proj.transform(coord, mapProjection, layerProjection);
   feature.getGeometry().setCoordinates(coord);
   return feature;
-
 };
+
+proto._transformCoordinateFeatureFromLayerToMap = function(feature) {
+
+  // controlla prima la proiezione
+  var mapProjection = this._mapService.getProjection().getCode();
+  var layerProjection = this._vectorLayer.getCrs();
+  var coord = feature.getGeometry().getCoordinates();
+  coord = ol.proj.transform(coord, layerProjection, mapProjection);
+  feature.getGeometry().setCoordinates(coord);
+  return feature;
+};
+
 
 // metodo add Feature che non fa alto che aggiungere la feature al buffer
 proto.addFeature = function(feature) {
-  feature = this._transformCoordinateFeature(feature);
+  feature = this._transformCoordinateFeatureFromMapToLayer(feature);
   this._editBuffer.addFeature(feature);
 };
 // non fa aalctro che aggiornare la feature del buffer
 proto.updateFeature = function(feature) {
-  feature = this._transformCoordinateFeature(feature);
+  feature = this._transformCoordinateFeatureFromMapToLayer(feature);
   this._editBuffer.updateFeature(feature);
 };
 //edit feature

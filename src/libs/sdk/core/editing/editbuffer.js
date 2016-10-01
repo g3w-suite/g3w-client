@@ -26,11 +26,29 @@ var proto = EditBuffer.prototype;
 
 //funzione commit
 proto.commit = function() {
+  var self = this;
+  var vectorLayer = this._editor.getVectorLayer();
   // prendo tutte le feature dal vettore di editing dell'editor
   var newFeatures = this._editor.getEditVectorLayer().getFeatures();
-  //aggiungo le features nuove al layer vettoriale originale
-  // che vengono visualizzate sul vector layer
-  this._editor.getVectorLayer().addFeatures(newFeatures);
+  if (newFeatures) {
+    //aggiungo le features nuove al layer vettoriale originale
+    // che vengono visualizzate sul vector layer
+    _.forEach(newFeatures, function(feature, index) {
+      newFeatures[index] = self._editor._transformCoordinateFeatureFromLayerToMap(feature);
+    });
+    vectorLayer.addFeatures(newFeatures);
+  }
+  var editGeometryBuffer = this._geometriesBuffer;
+  _.forEach(editGeometryBuffer, function(geometry, featureId) {
+    if (!self._isNewFeature(featureId)) {
+      var feature = vectorLayer.getFeatureById(featureId);
+      //caso di update .. nel caso di delete la feature è nulla
+      if (feature) {
+        feature = self._editor._transformCoordinateFeatureFromLayerToMap(feature);
+        vectorLayer.modifyFeatureGeometry(featureId, feature.getGeometry());
+      }
+    }
+  });
   // faccio il clear del layere di editing
   this._editor.getEditVectorLayer().clear();
   // faccio il clear del buffer
