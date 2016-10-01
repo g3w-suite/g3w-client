@@ -53,7 +53,14 @@ proto.setMode = function(mode) {
       this._editingMode = false;
       break;
   }
+  this._mode = mode;
   this.emit('setmode', mode);
 };
+
+proto.getMode = function() {
+  return this._mode;
+};
+
+
 
 module.exports = LoaderLayerService;

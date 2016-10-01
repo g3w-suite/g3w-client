@@ -1,7 +1,6 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var resolvedValue = require('core/utils/utils').resolve;
-var rejectedValue = require('core/utils/utils').reject;
 var VectorLayer = require('core/map/layer/vectorlayer');
 var LoaderLayer = require('./loaderlayer');
 
@@ -246,6 +245,19 @@ proto.setVectorFeaturesLock = function(vectorLayer, featureslock) {
 
 proto.cleanVectorFeaturesLock = function(vectorLayer) {
   vectorLayer.cleanFeatureLocks();
+};
+
+proto.lockFeatures = function(layerName) {
+  var d = $.Deferred();
+  var bbox = this._mapService.state.bbox;
+  $.get(this._baseUrl+layerName+"/?lock" + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
+    .done(function(data) {
+      d.resolve(data);
+    })
+    .fail(function(){
+      d.reject();
+    });
+  return d.promise();
 };
 
 // ottiene la configurazione del vettoriale

@@ -30,6 +30,7 @@ function Editor(options) {
   this._newPrefix = '_new_';
   this._featureLocks = null;
   this._started = false;
+  this._editingVectorStyle = options.editingVectorStyle || null;
   // verifica se bisogna attivare le relazioni ONE all'aggiunta di una nuova feature
   this.checkOneRelation = options.checkOneRelation || false;
   // regole copy and paste campi non sovrascrivibili
@@ -453,7 +454,6 @@ proto.isDirty = function() {
 // _setToolSettersListeners  --- !!!! DA COMPLETARE LA SPIEGAZIONE !!!----
 
 proto.onafter = function(setter, listener, priority) {
-  console.log(setter);
   this._onaftertoolaction(setter, listener, priority);
 };
 

@@ -40,6 +40,7 @@ proto.run = function(){
     })
   });
   var style = this.editor._editingVectorStyle || defaultStyle;
+
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer,this.editingLayer],
     condition: ol.events.condition.click,

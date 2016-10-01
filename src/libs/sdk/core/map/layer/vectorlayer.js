@@ -136,8 +136,20 @@ proto.setFeatureData = function(oldfid,fid,geometry,attributes){
 };
 
 proto.addFeatures = function(features) {
-  console.log(features.length);
   this.getSource().addFeatures(features);
+};
+
+proto.modifyFeatureGeometry = function(featureId, geometry) {
+  var features = this.getFeatures();
+  var feature = null;
+  _.forEach(features, function(feature, index) {
+    if (feature.getId() == featureId) {
+      features[index].setGeometry(geometry);
+      feature = feature[index];
+      return feature
+    }
+  });
+  return feature;
 };
 
 proto.setFeaturesFilter = function(featuresFilter){
