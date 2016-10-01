@@ -29,6 +29,7 @@ var proto = MoveFeatureTool.prototype;
 
 proto.run = function(){
   var self = this;
+
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
   var defaultStyle = new ol.style.Style({
@@ -39,10 +40,10 @@ proto.run = function(){
       })
     })
   });
-  var style = this.editor._editingVectorStyle || defaultStyle;
 
+  var style = this.editor._editingVectorStyle.move || defaultStyle;
   this._selectInteraction = new ol.interaction.Select({
-    layers: [this.layer,this.editingLayer],
+    layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
     style: [style]
   });

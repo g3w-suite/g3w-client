@@ -29,7 +29,6 @@ var proto = PickFeatureTool.prototype;
 
 proto._pickFeature = function(feature) {
   this.editor.pickFeature(feature);
-  console.log('tool picked feature');
 };
 
 // metodo eseguito all'avvio del tool

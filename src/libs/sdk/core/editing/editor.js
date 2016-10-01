@@ -158,7 +158,7 @@ proto.addEditingLayerToMap = function(geometryType) {
     geometrytype: geometryType
   });
   if (this._editingVectorStyle) {
-    this._editVectorLayer.setStyle(this._editingVectorStyle);
+    this._editVectorLayer.setStyle(this._editingVectorStyle.url);
   }
   //il getMapLyer non è altro che la versione ol.Vector del vectorLayer oggetto
   this._mapService.viewer.map.addLayer(this._editVectorLayer.getMapLayer());
@@ -217,6 +217,7 @@ proto.stop = function() {
 
 //setta il tool corrent per il layer in editing
 proto.setTool = function(toolType, options) {
+  console.log('setTool');
   // al momento stopTool ritorna sempre true
   // quindi if sotto mai verificata
   if (!this.stopTool()) {
@@ -235,6 +236,7 @@ proto.setTool = function(toolType, options) {
     // setto i listeners legati al tool scelto
     this._setToolSettersListeners(toolInstance);
     // faccio partire (chiamando il metodo run dell'istanza tool) il tool
+    console.log('qui')
     toolInstance.run();
     return true;
   }

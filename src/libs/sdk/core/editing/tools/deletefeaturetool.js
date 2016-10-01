@@ -109,7 +109,7 @@ proto.run = function() {
     layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
     style: function(feature, resolution) {
-      var style = self.editor._editingVectorStyle || styles[feature.getGeometry().getType()];
+      var style = self.editor._editingVectorStyle.delete || styles[feature.getGeometry().getType()];
       return style;
     }
   });
