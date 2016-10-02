@@ -11,6 +11,7 @@ function PickFeatureTool(editor){
   this.pickFeatureInteraction = null;
   this._running = false;
   this._busy = false;
+  this._originalFeatureStyle = null;
   
   // qui si definiscono i metodi che vogliamo poter intercettare, ed eventualmente bloccare (vedi API G3WObject)
   this.setters = {
@@ -34,13 +35,24 @@ proto._pickFeature = function(feature) {
 // metodo eseguito all'avvio del tool
 proto.run = function() {
   var self = this;
+  var defaultStyle = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 5,
+      fill: new ol.style.Fill({
+        color: 'red'
+      })
+    })
+  });
+  var style = this.editor._editingVectorStyle ? this.editor._editingVectorStyle.edit : null;
   var layers = [this.editor.getVectorLayer().getMapLayer(),this.editor.getEditVectorLayer().getMapLayer()];
   this.pickFeatureInteraction = new PickFeatureInteraction({
     layers: layers
   });
   
-  this.pickFeatureInteraction.on('picked',function(e){
-    if (!self._busy){
+  this.pickFeatureInteraction.on('picked', function(e) {
+    self.editor.setPickedFeature(e.feature);
+    if (!self._busy) {
+      e.feature.setStyle(style);
       self._busy = true;
       self.pause(true);
       self.pickFeature(e.feature)

@@ -41,6 +41,9 @@ var FormPanel = Vue.extend({
     exec: function(cbk) {
       var relations = this.state.relations || null;
       cbk(this.state.fields, relations);
+      if (this.$options.form.editor.getPickedFeature()) {
+        this.$options.form.editor.cleanUpPickedFeature();
+      }
       GUI.closeForm();
     },
     btnEnabled: function(button) {

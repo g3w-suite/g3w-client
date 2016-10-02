@@ -1,4 +1,4 @@
-  var PickFeatureEventType = {
+var PickFeatureEventType = {
   PICKED: 'picked'
 };
 
@@ -12,7 +12,7 @@ var PickFeatureInteraction = function(options) {
   ol.interaction.Pointer.call(this, {
     handleDownEvent: PickFeatureInteraction.handleDownEvent_,
     handleUpEvent: PickFeatureInteraction.handleUpEvent_,
-    handleMoveEvent: PickFeatureInteraction.handleMoveEvent_,
+    handleMoveEvent: PickFeatureInteraction.handleMoveEvent_
   });
   
   this.features_ = options.features || null;

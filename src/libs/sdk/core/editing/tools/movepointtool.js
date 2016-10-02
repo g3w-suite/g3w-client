@@ -32,26 +32,14 @@ proto.run = function(){
 
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-  var defaultStyle = new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 5,
-      fill: new ol.style.Fill({
-        color: '#1E90FF'
-      })
-    })
-  });
 
-  var style = this.editor._editingVectorStyle.move || defaultStyle;
+  var style = this.editor._editingVectorStyle ? this.editor._editingVectorStyle.move : null;
   this._selectInteraction = new ol.interaction.Select({
     layers: [this.layer, this.editingLayer],
     condition: ol.events.condition.click,
-    style: [style]
+    style: style
   });
-  if (style) {
-    //this._selectInteraction.setStyle(style);
-  }
   this.addInteraction(this._selectInteraction);
-  
   this._translateInteraction = new ol.interaction.Translate({
     features: this._selectInteraction.getFeatures()
   });

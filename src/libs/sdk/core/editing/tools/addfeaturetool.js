@@ -43,6 +43,7 @@ proto.run = function() {
     condition: this._condition,
     finishCondition: this._finishCondition // disponibile da https://github.com/openlayers/ol3/commit/d425f75bea05cb77559923e494f54156c6690c0b
   });
+  var style = this.editor._editingVectorStyle ? this.editor._editingVectorStyle.add : null;
   //aggiunge l'interazione tramite il metodo generale di editor.js
   // che non fa altro che chaimare il mapservice
   this.addInteraction(this.drawInteraction);
@@ -54,6 +55,7 @@ proto.run = function() {
   });
   // viene settato l'evento drawend
   this.drawInteraction.on('drawend', function(e) {
+    e.feature.setStyle(style);
     self.editor.emit('drawend',e);
     if (!self._busy) {
       self._busy = true;
@@ -118,6 +120,9 @@ proto.removeLastPoint = function() {
 // add Feature fnc setter function
 proto._addFeature = function(feature) {
   // aggiungo la geometria nell'edit buffer
+  //risetto allo style iniziale
+  feature.setStyle(null);
+  ////
   this.editor.addFeature(feature);
   this._busy = false;
   this.pause(false);

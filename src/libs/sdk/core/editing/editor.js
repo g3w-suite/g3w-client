@@ -39,7 +39,7 @@ function Editor(options) {
   this._fieldsLayerbindToRelationsFileds = options.fieldsLayerbindToRelationsFileds || {};
   // tools del form come ad esempio copypaste etc ..
   this._formTools = options.formTools || ['copypaste'];
-
+  this._pickedFeature = null;
   this._setterslisteners = {
     before: {},
     after: {}
@@ -130,6 +130,19 @@ proto.getfieldsLayerbindToRelationsFileds = function() {
 
 proto.getMapService = function() {
   return this._mapService;
+};
+
+proto.getPickedFeature = function() {
+  return this._pickedFeature;
+};
+
+proto.setPickedFeature = function(pickedFeature) {
+  this._pickedFeature = pickedFeature;
+};
+
+proto.cleanUpPickedFeature = function() {
+  this._pickedFeature.setStyle(null);
+  this._pickedFeature = null;
 };
 
 // associa l'oggetto VectorLayer su cui si vuole fare l'editing

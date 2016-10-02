@@ -45,6 +45,8 @@ proto.commit = function() {
       //caso di update .. nel caso di delete la feature è nulla
       if (feature) {
         feature = self._editor._transformCoordinateFeatureFromLayerToMap(feature);
+        //RISETTO FEATURE STYLE AL VECCHIO
+        feature.setStyle(null);
         vectorLayer.modifyFeatureGeometry(featureId, feature.getGeometry());
       }
     }
