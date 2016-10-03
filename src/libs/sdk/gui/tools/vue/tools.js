@@ -6,17 +6,17 @@ var Component = require('gui/vue/component');
 var ToolsService = require('gui/tools/toolsservice');
 
 var InternalComponent = Vue.extend({
-    template: require('./tools.html'),
-    data: function() {
-      return {
-        state: null
-      }
-    },
-    methods: {
-      fireAction: function(actionid){
-        this.$options.toolsService.fireAction(actionid);
-      }
+  template: require('./tools.html'),
+  data: function() {
+    return {
+      state: null
     }
+  },
+  methods: {
+    fireAction: function(actionid) {
+      this.$options.toolsService.fireAction(actionid);
+    }
+  }
 });
 
 function ToolsComponent(options) {

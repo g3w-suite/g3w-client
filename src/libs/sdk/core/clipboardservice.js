@@ -4,11 +4,12 @@ function ClipboardService() {
     // clipBoardId : id del form, data sono fileds e relations passate al form
     // il clipBoardForm mi serve per capire se attivare o meno la clipboard
     // se e solo se si riferisce allo stesso id
-    this._data[formId] = data;
+    var formLayer = formId.split('form')[0];
+    this._data[formLayer] = data;
   };
 
-  this.get = function(formId) {
-    return this._data[formId] || {};
+  this.get = function(formLayer) {
+    return this._data[formLayer] || {};
   }
 }
 module.exports = new ClipboardService;

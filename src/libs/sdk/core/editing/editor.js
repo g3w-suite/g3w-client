@@ -230,7 +230,6 @@ proto.stop = function() {
 
 //setta il tool corrent per il layer in editing
 proto.setTool = function(toolType, options) {
-  console.log('setTool');
   // al momento stopTool ritorna sempre true
   // quindi if sotto mai verificata
   if (!this.stopTool()) {
@@ -249,7 +248,6 @@ proto.setTool = function(toolType, options) {
     // setto i listeners legati al tool scelto
     this._setToolSettersListeners(toolInstance);
     // faccio partire (chiamando il metodo run dell'istanza tool) il tool
-    console.log('qui')
     toolInstance.run();
     return true;
   }
@@ -373,10 +371,18 @@ proto.collectRelations = function() {
 };
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una
-proto.setFieldsWithValues = function(feature, fields, relations) {
+proto.setFieldsWithValues = function(feature, fields, relations, images) {
   var attributes = {};
   _.forEach(fields, function(field) {
-    attributes[field.name] = field.value;
+    if (images) {
+      if (images[field.name]) {
+        attributes[field.name] = images[field.name]
+      } else {
+        attributes[field.name] = field.value;
+      }
+    }  else {
+      attributes[field.name] = field.value;
+    }
   });
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
@@ -600,6 +606,10 @@ proto.generateId = function() {
   return this._newPrefix+Date.now();
 };
 
+proto.generateFormId = function(vectorName) {
+  return vectorName + 'form' + Date.now();
+};
+
 proto.isNewFeature = function(fid) {
   if (fid) {
     return fid.toString().indexOf(this._newPrefix) == 0;
@@ -671,8 +681,8 @@ proto._onSaveEditorForm = function(feature, fields, relations, next) {
   var self = this;
   var feature = feature;
   var next = next;
-  return function(field, relations) {;
-    self.setFieldsWithValues(feature, fields, relations);
+  return function(field, relations, images) {
+    self.setFieldsWithValues(feature, fields, relations, images);
     if (next) {
       next(true);
     }
@@ -704,7 +714,7 @@ proto._openEditorForm = function(isNew, feature, next) {
       form = new self._formClass({
         provider: self,
         name: "Edita attributi "+vectorLayer.name,
-        id: "attributes-edit-"+vectorLayer.name,
+        id: self.generateFormId(vectorLayer.name),
         dataid: vectorLayer.name,
         vectorLayer: vectorLayer,
         pk: vectorLayer.pk,

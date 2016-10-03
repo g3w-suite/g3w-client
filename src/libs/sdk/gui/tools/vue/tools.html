@@ -7,9 +7,9 @@
       <div id="{{ group.name }}-tools" class="tool-box">
         <template v-for="tool in group.tools">
           <div v-if="tool.type == 'checkbox' " class="checkbox tool">
-            <label><input style="cursor:pointer" type="checkbox" @click="fireAction(tool.actionId)" value="">{{ tool.name }}</label>
+            <label><input style="cursor:pointer" :checked="tool.isCheck" type="checkbox" @click="fireAction(tool.actionId)" value="">{{ tool.name }}</label>
           </div>
-          <div class="tool" v-else>
+          <div v-else class="tool" >
             <i class="glyphicon glyphicon-cog"></i>
             <span @click="fireAction(tool.actionId)">{{ tool.name }}</span>
           </div>

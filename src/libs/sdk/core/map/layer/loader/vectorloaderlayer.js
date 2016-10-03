@@ -280,7 +280,14 @@ proto._getVectorLayerConfig = function(layerName) {
 // ottiene il vettoriale in modalità  editing
 proto._getVectorLayerData = function(vectorLayer, bbox) {
     var d = $.Deferred();
-    $.get(this._baseUrl+vectorLayer.name+"/?editing"+ this._customUrlParameters+"&in_bbox="+bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
+    var lock = this.getMode() == 'w' ? true : false;
+    var apiUrl;
+    if (lock) {
+      apiUrl = this._baseUrl+vectorLayer.name+"/?editing";
+    } else {
+      apiUrl = this._baseUrl+vectorLayer.name+"/?"
+    }
+    $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
         .done(function(data) {
             d.resolve(data);
         })

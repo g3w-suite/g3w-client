@@ -66,6 +66,9 @@ var vueComponentOptions = {
       }
       return false;
     },
+    isLoading : function(){
+      return this.state.loading;
+    },
     hasResults: function() {
       return this.state.layers.length;
     },

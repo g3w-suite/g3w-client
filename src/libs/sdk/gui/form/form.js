@@ -40,7 +40,8 @@ var FormPanel = Vue.extend({
   methods: {
     exec: function(cbk) {
       var relations = this.state.relations || null;
-      cbk(this.state.fields, relations);
+      var images = this.state.images || null;
+      cbk(this.state.fields, relations, images);
       if (this.$options.form.editor.getPickedFeature()) {
         this.$options.form.editor.cleanUpPickedFeature();
       }
@@ -161,7 +162,8 @@ var FormPanel = Vue.extend({
       return this.$options.form.getUniqueRelationElementId(relation, element);
     },
     pasteClipBoardToForm : function() {
-      this.$options.form._pasteClipBoardToForm();
+      var layerForm = this.$options.form._getLayerFormFromId();
+      this.$options.form._pasteClipBoardToForm(layerForm);
     },
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
@@ -171,16 +173,18 @@ var FormPanel = Vue.extend({
       if (!files.length) {
         return;
       }
-      this.createImage(files[0]);
+      var fieldName = $(e.target).attr('field');
+      this.state.images[fieldName] = files[0];
+      //this.createImage(fieldName, files[0]);
     },
-    createImage: function(file) {
+    createImage: function(fieldName, file) {
       var self = this;
-      var image = new Image();
       var reader = new FileReader();
       reader.onload = function(e) {
         self.state.image = e.target.result;
+        self.state.images[fieldName] = e.target.result;
       };
-      reader.readAsDataURL(file);
+      return reader.readAsDataURL(file);
     },
     removeImage: function() {
       this.state.image = ''
@@ -237,17 +241,16 @@ function Form(options) {
   this.pk = options.pk || null; // eventuale chiave primaria (non tutti i form potrebbero avercela o averne bisogno
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   this.state = {
-
     fields: options.fields,
     relations: options.relations,
-    image: ''
+    images: {}
   };
   this.tools = options.tools;
   // clipboard
   this._clipBoard = ClipBoard;
   //da rivedere
-  this.state.canpaste = _.has(this._clipBoard._data, this.id);
-  ///
+  var formLayer = this.id.split('form')[0];
+  this.state.canpaste = _.has(this._clipBoard._data, formLayer);
   this._formPanel = options.formPanel || FormPanel;
   this._defaults = options.defaults || Inputs.defaults;
   this._pickedPromise = null;
@@ -285,6 +288,8 @@ proto.getFields = function() {
   return this._fields;
 };
 
+
+
 proto._getRelationsOne = function() {
   // overwrite from plugin
   var self = this;
@@ -296,6 +301,10 @@ proto._getRelationsOne = function() {
   });
   return relationsOne;
 };
+
+proto._getLayerFormFromId = function() {
+  return this.id.split('form')[0];
+}
 
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
@@ -350,9 +359,9 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   return true;
 };
 
-proto._pasteClipBoardToForm = function() {
+proto._pasteClipBoardToForm = function(layerForm) {
 
-  var formData = this._clipBoard.get(this.id);
+  var formData = this._clipBoard.get(layerForm);
   this._pasteStateWithoutPk(formData.fields, formData.relations);
   this.state.canpaste = false;
 };

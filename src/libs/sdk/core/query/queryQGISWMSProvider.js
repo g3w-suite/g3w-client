@@ -89,15 +89,20 @@ function QueryQGISWMSProvider() {
                 valueExtra = "%";
               }
               filterOp = Filters[k];
+              var value;
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
                   //verifico se il valore non è un numero e quindi aggiungo singolo apice
-                  /*if(isNaN(v)) {
-                    valueQuotes = "'";
+                  if (_.isNull(v) || _.isEmpty(v)) {
+                    if (filterOp.indexOf('LIKE') > 0) {
+                      value = valueQuotes + valueExtra + valueExtra + valueQuotes;
+                    } else {
+                      value = null;
+                    }
                   } else {
-                    valueQuotes = "";
-                  }*/
-                  filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
+                    value = valueQuotes + valueExtra + v + valueExtra + valueQuotes;
+                  }
+                  filterElement = "\"" + k + "\" "+ filterOp +" " + value;
                 });
               });
             }

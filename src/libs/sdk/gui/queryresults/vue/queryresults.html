@@ -110,6 +110,6 @@
       </div>
     </li>
   </ul>
-  <span v-if="!hasResults()">Nessun risultato</span>
+  <span v-if="!isLoading() && !hasResults()">Nessun risultato</span>
 </div>
 

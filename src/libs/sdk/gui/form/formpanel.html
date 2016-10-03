@@ -31,14 +31,16 @@
                                         <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                                     </div>
                                     <div v-if="isFile(field)">
-                                        <div v-if="!state.image">
-                                            <h2>Select an image</h2>
-                                            <input type="file" @change="onFileChange">
+                                        <div>
+                                            <!--<span class="btn btn-default btn-file">-->
+                                                <!--Carica Foto <input type="file" title="Carica Foto" accept="image/*;capture=camera" @change="onFileChange">-->
+                                            <!--</span>-->
+                                            <input type="file" :name="field.name" :field="field.name" title="Carica Foto" accept="image/*;capture=camera"  @change="onFileChange">
                                         </div>
-                                        <div v-else>
-                                            <img style="width: 50%; max-width:200px; margin: auto; display: block; margin-bottom: 10px;" :src="state.image" />
-                                            <button @click="removeImage">Remove image</button>
-                                        </div>
+                                        <!--<div v-if="state.image">-->
+                                            <!--<img style="width: 50%; max-width:200px; margin: auto; display: block; margin-bottom: 10px;" :src="state.image" />-->
+                                            <!--<button @click="removeImage">Rimuovi Foto</button>-->
+                                        <!--</div>-->
                                     </div>
                                 </div>
                             </div>
