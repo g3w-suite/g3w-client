@@ -1,6 +1,7 @@
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
+var PickFeatureInteraction = require('g3w-ol3/src/interactions/pickfeatureinteraction');
 
 var EditingTool = require('./editingtool');
 
@@ -30,14 +31,22 @@ proto.run = function(){
   var self = this;
   this.layer = this.editor.getVectorLayer().getMapLayer();
   this.editingLayer = this.editor.getEditVectorLayer().getMapLayer();
-  
-  this._selectInteraction = new ol.interaction.Select({
-    layers: [this.layer,this.editingLayer],
+
+  this.pickedFeatures = new ol.Collection;
+
+  this._pickInteraction = new PickFeatureInteraction({
+    layers: [this.layer, this.editingLayer]
   });
-  this.addInteraction(this._selectInteraction);
-  
+
+  this.addInteraction(this._pickInteraction);
+
+  this._pickInteraction.on('picked', function(e) {
+    self.pickedFeatures.clear();
+    self.pickedFeatures.push(e.feature);
+  });
+
   this._modifyInteraction = new ol.interaction.Modify({
-    features: this._selectInteraction.getFeatures(),
+    features: this.pickedFeatures,
     deleteCondition: this._deleteCondition,
   });
   this.addInteraction(this._modifyInteraction);
@@ -80,26 +89,26 @@ proto.pause = function(pause){
     if (this._snapInteraction){
       this._snapInteraction.setActive(false);
     }
-    this._selectInteraction.setActive(false);
+    this._pickInteraction.setActive(false);
     this._modifyInteraction.setActive(false);
   }
   else {
     if (this._snapInteraction){
       this._snapInteraction.setActive(true);
     }
-    this._selectInteraction.setActive(true);
+    this._pickInteraction.setActive(true);
     this._modifyInteraction.setActive(true);
   }
 };
 
 proto.stop = function(){
-  this._selectInteraction.getFeatures().clear();
+  this.pickedFeatures.clear();
   if (this._snapInteraction){
      this.removeInteraction(this._snapInteraction);
      this._snapInteraction = null;
   }
-  this.removeInteraction(this._selectInteraction);
-  this._selectInteraction = null;
+  this.removeInteraction(this._pickInteraction);
+  this._pickInteraction = null;
   this.removeInteraction(this._modifyInteraction);
   this._modifyInteraction = null;
   return true;
@@ -108,7 +117,6 @@ proto.stop = function(){
 proto._modifyFeature = function(feature,isNew){
   // aggionro la geometria nel buffer di editing
   this.editor.updateFeature(feature,isNew);
-  this._selectInteraction.getFeatures().clear();
   this._busy = false;
   this.pause(false);
   return true;
