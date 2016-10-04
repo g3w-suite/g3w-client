@@ -215,8 +215,6 @@ proto.stop = function() {
       this._editBuffer.destroy();
       //lo setto a null
       this._editBuffer = null;
-      //rimuovo i listeners
-      this.removeAllListeners();
       //rimuovo il layer dalla mappa
       this.removeEditingLayerFromMap();
       //setto editor started a false
@@ -226,6 +224,12 @@ proto.stop = function() {
     return false;
   }
   return true;
+};
+
+proto.destroy = function() {
+  if (this.stop()) {
+    this.removeAllListeners();
+  }
 };
 
 //setta il tool corrent per il layer in editing
