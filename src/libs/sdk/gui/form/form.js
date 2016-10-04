@@ -307,7 +307,7 @@ proto._checkFieldsValidation = function(fields) {
   var fieldValid = true;
   _.forEach(fields, function(field) {
     if (field.validate && field.validate.required) {
-      if (_.isNil(field.value)) {
+      if (_.isNil(field.value) || !_.trim(field.value)) {
         fieldValid = false;
       }
       valid = valid && fieldValid;
@@ -385,6 +385,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   this.state.relations = relations;
   this.state.fields = fields;
   var elementsBoxes = this.getUniqueRelationsElementId(false);
+  this.internalComponent.$validate();
   this.state.elementsBoxes = elementsBoxes;
   return true;
 };
