@@ -48,7 +48,7 @@ var FormPanel = Vue.extend({
       GUI.closeForm();
     },
     btnEnabled: function(button) {
-      return button.type != 'save' || (button.type == 'save' && this.$validation.valid);
+      return button.type != 'save' || (button.type == 'save' && this.$validation.valid && this.isValidForm());
     },
     hasFieldsRequired: function() {
       return this.$options.form._hasFieldsRequired();
@@ -88,6 +88,16 @@ var FormPanel = Vue.extend({
       .then(function() {
         //TODO
       })
+    },
+    isValidForm: function() {
+      var self = this;
+      var valid = this.$options.form._checkFieldsValidation(this.state.fields);
+      _.forEach(this.state.relations, function(relation) {
+        _.forEach(relation.elements, function(element) {
+          valid = valid && self.$options.form._checkFieldsValidation(element.fields);
+        })
+      });
+      return valid;
     },
     pickLayerInputChange: function() {
       this.$options.form._cleanUpPickLayer();
@@ -290,6 +300,20 @@ proto.unmount = function(){
   this.internalComponent.$destroy(true);
   this.internalComponent = null;
   return resolve(true);
+};
+
+proto._checkFieldsValidation = function(fields) {
+  var valid = true;
+  var fieldValid = true;
+  _.forEach(fields, function(field) {
+    if (field.validate && field.validate.required) {
+      if (_.isNil(field.value)) {
+        fieldValid = false;
+      }
+      valid = valid && fieldValid;
+    }
+  });
+  return valid;
 };
 
 proto.getFields = function() {
