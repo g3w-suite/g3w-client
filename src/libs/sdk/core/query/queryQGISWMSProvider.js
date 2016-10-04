@@ -97,7 +97,7 @@ function QueryQGISWMSProvider() {
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
                   //verifico se il valore non è un numero e quindi aggiungo singolo apice
-                  if (!(_.isNull(v) || _.isEmpty(v))) {
+                  if (!(_.isNull(v) || (_.isNaN(v) || _.trim(v) == ''))) {;
                     filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
                     filterElements.push(filterElement);
                   }

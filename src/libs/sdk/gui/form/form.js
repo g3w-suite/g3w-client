@@ -86,15 +86,8 @@ var FormPanel = Vue.extend({
       this.checkPickLayer();
       this.$options.form._pickLayerToClipBoard()
       .then(function() {
-        _.forEach(self.state.relations, function(relation) {
-          _.forEach(relation.elements, function(element) {
-            _.forEach(element.fields, function(field) {
-              ///console.log(field);
-              self.$validate(field);
-            })
-          })
-        })
-      });
+        //TODO
+      })
     },
     pickLayerInputChange: function() {
       this.$options.form._cleanUpPickLayer();
@@ -365,9 +358,9 @@ proto._pasteStateWithoutPk = function(fields, relations) {
     })
   });
   // setto i nuovi fields e relations lasciando quelli vecchi
-  this.state.fields = fields;
   this.state.relations = relations;
-  var elementsBoxes = this.getUniqueRelationsElementId();
+  this.state.fields = fields;
+  var elementsBoxes = this.getUniqueRelationsElementId(false);
   this.state.elementsBoxes = elementsBoxes;
   return true;
 };
@@ -615,19 +608,19 @@ proto._setFormTools = function(tools) {
   })
 };
 
-proto.getUniqueRelationsElementId = function() {
+proto.getUniqueRelationsElementId = function(bool) {
   var self = this;
   var elementsBoxes = {};
-  _.forEach(this.state.relations,function(relation){
-    _.forEach(relation.elements,function(element){
+  var collapsed = _.isNil(bool) ? true : bool;
+  _.forEach(this.state.relations, function(relation){
+    _.forEach(relation.elements, function(element){
       var boxid = self.getUniqueRelationElementId(relation,element);
       elementsBoxes[boxid] = {
-        collapsed: true
+        collapsed: collapsed
       }
     })
   });
   return elementsBoxes;
-
 };
 
 proto.getUniqueRelationElementId = function(relation, element){
