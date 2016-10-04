@@ -679,9 +679,9 @@ proto._setupEditAttributesListeners = function() {
 
 proto._onSaveEditorForm = function(feature, fields, relations, next) {
   var self = this;
-  var feature = feature;
   var next = next;
-  return function(field, relations, images) {
+  var feature = feature;
+  return function(fields, relations, images) {
     self.setFieldsWithValues(feature, fields, relations, images);
     if (next) {
       next(true);

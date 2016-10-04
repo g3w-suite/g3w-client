@@ -304,7 +304,7 @@ proto._getRelationsOne = function() {
 
 proto._getLayerFormFromId = function() {
   return this.id.split('form')[0];
-}
+};
 
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
@@ -384,7 +384,7 @@ proto._isVisible = function(field) {
   return !(!field.editable && (field.value == "" || _.isNull(field.value)));
 };
 
-proto._isEditable = function(field){
+proto._isEditable = function(field) {
   return field.editable;
 };
 
