@@ -303,10 +303,11 @@ proto.unmount = function(){
 };
 
 proto._checkFieldsValidation = function(fields) {
+  var self = this;
   var valid = true;
   var fieldValid = true;
   _.forEach(fields, function(field) {
-    if (field.validate && field.validate.required) {
+    if (self._isEditable(field) && self._isVisible(field) && field.validate && field.validate.required) {
       if (_.isNil(field.value) || !_.trim(field.value)) {
         fieldValid = false;
       }
