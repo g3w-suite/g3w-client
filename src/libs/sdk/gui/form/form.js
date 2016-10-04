@@ -98,7 +98,7 @@ var FormPanel = Vue.extend({
     },
     visibleElements: function(relation) {
       return _.filter(relation.elements,function(element){
-        return element.state != 'DELETED';
+        return (element.state != 'NEW_DELETED' && element.state != 'OLD_DELETED');
       });
     },
     showRelation: function(relation){
@@ -645,7 +645,7 @@ proto._removeRelationElement = function(relation,element){
   _.forEach(relation.elements,function(_element,idxToRemove){
     if (_element.id == element.id) {
       //relation.elements.splice(idxToRemove,1);
-      element.state = 'DELETED'; // lo marco come elminato
+      element.state = element.state+'_DELETED'; // lo marco come elminato
       delete self.state.elementsBoxes.elmentBoxId;
     }
   })
