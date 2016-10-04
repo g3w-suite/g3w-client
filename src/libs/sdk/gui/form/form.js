@@ -82,8 +82,19 @@ var FormPanel = Vue.extend({
       this.$options.form._pickLayerInputFieldChange(field, relation);
     },
     pickLayerToClipBoard: function() {
+      var self = this;
       this.checkPickLayer();
-      this.$options.form._pickLayerToClipBoard();
+      this.$options.form._pickLayerToClipBoard()
+      .then(function() {
+        _.forEach(self.state.relations, function(relation) {
+          _.forEach(relation.elements, function(element) {
+            _.forEach(element.fields, function(field) {
+              ///console.log(field);
+              self.$validate(field);
+            })
+          })
+        })
+      });
     },
     pickLayerInputChange: function() {
       this.$options.form._cleanUpPickLayer();
@@ -164,6 +175,8 @@ var FormPanel = Vue.extend({
     pasteClipBoardToForm : function() {
       var layerForm = this.$options.form._getLayerFormFromId();
       this.$options.form._pasteClipBoardToForm(layerForm);
+      this.$validate(this.state.relations);
+      this.$resetValidation()
     },
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
@@ -363,7 +376,6 @@ proto._pasteClipBoardToForm = function(layerForm) {
 
   var formData = this._clipBoard.get(layerForm);
   this._pasteStateWithoutPk(formData.fields, formData.relations);
-
   this.state.canpaste = false;
 };
 
@@ -498,6 +510,7 @@ proto._pickLayerToClipBoard = function() {
         relationsPromise
         .then(function(relations) {
           self._pasteStateWithoutPk(fields, relations);
+          d.resolve();
         });
       }
     })

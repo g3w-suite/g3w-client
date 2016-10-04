@@ -47,12 +47,17 @@ function QueryQGISWMSProvider() {
 
   //funzione che fa la ricerca
   this.doSearch = function(queryFilterObject) {
+    var d = $.Deferred()
     var querylayer = queryFilterObject.queryLayer;
     var url = querylayer.getQueryUrl();
     var crs = querylayer.getCrs();
     var filterObject = queryFilterObject.filterObject;
     //creo il filtro
     var filter = this.createFilter(filterObject, querylayer.getQueryLayerName());
+    // nel caso in cui il filtro è vuoto
+    if (!filter) {
+      return d.reject().promise();
+    }
     //eseguo la richiesta e restituisco come risposta la promise del $.get
     var response = this.submitGetFeatureInfo({
       url: url,
@@ -64,7 +69,6 @@ function QueryQGISWMSProvider() {
   };
 
   this.createFilter = function(filterObject, querylayername) {
-
     /////inserisco il nome del layer (typename) ///
     var filter = [];
     function createSingleFilter(booleanObject) {
@@ -93,29 +97,26 @@ function QueryQGISWMSProvider() {
               _.forEach(input, function(v, k, obj) {
                 _.forEach(v, function(v, k, obj) {
                   //verifico se il valore non è un numero e quindi aggiungo singolo apice
-                  if (_.isNull(v) || _.isEmpty(v)) {
-                    if (filterOp.indexOf('LIKE') > 0) {
-                      value = valueQuotes + valueExtra + valueExtra + valueQuotes;
-                    } else {
-                      value = null;
-                    }
-                  } else {
-                    value = valueQuotes + valueExtra + v + valueExtra + valueQuotes;
+                  if (!(_.isNull(v) || _.isEmpty(v))) {
+                    filterElement = "\"" + k + "\" "+ filterOp +" " + valueQuotes + valueExtra + v + valueExtra + valueQuotes;
+                    filterElements.push(filterElement);
                   }
-                  filterElement = "\"" + k + "\" "+ filterOp +" " + value;
                 });
               });
             }
-            filterElements.push(filterElement);
+
           });
         });
-        rootFilter = filterElements.join(" "+ rootFilter + " ");
+        rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
       });
       return rootFilter;
     }
     //assegno il filtro creato
-    filter = querylayername + ":" + createSingleFilter(filterObject);
-    return filter;
+    if (createSingleFilter(filterObject)) {
+      return  querylayername + ":" + createSingleFilter(filterObject);
+    } else {
+      return false
+    }
   };
 
 }

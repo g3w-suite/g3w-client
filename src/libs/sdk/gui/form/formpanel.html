@@ -105,8 +105,8 @@
                             <span>* Campi richiesti</span>
                         </div>
                         <span v-for="button in buttons">
-                <button class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
-              </span>
+                            <button class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
+                        </span>
                     </div>
                 </div>
             </form>
