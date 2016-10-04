@@ -202,8 +202,10 @@ var FormPanel = Vue.extend({
     var self = this;
     if (this.$options.form.relationOne && this.$options.form.isnew) {
       var relationsOne = this.$options.form._getRelationsOne();
-      _.forEach(relationsOne, function(relationOne){
-        self.addRelationElement(relationOne);
+      _.forEach(relationsOne, function(relationOne) {
+        if (!relationOne.elements.length) {
+          self.addRelationElement(relationOne);
+        }
       });
     }
   }
@@ -288,8 +290,6 @@ proto.getFields = function() {
   return this._fields;
 };
 
-
-
 proto._getRelationsOne = function() {
   // overwrite from plugin
   var self = this;
@@ -363,6 +363,7 @@ proto._pasteClipBoardToForm = function(layerForm) {
 
   var formData = this._clipBoard.get(layerForm);
   this._pasteStateWithoutPk(formData.fields, formData.relations);
+
   this.state.canpaste = false;
 };
 
@@ -559,9 +560,9 @@ proto._setupFields = function() {
 proto._setupRelationsFields = function(relations) {
   var self = this;
   relations = relations || this.state.relations;
-  if (relations){
-    _.forEach(relations,function(relation){
-      _.forEach(relation.elements,function(element){
+  if (relations) {
+    _.forEach(relations, function(relation) {
+      _.forEach(relation.elements, function(element) {
         self._setupRelationElementFields(element);
       })
     });

@@ -9,7 +9,9 @@ function ClipboardService() {
   };
 
   this.get = function(formLayer) {
-    return this._data[formLayer] || {};
+    var data = this._data[formLayer] || {}
+    this._data[formLayer] = {};
+    return data;
   }
 }
 module.exports = new ClipboardService;

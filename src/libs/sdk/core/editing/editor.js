@@ -676,8 +676,9 @@ proto._setupAddFeatureAttributesEditingListeners = function() {
 // apre form attributi per editazione
 proto._setupEditAttributesListeners = function() {
   var self = this;
-  this.onbeforeasync('pickFeature',function(feature,next){
-    self._openEditorForm('old',feature,next);
+  this.onbeforeasync('pickFeature',function(feature, next) {
+    var new_old = self.isNewFeature(feature.getId()) ? 'new' : 'old';
+    self._openEditorForm(new_old, feature, next);
   });
 };
 
