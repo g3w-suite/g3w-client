@@ -285,7 +285,7 @@ proto._fallBack = function(feature){
 };
 
 proto._cut = function(geometry,cutCoordinate){
-  while (cutCoordinate.length < geometry.getStride()) {
+  while (cutCoordinate.length < geometry.getLayout().length) {
     cutCoordinate.push(0);
   }
 
