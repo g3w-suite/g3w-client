@@ -40,8 +40,7 @@ var FormPanel = Vue.extend({
   methods: {
     exec: function(cbk) {
       var relations = this.state.relations || null;
-      var images = this.state.images || null;
-      cbk(this.state.fields, relations, images);
+      cbk(this.state.fields, relations);
       if (this.$options.form.editor.getPickedFeature()) {
         this.$options.form.editor.cleanUpPickedFeature();
       }
@@ -184,23 +183,17 @@ var FormPanel = Vue.extend({
     copyToClipBoard : function() {
       this.$options.form._copyFormToClipBoard();
     },
-    onFileChange: function(e) {
-      var files = e.target.files || e.dataTransfer.files;
-      if (!files.length) {
-        return;
-      }
-      var fieldName = $(e.target).attr('field');
-      this.state.images[fieldName] = files[0];
-      //this.createImage(fieldName, files[0]);
-    },
-    createImage: function(fieldName, file) {
-      var self = this;
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        self.state.image = e.target.result;
-        self.state.images[fieldName] = e.target.result;
-      };
-      return reader.readAsDataURL(file);
+    onFileChange: function(field, e) {
+      var csrftoken = this.$cookie.get('csrftoken');
+      $(e.target).fileupload({
+        dataType: 'json',
+        formData : {'csrfmiddlewaretoken': csrftoken},
+        done: function (e, data) {
+          $.each(data.result, function (key, value) {
+            field.value = value.filename;
+          });
+        }
+      });
     },
     removeImage: function() {
       this.state.image = ''
@@ -224,6 +217,12 @@ var FormPanel = Vue.extend({
         }
       });
     }
+    // al momento lo devo forzare qui
+    $('input:file').filestyle({
+      buttonText: " Foto",
+      buttonName: "btn-primary",
+      iconName: "glyphicon glyphicon-camera"
+    });
   }
 });
 
@@ -260,8 +259,7 @@ function Form(options) {
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   this.state = {
     fields: options.fields,
-    relations: options.relations,
-    images: {}
+    relations: options.relations
   };
   this.tools = options.tools;
   // clipboard

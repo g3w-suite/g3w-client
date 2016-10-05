@@ -375,18 +375,10 @@ proto.collectRelations = function() {
 };
 // viene chamato quando si preme ad esempio Salva sul Form degli
 // attributi di una
-proto.setFieldsWithValues = function(feature, fields, relations, images) {
+proto.setFieldsWithValues = function(feature, fields, relations) {
   var attributes = {};
   _.forEach(fields, function(field) {
-    if (images) {
-      if (images[field.name]) {
-        attributes[field.name] = images[field.name]
-      } else {
-        attributes[field.name] = field.value;
-      }
-    }  else {
       attributes[field.name] = field.value;
-    }
   });
   // setto i campi della feature con i valori editati nel form
   feature.setProperties(attributes);
@@ -686,8 +678,8 @@ proto._onSaveEditorForm = function(feature, fields, relations, next) {
   var self = this;
   var next = next;
   var feature = feature;
-  return function(fields, relations, images) {
-    self.setFieldsWithValues(feature, fields, relations, images);
+  return function(fields, relations) {
+    self.setFieldsWithValues(feature, fields, relations);
     if (next) {
       next(true);
     }

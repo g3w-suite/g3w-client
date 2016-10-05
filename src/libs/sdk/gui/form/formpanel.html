@@ -1,115 +1,108 @@
 <div>
-    <div class="quick-actions-menu">
-        <div v-if="tools.copypaste" class="pull-right">
-            <button class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
-            <button class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
-            <button class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
+  <div class="quick-actions-menu">
+    <div v-if="tools.copypaste" class="pull-right">
+      <button class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
+      <button class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
+      <button class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
+    </div>
+  </div>
+  <div>
+    <validator name="validation">
+      <form novalidate class="form-horizontal g3w-form">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Attributi elemento</h3>
+            <div class="box-tools pull-right">
+            </div>
+          </div>
+          <div class="box-body">
+            <template v-for="field in state.fields">
+              <div v-if="isVisible(field)" class="form-group has-feedback">
+                <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
+                <div class="col-sm-8">
+                  <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                  <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                  </textarea>
+                  <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                    <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
+                  </select>
+                  <div v-if="isLayerPicker(field)">
+                    <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                    <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
+                  </div>
+                  <div v-if="isFile(field)">
+                    <div>
+                      <input type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Carica Foto" accept="image/*;capture=camera"  @change="onFileChange(field, $event)">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
-    </div>
-    <div>
-        <validator name="validation">
-            <form novalidate class="form-horizontal g3w-form">
-                <div class="box box-primary">
-                    <div class="box-header with-border">
-                        <h3 class="box-title">Attributi elemento</h3>
-                        <div class="box-tools pull-right">
-                        </div>
-                    </div>
-                    <div class="box-body">
-                        <template v-for="field in state.fields">
-                            <div v-if="isVisible(field)" class="form-group has-feedback">
-                                <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
-                                <div class="col-sm-8">
-                                    <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                    <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                    </textarea>
-                                    <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                        <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
-                                    </select>
-                                    <div v-if="isLayerPicker(field)">
-                                        <input class="form-control picklayerinput" @click="pickLayer(field)" @change="pickLayerInputChange" :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
-                                        <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
-                                    </div>
-                                    <div v-if="isFile(field)">
-                                        <div>
-                                            <!--<span class="btn btn-default btn-file">-->
-                                                <!--Carica Foto <input type="file" title="Carica Foto" accept="image/*;capture=camera" @change="onFileChange">-->
-                                            <!--</span>-->
-                                            <input type="file" :name="field.name" :field="field.name" title="Carica Foto" accept="image/*;capture=camera"  @change="onFileChange">
-                                        </div>
-                                        <!--<div v-if="state.image">-->
-                                            <!--<img style="width: 50%; max-width:200px; margin: auto; display: block; margin-bottom: 10px;" :src="state.image" />-->
-                                            <!--<button @click="removeImage">Rimuovi Foto</button>-->
-                                        <!--</div>-->
-                                    </div>
-                                </div>
+        <div v-for="relation in state.relations" style="margin-top:10px">
+          <div v-if="showRelation(relation)" transition="expand">
+            <div class="box box-default">
+              <div class="box-header with-border">
+                <h3 class="box-title">{{ relation | relationplural }}</h3>
+              </div>
+              <div class="box-body">
+                <table v-if="relation.elements.length" class="table table-striped">
+                  <thead>
+                  <tr>
+                    <th v-for="field in fieldsSubset(relation.fields)">{{field.label}}</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <template v-for="element in visibleElements(relation)">
+                    <tr class="attributes-preview" @click="toggleElementBox(relation,element)">
+                      <td v-for="relfield in fieldsSubset(element.fields)">
+                        <span>{{relfield.value}}</span>
+                      </td>
+                      <td>
+                        <i v-if="isRelationElementDeletable(relation,element)" class="glyphicon glyphicon glyphicon-trash link trash" @click.stop.prevent="removeRelationElement(relation,element)"></i>
+                        <i class="glyphicon glyphicon-option-horizontal link morelink"></i>
+                      </td>
+                    </tr>
+                    <tr v-show="!collapseElementBox(relation,element)" class="queryresults-featurebox">
+                      <td :colspan="fieldsSubsetLength(element.fields)+1">
+                        <template v-for="field in element.fields">
+                          <div v-if="isVisible(field)" class="form-group has-feedback">
+                            <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
+                            <div class="col-sm-8">
+                              <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                              <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label"></textarea>
+                              <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
+                                <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
+                              </select>
+                              <div v-if="isLayerPicker(field)">
+                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
+                                <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
+                              </div>
                             </div>
+                          </div>
                         </template>
-                    </div>
-                </div>
-                <div v-for="relation in state.relations" style="margin-top:10px">
-                    <div v-if="showRelation(relation)" transition="expand">
-                        <div class="box box-default">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">{{ relation | relationplural }}</h3>
-                            </div>
-                            <div class="box-body">
-                                <table v-if="relation.elements.length" class="table table-striped">
-                                    <thead>
-                                    <tr>
-                                        <th v-for="field in fieldsSubset(relation.fields)">{{field.label}}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <template v-for="element in visibleElements(relation)">
-                                        <tr class="attributes-preview" @click="toggleElementBox(relation,element)">
-                                            <td v-for="relfield in fieldsSubset(element.fields)">
-                                                <span>{{relfield.value}}</span>
-                                            </td>
-                                            <td>
-                                                <i v-if="isRelationElementDeletable(relation,element)" class="glyphicon glyphicon glyphicon-trash link trash" @click.stop.prevent="removeRelationElement(relation,element)"></i>
-                                                <i class="glyphicon glyphicon-option-horizontal link morelink"></i>
-                                            </td>
-                                        </tr>
-                                        <tr v-show="!collapseElementBox(relation,element)" class="queryresults-featurebox">
-                                            <td :colspan="fieldsSubsetLength(element.fields)+1">
-                                                <template v-for="field in element.fields">
-                                                    <div v-if="isVisible(field)" class="form-group has-feedback">
-                                                        <label :for="field.name" class="col-sm-4 control-label">{{ field.label }}<span v-if="field.validate && field.validate.required">*</span></label>
-                                                        <div class="col-sm-8">
-                                                            <input v-if="isSimple(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                                            <textarea v-if="isTextarea(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label"></textarea>
-                                                            <select v-if="isSelect(field)" @focus="checkPickLayer" :field="field.name" v-validate="field.validate" v-disabled="!isEditable(field)" class="form-control" v-model="field.value" :id="field.name" :placeholder="field.input.label">
-                                                                <option v-for="value in field.input.options.values" value="{{ value.key }}">{{ value.value }}</option>
-                                                            </select>
-                                                            <div v-if="isLayerPicker(field)">
-                                                                <input class="form-control picklayerinput" @click="pickLayer(field, relation)" @input="pickLayerInputFieldChange(field, relation)"  :field="field.name" v-validate="field.validate" data-toggle="tooltip" title="Ottieni il dato da un elemento del layer '{{ layerPickerPlaceHolder(field) }}' o scrivilo direttamente qui" v-disabled="!isEditable(field)" v-model="field.value" :id="field.name" :placeholder="'['+layerPickerPlaceHolder(field)+']'">
-                                                                <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </template>
-                                            </td>
-                                        </tr>
-                                    </template>
-                                    </tbody>
-                                </table>
-                                <div v-if="canAddRelationElements(relation)" class="row" style="margin:0px"><i class="glyphicon glyphicon-plus-sign pull-right btn-add" @click="addRelationElement(relation)"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-4 col-sm-8">
-                        <div v-if="hasFieldsRequired" style="margin-bottom:10px">
-                            <span>* Campi richiesti</span>
-                        </div>
-                        <span v-for="button in buttons">
-                            <button class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
-                        </span>
-                    </div>
-                </div>
-            </form>
-        </validator>
-    </div>
+                      </td>
+                    </tr>
+                  </template>
+                  </tbody>
+                </table>
+                <div v-if="canAddRelationElements(relation)" class="row" style="margin:0px"><i class="glyphicon glyphicon-plus-sign pull-right btn-add" @click="addRelationElement(relation)"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-4 col-sm-8">
+            <div v-if="hasFieldsRequired" style="margin-bottom:10px">
+              <span>* Campi richiesti</span>
+            </div>
+            <span v-for="button in buttons">
+              <button class="btn " :class="[button.class]" @click.stop.prevent="exec(button.cbk)" v-disabled="!btnEnabled(button)">{{ button.title }}</button>
+            </span>
+          </div>
+        </div>
+      </form>
+    </validator>
+  </div>
 </div>
