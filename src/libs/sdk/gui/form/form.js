@@ -263,6 +263,7 @@ function Form(options) {
     relations: options.relations,
     images: {}
   };
+  this._copyPaste = false;
   this.tools = options.tools;
   // clipboard
   this._clipBoard = ClipBoard;
@@ -303,14 +304,24 @@ proto.unmount = function(){
 };
 
 proto._checkFieldsValidation = function(fields) {
+  var self = this;
   var valid = true;
   var fieldValid = true;
   _.forEach(fields, function(field) {
     if (field.validate && field.validate.required) {
-      if (_.isNil(field.value) || !_.trim(field.value)) {
-        fieldValid = false;
+      if (self._copyPaste) {
+        // distinguo due condizioni: il copia e incolla
+        if (_.isNil(field.value) || !_.trim(field.value)) {
+          fieldValid = false;
+        }
+        valid = valid && fieldValid;
+      } else {
+        //dall'edit o new
+        if (_.isNil(field.value)) {
+          fieldValid = false;
+        }
+        valid = valid && fieldValid;
       }
-      valid = valid && fieldValid;
     }
   });
   return valid;
@@ -381,6 +392,7 @@ proto._pasteStateWithoutPk = function(fields, relations) {
       });
     })
   });
+  this._copyPaste = true;
   // setto i nuovi fields e relations lasciando quelli vecchi
   this.state.relations = relations;
   this.state.fields = fields;
