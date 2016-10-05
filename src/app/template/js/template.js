@@ -66,6 +66,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     //registro altri componenti che non hanno una collocazione spaziale precisa
     // come da esempio i risultati che possono essere montati sulla floatbar o altre parti del template
     this._addOtherComponents();
+    this._setViewport(this.templateConfig.viewport);
     this.emit('ready');
     GUI.ready();
   };
@@ -75,6 +76,13 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var self = this;
     if (this.templateConfig.othercomponents) {
       self._addComponents(this.templateConfig.othercomponents);
+    }
+  };
+  
+  this._setViewport = function(viewportComponents) {
+    if (viewportComponents) {
+      ApplicationTemplate.PlaceholdersServices.viewport.addComponents(viewportComponents);
+      this._addComponents(viewportComponents);
     }
   };
   

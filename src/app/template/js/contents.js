@@ -2,6 +2,7 @@ var t = require('core/i18n/i18n.service').t;
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
+var Stack = require('./barstack.js');
 var Component = require('gui/vue/component');
 
 var InternalComponent = Vue.extend({
@@ -16,6 +17,7 @@ var InternalComponent = Vue.extend({
 function ContentsComponent(options){
   base(this,options);
   var self = this;
+  this.stack = new Stack();
   this._service = this;
   this.id = "contents";
   this.title = "contents";
@@ -33,43 +35,24 @@ inherit(ContentsComponent, Component);
 
 var proto = ContentsComponent.prototype;
 
-proto.setContent = function(content) {
-  if (this._content) {
-    this.removeContent();
+proto.setContent = function(content,push) {
+  if (!push) {
+    this.clearContents();
   }
-  if (content instanceof jQuery) {
-    this._setDOMContent(content[0]);
-  }
-  else if (content instanceof Component) {
-    this._setVueContent(content);
-  }
-  else if (_.isString(content)) {
-    this._setDOMContent($(content)[0]);
-  }
-  else {
-    this._setDOMContent(content);
-  }
+  return this.stack.push(content,this.internalComponent.$el, true);
 };
 
-proto.removeContent = function(content) {
-  if(this._content instanceof Component) {
-    this._content.unmount();
-  }
-  else {
-    $(this.internalComponent.$el).empty();
-  }
+proto.removeContent = function() {
+  return this.stack.pop();
 };
 
-proto._setDOMContent = function(content) {
-  this.internalComponent.$el.appendChild(content);
-  this._content = content;
+// usato da viewport.js
+proto.popContent = function() {
+  return this.removeContent()
 };
-proto._setVueContent = function(component) {
-  var self = this;
-  component.mount(this.internalComponent.$el).
-  then(function(){
-    self._content = component;
-  });
+
+proto.clearContents = function() {
+  return this.stack.clear();
 };
 
 module.exports = ContentsComponent;

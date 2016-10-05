@@ -18,25 +18,25 @@ function MapService(project){
   this.viewer;
   this.target;
   this._mapControls = [],
-  this._mapLayers = [];
+    this._mapLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
   this.state = {
-      bbox: [],
-      resolution: null,
-      center: null,
-      loading: false
+    bbox: [],
+    resolution: null,
+    center: null,
+    loading: false
   };
   this._greyListenerKey = null;
   this.config = ApplicationService.getConfig();
-  
+
   var routerService = ApplicationService.getRouterService();
   routerService.addRoute('map/{?query}',function(query){
     var query = query || {};
     if (query.center) {
     }
   });
-  
+
   this._howManyAreLoading = 0;
   this._incrementLoaders = function(){
     if (this._howManyAreLoading == 0){
@@ -49,7 +49,7 @@ function MapService(project){
     }
     this._howManyAreLoading += 1;
   };
-  
+
   this._decrementLoaders = function(){
     this._howManyAreLoading -= 1;
     if (this._howManyAreLoading == 0){
@@ -57,7 +57,7 @@ function MapService(project){
       GUI.hideSpinner('maploadspinner');
     }
   };
-  
+
   this._interactionsStack = [];
   if(!_.isNil(project)) {
     this.project = project;
@@ -89,7 +89,7 @@ function MapService(project){
       self.emit('viewerset');
     }
   };
-  
+
   this._setupViewer = function(width,height) {
     var self = this;
     var projection = this.getProjection();
@@ -103,31 +103,31 @@ function MapService(project){
     var initxRes = ol.extent.getWidth(initextent) / width;
     var inityRes = ol.extent.getHeight(initextent) / height;
     var initResolution = Math.max(initxRes,inityRes);
-    
+
     /*var constrain_extent;
-    if (this.config.constraintextent) {
-      var extent = this.config.constraintextent;
-      var dx = extent[2]-extent[0];
-      var dy = extent[3]-extent[1];
-      var dx4 = dx/4;
-      var dy4 = dy/4;
-      var bbox_xmin = extent[0] + dx4;
-      var bbox_xmax = extent[2] - dx4;
-      var bbox_ymin = extent[1] + dy4;
-      var bbox_ymax = extent[3] - dy4;
-      
-      constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
-    }*/
-    
+     if (this.config.constraintextent) {
+     var extent = this.config.constraintextent;
+     var dx = extent[2]-extent[0];
+     var dy = extent[3]-extent[1];
+     var dx4 = dx/4;
+     var dy4 = dy/4;
+     var bbox_xmin = extent[0] + dx4;
+     var bbox_xmax = extent[2] - dx4;
+     var bbox_ymin = extent[1] + dy4;
+     var bbox_ymax = extent[3] - dy4;
+
+     constrain_extent = [bbox_xmin,bbox_ymin,bbox_xmax,bbox_ymax];
+     }*/
+
     this.viewer = ol3helpers.createViewer({
       id: this.target,
       view: {
         projection: projection,
         /*center: this.config.initcenter || ol.extent.getCenter(extent),
-        zoom: this.config.initzoom || 0,
-        extent: this.config.constraintextent || extent,
-        minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
-        maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
+         zoom: this.config.initzoom || 0,
+         extent: this.config.constraintextent || extent,
+         minZoom: this.config.minzoom || 0, // default di OL3 3.16.0
+         maxZoom: this.config.maxzoom || 28 // default di OL3 3.16.0*/
         center: ol.extent.getCenter(initextent),
         extent: extent,
         //minZoom: 0, // default di OL3 3.16.0
@@ -135,21 +135,21 @@ function MapService(project){
         maxResolution: maxResolution
       }
     });
-    
+
     if (this.config.background_color) {
       $('#' + this.target).css('background-color', this.config.background_color);
     }
-    
+
     $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute;right:0px;"></div>');
-    
+
     this.viewer.map.getInteractions().forEach(function(interaction){
       self._watchInteraction(interaction);
     });
-    
+
     this.viewer.map.getInteractions().on('add',function(interaction){
       self._watchInteraction(interaction.element);
     });
-    
+
     this.viewer.map.getInteractions().on('remove',function(interaction){
       //self._onRemoveInteraction(interaction);
     });
@@ -162,11 +162,11 @@ function MapService(project){
     QueryService.setMapService(this);
     this.emit('ready');
   };
-  
+
   this.project.on('projectswitch',function(){
     self.setupLayers();
   });
-  
+
   this.project.onafter('setLayersVisible',function(layersIds){
     var mapLayers = _.map(layersIds,function(layerId){
       var layer = self.project.getLayerById(layerId);
@@ -174,11 +174,11 @@ function MapService(project){
     });
     self.updateMapLayers(self.getMapLayers());
   });
-  
+
   this.project.onafter('setBaseLayer',function(){
     self.updateMapLayers(self.mapBaseLayers);
   });
-  
+
   base(this);
 }
 inherit(MapService,G3WObject);
@@ -257,7 +257,7 @@ proto.setupControls = function(){
           });
           self.addControl(control);
           break;
-        case 'zoombox': 
+        case 'zoombox':
           if (!isMobile.any) {
             control = ControlsFactory.create({
               type: controlType
@@ -292,9 +292,9 @@ proto.setupControls = function(){
             //faccio query by location su i layers selezionati o tutti
             var queryResultsPanel = showQueryResults('interrogazione');
             QueryService.queryByLocation(coordinates, layers)
-            .then(function(results){
-              queryResultsPanel.setQueryResponse(results);
-            });
+              .then(function(results){
+                queryResultsPanel.setQueryResponse(results);
+              });
           });
           self.addControl(control);
           break;
@@ -310,22 +310,22 @@ proto.setupControls = function(){
             var overviewProjectGid = self.project.getOverviewProjectGid();
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
-              .then(function(project){
-                var overViewMapLayers = self.getOverviewMapLayers(project);
-                control = ControlsFactory.create({
-                  type: controlType,
-                  position: 'bl',
-                  className: 'ol-overviewmap ol-custom-overviewmap',
-                  collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
-                  label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
-                  collapsed: false,
-                  layers: overViewMapLayers,
-                  view: new ol.View({
-                    projection: self.getProjection()
-                  })
+                .then(function(project){
+                  var overViewMapLayers = self.getOverviewMapLayers(project);
+                  control = ControlsFactory.create({
+                    type: controlType,
+                    position: 'bl',
+                    className: 'ol-overviewmap ol-custom-overviewmap',
+                    collapseLabel: $('<span class="glyphicon glyphicon-menu-left"></span>')[0],
+                    label: $('<span class="glyphicon glyphicon-menu-right"></span>')[0],
+                    collapsed: false,
+                    layers: overViewMapLayers,
+                    view: new ol.View({
+                      projection: self.getProjection()
+                    })
+                  });
+                  self.addControl(control);
                 });
-                self.addControl(control);
-              });
             }
           }
           break;
@@ -449,7 +449,7 @@ proto.getOverviewMapLayers = function(project) {
   var multiLayers = _.groupBy(projectLayers,function(layer){
     return layer.state.multilayer;
   });
-  
+
   var overviewMapLayers = [];
   _.forEach(multiLayers,function(layers,id){
     var multilayerId = 'overview_layer_'+id;
@@ -465,7 +465,7 @@ proto.getOverviewMapLayers = function(project) {
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
   });
-  
+
   return overviewMapLayers.reverse();
 };
 
@@ -485,7 +485,7 @@ proto.registerListeners = function(mapLayer) {
   mapLayer.on('loadend',function(){
     self._decrementLoaders(false);
   });
-  
+
   this.on('extraParamsSet',function(extraParams,update){
     if (update) {
       mapLayer.update(this.state,extraParams);
@@ -532,12 +532,16 @@ proto.extentToWGS84 = function(extent){
   return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
 };
 
+var highlightLayer = null;
+var animatingHighlight = false;
+
 proto.highlightGeometry = function(geometryObj,options) {
   var options = options || {};
-  var zoom = options.zoom || true;
-  
+  var zoom = (typeof options.zoom == 'boolean') ? options.zoom : true;
+  var duration = options.duration;
+
   var view = this.viewer.map.getView();
-  
+
   var geometry;
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
@@ -546,7 +550,7 @@ proto.highlightGeometry = function(geometryObj,options) {
     var format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
-  
+
   var geometryType = geometry.getType();
   if (geometryType == 'Point') {
     this.viewer.goTo(geometry.getCoordinates());
@@ -557,62 +561,76 @@ proto.highlightGeometry = function(geometryObj,options) {
     }
   }
 
-  var duration = options.duration || 4000;
-  
   if (options.fromWGS84) {
     geometry.transform('EPSG:4326','EPSG:'+ProjectService.state.project.crs);
   }
-  
+
   var feature = new ol.Feature({
     geometry: geometry
   });
-  var source = new ol.source.Vector();
-  source.addFeatures([feature]);
-  var layer = new ol.layer.Vector({
-    source: source,
-    style: function(feature){
-      var styles = [];
-      var geometryType = feature.getGeometry().getType();
-      if (geometryType == 'LineString') {
-        var style = new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'rgb(255,255,0)',
-            width: 4
-          })
-        });
-        styles.push(style);
-      }
-      else if (geometryType == 'Point') {
-        var style = new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: 6,
-            fill: new ol.style.Fill({
-              color: 'rgb(255,255,0)'
+
+
+  if (!highlightLayer) {
+    highlightLayer = new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: function(feature){
+        var styles = [];
+        var geometryType = feature.getGeometry().getType();
+        if (geometryType == 'LineString') {
+          var style = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgb(255,255,0)',
+              width: 4
             })
-          }),
-          zIndex: Infinity
-        });
-        styles.push(style);
-      } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
-        var style = new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: 'rgb(255,255,0)',
-            width: 4
-          }),
-          fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 0, 0.5)'
-          })
-        });
-        styles.push(style);
+          });
+          styles.push(style);
+        }
+        else if (geometryType == 'Point') {
+          var style = new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 6,
+              fill: new ol.style.Fill({
+                color: 'rgb(255,255,0)'
+              })
+            }),
+            zIndex: Infinity
+          });
+          styles.push(style);
+        } else if (geometryType == 'MultiPolygon' || geometryType == 'Polygon') {
+          var style = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'rgb(255,255,0)',
+              width: 4
+            }),
+            fill: new ol.style.Fill({
+              color: 'rgba(255, 255, 0, 0.5)'
+            })
+          });
+          styles.push(style);
+        }
+        return styles;
       }
-      return styles;
-    }
-  });
-  layer.setMap(this.viewer.map);
-  
-  setTimeout(function(){
-    layer.setMap(null);
-  },duration);
+    });
+
+    highlightLayer.setMap(this.viewer.map);
+  }
+
+  highlightLayer.getSource().clear();
+  highlightLayer.getSource().addFeature(feature);
+
+  if (duration) {
+    animatingHighlight = true;
+    setTimeout(function(){
+      highlightLayer.getSource().clear();
+      animatingHighlight = false;
+    },duration);
+  }
+};
+
+proto.clearHighlightGeometry = function() {
+  if (highlightLayer && ! animatingHighlight) {
+    highlightLayer.getSource().clear();
+  }
 };
 
 proto.refreshMap = function() {
@@ -654,7 +672,7 @@ proto.startDrawGreyCover = function(bbox) {
   var map = this.viewer.map;
   //verifico che non ci sia già un greyListener
   if (this._greyListenerKey) {
-      this.stopDrawGreyCover();
+    this.stopDrawGreyCover();
   } else {
     this._greyListenerKey = map.on('postcompose', function (evt) {
       var ctx = evt.context;
@@ -671,18 +689,18 @@ proto.startDrawGreyCover = function(bbox) {
       ctx.lineTo(0, 0);
       ctx.closePath();
       if (bbox) {
-       var minx = bbox[0];
-       var miny = bbox[1];
-       var maxx = bbox[2];
-       var maxy = bbox[3];
-       // Inner polygon,must be counter-clockwise
-       ctx.moveTo(minx, miny);
-       ctx.lineTo(minx, maxy);
-       ctx.lineTo(maxx, maxy);
-       ctx.lineTo(maxx, miny);
-       ctx.lineTo(minx, miny);
-       ctx.closePath();
-       }
+        var minx = bbox[0];
+        var miny = bbox[1];
+        var maxx = bbox[2];
+        var maxy = bbox[3];
+        // Inner polygon,must be counter-clockwise
+        ctx.moveTo(minx, miny);
+        ctx.lineTo(minx, maxy);
+        ctx.lineTo(maxx, maxy);
+        ctx.lineTo(maxx, miny);
+        ctx.lineTo(minx, miny);
+        ctx.closePath();
+      }
       ctx.fillStyle = 'rgba(0, 5, 25, 0.55)';
       ctx.fill();
       ctx.restore();

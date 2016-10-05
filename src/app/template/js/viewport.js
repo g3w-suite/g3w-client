@@ -6,33 +6,33 @@ var GUI = require('sdk').gui.GUI;
 
 var ViewportService = function(){  
   this.state = {
-    primaryViewTag: 'one', // di default la vista primaria è la prima
-    secondaryVisible: false,
-    ratioDenom: 2,
+    primaryView: 'map', // di default la vista primaria è la prima
+    secondaryPerc: 0,
     split: 'h',
-    viewSizes: {
-      one: {
+    map: {
+      sizes: {
         width: 0,
         height: 0
       },
-      two: {
+      aside: false
+    },
+    content:{
+      sizes: {
         width: 0,
         height: 0
-      }
+      },
+      aside: true,
+      stack: []
     }
   };
   
-  this.setters = {
-    setPrimaryComponent: function(componentId) {
-      var component = this._viewsByComponentId[componentId];
-      if(component) {
-        var viewTag = component.viewTag;
-        this._setPrimaryView(viewTag);
-      }
-    }
-  }
-  
-  this._viewsByComponentId = {};
+  this.components = {
+    map: null,
+    content: null
+  };
+
+  this.contentStack = [];
+
   var _components = null;
   this._secondaryViewMinWidth = 300;
   this._secondaryViewMinHeight = 200;
@@ -41,57 +41,127 @@ var ViewportService = function(){
   
   this.addComponents = function(components){
     var self = this;
-    var regiteredComponents = _.keys(self._viewsByComponentId);
-
-    // la viewport ha al massimo due viste, ognuna contente al massimo un componente. Se viene richiesta l'aggiunta di più di due componenti questi vengono ignorati
-    components = components.slice(0,3);
-    if (regiteredComponents.length == 2) {
-      return false;
-    }
-    
-    var sliceStart = regiteredComponents.length;
-    var sliceEnd = regiteredComponents.length + components.length;
-    var viewTags = ['one','two'].slice(sliceStart,sliceEnd);
-    _.forEach(viewTags, function(viewTag,idx){
-      var component = components[idx];
-      component.mount('#g3w-view-'+viewTag,true).
-      then(function(){
-        var componentId = component.getId();
-        self._viewsByComponentId[componentId] = {
-          viewTag: viewTag,
-          component: component
-        }
-      });
+    _.forEach(components,function(component,viewName){
+      if (['map','content'].indexOf(viewName) > -1) {
+        component.mount('#g3w-view-'+viewName,true).
+        then(function(){
+          self.components[viewName] = component;
+        });
+      }
     })
-    return true;
+  };
+
+  this.showContent = function(options) {
+    this.contentStack = [];
+    this.pushContent(options);
+  };
+
+  this.pushContent = function(options) {
+    this.contentStack.push(options);
+    this.setContents(options);
+  };
+
+  this.popContent = function() {
+    if (this.contentStack.length) {
+      var options = this.contentStack.pop();
+      this.setContents(options);
+    }
+  };
+
+  this.removeContent = function() {
+    this.contentStack = [];
+    this.closeSecondaryView();
+  };
+
+  this.showMap = function(options) {
+    this.showView('map', options);
+  };
+
+  this.setContents = function(options,push) {
+    var self = this;
+    this.components.content.setContent(options.content,push)
+    .then(function() {
+      self.state.content.title = options.title;
+      self.state.content.stack = _.map(self.contentStack,function(contentOptions){
+        return contentOptions.title;
+      });
+      self.showView('content', options)
+    })
+  };
+
+  this.showView = function(viewName,options) {
+    var perc = options.perc || this.getDefaultViewPerc(viewName);
+    var split = options.split || 'h';
+
+    var aside;
+    if (this.isPrimaryView(viewName)) {
+      aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
+    }
+    else {
+      aside = true;
+    }
+
+    this.state[viewName].aside = aside;
+
+    var secondaryPerc = this.isPrimaryView(viewName) ? 100 - perc : perc;
+
+    if (secondaryPerc > 0) {
+      this.showSecondaryView(split,secondaryPerc);
+    }
+    else {
+      this.closeSecondaryView();
+    }
+  };
+
+  this.getDefaultViewPerc = function(viewName) {
+    return this.isPrimaryView(viewName) ? 100 : 50;
+  };
+
+  this.isPrimaryView = function(viewName) {
+    return this.state.primaryView == viewName;
+  };
+
+  this.showSecondaryView = function(split,perc) {
+    if (!this.state.secondaryVisible) {
+      this.state.secondaryVisible = true;
+      this.state.split = split ? split : this.state.split;
+      this.state.secondaryPerc = perc ? perc : this.state.perc;
+      this._layout();
+    }
   };
   
-  this.addComponent = function(component) {
-    return this.addComponents[component];
-  };
-  
-  this.showSecondaryView = function(split,ratioDenom) {
-    this.state.secondaryVisible = true;
-    this.state.split = split ? split : this.state.split;
-    this.state.ratioDenom = ratioDenom ? ratioDenom : this.state.ratioDenom;
-    this._layout();
-  };
-  
-  this.hideSecondaryView = function() {
-    this.state.secondaryVisible = false;
-    this._layout();
+  this.closeSecondaryView = function(componentId) {
+    var self = this;
+    var contentsComponent = this.components.content;
+
+    if (contentsComponent.clearContents) {
+      contentsComponent.clearContents()
+        .then(function(){
+          self.state.secondaryVisible = false;
+          self._layout();
+        });
+    }
+    else {
+      this.state.secondaryVisible = false;
+      this._layout();
+    }
+
   };
   
   /* FINE INTERFACCIA PUBBLICA */
+
+
   
-  this._otherTag = function(viewTag) {
-    return (viewTag == 'one') ? 'two' : 'one';
+  this._otherView = function(viewName) {
+    return (viewName == 'map') ? 'content' : 'map';
   };
   
   // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
   
   this._setPrimaryView = function(viewTag) {
-    this.state.primaryView = viewTag;
+    if (this.state.primaryView != viewTag) {
+      this.state.primaryView = viewTag;
+    }
     //this._layout();
   };
   
@@ -118,9 +188,9 @@ var ViewportService = function(){
     
     GUI.on('ready',function(){
       // primo layout
-      var primaryViewTag = self.state.primaryViewTag;
-      var seondaryViewTag = self._otherTag(primaryViewTag);
-      var secondaryEl = $(".g3w-viewport ."+seondaryViewTag);
+      var primaryView = self.state.primaryView;
+      var secondaryView = self._otherView(primaryView);
+      var secondaryEl = $(".g3w-viewport ."+secondaryView);
       
       var seondaryViewMinWidth = secondaryEl.css('min-width');
       if ((seondaryViewMinWidth != "") && !_.isNaN(parseFloat(seondaryViewMinWidth))) {
@@ -155,39 +225,34 @@ var ViewportService = function(){
   };
   
   this._setViewSizes = function() {
-    var primaryViewTag = this.state.primaryViewTag;
-    var seondaryViewTag = this._otherTag(primaryViewTag);
-    
+    var primaryView = this.state.primaryView;
+    var secondaryView = this._otherView(primaryView);
+
     var viewportWidth = this._viewportWidth();
     var viewportHeight = this._viewportHeight();
     
     var primaryWidth = viewportWidth;
     var primaryHeight = viewportHeight;
     
-    var ratio = this.state.ratioDenom;
-    if (ratio > 0) {
-      if (this.state.split == 'h') {
-        secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth / ratio),this._secondaryViewMinWidth) : 0;
-        secondaryHeight = viewportHeight;
-        primaryWidth = viewportWidth - secondaryWidth;
-        primaryHeight = viewportHeight;
-      }
-      else {
-        secondaryWidth = viewportWidth;
-        secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight / ratio),this._secondaryViewMinHeight) : 0;
-        primaryWidth = viewportWidth;
-        primaryHeight = viewportHeight - secondaryHeight;
-      }
+    var scale = this.state.secondaryPerc / 100;
+    if (this.state.split == 'h') {
+      secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale),this._secondaryViewMinWidth) : 0;
+      secondaryHeight = viewportHeight;
+      primaryWidth = viewportWidth - secondaryWidth;
+      primaryHeight = viewportHeight;
+    }
+    else {
+      secondaryWidth = viewportWidth;
+      secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight * scale),this._secondaryViewMinHeight) : 0;
+      primaryWidth = viewportWidth;
+      primaryHeight = viewportHeight - secondaryHeight;
     }
     
-    this.state.viewSizes[primaryViewTag].width = primaryWidth;
-    this.state.viewSizes[primaryViewTag].height = primaryHeight;
-    //var primaryEl = $(".g3w-viewport ."+primaryViewTag);
+    this.state[primaryView].sizes.width = primaryWidth;
+    this.state[primaryView].sizes.height = primaryHeight;
     
-    
-    this.state.viewSizes[seondaryViewTag].width = secondaryWidth;
-    this.state.viewSizes[seondaryViewTag].height = secondaryHeight;
-    //var secondaryEl = $(".g3w-viewport ."+seondaryViewTag);
+    this.state[secondaryView].sizes.width = secondaryWidth;
+    this.state[secondaryView].sizes.height = secondaryHeight;
   };
   
   this._viewportHeight = function() {
@@ -214,14 +279,10 @@ var ViewportService = function(){
   
   this._layoutComponents = function() {
     var self = this;
-    if (!_components){
-      _components = _.map(this._viewsByComponentId,function(view){ return view.component; });
-    }
-    _.forEach(_components,function(component){
+    _.forEach(this.components,function(component, name){
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
-      var viewTag = self._viewsByComponentId[component.getId()].viewTag;
-      var width = self.state.viewSizes[viewTag].width;
-      var height = self.state.viewSizes[viewTag].height;
+      var width = self.state[name].sizes.width;
+      var height = self.state[name].sizes.height;
       component.layout(width,height);
     })
   };
@@ -238,6 +299,25 @@ var ViewportComponent = Vue.extend({
   data: function() {
     return {
       state: viewportService.state
+    }
+  },
+  computed: {
+    contentTitle: function() {
+      return this.state.content.stack[this.state.content.stack.length - 1];
+    },
+    previousTitle: function() {
+      if (this.state.content.stack.length > 1) {
+        return this.state.content.stack[this.state.content.stack.length - 2]
+      }
+      return null;
+    }
+  },
+  methods: {
+    closePanel: function() {
+      viewportService.removeContent();
+    },
+    gotoPreviousContent: function() {
+      viewportService.popContent();
     }
   }
 });
