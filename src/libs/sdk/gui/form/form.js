@@ -185,18 +185,41 @@ var FormPanel = Vue.extend({
     },
     onFileChange: function(field, e) {
       var csrftoken = this.$cookie.get('csrftoken');
+      var formData = {};
+      if (csrftoken) {
+        formData.csrfmiddlewaretoken = csrftoken;
+      }
       $(e.target).fileupload({
         dataType: 'json',
-        formData : {'csrfmiddlewaretoken': csrftoken},
+        formData : formData,
         done: function (e, data) {
           $.each(data.result, function (key, value) {
-            field.value = value.filename;
+            field.value = value.filename
           });
         }
       });
+      var files = e.target.files || e.dataTransfer.files;
+      if (!files.length)
+        return;
+      this.createImage(files[0]);
     },
-    removeImage: function() {
-      this.state.image = ''
+    createImage: function(file) {
+      var reader = new FileReader();
+      var self = this;
+      reader.onload = function(e) {
+        self.image = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    removeImage: function (e) {
+      this.image = '';
+    },
+    checkFileSrc: function(value) {
+      var value = value;
+      if (_.isNil(value)) {
+        value = ''
+      }
+      return value
     }
   },
   computed: {
@@ -217,9 +240,8 @@ var FormPanel = Vue.extend({
         }
       });
     }
-    // al momento lo devo forzare qui
     $('input:file').filestyle({
-      buttonText: " Foto",
+      buttonText: ' Foto',
       buttonName: "btn-primary",
       iconName: "glyphicon glyphicon-camera"
     });
@@ -368,11 +390,11 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   });
   // verifico i fileds delle relazioni da non sovrascrivere
   _.forEach(relations, function(relation, relationIndex) {
-    _.forEach(relationFields[relation.name], function(relationField) {
-      _.forEach(relation.elements, function(element, elementIndex) {
-        /// aggiungo allo stato della relazione copiata NEW
-        relations[relationIndex].elements[elementIndex].state = 'NEW';
-        _.forEach(element.fields, function(field, fieldIndex) {
+    _.forEach(relation.elements, function(element, elementIndex) {
+      /// aggiungo allo stato della relazione copiata NEW
+      relations[relationIndex].elements[elementIndex].state = 'NEW';
+      _.forEach(element.fields, function(field, fieldIndex) {
+        _.forEach(relationFields[relation.name], function(relationField) {
            if (field.name == relationField) {
              relations[relationIndex].elements[elementIndex].fields[fieldIndex].value = null;
            }
