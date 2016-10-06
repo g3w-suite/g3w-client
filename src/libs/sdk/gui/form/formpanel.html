@@ -31,8 +31,8 @@
                     <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                   </div>
                   <div v-if="isFile(field)">
+                    <img class="photo-preview img-responsive img-thumbnail"  :src="checkFileSrc(field.value)" />
                     <input v-if="isFile(field)" type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera"  @change="onFileChange(field, $event)">
-                    <img center height="100" width="100" :src="checkFileSrc(field.value)" />
                   </div>
                 </div>
               </div>

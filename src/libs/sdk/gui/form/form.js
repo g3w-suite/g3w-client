@@ -131,7 +131,6 @@ var FormPanel = Vue.extend({
       else {
         min = Number.NEGATIVE_INFINITY;
       }
-
       if (relation.min) {
         min = Math.min(min.relation.min);
       }
@@ -184,8 +183,9 @@ var FormPanel = Vue.extend({
       this.$options.form._copyFormToClipBoard();
     },
     onFileChange: function(field, e) {
-      var csrftoken = this.$cookie.get('csrftoken');
+      // verifico se esiste il tocken di django
       var formData = {};
+      var csrftoken = this.$cookie.get('csrftoken');
       if (csrftoken) {
         formData.csrfmiddlewaretoken = csrftoken;
       }
@@ -198,6 +198,7 @@ var FormPanel = Vue.extend({
           });
         }
       });
+      //verifico se è stato caricato un file
       var files = e.target.files || e.dataTransfer.files;
       if (!files.length)
         return;
@@ -310,7 +311,7 @@ proto.mount = function(container) {
   this._mountPanel(panel, container);
   return resolve(true);
 };
-
+//funxione mount panel
 proto._mountPanel = function(panel, container) {
   panel.$mount().$appendTo(container);
 };
@@ -321,7 +322,7 @@ proto.unmount = function(){
   this.internalComponent = null;
   return resolve(true);
 };
-
+// funzione che supporta la validazione dei campi obbigatori al fine di abliltare o meno il Salva
 proto._checkFieldsValidation = function(fields) {
   var self = this;
   var valid = true;
@@ -336,11 +337,11 @@ proto._checkFieldsValidation = function(fields) {
   });
   return valid;
 };
-
+//funzione che retituisce i fields
 proto.getFields = function() {
   return this._fields;
 };
-
+// funzione che restituisce se nella feture(nel layer) è prevista una relazione ONE
 proto._getRelationsOne = function() {
   // overwrite from plugin
   var self = this;
@@ -352,11 +353,12 @@ proto._getRelationsOne = function() {
   });
   return relationsOne;
 };
-
+//funzione che mi server per estrarre il layer name dall'id del form
+// utile per il clipboard al fine del copia e incolla
 proto._getLayerFormFromId = function() {
   return this.id.split('form')[0];
 };
-
+//funzione che clona i dati del form per il copia e incolla
 proto._copyFormToClipBoard = function() {
   var formData = _.cloneDeep(this.state);
   this._clipBoard.set(this.id, formData);
@@ -367,7 +369,8 @@ proto._copyFormToClipBoard = function() {
 proto._setFieldValueLayerFromToRelationField = function(relation, name) {
   console.log('questa funzione deve essere sovrascritta dal plugin al momento');
 };
-
+// funzione utlizzazta al fine di copiare i dati di un altra feature seleziona
+// evitando di scrivere i campi non sovrascrivibili. Rimasta con il nome vecchio riferita solo alla primary key
 proto._pasteStateWithoutPk = function(fields, relations) {
   //prendo vector layer
   var self = this;
@@ -410,18 +413,19 @@ proto._pasteStateWithoutPk = function(fields, relations) {
   this.state.elementsBoxes = elementsBoxes;
   return true;
 };
-
+// funzione che server per incollare i dati dalla clipboard nel form
 proto._pasteClipBoardToForm = function(layerForm) {
 
   var formData = this._clipBoard.get(layerForm);
   this._pasteStateWithoutPk(formData.fields, formData.relations);
   this.state.canpaste = false;
 };
-
+// funzione che verifica se la featuare su cui stiamo lavorando
+// è nuova o vecchia
 proto._isNew = function(){
   return this.isnew;
 };
-
+// funzione che verifa se il campo è obbligatorio o no
 proto._hasFieldsRequired = function() {
   var someFieldsRequired = _.some(this.state.fields, function(field){
     return field.validate && field.validate.required;
@@ -431,38 +435,38 @@ proto._hasFieldsRequired = function() {
   });
   return someFieldsRequired || someRelationsRequired;
 };
-
+// funzione che restituisce true/false a seconda se il campo è visibile o no
 proto._isVisible = function(field) {
   return !(!field.editable && (field.value == "" || _.isNull(field.value)));
 };
-
+//verifica se il campo è editabile o no
 proto._isEditable = function(field) {
   return field.editable;
 };
-
+// verifica se il campo è considerato tra i seimple(es text)
 proto._isSimple = function(field){
   if (_.includes(Inputs.specialInputs,field.input.type)){
     return false;
   }
   return _.includes(Inputs.simpleFieldTypes,field.type)
 };
-
+// verifica se l'input è una textarea
 proto._isTextarea = function(field) {
   return (field.input.type == Inputs.TEXTAREA);
 };
-
+// verifica se è una select
 proto._isSelect = function(field) {
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.SELECT);
 };
-
+// verifica se il campo è un picklayer
 proto._isLayerPicker = function(field){
   return (_.includes(Inputs.specialInputs,field.input.type) && field.input.type == Inputs.LAYERPICKER);
 };
-
+// verifica se il campo è di tipo file
 proto._isFile = function(field) {
   return (field.input.type == Inputs.FILE);
 };
-
+//una volta cliccato sulla mappa dopo un picklayer ripulisce
 proto._cleanUpPickLayer = function() {
   var mapService = GUI.getComponent('map').getService();
   mapService.removeInteraction(this._pickInteraction);
@@ -473,7 +477,7 @@ proto._cleanUpPickLayer = function() {
 proto._pickLayerInputFieldChange = function(field, relation) {
   console.log('funzione che deve essere sovrascritta dal plugin');
 };
-
+// funzione chiata nel caso pick layer
 proto._pickLayer = function(field, relation) {
   // ritorno una promessa, se qualcun altro volesse usare
   // il risultato (es. per settare altri campi in base alla feature selezionata)
@@ -573,7 +577,7 @@ proto._getDefaultValue = function(field) {
 
   return '';
 };
-
+// restituisce il nome del layer che si è appena cliccato con il picklayer
 proto._getlayerPickerLayerName = function(layerId){
   mapService = GUI.getComponent('map').getService();
   var layer = mapService.getProject().getLayerById(layerId);
@@ -598,7 +602,6 @@ proto._setupFields = function() {
     }
     return true;
   });
-  
   _.forEach(fields,function(field){
     if(_.isNil(field.value)){
       var defaultValue = self._getDefaultValue(field);
@@ -608,7 +611,7 @@ proto._setupFields = function() {
     }
   });
 };
-
+// funzione che setta i campi della relazione
 proto._setupRelationsFields = function(relations) {
   var self = this;
   relations = relations || this.state.relations;
