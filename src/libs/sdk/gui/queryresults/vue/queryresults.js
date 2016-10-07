@@ -45,9 +45,8 @@ function fieldIs(TYPE,layer,attributeName,attributeValue) {
 }
 
 var maxSubsetLength = 3;
-var expandActionCellWidth = 10;
-var actionsCellWidth = 10;
-var attributeCellTotalWidth = 100 - expandActionCellWidth - actionsCellWidth;
+var headerExpandActionCellWidth = 10;
+var headerActionsCellWidth = 10;
 
 var vueComponentOptions = {
   template: require('./queryresults.html'),
@@ -55,8 +54,8 @@ var vueComponentOptions = {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
-      expandActionCellWidth: expandActionCellWidth,
-      actionsCellWidth: actionsCellWidth
+      headerExpandActionCellWidth: headerExpandActionCellWidth,
+      headerActionsCellWidth: headerActionsCellWidth
     }
   },
   replace: false,
@@ -75,6 +74,12 @@ var vueComponentOptions = {
     },
     hasResults: function() {
       return this.state.layers.length;
+    },
+    layerHasActions: function(layer) {
+      return layer.hasgeometry;
+    },
+    featureHasActions: function(layer,feature) {
+      return this.geometryAvailable(feature);
     },
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
@@ -101,10 +106,12 @@ var vueComponentOptions = {
     attributesSubsetLength: function(attributes) {
       return this.attributesSubset(attributes).length;
     },
-    cellWidth: function(index,attributes) {
-      var subsetLength = this.attributesSubsetLength(attributes)
+    cellWidth: function(index,layer) {
+      var subsetLength = this.attributesSubsetLength(layer.attributes)
       var diff = maxSubsetLength - subsetLength;
-      var baseCellWidth = attributeCellTotalWidth / maxSubsetLength;
+      headerActionsCellWidth = this.layerHasActions(layer) ? headerActionsCellWidth : 0;
+      var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - headerActionsCellWidth;
+      var baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
       if ((index == subsetLength-1) && diff>0) {
         return baseCellWidth * (diff+1);
       }
@@ -160,6 +167,12 @@ function QueryResultsComponent(options) {
     this.createLayersFeaturesBoxes();
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
+
+  this.getElement = function() {
+    if (this.internalComponent) {
+      return this.internalComponent.$el;
+    }
+  }
 
   this._service.onafter('setLayersData',function(){
     self.createLayersFeaturesBoxes();

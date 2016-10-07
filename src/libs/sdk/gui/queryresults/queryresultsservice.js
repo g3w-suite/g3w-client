@@ -30,13 +30,14 @@ function QueryResultsService(){
       this.state.query = queryResponse.query;
       var layers = this._digestFeaturesForLayers(queryResponse.data)
       this.setLayersData(layers,this);
-      this.state.loading = false;
     },
     setLayersData: function(layers,self) {
-      self.state.layers =  layers
+      this.state.loading = false;
+      this.state.layers =  layers;
+      this.setActionsForFeatures(layers);
     },
-    getActionsForFeature: function() {
-      //
+    setActionsForFeatures: function(layers) {
+      // define actions for layers/features
     }
   };
   
@@ -69,15 +70,21 @@ function QueryResultsService(){
           id: layer.state.id,
           // prendo solo gli attributi effettivamente ritornati dal WMS (usando la prima feature disponibile)
           attributes: self._parseAttributes(layer.getAttributes(), featuresForLayer.features[0].getProperties()),
-          features: []
+          features: [],
+          hasgeometry: false,
+          show: true
         };
         _.forEach(featuresForLayer.features, function(feature){
-          //console.log(feature.getProperties()); //g3w_relations
           var fid = feature.getId() ? feature.getId() : id;
+          var geometry = feature.getGeometry();
+          if (geometry) {
+            layerObj.hasgeometry = true
+          }
           var featureObj = {
             id: fid,
             attributes: feature.getProperties(),
-            geometry: feature.getGeometry()
+            geometry: feature.getGeometry(),
+            show: true
             // aggiungo le relazioni
           };
           //console.log(featureObj);
