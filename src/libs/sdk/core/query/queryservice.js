@@ -282,6 +282,7 @@ function QueryService(){
         LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         INFO_FORMAT: infoFormat,
+        FEATURE_COUNT: 10,
         // PARAMETRI DI TOLLERANZA PER QGIS SERVER
         FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
         FI_LINE_TOLERANCE: PIXEL_TOLERANCE,

@@ -86,10 +86,10 @@ function QueryResultsService(){
           };
           //console.log(featureObj);
           layerObj.features.push(featureObj);
+          id += 1;
         });
         layers.push(layerObj);
       }
-      id += 1;
     })
     return layers;
   };
