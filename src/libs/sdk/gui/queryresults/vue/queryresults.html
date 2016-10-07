@@ -15,7 +15,7 @@
             <table class="table table-striped">
               <thead>
               <tr>
-                <th v-if="state.layersactions[layer.id].length" :style="{ width:headerActionsCellWidth + '%' }"></th>
+                <th v-if="layerHasActions(layer)" :style="{ width:headerActionsCellWidth + '%' }"></th>
                 <th v-for="(index,attribute) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
                 <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
               </tr>
