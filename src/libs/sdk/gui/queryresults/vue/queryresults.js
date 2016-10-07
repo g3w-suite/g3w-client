@@ -76,11 +76,14 @@ var vueComponentOptions = {
       return this.state.layers.length;
     },
     layerHasActions: function(layer) {
-      return layer.hasgeometry;
+      return this.state.layersactions[layer.id].length > 0;
     },
     featureHasActions: function(layer,feature) {
       return this.geometryAvailable(feature);
     },
+    /*getLayerActions: function(layer) {
+      return this.$options.queryResultsService.getLayerActions(layer);
+    },*/
     geometryAvailable: function(feature) {
       return feature.geometry ? true : false;
     },
@@ -109,8 +112,8 @@ var vueComponentOptions = {
     cellWidth: function(index,layer) {
       var subsetLength = this.attributesSubsetLength(layer.attributes)
       var diff = maxSubsetLength - subsetLength;
-      headerActionsCellWidth = this.layerHasActions(layer) ? headerActionsCellWidth : 0;
-      var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - headerActionsCellWidth;
+      actionsCellWidth = this.layerHasActions(layer) ? headerActionsCellWidth : 0;
+      var headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       var baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
       if ((index == subsetLength-1) && diff>0) {
         return baseCellWidth * (diff+1);

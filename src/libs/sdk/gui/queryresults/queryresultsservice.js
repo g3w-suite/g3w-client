@@ -12,16 +12,11 @@ function QueryResultsService(){
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
+
+  this.state = null
   
   this.init = function(options) {
     this.clearState();
-  };
-  
-  this.state = {
-    layers: [],
-    query: {},
-    querytitle: null,
-    loading: true
   };
   
   this.setters = {
@@ -32,12 +27,13 @@ function QueryResultsService(){
       this.setLayersData(layers,this);
     },
     setLayersData: function(layers,self) {
+      // an opportunity to alter / add results. Through the self reference the DOM element can be retrieved to manipulate results panel DOM
       this.state.loading = false;
       this.state.layers =  layers;
-      this.setActionsForFeatures(layers);
+      this.setActionsForLayers(layers);
     },
-    setActionsForFeatures: function(layers) {
-      // define actions for layers/features
+    addActionsForLayers: function(actions) {
+      // an opportunity for plugin to add layer actions
     }
   };
   
@@ -46,7 +42,8 @@ function QueryResultsService(){
       layers: [],
       query: {},
       querytitle: "",
-      loading: true
+      loading: true,
+      layersactions: {}
     };
   };
   
@@ -121,6 +118,23 @@ function QueryResultsService(){
         }
       })
     }
+  };
+
+  this.setActionsForLayers = function(layers) {
+    _.forEach(layers,function(layer){
+      if (!self.state.layersactions[layer.id]) {
+        self.state.layersactions[layer.id] = [];
+      }
+      if (layer.hasgeometry) {
+        self.state.layersactions[layer.id].push({
+          id: 'gotogeometry',
+          class: 'glyphicon glyphicon-map-marker',
+          hint: 'Visualizza sulla mappa',
+          cbk: QueryResultsService.goToGeometry
+        })
+      }
+    })
+    this.addActionsForLayers(self.state.layersactions);
   };
   
   this.trigger = function(action,layer,feature) {

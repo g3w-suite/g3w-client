@@ -207,15 +207,17 @@ function QueryService(){
     }
     
     var nfeatures = 0;
-    _.forEach(queryLayers,function(queryLayer) {
-      var features = parser.call(self, queryLayer, data);
-      nfeatures += features.length;
+    if (parser) {
+      _.forEach(queryLayers,function(queryLayer) {
+        var features = parser.call(self, queryLayer, data);
+        nfeatures += features.length;
 
-      featuresForLayers.push({
-        layer: queryLayer,
-        features: features
-      })
-    });
+        featuresForLayers.push({
+          layer: queryLayer,
+          features: features
+        })
+      });
+    }
 
     return featuresForLayers;
   };

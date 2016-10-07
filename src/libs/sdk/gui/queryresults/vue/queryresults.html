@@ -15,7 +15,7 @@
             <table class="table table-striped">
               <thead>
               <tr>
-                <th v-if="layerHasActions(layer)" :style="{ width:headerActionsCellWidth + '%' }"></th>
+                <th v-if="state.layersactions[layer.id].length" :style="{ width:headerActionsCellWidth + '%' }"></th>
                 <th v-for="(index,attribute) in attributesSubset(layer.attributes)" :style="{ width:cellWidth(index,layer) + '%' }">{{attribute.label}}</th>
                 <th :style="{ width:headerExpandActionCellWidth + '%' }"></th>
               </tr>
@@ -23,8 +23,8 @@
               <tbody>
               <template v-if="feature.show" v-for="feature in layer.features">
                 <tr @click="toggleFeatureBox(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header">
-                  <td v-if="featureHasActions(layer,feature)" class="action-cell">
-                    <span v-if="geometryAvailable(feature)" @click.stop.prevent="trigger('gotogeometry',layer,feature)" class="action-button-icon glyphicon glyphicon-map-marker link"></span>
+                  <td v-if="geometryAvailable(feature)" class="action-cell">
+                    <span @click.stop.prevent="trigger('gotogeometry',layer,feature)" class="action-button-icon glyphicon glyphicon-map-marker link"></span>
                   </td>
                   <td v-for="attribute in attributesSubset(layer.attributes)">
                     <span>{{feature.attributes[attribute.name]}}</span>
@@ -36,9 +36,11 @@
                 <tr v-show="collapseFeatureBox(layer,feature)" class="featurebox-body">
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
-                      <div v-if="geometryAvailable(feature)" @click="trigger('gotogeometry',layer,feature)" class="action-button hint--top-right" aria-label="Visualizza sulla mappa">
-                        <span class="action-button-icon glyphicon glyphicon-map-marker"></span>
-                      </div>
+                      <template v-for="action in state.layersactions[layer.id]">
+                        <div @click="trigger(action.id,layer,feature)"  class="action-button hint--top-right" aria-label="{{ action.hint }}">
+                          <span class="action-button-icon {{ action.class }}"></span>
+                        </div>
+                      </template>
                     </div>
                     <table>
                       <tr v-for="attribute in layer.attributes">
