@@ -161,7 +161,7 @@ function QueryResultsComponent(options) {
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
 
-  this._service.onafter('setQueryResponse',function(){
+  this._service.onafter('setLayersData',function(){
     self.createLayersFeaturesBoxes();
   });
   merge(this, options);

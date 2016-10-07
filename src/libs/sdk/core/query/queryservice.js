@@ -124,7 +124,7 @@ function QueryService(){
   // mentre con i risultati in msGLMOutput (da Mapserver) il parser può essere istruito per parserizzare in base ad un layer di filtro
   this._parseLayermsGMLOutput = function(queryLayer, data){
     var parser = new ol.format.WMSGetFeatureInfo({
-      //layers: [queryLayer.getQueryLayerName()]
+      layers: [queryLayer.getQueryLayerName()]
     });
     return parser.readFeatures(data);
   };
@@ -263,6 +263,8 @@ function QueryService(){
       urlsForLayers[urlHash].layers.push(layer);
     });
 
+    var resolution = self._mapService.getResolution();
+    var epsg = self._mapService.getEpsg();
     var queryUrlsForLayers = [];
     _.forEach(urlsForLayers,function(urlForLayers) {
       var sourceParam = urlForLayers.url.split('SOURCE');
@@ -274,8 +276,6 @@ function QueryService(){
       }
       var queryLayers = urlForLayers.layers;
       var infoFormat = queryLayers[0].getInfoFormat();
-      var resolution = self._mapService.getResolution();
-      var epsg = self._mapService.getEpsg();
       var params = {
         LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
         QUERY_LAYERS: _.map(queryLayers,function(layer){ return layer.getQueryLayerName(); }),
@@ -318,7 +318,8 @@ function QueryService(){
         d.resolve({
           data: featuresForLayers,
           query: {
-            coordinates: coordinates
+            coordinates: coordinates,
+            resolution: resolution
           }
         });
       })

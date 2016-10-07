@@ -12,27 +12,34 @@ function QueryResultsService(){
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
-
+  
   this.init = function(options) {
     this.clearState();
   };
-
+  
   this.state = {
     layers: [],
     query: {},
     querytitle: null,
     loading: true
   };
-
+  
   this.setters = {
-    setQueryResponse: function(queryResponse) {
+    setQueryResponse: function(queryResponse,coordinates,resolution) {
       this.state.layers = [];
       this.state.query = queryResponse.query;
-      this._digestFeaturesForLayers(queryResponse.data);
+      var layers = this._digestFeaturesForLayers(queryResponse.data)
+      this.setLayersData(layers,this);
       this.state.loading = false;
+    },
+    setLayersData: function(layers,self) {
+      self.state.layers =  layers
+    },
+    getActionsForFeature: function() {
+      //
     }
   };
-
+  
   this.clearState = function() {
     this.state = {
       layers: [],
@@ -41,11 +48,11 @@ function QueryResultsService(){
       loading: true
     };
   };
-
+  
   this.setTitle = function(querytitle) {
     this.state.querytitle = querytitle || "";
   };
-
+  
   this.reset = function() {
     this.clearState();
   };
@@ -53,6 +60,7 @@ function QueryResultsService(){
   this._digestFeaturesForLayers = function(featuresForLayers) {
     var self = this;
     var id = 0;
+    var layers = [];
     _.forEach(featuresForLayers, function(featuresForLayer) {
       var layer = featuresForLayer.layer;
       if (featuresForLayer.features.length) {
@@ -75,12 +83,13 @@ function QueryResultsService(){
           //console.log(featureObj);
           layerObj.features.push(featureObj);
         });
-        self.state.layers.push(layerObj);
+        layers.push(layerObj);
       }
       id += 1;
     })
+    return layers;
   };
-
+  
   this._parseAttributes = function(layerAttributes, featureAttributes) {
     var featureAttributesNames = _.keys(featureAttributes);
 
@@ -106,14 +115,14 @@ function QueryResultsService(){
       })
     }
   };
-
+  
   this.trigger = function(action,layer,feature) {
     var actionMethod = this._actions[action];
     if (actionMethod) {
       actionMethod(layer,feature);
     }
   };
-
+  
   base(this);
 }
 QueryResultsService.zoomToElement = function(layer,feature) {
