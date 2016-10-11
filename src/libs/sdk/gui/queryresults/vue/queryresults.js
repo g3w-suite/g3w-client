@@ -125,7 +125,7 @@ var vueComponentOptions = {
     relationsAttributesSubsetLength: function(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
-    collapseFeatureBox: function(layer, feature, relation_index) {
+    collapsedFeatureBox: function(layer, feature, relation_index) {
       var collapsed = true;
       var boxid;
       if (!_.isNil(relation_index)) {
@@ -175,7 +175,7 @@ function QueryResultsComponent(options) {
     if (this.internalComponent) {
       return this.internalComponent.$el;
     }
-  }
+  };
 
   this._service.onafter('setLayersData',function(){
     self.createLayersFeaturesBoxes();
@@ -186,10 +186,11 @@ function QueryResultsComponent(options) {
     var layersFeaturesBoxes = {};
     var layers = this._service.state.layers;
     _.forEach(layers,function(layer){
-      _.forEach(layer.features,function(feature){
+      _.forEach(layer.features,function(feature,index){
+        var collapsed = index == 0 ? false : true;
         var boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
-          collapsed: false
+          collapsed: collapsed
         };
         if (feature.attributes.relations) {
           boxid = '';
@@ -197,7 +198,7 @@ function QueryResultsComponent(options) {
             boxid = layer.id + '_' + feature.id + '_' + relation.name;
             _.forEach(relation.elements, function(element, index){
               layersFeaturesBoxes[boxid+index] = {
-                collapsed: false
+                collapsed: true
               };
             });
           })
@@ -205,6 +206,16 @@ function QueryResultsComponent(options) {
       })
     });
     this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
+  };
+
+  this.mount = function(parent,append) {
+    var self = this;
+    return base(this,'mount',parent,append).
+    then(function(){
+      if (self._service.state.layers.length) {
+        self._service.runHooks();
+      }
+    });
   };
 }
 inherit(QueryResultsComponent, Component);

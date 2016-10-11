@@ -23,8 +23,8 @@ function QueryResultsService(){
     setQueryResponse: function(queryResponse,coordinates,resolution) {
       this.state.layers = [];
       this.state.query = queryResponse.query;
-      var layers = this._digestFeaturesForLayers(queryResponse.data)
-      this.setLayersData(layers,this);
+      var layers = this._digestFeaturesForLayers(queryResponse.data);
+      this.runHooks(layers);
     },
     setLayersData: function(layers,self) {
       // an opportunity to alter / add results. Through the self reference the DOM element can be retrieved to manipulate results panel DOM
@@ -36,6 +36,11 @@ function QueryResultsService(){
       // an opportunity for plugin to add layer actions
     }
   };
+
+  this.runHooks = function(layers) {
+    layers = layers || this.state.layers;
+    this.setLayersData(layers,this);
+  };
   
   this.clearState = function() {
     this.state = {
@@ -46,7 +51,15 @@ function QueryResultsService(){
       layersactions: {}
     };
   };
-  
+
+  this.getState = function() {
+    return this.state;
+  };
+
+  this.setState = function(state) {
+    this.state = state;
+  }
+
   this.setTitle = function(querytitle) {
     this.state.querytitle = querytitle || "";
   };
@@ -90,7 +103,7 @@ function QueryResultsService(){
         });
         layers.push(layerObj);
       }
-    })
+    });
     return layers;
   };
   

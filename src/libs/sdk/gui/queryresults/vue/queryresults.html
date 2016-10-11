@@ -30,10 +30,10 @@
                     <span>{{feature.attributes[attribute.name]}}</span>
                   </td>
                   <td class="action-cell">
-                    <span class="fa link morelink" :class="[collapseFeatureBox(layer,feature) ? 'fa-minus' : 'fa-plus']"></span>
+                    <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
                   </td>
                 </tr>
-                <tr v-show="collapseFeatureBox(layer,feature)" class="featurebox-body">
+                <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
                       <template v-for="action in state.layersactions[layer.id]">
@@ -56,7 +56,7 @@
                     </table>
                   </td>
                 </tr>
-                <tr v-show="collapseFeatureBox(layer,feature) && feature.attributes.relations">
+                <tr v-show="collapsedFeatureBox(layer,feature) && feature.attributes.relations">
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <!--Relazioni-->
                     <div class="queryresults-container">
@@ -87,10 +87,10 @@
                                         <span>{{attribute.value}}</span>
                                       </td>
                                       <td class="action-cell text-center">
-                                        <span class="fa link morelink" :class="[collapseFeatureBox(layer, feature, relation.name+index) ? 'fa-minus' : 'fa-plus']" style="text-align: right"></span>
+                                        <span class="fa link morelink" :class="[collapsedFeatureBox(layer, feature, relation.name+index) ? 'fa-minus' : 'fa-plus']" style="text-align: right"></span>
                                       </td>
                                     </tr>
-                                    <tr v-show="collapseFeatureBox(layer, feature, relation.name+index)" class="featurebox-body">
+                                    <tr v-show="collapsedFeatureBox(layer, feature, relation.name+index)" class="featurebox-body">
                                       <td :colspan="relationsAttributesSubsetLength(element)+1">
                                         <table>
                                           <tr v-for="relattribute in relationsAttributes(element)">

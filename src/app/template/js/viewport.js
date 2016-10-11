@@ -51,20 +51,32 @@ var ViewportService = function(){
     })
   };
 
+  /*
+  options: {
+    content: può essere una stringa di testa, un elemento jQuery o un componente Vue
+    title: il title da mostrare nella finestra dei contenuti
+    push (opzionale, default false): se il contenuto deve essere impilato sul precedente (con possibilità di tornare indietro nello stack dei contenuti (contentStack)
+    split (opzionale, default 'h'): 'h' || 'v' splittare le finestre orizzontalmente o verticalmente. per ora testato solo orizzontalmente
+    perc (opzionale, default 50): valore numerico, indica la percentuale delle finestra dei contenuti (es. 33 -> 2/3 saranno di mappa e 1/3 di contenuti)
+  }
+   */
   this.showContent = function(options) {
-    this.contentStack = [];
-    this.pushContent(options);
+    var push = (typeof options.push === 'boolean') ? options.push : false;
+    if (!push) {
+      this.contentStack = [];
+    }
+    this._setContents(options,push);
   };
 
   this.pushContent = function(options) {
-    this.contentStack.push(options);
-    this.setContents(options);
+    this._setContents(options);
   };
 
   this.popContent = function() {
     if (this.contentStack.length) {
-      var options = this.contentStack.pop();
-      this.setContents(options);
+      this.contentStack.pop();
+      var options = this.contentStack[this.contentStack.length - 1];
+      this._setContents(options);
     }
   };
 
@@ -74,22 +86,60 @@ var ViewportService = function(){
   };
 
   this.showMap = function(options) {
-    this.showView('map', options);
+    this._showView('map', options);
   };
 
-  this.setContents = function(options,push) {
+  this.isPrimaryView = function(viewName) {
+    return this.state.primaryView == viewName;
+  };
+
+  this.showSecondaryView = function(split,perc) {
+    if (!this.state.secondaryVisible) {
+      this.state.secondaryVisible = true;
+      this.state.split = split ? split : this.state.split;
+      this.state.secondaryPerc = perc ? perc : this.state.perc;
+      this._layout();
+    }
+  };
+
+  this.closeSecondaryView = function(componentId) {
     var self = this;
-    this.components.content.setContent(options.content,push)
+    var contentsComponent = this.components.content;
+
+    if (contentsComponent.clearContents) {
+      contentsComponent.clearContents()
+        .then(function(){
+          self.state.secondaryVisible = false;
+          self._layout();
+        });
+    }
+    else {
+      this.state.secondaryVisible = false;
+      // questo è il metodo che esegue il layout delle viste, e dà ad ogni componente l'opportunità di ricalcolare il proprio layout
+      this._layout();
+    }
+  };
+
+  this._setContents = function(options,push) {
+    var self = this;
+    // viene chiamato il metodo setContents del componente deputato a gestire/mostrare contenuti generici (di default usiamo template/js/contentsviewer.js)
+    // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents) pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
+    this.components.content.setContent(options.content)
     .then(function() {
+      // se in modalità push vado ad inserire il contenuto nello stack. Appena lo stack avrà più di un elemento apparirà (sotto il titolo dei contenuto) il link per tornare al contenuto precedente
+      if (push) {
+        self.contentStack.push(options);
+      }
       self.state.content.title = options.title;
       self.state.content.stack = _.map(self.contentStack,function(contentOptions){
         return contentOptions.title;
       });
-      self.showView('content', options)
+      self._showView('content', options)
     })
   };
 
-  this.showView = function(viewName,options) {
+  // metodo che si occupa delle gestione di tutta la logica di visualizzazione delle due viste (mappa e contenuti)
+  this._showView = function(viewName,options) {
     var perc = options.perc || this.getDefaultViewPerc(viewName);
     var split = options.split || 'h';
 
@@ -117,41 +167,6 @@ var ViewportService = function(){
     return this.isPrimaryView(viewName) ? 100 : 50;
   };
 
-  this.isPrimaryView = function(viewName) {
-    return this.state.primaryView == viewName;
-  };
-
-  this.showSecondaryView = function(split,perc) {
-    if (!this.state.secondaryVisible) {
-      this.state.secondaryVisible = true;
-      this.state.split = split ? split : this.state.split;
-      this.state.secondaryPerc = perc ? perc : this.state.perc;
-      this._layout();
-    }
-  };
-  
-  this.closeSecondaryView = function(componentId) {
-    var self = this;
-    var contentsComponent = this.components.content;
-
-    if (contentsComponent.clearContents) {
-      contentsComponent.clearContents()
-        .then(function(){
-          self.state.secondaryVisible = false;
-          self._layout();
-        });
-    }
-    else {
-      this.state.secondaryVisible = false;
-      this._layout();
-    }
-
-  };
-  
-  /* FINE INTERFACCIA PUBBLICA */
-
-
-  
   this._otherView = function(viewName) {
     return (viewName == 'map') ? 'content' : 'map';
   };
@@ -283,6 +298,7 @@ var ViewportService = function(){
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
       var width = self.state[name].sizes.width;
       var height = self.state[name].sizes.height;
+      // ogni componente (mappa e contenuto) qui ha l'opportunità di ricalcolare il proprio il layout. Usato per esempio dalla mappa per reagire al resize della viewport
       component.layout(width,height);
     })
   };
@@ -325,4 +341,4 @@ var ViewportComponent = Vue.extend({
 module.exports = {
   ViewportService: viewportService,
   ViewportComponent: ViewportComponent
-}
+};

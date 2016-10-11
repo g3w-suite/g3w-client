@@ -1,62 +1,130 @@
 var inherit = require('sdk/core/utils/utils').inherit;
 var G3WObject = require('sdk/core/g3wobject');
+var Component = require('gui/vue/component');
 
 function BarStack(){
+  this._parent = null;
   this.state = {
-    closable: true,
     panels: []
   }
-  /*this.state = {
-    panels: []
-  };*/
 }
 
 inherit(BarStack,G3WObject);
 
 var proto = BarStack.prototype;
 
-proto.push = function(panel, parent, options){
+proto.push = function(content, parent, append){
   var self = this;
-  options = options || {};
-  var append = !_.isNil(options.append) ? options.append : false;
-  this.state.closable = !_.isNil(options.closable) ? options.closable : true;
-  this.remove(panel); // nel caso esista già prima lo rimuovo
-  panel.mount(parent, append)
-  .then(function(){
-    $(parent).localize();
-    self.state.panels.push(panel);
-  });
+  this._parent = parent;
+  append = append || false;
+  return this._mount(content,append);
 };
 
 proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
   var self = this;
   if (this.state.panels.length) {
-    var panel = this.state.panels.slice(-1)[0];
-    panel.unmount()
-    .then(function(){
-      //self.state.panels.pop();
-      self.state.panels.pop();
-    });
+    var content = this.state.panels.slice(-1)[0];
+    this._unmount(content);
   }
 };
 
-proto.remove = function(panel) {
+proto.clear = function() {
+  var self = this;
+  var d = $.Deferred();
+  var unmountRequests = [];
+  _.forEach(this.state.panels, function(content,idx) {
+    unmountRequests.push(self._unmount(content));
+  });
+  $.when(unmountRequests).then(function(){
+    d.resolve();
+  });
+  return d.promise();
+};
+
+proto._mount = function(content,append) {
+  var d = $.Deferred();
+  if (content instanceof jQuery) {
+    this._setJqueryContent(content);
+    d.resolve();
+  }
+  else if (_.isString(content)) {
+    var jqueryEl = $(content);
+    // nel caso in cui content sia testo puro, devo wrapparlo in un tag HTML in modo che $() generi un elemento DOM
+    if (!jqueryEl.length) {
+      jqueryEl = $('<div>'+content+'</div>');
+    }
+    this._setJqueryContent(jqueryEl);
+    d.resolve();
+  }
+  else if (content instanceof Component) {
+    this._checkDuplicateVueContent(content); // nel caso esista già prima lo rimuovo
+    this._setVueContent(content,append)
+    .then(function(){
+      d.resolve();
+    });
+  }
+  else {
+    this._setDOMContent(content);
+    d.resolve();
+  }
+  return d.promise();
+};
+
+proto._setJqueryContent = function(content) {
+  $(this._parent).append(content);
+  this.state.panels.push(content);
+};
+
+proto._setDOMContent = function(content) {
+  this._parent.appendChild(content);
+  this.state.panels.push(content);
+};
+
+proto._setVueContent = function(content,append) {
+  var self = this;
+  return content.mount(this._parent, append)
+  .then(function(){
+    $(parent).localize();
+    self.state.panels.push(content);
+  });
+};
+
+proto._checkDuplicateVueContent = function(content) {
   var self = this;
   var idxToRemove = null;
-  var id = panel.getId();
-  _.forEach(this.state.panels, function(_panel,idx) {
-    if (_panel.getId() == id) {
+  var id = content.getId();
+  _.forEach(this.state.panels, function(_content,idx) {
+    if (_content.getId && (_content.getId() == id)) {
       idxToRemove = idx;
     };
   });
   if (!_.isNull(idxToRemove)) {
-    var _panel = self.state.panels[idxToRemove];
-    _panel.unmount()
-    .then(function() {
-      self.state.panels.splice(idxToRemove,1);
+    var _content = self.state.panels[idxToRemove];
+    _content.unmount()
+      .then(function() {
+        self.state.panels.splice(idxToRemove,1);
+      });
+  }
+};
+
+proto._unmount = function(content) {
+  var self = this;
+  var d = $.Deferred();
+  if(content instanceof Component) {
+    content.unmount()
+    .then(function(){
+      //self.state.panels.pop();
+      self.state.panels.pop();
+      d.resolve();
     });
   }
+  else {
+    $(this._parent).empty();
+    this.state.panels.pop();
+    d.resolve();
+  }
+  return d.promise();
 };
 
 proto.getLength = function() {
