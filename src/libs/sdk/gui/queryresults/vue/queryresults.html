@@ -22,7 +22,7 @@
               </thead>
               <tbody>
               <template v-if="feature.show" v-for="feature in layer.features">
-                <tr @click="toggleFeatureBox(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header">
+                <tr @click="toggleFeatureBoxAndZoom(layer,feature);" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header">
                   <td v-if="geometryAvailable(feature)" class="action-cell">
                     <span @click.stop.prevent="trigger('gotogeometry',layer,feature)" class="action-button-icon glyphicon glyphicon-map-marker link"></span>
                   </td>
@@ -30,10 +30,10 @@
                     <span>{{feature.attributes[attribute.name]}}</span>
                   </td>
                   <td class="action-cell">
-                    <span class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
+                    <span v-if="layer.expandable" class="fa link morelink" :class="[collapsedFeatureBox(layer,feature) ? 'fa-plus' : 'fa-minus']"></span>
                   </td>
                 </tr>
-                <tr v-show="!collapsedFeatureBox(layer,feature)" class="featurebox-body">
+                <tr v-show="!collapsedFeatureBox(layer,feature) && layer.expandable" class="featurebox-body">
                   <td :colspan="attributesSubsetLength(layer.attributes)+2">
                     <div class="action-buttons-container">
                       <template v-for="action in state.layersactions[layer.id]">
@@ -47,10 +47,11 @@
                         <td class="attr-label">{{attribute.label}}</td>
                         <!--<td class="attr-value">{{feature.attributes[attribute.name]}}</td>-->
                         <td class="attr-value">
-                          <span v-if="isSimple(layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
+                          <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])">{{feature.attributes[attribute.name]}}</span>
                           <!--<span v-if="isRoute(layer,feature,attribute)" class="link dashboardlink" @click="goto(layer,feature.attributes[attribute.name])">{{ feature.attributes[attribute.name] }}</span>-->
                           <!--<img v-if="isPhoto(layer,feature,attribute)" data-url="{{getPhotoUrl(feature.attributes[attribute.name])}}" style="max-width:50px" :src="getPhotoUrl(feature.attributes[attribute.name],thumb)" />-->
-                          <a v-if="isLink(layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank" class="glyphicon glyphicon-link"></a>
+                          <img v-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])" :src="feature.attributes[attribute.name]">
+                          <a v-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :href="feature.attributes[attribute.name]" target="_blank" class="glyphicon glyphicon-link"></a>
                         </td>
                       </tr>
                     </table>

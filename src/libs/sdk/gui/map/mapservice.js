@@ -558,7 +558,15 @@ proto.highlightGeometry = function(geometryObj,options) {
   var geometryType = geometry.getType();
   if (zoom) {
     if (geometryType == 'Point') {
-      this.viewer.goTo(geometry.getCoordinates());
+      if (this.project.state.crs != 4326 && this.project.state.crs != 3857) {
+        var viewport = this.viewer.map.getViewport();
+        // zoom ad una risoluzione in cui la mappa copra 100m
+        var res = 100 / Math.max(viewport.clientWidth,viewport.clientHeight);
+        this.viewer.goToRes(geometry.getCoordinates(),res);
+      }
+      else {
+        this.viewer.goTo(geometry.getCoordinates(),6);
+      }
     }
     else {
       this.viewer.fit(geometry,options);

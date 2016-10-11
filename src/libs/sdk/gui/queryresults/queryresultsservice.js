@@ -82,7 +82,8 @@ function QueryResultsService(){
           attributes: self._parseAttributes(layer.getAttributes(), featuresForLayer.features[0].getProperties()),
           features: [],
           hasgeometry: false,
-          show: true
+          show: true,
+          expandable: true
         };
         _.forEach(featuresForLayer.features, function(feature){
           var fid = feature.getId() ? feature.getId() : id;
@@ -146,14 +147,49 @@ function QueryResultsService(){
           cbk: QueryResultsService.goToGeometry
         })
       }
-    })
+    });
     this.addActionsForLayers(self.state.layersactions);
   };
   
-  this.trigger = function(action,layer,feature) {
-    var actionMethod = this._actions[action];
+  this.trigger = function(actionId,layer,feature) {
+    var actionMethod = this._actions[actionId];
     if (actionMethod) {
       actionMethod(layer,feature);
+    }
+
+    if (layer) {
+      var layerActions = self.state.layersactions[layer.id];
+      if (layerActions) {
+        var action;
+        _.forEach(layerActions,function(layerAction){
+          if (layerAction.id == actionId) {
+            action = layerAction;
+          }
+        });
+
+        if (actionId == 'gotodetail') {
+          var a = 1;
+        }
+        if (action) {
+          this.triggerLayerAction(action,layer,feature);
+        }
+      }
+    }
+  };
+
+  this.triggerLayerAction = function(action,layer,feature) {
+    if (action.cbk) {
+      action.cbk(layer,feature)
+    }
+    if (action.route) {
+      var url;
+      var urlTemplate = action.route;
+      url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
+        return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
+      });
+      if (url && url != '') {
+        GUI.goto(url);
+      }
     }
   };
   

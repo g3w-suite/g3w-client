@@ -23,12 +23,12 @@ function getFieldType(layer,name,value) {
   value = value.toString();
 
   var extension = value.split('.').pop();
-  if (value.match(URLPattern)) {
-    return Fields.LINK;
-  }
-
   if (value.match(PhotoPattern)) {
     return Fields.PHOTO;
+  }
+
+  if (value.match(URLPattern)) {
+    return Fields.LINK;
   }
 
   return Fields.SIMPLE;
@@ -65,6 +65,9 @@ var vueComponentOptions = {
     },
     isLink: function(layer,attributeName,attributeValue) {
       return fieldIs(Fields.LINK,layer,attributeName,attributeValue);
+    },
+    is: function(type,layer,attributeName,attributeValue) {
+      return fieldIs(type,layer,attributeName,attributeValue);
     },
     layerHasFeatures: function(layer) {
       if (layer.features) {
@@ -147,6 +150,12 @@ var vueComponentOptions = {
       }
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
     },
+    toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
+      if (this.collapsedFeatureBox(layer, feature, relation_index)) {
+        this.trigger('gotogeometry',layer,feature)
+      }
+      this.toggleFeatureBox(layer, feature, relation_index);
+    },
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
     }
@@ -186,8 +195,13 @@ function QueryResultsComponent(options) {
     var layersFeaturesBoxes = {};
     var layers = this._service.state.layers;
     _.forEach(layers,function(layer){
+      if (layer.attributes.length <= maxSubsetLength) {
+        layer.expandable = false;
+      }
       _.forEach(layer.features,function(feature,index){
-        var collapsed = index == 0 ? false : true;
+        // se è la prima feature e il layer ha più di maxSubsetLength attributi, allora la espando già in apertura
+        //var collapsed = (index == 0 && layer.attributes.length > maxSubsetLength) ? false : true;
+        var collapsed = true;
         var boxid = layer.id+'_'+feature.id;
         layersFeaturesBoxes[boxid] = {
           collapsed: collapsed

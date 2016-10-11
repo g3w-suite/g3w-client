@@ -1,6 +1,7 @@
 var noop = require('core/utils/utils').noop;
 var inherit = require('core/utils/utils').inherit;
 var G3WObject = require('core/g3wobject');
+var RouterService = require('core/router');
 var ComponentsRegistry = require('gui/componentsregistry');
 
 // rappresenta l'interfaccia globale dell'API della GUI. 
@@ -40,6 +41,10 @@ function GUI() {
     return ComponentsRegistry.getComponent(id);
   };
   //fine metodi componente
+
+  this.goto = function(url) {
+    RouterService.goto(url);
+  };
 
   this.ready = function(){
     this.emit('ready');

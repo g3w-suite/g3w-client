@@ -88,6 +88,9 @@
         text-align: center;
         >span {
           padding-left: 5px;
+          &:hover {
+            color: darken(@light-blue,10%)
+          }
         }
       }
     }
@@ -103,13 +106,15 @@
         background-color: @light-blue;
         line-height: 1.42857143;
         margin-top: 8px;
+        height: 30px;
+        line-height: 30px;
+        overflow: hidden;
         .action-button {
           display:inline-block;
-          height: 50%;
           width: 40px;
           text-align: center;
           border-right: 2px solid white;
-          padding: 8px;
+          padding: 2px;
           cursor: pointer;
           &:hover {
             background-color: darken(@light-blue,20%);

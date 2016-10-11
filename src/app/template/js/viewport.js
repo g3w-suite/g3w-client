@@ -65,10 +65,12 @@ var ViewportService = function(){
     if (!push) {
       this.contentStack = [];
     }
+    this.contentStack.push(options);
     this._setContents(options,push);
   };
 
   this.pushContent = function(options) {
+    this.contentStack.push(options);
     this._setContents(options);
   };
 
@@ -126,10 +128,6 @@ var ViewportService = function(){
     // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents) pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
     this.components.content.setContent(options.content)
     .then(function() {
-      // se in modalità push vado ad inserire il contenuto nello stack. Appena lo stack avrà più di un elemento apparirà (sotto il titolo dei contenuto) il link per tornare al contenuto precedente
-      if (push) {
-        self.contentStack.push(options);
-      }
       self.state.content.title = options.title;
       self.state.content.stack = _.map(self.contentStack,function(contentOptions){
         return contentOptions.title;
