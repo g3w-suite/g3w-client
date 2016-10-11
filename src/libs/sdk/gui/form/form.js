@@ -282,7 +282,8 @@ function Form(options) {
   this.isnew = (!_.isNil(options.isnew) && _.isBoolean(options.isnew)) ? options.isnew : true;
   this.state = {
     fields: options.fields,
-    relations: options.relations
+    relations: options.relations,
+    isnew: this.isnew
   };
   this.tools = options.tools;
   // clipboard
@@ -369,6 +370,16 @@ proto._copyFormToClipBoard = function() {
 proto._setFieldValueLayerFromToRelationField = function(relation, name) {
   console.log('questa funzione deve essere sovrascritta dal plugin al momento');
 };
+
+proto._checkIfFieldIsOverwritable = function(fieldName, fieldsdArray) {
+  var check = null;
+  _.forEach(fieldsdArray, function(field) {
+    if (!_.isNil(field[fieldName])) {
+      check = field[fieldName]
+    }
+  });
+  return check;
+};
 // funzione utlizzazta al fine di copiare i dati di un altra feature seleziona
 // evitando di scrivere i campi non sovrascrivibili. Rimasta con il nome vecchio riferita solo alla primary key
 proto._pasteStateWithoutPk = function(fields, relations) {
@@ -386,9 +397,14 @@ proto._pasteStateWithoutPk = function(fields, relations) {
     relationFields = copyAndPasteFieldsNotOverwritable.relations;
   }
   // verifico i fields da non modificare sul layer
+  var orginalField;
   _.forEach(fields, function(field, index) {
-    if (self.pk == field.name || (layerFields.indexOf(field.name) != -1)) {
-      fields[index].value = null;
+    orginalField = self._checkIfFieldIsOverwritable(field.name, layerFields);
+    //verifico se è una chiave prmaria il campo
+    if (self.pk == field.name) {
+      fields[index].value = self.isnew ? null : self.state.fields[index].value;
+    } else if (!_.isNull(orginalField)) { // caso in cui non è la chiave primaria
+      fields[index].value = (orginalField && self.isnew) ? null : self.state.fields[index].value;
     }
   });
   // verifico i fileds delle relazioni da non sovrascrivere
@@ -695,7 +711,7 @@ proto._addRelationElement = function(relation) {
   relation.elements.push(element);
 };
 
-proto._removeRelationElement = function(relation,element){
+proto._removeRelationElement = function(relation, element){
   var self = this;
   _.forEach(relation.elements,function(_element,idxToRemove){
     if (_element.id == element.id) {
@@ -703,6 +719,13 @@ proto._removeRelationElement = function(relation,element){
       element.state = element.state+'_DELETED'; // lo marco come elminato
       delete self.state.elementsBoxes.elmentBoxId;
     }
+  })
+};
+
+proto._removeRelationElements = function(relation) {
+  var self = this;
+  _.forEach(relation.elements, function(element){
+    self._removeRelationElement(relation, element);
   })
 };
 

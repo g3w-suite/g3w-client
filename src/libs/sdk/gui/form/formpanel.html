@@ -1,9 +1,9 @@
 <div>
   <div class="quick-actions-menu">
     <div v-if="tools.copypaste" class="pull-right">
-      <button class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
-      <button class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
-      <button class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
+      <button v-if='state.isnew' class="btn btn-default glyphicon glyphicon-screenshot" data-placement="bottom" @click="pickLayerToClipBoard"  data-i18n="[title]copy_form_data_from_feature"></button>
+      <button v-if='!state.isnew' class="btn btn-default glyphicon glyphicon-copy" data-placement="bottom" @click="copyToClipBoard"  data-i18n="[title]copy_form_data"></button>
+      <button v-if='state.isnew' class="btn btn-default glyphicon glyphicon-paste" data-placement="bottom" @click="pasteClipBoardToForm" v-disabled="!state.canpaste" data-i18n="[title]paste_form_data"></button>
     </div>
   </div>
   <div>
@@ -31,7 +31,7 @@
                     <i class="glyphicon glyphicon-screenshot form-control-feedback" ></i>
                   </div>
                   <div v-if="isFile(field)">
-                    <img class="photo-preview img-responsive img-thumbnail"  :src="checkFileSrc(field.value)" />
+                    <img v-if="checkFileSrc(field.value)" class="photo-preview img-responsive img-thumbnail"  :src="checkFileSrc(field.value)" />
                     <input v-if="isFile(field)" type="file" :name="field.name" data-url="{{ field.uploadurl }}" :field="field.name" title="Foto" accept="image/*;capture=camera"  @change="onFileChange(field, $event)">
                   </div>
                 </div>

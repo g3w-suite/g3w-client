@@ -248,10 +248,13 @@ proto.cleanVectorFeaturesLock = function(vectorLayer) {
 };
 
 proto.lockFeatures = function(layerName) {
+  var self = this;
   var d = $.Deferred();
   var bbox = this._mapService.state.bbox;
+  var vectorLayer = this._layers[layerName].vector;
   $.get(this._baseUrl+layerName+"/?lock" + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
     .done(function(data) {
+      self.setVectorFeaturesLock(vectorLayer, data.featurelocks);
       d.resolve(data);
     })
     .fail(function(){
