@@ -225,14 +225,26 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     
     GUI.setModal = _.bind(this._showModalOverlay,this);
 
-    // Mostra il contenuto come vista principale. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue
-    GUI.showContent = function(content) {
+    // Mostra la mappa nascondendo la vista dei contenuti
+    GUI.showMap = function(split) {
+      GUI.showMapAside(100,split)
     };
-    // Mostra i contenuto come vista aside
-    GUI.pushContentAside = function(content,title,split,perc) {
-      GUI.showContentAside(content,title,true,split,perc);
+    // Mostra la mappa come vista aside (nel caso sia attiva la vista contenuti). Percentuale di default 30%
+    GUI.showMapAside = function(perc,split) {
+      perc = (typeof perc === 'boolean') ? perc : 30;
+      viewport.ViewportService.showMap({
+        perc: perc
+      })
     };
-
+    // Mostra il contenuto (100%)
+    GUI.showContent = function(content,title,split) {
+      GUI.showContentAside(content,title,100,split)
+    };
+    // Aggiunge contenuto allo stack
+    GUI.pushContentAside = function(content,title,perc,split) {
+      GUI.showContentAside(content,title,true,perc,split);
+    };
+    // Mostra il contenuto. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue. Percentuale di default 50%
     GUI.showContentAside = function(content,title,push,perc,split) {
       viewport.ViewportService.showContent({
         content: content,
@@ -241,12 +253,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         split: split,
         perc: perc
       });
-    };
-    // Nasconde la vista secondaria
-    GUI.hideAside = function() {
-      viewport.ViewportService.hideSecondaryView();
-      var contentComponent = ComponentsRegistry.getComponent('contents');
-      contentComponent.removeContent();
     };
     /* fine metodi specifici */
     
