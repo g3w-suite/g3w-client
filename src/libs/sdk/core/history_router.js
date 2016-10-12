@@ -29,12 +29,6 @@ var G3WObject = require('core/g3wobject');
  * RouterService.removeRoute(route);
 */
 
-// altrimenti due chiamate successive alla stessa route verrebbero ignorate
-// e può capitare di tornare a chiamare la stessa route senza averne chiamate prima (perché non tutta la GUI è comandata tramite Router)
-crossroads.ignoreState = true;
-// tutte le route vengono innescate da un url, invece di feramrsi alla prima (com'è di default)
-crossroads.greedy = true;
-
 var RouterService = function(){
   var self = this;
   this._initialLocationQuery;
@@ -44,7 +38,18 @@ var RouterService = function(){
       this._routeQuery = routeQuery;
       crossroads.parse(routeQuery);
     }
-  };
+  }
+  
+  History.Adapter.bind(window,'statechange',function(){
+      var state = History.getState();
+      var locationQuery = state.hash;
+      if(state.data && state.data.routequery){
+         self.setRouteQuery(state.data.routequery);
+      }
+      else {
+        self._setRouteQueryFromLocationQuery(locationQuery);
+      }
+  });
   
   base(this);
 };
@@ -74,21 +79,16 @@ proto.parse = function(request,defaultArgs) {
 };
 
 proto.goto = function(routeQuery){
+  //var pathb64 = Base64.encode(path);
+  //History.pushState({path:path},null,'?p='+pathb64);
   if (!this._initialQuery) {
     this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
   }
   if (routeQuery) {
-    this.setRouteQuery(routeQuery);
+    encodedRouteQuery = this._encodeRouteQuery(routeQuery);
+    var path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
+    History.pushState({routequery:routeQuery},null,path);
   }
-};
-
-proto.makePermalink = function(routeQuery) {
-  if (!this._initialQuery) {
-    this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
-  }
-  var encodedRouteQuery = this._encodeRouteQuery(routeQuery);
-  //encodedRouteQuery = Base64.encode(encodedRouteQuery);
-  return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
 };
 
 proto.makeQueryString = function(queryParams){};
@@ -165,8 +165,9 @@ proto._decodeRouteQuery = function(routeQuery) {
 };
 
 proto._setRouteQueryFromLocationQuery = function(locationQuery) {
+  //var pathb64 = this.getQueryParams(locationQuery)['q'];
+  //var path = pathb64 ? Base64.decode(pathb64) : '';
   var encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
-  //encodedRouteQuery = Base64.decode(encodedRouteQuery);
   if (encodedRouteQuery) {
     var routeQuery = this._decodeRouteQuery(encodedRouteQuery);
     this.setRouteQuery(routeQuery);

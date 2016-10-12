@@ -60,6 +60,19 @@ var ViewportService = function(){
     perc (opzionale, default 50): valore numerico, indica la percentuale delle finestra dei contenuti (es. 33 -> 2/3 saranno di mappa e 1/3 di contenuti)
   }
    */
+  this.showMap = function(options) {
+    if (this.state.secondaryVisible && this.state.secondaryPerc == 100) {
+      this._showView('map', options);
+    }
+  };
+
+  this.closeMap = function() {
+    if (this.state.secondaryVisible) {
+      this.state.secondaryPerc = 100;
+      this._layout();
+    }
+  };
+
   this.showContent = function(options) {
     var push = (typeof options.push === 'boolean') ? options.push : false;
     if (!push) {
@@ -87,21 +100,22 @@ var ViewportService = function(){
     this.closeSecondaryView();
   };
 
-  this.showMap = function(options) {
-    this._showView('map', options);
-  };
-
   this.isPrimaryView = function(viewName) {
     return this.state.primaryView == viewName;
   };
 
-  this.showSecondaryView = function(split,perc) {
-    if (!this.state.secondaryVisible) {
-      this.state.secondaryVisible = true;
-      this.state.split = split ? split : this.state.split;
-      this.state.secondaryPerc = perc ? perc : this.state.perc;
+  this.showPrimaryView = function(perc) {
+    if (perc && this.state.secondaryVisible && this.state.secondaryPerc == 100) {
+      this.state.secondaryPerc = 100 - perc;
       this._layout();
     }
+  };
+
+  this.showSecondaryView = function(split,perc) {
+    this.state.secondaryVisible = true;
+    this.state.split = split ? split : this.state.split;
+    this.state.secondaryPerc = perc ? perc : this.state.perc;
+    this._layout();
   };
 
   this.closeSecondaryView = function(componentId) {
@@ -128,6 +142,7 @@ var ViewportService = function(){
     // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents) pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
     this.components.content.setContent(options.content)
     .then(function() {
+      self.state.content.preferredPerc = options.perc || self.getDefaultViewPerc('content');
       self.state.content.title = options.title;
       self.state.content.stack = _.map(self.contentStack,function(contentOptions){
         return contentOptions.title;
@@ -324,11 +339,17 @@ var ViewportComponent = Vue.extend({
         return this.state.content.stack[this.state.content.stack.length - 2]
       }
       return null;
+    },
+    contentSmallerThenPreferred: function() {
+      return this.state.secondaryPerc < this.state.content.preferredPerc;
     }
   },
   methods: {
-    closePanel: function() {
+    closeContent: function() {
       viewportService.removeContent();
+    },
+    closeMap: function() {
+      viewportService.closeMap();
     },
     gotoPreviousContent: function() {
       viewportService.popContent();

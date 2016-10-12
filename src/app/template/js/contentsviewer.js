@@ -6,7 +6,7 @@ var Stack = require('./barstack.js');
 var Component = require('gui/vue/component');
 
 var InternalComponent = Vue.extend({
-    template: require('../html/contents.html'),
+    template: require('../html/contentsviewer.html'),
     data: function() {
       return {
         state: null

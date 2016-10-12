@@ -224,28 +224,23 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.hideSidebar = _.bind(this._hideSidebar, this);
     
     GUI.setModal = _.bind(this._showModalOverlay,this);
-    
-    // Mostra la mappa come vista principale
-    GUI.showMap = function() {
-      viewport.ViewportService.setPrimaryComponent('map');
-    };
-    // Mostra la mappa come vista aside, impostando il rapporto vista principale / vista secondaria (es. 2 per 1/2, 3 per vista secondaria 1/ di quella primaria, ecc.)
-    GUI.showMapAside = function(split,ratio) {
-      
-    };
+
     // Mostra il contenuto come vista principale. Il contenuto può essere una string HTML, un elemento DOM o un componente Vue
     GUI.showContent = function(content) {
-      var contentComponent = ComponentsRegistry.getComponent('contents');
-      // contentComponent.setContent(content);  DA IMPLEMENTARE: Il secondo componente settato in fase di configurazione (ancora non presente) dovrà implementare il metodo setContent
-      // che accetterà o una stringa HTML, o un elemento DOM, oppure un componente Vue
-      viewport.ViewportService.setPrimaryComponent('contents');
     };
     // Mostra i contenuto come vista aside
-    GUI.showContentAside = function(content,split,ratio) {
-      var contentComponent = ComponentsRegistry.getComponent('contents');
-      contentComponent.setContent(content);
-      viewport.ViewportService.setPrimaryComponent('map');
-      viewport.ViewportService.showSecondaryView(split,ratio);
+    GUI.pushContentAside = function(content,title,split,perc) {
+      GUI.showContentAside(content,title,true,split,perc);
+    };
+
+    GUI.showContentAside = function(content,title,push,perc,split) {
+      viewport.ViewportService.showContent({
+        content: content,
+        title: title,
+        push: push,
+        split: split,
+        perc: perc
+      });
     };
     // Nasconde la vista secondaria
     GUI.hideAside = function() {

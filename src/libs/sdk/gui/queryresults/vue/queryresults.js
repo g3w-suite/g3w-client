@@ -159,6 +159,14 @@ var vueComponentOptions = {
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
     }
+  },
+  watch: {
+    // i listeners del queryResultsService.postRender potrebbero avere bisogno di modificare il DOM dopo che sono cambiati (per qualsiasi motivo) i dati e quindi Vue rirenderizza il DOM
+    'state.layers': function(layers) {
+      if (layers.length) {
+        this.$options.queryResultsService.postRender(this.$el);
+      }
+    }
   }
 };
 
@@ -227,7 +235,7 @@ function QueryResultsComponent(options) {
     return base(this,'mount',parent,append).
     then(function(){
       if (self._service.state.layers.length) {
-        self._service.runHooks();
+        self._service.postRender(self.getElement());
       }
     });
   };

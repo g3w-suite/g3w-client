@@ -8,7 +8,7 @@ function QueryResultsService(){
   var self = this;
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
-    'gotogeometry': QueryResultsService.goToGeometry,
+    //'gotogeometry': QueryResultsService.goToGeometry,
     'highlightgeometry': QueryResultsService.highlightGeometry,
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
@@ -24,22 +24,20 @@ function QueryResultsService(){
       this.state.layers = [];
       this.state.query = queryResponse.query;
       var layers = this._digestFeaturesForLayers(queryResponse.data);
-      this.runHooks(layers);
+      this.setLayersData(layers,this);
     },
     setLayersData: function(layers,self) {
-      // an opportunity to alter / add results. Through the self reference the DOM element can be retrieved to manipulate results panel DOM
+      // un opportunità per aggiungere / modificare i risultati dell'interrogazione
       this.state.loading = false;
       this.state.layers =  layers;
       this.setActionsForLayers(layers);
     },
     addActionsForLayers: function(actions) {
-      // an opportunity for plugin to add layer actions
+      // un opportunità per i listener per aggiungere azioni a layer e feature
+    },
+    postRender: function(element) {
+      // un opportunità per i listener di intervenire sul DOM
     }
-  };
-
-  this.runHooks = function(layers) {
-    layers = layers || this.state.layers;
-    this.setLayersData(layers,this);
   };
   
   this.clearState = function() {
