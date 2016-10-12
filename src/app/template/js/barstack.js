@@ -57,7 +57,7 @@ proto._mount = function(content,append) {
     this._setJqueryContent(jqueryEl);
     d.resolve();
   }
-  else if (content instanceof Component) {
+  else if (content.mount && typeof content.mount == 'function') {
     this._checkDuplicateVueContent(content); // nel caso esista già prima lo rimuovo
     this._setVueContent(content,append)
     .then(function(){
