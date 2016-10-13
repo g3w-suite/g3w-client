@@ -78,7 +78,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       self._addComponents(this.templateConfig.othercomponents);
     }
   };
-  
+
   this._setViewport = function(viewportComponents) {
     if (viewportComponents) {
       ApplicationTemplate.PlaceholdersServices.viewport.addComponents(viewportComponents);
@@ -156,26 +156,24 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var showPanelResults;
       switch (type) {
         case 'query':
-          GUI.showFloatbar();
+          //GUI.showFloatbar();
           showPanelResults = GUI.showQueryResults;
           break;
       }
       return showPanelResults;
     };
 
-    GUI.showQueryResults = function(title, results) {
-      // istanziare il componente queryresults
-      // passarlo a Floatbar
+    GUI.showQueryResults = function(title,results) {
       var queryResultsComponent = GUI.getComponent('queryresults');
       var queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
-      queryResultService.setTitle(title);
+      //queryResultService.setTitle(title);
       if (results) {
         queryResultService.setQueryResponse(results);
       }
       //rimuovo spinner
       var options = {append: true};
-      floatbar.FloatbarService.showPanel(queryResultsComponent, options);
+      GUI.showContentAside(queryResultsComponent,"Risultati "+title,false);
       return queryResultService;
     };
     
