@@ -1,6 +1,0 @@
-<!-- item template -->
-<div id="projects-catalog" class="projects-catalog">
-  <ul>
-    <li v-for="project in state.projects" @click="switchProject(project.gid)" :class="[currentProjectGid == project.gid ? 'active' : '' ]">{{ project.title }}</li>
-  </ul>
-</div>
