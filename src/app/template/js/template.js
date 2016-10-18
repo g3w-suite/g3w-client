@@ -1,336 +1,244 @@
-var t = require('sdk/core/i18n/i18n.service').t;
-require('sdk/gui/vue/vue.directives');
 var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var G3WObject = require('core/g3wobject');
-var ComponentsRegistry = require('sdk/gui/componentsregistry');
-var GUI = require('sdk/gui/gui');
-// temporaneo per far funzionare le cose
-var config = {
-    client:{}
-};
+var ApplicationService = require('core/applicationservice');
+var ApiService = require('core/apiservice');
+var GUI = require('gui/gui.js');
+var ComponentsRegistry = require('gui/componentsregistry');
 
-var sidebar = require('./sidebar');
-var floatbar = require('./floatbar');
-var viewport = require('./viewport');
-var AppUI = require('./applicationui');
-var layout = require('./layout');
+/*
 
-// forse da trovare un posto migliore per attivare lo spinner iniziale...
-layout.loading();
+var ApiService = require('g3w/core/apiservice');
+var ProjectsRegistry = require('g3w/core/projectsregistry');
+var ProjectService = require('g3w/core/projectservice').ProjectService;
+var MapService = require('gui/map/mapservice');
+*/
+//var MapQueryService = require('g3w/core/mapqueryservice');
 
-var ApplicationTemplate = function(templateConfig, ApplicationService) {
-  self = this;
-  this.templateConfig = templateConfig;
-  this.init = function() {
-    var config = ApplicationService.getConfig();
-    if (config.debug){
-      Vue.config.debug = true;
-    }
-    // fa il setup dell'interfaccia
-    // dichiarando i metodi generali dell'applicazione GUI.showForm etc ..
-    this._setupInterface();
-    // fa il setup del layout
-    this._setupLayout();
-  };
-  // setup layout
-  // funzione che registra i componenti vue dell'applicazione
-  this._setupLayout = function(){  
-    Vue.filter('t', function (value) {
-      return t(value);
-    });
-    // Inizializzo i componenti vue dell'applicazione
-    // preima che venga istanziato l'oggetto vue padre
-    Vue.component('sidebar', sidebar.SidebarComponent);
-    Vue.component('viewport', viewport.ViewportComponent);
-    Vue.component('floatbar', floatbar.FloatbarComponent);
-    Vue.component('app', AppUI);
+//var TplView = require('./view/tplview');
+//var TplQueryResultsPanel = require('./tplqueryresults');
 
-    //inizializza l'applicazione Vue oggetto vue padre dell'applicazione
-    var app = new Vue({
-      el: 'body',
-      ready: function() {
-        // inzio a costruire il template
-        self._buildTemplate();
-        // faccio il localize
-        $(document).localize();
-      }
-    });
-  };
-  // funzione che costruice il template
-  this._buildTemplate = function() {
-    var self = this;
-    floatbar.FloatbarService.init(layout);
-    var placeholdersConfig = this.templateConfig.placeholders;
-    _.forEach(placeholdersConfig, function(components, placeholder) {
-      // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
-      self._addComponents(components.components, placeholder);
-    });
-    //registro altri componenti che non hanno una collocazione spaziale precisa
-    // come da esempio i risultati, form  che possono essere montati sulla floatbar o altre parti del template
-    this._addOtherComponents();
-    // setto la viewport
-    this._setViewport(this.templateConfig.viewport);
-    this.emit('ready');
-    GUI.ready();
-  };
+// http://webgis.at-bus.it/cgi-bin/FotoPaline?id=7772&sub=4&thumbnail=1
 
-  //aggiungere compineti non legati ad un placeholder
-  this._addOtherComponents = function() {
-    var self = this;
-    // verifico che ci siano altrimcomponenti rispetto a quelli in posizione standard
-    if (this.templateConfig.othercomponents) {
-      self._addComponents(this.templateConfig.othercomponents);
+var ResponseManager = require('./tplqueryresults');
+
+function getDay(date,reverse){
+  var dd = date.getDate();
+  var mm = date.getMonth()+1; //January is 0!
+  var yyyy = date.getFullYear();
+
+  if (reverse) {
+    return yyyy+"-"+mm+"-"+dd;
+  }
+  return dd+"-"+mm+"-"+yyyy;
+}
+
+var TplService = function(){
+  var self = this;
+  this.lotti = [];
+  this.day = null;
+  this.lottoId = null;
+  this.mapService = null;
+  this.config = {};
+
+  this._responseManager = null;
+
+  this.setters = {
+    setDay: function(day){
+      this.day = day;
     }
   };
-  // metodo per il setting della vieport
-  this._setViewport = function(viewportComponents) {
-    // sono passati i componenti della viewport
-    // di solito
-    /*[
-       map: new MapComponent({
-       id: 'map'
-       }),
-       content: new ContentsComponent({
-       id: 'contents'
-       })
-      ]
-     */
-    if (viewportComponents) {
-      // recupero il servizio della viewport
-      ApplicationTemplate.Services.viewport.addComponents(viewportComponents);
-      this._addComponents(viewportComponents);
-    }
-  };
-  // aggiunge componente al template
-  this._addComponent = function(component, placeholder) {
-    this._addComponents([component], placeholder);
-  };
-  // aggiunge componenti al template
-  this._addComponents = function(components, placeholder) {
-    var register = true;
-    // qui entro solo e soltanto con i componeti dei placeholders previsti
-    if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
-      var placeholderService = ApplicationTemplate.Services[placeholder];
-      if (placeholderService) {
-        register = placeholderService.addComponents(components);
-      }
-    }
-    _.forEach(components, function(component) {
-      // verifico se è stato registrato
-      // nel cosa in cui non è stato registrato (esempio caso otherscomponents)
-      if (register) {
-        // registro il componente
-        ComponentsRegistry.registerComponent(component);
-      }
-    })
-  };
-  // rimuovo il componente andando a toglierlo al component registry
-  this._removeComponent = function(plceholder,componentId) {
-    ComponentsRegistry.unregisterComponent(component);
-  };
-  
-  this._showModalOverlay = function(bool) {
-    var mapService = GUI.getComponent('map').getService();
-    if (bool) {
-      mapService.startDrawGreyCover();
-    } else {
-      mapService.stopDrawGreyCover();
-    }
-  };
-  this._showSidebar = function() {
-    //codice qui
-  };
-  this._hideSidebar = function() {
-    //codice qui
-  };
-  // setup dell'interfaccia dell'applicazione
-  // qui definisco i metodi generali dell'applicazione
-  // per poter interagire con essa attraverso maggiormente con l'oggetto GUI
-  this._setupInterface = function() {
-    /* DEFINIZIONE INTERFACCIA PUBBLICA */
-    
-    /* Metodi comuni a tutti i template */
-    GUI.layout = layout;
-    GUI.addComponent = _.bind(this._addComponent, this);
-    GUI.removeComponent = _.bind(this._removeComponent, this);
-    /* Metodi da definire (tramite binding) */
-    GUI.getResourcesUrl = _.bind(function() {
-      return ApplicationService.getConfig().resourcesurl;
-    },this);
-    //LIST
-    GUI.showList = _.bind(floatbar.FloatbarService.showPanel,floatbar.FloatbarService);
-    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel,floatbar.FloatbarService);
-    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
-    // TABLE
-    GUI.showTable = function() {};
-    GUI.closeTable = function() {};
-    //esempio di metodo generico Aside Results e Form etc...
-    GUI.showContentFactory = function(type) {
-      var showPanelContent;
-      switch (type) {
-        case 'query':
-          showPanelContent = GUI.showQueryResults;
-          break;
-        case 'form':
-          showPanelContent = GUI.showForm;
-          break;
-      }
-      return showPanelContent;
-    };
-    // funzione per la visualizzazione del form
-    GUI.showForm = function(options) {
-      var formComponent = GUI.getComponent('form');
-      var formService = formComponent.getService();
-      // inizializzo il form con le opzioni
-      formService.setInitForm(options);
-      // agggiunto un ulteriore parametro closable
-      // content, title, push, perc, split, closable)
-      GUI.showContentAside({
-        content: formComponent,
-        push: false,
-        closable: false
-      });
-      return formService;
-    };
-    // chiudo il form
-    GUI.closeForm = function() {
-      viewport.ViewportService.removeContent();
-    };
-
-    // funzione per la visuzlizzazione dei risultati
-    GUI.showQueryResults = function(title, results) {
-      var queryResultsComponent = GUI.getComponent('queryresults');
-      var queryResultService = queryResultsComponent.getService();
-      queryResultService.reset();
-      if (results) {
-        queryResultService.setQueryResponse(results);
-      }
-      GUI.showContentAside({
-        content: queryResultsComponent,
-        title: "Risultati "+title,
-        push: false
-      });
-      return queryResultService;
-    };
-    //temporaneo show panel
-    GUI.showPanel = _.bind(sidebar.SidebarService.showPanel, sidebar.SidebarService);
-    GUI.closePanel = _.bind(sidebar.SidebarService.closePanel, sidebar.SidebarService);
-
-    /* ------------------ */
-
-    toastr.options.positionClass = 'toast-top-center';
-    toastr.options.preventDuplicates = true;
-    toastr.options.timeOut = 2000;
-
-    /* --------------------- */
-    // proxy della libreria toastr
-    GUI.notify = toastr;
-    // proxy della libreria bootbox
-    GUI.dialog = bootbox;
-    /* spinner */
-    GUI.showSpinner = function(options){
-      var container = options.container || 'body';
-      var id = options.id || 'loadspinner';
-      var where = options.where || 'prepend'; // append | prepend
-      var style = options.style || '';
-      var transparent = options.transparent ? 'background-color: transparent' : '';
-      if (!$("#"+id).length) {
-        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
-      }
-    };
-    //fa sparire lo spinner di caricamento
-    GUI.hideSpinner = function(id){
-      $("#"+id).remove();
-    };
-    /* end spinner*/
-    /* fine metodi comuni */
-    
-    /* Metodi specifici del template */
-    // FLOATBAR //
-    GUI.showFloatbar = function() {
-      floatbar.FloatbarService.open();
-    };
-    GUI.hideFloatbar = function() {
-      floatbar.FloatbarService.close();
-    };
-    // SIDEBAR //
-    GUI.showSidebar = _.bind(this._showSidebar, this);
-    GUI.hideSidebar = _.bind(this._hideSidebar, this);
-    // MODAL
-    GUI.setModal = _.bind(this._showModalOverlay, this);
-    // Mostra la mappa nascondendo la vista dei contenuti
-    GUI.showMap = function(split) {
-      GUI.showMapAside(100, split)
-    };
-    // Mostra la mappa come vista aside (nel caso sia attiva la vista contenuti). Percentuale di default 30%
-    GUI.showMapAside = function(perc, split) {
-      perc = (typeof perc === 'boolean') ? perc : 30;
-      viewport.ViewportService.showMap({
-        perc: perc
-      })
-    };
-    // Mostra il contenuto (100%)
-    GUI.showContent = function(content, title, split) {
-      var options = {
-        content: content,
-        title: title,
-        split: split,
-        perc: 100
-      };
-      GUI.showContentAside(options)
-    };
-    // Mostra il contenuto. Il contenuto può essere una string HTML,
-    // un elemento DOM o un componente Vue. Percentuale di default 50%
-    GUI.showContentAside = function(options) {
-      var content = options.content || {};
-      var title = options.title || "";
-      var push = options.push || false;
-      var perc = options.perc || 0;
-      var split = options.split || null;
-      var closable = options.closable;
-      viewport.ViewportService.showContent({
-        content: content,
-        title: title,
-        push: push,
-        split: split,
-        perc: perc,
-        closable: closable
-      });
-    };
-    // Aggiunge contenuto allo stack
-    GUI.pushContentAside = function(content, title, perc, split) {
-      var options = {
-        content: content,
-        title: title,
-        perc: perc,
-        split: split,
-        push: true
-      };
-      GUI.showContentAside(options);
-    };
-    /* fine metodi specifici */
-    /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */
-  };
-  
   base(this);
+
+  this.preinit = function(config) {
+    var d = $.Deferred();
+    this.config = config;
+    this.urls = this.config.server.urls;
+
+    var startDay = config.tpl.startDay ? config.tpl.startDay : getDay(new Date());
+    this.setDay(startDay);
+
+    this._getLotti().
+    then(function(){
+        d.resolve();
+    });
+    return d.promise();
+  };
+
+  this.init = function() {
+    var self = this;
+    var d = $.Deferred();
+
+    this.mapService = GUI.getComponent('map').getService();
+
+    this.mapService.onbefore('setupViewer',function(){
+      var layersParams = {
+        DAY: '2015-10-10',
+        RADIUS: 10, // per aumentare il buffer delle getFeatureInfo di Mapserver,
+        LOTTO: self.lottoId
+      };
+      self.mapService.setLayersExtraParams(layersParams);
+    });
+
+    //GUI.setPrimaryView('content');
+    //GUI.showContent('Contenuto iniziale');
+    GUI.showContentAside('Contenuto iniziale');
+
+    var queryResultsService = GUI.getComponent('queryresults').getService();
+    queryResultsService.onbeforeasync('setLayersData',function(layersData,queryResultsService,next){
+      self._responseManager = new ResponseManager();
+      self._responseManager.preprocessLayersData(layersData);
+
+      var query = queryResultsService.state.query;
+      ApiService.get('VARIANTIQUERYMAP',{
+        params: {
+          day: self.day,
+          lotto: self.lottoId,
+          coords: query.coordinates.join(','),
+          res: query.resolution
+        }
+      })
+      .then(function(response){
+        if (response.length) {
+          var layerObj = self._responseManager.parse(response,'varianti');
+          layersData.unshift(layerObj);
+        }
+      })
+      .always(function(){
+        next(layersData);
+      })
+    });
+
+    queryResultsService.onafter('setLayersData',function(layersData){
+      self._responseManager.postprocessLayersData(layersData);
+    });
+
+    queryResultsService.onafter('postRender',function(queryResultsEl){
+      self._responseManager.createResultsHeaders(queryResultsEl);
+    });
+
+    queryResultsService.onbefore('addActionsForLayers',function(actions){
+      if (actions) {
+        if (actions['paline']) {
+          actions['paline'].push({
+            id: 'fermatadetail',
+            class: 'glyphicon glyphicon-time',
+            hint: 'Visualizza i transiti di questa fermata',
+            route: "tpl/fermate?id={id}&day="+self.day
+          })
+        }
+        if (actions['varianti']) {
+          actions['varianti'].push({
+            id: 'variantedetail',
+            class: 'glyphicon glyphicon-time',
+            hint: 'Visualizza le corse di questa variante',
+            route: "tpl/variante?id={id}&day="+self.day
+          })
+        }
+      }
+    });
+
+    var routerService = ApplicationService.getRouterService();
+    routerService.addRoute('tpl/fermate/{?query}',function(query){
+      try {
+        var TransitiFermataPage = require('./pages/transitiferamata');
+        var tfp = new TransitiFermataPage();
+        GUI.pushContentAside(tfp,'Transiti fermata '+query.id,100);
+        tfp.loadContent(query.id,query.day);
+      }
+      catch (e) {
+        //
+      }
+    });
+
+    routerService.addRoute('tpl/variante/{?query}',function(query){
+      try {
+        var CorseVariantePage = require('./pages/corsevariante');
+        var cvp = new CorseVariantePage();
+        GUI.pushContentAside(cvp,'Corse variante '+query.id,100);
+        cvp.loadContent(query.id,query.day);
+      }
+      catch (e) {
+        //
+      }
+    });
+
+    routerService.addRoute('map{?query}',function(query){
+      GUI.showMapAside(30);
+      var mapService = ComponentsRegistry.getComponent('map').getService();
+      var coords = query.point.split(',');
+      mapService.highlightGeometry(new ol.geom.Point(coords));
+    });
+
+    this._setupControls();
+  };
+
+  this._getLotti = function(){
+    var d = $.Deferred();
+    var self = this;
+    var apiLotti = this.urls.api +'/'+ this.urls.apiEndpoints.LOTTI;
+    $.get(apiLotti,function(lotti){
+      self.lotti = lotti;
+      self.lottoId = self.config.tpl.startLotto || lotti[0].id;
+      d.resolve();
+    });
+    return d.promise()
+  };
+
+  this._setupControls = function(){
+    self._setupMapDateControl();
+    self._setupSelezioneLottoMapControl();
+  };
+
+  this._setupMapDateControl = function() {
+    var datePickerControl = $('<div class="tpl-datecontrol"><input type="text" class="form-control tpl-datepicker"></div>');
+    $('#catalog').prepend(datePickerControl);
+    $.datepicker.setDefaults($.datepicker.regional["it"]);
+    var datePicker = $('.tpl-datepicker');
+    datePicker.datepicker({
+      'dateFormat' : 'dd-mm-yy',
+      'autoclose': true,
+      'onSelect': function(date,inst){
+        if (date) {
+          self.day = date;
+          var layersParams = {
+            DAY: date
+          };
+          Vue.nextTick(function() {
+            self.mapService.setLayersExtraParams(layersParams,true);
+            console.log(0)
+          });
+        }
+      }
+    });
+    datePicker.datepicker("setDate", self.day);
+  };
+
+  this._setupSelezioneLottoMapControl = function() {
+    var lotti = this.lotti;
+
+    var lottoControl = $('<div class="tpl-lottocontrol"><select class="form-control"></select></div>');
+    $('.tpl-datecontrol').after(lottoControl);
+    var lottiSelect = $('.tpl-lottocontrol > select');
+    lottiSelect.change(function(){
+      var lottoId = self.lottoId = $( this ).val();
+      var layersParams = {
+        LOTTO: lottoId
+      };
+      self.mapService.setLayersExtraParams(layersParams,true);
+    });
+
+
+    _.forEach(lotti,function(lotto){
+      var selected = '';
+      if (self.config.tpl.startLotto && (lotto.id == self.config.tpl.startLotto)) {
+        selected = 'selected';
+      }
+      var lottoOption = $('<option value="'+lotto.id+'" '+selected+'>'+lotto.denominazione+'</option>');
+      lottiSelect.append(lottoOption);
+    });
+  };
 };
-inherit(ApplicationTemplate,G3WObject);
-// questi sono i plceholder previsti ne standard dell'applicazione
+inherit(TplService,G3WObject);
 
-ApplicationTemplate.PLACEHOLDERS = [
-  'navbar',
-  'sidebar',
-  'viewport',
-  'floatbar'
-];
-// questi sono i servizi dei contenitori di componenti
-ApplicationTemplate.Services = {
-  navbar: null,
-  sidebar: sidebar.SidebarService,
-  viewport: viewport.ViewportService,
-  floatbar: sidebar.FloatbarService
-};
-
-module.exports =  ApplicationTemplate;
-
+module.exports = new TplService();
