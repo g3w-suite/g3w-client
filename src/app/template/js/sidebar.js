@@ -29,12 +29,14 @@ function SidebarService(){
   this.init = function(layout){
     this.layout = layout;
   };
-  
+  // funzione che serve ad aggiungere componeti alla sidebar
   this.addComponents = function(components){
     var self = this;
     _.forEach(components,function(component){
       self.addComponent(component);
     });
+    // rtorno true alla fine dell'aggiunta dei componenti perchè mi serve
+    // al template durante il buoldtemplate di dire se è stato regitstrato (true) o meno
     return true;
   };
   
@@ -51,7 +53,6 @@ function SidebarService(){
     sidebarItem.icon = component.dataIcon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');
-    
     //monto il componete nella sidebar
     component.mount("#g3w-sidebarcomponent-placeholder");
     if (_.has(component, 'initService')) {
@@ -64,7 +65,7 @@ function SidebarService(){
     //da vedere
   };
 
-  this.showPanel = function(panel){
+  this.showPanel = function(panel) {
     var parent = "#g3w-sidebarpanel-placeholder";
     this.stack.push(panel, parent);
   };

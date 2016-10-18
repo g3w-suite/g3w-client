@@ -26,12 +26,6 @@ var server =  {
   }
 };
 
-/*var templates =  {
-  app:  require('../templates/app.html'),
-  sidebar:  require('../templates/sidebar.html'),
-  floatbar:  require('../templates/floatbar.html'),
-};*/
-
 module.exports = {
   apptitle: apptitle,
   client: client,

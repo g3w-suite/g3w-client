@@ -16,7 +16,7 @@
     ">
       <button class="glyphicon glyphicon-remove pull-right close-panel-button" style="background-color: transparent;border: 0px;"></button>
     </div>
-    <div class="close-panel-block">
+    <div v-if="state.content.closable" class="close-panel-block">
       <span v-if="contentTitle">{{ contentTitle }}</span><button v-if="state.content.aside" class="glyphicon glyphicon-remove pull-right close-panel-button" @click="closeContent"></button>
     </div>
     <div v-if="previousTitle" class="g3w_contents_back">

@@ -782,6 +782,6 @@ $.LayoutManager.loading = function(start){
   else {
     $('#loadspinner').remove();
   }
-}
+};
 
 module.exports = $.LayoutManager;

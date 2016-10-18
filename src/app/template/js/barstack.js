@@ -9,26 +9,25 @@ function BarStack(){
   }
 }
 
-inherit(BarStack,G3WObject);
+inherit(BarStack, G3WObject);
 
 var proto = BarStack.prototype;
 
+// funzione che immette il componente (di qualsiasi tipo) nel parent element
 proto.push = function(content, parent, append){
-  var self = this;
   this._parent = parent;
   append = append || false;
   return this._mount(content,append);
 };
-
+// toglie l'ultimo componente dallo stack
 proto.pop = function(){
   // qui potremo chiedere al pannello se può essere chiuso...
-  var self = this;
   if (this.state.panels.length) {
     var content = this.state.panels.slice(-1)[0];
     this._unmount(content);
   }
 };
-
+// fa il clear di tutto lo stack in una volta sola
 proto.clear = function() {
   var self = this;
   var d = $.Deferred();
@@ -41,7 +40,7 @@ proto.clear = function() {
   });
   return d.promise();
 };
-
+// funzione che fa il mopnt del componente
 proto._mount = function(content,append) {
   var d = $.Deferred();
   if (content instanceof jQuery) {
@@ -89,7 +88,8 @@ proto._setVueContent = function(content,append) {
     self.state.panels.push(content);
   });
 };
-
+// verifica nel caso di un componente vue
+//
 proto._checkDuplicateVueContent = function(content) {
   var self = this;
   var idxToRemove = null;
@@ -97,7 +97,7 @@ proto._checkDuplicateVueContent = function(content) {
   _.forEach(this.state.panels, function(_content,idx) {
     if (_content.getId && (_content.getId() == id)) {
       idxToRemove = idx;
-    };
+    }
   });
   if (!_.isNull(idxToRemove)) {
     var _content = self.state.panels[idxToRemove];

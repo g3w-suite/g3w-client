@@ -4,10 +4,13 @@ var merge = require('sdk').core.utils.merge;
 var G3WObject = require('sdk').core.G3WObject;
 var GUI = require('sdk').gui.GUI;
 
-var ViewportService = function(){  
+var ViewportService = function() {
+  // contiene lo stato della viewport
   this.state = {
     primaryView: 'map', // di default la vista primaria è la prima
+    // percentuale della secondary view
     secondaryPerc: 0,
+    // come viene splittatta la vista (h = orizzontale, v = verticale)
     split: 'h',
     map: {
       sizes: {
@@ -22,35 +25,37 @@ var ViewportService = function(){
         height: 0
       },
       aside: true,
-      stack: []
+      // array contentente gli elementi nello stack del contents
+      stack: [],
+      closable: true
     }
   };
-  
+  // sono i contentuti della viewport (mmappa e content)
   this.components = {
     map: null,
     content: null
   };
-
+  // array content stack
   this.contentStack = [];
-
-  var _components = null;
+  // altezza e largezza minima della secondary view
   this._secondaryViewMinWidth = 300;
   this._secondaryViewMinHeight = 200;
   
   /* INTERFACCIA PUBBLICA */
-  
-  this.addComponents = function(components){
+  // funzione che va ad aggiungere i comnponenti alla viewport
+  this.addComponents = function(components) {
     var self = this;
-    _.forEach(components,function(component,viewName){
-      if (['map','content'].indexOf(viewName) > -1) {
-        component.mount('#g3w-view-'+viewName,true).
+    _.forEach(components, function(component, viewName) {
+      if (['map', 'content'].indexOf(viewName) > -1) {
+        // monto il componente sull'id specifico del componenti della mappa
+        // map e content
+        component.mount('#g3w-view-'+viewName, true).
         then(function(){
           self.components[viewName] = component;
         });
       }
     })
   };
-
   /*
   options: {
     content: può essere una stringa di testa, un elemento jQuery o un componente Vue
@@ -60,33 +65,35 @@ var ViewportService = function(){
     perc (opzionale, default 50): valore numerico, indica la percentuale delle finestra dei contenuti (es. 33 -> 2/3 saranno di mappa e 1/3 di contenuti)
   }
    */
+  // funzione showMap per la visulizzazione della mappa
   this.showMap = function(options) {
+    // verifica se la secondary è visibile e se la percentuale è 100%
     if (this.state.secondaryVisible && this.state.secondaryPerc == 100) {
       this._showView('map', options);
     }
   };
-
+  // chiude la mappa
   this.closeMap = function() {
     if (this.state.secondaryVisible) {
+      // setta la vista secondaria a 100%
       this.state.secondaryPerc = 100;
       this._layout();
     }
   };
-
+  // visualizza il contentuto della content della viewport
   this.showContent = function(options) {
+    // verifica se è stato settato l'opzione push
     var push = (typeof options.push === 'boolean') ? options.push : false;
     if (!push) {
+      // nel caso in cui push è falso il content stack viene resettato
       this.contentStack = [];
     }
+    // aggiungo al content stack i datio necessari a visualizzare il content
     this.contentStack.push(options);
-    this._setContents(options,push);
+    // chaimo funzione per settare il content
+    this._setContents(options, push);
   };
-
-  this.pushContent = function(options) {
-    this.contentStack.push(options);
-    this._setContents(options);
-  };
-
+  // funzione che toglie l'ultimo content al contentStack
   this.popContent = function() {
     if (this.contentStack.length) {
       this.contentStack.pop();
@@ -94,24 +101,24 @@ var ViewportService = function(){
       this._setContents(options);
     }
   };
-
+  // funzione che rimuove il cont dalla viewport
   this.removeContent = function() {
     this.contentStack = [];
     this.closeSecondaryView();
   };
-
+  // risposte se è view primaria
   this.isPrimaryView = function(viewName) {
     return this.state.primaryView == viewName;
   };
-
+  // visualizza la primary view a seconda della percentuale passata come argomento
   this.showPrimaryView = function(perc) {
     if (perc && this.state.secondaryVisible && this.state.secondaryPerc == 100) {
       this.state.secondaryPerc = 100 - perc;
       this._layout();
     }
   };
-
-  this.showSecondaryView = function(split,perc) {
+  // metodo per la visualizzazione della vista secondaria
+  this.showSecondaryView = function(split, perc) {
     this.state.secondaryVisible = true;
     this.state.split = split ? split : this.state.split;
     this.state.secondaryPerc = perc ? perc : this.state.perc;
@@ -135,8 +142,8 @@ var ViewportService = function(){
       this._layout();
     }
   };
-
-  this._setContents = function(options,push) {
+  // setto il content della viewport
+  this._setContents = function(options, push) {
     var self = this;
     // viene chiamato il metodo setContents del componente deputato a gestire/mostrare contenuti generici (di default usiamo template/js/contentsviewer.js)
     // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents) pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
@@ -144,7 +151,8 @@ var ViewportService = function(){
     .then(function() {
       self.state.content.preferredPerc = options.perc || self.getDefaultViewPerc('content');
       self.state.content.title = options.title;
-      self.state.content.stack = _.map(self.contentStack,function(contentOptions){
+      self.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
+      self.state.content.stack = _.map(self.contentStack,function(contentOptions) {
         return contentOptions.title;
       });
       self._showView('content', options)
@@ -152,10 +160,11 @@ var ViewportService = function(){
   };
 
   // metodo che si occupa delle gestione di tutta la logica di visualizzazione delle due viste (mappa e contenuti)
-  this._showView = function(viewName,options) {
+  // viewName può essere: map o content
+  // le opzione specificano percentuali , splitting tittolo etc ..
+  this._showView = function(viewName, options) {
     var perc = options.perc || this.getDefaultViewPerc(viewName);
     var split = options.split || 'h';
-
     var aside;
     if (this.isPrimaryView(viewName)) {
       aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
@@ -163,11 +172,8 @@ var ViewportService = function(){
     else {
       aside = true;
     }
-
     this.state[viewName].aside = aside;
-
     var secondaryPerc = this.isPrimaryView(viewName) ? 100 - perc : perc;
-
     if (secondaryPerc > 0) {
       this.showSecondaryView(split,secondaryPerc);
     }
@@ -175,24 +181,21 @@ var ViewportService = function(){
       this.closeSecondaryView();
     }
   };
-
   this.getDefaultViewPerc = function(viewName) {
     return this.isPrimaryView(viewName) ? 100 : 50;
   };
-
+  // ritorna la vista opposta rispoetto a quella passata
   this._otherView = function(viewName) {
     return (viewName == 'map') ? 'content' : 'map';
   };
   
   // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
-  
   this._setPrimaryView = function(viewTag) {
     if (this.state.primaryView != viewTag) {
       this.state.primaryView = viewTag;
     }
-    //this._layout();
   };
-  
+  // funzione che viene chiamat la prima volta che si instanzia la viewport
   this._prepareLayout = function() {
     var self = this;
     var drawing = false;
@@ -213,7 +216,7 @@ var ViewportService = function(){
           drawing = false;
       }
     }
-    
+    // una volta che la GUI è pronta
     GUI.on('ready',function(){
       // primo layout
       var primaryView = self.state.primaryView;
@@ -251,18 +254,21 @@ var ViewportService = function(){
       });
     });
   };
-  
+  // funzione che setta i size delle view (primaria e secondari)
   this._setViewSizes = function() {
+    // view primaria e secondaria
     var primaryView = this.state.primaryView;
     var secondaryView = this._otherView(primaryView);
-
+    // alterzza e larghezza della viewport
     var viewportWidth = this._viewportWidth();
     var viewportHeight = this._viewportHeight();
-    
+    // asegna alla primary view l'altezza e la larghezza della viewport
     var primaryWidth = viewportWidth;
     var primaryHeight = viewportHeight;
-    
+    //
     var scale = this.state.secondaryPerc / 100;
+    // verifica il tipo di plistting
+    // caso orizzontale
     if (this.state.split == 'h') {
       secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale),this._secondaryViewMinWidth) : 0;
       secondaryHeight = viewportHeight;
@@ -275,7 +281,7 @@ var ViewportService = function(){
       primaryWidth = viewportWidth;
       primaryHeight = viewportHeight - secondaryHeight;
     }
-    
+    // riassegno le giuste proporzione in sie height e width alla primary e secondary view
     this.state[primaryView].sizes.width = primaryWidth;
     this.state[primaryView].sizes.height = primaryHeight;
     
@@ -287,27 +293,29 @@ var ViewportService = function(){
     var topHeight = $(".navbar").innerHeight();
     return $(window).innerHeight() - topHeight;
   };
-    
+  // funzione che restituisce la larghezza della view
   this._viewportWidth = function() {
     var offset = $(".main-sidebar").offset().left;
     var width = $(".main-sidebar").innerWidth();
     var sideBarSpace = width + offset;
     return $(window).innerWidth() - sideBarSpace;
   };
-  
+  // funzione che stabilisce il layout e la visulizzazione verticale (v) o orizzontale (h)
   this._layout = function() {
+    // prende il tipo di split
     var splitClassToAdd = (this.state.split == 'h') ? 'split-h' : 'split-v';
     var splitClassToRemove =  (this.state.split == 'h') ? 'split-v' : 'split-c';
     $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
     $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
-    
+    // setta il size delle vista
     this._setViewSizes();
+    // carica il layout dei componenti
     this._layoutComponents();
   };
-  
+  // funzione che va a
   this._layoutComponents = function() {
     var self = this;
-    _.forEach(this.components,function(component, name){
+    _.forEach(this.components, function(component, name){
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
       var width = self.state[name].sizes.width;
       var height = self.state[name].sizes.height;
@@ -323,18 +331,22 @@ inherit(ViewportService, G3WObject);
 
 var viewportService = new ViewportService;
 
+
+// COMPONENTE VUE VIEWPORT
 var ViewportComponent = Vue.extend({
   template: require('../html/viewport.html'),
   data: function() {
     return {
-      state: viewportService.state
+      state: viewportService.state // lo stato del compoente è quello del servizio
     }
   },
   computed: {
     contentTitle: function() {
+      // cambia il titolo prendendo l'ultimo elemento aggiunto alla stack
       return this.state.content.stack[this.state.content.stack.length - 1];
     },
     previousTitle: function() {
+      // prende il titolo del precendete elemento
       if (this.state.content.stack.length > 1) {
         return this.state.content.stack[this.state.content.stack.length - 2]
       }

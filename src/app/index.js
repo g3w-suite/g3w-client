@@ -1,24 +1,16 @@
 var i18ninit = require('sdk').core.i18n.init;
+// oggetto
 var ApplicationService = require('sdk/sdk').core.ApplicationService;
+// oggetto application template che si occupa di gestire il template dell'applicazione
 var ApplicationTemplate = require('./template/js/template');
+// configurazione dell'applicazione
+var config = require('./config/config.js');
 
 // SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
 window.g3wsdk = require('sdk');
-
-var config = require('./config/config.js');
-
-// funzione temporanea che aggiunge il plugin (configurazioni) per caricare
-// il plugin geonodes con il layer accessi
-function aggiungiGeonodesPlugin(plugins) {
-
-  var pluginGeonodeObj = _.cloneDeep(plugins.iternet);
-  plugins.geonotes = pluginGeonodeObj;
-  return plugins;
-}
-
+// questa funzione che ala configurazione inizale dell'applicazione
+// tutte le cose in comune
 function createApplicationConfig() {
-  //aggiungo temporaneamente il plugin Geodotes
-  //aggiungiGeonodesPlugin(config.group.plugins);
   return {
     apptitle: config.apptitle || '',
     logo_img: config.group.header_logo_img,
@@ -52,12 +44,13 @@ function createApplicationConfig() {
     tools: config.tools,
     views: config.views || {}
   };
-};
+}
 
 // questa è la configurazione base del template che conterrà tutti gli
 // elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
 // Sarà l'applicazione a scegliere di riempire gli elementi
-function createTemplateConfig(){
+function createTemplateConfig() {
+  // recupero i componenti
   var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
   var SearchComponent = require('sdk').gui.vue.SearchComponent;
   var ToolsComponent = require('sdk').gui.vue.ToolsComponent;
@@ -66,6 +59,8 @@ function createTemplateConfig(){
   //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
   //ad hoc per i risultati
   var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
+  // componente Form
+  var FormComponent = require('sdk').gui.vue.FormComponent;
   
   return {
     title: config.apptitle,
@@ -98,7 +93,10 @@ function createTemplateConfig(){
     },
     othercomponents: [
       new QueryResultsComponent({
-          id: 'queryresults'
+        id: 'queryresults'
+      }),
+      new FormComponent({
+        id: 'form'
       })
     ],
     viewport: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
@@ -112,6 +110,7 @@ function createTemplateConfig(){
   };
 }
 
+// funzione che ottiene la configurazione dal server
 function obtainInitConfig(initConfigUrl) {
 
   var d = $.Deferred();
@@ -149,26 +148,38 @@ function obtainInitConfig(initConfigUrl) {
   return d.promise();
 }
 
-ApplicationService.on('ready',function(){
-  //istanzio l'appication template passando la configurazione del template e l'applicationService che fornisce API del progetto
+ApplicationService.on('ready', function() {
+  //istanzio l'appication template passando la configurazione
+  // del template e l'applicationService che fornisce API del progetto
   var templateConfig = createTemplateConfig();
   //istanzio l'application Template
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
-  applicationTemplate.on('ready',function(){
-    ApplicationService.postBootstrap();
-  })
   //inizializzo e faccio partire con il metodo init
   applicationTemplate.init();
+  // quando (dopo la chiamta e il setup del layout etc..) dell'application template
+  // è ready lancio l'applicationTemplate service postBoostrat
+  applicationTemplate.on('ready', function() {
+    ApplicationService.postBootstrap();
+  });
 });
 
-bootstrap = function(){
+// funzione che viene lanciata al momento di caricare app.js
+
+bootstrap = function() {
+  // inizlaizza l'internalizzazione
   i18ninit(config.i18n);
+  //ottengo al configurazione inizilae del gruppo di progetti
+  // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   obtainInitConfig(config.server.urls.initconfig)
   .then(function(initConfig) {
+    // una volta ottenuta la configurazione inziale
+    // vado a scrivere gli url dei file statici e del media url
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
     var applicationConfig = createApplicationConfig();
+    // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
+    // la vado a pssare al metodo init dell'application service
     ApplicationService.init(applicationConfig, true); // lancio manualmente il postBootstrp
   })
 }();
