@@ -1,10 +1,8 @@
-<li v-show="state.visible" class="treeview" :class="{'active': open}">
+<li v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}">
   <a href="#">
     <i :class="icon"></i>
     <span class="treeview-label">{{title | t}}</span>
-    <i v-if="(dataType === 'inline')" class="fa fa-angle-left pull-right"></i>
+    <i class="fa fa-angle-left pull-right"></i>
   </a>
-  <ul v-if="(dataType === 'inline')" class="treeview-menu">
-    <div id="g3w-sidebarcomponent-placeholder"></div>
-  </ul>
+  <div id="g3w-sidebarcomponent-placeholder"></div>
 </li>

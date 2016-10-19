@@ -10,6 +10,26 @@
   }
   .treeview-label {
     font-size: 1.1em;
+    font-weight: bold;
+  }
+  .treeview-menu {
+    padding: 10px 15px;
+    li:before {
+      font-family: FontAwesome;
+      content: '\f111';
+      position: relative;
+      font-size: 0.5em;
+      bottom: 2px;
+      margin-right: 7px;
+    }
+    li {
+      span {
+        cursor: pointer;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
   }
 }
 

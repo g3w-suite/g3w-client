@@ -11,7 +11,6 @@ var SidebarItem = Vue.extend({
         main: true,
         component: null,
         active: false,
-        dataType: 'inline',
         title: 'component',
         icon: null,
         open: true,
