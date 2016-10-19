@@ -86,10 +86,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   // metodo per il setting della vieport
   this._setViewport = function(viewportOptions) {
     // sono passati i componenti della viewport
-    // di solito
+    // es.:
     /*
     {
-     //primaryview: 'content',
      components: {
        map: new MapComponent({
         id: 'map'
@@ -209,7 +208,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       if (results) {
         queryResultService.setQueryResponse(results);
       }
-      GUI.showContentAside(queryResultsComponent, "Risultati "+title);
+      GUI.showContextualContent(queryResultsComponent, "Risultati "+title);
       return queryResultService;
     };
     //temporaneo show panel
@@ -264,16 +263,23 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       viewport.ViewportService.setPrimaryView(viewName);
     };
     // Mostra la mappa nascondendo la vista dei contenuti
-    GUI.showMap = function(split) {
-      GUI.showMapAside(100, split)
+    GUI.showMap = function() {
+      viewport.ViewportService.showMap();
     };
     // Mostra la mappa come vista aside (nel caso sia attiva la vista contenuti). Percentuale di default 30%
-    GUI.showMapAside = function(perc, split) {
-      perc = (typeof perc === 'boolean') ? perc : 30;
-      viewport.ViewportService.showMap({
-        perc: perc
+    GUI.showContextualMap = function(perc,split) {
+      perc = perc || 30;
+      viewport.ViewportService.showContextualMap({
+        perc: perc,
+        split: split
       })
     };
+    GUI.setContextualMapComponent = function(mapComponent) {
+      viewport.ViewportService.setContextualMapComponent(mapComponent);
+    };
+    GUI.resetContextualMapComponent = function() {
+      viewport.ViewportService.resetContextualMapComponent();
+    }
     // Mostra il contenuto (100%)
     GUI.showContent = function(content, title, split) {
       var options = {
@@ -286,7 +292,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     // Mostra il contenuto. Il contenuto può essere una string HTML,
     // un elemento DOM o un componente Vue. Percentuale di default 50%
-    GUI.showContentAside = function(content, title, perc, split){
+    GUI.showContextualContent = function(content, title, perc, split){
       var options = {
         content: content,
         title: title,

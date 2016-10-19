@@ -2,6 +2,7 @@ var inherit = require('sdk').core.utils.inherit;
 var base = require('sdk').core.utils.base;
 var merge = require('sdk').core.utils.merge;
 var G3WObject = require('sdk').core.G3WObject;
+var MapComponent = require('sdk').gui.vue.MapComponent;
 var GUI = require('sdk').gui.GUI;
 
 var ViewportService = function() {
@@ -30,11 +31,15 @@ var ViewportService = function() {
       closable: true
     }
   };
+
   // sono i contentuti della viewport (mmappa e content)
-  this.components = {
+  this._components = {
     map: null,
     content: null
   };
+
+  this._defaultMapComponent;
+  this._contextualMapComponent;
   // array content stack
   this.contentStack = [];
   // altezza e largezza minima della secondary view
@@ -60,19 +65,60 @@ var ViewportService = function() {
    }
    */
   // funzione showMap per la visulizzazione della mappa
-  this.showMap = function(options) {
-    // verifica se la secondary è visibile e se la percentuale è 100%
-    if (this.state.secondaryVisible && this.state.secondaryPerc == 100) {
-      this._showView('map', options);
-    }
+  this.showMap = function() {
+    this._toggleMapComponentVisibility(this._defaultMapComponent);
+    this._components['map'] = this._defaultMapComponent;
+    this._showView('map');
   };
+
+  this.showContextualMap = function(options) {
+    var self = this;
+    if (!this._contextualMapComponent) {
+      this._contextualMapComponent = this._defaultMapComponent;
+    }
+    if (this._contextualMapComponent != this._defaultMapComponent) {
+      this._toggleMapComponentVisibility(this._defaultMapComponent,false);
+    }
+    if (!this._contextualMapComponent.ismount()) {
+      var contextualMapComponent = this._contextualMapComponent;
+      contextualMapComponent.mount('#g3w-view-map', true)
+        .then(function(){
+          self._components['map'] = contextualMapComponent;
+        });
+    }
+    else {
+      self._components['map'] = this._contextualMapComponent;
+      this._toggleMapComponentVisibility(this._contextualMapComponent,true);
+    }
+    this._showView('map',options);
+  };
+
+  this.setContextualMapComponent = function(mapComponent) {
+    var self = this;
+    if (mapComponent == this._defaultMapComponent) {
+      return;
+    }
+    if (this._contextualMapComponent) {
+      this._contextualMapComponent.unmount();
+    }
+    this._contextualMapComponent = mapComponent;
+  };
+
+  this.resetContextualMapComponent = function() {
+    if (this._contextualMapComponent) {
+      this._contextualMapComponent.unmount();
+    }
+    this._contextualMapComponent = this._defaultMapComponent;
+  };
+
+  this._toggleMapComponentVisibility = function(mapComponent,toggle) {
+    mapComponent.internalComponent.$el.style.display = toggle ? 'block' : 'none';
+  };
+
   // chiude la mappa
   this.closeMap = function() {
-    if (this.state.secondaryVisible) {
-      // setta la vista secondaria a 100%
-      this.state.secondaryPerc = 100;
-      this._layout();
-    }
+    this.state.secondaryPerc = (this.state.primaryView == 'map') ? 100 : 0
+    this._layout();
   };
   // visualizza il contentuto della content della viewport
   this.showContent = function(options) {
@@ -130,7 +176,7 @@ var ViewportService = function() {
 
   this.closeSecondaryView = function(componentId) {
     var self = this;
-    var secondaryViewComponent = this.components[this._otherView(this.state.primaryView)];
+    var secondaryViewComponent = this._components[this._otherView(this.state.primaryView)];
 
     if (secondaryViewComponent.clearContents) {
       secondaryViewComponent.clearContents()
@@ -154,7 +200,10 @@ var ViewportService = function() {
         // map e content
         component.mount('#g3w-view-'+viewName, true).
         then(function(){
-          self.components[viewName] = component;
+          self._components[viewName] = component;
+          if (viewName == 'map') {
+            self._defaultMapComponent = component;
+          }
         });
       }
     })
@@ -165,7 +214,7 @@ var ViewportService = function() {
     var self = this;
     // viene chiamato il metodo setContents del componente deputato a gestire/mostrare contenuti generici (di default usiamo template/js/contentsviewer.js)
     // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents) pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
-    this.components.content.setContent(options.content)
+    this._components.content.setContent(options.content)
       .then(function() {
         self.state.content.preferredPerc = options.perc || self.getDefaultViewPerc('content');
         self.state.content.title = options.title;
@@ -181,6 +230,7 @@ var ViewportService = function() {
   // viewName può essere: map o content
   // le opzione specificano percentuali , splitting tittolo etc ..
   this._showView = function(viewName, options) {
+    options = options || {};
     var perc = options.perc || this.getDefaultViewPerc(viewName);
     var split = options.split || 'h';
     var aside;
@@ -335,7 +385,7 @@ var ViewportService = function() {
   // funzione che va a
   this._layoutComponents = function() {
     var self = this;
-    _.forEach(this.components, function(component, name){
+    _.forEach(this._components, function(component, name){
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
       var width = self.state[name].sizes.width;
       var height = self.state[name].sizes.height;
