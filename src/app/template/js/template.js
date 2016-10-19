@@ -279,7 +279,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     GUI.resetContextualMapComponent = function() {
       viewport.ViewportService.resetContextualMapComponent();
-    }
+    };
     // Mostra il contenuto (100%)
     GUI.showContent = function(content, title, split) {
       var options = {
@@ -303,7 +303,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
 
     // Aggiunge contenuto allo stack
-    GUI.pushContentAside = function(content, title, perc, split) {
+    GUI.pushContextualContent = function(content, title, perc, split) {
       var options = {
         content: content,
         title: title,

@@ -93,6 +93,14 @@ var ViewportService = function() {
     this._showView('map',options);
   };
 
+  this.recoverDefaultMap = function() {
+    if (this._components['map'] != this._defaultMapComponent) {
+      this._components['map'] = this._defaultMapComponent;
+      this._toggleMapComponentVisibility(this._contextualMapComponent,false);
+      this._toggleMapComponentVisibility(this._defaultMapComponent,true);
+    }
+  };
+
   this.setContextualMapComponent = function(mapComponent) {
     var self = this;
     if (mapComponent == this._defaultMapComponent) {
@@ -117,7 +125,8 @@ var ViewportService = function() {
 
   // chiude la mappa
   this.closeMap = function() {
-    this.state.secondaryPerc = (this.state.primaryView == 'map') ? 100 : 0
+    this.state.secondaryPerc = (this.state.primaryView == 'map') ? 100 : 0;
+    this.recoverDefaultMap();
     this._layout();
   };
   // visualizza il contentuto della content della viewport
@@ -136,6 +145,7 @@ var ViewportService = function() {
   // funzione che toglie l'ultimo content al contentStack
   this.popContent = function() {
     if (this.contentStack.length) {
+      this.recoverDefaultMap();
       this.contentStack.pop();
       var options = this.contentStack[this.contentStack.length - 1];
       this._setContents(options);
@@ -144,6 +154,7 @@ var ViewportService = function() {
   // funzione che rimuove il cont dalla viewport
   this.removeContent = function() {
     this.contentStack = [];
+    this.recoverDefaultMap();
     this.closeSecondaryView();
   };
   // risposte se è view primaria
