@@ -50,7 +50,7 @@ function SidebarService(){
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.title = component.title || sidebarItem.title;
     sidebarItem.open = (component.open === undefined) ? sidebarItem.open : component.open;
-    sidebarItem.icon = component.dataIcon || sidebarItem.icon;
+    sidebarItem.icon = component.icon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');
     //monto il componete nella sidebar
