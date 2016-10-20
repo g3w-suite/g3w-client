@@ -2,7 +2,7 @@ var translations = {
     "it": {
         "translation": {
             "component": "Componente Generico",
-            "search": "Ricerca",
+            "search": "Ricerche",
             "dosearch": "Cerca",
             "catalog": "Mappa",
             "baselayers": "Basi",
