@@ -99,15 +99,18 @@ function createTemplateConfig() {
         id: 'form'
       })
     ],
-    viewport: { // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
-      map: new MapComponent({
-        id: 'map'
-      }),
-      content: new ContentsComponent({
-        id: 'contents'
-      })
+    viewport: {
+      // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+      components: {
+        map: new MapComponent({
+          id: 'map'
+        }),
+        content: new ContentsComponent({
+          id: 'contents'
+        })
+      }
     }
-  };
+  }
 }
 
 // funzione che ottiene la configurazione dal server

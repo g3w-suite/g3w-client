@@ -50,8 +50,11 @@ var ViewportService = function() {
   // funzione che va ad aggiungere i comnponenti alla viewport
 
   this.init = function(options) {
+    // verifica se è stata settata la primary view alrimenti mette la mappa
     this.state.primaryView = options.primaryview ? options.primaryview : 'map';
+    // verifica se è stato settato la modalità di splitting
     this.state.split = options.split ? options.split : 'h';
+    // aggiunge i componenti ( che sono map e content
     this._addComponents(options.components);
   };
 
@@ -202,17 +205,20 @@ var ViewportService = function() {
       this._layout();
     }
   };
-
+  // aggiunge i componenti alla viewport
   this._addComponents = function(components) {
     var self = this;
+    // i components è un oggetto contente chiave nome componente e valure istanza componente
     _.forEach(components, function(component, viewName) {
+      // verifica che i componenti siano map o content
       if (['map', 'content'].indexOf(viewName) > -1) {
         // monto il componente sull'id specifico del componenti della mappa
         // map e content
         component.mount('#g3w-view-'+viewName, true).
-        then(function(){
+        then(function() {
           self._components[viewName] = component;
           if (viewName == 'map') {
+            // setto il defaul mappa componente
             self._defaultMapComponent = component;
           }
         });

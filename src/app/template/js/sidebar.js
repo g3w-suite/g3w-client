@@ -18,7 +18,7 @@ var SidebarItem = Vue.extend({
       };
   }
 });
-
+// service sidebar
 function SidebarService(){
   this.stack = new Stack();
   this.state = {
@@ -38,7 +38,7 @@ function SidebarService(){
     // al template durante il buoldtemplate di dire se è stato regitstrato (true) o meno
     return true;
   };
-  
+  // funzione che aggiunge componenti sulla sidebar
   this.addComponent = function(component) {
     //aggiungo componente
     this.state.components.push(component);
@@ -56,19 +56,19 @@ function SidebarService(){
     component.mount("#g3w-sidebarcomponent-placeholder");
     if (_.has(component, 'initService')) {
       component.initService();
-    };
+    }
     return true;
   };
   
   this.removeComponent = function(){
     //da vedere
   };
-
+  // visualizzazione pannello sullo stack
   this.showPanel = function(panel) {
     var parent = "#g3w-sidebarpanel-placeholder";
     this.stack.push(panel, parent);
   };
-
+  // chiusura pannello
   this.closePanel = function(){
     var panel = this.stack.pop();
   };
@@ -125,4 +125,4 @@ var SidebarComponent = Vue.extend({
 module.exports = {
   SidebarService: sidebarService,
   SidebarComponent: SidebarComponent
-}
+};
