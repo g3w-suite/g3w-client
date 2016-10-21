@@ -182,7 +182,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     // funzione per la visualizzazione del form
     GUI.showForm = function(options) {
-      var formComponent = GUI.getComponent('form');
+      // verifico che sia stato definito un formcomponent dall'editor custom del plugin
+      var formComponent = options.formComponent || GUI.getComponent('form');
       var formService = formComponent.getService();
       // inizializzo il form con le opzioni
       formService.setInitForm(options);
