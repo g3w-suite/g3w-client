@@ -92,7 +92,7 @@ gulp.task('modules', function() {
 
 gulp.task('plugins', function() {
   return gulp.src('./src/libs/plugins/**/plugin.js')
-    .pipe(gulp.dest(distFolder+'/plugins'));
+    .pipe(gulp.dest(distFolder+'/js'));
 });
 
 gulp.task('jshint', function() {
@@ -237,9 +237,23 @@ gulp.task('dist', function(done){
     done);
 });
 
-gulp.task('g3w-admin', ['dist'],function(){
-  gulp.src([distFolder+'/**/*.*','!'+distFolder+'/index.html','!'+distFolder+'/css/app.css','!'+distFolder+'/js/app.js'])
-  .pipe(gulp.dest(conf.g3w_admin_dest));
+gulp.task('g3w-admin-plugins',function(){
+  gulp.src(distFolder+'/js/**/plugin.js')
+  .pipe(rename(function(path){
+    path.dirname = conf.g3w_admin_plugins_basepath+'/'+path.dirname+'/static/'+path.dirname+'/js/';
+  }))
+  .pipe(gulp.dest('.'));
+});
+
+gulp.task('g3w-admin-client',function(){
+  gulp.src([distFolder+'/css/*.*',distFolder+'/fonts/*.*',distFolder+'/images/*.*',distFolder+'/js/app.min.js','!'+distFolder+'/index.html','!'+distFolder+'/css/app.css'])
+  .pipe(gulp.dest(conf.g3w_admin_client_dest));
+});
+
+gulp.task('g3w-admin',function(done){
+  runSequence('dist','g3w-admin-plugins','g3w-admin-client',
+    done);
+
 });
 
 gulp.task('default',['serve']); // development
