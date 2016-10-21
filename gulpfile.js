@@ -32,6 +32,7 @@ var Server = require('karma').Server;
 var production = false;
 
 var distFolder = conf.distFolder;
+var clientFolder = conf.clientFolder;
 
 gulp.task('browserify', [], function() {
     var bundler = browserify('./src/app/index.js', {
@@ -55,7 +56,7 @@ gulp.task('browserify', [], function() {
           //browserSync.notify(err.message, 3000);
           //browserSync.reload();
           this.emit('end');
-          del([distFolder+'/js/app.js',distFolder+'/style/app.css']).then(function(){
+          del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
             process.exit();
           });
         })
@@ -65,7 +66,7 @@ gulp.task('browserify', [], function() {
         //.pipe(gulpif(production, uglify().on('error', gutil.log)))
         .pipe(gulpif(!production,sourcemaps.write()))
         .pipe(rename('app.js'))
-        .pipe(gulp.dest(distFolder+'/js/'))
+        .pipe(gulp.dest(clientFolder+'/js/'))
     };
 
     var rebundle;
@@ -85,14 +86,12 @@ gulp.task('browserify', [], function() {
     return rebundle();
 });
 
-gulp.task('modules', function() {
-  return gulp.src('./src/libs/modules/**/module.js')
-    .pipe(gulp.dest(distFolder+'/modules'));
-});
-
 gulp.task('plugins', function() {
   return gulp.src('./src/libs/plugins/**/plugin.js')
-    .pipe(gulp.dest(distFolder+'/js'));
+    .pipe(rename(function(path){
+      path.dirname = distFolder+'/'+path.dirname+'/js/';
+    }))
+    .pipe(gulp.dest('.'));
 });
 
 gulp.task('jshint', function() {
@@ -109,7 +108,7 @@ gulp.task('less',['fonts'], function () {
     /*.pipe(gulpif(production,cleanCSS({
       keepSpecialComments: 0
     })))*/
-    .pipe(gulp.dest(distFolder+'/css/'))
+    .pipe(gulp.dest(clientFolder+'/css/'))
 });
 
 gulp.task('less-skins', function () {
@@ -120,19 +119,19 @@ gulp.task('less-skins', function () {
     /*.pipe(gulpif(production,cleanCSS({
       keepSpecialComments: 0
     })))*/
-    .pipe(gulp.dest(distFolder+'/css/skins/'))
+    .pipe(gulp.dest(clientFolder+'/css/skins/'))
 });
 
 gulp.task('fonts', function () {
   return gulp.src(['./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
-    .pipe(gulp.dest(distFolder+'/fonts/'))
+    .pipe(gulp.dest(clientFolder+'/fonts/'))
 });
 
 gulp.task('images', function () {
   return gulp.src(['./src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
-    .pipe(gulp.dest(distFolder+'/images/'))
+    .pipe(gulp.dest(clientFolder+'/images/'))
 });
 
 gulp.task('assets',['fonts','images','less','less-skins']);
@@ -144,7 +143,7 @@ gulp.task('html', ['assets'], function () {
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
     })))
-    .pipe(gulp.dest(distFolder));
+    .pipe(gulp.dest(clientFolder));
 });
 
 var proxy = httpProxy.createProxyServer({
@@ -238,15 +237,18 @@ gulp.task('dist', function(done){
 });
 
 gulp.task('g3w-admin-plugins',function(){
-  gulp.src(distFolder+'/js/**/plugin.js')
-  .pipe(rename(function(path){
-    path.dirname = conf.g3w_admin_plugins_basepath+'/'+path.dirname+'/static/'+path.dirname+'/js/';
-  }))
-  .pipe(gulp.dest('.'));
+  gulp.src(distFolder+'/**/js/plugin.js')
+    .pipe(rename(function(path){
+      var dirname = path.dirname;
+      var pluginname = dirname.replace('/js','');
+      var pluginpath = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+      path.dirname = pluginpath;
+    }))
+    .pipe(gulp.dest("."));
 });
 
 gulp.task('g3w-admin-client',function(){
-  gulp.src([distFolder+'/css/*.*',distFolder+'/fonts/*.*',distFolder+'/images/*.*',distFolder+'/js/app.min.js','!'+distFolder+'/index.html','!'+distFolder+'/css/app.css'])
+  gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
   .pipe(gulp.dest(conf.g3w_admin_client_dest));
 });
 
@@ -257,7 +259,6 @@ gulp.task('g3w-admin',function(done){
 });
 
 gulp.task('default',['serve']); // development
-
 
 //Karma
 /**

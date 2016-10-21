@@ -22,7 +22,8 @@ var server =  {
     api:  '/api',
     initconfig:  '/api/initconfig',
     config:  '/api/config',
-    staticurl:  ''
+    staticurl:  '',
+    client: 'g3w_client/',
   }
 };
 

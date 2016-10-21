@@ -21,7 +21,7 @@ function createApplicationConfig() {
     group: config.group,
     urls: config.server.urls,
     mediaurl: config.server.urls.mediaurl,
-    resourcesurl: config.server.urls.staticurl,
+    resourcesurl: config.server.urls.clienturl,
     projects: config.group.projects,
     initproject: config.group.initproject,
     overviewproject: config.group.overviewproject,
@@ -144,6 +144,7 @@ function obtainInitConfig(initConfigUrl) {
         //initConfig è l'oggetto contenete:
         //group, mediaurl, staticurl, user
         initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
+        initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
         d.resolve(initConfig);
       })
     }
@@ -178,6 +179,7 @@ bootstrap = function() {
     // una volta ottenuta la configurazione inziale
     // vado a scrivere gli url dei file statici e del media url
     config.server.urls.staticurl = initConfig.staticurl;
+    config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
     var applicationConfig = createApplicationConfig();
