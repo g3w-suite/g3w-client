@@ -22,6 +22,12 @@
       //min-height: 200px;
       //-webkit-transition: width 0.3s;
       //transition: width 0.3s;
+      .contents {
+        height: 100%;
+        > :first-child {
+          height: 100%;
+        }
+      }
       &.split-h {
         border-left: 4px solid darken(@gray-lighter,10%);
       }
