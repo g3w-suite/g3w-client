@@ -128,7 +128,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     })
   };
   // rimuovo il componente andando a toglierlo al component registry
-  this._removeComponent = function(plceholder,componentId) {
+  this._removeComponent = function(placeholder, componentId) {
     ComponentsRegistry.unregisterComponent(component);
   };
 
