@@ -179,7 +179,7 @@ bootstrap = function() {
     // una volta ottenuta la configurazione inziale
     // vado a scrivere gli url dei file statici e del media url
     config.server.urls.staticurl = initConfig.staticurl;
-    config.server.urls.clienturl = initConfig.staticurl+config.server.urls.client;
+    config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
     var applicationConfig = createApplicationConfig();

@@ -21,9 +21,7 @@ var server =  {
     ows:  '/ows',
     api:  '/api',
     initconfig:  '/api/initconfig',
-    config:  '/api/config',
-    staticurl:  '',
-    client: 'g3w_client/',
+    config:  '/api/config'
   }
 };
 
