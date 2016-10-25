@@ -5,11 +5,11 @@ var ApplicationService = require('sdk/sdk').core.ApplicationService;
 var ApplicationTemplate = require('./template/js/template');
 // configurazione dell'applicazione
 var config = require('./config/config.js');
-
 // SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
 window.g3wsdk = require('sdk');
 // questa funzione che ala configurazione inizale dell'applicazione
 // tutte le cose in comune
+
 function createApplicationConfig() {
   return {
     apptitle: config.apptitle || '',
@@ -61,7 +61,7 @@ function createTemplateConfig() {
   var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
   // componente Form
   var FormComponent = require('sdk').gui.vue.FormComponent;
-  
+
   return {
     title: config.apptitle,
     placeholders: {

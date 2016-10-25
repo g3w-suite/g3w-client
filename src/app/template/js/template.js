@@ -161,9 +161,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return ApplicationService.getConfig().resourcesurl;
     },this);
     //LIST
-    GUI.showList = _.bind(floatbar.FloatbarService.showPanel,floatbar.FloatbarService);
-    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel,floatbar.FloatbarService);
-    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel,floatbar.FloatbarService);
+    GUI.showList = _.bind(floatbar.FloatbarService.showPanel, floatbar.FloatbarService);
+    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel, floatbar.FloatbarService);
+    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel, floatbar.FloatbarService);
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
