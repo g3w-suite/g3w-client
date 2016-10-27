@@ -303,6 +303,17 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       GUI.setContent(options)
     };
 
+    GUI.pushContent = function(content, title, perc, split) {
+      var options = {
+        content: content,
+        title: title,
+        perc: 100,
+        split: split,
+        push: true
+      };
+      GUI.setContent(options);
+    };
+
     // Aggiunge contenuto allo stack
     GUI.pushContextualContent = function(content, title, perc, split) {
       var options = {
