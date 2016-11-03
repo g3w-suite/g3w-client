@@ -156,7 +156,7 @@ ApplicationService.on('ready', function() {
   //istanzio l'appication template passando la configurazione
   // del template e l'applicationService che fornisce API del progetto
   var templateConfig = createTemplateConfig();
-  //istanzio l'application Template
+  //istanzio l'application Template passando il templateconfig, l'applicationservice
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
   //inizializzo e faccio partire con il metodo init
   applicationTemplate.init();

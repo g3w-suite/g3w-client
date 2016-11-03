@@ -42,6 +42,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // Inizializzo i componenti vue dell'applicazione
     // preima che venga istanziato l'oggetto vue padre
     Vue.component('sidebar', sidebar.SidebarComponent);
+    ApplicationService.registerService('sidebar', sidebar.SidebarService);
     Vue.component('viewport', viewport.ViewportComponent);
     Vue.component('floatbar', floatbar.FloatbarComponent);
     Vue.component('app', AppUI);

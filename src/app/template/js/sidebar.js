@@ -1,5 +1,8 @@
 var t = require('sdk/core/i18n/i18n.service').t;
+var inherit = require('sdk/core/utils/utils').inherit;
 var Stack = require('./barstack.js');
+var G3WObject = require('sdk/core/g3wobject');
+var base = require('sdk/core/utils/utils').base;
 
 //sidebar item che non è altro che un li della sidebar dove sarà possobile impostare
 //titolo tipo di icona etc .. customizzata per ogni componente
@@ -18,9 +21,15 @@ var SidebarItem = Vue.extend({
       };
   }
 });
+
 // service sidebar
-function SidebarService(){
+function SidebarService() {
   this.stack = new Stack();
+  this.setters = {
+    closeSidebarPanel: function()  {
+      //hook function
+    }
+  };
   this.state = {
     components: []
   };
@@ -69,13 +78,15 @@ function SidebarService(){
     this.stack.push(panel, parent);
   };
   // chiusura pannello
-  this.closePanel = function(){
+  this.closePanel = function() {
+    this.closeSidebarPanel();
     var panel = this.stack.pop();
   };
+  base(this);
 }
-
-var sidebarService = new SidebarService();
-
+// eredito da G3Wobject così posso agire su onafter etc ..
+inherit(SidebarService, G3WObject);
+var sidebarService = new SidebarService;
 var SidebarComponent = Vue.extend({
     template: require('../html/sidebar.html'),
     data: function() {
@@ -84,7 +95,7 @@ var SidebarComponent = Vue.extend({
         panels: sidebarService.stack.state.panels,
         bOpen: true,
     		bPageMode: false,
-    		header: t('main navigation'),
+    		header: t('main navigation')
         };
     },
     computed: {
