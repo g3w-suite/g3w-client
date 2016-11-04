@@ -84,9 +84,12 @@ function SidebarService() {
   };
   base(this);
 }
+
 // eredito da G3Wobject così posso agire su onafter etc ..
 inherit(SidebarService, G3WObject);
+
 var sidebarService = new SidebarService;
+
 var SidebarComponent = Vue.extend({
     template: require('../html/sidebar.html'),
     data: function() {

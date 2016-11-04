@@ -114,4 +114,4 @@ var FloatbarComponent = Vue.extend({
 module.exports = {
   FloatbarService: floatbarService,
   FloatbarComponent: FloatbarComponent
-}
+};

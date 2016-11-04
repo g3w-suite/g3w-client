@@ -32,6 +32,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     this._setupInterface();
     // fa il setup del layout
     this._setupLayout();
+    //vado a registrare tutti i servizi dell'appilazione
+    this._setUpServices();
   };
   // setup layout
   // funzione che registra i componenti vue dell'applicazione
@@ -42,11 +44,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // Inizializzo i componenti vue dell'applicazione
     // preima che venga istanziato l'oggetto vue padre
     Vue.component('sidebar', sidebar.SidebarComponent);
-    ApplicationService.registerService('sidebar', sidebar.SidebarService);
     Vue.component('viewport', viewport.ViewportComponent);
     Vue.component('floatbar', floatbar.FloatbarComponent);
     Vue.component('app', AppUI);
-
     //inizializza l'applicazione Vue oggetto vue padre dell'applicazione
     var app = new Vue({
       el: 'body',
@@ -56,6 +56,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
         // faccio il localize
         $(document).localize();
       }
+    });
+  };
+  this._setUpServices = function() {
+    _.forEach(ApplicationTemplate.Services, function(service, element) {
+      console.log(element);
+      ApplicationService.registerService(element, service);
     });
   };
   // funzione che costruice il template
