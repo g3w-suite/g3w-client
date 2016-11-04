@@ -60,7 +60,6 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   };
   this._setUpServices = function() {
     _.forEach(ApplicationTemplate.Services, function(service, element) {
-      console.log(element);
       ApplicationService.registerService(element, service);
     });
   };
