@@ -188,8 +188,11 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     // funzione per la visualizzazione del form
     GUI.showForm = function(options) {
+     var FormComponent = require('sdk').gui.vue.FormComponent;
       // verifico che sia stato definito un formcomponent dall'editor custom del plugin
-      var formComponent = options.formComponent || GUI.getComponent('form');
+      var formComponent = options.formComponent ? new options.formComponent :  new FormComponent({
+          id: 'form'
+        });
       var formService = formComponent.getService();
       // inizializzo il form con le opzioni
       formService.setInitForm(options);

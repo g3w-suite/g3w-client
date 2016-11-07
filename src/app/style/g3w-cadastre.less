@@ -1,5 +1,6 @@
 .cadastre-page {
   font-size: 14px;
+  overflow: auto;
   .fabbricato {
     tr:hover > td {
       background-color: darken(#f3f3f3,5%);
@@ -8,8 +9,11 @@
   .uiu {
     .back-btn {
       cursor: pointer;
-      &:hover {
-        text-decoration: underline;
+      .back-link {
+        color: #3c8dbc;
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
     .stadio, .titolare {
@@ -23,6 +27,7 @@
   }
   .header {
     margin: 10px 0px;
+    font-size: 1.1em;
     .key {
       display: inline-block;
       width: 60px;

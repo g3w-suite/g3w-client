@@ -59,8 +59,6 @@ function createTemplateConfig() {
   //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
   //ad hoc per i risultati
   var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
-  // componente Form
-  var FormComponent = require('sdk').gui.vue.FormComponent;
 
   return {
     title: config.apptitle,
@@ -94,9 +92,6 @@ function createTemplateConfig() {
     othercomponents: [
       new QueryResultsComponent({
         id: 'queryresults'
-      }),
-      new FormComponent({
-        id: 'form'
       })
     ],
     viewport: {
