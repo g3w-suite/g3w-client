@@ -28,7 +28,8 @@ var ViewportService = function() {
       aside: true,
       // array contentente gli elementi nello stack del contents
       stack: [],
-      closable: true
+      closable: true,
+      backonclose: false
     }
   };
 
@@ -156,9 +157,14 @@ var ViewportService = function() {
   };
   // funzione che rimuove il cont dalla viewport
   this.removeContent = function() {
-    this.contentStack = [];
-    this.recoverDefaultMap();
-    this.closeSecondaryView();
+    if (this.state.content.backonclose) {
+      this.popContent();
+
+    } else {
+      this.contentStack = [];
+      this.recoverDefaultMap();
+      this.closeSecondaryView();
+    }
   };
   // risposte se è view primaria
   this.isPrimaryView = function(viewName) {
@@ -236,6 +242,7 @@ var ViewportService = function() {
         self.state.content.preferredPerc = options.perc || self.getDefaultViewPerc('content');
         self.state.content.title = options.title;
         self.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
+        self.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
         self.state.content.stack = _.map(self.contentStack,function(contentOptions) {
           return contentOptions.title;
         });

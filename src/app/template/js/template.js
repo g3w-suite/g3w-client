@@ -201,7 +201,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       GUI.setContent({
         content: formComponent,
         push: false,
-        closable: false
+        closable: false,
       });
       return formService;
     };
@@ -312,13 +312,15 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       GUI.setContent(options)
     };
 
-    GUI.pushContent = function(content, title, perc, split) {
+    GUI.pushContent = function(content, title, perc, split, backonclose) {
+
       var options = {
         content: content,
         title: title,
         perc: 100,
         split: split,
-        push: true
+        push: true,
+        backonclose: backonclose || false
       };
       GUI.setContent(options);
     };
@@ -342,13 +344,15 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var perc = options.perc || 0;
       var split = options.split || null;
       var closable = options.closable;
+      var backonclose = options.backonclose || false;
       viewport.ViewportService.showContent({
         content: content,
         title: title,
         push: push,
         split: split,
         perc: perc,
-        closable: closable
+        closable: closable,
+        backonclose: backonclose
       });
     };
     /* FINE VIEWPORT */
