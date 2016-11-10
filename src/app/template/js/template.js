@@ -9,7 +9,7 @@ var GUI = require('sdk/gui/gui');
 var config = {
   client:{}
 };
-
+// vado a recuperare le parti che compongono l'applicazione
 var sidebar = require('./sidebar');
 var floatbar = require('./floatbar');
 var viewport = require('./viewport');
@@ -18,7 +18,7 @@ var layout = require('./layout');
 
 // forse da trovare un posto migliore per attivare lo spinner iniziale...
 layout.loading();
-
+// classe che serve per instaziare e settare il template dell'applicazione
 var ApplicationTemplate = function(templateConfig, ApplicationService) {
   self = this;
   this.templateConfig = templateConfig;
@@ -51,13 +51,16 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     var app = new Vue({
       el: 'body',
       ready: function() {
-        // inzio a costruire il template
+        //una volta che l'istanza vue è pronta
+        // inzio a costruire il template aggiungendo i vari componenti
         self._buildTemplate();
         // faccio il localize
         $(document).localize();
       }
     });
   };
+  //funzione che server per registrare tutti i servizi legati
+  // alle vaie pari dell'appliazione
   this._setUpServices = function() {
     _.forEach(ApplicationTemplate.Services, function(service, element) {
       ApplicationService.registerService(element, service);
@@ -67,16 +70,20 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._buildTemplate = function() {
     var self = this;
     floatbar.FloatbarService.init(layout);
+    // recupero i plceholders dalla configurazione del template
     var placeholdersConfig = this.templateConfig.placeholders;
-    _.forEach(placeholdersConfig, function(components, placeholder) {
+    // ciclo su ogni placeholder
+    _.forEach(placeholdersConfig, function(options, placeholder) {
       // per ogni placeholder ci possono essere più componenti ciclo e aggiungo
-      self._addComponents(components.components, placeholder);
+      //che vuol dire montare i varic componenti vue nei rispettivi placeholder
+      self._addComponents(options.components, placeholder);
     });
     //registro altri componenti che non hanno una collocazione spaziale precisa
-    // come da esempio i risultati, form  che possono essere montati sulla floatbar o altre parti del template
+    // come da esempio QueryResultsComponent, form  che possono essere montati sulla floatbar o altre parti del template
     this._addOtherComponents();
-    // setto la viewport
+    // setto la viewport passadogli la configurazione del viewport dell'applicazione
     this._setViewport(this.templateConfig.viewport);
+    // emmto l'vento ready
     this.emit('ready');
     GUI.ready();
   };
@@ -106,7 +113,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
    }
    */
     if (viewportOptions) {
+      // inizializzo il service della viewport
       ApplicationTemplate.Services.viewport.init(viewportOptions);
+      // passo i componenti della viewport per essere aggiunti alla viewport
       this._addComponents(viewportOptions.components);
     }
   };
@@ -117,13 +126,18 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   // aggiunge componenti al template
   this._addComponents = function(components, placeholder) {
     var register = true;
-    // qui entro solo e soltanto con i componeti dei placeholders previsti
+    // qui entro solo e soltanto se è stato passato un placeholder e che questo
+    // sia tra i componeti dei placeholders previsti
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
+      // recupero il service del placeholder associato (sidebar, navbar etc..)
       var placeholderService = ApplicationTemplate.Services[placeholder];
+      // se non è nullo o vuoto
       if (placeholderService) {
+        // delego il servizio del placheholder di aggiungere il componente
         register = placeholderService.addComponents(components);
       }
     }
+    // ciclo sui componenti
     _.forEach(components, function(component) {
       // verifico se è stato registrato
       // nel cosa in cui non è stato registrato (esempio caso otherscomponents)
@@ -134,10 +148,10 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     })
   };
   // rimuovo il componente andando a toglierlo al component registry
-  this._removeComponent = function(placeholder, componentId) {
-    ComponentsRegistry.unregisterComponent(component);
+  this._removeComponent = function(componentId) {
+    ComponentsRegistry.unregisterComponent(componentId);
   };
-
+  // funzione che visualizza la modelae overlay
   this._showModalOverlay = function(bool) {
     var mapService = GUI.getComponent('map').getService();
     if (bool) {
@@ -174,6 +188,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
     //esempio di metodo generico Aside Results e Form etc...
+    // metodo che restituisce il metodo GUI
+    // a cui passare oggetto per la visualizzazione del Panello sul content component
     GUI.showContentFactory = function(type) {
       var showPanelContent;
       switch (type) {
@@ -187,29 +203,34 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return showPanelContent;
     };
     // funzione per la visualizzazione del form
+    // viene utilizzata ad esempio dall'editor per visualizzare il form nel content component
     GUI.showForm = function(options) {
+     // recupero il compomponete Form base
      var FormComponent = require('sdk').gui.vue.FormComponent;
       // verifico che sia stato definito un formcomponent dall'editor custom del plugin
+      // Istanzio sempre un componente nuovo
       var formComponent = options.formComponent ? new options.formComponent :  new FormComponent({
           id: 'form'
-        });
+      });
+      //recupero il servizio (che darà sempre una nuova istanza)
       var formService = formComponent.getService();
-      // inizializzo il form con le opzioni
+      // inizializzo il form con le opzioni ad esempio passate dall'editor (fields, relations etc..)
       formService.setInitForm(options);
-      // agggiunto un ulteriore parametro closable
-      // content, title, push, perc, split, closable)
+      // agggiunto un ulteriore parametro closable che di default è true
+      // e quindi sarà possibile chidere il pannello con la x
+      // parametri : [content, title, push, perc, split, closable]
       GUI.setContent({
         content: formComponent,
-        push: false,
-        closable: false,
+        push: false, //significa che ci deve essere solo lui( cancellando eventuali precedenti form)
+        closable: false
       });
+      //ritorno il formService
       return formService;
     };
-    // chiudo il form
+    // chiudo il form che chiama il metodo removeContent del service viewport
     GUI.closeForm = function() {
       viewport.ViewportService.removeContent();
     };
-
     // funzione per la visuzlizzazione dei risultati
     GUI.showQueryResults = function(title, results) {
       var queryResultsComponent = GUI.getComponent('queryresults');
@@ -311,20 +332,18 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       };
       GUI.setContent(options)
     };
-
-    GUI.pushContent = function(content, title, perc, split, backonclose) {
-
-      var options = {
-        content: content,
-        title: title,
-        perc: 100,
-        split: split,
-        push: true,
-        backonclose: backonclose || false
-      };
+    // funzione che server ad aggiungere il componente
+    // allo stack del content (in append)
+    // Le differenze rispetto a setContent sono :
+    //  - nel fatto che push è sempre a true e quindi il component viene impilato su altro componente
+    //  - ha un parametro in più che è il backonclose che specifica se nel cosa venga clicckato sulla x
+    //    il contentComponet viene chiuso totalmente e lo stack resettato o rimosso solo quel componete
+    GUI.pushContent = function(options) {
+      var options =  options || {};
+      options.push = true;
+      options.perc = 100;
       GUI.setContent(options);
     };
-
     // Aggiunge contenuto allo stack
     GUI.pushContextualContent = function(content, title, perc, split) {
       var options = {
@@ -336,8 +355,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       };
       GUI.setContent(options);
     };
-
+    // funzione che setta i parametri del contenuto del content
+    // come il componete etc..
     GUI.setContent = function(options) {
+      var options = options || {};
+      // vado a verificare le opzioni passate e setto valori di default
+      // in caso di mancata assegnazione
       var content = options.content || {};
       var title = options.title || "";
       var push = options.push || false;
@@ -345,6 +368,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var split = options.split || null;
       var closable = options.closable;
       var backonclose = options.backonclose || false;
+      // chiamo il metodo showContent del servizio
+      // viewport per poter visualizzare il content
       viewport.ViewportService.showContent({
         content: content,
         title: title,
@@ -359,9 +384,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     /* fine metodi specifici */
     /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */
   };
-
   base(this);
 };
+
 inherit(ApplicationTemplate,G3WObject);
 // questi sono i plceholder previsti ne standard dell'applicazione
 

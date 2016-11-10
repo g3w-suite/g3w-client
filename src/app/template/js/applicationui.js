@@ -59,7 +59,7 @@ var AppUI = Vue.extend({
         }
         return logo_link;
       }
-    },
+    }
 });
 
 module.exports = AppUI;

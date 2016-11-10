@@ -4,9 +4,8 @@ var Stack = require('./barstack.js');
 var G3WObject = require('sdk/core/g3wobject');
 var base = require('sdk/core/utils/utils').base;
 
-//sidebar item che non è altro che un li della sidebar dove sarà possobile impostare
+//sidebar item che non è altro che un li della sidebar dove sarà possibile impostare
 //titolo tipo di icona etc .. customizzata per ogni componente
-
 var SidebarItem = Vue.extend({
   template: require('../html/sidebar-item.html'),
   data: function() {
@@ -21,25 +20,30 @@ var SidebarItem = Vue.extend({
       };
   }
 });
-
 // service sidebar
 function SidebarService() {
+  //stack della sidebar
   this.stack = new Stack();
+  // metto i setter close sidebarpanel per catturare l'evento
+  // della chiusura del pannello sulla sidebar
   this.setters = {
     closeSidebarPanel: function()  {
       //hook function
     }
   };
+  //stato del servizio
   this.state = {
     components: []
   };
-  
-  this.init = function(layout){
+  //inizializzazione del servizio (non sembra chaimato mai)
+  this.init = function(layout) {
     this.layout = layout;
   };
   // funzione che serve ad aggiungere componeti alla sidebar
   this.addComponents = function(components){
     var self = this;
+    // per ogni componente (istanza) appartenete alla sidebar viene chiamato il metodo
+    // addComponent
     _.forEach(components,function(component){
       self.addComponent(component);
     });
@@ -47,11 +51,11 @@ function SidebarService() {
     // al template durante il buoldtemplate di dire se è stato regitstrato (true) o meno
     return true;
   };
-  // funzione che aggiunge componenti sulla sidebar
+  // funzione che aggiunge il singolo componente sulla sidebar
   this.addComponent = function(component) {
-    //aggiungo componente
+    //aggiungo componente allo state
     this.state.components.push(component);
-    //faccio montare il sedebar-item che contiene al suo interno il placeholder del componente vero e proprio
+    //faccio montare il sidebar-item che contiene al suo interno il placeholder del componente vero e proprio
     //in questo modo il componente non si dovrà occupare di costruire anche l'elemento li della sidebar
     //ma conterrà solo il contenuto
     var sidebarItem = new SidebarItem();
@@ -60,21 +64,25 @@ function SidebarService() {
     sidebarItem.open = (component.open === undefined) ? sidebarItem.open : component.open;
     sidebarItem.icon = component.icon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
+    //lo appendo al g3w-sidebarcomponents (template sidebar.html)
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');
-    //monto il componete nella sidebar
+    //monto il componete nella g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
+    // verifico che il componete abbai l'iniService come metodo
     if (_.has(component, 'initService')) {
+      //se si lo chiamo
       component.initService();
     }
     return true;
   };
-  
+  //rimuove il component
   this.removeComponent = function(){
-    //da vedere
+    //TODO
   };
   // visualizzazione pannello sullo stack
   this.showPanel = function(panel) {
     var parent = "#g3w-sidebarpanel-placeholder";
+    // utilizzo il metodo push dello stack per montare il panel sul sidebar
     this.stack.push(panel, parent);
   };
   // chiusura pannello
