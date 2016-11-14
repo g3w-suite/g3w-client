@@ -1,6 +1,11 @@
 .cadastre-page {
   font-size: 14px;
-  overflow: auto;
+  .tab-content {
+    padding: 10px 0px;
+    .tab-pane {
+      overflow: auto;
+    }
+  }
   .fabbricato {
     tr:hover > td {
       background-color: darken(#f3f3f3,5%);
@@ -17,7 +22,7 @@
       }
     }
     .stadio, .titolare {
-      margin:10px 0px;
+      //margin:10px 0px;
       border: 1px solid @light-blue;
       background-color: white;
     }

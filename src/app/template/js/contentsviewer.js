@@ -71,4 +71,18 @@ proto.clearContents = function() {
   return this.stack.clear();
 };
 
+proto.layout = function(parentWidth,parentHeight) {
+  var self = this;
+  var el = $(this.internalComponent.$el);
+  Vue.nextTick(function(){
+    var height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - el.siblings('.g3w_contents_back').outerHeight(true);
+    el.height(height);
+    self.stack.forEach(function(component){
+      if (typeof component.layout == 'function') {
+        component.layout(parentWidth,height);
+      }
+    })
+  })
+};
+
 module.exports = ContentsComponent;

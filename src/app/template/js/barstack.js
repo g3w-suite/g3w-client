@@ -136,6 +136,13 @@ proto._unmount = function(content) {
   }
   return d.promise();
 };
+
+proto.forEach = function(cbk) {
+  _.forEach(this.state.panels,function(panel){
+    cbk(panel);
+  })
+};
+
 // resituisce la lunghezza (numero elementi) dello stack
 proto.getLength = function() {
   return this.state.panels.length;

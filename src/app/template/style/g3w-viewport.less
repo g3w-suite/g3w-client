@@ -9,7 +9,6 @@
       width:0px;
       //-webkit-transition: width 0.3s;
       //transition: width 0.3s;
-      overflow: hidden;
     }
     &.content {
       float:right;
@@ -20,9 +19,6 @@
       position: relative;
       .contents {
         height: 100%;
-        > :first-child {
-          height: 100%;
-        }
       }
       &.split-h {
         border-left: 4px solid darken(@gray-lighter,10%);
@@ -32,6 +28,7 @@
       }
       .g3w_contents_back {
         padding: @base_padding 0px;
+        display: inline-block;
         >span {
           font-size: 1em;
           color: @light-blue;
@@ -45,7 +42,6 @@
     }
     .close-panel-block {
       line-height: 1;
-      padding: @base_padding;
       margin: 0px;
       button {
         color: #b0b0b0;

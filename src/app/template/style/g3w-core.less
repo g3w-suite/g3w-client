@@ -35,10 +35,14 @@
 .quick-actions-menu {
   overflow: hidden;
   height:40px;
-  width:100%;
   line-height:40px;
   text-align:center;
-  .btn {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn {
+  &.quick-action {
     font-size: 1.5em;
     color: #888888;
     background-color: transparent;
