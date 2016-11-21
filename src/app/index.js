@@ -42,7 +42,8 @@ function createApplicationConfig() {
     },
     plugins: config.group.plugins,
     tools: config.tools,
-    views: config.views || {}
+    views: config.views || {},
+    user: config.user || null
   };
 }
 
@@ -177,6 +178,7 @@ bootstrap = function() {
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.group = initConfig.group;
+    config.user = initConfig.user;
     var applicationConfig = createApplicationConfig();
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
     // la vado a pssare al metodo init dell'application service
