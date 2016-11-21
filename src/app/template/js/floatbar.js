@@ -31,7 +31,8 @@ function FloatbarService(){
     var options = options || {};
     var append = options.append || false;
     var modal = options.modal || false;
-    this.stack.push(panel,"#g3w-floatbarpanel-placeholder", options);
+    options.parent = "#g3w-floatbarpanel-placeholder";
+    this.stack.push(panel, options);
     if (!this._isopen) {
       this.open();
     };
@@ -77,12 +78,12 @@ var FloatbarComponent = Vue.extend({
     computed: {
       // quanti pannelli sono attivi nello stack
       panelsinstack: function(){
-        return this.stack.panels.length>0;
+        return this.stack.contentsdata.length>0;
       },
       panelname: function(){
         var name;
-        if (this.stack.panels.length){
-          name = this.stack.panels.slice(-1)[0].getTitle();
+        if (this.stack.contentsdata.length){
+          name = this.stack.contentsdata.slice(-1)[0].content.getTitle();
         }
         return name;
       },
@@ -92,7 +93,7 @@ var FloatbarComponent = Vue.extend({
     },
     watch: {
       // TODO: Brutto, ma è l'unico (per ora) modo flessibile che ho trovato per implementare il concetto di stack... 
-      "stack.panels": function(){
+      "stack.contentsdata": function(){
         var children = $("#g3w-floatbarpanel-placeholder").children();
         _.forEach(children,function(child,index){
           if (index == children.length-1){

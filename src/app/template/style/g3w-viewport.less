@@ -17,6 +17,7 @@
       background-color: @gray-lighter;
       overflow:hidden;
       position: relative;
+      padding-top:0px;
       .contents {
         height: 100%;
       }
@@ -27,24 +28,23 @@
         border-top: 2px solid @light-blue;
       }
       .g3w_contents_back {
-        padding: @base_padding 0px;
         display: inline-block;
         >span {
-          font-size: 1em;
           color: @light-blue;
           cursor: pointer;
           &:hover {
             text-decoration: underline;
           }
         }
-
       }
     }
     .close-panel-block {
-      line-height: 1;
+      line-height: 46px;
       margin: 0px;
+      position: relative;
       button {
         color: #b0b0b0;
+        line-height: 46px;
       }
     }
   }

@@ -239,7 +239,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       if (results) {
         queryResultService.setQueryResponse(results);
       }
-      GUI.showContextualContent(queryResultsComponent, "Risultati "+title);
+      GUI.showContextualContent(
+        {
+          content: queryResultsComponent,
+          title: "Risultati "+title
+        }
+      );
       return queryResultService;
     };
     //temporaneo show panel
@@ -312,24 +317,16 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       viewport.ViewportService.resetContextualMapComponent();
     };
     // Mostra il contenuto (100%)
-    GUI.showContent = function(content, title, split) {
-      var options = {
-        content: content,
-        title: title,
-        split: split,
-        perc: 100
-      };
-      GUI.setContent(options)
+    GUI.showContent = function(options) {
+      options =  options || {};
+      options.perc = 100;
+      GUI.setContent(options);
     };
     // Mostra il contenuto. Il contenuto può essere una string HTML,
     // un elemento DOM o un componente Vue. Percentuale di default 50%
-    GUI.showContextualContent = function(content, title, perc, split){
-      var options = {
-        content: content,
-        title: title,
-        split: split,
-        perc: perc || 50
-      };
+    GUI.showContextualContent = function(options){
+      options =  options || {};
+      options.perc = options.perc || 50;
       GUI.setContent(options)
     };
     // funzione che server ad aggiungere il componente
@@ -339,46 +336,33 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     //  - ha un parametro in più che è il backonclose che specifica se nel cosa venga clicckato sulla x
     //    il contentComponet viene chiuso totalmente e lo stack resettato o rimosso solo quel componete
     GUI.pushContent = function(options) {
-      var options =  options || {};
-      options.push = true;
+      options =  options || {};
       options.perc = 100;
+      options.push = true;
       GUI.setContent(options);
     };
     // Aggiunge contenuto allo stack
-    GUI.pushContextualContent = function(content, title, perc, split) {
-      var options = {
-        content: content,
-        title: title,
-        perc: perc || 50,
-        split: split,
-        push: true
-      };
+    GUI.pushContextualContent = function(options) {
+      options =  options || {};
+      options.perc = options.perc || 50;
+      options.push = true;
       GUI.setContent(options);
     };
     // funzione che setta i parametri del contenuto del content
     // come il componete etc..
     GUI.setContent = function(options) {
-      var options = options || {};
+      options = options || {};
       // vado a verificare le opzioni passate e setto valori di default
       // in caso di mancata assegnazione
-      var content = options.content || {};
-      var title = options.title || "";
-      var push = options.push || false;
-      var perc = options.perc || 0;
-      var split = options.split || null;
-      var closable = options.closable;
-      var backonclose = options.backonclose || false;
+      options.content = options.content || null;
+      options.title = options.title || "";
+      options.push = options.push || false;
+      options.perc = options.perc || 0;
+      options.split = options.split || 'h';
+      options.backonclose = options.backonclose || false;
       // chiamo il metodo showContent del servizio
       // viewport per poter visualizzare il content
-      viewport.ViewportService.showContent({
-        content: content,
-        title: title,
-        push: push,
-        split: split,
-        perc: perc,
-        closable: closable,
-        backonclose: backonclose
-      });
+      viewport.ViewportService.showContent(options);
     };
     /* FINE VIEWPORT */
     /* fine metodi specifici */

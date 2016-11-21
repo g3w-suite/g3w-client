@@ -6,15 +6,15 @@ var Component = require('gui/vue/component');
 
 // componente interno (VUE) del content della viewport
 var InternalComponent = Vue.extend({
-    template: require('../html/contentsviewer.html'), // altro non è che <div id="contents" class="contents"></div>
-    data: function() {
-      return {
-        state: null
-      }
+  template: require('../html/contentsviewer.html'), // altro non è che <div id="contents" class="contents"></div>
+  data: function() {
+    return {
+      state: null
     }
+  }
 });
 // componente content
-function ContentsComponent(options){
+function ContentsViewerComponent(options){
   base(this,options);
   this.stack = new Stack();
   // setta come servizio se stesso
@@ -27,8 +27,8 @@ function ContentsComponent(options){
     open: options.open || false
    }
    */
+  this.contentsdata = this.stack.state.contentsdata;
   this.state.visible = true;
-  this._content = null;
   // vado a settare il componente interno
   // sfruttando il metodo del componente base
   this.setInternalComponent(new InternalComponent({
@@ -38,37 +38,74 @@ function ContentsComponent(options){
   this.internalComponent.state = this.state;
 }
 
-inherit(ContentsComponent, Component);
+inherit(ContentsViewerComponent, Component);
 
-var proto = ContentsComponent.prototype;
+var proto = ContentsViewerComponent.prototype;
 
 // setta il contenuto dell content
-proto.setContent = function(content) {
+proto.setContent = function(options) {
   var self = this;
   var d = $.Deferred();
+  var push = options.push || false;
+  var content = options.content;
   // svuoto sempre lo stack, così ho sempre un solo elemento (la gestione dello stack è delegata alla viewport).
   // Uso comunque barstack perché implementa già la logica di montaggio dei contenuti nel DOM
-  this.clearContents()
-  .then(function () {
-    self.stack.push(content, self.internalComponent.$el, true)
+  if (!push) {
+    this.clearContents()
+    .then(function() {
+      self.addContent(content,options)
+      .then(function(){
+        d.resolve();
+      })
+    })
+  }
+  else {
+    this.addContent(content,options)
     .then(function(){
       d.resolve();
-    });
-  });
+    })
+  }
   return d.promise();
+};
+proto.addContent = function(content,options) {
+  var self = this;
+  options.parent = this.internalComponent.$el;
+  options.append = true;
+  return this.stack.push(content,options)
+  .then(function(){
+    self.contentsdata = self.stack.state.contentsdata;
+    self.updateContentVisibility();
+  })
 };
 // rimuove il contenuto dallo stack
 proto.removeContent = function() {
-  return this.stack.pop();
+  return this.clearContents();
 };
 // usato da viewport.js
 proto.popContent = function() {
-  return this.removeContent()
+  var self = this;
+  return this.stack.pop()
+  .then(function(){
+    self.contentsdata = self.stack.state.contentsdata;
+    self.updateContentVisibility();
+  });
+};
+proto.getCurrentContentData = function(){
+  return this.stack.getCurrentContentData();
+};
+proto.updateContentVisibility = function() {
+  var contentsEls = $(this.internalComponent.$el).children();
+  contentsEls.hide();
+  contentsEls.last().show();
 };
 // fa il clear dello stack in quanto si vuole che lo stack del contenteComponente
 // deve essere sempre vuoto in partenza
 proto.clearContents = function() {
-  return this.stack.clear();
+  var self = this;
+  return this.stack.clear()
+  .then(function(){
+    self.contentsdata = self.stack.state.contentsdata;
+  })
 };
 
 proto.layout = function(parentWidth,parentHeight) {
@@ -77,12 +114,13 @@ proto.layout = function(parentWidth,parentHeight) {
   Vue.nextTick(function(){
     var height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - el.siblings('.g3w_contents_back').outerHeight(true);
     el.height(height);
-    self.stack.forEach(function(component){
-      if (typeof component.layout == 'function') {
-        component.layout(parentWidth,height);
+    var contentsdata = self.stack.state.contentsdata;
+    contentsdata.forEach(function(data){
+      if (typeof data.content.layout == 'function') {
+        data.content.layout(parentWidth,height);
       }
     })
   })
 };
 
-module.exports = ContentsComponent;
+module.exports = ContentsViewerComponent;

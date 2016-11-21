@@ -1,3 +1,4 @@
+var utils = require('sdk/core/utils/utils');
 var inherit = require('sdk/core/utils/utils').inherit;
 var G3WObject = require('sdk/core/g3wobject');
 var Component = require('gui/vue/component');
@@ -9,7 +10,7 @@ function BarStack() {
   this._parent = null;
   // state del barstak contenente array pannelli
   this.state = {
-    panels: []
+    contentsdata: []
   }
 }
 
@@ -18,42 +19,57 @@ inherit(BarStack, G3WObject);
 var proto = BarStack.prototype;
 
 // funzione che immette il componente (di qualsiasi tipo) nel parent element
-proto.push = function(content, parent, append) {
+proto.push = function(content, options) {
   // parent è l'identificativo dell'elemento DOM sui cui montare (in append o meno) il component/panel
-  this._parent = parent;
-  append = append || false;
+  this._parent = options.parent;
   // chiamo il metodo mount del barstack
-  return this._mount(content, append);
+  return this._mount(content, options);
 };
 // toglie l'ultimo componente dallo stack
 proto.pop = function(){
+  var self = this;
+  var d = $.Deferred();
   // qui potremo chiedere al pannello se può essere chiuso...
-  if (this.state.panels.length) {
-    var content = this.state.panels.slice(-1)[0];
-    this._unmount(content);
+  if (this.state.contentsdata.length) {
+    var content = this.state.contentsdata.slice(-1)[0].content;
+    return this._unmount(content)
+    .then(function(){
+      self.state.contentsdata.pop();
+    })
   }
+  else {
+    d.resolve();
+  }
+  return d.promise();
 };
 // fa il clear di tutto lo stack in una volta sola
 proto.clear = function() {
   var self = this;
   var d = $.Deferred();
-  var unmountRequests = [];
-  _.forEach(this.state.panels, function(content, idx) {
-    unmountRequests.push(self._unmount(content));
-  });
-  $.when(unmountRequests).then(function(){
+  if (this.state.contentsdata.length) {
+    var unmountRequests = [];
+    _.forEach(this.state.contentsdata, function (data, idx) {
+      unmountRequests.push(self._unmount(data.content));
+    });
+    $.when(unmountRequests).then(function () {
+      self.state.contentsdata = [];
+      d.resolve();
+    });
+  }
+  else {
     d.resolve();
-  });
+  }
   return d.promise();
 };
+proto.getCurrentContentData = function() {
+  return this.state.contentsdata[this.state.contentsdata.length - 1];
+};
 // funzione che fa il mopnt del componente
-proto._mount = function(content, append) {
-  var d = $.Deferred();
+proto._mount = function(content, options) {
   // verifico il tipo di content passato:
   //oggetto JQuery
   if (content instanceof jQuery) {
-    this._setJqueryContent(content);
-    d.resolve();
+    return this._setJqueryContent(content);
   }
   //stringa
   else if (_.isString(content)) {
@@ -62,58 +78,67 @@ proto._mount = function(content, append) {
     if (!jqueryEl.length) {
       jqueryEl = $('<div>'+content+'</div>');
     }
-    this._setJqueryContent(jqueryEl);
-    d.resolve();
+    return this._setJqueryContent(jqueryEl);
   }
   // istanza componente (vue alla fine)
   else if (content.mount && typeof content.mount == 'function') {
     this._checkDuplicateVueContent(content); // nel caso esista già prima lo rimuovo
-    this._setVueContent(content, append)
-    .then(function(){
-      d.resolve();
-    });
+    return this._setVueContent(content,options)
   }
   // infine è elemento dom
   else {
-    this._setDOMContent(content);
-    d.resolve();
+    return this._setDOMContent(content);
   }
-  return d.promise();
 };
 //funzione che permettere di appendere oggetto jquery
-proto._setJqueryContent = function(content) {
+proto._setJqueryContent = function(content,options) {
   $(this._parent).append(content);
-  this.state.panels.push(content);
+  this.state.contentsdata.push({
+    content: content,
+    options: options
+  });
+  return utils.resolve();
 };
 //funzione che appende dom element
-proto._setDOMContent = function(content) {
+proto._setDOMContent = function(content,options) {
   this._parent.appendChild(content);
-  this.state.panels.push(content);
+  this.state.contentsdata.push({
+    content: content,
+    options: options
+  });
+  return utils.resolve();
 };
 // funzione che monta il componte su parent
-proto._setVueContent = function(content, append) {
+proto._setVueContent = function(content, options) {
   var self = this;
-  return content.mount(this._parent, append)
+  var d = $.Deferred();
+  var append = options.append || false;
+  content.mount(this._parent, append)
   .then(function(){
     $(parent).localize();
-    self.state.panels.push(content);
+    self.state.contentsdata.push({
+      content: content,
+      options: options
+    });
+    d.resolve();
   });
+  return d.promise();
 };
 // verifica nel caso di un componente vue
 proto._checkDuplicateVueContent = function(content) {
   var self = this;
   var idxToRemove = null;
   var id = content.getId();
-  _.forEach(this.state.panels, function(_content,idx) {
-    if (_content.getId && (_content.getId() == id)) {
+  _.forEach(this.state.contentsdata, function(data,idx) {
+    if (data.content.getId && (data.content.getId() == id)) {
       idxToRemove = idx;
     }
   });
   if (!_.isNull(idxToRemove)) {
-    var _content = self.state.panels[idxToRemove];
-    _content.unmount()
+    var data = self.state.contentsdata[idxToRemove];
+    data.content.unmount()
       .then(function() {
-        self.state.panels.splice(idxToRemove,1);
+        self.state.contentsdata.splice(idxToRemove,1);
       });
   }
 };
@@ -124,28 +149,25 @@ proto._unmount = function(content) {
   if(content instanceof Component) {
     content.unmount()
     .then(function(){
-      //self.state.panels.pop();
-      self.state.panels.pop();
       d.resolve();
     });
   }
   else {
     $(this._parent).empty();
-    this.state.panels.pop();
     d.resolve();
   }
   return d.promise();
 };
 
 proto.forEach = function(cbk) {
-  _.forEach(this.state.panels,function(panel){
-    cbk(panel);
+  _.forEach(this.state.contentsdata,function(data){
+    cbk(data.content);
   })
 };
 
 // resituisce la lunghezza (numero elementi) dello stack
 proto.getLength = function() {
-  return this.state.panels.length;
+  return this.state.contentsdata.length;
 };
 
 module.exports = BarStack;

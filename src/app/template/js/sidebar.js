@@ -83,7 +83,9 @@ function SidebarService() {
   this.showPanel = function(panel) {
     var parent = "#g3w-sidebarpanel-placeholder";
     // utilizzo il metodo push dello stack per montare il panel sul sidebar
-    this.stack.push(panel, parent);
+    this.stack.push(panel, {
+      parent: parent
+    });
   };
   // chiusura pannello
   this.closePanel = function() {
@@ -103,7 +105,7 @@ var SidebarComponent = Vue.extend({
     data: function() {
     	return {
         components: sidebarService.state.components,
-        panels: sidebarService.stack.state.panels,
+        panels: sidebarService.stack.state.contentsdata,
         bOpen: true,
     		bPageMode: false,
     		header: t('main navigation')
@@ -127,7 +129,7 @@ var SidebarComponent = Vue.extend({
       panelname: function(){
         var name = "";
         if (this.panels.length){
-          name = this.panels.slice(-1)[0].getTitle();
+          name = this.panels.slice(-1)[0].content.getTitle();
         }
         return name;
       }

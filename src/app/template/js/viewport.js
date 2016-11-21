@@ -30,7 +30,8 @@ var ViewportService = function() {
       // array contentente gli elementi nello stack del contents
       stack: [],
       closable: true,
-      backonclose: false
+      backonclose: false,
+      contentsdata:[]
     }
   };
   // sono i contentuti della viewport (mappa e content)
@@ -41,9 +42,7 @@ var ViewportService = function() {
   // contenuti di default
   this._defaultMapComponent;
   this._contextualMapComponent;
-  // array content stack. Contiene i vari componenti che sono
-  // contenuti/impilati nello stack del content
-  this.contentStack = [];
+
   // altezza e largezza minima della secondary view
   this._secondaryViewMinWidth = 300;
   this._secondaryViewMinHeight = 200;
@@ -133,45 +132,39 @@ var ViewportService = function() {
   };
   // visualizza il contentuto della content della viewport
   this.showContent = function(options) {
+    var self = this;
     // verifica se è stato settato l'opzione push
-    var push = (typeof options.push === 'boolean') ? options.push : false;
-    if (!push) {
-      // nel caso in cui push è falso il content stack viene resettato
-      // e settato ad array vuoto
-      this.contentStack = [];
-    }
-    // aggiungo al content stack i dati necessari a visualizzare il content
-    this.contentStack.push(options);
+    options.push = options.push || false;
     // chaimo funzione per settare il content
-    this._setContents(options);
+    this._components.content.setContent(options)
+      .then(function(){
+        var data = self._components.content.getCurrentContentData();
+        self._prepareView(data.options);
+      })
   };
   // funzione che toglie l'ultimo content al contentStack
   this.popContent = function() {
+    var self = this;
     // verifica che ci sia il conentuto nel compontentStack
-    if (this.contentStack.length) {
+    if (this.state.content.contentsdata.length) {
       this.recoverDefaultMap();
-      // rimuovo l'ultimo elemento dalla stack
-      this.contentStack.pop();
       // recupero il precedente content dallo stack
-      var options = this.contentStack[this.contentStack.length - 1];
-      // vado a settare il contenuto;
-      this._setContents(options);
+      this._components.content.popContent()
+      .then(function(){
+        var data = self._components.content.getCurrentContentData();
+        self._prepareView(data.options);
+      })
     }
-  };
-  // fal il reset del contentStack
-  this.clearContentStack = function() {
-    this.contentStack = [];
   };
   // funzione che rimuove il cont dalla viewport
   this.removeContent = function() {
     // verifico che l'attributo backonclose sia true o false
     // per fare in modo che lo stack del contentStack si completamente rimosso
     // o tolto solamente il componente
-    if (this.state.content.backonclose) {
+    if (this.state.content.backonclose && this.state.content.contentsdata.length > 1) {
       this.popContent();
     } else {
-      // resetto il contentStack
-      this.clearContentStack();
+      this._components.content.removeContent()
       //fa il recover della mappa di default
       this.recoverDefaultMap();
       // chido la View secondaria
@@ -259,28 +252,16 @@ var ViewportService = function() {
     })
   };
   // setto il content della viewport
-  this._setContents = function(options) {
-    var options = options || {};
-    var self = this;
-    // this._components.content non è altro che l'istanza contentComponet
-    // viene chiamato il metodo setContents del componente deputato
-    // a gestire/mostrare contenuti generici (di default usiamo template/js/contentsviewer.js)
-    // il contentviewer usa il barstack usato anche dalle sidebar, ma in realtà (vedi metodo setContents)
-    // pulisce sempre lo stack, perché in questo caso lo stack viene gestito direttamente da viewport.js
-    this._components.content.setContent(options.content)
-      .then(function() {
-        self.state.content.preferredPerc = options.perc || self.getDefaultViewPerc('content');
-        self.state.content.title = options.title;
-        self.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
-        self.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
-        self.state.content.stack = _.map(self.contentStack, function(contentOptions) {
-          return contentOptions.title;
-        });
-        // chimao mla funzione showView generica
-        // che ha bisogno di un parametro inizizle per ddecidere il tipo di view (map o content)
-        // e po opzioni
-        self._showView('content', options)
-      })
+  this._prepareView = function(options) {
+    this.state.content.preferredPerc = options.perc || this.getDefaultViewPerc('content');
+    this.state.content.title = options.title;
+    this.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
+    this.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
+    this.state.content.contentsdata = this._components.content.contentsdata;
+    // chimao mla funzione showView generica
+    // che ha bisogno di un parametro inizizle per ddecidere il tipo di view (map o content)
+    // e po opzioni
+    this._showView('content', options)
   };
   // metodo che si occupa delle gestione di tutta la logica di visualizzazione delle due viste (mappa e contenuti)
   // viewName può essere: map o content
@@ -437,19 +418,34 @@ var ViewportService = function() {
     // vengono aggiunte e rimosse le classi
     $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
     $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
+
+    var contentEl = $('.content');
+    var reducedWidth = 0;
+    if (contentEl && this.state.secondaryPerc == 100) {
+      var sideBarToggleEl = $('.sidebar-aside-toggle');
+      var toggleWidth = sideBarToggleEl.outerWidth();
+      contentEl.css('padding-left',toggleWidth + 5);
+      reducedWidth = (toggleWidth - 5);
+    }
+    else {
+      contentEl.css('padding-left',15);
+    }
+
     // setta il size delle vista
-    this._setViewSizes();
+    this._setViewSizes(reducedWidth);
     // carica il layout dei componenti
-    this._layoutComponents();
+    this._layoutComponents(reducedWidth,null);
   };
   // funzione che va a caricare i componenti
   // solo dopo che le size delle view sono state corrette
-  this._layoutComponents = function() {
+  this._layoutComponents = function(reducedWidth,reducedHeight) {
+    reducedWidth = reducedWidth || 0;
+    reducedHeight = reducedHeight || 0;
     var self = this;
     _.forEach(this._components, function(component, name) {
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
-      var width = self.state[name].sizes.width;
-      var height = self.state[name].sizes.height;
+      var width = self.state[name].sizes.width - reducedWidth;
+      var height = self.state[name].sizes.height - reducedHeight;
       // ogni componente (mappa e contenuto) qui
       // ha l'opportunità di ricalcolare il proprio il layout.
       // Usato per esempio dalla mappa per reagire al resize della viewport
@@ -473,14 +469,27 @@ var ViewportComponent = Vue.extend({
     }
   },
   computed: {
+    showtitle: function() {
+      var showtitle = true;
+      var contentsData = this.state.content.contentsdata;
+      if (contentsData.length) {
+        var options = contentsData[contentsData.length - 1].options;
+        if (_.isBoolean(options.showtitle)) showtitle = options.showtitle;
+      }
+      return showtitle;
+    },
     contentTitle: function() {
       // cambia il titolo prendendo l'ultimo elemento aggiunto alla stack
-      return this.state.content.stack[this.state.content.stack.length - 1];
+      var contentsData = this.state.content.contentsdata;
+      if (contentsData.length) {
+        return contentsData[contentsData.length - 1].options.title;
+      }
     },
     previousTitle: function() {
       // prende il titolo del precendete elemento
-      if (this.state.content.stack.length > 1) {
-        return this.state.content.stack[this.state.content.stack.length - 2]
+      var contentsData = this.state.content.contentsdata;
+      if (contentsData.length > 1) {
+        return contentsData[contentsData.length - 2].options.title;
       }
       return null;
     },
