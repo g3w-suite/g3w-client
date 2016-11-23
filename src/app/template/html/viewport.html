@@ -2,20 +2,6 @@
   <div id="g3w-view-map" class="g3w-view map" :style="{width:state.map.sizes.width+'px',height:state.map.sizes.height+'px'}">
   </div>
   <div id="g3w-view-content" class="g3w-view content" :style="{width:state.content.sizes.width+'px',height:state.content.sizes.height+'px'}">
-    <div v-if="contentSmallerThenPreferred" @click="closeMap" style="
-    position: absolute;
-    left: -50px;
-    top: 7px;
-    line-height: 1;
-    padding: 7px 2px;
-    font-size: 1.5em;
-    background-color: #3c8dbc;
-    color: white;
-    height: 39px;
-    width: 39px;
-    ">
-      <button class="glyphicon glyphicon-remove pull-right close-panel-button" style="background-color: transparent;border: 0px;"></button>
-    </div>
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
       <span v-if="showtitle && contentTitle">{{ contentTitle }}</span>
       <div v-else class="g3w_contents_back">

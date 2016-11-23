@@ -69,7 +69,7 @@ var ViewportService = function() {
    */
   // funzione showMap per la visulizzazione della mappa
   this.showMap = function() {
-    this._toggleMapComponentVisibility(this._defaultMapComponent);
+    this._toggleMapComponentVisibility(this._defaultMapComponent,true);
     this._components['map'] = this._defaultMapComponent;
     this._showView('map');
   };
@@ -150,10 +150,10 @@ var ViewportService = function() {
       this.recoverDefaultMap();
       // recupero il precedente content dallo stack
       this._components.content.popContent()
-      .then(function(){
-        var data = self._components.content.getCurrentContentData();
-        self._prepareView(data.options);
-      })
+        .then(function(){
+          var data = self._components.content.getCurrentContentData();
+          self._prepareView(data.options);
+        })
     }
   };
   // funzione che rimuove il cont dalla viewport
@@ -224,30 +224,30 @@ var ViewportService = function() {
     // nel caso attuale
     /*
      {
-      map: new MapComponent({
-        id: 'map'
-      }),
-      content: new ContentsComponent({
-        id: 'contents'
-      })
+     map: new MapComponent({
+     id: 'map'
+     }),
+     content: new ContentsComponent({
+     id: 'contents'
+     })
      }
-    */
+     */
     _.forEach(components, function(component, viewName) {
       // verifica che i componenti siano map o content
       if (['map', 'content'].indexOf(viewName) > -1) {
         // monto (chiamo il metodo mount che tuttti i componeti hanno) componente sull'id specifico del componenti della mappa
         // map e content
         component.mount('#g3w-view-'+viewName, true)
-        .then(function() {
-          // una volta che è stato montato aggiungo
-          // all'aray components
-          self._components[viewName] = component;
-          // verifico se il nome della view è la mappa
-          if (viewName == 'map') {
-            // setto il il componete come componente mappa di default
-            self._defaultMapComponent = component;
-          }
-        });
+          .then(function() {
+            // una volta che è stato montato aggiungo
+            // all'aray components
+            self._components[viewName] = component;
+            // verifico se il nome della view è la mappa
+            if (viewName == 'map') {
+              // setto il il componete come componente mappa di default
+              self._defaultMapComponent = component;
+            }
+          });
       }
     })
   };
@@ -300,6 +300,10 @@ var ViewportService = function() {
   // ritorna la vista opposta rispoetto a quella passata
   this._otherView = function(viewName) {
     return (viewName == 'map') ? 'content' : 'map';
+  };
+
+  this._isSecondary = function(view) {
+    return this.state.primaryView != view;
   };
 
   // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
@@ -412,6 +416,7 @@ var ViewportService = function() {
   };
   // funzione principale che si occupa dell'intero layout della vieport
   this._layout = function() {
+    var self = this;
     // prende il tipo di split
     var splitClassToAdd = (this.state.split == 'h') ? 'split-h' : 'split-v';
     var splitClassToRemove =  (this.state.split == 'h') ? 'split-v' : 'split-c';
@@ -423,9 +428,11 @@ var ViewportService = function() {
     var reducedWidth = 0;
     if (contentEl && this.state.secondaryPerc == 100) {
       var sideBarToggleEl = $('.sidebar-aside-toggle');
-      var toggleWidth = sideBarToggleEl.outerWidth();
-      contentEl.css('padding-left',toggleWidth + 5);
-      reducedWidth = (toggleWidth - 5);
+      if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
+        var toggleWidth = sideBarToggleEl.outerWidth();
+        contentEl.css('padding-left',toggleWidth + 5);
+        reducedWidth = (toggleWidth - 5);
+      }
     }
     else {
       contentEl.css('padding-left',15);
@@ -433,6 +440,43 @@ var ViewportService = function() {
 
     // setta il size delle vista
     this._setViewSizes(reducedWidth);
+
+    var closeMapBtn = $('#closemap-btn');
+    if (!closeMapBtn.length) {
+      var closeMapBtn = $('<div id="closemap-btn" @click="closeMap" style="\
+        position: absolute;\
+        right: 10px;\
+        top: 7px;\
+        line-height: 1;\
+        padding: 7px 2px;\
+        font-size: 1.5em;\
+        background-color: #3c8dbc;\
+        color: white;\
+        z-index:1000;\
+        height: 39px;\
+        width: 39px">\
+          <button class="glyphicon glyphicon-remove pull-right close-panel-button" style="background-color: transparent;border: 0px;"></button>\
+        </div>');
+      closeMapBtn.on('click',function(){
+        self.closeMap();
+      });
+      var mapView = $(".g3w-viewport .map");
+      mapView.append(closeMapBtn);
+    }
+
+    if (this.state.secondaryVisible) {
+      if (this._isSecondary('content') && (this.state.secondaryPerc < this.state.content.preferredPerc)) {
+        closeMapBtn.show()
+      }
+      else {
+        closeMapBtn.hide();
+      }
+    }
+    else {
+      closeMapBtn.hide();
+    }
+
+
     // carica il layout dei componenti
     this._layoutComponents(reducedWidth,null);
   };

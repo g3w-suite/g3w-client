@@ -45,12 +45,6 @@ var AppUI = Vue.extend({
     project_title: function() {
       var currentProject = ProjectsRegistry.getCurrentProject();
       return currentProject.state.name;
-    },
-    user: function() {
-      var user = ApplicationService.getConfig().user;
-      // verifico nel caso fosse un oggetto vuoto
-      if (_.isEmpty(user)) {user = null}
-      return user;
     }
    },
    methods: {

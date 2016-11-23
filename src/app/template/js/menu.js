@@ -3,6 +3,7 @@ var inherit = require('core/utils/utils').inherit;
 var base = require('core/utils/utils').base;
 var merge = require('core/utils/utils').merge;
 var Component = require('gui/vue/component');
+var GUI = require('sdk').gui.GUI;
 
 var InternalComponent = Vue.extend({
   template: require('../html/menu.html'),
@@ -18,6 +19,9 @@ var InternalComponent = Vue.extend({
       }
       else if (item.href) {
         window.open(item.href, '_blank');
+      }
+      else if (item.route) {
+        GUI.goto(item.route);
       }
       else {
         console.log("Nessuna azione per "+item.title);

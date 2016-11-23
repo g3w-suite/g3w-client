@@ -10,18 +10,19 @@ function ProjectsMenuComponent(options){
   var projects = ProjectsRegistry.getListableProjects();
   _.forEach(projects,function(project){
     menuitems.push({
-      title: project.title
+      title: project.title,
+      cbk: function() {
+
+        ProjectsRegistry.getProject(project.gid)
+        .then(function(project) {
+          ProjectsRegistry.setCurrentProject(project);
+        });
+      }
     })
   });
   this.state.menuitems = menuitems;
 }
 inherit(ProjectsMenuComponent, MenuComponent);
-
-var proto = ProjectsMenuComponent.prototype;
-
-proto.trigger = function(action,options) {
-
-};
 
 module.exports = ProjectsMenuComponent;
 
