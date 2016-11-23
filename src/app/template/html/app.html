@@ -7,14 +7,34 @@
       <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
         <span class="sr-only">Expand</span>
       </a>
-      <span style="color:white; font-size:2.5em; margin-left:20px; line-height:50px">tpl<b>Explorer</b></span>
-      <div class="navbar-custom-menu">
-        <ul class="nav navbar-nav">
-        </ul>
+      <div class="logo-wrapper">
+        <a v-if="logo_url" :href="logo_link" :target="logo_link_target" class=""><img :src="logo_url" style="height:40px"></a>
+        <span class="">{{project_title}}</span>
       </div>
-      <div class="product-disclaimer pull-right">
-        <span class="by-label">based on</span>
-        <span class="product-label"><a href="http://g3wsuite.gis3w.it" target="_blank">G3W-Client</a></span>
+      <div v-if="user" class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <li class="dropdown user user-menu">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-user"></i>
+              <span class="hidden-xs">{{ user.username }}</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="user-header">
+                <p>
+                  {{ user.first_name }} {{ user.last_name }}
+                </p>
+              </li>
+              <li class="user-footer">
+                <div class="pull-left">
+                  <a href="{{ user.admin_url }}" class="btn btn-default btn-flat"><i class="fa fa-folder"></i> Admin</a>
+                </div>
+                <div class="pull-right">
+                  <a href="{{ user.logout_url }}" class="btn btn-default btn-flat"><i class="fa fa-sign-out"></i>Sign out</a>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
     </nav>
   </header>
