@@ -24,8 +24,8 @@ var AppUI = Vue.extend({
       setFloatBarMaxHeight();
       setModalHeight();
     });
-   },
-   computed: {
+  },
+  computed: {
     logo_url: function() {
       var config = ApplicationService.getConfig();
       var logo_url;
@@ -45,21 +45,27 @@ var AppUI = Vue.extend({
     project_title: function() {
       var currentProject = ProjectsRegistry.getCurrentProject();
       return currentProject.state.name;
+    },
+    user: function() {
+      var user = ApplicationService.getConfig().user;
+      // verifico nel caso fosse un oggetto vuoto
+      if (_.isEmpty(user)) {user = null}
+      return user;
     }
-   },
-   methods: {
-      closePanel: function(){
-        sidebarService.closePanel();
-      },
-      isMobile: function(){return isMobile.any},
-      getLogoLink: function() {
-        var logo_link = null;
-        if (ApplicationService.getConfig().logo_link) {
-          logo_link = ApplicationService.getConfig().logo_link;
-        }
-        return logo_link;
+  },
+  methods: {
+    closePanel: function(){
+      sidebarService.closePanel();
+    },
+    isMobile: function(){return isMobile.any},
+    getLogoLink: function() {
+      var logo_link = null;
+      if (ApplicationService.getConfig().logo_link) {
+        logo_link = ApplicationService.getConfig().logo_link;
       }
+      return logo_link;
     }
+  }
 });
 
 module.exports = AppUI;
