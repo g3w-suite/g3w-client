@@ -114,6 +114,7 @@ proto.layout = function(parentWidth,parentHeight) {
   Vue.nextTick(function(){
     var height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - el.siblings('.g3w_contents_back').outerHeight(true);
     el.height(height);
+    el.children().first().height(height);
     var contentsdata = self.stack.state.contentsdata;
     contentsdata.forEach(function(data){
       if (typeof data.content.layout == 'function') {
