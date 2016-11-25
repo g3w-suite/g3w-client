@@ -230,6 +230,8 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // chiudo il form che chiama il metodo removeContent del service viewport
     GUI.closeForm = function() {
       viewport.ViewportService.removeContent();
+      // forzo a far si che il modale venga tolto
+      GUI.setModal(false);
     };
     // funzione per la visuzlizzazione dei risultati
     GUI.showQueryResults = function(title, results) {
