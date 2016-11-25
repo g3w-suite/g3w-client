@@ -101,17 +101,17 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // sono passati i componenti della viewport
     // es.:
     /*
-    {
+     {
      components: {
-       map: new MapComponent({
-        id: 'map'
-       }),
-       content: new ContentsComponent({
-        id: 'content',
-       })
+     map: new MapComponent({
+     id: 'map'
+     }),
+     content: new ContentsComponent({
+     id: 'content',
+     })
      }
-   }
-   */
+     }
+     */
     if (viewportOptions) {
       // inizializzo il service della viewport
       ApplicationTemplate.Services.viewport.init(viewportOptions);
@@ -205,12 +205,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     // funzione per la visualizzazione del form
     // viene utilizzata ad esempio dall'editor per visualizzare il form nel content component
     GUI.showForm = function(options) {
-     // recupero il compomponete Form base
-     var FormComponent = require('sdk').gui.vue.FormComponent;
+      // recupero il compomponete Form base
+      var FormComponent = require('sdk').gui.vue.FormComponent;
       // verifico che sia stato definito un formcomponent dall'editor custom del plugin
       // Istanzio sempre un componente nuovo
       var formComponent = options.formComponent ? new options.formComponent :  new FormComponent({
-          id: 'form'
+        id: 'form'
       });
       //recupero il servizio (che darà sempre una nuova istanza)
       var formService = formComponent.getService();

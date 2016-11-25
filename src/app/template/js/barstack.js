@@ -25,6 +25,7 @@ proto.push = function(content, options) {
   // chiamo il metodo mount del barstack
   return this._mount(content, options);
 };
+
 // toglie l'ultimo componente dallo stack
 proto.pop = function(){
   var self = this;
@@ -42,6 +43,7 @@ proto.pop = function(){
   }
   return d.promise();
 };
+
 // fa il clear di tutto lo stack in una volta sola
 proto.clear = function() {
   var self = this;
@@ -61,9 +63,15 @@ proto.clear = function() {
   }
   return d.promise();
 };
+
 proto.getCurrentContentData = function() {
   return this.state.contentsdata[this.state.contentsdata.length - 1];
 };
+
+proto.getPreviousContentData = function() {
+  return this.state.contentsdata[this.state.contentsdata.length - 2];
+};
+
 // funzione che fa il mopnt del componente
 proto._mount = function(content, options) {
   // verifico il tipo di content passato:
@@ -90,6 +98,7 @@ proto._mount = function(content, options) {
     return this._setDOMContent(content);
   }
 };
+
 //funzione che permettere di appendere oggetto jquery
 proto._setJqueryContent = function(content,options) {
   $(this._parent).append(content);
@@ -99,6 +108,7 @@ proto._setJqueryContent = function(content,options) {
   });
   return utils.resolve();
 };
+
 //funzione che appende dom element
 proto._setDOMContent = function(content,options) {
   this._parent.appendChild(content);
@@ -108,6 +118,7 @@ proto._setDOMContent = function(content,options) {
   });
   return utils.resolve();
 };
+
 // funzione che monta il componte su parent
 proto._setVueContent = function(content, options) {
   var self = this;
@@ -124,6 +135,7 @@ proto._setVueContent = function(content, options) {
   });
   return d.promise();
 };
+
 // verifica nel caso di un componente vue
 proto._checkDuplicateVueContent = function(content) {
   var self = this;
@@ -142,6 +154,7 @@ proto._checkDuplicateVueContent = function(content) {
       });
   }
 };
+
 // smonta il componente
 proto._unmount = function(content) {
   var self = this;

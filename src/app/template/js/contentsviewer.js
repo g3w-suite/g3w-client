@@ -67,6 +67,7 @@ proto.setContent = function(options) {
   }
   return d.promise();
 };
+
 proto.addContent = function(content,options) {
   var self = this;
   options.parent = this.internalComponent.$el;
@@ -77,10 +78,12 @@ proto.addContent = function(content,options) {
     self.updateContentVisibility();
   })
 };
+
 // rimuove il contenuto dallo stack
 proto.removeContent = function() {
   return this.clearContents();
 };
+
 // usato da viewport.js
 proto.popContent = function() {
   var self = this;
@@ -90,14 +93,21 @@ proto.popContent = function() {
     self.updateContentVisibility();
   });
 };
+
 proto.getCurrentContentData = function(){
   return this.stack.getCurrentContentData();
 };
+
+proto.getPreviousContentData = function() {
+  return this.stack.getPreviousContentData();
+};
+
 proto.updateContentVisibility = function() {
   var contentsEls = $(this.internalComponent.$el).children();
   contentsEls.hide();
   contentsEls.last().show();
 };
+
 // fa il clear dello stack in quanto si vuole che lo stack del contenteComponente
 // deve essere sempre vuoto in partenza
 proto.clearContents = function() {

@@ -46,6 +46,7 @@ var ViewportService = function() {
   // altezza e largezza minima della secondary view
   this._secondaryViewMinWidth = 300;
   this._secondaryViewMinHeight = 200;
+  this._immediateComponentsLayout = true;
   /* INTERFACCIA PUBBLICA */
   // funzione che va ad aggiungere i comnponenti alla viewport
   // funzione di inizialilizzazione
@@ -57,6 +58,41 @@ var ViewportService = function() {
     this.state.split = options.split ? options.split : 'h';
     // aggiunge i componenti ( che sono map e content)
     this._addComponents(options.components);
+  };
+
+  // aggiunge i componenti alla viewport
+  this._addComponents = function(components) {
+    var self = this;
+    // components è un oggetto contente chiave nome componente e valure istanza componente
+    // nel caso attuale
+    /*
+     {
+     map: new MapComponent({
+     id: 'map'
+     }),
+     content: new ContentsComponent({
+     id: 'contents'
+     })
+     }
+     */
+    _.forEach(components, function(component, viewName) {
+      // verifica che i componenti siano map o content
+      if (['map', 'content'].indexOf(viewName) > -1) {
+        // monto (chiamo il metodo mount che tuttti i componeti hanno) componente sull'id specifico del componenti della mappa
+        // map e content
+        component.mount('#g3w-view-'+viewName, true)
+          .then(function() {
+            // una volta che è stato montato aggiungo
+            // all'aray components
+            self._components[viewName] = component;
+            // verifico se il nome della view è la mappa
+            if (viewName == 'map') {
+              // setto il il componete come componente mappa di default
+              self._defaultMapComponent = component;
+            }
+          });
+      }
+    })
   };
   /*
    options: {
@@ -135,11 +171,15 @@ var ViewportService = function() {
     var self = this;
     // verifica se è stato settato l'opzione push
     options.push = options.push || false;
-    // chaimo funzione per settare il content
+    this._prepareContentView(options);
+    this._immediateComponentsLayout = false;
+    this._showView('content', options, true);
     this._components.content.setContent(options)
       .then(function(){
-        var data = self._components.content.getCurrentContentData();
-        self._prepareView(data.options);
+        //var data = self._components.content.getCurrentContentData();
+        //self._prepareView(data.options);
+        self._layoutComponents();
+        self._immediateComponentsLayout = true;
       })
   };
   // funzione che toglie l'ultimo content al contentStack
@@ -149,10 +189,14 @@ var ViewportService = function() {
     if (this.state.content.contentsdata.length) {
       this.recoverDefaultMap();
       // recupero il precedente content dallo stack
+      var data = this._components.content.getPreviousContentData(options);
+      self._prepareContentView(data.options);
+      this._immediateComponentsLayout = false;
+      this._showView('content', options, true);
       this._components.content.popContent()
         .then(function(){
-          var data = self._components.content.getCurrentContentData();
-          self._prepareView(data.options);
+          self._layoutComponents();
+          self._immediateComponentsLayout = true;
         })
     }
   };
@@ -217,52 +261,37 @@ var ViewportService = function() {
       this._layout();
     }
   };
-  // aggiunge i componenti alla viewport
-  this._addComponents = function(components) {
-    var self = this;
-    // components è un oggetto contente chiave nome componente e valure istanza componente
-    // nel caso attuale
-    /*
-     {
-     map: new MapComponent({
-     id: 'map'
-     }),
-     content: new ContentsComponent({
-     id: 'contents'
-     })
-     }
-     */
-    _.forEach(components, function(component, viewName) {
-      // verifica che i componenti siano map o content
-      if (['map', 'content'].indexOf(viewName) > -1) {
-        // monto (chiamo il metodo mount che tuttti i componeti hanno) componente sull'id specifico del componenti della mappa
-        // map e content
-        component.mount('#g3w-view-'+viewName, true)
-          .then(function() {
-            // una volta che è stato montato aggiungo
-            // all'aray components
-            self._components[viewName] = component;
-            // verifico se il nome della view è la mappa
-            if (viewName == 'map') {
-              // setto il il componete come componente mappa di default
-              self._defaultMapComponent = component;
-            }
-          });
-      }
-    })
+
+  //ritorna il valore di default della percentuale della view a sconda del tipo
+  // di content
+  this.getDefaultViewPerc = function(viewName) {
+    return this.isPrimaryView(viewName) ? 100 : 50;
   };
+  // ritorna la vista opposta rispoetto a quella passata
+  this._otherView = function(viewName) {
+    return (viewName == 'map') ? 'content' : 'map';
+  };
+
+  this._isSecondary = function(view) {
+    return this.state.primaryView != view;
+  };
+
+  // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
+  this._setPrimaryView = function(viewTag) {
+    if (this.state.primaryView != viewTag) {
+      this.state.primaryView = viewTag;
+    }
+  };
+
   // setto il content della viewport
-  this._prepareView = function(options) {
+  this._prepareContentView = function(options) {
     this.state.content.preferredPerc = options.perc || this.getDefaultViewPerc('content');
     this.state.content.title = options.title;
     this.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
     this.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
-    // chimao mla funzione showView generica
-    // che ha bisogno di un parametro inizizle per ddecidere il tipo di view (map o content)
-    // e po opzioni
-    this._showView('content', options)
   };
+
   // metodo che si occupa delle gestione di tutta la logica di visualizzazione delle due viste (mappa e contenuti)
   // viewName può essere: map o content
   // le opzione specificano percentuali , splitting tittolo etc ..
@@ -292,82 +321,84 @@ var ViewportService = function() {
       this.closeSecondaryView();
     }
   };
-  //ritorna il valore di default della percentuale della view a sconda del tipo
-  // di content
-  this.getDefaultViewPerc = function(viewName) {
-    return this.isPrimaryView(viewName) ? 100 : 50;
-  };
-  // ritorna la vista opposta rispoetto a quella passata
-  this._otherView = function(viewName) {
-    return (viewName == 'map') ? 'content' : 'map';
-  };
 
-  this._isSecondary = function(view) {
-    return this.state.primaryView != view;
-  };
+  this._getReducedSizes = function(){
+    var contentEl = $('.content');
+    var reducedWidth = 0;
+    var reducedHeight = 0;
+    if (contentEl && this.state.secondaryPerc == 100) {
+      var sideBarToggleEl = $('.sidebar-aside-toggle');
+      if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
+        var toggleWidth = sideBarToggleEl.outerWidth();
+        contentEl.css('padding-left',toggleWidth + 5);
+        reducedWidth = (toggleWidth - 5);
+      }
+    }
+    else {
+      contentEl.css('padding-left',15);
+    }
 
-  // meccanismo per il ricalcolo delle dimensioni della viewport e dei suoi componenti figli
-  this._setPrimaryView = function(viewTag) {
-    if (this.state.primaryView != viewTag) {
-      this.state.primaryView = viewTag;
+    return {
+      reducedWidth: reducedWidth,
+      reducedHeight: reducedHeight
     }
   };
-  // funzione che viene chiamata la prima volta che si instanzia la viewport
-  this._firstLayout = function() {
+
+  // funzione principale che si occupa dell'intero layout della vieport
+  this._layout = function() {
     var self = this;
-    var drawing = false;
-    var resizeFired = false;
-    // funzione che fa il trigger del resize
-    function triggerResize() {
-      resizeFired = true;
-      drawResize();
+    // prende il tipo di split
+    var splitClassToAdd = (this.state.split == 'h') ? 'split-h' : 'split-v';
+    var splitClassToRemove =  (this.state.split == 'h') ? 'split-v' : 'split-c';
+    // vengono aggiunte e rimosse le classi
+    $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
+    $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
+
+    var reducesdSizes = this._getReducedSizes();
+
+    // setta il size delle vista
+    this._setViewSizes(reducesdSizes.reducedWidth,reducesdSizes.reducedHeight);
+
+    var closeMapBtn = $('#closemap-btn');
+    if (!closeMapBtn.length) {
+      var closeMapBtn = $('<div id="closemap-btn" @click="closeMap" style="\
+        position: absolute;\
+        right: 10px;\
+        top: 7px;\
+        line-height: 1;\
+        padding: 7px 2px;\
+        font-size: 1.5em;\
+        background-color: #3c8dbc;\
+        color: white;\
+        z-index:1000;\
+        height: 39px;\
+        width: 39px">\
+          <button class="glyphicon glyphicon-remove pull-right close-panel-button" style="background-color: transparent;border: 0px;"></button>\
+        </div>');
+      closeMapBtn.on('click',function(){
+        self.closeMap();
+      });
+      var mapView = $(".g3w-viewport .map");
+      mapView.append(closeMapBtn);
     }
-    function drawResize() {
-      if (resizeFired === true) {
-        resizeFired = false;
-        drawing = true;
-        self._layout();
-        requestAnimationFrame(drawResize);
-      } else {
-        drawing = false;
+
+    if (this.state.secondaryVisible) {
+      if (this._isSecondary('content') && (this.state.secondaryPerc < this.state.content.preferredPerc)) {
+        closeMapBtn.show()
+      }
+      else {
+        closeMapBtn.hide();
       }
     }
-    // una volta che la GUI è pronta
-    GUI.on('ready',function(){
-      // prendo al primary view (verosimilmente 'map')
-      var primaryView = self.state.primaryView;
-      // secondary view 'content' di solito
-      var secondaryView = self._otherView(primaryView);
-      // seleziono l'elemento secondario con JQuery
-      var secondaryEl = $(".g3w-viewport ."+secondaryView);
-      // prendo (se esiste il valore css della seconday view min-width)
-      var secondaryViewMinWidth = secondaryEl.css('min-width');
-      if ((secondaryViewMinWidth != "") && !_.isNaN(parseFloat(secondaryViewMinWidth))) {
-        self._secondaryViewMinWidth =  parseFloat(secondaryViewMinWidth);
-      }
-      var secondaryViewMinHeight = secondaryEl.css('min-height');
-      if ((secondaryViewMinHeight != "") && !_.isNaN(parseFloat(secondaryViewMinHeight))) {
-        self._secondaryViewMinHeight =  parseFloat(secondaryViewMinHeight);
-      }
-      self._layout();
-      // resize scatenato da GUI
-      GUI.on('guiresized',function() {
-        triggerResize();
-      });
-      // resize della window
-      $(window).resize(function() {
-        // set resizedFired to true and execute drawResize if it's not already running
-        if (drawing === false) {
-          triggerResize();
-        }
-      });
-      // resize sul ridimensionamento della sidebar
-      $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
-        $(this).trigger('trans-end');
-        triggerResize();
-      });
-    });
+    else {
+      closeMapBtn.hide();
+    }
+
+    if (this._immediateComponentsLayout) {
+      this._layoutComponents();
+    }
   };
+
   // funzione che setta i size delle view (primaria e secondari)
   this._setViewSizes = function() {
     // view primaria e secondaria
@@ -414,77 +445,13 @@ var ViewportService = function() {
     var sideBarSpace = width + offset;
     return $(window).innerWidth() - sideBarSpace;
   };
-  // funzione principale che si occupa dell'intero layout della vieport
-  this._layout = function() {
-    var self = this;
-    // prende il tipo di split
-    var splitClassToAdd = (this.state.split == 'h') ? 'split-h' : 'split-v';
-    var splitClassToRemove =  (this.state.split == 'h') ? 'split-v' : 'split-c';
-    // vengono aggiunte e rimosse le classi
-    $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
-    $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
 
-    var contentEl = $('.content');
-    var reducedWidth = 0;
-    if (contentEl && this.state.secondaryPerc == 100) {
-      var sideBarToggleEl = $('.sidebar-aside-toggle');
-      if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
-        var toggleWidth = sideBarToggleEl.outerWidth();
-        contentEl.css('padding-left',toggleWidth + 5);
-        reducedWidth = (toggleWidth - 5);
-      }
-    }
-    else {
-      contentEl.css('padding-left',15);
-    }
-
-    // setta il size delle vista
-    this._setViewSizes(reducedWidth);
-
-    var closeMapBtn = $('#closemap-btn');
-    if (!closeMapBtn.length) {
-      var closeMapBtn = $('<div id="closemap-btn" @click="closeMap" style="\
-        position: absolute;\
-        right: 10px;\
-        top: 7px;\
-        line-height: 1;\
-        padding: 7px 2px;\
-        font-size: 1.5em;\
-        background-color: #3c8dbc;\
-        color: white;\
-        z-index:1000;\
-        height: 39px;\
-        width: 39px">\
-          <button class="glyphicon glyphicon-remove pull-right close-panel-button" style="background-color: transparent;border: 0px;"></button>\
-        </div>');
-      closeMapBtn.on('click',function(){
-        self.closeMap();
-      });
-      var mapView = $(".g3w-viewport .map");
-      mapView.append(closeMapBtn);
-    }
-
-    if (this.state.secondaryVisible) {
-      if (this._isSecondary('content') && (this.state.secondaryPerc < this.state.content.preferredPerc)) {
-        closeMapBtn.show()
-      }
-      else {
-        closeMapBtn.hide();
-      }
-    }
-    else {
-      closeMapBtn.hide();
-    }
-
-
-    // carica il layout dei componenti
-    this._layoutComponents(reducedWidth,null);
-  };
   // funzione che va a caricare i componenti
   // solo dopo che le size delle view sono state corrette
-  this._layoutComponents = function(reducedWidth,reducedHeight) {
-    reducedWidth = reducedWidth || 0;
-    reducedHeight = reducedHeight || 0;
+  this._layoutComponents = function() {
+    var reducesdSizes = this._getReducedSizes();
+    reducedWidth = reducesdSizes.reducedWidth || 0;
+    reducedHeight = reducesdSizes.reducedHeight || 0;
     var self = this;
     _.forEach(this._components, function(component, name) {
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
@@ -495,6 +462,63 @@ var ViewportService = function() {
       // Usato per esempio dalla mappa per reagire al resize della viewport
       component.layout(width, height);
     })
+  };
+
+  // funzione che viene chiamata la prima volta che si instanzia la viewport
+  this._firstLayout = function() {
+    var self = this;
+    var drawing = false;
+    var resizeFired = false;
+    // funzione che fa il trigger del resize
+    function triggerResize() {
+      resizeFired = true;
+      drawResize();
+    }
+    function drawResize() {
+      if (resizeFired === true) {
+        resizeFired = false;
+        drawing = true;
+        self._layout(true);
+        requestAnimationFrame(drawResize);
+      } else {
+        drawing = false;
+      }
+    }
+    // una volta che la GUI è pronta
+    GUI.on('ready',function(){
+      // prendo al primary view (verosimilmente 'map')
+      var primaryView = self.state.primaryView;
+      // secondary view 'content' di solito
+      var secondaryView = self._otherView(primaryView);
+      // seleziono l'elemento secondario con JQuery
+      var secondaryEl = $(".g3w-viewport ."+secondaryView);
+      // prendo (se esiste il valore css della seconday view min-width)
+      var secondaryViewMinWidth = secondaryEl.css('min-width');
+      if ((secondaryViewMinWidth != "") && !_.isNaN(parseFloat(secondaryViewMinWidth))) {
+        self._secondaryViewMinWidth =  parseFloat(secondaryViewMinWidth);
+      }
+      var secondaryViewMinHeight = secondaryEl.css('min-height');
+      if ((secondaryViewMinHeight != "") && !_.isNaN(parseFloat(secondaryViewMinHeight))) {
+        self._secondaryViewMinHeight =  parseFloat(secondaryViewMinHeight);
+      }
+      self._layout(true);
+      // resize scatenato da GUI
+      GUI.on('guiresized',function() {
+        triggerResize();
+      });
+      // resize della window
+      $(window).resize(function() {
+        // set resizedFired to true and execute drawResize if it's not already running
+        if (drawing === false) {
+          triggerResize();
+        }
+      });
+      // resize sul ridimensionamento della sidebar
+      $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function () {
+        $(this).trigger('trans-end');
+        triggerResize();
+      });
+    });
   };
   this._firstLayout();
   base(this);
