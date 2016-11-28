@@ -271,8 +271,9 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       var where = options.where || 'prepend'; // append | prepend
       var style = options.style || '';
       var transparent = options.transparent ? 'background-color: transparent' : '';
+      var center = options.center ? 'margin: auto' : '';
       if (!$("#"+id).length) {
-        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'"></div></div>');
+        $(container)[where].call($(container),'<div id="'+id+'" class="spinner-wrapper '+style+'" style="'+transparent+'"><div class="spinner '+style+'" style="'+ center+'"></div></div>');
       }
     };
     //fa sparire lo spinner di caricamento
