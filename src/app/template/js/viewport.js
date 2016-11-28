@@ -189,10 +189,10 @@ var ViewportService = function() {
     if (this.state.content.contentsdata.length) {
       this.recoverDefaultMap();
       // recupero il precedente content dallo stack
-      var data = this._components.content.getPreviousContentData(options);
+      var data = this._components.content.getPreviousContentData();
       self._prepareContentView(data.options);
       this._immediateComponentsLayout = false;
-      this._showView('content', options, true);
+      this._showView('content');
       this._components.content.popContent()
         .then(function(){
           self._layoutComponents();
@@ -208,7 +208,7 @@ var ViewportService = function() {
     if (this.state.content.backonclose && this.state.content.contentsdata.length > 1) {
       this.popContent();
     } else {
-      this._components.content.removeContent()
+      this._components.content.removeContent();
       //fa il recover della mappa di default
       this.recoverDefaultMap();
       // chido la View secondaria
