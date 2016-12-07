@@ -70,7 +70,7 @@ function createTemplateConfig() {
       },
       sidebar: {
         components: [
-          new SearchComponent({
+          new PrintComponent({
             id: 'print',
             open: false,
             icon: "fa fa-print"
@@ -82,12 +82,12 @@ function createTemplateConfig() {
           }),
           new CatalogComponent({
             id: 'catalog',
-            open: true,
+            //open: false,
             icon: "fa fa-database"
           }),
           new ToolsComponent({
             id: 'tools',
-            open: false,
+            open: true,
             icon: "fa fa-gear"
           })
         ]

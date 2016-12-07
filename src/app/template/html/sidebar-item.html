@@ -1,5 +1,5 @@
 <li v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}">
-  <a href="#">
+  <a @click="onClickItem" href="#">
     <i :class="icon"></i>
     <span class="treeview-label">{{title | t}}</span>
     <i class="fa fa-angle-left pull-right"></i>

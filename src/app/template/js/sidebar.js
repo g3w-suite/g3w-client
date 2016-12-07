@@ -18,6 +18,27 @@ var SidebarItem = Vue.extend({
         open: true,
         state: null
       };
+  },
+  methods: {
+    onClickItem: function() {
+      var self = this;
+      var sidebarService = this.$options.service;
+      if (!_.isNil(this.open)) {
+        this.component.state.open = !this.component.state.open;
+        _.forEach(sidebarService.state.components, function(component) {
+          var componentService = component.getService();
+          if (componentService && (_.has(componentService, 'showContex'))) {
+            if (component !== self.component) {
+              componentService.showContex(false);
+              component.state.open = false;
+            }
+            if (component == self.component) {
+              componentService.showContex(component.state.open);
+            }
+          }
+        })
+      }
+    }
   }
 });
 // service sidebar
@@ -29,6 +50,8 @@ function SidebarService() {
   this.setters = {
     closeSidebarPanel: function()  {
       //hook function
+    },
+    openCloseItem: function(bool) {
     }
   };
   //stato del servizio
@@ -58,12 +81,15 @@ function SidebarService() {
     //faccio montare il sidebar-item che contiene al suo interno il placeholder del componente vero e proprio
     //in questo modo il componente non si dovrà occupare di costruire anche l'elemento li della sidebar
     //ma conterrà solo il contenuto
-    var sidebarItem = new SidebarItem();
+    var sidebarItem = new SidebarItem({
+      service: this
+    });
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.title = component.title || sidebarItem.title;
-    sidebarItem.open = (component.open === undefined) ? sidebarItem.open : component.open;
+    sidebarItem.open = component.open;//(component.open === undefined) ? sidebarItem.open : component.open;
     sidebarItem.icon = component.icon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
+    sidebarItem.component = component;
     //lo appendo al g3w-sidebarcomponents (template sidebar.html)
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');
     //monto il componete nella g3w-sidebarcomponent-placeholder (template sidebar-item.html);
@@ -92,6 +118,7 @@ function SidebarService() {
     this.closeSidebarPanel();
     var panel = this.stack.pop();
   };
+
   base(this);
 }
 
@@ -142,7 +169,8 @@ var SidebarComponent = Vue.extend({
         return isMobile.any
       }
     },
-    ready: function(){
+    ready: function() {
+
     }
 });
 
