@@ -54,6 +54,7 @@ function createTemplateConfig() {
   // recupero i componenti
   var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
   var SearchComponent = require('sdk').gui.vue.SearchComponent;
+  var PrintComponent = require('sdk').gui.vue.PrintComponent;
   var ToolsComponent = require('sdk').gui.vue.ToolsComponent;
   var MapComponent = require('sdk').gui.vue.MapComponent;
   var ContentsComponent = require('./template/js/contentsviewer');
@@ -69,6 +70,11 @@ function createTemplateConfig() {
       },
       sidebar: {
         components: [
+          new SearchComponent({
+            id: 'print',
+            open: false,
+            icon: "fa fa-print"
+          }),
           new SearchComponent({
             id: 'search',
             open: false,
