@@ -215,6 +215,7 @@ var ViewportService = function() {
       this.closeSecondaryView();
     }
   };
+
   // risposte se è view primaria
   this.isPrimaryView = function(viewName) {
     return this.state.primaryView == viewName;
@@ -337,7 +338,6 @@ var ViewportService = function() {
     else {
       contentEl.css('padding-left',15);
     }
-
     return {
       reducedWidth: reducedWidth,
       reducedHeight: reducedHeight
@@ -455,7 +455,7 @@ var ViewportService = function() {
     var self = this;
     _.forEach(this._components, function(component, name) {
       // viene chiamato il metodo per il ricacolo delle dimensioni nei componenti figli
-      var width = self.state[name].sizes.width - reducedWidth;
+      var width = self.state[name].sizes.width - reducedWidth ;
       var height = self.state[name].sizes.height - reducedHeight;
       // ogni componente (mappa e contenuto) qui
       // ha l'opportunità di ricalcolare il proprio il layout.
