@@ -222,8 +222,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       GUI.setContent({
         content: formComponent,
         push: false, //significa che ci deve essere solo lui( cancellando eventuali precedenti form)
-        closable: false,
-        perc: 100
+        closable: false
       });
       //ritorno il formService
       return formService;
@@ -364,6 +363,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       options.perc = options.perc || 0;
       options.split = options.split || 'h';
       options.backonclose = options.backonclose || false;
+      options.showtitle = options.showtitle || true;
       // chiamo il metodo showContent del servizio
       // viewport per poter visualizzare il content
       viewport.ViewportService.showContent(options);
