@@ -233,9 +233,12 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       // forzo a far si che il modale venga tolto
       GUI.setModal(false);
     };
+
     // funzione per la visuzlizzazione dei risultati
     GUI.showQueryResults = function(title, results) {
+      // prendo il componente
       var queryResultsComponent = GUI.getComponent('queryresults');
+      // prendo il servizio del componente
       var queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
       if (results) {

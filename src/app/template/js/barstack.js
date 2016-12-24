@@ -2,6 +2,7 @@ var utils = require('sdk/core/utils/utils');
 var inherit = require('sdk/core/utils/utils').inherit;
 var G3WObject = require('sdk/core/g3wobject');
 var Component = require('gui/vue/component');
+var Panel = require('gui/panel');
 
 //classe barstack
 // essa server per poter montare stack di pannelli
@@ -159,7 +160,7 @@ proto._checkDuplicateVueContent = function(content) {
 proto._unmount = function(content) {
   var self = this;
   var d = $.Deferred();
-  if(content instanceof Component) {
+  if (content instanceof Component || content instanceof Panel) {
     content.unmount()
     .then(function(){
       d.resolve();
