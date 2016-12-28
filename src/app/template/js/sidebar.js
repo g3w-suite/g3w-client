@@ -27,6 +27,7 @@ var SidebarItem = Vue.extend({
         this.component.state.open = !this.component.state.open;
         _.forEach(sidebarService.state.components, function(component) {
           var componentService = component.getService();
+          // verifico che se il componente ha la funzione showContext
           if (componentService && (_.has(componentService, 'showContex'))) {
             if (component !== self.component) {
               componentService.showContex(false);

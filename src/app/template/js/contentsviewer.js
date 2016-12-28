@@ -113,7 +113,7 @@ proto.updateContentVisibility = function() {
 proto.clearContents = function() {
   var self = this;
   return this.stack.clear()
-  .then(function(){
+  .then(function() {
     self.contentsdata = self.stack.state.contentsdata;
   })
 };

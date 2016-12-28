@@ -371,6 +371,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       // viewport per poter visualizzare il content
       viewport.ViewportService.showContent(options);
     };
+
     /* FINE VIEWPORT */
     /* fine metodi specifici */
     /* FINE DEFINIZIONE INTERFACCIA PUBBLICA */
