@@ -55,7 +55,8 @@ proto.clear = function() {
       unmountRequests.push(self._unmount(data.content));
     });
     $.when(unmountRequests).then(function () {
-      self.state.contentsdata = [];
+      //self.state.contentsdata = [];
+      self.state.contentsdata.splice(0,self.state.contentsdata.length);
       d.resolve();
     });
   }

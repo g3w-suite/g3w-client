@@ -171,9 +171,6 @@ var ViewportService = function() {
     var self = this;
     // verifica se è stato settato l'opzione push
     options.push = options.push || false;
-    if (!options.push) {
-      this.removeContent();
-    }
     this._prepareContentView(options);
     this._immediateComponentsLayout = false;
     this._showView('content', options, true);
