@@ -82,12 +82,12 @@ function createTemplateConfig() {
           }),
           new CatalogComponent({
             id: 'catalog',
-            //open: false,
+            open: false,
             icon: "fa fa-database"
           }),
           new ToolsComponent({
             id: 'tools',
-            open: true,
+            open: false,
             icon: "fa fa-gear"
           })
         ]

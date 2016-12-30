@@ -14,8 +14,8 @@ var SidebarItem = Vue.extend({
         component: null,
         active: false,
         title: 'component',
+        open: false,
         icon: null,
-        open: true,
         state: null
       };
   },
@@ -23,25 +23,17 @@ var SidebarItem = Vue.extend({
     onClickItem: function() {
       var self = this;
       var sidebarService = this.$options.service;
-      if (!_.isNil(this.open)) {
-        this.component.state.open = !this.component.state.open;
-        _.forEach(sidebarService.state.components, function(component) {
-          var componentService = component.getService();
-          // verifico che se il componente ha la funzione showContext
-          if (componentService && (_.has(componentService, 'showContex'))) {
-            if (component !== self.component) {
-              componentService.showContex(false);
-              component.state.open = false;
-            }
-            if (component == self.component) {
-              componentService.showContex(component.state.open);
-            }
-          }
-        })
-      }
+      this.component.setOpen(!this.component.state.open);
+      // setto lo stato del componente open
+      _.forEach(sidebarService.state.components, function (component) {
+        if (component != self.component) {
+          component.setOpen(false);
+        }
+      })
     }
   }
 });
+
 // service sidebar
 function SidebarService() {
   //stack della sidebar
@@ -87,7 +79,7 @@ function SidebarService() {
     });
     //setto le parti della sidebar-item che cambiano da componente a componente (da rivedere)
     sidebarItem.title = component.title || sidebarItem.title;
-    sidebarItem.open = component.open;//(component.open === undefined) ? sidebarItem.open : component.open;
+    sidebarItem.open = component.state.open;//(component.open === undefined) ? sidebarItem.open : component.open;
     sidebarItem.icon = component.icon || sidebarItem.icon;
     sidebarItem.state = component.state || true;
     sidebarItem.component = component;
@@ -95,9 +87,9 @@ function SidebarService() {
     sidebarItem.$mount().$appendTo('#g3w-sidebarcomponents');
     //monto il componete nella g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
-    // verifico che il componete abbai l'iniService come metodo
+    // verifico che il componete abbia l'iniService come metodo
     if (_.has(component, 'initService')) {
-      //se si lo chiamo
+      //se si lo chiamo inizializzazione del servizo
       component.initService();
     }
     return true;

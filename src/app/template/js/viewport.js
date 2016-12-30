@@ -328,7 +328,7 @@ var ViewportService = function() {
     var contentEl = $('.content');
     var reducedWidth = 0;
     var reducedHeight = 0;
-    if (contentEl && this.state.secondaryPerc == 100) {
+    if (contentEl && this.state.secondaryVisible && this.state.secondaryPerc == 100) {
       var sideBarToggleEl = $('.sidebar-aside-toggle');
       if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
         var toggleWidth = sideBarToggleEl.outerWidth();
