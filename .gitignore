@@ -9,6 +9,7 @@
 .idea
 *~
 /documento.odt
+src/app/template/
 src/app/js/
 src/libs/plugins/
 src/libs/modules/
