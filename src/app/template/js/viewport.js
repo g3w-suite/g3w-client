@@ -27,11 +27,10 @@ var ViewportService = function() {
         height: 0
       },
       aside: true,
-      // array contentente gli elementi nello stack del contents
-      stack: [],
-      closable: true,
-      backonclose: false,
-      contentsdata:[]
+      stack: [], // array contentente gli elementi nello stack del contents
+      closable: true, // specifica se chiudibile o meno (presenza della x)
+      backonclose: false, // se al click della x deve essere chiso il contenuto tutto o toglierer l'ultomo contenuto dalla stack
+      contentsdata:[] // array contenete i dati del content
     }
   };
   // sono i contentuti della viewport (mappa e content)
@@ -44,17 +43,21 @@ var ViewportService = function() {
   this._contextualMapComponent;
 
   // altezza e largezza minima della secondary view
+  // imposte per evitare che la secondaryView (principalmente il content) possa diventare
+  // molto piccola (esempio impostando un perc = 1) e quindi rendere illeggibile
+  // il contenuto
   this._secondaryViewMinWidth = 300;
   this._secondaryViewMinHeight = 200;
+  // attributo che serve per
   this._immediateComponentsLayout = true;
   /* INTERFACCIA PUBBLICA */
   // funzione che va ad aggiungere i comnponenti alla viewport
   // funzione di inizialilizzazione
   this.init = function(options) {
     var options = options || {};
-    // verifica se è stata settata la primary view alrimenti mette la mappa di default
+    // verifica se è stata settata/specificata la primary view altrimenti mette la mappa di default
     this.state.primaryView = options.primaryview ? options.primaryview : 'map';
-    // verifica se è stato settato la modalità di splitting
+    // verifica se è stato settato la modalità di splitting altrimenti mette quello orizzontale
     this.state.split = options.split ? options.split : 'h';
     // aggiunge i componenti ( che sono map e content)
     this._addComponents(options.components);
@@ -64,15 +67,15 @@ var ViewportService = function() {
   this._addComponents = function(components) {
     var self = this;
     // components è un oggetto contente chiave nome componente e valure istanza componente
-    // nel caso attuale
+    // nel caso attuale (vedi index.js)
     /*
      {
-     map: new MapComponent({
-     id: 'map'
-     }),
-     content: new ContentsComponent({
-     id: 'contents'
-     })
+      map: new MapComponent({
+        id: 'map'
+      }),
+      content: new ContentsComponent({
+        id: 'contents'
+      })
      }
      */
     _.forEach(components, function(component, viewName) {
@@ -80,10 +83,11 @@ var ViewportService = function() {
       if (['map', 'content'].indexOf(viewName) > -1) {
         // monto (chiamo il metodo mount che tuttti i componeti hanno) componente sull'id specifico del componenti della mappa
         // map e content
+        // monto con append a true
         component.mount('#g3w-view-'+viewName, true)
           .then(function() {
             // una volta che è stato montato aggiungo
-            // all'aray components
+            // all'array components
             self._components[viewName] = component;
             // verifico se il nome della view è la mappa
             if (viewName == 'map') {
@@ -94,21 +98,15 @@ var ViewportService = function() {
       }
     })
   };
-  /*
-   options: {
-   content: può essere una stringa di testa, un elemento jQuery o un componente Vue
-   title: il title da mostrare nella finestra dei contenuti
-   push (opzionale, default false): se il contenuto deve essere impilato sul precedente (con possibilità di tornare indietro nello stack dei contenuti (contentStack)
-   split (opzionale, default 'h'): 'h' || 'v' splittare le finestre orizzontalmente o verticalmente. per ora testato solo orizzontalmente
-   perc (opzionale, default 50): valore numerico, indica la percentuale delle finestra dei contenuti (es. 33 -> 2/3 saranno di mappa e 1/3 di contenuti)
-   }
-   */
+
+
   // funzione showMap per la visulizzazione della mappa
   this.showMap = function() {
     this._toggleMapComponentVisibility(this._defaultMapComponent,true);
     this._components['map'] = this._defaultMapComponent;
     this._showView('map');
   };
+
   this.showContextualMap = function(options) {
     var self = this;
     if (!this._contextualMapComponent) {
@@ -130,6 +128,7 @@ var ViewportService = function() {
     }
     this._showView('map',options);
   };
+
   // funzione che recupera il componente mappa di default
   this.recoverDefaultMap = function() {
     // se il componente mappa è diversa dal componente mappa di default
@@ -139,6 +138,7 @@ var ViewportService = function() {
       this._toggleMapComponentVisibility(this._defaultMapComponent,true);
     }
   };
+
   this.setContextualMapComponent = function(mapComponent) {
     var self = this;
     if (mapComponent == this._defaultMapComponent) {
@@ -160,24 +160,38 @@ var ViewportService = function() {
   this._toggleMapComponentVisibility = function(mapComponent,toggle) {
     mapComponent.internalComponent.$el.style.display = toggle ? 'block' : 'none';
   };
+
   // chiude la mappa
   this.closeMap = function() {
     this.state.secondaryPerc = (this.state.primaryView == 'map') ? 100 : 0;
     this.recoverDefaultMap();
     this._layout();
   };
+
   // visualizza il contentuto della content della viewport
+  /*
+   options: {
+     content: può essere una stringa di testo, un elemento jQuery o un componente Vue
+     title: il title da mostrare nella finestra dei contenuti
+     push (opzionale, default false): se il contenuto deve essere impilato sul precedente (con possibilità di tornare indietro nello stack dei contenuti (contentStack)
+     split (opzionale, default 'h'): 'h' || 'v' splittare le finestre orizzontalmente o verticalmente. per ora testato solo orizzontalmente
+     perc (opzionale, default 50): valore numerico, indica la percentuale delle finestra dei contenuti (es. 33 -> 2/3 saranno di mappa e 1/3 di contenuti)
+   }
+   */
+  // funzione che è chiamata da GUI.setContent per visualizzare conentuto all'interno del content component
   this.showContent = function(options) {
     var self = this;
     // verifica se è stato settato l'opzione push
     options.push = options.push || false;
+    // vado a settare tutti i parametri per il content come la parcentuale, titolo, etc ..
     this._prepareContentView(options);
+    // setto immediateComponentsLayout a false
     this._immediateComponentsLayout = false;
     this._showView('content', options, true);
+    // chiamo la funzione setContent del componente componentsViewer
     this._components.content.setContent(options)
-      .then(function(){
-        //var data = self._components.content.getCurrentContentData();
-        //self._prepareView(data.options);
+      .then(function() {
+        // rivado a settare t
         self._layoutComponents();
         self._immediateComponentsLayout = true;
       })
@@ -201,6 +215,7 @@ var ViewportService = function() {
         })
     }
   };
+
   // funzione che rimuove il cont dalla viewport
   this.removeContent = function() {
     // verifico che l'attributo backonclose sia true o false
@@ -221,6 +236,7 @@ var ViewportService = function() {
   this.isPrimaryView = function(viewName) {
     return this.state.primaryView == viewName;
   };
+
   // metodo per definire qual'è la vista primaria
   this.setPrimaryView = function(viewTag) {
     if (this.state.primaryView != viewTag) {
@@ -228,6 +244,7 @@ var ViewportService = function() {
     }
     this._layout();
   };
+
   // visualizza la primary view a seconda della percentuale passata come argomento
   this.showPrimaryView = function(perc) {
     if (perc && this.state.secondaryVisible && this.state.secondaryPerc == 100) {
@@ -235,6 +252,7 @@ var ViewportService = function() {
       this._layout();
     }
   };
+
   // metodo per la visualizzazione della vista secondaria
   // nella maggior parte dei casi è il content
   this.showSecondaryView = function(split, perc) {
@@ -245,7 +263,8 @@ var ViewportService = function() {
     // richiamo la funzione layout
     this._layout();
   };
-  // chido la view secondaria
+
+  // chiudo la view secondaria
   this.closeSecondaryView = function(componentId) {
     var self = this;
     var secondaryViewComponent = this._components[this._otherView(this.state.primaryView)];
@@ -269,6 +288,7 @@ var ViewportService = function() {
   this.getDefaultViewPerc = function(viewName) {
     return this.isPrimaryView(viewName) ? 100 : 50;
   };
+
   // ritorna la vista opposta rispoetto a quella passata
   this._otherView = function(viewName) {
     return (viewName == 'map') ? 'content' : 'map';
@@ -285,7 +305,7 @@ var ViewportService = function() {
     }
   };
 
-  // setto il content della viewport
+  // setto gli attributi del content della viewport
   this._prepareContentView = function(options) {
     this.state.content.preferredPerc = options.perc || this.getDefaultViewPerc('content');
     this.state.content.title = options.title;
@@ -324,6 +344,9 @@ var ViewportService = function() {
     }
   };
 
+  // funzione che restituisce le misure in alterzza e larghezza per cui
+  // il contentuo deve essere spostato per evitare che venga messo sotto
+  //sidebar-aside-toggle nel caso di un content al 100% a tutta viewport
   this._getReducedSizes = function(){
     var contentEl = $('.content');
     var reducedWidth = 0;
@@ -354,12 +377,10 @@ var ViewportService = function() {
     // vengono aggiunte e rimosse le classi
     $(".g3w-viewport .g3w-view").addClass(splitClassToAdd);
     $(".g3w-viewport .g3w-view").removeClass(splitClassToRemove);
-
     var reducesdSizes = this._getReducedSizes();
-
     // setta il size delle vista
     this._setViewSizes(reducesdSizes.reducedWidth,reducesdSizes.reducedHeight);
-
+    // cloaseMap button
     var closeMapBtn = $('#closemap-btn');
     if (!closeMapBtn.length) {
       var closeMapBtn = $('<div id="closemap-btn" @click="closeMap" style="\
@@ -404,7 +425,7 @@ var ViewportService = function() {
   this._setViewSizes = function() {
     // view primaria e secondaria
     var primaryView = this.state.primaryView;
-    // recupera la seconda View che è non è la primary
+    // recupera la seconda View che è non è la primary (verosimilmente 'content')
     var secondaryView = this._otherView(primaryView);
     // altezza e larghezza della viewport
     var viewportWidth = this._viewportWidth();
@@ -427,27 +448,33 @@ var ViewportService = function() {
       primaryWidth = viewportWidth;
       primaryHeight = viewportHeight - secondaryHeight;
     }
-    // riassegno le giuste proporzione in sie height e width alla primary e secondary view
+    // riassegno le giuste proporzione in sia height e width alla primary e secondary view
+    // primary ViewSizes
     this.state[primaryView].sizes.width = primaryWidth;
     this.state[primaryView].sizes.height = primaryHeight;
-
+    // secondaryViewSizes
     this.state[secondaryView].sizes.width = secondaryWidth;
     this.state[secondaryView].sizes.height = secondaryHeight;
   };
 
+  // funzione che restituisce l'altezza che deve avere la viewPort
   this._viewportHeight = function() {
     var topHeight = $(".navbar").innerHeight();
     return $(window).innerHeight() - topHeight;
   };
+
   // funzione che restituisce la larghezza della view
   this._viewportWidth = function() {
+    // prendo la posizione della posizione a sinistra
+    // della sidebar
     var offset = $(".main-sidebar").offset().left;
     var width = $(".main-sidebar").innerWidth();
     var sideBarSpace = width + offset;
+    // resituisco la larghezza riservata alla viewport
     return $(window).innerWidth() - sideBarSpace;
   };
 
-  // funzione che va a caricare i componenti
+  // funzione che va a caricare i componenti (della viewport)
   // solo dopo che le size delle view sono state corrette
   this._layoutComponents = function() {
     var reducesdSizes = this._getReducedSizes();
@@ -465,27 +492,36 @@ var ViewportService = function() {
     })
   };
 
-  // funzione che viene chiamata la prima volta che si instanzia la viewport
+  // funzione che viene chiamata la prima volta che
+  // si instanzia la viewport
   this._firstLayout = function() {
     var self = this;
     var drawing = false;
     var resizeFired = false;
+
     // funzione che fa il trigger del resize
     function triggerResize() {
       resizeFired = true;
       drawResize();
     }
+
     function drawResize() {
       if (resizeFired === true) {
         resizeFired = false;
         drawing = true;
+        // chiama la funzione che si occupa ti settare
+        // il layout della viewport
         self._layout(true);
+        //funzione javascript nativa del browser (html5) che serve
+        // per il Controllo temporizzazione per animazioni basate su script
         requestAnimationFrame(drawResize);
       } else {
         drawing = false;
       }
     }
-    // una volta che la GUI è pronta
+    // registra la funzione che deve essere lanciata una volta che
+    // la GUI e pronta (si ha quando è stato chiamato il metodo _buildTemplate di template.js)
+    // che non fa altro che aggiungere alle varie parti dell'applicazione
     GUI.on('ready',function(){
       // prendo al primary view (verosimilmente 'map')
       var primaryView = self.state.primaryView;
@@ -524,9 +560,10 @@ var ViewportService = function() {
   this._firstLayout();
   base(this);
 };
-
+// eredita da G3WOBJECT
 inherit(ViewportService, G3WObject);
 
+//singleton
 var viewportService = new ViewportService;
 
 // COMPONENTE VUE VIEWPORT
@@ -538,8 +575,10 @@ var ViewportComponent = Vue.extend({
     }
   },
   computed: {
+    // proprietà derivata (booleana) che è legata al contentsdata dell'oggetto content
     showtitle: function() {
       var showtitle = true;
+      // prende l'array di componenti dello stack del content
       var contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
         var options = contentsData[contentsData.length - 1].options;

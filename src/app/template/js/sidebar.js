@@ -134,7 +134,7 @@ var SidebarComponent = Vue.extend({
     computed: {
       // quanti pannelli sono attivi nello stack
       panelsinstack: function(){
-        return this.panels.length>0;
+        return this.panels.length > 0;
       },
       showmainpanel: function(){
         return this.components.length>0 && !this.panelsinstack;

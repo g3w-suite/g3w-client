@@ -42,7 +42,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
       return t(value);
     });
     // Inizializzo i componenti vue dell'applicazione
-    // preima che venga istanziato l'oggetto vue padre
+    // prima che venga istanziato l'oggetto vue padre
     Vue.component('sidebar', sidebar.SidebarComponent);
     Vue.component('viewport', viewport.ViewportComponent);
     Vue.component('floatbar', floatbar.FloatbarComponent);
@@ -83,7 +83,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     this._addOtherComponents();
     // setto la viewport passadogli la configurazione del viewport dell'applicazione
     this._setViewport(this.templateConfig.viewport);
-    // emmto l'vento ready
+    // emetto l'evento ready
     this.emit('ready');
     GUI.ready();
   };
@@ -99,18 +99,18 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   // metodo per il setting della vieport
   this._setViewport = function(viewportOptions) {
     // sono passati i componenti della viewport
-    // es.:
+    // es.: map e content
     /*
-     {
-     components: {
-     map: new MapComponent({
-     id: 'map'
-     }),
-     content: new ContentsComponent({
-     id: 'content',
-     })
+
+    components: {
+      map: new MapComponent({
+        id: 'map'
+      }),
+      content: new ContentsComponent({
+        id: 'content',
+      })
      }
-     }
+
      */
     if (viewportOptions) {
       // inizializzo il service della viewport
@@ -123,11 +123,14 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
   this._addComponent = function(component, placeholder) {
     this._addComponents([component], placeholder);
   };
-  // aggiunge componenti al template
+  // aggiunge componenti al template e registra con componentregistry
   this._addComponents = function(components, placeholder) {
     var register = true;
     // qui entro solo e soltanto se è stato passato un placeholder e che questo
     // sia tra i componeti dei placeholders previsti
+    // ad esempio nel caso della vieport (setViewport) non viene passato nessun placeholder
+    // e quindi non viene chiamato addComponet del servizio viewport in quanto è
+    // chaitao quando viene inizializzazto (chiamato init) del servizio
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
       // recupero il service del placeholder associato (sidebar, navbar etc..)
       var placeholderService = ApplicationTemplate.Services[placeholder];
@@ -330,7 +333,7 @@ var ApplicationTemplate = function(templateConfig, ApplicationService) {
     };
     // Mostra il contenuto. Il contenuto può essere una string HTML,
     // un elemento DOM o un componente Vue. Percentuale di default 50%
-    GUI.showContextualContent = function(options){
+    GUI.showContextualContent = function(options) {
       options =  options || {};
       options.perc = options.perc || 50;
       GUI.setContent(options)

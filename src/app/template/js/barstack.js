@@ -5,7 +5,7 @@ var Component = require('gui/vue/component');
 var Panel = require('gui/panel');
 
 //classe barstack
-// essa server per poter montare stack di pannelli
+// Ha lo scopo di montare stack di pannelli
 // sopra ogni parte del parent in questione
 function BarStack() {
   this._parent = null;
@@ -15,6 +15,7 @@ function BarStack() {
   }
 }
 
+//eredita dall'oggetto G3WOBJECT
 inherit(BarStack, G3WObject);
 
 var proto = BarStack.prototype;
@@ -129,6 +130,9 @@ proto._setVueContent = function(content, options) {
   content.mount(this._parent, append)
   .then(function(){
     $(parent).localize();
+    // inserisco nell'array del content data un oggetto avente attributi:
+    // content: oggetto component
+    // options: oprizioni riguardanti title, perc etc ...
     self.state.contentsdata.push({
       content: content,
       options: options
