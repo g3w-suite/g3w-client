@@ -73,21 +73,25 @@ function createTemplateConfig() {
           new PrintComponent({
             id: 'print',
             open: false,
+            collapsable: true,
             icon: "fa fa-print"
           }),
           new SearchComponent({
             id: 'search',
             open: false,
+            collapsable: true,
             icon: "fa fa-search"
           }),
           new CatalogComponent({
             id: 'catalog',
             open: false,
+            collapsable: false,
             icon: "fa fa-database"
           }),
           new ToolsComponent({
             id: 'tools',
             open: false,
+            collapsable: true,
             icon: "fa fa-gear"
           })
         ]
