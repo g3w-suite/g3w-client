@@ -73,7 +73,7 @@ function createTemplateConfig() {
           new PrintComponent({
             id: 'print',
             open: false,
-            collapsable: true,
+            collapsable: true, //  i permette di capire se cliccandoci sopra posso lanciare il setOpen del componente
             icon: "fa fa-print"
           }),
           new SearchComponent({
