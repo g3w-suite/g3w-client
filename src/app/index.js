@@ -73,25 +73,25 @@ function createTemplateConfig() {
           new PrintComponent({
             id: 'print',
             open: false,
-            collapsable: true, //  i permette di capire se cliccandoci sopra posso lanciare il setOpen del componente
+            collapsible: true, //  i permette di capire se cliccandoci sopra posso lanciare il setOpen del componente
             icon: "fa fa-print"
           }),
           new SearchComponent({
             id: 'search',
             open: false,
-            collapsable: true,
+            collapsible: true,
             icon: "fa fa-search"
           }),
           new CatalogComponent({
             id: 'catalog',
             open: false,
-            collapsable: false,
+            collapsible: false,
             icon: "fa fa-database"
           }),
           new ToolsComponent({
             id: 'tools',
             open: false,
-            collapsable: true,
+            collapsible: true,
             icon: "fa fa-gear"
           })
         ]
