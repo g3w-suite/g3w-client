@@ -20,7 +20,9 @@
   <link rel="stylesheet" href="../dist/g3w-client/css/skins/skin-blue.css">
 </head>
 <body class="hold-transition skin-blue fixed">
-   <app :iface="iface"></app>
+  <div id="app">
+    <app></app>
+  </div>
   <!-- build:js js/sdk.ext.min.js -->
    <script src="./libs/sdk/ext/ismobile/ismobile.min.js"></script>
   <script src="./libs/sdk/ext/jquery/jquery-2.2.1.min.js"></script>
@@ -34,7 +36,7 @@
   <script src="./libs/sdk/ext/crossroads/crossroads.min.js"></script>
   <script src="./libs/sdk/ext/proj4js/proj4.js"></script>
   <script src="./libs/sdk/ext/ol3/ol-debug.js"></script>
-  <script src="./libs/sdk/ext/vue/dist/vue.min.js"></script>
+  <script src="./libs/sdk/ext/vue/vue.js"></script>
   <!-- endbuild -->
   <!-- build:js js/template.ext.min.js -->
   <script src="./app/ext/script/script.min.js"></script>
