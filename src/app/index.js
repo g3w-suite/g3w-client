@@ -193,7 +193,7 @@ bootstrap = function() {
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
     // la vado a pssare al metodo init dell'application service
     ApplicationService.init(applicationConfig, true); // lancio manualmente il postBootstrp
-  })
+  });
 }();
 
 
