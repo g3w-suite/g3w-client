@@ -86,7 +86,7 @@ function createTemplateConfig() {
             id: 'catalog',
             open: false,
             collapsible: false,
-            icon: "fa fa-database"
+            icon: "fa fa-map-o"
           }),
           new ToolsComponent({
             id: 'tools',
