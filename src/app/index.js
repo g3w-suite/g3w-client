@@ -36,7 +36,7 @@ function createApplicationConfig() {
     getWmsUrl: function(project){
       return config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
-    // richiesto da ProjectsRegistry
+    // richiesto da ProjectsRegistry per acquisire informazioni specifiche del progetto
     getProjectConfigUrl: function(project){
       return config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
