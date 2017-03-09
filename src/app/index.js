@@ -92,7 +92,7 @@ function createTemplateConfig() {
             id: 'tools',
             open: false,
             collapsible: true,
-            icon: "fa fa-gear"
+            icon: "fa fa-gears"
           })
         ]
       },
