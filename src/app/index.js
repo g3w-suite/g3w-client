@@ -88,6 +88,7 @@ function createTemplateConfig() {
             collapsible: false,
             icon: "fa fa-map-o"
           }),
+          // qui vanno i plugins sotto forma di tools
           new ToolsComponent({
             id: 'tools',
             open: false,
@@ -119,45 +120,6 @@ function createTemplateConfig() {
   }
 }
 
-// funzione che ottiene la configurazione dal server
-function obtainInitConfig(initConfigUrl) {
-
-  var d = $.Deferred();
-  //se esiste un oggetto globale initiConfig
-  //risolvo con quell'oggetto
-  if (window.initConfig) {
-    return d.resolve(window.initConfig);
-  }
-  // altrimenti devo prenderlo dal server usando il percorso indicato in ?project=<percorso>
-  else{
-    var projectPath;
-    var queryTuples = location.search.substring(1).split('&');
-    _.forEach(queryTuples, function(queryTuple) {
-      //se esiste la parola project nel url
-      if (queryTuple.indexOf("project") > -1) {
-        //prendo il valore del path progetto (nomeprogetto/tipoprogetto/idprogetto)
-        //esempio comune-di-capannori/qdjango/22/
-        projectPath = queryTuple.split("=")[1];
-      }
-    });
-    if (projectPath){
-      var initUrl = initConfigUrl;
-      if (projectPath) {
-        initUrl = initUrl + '/' + projectPath;
-      }
-      //recupro dal server la configurazione di quel progetto
-      $.get(initUrl, function(initConfig) {
-        //initConfig è l'oggetto contenete:
-        //group, mediaurl, staticurl, user
-        initConfig.staticurl = "../dist/"; // in locale forziamo il path degli asset
-        initConfig.clienturl = "../dist/"; // in locale forziamo il path degli asset
-        d.resolve(initConfig);
-      })
-    }
-  }
-  return d.promise();
-}
-
 ApplicationService.on('ready', function() {
   //istanzio l'appication template passando la configurazione
   // del template e l'applicationService che fornisce API del progetto
@@ -174,13 +136,12 @@ ApplicationService.on('ready', function() {
 });
 
 // funzione che viene lanciata al momento di caricare app.js
-
 bootstrap = function() {
   // inizlaizza l'internalizzazione
   i18ninit(config.i18n);
   //ottengo al configurazione inizilae del gruppo di progetti
   // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
-  obtainInitConfig(config.server.urls.initconfig)
+  ApplicationService.obtainInitConfig(config.server.urls.initconfig)
   .then(function(initConfig) {
     // una volta ottenuta la configurazione inziale
     // vado a scrivere gli url dei file statici e del media url
