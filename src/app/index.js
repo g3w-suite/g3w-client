@@ -7,9 +7,15 @@ var ApplicationTemplate = require('./template/js/template');
 var config = require('./config/config.js');
 // SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
 window.g3wsdk = require('sdk');
+//imposto il timeout delle richieste ajax di jquery
+// $.ajaxSetup({
+//    timeout: 5000 // in milliseconds
+// });
+// inizilaizza l'internalizzazione
+i18ninit(config.i18n);
+
 // questa funzione che ala configurazione inizale dell'applicazione
 // tutte le cose in comune
-
 function createApplicationConfig() {
   return {
     apptitle: config.apptitle || '',
@@ -61,7 +67,6 @@ function createTemplateConfig() {
   //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
   //ad hoc per i risultati
   var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
-
   return {
     title: config.apptitle,
     placeholders: {
@@ -120,6 +125,17 @@ function createTemplateConfig() {
   }
 }
 
+function sentErrorToApplicationTemplate(reloadFnc,error) {
+  if (error && error.responseJSON && error.responseJSON.error.data) {
+    error = error.responseJSON.error.data
+  } else {
+    error = 'Errore di connessione'
+  }
+  // stato un erore ne caricamento della configurazione del progetto
+  // passo la stessa funzione di bootstrap
+  ApplicationTemplate.fail(reloadFnc, error);
+}
+
 ApplicationService.on('ready', function() {
   //istanzio l'appication template passando la configurazione
   // del template e l'applicationService che fornisce API del progetto
@@ -136,9 +152,7 @@ ApplicationService.on('ready', function() {
 });
 
 // funzione che viene lanciata al momento di caricare app.js
-bootstrap = function() {
-  // inizlaizza l'internalizzazione
-  i18ninit(config.i18n);
+var bootstrap = function() {
   //ottengo al configurazione inizilae del gruppo di progetti
   // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
@@ -153,8 +167,19 @@ bootstrap = function() {
     var applicationConfig = createApplicationConfig();
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
     // la vado a pssare al metodo init dell'application service
-    ApplicationService.init(applicationConfig, true); // lancio manualmente il postBootstrp
-  });
-}();
+    ApplicationService.init(applicationConfig, true) // lancio manualmente il postBootstrp
+      .then(function() {
+        // andato tutto a buon fine
+      })
+      .fail(function(error) {
+        sentErrorToApplicationTemplate(bootstrap, error);
+      })
+  })
+  .fail(function(error) {
+    sentErrorToApplicationTemplate(bootstrap, error);
+  })
+};
 
+// lancio subito il bootstrap
+bootstrap();
 
