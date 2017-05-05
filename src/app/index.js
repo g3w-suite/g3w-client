@@ -125,7 +125,7 @@ function createTemplateConfig() {
   }
 }
 
-function sentErrorToApplicationTemplate(reloadFnc,error) {
+function sendErrorToApplicationTemplate(reloadFnc,error) {
   if (error && error.responseJSON && error.responseJSON.error.data) {
     error = error.responseJSON.error.data
   } else {
@@ -172,11 +172,11 @@ var bootstrap = function() {
         // andato tutto a buon fine
       })
       .fail(function(error) {
-        sentErrorToApplicationTemplate(bootstrap, error);
+        sendErrorToApplicationTemplate(bootstrap, error);
       })
   })
   .fail(function(error) {
-    sentErrorToApplicationTemplate(bootstrap, error);
+    sendErrorToApplicationTemplate(bootstrap, error);
   })
 };
 
