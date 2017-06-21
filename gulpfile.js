@@ -4,6 +4,7 @@ var del = require('del');
 var url = require('url');
 //Gulp
 var gulp   = require('gulp');
+var argv = require('yargs').argv;
 var concat = require('gulp-concat');
 var runSequence = require('run-sequence');
 var streamify = require('gulp-streamify');
@@ -33,6 +34,8 @@ var production = false;
 
 var distFolder = conf.distFolder;
 var clientFolder = conf.clientFolder;
+
+var client = argv.client || '';
 
 gulp.task('browserify', [], function() {
     var bundler = browserify('./src/app/index.js', {
@@ -139,7 +142,7 @@ gulp.task('assets',['fonts','images','less','less-skins']);
 gulp.task('html', ['assets'], function () {
   return gulp.src('./src/index.html')
     .pipe(useref())
-    .pipe(gulpif(['js/app.min.js'], uglify().on('error', gutil.log)))
+    //.pipe(gulpif(['js/app.min.js'], uglify().on('error', gutil.log)))
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
     })))
@@ -248,8 +251,9 @@ gulp.task('g3w-admin-plugins',function(){
 });
 
 gulp.task('g3w-admin-client',function(){
+  client_version = (client != '') ? 'client-'+client : 'client'
   gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-  .pipe(gulp.dest(conf.g3w_admin_client_dest));
+  .pipe(gulp.dest(conf.g3w_admin_client_dest_base+'/'+client_version+'/'));
 });
 
 gulp.task('g3w-admin',function(done){
