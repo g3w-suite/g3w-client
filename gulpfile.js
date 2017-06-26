@@ -66,7 +66,7 @@ gulp.task('browserify', [], function() {
         .pipe(source('build.js'))
         .pipe(buffer())
         .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
-        //.pipe(gulpif(production, uglify().on('error', gutil.log)))
+        .pipe(gulpif(production, uglify().on('error', gutil.log)))
         .pipe(gulpif(!production,sourcemaps.write()))
         .pipe(rename('app.js'))
         .pipe(gulp.dest(clientFolder+'/js/'))

@@ -30,7 +30,7 @@ function createApplicationConfig() {
     resourcesurl: config.server.urls.clienturl,
     projects: config.group.projects,
     initproject: config.group.initproject,
-    overviewproject: config.group.overviewproject,
+    overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,
     baselayers: config.group.baselayers,
     mapcontrols: config.group.mapcontrols,
     background_color: config.group.background_color,
@@ -40,11 +40,11 @@ function createApplicationConfig() {
     maxscale: config.group.maxscale,
     // richiesto da ProjectService
     getWmsUrl: function(project){
-      return config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
+      return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
     // richiesto da ProjectsRegistry per acquisire informazioni specifiche del progetto
     getProjectConfigUrl: function(project){
-      return config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
+      return config.server.urls.baseurl+config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
     plugins: config.group.plugins,
     tools: config.tools,
@@ -159,6 +159,7 @@ var bootstrap = function() {
   .then(function(initConfig) {
     // una volta ottenuta la configurazione inziale
     // vado a scrivere gli url dei file statici e del media url
+    config.server.urls.baseurl = initConfig.baseurl;
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
