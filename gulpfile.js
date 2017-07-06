@@ -68,6 +68,7 @@ gulp.task('browserify', [], function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
+      .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
       .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
       .pipe(gulpif(production, uglify().on('error', gutil.log)))
       .pipe(gulpif(!production,sourcemaps.write()))
