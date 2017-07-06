@@ -14,6 +14,7 @@ var buffer = require('vinyl-buffer');
 var flatten = require('gulp-flatten');
 var useref = require('gulp-useref');
 var filter = require('gulp-filter');
+var replace = require('gulp-replace');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
 var chalk = require('chalk');
@@ -37,56 +38,58 @@ var clientFolder = conf.clientFolder;
 
 var client = argv.client || '';
 
+var versionHash = Date.now();
+
 gulp.task('browserify', [], function() {
-    var bundler = browserify('./src/app/index.js', {
-      basedir: "./",
-      paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
-      debug: !production,
-      cache: {},
-      packageCache: {}
-    });
-    if (!production) {
-      bundler = watchify(bundler);
-    }
-    bundler.transform(stringify, {
-      appliesTo: { includeExtensions: ['.html'] }
-    });
+  var bundler = browserify('./src/app/index.js', {
+    basedir: "./",
+    paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
+    debug: !production,
+    cache: {},
+    packageCache: {}
+  });
+  if (!production) {
+    bundler = watchify(bundler);
+  }
+  bundler.transform(stringify, {
+    appliesTo: { includeExtensions: ['.html'] }
+  });
 
-    var bundle = function(){
-      return bundler.bundle()
-        .on('error', function(err){
-          console.log(err);
-          //browserSync.notify(err.message, 3000);
-          //browserSync.reload();
-          this.emit('end');
-          del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
-            process.exit();
-          });
-        })
-        .pipe(source('build.js'))
-        .pipe(buffer())
-        .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
-        .pipe(gulpif(production, uglify().on('error', gutil.log)))
-        .pipe(gulpif(!production,sourcemaps.write()))
-        .pipe(rename('app.js'))
-        .pipe(gulp.dest(clientFolder+'/js/'))
+  var bundle = function(){
+    return bundler.bundle()
+      .on('error', function(err){
+        console.log(err);
+        //browserSync.notify(err.message, 3000);
+        //browserSync.reload();
+        this.emit('end');
+        del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
+          process.exit();
+        });
+      })
+      .pipe(source('build.js'))
+      .pipe(buffer())
+      .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
+      .pipe(gulpif(production, uglify().on('error', gutil.log)))
+      .pipe(gulpif(!production,sourcemaps.write()))
+      .pipe(rename('app.js'))
+      .pipe(gulp.dest(clientFolder+'/js/'))
+  };
+
+  var rebundle;
+
+  if (!production) {
+    rebundle = function(){
+      return bundle().
+      pipe(browserSync.reload({stream: true, once: true}));
     };
-
-    var rebundle;
-
-    if (!production) {
-      rebundle = function(){
-        return bundle().
-        pipe(browserSync.reload({stream: true, once: true}));
-      };
-      bundler.on('update', rebundle);
+    bundler.on('update', rebundle);
+  }
+  else {
+    rebundle = function(){
+      return bundle();
     }
-    else {
-      rebundle = function(){
-        return bundle();
-      }
-    }
-    return rebundle();
+  }
+  return rebundle();
 });
 
 gulp.task('plugins', function() {
@@ -109,8 +112,8 @@ gulp.task('less',['fonts'], function () {
       paths: [ path.join(__dirname) ]
     }))
     /*.pipe(gulpif(production,cleanCSS({
-      keepSpecialComments: 0
-    })))*/
+     keepSpecialComments: 0
+     })))*/
     .pipe(gulp.dest(clientFolder+'/css/'))
 });
 
@@ -120,8 +123,8 @@ gulp.task('less-skins', function () {
       paths: [ path.join(__dirname) ]
     }))
     /*.pipe(gulpif(production,cleanCSS({
-      keepSpecialComments: 0
-    })))*/
+     keepSpecialComments: 0
+     })))*/
     .pipe(gulp.dest(clientFolder+'/css/skins/'))
 });
 
@@ -139,6 +142,15 @@ gulp.task('images', function () {
 
 gulp.task('assets',['fonts','images','less','less-skins']);
 
+function interpolateVersion(path, separator) {
+  var prepost = path.split(separator);
+  if (prepost.length != 2) {
+    return path;
+  }
+  return prepost[0] +"."+ versionHash + separator + prepost[1];
+
+};
+
 gulp.task('html', ['assets'], function () {
   return gulp.src('./src/index.html')
     .pipe(useref())
@@ -146,6 +158,24 @@ gulp.task('html', ['assets'], function () {
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
     })))
+    .pipe(rename(function (path){
+      path.basename = interpolateVersion(path.basename+path.extname, '.min.');
+      path.extname = "";
+    }))
+    .pipe(gulp.dest(clientFolder));
+});
+
+gulp.task('html:compiletemplate', function(){
+  return gulp.src('./src/index.html.template')
+    .pipe(replace("{VENDOR_CSS}","vendor."+versionHash+".min.css"))
+    .pipe(replace("{APP_CSS}","app."+versionHash+".min.css"))
+    .pipe(replace("{TEMPLATE_JS}","template.ext."+versionHash+".min.js"))
+    .pipe(replace("{SDK_EXT_JS}","sdk.ext."+versionHash+".min.js"))
+    .pipe(replace("{APP_JS}","app."+versionHash+".min.js"))
+    .pipe(rename({
+      basename: "index",
+      extname: ".html"
+    }))
     .pipe(gulp.dest(clientFolder));
 });
 
@@ -158,7 +188,7 @@ proxy.on('error',function(e){
 });
 
 function proxyMiddleware(urls) {
-	return function(req, res, next){
+  return function(req, res, next){
     var doproxy = false;
     for(var i in urls){
       if (req.url.indexOf(urls[i]) > -1){
@@ -175,17 +205,17 @@ function proxyMiddleware(urls) {
 }
 
 gulp.task('browser-sync', function() {
-    browserSync.init({
-        server: {
-            baseDir: ["src","."],
-            middleware: [proxyMiddleware(conf.proxy.urls)]
-        },
-        open: false,
-        startPath: "/",
-        socket: {
-          domain: "http://localhost:3000"
-        }
-    });
+  browserSync.init({
+    server: {
+      baseDir: ["src","."],
+      middleware: [proxyMiddleware(conf.proxy.urls)]
+    },
+    open: false,
+    startPath: "/",
+    socket: {
+      domain: "http://localhost:3000"
+    }
+  });
 });
 
 gulp.task('browser:reload',function(){
@@ -202,25 +232,25 @@ function prepareRunSequence() {
 }
 
 gulp.task('watch',function() {
-    watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],
-      prepareRunSequence('less','browser:reload')
-    );
-    watch(['./src/app/style/skins/*.less'],
-      prepareRunSequence('less:skins','browser:reload')
-    );
-    watch('./src/**/*.{png,jpg}',
-      prepareRunSequence('images','browser:reload')
-    );
-    watch('./src/libs/plugins/**/plugin.js',
-      prepareRunSequence('plugins','browser:reload')
-    );
-    gulp.watch(['./src/index.html','./src/**/*.html'], function(){
-      browserSync.reload();
-    });
+  watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],
+    prepareRunSequence('less','browser:reload')
+  );
+  watch(['./src/app/style/skins/*.less'],
+    prepareRunSequence('less:skins','browser:reload')
+  );
+  watch('./src/**/*.{png,jpg}',
+    prepareRunSequence('images','browser:reload')
+  );
+  watch('./src/libs/plugins/**/plugin.js',
+    prepareRunSequence('plugins','browser:reload')
+  );
+  gulp.watch(['./src/index.html','./src/**/*.html'], function(){
+    browserSync.reload();
+  });
 });
 
 gulp.task('production', function(){
-    production = true;
+  production = true;
 });
 
 gulp.task('production-bundle',['production','browserify']);
@@ -229,13 +259,17 @@ gulp.task('clean', function(){
   return del(['dist/**/*'],{force:true});
 });
 
+gulp.task('cleanup', function() {
+  return del([conf.clientFolder+"/js/app.js",conf.clientFolder+"/css/app.css"],{force:true})
+});
+
 gulp.task('serve', function(done){
   runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync',
     done);
 });
 
 gulp.task('dist', function(done){
-    runSequence('clean','production','browserify',['html','plugins'],
+  runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
     done);
 });
 
@@ -244,22 +278,36 @@ gulp.task('g3w-admin-plugins',function(){
     .pipe(rename(function(path){
       var dirname = path.dirname;
       var pluginname = dirname.replace('/js','');
-      var pluginpath = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
-      path.dirname = pluginpath;
+      path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
     .pipe(gulp.dest("."));
 });
 
-gulp.task('g3w-admin-client',function(){
-  client_version = (client != '') ? 'client-'+client : 'client'
-  gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-  .pipe(gulp.dest(conf.g3w_admin_client_dest_base+'/'+client_version+'/'));
+var client_version = (client != '') ? 'client-'+client : 'client';
+
+gulp.task('g3w-admin-client:clear', function(){
+  console.log(conf.g3w_admin_client_dest_static+'/'+client_version+'/js/*');
+  return del([
+    conf.g3w_admin_client_dest_static+'/'+client_version+'/js/*',
+    conf.g3w_admin_client_dest_static+'/'+client_version+'/css/*',
+    conf.g3w_admin_client_dest_template+'/'+client_version+'/index.html'
+  ],{force:true})
 });
 
-gulp.task('g3w-admin',function(done){
-  runSequence('dist','g3w-admin-plugins','g3w-admin-client',
-    done);
+gulp.task('g3w-admin-client:static',function(){
+  gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
+    .pipe(gulp.dest(conf.g3w_admin_client_dest_static+'/'+client_version+'/'));
+});
 
+gulp.task('g3w-admin-client:template',function(){
+  gulp.src(clientFolder+'/index.html')
+    .pipe(gulp.dest(conf.g3w_admin_client_dest_template+'/'+client_version+'/'));
+});
+
+gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
+
+gulp.task('g3w-admin',function(done){
+  runSequence('dist','g3w-admin-plugins','g3w-admin-client',done)
 });
 
 gulp.task('default',['serve']); // development
@@ -283,5 +331,3 @@ gulp.task('karma_tdd', function (done) {
     configFile: './karma.conf.js'
   }, done).start();
 });
-
-
