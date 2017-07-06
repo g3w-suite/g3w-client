@@ -287,7 +287,6 @@ gulp.task('g3w-admin-plugins',function(){
 var client_version = (client != '') ? 'client-'+client : 'client';
 
 gulp.task('g3w-admin-client:clear', function(){
-  console.log(conf.g3w_admin_client_dest_static+'/'+client_version+'/js/*');
   return del([
     conf.g3w_admin_client_dest_static+'/'+client_version+'/js/*',
     conf.g3w_admin_client_dest_static+'/'+client_version+'/css/*',
