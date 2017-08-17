@@ -4,6 +4,7 @@ var del = require('del');
 var url = require('url');
 //Gulp
 var gulp   = require('gulp');
+///
 var argv = require('yargs').argv;
 var concat = require('gulp-concat');
 var runSequence = require('run-sequence');
@@ -45,18 +46,18 @@ gulp.task('browserify', [], function() {
       basedir: "./",
       paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
       debug: !production,
-      cache: {},
-      packageCache: {}
+      cache: {}, // obbligatorio se si usa il plugin watchify
+      packageCache: {} // obbligatorio se usa il plugin watchify
     });
     if (!production) {
-      bundler = watchify(bundler);
+      bundler = watchify(bundler); // mi restituisce una nuova istanza browserify
     }
     bundler.transform(stringify, {
       appliesTo: { includeExtensions: ['.html'] }
     });
 
-    var bundle = function(){
-      return bundler.bundle()
+    var bundle = function() {
+      return bundler.bundle() // resituisce il file unico leggibile dal brower
         .on('error', function(err){
           console.log(err);
           //browserSync.notify(err.message, 3000);
@@ -66,8 +67,9 @@ gulp.task('browserify', [], function() {
             process.exit();
           });
         })
-        .pipe(source('build.js'))
-        .pipe(buffer())
+        .pipe(source('build.js'))// source trasforma ilreadable stream che viene da browserify in vinyl stream
+                                // che è ciò che si aspetta gulp nei suoi pipe
+        .pipe(buffer()) // Convert streaming vinyl files to use buffers.
         .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
         .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
         .pipe(gulpif(production, uglify().on('error', gutil.log)))
@@ -225,6 +227,7 @@ gulp.task('browser:reload',function(){
   }
 });
 
+// funzione che fa partire il sequence run passando argomenti
 function prepareRunSequence() {
   var _arguments = arguments;
   return function() {
@@ -256,25 +259,25 @@ gulp.task('production', function(){
 
 gulp.task('production-bundle',['production','browserify']);
 
-gulp.task('clean', function(){
-  return del(['dist/**/*'],{force:true});
+gulp.task('clean', function() {
+  return del(['dist/**/*'], {force:true});
 });
 
 gulp.task('cleanup', function() {
   return del([conf.clientFolder+"/js/app.js",conf.clientFolder+"/css/app.css"],{force:true})
 });
 
-gulp.task('serve', function(done){
+gulp.task('serve', function(done) {
   runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync',
     done);
 });
 
-gulp.task('dist', function(done){
+gulp.task('dist', function(done) {
     runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
     done);
 });
 
-gulp.task('g3w-admin-plugins',function(){
+gulp.task('g3w-admin-plugins',function() {
   gulp.src(distFolder+'/**/js/plugin.js')
     .pipe(rename(function(path){
       var dirname = path.dirname;
