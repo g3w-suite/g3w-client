@@ -28,6 +28,7 @@ function createApplicationConfig() {
     urls: config.server.urls,
     mediaurl: config.server.urls.mediaurl,
     resourcesurl: config.server.urls.clienturl,
+    vectorurl:config.server.urls.vectorurl,
     projects: config.group.projects,
     initproject: config.group.initproject,
     overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,
@@ -157,12 +158,14 @@ var bootstrap = function() {
   // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
   .then(function(initConfig) {
+
     // una volta ottenuta la configurazione inziale
-    // vado a scrivere gli url dei file statici e del media url
+    // vado a scrivere gli url dei file statici e del media urld del base url e del vector url
     config.server.urls.baseurl = initConfig.baseurl;
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
+    config.server.urls.vectorurl = initConfig.vectorurl;
     config.group = initConfig.group;
     config.user = initConfig.user;
     var applicationConfig = createApplicationConfig();
