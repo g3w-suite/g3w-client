@@ -11,7 +11,7 @@ window.g3wsdk = require('sdk');
 // $.ajaxSetup({
 //    timeout: 5000 // in milliseconds
 // });
-// inizilaizza l'internalizzazione
+// inizializza l'internalizzazione
 i18ninit(config.i18n);
 
 // questa funzione che ala configurazione inizale dell'applicazione
@@ -158,7 +158,6 @@ var bootstrap = function() {
   // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
   .then(function(initConfig) {
-
     // una volta ottenuta la configurazione inziale
     // vado a scrivere gli url dei file statici e del media urld del base url e del vector url
     config.server.urls.baseurl = initConfig.baseurl;

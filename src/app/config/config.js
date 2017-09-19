@@ -7,6 +7,7 @@ var tools = {
   tools:  []
 };
 
+// restituisce la configurazione/ messaggi
 var i18n = {
   resources: require('./locales/app.js')
 };
