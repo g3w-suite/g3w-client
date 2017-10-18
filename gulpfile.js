@@ -68,8 +68,9 @@ gulp.task('browserify', [], function() {
             process.exit();
           });
         })
-        .pipe(source('build.js'))
-        .pipe(buffer())
+        .pipe(source('build.js'))// source trasforma ilreadable stream che viene da browserify in vinyl stream
+                                // che è ciò che si aspetta gulp nei suoi pipe
+        .pipe(buffer()) // Convert streaming vinyl files to use buffers.
         .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
         .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
         .pipe(gulpif(production, uglify().on('error', gutil.log)))
@@ -285,7 +286,7 @@ gulp.task('serve', function(done){
 });
 
 
-gulp.task('dist', function(done {
+gulp.task('dist', function(done) {
     runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
     done);
 });
