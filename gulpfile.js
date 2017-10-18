@@ -68,9 +68,8 @@ gulp.task('browserify', [], function() {
             process.exit();
           });
         })
-        .pipe(source('build.js'))// source trasforma ilreadable stream che viene da browserify in vinyl stream
-                                // che è ciò che si aspetta gulp nei suoi pipe
-        .pipe(buffer()) // Convert streaming vinyl files to use buffers.
+        .pipe(source('build.js'))
+        .pipe(buffer())
         .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
         .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
         .pipe(gulpif(production, uglify().on('error', gutil.log)))
@@ -155,6 +154,15 @@ function interpolateVersion(path, separator) {
     return path;
   }
   return prepost[0] +"."+ versionHash + separator + prepost[1];
+};
+
+function interpolateVersion(path, separator) {
+  var prepost = path.split(separator);
+  if (prepost.length != 2) {
+    return path;
+  }
+  return prepost[0] +"."+ versionHash + separator + prepost[1];
+
 };
 
 gulp.task('html', ['assets'], function () {
@@ -270,12 +278,14 @@ gulp.task('cleanup', function() {
   return del([conf.clientFolder+"/js/app.js",conf.clientFolder+"/css/app.css"],{force:true})
 });
 
-gulp.task('serve', function(done) {
+
+gulp.task('serve', function(done){
   runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync',
     done);
 });
 
-gulp.task('dist', function(done) {
+
+gulp.task('dist', function(done {
     runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
     done);
 });
@@ -311,10 +321,11 @@ gulp.task('g3w-admin-client:template',function(){
   .pipe(gulp.dest(conf.g3w_admin_client_dest_template+'/'+client_version+'/'));
 });
 
+
 gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
 
 gulp.task('g3w-admin',function(done){
-  runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
+  runSequence('dist','g3w-admin-plugins','g3w-admin-client',done)
 });
 
 gulp.task('default',['serve']); // development
