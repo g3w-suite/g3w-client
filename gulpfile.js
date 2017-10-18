@@ -34,6 +34,7 @@ var Server = require('karma').Server;
 
 var production = false;
 
+
 var distFolder = conf.distFolder;
 var clientFolder = conf.clientFolder;
 
@@ -125,9 +126,6 @@ gulp.task('less-skins', function () {
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    /*.pipe(gulpif(production,cleanCSS({
-      keepSpecialComments: 0
-    })))*/
     .pipe(gulp.dest(clientFolder+'/css/skins/'))
 });
 
@@ -143,7 +141,13 @@ gulp.task('images', function () {
     .pipe(gulp.dest(clientFolder+'/images/'))
 });
 
-gulp.task('assets',['fonts','images','less','less-skins']);
+gulp.task('datatable-images',function () {
+  return gulp.src('./src/app/template/ext/datatables/DataTables-1.10.16/images/*')
+    .pipe(flatten())
+    .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'))
+});
+
+gulp.task('assets',['fonts','images','less','less-skins', 'datatable-images']);
 
 function interpolateVersion(path, separator) {
   var prepost = path.split(separator);
@@ -151,7 +155,6 @@ function interpolateVersion(path, separator) {
     return path;
   }
   return prepost[0] +"."+ versionHash + separator + prepost[1];
-
 };
 
 gulp.task('html', ['assets'], function () {
@@ -284,6 +287,7 @@ gulp.task('g3w-admin-plugins',function() {
       var pluginname = dirname.replace('/js','');
       path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
+    .pipe(uglify())
     .pipe(gulp.dest("."));
 });
 
@@ -310,7 +314,7 @@ gulp.task('g3w-admin-client:template',function(){
 gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
 
 gulp.task('g3w-admin',function(done){
-  runSequence('dist','g3w-admin-plugins','g3w-admin-client',done)
+  runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
 });
 
 gulp.task('default',['serve']); // development
