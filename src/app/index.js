@@ -9,10 +9,8 @@ var config = require('./config/config.js');
 window.g3wsdk = require('sdk');
 //imposto il timeout delle richieste ajax di jquery
 // $.ajaxSetup({
-//    timeout: 5000 // in milliseconds
+//    timeout: 5000 // in millisecondsi18
 // });
-// inizializza l'internalizzazione
-i18ninit(config.i18n);
 
 // questa funzione che ala configurazione inizale dell'applicazione
 // tutte le cose in comune
@@ -168,6 +166,9 @@ var bootstrap = function() {
     config.group = initConfig.group;
     config.user = initConfig.user;
     var applicationConfig = createApplicationConfig();
+    config.i18n.lng = config.user.i18n;
+    // inizializza l'internalizzazione
+    i18ninit(config.i18n);
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
     // la vado a pssare al metodo init dell'application service
     ApplicationService.init(applicationConfig, true) // lancio manualmente il postBootstrp
