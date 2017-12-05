@@ -7,9 +7,9 @@ var ApplicationTemplate = require('./template/js/template');
 var config = require('./config/config.js');
 // SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
 window.g3wsdk = require('sdk');
-//imposto il timeout delle richieste ajax di jquery
+// //imposto il timeout delle richieste ajax di jquery
 // $.ajaxSetup({
-//    timeout: 5000 // in millisecondsi18
+//    timeout: 1000 // in millisecondsi18
 // });
 
 // questa funzione che ala configurazione inizale dell'applicazione
@@ -141,23 +141,25 @@ ApplicationService.on('ready', function() {
   var templateConfig = createTemplateConfig();
   //istanzio l'application Template passando il templateconfig, l'applicationservice
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
-  //inizializzo e faccio partire con il metodo init
-  applicationTemplate.init();
-  // quando (dopo la chiamta e il setup del layout etc..) dell'application template
-  // è ready lancio l'applicationTemplate service postBoostrat
   applicationTemplate.on('ready', function() {
     ApplicationService.postBootstrap();
   });
+  //inizializzo e faccio partire con il metodo init
+  applicationTemplate.init();
+  // quando (dopo la chiamata e il setup del layout etc..) dell'application template
+  // è ready lancio l'applicationTemplate service postBoostrat
+
 });
 
 // funzione che viene lanciata al momento di caricare app.js
 var bootstrap = function() {
-  //ottengo al configurazione inizilae del gruppo di progetti
-  // config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
+  //ottengo al configurazione iniziale del gruppo di progetti
+  //config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
+  //ritorna una promessa con la configurazione iniziale
   .then(function(initConfig) {
     // una volta ottenuta la configurazione inziale
-    // vado a scrivere gli url dei file statici e del media urld del base url e del vector url
+    // vado a scrivere gli url dei file statici e del media url del base url e del vector url
     config.server.urls.baseurl = initConfig.baseurl;
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
@@ -165,8 +167,10 @@ var bootstrap = function() {
     config.server.urls.vectorurl = initConfig.vectorurl;
     config.group = initConfig.group;
     config.user = initConfig.user;
-    var applicationConfig = createApplicationConfig();
+    // ricavo la lingua dalla configurazione passata dal server
     config.i18n.lng = config.user.i18n;
+    // vado a creare la configurazione per l'applicazione
+    var applicationConfig = createApplicationConfig();
     // inizializza l'internalizzazione
     i18ninit(config.i18n);
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione

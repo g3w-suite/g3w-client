@@ -1,6 +1,7 @@
 var translations = {
   "it": {
     "translation": {
+      "change_map": "Cambia Mappa",
       "editing_data": "Editing Dati",
       "component": "Componente Generico",
       "search": "Ricerche",
@@ -18,11 +19,15 @@ var translations = {
       "paste_form_data": "Incolla",
       "copy_form_data_from_feature": "Copia i dati dalla mappa",
       "could_not_load_vector_layers": "Errore di connessione al server: non è stato possibile caricare i vettoriali richiesti",
-      "input_validation_error": "Campo obbligatorio o valore non corretto"
+      "input_validation_error": "Campo obbligatorio o valore non corretto",
+      "save": "Salva",
+      "cancel": "Cancella",
+      "close": "Chiudi"
     }
   },
   "en": {
     "translation": {
+      "change_map": "Change Map",
       "editing_data": "Editing Layers",
       "component": "Generic Component",
       "search": "Search",
@@ -39,8 +44,11 @@ var translations = {
       "copy_form_data": "Copia i dati del modulo",
       "paste_form_data": "Paste",
       "copy_form_data_from_feature": "Copia i dati dalla mappa",
-      "could_not_load_vector_layers": "Errore di connessione al server: non è stato possibile caricare i vettoriali richiesti",
-      "input_validation_error": "Mandatory Field or wrong data"
+      "could_not_load_vector_layers": "Connession server error: non è stato possibile caricare i vettoriali richiesti",
+      "input_validation_error": "Mandatory Field or wrong data",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close"
     }
   }
 };
