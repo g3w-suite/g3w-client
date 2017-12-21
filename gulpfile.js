@@ -13,7 +13,9 @@ var rename = require('gulp-rename');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var flatten = require('gulp-flatten');
+// userref server per parsare i build block del template
 var useref = require('gulp-useref');
+///////////////////////////////////////////////////////
 var filter = require('gulp-filter');
 var replace = require('gulp-replace');
 var gulpif = require('gulp-if');
@@ -42,23 +44,24 @@ var client = argv.client || '';
 
 var versionHash = Date.now();
 
+
 gulp.task('browserify', [], function() {
   var bundler = browserify('./src/app/index.js', {
     basedir: "./",
     paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
     debug: !production,
-    cache: {}, // obbligatorio se si usa il plugin watchify
-    packageCache: {} // obbligatorio se usa il plugin watchify
+    cache: {},
+    packageCache: {}
   });
   if (!production) {
-    bundler = watchify(bundler); // mi restituisce una nuova istanza browserify
+    bundler = watchify(bundler);
   }
   bundler.transform(stringify, {
     appliesTo: { includeExtensions: ['.html'] }
   });
 
   var bundle = function() {
-    return bundler.bundle() // resituisce il file unico leggibile dal brower
+    return bundler.bundle()
       .on('error', function(err){
         console.log(err);
         //browserSync.notify(err.message, 3000);
@@ -68,9 +71,8 @@ gulp.task('browserify', [], function() {
           process.exit();
         });
       })
-      .pipe(source('build.js'))// source trasforma ilreadable stream che viene da browserify in vinyl stream
-      // che è ciò che si aspetta gulp nei suoi pipe
-      .pipe(buffer()) // Convert streaming vinyl files to use buffers.
+      .pipe(source('build.js'))
+      .pipe(buffer())
       .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
       .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
       .pipe(gulpif(production, uglify().on('error', gutil.log)))
@@ -82,9 +84,9 @@ gulp.task('browserify', [], function() {
   var rebundle;
 
   if (!production) {
-    rebundle = function(){
-      return bundle().
-      pipe(browserSync.reload({stream: true, once: true}));
+    rebundle = function() {
+      return bundle()
+        .pipe(browserSync.reload({stream: true}));
     };
     bundler.on('update', rebundle);
   }
@@ -96,12 +98,24 @@ gulp.task('browserify', [], function() {
   return rebundle();
 });
 
+// serve per mettere i plugin nelle rispettive folder
 gulp.task('plugins', function() {
   return gulp.src('./src/libs/plugins/**/plugin.js')
-    .pipe(rename(function(path){
+    .pipe(rename(function(path) {
       path.dirname = distFolder+'/'+path.dirname+'/js/';
     }))
     .pipe(gulp.dest('.'));
+});
+
+// serve per gli eventuali less/css stili nella folder dei plugin
+gulp.task('plugins-less-skin', function() {
+  return gulp.src('./src/libs/plugins/**/**.less')
+    .pipe(less({
+    }))
+    .pipe(rename(function(path) {
+      path.dirname = distFolder+'/'+path.dirname+'/css/';
+    }))
+    .pipe(gulp.dest('.'))
 });
 
 gulp.task('jshint', function() {
@@ -115,14 +129,11 @@ gulp.task('less',['fonts'], function () {
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
-    /*.pipe(gulpif(production,cleanCSS({
-      keepSpecialComments: 0
-    })))*/
     .pipe(gulp.dest(clientFolder+'/css/'))
 });
 
 gulp.task('less-skins', function () {
-  return gulp.src('./src/app/template/style/less/skins/*.less')
+  return gulp.src('./src/app/template/style/less/skins/**/*.less')
     .pipe(less({
       paths: [ path.join(__dirname) ]
     }))
@@ -147,7 +158,7 @@ gulp.task('datatable-images',function () {
     .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'))
 });
 
-gulp.task('assets',['fonts','images','less','less-skins', 'datatable-images']);
+gulp.task('assets',['fonts', 'images', 'less', 'less-skins', 'datatable-images']);
 
 function interpolateVersion(path, separator) {
   var prepost = path.split(separator);
@@ -155,22 +166,27 @@ function interpolateVersion(path, separator) {
     return path;
   }
   return prepost[0] +"."+ versionHash + separator + prepost[1];
-};
+}
 
+// compila tutti i fonts, less etc ..
 gulp.task('html', ['assets'], function () {
+  // prende in pasto il index.html per leggere poi i blocchi build:
   return gulp.src('./src/index.html')
+    // concatena i blocchi build
     .pipe(useref())
-    //.pipe(gulpif(['js/app.min.js'], uglify().on('error', gutil.log)))
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
     })))
-    .pipe(rename(function (path){
+    .pipe(rename(function(path) {
+      // vengono rinomibnati con le versioni Date.now()
       path.basename = interpolateVersion(path.basename+path.extname, '.min.');
       path.extname = "";
     }))
     .pipe(gulp.dest(clientFolder));
 });
 
+//task che serve per costruire il template per django con riferimento ai
+// file minificati versionHash
 gulp.task('html:compiletemplate', function(){
   return gulp.src('./src/index.html.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+versionHash+".min.css"))
@@ -271,10 +287,20 @@ gulp.task('cleanup', function() {
 });
 
 gulp.task('serve', function(done) {
-  runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync',
+  runSequence('clean','browserify',['assets','watch','plugins','plugins-less-skin'],'browser-sync',
     done);
 });
 
+//task che si occupa, in maniera sincrona di
+/*
+  1 - ripulire folder dist
+  2 - settare la variabile production a true
+  3 - browserify i file (require)
+  4 - legge il file index.html dopo che sono stati elaborati less, fonts etc .. e legget i blocchi build
+      concatena e mette come mversione.min.css/js
+  5 - scrivere il template per django sostituendo al suffisso .min la versione correnter Date.now().min.css/js
+  6 - rimuovere i file app.js e app.css dalla folder client
+*/
 gulp.task('dist', function(done) {
   runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
     done);
@@ -288,6 +314,7 @@ gulp.task('g3w-admin-plugins',function() {
       path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
     .pipe(uglify())
+    .pipe(sourcemaps.write("."))
     .pipe(gulp.dest("."));
 });
 
@@ -313,6 +340,7 @@ gulp.task('g3w-admin-client:template',function(){
 
 gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
 
+// task che si occupa di tutta la parte admin, dalla compilazione del sdk, app ai plugins
 gulp.task('g3w-admin',function(done){
   runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
 });

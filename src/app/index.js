@@ -141,14 +141,12 @@ ApplicationService.on('ready', function() {
   var templateConfig = createTemplateConfig();
   //istanzio l'application Template passando il templateconfig, l'applicationservice
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
+  // resto in ascolto dell'on ready lanciato dopo la costruzione dell'interfaccia
   applicationTemplate.on('ready', function() {
-    ApplicationService.postBootstrap();
+    ApplicationService.postBootstrap()
   });
   //inizializzo e faccio partire con il metodo init
   applicationTemplate.init();
-  // quando (dopo la chiamata e il setup del layout etc..) dell'application template
-  // è ready lancio l'applicationTemplate service postBoostrat
-
 });
 
 // funzione che viene lanciata al momento di caricare app.js
