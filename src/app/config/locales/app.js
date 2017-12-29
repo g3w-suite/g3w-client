@@ -22,7 +22,10 @@ var translations = {
       "input_validation_error": "Campo obbligatorio o valore non corretto",
       "save": "Salva",
       "cancel": "Cancella",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "editing": {
+        "delete_feature": "Vuoi eliminare l'elemento selezionato?"
+      }
     }
   },
   "en": {
@@ -48,7 +51,10 @@ var translations = {
       "input_validation_error": "Mandatory Field or wrong data",
       "save": "Save",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "editing": {
+        "delete_feature": "Do you want delete selected feature ?"
+      }
     }
   }
 };

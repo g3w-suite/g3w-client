@@ -1,14 +1,11 @@
 var conf = require('./config');
 var path = require('path');
 var del = require('del');
-var url = require('url');
 //Gulp
 var gulp   = require('gulp');
 ///
 var argv = require('yargs').argv;
-var concat = require('gulp-concat');
 var runSequence = require('run-sequence');
-var streamify = require('gulp-streamify');
 var rename = require('gulp-rename');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
@@ -16,23 +13,21 @@ var flatten = require('gulp-flatten');
 // userref server per parsare i build block del template
 var useref = require('gulp-useref');
 ///////////////////////////////////////////////////////
-var filter = require('gulp-filter');
 var replace = require('gulp-replace');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
-var chalk = require('chalk');
 var watch = require('gulp-watch');
 var cleanCSS = require('gulp-clean-css');
 var gutil = require("gulp-util");
 var less = require('gulp-less');
 var jshint = require('gulp-jshint');
 var browserify = require('browserify');
+var babelify = require('babelify');
 var watchify = require('watchify');
 var stringify = require('stringify');
 var sourcemaps = require('gulp-sourcemaps');
 var browserSync = require('browser-sync');
 var httpProxy = require('http-proxy');
-var Server = require('karma').Server;
 
 var production = false;
 
@@ -56,6 +51,9 @@ gulp.task('browserify', [], function() {
   if (!production) {
     bundler = watchify(bundler);
   }
+  bundler.transform(babelify, {
+    babelrc: true
+  });
   bundler.transform(stringify, {
     appliesTo: { includeExtensions: ['.html'] }
   });
@@ -63,7 +61,7 @@ gulp.task('browserify', [], function() {
   var bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
-        console.log(err);
+        console.log(err)
         //browserSync.notify(err.message, 3000);
         //browserSync.reload();
         this.emit('end');
@@ -141,13 +139,13 @@ gulp.task('less-skins', function () {
 });
 
 gulp.task('fonts', function () {
-  return gulp.src(['./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
+  return gulp.src(['!./src/libs/**/node_modules/**/','./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/fonts/'))
 });
 
 gulp.task('images', function () {
-  return gulp.src(['./src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
+  return gulp.src(['!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/images/'))
 });
@@ -172,7 +170,7 @@ function interpolateVersion(path, separator) {
 gulp.task('html', ['assets'], function () {
   // prende in pasto il index.html per leggere poi i blocchi build:
   return gulp.src('./src/index.html')
-    // concatena i blocchi build
+  // concatena i blocchi build all'interno del template index.html es: <!-- build:js js/sdk.ext.min.js -->
     .pipe(useref())
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
@@ -348,21 +346,3 @@ gulp.task('g3w-admin',function(done){
 gulp.task('default',['serve']); // development
 
 //Karma
-/**
- * Run test once and exit
- */
-gulp.task('karma_test', function (done) {
-  new Server({
-    configFile: './karma.conf.js',
-    singleRun: true
-  }, done).start();
-});
-
-/**
- * Watch for file changes and re-run tests on each change
- */
-gulp.task('karma_tdd', function (done) {
-  new Server({
-    configFile: './karma.conf.js'
-  }, done).start();
-});
