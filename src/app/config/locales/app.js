@@ -25,11 +25,30 @@ const translations = {
       "editing": {
         "delete_feature": "Vuoi eliminare l'elemento selezionato?"
       },
+      "info": {
+        "title": "Risultati",
+        "open_link": "Apri documento allegato",
+        "server_error": "Si è verificato un errore nella richiesta al server",
+        "no_results": "Nessun risultato per questa interrogazione/ricerca "
+      },
       "form": {
         "inputs": {
           "input_validation_error": "Campo obbligatorio o tipo valore non corretto",
           "integer": "intero",
           "text": "testuale"
+        },
+        "relations": {
+          "tooltips": {
+            "add_relation": "Crea ed aggiungi nuova relazione",
+            "link_relation": "Aggiungi relazione",
+            "open_relation_tools": "Apri strumenti relatione",
+            "unlink_relation": "Annulla relazione"
+          }
+        }
+      },
+      "mapcontrols": {
+        "geolocations": {
+          "error": "Non è possibile calcolare la tua posizione."
         }
       }
     }
@@ -54,20 +73,38 @@ const translations = {
       "paste_form_data": "Paste",
       "copy_form_data_from_feature": "Copia i dati dalla mappa",
       "could_not_load_vector_layers": "Connession server error: non è stato possibile caricare i vettoriali richiesti",
-
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close",
       "editing": {
         "delete_feature": "Do you want delete selected feature ?"
       },
+      "info": {
+        "title": "Results",
+        "open_link": "Open attached document",
+        "server_error": "An error occurred from server",
+        "no_results": "No results found for this query/search"
+      },
       "form": {
-      "inputs": {
-        "input_validation_error": "Mandatory Field or wrong data type",
-        "integer": "integer",
-        "text": "text"
+        "inputs": {
+          "input_validation_error": "Mandatory Field or wrong data type",
+          "integer": "integer",
+          "text": "text"
+        },
+        "relations": {
+          "tooltips": {
+            "add_relation": "Create and link new relation",
+            "link_relation": "Link relation",
+            "open_relation_tools": "Show relation tools",
+            "unlink_relation": "Unlink relation"
+          }
+        }
+      },
+      "mapcontrols": {
+        "geolocations": {
+          "error": "Can't get your position"
+        }
       }
-    }
     }
   }
 };
