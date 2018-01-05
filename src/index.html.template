@@ -20,6 +20,7 @@
   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
+  <link rel="icon" href="{% static '/img/favicon.ico' %}">
 </head>
 <body class="hold-transition skin-{{ skin_class|default:"blue" }} fixed {% if sidebar_collapse %} sidebar-collapse {% endif %}" >
   <div id="app">

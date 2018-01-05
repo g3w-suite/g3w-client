@@ -23,7 +23,19 @@ const translations = {
       "cancel": "Cancella",
       "close": "Chiudi",
       "editing": {
-        "delete_feature": "Vuoi eliminare l'elemento selezionato?"
+        "tools": {
+          "add_feature": "Aggiungi feature",
+          "delete_feature": "Elimina feature",
+          "move_feature": "Muovi feature",
+          "update_vertex": "Aggiorna vertici feature",
+          "update_feature": "Modifica feature"
+        },
+        "messages": {
+          "delete_feature": "Vuoi eliminare l'elemento selezionato?",
+          "commit": "Vuoi salvare definitivamente le modifiche",
+          "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti."
+        }
+
       },
       "info": {
         "title": "Risultati",
@@ -69,15 +81,26 @@ const translations = {
       "street_search": "Find Address",
       "show": "Show",
       "hide": "Hide",
-      "copy_form_data": "Copia i dati del modulo",
+      "copy_form_data": "Copy data",
       "paste_form_data": "Paste",
-      "copy_form_data_from_feature": "Copia i dati dalla mappa",
-      "could_not_load_vector_layers": "Connession server error: non è stato possibile caricare i vettoriali richiesti",
+      "copy_form_data_from_feature": "Copy data from map",
+      "could_not_load_vector_layers": "Connection error: Layers can be loaded",
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close",
       "editing": {
-        "delete_feature": "Do you want delete selected feature ?"
+        "tools": {
+          "add_feature": "Add feature",
+          "delete_feature": "Delete feature",
+          "move_feature": "Move feature",
+          "update_vertex": "Update feature vertex",
+          "update_feature": "Update feature"
+        },
+        "messages": {
+          "delete_feature": "Do you want delete selected feature ?",
+          "commit": "Do you want to save the changes",
+          "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done."
+        }
       },
       "info": {
         "title": "Results",
