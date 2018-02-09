@@ -1,49 +1,53 @@
-var conf = require('./config');
-var path = require('path');
-var del = require('del');
+const conf = require('./config');
+const path = require('path');
+const del = require('del');
 //Gulp
-var gulp   = require('gulp');
+const gulp   = require('gulp');
 ///
-var argv = require('yargs').argv;
-var runSequence = require('run-sequence');
-var rename = require('gulp-rename');
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
-var flatten = require('gulp-flatten');
+const argv = require('yargs').argv;
+const runSequence = require('run-sequence');
+const rename = require('gulp-rename');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const flatten = require('gulp-flatten');
 // userref server per parsare i build block del template
-var useref = require('gulp-useref');
+const useref = require('gulp-useref');
 ///////////////////////////////////////////////////////
-var replace = require('gulp-replace');
-var gulpif = require('gulp-if');
-var uglify = require('gulp-uglify');
-var watch = require('gulp-watch');
-var cleanCSS = require('gulp-clean-css');
-var gutil = require("gulp-util");
-var less = require('gulp-less');
-var jshint = require('gulp-jshint');
-var browserify = require('browserify');
-var babelify = require('babelify');
-var imgurify = require('imgurify');
-var vueify = require('vueify');
-var watchify = require('watchify');
-var stringify = require('stringify');
-var sourcemaps = require('gulp-sourcemaps');
-var browserSync = require('browser-sync');
-var httpProxy = require('http-proxy');
-
-var production = false;
+const replace = require('gulp-replace');
+const gulpif = require('gulp-if');
+const uglify = require('gulp-uglify');
+const watch = require('gulp-watch');
+const cleanCSS = require('gulp-clean-css');
+const gutil = require("gulp-util");
+const less = require('gulp-less');
+const jshint = require('gulp-jshint');
+const browserify = require('browserify');
+const babelify = require('babelify');
+const imgurify = require('imgurify');
+const vueify = require('vueify');
+const watchify = require('watchify');
+const stringify = require('stringify');
+const sourcemaps = require('gulp-sourcemaps');
+const browserSync = require('browser-sync');
+const httpProxy = require('http-proxy');
 
 
-var distFolder = conf.distFolder;
-var clientFolder = conf.clientFolder;
+const distFolder = conf.distFolder;
+const clientFolder = conf.clientFolder;
+const client = argv.client || '';
 
-var client = argv.client || '';
+// it used to change build minified js and css to avoid server cache
+// every time we deploy a new client version
+const versionHash = Date.now();
 
-var versionHash = Date.now();
+// production const to set enviromental variable
+let production = false;
+
 
 
 gulp.task('browserify', [], function() {
-  var bundler = browserify('./src/app/index.js', {
+  let rebundle;
+  let bundler = browserify('./src/app/index.js', {
     basedir: "./",
     paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
     debug: !production,
@@ -60,7 +64,7 @@ gulp.task('browserify', [], function() {
     appliesTo: { includeExtensions: ['.html'] }
   }).transform(imgurify)
 
-  var bundle = function() {
+  const bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
         console.log(err);
@@ -79,8 +83,6 @@ gulp.task('browserify', [], function() {
       .pipe(gulp.dest(clientFolder+'/js/'))
   };
 
-  var rebundle;
-
   if (!production) {
     rebundle = function() {
       return bundle()
@@ -96,7 +98,7 @@ gulp.task('browserify', [], function() {
   return rebundle();
 });
 
-// serve per mettere i plugin nelle rispettive folder
+// it used to copy all plugins to g3w-admin plugin folder
 gulp.task('plugins', function() {
   return gulp.src('./src/libs/plugins/**/plugin.js')
     .pipe(rename(function(path) {
@@ -105,7 +107,7 @@ gulp.task('plugins', function() {
     .pipe(gulp.dest('.'));
 });
 
-// serve per gli eventuali less/css stili nella folder dei plugin
+// it use to lessisfy less file
 gulp.task('plugins-less-skin', function() {
   return gulp.src('./src/libs/plugins/**/**.less')
     .pipe(less({
@@ -166,25 +168,23 @@ function interpolateVersion(path, separator) {
   return prepost[0] +"."+ versionHash + separator + prepost[1];
 }
 
-// compila tutti i fonts, less etc ..
 gulp.task('html', ['assets'], function () {
-  // prende in pasto il index.html per leggere poi i blocchi build:
+  // get index.html to read all block build:
   return gulp.src('./src/index.html')
-  // concatena i blocchi build all'interno del template index.html es: <!-- build:js js/sdk.ext.min.js -->
+  // concat all build blocks inside index.html template es: <!-- build:js js/sdk.ext.min.js -->
     .pipe(useref())
     .pipe(gulpif(['css/app.min.css'],cleanCSS({
       keepSpecialComments: 0
     })))
     .pipe(rename(function(path) {
-      // vengono rinomibnati con le versioni Date.now()
+      // renamed with version Date.now()
       path.basename = interpolateVersion(path.basename+path.extname, '.min.');
       path.extname = "";
     }))
     .pipe(gulp.dest(clientFolder));
 });
 
-//task che serve per costruire il template per django con riferimento ai
-// file minificati versionHash
+//task used to build django g3w-admin template with the refercenced of all css and js minifiged and added versionHash
 gulp.task('html:compiletemplate', function(){
   return gulp.src('./src/index.html.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+versionHash+".min.css"))
@@ -246,7 +246,7 @@ gulp.task('browser:reload',function(){
   }
 });
 
-// funzione che fa partire il sequence run passando argomenti
+// run sequence function. It expect some arguments
 function prepareRunSequence() {
   var _arguments = arguments;
   return function() {
@@ -291,15 +291,15 @@ gulp.task('serve', function(done) {
     done);
 });
 
-//task che si occupa, in maniera sincrona di
+//dist task: it used to synchronize the following tasks:
 /*
-  1 - ripulire folder dist
-  2 - settare la variabile production a true
-  3 - browserify i file (require)
-  4 - legge il file index.html dopo che sono stati elaborati less, fonts etc .. e legget i blocchi build
-      concatena e mette come mversione.min.css/js
-  5 - scrivere il template per django sostituendo al suffisso .min la versione correnter Date.now().min.css/js
-  6 - rimuovere i file app.js e app.css dalla folder client
+  1 - clean dist folder
+  2 - set production variable to true
+  3 - browserify all files (require)
+  4 - read index.html after compiled less, fonts etc .. and read build blocks
+      concatenate e insert <version>.min.css/js version
+  5 - write django g3w-admin template subtitude suffix .min with current version
+  6 - Remove app.js and app.css from g3w-admin client folder
 */
 gulp.task('dist', function(done) {
   runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
@@ -309,8 +309,8 @@ gulp.task('dist', function(done) {
 gulp.task('g3w-admin-plugins',function() {
   gulp.src(distFolder+'/**/js/plugin.js')
     .pipe(rename(function(path){
-      var dirname = path.dirname;
-      var pluginname = dirname.replace('/js','');
+      const dirname = path.dirname;
+      const pluginname = dirname.replace('/js','');
       path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
     .pipe(uglify())
@@ -318,7 +318,7 @@ gulp.task('g3w-admin-plugins',function() {
     .pipe(gulp.dest("."));
 });
 
-var client_version = (client != '') ? 'client-'+client : 'client';
+const client_version = (client != '') ? 'client-'+client : 'client';
 
 gulp.task('g3w-admin-client:clear', function(){
   return del([
@@ -340,11 +340,10 @@ gulp.task('g3w-admin-client:template',function(){
 
 gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
 
-// task che si occupa di tutta la parte admin, dalla compilazione del sdk, app ai plugins
+// task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
 gulp.task('g3w-admin',function(done){
   runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
 });
 
-gulp.task('default',['serve']); // development
+gulp.task('default',['serve']); // development task - Deafult
 
-//Karma

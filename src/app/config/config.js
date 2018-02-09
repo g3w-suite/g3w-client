@@ -1,23 +1,23 @@
-var apptitle = "G3W Client";
+const apptitle = "G3W Client";
 
-var plugins = {
+const plugins = {
 };
 
-var tools = {
+const tools = {
   tools:  []
 };
 
-// restituisce la configurazione/ messaggi
-var i18n = {
+// get message fro internalization
+const i18n = {
   resources: require('./locales/app.js')
 };
 
-var client =  {
+const client =  {
   debug:  true,
   local:  false
 };
 
-var server =  {
+const server =  {
   urls:  {
     baseurl: '/',
     ows:  'ows',

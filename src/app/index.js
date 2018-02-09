@@ -1,19 +1,13 @@
 const i18ninit = require('sdk').core.i18n.init;
-// oggetto
 const ApplicationService = require('sdk/sdk').core.ApplicationService;
-// oggetto application template che si occupa di gestire il template dell'applicazione
+// ApplicationTemplate instance. It manages the application template
 const ApplicationTemplate = require('./template/js/template');
-// configurazione dell'applicazione
+// Main applcation config file
 const config = require('./config/config.js');
-// SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
+// set the global enviromental variable g3wsdk. It used by plugins to load sdk class and instances
 window.g3wsdk = require('sdk');
-// //imposto il timeout delle richieste ajax di jquery
-// $.ajaxSetup({
-//    timeout: 1000 // in millisecondsi18
-// });
 
-// questa funzione che ala configurazione inizale dell'applicazione
-// tutte le cose in comune
+// main function to create the start application configuration
 function createApplicationConfig() {
   return {
     apptitle: config.apptitle || '',
@@ -37,11 +31,11 @@ function createApplicationConfig() {
     proj4: config.group.proj4,
     minscale: config.group.minscale,
     maxscale: config.group.maxscale,
-    // richiesto da ProjectService
+    // needed by ProjectService
     getWmsUrl: function(project){
       return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
-    // richiesto da ProjectsRegistry per acquisire informazioni specifiche del progetto
+    // needed by ProjectsRegistry to get informations about project configuration
     getProjectConfigUrl: function(project){
       return config.server.urls.baseurl+config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
     },
@@ -52,19 +46,17 @@ function createApplicationConfig() {
   };
 }
 
-// questa è la configurazione base del template che conterrà tutti gli
-// elementi previsti dal template. Nella definizione sono tutti oggetti vuoti
-// Sarà l'applicazione a scegliere di riempire gli elementi
+// this is a base template configuration. It store all the elements
+// useful for the template. Att begin will be empty objects
+// Application will set only the required element
 function createTemplateConfig() {
-  // recupero i componenti
+  // get sdk componets
   const CatalogComponent = require('sdk').gui.vue.CatalogComponent;
   const SearchComponent = require('sdk').gui.vue.SearchComponent;
   const PrintComponent = require('sdk').gui.vue.PrintComponent;
   const ToolsComponent = require('sdk').gui.vue.ToolsComponent;
   const MapComponent = require('sdk').gui.vue.MapComponent;
   const ContentsComponent = require('./template/js/contentsviewer');
-  //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
-  //ad hoc per i risultati
   const QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
   return {
     title: config.apptitle,
@@ -77,7 +69,7 @@ function createTemplateConfig() {
           new PrintComponent({
             id: 'print',
             open: false,
-            collapsible: true, //  i permette di capire se cliccandoci sopra posso lanciare il setOpen del componente
+            collapsible: true, //  it used to manage click event if can run setOpen component method
             icon: "fa fa-print"
           }),
           new SearchComponent({
@@ -92,7 +84,7 @@ function createTemplateConfig() {
             collapsible: false,
             icon: "fa fa-map-o"
           }),
-          // qui vanno i plugins sotto forma di tools
+          // Component that store plugins
           new ToolsComponent({
             id: 'tools',
             open: false,
@@ -111,7 +103,7 @@ function createTemplateConfig() {
       })
     ],
     viewport: {
-      // placeholder del contenuto (view content) inizialmente Vista Secondaria (nascosta)
+      // placeholder of the content (view content). Secodary view (hidden)
       components: {
         map: new MapComponent({
           id: 'map'
@@ -130,34 +122,30 @@ function sendErrorToApplicationTemplate(reloadFnc,error) {
   } else {
     error = 'Errore di connessione'
   }
-  // stato un erore ne caricamento della configurazione del progetto
-  // passo la stessa funzione di bootstrap
   ApplicationTemplate.fail(reloadFnc, error);
 }
 
 ApplicationService.on('ready', function() {
-  //istanzio l'appication template passando la configurazione
-  // del template e l'applicationService che fornisce API del progetto
+  //create the ApplicationTemplate instance passing the template configuration
+  // and the applicationService instance that is useful to work with project API
   const templateConfig = createTemplateConfig();
-  //istanzio l'application Template passando il templateconfig, l'applicationservice
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
-  // resto in ascolto dell'on ready lanciato dopo la costruzione dell'interfaccia
+  // Listen ready event emit after build interface
   applicationTemplate.on('ready', function() {
     ApplicationService.postBootstrap()
   });
-  //inizializzo e faccio partire con il metodo init
+  //call initialize applicationTemplate method
   applicationTemplate.init();
 });
 
-// funzione che viene lanciata al momento di caricare app.js
+// frun when app.js is loaded
 const bootstrap = function() {
-  //ottengo al configurazione iniziale del gruppo di progetti
-  //config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
+  //get all configuration from groups
+  //config.server.urls.initconfig: api url to get starting configuration
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
-  //ritorna una promessa con la configurazione iniziale
+  //returna promise with starting configuration
   .then(function(initConfig) {
-    // una volta ottenuta la configurazione inziale
-    // vado a scrivere gli url dei file statici e del media url del base url e del vector url
+    // write urls of static files and media url (base url and vector url)
     config.server.urls.baseurl = initConfig.baseurl;
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
@@ -165,17 +153,15 @@ const bootstrap = function() {
     config.server.urls.vectorurl = initConfig.vectorurl;
     config.group = initConfig.group;
     config.user = initConfig.user;
-    // ricavo la lingua dalla configurazione passata dal server
+    // get language from server
     config.i18n.lng = config.user.i18n;
-    // vado a creare la configurazione per l'applicazione
+    // create application configuration
     const applicationConfig = createApplicationConfig();
-    // inizializza l'internalizzazione
+    // inizialize internalization
     i18ninit(config.i18n);
-    // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione
-    // la vado a pssare al metodo init dell'application service
-    ApplicationService.init(applicationConfig, true) // lancio manualmente il postBootstrp
+    ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
       .then(function() {
-        // andato tutto a buon fine
+        // all fine
       })
       .fail(function(error) {
         sendErrorToApplicationTemplate(bootstrap, error);
@@ -186,6 +172,6 @@ const bootstrap = function() {
   })
 };
 
-// lancio subito il bootstrap
+// run  bootstrap function
 bootstrap();
 
