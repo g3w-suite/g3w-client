@@ -1,10 +1,10 @@
-var i18ninit = require('sdk').core.i18n.init;
+const i18ninit = require('sdk').core.i18n.init;
 // oggetto
-var ApplicationService = require('sdk/sdk').core.ApplicationService;
+const ApplicationService = require('sdk/sdk').core.ApplicationService;
 // oggetto application template che si occupa di gestire il template dell'applicazione
-var ApplicationTemplate = require('./template/js/template');
+const ApplicationTemplate = require('./template/js/template');
 // configurazione dell'applicazione
-var config = require('./config/config.js');
+const config = require('./config/config.js');
 // SETTO LA VARIABILE GLOBALE g3wsdk, COME SE AVESSI USATO sdk.js
 window.g3wsdk = require('sdk');
 // //imposto il timeout delle richieste ajax di jquery
@@ -57,15 +57,15 @@ function createApplicationConfig() {
 // Sarà l'applicazione a scegliere di riempire gli elementi
 function createTemplateConfig() {
   // recupero i componenti
-  var CatalogComponent = require('sdk').gui.vue.CatalogComponent;
-  var SearchComponent = require('sdk').gui.vue.SearchComponent;
-  var PrintComponent = require('sdk').gui.vue.PrintComponent;
-  var ToolsComponent = require('sdk').gui.vue.ToolsComponent;
-  var MapComponent = require('sdk').gui.vue.MapComponent;
-  var ContentsComponent = require('./template/js/contentsviewer');
+  const CatalogComponent = require('sdk').gui.vue.CatalogComponent;
+  const SearchComponent = require('sdk').gui.vue.SearchComponent;
+  const PrintComponent = require('sdk').gui.vue.PrintComponent;
+  const ToolsComponent = require('sdk').gui.vue.ToolsComponent;
+  const MapComponent = require('sdk').gui.vue.MapComponent;
+  const ContentsComponent = require('./template/js/contentsviewer');
   //al momento si utilizza quesllo quenerico ma si potrebbe costruire un componente
   //ad hoc per i risultati
-  var QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
+  const QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
   return {
     title: config.apptitle,
     placeholders: {
@@ -138,7 +138,7 @@ function sendErrorToApplicationTemplate(reloadFnc,error) {
 ApplicationService.on('ready', function() {
   //istanzio l'appication template passando la configurazione
   // del template e l'applicationService che fornisce API del progetto
-  var templateConfig = createTemplateConfig();
+  const templateConfig = createTemplateConfig();
   //istanzio l'application Template passando il templateconfig, l'applicationservice
   applicationTemplate = new ApplicationTemplate(templateConfig, this);
   // resto in ascolto dell'on ready lanciato dopo la costruzione dell'interfaccia
@@ -150,7 +150,7 @@ ApplicationService.on('ready', function() {
 });
 
 // funzione che viene lanciata al momento di caricare app.js
-var bootstrap = function() {
+const bootstrap = function() {
   //ottengo al configurazione iniziale del gruppo di progetti
   //config.server.urls.initconfig: è l'api url a cui chiedere la configurazione iniziale
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
@@ -168,7 +168,7 @@ var bootstrap = function() {
     // ricavo la lingua dalla configurazione passata dal server
     config.i18n.lng = config.user.i18n;
     // vado a creare la configurazione per l'applicazione
-    var applicationConfig = createApplicationConfig();
+    const applicationConfig = createApplicationConfig();
     // inizializza l'internalizzazione
     i18ninit(config.i18n);
     // unavolta ottenuta la configurazione e settetat in modo digeribile all'applicazione

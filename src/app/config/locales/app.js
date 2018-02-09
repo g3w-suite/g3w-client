@@ -3,6 +3,7 @@ const translations = {
     "translation": {
       "change_map": "Cambia Mappa",
       "editing_data": "Editing Dati",
+      "editing_attributes": "Editita attributi",
       "component": "Componente Generico",
       "search": "Ricerche",
       "print": "Stampa",
@@ -22,6 +23,8 @@ const translations = {
       "save": "Salva",
       "cancel": "Cancella",
       "close": "Chiudi",
+      "exitnosave": "Esci senza salvare",
+      "annul": "Annulla",
       "editing": {
         "tools": {
           "add_feature": "Aggiungi feature",
@@ -62,6 +65,12 @@ const translations = {
         "geolocations": {
           "error": "Non è possibile calcolare la tua posizione."
         }
+      },
+      "catalog_items": {
+        "contextmenu": {
+          "zoomtolayer": "Zoom to Layer",
+          "open_attribute_table": "Apri la tabella degli attibuti"
+        }
       }
     }
   },
@@ -69,6 +78,7 @@ const translations = {
     "translation": {
       "change_map": "Change Map",
       "editing_data": "Editing Layers",
+      "editing_attributes": "Editing attributes",
       "component": "Generic Component",
       "search": "Search",
       "print": "Print",
@@ -88,6 +98,8 @@ const translations = {
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close",
+      "exitnosave": "Exit without save",
+      "annul": "Cancel",
       "editing": {
         "tools": {
           "add_feature": "Add feature",
@@ -126,6 +138,12 @@ const translations = {
       "mapcontrols": {
         "geolocations": {
           "error": "Can't get your position"
+        }
+      },
+      "catalog_items": {
+        "contextmenu": {
+          "zoomtolayer": "Zoom to Layer",
+          "open_attribute_table": "Open Attribute Table"
         }
       }
     }

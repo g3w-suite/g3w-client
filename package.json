@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "serve": "gulp serve",
-    "dist": "gulp dist"
+    "dist": "gulp dist",
+    "vue": "browserify -t vueify -e main.js -o pippo.js"
   },
   "repository": {
     "type": "git",
@@ -15,7 +16,8 @@
   "license": "GPL v.3",
   "homepage": "https://bitbucket.org/gis3w/g3w-client#readme",
   "dependencies": {
-    "object-hash": "^1.2.0"
+    "object-hash": "^1.2.0",
+    "vue": "^2.5.13"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -47,6 +49,7 @@
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.5",
     "http-proxy": "^1.11.0",
+    "imgurify": "^2.0.1",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "karma": "^1.7.1",
@@ -67,6 +70,7 @@
     "uglify-js": "^2.6.2",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
+    "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.9.7",

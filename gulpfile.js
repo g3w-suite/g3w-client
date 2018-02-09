@@ -23,6 +23,8 @@ var less = require('gulp-less');
 var jshint = require('gulp-jshint');
 var browserify = require('browserify');
 var babelify = require('babelify');
+var imgurify = require('imgurify');
+var vueify = require('vueify');
 var watchify = require('watchify');
 var stringify = require('stringify');
 var sourcemaps = require('gulp-sourcemaps');
@@ -51,19 +53,17 @@ gulp.task('browserify', [], function() {
   if (!production) {
     bundler = watchify(bundler);
   }
-  bundler.transform(babelify, {
+  bundler.transform(vueify)
+    .transform(babelify, {
     babelrc: true
-  });
-  bundler.transform(stringify, {
+  }).transform(stringify, {
     appliesTo: { includeExtensions: ['.html'] }
-  });
+  }).transform(imgurify)
 
   var bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
-        console.log(err)
-        //browserSync.notify(err.message, 3000);
-        //browserSync.reload();
+        console.log(err);
         this.emit('end');
         del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
           process.exit();
@@ -225,15 +225,17 @@ function proxyMiddleware(urls) {
 }
 
 gulp.task('browser-sync', function() {
+  var port = conf.localServerPort ? conf.localServerPort : 3000
   browserSync.init({
     server: {
       baseDir: ["src","."],
       middleware: [proxyMiddleware(conf.proxy.urls)]
     },
+    port: port,
     open: false,
     startPath: "/",
     socket: {
-      domain: "http://localhost:3000"
+      domain: "http://localhost:" + port
     }
   });
 });
