@@ -75,3 +75,7 @@ The main gulp commands to use in develop enviroment are:
       gulp g3w-admin
    ```
 
+# Internalization
+
+It is possible to change messages to the user or application components text changing file app.j 
+that is stored in g3w-client/src/app/config/locales
