@@ -21,6 +21,29 @@ The following instruction will install all node modules mandatory to use develop
 ```bash
 npm install
 ```
+## Install SDK and TEMPLATE
+
+The following instruction are mandatory to run and work with G3W_CLIENT
+
+1) From main g3w-client folder, move to src/app subfolder
+   ```bash
+   ~/../g3w-client$ cd src/app
+   ```
+2) Clone G3W-TEMPLATE repository (you have to call it template)
+    ```bash
+      ~/../g3w-client/src/app$ git clone https://github.com/g3w-suite/g3w-client-template-lte.git template
+      ```   
+3) Create a libs subfolder into src folder
+   ```bash
+      ~/../g3w-client/src/app$ cd ..
+      ~/../g3w-client/src$ mkdir libs
+      ~/../g3w-client/src$ cd libs
+    ```
+4) Clone G3W-SDK repository (you have to call it sdk)
+
+    ```bash
+       ~/../g3w-client/src/libs$ git clone https://github.com/g3w-suite/g3w-client-sdk.git sdk
+     ```
 
 After you can start locally demo (we use [**Gulp**](https://gulpjs.com/)):
 
@@ -32,6 +55,8 @@ gulp default
 
 You can customize local server configuration through "config.js" file
 
+1) 
+
 ## Development Task Command
 
 The main gulp command to use develop enviroment are:
@@ -39,7 +64,7 @@ The main gulp command to use develop enviroment are:
 1."Default Commad". It used to run local server
  
   ```bash
-    gulp default
+    ~/../g3w-client$ gulp default
   ``` 
 2."Admin Command". It used to build and copy the client files (.js, .css, etc..) and index.html template to g3w-admin client folders
   
