@@ -45,12 +45,6 @@ The following instruction are mandatory to run and work with G3W-CLIENT
        ~/../g3w-client/src/libs$ git clone https://github.com/g3w-suite/g3w-client-sdk.git sdk
      ```
 
-After you can start locally demo (we use [**Gulp**](https://gulpjs.com/)):
-
-```bash
-gulp default
-```
-
 ## Local Server Configuration
 
 You can customize local server configuration through "config.js" file
@@ -64,7 +58,11 @@ You can customize local server configuration through "config.js" file
 
 ## Development Task Command
 
-The main gulp command to use develop enviroment are:
+
+We use [**Gulp**](https://gulpjs.com/)  for automating tasks in development 
+
+
+The main gulp commands to use in develop enviroment are:
 
 1."Default Commad". It used to run local server. Run it from ~/../g3w-client$
  
