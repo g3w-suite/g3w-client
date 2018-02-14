@@ -23,7 +23,7 @@ npm install
 ```
 ## Install SDK and TEMPLATE
 
-The following instruction are mandatory to run and work with G3W_CLIENT
+The following instruction are mandatory to run and work with G3W-CLIENT
 
 1) From main g3w-client folder, move to src/app subfolder
    ```bash
@@ -55,13 +55,18 @@ gulp default
 
 You can customize local server configuration through "config.js" file
 
-1) 
+
+1) Open config.js file to change local G3W-ADMIN path, server port, etc ..:
+
+    ```bash
+       ~/../g3w-client$ nano config.js
+     ``` 
 
 ## Development Task Command
 
 The main gulp command to use develop enviroment are:
 
-1."Default Commad". It used to run local server
+1."Default Commad". It used to run local server. Run it from ~/../g3w-client$
  
   ```bash
     ~/../g3w-client$ gulp default
