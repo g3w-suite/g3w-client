@@ -10,11 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/gis3w/g3w-client.git"
+    "url": "https://github.com/g3w-suite/g3w-client.git"
   },
   "author": "",
   "license": "GPL v.3",
-  "homepage": "https://bitbucket.org/gis3w/g3w-client#readme",
+  "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
     "object-hash": "^1.2.0",
     "vue": "^2.5.13"
