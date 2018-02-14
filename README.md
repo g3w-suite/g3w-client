@@ -21,7 +21,7 @@ The following instruction will install all node modules mandatory to use develop
 ```bash
 npm install
 ```
-## Install SDK and TEMPLATE
+## Clone G3W-SDK and G3W-TEMPLATE repositories
 
 The following instruction are mandatory to run and work with G3W-CLIENT
 
