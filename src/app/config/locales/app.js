@@ -1,7 +1,7 @@
 const translations = {
   "it": {
     "translation": {
-      "change_map": "Cambia Mappa",
+      "changemap": "Cambia Mappa",
       "editing_data": "Editing Dati",
       "editing_attributes": "Editita attributi",
       "component": "Componente Generico",
@@ -9,6 +9,7 @@ const translations = {
       "print": "Stampa",
       "dosearch": "Cerca",
       "catalog": "Mappa",
+      "data": "Dati",
       "baselayers": "Basi",
       "tools": "Strumenti",
       "tree": "Strati",
@@ -27,6 +28,7 @@ const translations = {
       "close": "Chiudi",
       "exitnosave": "Esci senza salvare",
       "annul": "Annulla",
+      "layer_is_added": "Layer già aggiunto",
       "editing": {
         "tools": {
           "add_feature": "Aggiungi feature",
@@ -78,7 +80,7 @@ const translations = {
   },
   "en": {
     "translation": {
-      "change_map": "Change Map",
+      "changemap": "Change Map",
       "editing_data": "Editing Layers",
       "editing_attributes": "Editing attributes",
       "component": "Generic Component",
@@ -86,6 +88,7 @@ const translations = {
       "print": "Print",
       "dosearch": "Search",
       "catalog": "Map",
+      "data": "Data",
       "baselayers": "Base",
       "tools": "Tools",
       "tree": "Layers",
@@ -104,6 +107,7 @@ const translations = {
       "close": "Close",
       "exitnosave": "Exit without save",
       "annul": "Cancel",
+      "layer_is_added": "Layer already added",
       "editing": {
         "tools": {
           "add_feature": "Add feature",

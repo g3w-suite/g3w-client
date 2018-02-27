@@ -16,8 +16,10 @@
   "license": "GPL v.3",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "axios": "^0.18.0",
     "object-hash": "^1.2.0",
-    "vue": "^2.5.13"
+    "vue": "^2.5.13",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -72,8 +74,10 @@
     "vinyl-source-stream": "^1.1.0",
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
-    "webpack": "^3.10.0",
-    "webpack-dev-server": "^2.9.7",
+    "webpack": "^3.11.0",
+    "webpack-dev-server": "^2.11.1",
+    "webpack-dev-middleware": "^2.0.6",
+    "webpack-hot-middleware": "^2.21.0",
     "yargs": "^8.0.2"
   }
 }
