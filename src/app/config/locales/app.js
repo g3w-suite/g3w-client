@@ -1,6 +1,8 @@
 const translations = {
   "it": {
     "translation": {
+      "yes": "Si",
+      "no": "No",
       "changemap": "Cambia Mappa",
       "editing_data": "Editing Dati",
       "editing_attributes": "Editita attributi",
@@ -8,6 +10,7 @@ const translations = {
       "search": "Ricerche",
       "print": "Stampa",
       "dosearch": "Cerca",
+      "metadata": {},
       "catalog": "Mappa",
       "data": "Dati",
       "baselayers": "Basi",
@@ -23,12 +26,19 @@ const translations = {
       "error_map_loading": "Errore di caricamento della nuova mappa",
       "check_internet_connection_or_server_admin": "Controllare la connessione internet o contattare l'amministratore",
       "could_not_load_vector_layers": "Errore di connessione al server: non è stato possibile caricare i vettoriali richiesti",
+      "server_saver_error": "Errore nel salvataggio sul server",
+      "server_error": "Si è verificato un errore nella richiesta al server",
       "save": "Salva",
       "cancel": "Cancella",
       "close": "Chiudi",
+      "add": "Aggiungi",
       "exitnosave": "Esci senza salvare",
       "annul": "Annulla",
       "layer_is_added": "Layer già aggiunto",
+      "back_to_relations": "Ritorna alle Relazioni",
+      "no_relations_found": "Non ci sono relazioni",
+      "relation_data": "Dati relativi alla relazione",
+      "list_of_relations_feature": "Elenco Relazioni della feature ",
       "editing": {
         "tools": {
           "add_feature": "Aggiungi feature",
@@ -42,7 +52,8 @@ const translations = {
           "commit": "Vuoi salvare definitivamente le modifiche",
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti."
         }
-
+      },
+      "sidebar": {
       },
       "info": {
         "title": "Risultati",
@@ -67,19 +78,29 @@ const translations = {
       },
       "mapcontrols": {
         "geolocations": {
+          "title": "",
           "error": "Non è possibile calcolare la tua posizione."
+        },
+        "add_layer_control": {
+          "header": "Aggiungi Layer",
+          "select_projection": "Seleziona il sistema di proiezione del layer",
+          "select_color": "Seleziona il colore del Layer",
+          "drag_layer": "Trascina il layer in questa area"
         }
       },
       "catalog_items": {
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
-          "open_attribute_table": "Apri la tabella degli attibuti"
+          "open_attribute_table": "Apri la tabella degli attibuti",
+          "show_metadata": "Metadati"
         }
       }
     }
   },
   "en": {
     "translation": {
+      "yes": "Yes",
+      "no": "No",
       "changemap": "Change Map",
       "editing_data": "Editing Layers",
       "editing_attributes": "Editing attributes",
@@ -87,6 +108,7 @@ const translations = {
       "search": "Search",
       "print": "Print",
       "dosearch": "Search",
+      "metadata": {},
       "catalog": "Map",
       "data": "Data",
       "baselayers": "Base",
@@ -102,12 +124,19 @@ const translations = {
       "error_map_loading": "Error occurs loading map",
       "check_internet_connection_or_server_admin": "Check internet connection or contact admin",
       "could_not_load_vector_layers": "Connection error: Layers can be loaded",
+      "server_saver_error": "Error in server saving",
+      "server_error": "Server connection error",
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close",
+      "add": "Add",
       "exitnosave": "Exit without save",
       "annul": "Cancel",
       "layer_is_added": "Layer already added",
+      "back_to_relations": "Back to Relations",
+      "no_relations_found": "No relations found",
+      "relation_data": "Relation data",
+      "list_of_relations_feature": "List of relations feature ",
       "editing": {
         "tools": {
           "add_feature": "Add feature",
@@ -121,6 +150,8 @@ const translations = {
           "commit": "Do you want to save the changes",
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done."
         }
+      },
+      "sidebar": {
       },
       "info": {
         "title": "Results",
@@ -146,12 +177,19 @@ const translations = {
       "mapcontrols": {
         "geolocations": {
           "error": "Can't get your position"
+        },
+        "add_layer_control": {
+          "header": "Add Layer",
+          "select_projection": "Select layer projection",
+          "select_color": "Select Layer Color",
+          "drag_layer": "Drag and drop layer here"
         }
       },
       "catalog_items": {
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
-          "open_attribute_table": "Open Attribute Table"
+          "open_attribute_table": "Open Attribute Table",
+          "show_metadata": "Metadata"
         }
       }
     }

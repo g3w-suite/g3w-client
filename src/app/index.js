@@ -54,6 +54,7 @@ function createTemplateConfig() {
   const CatalogComponent = require('sdk').gui.vue.CatalogComponent;
   const SearchComponent = require('sdk').gui.vue.SearchComponent;
   const PrintComponent = require('sdk').gui.vue.PrintComponent;
+  const MetadataComponent = require('sdk').gui.vue.MetadataComponent;
   const ToolsComponent = require('sdk').gui.vue.ToolsComponent;
   const MapComponent = require('sdk').gui.vue.MapComponent;
   const ContentsComponent = require('./template/js/contentsviewer');
@@ -66,6 +67,13 @@ function createTemplateConfig() {
       },
       sidebar: {
         components: [
+          new MetadataComponent({
+            id: 'metadata',
+            open: false,
+            collapsible: false,
+            context: false,
+            icon: "fa fa-file-code-o"
+          }),
           new PrintComponent({
             id: 'print',
             open: false,
@@ -159,6 +167,15 @@ const bootstrap = function() {
     const applicationConfig = createApplicationConfig();
     // inizialize internalization
     i18ninit(config.i18n);
+    // set accept-language reuest header based on config language
+    //jquery
+    const language_header = config.i18n.lng || 'en';
+    $.ajaxSetup({
+      beforeSend: function (jqXHR) {
+        jqXHR.setRequestHeader('Accept-Language', language_header);
+      }
+    });
+
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
       .then(function() {
         // all fine

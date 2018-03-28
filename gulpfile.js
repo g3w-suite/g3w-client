@@ -28,6 +28,7 @@ const vueify = require('vueify');
 const watchify = require('watchify');
 const stringify = require('stringify');
 const sourcemaps = require('gulp-sourcemaps');
+const hmr = require('browserify-hmr');
 const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
 
@@ -43,6 +44,49 @@ const versionHash = Date.now();
 // production const to set enviromental variable
 let production = false;
 
+gulp.task('hmr', () => {
+   let bundler = browserify('./src/app/index.js', {
+     basedir: "./",
+     paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
+     debug: !production,
+     cache: {},
+     packageCache: {}
+   });
+
+   if (!production) {
+     bundler = watchify(bundler);
+     bundler.plugin(hmr);
+   }
+   bundler
+    .transform(vueify)
+    .transform(babelify, {
+      babelrc: true
+    }).transform(stringify, {
+      appliesTo: { includeExtensions: ['.html'] }
+    }).transform(imgurify);
+
+  bundler.on('update', bundle);
+  bundle();
+
+  function bundle() {
+    bundler.bundle()
+      .on('error', function(err){
+        console.log(err);
+        this.emit('end');
+        del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
+          process.exit();
+        });
+      })
+      .pipe(source('build.js'))
+      .pipe(buffer())
+      .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
+      .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
+      .pipe(gulpif(production, uglify().on('error', gutil.log)))
+      .pipe(gulpif(!production,sourcemaps.write()))
+      .pipe(rename('app.js'))
+      .pipe(gulp.dest(clientFolder+'/js/'))
+  }
+});
 
 
 gulp.task('browserify', [], function() {
@@ -291,6 +335,13 @@ gulp.task('serve', function(done) {
     done);
 });
 
+gulp.task('serve-hot', function(done) {
+  runSequence('clean','hmr',['assets','plugins','plugins-less-skin'],'browser-sync',
+    done);
+});
+
+
+
 //dist task: it used to synchronize the following tasks:
 /*
   1 - clean dist folder
@@ -346,4 +397,5 @@ gulp.task('g3w-admin',function(done){
 });
 
 gulp.task('default',['serve']); // development task - Deafult
+gulp.task('default-hot',['serve-hot']); // development task Hot Module- Deafult
 
