@@ -38,6 +38,7 @@ const translations = {
       "back_to_relations": "Ritorna alle Relazioni",
       "no_relations_found": "Non ci sono relazioni",
       "relation_data": "Dati relativi alla relazione",
+      "relation_already_added" : "Relazione già presente",
       "list_of_relations_feature": "Elenco Relazioni della feature ",
       "editing": {
         "tools": {
@@ -136,6 +137,7 @@ const translations = {
       "back_to_relations": "Back to Relations",
       "no_relations_found": "No relations found",
       "relation_data": "Relation data",
+      "relation_already_added" : "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
       "editing": {
         "tools": {

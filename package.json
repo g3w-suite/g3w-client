@@ -19,6 +19,8 @@
     "axios": "^0.18.0",
     "object-hash": "^1.2.0",
     "vue": "^2.5.13",
+    "vue-search-select": "^2.5.0",
+    "vuetable-2": "^1.7.5",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
