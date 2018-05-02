@@ -4,7 +4,8 @@
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
-    "serve": "gulp serve",
+    "admin": "gulp admin",
+    "default": "gulp default",
     "dist": "gulp dist",
     "vue": "browserify -t vueify -e main.js -o pippo.js"
   },
@@ -13,7 +14,7 @@
     "url": "https://github.com/g3w-suite/g3w-client.git"
   },
   "author": "",
-  "license": "GPL v.3",
+  "license": "GPL-3.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
     "axios": "^0.18.0",
