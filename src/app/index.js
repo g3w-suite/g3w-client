@@ -31,6 +31,7 @@ function createApplicationConfig() {
     proj4: config.group.proj4,
     minscale: config.group.minscale,
     maxscale: config.group.maxscale,
+    main_map_title: config.main_map_title,
     // needed by ProjectService
     getWmsUrl: function(project){
       return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
@@ -155,10 +156,12 @@ const bootstrap = function() {
   .then(function(initConfig) {
     // write urls of static files and media url (base url and vector url)
     config.server.urls.baseurl = initConfig.baseurl;
+    config.server.urls.frontendurl = initConfig.frontendurl;
     config.server.urls.staticurl = initConfig.staticurl;
     config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
     config.server.urls.mediaurl = initConfig.mediaurl;
     config.server.urls.vectorurl = initConfig.vectorurl;
+    config.main_map_title = initConfig.main_map_title;
     config.group = initConfig.group;
     config.user = initConfig.user;
     // get language from server
