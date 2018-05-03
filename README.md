@@ -2,6 +2,7 @@
 
 G3W-CLIENT client module for G3W-SUITE.
 
+
 The following instructions are for a Ubuntu 16.04 LTS.
 
 ## Installation of node.js
@@ -9,6 +10,9 @@ The following instructions are for a Ubuntu 16.04 LTS.
 ```bash
 sudo apt-get install -y nodejs-legacy npm
 ```
+
+Note: You have to install Node version >= v8.11.1
+
 
 ## Clone sdk and template repository
 
@@ -44,10 +48,11 @@ The following instruction are mandatory to run and work with G3W-CLIENT
     ```bash
        ~/../g3w-client/src/libs$ git clone https://github.com/g3w-suite/g3w-client-sdk.git sdk
      ```
-
 ## Local Server Configuration
 
-You can customize local server configuration through "config.js" file
+This is the front-end part of the G3W-SUITE. Before run it in develop mode YOU NEED TO INSTALL AND RUN the server part  [**g3w-admin**](https://github.com/g3w-suite/g3w-admin)
+
+After server side installation you can customize local server configuration through "config.js" file
 
 
 1) Open config.js file to change local G3W-ADMIN path, server port, etc ..:
@@ -55,6 +60,7 @@ You can customize local server configuration through "config.js" file
     ```bash
        ~/../g3w-client$ nano config.js
      ```
+
 
 ## Development Task Command
 
@@ -79,3 +85,6 @@ The main gulp commands to use in develop enviroment are:
 
 It is possible to change messages to the user or application components text changing file app.j
 that is stored in g3w-client/src/app/config/locales
+
+
+
