@@ -89,6 +89,12 @@ const translations = {
           "select_projection": "Seleziona il sistema di proiezione del layer",
           "select_color": "Seleziona il colore del Layer",
           "drag_layer": "Trascina il layer in questa area"
+        },
+        "querybypolygon": {
+          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul><label for='closehelpquerypolygon' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+        },
+        "querybybbox": {
+          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul><label for='closehelpquerybbox' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
         }
       },
       "catalog_items": {
@@ -97,6 +103,11 @@ const translations = {
           "open_attribute_table": "Apri la tabella degli attibuti",
           "show_metadata": "Metadati"
         }
+      },
+      "dataTable": {
+        "previous": "Precedente",
+        "next": "Successivo",
+        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe"
       }
     }
   },
@@ -141,7 +152,7 @@ const translations = {
       "back_to_relations": "Back to Relations",
       "no_relations_found": "No relations found",
       "relation_data": "Relation data",
-      "relation_already_added" : "Relation already added",
+      "relation_already_added": "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
       "editing": {
         "tools": {
@@ -157,8 +168,7 @@ const translations = {
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done."
         }
       },
-      "sidebar": {
-      },
+      "sidebar": {},
       "info": {
         "title": "Results",
         "open_link": "Open attached document",
@@ -189,6 +199,12 @@ const translations = {
           "select_projection": "Select layer projection",
           "select_color": "Select Layer Color",
           "drag_layer": "Drag and drop layer here"
+        },
+        "querybypolygon": {
+          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul><label for='closehelpquerypolygon' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+        },
+        "querybybbox": {
+          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul><label for='closehelpquerybbox' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
         }
       },
       "catalog_items": {
@@ -197,6 +213,11 @@ const translations = {
           "open_attribute_table": "Open Attribute Table",
           "show_metadata": "Metadata"
         }
+      },
+      "dataTable": {
+        "previous": "Previous",
+        "next": "Next",
+        "info": "Showing _START_ to _END_ of _TOTAL_ entries"
       }
     }
   }

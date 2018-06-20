@@ -20,6 +20,7 @@
     "axios": "^0.18.0",
     "object-hash": "^1.2.0",
     "vue": "^2.5.13",
+    "vue-rx": "^5.0.0",
     "vue-search-select": "^2.5.0",
     "vuetable-2": "^1.7.5",
     "vuex": "^3.0.1"
@@ -32,7 +33,7 @@
     "browser-sync": "^2.13.0",
     "browserify": "^13.1.0",
     "browserify-hmr": "^0.3.6",
-    "del": "^2.2.0",
+    "del": "^2.2.2",
     "generator-browserify": "^0.4.1",
     "generator-karma": "^2.0.0",
     "gulp": "^3.9.1",

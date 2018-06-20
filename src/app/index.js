@@ -1,4 +1,5 @@
 const i18ninit = require('sdk').core.i18n.init;
+const t = require('sdk').core.i18n.t;
 const ApplicationService = require('sdk/sdk').core.ApplicationService;
 // ApplicationTemplate instance. It manages the application template
 const ApplicationTemplate = require('./template/js/template');
@@ -125,13 +126,13 @@ function createTemplateConfig() {
   }
 }
 
-function sendErrorToApplicationTemplate(reloadFnc,error) {
+function sendErrorToApplicationTemplate(reloadFnc, lng, error) {
   if (error && error.responseJSON && error.responseJSON.error.data) {
     error = error.responseJSON.error.data
   } else {
-    error = 'Errore di connessione'
+    error = null
   }
-  ApplicationTemplate.fail(reloadFnc, error);
+  ApplicationTemplate.fail(reloadFnc, lng, error);
 }
 
 ApplicationService.on('ready', function() {
@@ -178,17 +179,27 @@ const bootstrap = function() {
         jqXHR.setRequestHeader('Accept-Language', language_header);
       }
     });
-
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
       .then(function() {
-        // all fine
+        $.extend( true, $.fn.dataTable.defaults, {
+          "language": {
+            "paginate": {
+              "previous": t("dataTable.previous"),
+              "next": t("dataTable.next"),
+            },
+            "info": t("dataTable.info")
+          }
+        });
       })
       .fail(function(error) {
-        sendErrorToApplicationTemplate(bootstrap, error);
+        const language_header = config.i18n.lng || 'en';
+        sendErrorToApplicationTemplate(bootstrap, language_header, error);
       })
   })
   .fail(function(error) {
-    sendErrorToApplicationTemplate(bootstrap, error);
+    const language_header = config.i18n.lng || 'en';
+    // inizialize internalization
+    sendErrorToApplicationTemplate(bootstrap, language_header, error);
   })
 };
 
