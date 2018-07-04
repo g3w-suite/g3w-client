@@ -10,7 +10,7 @@ const rename = require('gulp-rename');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 const flatten = require('gulp-flatten');
-// userref server per parsare i build block del template
+// userref it used to parse build block of the template
 const useref = require('gulp-useref');
 ///////////////////////////////////////////////////////
 const replace = require('gulp-replace');
@@ -20,6 +20,7 @@ const watch = require('gulp-watch');
 const cleanCSS = require('gulp-clean-css');
 const gutil = require("gulp-util");
 const less = require('gulp-less');
+const LessGlob = require('less-plugin-glob');
 const jshint = require('gulp-jshint');
 const browserify = require('browserify');
 const babelify = require('babelify');
@@ -31,8 +32,11 @@ const sourcemaps = require('gulp-sourcemaps');
 const hmr = require('browserify-hmr');
 const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
+const htmlreplace = require('gulp-html-replace');
 
-
+const templateFolder = conf.templateFolder;
+const sdkFolder = conf.sdkFolder;
+const pluginsFolder = conf.pluginsFolder;
 const distFolder = conf.distFolder;
 const clientFolder = conf.clientFolder;
 const client = argv.client || '';
@@ -106,7 +110,7 @@ gulp.task('browserify', [], function() {
     babelrc: true
   }).transform(stringify, {
     appliesTo: { includeExtensions: ['.html'] }
-  }).transform(imgurify)
+  }).transform(imgurify);
 
   const bundle = function() {
     return bundler.bundle()
@@ -151,6 +155,23 @@ gulp.task('plugins', function() {
     .pipe(gulp.dest('.'));
 });
 
+gulp.task('less',['fonts'], function () {
+  return gulp.src('./src/app/style/app.less')
+    .pipe(less({
+      paths: [ path.join(__dirname) ],
+      plugins: [LessGlob]
+    }))
+    .pipe(gulp.dest(clientFolder+'/css/'))
+});
+
+gulp.task('less-skins', function () {
+  return gulp.src('./src/app/template/style/less/skins/**/*.less')
+    .pipe(less({
+      paths: [ path.join(__dirname) ]
+    }))
+    .pipe(gulp.dest(clientFolder+'/css/skins/'))
+});
+
 // it use to lessisfy less file
 gulp.task('plugins-less-skin', function() {
   return gulp.src('./src/libs/plugins/**/**.less')
@@ -166,22 +187,6 @@ gulp.task('jshint', function() {
   return gulp.src('./src/**/*.js')
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'));
-});
-
-gulp.task('less',['fonts'], function () {
-  return gulp.src('./src/app/style/app.less')
-    .pipe(less({
-      paths: [ path.join(__dirname) ]
-    }))
-    .pipe(gulp.dest(clientFolder+'/css/'))
-});
-
-gulp.task('less-skins', function () {
-  return gulp.src('./src/app/template/style/less/skins/**/*.less')
-    .pipe(less({
-      paths: [ path.join(__dirname) ]
-    }))
-    .pipe(gulp.dest(clientFolder+'/css/skins/'))
 });
 
 gulp.task('fonts', function () {
@@ -212,12 +217,27 @@ function interpolateVersion(path, separator) {
   return prepost[0] +"."+ versionHash + separator + prepost[1];
 }
 
-gulp.task('html', ['assets'], function () {
+
+gulp.task('html', ['add_external_resources_to_main_html','assets'], function() {
+  return gulp.src('./src/index.html')
+    .pipe(useref())
+    .pipe(gulpif(['css/app.min.css'], cleanCSS({
+      keepSpecialComments: 0
+    })))
+    .pipe(rename(function(path) {
+      // renamed with version Date.now()
+      path.basename = interpolateVersion(path.basename+path.extname, '.min.');
+      path.extname = "";
+    }))
+    .pipe(gulp.dest(clientFolder));
+});
+
+gulp.task('html_old', ['assets'], function () {
   // get index.html to read all block build:
   return gulp.src('./src/index.html')
   // concat all build blocks inside index.html template es: <!-- build:js js/sdk.ext.min.js -->
     .pipe(useref())
-    .pipe(gulpif(['css/app.min.css'],cleanCSS({
+    .pipe(gulpif(['css/app.min.css'], cleanCSS({
       keepSpecialComments: 0
     })))
     .pipe(rename(function(path) {
@@ -243,7 +263,7 @@ gulp.task('html:compiletemplate', function(){
     .pipe(gulp.dest(clientFolder));
 });
 
-var proxy = httpProxy.createProxyServer({
+const proxy = httpProxy.createProxyServer({
   target: conf.proxy.url
 });
 
@@ -269,7 +289,7 @@ function proxyMiddleware(urls) {
 }
 
 gulp.task('browser-sync', function() {
-  var port = conf.localServerPort ? conf.localServerPort : 3000
+  const port = conf.localServerPort ? conf.localServerPort : 3000;
   browserSync.init({
     server: {
       baseDir: ["src","."],
@@ -298,8 +318,9 @@ function prepareRunSequence() {
   }
 }
 
+// watch applications changes
 gulp.task('watch',function() {
-  watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less'],
+  watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less', './src/libs/plugins/**/*.less'],
     prepareRunSequence('less','browser:reload')
   );
   watch(['./src/app/style/skins/*.less'],
@@ -396,6 +417,21 @@ gulp.task('g3w-admin',function(done){
   runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
 });
 
-gulp.task('default',['serve']); // development task - Deafult
+// this is usefult o pre creare
+gulp.task('add_external_resources_to_main_html', function() {
+  const replaceRelativeTemplateFolder =  './' + path.relative(path.resolve('./src'), path.resolve(templateFolder))  + '/' ;
+  const replaceRelativeSdkFolder =  './' + path.relative(path.resolve('./src'), path.resolve(sdkFolder)) + '/';
+  return gulp.src('./src/index.dev.html')
+    .pipe(htmlreplace({
+      'template_css': gulp.src('./src/app/template/index.css.html').pipe(replace('./',replaceRelativeTemplateFolder)),
+      'template_js': gulp.src('./src/app/template/index.js.html').pipe(replace('./', replaceRelativeTemplateFolder)),
+      'sdk_css': gulp.src('./src/libs/sdk/index.css.html').pipe(replace('./', replaceRelativeSdkFolder)),
+      'sdk_js': gulp.src('./src/libs/sdk/index.js.html').pipe(replace('./', replaceRelativeSdkFolder))
+    }))
+    .pipe(rename('index.html'))
+    .pipe(gulp.dest("./src"));
+});
+
+gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
 gulp.task('default-hot',['serve-hot']); // development task Hot Module- Deafult
 

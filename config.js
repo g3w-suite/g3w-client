@@ -1,4 +1,7 @@
-var conf = {
+const conf = {
+  templateFolder:'./src/app/template', //template folder of template repository
+  sdkFolder: './src/libs/sdk', // sdk folder of sdk repository
+  pluginsFolder: './src/libs/plugins', // plugins folder of app plugins
   distFolder: './dist', // G3W-CLIENT main dist folder
   clientFolder: './dist/client', // G3W-CLIENT client dist folder where are compiled
   localServerPort: 3000, // port for local server. If not set local server run on port 3000
