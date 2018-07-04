@@ -196,7 +196,7 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('images', function () {
-  return gulp.src(['!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
+  return gulp.src(['!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}', './src/app/template/images/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/images/'))
 });
@@ -250,7 +250,7 @@ gulp.task('html_old', ['assets'], function () {
 
 //task used to build django g3w-admin template with the refercenced of all css and js minifiged and added versionHash
 gulp.task('html:compiletemplate', function(){
-  return gulp.src('./src/index.html.template')
+  return gulp.src('./src/index.admin.html.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+versionHash+".min.css"))
     .pipe(replace("{APP_CSS}","app."+versionHash+".min.css"))
     .pipe(replace("{TEMPLATE_JS}","template.ext."+versionHash+".min.js"))
@@ -320,7 +320,7 @@ function prepareRunSequence() {
 
 // watch applications changes
 gulp.task('watch',function() {
-  watch(['./src/app/style/*.less','./src/app/template/style/*.less','./src/app/template/style/less/*.less', './src/libs/plugins/**/*.less'],
+  watch(['./src/app/style/*.less', templateFolder+'/style/**/*.less', pluginsFolder + '/**/*.less'],
     prepareRunSequence('less','browser:reload')
   );
   watch(['./src/app/style/skins/*.less'],
@@ -332,7 +332,7 @@ gulp.task('watch',function() {
   watch('./src/libs/plugins/**/plugin.js',
     prepareRunSequence('plugins','browser:reload')
   );
-  gulp.watch(['./src/index.html','./src/**/*.html'], function(){
+  gulp.watch(['./src/index.html','./src/**/*.html', templateFolder + '/**/*.html', sdkFolder + '/**/*.html'], function() {
     browserSync.reload();
   });
 });
