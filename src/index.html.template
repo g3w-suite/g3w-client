@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>G3W Client</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" name="viewport">
+  <!-- build:css css/vendor.min.css -->
+    <!-- build:template_css-->
+    <!-- endbuild -->
+    <!-- build:sdk_css-->
+    <!-- endbuild -->
+    <!-- build:plugins_css-->
+    <!-- endbuild -->
+  <!-- endbuild -->
+
+  <!-- build:css css/app.min.css -->
+    <link rel="stylesheet" href="../dist/client/css/app.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-blue.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-blue-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-black-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-black.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-green-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-green.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-purple-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-purple.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-red-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-red.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-yellow-light.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/skin-yellow.css">
+    <link rel="stylesheet" href="../dist/client/css/skins/g3w-skin-blue.css">
+    <!--<link rel="stylesheet" href="../dist/client/css/skins/g3w-skin-green.css">-->
+    <!--<link rel="stylesheet" href="../dist/client/css/skins/components/g3w-ol-control-skins.css">-->
+  <!-- endbuild -->
+</head>
+<body class="hold-transition skin-blue fixed">
+  <div id="app">
+    <app></app>
+  </div>
+  <!-- build:js js/vendor.min.js -->
+    <!-- build:sdk_js-->
+    <!-- endbuild -->
+
+    <!-- build:template_js-->
+    <!-- endbuild -->
+
+    <!-- build:plugins_js-->
+    <!-- endbuild -->
+  <!-- endbuild -->
+
+  <!-- build:js js/app.min.js -->
+    <script src="../dist/client/js/app.js"></script>
+  <!-- endbuild -->
+</body>
+</html>

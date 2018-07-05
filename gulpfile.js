@@ -1,6 +1,7 @@
 const conf = require('./config');
 const path = require('path');
 const del = require('del');
+const fs = require('fs');
 //Gulp
 const gulp   = require('gulp');
 ///
@@ -59,7 +60,9 @@ gulp.task('hmr', () => {
 
    if (!production) {
      bundler = watchify(bundler);
-     bundler.plugin(hmr);
+     bundler.plugin(hmr, {
+       mode: "fs"
+     });
    }
    bundler
     .transform(vueify)
@@ -232,29 +235,12 @@ gulp.task('html', ['add_external_resources_to_main_html','assets'], function() {
     .pipe(gulp.dest(clientFolder));
 });
 
-gulp.task('html_old', ['assets'], function () {
-  // get index.html to read all block build:
-  return gulp.src('./src/index.html')
-  // concat all build blocks inside index.html template es: <!-- build:js js/sdk.ext.min.js -->
-    .pipe(useref())
-    .pipe(gulpif(['css/app.min.css'], cleanCSS({
-      keepSpecialComments: 0
-    })))
-    .pipe(rename(function(path) {
-      // renamed with version Date.now()
-      path.basename = interpolateVersion(path.basename+path.extname, '.min.');
-      path.extname = "";
-    }))
-    .pipe(gulp.dest(clientFolder));
-});
-
-//task used to build django g3w-admin template with the refercenced of all css and js minifiged and added versionHash
+//task used to build django g3w-admin template with the refercenced of all css and js minified and added versionHash
 gulp.task('html:compiletemplate', function(){
-  return gulp.src('./src/index.admin.html.template')
+  return gulp.src('./src/index.html.admin.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+versionHash+".min.css"))
     .pipe(replace("{APP_CSS}","app."+versionHash+".min.css"))
-    .pipe(replace("{TEMPLATE_JS}","template.ext."+versionHash+".min.js"))
-    .pipe(replace("{SDK_EXT_JS}","sdk.ext."+versionHash+".min.js"))
+    .pipe(replace("{VENDOR_JS}","vendor."+versionHash+".min.js"))
     .pipe(replace("{APP_JS}","app."+versionHash+".min.js"))
     .pipe(rename({
       basename: "index",
@@ -361,8 +347,6 @@ gulp.task('serve-hot', function(done) {
     done);
 });
 
-
-
 //dist task: it used to synchronize the following tasks:
 /*
   1 - clean dist folder
@@ -417,21 +401,46 @@ gulp.task('g3w-admin',function(done){
   runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
 });
 
-// this is usefult o pre creare
+// this is useful o pre creare
 gulp.task('add_external_resources_to_main_html', function() {
-  const replaceRelativeTemplateFolder =  './' + path.relative(path.resolve('./src'), path.resolve(templateFolder))  + '/' ;
-  const replaceRelativeSdkFolder =  './' + path.relative(path.resolve('./src'), path.resolve(sdkFolder)) + '/';
-  return gulp.src('./src/index.dev.html')
+  const srcFolder = './src';
+  const indexCss = 'index.css.html';
+  const indexJs = 'index.js.html';
+  const pluginsExternalSources = {
+    css: [],
+    js: []
+  };
+  if (pluginsFolder) {
+    const absolutePluginFolder = path.resolve(pluginsFolder);
+    fs.readdirSync(absolutePluginFolder).forEach(file => {
+      const filePath = path.join(absolutePluginFolder, file);
+      if (fs.statSync(filePath).isDirectory()) {
+        fs.readdirSync(filePath).forEach(pluginFile => {
+          const ansoluteFilePath = path.join(filePath, pluginFile);
+          if (pluginFile === indexCss)
+            pluginsExternalSources.css.push(ansoluteFilePath);
+          if (pluginFile === indexJs)
+            pluginsExternalSources.js.push(ansoluteFilePath);
+        })
+      }
+    });
+  }
+  const replaceRelativeTemplateFolder = path.relative(path.resolve(srcFolder), path.resolve(templateFolder))  + '/' ;
+  const replaceRelativeSdkFolder =  path.relative(path.resolve(srcFolder), path.resolve(sdkFolder)) + '/';
+  return gulp.src(srcFolder + '/index.html.template')
+    // replace css and js sources
     .pipe(htmlreplace({
-      'template_css': gulp.src('./src/app/template/index.css.html').pipe(replace('./',replaceRelativeTemplateFolder)),
-      'template_js': gulp.src('./src/app/template/index.js.html').pipe(replace('./', replaceRelativeTemplateFolder)),
-      'sdk_css': gulp.src('./src/libs/sdk/index.css.html').pipe(replace('./', replaceRelativeSdkFolder)),
-      'sdk_js': gulp.src('./src/libs/sdk/index.js.html').pipe(replace('./', replaceRelativeSdkFolder))
+      'template_css': gulp.src(path.join(templateFolder, indexCss)).pipe(replace('./',replaceRelativeTemplateFolder)),
+      'template_js': gulp.src(path.join(templateFolder, indexJs)).pipe(replace('./', replaceRelativeTemplateFolder)),
+      'sdk_css': gulp.src(path.join(sdkFolder , indexCss)).pipe(replace('./', replaceRelativeSdkFolder)),
+      'sdk_js': gulp.src(path.join(sdkFolder, indexJs)).pipe(replace('./', replaceRelativeSdkFolder)),
+      'plugins_css': gulp.src(pluginsExternalSources.css),
+      'plugins_js': gulp.src(pluginsExternalSources.js)
     }))
     .pipe(rename('index.html'))
-    .pipe(gulp.dest("./src"));
+    .pipe(gulp.dest(srcFolder));
 });
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
-gulp.task('default-hot',['serve-hot']); // development task Hot Module- Deafult
+gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult
 

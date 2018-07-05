@@ -26,11 +26,8 @@
   <div id="app">
     <app></app>
   </div>
-  {% with client_default|add:"/js/{SDK_EXT_JS}" as sdk_js %}
-    <script src="{% static sdk_js %}"></script>
-  {% endwith %}
-  {% with client_default|add:"/js/{TEMPLATE_JS}" as template_js %}
-    <script src="{% static template_js %}"></script>
+  {% with client_default|add:"/js/{VENDOR_JS}" as vendor_js %}
+      <script src="{% static vendor_js %}"></script>
   {% endwith %}
   <script>
     {{ group_config|safe }}
