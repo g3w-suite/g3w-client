@@ -318,6 +318,9 @@ gulp.task('watch',function() {
   watch('./src/libs/plugins/**/plugin.js',
     prepareRunSequence('plugins','browser:reload')
   );
+  watch(path.join(pluginsFolder,'*', 'index.*.html'),
+    prepareRunSequence('add_external_resources_to_main_html','browser:reload')
+  );
   gulp.watch(['./src/index.html','./src/**/*.html', templateFolder + '/**/*.html', sdkFolder + '/**/*.html'], function() {
     browserSync.reload();
   });
@@ -402,29 +405,10 @@ gulp.task('g3w-admin',function(done){
 });
 
 // this is useful o pre creare
-gulp.task('add_external_resources_to_main_html', function() {
+gulp.task('add_external_resources_to_main_html',  function() {
   const srcFolder = './src';
   const indexCss = 'index.css.html';
   const indexJs = 'index.js.html';
-  const pluginsExternalSources = {
-    css: [],
-    js: []
-  };
-  if (pluginsFolder) {
-    const absolutePluginFolder = path.resolve(pluginsFolder);
-    fs.readdirSync(absolutePluginFolder).forEach(file => {
-      const filePath = path.join(absolutePluginFolder, file);
-      if (fs.statSync(filePath).isDirectory()) {
-        fs.readdirSync(filePath).forEach(pluginFile => {
-          const ansoluteFilePath = path.join(filePath, pluginFile);
-          if (pluginFile === indexCss)
-            pluginsExternalSources.css.push(ansoluteFilePath);
-          if (pluginFile === indexJs)
-            pluginsExternalSources.js.push(ansoluteFilePath);
-        })
-      }
-    });
-  }
   const replaceRelativeTemplateFolder = path.relative(path.resolve(srcFolder), path.resolve(templateFolder))  + '/' ;
   const replaceRelativeSdkFolder =  path.relative(path.resolve(srcFolder), path.resolve(sdkFolder)) + '/';
   return gulp.src(srcFolder + '/index.html.template')
@@ -434,12 +418,21 @@ gulp.task('add_external_resources_to_main_html', function() {
       'template_js': gulp.src(path.join(templateFolder, indexJs)).pipe(replace('./', replaceRelativeTemplateFolder)),
       'sdk_css': gulp.src(path.join(sdkFolder , indexCss)).pipe(replace('./', replaceRelativeSdkFolder)),
       'sdk_js': gulp.src(path.join(sdkFolder, indexJs)).pipe(replace('./', replaceRelativeSdkFolder)),
-      'plugins_css': gulp.src(pluginsExternalSources.css),
-      'plugins_js': gulp.src(pluginsExternalSources.js)
+      'plugins_css': gulp.src(path.join(pluginsFolder, '*','index.css.html'))
+        .pipe(replace('./', function() {
+          const pluginName = path.dirname(this.file.relative);
+          return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
+        })),
+      'plugins_js': gulp.src(path.join(pluginsFolder, '*','index.js.html'))
+        .pipe(replace('./', function() {
+          const pluginName = path.dirname(this.file.relative);
+          return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
+        }))
     }))
     .pipe(rename('index.html'))
     .pipe(gulp.dest(srcFolder));
 });
+
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
 gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult
