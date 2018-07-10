@@ -48,98 +48,12 @@ function createApplicationConfig() {
   };
 }
 
-// this is a base template configuration. It store all the elements
-// useful for the template. Att begin will be empty objects
-// Application will set only the required element
-function createTemplateConfig() {
-  // get sdk componets
-  const CatalogComponent = require('sdk').gui.vue.CatalogComponent;
-  const SearchComponent = require('sdk').gui.vue.SearchComponent;
-  const PrintComponent = require('sdk').gui.vue.PrintComponent;
-  const MetadataComponent = require('sdk').gui.vue.MetadataComponent;
-  const ToolsComponent = require('sdk').gui.vue.ToolsComponent;
-  const MapComponent = require('sdk').gui.vue.MapComponent;
-  const ContentsComponent = require('./template/js/contentsviewer');
-  const QueryResultsComponent = require('sdk').gui.vue.QueryResultsComponent;
-  return {
-    title: config.apptitle,
-    placeholders: {
-      navbar: {
-        components: []
-      },
-      sidebar: {
-        components: [
-          new MetadataComponent({
-            id: 'metadata',
-            open: false,
-            collapsible: false,
-            context: false,
-            icon: "fa fa-file-code-o"
-          }),
-          new PrintComponent({
-            id: 'print',
-            open: false,
-            collapsible: true, //  it used to manage click event if can run setOpen component method
-            icon: "fa fa-print"
-          }),
-          new SearchComponent({
-            id: 'search',
-            open: false,
-            collapsible: true,
-            icon: "fa fa-search"
-          }),
-          new CatalogComponent({
-            id: 'catalog',
-            open: false,
-            collapsible: false,
-            icon: "fa fa-map-o"
-          }),
-          // Component that store plugins
-          new ToolsComponent({
-            id: 'tools',
-            open: false,
-            collapsible: true,
-            icon: "fa fa-gears"
-          })
-        ]
-      },
-      floatbar:{
-        components: []
-      }
-    },
-    othercomponents: [
-      new QueryResultsComponent({
-        id: 'queryresults'
-      })
-    ],
-    viewport: {
-      // placeholder of the content (view content). Secodary view (hidden)
-      components: {
-        map: new MapComponent({
-          id: 'map'
-        }),
-        content: new ContentsComponent({
-          id: 'contents'
-        })
-      }
-    }
-  }
-}
-
-function sendErrorToApplicationTemplate(reloadFnc, lng, error) {
-  if (error && error.responseJSON && error.responseJSON.error.data) {
-    error = error.responseJSON.error.data
-  } else {
-    error = null
-  }
-  ApplicationTemplate.fail(reloadFnc, lng, error);
-}
-
 ApplicationService.on('ready', function() {
   //create the ApplicationTemplate instance passing the template configuration
   // and the applicationService instance that is useful to work with project API
-  const templateConfig = createTemplateConfig();
-  applicationTemplate = new ApplicationTemplate(templateConfig, this);
+  applicationTemplate = new ApplicationTemplate({
+    ApplicationService: this
+  });
   // Listen ready event emit after build interface
   applicationTemplate.on('ready', function() {
     ApplicationService.postBootstrap()
@@ -150,11 +64,19 @@ ApplicationService.on('ready', function() {
 
 // frun when app.js is loaded
 const bootstrap = function() {
+  function handleError(error) {
+    if (error && error.responseJSON && error.responseJSON.error.data) {
+      error = error.responseJSON.error.data
+    } else {
+      error = null
+    }
+    return error;
+  }
   //get all configuration from groups
   //config.server.urls.initconfig: api url to get starting configuration
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
   //returna promise with starting configuration
-  .then(function(initConfig) {
+  .then((initConfig) => {
     // write urls of static files and media url (base url and vector url)
     config.server.urls.baseurl = initConfig.baseurl;
     config.server.urls.frontendurl = initConfig.frontendurl;
@@ -173,14 +95,14 @@ const bootstrap = function() {
     i18ninit(config.i18n);
     // set accept-language reuest header based on config language
     //jquery
-    const language_header = config.i18n.lng || 'en';
+    const language = config.i18n.lng || 'en';
     $.ajaxSetup({
       beforeSend: function (jqXHR) {
-        jqXHR.setRequestHeader('Accept-Language', language_header);
+        jqXHR.setRequestHeader('Accept-Language', language);
       }
     });
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
-      .then(function() {
+      .then(() => {
         $.extend( true, $.fn.dataTable.defaults, {
           "language": {
             "paginate": {
@@ -191,15 +113,22 @@ const bootstrap = function() {
           }
         });
       })
-      .fail(function(error) {
-        const language_header = config.i18n.lng || 'en';
-        sendErrorToApplicationTemplate(bootstrap, language_header, error);
+      .fail((error) => {
+        error = handleError(error);
+        ApplicationTemplate.fail({
+          language,
+          error
+        });
       })
   })
-  .fail(function(error) {
-    const language_header = config.i18n.lng || 'en';
+  .fail((error) => {
+    const language = config.i18n.lng || 'en';
     // inizialize internalization
-    sendErrorToApplicationTemplate(bootstrap, language_header, error);
+    error = handleError(error);
+    ApplicationTemplate.fail({
+      language,
+      error
+    });
   })
 };
 

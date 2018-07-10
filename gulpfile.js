@@ -158,10 +158,6 @@ gulp.task('plugins', function() {
     .pipe(gulp.dest('.'));
 });
 
-gulp.task('all-less', function(cb) {
-  //TODO
-});
-
 // compile less file in css
 gulp.task('less',['fonts'], function () {
   const templateLessFolder = path.join(templateFolder, 'style', 'less');
@@ -171,23 +167,6 @@ gulp.task('less',['fonts'], function () {
       plugins: [LessGlob] //plugin to manage globs import es: @import path/***
     }))
     .pipe(gulp.dest(clientFolder+'/css/'))
-});
-
-
-// it use to lessisfy less file
-gulp.task('plugins-less-skin', function() {
-  return gulp.src('./src/libs/plugins/**/**.less')
-    .pipe(less({}))
-    .pipe(rename(function(path) {
-      path.dirname = distFolder+'/'+path.dirname+'/css/';
-    }))
-    .pipe(gulp.dest('.'))
-});
-
-gulp.task('jshint', function() {
-  return gulp.src('./src/**/*.js')
-    .pipe(jshint())
-    .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('fonts', function () {
@@ -203,17 +182,15 @@ gulp.task('images', function () {
 });
 
 gulp.task('datatable-images',function () {
-  return gulp.src('./src/app/template/ext/datatables/DataTables-1.10.16/images/*')
+  return gulp.src(path.join(templateFolder, '/ext/datatables/DataTables-1.10.16/images/*'))
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'))
 });
 
-//gulp.task('assets',['fonts', 'images', 'less', 'less-skins', 'datatable-images']);
 gulp.task('assets',['fonts', 'images', 'less', 'datatable-images']);
 
-
 function interpolateVersion(path, separator) {
-  var prepost = path.split(separator);
+  const prepost = path.split(separator);
   if (prepost.length != 2) {
     return path;
   }
@@ -341,12 +318,11 @@ gulp.task('cleanup', function() {
 });
 
 gulp.task('serve', function(done) {
-  runSequence('clean','browserify',['assets','watch','plugins','plugins-less-skin'],'browser-sync', done);
+  runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync', done);
 });
 
 gulp.task('serve-hot', function(done) {
-  runSequence('clean','hmr',['assets','plugins','plugins-less-skin'],'browser-sync',
-    done);
+  runSequence('clean','hmr',['assets','plugins'],'browser-sync', done);
 });
 
 //dist task: it used to synchronize the following tasks:
@@ -415,7 +391,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
     .pipe(htmlreplace({
       'template_vendor_css': gulp.src(path.join(templateFolder, indexCss)).pipe(replace('./',replaceRelativeTemplateFolder)),
       'template_vendor_js': gulp.src(path.join(templateFolder, indexJs)).pipe(replace('./', replaceRelativeTemplateFolder)),
-      'sdk__vendor_css': gulp.src(path.join(sdkFolder , indexCss)).pipe(replace('./', replaceRelativeSdkFolder)),
+      'sdk_vendor_css': gulp.src(path.join(sdkFolder , indexCss)).pipe(replace('./', replaceRelativeSdkFolder)),
       'sdk_vendor_js': gulp.src(path.join(sdkFolder, indexJs)).pipe(replace('./', replaceRelativeSdkFolder)),
       'plugins_css': gulp.src(path.join(pluginsFolder, '*','index.css.html'))
         .pipe(replace('./', function() {
