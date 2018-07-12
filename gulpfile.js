@@ -295,10 +295,10 @@ gulp.task('watch',function() {
   watch('./src/libs/plugins/**/plugin.js',
     prepareRunSequence('plugins','browser:reload')
   );
-  watch(path.join(pluginsFolder,'*', 'index.*.html'),
+  watch([path.join(pluginsFolder,'*', 'index.*.html'), path.join(templateFolder,'*.*.html'), path.join(sdkFolder,'*.*.html')],
     prepareRunSequence('add_external_resources_to_main_html','browser:reload')
   );
-  gulp.watch(['./src/index.html','./src/**/*.html', templateFolder + '/**/*.html', sdkFolder + '/**/*.html'], function() {
+  gulp.watch(['./src/index.html','./src/**/*.html', templateFolder + '/**/**.html', sdkFolder + '/**/*.html'], function() {
     browserSync.reload();
   });
 });

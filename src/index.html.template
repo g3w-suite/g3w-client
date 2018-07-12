@@ -23,10 +23,11 @@
     <app></app>
   </div>
   <!-- build:js js/vendor.min.js -->
-    <!-- build:sdk_vendor_js-->
-    <!-- endbuild -->
 
     <!-- build:template_vendor_js-->
+    <!-- endbuild -->
+
+    <!-- build:sdk_vendor_js-->
     <!-- endbuild -->
 
     <!-- build:plugins_js-->
