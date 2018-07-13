@@ -12,12 +12,12 @@ const i18n = {
   resources: require('./locales/app.js')
 };
 
-const client =  {
+const client = {
   debug:  true,
   local:  false
 };
 
-const server =  {
+const server = {
   urls:  {
     baseurl: '/',
     ows:  'ows',
