@@ -197,13 +197,12 @@ function interpolateVersion(path, separator) {
   return prepost[0] +"."+ versionHash + separator + prepost[1];
 }
 
-
 gulp.task('html', ['add_external_resources_to_main_html','assets'], function() {
   return gulp.src('./src/index.html')
     .pipe(useref())
     .pipe(gulpif(['css/app.min.css'], cleanCSS({
       keepSpecialComments: 0
-    })))
+    }), replace(/\w+fonts/g, 'fonts')))
     .pipe(rename(function(path) {
       // renamed with version Date.now()
       path.basename = interpolateVersion(path.basename+path.extname, '.min.');
