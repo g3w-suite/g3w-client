@@ -3,6 +3,8 @@ const translations = {
     "translation": {
       "yes": "Si",
       "no": "No",
+      "back":"Indietro",
+      "backto": "Torna a ",
       "changemap": "Cambia Mappa",
       "editing_data": "Editing Dati",
       "editing_attributes": "Editita attributi",
@@ -115,6 +117,8 @@ const translations = {
     "translation": {
       "yes": "Yes",
       "no": "No",
+      "back": "Back",
+      "backto": "Back to ",
       "changemap": "Change Map",
       "editing_data": "Editing Layers",
       "editing_attributes": "Editing attributes",
