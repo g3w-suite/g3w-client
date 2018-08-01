@@ -86,6 +86,9 @@ const translations = {
           "title": "",
           "error": "Non è possibile calcolare la tua posizione."
         },
+        "nominatim": {
+          "placeholder": "Città, Indirizzo ..."
+        },
         "add_layer_control": {
           "header": "Aggiungi Layer",
           "select_projection": "Seleziona il sistema di proiezione del layer",
@@ -197,6 +200,9 @@ const translations = {
       "mapcontrols": {
         "geolocations": {
           "error": "Can't get your position"
+        },
+        "nominatim": {
+          "placeholder": "City, Address ..."
         },
         "add_layer_control": {
           "header": "Add Layer",
