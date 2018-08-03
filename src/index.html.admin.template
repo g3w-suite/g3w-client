@@ -22,7 +22,7 @@
   <![endif]-->
   <link rel="icon" href="{% static '/img/favicon.ico' %}">
 </head>
-<body class="hold-transition skin-{{ skin_class|default:"blue" }} fixed {% if sidebar_collapse %} sidebar-collapse {% endif %}" >
+<body class="hold-transition skin-{{ skin_class|default:'blue' }} fixed {% if sidebar_collapse %} sidebar-collapse {% endif %}" >
   <div id="app">
     <app></app>
   </div>

@@ -6,12 +6,16 @@
   <title>G3W Client</title>
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" name="viewport">
   <!-- build:css css/vendor.min.css -->
+
     <!-- build:template_vendor_css-->
     <!-- endbuild -->
+
     <!-- build:sdk_vendor_css-->
     <!-- endbuild -->
+
     <!-- build:plugins_css-->
     <!-- endbuild -->
+
   <!-- endbuild -->
 
   <!-- build:css css/app.min.css -->
@@ -19,20 +23,22 @@
   <!-- endbuild -->
 </head>
 <body class="hold-transition skin-blue fixed">
+
   <div id="app">
     <app></app>
   </div>
-  <!-- build:js js/vendor.min.js -->
-    <script src="app/template/ext/jquery/jquery-2.2.1.min.js"></script>
 
-    <!-- build:sdk_vendor_js-->
-    <!-- endbuild -->
+  <!-- build:js js/vendor.min.js -->
 
     <!-- build:template_vendor_js-->
     <!-- endbuild -->
 
+    <!-- build:sdk_vendor_js-->
+    <!-- endbuild -->
+
     <!-- build:plugins_js-->
     <!-- endbuild -->
+
   <!-- endbuild -->
 
   <!-- build:js js/app.min.js -->

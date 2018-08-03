@@ -21,7 +21,6 @@ const cleanCSS = require('gulp-clean-css');
 const gutil = require("gulp-util");
 const less = require('gulp-less');
 const LessGlob = require('less-plugin-glob');
-const jshint = require('gulp-jshint');
 const browserify = require('browserify');
 const babelify = require('babelify');
 const imgurify = require('imgurify');
@@ -198,6 +197,7 @@ function interpolateVersion(path, separator) {
 }
 
 gulp.task('html', ['add_external_resources_to_main_html','assets'], function() {
+//gulp.task('html', ['assets'], function() {
   return gulp.src('./src/index.html')
     .pipe(useref())
     .pipe(gulpif(['css/app.min.css'], cleanCSS({
@@ -383,7 +383,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
   const srcFolder = './src';
   const indexCss = 'index.css.html';
   const indexJs = 'index.js.html';
-  const replaceRelativeTemplateFolder = path.relative(path.resolve(srcFolder), path.resolve(templateFolder))  + '/' ;
+  const replaceRelativeTemplateFolder =  path.relative(path.resolve(srcFolder), path.resolve(templateFolder))  + '/' ;
   const replaceRelativeSdkFolder =  path.relative(path.resolve(srcFolder), path.resolve(sdkFolder)) + '/';
   return gulp.src(srcFolder + '/index.html.template')
     // replace css and js sources
