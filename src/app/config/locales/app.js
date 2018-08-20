@@ -53,10 +53,27 @@ const translations = {
           "update_vertex": "Aggiorna vertici feature",
           "update_feature": "Modifica feature"
         },
+        steps: {
+          help: {
+            "new": "Creo una nuova feature",
+            "edit_table": "Edita le features della tabella",
+            "draw_new_feature": "Disegna sulla mappa la feature",
+            "action_confirm": "Conferma azione",
+            "double_click_delete": "Doppio Click sulla feature che vuoi cancellare",
+            "edit_feature_vertex": "Modifica o aggiungi un vertice alla feature selezionata",
+            "move": "Muovi la feature selezionata",
+            "select_feature_to_relation": "Seleziona la feature che vuoi mettere in relazione",
+            "show_edit_feature_form":  "Mostra il form della feature per poter editare gli attributi",
+            "pick_feature": "Clicca su una feature per poterla modificare",
+            "insert_attributes_feature": "Inserisci gli attributi della feature"
+          }
+        },
         "messages": {
           "delete_feature": "Vuoi eliminare l'elemento selezionato?",
           "commit": "Vuoi salvare definitivamente le modifiche",
-          "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti."
+          "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
+          "saved": "I dati sono stati salvati correttamente",
+          "loading_data": "Caricamento dati"
         }
       },
       "sidebar": {
@@ -71,7 +88,9 @@ const translations = {
         "inputs": {
           "input_validation_error": "Campo obbligatorio o tipo valore non corretto",
           "integer": "intero",
-          "text": "testuale"
+          "text": "testuale",
+          "string": "stringa",
+          "date": "data"
         },
         "relations": {
           "tooltips": {
@@ -171,10 +190,27 @@ const translations = {
           "update_vertex": "Update feature vertex",
           "update_feature": "Update feature"
         },
+        steps: {
+          help: {
+            "new": "Create new feature",
+            "edit_table": "Edit table features",
+            "draw_new_feature": "Draw feature on map",
+            "action_confirm": "Confirm action",
+            "double_click_delete": "Double Click on the feature to delete",
+            "edit_feature_vertex": "Modify or add a vertex on selected feature",
+            "move": "Move selected feature",
+            "select_feature_to_relation": "Select feature that you bind relation",
+            "show_edit_feature_form":  "Show feature form to edit attributes",
+            "pick_feature": "Click on feature to modify",
+            "insert_attributes_feature": "Insert attributes of the feature"
+          }
+        },
         "messages": {
           "delete_feature": "Do you want delete selected feature ?",
           "commit": "Do you want to save the changes",
-          "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done."
+          "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
+          "saved": "Data saved successfully",
+          "loading_data": "Loading data"
         }
       },
       "sidebar": {},
@@ -188,7 +224,9 @@ const translations = {
         "inputs": {
           "input_validation_error": "Mandatory Field or wrong data type",
           "integer": "integer",
-          "text": "text"
+          "text": "text",
+          "string": "string",
+          "date": "date"
         },
         "relations": {
           "tooltips": {
@@ -229,7 +267,8 @@ const translations = {
       "dataTable": {
         "previous": "Previous",
         "next": "Next",
-        "info": "Showing _START_ to _END_ of _TOTAL_ entries"
+        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+        "no_data": "No data"
       }
     }
   }
