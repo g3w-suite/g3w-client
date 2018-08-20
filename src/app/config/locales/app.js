@@ -3,6 +3,8 @@ const translations = {
     "translation": {
       "yes": "Si",
       "no": "No",
+      "back":"Indietro",
+      "backto": "Torna a ",
       "changemap": "Cambia Mappa",
       "editing_data": "Editing Dati",
       "editing_attributes": "Editita attributi",
@@ -19,6 +21,7 @@ const translations = {
       "tools": "Strumenti",
       "tree": "Strati",
       "legend": "Legenda",
+      "nobaselayer": "Nessuna mappa di base",
       "street_search": "Cerca indirizzo",
       "show": "Mostra",
       "hide": "Nascondi",
@@ -50,11 +53,27 @@ const translations = {
           "update_vertex": "Aggiorna vertici feature",
           "update_feature": "Modifica feature"
         },
+        steps: {
+          help: {
+            "new": "Creo una nuova feature",
+            "edit_table": "Edita le features della tabella",
+            "draw_new_feature": "Disegna sulla mappa la feature",
+            "action_confirm": "Conferma azione",
+            "double_click_delete": "Doppio Click sulla feature che vuoi cancellare",
+            "edit_feature_vertex": "Modifica o aggiungi un vertice alla feature selezionata",
+            "move": "Muovi la feature selezionata",
+            "select_feature_to_relation": "Seleziona la feature che vuoi mettere in relazione",
+            "show_edit_feature_form":  "Mostra il form della feature per poter editare gli attributi",
+            "pick_feature": "Clicca su una feature per poterla modificare",
+            "insert_attributes_feature": "Inserisci gli attributi della feature"
+          }
+        },
         "messages": {
           "delete_feature": "Vuoi eliminare l'elemento selezionato?",
           "commit": "Vuoi salvare definitivamente le modifiche",
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
-          "saved": "I dati sono stati salvati correttamente"
+          "saved": "I dati sono stati salvati correttamente",
+          "loading_data": "Caricamento dati"
         }
       },
       "sidebar": {
@@ -87,6 +106,9 @@ const translations = {
           "title": "",
           "error": "Non è possibile calcolare la tua posizione."
         },
+        "nominatim": {
+          "placeholder": "Città, Indirizzo ..."
+        },
         "add_layer_control": {
           "header": "Aggiungi Layer",
           "select_projection": "Seleziona il sistema di proiezione del layer",
@@ -110,8 +132,7 @@ const translations = {
       "dataTable": {
         "previous": "Precedente",
         "next": "Successivo",
-        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
-        "no_data": "Nessun dato disponibile"
+        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe"
       }
     }
   },
@@ -119,6 +140,8 @@ const translations = {
     "translation": {
       "yes": "Yes",
       "no": "No",
+      "back": "Back",
+      "backto": "Back to ",
       "changemap": "Change Map",
       "editing_data": "Editing Layers",
       "editing_attributes": "Editing attributes",
@@ -135,6 +158,7 @@ const translations = {
       "tools": "Tools",
       "tree": "Layers",
       "legend": "Legend",
+      "nobaselayer": "No basemap",
       "street_search": "Find Address",
       "show": "Show",
       "hide": "Hide",
@@ -166,11 +190,27 @@ const translations = {
           "update_vertex": "Update feature vertex",
           "update_feature": "Update feature"
         },
+        steps: {
+          help: {
+            "new": "Create new feature",
+            "edit_table": "Edit table features",
+            "draw_new_feature": "Draw feature on map",
+            "action_confirm": "Confirm action",
+            "double_click_delete": "Double Click on the feature to delete",
+            "edit_feature_vertex": "Modify or add a vertex on selected feature",
+            "move": "Move selected feature",
+            "select_feature_to_relation": "Select feature that you bind relation",
+            "show_edit_feature_form":  "Show feature form to edit attributes",
+            "pick_feature": "Click on feature to modify",
+            "insert_attributes_feature": "Insert attributes of the feature"
+          }
+        },
         "messages": {
           "delete_feature": "Do you want delete selected feature ?",
           "commit": "Do you want to save the changes",
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
-          "saved": "Data saved!!!"
+          "saved": "Data saved successfully",
+          "loading_data": "Loading data"
         }
       },
       "sidebar": {},
@@ -200,6 +240,9 @@ const translations = {
       "mapcontrols": {
         "geolocations": {
           "error": "Can't get your position"
+        },
+        "nominatim": {
+          "placeholder": "City, Address ..."
         },
         "add_layer_control": {
           "header": "Add Layer",
