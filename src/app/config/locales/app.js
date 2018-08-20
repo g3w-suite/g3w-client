@@ -53,7 +53,8 @@ const translations = {
         "messages": {
           "delete_feature": "Vuoi eliminare l'elemento selezionato?",
           "commit": "Vuoi salvare definitivamente le modifiche",
-          "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti."
+          "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
+          "saved": "I dati sono stati salvati correttamente"
         }
       },
       "sidebar": {
@@ -68,7 +69,9 @@ const translations = {
         "inputs": {
           "input_validation_error": "Campo obbligatorio o tipo valore non corretto",
           "integer": "intero",
-          "text": "testuale"
+          "text": "testuale",
+          "string": "stringa",
+          "date": "data"
         },
         "relations": {
           "tooltips": {
@@ -107,7 +110,8 @@ const translations = {
       "dataTable": {
         "previous": "Precedente",
         "next": "Successivo",
-        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe"
+        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
+        "no_data": "Nessun dato disponibile"
       }
     }
   },
@@ -165,7 +169,8 @@ const translations = {
         "messages": {
           "delete_feature": "Do you want delete selected feature ?",
           "commit": "Do you want to save the changes",
-          "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done."
+          "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
+          "saved": "Data saved!!!"
         }
       },
       "sidebar": {},
@@ -179,7 +184,9 @@ const translations = {
         "inputs": {
           "input_validation_error": "Mandatory Field or wrong data type",
           "integer": "integer",
-          "text": "text"
+          "text": "text",
+          "string": "string",
+          "date": "date"
         },
         "relations": {
           "tooltips": {
@@ -217,7 +224,8 @@ const translations = {
       "dataTable": {
         "previous": "Previous",
         "next": "Next",
-        "info": "Showing _START_ to _END_ of _TOTAL_ entries"
+        "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+        "no_data": "No data"
       }
     }
   }
