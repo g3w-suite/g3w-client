@@ -46,6 +46,11 @@ const translations = {
       "relation_already_added" : "Relazione già presente",
       "list_of_relations_feature": "Elenco Relazioni della feature ",
       "editing": {
+        "inputs": {
+          "media": {
+            "unsupported": "Formato non supportato"
+          },
+        },
         "tools": {
           "add_feature": "Aggiungi feature",
           "delete_feature": "Elimina feature",
@@ -53,8 +58,8 @@ const translations = {
           "update_vertex": "Aggiorna vertici feature",
           "update_feature": "Modifica feature"
         },
-        steps: {
-          help: {
+        "steps": {
+          "help": {
             "new": "Creo una nuova feature",
             "edit_table": "Edita le features della tabella",
             "draw_new_feature": "Disegna sulla mappa la feature",
@@ -73,7 +78,8 @@ const translations = {
           "commit": "Vuoi salvare definitivamente le modifiche",
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
           "saved": "I dati sono stati salvati correttamente",
-          "loading_data": "Caricamento dati"
+          "loading_data": "Caricamento dati",
+          "saving": "Salvataggio dati in corso. Attendere ..."
         }
       },
       "sidebar": {
@@ -82,7 +88,8 @@ const translations = {
         "title": "Risultati",
         "open_link": "Apri documento allegato",
         "server_error": "Si è verificato un errore nella richiesta al server",
-        "no_results": "Nessun risultato per questa interrogazione/ricerca "
+        "no_results": "Nessun risultato per questa interrogazione/ricerca ",
+        "link_button": "Apri"
       },
       "form": {
         "inputs": {
@@ -183,6 +190,11 @@ const translations = {
       "relation_already_added": "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
       "editing": {
+        "inputs": {
+          "media": {
+            "unsupported": "Unsopported format"
+          }
+        },
         "tools": {
           "add_feature": "Add feature",
           "delete_feature": "Delete feature",
@@ -190,8 +202,8 @@ const translations = {
           "update_vertex": "Update feature vertex",
           "update_feature": "Update feature"
         },
-        steps: {
-          help: {
+        "steps": {
+          "help": {
             "new": "Create new feature",
             "edit_table": "Edit table features",
             "draw_new_feature": "Draw feature on map",
@@ -210,7 +222,8 @@ const translations = {
           "commit": "Do you want to save the changes",
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
           "saved": "Data saved successfully",
-          "loading_data": "Loading data"
+          "loading_data": "Loading data",
+          "saving": "Saving data. Please wait ..."
         }
       },
       "sidebar": {},
@@ -218,7 +231,8 @@ const translations = {
         "title": "Results",
         "open_link": "Open attached document",
         "server_error": "An error occurred from server",
-        "no_results": "No results found for this query/search"
+        "no_results": "No results found for this query/search",
+        "link_button": "Open"
       },
       "form": {
         "inputs": {
