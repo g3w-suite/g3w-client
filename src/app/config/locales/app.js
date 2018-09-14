@@ -79,7 +79,8 @@ const translations = {
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
           "saved": "I dati sono stati salvati correttamente",
           "loading_data": "Caricamento dati",
-          "saving": "Salvataggio dati in corso. Attendere ..."
+          "saving": "Salvataggio dati in corso. Attendere ...",
+          "qgis_input_widget_relation": "Gestisci le relazioni tramite form dedicato"
         }
       },
       "sidebar": {
@@ -123,13 +124,14 @@ const translations = {
           "drag_layer": "Trascina il layer in questa area"
         },
         "querybypolygon": {
-          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul><label for='closehelpquerypolygon' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul>"
         },
         "querybybbox": {
-          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul><label for='closehelpquerybbox' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
+          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
         }
       },
       "catalog_items": {
+        "helptext": "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
           "open_attribute_table": "Apri la tabella degli attibuti",
@@ -223,7 +225,8 @@ const translations = {
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
           "saved": "Data saved successfully",
           "loading_data": "Loading data",
-          "saving": "Saving data. Please wait ..."
+          "saving": "Saving data. Please wait ...",
+          "qgis_input_widget_relation": "Use relation specific form to work with relation"
         }
       },
       "sidebar": {},
@@ -265,13 +268,14 @@ const translations = {
           "drag_layer": "Drag and drop layer here"
         },
         "querybypolygon": {
-          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul><label for='closehelpquerypolygon' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul>"
         },
         "querybybbox": {
-          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul><label for='closehelpquerybbox' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
+          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul>"
         }
       },
       "catalog_items": {
+        "helptext": "Right-click on individual layer to access additional features",
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
           "open_attribute_table": "Open Attribute Table",
