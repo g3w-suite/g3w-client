@@ -103,7 +103,7 @@ const translations = {
         "relations": {
           "tooltips": {
             "add_relation": "Crea ed aggiungi nuova relazione",
-            "link_relation": "Aggiungi relazione",
+            "link_relation": "Associa una relazione esistente a questa feature",
             "open_relation_tools": "Apri strumenti relatione",
             "unlink_relation": "Annulla relazione"
           }
@@ -128,6 +128,9 @@ const translations = {
         },
         "querybybbox": {
           "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
+        },
+        "query": {
+          "input_relation": "Clicca per accedere all'elenco delle relazioni"
         }
       },
       "catalog_items": {
@@ -248,7 +251,7 @@ const translations = {
         "relations": {
           "tooltips": {
             "add_relation": "Create and link new relation",
-            "link_relation": "Link relation",
+            "link_relation": "Join a relation to this feature",
             "open_relation_tools": "Show relation tools",
             "unlink_relation": "Unlink relation"
           }
@@ -272,6 +275,9 @@ const translations = {
         },
         "querybybbox": {
           "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul>"
+        },
+        "query": {
+          "input_relation": "Click to show relations"
         }
       },
       "catalog_items": {
