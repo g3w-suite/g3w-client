@@ -80,8 +80,28 @@ const translations = {
           "saved": "I dati sono stati salvati correttamente",
           "loading_data": "Caricamento dati",
           "saving": "Salvataggio dati in corso. Attendere ...",
-          "qgis_input_widget_relation": "Gestisci le relazioni tramite form dedicato"
-        }
+          "qgis_input_widget_relation": "Gestisci le relazioni tramite form dedicato",
+          "commit": {
+            "add": "Aggiunte",
+            "delete": "Cancellate",
+            "update": "Modificate"
+          }
+        },
+        "relation": {
+          "table": {
+            "info": `
+                  <div>
+                    Questa è la lista delle relazioni orfane o associate ad altre geometrie.
+                    Clicca sulla singola relazione per associarla alla geometria in editing.
+                  </div>
+                  <div>
+                    <span style="font-weight: bold">
+                      ATTENZIONE
+                    </span>: nel caso in cui la relazione sia attualmente associata ad un'altra geometria, verrà dissociata da questa
+                  </div>
+                `
+          }
+        },
       },
       "sidebar": {
       },
@@ -229,8 +249,29 @@ const translations = {
           "saved": "Data saved successfully",
           "loading_data": "Loading data",
           "saving": "Saving data. Please wait ...",
-          "qgis_input_widget_relation": "Use relation specific form to work with relation"
-        }
+          "qgis_input_widget_relation": "Use relation specific form to work with relation",
+          "pdf": "Document preview not available. Please click here ",
+          "commit": {
+            "add": "Added",
+            "delete": "Deleted",
+            "update": "Modified"
+          }
+        },
+        "relation": {
+          "table": {
+            "info": `
+                  <div>
+                    This is a list of orphan or binded relations to other features.
+                    Click on single relation to link it to current editing feature.
+                  </div>
+                  <div>
+                    <span style="font-weight: bold">
+                      ATTENTION
+                    </span>: in case of this relation is already bind to another, the previous link is lost
+                  </div>
+                `
+          }
+        },
       },
       "sidebar": {},
       "info": {
