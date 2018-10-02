@@ -46,6 +46,7 @@ const translations = {
       "relation_already_added" : "Relazione già presente",
       "list_of_relations_feature": "Elenco Relazioni della feature ",
       "editing": {
+        "edit_relation": "Edita relazione",
         "inputs": {
           "media": {
             "unsupported": "Formato non supportato"
@@ -75,7 +76,7 @@ const translations = {
         },
         "messages": {
           "delete_feature": "Vuoi eliminare l'elemento selezionato?",
-          "commit": "Vuoi salvare definitivamente le modifiche",
+          "commit_feature": "Vuoi salvare definitivamente le modifiche",
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
           "saved": "I dati sono stati salvati correttamente",
           "loading_data": "Caricamento dati",
@@ -135,7 +136,8 @@ const translations = {
           "error": "Non è possibile calcolare la tua posizione."
         },
         "nominatim": {
-          "placeholder": "Città, Indirizzo ..."
+          "placeholder": "Città, Indirizzo ...",
+          "noresults": "Nessun risultato"
         },
         "add_layer_control": {
           "header": "Aggiungi Layer",
@@ -215,6 +217,7 @@ const translations = {
       "relation_already_added": "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
       "editing": {
+        "edit_relation": "Edit relation",
         "inputs": {
           "media": {
             "unsupported": "Unsopported format"
@@ -244,7 +247,7 @@ const translations = {
         },
         "messages": {
           "delete_feature": "Do you want delete selected feature ?",
-          "commit": "Do you want to save the changes",
+          "commit_feature": "Do you want to save the changes",
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
           "saved": "Data saved successfully",
           "loading_data": "Loading data",
@@ -303,7 +306,8 @@ const translations = {
           "error": "Can't get your position"
         },
         "nominatim": {
-          "placeholder": "City, Address ..."
+          "placeholder": "City, Address ...",
+          "noresults": "No results"
         },
         "add_layer_control": {
           "header": "Add Layer",
