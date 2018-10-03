@@ -109,7 +109,9 @@ const bootstrap = function() {
               "previous": t("dataTable.previous"),
               "next": t("dataTable.next"),
             },
-            "info": t("dataTable.info")
+            "info": t("dataTable.info"),
+            "zeroRecords": t("dataTable.nodatafilterd"),
+            "infoFiltered": t("dataTable.infoFiltered")
           }
         });
       })

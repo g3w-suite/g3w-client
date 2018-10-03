@@ -128,6 +128,9 @@ const translations = {
             "open_relation_tools": "Apri strumenti relatione",
             "unlink_relation": "Annulla relazione"
           }
+        },
+        "footer": {
+          "required_fields": "Campi richiesti"
         }
       },
       "mapcontrols": {
@@ -153,6 +156,12 @@ const translations = {
         },
         "query": {
           "input_relation": "Clicca per accedere all'elenco delle relazioni"
+        },
+        "length": {
+          "tooltip": "Lunghezza"
+        },
+        "area": {
+          "tooltip": "Area"
         }
       },
       "catalog_items": {
@@ -166,7 +175,9 @@ const translations = {
       "dataTable": {
         "previous": "Precedente",
         "next": "Successivo",
-        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe"
+        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
+        "nodatafilterd": "Nessun risultato trovato",
+        "infoFiltered": "(Filtrati da _MAX_ total righe)"
       }
     }
   },
@@ -299,6 +310,9 @@ const translations = {
             "open_relation_tools": "Show relation tools",
             "unlink_relation": "Unlink relation"
           }
+        },
+        "footer": {
+          "required_fields": "Required fields"
         }
       },
       "mapcontrols": {
@@ -323,6 +337,12 @@ const translations = {
         },
         "query": {
           "input_relation": "Click to show relations"
+        },
+        "length": {
+          "tooltip": "Length"
+        },
+        "area": {
+          "tooltip": "Area"
         }
       },
       "catalog_items": {
@@ -337,7 +357,9 @@ const translations = {
         "previous": "Previous",
         "next": "Next",
         "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-        "no_data": "No data"
+        "no_data": "No data",
+        "nodatafilterd": "No matching records found",
+        "infoFiltered": "(filtered from _MAX_ total records)"
       }
     }
   }
