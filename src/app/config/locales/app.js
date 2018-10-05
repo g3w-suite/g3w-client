@@ -140,7 +140,8 @@ const translations = {
         },
         "nominatim": {
           "placeholder": "Città, Indirizzo ...",
-          "noresults": "Nessun risultato"
+          "noresults": "Nessun risultato",
+          "notresponseserver": "Il server non risponde"
         },
         "add_layer_control": {
           "header": "Aggiungi Layer",
@@ -155,7 +156,7 @@ const translations = {
           "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
         },
         "query": {
-          "input_relation": "Clicca per accedere all'elenco delle relazioni"
+          "input_relation": "Clicca per consultare le relazioni"
         },
         "length": {
           "tooltip": "Lunghezza"
@@ -321,7 +322,8 @@ const translations = {
         },
         "nominatim": {
           "placeholder": "City, Address ...",
-          "noresults": "No results"
+          "noresults": "No results",
+          "notresponseserver": "No response from server"
         },
         "add_layer_control": {
           "header": "Add Layer",
