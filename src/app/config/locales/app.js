@@ -45,7 +45,11 @@ const translations = {
       "relation_data": "Dati relativi alla relazione",
       "relation_already_added" : "Relazione già presente",
       "list_of_relations_feature": "Elenco Relazioni della feature ",
+      "law": {
+        "button": "Consulta normativa"
+      },
       "editing": {
+        "edit_relation": "Edita relazione",
         "inputs": {
           "media": {
             "unsupported": "Formato non supportato"
@@ -75,12 +79,33 @@ const translations = {
         },
         "messages": {
           "delete_feature": "Vuoi eliminare l'elemento selezionato?",
-          "commit": "Vuoi salvare definitivamente le modifiche",
+          "commit_feature": "Vuoi salvare definitivamente le modifiche",
           "change_toolbox_relation": "Layer in relazione. Prima di passare ad altri editing è obbligatorio salvare le modifiche correnti.",
           "saved": "I dati sono stati salvati correttamente",
           "loading_data": "Caricamento dati",
-          "saving": "Salvataggio dati in corso. Attendere ..."
-        }
+          "saving": "Salvataggio dati in corso. Attendere ...",
+          "qgis_input_widget_relation": "Gestisci le relazioni tramite form dedicato",
+          "commit": {
+            "add": "Aggiunte",
+            "delete": "Cancellate",
+            "update": "Modificate"
+          }
+        },
+        "relation": {
+          "table": {
+            "info": `
+                  <div>
+                    Questa è la lista delle relazioni orfane o associate ad altre geometrie.
+                    Clicca sulla singola relazione per associarla alla geometria in editing.
+                  </div>
+                  <div>
+                    <span style="font-weight: bold">
+                      ATTENZIONE
+                    </span>: nel caso in cui la relazione sia attualmente associata ad un'altra geometria, verrà dissociata da questa
+                  </div>
+                `
+          }
+        },
       },
       "sidebar": {
       },
@@ -102,10 +127,13 @@ const translations = {
         "relations": {
           "tooltips": {
             "add_relation": "Crea ed aggiungi nuova relazione",
-            "link_relation": "Aggiungi relazione",
+            "link_relation": "Associa una relazione esistente a questa feature",
             "open_relation_tools": "Apri strumenti relatione",
             "unlink_relation": "Annulla relazione"
           }
+        },
+        "footer": {
+          "required_fields": "Campi richiesti"
         }
       },
       "mapcontrols": {
@@ -114,7 +142,9 @@ const translations = {
           "error": "Non è possibile calcolare la tua posizione."
         },
         "nominatim": {
-          "placeholder": "Città, Indirizzo ..."
+          "placeholder": "Città, Indirizzo ...",
+          "noresults": "Nessun risultato",
+          "notresponseserver": "Il server non risponde"
         },
         "add_layer_control": {
           "header": "Aggiungi Layer",
@@ -123,13 +153,23 @@ const translations = {
           "drag_layer": "Trascina il layer in questa area"
         },
         "querybypolygon": {
-          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul><label for='closehelpquerypolygon' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul>"
         },
         "querybybbox": {
-          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul><label for='closehelpquerybbox' style='float:right'> Non mostrare più</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
+          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
+        },
+        "query": {
+          "input_relation": "Clicca per consultare le relazioni"
+        },
+        "length": {
+          "tooltip": "Lunghezza"
+        },
+        "area": {
+          "tooltip": "Area"
         }
       },
       "catalog_items": {
+        "helptext": "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
           "open_attribute_table": "Apri la tabella degli attibuti",
@@ -139,7 +179,9 @@ const translations = {
       "dataTable": {
         "previous": "Precedente",
         "next": "Successivo",
-        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe"
+        "info": "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
+        "nodatafilterd": "Nessun risultato trovato",
+        "infoFiltered": "(Filtrati da _MAX_ total righe)"
       }
     }
   },
@@ -189,7 +231,11 @@ const translations = {
       "relation_data": "Relation data",
       "relation_already_added": "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
+      "law": {
+        "button": "Show law"
+      },
       "editing": {
+        "edit_relation": "Edit relation",
         "inputs": {
           "media": {
             "unsupported": "Unsopported format"
@@ -219,12 +265,34 @@ const translations = {
         },
         "messages": {
           "delete_feature": "Do you want delete selected feature ?",
-          "commit": "Do you want to save the changes",
+          "commit_feature": "Do you want to save the changes",
           "change_toolbox_relation": "Layer has relation/relations. Before switch editing you need to save changes done.",
           "saved": "Data saved successfully",
           "loading_data": "Loading data",
-          "saving": "Saving data. Please wait ..."
-        }
+          "saving": "Saving data. Please wait ...",
+          "qgis_input_widget_relation": "Use relation specific form to work with relation",
+          "pdf": "Document preview not available. Please click here ",
+          "commit": {
+            "add": "Added",
+            "delete": "Deleted",
+            "update": "Modified"
+          }
+        },
+        "relation": {
+          "table": {
+            "info": `
+                  <div>
+                    This is a list of orphan or binded relations to other features.
+                    Click on single relation to link it to current editing feature.
+                  </div>
+                  <div>
+                    <span style="font-weight: bold">
+                      ATTENTION
+                    </span>: in case of this relation is already bind to another, the previous link is lost
+                  </div>
+                `
+          }
+        },
       },
       "sidebar": {},
       "info": {
@@ -245,10 +313,13 @@ const translations = {
         "relations": {
           "tooltips": {
             "add_relation": "Create and link new relation",
-            "link_relation": "Link relation",
+            "link_relation": "Join a relation to this feature",
             "open_relation_tools": "Show relation tools",
             "unlink_relation": "Unlink relation"
           }
+        },
+        "footer": {
+          "required_fields": "Required fields"
         }
       },
       "mapcontrols": {
@@ -256,7 +327,9 @@ const translations = {
           "error": "Can't get your position"
         },
         "nominatim": {
-          "placeholder": "City, Address ..."
+          "placeholder": "City, Address ...",
+          "noresults": "No results",
+          "notresponseserver": "No response from server"
         },
         "add_layer_control": {
           "header": "Add Layer",
@@ -265,13 +338,23 @@ const translations = {
           "drag_layer": "Drag and drop layer here"
         },
         "querybypolygon": {
-          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul><label for='closehelpquerypolygon' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerypolygon' class='pull-right'/>"
+          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul>"
         },
         "querybybbox": {
-          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul><label for='closehelpquerybbox' style='float:right'> Do not show again</label><input type='checkbox' id='closehelpquerybbox' class='pull-right'/>"
+          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul>"
+        },
+        "query": {
+          "input_relation": "Click to show relations"
+        },
+        "length": {
+          "tooltip": "Length"
+        },
+        "area": {
+          "tooltip": "Area"
         }
       },
       "catalog_items": {
+        "helptext": "Right-click on individual layer to access additional features",
         "contextmenu": {
           "zoomtolayer": "Zoom to Layer",
           "open_attribute_table": "Open Attribute Table",
@@ -282,7 +365,9 @@ const translations = {
         "previous": "Previous",
         "next": "Next",
         "info": "Showing _START_ to _END_ of _TOTAL_ entries",
-        "no_data": "No data"
+        "no_data": "No data",
+        "nodatafilterd": "No matching records found",
+        "infoFiltered": "(filtered from _MAX_ total records)"
       }
     }
   }
