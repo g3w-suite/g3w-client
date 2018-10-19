@@ -1,5 +1,8 @@
 const i18ninit = require('sdk').core.i18n.init;
-const t = require('sdk').core.i18n.t;
+// sdk configuration file
+const sdkConfig = require('sdk').config;
+// template configuration file
+import templateConfig from './template/config'
 const ApplicationService = require('sdk/sdk').core.ApplicationService;
 // ApplicationTemplate instance. It manages the application template
 const ApplicationTemplate = require('./template/js/template');
@@ -7,6 +10,16 @@ const ApplicationTemplate = require('./template/js/template');
 const config = require('./config/config.js');
 // set the global enviromental variable g3wsdk. It used by plugins to load sdk class and instances
 window.g3wsdk = require('sdk');
+
+// this function is used to merge all configurations from sdk template etc .. for example i18n
+function addConfigurationFromOtherModules() {
+  //i18n
+  const skdI18n = sdkConfig.i18n || {};
+  const templateI18n = templateConfig.i18n || {};
+  for (const language in config.i18n.resources) {
+    Object.assign(config.i18n.resources[language].translation, skdI18n[language], templateI18n[language]);
+  }
+}
 
 // main function to create the start application configuration
 function createApplicationConfig() {
@@ -72,6 +85,8 @@ const bootstrap = function() {
     }
     return error;
   }
+  // add all configurations
+  addConfigurationFromOtherModules();
   //get all configuration from groups
   //config.server.urls.initconfig: api url to get starting configuration
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
@@ -102,7 +117,9 @@ const bootstrap = function() {
       }
     });
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
-      .then(() => {})
+      .then(() => {
+
+      })
       .fail((error) => {
         error = handleError(error);
         ApplicationTemplate.fail({

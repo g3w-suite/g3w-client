@@ -27,11 +27,24 @@ const server = {
   }
 };
 
-module.exports = {
-  apptitle: apptitle,
-  client: client,
-  server: server,
-  plugins:  plugins,
-  tools:  tools,
-  i18n: i18n
+const utils = {
+  merge: function(type) {
+    if (type) {
+      console.log(CONFIG)
+    }
+  }
 };
+
+const CONFIG = {
+  apptitle,
+  client,
+  server,
+  plugins,
+  tools,
+  i18n,
+  utils
+};
+
+
+
+module.exports = CONFIG;
