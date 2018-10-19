@@ -55,7 +55,7 @@ This is the front-end part of the G3W-SUITE. Before run it in develop mode YOU N
 After server side installation you can customize local server configuration through "config.js" file
 
 
-1) Open config.js file to change local G3W-ADMIN path, server port, etc ..:
+1) Create a new file named config.js form config.template.js and change local G3W-ADMIN path, server port, etc ..:
 
     ```bash
        ~/../g3w-client$ nano config.js

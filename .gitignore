@@ -17,3 +17,4 @@ src/libs/modules/
 /src/libs/sdk/
 /src/index.html
 /src/libs/plugins/
+config.js
