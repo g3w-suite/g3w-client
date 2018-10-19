@@ -45,9 +45,6 @@ const translations = {
       "relation_data": "Dati relativi alla relazione",
       "relation_already_added" : "Relazione già presente",
       "list_of_relations_feature": "Elenco Relazioni della feature ",
-      "law": {
-        "button": "Consulta normativa"
-      },
       "editing": {
         "edit_relation": "Edita relazione",
         "inputs": {
@@ -200,7 +197,6 @@ const translations = {
       "print": "Print",
       "create_print": "Create Print",
       "dosearch": "Search",
-      "metadata": {},
       "catalog": "Map",
       "data": "Data",
       "baselayers": "Base",
@@ -231,9 +227,6 @@ const translations = {
       "relation_data": "Relation data",
       "relation_already_added": "Relation already added",
       "list_of_relations_feature": "List of relations feature ",
-      "law": {
-        "button": "Show law"
-      },
       "editing": {
         "edit_relation": "Edit relation",
         "inputs": {

@@ -1,4 +1,5 @@
 const i18ninit = require('sdk').core.i18n.init;
+const addI18n = require('sdk').core.i18n.addI18n;
 // sdk configuration file
 const sdkConfig = require('sdk').config;
 // template configuration file
@@ -12,13 +13,12 @@ const config = require('./config/config.js');
 window.g3wsdk = require('sdk');
 
 // this function is used to merge all configurations from sdk template etc .. for example i18n
-function addConfigurationFromOtherModules() {
+function addI18nConfigModules() {
   //i18n
-  const skdI18n = sdkConfig.i18n || {};
+  const sdkI18n = sdkConfig.i18n || {};
   const templateI18n = templateConfig.i18n || {};
-  for (const language in config.i18n.resources) {
-    Object.assign(config.i18n.resources[language].translation, skdI18n[language], templateI18n[language]);
-  }
+  addI18n(sdkI18n);
+  addI18n(templateI18n);
 }
 
 // main function to create the start application configuration
@@ -86,7 +86,7 @@ const bootstrap = function() {
     return error;
   }
   // add all configurations
-  addConfigurationFromOtherModules();
+  //addConfigurationFromOtherModules();
   //get all configuration from groups
   //config.server.urls.initconfig: api url to get starting configuration
   ApplicationService.obtainInitConfig(config.server.urls.initconfig)
@@ -107,7 +107,10 @@ const bootstrap = function() {
     // create application configuration
     const applicationConfig = createApplicationConfig();
     // inizialize internalization
-    i18ninit(config.i18n);
+    i18ninit(config.i18n)
+      .then(() => {
+        addI18nConfigModules()
+      });
     // set accept-language reuest header based on config language
     //jquery
     const language = config.i18n.lng || 'en';
