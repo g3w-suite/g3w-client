@@ -1,4 +1,4 @@
 {
   "presets": ["env"],
-  "plugins": ["transform-remove-strict-mode", "transform-object-rest-spread"]
+  "plugins": ["transform-remove-strict-mode", "transform-object-rest-spread", "transform-runtime","transform-async-to-generator"]
 }

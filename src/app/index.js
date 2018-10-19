@@ -102,19 +102,7 @@ const bootstrap = function() {
       }
     });
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
-      .then(() => {
-        $.extend( true, $.fn.dataTable.defaults, {
-          "language": {
-            "paginate": {
-              "previous": t("dataTable.previous"),
-              "next": t("dataTable.next"),
-            },
-            "info": t("dataTable.info"),
-            "zeroRecords": t("dataTable.nodatafilterd"),
-            "infoFiltered": t("dataTable.infoFiltered")
-          }
-        });
-      })
+      .then(() => {})
       .fail((error) => {
         error = handleError(error);
         ApplicationTemplate.fail({
