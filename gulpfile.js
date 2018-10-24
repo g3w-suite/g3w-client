@@ -181,7 +181,7 @@ gulp.task('images', function () {
 });
 
 gulp.task('datatable-images',function () {
-  return gulp.src(path.join(templateFolder, '/ext/datatables/DataTables-1.10.16/images/*'))
+  return gulp.src(path.join(sdkFolder, '/ext/datatables/DataTables-1.10.16/images/*'))
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'))
 });
@@ -261,7 +261,7 @@ gulp.task('browser-sync', function() {
     open: false,
     startPath: "/",
     socket: {
-      domain: "http://localhost:" + port
+      domain: `${conf.host}:${port}`
     }
   });
 });
