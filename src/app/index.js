@@ -46,6 +46,7 @@ function createApplicationConfig() {
     minscale: config.group.minscale,
     maxscale: config.group.maxscale,
     main_map_title: config.main_map_title,
+    credits: config.credits,
     // needed by ProjectService
     getWmsUrl: function(project){
       return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
@@ -102,6 +103,7 @@ const bootstrap = function() {
     config.main_map_title = initConfig.main_map_title;
     config.group = initConfig.group;
     config.user = initConfig.user;
+    config.credits = initConfig.credits;
     // get language from server
     config.i18n.lng = config.user.i18n;
     // create application configuration

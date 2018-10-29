@@ -104,8 +104,7 @@ const translations = {
           }
         },
       },
-      "sidebar": {
-      },
+      "sidebar": {},
       "info": {
         "title": "Risultati",
         "open_link": "Apri documento allegato",

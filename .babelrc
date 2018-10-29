@@ -1,4 +1,10 @@
 {
   "presets": ["env"],
-  "plugins": ["transform-remove-strict-mode", "transform-object-rest-spread", "transform-runtime","transform-async-to-generator"]
+  "plugins": [
+    "transform-remove-strict-mode",
+    "transform-object-rest-spread",
+    "transform-runtime",
+    "transform-async-to-generator",
+    "transform-array-find"
+  ]
 }
