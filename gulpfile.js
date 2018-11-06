@@ -32,6 +32,7 @@ const hmr = require('browserify-hmr');
 const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
+const concat = require('gulp-concat');
 
 const templateFolder = conf.templateFolder;
 const sdkFolder = conf.sdkFolder;
@@ -160,13 +161,16 @@ gulp.task('plugins', function() {
 // compile less file in css
 gulp.task('less',['fonts'], function () {
   const templateLessFolder = path.join(templateFolder, 'style', 'less');
-  return gulp.src(path.join(templateLessFolder, 'app.less'))
+  const pluginsLessFolder = path.join(pluginsFolder, '*', 'style', 'less');
+  return gulp.src([path.join(templateLessFolder, 'app.less'), path.join(pluginsLessFolder, 'plugin.less')])
+    .pipe(concat('app.less'))
     .pipe(less({
-      paths: [ templateLessFolder], // add paths where to search in @import
+      paths: [templateLessFolder, pluginsLessFolder], // add paths where to search in @import
       plugins: [LessGlob] //plugin to manage globs import es: @import path/***
     }))
     .pipe(gulp.dest(clientFolder+'/css/'))
 });
+
 
 gulp.task('fonts', function () {
   return gulp.src(['!./src/libs/**/node_modules/**/','./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
@@ -293,6 +297,9 @@ gulp.task('watch',function() {
   );
   watch('./src/libs/plugins/**/plugin.js',
     prepareRunSequence('plugins','browser:reload')
+  );
+  watch('./src/libs/plugins/**/style/less/plugin.less',
+    prepareRunSequence('less','browser:reload')
   );
   watch([path.join(pluginsFolder,'*', 'index.*.html'), path.join(templateFolder,'*.*.html'), path.join(sdkFolder,'*.*.html')],
     prepareRunSequence('add_external_resources_to_main_html','browser:reload')

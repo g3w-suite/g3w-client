@@ -5,6 +5,7 @@
     "transform-object-rest-spread",
     "transform-runtime",
     "transform-async-to-generator",
-    "transform-array-find"
+    "transform-array-find",
+    "transform-vue-jsx"
   ]
 }
