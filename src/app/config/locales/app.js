@@ -148,12 +148,6 @@ const translations = {
           "select_color": "Seleziona il colore del Layer",
           "drag_layer": "Trascina il layer in questa area"
         },
-        "querybypolygon": {
-          "help": "<h4>Guida - Query By Polygon</h4><ul><li>Seleziona uno strato poligonale</li><li>Clicca su una feature dello strato selezionato per lanciare la selezione</li></ul>"
-        },
-        "querybybbox": {
-          "help": "<h4>Guida - Query BBox layer</h4><ul><li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li></ul>"
-        },
         "query": {
           "input_relation": "Clicca per consultare le relazioni"
         },
@@ -328,12 +322,6 @@ const translations = {
           "select_projection": "Select layer projection",
           "select_color": "Select Layer Color",
           "drag_layer": "Drag and drop layer here"
-        },
-        "querybypolygon": {
-          "help": "<h4>Guide - Query By Polygon</h4><ul><li>Select a Polygon layer from TOC</li><li>Click on a feature to run the selection</li></ul>"
-        },
-        "querybybbox": {
-          "help": "<h4>Guide - Query BBox layer</h4><ul><li>Draw a rectangle to query features of the layers with yellow underling on TOC</li></ul>"
         },
         "query": {
           "input_relation": "Click to show relations"
