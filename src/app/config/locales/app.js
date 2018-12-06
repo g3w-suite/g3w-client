@@ -64,7 +64,7 @@ const translations = {
           "error": "Non è possibile calcolare la tua posizione."
         },
         "nominatim": {
-          "placeholder": "Città, Indirizzo ...",
+          "placeholder": "Indirizzo ...",
           "noresults": "Nessun risultato",
           "notresponseserver": "Il server non risponde"
         },
@@ -164,7 +164,7 @@ const translations = {
           "error": "Can't get your position"
         },
         "nominatim": {
-          "placeholder": "City, Address ...",
+          "placeholder": "Address ...",
           "noresults": "No results",
           "notresponseserver": "No response from server"
         },

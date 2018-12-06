@@ -29,6 +29,7 @@ function createApplicationConfig() {
     logo_link: config.group.header_logo_link,
     terms_of_use_text: config.group.header_terms_of_use_text,
     terms_of_use_link: config.group.terms_of_use_link,
+    header_custom_links: config.group.header_custom_links,
     debug: config.client.debug || false,
     group: config.group,
     urls: config.server.urls,
