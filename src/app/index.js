@@ -49,8 +49,8 @@ function createApplicationConfig() {
     main_map_title: config.main_map_title,
     credits: config.credits,
     // needed by ProjectService
-    getWmsUrl: function(project){
-      return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
+    getWmsUrl: function(project) {
+      return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id+'/';
     },
     // needed by ProjectsRegistry to get informations about project configuration
     getProjectConfigUrl: function(project) {
