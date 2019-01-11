@@ -48,6 +48,7 @@ function createApplicationConfig() {
     maxscale: config.group.maxscale,
     main_map_title: config.main_map_title,
     credits: config.credits,
+    layout: config.group.layout,
     // needed by ProjectService
     getWmsUrl: function(project) {
       return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id+'/';
