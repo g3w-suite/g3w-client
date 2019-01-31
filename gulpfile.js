@@ -87,7 +87,11 @@ gulp.task('hmr', () => {
       .pipe(buffer())
       .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
       .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
-      .pipe(gulpif(production, uglify().on('error', gutil.log)))
+      .pipe(gulpif(production, uglify({
+        compress: {
+          drop_console: true
+        }
+      }).on('error', gutil.log)))
       .pipe(gulpif(!production,sourcemaps.write()))
       .pipe(rename('app.js'))
       .pipe(gulp.dest(clientFolder+'/js/'))
@@ -128,7 +132,11 @@ gulp.task('browserify', [], function() {
       .pipe(buffer())
       .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
       .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
-      .pipe(gulpif(production, uglify().on('error', gutil.log)))
+      .pipe(gulpif(production, uglify({
+        compress: {
+          drop_console: true
+        }
+      }).on('error', gutil.log)))
       .pipe(rename('app.js'))
       .pipe(gulpif(!production, sourcemaps.write('./')))
       .pipe(gulp.dest(clientFolder+'/js/'))
@@ -240,15 +248,21 @@ proxy.on('error',function(e){
 function proxyMiddleware(urls) {
   return function(req, res, next){
     let doproxy = false;
-    for(let i in urls){
-      if (req.url.indexOf(urls[i]) > -1){
+    let rootUrl;
+    if (req.url.indexOf('plugin.js') > -1) {
+      rootUrl = req.url;
+    } else
+      rootUrl = req.url.split('?')[0];
+    for (let i in urls) {
+      if (rootUrl.indexOf(urls[i]) > -1) {
         doproxy = true;
+        break;
       }
     }
     if (doproxy){
       proxy.web(req,res);
     }
-    else{
+    else {
       next();
     }
   }
@@ -353,7 +367,11 @@ gulp.task('g3w-admin-plugins',function() {
       const pluginname = dirname.replace('/js','');
       path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
-    .pipe(uglify())
+    .pipe(uglify({
+      compress: {
+        drop_console: true
+      }
+    }))
     .pipe(sourcemaps.write("."))
     .pipe(gulp.dest("."));
 });
