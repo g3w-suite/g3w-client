@@ -17,6 +17,7 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "@turf/angle": "^6.0.1",
     "axios": "^0.18.0",
     "es6-promise": "^4.2.5",
     "object-hash": "^1.2.0",

@@ -46,18 +46,6 @@ const translations = {
         "no_results": "Nessun risultato per questa interrogazione/ricerca ",
         "link_button": "Apri"
       },
-      "form": {
-        "inputs": {
-          "input_validation_error": "Campo obbligatorio o tipo valore non corretto",
-          "integer": "intero",
-          "text": "testuale",
-          "string": "stringa",
-          "date": "data"
-        },
-        "footer": {
-          "required_fields": "Campi richiesti"
-        }
-      },
       "mapcontrols": {
         "geolocations": {
           "title": "",
@@ -146,18 +134,6 @@ const translations = {
         "server_error": "An error occurred from server",
         "no_results": "No results found for this query/search",
         "link_button": "Open"
-      },
-      "form": {
-        "inputs": {
-          "input_validation_error": "Mandatory Field or wrong data type",
-          "integer": "integer",
-          "text": "text",
-          "string": "string",
-          "date": "date"
-        },
-        "footer": {
-          "required_fields": "Required fields"
-        }
       },
       "mapcontrols": {
         "geolocations": {
