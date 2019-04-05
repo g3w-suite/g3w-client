@@ -51,11 +51,11 @@ function createApplicationConfig() {
     layout: config.group.layout,
     // needed by ProjectService
     getWmsUrl: function(project) {
-      return config.server.urls.baseurl+config.server.urls.ows+'/'+config.group.id+'/'+project.type+'/'+project.id;
+      return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
     },
     // needed by ProjectsRegistry to get informations about project configuration
     getProjectConfigUrl: function(project) {
-      return config.server.urls.baseurl+config.server.urls.config+'/'+config.group.id+'/'+project.type+'/'+project.id;
+      return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}`;
     },
     plugins: config.group.plugins,
     tools: config.tools,
