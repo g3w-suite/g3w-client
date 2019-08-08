@@ -48,7 +48,7 @@ function createApplicationConfig() {
     maxscale: config.group.maxscale,
     main_map_title: config.main_map_title,
     credits: config.credits,
-    layout: config.group.layout,
+    layout: config.group.layout || {},
     // needed by ProjectService
     getWmsUrl: function(project) {
       return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
@@ -110,6 +110,8 @@ const bootstrap = function() {
     config.i18n.lng = config.user.i18n;
     // create application configuration
     const applicationConfig = createApplicationConfig();
+    // check if is inside a iframe
+    config.group.layout.iframe = window.top !== window.self;
     // inizialize internalization
     i18ninit(config.i18n)
       .then(() => {
@@ -124,9 +126,7 @@ const bootstrap = function() {
       }
     });
     ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
-      .then(() => {
-
-      })
+      .then(() => {})
       .fail((error) => {
         error = handleError(error);
         ApplicationTemplate.fail({
