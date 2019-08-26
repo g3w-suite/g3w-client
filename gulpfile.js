@@ -68,7 +68,7 @@ gulp.task('hmr', () => {
     .transform(babelify, {
       babelrc: true
     }).transform(stringify, {
-      appliesTo: { includeExtensions: ['.html'] }
+      appliesTo: { includeExtensions: ['.html', '.xml'] }
     }).transform(imgurify);
 
   bundler.on('update', bundle);
@@ -116,7 +116,7 @@ gulp.task('browserify', [], function() {
     .transform(babelify, {
     babelrc: true
   }).transform(stringify, {
-    appliesTo: { includeExtensions: ['.html'] }
+    appliesTo: { includeExtensions: ['.html', '.xml'] }
   }).transform(imgurify);
 
   const bundle = function() {

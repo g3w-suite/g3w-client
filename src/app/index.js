@@ -64,11 +64,11 @@ function createApplicationConfig() {
   };
 }
 
-ApplicationService.on('ready', function() {
+ApplicationService.on('ready', () => {
   //create the ApplicationTemplate instance passing the template configuration
   // and the applicationService instance that is useful to work with project API
-  applicationTemplate = new ApplicationTemplate({
-    ApplicationService: this
+  const applicationTemplate = new ApplicationTemplate({
+    ApplicationService
   });
   // Listen ready event emit after build interface
   applicationTemplate.on('ready', function() {
