@@ -4,6 +4,10 @@ const del = require('del');
 //Gulp
 const gulp   = require('gulp');
 ///
+//utility to work with git
+const gitBranchName = require('current-git-branch');
+const git = require('gulp-git');
+
 const argv = require('yargs').argv;
 const runSequence = require('run-sequence');
 const rename = require('gulp-rename');
@@ -33,6 +37,8 @@ const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
+const KarmaServer = require('karma').Server;
+
 
 const templateFolder = conf.templateFolder;
 const sdkFolder = conf.sdkFolder;
@@ -155,6 +161,20 @@ gulp.task('browserify', [], function() {
     }
   }
   return rebundle();
+});
+
+gulp.task('branches_tags', function() {
+  const gitPaths = ['./src/app/template', './src/libs/sdk'];
+  gitPaths.forEach((gitPath) => {
+    const tagVersion = `BRANCH${gitBranchName({ altPath: gitPath })}_HASH${versionHash}`;
+    git.tag(tagVersion, tagVersion, {
+      cwd: gitPath
+    }, function (err) {
+      if (err) {
+        console.log('Err', err)
+      }
+    });
+  })
 });
 
 // it used to copy all plugins to g3w-admin plugin folder
@@ -432,6 +452,20 @@ gulp.task('add_external_resources_to_main_html',  function() {
     .pipe(gulp.dest(srcFolder));
 });
 
+gulp.task('test', function() {
+
+});
+
+gulp.task('test-plugins', function(done) {
+  new KarmaServer({
+    configFile: `${__dirname}/test/config/karma.plugins.config.js`,
+    singleRun: true
+  }, done).start();
+});
+
+gulp.task('test-plugin', function() {
+
+});
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
 gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult

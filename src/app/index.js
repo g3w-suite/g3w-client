@@ -64,20 +64,6 @@ function createApplicationConfig() {
   };
 }
 
-ApplicationService.on('ready', () => {
-  //create the ApplicationTemplate instance passing the template configuration
-  // and the applicationService instance that is useful to work with project API
-  const applicationTemplate = new ApplicationTemplate({
-    ApplicationService
-  });
-  // Listen ready event emit after build interface
-  applicationTemplate.on('ready', function() {
-    ApplicationService.postBootstrap()
-  });
-  //call initialize applicationTemplate method
-  applicationTemplate.init();
-});
-
 // frun when app.js is loaded
 const bootstrap = function() {
   function handleError(error) {
@@ -125,8 +111,21 @@ const bootstrap = function() {
         jqXHR.setRequestHeader('Accept-Language', language);
       }
     });
-    ApplicationService.init(applicationConfig, true) // lunch manuallythe postBootstrp
-      .then(() => {})
+
+    ApplicationService.init(applicationConfig)
+      .then(() => {
+        //create the ApplicationTemplate instance passing the template configuration
+        // and the applicationService instance that is useful to work with project API
+        const applicationTemplate = new ApplicationTemplate({
+          ApplicationService
+        });
+        // Listen ready event emit after build interface
+        applicationTemplate.on('ready', () =>  {
+          ApplicationService.postBootstrap()
+        });
+        //call initialize applicationTemplate method
+        applicationTemplate.init();
+      })
       .fail((error) => {
         error = handleError(error);
         ApplicationTemplate.fail({
