@@ -1,5 +1,6 @@
 const conf = require('./config');
 const path = require('path');
+const fs = require('fs')
 const del = require('del');
 //Gulp
 const gulp   = require('gulp');
@@ -37,9 +38,8 @@ const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
+const prompt = require('gulp-prompt');
 const KarmaServer = require('karma').Server;
-
-
 const templateFolder = conf.templateFolder;
 const sdkFolder = conf.sdkFolder;
 const pluginsFolder = conf.pluginsFolder;
@@ -376,7 +376,7 @@ gulp.task('serve-hot', function(done) {
   6 - Remove app.js and app.css from g3w-admin client folder
 */
 gulp.task('dist', function(done) {
-  runSequence('clean','production','browserify',['html','plugins'],'html:compiletemplate','cleanup',
+  runSequence('clean','production','browserify',['html'],'html:compiletemplate','cleanup',
     done);
 });
 
@@ -387,13 +387,36 @@ gulp.task('g3w-admin-plugins',function() {
       const pluginname = dirname.replace('/js','');
       path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
-    .pipe(uglify({
-      compress: {
-        drop_console: true
-      }
-    }))
-    .pipe(sourcemaps.write("."))
     .pipe(gulp.dest("."));
+});
+
+gulp.task('select-plugins', function() {
+  const plugins = fs.readdirSync(distFolder).filter((file) => {
+    return file !== 'client' && fs.statSync(distFolder+'/'+file).isDirectory();
+  });
+  return gulp.src('./package.json')
+    .pipe(prompt.prompt({
+        type: 'checkbox',
+        name: 'plugins',
+        message: 'Plugins',
+        choices: plugins
+      }, function(response) {
+        process.env.G3W_PLUGINS = response.plugins;
+      })
+    )
+});
+
+gulp.task('g3w-admin-plugins-select', ['plugins', 'select-plugins'], function(done) {
+  const pluginNames = process.env.G3W_PLUGINS.split(',');
+  const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
+  return gulp.src(sources)
+    .pipe(rename(function(path){
+      const dirname = path.dirname;
+      const pluginname = dirname.replace('/js','');
+      path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+    }))
+    .pipe(gulp.dest("."));
+
 });
 
 const client_version = (client != '') ? 'client-'+client : 'client';
@@ -420,7 +443,7 @@ gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static'
 
 // task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
 gulp.task('g3w-admin',function(done){
-  runSequence('dist','g3w-admin-plugins','g3w-admin-client', done)
+  runSequence('dist','g3w-admin-plugins-select','g3w-admin-client', done)
 });
 
 // this is useful o pre creare

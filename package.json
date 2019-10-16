@@ -4,10 +4,9 @@
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
-    "admin": "gulp admin",
-    "default": "gulp default",
-    "dist": "gulp dist",
-    "vue": "browserify -t vueify -e main.js -o pippo.js"
+    "admin": "gulp g3w-admin",
+    "plugins": "gulp g3w-admin-plugins-select",
+    "default": "gulp default"
   },
   "repository": {
     "type": "git",
@@ -61,6 +60,7 @@
     "gulp-merge": "^0.1.1",
     "gulp-minify-css": "^1.2.4",
     "gulp-preprocess": "^2.0.0",
+    "gulp-prompt": "^1.2.0",
     "gulp-refresh": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.6.1",
@@ -72,6 +72,7 @@
     "gulp-watch": "^4.3.5",
     "http-proxy": "^1.11.0",
     "imgurify": "^2.0.1",
+    "inquirer": "^7.0.0",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "karma": "^4.3.0",
