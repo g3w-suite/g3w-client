@@ -222,7 +222,7 @@ gulp.task('assets',['fonts', 'images', 'less', 'datatable-images']);
 
 function interpolateVersion(path, separator) {
   const prepost = path.split(separator);
-  if (prepost.length != 2) {
+  if (prepost.length !== 2) {
     return path;
   }
   return prepost[0] +"."+ versionHash + separator + prepost[1];
@@ -390,6 +390,10 @@ gulp.task('g3w-admin-plugins',function() {
     .pipe(gulp.dest("."));
 });
 
+gulp.task('copy-and-select-plugins', function(done) {
+  runSequence('plugins', 'select-plugins', done)
+});
+
 gulp.task('select-plugins', function() {
   const plugins = fs.readdirSync(distFolder).filter((file) => {
     return file !== 'client' && fs.statSync(distFolder+'/'+file).isDirectory();
@@ -406,8 +410,12 @@ gulp.task('select-plugins', function() {
     )
 });
 
-gulp.task('g3w-admin-plugins-select', ['plugins', 'select-plugins'], function(done) {
+gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done) {
   const pluginNames = process.env.G3W_PLUGINS.split(',');
+  if (pluginNames.length === 1 && pluginNames[0] === '') {
+    console.log('No plugin selected');
+    return;
+  }
   const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
   return gulp.src(sources)
     .pipe(rename(function(path){
