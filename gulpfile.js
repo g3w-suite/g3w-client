@@ -414,16 +414,18 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
   const pluginNames = process.env.G3W_PLUGINS.split(',');
   if (pluginNames.length === 1 && pluginNames[0] === '') {
     console.log('No plugin selected');
-    return;
+    done();
+  } else  {
+    const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
+    return gulp.src(sources)
+      .pipe(rename(function(path){
+        const dirname = path.dirname;
+        const pluginname = dirname.replace('/js','');
+        path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+      }))
+      .pipe(gulp.dest("."));
   }
-  const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
-  return gulp.src(sources)
-    .pipe(rename(function(path){
-      const dirname = path.dirname;
-      const pluginname = dirname.replace('/js','');
-      path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
-    }))
-    .pipe(gulp.dest("."));
+
 
 });
 
