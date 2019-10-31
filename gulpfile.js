@@ -425,8 +425,6 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
       }))
       .pipe(gulp.dest("."));
   }
-
-
 });
 
 const client_version = (client != '') ? 'client-'+client : 'client';
