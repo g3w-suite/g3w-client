@@ -52,7 +52,11 @@ const client = argv.client || '';
 const versionHash = Date.now();
 
 // production const to set enviromental variable
+function setNODE_ENV() {
+  process.env.NODE_ENV = production ? 'production' : 'development';
+}
 let production = false;
+setNODE_ENV();
 
 gulp.task('hmr', () => {
    let bundler = browserify('./src/app/index.js', {
@@ -345,6 +349,7 @@ gulp.task('watch',function() {
 
 gulp.task('production', function(){
   production = true;
+  setNODE_ENV();
 });
 
 gulp.task('production-bundle',['production','browserify']);

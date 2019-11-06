@@ -1,3 +1,5 @@
+import Vue from 'vue/dist/vue.js';
+window.Vue = Vue;
 const i18ninit = require('sdk').core.i18n.init;
 const addI18n = require('sdk').core.i18n.addI18n;
 // sdk configuration file
