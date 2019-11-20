@@ -6,7 +6,6 @@ const del = require('del');
 const gulp   = require('gulp');
 ///
 //utility to work with git
-const gitBranchName = require('current-git-branch');
 const git = require('gulp-git');
 
 const argv = require('yargs').argv;
@@ -46,16 +45,44 @@ const pluginsFolder = conf.pluginsFolder;
 const distFolder = conf.distFolder;
 const clientFolder = conf.clientFolder;
 const client = argv.client || '';
+const DEPENDENCY_REPO_PATH = ['./src/app/template', './src/libs/sdk'];
 
 // it used to change build minified js and css to avoid server cache
 // every time we deploy a new client version
 const versionHash = Date.now();
+const DEPLOY_FILENAME_INFO = `./deploy/${versionHash}.txt`;
+
+// function to ge information from repopath
+function writeRepoInfo(repopath, filename) {
+  filename = filename || DEPLOY_FILENAME_INFO;
+  const repoName = repopath.split('/').pop();
+  let currentCommit;
+  let currentBranch;
+  git.exec({
+    args: 'log -1 --format="%H"',
+    cwd: repopath
+  }, (err, stdout) => {
+    currentCommit = stdout.trim();
+    git.exec({
+      args: 'rev-parse --abbrev-ref HEAD',
+      cwd: repopath
+    }, (err, stdout) =>{
+      currentBranch = stdout.trim();
+      const content = `${repoName}: BRANCH: ${currentBranch} COMMIT: ${currentCommit}\n`;
+      fs.appendFile(filename, content , function (err) {
+        if (err) throw err;
+      });
+    });
+  });
+}
+
 
 // production const to set enviromental variable
 function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
 }
 let production = false;
+let g3w_admin = false;
 setNODE_ENV();
 
 gulp.task('hmr', () => {
@@ -95,7 +122,7 @@ gulp.task('hmr', () => {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
-      .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
+      .pipe(gulpif(production, replace("{G3W_VERSION}", versionHash)))
       .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
       .pipe(gulpif(production, uglify({
         compress: {
@@ -167,18 +194,10 @@ gulp.task('browserify', [], function() {
   return rebundle();
 });
 
-gulp.task('branches_tags', function() {
-  const gitPaths = ['./src/app/template', './src/libs/sdk'];
-  gitPaths.forEach((gitPath) => {
-    const tagVersion = `BRANCH${gitBranchName({ altPath: gitPath })}_HASH${versionHash}`;
-    git.tag(tagVersion, tagVersion, {
-      cwd: gitPath
-    }, function (err) {
-      if (err) {
-        console.log('Err', err)
-      }
-    });
-  })
+gulp.task('sdk-template-deploy-info', function(){
+  DEPENDENCY_REPO_PATH.forEach((repopath)=> {
+    writeRepoInfo(repopath)
+  });
 });
 
 // it used to copy all plugins to g3w-admin plugin folder
@@ -421,18 +440,22 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
     console.log('No plugin selected');
     done();
   } else  {
+    fs.appendFile(DEPLOY_FILENAME_INFO, 'PLUGINS: \n' , function (err) {
+      if (err) console.log(err)
+    });
     const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
     return gulp.src(sources)
       .pipe(rename(function(path){
         const dirname = path.dirname;
         const pluginname = dirname.replace('/js','');
+        writeRepoInfo(`${pluginsFolder}/${pluginname}`);
         path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
       }))
       .pipe(gulp.dest("."));
   }
 });
 
-const client_version = (client != '') ? 'client-'+client : 'client';
+const client_version = (client !== '') ? 'client-'+client : 'client';
 
 gulp.task('g3w-admin-client:clear', function(){
   return del([
@@ -456,7 +479,8 @@ gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static'
 
 // task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
 gulp.task('g3w-admin',function(done){
-  runSequence('dist','g3w-admin-plugins-select','g3w-admin-client', done)
+  g3w_admin = true;
+  runSequence('dist', 'sdk-template-deploy-info','g3w-admin-client', 'g3w-admin-plugins-select', done)
 });
 
 // this is useful o pre creare
