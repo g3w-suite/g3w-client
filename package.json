@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "admin": "gulp g3w-admin",
+    "admin:client": "gulp g3w-admin:client_only",
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default"
   },
@@ -36,7 +37,6 @@
     "babelify": "^7.3.0",
     "browser-sync": "^2.13.0",
     "browserify": "^13.1.0",
-    "browserify-hmr": "^0.3.6",
     "chai": "^4.2.0",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
