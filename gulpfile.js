@@ -50,6 +50,10 @@ const DEPENDENCY_REPO_PATH = ['./src/app/template', './src/libs/sdk'];
 // every time we deploy a new client version
 const versionHash = Date.now();
 const DEPLOY_FILENAME_INFO = `./deploy/${versionHash}.txt`;
+let production = false;
+let g3w_admin = false;
+let build_all = true;
+let g3w_admin_version = 'py2';
 //used to check if change are done on these file without upload new file with no changes
 const buildChanges = {
   vendor: {
@@ -103,10 +107,12 @@ function writeRepoInfo(repopath, filename) {
 function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
 }
-let production = false;
-let g3w_admin = false;
-let build_all = true;
+
 setNODE_ENV();
+
+gulp.task('g3w_admin_python3', function(){
+  g3w_admin_version = 'py3';
+});
 
 // Broserify Task -- It used to trasform code modularizated in browser compatible way
 gulp.task('browserify', [], function() {
@@ -243,7 +249,6 @@ gulp.task('html', ['add_external_resources_to_main_html', 'assets'], function() 
 //task used to build django g3w-admin template with the refercenced of all css and js minified and added versionHash
 gulp.task('html:compiletemplate', function() {
   !build_all && set_current_hash_version();
-  console.log(buildChanges)
   return gulp.src('./src/index.html.admin.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+buildChanges.vendor.css.hash+".min.css"))
     .pipe(replace("{APP_CSS}","app."+buildChanges.app.css.hash+".min.css"))
@@ -381,7 +386,7 @@ gulp.task('g3w-admin-plugins',function() {
     .pipe(rename(function(path){
       const dirname = path.dirname;
       const pluginname = dirname.replace('/js','');
-      path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+      path.dirname = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
     }))
     .pipe(gulp.dest("."));
 });
@@ -421,7 +426,7 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
         const dirname = path.dirname;
         const pluginname = dirname.replace('/js','');
         writeRepoInfo(`${pluginsFolder}/${pluginname}`);
-        path.dirname = conf.g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+        path.dirname = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
       }))
       .pipe(gulp.dest("."));
   }
@@ -431,7 +436,7 @@ const client_version = (client !== '') ? 'client-'+client : 'client';
 
 function set_current_hash_version() {
   ['js', 'css'].forEach(folder => {
-    fs.readdirSync(`${conf.g3w_admin_client_dest_static}/${client_version}/${folder}`).filter((file) => {
+    fs.readdirSync(`${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static}/${client_version}/${folder}`).filter((file) => {
       //exclude datatable
       if (file.indexOf('DataTables-') === -1 && file.indexOf('vendor') !== -1) {
         const hash = file.split('.')[1];
@@ -443,13 +448,13 @@ function set_current_hash_version() {
 
 gulp.task('g3w-admin-client:clear', function() {
   const del_files = build_all ? [
-    conf.g3w_admin_client_dest_static+'/'+client_version+'/js/*',
-    conf.g3w_admin_client_dest_static+'/'+client_version+'/css/*',
-    conf.g3w_admin_client_dest_template+'/'+client_version+'/index.html'
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/js/*',
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/css/*',
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
   ]: [
-    conf.g3w_admin_client_dest_static+'/'+client_version+'/js/app.*',
-    conf.g3w_admin_client_dest_static+'/'+client_version+'/css/app.*',
-    conf.g3w_admin_client_dest_template+'/'+client_version+'/index.html'
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/js/app.*',
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/css/app.*',
+    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
 
   ];
   return del(del_files, {
@@ -459,12 +464,12 @@ gulp.task('g3w-admin-client:clear', function() {
 
 gulp.task('g3w-admin-client:static',function(){
   gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-    .pipe(gulp.dest(conf.g3w_admin_client_dest_static+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/'));
 });
 
 gulp.task('g3w-admin-client:template',function(){
   gulp.src(clientFolder+'/index.html')
-    .pipe(gulp.dest(conf.g3w_admin_client_dest_template+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/'));
 });
 
 gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
@@ -478,11 +483,19 @@ gulp.task('g3w-admin',function(done){
   runSequence('dist', 'sdk-template-deploy-info','g3w-admin-client', 'g3w-admin-plugins-select', done)
 });
 
+gulp.task('g3w-admin-py3',function(done){
+  g3w_admin = true;
+  runSequence('g3w_admin_python3', 'dist', 'sdk-template-deploy-info','g3w-admin-client', 'g3w-admin-plugins-select', done)
+});
+
 gulp.task('set_build_all_to_false', function() {
   build_all = false;
 });
 
-gulp.task('g3w-admin:client_only',['set_build_all_to_false', 'g3w-admin']);
+//python2
+gulp.task('g3w-admin:client_only', ['set_build_all_to_false', 'g3w-admin']);
+//python3
+gulp.task('g3w-admin-py3:client_only',['g3w_admin_python3', 'set_build_all_to_false', 'g3w-admin']);
 
 // this is useful o pre creare
 gulp.task('add_external_resources_to_main_html',  function() {

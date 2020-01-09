@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "admin": "gulp g3w-admin",
+    "admin-py3": "gulp g3w-admin-py3",
     "admin:client": "gulp g3w-admin:client_only",
+    "admin-py3:client": "gulp g3w-admin-py3:client_only",
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default"
   },
