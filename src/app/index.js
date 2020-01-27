@@ -78,7 +78,9 @@ const bootstrap = function() {
   //addConfigurationFromOtherModules();
   //get all configuration from groups
   //config.server.urls.initconfig: api url to get starting configuration
-  ApplicationService.obtainInitConfig(config.server.urls.initconfig)
+  ApplicationService.obtainInitConfig({
+    initConfigUrl: config.server.urls.initconfig
+  })
   //returna promise with starting configuration
   .then((initConfig) => {
     // write urls of static files and media url (base url and vector url)
