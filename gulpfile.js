@@ -464,12 +464,14 @@ gulp.task('g3w-admin-client:clear', function() {
 
 gulp.task('g3w-admin-client:static',function(){
   gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-    .pipe(gulp.dest(conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/'))
+    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/'));
 });
 
 gulp.task('g3w-admin-client:template',function(){
   gulp.src(clientFolder+'/index.html')
-    .pipe(gulp.dest(conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_template+'/'+client_version+'/'))
+    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/'));
 });
 
 gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
@@ -492,6 +494,7 @@ gulp.task('set_build_all_to_false', function() {
   build_all = false;
 });
 
+gulp.task('g3w-admin:client_only_all', ['set_build_all_to_false', 'g3w-admin']);
 //python2
 gulp.task('g3w-admin:client_only', ['set_build_all_to_false', 'g3w-admin']);
 //python3
