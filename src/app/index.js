@@ -48,6 +48,8 @@ function createApplicationConfig() {
     maxscale: config.group.maxscale,
     main_map_title: config.main_map_title,
     credits: config.credits,
+    _i18n: config._i18n,
+    i18n: config.i18n,
     layout: config.group.layout || {},
     // needed by ProjectService
     getWmsUrl: function(project) {
@@ -94,20 +96,21 @@ const bootstrap = function() {
     config.group = initConfig.group;
     config.user = initConfig.user;
     config.credits = initConfig.credits;
+    config.i18n = initConfig.i18n;
     // get language from server
-    config.i18n.lng = config.user.i18n;
+    config._i18n.lng = config.user.i18n;
     // create application configuration
     const applicationConfig = createApplicationConfig();
     // check if is inside a iframe
     config.group.layout.iframe = window.top !== window.self;
     // inizialize internalization
-    i18ninit(config.i18n)
+    i18ninit(config._i18n)
       .then(() => {
         addI18nConfigModules()
       });
     // set accept-language reuest header based on config language
     //jquery
-    const language = config.i18n.lng || 'en';
+    const language = config.user.i18n || 'en';
     $.ajaxSetup({
       beforeSend: function (jqXHR) {
         jqXHR.setRequestHeader('Accept-Language', language);

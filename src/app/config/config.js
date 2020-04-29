@@ -8,7 +8,7 @@ const tools = {
 };
 
 // get message from internalization
-const i18n = {
+const _i18n = {
   resources: require('./locales/app.js')
 };
 
@@ -41,7 +41,7 @@ const CONFIG = {
   server,
   plugins,
   tools,
-  i18n,
+  _i18n,
   utils
 };
 
