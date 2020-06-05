@@ -1,4 +1,5 @@
 // MeasureInteracion
+const t = require('core/i18n/i18n.service').t;
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;
@@ -142,7 +143,7 @@ proto._drawStart = function(evt) {
   this._layer.getSource().clear();
   this._poinOnMapMoveListener = this._map.on('pointermove', (evt) => {
     if (evt.dragging) return;
-    if (this._feature) helpMsg = this._helpMsg;
+    if (this._feature) helpMsg = t(this._helpMsg);
     this._helpTooltipElement.innerHTML = helpMsg;
     this._helpTooltip.setPosition(evt.coordinate);
     this._helpTooltipElement.classList.remove('hidden');

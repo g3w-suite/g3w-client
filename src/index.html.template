@@ -7,10 +7,7 @@
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" name="viewport">
   <!-- build:css css/vendor.min.css -->
 
-    <!-- build:template_vendor_css-->
-    <!-- endbuild -->
-
-    <!-- build:sdk_vendor_css-->
+    <!-- build:app_vendor_css-->
     <!-- endbuild -->
 
     <!-- build:plugins_css-->
@@ -30,10 +27,7 @@
 
   <!-- build:js js/vendor.min.js -->
 
-    <!-- build:template_vendor_js-->
-    <!-- endbuild -->
-
-    <!-- build:sdk_vendor_js-->
+    <!-- build:app_vendor_js-->
     <!-- endbuild -->
 
     <!-- build:plugins_js-->

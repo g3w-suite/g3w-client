@@ -1,6 +1,6 @@
 {
   "name": "g3w-client",
-  "version": "0.0.1",
+  "version": "3.0.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {

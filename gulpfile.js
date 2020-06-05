@@ -31,15 +31,13 @@ const imgurify = require('imgurify');
 const vueify = require('vueify');
 const watchify = require('watchify');
 const stringify = require('stringify');
-const sourcemaps = require('gulp-sourcemaps');
 const browserSync = require('browser-sync');
 const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
 const prompt = require('gulp-prompt');
 const KarmaServer = require('karma').Server;
-const templateFolder = conf.templateFolder;
-const sdkFolder = conf.sdkFolder;
+const assetsFolder = conf.assetsFolder;
 const pluginsFolder = conf.pluginsFolder;
 const distFolder = conf.distFolder;
 const clientFolder = conf.clientFolder;
@@ -185,12 +183,12 @@ gulp.task('plugins', function() {
 
 // compile less file in css
 gulp.task('less',['fonts'], function () {
-  const templateLessFolder = path.join(templateFolder, 'style', 'less');
+  const appLessFolder = path.join(assetsFolder, 'style', 'less');
   const pluginsLessFolder = path.join(pluginsFolder, '*', 'style', 'less');
-  return gulp.src([path.join(templateLessFolder, 'app.less'), path.join(pluginsLessFolder, 'plugin.less')])
+  return gulp.src([path.join(appLessFolder, 'app.less'), path.join(pluginsLessFolder, 'plugin.less')])
     .pipe(concat('app.less'))
     .pipe(less({
-      paths: [templateLessFolder, pluginsLessFolder], // add paths where to search in @import
+      paths: [appLessFolder, pluginsLessFolder], // add paths where to search in @import
       plugins: [LessGlob] //plugin to manage globs import es: @import path/***
     }))
     .pipe(gulp.dest(clientFolder+'/css/'))
@@ -198,20 +196,20 @@ gulp.task('less',['fonts'], function () {
 
 
 gulp.task('fonts', function () {
-  return gulp.src(['!./src/libs/**/node_modules/**/','./src/libs/**/*.{eot,ttf,woff,woff2}','./third-party/**/*.{eot,ttf,woff,woff2}','./src/**/*.{eot,ttf,woff,woff2}'])
+  return gulp.src([path.join(assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'), '!./src/libs/**/node_modules/**/','./src/libs/plugins/**/*.{eot,ttf,woff,woff2}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/fonts/'))
 });
 
 gulp.task('images', function () {
-  return gulp.src(['!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}', './src/app/template/images/**/*.{png,jpg,gif,svg}'])
+  return gulp.src([path.join(assetsFolder,'images/**/*.{png,jpg,gif,svg}'),'!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/images/'))
 });
 
 gulp.task('datatable-images',function () {
   if (!build_all) return;
-  return gulp.src(path.join(sdkFolder, '/ext/datatables/DataTables-1.10.16/images/*'))
+  return gulp.src(path.join(assetsFolder, 'vendors/datatables/DataTables-1.10.16/images/*'))
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'))
 });
@@ -319,7 +317,7 @@ function prepareRunSequence() {
 
 // watch applications changes
 gulp.task('watch',function() {
-  watch(['./src/app/style/*.less', templateFolder+'/style/**/*.less', pluginsFolder + '/**/*.less'],
+  watch(['./src/style/**/*.less', pluginsFolder + '/**/*.less'],
     prepareRunSequence('less','browser:reload')
   );
   watch(['./src/app/style/skins/*.less'],
@@ -334,10 +332,13 @@ gulp.task('watch',function() {
   watch('./src/libs/plugins/**/style/less/plugin.less',
     prepareRunSequence('less','browser:reload')
   );
-  watch([path.join(pluginsFolder,'*', 'index.*.html'), path.join(templateFolder,'*.*.html'), path.join(sdkFolder,'*.*.html')],
+  watch([path.join(pluginsFolder,'*', 'index.*.html')],
     prepareRunSequence('add_external_resources_to_main_html','browser:reload')
   );
-  gulp.watch(['./src/index.html','./src/**/*.html', templateFolder + '/**/**.html', sdkFolder + '/**/*.html'], function() {
+  watch(path.join('assets', 'index.*.html'),
+    prepareRunSequence('add_external_resources_to_main_html','browser:reload')
+  );
+  gulp.watch(['./src/index.html','./src/**/*.html'], function() {
     browserSync.reload();
   });
 });
@@ -506,15 +507,12 @@ gulp.task('add_external_resources_to_main_html',  function() {
   if (build_all) {
     const indexCss = 'index.css.html';
     const indexJs = 'index.js.html';
-    const replaceRelativeTemplateFolder =  path.relative(path.resolve(srcFolder), path.resolve(templateFolder))  + '/' ;
-    const replaceRelativeSdkFolder =  path.relative(path.resolve(srcFolder), path.resolve(sdkFolder)) + '/';
+    const replaceRelativeAssetsFolderFolder =  path.relative(path.resolve(srcFolder), path.resolve(assetsFolder))  + '/' ;
     return gulp.src(srcFolder + '/index.html.template')
     // replace css and js sources
       .pipe(htmlreplace({
-        'template_vendor_css': gulp.src(path.join(templateFolder, indexCss)).pipe(replace('./',replaceRelativeTemplateFolder)),
-        'template_vendor_js': gulp.src(path.join(templateFolder, indexJs)).pipe(replace('./', replaceRelativeTemplateFolder)),
-        'sdk_vendor_css': gulp.src(path.join(sdkFolder , indexCss)).pipe(replace('./', replaceRelativeSdkFolder)),
-        'sdk_vendor_js': gulp.src(path.join(sdkFolder, indexJs)).pipe(replace('./', replaceRelativeSdkFolder)),
+        'app_vendor_css': gulp.src(path.join(assetsFolder, indexCss)).pipe(replace('./',replaceRelativeAssetsFolderFolder)),
+        'app_vendor_js': gulp.src(path.join(assetsFolder, indexJs)).pipe(replace('./', replaceRelativeAssetsFolderFolder)),
         'plugins_css': gulp.src(path.join(pluginsFolder, '*','index.css.html'))
           .pipe(replace('./', function() {
             const pluginName = path.dirname(this.file.relative);
