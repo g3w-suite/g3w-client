@@ -1,0 +1,49 @@
+.skin-purple {
+  .skin-border-color {
+    border-color: @purple !important;
+  }
+  .skin-background-color {
+    background-color: @purple !important;
+    &.lighten {
+      background-color: lighten(@purple, 30%) !important;
+    }
+  }
+  .skin-button {
+    background: @purple !important;
+    &.lighten {
+      background: lighten(@purple, 30%) !important;
+    }
+    &.bordered {
+      .skin-border-color();
+    }
+    &.focus {
+      border:0;
+    }
+  }
+  .skin-color {
+    color: @purple !important;
+  }
+  .skin-tooltip-top + .tooltip.top, .skin-tooltip-left + .tooltip.left, .skin-tooltip-right + .tooltip.right  {
+    .tooltip-inner {
+      background-color: @purple !important;
+      font-weight: bold;
+    }
+
+  }
+  .skin-tooltip-top + .tooltip.top {
+    .tooltip-arrow {
+      border-top-color: @purple !important;
+    }
+  }
+  .skin-tooltip-left + .tooltip.left {
+    .tooltip-arrow {
+      border-left-color: @purple !important;
+    }
+  }
+
+  .skin-tooltip-right + .tooltip.right {
+    .tooltip-arrow {
+      border-right-color: @purple !important;
+    }
+  }
+}

@@ -1,0 +1,105 @@
+.skin-yellow {
+  .back-btn {
+    .back-link {
+      color: @yellow;
+    }
+  }
+  .queryresults-wrapper{
+    .queryresults-container {
+      .queryresults {
+        .tab-node.group {
+          .row:nth-child(even) {
+            background-color: lighten(@yellow, 45%) !important;
+          }
+          .sub-group {
+            background-color: lighten(@yellow, 45%) !important;
+          }
+        }
+        .query_relation_field_message {
+          color: @yellow;
+        }
+        .query_relation_field {
+          background-color: @yellow;
+        }
+      }
+      ul {
+        > li {
+          span.key {
+            color: @yellow;
+          }
+          .box-title {
+            color: @yellow;
+          }
+        }
+      }
+      .tooltip.top .tooltip-inner {
+        background-color:@yellow;
+              }
+      .tooltip.top .tooltip-arrow {
+        border-top-color: @yellow;
+      }
+
+      table.feature_attributes tr:nth-child(even), table.fieldsoutofstructure tr:nth-child(even) {
+        background: fade(@yellow, 10%) !important;
+      }
+
+      .link {
+        color: @yellow;
+      }
+      .field_link {
+        background-color: @yellow !important;
+        border-color: @yellow !important;
+      }
+      .queryresults-single {
+        span.key {
+          color: darken(@yellow,20%);
+        }
+      }
+      .featurebox-header {
+        &:hover td {
+          background-color:  lighten(@yellow, 30%);
+        }
+        .action-cell {
+          >span {
+            &:hover {
+              color: darken(@yellow,10%)
+            }
+          }
+        }
+      }
+
+      .featurebox-header-open {
+        td {
+          background-color:  lighten(@yellow, 30%) !important;
+        }
+      }
+
+      tr.featurebox-header-open + .featurebox-body  {
+        td > div, td > table {
+          border-color: lighten(@yellow, 30%);
+        }
+      }
+
+      .featurebox-body {
+        .action-buttons-container {
+          background-color: @yellow;
+        }
+      }
+
+      .box.box-primary {
+        border-top-color: @yellow;
+      }
+      .law-button {
+        background-color: @yellow !important;
+      }
+    }
+  }
+
+  .query-relations-page {
+    td {
+      //color: @yellow;
+    }
+  }
+
+}
+

@@ -1,0 +1,76 @@
+<div class="g3w-viewport">
+  <transition name="fade" :duration="{ enter: 800, leave: 500 }">
+    <user-message
+            v-if="usermessage.show"
+            @close-usermessage="closeUserMessage"
+            :title="usermessage.title"
+            :message="usermessage.message"
+            :draggable="usermessage.draggable"
+            :closable="usermessage.closable"
+            :position="usermessage.position"
+            :autoclose="usermessage.autoclose"
+            :size="usermessage.size"
+            :type="usermessage.type">
+      <template v-if="hooks.header" v-slot:header>
+        <component :is="hooks.header"></component>
+      </template>
+      <template v-if="hooks.body" v-slot:body>
+        <component :is="hooks.body"></component>
+      </template>
+      <template v-if="hooks.footer" v-slot:footer>
+        <component :is="usermessage.hooks.footer"></component>
+      </template>
+    </user-message>
+  </transition>
+  <div id="g3w-view-map" class="g3w-view map" :style="{width:state.map.sizes.width+'px',height:state.map.sizes.height+'px'}">
+    <online-status :online="appState.online"></online-status>
+  </div>
+  <div id="g3w-view-content" class="g3w-view content" :style="{width:state.content.sizes.width+'px',height:state.content.sizes.height+'px'}">
+    <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
+      <div v-if="previousTitle" class="g3w_contents_back">
+        <span  @click="gotoPreviousContent()">
+          <div style="display: inline-block" v-if ="backOrBackTo === 'back'">
+             <span  :class="g3wtemplate.getFontClass('back')"></span>
+             <span v-t="'back'"></span>
+          </div>
+          <div style="display: inline-block; margin-top:10px;"  v-else-if ="backOrBackTo === 'backto'">
+            <span :class="g3wtemplate.getFontClass('back')"></span>
+            <span v-t:pre="'backto'">{{ previousTitle }}</span>
+          </div>
+        </span>
+      </div>
+      <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;" class="g3w-span-button fa-stack fa-lg pull-right">
+        <i :class="g3wtemplate.getFontClass('circle')"  class="fa-stack-2x panel-button"></i>
+        <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
+      </span>
+      <div class="panel-title" v-if="showtitle && contentTitle">
+        <span id="contenttitle">{{ contentTitle }}</span>
+      </div>
+    </div>
+    <div v-show="state.content.loading" class="bar-loader"></div>
+  </div>
+  <transition name="fade" :duration="{ enter: 800, leave: 500 }">
+    <user-message
+            v-if="usermessage.show"
+            @close-usermessage="closeUserMessage"
+            :title="usermessage.title"
+            :textMessage="usermessage.textMessage"
+            :message="usermessage.message"
+            :draggable="usermessage.draggable"
+            :closable="usermessage.closable"
+            :position="usermessage.position"
+            :autoclose="usermessage.autoclose"
+            :size="usermessage.size"
+            :type="usermessage.type">
+      <template v-if="hooks.header" v-slot:header>
+        <component :is="hooks.header"></component>
+      </template>
+      <template v-if="hooks.body" v-slot:body>
+        <component :is="hooks.body"></component>
+      </template>
+      <template v-if="hooks.footer" v-slot:footer>
+        <component :is="usermessage.hooks.footer"></component>
+      </template>
+    </user-message>
+</transition>
+</div>

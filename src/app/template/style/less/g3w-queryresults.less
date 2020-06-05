@@ -1,0 +1,266 @@
+.queryresults-wrapper {
+  height: 100%;
+  .queryresults-container {
+    height: 100%;
+    overflow-y: auto;
+    .sub-group .group > .row {
+      margin-left: -2px;
+      margin-right: -2px;
+    }
+    .tab-node.group {
+      .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
+    .field_link {
+      border-radius: 5px;
+      font-weight: bold;
+      &:hover{
+        color:#FFFFFF;
+      }
+    }
+    .queryresults {
+      .tab-node.group {
+        .row > div {
+          padding-left: 0;
+          padding-right: 15px;
+        }
+        .row > div:last-child {
+          padding-right: 0;
+        }
+        .row:nth-child(odd) {
+          background-color: #FFFFFF ;
+        }
+      }
+
+      table {
+        tbody {
+          > tr.featurebox-header {
+            &:nth-of-type(even) {
+              background-color: #f9f9f9 !important;
+            }
+          }
+        }
+      }
+      .query_relation_field {
+        i {
+          padding:7px;
+        }
+        display: inline-block;
+        cursor: pointer;
+        color: white;
+        width: 30px;
+        height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        box-shadow:  0 3px 5px rgba(0,0,0,0.5);
+        -moz-box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+        -webkit-box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+        -o-box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+      }
+      .query_relation_field_message {
+        font-weight: bold;
+        margin-left: 5px;
+      }
+
+    }
+
+    ul {
+      list-style-type: none;
+      overflow: auto;
+      padding: 0px;
+      > li {
+        .queryresults-multi {
+          margin-top: 25px;
+        }
+        span.key {
+          font-weight: bold;
+          font-size: 1.2em;
+          margin-bottom: 10px;
+          display: block;
+        }
+        .box-title {
+          font-weight: bold;
+          font-size: 1.4em;
+        }
+      }
+    }
+    .tooltip.top .tooltip-inner {
+      margin-left: 100px;
+      font-weight:bold;
+    }
+    .divider {
+      display: block;
+      position: relative;
+      padding: 0;
+      margin: 8px auto;
+      height: 0;
+      width: 100%;
+      max-height: 0;
+      font-size: 1px;
+      line-height: 0;
+      clear: both;
+      border: none;
+      border-bottom: 1px solid rgba(65, 86, 96, 0.3);
+    }
+    table {
+      table-layout: fixed;
+      thead {
+        th {
+          border-bottom: none;
+        }
+      }
+      tbody {
+        border: 1px solid #f3f3f3;
+        .featurebox-header > td {
+          overflow: hidden;
+          //text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+    }
+    .link {
+      cursor: pointer;
+      &.dashboardlink {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+      &.morelink {
+        font-weight: bold;
+        text-decoration: none;
+      }
+    }
+    .queryresults-single {
+      margin-top: 6px;
+      span.key {
+        display: inline-block;
+        font-size: 1.1em;
+        font-weight: bold;
+        width: 80px;
+        margin-bottom: 0px;
+      }
+      span.value {
+        display: inline-block;
+        font-size: 1.1em;
+        margin-bottom: 0px;
+      }
+    }
+    .viewer-container {
+      top: 50px;
+    }
+
+    .featurebox-header {
+      cursor: pointer;
+      .action-cell {
+        text-align: center;
+        >span {
+          padding-left: 5px;
+        }
+        &.right {
+          text-align: right;
+        }
+      }
+
+    }
+    tr.featurebox-header-open + .featurebox-body  {
+      > td > div, td > table {
+        border-radius: 3px;
+        border: 1px solid;
+        padding: 3px;
+      }
+      > td > table {
+        border-collapse: separate;
+      }
+
+      > td > table td, td > table th {
+        padding: 3px;
+      }
+    }
+
+    .featurebox-body {
+      table.fieldsoutofstructure {
+        border:0 !important;
+      }
+      @media (max-width: 768px) {
+        .field_value.col-sm-6, .field_label.col-sm-6 {
+          width: 50% !important;
+          float: left;
+        }
+      }
+      tbody {
+        border: 0;
+        td {
+          padding: 0;
+        }
+      }
+      .action-buttons-container {
+        line-height: 1.42857143;
+        margin-top: 8px;
+        height: 30px;
+        line-height: 30px;
+        overflow: hidden;
+        .action-button-icon {
+          color:white;
+          font-size: 1.2em;
+        }
+      }
+      table {
+        width: 100%;
+        margin: 6px 0px 10px 0px;
+      }
+      .attr-label {
+        width: 30%;
+        max-width: 40%;
+      }
+      .attr-value, .field_value {
+        font-weight: bold
+      }
+    }
+
+   .box-primary {
+      border-top-width: 3px;
+    }
+
+    .box.box-solid.box-default.relationsbox {
+      font-size: 0.9em;
+      >.box-header {
+        background: transparent;
+        background-color: transparent;
+      }
+    }
+    .photo-preview:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+
+.query-relations-page {
+  height: 100%;
+  font-size: 14px;
+  .query-relations, .query-relation {
+    height: 100%;
+  }
+  td {
+    span {
+      font-size:1.5em;
+    }
+  }
+  #relationtable {
+    td {
+      span {
+        font-size:1em;
+      }
+    }
+  }
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.25s ease-out;
+}

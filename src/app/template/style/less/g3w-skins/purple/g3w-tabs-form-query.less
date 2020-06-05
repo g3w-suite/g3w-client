@@ -1,0 +1,17 @@
+.skin-purple {
+  .group-title {
+    background-color: lighten(@purple, 10%);
+  }
+  .formquerytabs.nav-tabs  {
+    i:not(.active) > a {
+      color: @purple;
+    }
+    li > a {
+      color: @purple;
+    }
+    li.active > a,  li.active > a:focus, .nav-tabs > li.active > a:hover {
+      background-color: @purple !important;
+      color: #ffffff;
+    }
+  }
+}

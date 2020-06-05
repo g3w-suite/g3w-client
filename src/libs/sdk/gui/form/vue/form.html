@@ -1,0 +1,20 @@
+<div class="g3wform_content" style="position: relative">
+  <bar-loader :loading="state.loading"></bar-loader>
+  <g3wformheader
+    :currentindex="state.currentheaderindex"
+    :headers="state.headers"
+    @clickheader="switchComponent">
+  </g3wformheader>
+  <div class="g3wform_body" >
+    <keep-alive>
+      <component
+        @hook:activated="reloadLayout"
+        @addtovalidate="addToValidate"
+        @changeinput="changeInput"
+        :state="state"
+        :is="state.component">
+      </component>
+    </keep-alive>
+  </div>
+  <g3w-form-footer :state="state"></g3w-form-footer>
+</div>

@@ -1,0 +1,25 @@
+<aside class="main-sidebar" :class="{ iframe: iframe }" >
+  <!-- sidebar: style can be found in sidebar.less -->
+  <!-- Sidebar toggle button-->
+  <!-- Toggle button on the left side of main sidebar only if not mobile -->
+  <a v-if="!isMobile()" href="#" class="sidebar-aside-toggle" data-toggle="offcanvas" role="button">
+    <i :class="g3wtemplate.getFontClass('bars')"></i>
+  </a>
+	<div id="g3w-sidebar" class="sidebar">
+    <div id="disable-sidebar"></div>
+    <div v-show="panelsinstack" class="g3w-sidebarpanel">
+      <div id="g3w-sidebarpanel-header-placeholder" style="overflow: hidden;line-height: 14px;margin-top: 4px; font-size:1.5em">
+          <h4 v-if="gui.title" style="display: inline-block; font-weight: bold" v-t="gui.title"></h4>
+          <span @click="closePanel" class="g3w-span-button close-pane-button fa-stack fa-lg pull-right">
+            <i :class="g3wtemplate.getFontClass('circle')" class="fa-stack-1x panel-button"></i>
+            <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
+          </span>
+      </div>
+      <div id="g3w-sidebarpanel-placeholder" class="g3w-sidebarpanel-placeholder"></div>
+    </div>
+    <div id="g3w-sidebarcomponents-content" >
+      <ul id="g3w-sidebarcomponents" v-show="showmainpanel" class="sidebar-menu"></ul>
+    </div>
+  </div>
+  <!-- /.sidebar -->
+</aside>

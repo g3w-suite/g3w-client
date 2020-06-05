@@ -1,0 +1,9 @@
+<li class="customheaderlink dropdown user user-menu" :title="state.title">
+  <a v-if="state.type === 'link'" :href="state.url" :class="{ imagelink : !!state.img}" :target="state.target" class="dropdown-toggle">
+    <img height="40" v-if="state.img" :src="state.img">
+    <span v-else>{{state.title}}</span>
+  </a>
+  <a v-else-if="state.type === 'modal'" style="cursor: pointer" @click="showCustomModal(state.id)" data-toggle="modal" data-target="#custom_modal" class="dropdown-toggle">
+    <span>{{state.title}}</span>
+  </a>
+</li>

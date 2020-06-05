@@ -1,0 +1,36 @@
+.skin-red {
+
+  .loading:not(:required):after {
+    -webkit-box-shadow: @red 1.5em 0 0 0, @red 1.1em 1.1em 0 0, @red 0 1.5em 0 0, @red -1.1em 1.1em 0 0, rgba(0, 0, 0, 0.5) -1.5em 0 0 0, rgba(0, 0, 0, 0.5) -1.1em -1.1em 0 0, @red 0 -1.5em 0 0, @red 1.1em -1.1em 0 0;
+    box-shadow: @red 1.5em 0 0 0, @red 1.1em 1.1em 0 0, @red 0 1.5em 0 0, @red -1.1em 1.1em 0 0, @red -1.5em 0 0 0, @red -1.1em -1.1em 0 0, @red 0 -1.5em 0 0, @red 1.1em -1.1em 0 0;
+  }
+
+  .spinner-wrapper {
+    color: @red;
+    &.red {
+      color: white;
+      background-color: @red;
+    }
+    .spinner {
+      border: 8px solid @red;
+      &.transparent {
+        border: 8px solid @red;
+        border-top-color: transparent;
+      }
+    }
+  }
+
+  .bar-loader:before {
+    background-color: darken(@red, 20%);
+  }
+
+
+  #startingspinner {
+    .double-bounce1, .double-bounce2 {
+      background-color: @red;
+    }
+  }
+
+}
+
+

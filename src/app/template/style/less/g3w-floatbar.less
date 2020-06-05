@@ -1,0 +1,73 @@
+.control-sidebar {
+  .g3w-sidebarpanel {
+    background: #f9fafc;
+    border-left: 1px solid #d2d6de;
+    padding: 0px 10px 10px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    .g3w-floatbarpanel-name{
+      font-weight: bold
+    }
+  }
+  border: 0px !important;
+}
+
+.control-sidebar-bg-shadow{
+  .box-shadow(-1px,0px,15px,rgba(0,0,0,.7))
+}
+
+.expand-transition {
+  transition: all .3s ease;
+}
+
+/* .expand-enter è lo stato iniziale del elemento */
+/* .expand-leave è lo stato finale del elemento */
+.expand-enter, .expand-leave {
+  opacity: 0;
+}
+
+.control-sidebar {
+  .floatbar-aside-toggle {
+    position:absolute;
+    right:(@control-sidebar-width);
+    top: @navbar-height;
+    background-color: @light-blue;
+    color: white;
+    background-image: none;
+    font-size: 20px;
+    line-height: 20px;
+    padding: 12.5px 15px 12.5px 17px;
+    //Add the fontawesome bars icon
+    font-family: fontAwesome;
+    &:before {
+      content: "\f100";
+    }
+    &:focus,
+    &:hover {
+      color: #fff;
+    }
+    @media (max-width: @screen-xs-max) {
+      right: @sidebar-width-small;
+    }
+  }
+  .floatbar-aside-toggle .icon-bar {
+    display: none;
+  }
+  &.control-sidebar-open {
+    .floatbar-aside-toggle {
+      &:before {
+        content: "\f101";
+      }
+    }
+  }
+  @media (max-width: @screen-xs-max) {
+    padding-top: 50px;
+    width: @sidebar-width-small;
+  }
+}
+
+.control-sidebar-bg {
+  @media (max-width: @screen-xs-max) {
+      width: @sidebar-width-small;
+  }
+}

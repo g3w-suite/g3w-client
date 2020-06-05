@@ -1,0 +1,20 @@
+<div class="query-relations" style="overflow-y:auto">
+  <div class="header">
+    <div>
+      <span style="font-size: 1.2em;" v-t:pre="'sdk.relations.list_of_relations_feature'"> </span>
+      <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
+    </div>
+  </div>
+  <table class="table table-bordered table-hover">
+    <thead>
+    </thead>
+    <tbody>
+    <tr @click="showRelation(relation)" v-for="relation in relations" style="cursor:pointer">
+      <td>
+        <span >{{ relation.name }}</span>
+        <span :class="g3wtemplate.getFontClass('arrow-right')" class="pull-right" aria-hidden="true"></span>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

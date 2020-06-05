@@ -4,12 +4,10 @@
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
-    "admin": "gulp g3w-admin",
-    "admin-py3": "gulp g3w-admin-py3",
-    "admin:client": "gulp g3w-admin:client_only",
-    "admin-py3:client": "gulp g3w-admin-py3:client_only",
+    "admin": "gulp g3w-admin --max-old-space-size=2048",
+    "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
     "plugins": "gulp g3w-admin-plugins-select",
-    "default": "gulp default --max-old-space-size=8192"
+    "default": "gulp default --max-old-space-size=2048"
   },
   "repository": {
     "type": "git",
@@ -33,6 +31,7 @@
     "babel-plugin-syntax-jsx": "^6.18.0",
     "babel-plugin-transform-array-find": "^1.0.0",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-remove-strict-mode": "0.0.2",
     "babel-plugin-transform-runtime": "^6.23.0",

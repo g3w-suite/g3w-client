@@ -1,0 +1,12 @@
+<div class="query-relations-page">
+    <component
+        @save-relation="saveCSVRelations"
+        :ref="currentview"
+        :previousview="previousview"
+        :is="currentview"
+        :relations="relations"
+        :relation="relation"
+        :feature="feature"
+        :table="table">
+    </component>
+</div>

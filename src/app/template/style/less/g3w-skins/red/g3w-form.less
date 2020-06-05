@@ -1,0 +1,81 @@
+.skin-red {
+  .g3wform_header {
+    .title {
+      &.one {
+        color: darken(@red, 20%);
+      }
+      color: lighten(@red, 20%);
+      &.tabs:hover {
+        border-bottom: 4px solid lighten(@red, 40%);
+      }
+    }
+    .item_selected {
+      color: darken(@red, 20%);
+      border-bottom: 3px solid @red !important;
+    }
+  }
+
+  .g3wform_body {
+    form .box-primary {
+      border-top-color: @red;
+    }
+    .form-control {
+      &:focus {
+        border-color: @red;
+      }
+    }
+    .input-group-addon {
+      color: @red;
+    }
+    .bootstrap-filestyle {
+      label.btn-primary {
+        background-color: @red;
+        border-color: @red;
+        &:hover {
+          background-color: darken(@red, 20%);
+        }
+      }
+    }
+    h5.relation_title {
+      color: @red;
+    }
+    .g3w-icon {
+      color: @red;
+    }
+    .tooltip-inner {
+      background-color:@red;
+      font-weight: bold;
+    }
+    .tooltip.bottom .tooltip-arrow {
+      border-bottom-color: @red;
+    }
+    .tooltip.left .tooltip-arrow {
+      border-left-color: @red;
+    }
+    .relation-editbtn {
+      border: 2px solid @red;
+      color: @red;
+    }
+  }
+
+  .g3w-form, .g3wform_footer{
+    .g3w-relationname {
+      color: @red;
+    }
+    .btn-add {
+      color:@red;
+    }
+    .link {
+      color: @red;
+    }
+  }
+  .bootstrap-datetimepicker-widget {
+    a > span.glyphicon-remove {
+      color: @red;
+    }
+    .datepicker .active{
+      background-color: @red;
+    }
+  }
+
+}

@@ -1,0 +1,33 @@
+<div class="g3w-search-panel form-group">
+  <h4><b>{{ state.title }}</b></h4>
+  <slot name="tools"></slot>
+  <slot name="form">
+    <form id="g3w-search-form">
+      <template v-for="forminput in state.forminputs" :key="forminput.id">
+        <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
+          <label :for="forminput.id + ' '">{{ forminput.label }}</label>
+          <input
+            type="number"
+            min="0"
+            @change="changeNumericInput(forminput)"
+            @keyup="changeNumericInput(forminput)"
+            v-model="forminput.value" class="form-control"
+            :id="forminput.id">
+        </div>
+        <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
+          <label :for="forminput.id">{{ forminput.label }}</label>
+          <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id" >
+        </div>
+        <div v-if="forminput.type === 'selectfield'" class="form-group text">
+          <label :for="forminput.id">{{ forminput.label }}</label>
+          <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
+          <select2 :forminput="forminput" @select-change="changeInput"></select2>
+        </div>
+      </template>
+      <div class="form-group">
+        <button id="dosearch" class="btn btn-block pull-right" @click.stop="doSearch" data-i18n="dosearch" :disabled="state.searching" v-t="'dosearch'"></button>
+      </div>
+    </form>
+  </slot>
+  <slot name="footer"></slot>
+</div>

@@ -1,0 +1,89 @@
+//Navbar toggle button
+
+.g3w-nav {
+  max-height: 50px !important;
+}
+
+.main-header {
+  .navbar {
+    box-shadow: 0 3px 15px 0 rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 3px 15px 0 rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow:0 3px 15px 0 rgba(0, 0, 0, 0.3);
+  }
+  .navbar-inverse .navbar-toggle:focus, .navbar-inverse .navbar-toggle:hover {
+    margin-top: 3px;
+  }
+  .customheaderlink {
+    a.imagelink {
+      padding:5px;
+    }
+  }
+}
+
+
+.sidebar-aside-toggle, .controls-aside-toggle {
+  position:absolute;
+  left:@sidebar-width;
+  top: @navbar-height;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+  color: white;
+  background-image: none;
+  padding: 12.5px;
+  //Add the fontawesome bars icon
+  font-family: fontAwesome;
+  &:focus,
+  &:hover {
+    color: #fff;
+  }
+  @media (max-width: @screen-xs-max) {
+      left: @sidebar-width-small;
+  }
+}
+
+.sidebar-aside-toggle .icon-bar {
+  display: none;
+}
+
+//Per evitare che la navbar si allarghi (in altezza) in modalità mobile (override di bootstrap)
+.navbar-form{
+  padding-top:0;
+  padding-bottom:0;
+  margin-bottom:0
+}
+
+.logo-wrapper {
+  display:flex;
+  padding: 5px;
+  max-height: 50px;
+  font-weight: bold;
+  align-items: center;
+  color: white;
+  img {
+    height: 40px;
+    margin-right: 10px;
+  }
+  .project_title_content {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    > div {
+      height: 22px;
+    }
+    .main_title {
+      font-size: 1.6em;
+    }
+    .sub_title {
+      font-size: 1.3em;
+    }
+  }
+}
+
+.title-box {
+  line-height: @navbar-height;
+  margin-left: 10px;
+  .title {
+    font-size: 2em;
+    font-weight: bold;
+    color: white
+  }
+}

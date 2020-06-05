@@ -1,0 +1,82 @@
+.skin-purple {
+  .g3wform_header {
+    .title {
+      &.one {
+        color: darken(@purple, 20%);
+      }
+      color: lighten(@purple, 20%);
+      &.tabs:hover {
+        border-bottom: 4px solid lighten(@purple, 40%);
+      }
+    }
+    .item_selected {
+      color: darken(@purple, 20%);
+      border-bottom: 3px solid @purple !important;
+    }
+  }
+
+  .g3wform_body {
+    form .box-primary {
+      border-top-color: @purple;
+    }
+    .form-control {
+      &:focus {
+        border-color: @purple;
+      }
+    }
+    .input-group-addon {
+      color: @purple;
+    }
+    .bootstrap-filestyle {
+      label.btn-primary {
+        background-color: @purple;
+        border-color: @purple;
+        &:hover {
+          background-color: darken(@purple, 20%);
+        }
+      }
+    }
+
+    h5.relation_title {
+      color: @purple;
+    }
+    .g3w-icon {
+      color: @purple;
+    }
+    .tooltip-inner {
+      background-color:@purple;
+      font-weight: bold;
+    }
+    .tooltip.bottom .tooltip-arrow {
+      border-bottom-color: @purple;
+    }
+    .tooltip.left .tooltip-arrow {
+      border-left-color: @purple;
+    }
+    .relation-editbtn {
+      border: 2px solid @purple;
+      color: @purple;
+    }
+  }
+
+  .g3w-form, .g3wform_footer{
+    .g3w-relationname {
+      color: @purple;
+    }
+    .btn-add {
+      color:@purple;
+    }
+    .link {
+      color: @purple;
+    }
+  }
+  .bootstrap-datetimepicker-widget {
+    a > span.glyphicon-remove {
+      color: @purple;
+    }
+    .datepicker .active{
+      background-color: @purple;
+    }
+  }
+
+}

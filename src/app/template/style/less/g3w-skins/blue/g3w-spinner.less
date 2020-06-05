@@ -1,0 +1,35 @@
+.skin-blue {
+  .loading:not(:required):after {
+    -webkit-box-shadow: @light-blue 1.5em 0 0 0, @light-blue 1.1em 1.1em 0 0, @light-blue 0 1.5em 0 0, @light-blue -1.1em 1.1em 0 0, rgba(0, 0, 0, 0.5) -1.5em 0 0 0, rgba(0, 0, 0, 0.5) -1.1em -1.1em 0 0, @light-blue 0 -1.5em 0 0, @light-blue 1.1em -1.1em 0 0;
+    box-shadow: @light-blue 1.5em 0 0 0, @light-blue 1.1em 1.1em 0 0, @light-blue 0 1.5em 0 0, @light-blue -1.1em 1.1em 0 0, @light-blue -1.5em 0 0 0, @light-blue -1.1em -1.1em 0 0, @light-blue 0 -1.5em 0 0, @light-blue 1.1em -1.1em 0 0;
+  }
+
+  .spinner-wrapper {
+    color: @light-blue;
+    &.yellow {
+      color: white;
+      background-color: @light-blue;
+    }
+    .spinner {
+      border: 8px solid @light-blue;
+      &.transparent {
+        border: 8px solid @light-blue;
+        border-top-color: transparent;
+      }
+    }
+  }
+
+  .bar-loader:before {
+    background-color: darken(@light-blue, 20%);
+  }
+
+
+  #startingspinner {
+    .double-bounce1, .double-bounce2 {
+      background-color: @light-blue;
+    }
+  }
+
+}
+
+

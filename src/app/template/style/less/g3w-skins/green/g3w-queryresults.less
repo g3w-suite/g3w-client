@@ -1,0 +1,108 @@
+.skin-green {
+  .back-btn {
+    .back-link {
+      color: @green;
+    }
+  }
+  .queryresults-wrapper {
+
+    .queryresults-container {
+      .queryresults {
+
+        .tab-node.group {
+          .row:nth-child(even) {
+            background-color: lighten(@green, 50%) !important;
+          }
+          .sub-group {
+            background-color: lighten(@green, 50%) !important;
+          }
+        }
+
+        .query_relation_field_message {
+          color: @green;
+        }
+        .query_relation_field {
+          background-color: @green;
+        }
+      }
+      ul {
+        > li {
+          span.key {
+            color: @green;
+          }
+          .box-title {
+            color: @green;
+          }
+        }
+      }
+      .tooltip.top .tooltip-inner {
+        background-color:@green;
+              }
+      .tooltip.top .tooltip-arrow {
+        border-top-color: @green;
+      }
+
+      table.feature_attributes tr:nth-child(even), table.fieldsoutofstructure tr:nth-child(even) {
+        background: fade(@green, 10%) !important;
+      }
+
+      .link {
+        color: @green;
+      }
+      .field_link {
+        background-color: @green !important;
+        border-color: @green !important;
+      }
+      .queryresults-single {
+        span.key {
+          color: darken(@green,20%);
+        }
+      }
+      .featurebox-header {
+        &:hover td {
+          background-color:  lighten(@green, 30%);
+        }
+        .action-cell {
+          >span {
+            &:hover {
+              color: darken(@green,10%)
+            }
+          }
+        }
+      }
+
+      .featurebox-header-open {
+        td {
+          background-color:  lighten(@green, 30%) !important;
+        }
+      }
+
+      tr.featurebox-header-open + .featurebox-body  {
+        td > div, td > table {
+          border-color: lighten(@green, 30%);
+        }
+      }
+
+      .featurebox-body {
+        .action-buttons-container {
+          background-color: @green;
+        }
+      }
+
+      .box.box-primary {
+        border-top-color: @green;
+      }
+      .law-button {
+        background-color: @green !important;
+      }
+    }
+  }
+
+  .query-relations-page {
+    td {
+      //color: @green;
+    }
+  }
+
+}
+

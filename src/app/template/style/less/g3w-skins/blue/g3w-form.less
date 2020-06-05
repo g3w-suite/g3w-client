@@ -1,0 +1,83 @@
+.skin-blue {
+  .g3wform_header {
+    .title {
+      &.one {
+        color: darken(@light-blue, 20%);
+      }
+      color: lighten(@light-blue, 20%);
+      &.tabs:hover {
+        border-bottom: 4px solid lighten(@light-blue, 40%);
+      }
+    }
+    .item_selected {
+      color: darken(@light-blue, 20%);
+      border-bottom: 3px solid @light-blue !important;
+    }
+  }
+  .g3wform_body {
+    form .box-primary {
+      border-top-color: @light-blue
+    }
+
+    .form-control {
+      &:focus {
+        border-color: @light-blue;
+      }
+    }
+
+    .input-group-addon {
+      color: @light-blue;
+    }
+
+    .bootstrap-filestyle {
+      label.btn-primary {
+        background-color: @light-blue;
+        border-color: @light-blue;
+        &:hover {
+          background-color: darken(@light-blue, 20%);
+        }
+      }
+    }
+
+    h5.relation_title {
+      color: @light-blue;
+    }
+    .g3w-icon {
+      color: @light-blue;
+    }
+    .tooltip-inner {
+      background-color:@light-blue;
+    }
+    .tooltip.bottom .tooltip-arrow {
+      border-bottom-color: @light-blue;
+    }
+    .tooltip.left .tooltip-arrow {
+      border-left-color: @light-blue;
+    }
+    .relation-editbtn {
+      border: 2px solid @light-blue;
+      color: @light-blue;
+    }
+  }
+
+  .g3w-form, .g3wform_footer {
+    .g3w-relationname {
+      color: @light-blue;
+    }
+    .btn-add {
+      color:@light-blue;
+    }
+    .link {
+      color: @light-blue;
+    }
+  }
+  .bootstrap-datetimepicker-widget {
+    a > span.glyphicon-remove {
+      color: @light-blue;
+    }
+    .datepicker .active{
+      background-color: @light-blue;
+    }
+  }
+
+}

@@ -1,0 +1,33 @@
+<div class="query-relation">
+  <div v-if="showrelationslist" class="back-btn" @click="back">
+    <span class="back-link">
+      <span v-t="'sdk.relations.back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
+    </span>
+  </div>
+  <div class="header">
+    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 1.5em">
+      <span>
+        <span  v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
+      </span>
+      <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+            :class="g3wtemplate.getFontClass('excel')" @click="saveRelation" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
+    </div>
+  </div>
+  <div v-if="table.rows.length">
+    <table id="relationtable" class="table table-striped" width="100%">
+      <thead>
+      <tr>
+        <th v-for="column in table.columns">{{ column }}</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="row in table.rows">
+        <td v-for="value in row">
+          <field :state="{value:value}"></field>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
+</div>
