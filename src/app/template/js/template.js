@@ -13,12 +13,7 @@ const G3wApplicationFilterPlugin = require('sdk/gui/vue/vue.filter');
 Vue.use(G3wApplicationFilterPlugin);
 
 // install template information library (es. classes etc..)
-Vue.use(VueTemplatePlugin, {
-  font:{
-    name: 'fontawsome',
-    version: '5'
-  }
-});
+Vue.use(VueTemplatePlugin, {});
 
 // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 Vue.mixin({
