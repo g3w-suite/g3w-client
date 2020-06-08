@@ -506,14 +506,14 @@ gulp.task('add_external_resources_to_main_html',  function() {
     return gulp.src(srcFolder + '/index.html.template')
     // replace css and js sources
       .pipe(htmlreplace({
-        'app_vendor_css': gulp.src(path.join(assetsFolder, indexCss)).pipe(replace('./',replaceRelativeAssetsFolderFolder)),
-        'app_vendor_js': gulp.src(path.join(assetsFolder, indexJs)).pipe(replace('./', replaceRelativeAssetsFolderFolder)),
-        'plugins_css': gulp.src(path.join(pluginsFolder, '*','index.css.html'))
+        'app_vendor_css': gulp.src(path.join(assetsFolder, 'vendors', indexCss)).pipe(replace('./',replaceRelativeAssetsFolderFolder)),
+        'app_vendor_js': gulp.src(path.join(assetsFolder, 'vendors', indexJs)).pipe(replace('./', replaceRelativeAssetsFolderFolder)),
+        'plugins_css': gulp.src(path.join(pluginsFolder, '*',indexCss))
           .pipe(replace('./', function() {
             const pluginName = path.dirname(this.file.relative);
             return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
           })),
-        'plugins_js': gulp.src(path.join(pluginsFolder, '*','index.js.html'))
+        'plugins_js': gulp.src(path.join(pluginsFolder, '*',indexJs))
           .pipe(replace('./', function() {
             const pluginName = path.dirname(this.file.relative);
             return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
