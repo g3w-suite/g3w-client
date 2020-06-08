@@ -25,29 +25,7 @@ The following instruction will install all node modules mandatory to use develop
 ```bash
 npm install
 ```
-## Clone G3W-SDK and G3W-TEMPLATE repositories
 
-The following instruction are mandatory to run and work with G3W-CLIENT
-
-1) From main g3w-client folder, move to src/app subfolder
-   ```bash
-   ~/../g3w-client$ cd src/app
-   ```
-2) Clone G3W-TEMPLATE repository (you have to call it template)
-    ```bash
-      ~/../g3w-client/src/app$ git clone https://github.com/g3w-suite/g3w-client-template-lte.git template
-      ```
-3) Create a libs subfolder into src folder
-   ```bash
-      ~/../g3w-client/src/app$ cd ..
-      ~/../g3w-client/src$ mkdir libs
-      ~/../g3w-client/src$ cd libs
-    ```
-4) Clone G3W-SDK repository (you have to call it sdk)
-
-    ```bash
-       ~/../g3w-client/src/libs$ git clone https://github.com/g3w-suite/g3w-client-sdk.git sdk
-     ```
 ## Local Server Configuration
 
 This is the front-end part of the G3W-SUITE. Before run it in develop mode YOU NEED TO INSTALL AND RUN the server part  [**g3w-admin**](https://github.com/g3w-suite/g3w-admin)
@@ -82,9 +60,7 @@ The main gulp commands to use in develop enviroment are:
    ```
 
 # Internalization
-
-It is possible to change messages to the user or application components text changing file app.j
-that is stored in g3w-client/src/app/config/locales
+It is possible to add internalization translation adding/modified  g3w-client/src/config/i18n/index.js
 
 
 
