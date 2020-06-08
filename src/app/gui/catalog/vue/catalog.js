@@ -692,13 +692,14 @@ Vue.component('layerslegend-items',{
       });
       return legendurl;
     },
-    getLegendSrc(_layers) {
+    async getLegendSrc(_layers) {
       const urlMethodsLayersName = {
         GET: {},
         POST: {}
       };
       const self = this;
       this.legendurls = [];
+      await this.$nextTick();
       const layers = _layers.reverse();
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
