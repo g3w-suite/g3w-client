@@ -12,3 +12,5 @@
 /src/libs/sdk/g3w-ol3/config/config.js
 /src/libs/sdk/config/dev/
 /src/plugins/
+/src/app/dev/
+/src/config/keys/index.js

@@ -1,23 +1,23 @@
+import keys from 'config/keys';
 const apptitle = "G3W Client";
 
-const plugins = {
-};
+export const plugins = {};
 
-const tools = {
+export const tools = {
   tools:  []
 };
 
 // get message from internalization
-const _i18n = {
+export const _i18n = {
   resources: require('./i18n/index.js')
 };
 
-const client = {
+export const client = {
   debug:  true,
   local:  false
 };
 
-const server = {
+export const server = {
   urls:  {
     baseurl: '/',
     ows:  'ows',
@@ -27,7 +27,7 @@ const server = {
   }
 };
 
-const utils = {
+export const utils = {
   merge: function(type) {
     if (type) {
       console.log(CONFIG)
@@ -35,8 +35,13 @@ const utils = {
   }
 };
 
+export const secrets = {
+  keys
+};
+
 export default {
   apptitle,
+  secrets,
   client,
   server,
   plugins,

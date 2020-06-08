@@ -113,7 +113,7 @@ gulp.task('browserify', [], function() {
   let rebundle;
   let bundler = browserify('./src/app/index.js', {
     basedir: "./",
-    paths: ["./src/config/","./src/app/", "./src/app/sdk/", "./src/plugins/"],
+    paths: ["./src/","./src/app/", "./src/app/sdk/", "./src/plugins/"],
     debug: !production,
     cache: {},
     packageCache: {}
@@ -165,11 +165,6 @@ gulp.task('browserify', [], function() {
   return rebundle();
 });
 
-gulp.task('sdk-template-deploy-info', function(){
-  DEPENDENCY_REPO_PATH.forEach((repopath)=> {
-    writeRepoInfo(repopath)
-  });
-});
 
 // it used to copy all plugins to g3w-admin plugin folder
 gulp.task('plugins', function() {
@@ -325,10 +320,10 @@ gulp.task('watch',function() {
   watch('./src/**/*.{png,jpg}',
     prepareRunSequence('images','browser:reload')
   );
-  watch('./src/libs/plugins/**/plugin.js',
+  watch('./src/plugins/**/plugin.js',
     prepareRunSequence('plugins','browser:reload')
   );
-  watch('./src/libs/plugins/**/style/less/plugin.less',
+  watch('./src/plugins/**/style/less/plugin.less',
     prepareRunSequence('less','browser:reload')
   );
   watch([path.join(pluginsFolder,'*', 'index.*.html')],
@@ -475,13 +470,9 @@ gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static'
 // task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
 gulp.task('g3w-admin',function(done){
   g3w_admin = true;
-  runSequence('dist', 'sdk-template-deploy-info','g3w-admin-client', 'g3w-admin-plugins-select', done)
+  runSequence('dist','g3w-admin-client', 'g3w-admin-plugins-select', done)
 });
 
-gulp.task('g3w-admin-py3',function(done){
-  g3w_admin = true;
-  runSequence('g3w_admin_python3', 'dist', 'sdk-template-deploy-info','g3w-admin-client', 'g3w-admin-plugins-select', done)
-});
 
 gulp.task('set_build_all_to_false', function() {
   build_all = false;

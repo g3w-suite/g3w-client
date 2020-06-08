@@ -1,11 +1,11 @@
 // Main application config file
 import config from '../config'
-const i18ninit = require('sdk').core.i18n.init;
-const ApplicationService = require('sdk/sdk').core.ApplicationService;
-// ApplicationTemplate instance. It manages the application template
-const ApplicationTemplate = require('./template/js/template');
+const i18ninit = require('core/i18n/i18n.service').init;
+const ApplicationService = require('core/applicationservice');
+// Application instance. It manages the application template
+const Application = require('gui/app/main');
 // set the global enviromental variable g3wsdk. It used by plugins to load sdk class and instances
-window.g3wsdk = require('sdk');
+window.g3wsdk = require('api');
 
 // main function to create the start application configuration
 function createApplicationConfig() {
@@ -103,9 +103,9 @@ const bootstrap = function() {
 
     ApplicationService.init(applicationConfig)
       .then(() => {
-        //create the ApplicationTemplate instance passing the template configuration
+        //create the Application instance passing the template configuration
         // and the applicationService instance that is useful to work with project API
-        const applicationTemplate = new ApplicationTemplate({
+        const applicationTemplate = new Application({
           ApplicationService
         });
         // Listen ready event emit after build interface
@@ -117,7 +117,7 @@ const bootstrap = function() {
       })
       .fail((error) => {
         error = handleError(error);
-        ApplicationTemplate.fail({
+        Application.fail({
           language,
           error
         });
@@ -127,7 +127,7 @@ const bootstrap = function() {
     const language = config.i18n.lng || 'en';
     // inizialize internalization
     error = handleError(error);
-    ApplicationTemplate.fail({
+    Application.fail({
       language,
       error
     });
