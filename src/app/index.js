@@ -1,25 +1,11 @@
+// Main application config file
+import config from '../config'
 const i18ninit = require('sdk').core.i18n.init;
-const addI18n = require('sdk').core.i18n.addI18n;
-// sdk configuration file
-const sdkConfig = require('sdk').config;
-// template configuration file
-import templateConfig from './template/config'
 const ApplicationService = require('sdk/sdk').core.ApplicationService;
 // ApplicationTemplate instance. It manages the application template
 const ApplicationTemplate = require('./template/js/template');
-// Main applcation config file
-const config = require('./config/config.js');
 // set the global enviromental variable g3wsdk. It used by plugins to load sdk class and instances
 window.g3wsdk = require('sdk');
-
-// this function is used to merge all configurations from sdk template etc .. for example i18n
-function addI18nConfigModules() {
-  //i18n
-  const sdkI18n = sdkConfig.i18n || {};
-  const templateI18n = templateConfig.i18n || {};
-  addI18n(sdkI18n);
-  addI18n(templateI18n);
-}
 
 // main function to create the start application configuration
 function createApplicationConfig() {
@@ -105,9 +91,7 @@ const bootstrap = function() {
     config.group.layout.iframe = window.top !== window.self;
     // inizialize internalization
     i18ninit(config._i18n)
-      .then(() => {
-        addI18nConfigModules()
-      });
+      .then(() => {});
     // set accept-language reuest header based on config language
     //jquery
     const language = config.user.i18n || 'en';

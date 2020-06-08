@@ -245,7 +245,7 @@ const ApplicationService = function() {
     //first time l'application service is not ready
     if (!ApplicationState.ready) {
       // LOAD DEVELOPMENT CONFIGURATION
-      if (!production) require('../config/dev/index');
+      if (!production) require('../dev/index');
       $.when(
         // register project
         ProjectsRegistry.init(this._config),

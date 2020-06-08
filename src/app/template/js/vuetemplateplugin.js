@@ -1,6 +1,6 @@
-const Fonts = require('../config/frameworks/fonts');
+const Fonts = require('frameworks/fonts');
 const VueTemplatePlugin = {
-  install: function(Vue, {font={name:'fontawsome', version:'4'}} = {}) {
+  install: function(Vue, {font={name:'fontawsome', version:'5'}} = {}) {
     // set g3wtemplate property to all instances
     Vue.prototype.g3wtemplate = {
       font: Fonts[font.name].versions[font.version],

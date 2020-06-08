@@ -113,7 +113,7 @@ gulp.task('browserify', [], function() {
   let rebundle;
   let bundler = browserify('./src/app/index.js', {
     basedir: "./",
-    paths: ["./src/app/", "./src/libs/", "./src/libs/sdk/"],
+    paths: ["./src/config/","./src/app/", "./src/app/sdk/", "./src/plugins/"],
     debug: !production,
     cache: {},
     packageCache: {}
@@ -128,7 +128,6 @@ gulp.task('browserify', [], function() {
   }).transform(stringify, {
     appliesTo: { includeExtensions: ['.html', '.xml'] }
   }).transform(imgurify);
-
 
   const bundle = function() {
     return bundler.bundle()
@@ -202,7 +201,7 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('images', function () {
-  return gulp.src([path.join(assetsFolder,'images/**/*.{png,jpg,gif,svg}'),'!./src/libs/**/node_modules/**/', './src/app/images/**/*.{png,jpg,gif,svg}','./src/libs/**/*.{png,jpg,gif,svg}'])
+  return gulp.src([path.join(assetsFolder,'images/**/*.{png,jpg,gif,svg}'),'!./src/**/node_modules/**/','./src/plugins/**/*.{png,jpg,gif,svg}'])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/images/'))
 });
@@ -317,10 +316,10 @@ function prepareRunSequence() {
 
 // watch applications changes
 gulp.task('watch',function() {
-  watch(['./src/style/**/*.less', pluginsFolder + '/**/*.less'],
+  watch(['./assets/style/**/*.less', pluginsFolder + '/**/*.less'],
     prepareRunSequence('less','browser:reload')
   );
-  watch(['./src/app/style/skins/*.less'],
+  watch(['./assets/style/skins/*.less'],
     prepareRunSequence('less:skins','browser:reload')
   );
   watch('./src/**/*.{png,jpg}',
@@ -459,16 +458,12 @@ gulp.task('g3w-admin-client:clear', function() {
 
 gulp.task('g3w-admin-client:static',function(){
   gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-    // .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/'))
-    // .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/'))
     .pipe(gulp.dest(conf.g3w_admin_paths['dev'].g3w_admin_client_dest_static+'/'+client_version+'/'));
 
 });
 
 gulp.task('g3w-admin-client:template',function(){
   gulp.src(clientFolder+'/index.html')
-    // .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_template+'/'+client_version+'/'))
-    // .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/'))
     .pipe(gulp.dest(conf.g3w_admin_paths['dev'].g3w_admin_client_dest_template+'/'+client_version+'/'));
 });
 

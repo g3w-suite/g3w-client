@@ -9,7 +9,7 @@ const tools = {
 
 // get message from internalization
 const _i18n = {
-  resources: require('./locales/app.js')
+  resources: require('./i18n/index.js')
 };
 
 const client = {
@@ -35,7 +35,7 @@ const utils = {
   }
 };
 
-const CONFIG = {
+export default {
   apptitle,
   client,
   server,
@@ -45,6 +45,3 @@ const CONFIG = {
   utils
 };
 
-
-
-module.exports = CONFIG;
