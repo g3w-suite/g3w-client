@@ -36,18 +36,15 @@ const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
 const prompt = require('gulp-prompt');
-const KarmaServer = require('karma').Server;
 const assetsFolder = conf.assetsFolder;
 const pluginsFolder = conf.pluginsFolder;
 const distFolder = conf.distFolder;
 const clientFolder = conf.clientFolder;
 const client = argv.client || '';
-const DEPENDENCY_REPO_PATH = ['./src/app/template', './src/libs/sdk'];
-
+const client_version = (client !== '') ? 'client-'+client : 'client';
 // it used to change build minified js and css to avoid server cache
 // every time we deploy a new client version
 const versionHash = Date.now();
-const DEPLOY_FILENAME_INFO = `./deploy/${versionHash}.txt`;
 let production = false;
 let g3w_admin = false;
 let build_all = true;
@@ -75,30 +72,6 @@ const buildChanges = {
     }
   }
 };
-
-// function to ge information from repopath
-function writeRepoInfo(repopath, filename) {
-  filename = filename || DEPLOY_FILENAME_INFO;
-  const repoName = repopath.split('/').pop();
-  let currentCommit;
-  let currentBranch;
-  git.exec({
-    args: 'log -1 --format="%H"',
-    cwd: repopath
-  }, (err, stdout) => {
-    currentCommit = stdout.trim();
-    git.exec({
-      args: 'rev-parse --abbrev-ref HEAD',
-      cwd: repopath
-    }, (err, stdout) =>{
-      currentBranch = stdout.trim();
-      const content = `${repoName}: BRANCH: ${currentBranch} COMMIT: ${currentCommit}\n`;
-      fs.appendFile(filename, content , function (err) {
-        if (err) throw err;
-      });
-    });
-  });
-}
 
 
 // production const to set enviromental variable
@@ -407,22 +380,16 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
     console.log('No plugin selected');
     done();
   } else  {
-    fs.appendFile(DEPLOY_FILENAME_INFO, 'PLUGINS: \n' , function (err) {
-      if (err) console.log(err)
-    });
     const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
     return gulp.src(sources)
       .pipe(rename(function(path){
         const dirname = path.dirname;
         const pluginname = dirname.replace('/js','');
-        writeRepoInfo(`${pluginsFolder}/${pluginname}`);
         path.dirname = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
       }))
       .pipe(gulp.dest("."));
   }
 });
-
-const client_version = (client !== '') ? 'client-'+client : 'client';
 
 function set_current_hash_version() {
   ['js', 'css'].forEach(folder => {
@@ -464,7 +431,6 @@ gulp.task('g3w-admin-client:template',function(){
 
 gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
 
-
 gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
 
 // task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
@@ -473,19 +439,13 @@ gulp.task('g3w-admin',function(done){
   runSequence('dist','g3w-admin-client', 'g3w-admin-plugins-select', done)
 });
 
-
 gulp.task('set_build_all_to_false', function() {
   build_all = false;
 });
 
 gulp.task('g3w-admin:client_only_all', ['set_build_all_to_false', 'g3w-admin']);
-//python2
-gulp.task('g3w-admin:client_only', ['set_build_all_to_false', 'g3w-admin']);
-//python3
-gulp.task('g3w-admin-py3:client_only',['g3w_admin_python3', 'set_build_all_to_false', 'g3w-admin']);
 //dev
-gulp.task('g3w-admin-dev:client_only',['g3w_admin_dev', 'set_build_all_to_false', 'g3w-admin']);
-
+gulp.task('g3w-admin-dev:client_only',['set_build_all_to_false', 'g3w-admin']);
 
 // this is useful o pre creare
 gulp.task('add_external_resources_to_main_html',  function() {
@@ -520,20 +480,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
 
 });
 
-gulp.task('test', function() {
-
-});
-
-gulp.task('test-plugins', function(done) {
-  new KarmaServer({
-    configFile: `${__dirname}/test/config/karma.plugins.config.js`,
-    singleRun: true
-  }, done).start();
-});
-
-gulp.task('test-plugin', function() {
-
-});
+gulp.task('test', function() {});
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
 gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult

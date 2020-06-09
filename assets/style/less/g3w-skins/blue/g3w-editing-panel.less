@@ -1,7 +1,10 @@
 .skin-blue {
   .g3w-editing-panel {
     .toolboxselected {
-      border-left-color: @light-blue;
+       box-shadow: 0px 0px 0px 3px @light-blue;
+      -webkit-box-shadow:  0px 0px 0px 3px @light-blue;
+      -moz-box-shadow:  0px 0px 0px 3px @light-blue;
+      -o-box-shadow:  0px 0px 0px 3px @light-blue;
     }
     .warning-message {
       color: darken(@light-blue, 80%);
@@ -12,7 +15,6 @@
       color: darken(@light-blue, 20%);
     }
   }
-
   .gutter-vertical {
     background-color: @light-blue;
   }
