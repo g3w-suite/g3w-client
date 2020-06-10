@@ -36,6 +36,9 @@ const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
 const prompt = require('gulp-prompt');
+//test
+const Server = require('karma').Server;
+///
 const assetsFolder = conf.assetsFolder;
 const pluginsFolder = conf.pluginsFolder;
 const distFolder = conf.distFolder;
@@ -480,7 +483,15 @@ gulp.task('add_external_resources_to_main_html',  function() {
 
 });
 
-gulp.task('test', function() {});
+/**
+ * Run test once and exit
+ */
+gulp.task('test', function (done) {
+  new Server({
+    configFile: __dirname + '/test/config/karma.dev.config.js',
+    singleRun: true
+  }, done).start();
+});
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
 gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult

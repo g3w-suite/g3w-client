@@ -803,8 +803,7 @@ proto._setupControls = function() {
           if (!isMobile.any && this.filterableLayersAvailable()) {
             const controlLayers = getMapLayersByFilter({
               SELECTEDORALL: true,
-              FILTERABLE: true,
-              VISIBLE: true
+              FILTERABLE: true
             });
             control = this.createMapControl(controlType, {
               options: {
@@ -813,16 +812,28 @@ proto._setupControls = function() {
               }
             });
             if (control) {
+              const layersFilterObject = {
+                SELECTEDORALL: true,
+                FILTERABLE: true,
+                VISIBLE: true
+              };
+              control.on('toggled', (evt)=>{
+                if (evt.target.isToggled()) {
+                  const layers = getMapLayersByFilter(layersFilterObject);
+                  if (layers.length === 0) {
+                    GUI.showUserMessage({
+                      type: "warning",
+                      message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
+                    });
+                    control.toggle();
+                  }
+                }
+              });
               const eventKey = control.on('bboxend', (e) => {
                 let bbox = e.extent;
                 let filterBBox = bbox;
                 const center = ol.extent.getCenter(bbox);
                 this.getMap().getView().setCenter(center);
-                const layersFilterObject = {
-                  SELECTEDORALL: true,
-                  FILTERABLE: true,
-                  VISIBLE: true
-                };
                 const layers = getMapLayersByFilter(layersFilterObject);
                 let queriesPromise;
                 const querymultilayers = this.project.isQueryMultiLayers(controlType);

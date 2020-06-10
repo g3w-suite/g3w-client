@@ -456,7 +456,7 @@ const geoutils = {
         uid: feature.getUid(),
         geometries
       })
-    })
+    });
     return splitterdGeometries;
   },
   splitFeature({feature, splitfeature} ={}){

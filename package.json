@@ -7,7 +7,8 @@
     "admin": "gulp g3w-admin --max-old-space-size=2048",
     "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
     "plugins": "gulp g3w-admin-plugins-select",
-    "default": "gulp default --max-old-space-size=2048"
+    "default": "gulp default --max-old-space-size=2048",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
