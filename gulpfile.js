@@ -5,9 +5,6 @@ const del = require('del');
 //Gulp
 const gulp   = require('gulp');
 ///
-//utility to work with git
-const git = require('gulp-git');
-
 const argv = require('yargs').argv;
 const runSequence = require('run-sequence');
 const rename = require('gulp-rename');
@@ -87,9 +84,9 @@ setNODE_ENV();
 // Broserify Task -- It used to trasform code modularizated in browser compatible way
 gulp.task('browserify', [], function() {
   let rebundle;
-  let bundler = browserify('./src/app/index.js', {
+  let bundler = browserify('./src/app/main.js', {
     basedir: "./",
-    paths: ["./src/","./src/app/", "./src/app/sdk/", "./src/plugins/"],
+    paths: ["./src/","./src/app/", "./src/plugins/"],
     debug: !production,
     cache: {},
     packageCache: {}
@@ -446,9 +443,7 @@ gulp.task('set_build_all_to_false', function() {
   build_all = false;
 });
 
-gulp.task('g3w-admin:client_only_all', ['set_build_all_to_false', 'g3w-admin']);
-//dev
-gulp.task('g3w-admin-dev:client_only',['set_build_all_to_false', 'g3w-admin']);
+gulp.task('g3w-admin:client_only',['set_build_all_to_false', 'g3w-admin']);
 
 // this is useful o pre creare
 gulp.task('add_external_resources_to_main_html',  function() {
@@ -488,7 +483,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
  */
 gulp.task('test', function (done) {
   new Server({
-    configFile: __dirname + '/test/config/karma.dev.config.js',
+    configFile: __dirname + '/test/config/karma.app.config.js',
     singleRun: true
   }, done).start();
 });

@@ -1,5 +1,6 @@
 import keys from 'config/keys';
 const apptitle = "G3W Client";
+const supportedLng = ['en', 'it'];
 
 export const plugins = {};
 
@@ -45,6 +46,7 @@ export default {
   client,
   server,
   plugins,
+  supportedLng,
   tools,
   _i18n,
   utils

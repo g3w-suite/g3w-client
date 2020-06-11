@@ -30,7 +30,7 @@ function Layer(config={}, options={}) {
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
-    const vectorUrl = initConfig.vectorurl;
+    const vectorUrl = project.getVectorUrl();
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;

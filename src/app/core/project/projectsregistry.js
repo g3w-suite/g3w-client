@@ -64,14 +64,14 @@ proto.init = function(config={}) {
     this.setupState();
     // get current configuration
     this.getProject(config.initproject)
-    .then((project) => {
+    .then(project => {
       // set current project
       this.setCurrentProject(project);
       this.initialized = true;
       d.resolve(project);
     })
-    .fail(function() {
-      d.reject();
+    .fail(error => {
+      d.reject(error);
     })
   }
   return d.promise();
@@ -126,6 +126,7 @@ proto.setProjects = function(projects) {
     project.maxscale = this.config.maxscale;
     project.crs = this.config.crs;
     project.proj4 = this.config.proj4;
+    project.vectorurl = this.config.vectorurl;
     project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
     this._groupProjects.push(project);
   });

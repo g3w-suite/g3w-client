@@ -170,6 +170,10 @@ proto.getLayers = function() {
   return [...this.state.layers, ...this.state.baselayers];
 };
 
+proto.getBaseLayers = function() {
+  return this.state.baselayers;
+};
+
 proto.getConfigLayers = function() {
   return this.state.layers;
 };
@@ -180,6 +184,10 @@ proto.getThumbnail = function() {
 
 proto.getState = function() {
   return this.state;
+};
+
+proto.getVectorUrl = function() {
+  return this.state.vectorurl;
 };
 
 proto.getId = function() {
