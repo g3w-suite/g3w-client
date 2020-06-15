@@ -126,10 +126,22 @@ const QueryBuilder = Vue.extend({
     this.layers = project.getLayers().filter(layer => {
       return !layer.baseLayer && layer.geometrytype && layer.geometrytype !== 'NoGeometry' && Array.isArray(layer.fields);
     }).map(layer => {
+      const relations = project.getRelationsByLayerId({
+        layerId: layer.id,
+        type: 'ONE'
+      });
+      let excludejoinfields = [];
+      relations.forEach( relation => {
+        let {customPrefix} = relation;
+        const joinLayer = project.getLayerById(relation.referencingLayer);
+        customPrefix = customPrefix === undefined ? `${joinLayer.getName()}_` : customPrefix;
+        const joinLayerFields = joinLayer.getFields().map(field => `${customPrefix}${field.name}`);
+        excludejoinfields = [...excludejoinfields, ...joinLayerFields];
+      });
       return {
         id: layer.id,
         label: layer.name,
-        fields: layer.fields.map(field => field.name)
+        fields: layer.fields.map(field => field.name).filter(field => excludejoinfields.indexOf(field) === -1)
       }
     });
     this.operators = operators;

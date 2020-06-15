@@ -87,6 +87,12 @@ proto.getRelationById = function(relationId){
   })
 };
 
+proto.getRelationsByLayerId = function({layerId, type}={}){
+  return this.state.relations.filter(relation => {
+    return relation.referencedLayer === layerId && (type ? relation.type === type : true);
+  })
+};
+
 proto.getOwsMethod = function() {
   return this.state.ows_method;
 };
