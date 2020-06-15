@@ -41,7 +41,7 @@ BaseLayers.TMS =  {
 
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding, format='image/png', opacity=0.7} = {}) {
+  get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
     const projection = Projections.get(`EPSG:${crs}`);
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
@@ -67,6 +67,7 @@ BaseLayers.WMTS = {
           resolutions: resolutions,
           matrixIds: matrixIds
         }),
+        style
       })
     });
   }
