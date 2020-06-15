@@ -161,7 +161,11 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     const layer = featuresForLayer.layer;
     if (layer instanceof Layer) {
       extractRelations = true;
-      layerAttributes = layer.getAttributes();
+      layerAttributes = layer.getAttributes().map(attribute => {
+        const sanitizeAttribute = {...attribute};
+        sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
+        return sanitizeAttribute
+      });
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();

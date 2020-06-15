@@ -41,23 +41,34 @@ BaseLayers.TMS =  {
 
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, crs, format='image/png', opacity=0.7} = {}) {
+  get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding, format='image/png', opacity=0.7} = {}) {
     const projection = Projections.get(`EPSG:${crs}`);
     const projectionExtent = projection.getExtent();
+    const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;
-    const matrixIds = [];
-    const resolutions = [];
-    for (var i = 0; i < 18; i++) {
-      matrixIds[i] = i.toString();
-      resolutions[i] = size / Math.pow(2, i);
+    const matrixIds = new Array(14);
+    for (var z = 0; z < 14; ++z) {
+      // generate resolutions and matrixIds arrays for this WMTS
+      resolutions[z] = size / Math.pow(2, z);
+      matrixIds[z] = z;
     }
-    url = 'https://hazards.fema.gov/gis/nfhl/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/16';
     return new ol.layer.Tile({
       opacity,
-      source: new ol.source.TileArcGISRest({
-        url
+      source: new ol.source.WMTS({
+        url,
+        projection,
+        layer,
+        matrixSet,
+        requestEncoding,
+        format,
+        attributions,
+        tileGrid: new ol.tilegrid.WMTS({
+          origin: ol.extent.getTopLeft(projectionExtent),
+          resolutions: resolutions,
+          matrixIds: matrixIds
+        }),
       })
-    })
+    });
   }
 };
 
@@ -70,9 +81,6 @@ BaseLayers.BING.Road = new ol.layer.Tile({
   source: new ol.source.BingMaps({
     key: BING_API_KEY,
     imagerySet: 'Road'
-    // use maxZoom 19 to see stretched tiles instead of the BingMaps
-    // "no photos at this zoom level" tiles
-    // maxZoom: 19
   }),
   basemap: true
 });
@@ -84,9 +92,6 @@ BaseLayers.BING.AerialWithLabels = new ol.layer.Tile({
   source: new ol.source.BingMaps({
     key: BING_API_KEY,
     imagerySet: 'AerialWithLabels'
-      // use maxZoom 19 to see stretched tiles instead of the BingMaps
-      // "no photos at this zoom level" tiles
-      // maxZoom: 19
   }),
   basemap: true
 });
@@ -98,9 +103,6 @@ BaseLayers.BING.Aerial = new ol.layer.Tile({
   source: new ol.source.BingMaps({
     key: BING_API_KEY,
     imagerySet: 'Aerial'
-      // use maxZoom 19 to see stretched tiles instead of the BingMaps
-      // "no photos at this zoom level" tiles
-      // maxZoom: 19
   }),
   basemap: true
 });

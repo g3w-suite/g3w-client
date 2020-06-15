@@ -302,7 +302,7 @@ gulp.task('watch',function() {
   watch([path.join(pluginsFolder,'*', 'index.*.html')],
     prepareRunSequence('add_external_resources_to_main_html','browser:reload')
   );
-  watch(path.join('assets', 'index.*.html'),
+  watch(path.join('assets', 'vendors', 'index.*.html'),
     prepareRunSequence('add_external_resources_to_main_html','browser:reload')
   );
   gulp.watch(['./src/index.html','./src/**/*.html'], function() {

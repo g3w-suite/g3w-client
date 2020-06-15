@@ -92,7 +92,8 @@
             return true
           } else {
             return !!this.fields.find((field) => {
-              return field.name === node.field_name || node.relation
+              const field_name = node.field_name ? node.field_name.replace(/ /g,"_") :  node.field_name;
+              return field.name === field_name || node.relation
             })
           }
         });
@@ -151,9 +152,9 @@
       getField(node) {
         if (node.relation) return node;
         const field = this.fields.find((field) => {
-          return field.name === node.field_name;
+          const field_name = node.field_name ? node.field_name.replace(/ /g,"_") : node.field_name;
+          return field.name === field_name;
         });
-        field.label = field.label || node.alias;
         return field;
       },
       getNodeType(node) {
