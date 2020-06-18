@@ -1,3 +1,6 @@
+@light-green-30: #a1e096;
+@light-green-48: #e4ffcb;
+
 .skin-green {
   .back-btn {
     .back-link {
@@ -8,13 +11,12 @@
 
     .queryresults-container {
       .queryresults {
-
-        .tab-node.group {
+        .tab-node.group  {
           .row:nth-child(even) {
-            background-color: lighten(@green, 50%) !important;
+            background-color: @light-green-48 !important;
           }
           .sub-group {
-            background-color: lighten(@green, 50%) !important;
+            background-color: @light-green-48 !important;
           }
         }
 
@@ -37,13 +39,13 @@
       }
       .tooltip.top .tooltip-inner {
         background-color:@green;
-              }
+      }
       .tooltip.top .tooltip-arrow {
         border-top-color: @green;
       }
 
       table.feature_attributes tr:nth-child(even), table.fieldsoutofstructure tr:nth-child(even) {
-        background: fade(@green, 10%) !important;
+        background: @light-green-48 !important;
       }
 
       .link {
@@ -55,40 +57,35 @@
       }
       .queryresults-single {
         span.key {
-          color: darken(@green,20%);
+          color: darken(@green, 20%);
         }
       }
       .featurebox-header {
         &:hover td {
-          background-color:  lighten(@green, 30%);
+          background-color:  @light-green-30;
         }
         .action-cell {
           >span {
             &:hover {
-              color: darken(@green,10%)
+              color: darken(@green, 10%)
             }
           }
         }
       }
-
       .featurebox-header-open {
         td {
-          background-color:  lighten(@green, 30%) !important;
+          background-color:  @light-green-30 !important;
         }
       }
 
       tr.featurebox-header-open + .featurebox-body  {
-        td > div, td > table {
-          border-color: lighten(@green, 30%);
-        }
-      }
-
-      .featurebox-body {
         .action-buttons-container {
           background-color: @green;
         }
+        td > div, td > table {
+          border-color: @light-green-30;
+        }
       }
-
       .box.box-primary {
         border-top-color: @green;
       }
@@ -103,6 +100,5 @@
       //color: @green;
     }
   }
-
 }
 
