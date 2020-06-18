@@ -43,6 +43,7 @@
     "browser-sync": "^2.13.0",
     "browserify": "^13.1.0",
     "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
     "generator-browserify": "^0.4.1",
