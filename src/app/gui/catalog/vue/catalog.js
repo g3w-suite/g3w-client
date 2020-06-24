@@ -191,6 +191,16 @@ const vueComponentOptions = {
         this._hideMenu();
       })
     },
+    downloadGpx(layerId) {
+      this.layerMenu.loading.xls = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getGpx().catch((err) => {
+        GUI.notify.error(t("info.server_error"));
+      }).finally(() => {
+        this.layerMenu.loading.xls = false;
+        this._hideMenu();
+      })
+    },
     showAttributeTable: function(layerId) {
       this.layerMenu.loading.data_table = false;
       GUI.closeContent();

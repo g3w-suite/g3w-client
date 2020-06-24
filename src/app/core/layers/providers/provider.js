@@ -388,7 +388,7 @@ proto._parseAttributes = function(layerAttributes, featureAttributes) {
   }
 };
 
-proto._tranformFeatures = function(features, projections) {
+proto._transformFeatures = function(features, projections) {
   if (features.length) {
     if(!!features[0].getGeometry()) {
       const mainProjection = projections.layer ? projections.layer : projections.map;
@@ -409,7 +409,7 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const x2js = new X2JS();
   const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
-  const features = this._tranformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
+  const features = this._transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
   if (features.length && this._hasFieldsStartWithNumber) {
     const properties = Object.keys(features[0].getProperties());
     const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);

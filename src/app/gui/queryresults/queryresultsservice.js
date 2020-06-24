@@ -7,6 +7,7 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 
 function QueryResultsService() {
@@ -159,8 +160,16 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let formStructure;
     let extractRelations = false;
     const layer = featuresForLayer.layer;
+    const download = {
+      shapefile: false,
+      gpx: false,
+      xls: false
+    };
     if (layer instanceof Layer) {
       extractRelations = true;
+      download.shapefile = layer.isShpDownlodable();
+      download.gpx = layer.isGpxDownlodable();
+      download.xls = layer.isXlsDownlodable();
       layerAttributes = layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
@@ -206,13 +215,13 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerTitle = (split_layer_name.length > 4) ? split_layer_name.slice(0, split_layer_name.length -4).join(' '): layer;
       layerId = layer;
     }
-
     const layerObj = {
       title: layerTitle,
       id: layerId,
       attributes: [],
       features: [],
       hasgeometry: false,
+      download,
       show: true,
       expandable: true,
       hasImageField: false,
@@ -331,6 +340,14 @@ proto.setActionsForLayers = function(layers) {
         relations
       });
     }
+    // if (layer.download.shapefile) {
+    //   this.state.layersactions[layer.id].push({
+    //     id: 'gotogeometry',
+    //     class: GUI.getFontClass('download'),
+    //     hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
+    //     cbk: this.downloadFeature.bind(this, 'shapefile')
+    //   });
+    // }
   });
   this.addActionsForLayers(this.state.layersactions);
 };
@@ -402,7 +419,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
           break;
       }
       if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
-      if (_.isArray(coordinates)) {
+      if (Array.isArray(coordinates)) {
         if (coordinates.length === 2) {
           const pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
           mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
@@ -454,6 +471,51 @@ proto._addVectorLayersDataToQueryResponse = function() {
 //function to add c custom componet in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
+};
+
+proto.downloadFeature = function(type, {id:layerId}={}, feature){
+  const fid = feature ? feature.attributes['g3w_fid'] : null;
+  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  let promise = Promise.resolve();
+  GUI.setLoadingContent(true);
+  switch(type) {
+    case 'shapefile':
+      promise = layer.getShp({fid});
+      break;
+    case 'xls':
+      promise  = layer.getXls({fid});
+      break;
+    case 'gpx':
+      promise = layer.getGpx({fid});
+      break;
+  }
+  promise.catch((err) => {
+    GUI.notify.error(t("info.server_error"));
+  }).finally(()=>{
+    GUI.setLoadingContent(false);
+  })
+};
+
+proto.downloadGpx = function({id:layerId}={}, feature){
+  const fid = feature ? feature.attributes['g3w_fid'] : null;
+  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  layer.getGpx({fid}).catch((err) => {
+    GUI.notify.error(t("info.server_error"));
+  }).finally(() => {
+    this.layerMenu.loading.shp = false;
+    this._hideMenu();
+  })
+};
+
+proto.downloadXls = function({id:layerId}={}, feature){
+  const fid = feature ? feature.attributes['g3w_fid'] : null;
+  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  layer.getXls({fid}).catch((err) => {
+    GUI.notify.error(t("info.server_error"));
+  }).finally(() => {
+    this.layerMenu.loading.shp = false;
+    this._hideMenu();
+  })
 };
 
 proto.goToGeometry = function(layer, feature) {
