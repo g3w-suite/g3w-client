@@ -51,37 +51,46 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
-
-proto._run = function() {
-  this.state.searching = true;
-  const filter = this.fillFilterInputsWithValues();
-  GUI.closeContent();
-  const showQueryResults = GUI.showContentFactory('query');
-  const queryResultsPanel = showQueryResults(this.state.title);
-  const expression = new Expression();
-  const layerName = this.searchLayer.getWMSLayerName();
-  expression.createExpressionFromFilter(filter, layerName);
-  const _filter = new Filter();
-  _filter.setExpression(expression.get());
-  this.searchLayer.search({
-    filter: _filter,
-    queryUrl: this.url,
-    feature_count: 10000
-  })
-    .then((results) => {
+proto.doSearch = function({filter=this.createFilter(), queryUrl=this.url, feature_count=10000} ={}) {
+  return new Promise((resolve, reject) => {
+    this.searchLayer.search({
+      filter,
+      queryUrl,
+      feature_count
+    }).then((results) => {
       results = {
         data: results
       };
-      queryResultsPanel.onceafter('postRender', () => {
-        this.state.searching = false;
-      });
-      queryResultsPanel.setQueryResponse(results);
-    })
-    .fail((err) => {
-      GUI.notify.error(t('server_error'));
-      GUI.closeContent();
+      resolve(results);
+    }).fail(error => reject(error))
+  })
+};
+
+proto.createFilter = function(){
+  const filterObject = this.fillFilterInputsWithValues();
+  const expression = new Expression();
+  const layerName = this.searchLayer.getWMSLayerName();
+  expression.createExpressionFromFilter(filterObject, layerName);
+  const filter = new Filter();
+  filter.setExpression(expression.get());
+  return filter;
+};
+
+proto._run = function() {
+  this.state.searching = true;
+  GUI.closeContent();
+  const showQueryResults = GUI.showContentFactory('query');
+  const queryResultsPanel = showQueryResults(this.state.title);
+  this.doSearch().then(results => {
+    queryResultsPanel.onceafter('postRender', () => {
       this.state.searching = false;
-    })
+    });
+    queryResultsPanel.setQueryResponse(results);
+  }).catch((error) => {
+    GUI.notify.error(t('server_error'));
+    GUI.closeContent();
+    this.state.searching = false;
+  })
 };
 
 proto.changeInput = function({attribute, value} = {}) {
