@@ -87,9 +87,8 @@ function TableLayer(config={}, options={}) {
   // call base layer
   base(this, config, options);
   const projectRelations = project.getRelations();
-  // create realations
-  this._relations;
-  this._createRelations(projectRelations);
+  // create relations
+  this._relations = this._createRelations(projectRelations);
   // get configuration from server if is editable
   this._editatbleLayer;
   if (this.isEditable()) {
@@ -466,12 +465,9 @@ proto._createRelations = function(projectRelations) {
     if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
       relations.push(relation);
   });
-  if (relations.length) {
-    this._relations = new Relations({
-      relations
-    });
-  }
-  return relations;
+  return new Relations({
+    relations
+  });
 };
 
 proto.createNewFeature = function() {
