@@ -61,7 +61,6 @@
       <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
       <span :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
-      </i>
     </li>
     <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
@@ -81,7 +80,6 @@
         <span  :class="g3wtemplate.getFontClass('download')"></span>
         <span class="item-text">Download shapefile</span>
       </div>
-      </i>
     </li>
     <li v-if="canDownloadXls(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadXls(layerMenu.layer.id)" >
@@ -89,7 +87,6 @@
         <span :class="g3wtemplate.getFontClass('excel')"></span>
         <span class="item-text">Download Xls</span>
       </div>
-      </i>
     </li>
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
       <div @click.prevent.stop="copyWmsUrl($event, layerMenu.layer.id)" style="display: flex; max-width:300px; align-items: center;">
@@ -99,7 +96,6 @@
           <span @click.prevent.stop="" class="bold catalog-menu-wms wms-url-tooltip" style="color: #000000" :class="g3wtemplate.getFontClass('eye')" data-placement="bottom" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)"></span>
         </div>
       </div>
-      </i>
     </li>
   </ul>
 </div>

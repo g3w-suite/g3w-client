@@ -1,5 +1,5 @@
 const layout = require('./utils').layout;
-const Control = function(options) {
+const Control = function(options={}) {
   const name = options.name || "";
   this._enabled = (options.enabled === false) ? false : true;
   this.offline = options.offline !== undefined ? options.offline : true;

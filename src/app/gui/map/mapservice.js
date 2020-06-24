@@ -38,6 +38,7 @@ function MapService(options={}) {
   this._layersStoresEventKeys = {};
   this.project = null;
   this._mapControls = [];
+  this._changeMapMapControls = [];
   this._mapLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
@@ -118,6 +119,7 @@ function MapService(options={}) {
         this._resetView();
         this._setupMapLayers();
         this._setupVectorLayers();
+        this._checkMapControls();
         this.viewer.map.getView().on("change:resolution", (evt) => {
           this._updateMapView();
         });
@@ -166,7 +168,6 @@ function MapService(options={}) {
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
       this._setupAllLayers();
-      this.setupControls();
       // set change resolution
       this.viewer.map.getView().on("change:resolution", (evt) => {
         this._updateMapView();
@@ -502,19 +503,29 @@ proto.activeMapControl = function(controlName) {
   !control.isToggled() ? control.toggle() : null;
 };
 
-proto.createMapControl = function(type, options={add=true, toggled=false, visible=true, options={}}={}) {
-  const id = options.id || type;
+proto.createMapControl = function(type, {id, add=true, toggled=false, visible, options={}}={}) {
+  id = id || type;
   const control = ControlsFactory.create({
     type,
-    toggled: options.toggled,
-    ...options.options
+    toggled,
+    ...options
   });
-  control && this.addControl(id, type, control, options.add, options.visible);
+  visible = visible === undefined ? (control.isVisible ? control.isVisible() : true) : visible;
+  control && this.addControl(id, type, control, add, visible);
   return control;
 };
 
 proto.showAddLayerModal = function() {
   this.emit('addexternallayer');
+};
+
+proto._checkMapControls = function(){
+  this._changeMapMapControls.forEach(({control, getVisible=()=>{return true}}) =>{
+    this._setMapControlVisible({
+      control,
+      visible: getVisible()
+    })
+  })
 };
 
 proto._setupControls = function() {
@@ -670,22 +681,32 @@ proto._setupControls = function() {
           });
           break;
         case 'querybypolygon':
-          const controlQuerableLayers = getMapLayersByFilter({
-            QUERYABLE: true,
-            SELECTEDORALL: true
-          });
-          const controlFiltrableLayers = getMapLayersByFilter({
-            FILTERABLE: true,
-            SELECTEDORALL: true
-          });
-          const controlLayers = [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
+          const getControlLayers = () =>{
+            const controlQuerableLayers = getMapLayersByFilter({
+              QUERYABLE: true,
+              SELECTEDORALL: true
+            });
+            const controlFiltrableLayers = getMapLayersByFilter({
+              FILTERABLE: true,
+              SELECTEDORALL: true
+            });
+            return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
+          };
+
           control = this.createMapControl(controlType, {
             options: {
-              layers: controlLayers,
+              layers: getControlLayers(),
               help: "sdk.mapcontrols.querybypolygon.help"
             }
           });
           if (control) {
+            this._changeMapMapControls.push({
+              control,
+              getVisible: () => {
+                const controlLayers = getControlLayers();
+                return control.checkVisibile(controlLayers);
+              }
+            });
             const showQueryResults = GUI.showContentFactory('query');
             const eventKey = control.on('picked', throttle((e) => {
               let results = {};
@@ -800,18 +821,28 @@ proto._setupControls = function() {
           }
           break;
         case 'querybbox':
-          if (!isMobile.any && this.filterableLayersAvailable()) {
-            const controlLayers = getMapLayersByFilter({
-              SELECTEDORALL: true,
-              FILTERABLE: true
-            });
+          if (!isMobile.any) {
+            const getControlLayers = ()=>{
+              return this.filterableLayersAvailable() ? getMapLayersByFilter({
+                SELECTEDORALL: true,
+                FILTERABLE: true
+              }) : [];
+            };
+
             control = this.createMapControl(controlType, {
               options: {
-                layers: controlLayers,
+                layers: getControlLayers(),
                 help: "sdk.mapcontrols.querybybbox.help"
               }
             });
             if (control) {
+              this._changeMapMapControls.push({
+                control,
+                getVisible: () => {
+                  const controlLayers = getControlLayers();
+                  return control.checkVisible(controlLayers);
+                }
+              });
               const layersFilterObject = {
                 SELECTEDORALL: true,
                 FILTERABLE: true,
@@ -1940,6 +1971,7 @@ proto.refreshMap = function(options) {
 proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
+    this.setupControls();
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();

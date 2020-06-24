@@ -51,11 +51,9 @@ const ApplicationService = function() {
   // init application
   this.init = async function() {
     try {
-      this._config = await this.createApplicationConfig();
-      // setup All i18n configuration
-      this.setupI18n();
-      await this._bootstrap();
-      return true;
+      const config = await this.createApplicationConfig();
+      this.setConfig(config);
+      return await this.bootstrap();
     } catch(error) {
       const browserLng = navigator && navigator.language || 'en';
       const language = appConfig.supportedLng.find(lng => {
@@ -179,6 +177,10 @@ const ApplicationService = function() {
   // get config
   this.getConfig = function() {
     return this._config;
+  };
+
+  this.setConfig = function(config={}){
+    this._config = config;
   };
 
   // router service
@@ -354,8 +356,10 @@ const ApplicationService = function() {
   };
 
   //  bootstrap (when called init)
-  this._bootstrap = function() {
+  this.bootstrap = function() {
     return new Promise((resolve, reject) => {
+      // setup All i18n configuration
+      this.setupI18n();
       //first time l'application service is not ready
       if (!ApplicationState.ready) {
         // LOAD DEVELOPMENT CONFIGURATION
@@ -370,7 +374,7 @@ const ApplicationService = function() {
           this.registerOnlineOfflineEvent();
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;
-          resolve();
+          resolve(true);
         }).fail((error) => {
           reject(error);
         })
