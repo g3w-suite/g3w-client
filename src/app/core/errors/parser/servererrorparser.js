@@ -7,35 +7,41 @@ const serverErrorParser = function(options={}) {
 const proto = serverErrorParser.prototype;
 
 proto.parse = function({type='responseJSON'}={}) {
-  let error_message = '';
+  let error_message = "server_saver_error";
   function traverseErrorMessage(errorObject) {
-    let errormessage = "server_saver_error";
-    Object.entries(errorObject).find(([key, value]) => {
-      if (key === 'fields') {
-        try {
-          if (typeof value === 'string') error_message = value;
-          else
-            Object.entries(value).forEach(([field, error]) => {
-              error_message = `${error_message}${field} ${error[0]} `;
-            })
-        } catch(err){}
-        return true;
-      } else if (!Array.isArray(value) && typeof value === 'object' ) {
-        traverseErrorMessage(value);
-      }
-    });
-    return error_message;
+    const entries = Object.entries(errorObject);
+    const entry = entries.find(([key, value]) => key === 'fields');
+    if (entry) {
+      const [, value] = entry;
+      try {
+        if (typeof value === 'string') {
+          const [field] = entries.find(([key, value]) => key !== 'fields');
+          error_message = `[${field}] ${value}`;
+        }
+        else {
+          error_message = '';
+          Object.entries(value).forEach(([field, error]) => {
+            error_message = `${error_message}${field} ${error[0]} `;
+          });
+        }
+      } catch(err){}
+      return error_message.replace(/\:|\./g, '');
+    } else {
+      const [, value] = entries[0];
+      if (!Array.isArray(value) && typeof value === 'object' )
+        return traverseErrorMessage(value)
+    }
   }
   if (type === 'responseJSON')
     return  (this._error && this._error.responseJSON && this._error.responseJSON.error.message) ? this._error.responseJSON.error.message : t("server_saver_error");
-  else if (type=== 'String') {
-    if (typeof this._error === 'string') {
-      return this._error
-    } else {
-      return traverseErrorMessage(this._error)
+  else if (type === 'String') {
+    if (typeof this._error === 'string')
+      return this._error;
+    else {
+      return traverseErrorMessage(this._error);
     }
-  }
-  else return t("server_saver_error");
+
+  } else return t("server_saver_error");
 };
 
 module.exports = serverErrorParser;

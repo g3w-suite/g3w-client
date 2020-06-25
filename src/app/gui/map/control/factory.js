@@ -21,8 +21,7 @@ const ControlsFactory = {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
     if (ControlClass) control = new ControlClass(options);
-    const visible = (control instanceof Control && control.isVisible) ? control.isVisible() : true;
-    return visible ? control: null
+    return control;
   }
 };
 

@@ -192,6 +192,10 @@ proto.getState = function() {
   return this.state;
 };
 
+proto.getSearches = function(){
+  return this.state.search || [];
+};
+
 proto.getVectorUrl = function() {
   return this.state.vectorurl;
 };

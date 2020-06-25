@@ -13,13 +13,17 @@ const QueryBBoxControl = function(options = {}){
   };
   options = utils.merge(options,_options);
   const layers = options.layers || [];
-  options.visible = !!layers.length;
+  options.visible = this.checkVisible(layers);
   InteractionControl.call(this, options);
 };
 
 ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
+
+proto.checkVisible = function(layers){
+  return layers.length > 0;
+};
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this,map);

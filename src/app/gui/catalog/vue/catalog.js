@@ -134,7 +134,7 @@ const vueComponentOptions = {
     canZoom(layer) {
       let canZoom = false;
       if (layer.bbox) {
-        bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
+        const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
         canZoom = bbox.find((coordinate) => {
           return coordinate > 0;
         });
