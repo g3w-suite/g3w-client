@@ -8,8 +8,8 @@ const mapDOM = {
 }
 export default function TestQuery ({mapcontrols=[], config}={}) {
     describe('#Query', function() {
-      const {query, querybypolygon, querybybbox} = config;
       const mapService = new MapComponent({}).getService();
+      const {query, querybypolygon, querybybbox} = config;
       mapService.setupViewer(mapDOM.width, mapDOM.height);
       const map = mapService.getMap();
       if (mapcontrols.find(mapcontrol => mapcontrol === 'query')) {
@@ -44,5 +44,6 @@ export default function TestQuery ({mapcontrols=[], config}={}) {
           }
         }
       }
+      mapService.clear();
     })
 }

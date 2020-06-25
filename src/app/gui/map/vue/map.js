@@ -28,6 +28,21 @@ const vueComponentOptions = {
       return this.service.state.mapcontrolsalignement;
     }
   },
+  methods: {
+    showHideControls: function () {
+      const mapControls = this.$options.service.getMapControls();
+      mapControls.forEach((control) => {
+        if (control.type !== "scaleline")
+          control.control.showHide();
+      })
+    },
+    getPermalinkUrl() {
+      return this.ready ? this.$options.service.getMapExtentUrl(): null;
+    },
+    createCopyMapExtentUrl(){
+      const mapService = this.$options.service.createCopyMapExtentUrl();
+    }
+  },
   mounted: function() {
     const mapService = this.$options.service;
     mapService.once('ready', ()=>{
@@ -45,20 +60,8 @@ const vueComponentOptions = {
       })
     })
   },
-  methods: {
-    showHideControls: function () {
-      const mapControls = this.$options.service.getMapControls();
-      mapControls.forEach((control) => {
-        if (control.type !== "scaleline")
-          control.control.showHide();
-      })
-    },
-    getPermalinkUrl() {
-      return this.ready ? this.$options.service.getMapExtentUrl(): null;
-    },
-    createCopyMapExtentUrl(){
-      const mapService = this.$options.service.createCopyMapExtentUrl();
-    }
+  destroyed() {
+    this.service.clear();
   }
 };
 // interanl registration

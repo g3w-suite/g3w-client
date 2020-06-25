@@ -87,9 +87,10 @@ const getApplicationConfig = async function(url) {
 
 const getProjetsRegistry = async function(url) {
   try {
+    console.log(url)
     const config = await getApplicationConfig(url);
     ApplicationService.setConfig(config);
-    ProjectsRegistry.initialized = false;
+    ProjectsRegistry.clear();
     const promise = new Promise((resolve, reject) => {
       ProjectsRegistry.init(config)
         .then(() =>{
@@ -102,6 +103,7 @@ const getProjetsRegistry = async function(url) {
     await promise;
     return config;
   } catch(error) {
+    console.log(error)
     Promise.reject({
       error
     })

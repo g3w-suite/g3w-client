@@ -1,14 +1,12 @@
 import TestProject from './project/test'
 export default function TestProjects({applicationConfig, groupId, projectConfig, plugins, project}) {
-  const {mapcontrols, search} = applicationConfig;
+  const {mapcontrols} = applicationConfig;
   describe(`#Group[${groupId}]`, function(){
-    describe('#project', function() {
-      TestProject({
-        config: projectConfig,
-        plugins,
-        project,
-        mapcontrols
-      })
+    TestProject({
+      config: projectConfig,
+      plugins,
+      project,
+      mapcontrols
     })
   })
 }

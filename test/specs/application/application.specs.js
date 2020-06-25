@@ -1,7 +1,6 @@
 import TestConfig from '../../config/whattest';
 import Service from './service';
 import GroupTest from './group/test'
-const {assert, expect} = chai;
 const groupTestConfig = {};
 
 before(async function() {
@@ -35,9 +34,6 @@ before(async function() {
       })
     }
   }
-  it('pippo', function() {
-    //neede to run async before
-  })
 })
 
 it('all groups hook', function() {
