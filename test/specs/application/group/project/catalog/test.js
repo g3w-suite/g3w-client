@@ -14,7 +14,7 @@ export default function TestCatalog({gid, testConfig={}}={}) {
       const disabledLayers = infoLayersTree.layers.filter(layer => layer.disabled);
       const visibleLayers = infoLayersTree.layers.filter(layer => layer.visible);
       expect(infoLayersTree.layers).to.be.length(count)
-      expect(visibleLayers).to.be.length(testVisibleLayersCount)
+      expect(disabledLayers).to.be.length(testDisabledLayersCount)
     })
   })
 }
