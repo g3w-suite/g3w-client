@@ -73,8 +73,28 @@ proto.init = function(config={}) {
     .fail(error => {
       d.reject(error);
     })
+  } else {
+    const project = this.getCurrentProject();
+    d.resolve(project);
   }
   return d.promise();
+};
+
+proto.clear = function(){
+  this.config = null;
+  this.initialized = false;
+  this.projectType = null;
+  this.overviewproject;
+  this.initialized = false;
+  this._groupProjects = [];
+  this._projectConfigs = {};
+  this.state = {
+    baseLayers: {},
+    minScale: null,
+    maxscale: null,
+    currentProject: null,
+    qgis_version: null
+  };
 };
 
 proto.setProjectType = function(projectType) {

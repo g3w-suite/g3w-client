@@ -36,6 +36,11 @@ function MapService(options={}) {
   this.target = options.target || null;
   this.maps_container = options.maps_container || null;
   this._layersStoresEventKeys = {};
+  this._keyEvents = {
+    ol: [],
+    g3wobject: [],
+    eventemitter: []
+  };
   this.project = null;
   this._mapControls = [];
   this._changeMapMapControls = [];
@@ -111,7 +116,7 @@ function MapService(options={}) {
   else {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
-    ProjectsRegistry.onafter('setCurrentProject', (project) => {
+    const keysetCurrentProject = ProjectsRegistry.onafter('setCurrentProject', (project) => {
       this.removeLayers();
       this._removeListeners();
       this.project = project;
@@ -126,7 +131,12 @@ function MapService(options={}) {
       };
       ApplicationService.isIframe() && changeProjectCallBack();
       this.getMap().once('change:size', changeProjectCallBack);
-    })
+    });
+    this._keyEvents.g3wobject.push({
+      who: ProjectsRegistry,
+      setter : 'setCurrentProject',
+      key: keysetCurrentProject
+    });
   }
   this._setupListeners();
   this._marker = null;
@@ -169,9 +179,10 @@ function MapService(options={}) {
       this.state.center = this.viewer.getCenter();
       this._setupAllLayers();
       // set change resolution
-      this.viewer.map.getView().on("change:resolution", (evt) => {
+      const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", (evt) => {
         this._updateMapView();
       });
+      this._keyEvents.ol.push(keyolchangeresolution);
       this.emit('viewerset');
     },
     controlClick: function(active) {}
@@ -199,6 +210,11 @@ function MapService(options={}) {
 
   this.on('cataloglayerselected', this._onCatalogSelectLayer);
 
+  this._keyEvents.eventemitter.push({
+    event: 'cataloglayerselected',
+    listener: this._onCatalogSelectLayer
+  });
+
   this._onCatalogUnSelectLayer = function() {
     for (let i = 0; i< this._mapControls.length; i++) {
       const mapcontrol = this._mapControls[i];
@@ -208,11 +224,22 @@ function MapService(options={}) {
   };
 
   this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
+  this._keyEvents.eventemitter.push({
+    event: 'cataloglayerunselected',
+    listener: this._onCatalogUnSelectLayer
+  });
 
-  this.on('extraParamsSet',(extraParams, update) => {
+  const extraParamsSet = (extraParams, update) => {
     update && this.getMapLayers().forEach((mapLayer) => {
-        mapLayer.update(this.state,extraParams);
-      })
+      mapLayer.update(this.state, extraParams);
+    })
+  };
+
+  this.on('extraParamsSet', extraParamsSet);
+
+  this._keyEvents.eventemitter.push({
+    event: 'extraParamsSet',
+    listener: extraParamsSet
   });
 
   this.once('viewerset', ()=> {
@@ -238,6 +265,33 @@ function MapService(options={}) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+//clear methods to remove all listeners events
+proto.clear = function() {
+  Object.keys(this._keyEvents).forEach(type => {
+    switch(type) {
+      case 'ol':
+        this._keyEvents[type].forEach(keyEvent => ol.Observable.unByKey(keyEvent));
+        break;
+      case 'g3wobject':
+        this._keyEvents[type].forEach(eventObject => {
+          const {who, setter, key} = eventObject;
+          who.un(setter, key);
+        });
+        break;
+      case 'eventemitter':
+        this._keyEvents[type].forEach(eventObject => {
+          const {event, listener } = eventObject;
+          this.removeListener(event, listener);
+        });
+        break;
+    }
+  });
+  this._keyEvents = null;
+  MapLayersStoreRegistry.getLayersStores().forEach(layerStore => {
+    this._removeEventsKeysToLayersStore(layerStore);
+  })
+};
 
 proto.showMapSpinner = function(){
   GUI.showSpinner({
