@@ -49,16 +49,18 @@ function Layer(config={}, options={}) {
   this.state = {
     id: config.id,
     title: config.title,
-    selected: config.selected | false,
-    disabled: config.disabled | false,
+    selected: config.selected || false,
+    disabled: config.disabled || false,
     metadata: config.metadata,
     metadata_querable: this.isQueryable({onMap:false}),
     openattributetable: this.canShowTable(),
     removable: config.removable || false,
     source: config.source,
     infoformat: this.getInfoFormat(),
-    geolayer: false
+    geolayer: false,
+    visible: config.visible || false
   };
+
 
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
@@ -373,7 +375,8 @@ proto.setSelected = function(bool) {
 };
 
 proto.setDisabled = function(bool) {
-  this.state.disabled = bool
+  this.state.disabled = bool;
+  this.isVisible();
 };
 
 proto.isDisabled = function() {
@@ -381,7 +384,8 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  return !this.state.groupdisabled && this.state.checked && !this.isDisabled();
+  this.state.visible = !this.state.groupdisabled && this.state.checked && !this.isDisabled();
+  return this.state.visible;
 };
 
 proto.setVisible = function(bool) {

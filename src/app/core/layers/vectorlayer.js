@@ -21,7 +21,6 @@ mixin(VectorLayer, GeoLayerMixin);
 
 const proto = VectorLayer.prototype;
 
-
 proto.getEditingLayer = function() {
   return this.getMapLayer().getOLLayer();
 };
