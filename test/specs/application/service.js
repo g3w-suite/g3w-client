@@ -87,7 +87,6 @@ const getApplicationConfig = async function(url) {
 
 const getProjetsRegistry = async function(url) {
   try {
-    console.log(url)
     const config = await getApplicationConfig(url);
     ApplicationService.setConfig(config);
     ProjectsRegistry.clear();

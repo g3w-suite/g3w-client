@@ -1,47 +1,49 @@
+import Service from '../../service';
 import TestRelations from './relations/test';
 import TestLayers from './layers/test';
 import TestQuery from './queries/querytest';
 import TestSearches from './searches/test';
+import TestCatalog from './catalog/test'
 const Project = require('core/project/project');
 
-export default function TestProject({project, plugins, config={}, mapcontrols=[]}={}){
-  describe('Project', function(){
-    const id = project.getId();
-    it(`Project[${id}]: is instance of Project`, function() {
+export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={}){
+  const {gid} = testConfig;
+  describe('#Test Project', function() {
+    let project;
+    before(async ()=> {
+      project = await Service.getProject(gid);
+    })
+    it(`Project[${gid}]: is instance of Project`, function() {
       assert.instanceOf(project, Project);
     });
-    if (Object.keys(config.layers).length)
-      describe(`Project[${id}]: layers`, function(){
+    it('hook for sub projects test to wait before async ', function() {
+      if (Object.keys(testConfig.layers).length)
         TestLayers({
-          projectId: id,
           layers: project.getLayers(),
-          config: config.layers
+          testConfig: testConfig.layers
         });
-      })
-    if (Object.keys(config.relations).length)
-      describe(`Project[${id}]: relations`, function(){
+      if (Object.keys(testConfig.relations).length)
         TestRelations({
-          projectId: id,
           relations: project.getRelations(),
-          config: config.relations
+          testConfig: testConfig.relations
         });
-      })
-    if (Object.keys(config.queries).length)
-      describe(`Project[${id}]: queries`, function(){
+      if (Object.keys(testConfig.queries).length)
         TestQuery({
-          config: config.queries,
+          testConfig: testConfig.queries,
           mapcontrols
         })
-      })
-    if (Object.keys(config.searches).length) {
-      const searches = project.getSearches();
-      describe(`Project[${id}]: searches`, function(){
+      if (Object.keys(testConfig.searches).length)
         TestSearches({
-          projectId: id,
-          config: config.searches,
-          searches
+          testConfig: testConfig.searches,
+          searches: project.getSearches()
         })
-      })
-    }
+      if (Object.keys(testConfig.catalog).length)
+        TestCatalog({
+          gid,
+          testConfig: testConfig.catalog,
+        })
+    })
+
+
   })
 }

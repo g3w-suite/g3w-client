@@ -23,9 +23,6 @@ function Layer(config={}, options={}) {
   };
   const {project} = options;
   if (!this.isBaseLayer()) {
-    const qgisVersion = project.getQgisVersion({
-      type: 'major'
-    });
     //set url to get varios type of data
     const projectType = project.getType();
     const projectId = project.getId();
@@ -43,8 +40,8 @@ function Layer(config={}, options={}) {
     };
     //set custom parameters based on project qgis version
     this.config.searchParams = {
-      I: qgisVersion === 2 ? null : 0,
-      J: qgisVersion === 2 ? null : 0
+      I: 0,
+      J: 0
     };
   }
 

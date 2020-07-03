@@ -6,10 +6,10 @@ const mapDOM = {
   width: 1168,
   height: 899
 }
-export default function TestQuery ({mapcontrols=[], config}={}) {
+export default function TestQuery ({mapcontrols=[], testConfig}={}) {
     describe('#Query', function() {
       const mapService = new MapComponent({}).getService();
-      const {query, querybypolygon, querybybbox} = config;
+      const {query, querybypolygon, querybybbox} = testConfig;
       mapService.setupViewer(mapDOM.width, mapDOM.height);
       const map = mapService.getMap();
       if (mapcontrols.find(mapcontrol => mapcontrol === 'query')) {

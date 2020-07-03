@@ -77,26 +77,16 @@ proto.isDisabled = function() {
 };
 
 proto.isPrintable = function({scale}={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
-    type: 'major'
-  });
-  const visible = QGISVERSION === 3 ? !this.state.groupdisabled : true;
+  const visible = !this.state.groupdisabled;
   return this.isChecked() && visible && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
 };
 
 proto.setDisabled = function(resolution, mapUnits='m') {
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  const QGISVERSION = ProjectsRegistry.getCurrentProject().getQgisVersion({
-    type: 'major'
-  });
   if (this.state.scalebasedvisibility) {
     const mapScale = getScaleFromResolution(resolution, mapUnits);
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
-    this.state.disabled = (QGISVERSION === 3 && this.state.minscale === 0) ? !(mapScale >= this.state.maxscale) : this.state.disabled;
-  } else {
-    this.state.disabled = false;
-  }
+    this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
+  } else this.state.disabled = false;
 };
 
 proto.getMultiLayerId = function() {
