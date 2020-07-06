@@ -231,7 +231,7 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
          if (featureMember) {
            featureMember.g3w_fid = {
              __prefix: feature.__prefix,
-             __text: featureMember._fid
+             __text: featureMember._fid && featureMember._fid.split('.')[1]
            };
            if (Array.isArray(featureMember)){
              featureMemberArrayAndPrefix.features = featureMember;

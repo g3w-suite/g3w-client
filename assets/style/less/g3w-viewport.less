@@ -26,6 +26,22 @@
       //transition: all 0.1s;
     }
     &.content {
+      #resize-map-and-content {
+        position: absolute;
+        z-index:1;
+        &.split-h {
+          width: 3px;
+          height: 50%;
+          cursor: col-resize;
+          left:0
+        }
+        &.split-v{
+          height: 3px;
+          width: 50%;
+          cursor: row-resize;
+          top:0
+        }
+      }
       .preview {
         width: 100%;
         margin-top: 10px;
@@ -152,6 +168,7 @@
         border-left: 1px solid darken(@gray-lighter, 10%);
       }
       &.split-v {
+        overflow: auto;
         border-top: 1px solid darken(@gray-lighter, 10%);
       }
       .g3w_contents_back {

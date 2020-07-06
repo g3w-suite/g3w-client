@@ -108,26 +108,29 @@ proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
-proto.getXls = function({fid}={}){
+proto.getXls = function({data}={}){
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
+    data,
     httpMethod: "GET"
   })
 };
 
-proto.getShp = function({fid}={}) {
+proto.getShp = function({data}={}) {
   const url = this.getUrl('shp');
   return XHR.fileDownload({
     url,
+    data,
     httpMethod: "GET"
   })
 };
 
-proto.getGpx = function({fid}={}){
+proto.getGpx = function({data}={}){
   const url = this.getUrl('gpx');
   return XHR.fileDownload({
     url,
+    data,
     httpMethod: "GET"
   })
 };

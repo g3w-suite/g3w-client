@@ -419,10 +419,10 @@ const ViewportService = function() {
 
   //main layout function
   this._layout = function(event=null) {
-    const splitClassToAdd = (this.state.split === 'h') ? 'split-h' : 'split-v';
-    const splitClassToRemove =  (this.state.split === 'h') ? 'split-v' : 'split-c';
-    const viewportViewElement = $(".g3w-viewport .g3w-view");
-    viewportViewElement.addClass(splitClassToAdd).removeClass(splitClassToRemove);
+    //const splitClassToAdd = (this.state.split === 'h') ? 'split-h' : 'split-v';
+    //const splitClassToRemove =  (this.state.split === 'h') ? 'split-v' : 'split-h';
+    //const viewportViewElement = $(".g3w-viewport .g3w-view");
+    //viewportViewElement.addClass(splitClassToAdd).removeClass(splitClassToRemove);
     const reducesdSizes = this._getReducedSizes();
     this._setViewSizes(reducesdSizes.reducedWidth,reducesdSizes.reducedHeight);
     if (this._immediateComponentsLayout) this._layoutComponents(event);
@@ -657,26 +657,35 @@ const ViewportComponent = Vue.extend({
           this.media.matches = event.currentTarget.matches;
         }
       });
+      const sizeConstraints = {
+        min: 0.5,
+        max: 200
+      };
       $('#resize-map-and-content').mousedown((evt)=>{
+        const { target } = evt;
+        const size = target.className === 'split-h' ? 'width' : 'height';
         evt.preventDefault();
-        const sidebarWidth = $('#g3w-sidebar').width();
-        const viewPortWidth = $(this.$el).width();
+        const sidebarHeaderSize = (size === 'width') ? $('#g3w-sidebar').width() : $('#main-header .navbar').height();
+        const viewPortSize = $(this.$el)[size]();
         $(document).mousemove((evt) => {
-          const mapWidth = (evt.pageX+2) - sidebarWidth;
-          const contentWidth = viewPortWidth - mapWidth;
-          console.log(contentWidth)
+          let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
+          if (mapSize > viewPortSize - sizeConstraints.max)
+            mapSize = viewPortSize - sizeConstraints.max;
+          else if( mapSize < sizeConstraints.min)
+            mapSize = sizeConstraints.min;
+          const contentSize = viewPortSize - mapSize;
           viewportService.resizeViewComponents({
             map: {
-              width: mapWidth
+              [size]: mapSize
             },
             content: {
-              width: contentWidth
+              [size]: contentSize
             }
           });
-        })
-      });
-      $(document).mouseup((evt) => {
-        $(document).unbind('mousemove');
+        });
+        $(document).mouseup((evt) => {
+          $(document).unbind('mousemove');
+        });
       });
 
     })

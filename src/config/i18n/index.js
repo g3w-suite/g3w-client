@@ -112,6 +112,18 @@ const translations = {
             actions: {
               show_map: {
                 hint: "Visualizza sulla mappa"
+              },
+              relations: {
+                hint: "Visualizza Relazioni"
+              },
+              download_shapefile: {
+                hint: 'Scarica Shapefile'
+              },
+              download_xls: {
+                hint: "Scarica XLS"
+              },
+              download_gpx: {
+                hint: "Scarica GPX"
               }
             }
           },
@@ -409,6 +421,18 @@ const translations = {
             actions: {
               show_map: {
                 hint: "Show on map"
+              },
+              relations: {
+                hint: "Show Relations"
+              },
+              download_shapefile: {
+                hint: 'Download Shapefile'
+              },
+              download_xls: {
+                hint: "Download XLS"
+              },
+              download_gpx: {
+                hint: "Download GPX"
               }
             }
           },

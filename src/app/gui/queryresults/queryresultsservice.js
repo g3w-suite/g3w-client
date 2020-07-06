@@ -9,6 +9,8 @@ const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
+// set formats for download single feature
+const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'xls', 'gpx'];
 
 function QueryResultsService() {
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
@@ -324,7 +326,7 @@ proto.setActionsForLayers = function(layers) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         class: GUI.getFontClass('marker'),
-        hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
+        hint: 'sdk.mapcontrols.query.actions.show_map.hint',
         cbk: this.goToGeometry.bind(this)
       });
     // in case of relations
@@ -335,19 +337,20 @@ proto.setActionsForLayers = function(layers) {
       relations && relations.length && this.state.layersactions[layer.id].push({
         id: 'show-query-relations',
         class: GUI.getFontClass('relation'),
-        hint: 'Visualizza Relazioni',
+        hint: 'sdk.mapcontrols.query.actions.relations.hint',
         cbk: QueryResultsService.showQueryRelations,
         relations
       });
     }
-    if (layer.download.shapefile) {
-      this.state.layersactions[layer.id].push({
-        id: 'gotogeometry',
+    DOWNLOAD_FEATURE_FORMATS.forEach(format => {
+      layer.download[format] && this.state.layersactions[layer.id].push({
+        id: `download_${format}_feature`,
         class: GUI.getFontClass('download'),
-        hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
-        cbk: this.downloadFeature.bind(this, 'shapefile')
+        hint: `sdk.mapcontrols.query.actions.download_${format}.hint`,
+        cbk: this.downloadFeature.bind(this, format)
       });
-    }
+    })
+
   });
   this.addActionsForLayers(this.state.layersactions);
 };
@@ -477,16 +480,19 @@ proto.downloadFeature = function(type, {id:layerId}={}, feature){
   const fid = feature ? feature.attributes['g3w_fid'] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   let promise = Promise.resolve();
+  const data = {
+    fid
+  };
   GUI.setLoadingContent(true);
   switch(type) {
     case 'shapefile':
-      promise = layer.getShp({fid});
+      promise = layer.getShp({data});
       break;
     case 'xls':
-      promise  = layer.getXls({fid});
+      promise  = layer.getXls({data});
       break;
     case 'gpx':
-      promise = layer.getGpx({fid});
+      promise = layer.getGpx({data});
       break;
   }
   promise.catch((err) => {
