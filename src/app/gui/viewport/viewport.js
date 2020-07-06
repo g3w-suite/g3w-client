@@ -471,6 +471,18 @@ const ViewportService = function() {
     return $(window).innerWidth() - sideBarSpace;
   };
 
+  this.resizeViewComponents = function(sizes={}){
+    Object.entries(this._components).forEach(([name, component]) => {
+      const width = sizes[name].width || this.state[name].sizes.width;
+      const height = sizes[name].height || this.state[name].sizes.height;
+      $(`#g3w-view-${name}`).css({
+        width,
+        height
+      });
+      component.layout(width, height);
+    });
+  };
+
   // load components of  viewport
   // after right size setting
   this._layoutComponents = function(event=null) {
@@ -645,6 +657,28 @@ const ViewportComponent = Vue.extend({
           this.media.matches = event.currentTarget.matches;
         }
       });
+      $('#resize-map-and-content').mousedown((evt)=>{
+        evt.preventDefault();
+        const sidebarWidth = $('#g3w-sidebar').width();
+        const viewPortWidth = $(this.$el).width();
+        $(document).mousemove((evt) => {
+          const mapWidth = (evt.pageX+2) - sidebarWidth;
+          const contentWidth = viewPortWidth - mapWidth;
+          console.log(contentWidth)
+          viewportService.resizeViewComponents({
+            map: {
+              width: mapWidth
+            },
+            content: {
+              width: contentWidth
+            }
+          });
+        })
+      });
+      $(document).mouseup((evt) => {
+        $(document).unbind('mousemove');
+      });
+
     })
   }
 });

@@ -340,14 +340,14 @@ proto.setActionsForLayers = function(layers) {
         relations
       });
     }
-    // if (layer.download.shapefile) {
-    //   this.state.layersactions[layer.id].push({
-    //     id: 'gotogeometry',
-    //     class: GUI.getFontClass('download'),
-    //     hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
-    //     cbk: this.downloadFeature.bind(this, 'shapefile')
-    //   });
-    // }
+    if (layer.download.shapefile) {
+      this.state.layersactions[layer.id].push({
+        id: 'gotogeometry',
+        class: GUI.getFontClass('download'),
+        hint: t('sdk.mapcontrols.query.actions.show_map.hint'),
+        cbk: this.downloadFeature.bind(this, 'shapefile')
+      });
+    }
   });
   this.addActionsForLayers(this.state.layersactions);
 };

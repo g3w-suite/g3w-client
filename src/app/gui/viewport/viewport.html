@@ -24,6 +24,7 @@
   </transition>
   <div id="g3w-view-map" class="g3w-view map" :style="{width:state.map.sizes.width+'px',height:state.map.sizes.height+'px'}">
     <online-status :online="appState.online"></online-status>
+    <div id="resize-map-and-content" style="height: 100%; cursor: col-resize; position: absolute; width: 2px; right: 0; z-index:1000; "></div>
   </div>
   <div id="g3w-view-content" class="g3w-view content" :style="{width:state.content.sizes.width+'px',height:state.content.sizes.height+'px'}">
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
