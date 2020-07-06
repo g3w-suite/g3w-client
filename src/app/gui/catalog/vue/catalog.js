@@ -550,18 +550,18 @@ Vue.component('layerslegend-items',{
       const self = this;
       this.legendurls = [];
       await this.$nextTick();
-      const layers = _layers.reverse();
+      // need to filter geolayer
+      const layers = _layers.filter(layer => layer.geolayer);
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = this.getLegendUrl(layer, this.legend);
-        if (layer.source && layer.source.url)
-          urlLayersName[url] = [];
+        if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
           if (!urlLayersName[prefix])
             urlLayersName[prefix] = [];
-          urlLayersName[prefix].push(layerName)
+          urlLayersName[prefix].unshift(layerName);
         }
       }
       for (const method in urlMethodsLayersName) {
