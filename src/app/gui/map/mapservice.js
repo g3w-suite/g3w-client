@@ -1271,6 +1271,7 @@ proto.setMapControlsContainer = function(mapControlDom) {
 
 proto._updateMapControlsLayout = function({width, height}={}) {
   // update only when all control are ready
+  const mapControlsContent = $('.g3w-map-controls');
   if (this.state.mapcontrolready && this.state.mapControl.update) {
     let changed = false;
     // count the mapcontrol insied g3w-map-control container
@@ -1280,6 +1281,8 @@ proto._updateMapControlsLayout = function({width, height}={}) {
     });
     // check if is vertical
     if (this.isMapControlsVerticalAlignement()) {
+      if (height < 150) mapControlsContent.hide();
+      else mapControlsContent.show()
       let mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
       // get bottom controls
       const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
