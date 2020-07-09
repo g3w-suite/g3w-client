@@ -14,16 +14,17 @@ const InternalComponent = Vue.extend({
   }
 });
 
-function ContentsViewerComponent(options) {
+function ContentsViewerComponent(options={}) {
   base(this, options);
   this.stack = new Stack();
   this.setService(this);
   this.title = "contents";
   this.contentsdata = this.stack.state.contentsdata;
   this.state.visible = true;
-  this.setInternalComponent(new InternalComponent({
+  const internalComponent = new InternalComponent({
     service: this
-  }));
+  });
+  this.setInternalComponent(internalComponent);
   this.internalComponent.state = this.state;
 }
 

@@ -244,6 +244,9 @@ const ApplicationTemplate = function({ApplicationService}) {
     _.forEach(GUI.getComponents(), function(component) {
       ApplicationService.registerService(component.id, component.getService());
     })
+    ApplicationTemplate.Services.viewport.on('resize', ()=>{
+      GUI.emit('resize')
+    })
   };
   // build template function
   this._buildTemplate = function() {
@@ -432,7 +435,8 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.showContextualContent({
         perc,
         content: queryResultsComponent,
-        title: [t("info.title"), title].join(' ')
+        title: "info.title",
+        post_title: title
       });
       return queryResultService;
     };

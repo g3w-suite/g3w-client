@@ -71,7 +71,7 @@ function QueryResultsService() {
   };
   GUI.onbefore('setContent', (options)=>{
     const {perc} = options;
-    if (perc === 100) {
+    if (perc === 100 && GUI.isMobile()) {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
       this._asyncFnc.goToGeometry.async = true;
     }
@@ -345,7 +345,7 @@ proto.setActionsForLayers = function(layers) {
     DOWNLOAD_FEATURE_FORMATS.forEach(format => {
       layer.download[format] && this.state.layersactions[layer.id].push({
         id: `download_${format}_feature`,
-        class: GUI.getFontClass('download'),
+        class: GUI.getFontClass(format),
         hint: `sdk.mapcontrols.query.actions.download_${format}.hint`,
         cbk: this.downloadFeature.bind(this, format)
       });

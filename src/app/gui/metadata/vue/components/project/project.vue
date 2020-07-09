@@ -80,7 +80,6 @@
       'metadata-tab-content': MetadataTabContent,
       'metadata-bbox-content': MetadataBBOXContent,
       'metadata-contacts-content': MetadataContactsContent
-
     },
     methods: {
       isArrayorObject(value) {

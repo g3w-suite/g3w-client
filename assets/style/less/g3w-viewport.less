@@ -17,6 +17,22 @@
   line-height: 0;
   .g3w-view {
     &.map {
+      #resize-map-and-content {
+        position: absolute;
+        z-index:1;
+        &.split-h {
+          width: 4px;
+          height: 100%;
+          cursor: col-resize;
+          right:-2px;
+        }
+        &.split-v{
+          height: 4px;
+          width: 100%;
+          cursor: row-resize;
+          bottom:-2px;
+        }
+      }
       line-height: normal;
       display:inline-block;
       height:0;
@@ -26,21 +42,6 @@
       //transition: all 0.1s;
     }
     &.content {
-      #resize-map-and-content {
-        position: absolute;
-        z-index:1;
-        &.split-h {
-          width: 5px;
-          height: 90%;
-          cursor: col-resize;
-          left:0
-        }        &.split-v{
-          height: 5px;
-          width: 90%;
-          cursor: row-resize;
-          top:0
-        }
-      }
       .preview {
         width: 100%;
         margin-top: 10px;
@@ -167,7 +168,6 @@
         border-left: 1px solid darken(@gray-lighter, 10%);
       }
       &.split-v {
-        overflow: auto;
         border-top: 1px solid darken(@gray-lighter, 10%);
       }
       .g3w_contents_back {

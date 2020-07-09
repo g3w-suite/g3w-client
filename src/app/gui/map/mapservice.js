@@ -1281,8 +1281,6 @@ proto._updateMapControlsLayout = function({width, height}={}) {
     });
     // check if is vertical
     if (this.isMapControlsVerticalAlignement()) {
-      if (height < 150) mapControlsContent.hide();
-      else mapControlsContent.show()
       let mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
       // get bottom controls
       const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
@@ -2202,6 +2200,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     data,
     color,
     type;
+    crs;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();

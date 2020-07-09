@@ -10,7 +10,7 @@ const ComponentsRegistry = require('gui/componentsregistry');
 // app shold call GUI.ready() when GUI is ready
 function GUI() {
   this.setters = {
-    setContent: function(options) {
+    setContent: function(options={}) {
       this.emit('opencontent', true);
       this._setContent(options)
     }

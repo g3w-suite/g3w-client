@@ -1,3 +1,4 @@
+import {viewport as viewportConstraints} from 'gui/constraints';
 import userMessage from 'gui/usermessage/vue/usermessage.vue';
 import onlineStatus from 'gui/online/vue/online.vue';
 const {base, inherit} = require('core/utils/utils');
@@ -11,13 +12,18 @@ const ViewportService = function() {
     primaryView: 'map', // primary view (default)
     // percentage of secondary view
     secondaryPerc: 0,
+    resized: {
+      start: false,
+      'h': false,
+      'v': false
+    },
     // splitting orientation (h = horizontal, v = vertical)
     split: 'h',
     //map
     map: {
       sizes: {
-        width: 0,
-        height: 0
+        width:0,
+        height:0
       },
       aside: false
     },
@@ -27,6 +33,14 @@ const ViewportService = function() {
       sizes: {
         width: 0,
         height: 0
+      },
+      resize: {
+        'h': {
+          perc: 0
+        },
+        'v': {
+          perc:0
+        }
       },
       aside: true,
       showgoback: true,
@@ -62,8 +76,8 @@ const ViewportService = function() {
   this._contextualMapComponent;
 
   // minimun height and width of secondary view
-  this._secondaryViewMinWidth = 300;
-  this._secondaryViewMinHeight = 200;
+  this._secondaryViewMinWidth = viewportConstraints.resize.content.min;
+  this._secondaryViewMinHeight =  viewportConstraints.resize.content.min;
   // attributo che serve per
   this._immediateComponentsLayout = true;
   /* PLUBILC INTARFACE */
@@ -73,7 +87,12 @@ const ViewportService = function() {
     // check splitting property
     this.state.split = options.split ? options.split : 'h';
     // add component (map and content)
-    this._addComponents(options.components);
+    const { components } = options;
+    this._addComponents(components);
+  };
+
+  this.setResized = function (type, bool=false) {
+    this.state.resized[type] = bool;
   };
 
   this.showUserMessage = function({title, message, type, position, size, draggable, textMessage=false, closable, autoclose, hooks={}}={}) {
@@ -131,7 +150,7 @@ const ViewportService = function() {
      */
     Object.entries(components).forEach(([viewName, component]) => {
       // check if component are map or content
-      if (['map', 'content'].indexOf(viewName) > -1) {
+      if (Object.keys(this._components).indexOf(viewName) > -1) {
         component.mount('#g3w-view-'+viewName, true)
           .then(() => {
             this._components[viewName] = component;
@@ -224,16 +243,17 @@ const ViewportService = function() {
    */
 
   this.showContent = function(options={}) {
-    // check if push i setted
+    // check if push is set
     options.push = options.push || false;
-    // set all pcontenty parameters
+    const evenContentName = options.perc === 100 ? 'show-content-full' : 'show-content';
+    // set all content parameters
     this._prepareContentView(options);
     this._immediateComponentsLayout = false;
     this._showView('content', options);
     this._components.content.setContent(options)
       .then(() => {
         this._immediateComponentsLayout = true;
-        this._layoutComponents('show-content');
+        this._layoutComponents(evenContentName);
       });
   };
 
@@ -282,7 +302,7 @@ const ViewportService = function() {
     const d = $.Deferred();
     if (this.isContentOpen()) {
       this._components.content.removeContent();
-      // close secondari view( return a promise)
+      // close secondary view( return a promise)
       this.closeSecondaryView('close-content')
         .then(() => {
           //recover default map
@@ -440,9 +460,9 @@ const ViewportService = function() {
     let secondaryWidth;
     let secondaryHeight;
     // percentage of secondary view (content)
-    const scale = this.state.secondaryPerc / 100;
+    const scale = (this.state.secondaryPerc < 100 && this.state.resized[this.state.split] ? this.state.content.resize[this.state.split].perc : this.state.secondaryPerc) / 100;
     if (this.state.split === 'h') {
-      secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale),this._secondaryViewMinWidth) : 0;
+      secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale), this._secondaryViewMinWidth) : 0;
       secondaryHeight = viewportHeight;
       primaryWidth = viewportWidth - secondaryWidth;
       primaryHeight = viewportHeight;
@@ -471,16 +491,10 @@ const ViewportService = function() {
     return $(window).innerWidth() - sideBarSpace;
   };
 
-  this.resizeViewComponents = function(sizes={}){
-    Object.entries(this._components).forEach(([name, component]) => {
-      const width = sizes[name].width || this.state[name].sizes.width;
-      const height = sizes[name].height || this.state[name].sizes.height;
-      $(`#g3w-view-${name}`).css({
-        width,
-        height
-      });
-      component.layout(width, height);
-    });
+  this.resizeViewComponents = function(type, sizes={}, perc){
+    this.setResized(type, true);
+    this.state.content.resize[type].perc = perc;
+    this._layout('resize');
   };
 
   // load components of  viewport
@@ -491,6 +505,7 @@ const ViewportService = function() {
       const reducedWidth = reducesdSizes.reducedWidth || 0;
       const reducedHeight = reducesdSizes.reducedHeight || 0;
       // for each components
+      this._setViewSizes();
       Object.entries(this._components).forEach(([name, component]) => {
         const width = this.state[name].sizes.width - reducedWidth ;
         const height = this.state[name].sizes.height - reducedHeight;
@@ -523,17 +538,6 @@ const ViewportService = function() {
     };
     // GUI ready event
     GUI.on('ready',() => {
-      const primaryView = this.state.primaryView;
-      const secondaryView = this._otherView(primaryView);
-      const secondaryEl = $(".g3w-viewport ."+secondaryView);
-      const secondaryViewMinWidth = secondaryEl.css('min-width');
-      if ((secondaryViewMinWidth != "") && !_.isNaN(parseFloat(secondaryViewMinWidth))) {
-        this._secondaryViewMinWidth =  parseFloat(secondaryViewMinWidth);
-      }
-      const secondaryViewMinHeight = secondaryEl.css('min-height');
-      if ((secondaryViewMinHeight != "") && !_.isNaN(parseFloat(secondaryViewMinHeight))) {
-        this._secondaryViewMinHeight =  parseFloat(secondaryViewMinHeight);
-      }
       this._layout();
       GUI.on('guiresized',() => {
         triggerResize();
@@ -604,20 +608,30 @@ const ViewportComponent = Vue.extend({
     showContent: function() {
       return this.state.content.show;
     },
+    styles() {
+      return {
+        map: {
+          width: `${this.state.map.sizes.width}px`,
+          height: `${this.state.map.sizes.height}px`,
+        },
+        content: {
+          width: `${this.state.content.sizes.width}px`,
+          height: `${this.state.content.sizes.height}px`,
+          minHeight: this.state.split === 'v'?  `${viewportConstraints.resize.content.min}px` : null
+        }
+      }
+    },
     contentTitle: function() {
       const contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
-        return contentsData[contentsData.length - 1].options.title;
+        const {title, post_title} = contentsData[contentsData.length - 1].options;
+        return {title, post_title};
       }
     },
     backOrBackTo(){
       const contentsData = this.state.content.contentsdata;
-      if (contentsData.length > 1 && this.state.content.showgoback) {
-        if (!contentsData[contentsData.length - 2].options.title) {
-          return 'back';
-        }
-        return 'backto'
-      }
+      if (contentsData.length > 1 && this.state.content.showgoback)
+        return (!contentsData[contentsData.length - 2].options.title) ? 'back': 'backto';
       return false;
     },
     previousTitle: function() {
@@ -649,6 +663,36 @@ const ViewportComponent = Vue.extend({
     }
   },
   mounted() {
+    const handleResizeViewport = ()=>{
+      this.state.resized.start = true;
+      $('#resize-map-and-content').mousedown((evt) => {
+        const size =  this.state.split === 'h' ? 'width' : 'height';
+        evt.preventDefault();
+        const sidebarHeaderSize = (size === 'width') ? $('#g3w-sidebar').width() : $('#main-header .navbar').height();
+        const viewPortSize = $(this.$el)[size]();
+        $(document).mousemove((evt) => {
+          let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
+          if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
+            mapSize = viewPortSize -  viewportConstraints.resize.content.min;
+          else if( mapSize < viewportConstraints.resize.map.min)
+            mapSize = viewportConstraints.resize.map.min;
+          const contentSize = viewPortSize - mapSize;
+          const resizePercentageMap = Math.round((mapSize / viewPortSize) * 100);
+          const resizePercentageContent = 100 - resizePercentageMap;
+          viewportService.resizeViewComponents(this.state.split, {
+            map: {
+              [size]: mapSize
+            },
+            content: {
+              [size]: contentSize
+            }
+          }, resizePercentageContent);
+        });
+        $(document).mouseup((evt) => {
+          $(document).unbind('mousemove');
+        });
+      });
+    };
     this.$nextTick(() => {
       const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
       this.media.matches = mediaQueryEventMobile.matches;
@@ -657,37 +701,7 @@ const ViewportComponent = Vue.extend({
           this.media.matches = event.currentTarget.matches;
         }
       });
-      const sizeConstraints = {
-        min: 0.5,
-        max: 200
-      };
-      $('#resize-map-and-content').mousedown((evt)=>{
-        const { target } = evt;
-        const size = target.className === 'split-h' ? 'width' : 'height';
-        evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('#g3w-sidebar').width() : $('#main-header .navbar').height();
-        const viewPortSize = $(this.$el)[size]();
-        $(document).mousemove((evt) => {
-          let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
-          if (mapSize > viewPortSize - sizeConstraints.max)
-            mapSize = viewPortSize - sizeConstraints.max;
-          else if( mapSize < sizeConstraints.min)
-            mapSize = sizeConstraints.min;
-          const contentSize = viewPortSize - mapSize;
-          viewportService.resizeViewComponents({
-            map: {
-              [size]: mapSize
-            },
-            content: {
-              [size]: contentSize
-            }
-          });
-        });
-        $(document).mouseup((evt) => {
-          $(document).unbind('mousemove');
-        });
-      });
-
+      handleResizeViewport();
     })
   }
 });

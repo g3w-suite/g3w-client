@@ -22,11 +22,12 @@
       </template>
     </user-message>
   </transition>
-  <div id="g3w-view-map" :class="[state.split === 'h' ? 'split-h' : 'split-v']" class="g3w-view map" :style="{width:state.map.sizes.width+'px',height:state.map.sizes.height+'px'}">
+  <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
+    <div v-show="state.resized.start && state.secondaryPerc < 100" id="resize-map-and-content" :class="`split-${state.split}`"></div>
     <online-status :online="appState.online"></online-status>
   </div>
-  <div id="g3w-view-content" :class="[state.split === 'h' ? 'split-h' : 'split-v']" class="g3w-view content" :style="{width:state.content.sizes.width+'px',height:state.content.sizes.height+'px'}">
-    <div id="resize-map-and-content" :class="[state.split === 'h' ? 'split-h' : 'split-v']"></div>
+  <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content"
+       :style="styles.content">
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
       <div v-if="previousTitle" class="g3w_contents_back">
         <span  @click="gotoPreviousContent()">
@@ -45,7 +46,7 @@
         <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
       </span>
       <div class="panel-title" v-if="showtitle && contentTitle">
-        <span id="contenttitle">{{ contentTitle }}</span>
+        <span id="contenttitle" v-t:pre="contentTitle.title">{{ contentTitle.post_title}}</span>
       </div>
     </div>
     <div v-show="state.content.loading" class="bar-loader"></div>

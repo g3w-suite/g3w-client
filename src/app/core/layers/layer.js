@@ -31,6 +31,7 @@ function Layer(config={}, options={}) {
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
+    this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;

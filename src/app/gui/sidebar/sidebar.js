@@ -54,7 +54,7 @@ const SidebarItem = Vue.extend({
   created() {
     this.component.openClose = () =>{
       this.$refs.anchor_click.click();
-    }
+    };
   },
   async mounted() {
     await this.$nextTick();
@@ -125,9 +125,7 @@ function SidebarService() {
     //mount componet to g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
     // check if componentonent has iniService method
-    if (_.has(component, 'initService')) {
-      component.initService();
-    }
+    component.initService && component.initService();
     return true;
   };
 
@@ -194,7 +192,6 @@ function SidebarService() {
       content = null;
     })
   };
-
   base(this);
 }
 

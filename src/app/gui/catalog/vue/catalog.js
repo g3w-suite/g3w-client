@@ -148,6 +148,10 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isXlsDownlodable(): false;
     },
+    canDownloadGpx(layerId) {
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isGpxDownlodable(): false;
+    },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
@@ -191,12 +195,12 @@ const vueComponentOptions = {
       })
     },
     downloadGpx(layerId) {
-      this.layerMenu.loading.xls = true;
+      this.layerMenu.loading.gpx = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getGpx().catch((err) => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
-        this.layerMenu.loading.xls = false;
+        this.layerMenu.loading.gpx = false;
         this._hideMenu();
       })
     },

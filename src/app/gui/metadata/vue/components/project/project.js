@@ -3,7 +3,7 @@ const Component = require('gui/vue/component');
 const base = require('core/utils/utils').base;
 import ProjectCatalog from './project.vue'
 
-function ProjectComponent({state = {}, service} = {}) {
+function ProjectMetadataComponent({state = {}, service} = {}) {
   base(this);
   const vueComponent = Vue.extend(ProjectCatalog);
   this.setService(service);
@@ -13,6 +13,6 @@ function ProjectComponent({state = {}, service} = {}) {
   this.layout = function() {};
 }
 
-inherit(ProjectComponent, Component);
+inherit(ProjectMetadataComponent, Component);
 
-module.exports = ProjectComponent;
+module.exports = ProjectMetadataComponent;

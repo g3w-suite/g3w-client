@@ -58,7 +58,6 @@ proto._buildProjectGroupMetadata = function() {
   this.state.groups = groups;
 };
 
-
 proto.getProjectMetadata = function() {
   return this.state;
 };
@@ -83,13 +82,12 @@ proto.showMetadata = function(bool) {
     });
     GUI.setContent({
       content: this.content,
-      title: t("sdk.metadata.title"),
+      title: "sdk.metadata.title",
       perc: 100
     });
     this.show = true;
-  } else {
-    GUI.closeContent()
-  }
+  } else GUI.closeContent()
+
 };
 
 proto.reload = function() {
