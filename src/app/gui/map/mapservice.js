@@ -1271,7 +1271,6 @@ proto.setMapControlsContainer = function(mapControlDom) {
 
 proto._updateMapControlsLayout = function({width, height}={}) {
   // update only when all control are ready
-  const mapControlsContent = $('.g3w-map-controls');
   if (this.state.mapcontrolready && this.state.mapControl.update) {
     let changed = false;
     // count the mapcontrol insied g3w-map-control container
@@ -1281,32 +1280,39 @@ proto._updateMapControlsLayout = function({width, height}={}) {
     });
     // check if is vertical
     if (this.isMapControlsVerticalAlignement()) {
-      let mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
-      // get bottom controls
-      const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
-      const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
-      const freeSpace = bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
-      if (freeSpace < 10) {
-        if (isMobile.any) {
-          this.setMapControlsAlignement('rh');
-          return;
-        } else
-          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
-        changed = true;
-      } else {
-        // check if there enought space to expand mapcontrols
-        const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
-        if (freeSpace  > nextHeight) {
+      const handleVerticalMapControlDOMElements = () => {
+        const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
+        // get bottom controls
+        const bottomMapControls =  $(`.ol-control-b${this.getMapControlsAlignement()[0]}`);
+        const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
+        const freeSpace =  bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
+        if (freeSpace < 10) {
+          if (isMobile.any) {
+            this.setMapControlsAlignement('rh');
+            return;
+          } else
+            this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changed = true;
-          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
+        } else {
+          // check if there enought space to expand mapcontrols
+          const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
+          if (freeSpace  > nextHeight) {
+            changed = true;
+            this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
+          }
         }
-      }
-      if (changed) {
-        mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
-        mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
-        this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
-        this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
-      }
+        if (changed) {
+          const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
+          const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
+          this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
+          this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
+          changed = false;
+          setTimeout(()=>{
+            handleVerticalMapControlDOMElements();
+          })
+        }
+      };
+      handleVerticalMapControlDOMElements();
     } else {
       if (isMobile.any) {
         this.setMapControlsAlignement('rv');

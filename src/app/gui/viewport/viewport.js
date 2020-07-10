@@ -669,7 +669,7 @@ const ViewportComponent = Vue.extend({
       $('#resize-map-and-content').mousedown((evt) => {
         const size =  this.state.split === 'h' ? 'width' : 'height';
         evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : sidebarWidth : $('#main-header .navbar').height();
+        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : sidebarWidth : $('#main-navbar').height();
         const viewPortSize = $(this.$el)[size]();
         $(document).mousemove((evt) => {
           let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
