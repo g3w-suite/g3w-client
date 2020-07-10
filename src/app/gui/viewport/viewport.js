@@ -663,12 +663,13 @@ const ViewportComponent = Vue.extend({
     }
   },
   mounted() {
+    const sidebarWidth = $('#g3w-sidebar').width();
     const handleResizeViewport = ()=>{
       this.state.resized.start = true;
       $('#resize-map-and-content').mousedown((evt) => {
         const size =  this.state.split === 'h' ? 'width' : 'height';
         evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('#g3w-sidebar').width() : $('#main-header .navbar').height();
+        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : sidebarWidth : $('#main-header .navbar').height();
         const viewPortSize = $(this.$el)[size]();
         $(document).mousemove((evt) => {
           let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
