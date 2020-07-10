@@ -1,4 +1,4 @@
-import config_X from './template'; // import index of group
+import config_X from './group_template'; // import index of group
 /*
 import config_Y from './templateY'; // import index of another group
 ....

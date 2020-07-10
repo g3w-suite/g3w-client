@@ -3,10 +3,10 @@ export default {
   searches: [
     {
       id: 1,
-      attrtibutes: {
-        nome: 'Pippo'
+      attributes: {
+        nome: 'PPPPP'
       },
-      count: 1
+      count: 9
     }
   ]
 }

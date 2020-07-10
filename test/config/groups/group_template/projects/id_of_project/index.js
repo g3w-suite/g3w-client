@@ -7,7 +7,7 @@ import relations from './relations'
 import metadata from './metadata';
 
 export default {
-  gid: 'qdjango:1', // gid of project
+  gid: '<id of project es. qdjango:1>',
   layers,
   queries,
   metadata,
