@@ -1,5 +1,14 @@
 const Geometry = {};
 
+Geometry.isMultiGeometry = function(geometryType){
+  return [
+    Geometry.GeometryTypes.MULTIPOLYGON,
+    Geometry.GeometryTypes.MULTIPOINT,
+    Geometry.GeometryTypes.MULTILINESTRING,
+    Geometry.GeometryTypes.MULTILINE
+  ].indexOf(geometryType) !== -1;
+};
+
 Geometry.GeometryTypes = {
   POINT: "Point",
   MULTIPOINT: "MultiPoint",

@@ -1869,7 +1869,7 @@ proto.goToRes = function(coordinates, resolution){
 proto.zoomToFeatures = function(features, options={highlight: false}) {
   let extent;
   let geometryType;
-  const geometryCoordinates = [];
+  let geometryCoordinates = [];
   const {highlight} = options;
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
@@ -1877,10 +1877,12 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
     if (geometry) {
       const featureExtent = [...geometry.getExtent()];
       extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
+      geometryType = geometryType ? geometryType : geometry.getType();
       if (highlight) {
-        geometryType = geometryType || geometry.getType();
         const coordinates = geometry.getCoordinates();
-        geometryCoordinates.push(geometryType.includes('Multi') && coordinates.length ? coordinates[0]: coordinates);
+        if (geometryType.includes('Multi'))
+          geometryCoordinates = [...geometryCoordinates, ...coordinates];
+        else geometryCoordinates.push(coordinates);
       }
     }
   }

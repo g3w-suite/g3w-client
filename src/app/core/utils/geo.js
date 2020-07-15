@@ -139,7 +139,6 @@ const geoutils = {
     };
     reader.readAsArrayBuffer(url);
   },
-
   createLayerStyle: function(styleObj) {
     let style;
     const styles = {};
@@ -171,7 +170,6 @@ const geoutils = {
     }
     return style
   },
-
   createOlLayer: function(options = {}) {
     const id = options.id;
     const features = options.features;
@@ -226,7 +224,6 @@ const geoutils = {
     olLayer.setStyle(style);
     return olLayer;
   },
-
   createSelectedStyle({geometryType, color='rgb(255,255,0)'}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
@@ -261,14 +258,12 @@ const geoutils = {
     }
     return style;
   },
-
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
     return properties.filter((property) => {
       return geometryFields.indexOf(property) === -1;
     });
   },
-
   getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false}={}) {
     const d = $.Deferred();
     const size = map.getSize();
@@ -327,7 +322,6 @@ const geoutils = {
     }
     return d.promise();
   },
-
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
@@ -372,7 +366,6 @@ const geoutils = {
     }
     return d.promise();
   },
-
   parseQueryLayersPromiseResponses(responses) {
     const results = {
       query: responses[0] ? responses[0].query: null,
@@ -440,7 +433,7 @@ const geoutils = {
             splittedSegments.push(olFromJsts.write(newSegment));
           }
           startPoint = splitPoint;
-        })
+        });
         pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
       } else pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
     }
@@ -526,6 +519,27 @@ const geoutils = {
     }
     return splittedFeatureGeometries;
   },
+  singleGeometriesToMultiGeometry(geometries=[]) {
+    const geometryType = geometries[0] && geometries[0].getType();
+    return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
+  },
+  multiGeometryToSingleGeometries(geometry){
+    const geometryType = geometry.getType();
+    let geometries = [];
+    switch (geometryType) {
+      case Geometry.GeometryTypes.MULTIPOLYGON:
+        geometries = geometry.getPolygons();
+        break;
+      case Geometry.GeometryTypes.MULTILINE:
+      case Geometry.GeometryTypes.MULTILINESTRING:
+        geometries = geometry.getLineStrings();
+        break;
+      case Geometry.GeometryTypes.MULTIPOINT:
+        geometries = geometry.getPoints();
+        break;
+    }
+    return geometries;
+  },
   dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;
@@ -548,7 +562,7 @@ const geoutils = {
           for (let i=0; i < featuresLength ; i++) {
             const feature = features[i];
             const coordinates = parser.read(feature.getGeometry()).getCoordinates();
-            const LineString = new jsts.geom.GeometryFactory().createLineString(coordinates)
+            const LineString = new jsts.geom.GeometryFactory().createLineString(coordinates);
             lineMerger.addLineString(LineString);
           }
           const mergedLineString = lineMerger.getMergedLineStrings();

@@ -13,6 +13,7 @@ const RelationsPage = require('gui/relations/vue/relationspage');
 const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'xls', 'gpx'];
 
 function QueryResultsService() {
+  this._currentLayerIds = [];
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     this._setRelations(project);
   });
@@ -24,9 +25,7 @@ function QueryResultsService() {
   this._relations = [];
   const project = this._project = ProjectsRegistry.getCurrentProject();
   // userful to set right order for query result based on toc order layers
-  this._projectLayerIds = this._project.getConfigLayers().map((layer) => {
-    return layer.id;
-  });
+  this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
   this.state = {
     zoomToResult: true,
     components: []
@@ -45,6 +44,7 @@ function QueryResultsService() {
     },
     setLayersData: function(layers) {
       // here set the right order of result layers based on toc
+      this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
       this.state.layers =  layers;
@@ -95,6 +95,10 @@ proto.clear = function() {
       async: false
     }
   };
+};
+
+proto.getCurrentLayersIds = function(){
+  return this._currentLayerIds;
 };
 
 proto.runAsyncTodo = function() {
