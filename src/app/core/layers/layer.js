@@ -563,6 +563,7 @@ Layer.ServerTypes = {
 
 // Source Types
 Layer.SourceTypes = {
+  VIRTUAL:'virtual',
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
   MSSQL: 'mssql',

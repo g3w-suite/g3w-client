@@ -9,6 +9,12 @@ const Providers = {
 
 const ProvidersForServerTypes = {
   'QGIS': {
+    'virtual': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: Providers.qgis,
+      search: Providers.qgis
+    },
     'postgres': {
       query: Providers.wms,
       filter: Providers.wfs,
