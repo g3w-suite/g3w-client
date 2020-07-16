@@ -1,4 +1,5 @@
 const id = require('core/utils/utils').getUniqueDomId();
+const GUI = require('gui/gui');
 const templateCompiled = Vue.compile( require('./lineXY.html'));
 const C3XYLine = {
   ...templateCompiled,
@@ -6,8 +7,7 @@ const C3XYLine = {
     showdata: {
       type: Boolean,
       default: true
-    },
-
+    }
   },
   data() {
     return {
@@ -75,7 +75,8 @@ const C3XYLine = {
     getData() {
       return this.data;
     },
-    resize({width, height}={}) {
+    async resize({width, height}={}) {
+      await this.$nextTick();
       this.chart.resize({
         width: width,
         height: height || $(`#${this.id}`).height() - 4
@@ -101,7 +102,6 @@ const C3XYLine = {
 
       }
       this.resize();
-
     },
     changeItems(items) {
       if (items.length === 1)
@@ -126,6 +126,7 @@ const C3XYLine = {
   },
   mounted() {
     this.$nextTick(() => {
+      GUI.on('resize', this.resize);
       const self = this;
       this.config.data.onselected = function(evt) {
         const _temp = [...self.selectitems, evt];
@@ -149,6 +150,7 @@ const C3XYLine = {
     this.data = this.selectitems = null;
     this.chart.destroy();
     this.chart = null;
+    GUI.off('resize', this.resize);
   }
 };
 

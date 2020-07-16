@@ -1272,7 +1272,10 @@ proto.setMapControlsContainer = function(mapControlDom) {
 proto._updateMapControlsLayout = function({width, height}={}) {
   // update only when all control are ready
   if (this.state.mapcontrolready && this.state.mapControl.update) {
-    let changed = false;
+    const changedAndMoreSpace = {
+      changed : false,
+      space: false
+    };
     // count the mapcontrol insied g3w-map-control container
     this._mapControls.forEach((control) => {
       const map = this.getMap();
@@ -1292,22 +1295,23 @@ proto._updateMapControlsLayout = function({width, height}={}) {
             return;
           } else
             this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
-          changed = true;
+          changedAndMoreSpace.changed = true;
         } else {
           // check if there enought space to expand mapcontrols
           const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
           if (freeSpace  > nextHeight) {
-            changed = true;
+            changedAndMoreSpace.changed = true;
+            changedAndMoreSpace.space = true;
             this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
           }
         }
-        if (changed) {
+        if (changedAndMoreSpace.changed) {
           const mapControslHeight = this.state.mapControl.grid[this.state.mapControl.currentIndex].columns * this.state.mapcontrolSizes.minWidth;
           const mapControlsWidth = this.state.mapControl.grid[this.state.mapControl.currentIndex].rows * this.state.mapcontrolSizes.minWidth;
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
-          changed = false;
-          setTimeout(()=>{
+          changedAndMoreSpace.changed = false;
+          changedAndMoreSpace.space && setTimeout(()=>{
             handleVerticalMapControlDOMElements();
           })
         }

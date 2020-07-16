@@ -170,25 +170,23 @@
       &.split-v {
         border-top: 1px solid darken(@gray-lighter, 10%);
       }
-      .g3w_contents_back {
-        display: inline-block;
-        margin-left: 5px;
-        > span {
-          cursor: pointer;
-          font-weight: bold;
-          &:hover {
-            text-decoration: none;
-          }
-        }
-      }
     }
     .close-panel-block {
       overflow: hidden;
       line-height: 20px;
       margin-top: 2px;
-      margin-bottom: 5px;
-      margin-left: 10px;
-      font-size:1.5em;
+      margin-bottom: 10px;
+      font-size: 1.5em;
+      .g3w_contents_back {
+        .backto, .back {
+          display: inline-block;
+          font-weight: bold;
+        }
+        .backto {
+          margin-top:10px;
+          cursor:pointer
+        }
+      }
       .panel-title {
         margin-top: 10px;
         margin-bottom: 10px;

@@ -26,27 +26,25 @@
     <div v-show="state.resized.start && state.secondaryPerc < 100" id="resize-map-and-content" :class="`split-${state.split}`"></div>
     <online-status :online="appState.online"></online-status>
   </div>
-  <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content"
-       :style="styles.content">
+  <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content">
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
       <div v-if="previousTitle" class="g3w_contents_back">
-        <span  @click="gotoPreviousContent()">
-          <div style="display: inline-block" v-if ="backOrBackTo === 'back'">
-             <span  :class="g3wtemplate.getFontClass('back')"></span>
-             <span v-t="'back'"></span>
-          </div>
-          <div style="display: inline-block; margin-top:10px;"  v-else-if ="backOrBackTo === 'backto'">
-            <span :class="g3wtemplate.getFontClass('back')"></span>
-            <span v-t:pre="'backto'">{{ previousTitle }}</span>
-          </div>
-        </span>
+        <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
+          <span :class="g3wtemplate.getFontClass('back')"></span>
+          <span v-t="'back'"></span>
+        </div>
+        <div @click="gotoPreviousContent()" :class="backOrBackTo" v-else>
+          <span :class="g3wtemplate.getFontClass('back')"></span>
+          <span v-t="'backto'"></span>
+          <span v-t="previousTitle"></span>
+        </div>
       </div>
       <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;" class="g3w-span-button fa-stack fa-lg pull-right">
         <i :class="g3wtemplate.getFontClass('circle')"  class="fa-stack-2x panel-button"></i>
         <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
       </span>
-      <div class="panel-title" v-if="showtitle && contentTitle">
-        <span id="contenttitle" v-t:pre="contentTitle.title">{{ contentTitle.post_title}}</span>
+      <div class="panel-title" v-if="!previousTitle && showtitle && contentTitle">
+        <span id="contenttitle" v-t:pre="contentTitle.title"><span v-t="contentTitle.post_title"></span></span>
       </div>
     </div>
     <div v-show="state.content.loading" class="bar-loader"></div>
