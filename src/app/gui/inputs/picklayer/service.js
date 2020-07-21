@@ -1,45 +1,79 @@
 const PickFeatureInteraction = require('g3w-ol/src/interactions/pickfeatureinteraction');
+const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+const MapCatalogLayersRegistry = require('core/map/maplayersstoresregistry');
+const { getQueryLayersPromisesByCoordinates} = require('core/utils/geo');
 const GUI = require('gui/gui');
 
 function PickLayerService(options={}) {
-  this._layersfields = options.layers || [];
-  this._mapService = GUI.getComponent('map').getService();
-  const layers = this._layersfields.map((option) => {
-    return this._mapService.getLayerById(option.layer)
-  });
-  this._interaction = new PickFeatureInteraction({
+  console.log(options)
+  this.pick_type = options.pick_type || 'map';
+  this.ispicked = false;
+  this.field = options.field || options.key;
+  this.layerId = options.layer_id;
+  this.contentPerc;
+  this.mapService = GUI.getComponent('map').getService();
+  this.interaction = this._pick_type === 'map' ?  new PickFeatureInteraction({
     layers
-  })
+  }) : new PickCoordinatesInteraction();
 }
 
 const proto = PickLayerService.prototype;
 
+proto.isPicked = function(){
+  return this.ispicked;
+};
+
 proto.pick = function() {
   return new Promise((resolve, reject) => {
-    GUI.setModal(false);
-    this._mapService.addInteraction(this._interaction);
-    this._interaction.once('picked', (event) => {
-      const layerId = event.layer.get('id');
-      const feature = event.feature;
-      const {field} = this._layersfields.find((layerfield) => {
-        return layerfield.layer === layerId;
-      });
-      const value = feature.getProperties()[field];
+    let value;
+    this.ispicked = true;
+    const afterPick = (feature) => {
+      if (feature) {
+        value = feature.getProperties()[this.field];
+        resolve(value);
+      } else {
+        reject();
+      }
+      this.ispicked = false;
       this.unpick();
-      resolve(value)
+    };
+    this.contentPerc = GUI.getContentPercentage() === 100 && GUI.hideContent(true);
+    GUI.setModal(false);
+    this.mapService.addInteraction(this.interaction);
+    this.interaction.once('picked', (event) => {
+      if (this.pick_type === 'map') {
+        this.layerId = event.layer.get('id');
+        const feature = event.feature;
+        afterPick(feature);
+      } else if (this.pick_type === 'wms'){
+        const layer = MapCatalogLayersRegistry.getLayerById(this.layerId);
+        if (layer) {
+          getQueryLayersPromisesByCoordinates(
+            [layer],
+            {
+              map: this.mapService.getMap(),
+              feature_count: 1,
+              coordinates: event.coordinate
+            }).then(response => {
+              const feature = response[0].data && response[0].data[0].features[0];
+              afterPick(feature);
+          })
+        }
+      }
     })
   })
 };
 
 proto.unpick = function() {
-  this._mapService.removeInteraction(this._interaction);
+  this.mapService.removeInteraction(this.interaction);
   GUI.setModal(true);
-
+  this.contentPerc && GUI.hideContent(false, this.contentPerc);
 };
 
 proto.clear = function() {
   this.unpick();
-  this._mapService = this._interaction = this._field = null;
+  this.mapService = this.interaction = this._field = null;
+  this.layersfields = null;
 };
 
 module.exports = PickLayerService;

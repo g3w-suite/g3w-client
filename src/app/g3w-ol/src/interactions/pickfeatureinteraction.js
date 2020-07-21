@@ -48,11 +48,7 @@ PickFeatureInteraction.handleUpEvent_ = function(event) {
 PickFeatureInteraction.handleMoveEvent_ = function(event) {
   const elem = event.map.getTargetElement();
   const intersectingFeature = this.featuresAtPixel_(event.pixel, event.map);
-  if (intersectingFeature) {
-    elem.style.cursor =  'pointer';
-  } else {
-    elem.style.cursor = '';
-  }
+  elem.style.cursor = intersectingFeature ?  'pointer': '';
 };
 
 PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {

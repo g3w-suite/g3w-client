@@ -24,15 +24,15 @@ const vueComponentOptions = {
     }
   },
   methods: {
-    onChangeTemplate: function() {
+    onChangeTemplate() {
       this.$options.service.changeTemplate();
     },
-    onChangeScale: function() {
+    onChangeScale() {
       this.$options.service.changeScale()
     },
-    onChangeFormat: function() {},
-    onChangeDpi: function() {},
-    onChangeRotation: function(evt) {
+    onChangeFormat() {},
+    onChangeDpi() {},
+    onChangeRotation(evt) {
       if (this.state.rotation >= 0 && !_.isNil(this.state.rotation) && this.state.rotation != '') {
         this.state.rotation = (this.state.rotation > 360) ? 360 : this.state.rotation;
         evt.target.value = this.state.rotation;

@@ -54,7 +54,7 @@ proto.GET = function({url, params, mime_type}) {
 };
 
 proto._getParamsFromOptions = function(layers, options) {
-  const templateMap = options.map || 'map0';
+  const {extent, rotation, dpi, format, crs, template, maps=[]} = options;
   layers = layers.map((layer) => {
     return layer.getPrintLayerName()
   });
@@ -62,15 +62,18 @@ proto._getParamsFromOptions = function(layers, options) {
     SERVICE: 'WMS',
     VERSION: '1.3.0',
     REQUEST: 'GetPrint',
-    TEMPLATE: options.template,
-    DPI: options.dpi,
-    FORMAT: options.format,
-    CRS: options.crs,
+    TEMPLATE: template,
+    DPI: dpi,
+    FORMAT: format,
+    CRS: crs,
     LAYERS: layers.join()
   };
-  params[templateMap + ':SCALE'] = options.scale;
-  params[templateMap + ':EXTENT'] = options.extent;
-  params[templateMap + ':ROTATION'] = options.rotation;
+
+  maps.forEach(({name, scale}) => {
+    params[name + ':SCALE'] = scale;
+    params[name + ':EXTENT'] = extent;
+    params[name + ':ROTATION'] = rotation;
+  });
   return params;
 };
 

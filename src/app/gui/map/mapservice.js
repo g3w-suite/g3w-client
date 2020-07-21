@@ -455,9 +455,7 @@ proto.getLayerByName = function(name) {
 
 // return layer by id
 proto.getLayerById = function(id) {
-  return this.getMap().getLayers().getArray().find((layer) => {
-    return  layer.get('id') === id
-  })
+  return this.getMap().getLayers().getArray().find(layer => layer.get('id') === id);
 };
 
 // method do get all feature from vector layer based on coordinates

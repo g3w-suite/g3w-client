@@ -597,6 +597,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.getContentLength = function() {
       return viewport.ViewportService.contentLength();
     };
+
+    //get content percentage
+    GUI.getContentPercentage = function(){
+      return viewport.ViewportService.getContentPercentage();
+    };
     
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
       const options = {

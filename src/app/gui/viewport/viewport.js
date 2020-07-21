@@ -267,6 +267,11 @@ const ViewportService = function() {
     return prevContentPerc;
   };
 
+  //get content percentage
+  this.getContentPercentage = function(){
+    return this.state.secondaryPerc;
+  };
+
   this.contentLength = function() {
     return this.state.content.contentsdata.length;
   };

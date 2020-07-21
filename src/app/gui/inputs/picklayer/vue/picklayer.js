@@ -1,19 +1,21 @@
 const Input = require('gui/inputs/input');
 const Service = require('../service');
 
-
 const PickLayerInput = Vue.extend({
   mixins: [Input],
   template: require('./picklayer.html'),
   methods: {
     pickLayer() {
-      this.pickservice.pick().then((value) => {
-        this.state.value = value;
-      })
+      this.pickservice.pick()
+        .then((value) => {
+          this.state.value = value;
+        }).catch(()=>{
+
+        })
     },
     unpick() {
       setTimeout(() => {
-        this.pickservice.unpick();
+        !this.pickservice.isPicked() && this.pickservice.unpick();
       }, 200)
     }
   },
