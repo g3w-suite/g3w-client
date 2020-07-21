@@ -59,11 +59,9 @@ function PrintComponentService() {
       this.state.formats = formats;
       this.state.output.format = formats[0].value;
       this.state.maps = this.state.print[0].maps;
-      this.state.width = this.state.print[0].maps[0].w;
-      this.state.height = this.state.print[0].maps[0].h;
     }
   };
-};
+}
 
 inherit(PrintComponentService, G3WObject);
 
@@ -71,14 +69,8 @@ const proto = PrintComponentService.prototype;
 
 proto.changeTemplate = function() {
   if (!this.state.template) return;
-  this.state.print.forEach(print => {
-    if (print.name === this.state.template) {
-      this.state.width = print.maps[0].w;
-      this.state.height = print.maps[0].h;
-      this.state.map = print.maps[0].name;
-      this.state.maps = print.maps;
-    }
-  });
+  const {maps} = this.state.print.find(print => print.name === this.state.template);
+  this.state.maps = maps;
   this._setPrintArea();
 };
 
@@ -99,13 +91,19 @@ proto._getPrintExtent = function() {
   return extent.join()
 };
 
+proto.getOverviewExtent = function(extent={}) {
+  const {xmin, xmax, ymin, ymax} = extent;
+  const overviewextent =  this._mapService.isAxisOrientationInverted() ? [ymin, xmin, ymax, xmax ] : [xmin, ymin, xmax, ymax];
+  return overviewextent.join();
+};
+
 proto._getOptionsPrint = function() {
   const maps = this.state.maps.map(map => ({
     name: map.name,
-    scale: map.overview ? map.scale : this.state.scala
+    scale: map.overview ? map.scale : this.state.scala,
+    extent: map.overview ? this.getOverviewExtent(map.extent) : this._getPrintExtent()
   }));
   const options = {
-    extent: this._getPrintExtent(),
     rotation: this.state.rotation,
     dpi: this.state.dpi,
     template: this.state.template,
@@ -159,9 +157,10 @@ proto.showError = function() {
 proto._calculateInternalPrintExtent = function() {
   const resolution = this._map.getView().getResolution();
   const scala = parseFloat(this.state.scala);
+  const {h: height, w: width} = this.state.maps.find(map=> !map.overview);
   const resolutionInMeters = this._mapService.getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution);
-  const w = (((this.state.width / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
-  const h = (((this.state.height  / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
+  const w = (((width / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
+  const h = (((height  / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
   // get current map center ( in pixel)
   const center = [
     (this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO) / 2, // X
@@ -259,16 +258,6 @@ proto._initPrintConfig = function() {
   }
 };
 
-proto._setMapInfo = function() {
-  this.state.print[0].maps.forEach((map) => {
-    if (map.name === 'map0') {
-      this.state.map = map.name;
-      this.state.width = map.w;
-      this.state.height = map.h;
-      return false;
-    }
-  })
-};
 
 proto.showPrintArea = function(bool) {
   // close content if open
@@ -280,7 +269,6 @@ proto.showPrintArea = function(bool) {
         this._mapService.getMap().once('postrender', (evt) => {
           this._map = evt.map;
           if (bool) {
-            this._setMapInfo();
             this._setMoveendMapEvent();
             this._initPrintConfig();
             this._showPrintArea();

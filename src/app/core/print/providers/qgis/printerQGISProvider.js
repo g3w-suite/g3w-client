@@ -54,7 +54,7 @@ proto.GET = function({url, params, mime_type}) {
 };
 
 proto._getParamsFromOptions = function(layers, options) {
-  const {extent, rotation, dpi, format, crs, template, maps=[]} = options;
+  const { rotation, dpi, format, crs, template, maps=[]} = options;
   layers = layers.map((layer) => {
     return layer.getPrintLayerName()
   });
@@ -69,7 +69,7 @@ proto._getParamsFromOptions = function(layers, options) {
     LAYERS: layers.join()
   };
 
-  maps.forEach(({name, scale}) => {
+  maps.forEach(({name, scale, extent}) => {
     params[name + ':SCALE'] = scale;
     params[name + ':EXTENT'] = extent;
     params[name + ':ROTATION'] = rotation;
