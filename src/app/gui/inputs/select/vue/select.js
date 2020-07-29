@@ -1,10 +1,15 @@
+const PickLayerInputService = require('gui/inputs/picklayer/service');
+const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const Layer = require('core/layers/layer');
 const Input = require('gui/inputs/input');
 const selectMixin = require('./selectmixin');
 
 const SelectInput = Vue.extend({
   mixins: [Input, selectMixin],
   data: function() {
-    return {}
+    return {
+      showPickLayer: false
+    }
   },
   template: require('./select.html'),
   watch: {
@@ -13,7 +18,23 @@ const SelectInput = Vue.extend({
        this.changeSelect(values[0].value);
     }
   },
+  methods: {
+    async pickLayerValue(){
+      const value = await this.pickLayerInputService.pick();
+      this.select2.val(value).trigger('change');
+      this.changeSelect(value);
+    }
+  },
   created() {
+    if (this.state.input.type === 'select_autocomplete') {
+      const editingLayer =  MapLayersStoreRegistry.getLayerById(this.state.input.options.layer_id).getEditingLayer();
+      this.showPickLayer = editingLayer ? editingLayer.getType() === Layer.LayerTypes.VECTOR : false;
+      const options = {
+        ...this.state.input.options,
+        pick_type: editingLayer && editingLayer.isStarted() && 'map' || null
+      };
+      this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
+    }
     this.autocomplete && this.state.value && this.service.getKeyByValue({search: this.state.value});
   },
   mounted() {
@@ -61,6 +82,12 @@ const SelectInput = Vue.extend({
         this.changeSelect(value);
       });
     })
+  },
+  beforeDestroy() {
+    if (this.pickLayerInputService){
+      this.pickLayerInputService.clear();
+      this.pickLayerInputService = null;
+    }
   }
 });
 

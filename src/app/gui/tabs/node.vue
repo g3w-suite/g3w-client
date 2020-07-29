@@ -54,7 +54,6 @@
   import G3wInput from '../inputs/g3w-input.vue';
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
-  const RelationPage = require('gui/relations/vue/relationspage');
   const GUI = require('gui/gui');
   const COLUMNCLASSES = {
     1: 'col-md-12',
@@ -130,6 +129,7 @@
       },
       showRelation(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+        const RelationPage = require('gui/relations/vue/relationspage');
         GUI.pushContent({
           content: new RelationPage({
             currentview: 'relations',

@@ -4,128 +4,12 @@ const base = require('core/utils/utils').base;
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
-const Field = require('gui/fields/g3w-field.vue');
 const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
-const RelationPageEventBus = new Vue();
-const compiledTemplate = createCompiledTemplate(require('./relations.html'));
-
-/* List of relations */
-const relationsComponent = {
-  ...compiledTemplate,
-  props: ['relations', 'feature'],
-  methods: {
-    showRelation: function(relation) {
-      this.$parent.showRelation(relation);
-    },
-    featureInfo: function() {
-      let infoFeatures = [];
-      let index = 0;
-      Object.entries(this.feature.attributes).forEach(([key, value]) => {
-        if (index > 2) return false;
-        if (value && _.isString(value) && value.indexOf('/') === -1 ) {
-          infoFeatures.push({
-            key: key,
-            value: value
-          });
-          index+=1;
-        }
-      });
-      return infoFeatures
-    }
-  },
-  mounted() {
-    if (this.relations.length === 1) {
-      const relation = this.relations[0];
-      relation.noback = true;
-      this.showRelation(relation);
-    }
-  },
-  beforeDestroy() {
-    if (this.relations.length === 1) {
-      delete this.relations[0].noback;
-    }
-  }
-};
-/*-----------------------------------*/
-let relationDataTable;
-/* Relation Table */
-const relationComponent = {
-  template: require('./relation.html'),
-  props: ['table', 'relation', 'previousview'],
-  inject: ['relationnoback'],
-  components: {
-    Field
-  },
-  computed: {
-    showrelationslist() {
-      return this.previousview === 'relations' && !this.relationnoback;
-    },
-    one() {
-      return this.relation.type === 'ONE'
-    }
-  },
-  methods: {
-    saveRelation(){
-      this.$emit('save-relation')
-    },
-    reloadLayout() {
-      relationDataTable.columns.adjust();
-    },
-    back: function() {
-      this.$parent.setRelationsList();
-    },
-    getFieldType: function (value) {
-      const Fields = {};
-      Fields.SIMPLE = 'simple';
-      Fields.LINK = 'link';
-
-      const URLPattern = /^(https?:\/\/[^\s]+)/g;
-      if (_.isNil(value)) {
-        return Fields.SIMPLE;
-      }
-      value = value.toString();
-
-      if (value.match(URLPattern)) {
-        return Fields.LINK;
-      }
-
-      return Fields.SIMPLE;
-    },
-    fieldIs: function(type, value) {
-      const fieldType = this.getFieldType(value);
-      return fieldType === type;
-    },
-    is: function(type,value) {
-      return this.fieldIs(type, value);
-    }
-  },
-  created() {
-    RelationPageEventBus.$on('reload', () => {
-      this.reloadLayout();
-    })
-  },
-  mounted () {
-    this.relation.title = this.relation.name;
-    this.$nextTick(() => {
-      $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
-      if (!this.one) {
-        const tableHeight = $(".content").height();
-        relationDataTable = $('#relationtable').DataTable( {
-          "pageLength": 10,
-          "bLengthChange": false,
-          "scrollY": tableHeight / 2 +  "px",
-          "scrollCollapse": true,
-          "scrollX": true,
-          "order": [ 0, 'asc' ]
-        } )
-      }
-    })
-  }
-};
-/*-----------------------------------*/
+const RelationPageEventBus = require('./relationeventbus');
+const compiledTemplate = createCompiledTemplate(require('./relationspage.html'));
 
 const InternalComponent = Vue.extend({
-  template: require('./relationspage.html'),
+  ...compiledTemplate,
   data: function() {
     return {
       state: null,
@@ -144,8 +28,8 @@ const InternalComponent = Vue.extend({
     }
   },
   components: {
-    'relations': relationsComponent,
-    'relation': relationComponent
+    'relations': require('./relations'),
+    'relation': require('./relation')
   },
   methods: {
     saveCSVRelations(){

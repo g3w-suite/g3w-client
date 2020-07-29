@@ -173,8 +173,18 @@ const geoMixin = {
   }
 };
 
+const resizeMixin = {
+  created(){
+    GUI.on('resize', this.resize);
+  },
+  beforeDestroy(){
+    GUI.off('resize', this.resize)
+  }
+};
+
 module.exports = {
   geoMixin,
   fieldsMixin,
-  mediaMixin
+  mediaMixin,
+  resizeMixin
 };

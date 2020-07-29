@@ -164,7 +164,7 @@ const vueComponentOptions = {
       });
       return newstructure;
     },
-    isAttributeOrTab(layer, item,) {
+    isAttributeOrTab(layer, item) {
       const isField = item.field_name !== undefined;
       return  {
         type: isField && 'field' || 'tab',

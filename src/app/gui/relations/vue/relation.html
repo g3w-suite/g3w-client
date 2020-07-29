@@ -16,16 +16,30 @@
   <div v-if="table.rows.length">
     <table id="relationtable" class="table table-striped" width="100%">
       <thead>
-      <tr>
-        <th v-for="column in table.columns">{{ column }}</th>
-      </tr>
+        <tr>
+          <th v-if="table.formStructure"></th>
+          <th v-for="column in table.columns">{{ column }}</th>
+        </tr>
       </thead>
       <tbody>
-      <tr v-for="row in table.rows">
-        <td v-for="value in row">
-          <field :state="{value:value}"></field>
-        </td>
-      </tr>
+        <template v-for="row in table.rows">
+          <tr>
+            <td class="back-to-row" @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
+              <span class="row-form skin-color skin-tooltip-right" v-t-tooltip="'sdk.tooltips.relations.row_to_form_and_back'"
+                data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
+            </td>
+            <template v-if="table.formStructure && table.rowFormStructure === row">
+              <td :colspan="table.columns.length" class="row-wrap-tabs" style="background: #FFFFFF">
+                <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
+              </td>
+            </template>
+            <template v-else>
+              <td v-for="value in row">
+                <field :state="{value:value}"></field>
+              </td>
+            </template>
+          </tr>
+        </template>
       </tbody>
     </table>
   </div>

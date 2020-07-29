@@ -274,7 +274,7 @@ proto.getTableFields = function() {
 };
 
 proto.getTableHeaders = function(){
-  return this.getTableFields().filter((field) => {
+  return this.getTableFields().filter(field => {
     return geometryFields.indexOf(field.name) === -1
   });
 };

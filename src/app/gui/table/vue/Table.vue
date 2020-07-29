@@ -17,11 +17,13 @@
   import TableBody from "./components/tablebody.vue";
   const Field = require('gui/fields/g3w-field.vue');
   const debounce = require('core/utils/utils').debounce;
+  const {resizeMixin} = require('gui/vue/vue.mixins');
   const GUI = require('gui/gui');
   let dataTable;
   let fieldsComponents = [];
   export default {
     name: "G3WTable",
+    mixins: [resizeMixin],
     data: function() {
       return {
         tableBodyComponent:null,
@@ -88,7 +90,7 @@
           this.reloadLayout()
         }, 0)
       },
-      async setTableBodyHeight() {
+      async resize() {
         await this.$nextTick();
         const tableHeight = $(".content").height();
         const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
@@ -97,8 +99,7 @@
     },
     created() {},
     mounted: function() {
-      this.setContentKey = GUI.onafter('setContent', this.setTableBodyHeight);
-      GUI.on('resize', this.setTableBodyHeight);
+      this.setContentKey = GUI.onafter('setContent', this.resize);
       const hideElements = () => {
         $('.dataTables_info, .dataTables_length').hide();
         $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
@@ -152,8 +153,8 @@
     },
     beforeDestroy() {
       GUI.un('setContent', this.setContentKey);
-      GUI.off('resize', this.setTableBodyHeight);
       dataTable.destroy();
+      dataTable = null;
     }
   }
 </script>

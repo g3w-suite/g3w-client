@@ -44,8 +44,7 @@ const GlobalDirective = {
         }
       }
     );
-    
-    
+
     Vue.directive('t-tooltip', {
       bind(el, binding){
         const value= binding.value;
@@ -58,7 +57,6 @@ const GlobalDirective = {
         vm.$watch(() => ApplicationState.lng, handler);
       }
     });
-    
 
     Vue.directive('t-html', {
       bind(el, binding){
@@ -72,8 +70,7 @@ const GlobalDirective = {
         handlerElement();
       }
     });
-    
-    
+
     Vue.directive('t-placeholder', {
       bind(el, binding){
         const value= binding.value;

@@ -27,6 +27,7 @@ proto.buildRelationTable = function(relations=[], id) {
   const headers = layer.getTableHeaders();
   let columns = null;
   let rows = [];
+  let fields;
   if (relations.length) {
     const properties = Object.keys(relations[0].properties);
     columns = headers.filter(header => properties.indexOf(header.name) !==-1);
@@ -35,11 +36,16 @@ proto.buildRelationTable = function(relations=[], id) {
         return relation.properties[column.name]
       })
     });
+    fields = columns;
     columns = columns.map(column => column.label);
   }
   return {
     columns,
-    rows
+    rows,
+    fields,
+    formStructure : layer.getEditorFormStructure(),
+    rowFormStructure: null,
+    layerId: layer.getId()
   }
 };
 

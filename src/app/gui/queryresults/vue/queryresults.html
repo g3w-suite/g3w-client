@@ -1,4 +1,4 @@
-<div id="search-results" class="queryresults-wrapper ">
+<div id="search-results" class="queryresults-wrapper">
   <bar-loader :loading="state.loading"></bar-loader>
   <div class="queryresults-container">
     <template v-if="!state.loading">
@@ -84,36 +84,36 @@
                 </thead>
                 <tbody>
                   <template v-if="feature.show" v-for="feature in layer.features">
-                  <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
-                    <td v-if="showAction({action:action, layer:layer, feature:feature})" @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]">
-                      <span class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                        <span :class="'action-button-icon ' + action.class"></span>
-                      </span>
-                    </td>
-                    <td v-else></td>
-                    <td style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden; vertical-align: middle" v-for="attribute in attributesSubset(layer.attributes)">
-                      <span>{{feature.attributes[attribute.name]}}</span>
-                    </td>
-                    <td class="action-cell right">
-                      <span v-if="!hasLayerOneFeature(layer)"  class="fa link morelink skin-color" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
-                      <span v-else></span>
-                    </td>
-                  </tr>
-                  <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
-                    <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
-                      <table class="feature_attributes">
-                        <tr v-for="attribute in layer.attributes">
-                          <td class="attr-label">{{ attribute.label }}</td>
-                          <td class="attr-value" :attribute="attribute.name">
-                            <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
-                            <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
-                            <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
-                            <g3w-link v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
+                    <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
+                      <td v-if="showAction({action:action, layer:layer, feature:feature})" @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]">
+                        <span class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
+                          <span :class="'action-button-icon ' + action.class"></span>
+                        </span>
+                      </td>
+                      <td v-else></td>
+                      <td style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden; vertical-align: middle" v-for="attribute in attributesSubset(layer.attributes)">
+                        <span>{{feature.attributes[attribute.name]}}</span>
+                      </td>
+                      <td class="action-cell right">
+                        <span v-if="!hasLayerOneFeature(layer)"  class="fa link morelink skin-color" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
+                        <span v-else></span>
+                      </td>
+                    </tr>
+                    <tr v-if="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" class="featurebox-body">
+                      <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length + 1)">
+                        <table class="feature_attributes">
+                          <tr v-for="attribute in layer.attributes">
+                            <td class="attr-label">{{ attribute.label }}</td>
+                            <td class="attr-value" :attribute="attribute.name">
+                              <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
+                              <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
+                              <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
+                              <g3w-link v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
                 </template>
                 </tbody>
               </table>

@@ -7,14 +7,6 @@
   .queryresults-wrapper{
     .queryresults-container {
       .queryresults {
-        .tab-node.group {
-          .row:nth-child(even) {
-            background-color: lighten(@red, 39%) !important;
-          }
-          .sub-group {
-            background-color: lighten(@red, 39%) !important;
-          }
-        }
         .query_relation_field_message {
           color: @red;
         }
@@ -71,12 +63,6 @@
       .featurebox-header-open {
         td {
           background-color:  lighten(@red, 30%) !important;
-        }
-      }
-
-      tr.featurebox-header-open + .featurebox-body  {
-        td > div, td > table {
-          border-color: lighten(@red, 30%);
         }
       }
 

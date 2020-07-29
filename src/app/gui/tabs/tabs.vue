@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="tabs-wrapper">
     <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
         <a data-toggle="tab" :href="'#'+ ids[index]" >{{tab.name}}</a>
@@ -53,10 +53,7 @@
     },
     methods: {
       getField(fieldName) {
-        const tabfields = this.fields.find((field) => {
-          return field.name === fieldName;
-        });
-        return tabfields;
+        return this.fields.find(field => field.name === fieldName);
       }
     },
     components: {
@@ -88,5 +85,4 @@
   .tab-content {
     margin-top: 10px;
   }
-
 </style>

@@ -352,6 +352,10 @@ proto.getEditor = function() {
   return this._editor;
 };
 
+proto.isStarted = function(){
+  return this.getEditor().isStarted()
+};
+
 proto.setEditor = function(editor) {
   this._editor = editor;
 };
