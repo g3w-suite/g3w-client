@@ -57,7 +57,7 @@ const GlobalDirective = {
         this.handler();
         vm.$watch(() => ApplicationState.lng, this.handler);
       },
-      update(el, oldVnode){
+      componentUpdated(el, oldVnode){
         const current_tooltip = el.getAttribute('current-tooltip');
         (current_tooltip != null && current_tooltip !== oldVnode.oldValue) &&
             this.handler({
