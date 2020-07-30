@@ -104,7 +104,8 @@ const translations = {
         },
         tooltips: {
           relations: {
-            row_to_form_and_back: "Visualizza formato Riga - Form "
+            form_to_row: "Visualizza formato Riga",
+            row_to_form: "Visualizza formato Form"
           },
           copy_map_extent_url: 'Copia map view link',
           download_xls: "Scarica XLS"
@@ -418,7 +419,8 @@ const translations = {
         },
         tooltips: {
           relations: {
-            row_to_form_and_back: "Row view - Form view"
+            form_to_row: "Row View",
+            row_to_form: "Form View"
           },
           copy_map_extent_url: 'Copy map view link',
           download_xls: "Download XLS"

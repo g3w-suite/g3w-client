@@ -46,16 +46,24 @@ const GlobalDirective = {
     );
 
     Vue.directive('t-tooltip', {
-      bind(el, binding){
-        const value= binding.value;
+      bind(_el, binding){
         const i18Fnc = binding.arg;
-        const handler = () =>{
+        this.handler = ({el=_el}={}) =>{
+          const current_tooltip = el.getAttribute('current-tooltip');
+          const value = current_tooltip !== null ? current_tooltip:  binding.value;
           const title = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
-          el.setAttribute('data-original-title', title)
+          el.setAttribute('data-original-title', title);
         };
-        handler();
-        vm.$watch(() => ApplicationState.lng, handler);
-      }
+        this.handler();
+        vm.$watch(() => ApplicationState.lng, this.handler);
+      },
+      update(el, oldVnode){
+        const current_tooltip = el.getAttribute('current-tooltip');
+        (current_tooltip != null && current_tooltip !== oldVnode.oldValue) &&
+            this.handler({
+            el
+          });
+        }
     });
 
     Vue.directive('t-html', {

@@ -25,7 +25,7 @@
         <template v-for="row in table.rows">
           <tr>
             <td class="back-to-row" @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
-              <span class="row-form skin-color skin-tooltip-right" v-t-tooltip="'sdk.tooltips.relations.row_to_form_and_back'"
+              <span :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'" class="row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                 data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
