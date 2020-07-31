@@ -81,18 +81,25 @@
         <span class="item-text">Download Shapefile</span>
       </div>
     </li>
-    <li v-if="canDownloadXls(layerMenu.layer.id)">
-      <div @click.prevent.stop="downloadXls(layerMenu.layer.id)" >
-        <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
-        <span :class="g3wtemplate.getFontClass('xls')"></span>
-        <span class="item-text">Download XLS</span>
-      </div>
-    </li>
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
         <span :class="g3wtemplate.getFontClass('gpx')"></span>
         <span class="item-text">Download GPX</span>
+      </div>
+    </li>
+<!--    <li>-->
+<!--      <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" >-->
+<!--        <bar-loader :loading="layerMenu.loading.csv"></bar-loader>-->
+<!--        <span :class="g3wtemplate.getFontClass('csv')"></span>-->
+<!--        <span class="item-text">Download CSV</span>-->
+<!--      </div>-->
+<!--    </li>-->
+    <li v-if="canDownloadXls(layerMenu.layer.id)">
+      <div @click.prevent.stop="downloadXls(layerMenu.layer.id)" >
+        <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
+        <span :class="g3wtemplate.getFontClass('xls')"></span>
+        <span class="item-text">Download XLS</span>
       </div>
     </li>
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">

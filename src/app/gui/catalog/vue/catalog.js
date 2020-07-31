@@ -33,7 +33,10 @@ const vueComponentOptions = {
         layer: null,
         loading: {
           data_table: false,
-          shp: false
+          shp: false,
+          csv: false,
+          gpx: false,
+          xls: false
         },
         //colorMenu
         colorMenu: {
@@ -181,6 +184,16 @@ const vueComponentOptions = {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.shp = false;
+        this._hideMenu();
+      })
+    },
+    downloadCsv(layerId) {
+      this.layerMenu.loading.csv = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getCsv().catch((err) => {
+        GUI.notify.error(t("info.server_error"));
+      }).finally(() => {
+        this.layerMenu.loading.csv = false;
         this._hideMenu();
       })
     },
@@ -393,6 +406,12 @@ Vue.component('tristate-tree', {
       const isFolder = !!this.layerstree.nodes;
       return isFolder
     },
+    showscalevisibilityclass(){
+      return !this.isFolder && this.layerstree.scalebasedvisibility
+    },
+    showScaleVisibilityToolip(){
+      return this.showscalevisibilityclass && this.isDisabled && this.layerstree.checked;
+    },
     isTable: function() {
       if (!this.isFolder) {
         return !this.layerstree.geolayer && !this.layerstree.external;
@@ -468,6 +487,9 @@ Vue.component('tristate-tree', {
           if (node.id) node.uncheckable = true;
       })
     }
+    this.$nextTick(()=>{
+      $('span.scalevisibility').tooltip();
+    })
   }
 });
 

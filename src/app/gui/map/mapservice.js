@@ -689,7 +689,8 @@ proto._setupControls = function() {
           });
           const eventKey = control.on('picked', throttle((e) => {
             const coordinates = e.coordinates;
-            this.getMap().getView().setCenter(coordinates);
+            // commented zoom to coordinate
+            //this.getMap().getView().setCenter(coordinates);
             // show marker
             this.showMarker(coordinates);
             const showQueryResults = GUI.showContentFactory('query');

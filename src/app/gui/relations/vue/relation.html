@@ -9,27 +9,34 @@
       <span>
         <span  v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
-      <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-            :class="g3wtemplate.getFontClass('excel')" @click="saveRelation" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
+      <span>
+<!--         <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"-->
+<!--               :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>-->
+        <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
+      </span>
     </div>
   </div>
   <div v-if="table.rows.length">
     <table id="relationtable" class="table table-striped" width="100%">
       <thead>
         <tr>
-          <th v-if="table.formStructure"></th>
+          <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>
           <th v-for="column in table.columns">{{ column }}</th>
         </tr>
       </thead>
       <tbody>
         <template v-for="row in table.rows">
-          <tr>
-            <td class="back-to-row" @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
-              <span :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'" class="row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+          <tr :class="{'selected': table.rowFormStructure === row}">
+            <td
+                @click="showFormStructureRow($event, row)"
+                style="cursor: pointer" v-if="table.formStructure">
+              <span style="max-width: 10px; width: 10px;" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                class="row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                 data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
-              <td :colspan="table.columns.length" class="row-wrap-tabs" style="background: #FFFFFF">
+              <td :colspan="table.columns.length" class="row-wrap-tabs">
                 <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
               </td>
             </template>

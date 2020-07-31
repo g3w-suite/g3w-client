@@ -105,7 +105,6 @@ const vueComponentOptions = {
       return _attributes.slice(0, end);
     },
     relationsAttributesSubset: function(relationAttributes) {
-      console.log(relationAttributes)
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         if (_.isArray(value)) return;
@@ -239,11 +238,10 @@ const vueComponentOptions = {
   },
   watch: {
     'state.layers': function(layers) {
-      if (layers.length) {
-        if (layers.length === 1 && layers[0].features.length && this.state.zoomToResult)
-          this.zoomToLayerFeaturesExtent(layers[0], {
-            maxZoom: 8
-          });
+      if (layers.length && layers.length === 1 && layers[0].features.length && this.state.zoomToResult) {
+        //   this.zoomToLayerFeaturesExtent(layers[0], {
+        //     maxZoom: 8
+        //   });
       }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);

@@ -30,6 +30,7 @@ function Layer(config={}, options={}) {
     const vectorUrl = project.getVectorUrl();
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
+    this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
@@ -129,6 +130,15 @@ proto.getShp = function({data}={}) {
 
 proto.getGpx = function({data}={}){
   const url = this.getUrl('gpx');
+  return XHR.fileDownload({
+    url,
+    data,
+    httpMethod: "GET"
+  })
+};
+
+proto.getCsv = function({data}={}){
+  const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,
     data,

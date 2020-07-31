@@ -32,8 +32,8 @@ const InternalComponent = Vue.extend({
     'relation': require('./relation')
   },
   methods: {
-    saveCSVRelations(){
-      this.$options.service.saveCSVRelations();
+    saveRelations(type){
+      this.$options.service.saveRelations(type);
     },
     reloadLayout() {
       RelationPageEventBus.$emit('reload');

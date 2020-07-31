@@ -16,7 +16,26 @@
     }
     .queryresults {
       table {
+        thead tr {
+          th.centered{
+            text-align: center;
+          }
+          th.collapsed {
+            width: 30px;
+            max-width: 30px;
+          }
+        }
         tbody {
+          td.attribute{
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            vertical-align: middle;
+          }
+          td.collapsed {
+            vertical-align: inherit;
+          }
           > tr.featurebox-header {
             &:nth-of-type(even) {
               background-color: #f9f9f9 !important;

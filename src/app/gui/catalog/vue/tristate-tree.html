@@ -2,7 +2,9 @@
   class="tree-item"
   @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
   @click="select()"
-  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: isDisabled}">
+  :class="{
+    selected: !isFolder || !isTable ? layerstree.selected : false,
+    itemmarginbottom: !isFolder,  disabled: isDisabled  }">
   <span v-if="isFolder"
     :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('arrow-down') : g3wtemplate.getFontClass('arrow-right')]"
     @click="expandCollapse"
@@ -33,8 +35,18 @@
   </template>
 
   <span v-show="!layerstree.hidden || isFolder"
-    class="tree-node-title"
-    :class="{'disabled': layerstree.disabled, 'bold': isFolder, 'highlightlayer': isHighLight }"> {{ layerstree.title }}
+    class="tree-node-title skin-tooltip-top"
+    data-placement="top"
+    :current-tooltip="showScaleVisibilityToolip ? `minscale [${layerstree.minscale}]
+     maxscale [${layerstree.maxscale}]` : ''"
+    v-t-tooltip = "showScaleVisibilityToolip ? `minscale [${layerstree.minscale}]
+    maxscale [${layerstree.maxscale}]` : ''"
+    :class="{
+      disabled: layerstree.disabled,
+      bold: isFolder,
+      highlightlayer: isHighLight,
+      scalevisibility : showscalevisibilityclass
+    }"> {{ layerstree.title }}
   </span>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">

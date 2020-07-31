@@ -18,8 +18,9 @@ proto.getRelations = function(options={}) {
   return RelationsService.getRelations(options);
 };
 
-proto.saveCSVRelations = function(){
-  return RelationsService.saveCSV(this._options);
+proto.saveRelations = function(type){
+  this._options.type = type;
+  return RelationsService.save(this._options);
 };
 
 proto.buildRelationTable = function(relations=[], id) {

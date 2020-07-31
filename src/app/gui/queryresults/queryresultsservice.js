@@ -1,5 +1,5 @@
-const {base, inherit, noop, downloadCSV} = require('core/utils/utils');
-const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
+const {base, inherit, noop, downloadCSVLayerFeatures} = require('core/utils/utils');
+const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
@@ -10,7 +10,7 @@ const ComponentsRegistry = require('gui/componentsregistry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 // set formats for download single feature
-const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'xls', 'gpx'];
+const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'xls'];
 
 function QueryResultsService() {
   this._currentLayerIds = [];
@@ -443,7 +443,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
               features = vectorLayer.getIntersectedFeatures(intersectGeom);
               break;
             case ol.layer.Vector:
-              _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+              vectorLayer.getSource().getFeatures().forEach(feature => {
                 if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
                   features.push(feature);
                 }
@@ -458,7 +458,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
             features = vectorLayer.getIntersectedFeatures(intersectGeom);
             break;
           case ol.layer.Vector:
-            _.forEach(vectorLayer.getSource().getFeatures(), function(feature) {
+            vectorLayer.getSource().getFeatures().forEach(feature => {
               if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
                 features.push(feature);
               }
@@ -468,7 +468,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
       }
       queryResponse.data = queryResponse.data ? queryResponse.data : [];
       queryResponse.data.push({
-        features: features,
+        features,
         layer: vectorLayer
       });
     })
@@ -548,31 +548,11 @@ proto.goToGeometry = function(layer, feature) {
 //save layer result
 proto.saveLayerResult = function(layer, alias=true) {
   try {
-    //get headers
-    const attributes = Object.keys(layer.features[0].attributes);
-    const properties = getAlphanumericPropertiesFromFeature(attributes);
-    const headers = !alias ? properties : properties.map((property) => {
-      const attribute = layer.attributes.find(attribute => attribute.name === property);
-      return attribute ? attribute.label : property;
-    });
-
-    const items = layer.features.map((feature) => {
-      const attributes = feature.attributes;
-      const item = {};
-      properties.forEach((property, index) => {
-        const key = !alias && property || headers[index];
-        item[key] = attributes[property];
-      });
-      return item;
-    });
-
-    downloadCSV({
-      filename: layer.id,
-      items
+    downloadCSVLayerFeatures({
+      layer,
+      alias
     })
-
   } catch(e) {
-    console.log(e)
     GUI.notify.error(t('info.server_error'));
   }
 };
@@ -585,10 +565,10 @@ QueryResultsService.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
     setTimeout(() => {
       const mapService = ComponentsRegistry.getComponent('map').getService();
-      mapService.highlightGeometry(feature.geometry, {
-        layerId: layer.id,
-        duration: 1500
-      });
+      // mapService.highlightGeometry(feature.geometry, {
+      //   layerId: layer.id,
+      //   duration: 1500
+      // });
     }, 0)
   }
 };

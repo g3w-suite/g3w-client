@@ -107,8 +107,10 @@ const translations = {
             form_to_row: "Visualizza formato Riga",
             row_to_form: "Visualizza formato Form"
           },
+          zoom_to_features_extent: "Zoom sulle features",
           copy_map_extent_url: 'Copia map view link',
-          download_xls: "Scarica XLS"
+          download_xls: "Scarica XLS",
+          download_csv: "Scarica CSV"
         },
         mapcontrols: {
           query: {
@@ -422,8 +424,10 @@ const translations = {
             form_to_row: "Row View",
             row_to_form: "Form View"
           },
+          zoom_to_features_extent: "Zoom to features extent",
           copy_map_extent_url: 'Copy map view link',
-          download_xls: "Download XLS"
+          download_xls: "Download XLS",
+          download_csv: "Download CSV",
         },
         mapcontrols: {
           query: {

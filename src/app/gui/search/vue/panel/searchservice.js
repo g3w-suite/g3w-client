@@ -80,12 +80,12 @@ proto._run = function() {
   this.state.searching = true;
   GUI.closeContent();
   const showQueryResults = GUI.showContentFactory('query');
-  const queryResultsPanel = showQueryResults(this.state.title);
+  const queryResultsService = showQueryResults(this.state.title);
   this.doSearch().then(results => {
-    queryResultsPanel.onceafter('postRender', () => {
+    queryResultsService.onceafter('postRender', () => {
       this.state.searching = false;
     });
-    queryResultsPanel.setQueryResponse(results);
+    queryResultsService.setQueryResponse(results);
   }).catch((error) => {
     GUI.notify.error(t('server_error'));
     GUI.closeContent();

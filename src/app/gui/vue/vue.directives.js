@@ -18,32 +18,17 @@ const GlobalDirective = {
       handlerElement(innerHTML);
     };
 
-    Vue.directive("disabled",function(el, binding){
-        if (binding.value){
-          el.setAttribute('disabled','disabled');
-        } else {
-          el.removeAttribute('disabled');
-        }
-      }
-    );
+    Vue.directive("disabled", (el, binding) => {
+      binding.value ? el.setAttribute('disabled','disabled') : el.removeAttribute('disabled');
+    });
 
-    Vue.directive("checked",function(el, binding){
-        if (binding.value){
-          el.setAttribute('checked','checked');
-        } else {
-          el.removeAttribute('checked');
-        }
-      }
-    );
+    Vue.directive("checked",(el, binding) => {
+      binding.value ? el.setAttribute('checked','checked') : el.removeAttribute('checked');
+    });
 
-    Vue.directive("selected-first",function(el, binding){
-        if (binding.value===0) {
-          el.setAttribute('selected','');
-        } else {
-          el.removeAttribute('selected');
-        }
-      }
-    );
+    Vue.directive("selected-first", (el, binding) => {
+      binding.value===0 ? el.setAttribute('selected','') : el.removeAttribute('selected');
+    });
 
     Vue.directive('t-tooltip', {
       bind(_el, binding){
@@ -55,7 +40,7 @@ const GlobalDirective = {
           el.setAttribute('data-original-title', title);
         };
         this.handler();
-        vm.$watch(() => ApplicationState.lng, this.handler);
+        this.unwatch = vm.$watch(() => ApplicationState.lng, this.handler);
       },
       componentUpdated(el, oldVnode){
         const current_tooltip = el.getAttribute('current-tooltip');
@@ -63,7 +48,10 @@ const GlobalDirective = {
             this.handler({
             el
           });
-        }
+      },
+      unbind(){
+        this.unwatch();
+      }
     });
 
     Vue.directive('t-html', {
@@ -71,11 +59,14 @@ const GlobalDirective = {
         const handlerElement = () => {
           el.innerHTML = `${t(binding.value)}`;
         };
-        vm.$watch(() => ApplicationState.lng, () => {
+        this.unwatch = vm.$watch(() => ApplicationState.lng, () => {
             handlerElement();
           }
         );
         handlerElement();
+      },
+      unbind(){
+        this.unwatch();
       }
     });
 
@@ -88,7 +79,10 @@ const GlobalDirective = {
           el.setAttribute('placeholder', placeholder);
         };
         handler();
-        vm.$watch(() => ApplicationState.lng, handler);
+        this.unwatch = vm.$watch(() => ApplicationState.lng, handler);
+      },
+      unbind(){
+        this.unwatch();
       }
     });
     
@@ -102,7 +96,10 @@ const GlobalDirective = {
           el.setAttribute('data-original-title', title)
         };
         handler();
-        vm.$watch(() => ApplicationState.lng, handler);
+        this.unwatch = vm.$watch(() => ApplicationState.lng, handler);
+      },
+      unbind(){
+        this.unwatch();
       }
     });
     

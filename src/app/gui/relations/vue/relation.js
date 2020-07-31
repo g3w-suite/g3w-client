@@ -37,18 +37,20 @@ module.exports = {
       $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 160);
       if (this.table.rowFormStructure) {
         await this.$nextTick();
-        const width =  $('#relationtable_wrapper').width() - 80;
+        const width =  $('#relationtable_wrapper').width() - 55;
         $('.row-wrap-tabs .tabs-wrapper').width(width);
       }
     },
-    saveRelation(){
-      this.$emit('save-relation')
+    saveRelation(type){
+      this.$emit('save-relation', type)
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.feature = this.getTabFeature(row);
       this.fields = this.getRowFields(row);
       this.resize();
+      await this.$nextTick();
+      $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
     },
     getRowFields(row){
       const fields = this.table.fields.map((field, index)=> {
@@ -102,7 +104,10 @@ module.exports = {
           "scrollX": true,
           "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
           "columnDefs": [
-            { "orderable":  !this.table.formStructure, "targets": 0 }
+            {
+              "orderable":  !this.table.formStructure,
+              "targets": 0
+            }
           ]
         });
         $('.row-form').tooltip();

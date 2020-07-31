@@ -1,4 +1,3 @@
-
 /**
  * Decimal adjustment of a number.
  *
@@ -271,6 +270,31 @@ const utils = {
     temapAncor.dataset.downloadurl = [mime_type, temapAncor.download, temapAncor.href].join(':');
     temapAncor.click();
   },
+  downloadCSVLayerFeatures({layer, alias=true}={}) {
+    const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+    //get headers
+    const attributes = Object.keys(layer.features[0].attributes);
+    const properties = getAlphanumericPropertiesFromFeature(attributes);
+    const headers = !alias ? properties : properties.map((property) => {
+      const attribute = layer.attributes.find(attribute => attribute.name === property);
+      return attribute ? attribute.label : property;
+    });
+    const items = layer.features.map((feature) => {
+      const attributes = feature.attributes;
+      const item = {};
+      properties.forEach((property, index) => {
+        const key = !alias && property || headers[index];
+        item[key] = attributes[property];
+      });
+      return item;
+    });
+
+    utils.downloadCSV({
+      filename: layer.id,
+      items
+    })
+  },
+
   downloadCSV({filename= utils.getUniqueDomId(), items=[]}={}){
     function convertToCSV(items) {
       let str = '';

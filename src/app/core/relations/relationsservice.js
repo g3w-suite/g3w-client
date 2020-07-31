@@ -34,8 +34,7 @@ proto.getRelations = function(options={}) {
   })
 };
 
-proto.saveCSV = function(options={}){
-  options.type = 'xls';
+proto.save = function(options={}){
   const url = this.createUrl(options);
   XHR.fileDownload({
     url,

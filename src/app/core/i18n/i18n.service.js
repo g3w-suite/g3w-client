@@ -42,7 +42,7 @@ const getAppLanguage = function() {
 
 // function to translate
 const t = function(text) {
-    return i18next.t(text);
+  return i18next.t(text);
 };
 
 // function to translate plugins

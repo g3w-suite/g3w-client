@@ -10,6 +10,18 @@ table.dataTable {
   border-bottom: 1px solid #dcdcdc !important;
 }
 
+#relationtable {
+  &.dataTable tbody {
+    tr.selected {
+      background-color: #e4e4e4 !important;
+      .row-wrap-tabs {
+        .tabs-wrapper {
+          background-color: #FFFFFF !important;
+        }
+      }
+    }
+  }
+}
 
 .bootbox.dialogFullScreen {
   .modal-dialog {
