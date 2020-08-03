@@ -7,11 +7,17 @@
       margin-left: -2px;
       margin-right: -2px;
     }
-    .field_link {
-      border-radius: 5px;
-      font-weight: bold;
-      &:hover{
-        color:#FFFFFF;
+    .field_value {
+      .field_link, img {
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+      }
+      .field_link {
+        border-radius: 5px;
+        min-width: 50px;
+        font-weight: bold;
+        &:hover{
+          color:#FFFFFF;
+        }
       }
     }
     .queryresults {
