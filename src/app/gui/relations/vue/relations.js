@@ -2,7 +2,7 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./relations.html'));
 module.exports =  {
   ...compiledTemplate,
-  props: ['relations', 'feature'],
+  props: ['relations', 'feature','loading'],
   methods: {
     showRelation: function(relation) {
       this.$parent.showRelation(relation);
