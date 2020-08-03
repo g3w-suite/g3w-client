@@ -12,54 +12,13 @@ function CatalogService() {
     layerstrees: [],
     layersgroups: []
   };
+
   this.setters = {};
-
-  this.addExternalLayer = function(layer) {
-    layer.removable = true;
-    this.state.externallayers.push(layer);
-  };
-
-  this.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
-    const nodes = [];
-    layers.forEach((layer) => {
-      nodes.push(layer)
-    });
-    return {
-      title,
-      nodes
-    }
-  };
-
-  this.getMajorQgisVersion = function() {
-    return ProjectsRegistry.getCurrentProject().getQgisVersion({
-      type: 'major'
-    });
-  };
-
-  // method to add a custom layers group
-  this.addLayersGroup = function(layersGroup) {
-    this.state.layersgroups.push(layersGroup);
-  };
-
-  this.removeExternalLayer = function(name) {
-    this.state.externallayers.forEach((layer, index) => {
-      if (layer.name === name) {
-        this.state.externallayers.splice(index, 1);
-        return false
-      }
-    });
-  };
-
-  this.addLayersStoreToLayersTrees = function(layersStore) {
-    this.state.layerstrees.push({
-      tree: layersStore.getLayersTree(),
-      storeid: layersStore.getId()
-    });
-  };
 
   base(this);
 
   const layersStores = CatalogLayersStoresRegistry.getLayersStores();
+
   layersStores.forEach((layersStore) => {
     this.addLayersStoreToLayersTrees(layersStore);
   });
@@ -85,5 +44,50 @@ function CatalogService() {
 }
 
 inherit(CatalogService, G3WObject);
+
+const proto = CatalogService.prototype;
+
+proto.addExternalLayer = function(layer) {
+  layer.removable = true;
+  this.state.externallayers.push(layer);
+};
+
+proto.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
+  const nodes = [];
+  layers.forEach((layer) => {
+    nodes.push(layer)
+  });
+  return {
+    title,
+    nodes
+  }
+};
+
+proto.getMajorQgisVersion = function() {
+  return ProjectsRegistry.getCurrentProject().getQgisVersion({
+    type: 'major'
+  });
+};
+
+// method to add a custom layers group
+proto.addLayersGroup = function(layersGroup) {
+  this.state.layersgroups.push(layersGroup);
+};
+
+proto.removeExternalLayer = function(name) {
+  this.state.externallayers.forEach((layer, index) => {
+    if (layer.name === name) {
+      this.state.externallayers.splice(index, 1);
+      return false
+    }
+  });
+};
+
+proto.addLayersStoreToLayersTrees = function(layersStore) {
+  this.state.layerstrees.push({
+    tree: layersStore.getLayersTree(),
+    storeid: layersStore.getId()
+  });
+};
 
 module.exports = CatalogService;

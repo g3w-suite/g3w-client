@@ -12,6 +12,7 @@ const InternalComponent = Vue.extend({
   ...compiledTemplate,
   data: function() {
     return {
+      loading: false,
       state: null,
       error: false,
       table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
@@ -39,10 +40,11 @@ const InternalComponent = Vue.extend({
       RelationPageEventBus.$emit('reload');
     },
     showRelation: function(relation) {
+      GUI.setLoadingContent(true);
+      this.loading = true;
       this.relation = relation;
       const relationLayerId = relation.referencingLayer;
       const fid = this.feature.attributes['g3w_fid'];
-      GUI.setLoadingContent(true);
       this.$options.service.getRelations({
         layer: this.$options.layer,
         relation,
@@ -55,6 +57,7 @@ const InternalComponent = Vue.extend({
       }).catch((err) => {
       }).finally(() => {
         GUI.setLoadingContent(false);
+        this.loading = true;
       })
     },
     setRelationsList: function() {

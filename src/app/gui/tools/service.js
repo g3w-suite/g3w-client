@@ -33,74 +33,6 @@ function Service(options={}){
     }
   };
 
-  this.reload = function() {
-    this.removeTools();
-  };
-
-  this._addTool = function(tool, {position : order, title: name}) {
-    let group = this._addToolGroup(order, name);
-    if (tool.action === undefined && tool.type)
-      tool.action = Service.ACTIONS[tool.type] ? Service.ACTIONS[tool.type].bind(null, tool.options) : ()=>{};
-    group.tools.push(tool);
-  };
-
-  this._addTools = function(tools, groupName) {
-    tools.forEach((tool) => {
-      this.addTool(tool, groupName)
-    });
-  };
-
-  this.setLoading = function(bool=false) {
-    this.state.loading = bool;
-  };
-
-  this._removeTool = function(toolIdx) {
-    this.state.toolsGroups = this.state.toolsGroups.splice(toolIdx, 1);
-  };
-
-  this._removeTools = function() {
-    this.state.toolsGroups.splice(0);
-  };
-
-  this.updateToolsGroup = function(order, groupConfig) {
-    Vue.set(this.state.toolsGroups, order, groupConfig);
-  };
-
-  this.getState = function() {
-    return this.state;
-  };
-
-  this._removeToolGroup = function(name) {
-    this.state.toolsGroups = this.state.toolsGroups.filter(group =>{
-      return group.name !== name;
-    });
-  };
-
-  this._addToolGroup = function(order, name) {
-    let group = this.state.toolsGroups.find((_group) => {
-      return _group.name === name
-    });
-    if (!group) {
-      group = {
-        name,
-        tools: []
-      };
-      this.state.toolsGroups.splice(order, 0, group);
-    }
-    return group;
-  };
-
-  this.setToolState = function({id, state={type:null, message: null}}={}){
-    this.state.toolsGroups.find(toolGroup => {
-      const tool = toolGroup.tools.find(tool => tool.name === id);
-      if (tool) {
-        tool.state.type = state.type;
-        tool.state.message = state.message;
-        return true;
-      }
-    })
-  };
-
   base(this);
 
   const project = ProjectRegistry.getCurrentProject();
@@ -119,6 +51,76 @@ function Service(options={}){
 }
 
 inherit(Service, G3WObject);
+
+const proto = Service.prototype;
+
+proto.reload = function() {
+  this.removeTools();
+};
+
+proto._addTool = function(tool, {position : order, title: name}) {
+  let group = this._addToolGroup(order, name);
+  if (tool.action === undefined && tool.type)
+    tool.action = Service.ACTIONS[tool.type] ? Service.ACTIONS[tool.type].bind(null, tool.options) : ()=>{};
+  group.tools.push(tool);
+};
+
+proto._addTools = function(tools, groupName) {
+  tools.forEach((tool) => {
+    this.addTool(tool, groupName)
+  });
+};
+
+proto.setLoading = function(bool=false) {
+  this.state.loading = bool;
+};
+
+proto._removeTool = function(toolIdx) {
+  this.state.toolsGroups = this.state.toolsGroups.splice(toolIdx, 1);
+};
+
+proto._removeTools = function() {
+  this.state.toolsGroups.splice(0);
+};
+
+proto.updateToolsGroup = function(order, groupConfig) {
+  Vue.set(this.state.toolsGroups, order, groupConfig);
+};
+
+proto.getState = function() {
+  return this.state;
+};
+
+proto._removeToolGroup = function(name) {
+  this.state.toolsGroups = this.state.toolsGroups.filter(group =>{
+    return group.name !== name;
+  });
+};
+
+proto._addToolGroup = function(order, name) {
+  let group = this.state.toolsGroups.find((_group) => {
+    return _group.name === name
+  });
+  if (!group) {
+    group = {
+      name,
+      tools: []
+    };
+    this.state.toolsGroups.splice(order, 0, group);
+  }
+  return group;
+};
+
+proto.setToolState = function({id, state={type:null, message: null}}={}){
+  this.state.toolsGroups.find(toolGroup => {
+    const tool = toolGroup.tools.find(tool => tool.name === id);
+    if (tool) {
+      tool.state.type = state.type;
+      tool.state.message = state.message;
+      return true;
+    }
+  })
+};
 
 Service.ACTIONS = {};
 

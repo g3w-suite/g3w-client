@@ -461,5 +461,4 @@ const ApplicationService = function() {
 
 inherit(ApplicationService, G3WObject);
 
-
 module.exports = new ApplicationService;

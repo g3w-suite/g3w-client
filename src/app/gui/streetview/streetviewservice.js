@@ -19,22 +19,26 @@ function StreetViewService() {
     })
   };
 
-  this.getPosition = function() {
-    return this._position;
-  };
-
-  this.showStreetView = function(position) {
-    this._position = position;
-    GUI.setContent({
-      content: new StreetViewComponent({
-        service: this
-      }),
-      title: 'StreetView'
-    });
-  };
   base(this);
 }
 
 inherit(StreetViewService, G3WObject);
+
+const proto = StreetViewService.prototype;
+
+proto.getPosition = function() {
+  return this._position;
+};
+
+proto.showStreetView = function(position) {
+  this._position = position;
+  GUI.setContent({
+    content: new StreetViewComponent({
+      service: this
+    }),
+    title: 'StreetView'
+  });
+};
+
 
 module.exports = StreetViewService;

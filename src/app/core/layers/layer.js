@@ -101,7 +101,6 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
-
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
 };
