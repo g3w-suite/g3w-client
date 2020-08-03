@@ -37,7 +37,7 @@ module.exports = {
       $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 160);
       if (this.table.rowFormStructure) {
         await this.$nextTick();
-        const width =  $('#relationtable_wrapper').width() - 55;
+        const width =  $('#relationtable_wrapper').width() - 60;
         $('.row-wrap-tabs .tabs-wrapper').width(width);
       }
     },

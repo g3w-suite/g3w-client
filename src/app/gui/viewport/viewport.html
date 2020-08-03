@@ -30,11 +30,11 @@
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
       <div v-if="previousTitle" class="g3w_contents_back">
         <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
-          <span :class="g3wtemplate.getFontClass('back')"></span>
+          <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
           <span v-t="'back'"></span>
         </div>
         <div @click="gotoPreviousContent()" :class="backOrBackTo" v-else>
-          <span :class="g3wtemplate.getFontClass('back')"></span>
+          <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
           <span v-t="'backto'"></span>
           <span v-t="previousTitle"></span>
         </div>
