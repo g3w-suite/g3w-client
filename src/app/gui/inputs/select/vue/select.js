@@ -3,6 +3,7 @@ const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const Layer = require('core/layers/layer');
 const Input = require('gui/inputs/input');
 const selectMixin = require('./selectmixin');
+const GUI = require('gui/gui');
 
 const SelectInput = Vue.extend({
   mixins: [Input, selectMixin],
@@ -20,9 +21,21 @@ const SelectInput = Vue.extend({
   },
   methods: {
     async pickLayerValue(){
-      const value = await this.pickLayerInputService.pick();
-      this.select2.val(value).trigger('change');
-      this.changeSelect(value);
+      try {
+        const value = await this.pickLayerInputService.pick();
+        this.select2.val(value).trigger('change');
+        this.changeSelect(value);
+        GUI.showUserMessage({
+          type: 'success',
+          autoclose: true
+        })
+      } catch(err){
+        GUI.showUserMessage({
+          type: "warning",
+          message: 'sdk.form.inputs.messages.errors.picklayer',
+          autoclose: true
+        })
+      }
     }
   },
   created() {

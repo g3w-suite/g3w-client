@@ -472,14 +472,7 @@ proto.getQueryLayerName = function() {
 };
 
 proto.getQueryLayerOrigName = function() {
-  let queryLayerName;
-  if (this.state.infolayer && this.config.infolayer !== '') {
-    queryLayerName = this.config.infolayer;
-  }
-  else {
-    queryLayerName = this.config.origname;
-  }
-  return queryLayerName;
+  return this.state.infolayer && this.config.infolayer !== '' ? this.config.infolayer :  this.config.origname;
 };
 
 proto.getInfoFormat = function(ogcService) {
@@ -544,9 +537,7 @@ proto.canShowTable = function() {
   return false
 };
 
-
 /// LAYER PROPERTIES
-
 // Layer Types
 Layer.LayerTypes = {
   TABLE: "table",
@@ -567,7 +558,6 @@ Layer.ServerTypes = {
   TMS: "TMS",
   WMTS: "WMTS",
   G3WSUITE: "G3WSUITE"
-
 };
 
 // Source Types
@@ -596,6 +586,5 @@ Layer.EDITOPS = {
   UPDATE: 2,
   DELETE: 4
 };
-
 
 module.exports = Layer;

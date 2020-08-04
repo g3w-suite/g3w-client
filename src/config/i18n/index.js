@@ -182,6 +182,11 @@ const translations = {
         form: {
           loading: 'Caricamento ...',
           inputs: {
+            messages: {
+              errors: {
+                picklayer: "Nessuna feature selezionata. Verificare se il layer è in editing o non visibile alla scala attuale"
+              }
+            },
             tooltips: {
               picklayer: "Prendi valore dalla mappa"
             },
@@ -499,6 +504,11 @@ const translations = {
         form: {
           loading: 'Loading ...',
           inputs: {
+            messages: {
+              errors: {
+                picklayer: "No feature selected. Check if layer is on editing or visible at current scale"
+              }
+            },
             tooltips:{
               picklayer: "Get value from ma layer"
             },

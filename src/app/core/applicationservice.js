@@ -370,7 +370,6 @@ const ApplicationService = function() {
           // inizialize api service
           ApiService.init(this._config)
         ).then(() => {
-          //rigistern online event
           this.registerOnlineOfflineEvent();
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;

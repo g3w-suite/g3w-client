@@ -4,7 +4,7 @@ const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields } =  require('core/utils/geo');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
-const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_'
+const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 function Provider(options = {}) {
   this._isReady = false;

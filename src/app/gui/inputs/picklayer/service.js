@@ -44,9 +44,7 @@ proto.pick = function() {
       if (feature) {
         value = feature.getProperties()[this.field];
         resolve(value);
-      } else {
-        reject();
-      }
+      } else reject();
       this.ispicked = false;
       this.unpick();
     };
@@ -67,7 +65,8 @@ proto.pick = function() {
               feature_count: 1,
               coordinates: event.coordinate
             }).then(response => {
-              const feature = response[0].data && response[0].data[0].features[0];
+              const {data=[]} = response[0];
+              const feature = data.length && data[0].features[0] || null;
               afterPick(feature);
           })
         }
