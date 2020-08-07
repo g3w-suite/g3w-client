@@ -399,13 +399,11 @@ const utils = {
         $.fileDownload(url, {
           httpMethod,
           data,
-          successCallback() {
-            resolve()
-          },
-          failCallback() {
-            reject()
-          }
-        });
+        }).done(()=>{
+          resolve()
+        }).fail(()=>{
+          reject()
+        })
       })
     }
   }

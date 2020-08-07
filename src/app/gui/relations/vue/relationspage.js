@@ -34,7 +34,9 @@ const InternalComponent = Vue.extend({
   },
   methods: {
     saveRelations(type){
-      this.$options.service.saveRelations(type);
+      this.$options.service.saveRelations(type)
+        .then(response =>{})
+        .catch(error =>{});
     },
     reloadLayout() {
       RelationPageEventBus.$emit('reload');

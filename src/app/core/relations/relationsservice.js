@@ -36,7 +36,7 @@ proto.getRelations = function(options={}) {
 
 proto.save = function(options={}){
   const url = this.createUrl(options);
-  XHR.fileDownload({
+  return XHR.fileDownload({
     url,
     httpMethod: "GET"
   })

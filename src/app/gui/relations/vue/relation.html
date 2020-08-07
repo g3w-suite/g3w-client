@@ -12,7 +12,7 @@
       <span>
 <!--         <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"-->
 <!--               :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>-->
-        <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+        <span v-if="showDownloadButtons.xls" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
               :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
       </span>
     </div>

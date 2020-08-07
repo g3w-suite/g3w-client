@@ -1,5 +1,6 @@
 import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
 const RelationPageEventBus = require('./relationeventbus');
@@ -87,6 +88,12 @@ module.exports = {
     }
   },
   created() {
+    this.showDownloadButtons = {
+      xls: CatalogLayersStoresRegistry.getLayerById(this.table.layerId).isXlsDownlodable() && this.table.rows.length,
+      csv: false,
+      shp: false,
+      gpx: false
+    };
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     })
