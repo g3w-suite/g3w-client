@@ -1,5 +1,6 @@
 const PickLayerInputService = require('gui/inputs/picklayer/service');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Layer = require('core/layers/layer');
 const Input = require('gui/inputs/input');
 const selectMixin = require('./selectmixin');
@@ -40,15 +41,20 @@ const SelectInput = Vue.extend({
   },
   created() {
     if (this.state.input.type === 'select_autocomplete') {
-      const editingLayer =  MapLayersStoreRegistry.getLayerById(this.state.input.options.layer_id).getEditingLayer();
-      this.showPickLayer = editingLayer ? editingLayer.getType() === Layer.LayerTypes.VECTOR : false;
-      const options = {
-        ...this.state.input.options,
-        pick_type: editingLayer && editingLayer.isStarted() && 'map' || null
-      };
-      this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
+      const dependencyLayerId = this.state.input.options.layer_id;
+      try {
+        const dependencyLayer =  MapLayersStoreRegistry.getLayerById(dependencyLayerId).getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
+        this.showPickLayer = dependencyLayer ? dependencyLayer.getType() !== Layer.LayerTypes.TABLE : false;
+        const options = {
+          ...this.state.input.options,
+          pick_type: dependencyLayer.isStarted && dependencyLayer.isStarted() && 'map' || null
+        };
+        this.pickLayerInputService = this.showPickLayer && new PickLayerInputService(options);
+      } catch(err) {}
     }
-    this.autocomplete && this.state.value && this.service.getKeyByValue({search: this.state.value});
+    this.autocomplete && this.state.value && this.service.getKeyByValue({
+      search: this.state.value
+    });
   },
   mounted() {
     this.$nextTick(() => {

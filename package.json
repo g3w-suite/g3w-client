@@ -18,11 +18,10 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
-    "@vue/composition-api": "^0.3.2",
     "es6-promise": "^4.2.5",
     "jsts": "^2.1.2",
     "object-hash": "^1.2.0",
-    "vue": "^2.6.10",
+    "vue": "^2.6.11",
     "xml-js": "^1.6.11",
     "xml2json": "^0.12.0"
   },
