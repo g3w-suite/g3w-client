@@ -394,7 +394,7 @@ const utils = {
       return string;
     },
     
-    fileDownload({url, data, httpMethod="POST"} = {}) {
+    fileDownload({url, data={}, httpMethod="POST"} = {}) {
       return new Promise((resolve, reject) => {
         $.fileDownload(url, {
           httpMethod,
