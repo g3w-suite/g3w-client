@@ -28,6 +28,10 @@ const vueComponentOptions = {
         index
       })
     }
+  },
+  async mounted() {
+    await this.$nextTick();
+    $('.icon-search-action').tooltip();
   }
 };
 

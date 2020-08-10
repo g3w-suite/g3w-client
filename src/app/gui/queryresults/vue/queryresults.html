@@ -12,10 +12,28 @@
                        v-t-tooltip="'sdk.tooltips.zoom_to_features_extent'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>
-                <span>
+                <span v-if="layer.download.shapefile">
+                  <span title="SHP" class="action-button-icon action-button skin-tooltip-right"
+                        data-placement="right" data-toggle="tooltip"
+                        :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')">
+                  </span>
+                </span>
+                <span v-if="layer.download.gpx">
+                  <span title="GPX" class="action-button-icon action-button skin-tooltip-right"
+                        data-placement="right" data-toggle="tooltip"
+                        :class="g3wtemplate.getFontClass('gpx')" @click.stop="saveLayerResult(layer, 'gpx')">
+                  </span>
+                </span>
+                <span  v-if="layer.download.csv">
                   <span title="CSV" class="action-button-icon action-button skin-tooltip-right"
                     data-placement="right" data-toggle="tooltip"
-                    :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer)">
+                    :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer, 'csv')">
+                  </span>
+                </span>
+                <span v-if="layer.download.xls">
+                  <span title="XLS" class="action-button-icon action-button skin-tooltip-right"
+                        data-placement="right" data-toggle="tooltip"
+                        :class="g3wtemplate.getFontClass('xls')" @click.stop="saveLayerResult(layer, 'xls')">
                   </span>
                 </span>
               </div>

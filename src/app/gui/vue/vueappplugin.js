@@ -66,7 +66,6 @@ const font = {
   circle: "fas fa-circle",
   calculator: "fas fa-calculator",
   picture: "far fa-image",
-  crosshairs: "fas fa-crosshairs",
   keyboard: "far fa-keyboard",
   'file-download':"fas fa-file-download",
   copy: "far fa-copy",
@@ -85,7 +84,8 @@ const font = {
   'copy-paste': "far fa-copy",
   'vector-square': "fas fa-vector-square",
   download: "fas fa-download",
-  credits: "fas fa-euro-sign"
+  credits: "fas fa-euro-sign",
+  filter: "fas fa-filter"
 };
 
 const Vueappplugin = {

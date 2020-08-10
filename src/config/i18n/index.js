@@ -13,6 +13,12 @@ const translations = {
           rotation: "Rotazione"
         },
         querybuilder: {
+          search: {
+            run: "Lancia ricerca",
+            info: "Informazioni",
+            delete: "Cancella",
+            edit: "Modifica"
+          },
           messages: {
             changed: 'Salvato correttamente'
           },
@@ -109,8 +115,10 @@ const translations = {
           },
           zoom_to_features_extent: "Zoom sulle features",
           copy_map_extent_url: 'Copia map view link',
+          download_shapefile: "Scarica Shapefile",
+          download_gpx: "Scarica GPX",
+          download_csv: "Scarica CSV",
           download_xls: "Scarica XLS",
-          download_csv: "Scarica CSV"
         },
         mapcontrols: {
           query: {
@@ -121,15 +129,6 @@ const translations = {
               },
               relations: {
                 hint: "Visualizza Relazioni"
-              },
-              download_shapefile: {
-                hint: 'Scarica Shapefile'
-              },
-              download_xls: {
-                hint: "Scarica XLS"
-              },
-              download_gpx: {
-                hint: "Scarica GPX"
               }
             }
           },
@@ -218,6 +217,12 @@ const translations = {
               title:"",
               copy: "Clicca qui per copiare url",
               copied: "Copiato"
+            },
+            download: {
+              shp: 'Scarica Shapefile',
+              gpx: 'Scarica GPX',
+              csv: 'Scarica CSV',
+              xls: 'Scarica XLS'
             }
           }
         },
@@ -335,6 +340,12 @@ const translations = {
           rotation: "Rotation"
         },
         querybuilder: {
+          search: {
+            run: "Run",
+            info: "Information",
+            delete: "Delete",
+            edit: "Edit"
+          },
           messages: {
             changed: 'Saved'
           },
@@ -431,8 +442,10 @@ const translations = {
           },
           zoom_to_features_extent: "Zoom to features extent",
           copy_map_extent_url: 'Copy map view link',
-          download_xls: "Download XLS",
+          download_shapefile: "Download Shapefile",
+          download_gpx: "Download GPX",
           download_csv: "Download CSV",
+          download_xls: "Download XLS",
         },
         mapcontrols: {
           query: {
@@ -446,6 +459,9 @@ const translations = {
               },
               download_shapefile: {
                 hint: 'Download Shapefile'
+              },
+              download_xls: {
+                hint: "Download CSV"
               },
               download_xls: {
                 hint: "Download XLS"
@@ -540,6 +556,12 @@ const translations = {
               title:"",
               copy: "Click here to copy url",
               copied: "Copied"
+            },
+            download: {
+              shp: 'Download Shapefile',
+              gpx: 'Download GPX',
+              csv: 'Download CSV',
+              xls: 'Download XLS'
             }
           }
         },

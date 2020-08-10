@@ -10,7 +10,7 @@ const ComponentsRegistry = require('gui/componentsregistry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 // set formats for download single feature
-const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'xls'];
+const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'csv', 'xls'];
 
 function QueryResultsService() {
   this._currentLayerIds = [];
@@ -169,12 +169,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     const download = {
       shapefile: false,
       gpx: false,
+      csv: false,
       xls: false
     };
     if (layer instanceof Layer) {
       extractRelations = true;
       download.shapefile = layer.isShpDownlodable();
       download.gpx = layer.isGpxDownlodable();
+      download.csv = layer.isCsvDownlodable();
       download.xls = layer.isXlsDownlodable();
       layerAttributes = layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
@@ -350,8 +352,8 @@ proto.setActionsForLayers = function(layers) {
       layer.download[format] && this.state.layersactions[layer.id].push({
         id: `download_${format}_feature`,
         class: GUI.getFontClass(format),
-        hint: `sdk.mapcontrols.query.actions.download_${format}.hint`,
-        cbk: this.downloadFeature.bind(this, format)
+        hint: `sdk.tooltips.download_${format}`,
+        cbk: this.downloadFeatures.bind(this, format)
       });
     })
 
@@ -480,13 +482,12 @@ proto._addComponent = function(component) {
   this.state.components.push(component)
 };
 
-proto.downloadFeature = function(type, {id:layerId}={}, feature){
-  const fid = feature ? feature.attributes['g3w_fid'] : null;
+proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
+  const data = {};
+  features = features ?  Array.isArray(features) ? features : [features]: features;
+  data.fids = features.map(feature => feature.attributes['g3w_fid']).join(',');
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   let promise = Promise.resolve();
-  const data = {
-    fid
-  };
   GUI.setLoadingContent(true);
   switch(type) {
     case 'shapefile':
@@ -494,6 +495,9 @@ proto.downloadFeature = function(type, {id:layerId}={}, feature){
       break;
     case 'xls':
       promise  = layer.getXls({data});
+      break;
+    case 'csv':
+      promise  = layer.getCsv({data});
       break;
     case 'gpx':
       promise = layer.getGpx({data});
@@ -546,15 +550,8 @@ proto.goToGeometry = function(layer, feature) {
 };
 
 //save layer result
-proto.saveLayerResult = function(layer, alias=true) {
-  try {
-    downloadCSVLayerFeatures({
-      layer,
-      alias
-    })
-  } catch(e) {
-    GUI.notify.error(t('info.server_error'));
-  }
+proto.saveLayerResult = function({layer, type='csv'}={}) {
+  this.downloadFeatures(type, layer, layer.features);
 };
 
 QueryResultsService.zoomToElement = function(layer, feature) {

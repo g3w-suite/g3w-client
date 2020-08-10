@@ -321,9 +321,7 @@ const utils = {
         link.setAttribute("href", url);
         link.setAttribute("download", exportedFilenmae);
         link.style.visibility = 'hidden';
-        document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
       }
     }
   },

@@ -9,11 +9,15 @@
       <span>
         <span  v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
-      <span>
-<!--         <span v-if="table.rows.length" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"-->
-<!--               :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>-->
+      <span v-if="table.rows.length">
+        <span v-if="showDownloadButtons.shapefile" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip="'sdk.tooltips.download_shapefile'"></span>
+        <span v-if="showDownloadButtons.gpx" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('gpx')" @click="saveRelation('gpx')" v-t-tooltip="'sdk.tooltips.download_gpx'"></span>
+        <span v-if="showDownloadButtons.csv" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+          :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>
         <span v-if="showDownloadButtons.xls" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
+          :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
       </span>
     </div>
   </div>

@@ -82,7 +82,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: G3WTemplate.getFontClass('calculator'),
+                class: G3WTemplate.getFontClass('filter'),
                 tooltip: 'Query Builder',
                 fnc:()=> {
                   QueryBuilderUIFactory.show({
@@ -90,9 +90,12 @@ const ApplicationTemplate = function({ApplicationService}) {
                   });
                 },
                 style: {
-                  color: '#FFFFFF',
-                  padding: '5px',
-                  fontSize: '1.3em'
+                  color: '#8DC3E3',
+                  padding: '6px',
+                  fontSize: '1.2em',
+                  boxShadow: '0 2px 5px rgba(0,0,0, 0.3)',
+                  borderRadius: '3px',
+                  marginRight: '5px'
                 }
               }],
               mobile: true

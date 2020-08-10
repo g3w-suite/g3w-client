@@ -155,6 +155,10 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isGpxDownlodable(): false;
     },
+    canDownloadCsv(layerId){
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isCsvDownlodable(): false;
+    },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
@@ -248,7 +252,7 @@ const vueComponentOptions = {
         }
       });
     },
-    closeLayerMenu: function() {
+    closeLayerMenu() {
       this._hideMenu();
       this.showColorMenu(false);
     },
@@ -336,7 +340,9 @@ const vueComponentOptions = {
       }
     });
 
-    CatalogEventHub.$on('showmenulayer', (layerstree, evt) => {
+    CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
+      this._hideMenu();
+      await this.$nextTick();
       const layerId = layerstree.id;
       const constMenuHeight = ((layerId) => {
         return (1*this.canShowWmsUrl(layerId)
@@ -465,7 +471,7 @@ Vue.component('tristate-tree', {
       const mapService = GUI.getComponent('map').getService();
       mapService.removeExternalLayer(name);
     },
-    showLayerMenu: function(layerstree, evt) {
+    showLayerMenu(layerstree, evt) {
       if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }

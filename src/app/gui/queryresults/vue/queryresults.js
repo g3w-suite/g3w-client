@@ -36,8 +36,8 @@ const vueComponentOptions = {
     }
   },
   methods: {
-    saveLayerResult(layer) {
-      this.$options.queryResultsService.saveLayerResult(layer);
+    saveLayerResult(layer, type="csv") {
+      this.$options.queryResultsService.saveLayerResult({layer, type});
     },
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;

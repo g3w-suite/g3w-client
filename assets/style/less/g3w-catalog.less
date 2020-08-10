@@ -199,7 +199,7 @@ Licensed under MIT
 #layer-menu {
   background: #FAFAFA;
   border: 1px solid #BDBDBD;
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+  border-radius: 3px;
   display: block;
   list-style: none;
   margin: 0;
@@ -210,6 +210,21 @@ Licensed under MIT
   color:#000000;
 
   li {
+    span.menu-icon {
+      padding-right: 3px;
+    }
+    &.title {
+      background: transparent;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-bottom-width: 3px !important;
+      &:hover {
+        cursor: default !important;
+        background:transparent !important;
+        color: #000000;
+      }
+    }
+
     border-bottom: 1px solid #E0E0E0;
     margin: 0;
     padding: 5px 15px;

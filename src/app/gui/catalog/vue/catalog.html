@@ -52,14 +52,17 @@
       <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'" v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>
   </div>
-  <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"  tabindex="-1" v-if="layerMenu.show"  :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+  <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"
+      tabindex="-1" v-if="layerMenu.show"
+      :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+    <li class="title">{{ layerMenu.layer.title}}</li>
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
-      <span :class="g3wtemplate.getFontClass('search')"></span>
+      <span class="menu-icon" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
     </li>
     <li v-if="layerMenu.layer.openattributetable" @click.prevent.stop="showAttributeTable(layerMenu.layer.id)">
       <bar-loader :loading="layerMenu.loading.data_table"></bar-loader>
-      <span :class="g3wtemplate.getFontClass('list')"> </span>
+      <span class="menu-icon" :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
     <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
@@ -77,29 +80,29 @@
     <li v-if="canDownloadShp(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
-        <span  :class="g3wtemplate.getFontClass('shapefile')"></span>
-        <span class="item-text">Download Shapefile</span>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('shapefile')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
     <li v-if="canDownloadGpx(layerMenu.layer.id)">
       <div @click.prevent.stop="downloadGpx(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
-        <span :class="g3wtemplate.getFontClass('gpx')"></span>
-        <span class="item-text">Download GPX</span>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('gpx')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
       </div>
     </li>
-<!--    <li>-->
-<!--      <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" >-->
-<!--        <bar-loader :loading="layerMenu.loading.csv"></bar-loader>-->
-<!--        <span :class="g3wtemplate.getFontClass('csv')"></span>-->
-<!--        <span class="item-text">Download CSV</span>-->
-<!--      </div>-->
-<!--    </li>-->
+    <li v-if="canDownloadCsv(layerMenu.layer.id)">
+      <div @click.prevent.stop="downloadCsv(layerMenu.layer.id)" >
+        <bar-loader :loading="layerMenu.loading.csv"></bar-loader>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('csv')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.csv'"></span>
+      </div>
+    </li>
     <li v-if="canDownloadXls(layerMenu.layer.id)">
-      <div @click.prevent.stop="downloadXls(layerMenu.layer.id)" >
+      <div @click.prevent.stop="downloadXls(layerMenu.layer.id)">
         <bar-loader :loading="layerMenu.loading.xls"></bar-loader>
-        <span :class="g3wtemplate.getFontClass('xls')"></span>
-        <span class="item-text">Download XLS</span>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('xls')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.xls'"></span>
       </div>
     </li>
     <li v-if="canShowWmsUrl(layerMenu.layer.id)">
@@ -107,7 +110,10 @@
         <span :class="g3wtemplate.getFontClass('copy')"></span>
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
           <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" :title="copywmsurltooltip">WMS URL</span>
-          <span @click.prevent.stop="" class="bold catalog-menu-wms wms-url-tooltip" style="color: #000000" :class="g3wtemplate.getFontClass('eye')" data-placement="bottom" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)"></span>
+          <span @click.prevent.stop="" class="bold catalog-menu-wms wms-url-tooltip"
+            style="color: #000000" :class="g3wtemplate.getFontClass('eye')"
+            data-placement="bottom" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)">
+          </span>
         </div>
       </div>
     </li>

@@ -88,11 +88,12 @@ module.exports = {
     }
   },
   created() {
+    const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
     this.showDownloadButtons = {
-      xls: CatalogLayersStoresRegistry.getLayerById(this.table.layerId).isXlsDownlodable() && this.table.rows.length,
-      csv: false,
-      shp: false,
-      gpx: false
+      shapefile: layer.isXlsDownlodable(),
+      gpx: layer.isGpxDownlodable(),
+      csv: layer.isCsvDownlodable(),
+      xls:layer.isXlsDownlodable(),
     };
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();

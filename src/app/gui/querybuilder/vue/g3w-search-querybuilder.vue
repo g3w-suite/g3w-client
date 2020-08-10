@@ -3,13 +3,21 @@
     <div style="position:relative">
       <bar-loader :loading="loading"></bar-loader>
       <div class="querybuliserch-tools" style="display:flex; align-items: baseline">
-        <i :class="g3wtemplate.getFontClass('calculator')" style="margin-right: 14px; margin-left: 1px;"></i>
+        <i :class="g3wtemplate.getFontClass('filter')" style="margin-right: 14px; margin-left: 1px;"></i>
         <span style="white-space: pre-wrap">{{querybuildersearch.name}}</span>
         <div style="margin-left: auto">
-          <i @click.stop="run" style="color: green;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('run')"></i>
-          <i @click.stop="showinfo=!showinfo" style="color: #307095; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('info')"></i>
-          <i @click.stop="edit" style="color: #307095; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('pencil')"></i>
-          <i @click.stop="remove" style="color: red;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('trash')"></i>
+          <span class="icon-search-action skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.run'">
+            <i @click.stop="run" style="color: green;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('run')"></i>
+          </span>
+          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.info'">
+            <i @click.stop="showinfo=!showinfo" style="color: #FFFFFF; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('info')"></i>
+          </span>
+          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.edit'">
+            <i @click.stop="edit" style="color: #307095; padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('pencil')"></i>
+          </span>
+          <span class="icon-search-action skin-tooltip-bottom"  data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.querybuilder.search.delete'">
+            <i @click.stop="remove" style="color: red;  padding: 3px; font-size: 1.3em;" :class="g3wtemplate.getFontClass('trash')"></i>
+          </span>
         </div>
       </div>
       <div class="querybuildsearch-info" v-show="showinfo" style="margin-top: 5px;">

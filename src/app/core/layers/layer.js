@@ -336,6 +336,10 @@ proto.isGpxDownlodable = function(){
   return this.config.download_gpx;
 };
 
+proto.isCsvDownlodable = function(){
+  return this.config.download_csv;
+};
+
 proto.getEditingLayer = function() {
   return this._editingLayer;
 };
@@ -445,7 +449,7 @@ proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
-// get url by type ( data, shp, xls,  editing..etc..)
+// get url by type ( data, shp, csv, xls,  editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
 };
