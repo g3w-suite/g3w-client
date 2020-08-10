@@ -66,9 +66,12 @@
         }
       }
 
-      .featurebox-body {
+      tr.featurebox-header-open + .featurebox-body  {
         .action-buttons-container {
           background-color: @purple;
+        }
+        td > div, td > table {
+          border-color:  lighten(@purple, 30%);
         }
       }
 
