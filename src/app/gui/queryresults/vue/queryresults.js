@@ -283,14 +283,13 @@ function QueryResultsComponent(options={}) {
     }
   };
 
-  this._service.onafter('setLayersData', () => {
+  this._service.onafter('setLayersData', async () => {
     if (!this.internalComponent) {
       this.setInternalComponent();
     }
     this.createLayersFeaturesBoxes();
-    requestAnimationFrame(() => {
-      $('.action-button[data-toggle="tooltip"]').tooltip();
-    })
+    await this.internalComponent.$nextTick();
+    $('.action-button[data-toggle="tooltip"]').tooltip();
   });
 
   this.createLayersFeaturesBoxes = function() {

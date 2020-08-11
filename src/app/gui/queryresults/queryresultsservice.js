@@ -1,4 +1,4 @@
-const {base, inherit, noop, downloadCSVLayerFeatures} = require('core/utils/utils');
+const {base, inherit, noop } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -332,7 +332,7 @@ proto.setActionsForLayers = function(layers) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         class: GUI.getFontClass('marker'),
-        hint: 'sdk.mapcontrols.query.actions.show_map.hint',
+        hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
         cbk: this.goToGeometry.bind(this)
       });
     // in case of relations

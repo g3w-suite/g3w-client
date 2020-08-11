@@ -4,7 +4,7 @@ export const viewport = {
       min: 350
     },
     content: {
-      min: 300
+      min: 350
     }
   }
 };

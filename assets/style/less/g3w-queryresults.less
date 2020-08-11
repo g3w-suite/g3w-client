@@ -72,7 +72,6 @@
         font-weight: bold;
         margin-left: 5px;
       }
-
     }
 
     ul {
@@ -89,9 +88,19 @@
           margin-bottom: 10px;
           display: block;
         }
-        .box-title {
-          font-weight: bold;
-          font-size: 1.4em;
+        .box-header {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          font-weight: bold !important;
+          font-size: 1.2em !important;
+          justify-content: space-between;
+          .box-title {
+            margin: auto;
+            margin-left: 0;
+            font-weight: bold !important;
+            font-size: 1.2em !important;
+          }
         }
       }
     }
