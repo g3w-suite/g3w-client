@@ -427,7 +427,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
   let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
   let feature;
   if (obj instanceof Feature) feature = obj;
-  else if (obj instanceof ol.feature.Feature) feature = new Feature({
+  else if (obj instanceof ol.Feature) feature = new Feature({
       feature: obj
     });
   else feature = obj && this.getFeatureById(obj);

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="col-sm-3 metadata-label" v-t="data.label"></div>
+    <div class="col-sm-3 metadata-label skin-color-dark" v-t="data.label"></div>
     <div v-if="fieldName == 'keywords'" class="col-sm-9 value">
       {{ arrayToString }}
     </div>

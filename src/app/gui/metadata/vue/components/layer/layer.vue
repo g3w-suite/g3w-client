@@ -1,16 +1,17 @@
 <template>
   <div>
-    <h4 @click="showHideInfo" class="layer_header" data-toggle="collapse" :data-target="'#' + state.id">
-      <i class="layer-header-icon" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>{{ state.name}}
-      <span class="fa" :class="[show ? g3wtemplate.font['eye-close'] : g3wtemplate.font['eye']]"></span>
+    <h4 @click="showHideInfo" class="layer_header skin-color-dark" data-toggle="collapse" :data-target="'#' + state.id">
+      <i class="layer-header-icon" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>
+      <span class="layer-name">{{ state.name }}</span>
+      <span class="open-close" :class="[show ? g3wtemplate.getFontClass('minus') :g3wtemplate.getFontClass('plus')]"></span>
     </h4>
     <div :id="state.id" class="collapse">
       <ul class="metadata-nav-tabs nav nav-tabs" role="tablist">
-        <li role="presentation" class="active">
+        <li role="presentation" class="active spatial-tab">
           <a v-t="'sdk.metadata.groups.layers.groups.general'" :href="'#layer_general_' + state.id" aria-controls="general" role="tab" data-toggle="tab">
           </a>
         </li>
-        <li v-if="isSpatial" role="presentation">
+        <li v-if="isSpatial" role="presentation" class="spatial-tab">
           <a v-t="'sdk.metadata.groups.layers.groups.spatial'" :href="'#layer_spatial_' + state.id" aria-controls="profile" role="tab" data-toggle="tab">
           </a>
         </li>
@@ -137,15 +138,17 @@
 <style scoped>
   .layer_header {
     border-bottom: 1px solid rgba(226, 226, 226, 0.3);
-    padding-bottom: 10px;
+    padding: 5px;
+    margin-bottom: 0;
     cursor: pointer;
-    color: #2c3b41;
+  }
+  .layer-name {
     font-weight: bold;
   }
   .layer-header-icon {
     margin-right: 10px;
   }
-  .layer_header span {
+  .layer_header span.open-close {
     position: absolute;
     right: 5px;
   }
@@ -168,6 +171,9 @@
     padding: 20px;
     background-color: #f9f9f9;
     overflow: auto;
+  }
+  .spatial-tab{
+    font-weight: bold;
   }
 
 </style>

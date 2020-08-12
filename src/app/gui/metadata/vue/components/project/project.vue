@@ -1,38 +1,28 @@
 <template>
   <div id="project-catalog">
-    <h2>{{ state.name }}</h2>
-    <div id="project-catalog-container" class="container-fluid h_90">
-      <div class="row h_100" >
-        <div class="col-sm-3 metadata-header left-vertical-tabs">
-          <div class="nav-tabs-wrapper stacked">
-            <ul role="tablist" class="nav nav-tabs  nav-stacked">
-              <li class="active">
-                <a data-toggle="tab" href="#general" class="metadata-item-tab general">
-                  <div class="title title_center">
-                    <i :class="iconsClass.info" class="fa-2x" aria-hidden="true"></i>
-                  </div>
-                  <div v-t="'sdk.metadata.groups.general.title'" class="tab-title"></div>
-                </a>
-              </li>
-              <li>
-                <a data-toggle="tab" href="#spatial" class="metadata-item-tab spatial">
-                  <div class="title title_center">
-                    <i :class="iconsClass.globe" class="fa-2x" aria-hidden="true"></i>
-                  </div>
-                  <div v-t="'sdk.metadata.groups.spatial.title'" class="tab-title"></div>
-                </a></li>
-              <li>
-                <a data-toggle="tab" href="#layers"  class="metadata-item-tab layers">
-                  <div class="title title_center">
-                    <i :class="iconsClass.bars" class="fa-2x" aria-hidden="true"></i>
-                  </div>
-                  <div v-t="'sdk.metadata.groups.layers.title'" class="tab-title"></div>
-                </a>
-              </li>
-            </ul>
-        </div>
-        </div>
-        <div class="col-sm-9 metadata-body tab-content">
+    <h3 class="content-header-component skin-color">{{ state.name }}</h3>
+    <div id="project-catalog-container" style="padding:0">
+      <ul role="tablist" class="nav nav-tabs metadata-nav-bar">
+        <li class="active">
+          <a data-toggle="tab" href="#general"  class="metadata-item-tab general">
+            <i :class="g3wtemplate.getFontClass('info')" aria-hidden="true"></i>
+            <span v-t="'sdk.metadata.groups.general.title'"  style="font-weight: bold"></span>
+          </a>
+        </li>
+        <li>
+          <a data-toggle="tab" href="#spatial" class="metadata-item-tab spatial">
+            <i :class="iconsClass.globe"  aria-hidden="true"></i>
+            <span v-t="'sdk.metadata.groups.spatial.title'" style="font-weight: bold"></span>
+          </a></li>
+        <li>
+          <a data-toggle="tab" href="#layers" class="metadata-item-tab layers">
+            <i :class="iconsClass.bars" aria-hidden="true"></i>
+            <span v-t="'sdk.metadata.groups.layers.title'"  style="font-weight: bold"></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-sm-12 metadata-body tab-content">
             <div id="general" class="tab-pane fade in active nano-content">
               <template>
                 <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
@@ -53,8 +43,6 @@
               <metadata-layer :state="layer" v-for="layer in state.groups.layers.layers.value"></metadata-layer>
             </div>
           </div>
-        </div>
-      </div>
     </div>
 </template>
 
@@ -63,8 +51,10 @@
   import MetadataTabContent from './metadatatabcontent.vue';
   import MetadataBBOXContent from './metadatabboxcontent.vue';
   import MetadataContactsContent from './metadatacontactscontent.vue';
+  const {resizeMixin} = require('gui/vue/vue.mixins');
   export default {
     name: "project",
+    mixins: [resizeMixin],
     data() {
       return {
         state: this.$options.state,
@@ -82,6 +72,12 @@
       'metadata-contacts-content': MetadataContactsContent
     },
     methods: {
+      resize(){
+        const projectcatalogheight = $('#project-catalog').outerHeight();
+        const titleHeight= $('.content-header-component').outerHeight();
+        const metadatanavbarHeight = $('.metadata-nav-bar').outerHeight();
+        $('.metadata-body').height(projectcatalogheight - titleHeight - metadatanavbarHeight - 50);
+      },
       isArrayorObject(value) {
         return Array.isArray(value) || typeof value === 'object';
       },
@@ -100,16 +96,15 @@
         return component;
       }
     },
-    mounted() {
-      this.$nextTick(() => {
-      })
-    }
+    async mounted() {
+      await this.$nextTick();
+    },
+
   }
 </script>
 
 <style scoped>
   .metadata-item-tab {
-    height: 90px;
     margin-right: 10px;
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
@@ -117,17 +112,10 @@
     margin-bottom: 10px;
   }
 
-  .metadata-item-tab.spatial {
-    background-color: #019A4C;
-  }
-
-  .metadata-item-tab.layers {
-    background-color: #FF9B21;
-  }
-
   .metadata-body {
     overflow-y: auto;
     overflow-x: hidden;
+    padding-left: 0;
   }
 
   .metadata-body div {
@@ -157,7 +145,6 @@
   }
 
   #project-catalog {
-    padding: 3px 10px 3px 10px;
     position: relative;
     overflow: auto;
   }
@@ -186,9 +173,6 @@
     padding-left: 0 !important;
   }
 
-  .nav-tabs > li.active > a {
-    background-color: #2c3b41 !important;
-  }
 
 
 </style>

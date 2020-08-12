@@ -27,7 +27,6 @@ proto.setMap = function(map) {
     const start_coordinate = this._startCoordinate;
     const end_coordinate = e.coordinate;
     const extent = ol.extent.boundingExtent([start_coordinate,end_coordinate]);
-    console.log(extent)
     this.dispatchEvent({
       type: 'zoomend',
       extent: extent

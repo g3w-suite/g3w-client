@@ -1,9 +1,35 @@
-.metadata-item-tab.general:hover {
-  background-color: @light-blue;
-}
-.metadata-item-tab.general {
-  background-color: @light-blue;
-}
 #project-catalog {
   background: transparent;
+  #project-catalog-container{
+    .metadata-nav-bar{
+      display: flex;
+      justify-content: space-between;
+      li {
+        &.active {
+          a.metadata-item-tab {
+            border-bottom-color: #222d32 !important;
+            border-bottom-width: 4px;
+            background-color: transparent !important;
+            color: #2c3b41 !important;
+          }
+        }
+        width: 100%;
+        margin:1px;
+        a.metadata-item-tab {
+          margin:0;
+          font-size: 1.1em;
+          border-bottom: 4px solid #e2e2e2;
+          &.general {
+            color: @light-blue;
+          }
+          &.layers {
+            color: @yellow;
+          }
+          &.spatial {
+            color: @green;
+          }
+        }
+      }
+    }
+  }
 }

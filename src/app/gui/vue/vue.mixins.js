@@ -177,6 +177,10 @@ const resizeMixin = {
   created(){
     GUI.on('resize', this.resize);
   },
+  async mounted(){
+    await this.$nextTick();
+    this.resize && this.resize();
+  },
   beforeDestroy(){
     GUI.off('resize', this.resize)
   }
