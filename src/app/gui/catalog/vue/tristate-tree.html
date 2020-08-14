@@ -37,10 +37,8 @@
   <span v-show="!layerstree.hidden || isFolder"
     class="tree-node-title skin-tooltip-top"
     data-placement="top"
-    :current-tooltip="showScaleVisibilityToolip ? `minscale [${layerstree.minscale}]
-     maxscale [${layerstree.maxscale}]` : ''"
-    v-t-tooltip = "showScaleVisibilityToolip ? `minscale [${layerstree.minscale}]
-    maxscale [${layerstree.maxscale}]` : ''"
+    :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+    v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
     :class="{
       disabled: layerstree.disabled,
       bold: isFolder,

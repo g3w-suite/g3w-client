@@ -1,9 +1,32 @@
 import ApplicationState from 'core/applicationstate';
 const {t, tPlugin} = require('core/i18n/i18n.service');
+const { uniqueId } = require('core/utils/utils');
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
-    const prePositioni18n = ({el, binding, i18nFnc=t , update=false}) => {
+    const directives = {};
+    const createDirectiveObj = ({el, attr}) =>{
+      //create unique id
+      const unique_attr_id = uniqueId();
+      // set new attribute
+      el.setAttribute(attr, unique_attr_id);
+      directives[unique_attr_id] = {};
+      return unique_attr_id;
+    };
+    const setUnwatch = ({id, unwatch})=>{
+      directives[id].unwatch = unwatch;
+    };
+    const unbindWatch = ({attr, el})=>{
+      const unique_attr_id =  el.getAttribute(attr);
+      directives[unique_attr_id].unwatch();
+      delete directives[unique_attr_id];
+    };
+    const runHandlerOnUpdate = ({el, attrId, attr, oldValue})=>{
+      const unique_attr_id =  el.getAttribute(attrId);
+      const attr_value = el.getAttribute(attr);
+      (attr_value != null && attr_value !== oldValue) && directives[unique_attr_id].handler({el});
+    };
+    const prePositioni18n = ({el, binding, i18nFnc=t}) => {
       const innerHTML = el.innerHTML;
       const position = binding.arg ? binding.arg : 'post';
       const handlerElement = (innerHTML) => {
@@ -11,11 +34,8 @@ const GlobalDirective = {
         if (position === 'pre') el.innerHTML =  `${value} ${innerHTML}`;
         else if (position === 'post') el.innerHTML = `${innerHTML} ${value}`;
       };
-      vm.$watch(() => ApplicationState.lng, () => {
-          handlerElement(innerHTML);
-        }
-      );
       handlerElement(innerHTML);
+      return vm.$watch(() => ApplicationState.lng, () => handlerElement(innerHTML));
     };
 
     Vue.directive("disabled", (el, binding) => {
@@ -32,46 +52,71 @@ const GlobalDirective = {
 
     Vue.directive('t-tooltip', {
       bind(_el, binding){
+        const unique_v_t_tooltip_attr = createDirectiveObj({
+          el:_el,
+          attr: 'g3w-v-t-tooltip-id'
+        });
         const i18Fnc = binding.arg;
-        this.handler = ({el=_el}={}) =>{
+        directives[unique_v_t_tooltip_attr].modifiers = binding.modifiers;
+        const handler = ({el=_el}={}) =>{
           const current_tooltip = el.getAttribute('current-tooltip');
+          const unique_v_t_tooltip_attr =  el.getAttribute('g3w-v-t-tooltip-id');
           const value = current_tooltip !== null ? current_tooltip:  binding.value;
-          const title = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
+          const title = directives[unique_v_t_tooltip_attr].modifiers.text  ? value : (i18Fnc === 'plugin') ? tPlugin(value) : t(value);
           el.setAttribute('data-original-title', title);
         };
-        this.handler();
-        this.unwatch = vm.$watch(() => ApplicationState.lng, this.handler);
+        handler();
+        directives[unique_v_t_tooltip_attr].handler = handler;
+        setUnwatch({
+          id:unique_v_t_tooltip_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handler)
+        })
       },
       componentUpdated(el, oldVnode){
-        const current_tooltip = el.getAttribute('current-tooltip');
-        (current_tooltip != null && current_tooltip !== oldVnode.oldValue) &&
-            this.handler({
-            el
-          });
+        runHandlerOnUpdate({
+          el,
+          attrId: 'g3w-v-t-tooltip-id',
+          attr:'current-tooltip',
+          oldValue: oldVnode.oldValue
+        });
       },
-      unbind(){
-        this.unwatch();
+      unbind(el){
+        unbindWatch({
+          attr:'g3w-v-t-tooltip-id',
+          el
+        })
       }
     });
 
     Vue.directive('t-html', {
       bind(el, binding){
+        const unique_v_t_html_attr = createDirectiveObj({
+          el,
+          attr: 'g3w-v-t-html-id'
+        });
         const handlerElement = () => {
           el.innerHTML = `${t(binding.value)}`;
         };
-        this.unwatch = vm.$watch(() => ApplicationState.lng, () => {
-            handlerElement();
-          }
-        );
         handlerElement();
+        setUnwatch({
+          id: unique_v_t_html_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handlerElement)
+        });
       },
-      unbind(){
-        this.unwatch();
+      unbind(el){
+        unbindWatch({
+          attr:'g3w-v-t-html-id',
+          el
+        })
       }
     });
 
     Vue.directive('t-placeholder', {
       bind(el, binding){
+        const unique_v_t_placeholder_attr = createDirectiveObj({
+          el,
+          attr: 'g3w-v-t-placeholder-id'
+        });
         const value= binding.value;
         const i18Fnc = binding.arg;
         const handler = () =>{
@@ -79,15 +124,26 @@ const GlobalDirective = {
           el.setAttribute('placeholder', placeholder);
         };
         handler();
-        this.unwatch = vm.$watch(() => ApplicationState.lng, handler);
+        setUnwatch({
+          id:unique_v_t_placeholder_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handler)
+        });
       },
-      unbind(){
-        this.unwatch();
+      unbind(el){
+        unbindWatch({
+          attr:'g3w-v-t-placeholder-id',
+          el
+        })
       }
     });
     
     Vue.directive('t-title', {
       bind(el, binding){
+        // get unique id
+        const unique_v_t_title_attr = createDirectiveObj({
+          el,
+          attr: 'g3w-v-t-title-id'
+        });
         const value= binding.value;
         const i18Fnc = binding.arg;
         const handler = () =>{
@@ -96,29 +152,61 @@ const GlobalDirective = {
           el.setAttribute('data-original-title', title)
         };
         handler();
-        this.unwatch = vm.$watch(() => ApplicationState.lng, handler);
+        setUnwatch({
+          id: unique_v_t_title_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handler)
+        });
       },
-      unbind(){
-        this.unwatch();
+      unbind(el){
+        unbindWatch({
+          attr:'g3w-v-t-title-id',
+          el
+        })
       }
     });
     
     Vue.directive("t", {
       bind: function (el, binding) {
-        prePositioni18n({
+        const unique_v_t_attr = createDirectiveObj({
           el,
-          binding,
-          i18nFnc: t
+          attr: 'g3w-v-t-id'
+        });
+        setUnwatch({
+          id: unique_v_t_attr,
+          unwatch: prePositioni18n({
+            el,
+            binding,
+            i18nFnc: t
+          })
+        })
+      },
+      unbind(el){
+        unbindWatch({
+          el,
+          attr:'g3w-v-t-id'
         })
       }
     });
 
     Vue.directive("t-plugin", {
       bind: function (el, binding) {
-        prePositioni18n({
+        const unique_v_t_plugin_attr = createDirectiveObj({
           el,
-          binding,
-          i18nFnc: tPlugin,
+          attr: 'g3w-v-t-plugin-id'
+        });
+        setUnwatch({
+          id: unique_v_t_plugin_attr,
+          unwatch: prePositioni18n({
+            el,
+            binding,
+            i18nFnc: tPlugin,
+          })
+        })
+      },
+      unbind(el){
+        unbindWatch({
+          el,
+          attr: 'g3w-v-t-plugin-id'
         })
       }
     });

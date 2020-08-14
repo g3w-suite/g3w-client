@@ -2,8 +2,7 @@
   <tbody id="table_body_attributes">
     <tr role="row" class="feature_attribute"
         style="cursor: pointer"
-        :id="'open_table_row_' + index"
-        v-for="(feature, index) in features" :key="index"
+        v-for="(feature, index) in features" :key="feature.id"
         @mouseover="zoomAndHighLightSelectedFeature(feature, false)"
         @click="[zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
         :selected="selectedRow === index"

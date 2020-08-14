@@ -208,11 +208,21 @@ Licensed under MIT
   min-width: 150px;
   z-index: 999999;
   color:#000000;
-
+  outline: none;
   li {
     span.menu-icon {
       padding-right: 3px;
+      margin-right: 3px;
     }
+    .wms-url-tooltip{
+      color:#000000;
+      opacity: 1;
+      &:hover {
+        color: #FFFFFF !important;
+        transform: scale(1.1);
+      }
+    }
+
     &.title {
       background: transparent;
       font-size: 1.1em;
