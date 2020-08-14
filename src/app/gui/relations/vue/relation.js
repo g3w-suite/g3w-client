@@ -90,7 +90,7 @@ module.exports = {
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
     this.showDownloadButtons = {
-      shapefile: layer.isXlsDownlodable(),
+      shapefile: layer.isShpDownlodable(),
       gpx: layer.isGpxDownlodable(),
       csv: layer.isCsvDownlodable(),
       xls:layer.isXlsDownlodable(),
