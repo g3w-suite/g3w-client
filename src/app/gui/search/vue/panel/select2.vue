@@ -8,24 +8,41 @@
 </template>
 
 <script>
-  const t = require('core/i18n/i18n.service').t;
+  const { t } = require('core/i18n/i18n.service');
+  const { debounce } = require('core/utils/utils');
   export default {
     name: "select2",
-    props: ['forminput'],
+    props: ['forminput', 'autocompleteRequest'],
     methods: {
       _initSelect2Element() {
+        const { type, attribute } = this.forminput;
+        const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({
           width: '100%',
+          minimumInputLength: isAutocomplete && 3 || 0,
+          ajax: isAutocomplete ? {
+            transport: async ({term}, success, failure) => {
+              try {
+                const data = await this.autocompleteRequest({
+                  [attribute]: term
+                });
+                success(data)
+              } catch(err) {
+                failure(err)
+              }
+            }
+          } : null,
+          processResults: isAutocomplete ? function(data) {
+            return {
+              results: data
+            };
+          } : null,
           matcher: (params, data) => {
             const searchItem = params.term ? params.term.toLowerCase(): params.term;
             // If there are no search terms, return all of the data
-            if ($.trim(searchItem) === '') {
-              return data;
-            }
+            if ($.trim(searchItem) === '') return data;
             // Do not display the item if there is no 'text' property
-            if (typeof data.text === 'undefined') {
-              return null;
-            }
+            if (typeof data.text === 'undefined') return null;
             // `params.term` should be the term that is used for searching
             // `data.text` is the text that is displayed for the data object
             if (data.text.toLowerCase().indexOf(searchItem) > -1) {
@@ -55,14 +72,12 @@
     },
     watch : {
       'forminput.value'(value) {
-        if (!value)
-          this.select2.val('');
+        if (!value) this.select2.val('');
       }
     },
-    mounted() {
-      this.$nextTick(()=> {
-        this._initSelect2Element();
-      })
+    async mounted() {
+      await this.$nextTick();
+      this._initSelect2Element();
     },
     beforeDestroy() {
       this.select2.select2('destroy');

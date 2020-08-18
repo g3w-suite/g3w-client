@@ -42,9 +42,7 @@ proto.isReady = function() {
   return this._isReady;
 };
 
-proto.error = function() {
-  //TODO
-};
+proto.error = function() {};
 
 proto.isValid = function() {
   console.log('overwriteby single provider');
@@ -296,7 +294,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
   const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g)];
   this._hasFieldsStartWithNumber = !!arrayQGS.length;
   arrayQGS.forEach((find, idx) => {
-    if(idx%2 === 0) {
+    if (idx%2 === 0) {
       const regex = new RegExp(`${find[0]}`, "g");
       response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}>`)
     }
@@ -312,7 +310,6 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
     layerTitle,
     layerId;
   featuresForLayers.forEach((featuresForLayer) => {
-    featuresForLayer = featuresForLayer;
     const layer = featuresForLayer.layer;
     layerAttributes = layer.getAttributes();
     layerTitle = layer.getTitle();
@@ -336,24 +333,19 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0].getProperties());
       // check if exist image field
       layerObj.attributes.forEach((attribute) => {
-        if (attribute.type === 'image') {
-          layerObj.hasImageField = true;
-        }
+        layerObj.hasImageField = attribute.type === 'image';
       });
       // loop throught selected features from query result
       featuresForLayer.features.forEach((feature) => {
         const fid = feature.getId() ? feature.getId() : id;
         const geometry = feature.getGeometry();
         // check if feature has geometry
-        if (geometry) {
-          // set to true it used by action
-          layerObj.hasgeometry = true
-        }
+        layerObj.hasgeometry = geometry && true || false;
         // create feature object
         const featureObj = {
           id: fid,
           attributes: feature.getProperties(),
-          geometry: feature.getGeometry(),
+          geometry,
           show: true
         };
         layerObj.features.push(featureObj);

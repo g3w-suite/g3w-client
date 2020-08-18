@@ -35,6 +35,16 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
+proto.getFilterData = async function({fields=[], suggest={}}){
+  const params = {
+    suggest: Object.keys(suggest)
+  }
+  return XHR.get({
+    url: this._dataUrl,
+    params
+  })
+};
+
 //query by filter
 proto.query = function(options={}) {
   const d = $.Deferred();
@@ -88,7 +98,7 @@ proto.getConfig = function() {
   const d = $.Deferred();
   const url = this._configUrl;
   if (!url) {
-    d.reject('Url non valido');
+    d.reject('not valid url');
     return;
   }
   $.get(url)
@@ -242,52 +252,33 @@ proto.getFeatures = function(options={}, params={}) {
   return d.promise();
 };
 
-// main function, starting point, is called to get vector data
 proto._loadLayerData = function(mode, customUrlParameters) {
   const d = $.Deferred();
-  //verifica se sono stati caricati i vettoriali dei layer
-  // attraverso la proprietà vector del layer passato dal plugin
   Obkect.entries(this._layers).forEach(([layerCode, layer]) => {
-    // verifico se l'attributo vector è nullo
     if (_.isNull(layer.vector)) {
       noVectorlayerCodes.push(layerCode);
     }
   });
-  // eseguo le richieste delle configurazioni e mi tengo le promesse
   const vectorLayersSetup = noVectorlayerCodes.map((layerCode) => {
     return this._setupVectorLayer(layerCode);
   });
-  // emetto l'evento loadingvectorlayersstart (il pluginservice è in ascolto)
   this.emit('loadingvectorlayersstart');
-  // aspetto tutte le promesse del setup vector
   $.when.apply(this, vectorLayersSetup)
-  // una volta che tutte le configurazioni dei layer vecor
-  // sono state prese dal server e dopo aver assegnato all'attributo vector
-  // del layer plugin il layer vettoriale costruito con le configurazioni
-  // di sopra
     .then(() => {
-      // le promesse ritornano il layerCode del layer vettoriale appena costuito
       const vectorLayersCodes = Array.prototype.slice.call(arguments);
-      // emtto evento che inzia il recupero dei dati dei layer vettoriali (geojson)
       this.emit('loadingvectolayersdatastart');
-      // inizio a caricare tutti i vettoriali dopo aver caricato le configurazioni
       this.loadAllVectorsData(vectorLayersCodes)
         .then(() => {
           this._vectorLayersCodes = vectorLayersCodes;
           d.resolve(vectorLayersCodes);
-          // emtto evento che ho ricevuto i layers
           this.emit('loadingvectorlayersend');
-          // ora il loader è pronto
           this.setReady(true);
-
         })
         .fail(() =>  {
-          // risetto tutti i layer veetotiali a null
           this._layers.forEach((layer) => {
             layer.vector = null;
           });
           d.reject();
-          // emttto che c'è stato un errore nel loading dei dati che vengono dal server
           this.emit('errorloadingvectorlayersend');
           this.setReady(false);
         })
@@ -312,8 +303,6 @@ proto.getLayers = function() {
   return this._layers;
 };
 
-// funzione che fa il reload che rihiede di nuovo il dati del vetor layer
-// caso in cui si lavora con un layer vettoriale e non si usa un wms per fare la query
 proto.reloadVectorData = function(layerCode) {
   const d = $.Deferred();
   const bbox = this._mapService.state.bbox;
@@ -329,13 +318,9 @@ proto.reloadVectorData = function(layerCode) {
   return d.promise();
 };
 
-//funzione che permette di ottenere tutti i dati relativi ai layer vettoriali caricati
-//prima si è ottenuta la coinfigurazione, ora si ottengono i dati veri e propri
 proto.loadAllVectorsData = function(layerCodes) {
   const d = $.Deferred();
   let layers = this._layers;
-  // verifico che il BBOX attuale non sia stato già  caricato
-  // prondo il bbox
   const bbox = this._mapService.state.bbox;
   const loadedExtent = this._loadedExtent;
   if (loadedExtent && ol.extent.containsExtent(loadedExtent, bbox)) {
@@ -352,7 +337,6 @@ proto.loadAllVectorsData = function(layerCodes) {
       layers.push(this._layers[layerCode]);
     });
   }
-  //per ogni layer del plugin che non ha il layer vado a caricare i dati del layer vettoriale
   const vectorDataRequests = layers.map((Layer) => {
     return this._loadVectorData(Layer.vector, bbox);
   });
@@ -385,17 +369,12 @@ proto._checkVectorGeometryTypeFromConfig = function(vectorConfig) {
 };
 
 proto._createVectorLayerFromConfig = function(layerCode) {
-  // recupero la configurazione del layer settata da plugin service
   const layerConfig = this._layers[layerCode];
   const d = $.Deferred();
-  // eseguo le richieste delle configurazioni
   this._getVectorLayerConfig(layerConfig[this._editingApiField])
     .then((vectorConfigResponse) => {
       let vectorConfig = vectorConfigResponse.vector;
-      // vado a verificare la correttezza del geometryType (caso di editing generico)
       vectorConfig = this._checkVectorGeometryTypeFromConfig(vectorConfig);
-      // una volta ottenuta dal server la configurazione vettoriale,
-      // provvedo alla creazione del layer vettoriale
       const crsLayer = layerConfig.crs || this._mapService.getProjection().getCode();
       const vectorLayer = this._createVectorLayer({
         geometrytype: vectorConfig.geometrytype,
@@ -406,29 +385,14 @@ proto._createVectorLayerFromConfig = function(layerCode) {
         name: layerConfig.name,
         editing: self._editingMode
       });
-      // setto i campi del layer
       vectorLayer.setFields(vectorConfig.fields);
       vectorLayer.setCrs(crsLayer);
-      // questo è la proprietà della configurazione del config layer
-      // che specifica se esistono relazioni con altri layer
-      // sono array di oggetti che specificano una serie di
-      // informazioni su come i layer sono relazionati (nome della relazione == nome layer)
-      // foreign key etc ..
       const relations = vectorConfig.relations;
-      // nel caso il layer abbia relazioni (array non vuoto)
       if (relations) {
-        // per dire a vectorLayer che i dati
-        // delle relazioni verranno caricati solo quando
-        // richiesti (es. aperture form di editing)
         vectorLayer.lazyRelations = true;
-        //vado a settare le relazioni del vector layer
         vectorLayer.setRelations(relations);
       }
-      // setto lo stile del layer OL
-      if (layerConfig.style) {
-        vectorLayer.setStyle(layerConfig.style);
-      }
-      // risolve con il nome del vectorLayer
+      if (layerConfig.style) vectorLayer.setStyle(layerConfig.style);
       d.resolve(vectorLayer);
     })
     .fail(() => {
@@ -437,17 +401,13 @@ proto._createVectorLayerFromConfig = function(layerCode) {
   return d.promise();
 };
 
-// funzione che dato la configurazione del layer fornito dal plugin (style, editor, vctor etc..)
-// esegue richieste al server al fine di ottenere configurazione vettoriale del layer
+
 proto._setupVectorLayer = function(layerCode) {
   const d = $.Deferred();
-  // eseguo le richieste delle configurazioni
   this._createVectorLayerFromConfig(layerCode)
     .then((vectorLayer) => {
       const layerConfig = this._layers[layerCode];
-      // assegno il vetorLayer appena creato all'attributo vector del layer
       layerConfig.vector = vectorLayer;
-      // risolve con il nome del layerCode
       d.resolve(layerCode);
     })
     .fail(() => {
@@ -456,24 +416,15 @@ proto._setupVectorLayer = function(layerCode) {
   return d.promise();
 };
 
-//in base all bbox e la layer chiedo al server di restituirmi il vettoriale (geojson) del layer
 proto._loadVectorData = function(vectorLayer, bbox) {
-  // eseguo le richieste dei dati al server al fine di ottenere il geojson,
-  // vettoriale, del layer richiesto
   return self._getVectorLayerData(vectorLayer, bbox)
     .then((vectorDataResponse) => {
       this.setVectorLayerData(vectorLayer[this._editingApiField], vectorDataResponse);
-      // setto i dati vettoriali del layer vettoriale
-      // e verifico se siamo in editingMode write e se ci sono featurelocks
       if (this._editingMode && vectorDataResponse.featurelocks) {
-        // nel cso in cui sia in editing (mode w) e che si siano featureLocks
-        // setto tale features al layervettoriale
         this.setVectorFeaturesLock(vectorLayer, vectorDataResponse.featurelocks);
       }
-      //setto i dati del layer vettoriale (geojson)
       vectorLayer.setData(vectorDataResponse.vector.data);
-      if (this._)
-        return vectorDataResponse;
+      if (this._) return vectorDataResponse;
     })
     .fail(() => {
       return false;
@@ -492,9 +443,7 @@ proto.setVectorLayerData = function(layerCode, vectorLayerData) {
   this._vectorLayersData[layerCode] = vectorLayerData;
 };
 
-//funzione che setta le features lock del layer vettoriale
 proto.setVectorFeaturesLock = function(vectorLayer, featureslock) {
-  //vado a pescare le fifferenze tra le featureidlock già caricati id
   const newFeaturesLockIds = _.differenceBy(featureslock, vectorLayer.getFeatureLocks(), 'featureid');
   newFeaturesLockIds.forEach((newLockId) => {
     vectorLayer.addLockId(newLockId)
@@ -520,12 +469,8 @@ proto.lockFeatures = function(layerName) {
   return d.promise();
 };
 
-// ottiene la configurazione del vettoriale
-// (qui richiesto solo per la definizione degli input)
 proto._getVectorLayerConfig = function(layerApiField) {
   const d = $.Deferred();
-  // attravercso il layer name e il base url
-  // chiedo la server di inviarmi la configurazione editing del laye
   $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
     .done((data) => {
       d.resolve(data);
@@ -536,7 +481,6 @@ proto._getVectorLayerConfig = function(layerApiField) {
   return d.promise();
 };
 
-// ottiene il vettoriale in modalità  editing
 proto._getVectorLayerData = function(vectorLayer, bbox) {
   const d = $.Deferred();
   const lock = this.getMode() == 'w' ? true : false;
@@ -555,13 +499,13 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
     });
   return d.promise();
 };
-// funzione per creare il layer vettoriale
+
 proto._createVectorLayer = function(options) {
   const vector = new VectorLayer(options);
   return vector;
 };
-//funzione chiamata dal plugin quando si vuole fare un cleanUp dei layers
-// !!! -- DA RIVEDERE -- !!!
+
+
 proto.cleanUpLayers = function() {
   this._loadedExtent = null;
 };

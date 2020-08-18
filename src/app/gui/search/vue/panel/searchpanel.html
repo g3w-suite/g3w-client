@@ -18,10 +18,10 @@
           <label :for="forminput.id">{{ forminput.label }}</label>
           <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id" >
         </div>
-        <div v-if="forminput.type === 'selectfield'" class="form-group text">
+        <div v-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text">
           <label :for="forminput.id">{{ forminput.label }}</label>
           <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
-          <select2 :forminput="forminput" @select-change="changeInput"></select2>
+          <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
         </div>
       </template>
       <div class="form-group">

@@ -51,18 +51,24 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
+proto.autocompleteRequest = async function(params={}){
+  const data = await this.searchLayer.getFilterData({
+    ...params
+  });
+  return {
+    result: data
+  };
+};
+
 proto.doSearch = function({filter=this.createFilter(), queryUrl=this.url, feature_count=10000} ={}) {
   return new Promise((resolve, reject) => {
     this.searchLayer.search({
       filter,
       queryUrl,
       feature_count
-    }).then((results) => {
-      results = {
-        data: results
-      };
-      resolve(results);
-    }).fail(error => reject(error))
+    }).then(data => resolve({
+      data
+    })).fail(error => reject(error))
   })
 };
 
@@ -283,16 +289,15 @@ proto.fillInputsFormFromFilter = function({filter}) {
         value: '',
         id: input.id || id
       };
-      if (forminput.type === 'selectfield') {
+      if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
         const dependance = forminput.options.dependance;
+        forminput.options.values = forminput.options.values === undefined ? [] : forminput.options.values;
         if (dependance) {
           this.depedencies[forminput.attribute] = dependance;
           this.state.loading[dependance] = false;
           forminput.options.disabled = true;
           this._checkInputDependencies(forminput);
-        } else {
-          this.depedencies.root = forminput.attribute;
-        }
+        } else this.depedencies.root = forminput.attribute;
         if (forminput.options.values[0] !== '')
           forminput.options.values.unshift('');
         forminput.value = '';

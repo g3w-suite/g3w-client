@@ -153,6 +153,25 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
+/*
+* getFilterData is a function to get data feature based on fields and suggets
+* params:
+* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
+* - fields: Array of object with type of suggest (see above)
+* */
+proto.getFilterData = async function({fields=[], suggest}={}){
+  const provider =  this.getProvider('data');
+  const response = await provider.getFilterData({
+    fields,
+    suggest
+  });
+  let data= [];
+  if (response.result){
+    data = response.vector.data.features;
+  }
+  return data;
+};
+
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null, formatter=0 } = {}) {
   const d = $.Deferred();
   let provider;
@@ -218,7 +237,6 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 proto.search = function(options={}, params={}) {
   // check option feature_count
   options.feature_count = options.feature_count || 10;
-  //for qgis 2 / 3 purpose
   options = {
     ...options,
     ...this.config.searchParams,
@@ -226,40 +244,24 @@ proto.search = function(options={}, params={}) {
     };
   const d = $.Deferred();
   const provider = this.getProvider('search');
-  if (provider) {
+  if (provider)
     provider.query(options)
-      .done(function(response) {
-        d.resolve(response);
-      })
-      .fail(function(err) {
-        d.reject(err);
-      });
-  } else {
-    d.reject(t('sdk.search.layer_not_searchable'));
-  }
+      .done(response => d.resolve(response))
+      .fail(err => d.reject(err));
+  else d.reject(t('sdk.search.layer_not_searchable'));
   return d.promise();
 };
 
 //Info from layer (only for querable layers)
 proto.query = function(options={}) {
   const d = $.Deferred();
-  let provider = this.getProvider('query');
-  // in case filter
-  if (options.filter) {
-    provider = this.providers.filter;
-  }
-  // if is intanced provider
-  if (provider) {
+  const { filter } = options;
+  const provider = this.getProvider(filter? 'filter' : 'query');
+  if (provider)
     provider.query(options)
-      .done(function(response) {
-        d.resolve(response);
-      })
-      .fail(function(err) {
-        d.reject(err);
-      });
-  } else {
-    d.reject('Il layer non è interrogabile');
-  }
+      .done(response => d.resolve(response))
+      .fail(err => d.reject(err));
+  else d.reject(t('sdk.search.layer_not_querable'));
   return d.promise();
 };
 

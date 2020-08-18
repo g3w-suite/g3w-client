@@ -4,7 +4,8 @@ const translations = {
       sdk: {
         search: {
           all: 'TUTTE',
-          layer_not_searchable: "Il layer non è ricercabile"
+          layer_not_searchable: "Il layer non è ricercabile",
+          layer_not_querable: "Il layer non è interrogabile"
         },
         print: {
           no_layers: 'Nessun Layer visibile',
@@ -358,7 +359,8 @@ const translations = {
       sdk: {
         search: {
           all: 'ALL',
-          layer_not_searchable: "Layer not searchable"
+          layer_not_searchable: "Layer is not searchable",
+          layer_not_querable: "Layer is not querable"
         },
         print: {
           no_layers: 'No Layer to print',

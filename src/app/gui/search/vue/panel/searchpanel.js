@@ -17,15 +17,17 @@ const SearchPanelComponent = Vue.extend({
     }
   },
   methods: {
-    onFocus(event) {
+    async onFocus(event) {
       if (this.isMobile()) {
         const top = $(event.target).position().top - 10 ;
-        this.$nextTick(()=> {
-          setTimeout(() => {
-            $('.sidebar').scrollTop(top);
-          }, 500)
-        });
+        await this.$nextTick();
+        setTimeout(() => {
+          $('.sidebar').scrollTop(top);
+          }, 500);
       }
+    },
+    async autocompleteRequest(params={}){
+      this.$options.service.autocompleteRequest(params);
     },
     changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
       const dependency = this.state.dependencies.find((_dependency) => {
@@ -59,7 +61,6 @@ const SearchPanelComponent = Vue.extend({
     },
     changeInput({attribute, value}={}) {
       this.$options.service.changeInput({attribute, value});
-      //check id there are dependencies
       const fillDependencyPromises = this.changeDependencyFields({
         attribute,
         value
