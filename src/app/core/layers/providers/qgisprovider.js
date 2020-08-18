@@ -37,8 +37,9 @@ const proto = QGISProvider.prototype;
 
 proto.getFilterData = async function({fields=[], suggest={}}){
   const params = {
-    suggest: Object.keys(suggest)
+    suggest
   }
+  console.log(params)
   return XHR.get({
     url: this._dataUrl,
     params

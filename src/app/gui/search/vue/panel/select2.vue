@@ -14,6 +14,20 @@
     name: "select2",
     props: ['forminput', 'autocompleteRequest'],
     methods: {
+      async autocompleteFieldRequest({field, value, success, failure}){
+        this.forminput.values = [];
+        await this.$nextTick();
+        try {
+          const data = await this.autocompleteRequest({
+            field,
+            value
+          });
+          data.forEach(value => this.forminput.values.push(value));
+          console.log(data)
+        } catch(err) {
+          failure()
+        }
+      },
       _initSelect2Element() {
         const { type, attribute } = this.forminput;
         const isAutocomplete = type === 'autocompletefield';
@@ -21,21 +35,14 @@
           width: '100%',
           minimumInputLength: isAutocomplete && 3 || 0,
           ajax: isAutocomplete ? {
-            transport: async ({term}, success, failure) => {
-              try {
-                const data = await this.autocompleteRequest({
-                  [attribute]: term
-                });
-                success(data)
-              } catch(err) {
-                failure(err)
-              }
+            transport: ({data:{q:value}}, success, failure) => {
+              this.autocompleteFieldRequest({
+                field: attribute,
+                value,
+                success,
+                failure
+              })
             }
-          } : null,
-          processResults: isAutocomplete ? function(data) {
-            return {
-              results: data
-            };
           } : null,
           matcher: (params, data) => {
             const searchItem = params.term ? params.term.toLowerCase(): params.term;

@@ -51,13 +51,17 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
-proto.autocompleteRequest = async function(params={}){
-  const data = await this.searchLayer.getFilterData({
-    ...params
+proto.autocompleteRequest = async function({field, value}={}){
+  let data = [];
+  try {
+    data = await this.searchLayer.getFilterData({
+      suggest: `${field}|${value}`
+    })
+  } catch(error) {}
+  console.log(data)
+  return data.map(feature => {
+    return feature.properties[field]
   });
-  return {
-    result: data
-  };
 };
 
 proto.doSearch = function({filter=this.createFilter(), queryUrl=this.url, feature_count=10000} ={}) {
@@ -156,6 +160,13 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
     this._getCascadeDependanciesFilter(dependance, dependencies)
   }
   return dependencies
+};
+
+proto._getCurrentFieldDependance = function(field) {
+  const dependance = this.depedencies[field];
+  return dependance && {
+   [dependance]: this.state.cachedependencies[dependance]._currentValue
+  } || null;
 };
 
 // check the current value of father dependance
