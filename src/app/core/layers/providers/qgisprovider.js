@@ -35,13 +35,14 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
-proto.getFilterData = async function({fields=[], suggest={}}){
+proto.getFilterData = function({fields=[], suggest={}, unique}){
   const params = {
-    suggest
-  }
-  console.log(params)
+    'field[]': fields,
+    suggest,
+    unique
+  };
   return XHR.get({
-    url: this._dataUrl,
+    url: `${this._dataUrl}`,
     params
   })
 };

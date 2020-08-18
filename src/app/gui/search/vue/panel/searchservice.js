@@ -51,17 +51,40 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
+proto.createFieldsDependencyAutocompleteParameter = function({fields=[], field}={}) {
+  const dependendency = this._getCurrentFieldDependance(field);
+  if (dependendency) {
+    fields.push(dependendency);
+    const field = Object.keys(dependendency)[0];
+    return this.createFieldsDependencyAutocompleteParameter({
+      fields,
+      field
+    })
+  }
+  return fields;
+};
+
 proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
+  const fields = this.createFieldsDependencyAutocompleteParameter({
+    field
+  }).map(fieldValue =>{
+    const [field, value] = Object.entries(fieldValue)[0];
+    return `${field}|${value}`;
+  });
   try {
     data = await this.searchLayer.getFilterData({
-      suggest: `${field}|${value}`
+      fields,
+      suggest: `${field}|${value}`,
+      unique: field
     })
-  } catch(error) {}
-  console.log(data)
-  return data.map(feature => {
-    return feature.properties[field]
-  });
+  } catch(error) {
+    console.log(error)
+  }
+  return data.map(value => ({
+    id:value,
+    text:value
+  }))
 };
 
 proto.doSearch = function({filter=this.createFilter(), queryUrl=this.url, feature_count=10000} ={}) {
@@ -172,10 +195,10 @@ proto._getCurrentFieldDependance = function(field) {
 // check the current value of father dependance
 proto._getDependanceCurrentValue = function(field) {
   const dependance = this.depedencies[field];
-  return this.state.cachedependencies[dependance]._currentValue
+  return this.state.cachedependencies[dependance]._currentValue;
 };
 
-proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
+proto.fillDependencyInputs = function({field, subscribers=[], value='', type}={}) {
   const isRoot = this.depedencies.root === field;
   return new Promise((resolve, reject) => {
     subscribers.forEach((subscribe) => {
@@ -213,66 +236,68 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=''}={}) {
           resolve()
         }
       } else {
-        this.queryService = GUI.getComponent('queryresults').getService();
-        this.state.loading[field] = true;
-        if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
-        else {
-          const dependenceValue =  this._getDependanceCurrentValue(field);
-          this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
-          this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
-        }
-        const equality = {};
-        const inputFilterObject = {};
-        equality[field] = value;
-        const operator = this._getExpressionOperatorFromInput(field);
-        inputFilterObject[operator] = equality;
-        const filter = {};
-        filter[this._rootFilterOperator] = [inputFilterObject];
-        this._getCascadeDependanciesFilter(field).forEach((dependanceField) => {
-          filter[this._rootFilterOperator].splice(filter[this._rootFilterOperator].length -1, 0,this.currentFilter[dependanceField]);
-        });
-        const expression = new Expression();
-        const layerName = this.searchLayer.getWMSLayerName();
-        expression.createExpressionFromFilter(filter, layerName);
-        const _filter = new Filter();
-        _filter.setExpression(expression.get());
-        this.currentFilter[field] = inputFilterObject;
-        this.searchLayer.search({
-          filter: _filter,
-          feature_count: 10000 //SET HIGHT LEVEL OF FEATURE COUNT TO GET MAXIMUM RESPONSES
-        }).then((response) => {
-          const digestResults = this.queryService._digestFeaturesForLayers(response);
-          if (digestResults.length) {
-            const features = digestResults[0].features;
-            for (let i = 0; i < subscribers.length; i++) {
-              const subscribe = subscribers[i];
-              let uniqueValue = new Set();
-              features.forEach((feature) => {
-                let value = feature.attributes[subscribe.attribute];
-                if (value && !uniqueValue.has(value)) {
-                  subscribe.options.values.push(value);
-                  uniqueValue.add(value);
-                }
-              });
-              subscribe.options.values.sort();
-              if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              else {
-                const dependenceValue =  this._getDependanceCurrentValue(field);
-                this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
-              }
-              subscribe.options.disabled = false;
-            }
+        if (type === 'autocompletefield') {
+          subscribe.options.disabled = false;
+          resolve();
+        } else {
+          this.queryService = GUI.getComponent('queryresults').getService();
+          this.state.loading[field] = true;
+          if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
+          else {
+            const dependenceValue =  this._getDependanceCurrentValue(field);
+            this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
+            this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
           }
-        }).fail((err) => {
-          reject(err);
-        }).always(() => {
-            this.state.loading[field] = false;
-            resolve();
-          })
+          const equality = {};
+          const inputFilterObject = {};
+          equality[field] = value;
+          const operator = this._getExpressionOperatorFromInput(field);
+          inputFilterObject[operator] = equality;
+          const filter = {};
+          filter[this._rootFilterOperator] = [inputFilterObject];
+          this._getCascadeDependanciesFilter(field).forEach((dependanceField) => {
+            filter[this._rootFilterOperator].splice(filter[this._rootFilterOperator].length -1, 0,this.currentFilter[dependanceField]);
+          });
+          const expression = new Expression();
+          const layerName = this.searchLayer.getWMSLayerName();
+          expression.createExpressionFromFilter(filter, layerName);
+          const _filter = new Filter();
+          _filter.setExpression(expression.get());
+          this.currentFilter[field] = inputFilterObject;
+          this.searchLayer.search({
+            filter: _filter,
+            feature_count: 10000 //SET HIGHT LEVEL OF FEATURE COUNT TO GET MAXIMUM RESPONSES
+          }).then((response) => {
+            const digestResults = this.queryService._digestFeaturesForLayers(response);
+            if (digestResults.length) {
+              const features = digestResults[0].features;
+              for (let i = 0; i < subscribers.length; i++) {
+                const subscribe = subscribers[i];
+                let uniqueValue = new Set();
+                features.forEach((feature) => {
+                  let value = feature.attributes[subscribe.attribute];
+                  if (value && !uniqueValue.has(value)) {
+                    subscribe.options.values.push(value);
+                    uniqueValue.add(value);
+                  }
+                });
+                subscribe.options.values.sort();
+                if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+                else {
+                  const dependenceValue =  this._getDependanceCurrentValue(field);
+                  this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+                }
+                subscribe.options.disabled = false;
+              }
+            }
+          }).fail((err) => reject(err))
+            .always(() => {
+              this.state.loading[field] = false;
+              resolve();
+            })
+        }
       }
-    } else {
-      resolve()
-    }
+    } else resolve()
   })
 };
 

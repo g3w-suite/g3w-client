@@ -14,20 +14,6 @@
     name: "select2",
     props: ['forminput', 'autocompleteRequest'],
     methods: {
-      async autocompleteFieldRequest({field, value, success, failure}){
-        this.forminput.values = [];
-        await this.$nextTick();
-        try {
-          const data = await this.autocompleteRequest({
-            field,
-            value
-          });
-          data.forEach(value => this.forminput.values.push(value));
-          console.log(data)
-        } catch(err) {
-          failure()
-        }
-      },
       _initSelect2Element() {
         const { type, attribute } = this.forminput;
         const isAutocomplete = type === 'autocompletefield';
@@ -35,13 +21,16 @@
           width: '100%',
           minimumInputLength: isAutocomplete && 3 || 0,
           ajax: isAutocomplete ? {
-            transport: ({data:{q:value}}, success, failure) => {
-              this.autocompleteFieldRequest({
-                field: attribute,
-                value,
-                success,
-                failure
-              })
+            transport: async ({data:{q:value}}, success, failure) => {
+              try {
+                const data = await this.autocompleteRequest({
+                  field: attribute,
+                  value
+                });
+                success({results: data});
+              } catch(error){
+                failure(error);
+              }
             }
           } : null,
           matcher: (params, data) => {
@@ -72,7 +61,8 @@
           const value = evt.params.data.id;
           this.$emit('select-change', {
             attribute,
-            value
+            value,
+            type: this.forminput.type
           });
         })
       }

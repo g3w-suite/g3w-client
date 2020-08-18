@@ -159,17 +159,14 @@ proto.isGeoLayer = function() {
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({fields=[], suggest}={}){
+proto.getFilterData = async function({fields=[], suggest={}, unique}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
     fields,
-    suggest
+    suggest,
+    unique
   });
-  let data= [];
-  if (response.result){
-    data = response.vector.data.features;
-  }
-  return data;
+  return response.result ? unique ? response.data : response.vector.data.features : [];
 };
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null, formatter=0 } = {}) {

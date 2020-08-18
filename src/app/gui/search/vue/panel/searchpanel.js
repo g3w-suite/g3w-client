@@ -27,7 +27,7 @@ const SearchPanelComponent = Vue.extend({
       }
     },
     async autocompleteRequest(params={}){
-      this.$options.service.autocompleteRequest(params);
+      return this.$options.service.autocompleteRequest(params);
     },
     changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
       const dependency = this.state.dependencies.find((_dependency) => {
@@ -40,19 +40,20 @@ const SearchPanelComponent = Vue.extend({
             return input.attribute === subscribers[i].attribute;
           });
           const dependance = subscribers[i].options.dependance;
-          fillfieldspromises.push(this.$options.service.fillDependencyInputs({
-            field,
-            dependance,
-            subscribers,
-            value
-          }));
           forminputvalue.value = '';
-          this.changeDependencyFields({
-            attribute: forminputvalue.attribute,
-            value: forminputvalue.value,
-            fillfieldspromises
-          })
-        }
+            fillfieldspromises.push(this.$options.service.fillDependencyInputs({
+              field,
+              dependance,
+              subscribers,
+              value,
+              type: forminputvalue.type
+            }));
+            this.changeDependencyFields({
+              attribute: forminputvalue.attribute,
+              value: forminputvalue.value,
+              fillfieldspromises
+            })
+          }
       }
       return fillfieldspromises;
     },

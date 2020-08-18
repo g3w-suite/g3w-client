@@ -328,17 +328,11 @@ const utils = {
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
-        if (url) {
+        url ?
           $.get(url, params)
-            .then((result) => {
-              resolve(result);
-            })
-            .fail((err) => {
-              reject(err);
-            })
-        } else {
-          reject('No url')
-        }
+            .then(result => resolve(result))
+            .fail(err => reject(err))
+        : reject('No url')
       })
     },
     post({url, data, formdata = false, contentType} = {}) {
@@ -384,6 +378,7 @@ const utils = {
         }
       })
     },
+
     htmlescape(string){
       string = string.replace("&", "&amp;");
       string = string.replace("<", "&lt;");
@@ -391,7 +386,7 @@ const utils = {
       string = string.replace('"', "&quot;");
       return string;
     },
-    
+
     fileDownload({url, data={}, httpMethod="POST"} = {}) {
       return new Promise((resolve, reject) => {
         $.fileDownload(url, {
