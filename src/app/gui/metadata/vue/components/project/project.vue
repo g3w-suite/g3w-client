@@ -73,10 +73,12 @@
     },
     methods: {
       resize(){
-        const projectcatalogheight = $('#project-catalog').outerHeight();
-        const titleHeight= $('.content-header-component').outerHeight();
-        const metadatanavbarHeight = $('.metadata-nav-bar').outerHeight();
-        $('.metadata-body').height(projectcatalogheight - titleHeight - metadatanavbarHeight - 50);
+        setTimeout(()=>{
+          const projectcatalogheight = $('#project-catalog').outerHeight();
+          const titleHeight= $('.content-header-component').outerHeight();
+          const metadatanavbarHeight = $('.metadata-nav-bar').outerHeight();
+          $('.metadata-body').height(projectcatalogheight - titleHeight - metadatanavbarHeight - 50);
+        })
       },
       isArrayorObject(value) {
         return Array.isArray(value) || typeof value === 'object';
@@ -95,11 +97,7 @@
         }
         return component;
       }
-    },
-    async mounted() {
-      await this.$nextTick();
-    },
-
+    }
   }
 </script>
 
