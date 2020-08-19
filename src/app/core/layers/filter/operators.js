@@ -17,4 +17,14 @@ export const EXPRESSION_OPERATORS = {
   ...OPERATORS,
   'lte=': '<=',
   ltgt: '!=',
+  like: 'LIKE',
+  ilike: 'ILIKE',
+};
+
+export const EXPRESSION_OPERATORS_FIELD = {
+  ...OPERATORS,
+  'lte=': '<=',
+  ltgt: '<>',
+  like: 'LIKE',
+  ilike: 'ILIKE',
 };

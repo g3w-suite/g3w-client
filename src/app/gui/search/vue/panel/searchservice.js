@@ -1,12 +1,11 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+import { EXPRESSION_OPERATORS_FIELD } from 'core/layers/filter/operators';
+import { ALLVALUE }  from '../../constants';
+const { base, inherit } = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const Filter = require('core/layers/filter/filter');
-const Expression = require('core/layers/filter/expression');
 
 function SearchService(config={}) {
   this.debounces =  {
@@ -30,7 +29,6 @@ function SearchService(config={}) {
   this.project = ProjectsRegistry.getCurrentProject();
   this.searchLayer = null;
   this.filter = null;
-  this.currentFilter = {};
   this._rootFilterOperator = 'AND';
   this.init = function(config) {
     this.state.title = config.name;
@@ -51,30 +49,39 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
-proto.createFieldsDependencyAutocompleteParameter = function({fields=[], field}={}) {
+proto.createSingleFieldParameter = function({field, value, operator='eq'}){
+  return `${field}|${EXPRESSION_OPERATORS_FIELD[operator]}|${value}`;
+};
+
+proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this._getCurrentFieldDependance(field);
+  if (value !== undefined) {
+    const fieldParam = this.createSingleFieldParameter({
+      field,
+      value,
+      operator: this.filter[this._rootFilterOperator].find(input => input.attribute === field).op
+    });
+    fields.push(fieldParam);
+  }
   if (dependendency) {
-    fields.push(dependendency);
-    const field = Object.keys(dependendency)[0];
-    return this.createFieldsDependencyAutocompleteParameter({
+    const [field, value] = Object.entries(dependendency)[0];
+    const operator = EXPRESSION_OPERATORS_FIELD[this.filter[this._rootFilterOperator].find(input => input.attribute === field).op];
+    fields.unshift(`${field}|${operator}|${value}`);
+    return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
     })
   }
-  return fields;
+  return fields.join();
 };
 
 proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
-  const fields = this.createFieldsDependencyAutocompleteParameter({
-    field
-  }).map(fieldValue =>{
-    const [field, value] = Object.entries(fieldValue)[0];
-    return `${field}|${value}`;
-  });
   try {
     data = await this.searchLayer.getFilterData({
-      fields,
+      field: this.createFieldsDependenciesAutocompleteParameter({
+        field
+      }),
       suggest: `${field}|${value}`,
       unique: field
     })
@@ -87,26 +94,50 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = function({filter=this.createFilter(), queryUrl=this.url, feature_count=10000} ={}) {
+proto.doSearch = function({filter, queryUrl=this.url, feature_count=10000} ={}) {
   return new Promise((resolve, reject) => {
-    this.searchLayer.search({
-      filter,
-      queryUrl,
-      feature_count
-    }).then(data => resolve({
-      data
-    })).fail(error => reject(error))
+    if (filter) {
+      this.searchLayer.search({
+        filter,
+        queryUrl,
+        feature_count
+      }).then((results) => {
+        results = {
+          data: results
+        };
+        resolve(results);
+      }).fail(error => reject(error))
+    } else {
+      this.searchLayer.getFilterData({
+        field: this.createFilter()
+      }).then(features => {
+        resolve([{
+          layer: this.searchLayer,
+          features
+        }])
+      }).catch(error => reject(error));
+    }
   })
 };
 
 proto.createFilter = function(){
   const filterObject = this.fillFilterInputsWithValues();
-  const expression = new Expression();
-  const layerName = this.searchLayer.getWMSLayerName();
-  expression.createExpressionFromFilter(filterObject, layerName);
-  const filter = new Filter();
-  filter.setExpression(expression.get());
-  return filter;
+  const fields = [];
+  for (const andor in filterObject) {
+    if (andor === 'AND') {
+      filterObject[andor].forEach(input =>{
+        const [operator, fieldValue] = Object.entries(input)[0];
+        const [field, value] = Object.entries(fieldValue)[0];
+        const fieldParam = this.createSingleFieldParameter({
+          field,
+          value,
+          operator
+        });
+        fields.push(fieldParam);
+      })
+    }
+  }
+  return fields.join();
 };
 
 proto._run = function() {
@@ -198,17 +229,17 @@ proto._getDependanceCurrentValue = function(field) {
   return this.state.cachedependencies[dependance]._currentValue;
 };
 
-proto.fillDependencyInputs = function({field, subscribers=[], value='', type}={}) {
+proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE, type}={}) {
   const isRoot = this.depedencies.root === field;
   return new Promise((resolve, reject) => {
-    subscribers.forEach((subscribe) => {
-      subscribe.options.disabled = true;
-      subscribe.value = '';
+    subscribers.forEach(subscribe => {
+      subscribe.value = ALLVALUE;
+      subscribe.options.disabled = subscribe.type !== 'autocompletefield';
       subscribe.options.values.splice(1);
     });
     this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
     this.state.cachedependencies[field]._currentValue = value;
-    if (value) {
+    if (value !== ALLVALUE) {
       let isCached;
       let rootValues;
       if (isRoot) {
@@ -237,10 +268,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value='', type}={}
         }
       } else {
         if (type === 'autocompletefield') {
-          subscribe.options.disabled = false;
           resolve();
         } else {
-          this.queryService = GUI.getComponent('queryresults').getService();
           this.state.loading[field] = true;
           if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
           else {
@@ -248,56 +277,43 @@ proto.fillDependencyInputs = function({field, subscribers=[], value='', type}={}
             this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
             this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
           }
-          const equality = {};
-          const inputFilterObject = {};
-          equality[field] = value;
-          const operator = this._getExpressionOperatorFromInput(field);
-          inputFilterObject[operator] = equality;
-          const filter = {};
-          filter[this._rootFilterOperator] = [inputFilterObject];
-          this._getCascadeDependanciesFilter(field).forEach((dependanceField) => {
-            filter[this._rootFilterOperator].splice(filter[this._rootFilterOperator].length -1, 0,this.currentFilter[dependanceField]);
+          const fields = this.createFieldsDependenciesAutocompleteParameter({
+            field,
+            value
           });
-          const expression = new Expression();
-          const layerName = this.searchLayer.getWMSLayerName();
-          expression.createExpressionFromFilter(filter, layerName);
-          const _filter = new Filter();
-          _filter.setExpression(expression.get());
-          this.currentFilter[field] = inputFilterObject;
-          this.searchLayer.search({
-            filter: _filter,
-            feature_count: 10000 //SET HIGHT LEVEL OF FEATURE COUNT TO GET MAXIMUM RESPONSES
-          }).then((response) => {
-            const digestResults = this.queryService._digestFeaturesForLayers(response);
-            if (digestResults.length) {
-              const features = digestResults[0].features;
-              for (let i = 0; i < subscribers.length; i++) {
-                const subscribe = subscribers[i];
-                let uniqueValue = new Set();
-                features.forEach((feature) => {
-                  let value = feature.attributes[subscribe.attribute];
-                  if (value && !uniqueValue.has(value)) {
-                    subscribe.options.values.push(value);
-                    uniqueValue.add(value);
-                  }
+          const uniqueParams = subscribers.length && subscribers.length=== 1 ? subscribers[0].attribute : null;
+          this.searchLayer.getFilterData({
+            fields,
+            unique: uniqueParams
+          }).then(data => {
+            for (let i = 0; i < subscribers.length; i++) {
+              const subscribe = subscribers[i];
+              if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
+              else {
+                const { attribute } = subscribe;
+                const uniqueValues = new Set();
+                data.forEach((feature) => {
+                  const value = feature.attributes[attribute];
+                  value &&  uniqueValues.add(value);
                 });
-                subscribe.options.values.sort();
-                if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
-                else {
-                  const dependenceValue =  this._getDependanceCurrentValue(field);
-                  this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
-                }
-                subscribe.options.disabled = false;
+                [...uniqueValues].sort().forEach(value => subscribe.options.values.push(value));
               }
+              if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              else {
+                const dependenceValue =  this._getDependanceCurrentValue(field);
+                this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              }
+              subscribe.options.disabled = false;
             }
-          }).fail((err) => reject(err))
-            .always(() => {
+          }).catch(error => {
+            reject(error)
+          }).finally(() => {
               this.state.loading[field] = false;
               resolve();
             })
         }
       }
-    } else resolve()
+    } else resolve();
   })
 };
 
@@ -322,7 +338,7 @@ proto.fillInputsFormFromFilter = function({filter}) {
         attribute: input.attribute,
         type: input.input.type || 'textfield',
         options: Object.assign({}, input.input.options),
-        value: '',
+        value: ALLVALUE,
         id: input.id || id
       };
       if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
@@ -334,11 +350,9 @@ proto.fillInputsFormFromFilter = function({filter}) {
           forminput.options.disabled = true;
           this._checkInputDependencies(forminput);
         } else this.depedencies.root = forminput.attribute;
-        if (forminput.options.values[0] !== '')
-          forminput.options.values.unshift('');
-        forminput.value = '';
-      } else
-        forminput.value = null;
+        forminput.options.values[0] !== ALLVALUE && forminput.options.values.unshift(ALLVALUE);
+        forminput.value = ALLVALUE;
+      } else forminput.value = null;
       this.state.forminputs.push(forminput);
       id+=1;
     });
@@ -386,8 +400,10 @@ proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues
           });
           getvaluefromforminputid.push(forminputwithvalue.id);
           const value = forminputwithvalue.value;
-          filterInput[_operator][fieldName] = value;
-          filterWithValues[operator].push(filterInput);
+          if (value !== ALLVALUE) {
+            filterInput[_operator][fieldName] = value;
+            filterWithValues[operator].push(filterInput);
+          }
         }
     })
   }

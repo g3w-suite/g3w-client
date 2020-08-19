@@ -1,7 +1,7 @@
 <template>
   <select :name="forminput.attribute" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
     <option :value="value" v-for="value in forminput.options.values" :key="value">
-      <span v-if="value === ''" v-t="'sdk.search.all'"></span>
+      <span v-if="value === allvalue " v-t="'sdk.search.all'"></span>
       <span v-else>{{ value }}</span>
     </option>
   </select>
@@ -10,6 +10,7 @@
 <script>
   const { t } = require('core/i18n/i18n.service');
   const { debounce } = require('core/utils/utils');
+  import { ALLVALUE }  from '../../constants';
   export default {
     name: "select2",
     props: ['forminput', 'autocompleteRequest'],
@@ -51,9 +52,12 @@
             return null;
           },
           "language": {
-            "noResults": function(){
-              return t("no_results");
-            }
+            noResults(){
+              return t("sdk.search.no_results");
+            },
+            errorLoading(){
+              return t("sdk.search.error_loading")
+            },
           },
         });
         this.select2.on('select2:select', (evt) => {
@@ -69,8 +73,13 @@
     },
     watch : {
       'forminput.value'(value) {
-        if (!value) this.select2.val('');
+        if (value === ALLVALUE) {
+          this.select2.val(value);
+        }
       }
+    },
+    created(){
+      this.allvalue = ALLVALUE;
     },
     async mounted() {
       await this.$nextTick();

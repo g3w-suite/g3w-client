@@ -4,6 +4,8 @@ const translations = {
       sdk: {
         search: {
           all: 'TUTTE',
+          no_results: "Nessun valore trovato",
+          error_loading: "Errore nel caricamento valori",
           layer_not_searchable: "Il layer non è ricercabile",
           layer_not_querable: "Il layer non è interrogabile"
         },
@@ -359,6 +361,8 @@ const translations = {
       sdk: {
         search: {
           all: 'ALL',
+          no_results: "No results",
+          error_loading: "Error Loading Data",
           layer_not_searchable: "Layer is not searchable",
           layer_not_querable: "Layer is not querable"
         },

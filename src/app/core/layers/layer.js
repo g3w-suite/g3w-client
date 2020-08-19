@@ -5,6 +5,7 @@ const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const { geometryFields } =  require('core/utils/geo');
+const Parsers = require('core/parsers/parsers');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
@@ -159,10 +160,10 @@ proto.isGeoLayer = function() {
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({fields=[], suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
-    fields,
+    field,
     suggest,
     unique
   });

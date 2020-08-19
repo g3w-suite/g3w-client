@@ -1,6 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
-const XHR = require('core/utils/utils').XHR;
+const { base, inherit } = require('core/utils/utils');
+const { XHR } = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
 const RelationsService = require('core/relations/relationsservice');
@@ -35,9 +34,9 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
-proto.getFilterData = function({fields=[], suggest={}, unique}){
+proto.getFilterData = function({field, suggest={}, unique}={}){
   const params = {
-    'field[]': fields,
+    field,
     suggest,
     unique
   };

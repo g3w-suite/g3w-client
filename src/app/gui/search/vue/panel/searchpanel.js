@@ -1,4 +1,5 @@
 import Select2 from './select2.vue'
+import {ALLVALUE} from "../../constants";
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Panel = require('gui/panel');
@@ -39,11 +40,9 @@ const SearchPanelComponent = Vue.extend({
           const forminputvalue = this.state.forminputs.find((input) => {
             return input.attribute === subscribers[i].attribute;
           });
-          const dependance = subscribers[i].options.dependance;
-          forminputvalue.value = '';
+          forminputvalue.value = ALLVALUE;
             fillfieldspromises.push(this.$options.service.fillDependencyInputs({
               field,
-              dependance,
               subscribers,
               value,
               type: forminputvalue.type
