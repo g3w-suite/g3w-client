@@ -45,7 +45,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
       url: `${this._dataUrl}`,
       params
     });
-    this.setProjections();
+    const isVector = this._layer.getType() !== "table";
+    isVector && this.setProjections();
     const data = response.result ?  unique ? response.data :  {
       data: this._parseGeoJsonResponse({
         layer: this._layer,
@@ -60,11 +61,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
 };
 
 proto.setProjections = function() {
-  const isVector = this._layer.getType() !== "table";
-  if (isVector) {
-    this._projections.layer = this._layer.getProjection();
-    this._projections.map = this._layer.getMapProjection() || this._projections.layer;
-  }
+  this._projections.layer = this._layer.getProjection();
+  this._projections.map = this._layer.getMapProjection() || this._projections.layer;
 };
 
 //query by filter
@@ -72,7 +70,8 @@ proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
-  this.setProjections();
+  const isVector = this._layer.getType() !== "table";
+  isVector && this.setProjections();
   const crs = isVector ? this._layer.getSourceType() === 'spatialite' ? `EPSG:${this._layer.getCrs()}` : this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;

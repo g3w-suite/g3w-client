@@ -5,6 +5,8 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ProjectsRegistry = require('core/project/projectsregistry');
+const Filter = require('core/layers/filter/filter');
+const Expression = require('core/layers/filter/expression');
 
 function SearchService(config={}) {
   this.debounces =  {
@@ -91,49 +93,71 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = function({filter, queryUrl=this.url, feature_count=10000} ={}) {
+proto.doSearch = function({filter, searchType='wms', queryUrl=this.url, feature_count=10000} ={}) {
+  filter = filter || this.createFilter(searchType);
   return new Promise((resolve, reject) => {
-    if (filter) {
-      this.searchLayer.search({
-        filter,
-        queryUrl,
-        feature_count
-      }).then((results) => {
-        results = {
-          data: results
-        };
-        resolve(results);
-      }).fail(error => reject(error))
-    } else {
-      this.searchLayer.getFilterData({
-        field: this.createFilter()
-      }).then(response => {
-        resolve(response)
-      }).catch(error => {
-        reject(error);
-      });
+    switch (searchType) {
+      case 'wms':
+        this.searchLayer.search({
+          filter,
+          queryUrl,
+          feature_count
+        }).then((results) => {
+          results = {
+            data: results
+          };
+          resolve(results);
+        }).fail(error => {
+          reject(error)
+        });
+        break;
+      case 'api':
+        this.searchLayer.getFilterData({
+          field: filter
+        }).then(response => {
+          resolve(response)
+        }).catch(error => {
+          reject(error);
+        });
+        break;
     }
   })
 };
 
-proto.createFilter = function(){
+/*
+* type wms, vector (for vector api)
+* */
+proto.createFilter = function(type='wms'){
   const filterObject = this.fillFilterInputsWithValues();
-  const fields = [];
-  for (const andor in filterObject) {
-    if (andor === 'AND') {
-      filterObject[andor].forEach(input =>{
-        const [operator, fieldValue] = Object.entries(input)[0];
-        const [field, value] = Object.entries(fieldValue)[0];
-        const fieldParam = this.createSingleFieldParameter({
-          field,
-          value,
-          operator
-        });
-        fields.push(fieldParam);
-      })
-    }
+  let filter;
+  switch (type) {
+    case 'wms':
+      const expression = new Expression();
+      const layerName = this.searchLayer.getWMSLayerName();
+      expression.createExpressionFromFilter(filterObject, layerName);
+      filter = new Filter();
+      filter.setExpression(expression.get());
+      break;
+    case 'api':
+      const fields = [];
+      for (const andor in filterObject) {
+        if (andor === 'AND') {
+          filterObject[andor].forEach(input =>{
+            const [operator, fieldValue] = Object.entries(input)[0];
+            const [field, value] = Object.entries(fieldValue)[0];
+            const fieldParam = this.createSingleFieldParameter({
+              field,
+              value,
+              operator
+            });
+            fields.push(fieldParam);
+          })
+        }
+      }
+      filter = fields.join();
+      break;
   }
-  return fields.join();
+  return filter;
 };
 
 proto._run = function() {
