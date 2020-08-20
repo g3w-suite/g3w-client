@@ -2144,7 +2144,8 @@ proto.addExternalLayer = async function(externalLayer, download) {
     name,
     data,
     color,
-    type;
+    type,
+    crs;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
@@ -2195,12 +2196,10 @@ proto.addExternalLayer = async function(externalLayer, download) {
   };
   const createExternalLayer = (format, data, epsg=crs) => {
     let vectorLayer;
-    console.log(data)
     const features = format.readFeatures(data, {
       dataProjection: epsg,
       featureProjection: this.getEpsg()
     });
-    console.log(features)
     if (features.length) {
       const vectorSource = new ol.source.Vector({
         features

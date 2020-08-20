@@ -52,15 +52,16 @@ function Layer(config={}, options={}) {
   this.state = {
     id: config.id,
     title: config.title,
-    selected: config.selected | false,
-    disabled: config.disabled | false,
+    selected: config.selected || false,
+    disabled: config.disabled || false,
     metadata: config.metadata,
     metadata_querable: this.isQueryable({onMap:false}),
     openattributetable: this.canShowTable(),
     removable: config.removable || false,
     source: config.source,
     infoformat: this.getInfoFormat(),
-    geolayer: false
+    geolayer: false,
+    visible: config.visible || false
   };
 
   // refferred to (layersstore);
