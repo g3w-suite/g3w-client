@@ -5,7 +5,6 @@ const XHR = require('core/utils/utils').XHR;
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const { geometryFields } =  require('core/utils/geo');
-const Parsers = require('core/parsers/parsers');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
@@ -167,7 +166,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
     suggest,
     unique
   });
-  return response.result ? unique ? response.data : response.vector.data.features : [];
+
+  return response;
 };
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null, formatter=0 } = {}) {

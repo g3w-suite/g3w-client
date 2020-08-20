@@ -22,6 +22,7 @@
           width: '100%',
           minimumInputLength: isAutocomplete && 3 || 0,
           ajax: isAutocomplete ? {
+            delay: 500,
             transport: async ({data:{q:value}}, success, failure) => {
               try {
                 const data = await this.autocompleteRequest({
@@ -75,6 +76,7 @@
       'forminput.value'(value) {
         if (value === ALLVALUE) {
           this.select2.val(value);
+          this.select2.trigger('change');
         }
       }
     },

@@ -20,11 +20,3 @@ export const EXPRESSION_OPERATORS = {
   like: 'LIKE',
   ilike: 'ILIKE',
 };
-
-export const EXPRESSION_OPERATORS_FIELD = {
-  ...OPERATORS,
-  'lte=': '<=',
-  ltgt: '<>',
-  like: 'LIKE',
-  ilike: 'ILIKE',
-};

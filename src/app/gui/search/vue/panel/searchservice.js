@@ -1,4 +1,3 @@
-import { EXPRESSION_OPERATORS_FIELD } from 'core/layers/filter/operators';
 import { ALLVALUE }  from '../../constants';
 const { base, inherit } = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
@@ -50,7 +49,7 @@ inherit(SearchService, G3WObject);
 const proto = SearchService.prototype;
 
 proto.createSingleFieldParameter = function({field, value, operator='eq'}){
-  return `${field}|${EXPRESSION_OPERATORS_FIELD[operator]}|${value}`;
+  return `${field}|${operator.toLowerCase()}|${value}`;
 };
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
@@ -65,8 +64,8 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
   }
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
-    const operator = EXPRESSION_OPERATORS_FIELD[this.filter[this._rootFilterOperator].find(input => input.attribute === field).op];
-    fields.unshift(`${field}|${operator}|${value}`);
+    const operator = this.filter[this._rootFilterOperator].find(input => input.attribute === field).op;
+    fields.unshift(`${field}|${operator}|${encodeURI(value)}`);
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
@@ -85,9 +84,7 @@ proto.autocompleteRequest = async function({field, value}={}){
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {
-    console.log(error)
-  }
+  } catch(error) {}
   return data.map(value => ({
     id:value,
     text:value
@@ -110,12 +107,11 @@ proto.doSearch = function({filter, queryUrl=this.url, feature_count=10000} ={}) 
     } else {
       this.searchLayer.getFilterData({
         field: this.createFilter()
-      }).then(features => {
-        resolve([{
-          layer: this.searchLayer,
-          features
-        }])
-      }).catch(error => reject(error));
+      }).then(response => {
+        resolve(response)
+      }).catch(error => {
+        reject(error);
+      });
     }
   })
 };
@@ -277,13 +273,13 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE, ty
             this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
             this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
           }
-          const fields = this.createFieldsDependenciesAutocompleteParameter({
+          const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
           const uniqueParams = subscribers.length && subscribers.length=== 1 ? subscribers[0].attribute : null;
           this.searchLayer.getFilterData({
-            fields,
+            field: fieldParams,
             unique: uniqueParams
           }).then(data => {
             for (let i = 0; i < subscribers.length; i++) {

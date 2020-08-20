@@ -34,16 +34,37 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
-proto.getFilterData = function({field, suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique}={}){
   const params = {
     field,
     suggest,
     unique
   };
-  return XHR.get({
-    url: `${this._dataUrl}`,
-    params
-  })
+  try {
+    const response = await XHR.get({
+      url: `${this._dataUrl}`,
+      params
+    });
+    this.setProjections();
+    const data = response.result ?  unique ? response.data :  {
+      data: this._parseGeoJsonResponse({
+        layer: this._layer,
+        response,
+        projections: this._projections
+      })
+    }: Promise.reject();
+    return data;
+  } catch(error){
+    return Promise.reject(error);
+  }
+};
+
+proto.setProjections = function() {
+  const isVector = this._layer.getType() !== "table";
+  if (isVector) {
+    this._projections.layer = this._layer.getProjection();
+    this._projections.map = this._layer.getMapProjection() || this._projections.layer;
+  }
 };
 
 //query by filter
@@ -51,11 +72,7 @@ proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
   const filter = options.filter || null;
-  const isVector = this._layer.getType() !== "table";
-  if (isVector) {
-    this._projections.layer = this._layer.getProjection();
-    this._projections.map = this._layer.getMapProjection() || this._projections.layer;
-  }
+  this.setProjections();
   const crs = isVector ? this._layer.getSourceType() === 'spatialite' ? `EPSG:${this._layer.getCrs()}` : this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
