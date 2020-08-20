@@ -2210,7 +2210,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     name,
     data,
     color,
-    type;
+    type,
     crs;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
