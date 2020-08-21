@@ -6,7 +6,7 @@
           <th v-for="header in state.headers">{{ header.label }}</th>
         </tr>
       </thead>
-      <table-body :headers="state.headers" :features="state.features" :zoomAndHighLightSelectedFeature="zoomAndHighLightSelectedFeature"></table-body>
+      <table-body :headers="state.headers" :features="state.features" :hasGeometry="state.hasGeometry" :zoomAndHighLightSelectedFeature="zoomAndHighLightSelectedFeature"></table-body>
     </table>
     <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
@@ -37,7 +37,8 @@
         this.$options.service._setLayout();
       },
       zoomAndHighLightSelectedFeature: function(feature, zoom=true) {
-        feature.geometry && this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
+        if (this.state.geometry)
+          this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
       },
       reloadLayout() {
         this.$nextTick(() => {
@@ -47,44 +48,40 @@
       hasHeaders() {
         return !!this.state.headers.length;
       },
-      createdContentBody() {
+      createTdContentBody() {
         const self = this;
         fieldsComponents = fieldsComponents.filter((fieldComponent) => {
           fieldComponent.$destroy();
           return false;
         });
-        const trDomeElements = $('#layer_attribute_table tbody tr');
-        trDomeElements.css('cursor', 'pointer');
-        trDomeElements.each((index, element) => {
+        $('#layer_attribute_table tbody tr').each((index, element) => {
           const feature = this.state.features[index];
-          if (feature.geometry) {
-            $(element).on('click', () => {
-              if ($(this).hasClass( "selected" ))
-                $(this).removeClass( "selected" );
-              else {
-                $('#layer_attribute_table tbody tr').removeClass('selected');
-                $(this).addClass( "selected" )
-              }
-              self.zoomAndHighLightSelectedFeature(feature);
-            });
-            $(element).on('mouseover', () => {
-              self.zoomAndHighLightSelectedFeature(feature, false);
-            });
-          }
-          $(element).children().each((index, element)=> {
-            const header = this.state.headers[index];
-            const fieldClass = Vue.extend(Field);
-            const fieldInstance = new fieldClass({
-              propsData: {
-                state: {
-                  value: feature.attributes[header.name]
+          if (feature) {
+            if (this.state.hasGeometry)
+              $(element).on('click', function() {
+                if ($(this).hasClass( "selected" ))
+                  $(this).removeClass( "selected" );
+                else {
+                  $('#layer_attribute_table tbody tr').removeClass('selected');
+                  $(this).addClass( "selected" )
                 }
-              }
-            });
-            fieldInstance.$mount();
-            fieldsComponents.push(fieldInstance);
-            $(element).html(fieldInstance.$el);
-          })
+                self.zoomAndHighLightSelectedFeature(feature);
+              });
+            $(element).children().each((index, element)=> {
+              const header = this.state.headers[index];
+              const fieldClass = Vue.extend(Field);
+              const fieldInstance = new fieldClass({
+                propsData: {
+                  state: {
+                    value: feature.attributes[header.name]
+                  }
+                }
+              });
+              fieldInstance.$mount();
+              fieldsComponents.push(fieldInstance);
+              $(element).html(fieldInstance.$el);
+            })
+          }
         });
         setTimeout(()=> {
           this.reloadLayout()
@@ -92,7 +89,7 @@
       }
     },
     created() {},
-    mounted() {
+    mounted: function() {
       const hideElements = () => {
         $('.dataTables_info, .dataTables_length').hide();
         $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
@@ -110,17 +107,11 @@
             "order": [ 0, 'asc' ],
             "columns": this.state.headers,
             "ajax": debounce((data, callback) => {
-              //remove listeners
-              const trDomeElements = $('#open_attribute_table table tr');
-              trDomeElements.each(element => {
-                $(element).off('click');
-                $(element).off('mouseover');
-              });
               this.$options.service.getData(data)
                 .then((serverData) => {
                   callback(serverData);
                   this.$nextTick(() => {
-                    this.createdContentBody();
+                    this.createTdContentBody();
                     if (this.isMobile()) {
                       hideElements();
                     }

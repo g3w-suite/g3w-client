@@ -2,11 +2,12 @@
   <tbody id="table_body_attributes">
     <tr role="row" class="feature_attribute"
         style="cursor: pointer"
-        v-for="(feature, index) in features" :key="feature.id"
+        :id="'open_table_row_' + index"
+        v-for="(feature, index) in features" :key="index"
         @mouseover="zoomAndHighLightSelectedFeature(feature, false)"
         @click="[zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
         :selected="selectedRow === index"
-        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: feature.geometry}]">
+        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: hasGeometry}]">
       <td v-for="header in headers" :tab-index="1">
         <field :state="{value: feature.attributes[header.name]}"></field>
       </td>
@@ -30,6 +31,9 @@
       zoomAndHighLightSelectedFeature: {
         type: Function
       },
+      hasGeometry: {
+        type: Boolean
+      }
     },
     data() {
       return {
