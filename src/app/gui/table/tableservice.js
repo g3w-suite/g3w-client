@@ -18,8 +18,7 @@ const TableService = function(options = {}) {
     loading: false,
     allfeatures: 0,
     featurescount: 0,
-    pagination: true,
-    hasGeometry: false
+    pagination: true
   };
   this._async = {
     state: false,
@@ -106,7 +105,6 @@ proto.addFeature = function(feature) {
 };
 
 proto.addFeatures = function(features) {
-  this.state.hasGeometry = this.hasGeometry(features);
   features.forEach((feature) => {
     this.addFeature(feature);
   });
@@ -124,13 +122,6 @@ proto._returnGeometry = function(feature) {
     geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
   }
   return geometry;
-};
-
-proto.hasGeometry = function(features) {
-  if (features.length) {
-    return !!features[0].geometry
-  }
-  return false
 };
 
 proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
