@@ -13,7 +13,7 @@
   import { ALLVALUE }  from '../../constants';
   export default {
     name: "select2",
-    props: ['forminput', 'autocompleteRequest'],
+    props: ['forminput','autocompleteRequest'],
     methods: {
       _initSelect2Element() {
         const { type, attribute } = this.forminput;

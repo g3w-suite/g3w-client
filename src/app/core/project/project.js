@@ -55,7 +55,9 @@ const proto = Project.prototype;
 
 proto.setSearchEndPoint = function(){
   const {search_endpoint, search=[]} = this.state;
-  search.forEach(search => search.search_endpoint = search_endpoint);
+  search.forEach(search => {
+    search.search_endpoint = search_endpoint;
+  });
 };
 
 proto.getAliasUrl = function() {

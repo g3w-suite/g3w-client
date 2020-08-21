@@ -5,23 +5,32 @@
     <form id="g3w-search-form">
       <template v-for="forminput in state.forminputs" :key="forminput.id">
         <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
-          <label :for="forminput.id + ' '">{{ forminput.label }}</label>
-          <input
-            type="number"
-            min="0"
-            @change="changeNumericInput(forminput)"
-            @keyup="changeNumericInput(forminput)"
-            v-model="forminput.value" class="form-control"
-            :id="forminput.id">
-        </div>
+            <label :for="forminput.id + ' '">{{ forminput.label }}</label>
+            <input
+                    type="number"
+                    min="0"
+                    @change="changeNumericInput(forminput)"
+                    @keyup="changeNumericInput(forminput)"
+                    v-model="forminput.value" class="form-control"
+                    :id="forminput.id">
+          </div>
         <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
-          <label :for="forminput.id">{{ forminput.label }}</label>
+          <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
+            <span>{{ forminput.label }}</span>
+            <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+          </label>
           <input @focus="onFocus" type="text" v-model="forminput.value" class="form-control" :id="forminput.id" >
         </div>
         <div v-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text">
-          <label :for="forminput.id">{{ forminput.label }}</label>
+          <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
+            <span>{{ forminput.label }}</span>
+            <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+          </label>
           <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
           <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
+        </div>
+        <div class="search-logicop" style="margin-top: 3px; width:100%">
+          <h4 style="font-weight: bold; text-align: center" class="skin-color">{{ forminput.logicop }}</h4>
         </div>
       </template>
       <div class="form-group">

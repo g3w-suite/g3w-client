@@ -1,5 +1,6 @@
 import Select2 from './select2.vue'
 import {ALLVALUE} from "../../constants";
+import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const Panel = require('gui/panel');
@@ -18,6 +19,9 @@ const SearchPanelComponent = Vue.extend({
     }
   },
   methods: {
+    getLabelOperator(operator){
+      return `[ ${EXPRESSION_OPERATORS[operator]} ]`
+    },
     async onFocus(event) {
       if (this.isMobile()) {
         const top = $(event.target).position().top - 10 ;
@@ -30,14 +34,15 @@ const SearchPanelComponent = Vue.extend({
     async autocompleteRequest(params={}){
       return this.$options.service.autocompleteRequest(params);
     },
-    changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
+    changeDependencyFields({attribute:field, group="AND", value, fillfieldspromises=[]}) {
       const dependency = this.state.dependencies.find((_dependency) => {
         return field === _dependency.observer
       });
       if (dependency) {
         const subscribers = dependency.subscribers || [];
         for (let i = subscribers.length; i--;) {
-          const forminputvalue = this.state.forminputs.find((input) => {
+          const forminputs = Object.values(this.state.search).flat();
+          const forminputvalue = forminputs.find((input) => {
             return input.attribute === subscribers[i].attribute;
           });
           forminputvalue.value = ALLVALUE;
@@ -59,9 +64,10 @@ const SearchPanelComponent = Vue.extend({
     changeNumericInput(input) {
       input.value = input.value || input.value === 0 ? input.value : null;
     },
-    changeInput({attribute, value}={}) {
+    changeInput({group, attribute, value}={}) {
       this.$options.service.changeInput({attribute, value});
       const fillDependencyPromises = this.changeDependencyFields({
+        group,
         attribute,
         value
       });

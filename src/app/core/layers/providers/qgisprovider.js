@@ -34,11 +34,9 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
-proto.getFilterData = async function({field, fieldand, fieldor, suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique}={}){
   const params = {
     field,
-    fieldand,
-    fieldor,
     suggest,
     unique
   };
