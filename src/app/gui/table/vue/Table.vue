@@ -51,7 +51,6 @@
         return !!this.state.headers.length;
       },
       createdContentBody() {
-        const self = this;
         fieldsComponents = fieldsComponents.filter((fieldComponent) => {
           fieldComponent.$destroy();
           return false;
@@ -60,20 +59,17 @@
         trDomeElements.css('cursor', 'pointer');
         trDomeElements.each((index, element) => {
           const feature = this.state.features[index];
-          if (feature.geometry) {
-            $(element).on('click', () => {
-              if ($(this).hasClass( "selected" ))
-                $(this).removeClass( "selected" );
-              else {
-                $('#layer_attribute_table tbody tr').removeClass('selected');
-                $(this).addClass( "selected" )
-              }
-              self.zoomAndHighLightSelectedFeature(feature);
-            });
-            $(element).on('mouseover', () => {
-              self.zoomAndHighLightSelectedFeature(feature, false);
-            });
-          }
+          const hasGeometry = !!feature.geometry;
+          $(element).addClass('feature_attribute');
+          $(element).on('click', ()=> {
+            const selected = $(element).attr("selected");
+            trDomeElements.attr('selected', false);
+            $(element).attr( "selected", !selected );
+            hasGeometry && !selected && this.zoomAndHighLightSelectedFeature(feature);
+          });
+          $(element).on('mouseover', () => {
+            hasGeometry && this.zoomAndHighLightSelectedFeature(feature, false);
+          });
           $(element).children().each((index, element)=> {
             const header = this.state.headers[index];
             const fieldClass = Vue.extend(Field);

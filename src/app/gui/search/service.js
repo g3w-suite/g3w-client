@@ -73,6 +73,7 @@ proto.removeTools = function() {
 
 proto.reload = function() {
   this.state.searches = ProjectsRegistry.getCurrentProject().state.search;
+  this.state.querybuildersearches = QueryBuilderService.getCurrentProjectItems();
 };
 
 

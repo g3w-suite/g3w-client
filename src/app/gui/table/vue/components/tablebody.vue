@@ -4,9 +4,9 @@
         style="cursor: pointer"
         v-for="(feature, index) in features" :key="feature.id"
         @mouseover="zoomAndHighLightSelectedFeature(feature, false)"
-        @click="[zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
+        @click="[selectedRow !== index && zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
         :selected="selectedRow === index"
-        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: feature.geometry}]">
+        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}]">
       <td v-for="header in headers" :tab-index="1">
         <field :state="{value: feature.attributes[header.name]}"></field>
       </td>

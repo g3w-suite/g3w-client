@@ -33,6 +33,7 @@ function SearchService(config={}) {
   this._rootFilterOperator = 'AND';
   this.init = function(config) {
     this.state.title = config.name;
+    this.search_endpoint = config.search_endpoint || 'ows';
     const options = config.options || {};
     this.url = options.queryurl;
     this.filter = options.filter;
@@ -83,6 +84,8 @@ proto.autocompleteRequest = async function({field, value}={}){
       field: this.createFieldsDependenciesAutocompleteParameter({
         field
       }),
+      fieldand: null,
+      fieldor: null,
       suggest: `${field}|${value}`,
       unique: field
     })
@@ -93,11 +96,11 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = function({filter, searchType='wms', queryUrl=this.url, feature_count=10000} ={}) {
+proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=this.url, feature_count=10000} ={}) {
   filter = filter || this.createFilter(searchType);
   return new Promise((resolve, reject) => {
     switch (searchType) {
-      case 'wms':
+      case 'ows':
         this.searchLayer.search({
           filter,
           queryUrl,
@@ -127,11 +130,11 @@ proto.doSearch = function({filter, searchType='wms', queryUrl=this.url, feature_
 /*
 * type wms, vector (for vector api)
 * */
-proto.createFilter = function(type='wms'){
+proto.createFilter = function(type='ows'){
   const filterObject = this.fillFilterInputsWithValues();
   let filter;
   switch (type) {
-    case 'wms':
+    case 'ows':
       const expression = new Expression();
       const layerName = this.searchLayer.getWMSLayerName();
       expression.createExpressionFromFilter(filterObject, layerName);

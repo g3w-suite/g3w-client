@@ -40,6 +40,7 @@ const translations = {
             operators: 'OPERATORI',
             expression: 'ESPRESSIONE'
           },
+          error_run: 'Si è verificato un errore. Verificare se la query è corretta',
           error_test: "Errore nell'esecuzione della query",
           delete: 'Vuoi confermare la cancellazione?',
           additem: 'Inserisci nome della ricerca'
@@ -397,6 +398,7 @@ const translations = {
             operators: 'OPERATORS',
             expression: 'EXPRESSION'
           },
+          error_run: 'An error occurs. Please check the query',
           error_test: "An error occur during query execution",
           delete: 'Do you want delete it?',
           additem: 'Insert the name of the new search'

@@ -13,17 +13,14 @@ const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
   this._cacheValues = {};
-  this._items = {};
-  ProjectsRegistry.oncebefore('setCurrentProject', (project) => {
-    const projectId = project.getId();
-    this._items[projectId] = this.getItems(projectId);
-  })
+  this._items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
 }
 
 const proto = QueryBuilderService.prototype;
 
 proto.getCurrentProjectItems = function() {
   const projectId = ProjectsRegistry.getCurrentProject().getId();
+  this._items[projectId] = this._items[projectId] || [];
   return this._items[projectId];
 };
 
@@ -90,6 +87,11 @@ proto.run = function({layerId, filter, showResult=true}={}){
       }
       resolve(data)
     }).fail((err)=>{
+      GUI.showUserMessage({
+        type: 'alert',
+        message: 'sdk.querybuilder.error_run',
+        autoclose: true
+      });
       reject(err)
     })
   });

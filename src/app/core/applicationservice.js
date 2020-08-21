@@ -424,21 +424,23 @@ const ApplicationService = function() {
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {
+                // remove all toos
+                ProjectsRegistry.onceafter('setCurrentProject', ()=>{
+                  GUI.getComponent('tools').getService().reload();
+                  // reload metadati
+                  GUI.getComponent('metadata').getService().reload();
+                  // reload plugins
+                  PluginsRegistry.reloadPlugins(initConfig, project)
+                    .then(()=>{})
+                    .catch(()=>{})
+                    .finally(()=> {
+                      // reload components
+                      GUI.reloadComponents();
+                      d.resolve(project);
+                    })
+                });
                 // change current project project
                 ProjectsRegistry.setCurrentProject(project);
-                // remove all toos
-                GUI.getComponent('tools').getService().reload();
-                // reload metadati
-                GUI.getComponent('metadata').getService().reload();
-                // reload plugins
-                PluginsRegistry.reloadPlugins(initConfig, project)
-                  .then(()=>{})
-                  .catch(()=>{})
-                  .finally(()=> {
-                  // reload components
-                  GUI.reloadComponents();
-                  d.resolve(project);
-                })
               })
               .fail((err) => {
                 console.log(err);
