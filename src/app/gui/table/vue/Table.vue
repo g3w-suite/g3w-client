@@ -56,15 +56,13 @@
         trDomeElements.css('cursor', 'pointer');
         trDomeElements.each((index, element) => {
           const feature = this.state.features[index];
+          $(element).addClass('feature_attribute');
           if (feature.geometry) {
             $(element).on('click', ()=> {
-              if ($(element).hasClass( "selected" ))
-                $(element).removeClass( "selected" );
-              else {
-                $('#layer_attribute_table tbody tr').removeClass('selected');
-                $(element).addClass( "selected" );
-                this.zoomAndHighLightSelectedFeature(feature);
-              }
+              const selected = $(element).attr("selected");
+              trDomeElements.attr('selected', false);
+              $(element).attr( "selected", !selected );
+              !selected && this.zoomAndHighLightSelectedFeature(feature);
             });
             $(element).on('mouseover', () => {
               this.zoomAndHighLightSelectedFeature(feature, false);
