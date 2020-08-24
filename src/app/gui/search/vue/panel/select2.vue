@@ -59,6 +59,13 @@
             errorLoading(){
               return t("sdk.search.error_loading")
             },
+            searching(){
+              return t("sdk.search.searching")
+            },
+            inputTooShort(args) {
+              const remainingChars = args.minimum - args.input.length;
+              return `${t("sdk.search.autocomplete.inputshort.pre")} ${remainingChars} ${t("sdk.search.autocomplete.inputshort.post")}`;
+            }
           },
         });
         this.select2.on('select2:select', (evt) => {

@@ -7,6 +7,7 @@ const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregis
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
+const NONVALIDVALUES = [null, undefined, ALLVALUE];
 
 function SearchService(config={}) {
   this.debounces =  {
@@ -50,14 +51,14 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
-proto.createSingleFieldParameter = function({field, value, operator='eq'}){
-  return `${field}|${operator.toLowerCase()}|${value}`;
+proto.createSingleFieldParameter = function({field, value, operator='eq', logicop=null}){
+  logicop = logicop && `|${logicop}`;
+  return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
 };
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this._getCurrentFieldDependance(field);
   if (value !== undefined) {
-    console.log(value)
     const fieldParam = this.createSingleFieldParameter({
       field,
       value,
@@ -74,7 +75,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
       field
     })
   }
-  return fields.join();
+  return fields.length && fields.join() || null;
 };
 
 proto.autocompleteRequest = async function({field, value}={}){
@@ -87,7 +88,9 @@ proto.autocompleteRequest = async function({field, value}={}){
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {}
+  } catch(error) {
+    console.log(error)
+  }
   return data.map(value => ({
     id:value,
     text:value
@@ -129,33 +132,26 @@ proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=thi
 * type wms, vector (for vector api)
 * */
 proto.createFilter = function(type='ows'){
-  const filterObject = this.fillFilterInputsWithValues();
   let filter;
+  const inputs = this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
   switch (type) {
     case 'ows':
       const expression = new Expression();
       const layerName = this.searchLayer.getWMSLayerName();
-      expression.createExpressionFromFilter(filterObject, layerName);
+      expression.createExpressionFromFilter(inputs, layerName);
       filter = new Filter();
       filter.setExpression(expression.get());
       break;
     case 'api':
-      const fields = [];
-      for (const andor in filterObject) {
-        if (andor === 'AND') {
-          filterObject[andor].forEach(input =>{
-            const [operator, fieldValue] = Object.entries(input)[0];
-            const [field, value] = Object.entries(fieldValue)[0];
-            const fieldParam = this.createSingleFieldParameter({
-              field,
-              value,
-              operator
-            });
-            fields.push(fieldParam);
-          })
-        }
-      }
-      filter = fields.join();
+      const inputsLength = inputs.length -1 ;
+      const fields = inputs.map((input, index) => this.createSingleFieldParameter({
+          field: input.attribute,
+          value: input.value,
+          operator: input.operator,
+          logicop: index < inputsLength ?  input.logicop: null
+        })
+      );
+      filter = fields.join() || null;
       break;
   }
   return filter;
@@ -179,9 +175,7 @@ proto._run = function() {
 };
 
 proto.changeInput = function({attribute, value} = {}) {
-  const input = this.state.forminputs.find((input) => {
-    return attribute === input.attribute
-  });
+  const input = this.state.forminputs.find(input => attribute === input.attribute);
   input.value = value;
 };
 
@@ -247,20 +241,21 @@ proto._getCurrentFieldDependance = function(field) {
 // check the current value of father dependance
 proto._getDependanceCurrentValue = function(field) {
   const dependance = this.depedencies[field];
-  return this.state.cachedependencies[dependance]._currentValue;
+  return dependance ? this.state.cachedependencies[dependance]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
 };
 
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE, type}={}) {
   const isRoot = this.depedencies.root === field;
+  const notValidValue = value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value = ALLVALUE;
-      subscribe.options.disabled = subscribe.type !== 'autocompletefield';
+      subscribe.options.disabled = notValidValue || subscribe.type !== 'autocompletefield';
       subscribe.options.values.splice(1);
     });
     this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
     this.state.cachedependencies[field]._currentValue = value;
-    if (value !== ALLVALUE) {
+    if (value && value !== ALLVALUE) {
       let isCached;
       let rootValues;
       if (isRoot) {
@@ -360,12 +355,12 @@ proto.fillInputsFormFromFilter = function({filter}) {
       options: Object.assign({}, input.input.options),
       value: ALLVALUE,
       operator: input.op,
-      logicop: id === filterLength -1 ? null : input.logicop,
+      logicop: input.logicop,
       id: input.id || id
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
-      const dependance = forminput.options.dependance;
       forminput.options.values = forminput.options.values === undefined ? [] : forminput.options.values;
+      const dependance = forminput.options.dependance;
       if (dependance) {
         this.depedencies[forminput.attribute] = dependance;
         this.state.loading[dependance] = false;
@@ -398,33 +393,6 @@ proto.getInfoFromLayer = function(ogcService) {
     crs: this.searchLayer.getCrs(),
     serverType: this.searchLayer.getServerType()
   };
-};
-
-proto.fillFilterInputsWithValues = function(filter=this.filter, filterWithValues={}, exclude=[]) {
-  const getvaluefromforminputid = [];
-  filter.forEach(input => {
-    const logicoperator =  input.logicop;
-    filterWithValues[logicoperator] = [];
-    const _input = input.input;
-    if (exclude.indexOf(_input.attribute) === -1)
-      if (Array.isArray(_input))this.fillFilterInputsWithValues(_input);
-      else {
-        const _operator = input.op;
-        const fieldName = input.attribute;
-        const filterInput = {};
-        filterInput[_operator] = {};
-        const forminputwithvalue = this.state.forminputs.find(forminput => {
-          return forminput.attribute === fieldName && getvaluefromforminputid.indexOf(forminput.id) === -1;
-        });
-        getvaluefromforminputid.push(forminputwithvalue.id);
-        const value = forminputwithvalue.value;
-        if (value !== ALLVALUE) {
-          filterInput[_operator][fieldName] = value;
-          filterWithValues[logicoperator].push(filterInput);
-        }
-      }
-  });
-  return filterWithValues;
 };
 
 proto.setSearchLayer = function(layer) {

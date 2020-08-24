@@ -5,9 +5,16 @@ const translations = {
         search: {
           all: 'TUTTE',
           no_results: "Nessun valore trovato",
+          searching: "Sto cercando ..",
           error_loading: "Errore nel caricamento valori",
           layer_not_searchable: "Il layer non è ricercabile",
-          layer_not_querable: "Il layer non è interrogabile"
+          layer_not_querable: "Il layer non è interrogabile",
+          autocomplete: {
+            inputshort: {
+              pre: "Digita almeno",
+              post: "caratteri"
+            }
+          }
         },
         print: {
           no_layers: 'Nessun Layer visibile',
@@ -363,9 +370,16 @@ const translations = {
         search: {
           all: 'ALL',
           no_results: "No results",
+          searching: "Searching ...",
           error_loading: "Error Loading Data",
           layer_not_searchable: "Layer is not searchable",
-          layer_not_querable: "Layer is not querable"
+          layer_not_querable: "Layer is not querable",
+          autocomplete: {
+            inputshort: {
+              pre: "Please eneter",
+              post: "or more characters"
+            }
+          }
         },
         print: {
           no_layers: 'No Layer to print',

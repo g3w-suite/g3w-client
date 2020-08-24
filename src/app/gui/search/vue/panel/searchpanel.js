@@ -34,40 +34,36 @@ const SearchPanelComponent = Vue.extend({
     async autocompleteRequest(params={}){
       return this.$options.service.autocompleteRequest(params);
     },
-    changeDependencyFields({attribute:field, group="AND", value, fillfieldspromises=[]}) {
+    changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
       const dependency = this.state.dependencies.find((_dependency) => {
         return field === _dependency.observer
       });
       if (dependency) {
         const subscribers = dependency.subscribers || [];
         for (let i = subscribers.length; i--;) {
-          const forminputs = Object.values(this.state.search).flat();
-          const forminputvalue = forminputs.find((input) => {
-            return input.attribute === subscribers[i].attribute;
-          });
-          forminputvalue.value = ALLVALUE;
-            fillfieldspromises.push(this.$options.service.fillDependencyInputs({
-              field,
-              subscribers,
-              value,
-              type: forminputvalue.type
-            }));
-            this.changeDependencyFields({
-              attribute: forminputvalue.attribute,
-              value: forminputvalue.value,
-              fillfieldspromises
-            })
-          }
+          const forminputvalue = this.state.forminputs.find(input => input.attribute === subscribers[i].attribute);
+          fillfieldspromises.push(this.$options.service.fillDependencyInputs({
+            field,
+            subscribers,
+            value,
+            type: forminputvalue.type
+          }));
+          this.changeDependencyFields({
+            attribute: forminputvalue.attribute,
+            value: forminputvalue.value,
+            fillfieldspromises
+          })
+        }
       }
       return fillfieldspromises;
     },
     changeNumericInput(input) {
       input.value = input.value || input.value === 0 ? input.value : null;
+      this.changeInput(input);
     },
-    changeInput({group, attribute, value}={}) {
+    changeInput({ attribute, value}={}) {
       this.$options.service.changeInput({attribute, value});
       const fillDependencyPromises = this.changeDependencyFields({
-        group,
         attribute,
         value
       });

@@ -78,64 +78,84 @@ proto._build = function(operator, field, value) {
   return [`"${field}"`, OPERATORS[operator], `${value}`].join(' ');
 };
 
-proto.createExpressionFromFilter = function(filterObject, layername) {
-  function createSingleFilter(booleanObject) {
-    let filterElements = [];
-    let rootFilter;
-    for (const operator in booleanObject) {
-      rootFilter = OPERATORS[operator];
-      const inputs = booleanObject[operator];
-      inputs.forEach((input) => {
-        for (const operator in input) {
-          const value = input[operator];
-          if (Array.isArray(value)) {
-            filterElement = createSingleFilter(input);
-          } else {
-            const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
-            filterOp = OPERATORS[operator];
-            for (const operator in input) {
-              const field = input[operator];
-              for (const name in field) {
-                const value = field[name];
-                if (operator === 'IN') {
-                  const _value = Array.isArray(value) ? value : [value];
-                  const filterValue = `( ${_value.join(',').replace(/,/g, ' , ')} )`;
-                  const  filterElement = `"${name}" ${filterOp} ${filterValue}`;
-                  filterElements.push(filterElement)
-                } else if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
-                  const singolequote = typeof value !== 'number' ? value.split("'") : [];
-                  if (singolequote.length > 1) {
-                    const _filterElements = [];
-                    for (let i = 0; i < singolequote.length; i++) {
-                      const value = singolequote[i];
-                      if (!value)
-                        continue;
-                      const filterOp = 'ILIKE';
-                      const filterValue = `%${value}%`.trim();
-                      const filterElement = `"${name}" ${filterOp} '${filterValue}'`;
-                      _filterElements.push(filterElement)
-                    }
-                    filterElements.push(_filterElements.join(' AND '))
-                  } else {
-                    const filterValue = `${valueExtra}${value}${valueExtra}`;
-                    const filterElement = `"${name}" ${filterOp} '${filterValue}'`;
-                    filterElements.push(filterElement);
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-      rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
-    }
-    return rootFilter;
+proto.createSingleExpressionElement = function({value, attribute, operator, logicop}={}){
+  let filterElement;
+  const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
+  const filterOp = OPERATORS[operator];
+  const filterLogicOperator = logicop && ` ${logicop} ` || '';
+  if (operator === 'IN') {
+    const _value = Array.isArray(value) ? value : [value];
+    const filterValue = `( ${_value.join(',').replace(/,/g, ' , ')} )`;
+    filterElement = `"${attribute}" ${filterOp} ${filterValue}${filterLogicOperator}`;
+  } else if ((value !== null && value !== undefined) && !(Number.isNaN(value) || !value.toString().trim())) {
+    const singolequote = typeof value !== 'number' ? value.split("'") : [];
+    if (singolequote.length > 1) {
+      const _filterElements = [];
+      for (let i = 0; i < singolequote.length; i++) {
+        const value = singolequote[i];
+        if (!value)
+          continue;
+        const filterOp = 'ILIKE';
+        const filterValue = `%${value}%`.trim();
+        const filterElement = `"${attribute}" ${filterOp} '${filterValue}'`;
+        _filterElements.push(filterElement)
+      }
+      filterElement =  `${_filterElements.join(' AND ')}${filterLogicOperator}`;
+    } else filterElement = `"${attribute}" ${filterOp} '${valueExtra}${value}${valueExtra}'${filterLogicOperator}`;
   }
-  const filter = createSingleFilter(filterObject);
-  if (filter)
-    this._expression = `${layername}:${filter}`;
-  return this
+  return filterElement;
 };
 
+proto.createExpressionFromFilterObject = function(filter={}){
+  let filterElements = [];
+  let rootFilter;
+  for (const operator in filter) {
+    rootFilter = OPERATORS[operator];
+    const inputs = filter[operator];
+    inputs.forEach((input) => {
+      for (const operator in input) {
+        const value = input[operator];
+        console.log(value)
+        if (Array.isArray(value)) {
+          this.createExpressionFromFilterObject(input);
+        } else {
+          const field = input[operator];
+          for (const attribute in field) {
+            const value = field[attribute];
+            const fieldElement = this.createSingleExpressionElement({
+              value,
+              operator,
+              attribute
+            });
+            filterElements.push(fieldElement);
+          }
+        }
+      }
+    });
+    rootFilter = (filterElements.length > 0) ? filterElements.join(" "+ rootFilter + " ") : false;
+  }
+  return rootFilter;
+};
+
+proto.createExpressionFromFilterArray = function(inputs=[], layerName){
+  let filter = '';
+  // set logicop of last element to null
+  const inputsLength = inputs.length - 1;
+  console.log(inputsLength)
+  inputs.forEach((input, index) => {
+    filterElement = this.createSingleExpressionElement(input);
+    if (input.logicop && index === inputsLength ) {
+      filterElement = filterElement.substring(0, filterElement.length - (input.logicop.length+1))
+    }
+    filter = `${filter}${filterElement}`;
+  });
+  return filter;
+};
+
+proto.createExpressionFromFilter = function(filter, layerName) {
+  const filterParam = Array.isArray(filter) ? this.createExpressionFromFilterArray(filter) : this.createExpressionFromFilterObject(filter);
+  if (filterParam) this._expression = `${layerName}:${filterParam}`;
+  return this
+};
 
 module.exports = Expression;
