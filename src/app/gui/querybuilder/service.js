@@ -13,7 +13,7 @@ const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
   this._cacheValues = {};
-  this._items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES);
+  this._items = ApplicationService.getLocalItem(QUERYBUILDERSEARCHES) || {};
 }
 
 const proto = QueryBuilderService.prototype;

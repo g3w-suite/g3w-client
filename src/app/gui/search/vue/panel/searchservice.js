@@ -345,7 +345,8 @@ proto.setInputDependencies = function({master, slave}={}) {
 
 proto.createInputsFormFromFilter = function({filter=[]}={}) {
   let id = 0;
-  filter.forEach(input => {
+  const filterLenght = filter.length - 1;
+  filter.forEach((input, index) => {
     const forminput = {
       label: input.label,
       attribute: input.attribute,
@@ -353,7 +354,7 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
       options: {...input.input.options},
       value: null,
       operator: input.op,
-      logicop: input.logicop,
+      logicop: index === filterLenght ? null : input.logicop,
       id: input.id || id
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
