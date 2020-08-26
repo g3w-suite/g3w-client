@@ -141,13 +141,9 @@ proto.createExpressionFromFilterArray = function(inputs=[], layerName){
   let filter = '';
   // set logicop of last element to null
   const inputsLength = inputs.length - 1;
-  console.log(inputsLength)
   inputs.forEach((input, index) => {
-    filterElement = this.createSingleExpressionElement(input);
-    if (input.logicop && index === inputsLength ) {
-      filterElement = filterElement.substring(0, filterElement.length - (input.logicop.length+1))
-    }
-    filter = `${filter}${filterElement}`;
+    const filterElement = this.createSingleExpressionElement(input);
+    filter = `${filter}${(input.logicop && index === inputsLength) ? filterElement.substring(0, filterElement.length - (input.logicop.length+1)): filterElement}`;
   });
   return filter;
 };

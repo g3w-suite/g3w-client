@@ -166,7 +166,6 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
     suggest,
     unique
   });
-
   return response;
 };
 

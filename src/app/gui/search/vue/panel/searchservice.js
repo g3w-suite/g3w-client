@@ -21,30 +21,28 @@ function SearchService(config={}) {
   // reactivity data
   this.state = {
     title: null,
-    dependencies: [],
-    cachedependencies:{},
     forminputs: [],
     loading: {},
     searching: false
   };
-  this.depedencies = {};
+  const {options={}} = config;
+  const layerid = options.querylayerid || options.layerid || null;
+  const filter = options.filter || [];
+  this.inputdependance = {};
+  this.inputdependencies = [];
+  this.cachedependencies = {};
   this.project = ProjectsRegistry.getCurrentProject();
   this.searchLayer = null;
   this.filter = null;
   this.inputs = [];
-  this.init = function(config) {
-    this.state.title = config.name;
-    this.search_endpoint = config.search_endpoint || 'ows';
-    const options = config.options || {};
-    this.url = options.queryurl;
-    this.filter = options.filter;
-    const layerid = options.querylayerid || options.layerid || null;
-    this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
-    const filter = options.filter || [];
-    this.fillInputsFormFromFilter({filter});
-  };
-  // set run function
-  return this.init(config);
+  this.state.title = config.name;
+  this.search_endpoint = config.search_endpoint || 'ows';
+  this.url = options.queryurl;
+  this.filter = options.filter;
+  this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
+  this.createInputsFormFromFilter({
+    filter
+  });
 }
 
 inherit(SearchService, G3WObject);
@@ -57,7 +55,7 @@ proto.createSingleFieldParameter = function({field, value, operator='eq', logico
 };
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
-  const dependendency = this._getCurrentFieldDependance(field);
+  const dependendency = this.getCurrentFieldDependance(field);
   if (value !== undefined) {
     const fieldParam = this.createSingleFieldParameter({
       field,
@@ -88,9 +86,7 @@ proto.autocompleteRequest = async function({field, value}={}){
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {
-    console.log(error)
-  }
+  } catch(error) {}
   return data.map(value => ({
     id:value,
     text:value
@@ -128,12 +124,16 @@ proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=thi
   })
 };
 
+proto.filterValidFormInputs = function(){
+  return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
+};
+
 /*
 * type wms, vector (for vector api)
 * */
 proto.createFilter = function(type='ows'){
   let filter;
-  const inputs = this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
+  const inputs = this.filterValidFormInputs();
   switch (type) {
     case 'ows':
       const expression = new Expression();
@@ -231,42 +231,43 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
   return dependencies
 };
 
-proto._getCurrentFieldDependance = function(field) {
-  const dependance = this.depedencies[field];
+proto.getCurrentFieldDependance = function(field) {
+  const dependance = this.inputdependance[field];
   return dependance && {
-   [dependance]: this.state.cachedependencies[dependance]._currentValue
+   [dependance]: this.cachedependencies[dependance]._currentValue
   } || null;
 };
 
-// check the current value of father dependance
-proto._getDependanceCurrentValue = function(field) {
-  const dependance = this.depedencies[field];
-  return dependance ? this.state.cachedependencies[dependance]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
+// check the current value of dependance
+proto.getDependanceCurrentValue = function(field) {
+  const dependance = this.inputdependance[field];
+  return dependance ? this.cachedependencies[dependance]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
 };
 
-proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE, type}={}) {
-  const isRoot = this.depedencies.root === field;
-  const notValidValue = value === null || value === undefined || value.toString().trim() === '';
+// fill all dependencies inputs based on value
+proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
+  const isRoot = this.inputdependance[field] === undefined;
+  const invalidValue = value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value = ALLVALUE;
-      subscribe.options.disabled = notValidValue || subscribe.type !== 'autocompletefield';
+      subscribe.options.disabled = invalidValue || subscribe.type !== 'autocompletefield';
       subscribe.options.values.splice(1);
     });
-    this.state.cachedependencies[field] = this.state.cachedependencies[field] || {};
-    this.state.cachedependencies[field]._currentValue = value;
+    this.cachedependencies[field] = this.cachedependencies[field] || {};
+    this.cachedependencies[field]._currentValue = value;
     if (value && value !== ALLVALUE) {
       let isCached;
       let rootValues;
       if (isRoot) {
-        const cachedValue = this.state.cachedependencies[field] && this.state.cachedependencies[field][value];
+        const cachedValue = this.cachedependencies[field] && this.cachedependencies[field][value];
         isCached = cachedValue !== undefined;
         rootValues = isCached && cachedValue;
       } else {
-        const dependenceCurrentValue = this._getDependanceCurrentValue(field);
-        const cachedValue = this.state.cachedependencies[field]
-          && this.state.cachedependencies[field][dependenceCurrentValue]
-          && this.state.cachedependencies[field][dependenceCurrentValue][value];
+        const dependenceCurrentValue = this.getDependanceCurrentValue(field);
+        const cachedValue = this.cachedependencies[field]
+          && this.cachedependencies[field][dependenceCurrentValue]
+          && this.cachedependencies[field][dependenceCurrentValue][value];
         isCached = cachedValue !== undefined;
         rootValues = isCached && cachedValue;
       }
@@ -283,93 +284,95 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE, ty
           resolve()
         }
       } else {
-        if (type === 'autocompletefield') {
-          resolve();
-        } else {
-          this.state.loading[field] = true;
-          if (isRoot) this.state.cachedependencies[field][value] = this.state.cachedependencies[field][value] || {};
-          else {
-            const dependenceValue =  this._getDependanceCurrentValue(field);
-            this.state.cachedependencies[field][dependenceValue] = this.state.cachedependencies[field][dependenceValue] || {};
-            this.state.cachedependencies[field][dependenceValue][value] = this.state.cachedependencies[field][dependenceValue][value] || {}
-          }
+        this.state.loading[field] = true;
+        if (isRoot) this.cachedependencies[field][value] = this.cachedependencies[field][value] || {};
+        else {
+          const dependenceValue =  this.getDependanceCurrentValue(field);
+          this.cachedependencies[field][dependenceValue] = this.cachedependencies[field][dependenceValue] || {};
+          this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
+        }
+        // exclude autocomplet subscribers
+        const notAutocompleteSubscribers = subscribers.filter( subscribe => subscribe.type !== 'autocompletefield');
+        if (notAutocompleteSubscribers.length) {
           const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
-          const uniqueParams = subscribers.length && subscribers.length=== 1 ? subscribers[0].attribute : null;
+          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : undefined;
           this.searchLayer.getFilterData({
             field: fieldParams,
             unique: uniqueParams
-          }).then(data => {
-            for (let i = 0; i < subscribers.length; i++) {
-              const subscribe = subscribers[i];
+          }).then(data => {data = uniqueParams ? data : data.data[0].features || [];
+            for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
+              const subscribe = notAutocompleteSubscribers[i];
               if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
               else {
                 const { attribute } = subscribe;
                 const uniqueValues = new Set();
-                data.forEach((feature) => {
-                  const value = feature.attributes[attribute];
-                  value &&  uniqueValues.add(value);
+                data.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
                 });
                 [...uniqueValues].sort().forEach(value => subscribe.options.values.push(value));
               }
-              if (isRoot) this.state.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
+              if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
-                const dependenceValue =  this._getDependanceCurrentValue(field);
-                this.state.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
+                const dependenceValue =  this.getDependanceCurrentValue(field);
+                this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
               subscribe.options.disabled = false;
             }
           }).catch(error => {
             reject(error)
           }).finally(() => {
-              this.state.loading[field] = false;
-              resolve();
-            })
-        }
+            this.state.loading[field] = false;
+            resolve();
+          })
+        } else resolve();
       }
     } else resolve();
   })
 };
 
-proto._checkInputDependencies = function(forminput) {
-  const { dependance } = forminput.options;
-  const dependency = this.state.dependencies.find((_dependency) => {
-    return _dependency.observer === dependance;
-  });
-  !dependency && this.state.dependencies.push({
-      observer: dependance,
-      subscribers: [forminput]
-    }) || dependency.subscribers.push(forminput)
+proto.getDependencies = function(field){
+  return this.inputdependencies[field] || [];
 };
 
-proto.fillInputsFormFromFilter = function({filter}) {
+proto.setInputDependencies = function({master, slave}={}) {
+  this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
+  this.inputdependencies[master].push(slave);
+};
+
+proto.createInputsFormFromFilter = function({filter=[]}={}) {
   let id = 0;
-  const filterLength = filter.length;
   filter.forEach(input => {
     const forminput = {
       label: input.label,
       attribute: input.attribute,
       type: input.input.type || 'textfield',
-      options: Object.assign({}, input.input.options),
-      value: ALLVALUE,
+      options: {...input.input.options},
+      value: null,
       operator: input.op,
       logicop: input.logicop,
       id: input.id || id
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       forminput.options.values = forminput.options.values === undefined ? [] : forminput.options.values;
-      const dependance = forminput.options.dependance;
+      //check if has a dependance
+      const { options:{ dependance } } = forminput;
       if (dependance) {
-        this.depedencies[forminput.attribute] = dependance;
+        //set dependance of input
+        this.inputdependance[forminput.attribute] = dependance;
         this.state.loading[dependance] = false;
         forminput.options.disabled = true;
-        this._checkInputDependencies(forminput);
-      } else this.depedencies.root = forminput.attribute;
+        this.setInputDependencies({
+          master: dependance,
+          slave: forminput
+        });
+      }
       forminput.options.values[0] !== ALLVALUE && forminput.options.values.unshift(ALLVALUE);
       forminput.value = ALLVALUE;
-    } else forminput.value = null;
+    }
     this.state.forminputs.push(forminput);
     id+=1;
   });

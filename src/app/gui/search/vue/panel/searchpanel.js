@@ -34,28 +34,13 @@ const SearchPanelComponent = Vue.extend({
     async autocompleteRequest(params={}){
       return this.$options.service.autocompleteRequest(params);
     },
-    changeDependencyFields({attribute:field, value, fillfieldspromises=[]}) {
-      const dependency = this.state.dependencies.find((_dependency) => {
-        return field === _dependency.observer
-      });
-      if (dependency) {
-        const subscribers = dependency.subscribers || [];
-        for (let i = subscribers.length; i--;) {
-          const forminputvalue = this.state.forminputs.find(input => input.attribute === subscribers[i].attribute);
-          fillfieldspromises.push(this.$options.service.fillDependencyInputs({
-            field,
-            subscribers,
-            value,
-            type: forminputvalue.type
-          }));
-          this.changeDependencyFields({
-            attribute: forminputvalue.attribute,
-            value: forminputvalue.value,
-            fillfieldspromises
-          })
-        }
-      }
-      return fillfieldspromises;
+    changeDependencyFields({attribute:field, value}) {
+      const subscribers = this.$options.service.getDependencies(field);
+      return subscribers.length ? this.$options.service.fillDependencyInputs({
+        field,
+        subscribers,
+        value
+      }): Promise.resolve();
     },
     changeNumericInput(input) {
       input.value = input.value || input.value === 0 ? input.value : null;
@@ -63,16 +48,13 @@ const SearchPanelComponent = Vue.extend({
     },
     changeInput({ attribute, value}={}) {
       this.$options.service.changeInput({attribute, value});
-      const fillDependencyPromises = this.changeDependencyFields({
+      this.state.searching = true;
+      this.changeDependencyFields({
         attribute,
         value
-      });
-      if (fillDependencyPromises.length) {
-        this.state.searching = true;
-        Promise.all(fillDependencyPromises).then(() => {
-          this.state.searching = false;
-        })
-      }
+      }).finally(() => {
+        this.state.searching = false;
+      })
     },
     doSearch: function(event) {
      event.preventDefault();
