@@ -179,6 +179,7 @@ proto.getMapLayer = function(options={}, extraParams) {
   let mapLayer;
   const method = this.isExternalWMS() ? 'GET' : this.getOwsMethod();
   if (this.isCached()) {
+    options.extent = this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null;
     mapLayer = new XYZLayer(options, method);
   } else {
     if (this.isExternalWMS() && this.config.source && this.config.source.type === 'arcgismapserver') {

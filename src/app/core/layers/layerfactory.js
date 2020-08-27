@@ -71,6 +71,4 @@ function LayerFactory() {
   }
 }
 
-
-
 module.exports = new LayerFactory();

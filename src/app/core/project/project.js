@@ -34,12 +34,12 @@ function Project(config={}, options={}) {
   // process layers
   this._processLayers();
   // set the project projection
-  this._projection = Projections.get(this.state.crs, this.state.proj4, this.state.extent);
+  this._projection = Projections.get(this.state.crs, this.state.proj4);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
   this.setters = {
     setBaseLayer: function(id) {
-      this.state.baselayers.forEach((baseLayer) => {
+      this.state.baselayers.forEach(baseLayer => {
         this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id === id);
         baseLayer.visible = (baseLayer.id === id);
       })
@@ -158,7 +158,7 @@ proto._buildLayersStore = function() {
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
-  layers.forEach((layerConfig) => {
+  layers.forEach(layerConfig => {
     // add projection
     layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs, layerConfig.proj4) : this._projection;
     //add ows_method

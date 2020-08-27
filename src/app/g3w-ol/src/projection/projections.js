@@ -1,10 +1,11 @@
 const Projection = require('./projection');
+const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {
   get: function(crs, proj4def, extent) {
     crs = Projections.normalizeCrs(crs);
     const _proj =  ol.proj.projections ? ol.proj.projections : ol.proj;
-    const cachedProjection = _proj.get(crs);
+    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs) !== -1 ?  _proj.get(crs) : null;
     if (cachedProjection) return cachedProjection;
     const projection = new Projection({
       crs,
@@ -12,6 +13,7 @@ const Projections = {
       extent
     });
     _proj.add ? _proj.add(crs, projection) : _proj.addProjection(projection);
+    ADDEDPROJECTIONS.push(crs);
     return projection;
   },
   normalizeCrs: function(crs) {

@@ -50,6 +50,7 @@ proto._makeOlLayer = function(){
   const layerOptions = {
     url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
     maxZoom: 20,
+    extent: this.config.extent,
     iframe_internal: this.iframe_internal
   };
 

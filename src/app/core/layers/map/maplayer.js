@@ -6,6 +6,7 @@ function MapLayer(config={}) {
   this.config = config;
   this.id = config.id;
   this.iframe_internal = config.iframe_internal || false;
+  this.extent = config.extent;
   this.projection = config.projection;
   base(this);
 }

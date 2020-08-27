@@ -105,6 +105,7 @@ RasterLayers._WMSLayer = function(options={}) {
     name: layerObj.name,
     opacity: layerObj.opacity || 1.0,
     visible:layerObj.visible,
+    extent: layerObj.extent,
     maxResolution: layerObj.maxResolution
   };
 
@@ -124,21 +125,14 @@ RasterLayers._WMSLayer = function(options={}) {
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  if (!options.url){
-    return;
-  }
+  const {url, projection, maxZoom, minZoom, extent} = options;
+  if (!url) return;
   const sourceOptions = {
-    url: options.url
+    url,
+    maxZoom,
+    minZoom,
+    projection,
   };
-  if (options.projection) {
-    sourceOptions.projection = options.projection;
-  }
-  if (options.maxZoom) {
-    sourceOptions.maxZoom = options.maxZoom;
-  }
-  if (options.minZoom) {
-    sourceOptions.minZoom = options.minZoom;
-  }
   if (iframe_internal)
     loadImageTileFunction({
       method,
@@ -146,8 +140,8 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
       sourceOptions
     });
   const source = new ol.source.XYZ(sourceOptions);
-
   return new ol.layer.Tile({
+    extent: projection.getAxisOrientation() === 'new' ? [extent[1], extent[3], extent[0], extent[2]]: extent,
     source
   });
 };
