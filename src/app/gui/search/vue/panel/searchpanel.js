@@ -46,8 +46,8 @@ const SearchPanelComponent = Vue.extend({
       input.value = input.value || input.value === 0 ? input.value : null;
       this.changeInput(input);
     },
-    changeInput({ attribute, value}={}) {
-      this.$options.service.changeInput({attribute, value});
+    changeInput({ id, attribute, value}={}) {
+      this.$options.service.changeInput({id, value});
       this.state.searching = true;
       this.changeDependencyFields({
         attribute,

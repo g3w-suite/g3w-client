@@ -141,7 +141,7 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
     });
   const source = new ol.source.XYZ(sourceOptions);
   return new ol.layer.Tile({
-    extent: projection.getAxisOrientation() === 'new' ? [extent[1], extent[3], extent[0], extent[2]]: extent,
+    extent: projection.getAxisOrientation() === 'neu' ? [extent[1], extent[3], extent[0], extent[2]]: extent,
     source
   });
 };

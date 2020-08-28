@@ -174,8 +174,8 @@ proto._run = function() {
   })
 };
 
-proto.changeInput = function({attribute, value} = {}) {
-  const input = this.state.forminputs.find(input => attribute === input.attribute);
+proto.changeInput = function({id, value} = {}) {
+  const input = this.state.forminputs.find(input => id == input.id);
   input.value = value;
 };
 
@@ -247,11 +247,11 @@ proto.getDependanceCurrentValue = function(field) {
 // fill all dependencies inputs based on value
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
   const isRoot = this.inputdependance[field] === undefined;
-  const invalidValue = value === null || value === undefined || value.toString().trim() === '';
+  const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value = ALLVALUE;
-      subscribe.options.disabled = invalidValue || subscribe.type !== 'autocompletefield';
+      subscribe.options.disabled = subscribe.type !== 'autocompletefield' || invalidValue ;
       subscribe.options.values.splice(1);
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};

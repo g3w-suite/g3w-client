@@ -5,7 +5,10 @@
     <form id="g3w-search-form">
       <template v-for="forminput in state.forminputs" :key="forminput.id">
         <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
-            <label :for="forminput.id + ' '">{{ forminput.label }}</label>
+          <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
+            <span>{{ forminput.label || forminput.attribute }}</span>
+            <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
+          </label>
             <input type="number" min="0" @change="changeNumericInput(forminput)" @input="changeNumericInput(forminput)"
               v-model="forminput.value" class="form-control"
               :id="forminput.id">

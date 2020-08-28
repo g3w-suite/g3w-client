@@ -69,9 +69,11 @@
           },
         });
         this.select2.on('select2:select', (evt) => {
+          const id = $(evt.target).attr('id');
           const attribute = $(evt.target).attr('name');
           const value = evt.params.data.id;
           this.$emit('select-change', {
+            id,
             attribute,
             value,
             type: this.forminput.type

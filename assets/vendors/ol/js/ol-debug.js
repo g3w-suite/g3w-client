@@ -6587,6 +6587,7 @@ ol.tilegrid.TileGrid.tmpTileCoord_ = [0, 0, 0];
  * @api
  */
 ol.tilegrid.TileGrid.prototype.forEachTileCoord = function(extent, zoom, callback) {
+  console.log(extent)
   var tileRange = this.getTileRangeForExtentAndZ(extent, zoom);
   for (var i = tileRange.minX, ii = tileRange.maxX; i <= ii; ++i) {
     for (var j = tileRange.minY, jj = tileRange.maxY; j <= jj; ++j) {
@@ -7682,7 +7683,6 @@ ol.events.EventTarget.prototype.addEventListener = function(type, listener) {
  *     event object or if any of the listeners returned false.
  */
 ol.events.EventTarget.prototype.dispatchEvent = function(event) {
-  console.log(event)
   var evt = typeof event === 'string' ? new ol.events.Event(event) : event;
   var type = evt.type;
   evt.target = this;
@@ -74677,6 +74677,7 @@ goog.require('ol.tilecoord');
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
 ol.TileUrlFunction.createFromTemplate = function(template, tileGrid) {
+  console.log(template)
   var zRegEx = /\{z\}/g;
   var xRegEx = /\{x\}/g;
   var yRegEx = /\{y\}/g;
@@ -74692,6 +74693,7 @@ ol.TileUrlFunction.createFromTemplate = function(template, tileGrid) {
       if (!tileCoord) {
         return undefined;
       } else {
+        console.log(tileCoord)
         return template.replace(zRegEx, tileCoord[0].toString())
             .replace(xRegEx, tileCoord[1].toString())
             .replace(yRegEx, function() {
@@ -75387,6 +75389,7 @@ ol.source.UrlTile.prototype.setTileUrlFunction = function(tileUrlFunction, opt_k
  * @api
  */
 ol.source.UrlTile.prototype.setUrl = function(url) {
+  console.log(url, this.tileGrid)
   var urls = this.urls = ol.TileUrlFunction.expandUrl(url);
   this.setTileUrlFunction(this.fixedTileUrlFunction ?
     this.fixedTileUrlFunction.bind(this) :
@@ -76048,7 +76051,6 @@ ol.source.XYZ = function(opt_options) {
       minZoom: options.minZoom,
       tileSize: options.tileSize
     });
-
   ol.source.TileImage.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
