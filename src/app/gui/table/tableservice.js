@@ -18,6 +18,8 @@ const TableService = function(options = {}) {
     loading: false,
     allfeatures: 0,
     featurescount: 0,
+    fields: [],
+    formStructure: this.layer.getEditorFormStructure(),
     pagination: true
   };
   this._async = {
@@ -36,6 +38,12 @@ proto.getHeaders = function() {
   return this.layer.getTableHeaders();
 };
 
+proto.setFields = function(){
+  const feature = this.state.features[0];
+  const attributes = Object.keys(feature.attributes);
+  this.state.fields = this.getHeaders().filter(header => attributes.indexOf(header.name) !==-1);
+};
+
 // function need to work with pagination
 proto.setDataForDataTable = function() {
   const data = [];
@@ -47,6 +55,7 @@ proto.setDataForDataTable = function() {
     });
     data.push(values)
   });
+  this.state.features.length && this.setFields();
   return data;
 };
 

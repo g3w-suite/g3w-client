@@ -22,37 +22,19 @@
     </div>
   </div>
   <div v-if="table.rows.length">
-    <table id="relationtable" class="table table-striped" width="100%">
-      <thead>
-        <tr>
-          <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>
-          <th v-for="column in table.columns">{{ column }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-for="row in table.rows">
-          <tr :class="{'selected': table.rowFormStructure === row}">
-            <td
-                @click="showFormStructureRow($event, row)"
-                style="cursor: pointer" v-if="table.formStructure">
-              <span style="max-width: 15px; width: 15px;" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
-            </td>
-            <template v-if="table.formStructure && table.rowFormStructure === row">
-              <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
-              </td>
-            </template>
-            <template v-else>
-              <td v-for="value in row">
-                <field :state="{value:value}"></field>
-              </td>
-            </template>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+    <table-row-form-input :id="'relationtable'" :table="table" @show-hide-form-structure="resize()">
+      <template v-slot:header>
+        <th v-for="column in table.columns">{{ column }}</th>
+      </template>
+    </table-row-form-input>
   </div>
   <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
 </div>
+<script>
+  import TableRowFormInput from "gui/table/vue/TableRowFormInput.vue";
+  export default {
+    components: {
+      TableRowFormInput
+    }
+  }
+</script>

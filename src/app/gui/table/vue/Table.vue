@@ -1,20 +1,22 @@
 <template>
   <div id="open_attribute_table">
-    <table v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
-      <thead>
-        <tr>
-          <th v-for="header in state.headers">{{ header.label }}</th>
-        </tr>
-      </thead>
-      <table-body :headers="state.headers" :features="state.features" :zoomAndHighLightSelectedFeature="zoomAndHighLightSelectedFeature"></table-body>
-    </table>
+    <table-row-form-input v-if="hasHeaders()" :selectRow="true" :id="'layer_attribute_table'" @hook:mounted="tableMounted" :custom-class="'display compact nowrap'"
+      :table="{
+      formStructure: state.formStructure,
+       fields: state.fields,
+       columns: state.headers.map(header=> header.label),
+       rows:state.features.map(feature=> state.headers.map(header => feature.attributes[header.name]))}" @show-hide-form-structure="resize()">
+      <template v-slot:header>
+        <th v-for="header in state.headers">{{ header.label }}</th>
+      </template>
+    </table-row-form-input>
     <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
   </div>
 </template>
 
 <script>
-  import TableBody from "./components/tablebody.vue";
+  import TableRowFormInput from "./TableRowFormInput.vue";
   const Field = require('gui/fields/g3w-field.vue');
   const debounce = require('core/utils/utils').debounce;
   const {resizeMixin} = require('gui/vue/vue.mixins');
@@ -33,19 +35,22 @@
       }
     },
     components: {
-      TableBody
+      TableRowFormInput,
+      Field
     },
     methods: {
+      toggleRow(index) {
+        this.selectedRow = this.selectedRow === index ? null : index;
+      },
       _setLayout: function() {
         this.$options.service._setLayout();
       },
       zoomAndHighLightSelectedFeature: function(feature, zoom=true) {
         feature.geometry && this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
       },
-      reloadLayout() {
-        this.$nextTick(() => {
-          dataTable.columns.adjust();
-        });
+      async reloadLayout() {
+        await this.$nextTick();
+        dataTable && dataTable.columns.adjust();
       },
       hasHeaders() {
         return !!this.state.headers.length;
@@ -85,7 +90,7 @@
             $(element).html(fieldInstance.$el);
           })
         });
-        setTimeout(()=> {
+        setTimeout(() => {
           this.reloadLayout()
         }, 0)
       },
@@ -94,69 +99,65 @@
         const tableHeight = $(".content").height();
         const tableHeaderHeight = $('#open_attribute_table  div.dataTables_scrollHeadInner').height();
         $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
+      },
+      async tableMounted(){
+        const hideElements = () => {
+          $('.dataTables_info, .dataTables_length').hide();
+          $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
+          $('.dataTables_filter').css('float', 'right');
+          $('.dataTables_paginate').css('margin', '0');
+        };
+        await this.$nextTick();
+        this.first = false;
+        dataTable = this.state.pagination ? $('#layer_attribute_table').DataTable({
+          "lengthMenu": this.state.pageLengths,
+          "scrollX": true,
+          "scrollCollapse": true,
+          "order": [this.state.formStructure ? 1 : 0, 'asc'],
+          "columnDefs": [
+            this.state.formStructure ? { "orderable": false, "targets": 0 }: null
+          ],
+          "ajax": debounce((data, callback) => {
+            //remove listeners
+            const trDomeElements = $('#layer_attribute_table tr');
+            trDomeElements.each(element => {
+              $(element).off('click');
+              $(element).off('mouseover');
+            });
+            this.$options.service.getData(data)
+              .then( async serverData => {
+                callback(serverData);
+                await this.$nextTick();
+                this.createdContentBody();
+                this.isMobile() && hideElements();
+              })
+              .catch((error) => {
+                console.log(error)
+              })
+          }, 800),
+          "serverSide": true,
+          "processing": true,
+          "deferLoading": this.state.allfeatures
+        }) : $('#layer_attribute_table').DataTable({
+          "lengthMenu": this.state.pageLengths,
+          "scrollX": true,
+          "scrollCollapse": true,
+          "order": [ this.state.formStructure ? 1 : 0, 'asc' ],
+          "columnDefs": [
+            this.state.formStructure ? {
+            "orderable": false, "targets": 0
+          }: null
+          ],
+        });
+        this.isMobile() && hideElements();
       }
     },
     created() {},
     mounted() {
       this.setContentKey = GUI.onafter('setContent', this.resize);
-      const hideElements = () => {
-        $('.dataTables_info, .dataTables_length').hide();
-        $('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
-        $('.dataTables_filter').css('float', 'right');
-        $('.dataTables_paginate').css('margin', '0');
-      };
-      this.$nextTick(() => {
-        this.first = false;
-        if (this.state.pagination) {
-          //pagination
-          dataTable = $('#open_attribute_table table').DataTable({
-            "lengthMenu": this.state.pageLengths,
-            "scrollX": true,
-            "scrollCollapse": true,
-            "order": [ 0, 'asc' ],
-            "columns": this.state.headers,
-            "ajax": debounce((data, callback) => {
-              //remove listeners
-              const trDomeElements = $('#open_attribute_table table tr');
-              trDomeElements.each(element => {
-                $(element).off('click');
-                $(element).off('mouseover');
-              });
-              this.$options.service.getData(data)
-                .then((serverData) => {
-                  callback(serverData);
-                  this.$nextTick(() => {
-                    this.createdContentBody();
-                    if (this.isMobile()) {
-                      hideElements();
-                    }
-                  })
-                })
-                .catch((error) => {
-                  console.log(error)
-                })
-            }, 800),
-            "serverSide": true,
-            "processing": true,
-            //"responsive": true,
-            "deferLoading": this.state.allfeatures
-          });
-        } else {
-          // no pagination all data
-          dataTable = $('#open_attribute_table table').DataTable({
-            "lengthMenu": this.state.pageLengths,
-            "scrollX": true,
-            "scrollCollapse": true,
-            "order": [ 0, 'asc' ],
-            //"responsive": true,
-          });
-        }
-        if (this.isMobile()) {
-          hideElements();
-        }
-      });
     },
     beforeDestroy() {
+      console.log(dataTable)
       GUI.un('setContent', this.setContentKey);
       dataTable.destroy();
       dataTable = null;
