@@ -17,7 +17,7 @@ const proto = GeolocationControl.prototype;
 proto._showMarker = function(coordinates, show=true){
   const feature = new ol.Feature({
     geometry: new ol.geom.Point(coordinates)
-  })
+  });
   if (show) this._layer.getSource().addFeature(feature);
   else this._layer.getSource().clear();
 };
@@ -42,7 +42,7 @@ proto.setMap = function(map) {
             })
           })
         })
-      })
+      });
       const coordinates = geolocation.getPosition();
       const view = map.getView();
       map.addLayer(this._layer);
@@ -55,15 +55,11 @@ proto.setMap = function(map) {
       $(this.element).on('click', () => {
 
       });
-    } else {
-      this.hideControl();
-    }
+    } else this.hideControl();
   });
   geolocation.once('error', (e) => {
     this.hideControl();
-    if (e.code !== 1) {
-      this.dispatchEvent('error');
-    }
+    if (e.code !== 1) this.dispatchEvent('error');
   });
 };
 

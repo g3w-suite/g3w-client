@@ -734,143 +734,144 @@ proto._setupControls = function() {
           });
           break;
         case 'querybypolygon':
-          const getControlLayers = () =>{
-            const controlQuerableLayers = getMapLayersByFilter({
-              QUERYABLE: true,
-              SELECTEDORALL: true
-            });
-            const controlFiltrableLayers = getMapLayersByFilter({
-              FILTERABLE: true,
-              SELECTEDORALL: true
-            });
-            return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
-          };
-
-          control = this.createMapControl(controlType, {
-            options: {
-              layers: getControlLayers(),
-              help: "sdk.mapcontrols.querybypolygon.help"
-            }
-          });
-          if (control) {
-            this._changeMapMapControls.push({
-              control,
-              getVisible: () => {
-                const controlLayers = getControlLayers();
-                return control.checkVisibile(controlLayers);
+          if (!isMobile.any) {
+            const getControlLayers = () =>{
+              const controlQuerableLayers = getMapLayersByFilter({
+                QUERYABLE: true,
+                SELECTEDORALL: true
+              });
+              const controlFiltrableLayers = getMapLayersByFilter({
+                FILTERABLE: true,
+                SELECTEDORALL: true
+              });
+              return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
+            };
+            control = this.createMapControl(controlType, {
+              options: {
+                layers: getControlLayers(),
+                help: "sdk.mapcontrols.querybypolygon.help"
               }
             });
-            const showQueryResults = GUI.showContentFactory('query');
-            const eventKey = control.on('picked', throttle((e) => {
-              let results = {};
-              let geometry;
-              const coordinates = e.coordinates;
-              this.getMap().getView().setCenter(coordinates);
-              let layersFilterObject = {
-                QUERYABLE: true,
-                SELECTED: true,
-                VISIBLE: true
-              };
-              const queryResultsPanel = showQueryResults('');
-              const layers = getMapLayersByFilter(layersFilterObject);
-              let queryResulsPromise = getQueryLayersPromisesByCoordinates(
-                layers,
-                {
-                  map,
-                  feature_count,
-                  coordinates
+            if (control) {
+              this._changeMapMapControls.push({
+                control,
+                getVisible: () => {
+                  const controlLayers = getControlLayers();
+                  return control.checkVisibile(controlLayers);
+                }
               });
-              queryResulsPromise.then((responses) => {
-                let layersResults = responses;
-                let queriesPromise;
-                results = {};
-                // unify results of the promises
-                results.query = layersResults[0] ? layersResults[0].query : null;
-                if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
-                  geometry = layersResults[0].data[0].features[0].getGeometry();
-                  const excludeLayers = [layersResults[0].data[0].layer];
-                  if (geometry) {
-                    let filter = new Filter();
-                    let layerFilterObject = {
-                      ALLNOTSELECTED: true,
-                      FILTERABLE: true,
-                      VISIBLE: true
-                    };
-                    const querymultilayers = this.project.isQueryMultiLayers(controlType);
-                    let filterGeometry = geometry;
-                    if (querymultilayers) {
-                      const layers = getMapLayersByFilter(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
-                      queriesPromise = getQueryLayersPromisesByGeometry(layers,
-                        {
-                          geometry,
-                          bbox:false,
-                          feature_count,
-                          projection: this.getProjection()
-                        }
-                      )
-                    } else {
-                      const d = $.Deferred();
-                      queriesPromise = d.promise();
-                      const layers = getMapLayersByFilter(layerFilterObject);
-                      if (layers.length === 0) d.resolve([]);
-                      else {
-                        const queryResponses = [];
-                        const feature_count = this.project.getQueryFeatureCount();
-                        const mapCrs = this.getCrs();
-                        let layersLenght = layers.length;
-                        layers.forEach((layer) => {
-                          const layerCrs = layer.getProjection().getCode();
-                          if (mapCrs !== layerCrs)
-                            filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
-                          filter.setGeometry(filterGeometry);
-                          layer.query({
-                            filter,
-                            feature_count
-                          }).then((response) => {
-                            queryResponses.push(response)
-                          }).always(() => {
-                            layersLenght -= 1;
-                            if (layersLenght === 0)
-                              d.resolve(queryResponses)
-                          })
-                        });
-                      }
-                    }
-                    this.highlightGeometry(geometry);
-                  }
-                  queriesPromise
-                    .then((args) => {
-                      layersResults = args;
-                      const results = {
-                        query: layersResults[0] ? layersResults[0].query : null,
-                        data: []
+              const showQueryResults = GUI.showContentFactory('query');
+              const eventKey = control.on('picked', throttle((e) => {
+                let results = {};
+                let geometry;
+                const coordinates = e.coordinates;
+                this.getMap().getView().setCenter(coordinates);
+                let layersFilterObject = {
+                  QUERYABLE: true,
+                  SELECTED: true,
+                  VISIBLE: true
+                };
+                const queryResultsPanel = showQueryResults('');
+                const layers = getMapLayersByFilter(layersFilterObject);
+                let queryResulsPromise = getQueryLayersPromisesByCoordinates(
+                  layers,
+                  {
+                    map,
+                    feature_count,
+                    coordinates
+                  });
+                queryResulsPromise.then((responses) => {
+                  let layersResults = responses;
+                  let queriesPromise;
+                  results = {};
+                  // unify results of the promises
+                  results.query = layersResults[0] ? layersResults[0].query : null;
+                  if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
+                    geometry = layersResults[0].data[0].features[0].getGeometry();
+                    const excludeLayers = [layersResults[0].data[0].layer];
+                    if (geometry) {
+                      let filter = new Filter();
+                      let layerFilterObject = {
+                        ALLNOTSELECTED: true,
+                        FILTERABLE: true,
+                        VISIBLE: true
                       };
-                      layersResults.forEach((result) => {
-                        if (result.data)
-                          result.data.forEach(data => {results.data.push(data)});
+                      const querymultilayers = this.project.isQueryMultiLayers(controlType);
+                      let filterGeometry = geometry;
+                      if (querymultilayers) {
+                        const layers = getMapLayersByFilter(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
+                        queriesPromise = getQueryLayersPromisesByGeometry(layers,
+                          {
+                            geometry,
+                            bbox:false,
+                            feature_count,
+                            projection: this.getProjection()
+                          }
+                        )
+                      } else {
+                        const d = $.Deferred();
+                        queriesPromise = d.promise();
+                        const layers = getMapLayersByFilter(layerFilterObject);
+                        if (layers.length === 0) d.resolve([]);
+                        else {
+                          const queryResponses = [];
+                          const feature_count = this.project.getQueryFeatureCount();
+                          const mapCrs = this.getCrs();
+                          let layersLenght = layers.length;
+                          layers.forEach((layer) => {
+                            const layerCrs = layer.getProjection().getCode();
+                            if (mapCrs !== layerCrs)
+                              filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                            filter.setGeometry(filterGeometry);
+                            layer.query({
+                              filter,
+                              feature_count
+                            }).then((response) => {
+                              queryResponses.push(response)
+                            }).always(() => {
+                              layersLenght -= 1;
+                              if (layersLenght === 0)
+                                d.resolve(queryResponses)
+                            })
+                          });
+                        }
+                      }
+                      this.highlightGeometry(geometry);
+                    }
+                    queriesPromise
+                      .then((args) => {
+                        layersResults = args;
+                        const results = {
+                          query: layersResults[0] ? layersResults[0].query : null,
+                          data: []
+                        };
+                        layersResults.forEach((result) => {
+                          if (result.data)
+                            result.data.forEach(data => {results.data.push(data)});
+                        });
+                        queryResultsPanel.setZoomToResults(false);
+                        queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
+                      })
+                      .fail((error) => {
+                        GUI.notify.error(t("info.server_error"));
+                        GUI.closeContent();
+                      })
+                      .always(() => {
+                        this.clearHighlightGeometry();
                       });
-                      queryResultsPanel.setZoomToResults(false);
-                      queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
-                    })
-                    .fail((error) => {
-                      GUI.notify.error(t("info.server_error"));
-                      GUI.closeContent();
-                    })
-                    .always(() => {
-                      this.clearHighlightGeometry();
-                    });
-                } else
-                  queryResultsPanel.setQueryResponse([]);
-              })
-              .fail(() => {
-                GUI.notify.error(t("info.server_error"));
-                GUI.closeContent();
-              })
-            }));
-            control.setEventKey({
-              eventType: 'picked',
-              eventKey
-            });
+                  } else
+                    queryResultsPanel.setQueryResponse([]);
+                })
+                  .fail(() => {
+                    GUI.notify.error(t("info.server_error"));
+                    GUI.closeContent();
+                  })
+              }));
+              control.setEventKey({
+                eventType: 'picked',
+                eventKey
+              });
+            }
           }
           break;
         case 'querybbox':
@@ -995,40 +996,38 @@ proto._setupControls = function() {
           this.on('viewerset', () => {
             this.viewer.map.addLayer(control.getLayer());
           });
-          if (!isMobile.any) {
-            const streetViewService = new StreetViewService();
-            streetViewService.init().then(()=> {
-              const position = {
-                lat: null,
-                lng: null
-              };
-              const closeContentFnc = () => {
-                control.clearMarker();
-              };
-              streetViewService.onafter('postRender', (position) => {
-                control.setPosition(position);
+          const streetViewService = new StreetViewService();
+          streetViewService.init().then(()=> {
+            const position = {
+              lat: null,
+              lng: null
+            };
+            const closeContentFnc = () => {
+              control.clearMarker();
+            };
+            streetViewService.onafter('postRender', (position) => {
+              control.setPosition(position);
+            });
+            if (control) {
+              this._setMapControlVisible({
+                control,
+                visible: true
               });
-              if (control) {
-                this._setMapControlVisible({
-                  control,
-                  visible: true
-                });
-                control.on('picked', throttle((e) => {
-                  GUI.off('closecontent', closeContentFnc);
-                  const coordinates = e.coordinates;
-                  const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
-                  position.lat = lonlat[1];
-                  position.lng = lonlat[0];
-                  streetViewService.showStreetView(position);
-                  GUI.on('closecontent', closeContentFnc);
-                }));
-                control.on('disabled', () => {
-                  GUI.closeContent();
-                  GUI.off('closecontent', closeContentFnc);
-                })
-              }
-            })
-          }
+              control.on('picked', throttle((e) => {
+                GUI.off('closecontent', closeContentFnc);
+                const coordinates = e.coordinates;
+                const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
+                position.lat = lonlat[1];
+                position.lng = lonlat[0];
+                streetViewService.showStreetView(position);
+                GUI.on('closecontent', closeContentFnc);
+              }));
+              control.on('disabled', () => {
+                GUI.closeContent();
+                GUI.off('closecontent', closeContentFnc);
+              })
+            }
+          })
           break;
         case 'scaleline':
           conntrol = this.createMapControl(controlType, {
@@ -1528,10 +1527,10 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const extent = project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
   const minyRes = ol.extent.getHeight(extent) / height;
-  const maxResolution = Math.max(maxxRes,minyRes);
+  const maxResolution = Math.min(maxxRes,minyRes);
   const initxRes = ol.extent.getWidth(initextent) / width;
   const inityRes = ol.extent.getHeight(initextent) / height;
-  let resolution = Math.max(initxRes,inityRes);
+  const resolution = Math.min(initxRes,inityRes);
   const center = ol.extent.getCenter(initextent);
   return {
     projection,
@@ -1583,6 +1582,7 @@ proto._setupViewer = function(width, height) {
     stopEvent: false
   });
 
+  VIEW = this.viewer.map.getView()
   this.viewer.map.addOverlay(this._marker);
   this.emit('ready');
 };

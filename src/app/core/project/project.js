@@ -200,6 +200,10 @@ proto.getState = function() {
   return this.state;
 };
 
+proto.getPrint = function(){
+  return this.state.print || [];
+};
+
 proto.getSearches = function(){
   return this.state.search || [];
 };

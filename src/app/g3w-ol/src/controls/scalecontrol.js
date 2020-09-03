@@ -1,5 +1,6 @@
 const layout = require('./utils').layout;
 const changeLayout = require('./utils').changeLayoutBottomControl;
+const t = require('core/i18n/i18n.service').t;
 const getResolutionFromScale = require('../utils/utils').getResolutionFromScale;
 const getScaleFromResolution = require('../utils/utils').getScaleFromResolution;
 const SCALES = [
@@ -37,8 +38,8 @@ proto.layout = function(map) {
     width: '120px',
     height: '20px',
     language: {
-      noResults: function (params) {
-        return "Scala non valida";
+      noResults(params) {
+        return t("sdk.mapcontrols.scale.no_valid_scale");
       }
     },
     minimumResultsForSearch: this.isMobile ? -1 : 0,

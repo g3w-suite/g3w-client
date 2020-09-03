@@ -37,6 +37,8 @@ const DateTimePickerInput = Vue.extend({
         $(`#${this.iddatetimepicker}`).datetimepicker({
           defaultDate: date,
           format: datetimedisplayformat,
+          ignoreReadonly: true,
+          allowInputToggle: true,
           toolbarPlacement: 'top',
           widgetPositioning: {
             vertical: 'auto',

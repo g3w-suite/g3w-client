@@ -202,6 +202,9 @@ const translations = {
               tooltip: "Area",
               help: "Clicca per continuare a disegnare il poligono.<br>CANC se si vuole cancellare l'ultimo vertice inserito"
             }
+          },
+          scale: {
+            no_valid_scale: "Scala non valida"
           }
         },
         relations: {
@@ -566,6 +569,9 @@ const translations = {
               tooltip: "Area",
               help: "Click to draw poligon.Press <br>CANC if you want delete last vertex"
             }
+          },
+          scale: {
+            no_valid_scale: "Invalid Scale"
           }
         },
         relations: {

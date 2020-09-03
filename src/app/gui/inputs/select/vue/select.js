@@ -92,12 +92,13 @@ const SelectInput = Vue.extend({
         });
       } else {
         this.select2 = selectElement.select2({
-          language
+          language,
+          minimumResultsForSearch: this.isMobile() ? -1 : null
         });
       }
       this.state.value && this.select2.val(this.state.value).trigger('change');
       this.select2.on('select2:select', (event) => {
-        const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
+        const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
         this.changeSelect(value);
       });
     })

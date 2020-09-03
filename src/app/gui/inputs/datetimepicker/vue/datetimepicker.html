@@ -3,7 +3,7 @@
     <div class='input-group date' :id='iddatetimepicker'>
       <input
         :id="idinputdatetimepiker"
-        :readonly="!editable ? 'readonly' : null"
+        :readonly="!editable || isMobile() ? 'readonly' : null"
         type='text'
         v-disabled="!editable"
         :class="{'input-error-validation' : notvalid}"

@@ -9,7 +9,7 @@ const MeasureIteraction = function(options={}) {
   this._poinOnMapMoveListener;
   this._helpMsg = options.help;
   this._projection = options.projection;
-  const useSphereMethods = ['EPSG:3857', 'EPSG:4326'].indexOf(this._projection.getCode()) !== -1;
+  const useSphereMethods = this._projection.getCode() === 'EPSG:3857' || this._projection.getUnits() === 'degrees';
   const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
       color: 'rgba(255, 255, 255, 0.2)'

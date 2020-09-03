@@ -16,6 +16,7 @@ function QueryResultsService() {
   this._currentLayerIds = [];
   ProjectsRegistry.onafter('setCurrentProject', (project) => {
     this._setRelations(project);
+    this._setAtlasActions(project);
   });
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
@@ -59,6 +60,7 @@ function QueryResultsService() {
   };
   base(this);
   this._setRelations(project);
+  this._setAtlasActions(project);
   this._addVectorLayersDataToQueryResponse();
   this._asyncFnc = {
     todo: noop,
@@ -144,6 +146,10 @@ proto.setState = function(state) {
 proto._setRelations = function(project) {
   const projectRelations = project.getRelations();
   this._relations = projectRelations ? _.groupBy(projectRelations,'referencedLayer'):  [];
+};
+
+proto._setAtlasActions = function(project){
+  const atlasactions = project.getPrint().find(printconfig => printconfig === 'atlas');
 };
 
 proto.setTitle = function(querytitle) {
