@@ -35,7 +35,8 @@ module.exports = {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       const tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-      $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 160);
+      const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_realtion .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
+      $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - OtherElementHeight );
       if (this.table.rowFormStructure) {
         await this.$nextTick();
         const width =  $('#relationtable_wrapper').width() - 60;
@@ -111,12 +112,7 @@ module.exports = {
           "scrollCollapse": true,
           "scrollX": true,
           "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
-          "columnDefs": [
-            {
-              "orderable":  !this.table.formStructure,
-              "targets": 0
-            }
-          ]
+          "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
         });
         $('.row-form').tooltip();
         this.resize();

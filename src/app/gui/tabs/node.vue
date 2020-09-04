@@ -1,6 +1,6 @@
 <template>
   <div class="tab-node group">
-    <h5 class="title group-title" v-if="showGroupTile">{{ node.name }}</h5>
+    <h5 class="title group-title" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
     <div v-for="row in rows" class="row">
       <div v-for="column in columnNumber" :class="columnClass">
         <template v-if="getNode(row, column)">
@@ -183,7 +183,6 @@
   }
   .title {
     font-weight: bold;
-    font-size: 1.1em;
     width: 100%;
     color: #ffffff;
     padding: 5px;
