@@ -157,7 +157,6 @@
       this.setContentKey = GUI.onafter('setContent', this.resize);
     },
     beforeDestroy() {
-      console.log(dataTable)
       GUI.un('setContent', this.setContentKey);
       dataTable.destroy();
       dataTable = null;

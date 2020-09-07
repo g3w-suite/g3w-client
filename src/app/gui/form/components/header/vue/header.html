@@ -1,6 +1,7 @@
 <div class="g3wform_header box-header with-border">
   <span style="display:flex;"
     class="title"
+    :style="{fontSize: isMobile() && '1em !important'}"
     :class="[{item_selected: currentindex === index && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
     v-for="(header, index) in headers" :key="header.title"
     @click="click(index)">

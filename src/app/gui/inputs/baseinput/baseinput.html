@@ -2,6 +2,7 @@
   <slot name="label">
     <label :for="state.name" class="col-sm-4 control-label">{{ state.label }}
       <span v-if="state.validate && state.validate.required">*</span>
+      <slot name="label-action"></slot>
     </label>
   </slot>
   <div class="col-sm-8">

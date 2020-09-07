@@ -1268,6 +1268,8 @@ proto.setMapControlsContainer = function(mapControlDom) {
 };
 
 proto._updateMapControlsLayout = function({width, height}={}) {
+  // case mobile open keyboard
+  (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 100);
   // update only when all control are ready
   if (this.state.mapcontrolready && this.state.mapControl.update) {
     const changedAndMoreSpace = {

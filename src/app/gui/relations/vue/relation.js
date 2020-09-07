@@ -1,6 +1,5 @@
 import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
-import TableRowFormInput from "gui/table/vue/TableRowFormInput.vue";
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
@@ -37,7 +36,8 @@ module.exports = {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       const tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-      $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 160);
+      const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_realtion .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
+      $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - OtherElementHeight );
       if (this.table.rowFormStructure) {
         await this.$nextTick();
         const width =  $('#relationtable_wrapper').width() - 60;
@@ -123,6 +123,22 @@ module.exports = {
       $('.row-form').tooltip();
       this.resize();
     }
+    this.$nextTick(() => {
+      $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
+      if (!this.one) {
+        relationDataTable = $('#relationtable').DataTable( {
+          "pageLength": 10,
+          "bLengthChange": false,
+          "scrollResize": true,
+          "scrollCollapse": true,
+          "scrollX": true,
+          "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
+          "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
+        });
+        $('.row-form').tooltip();
+        this.resize();
+      }
+    })
   },
   beforeDestroy(){
     relationDataTable.destroy();

@@ -1,15 +1,15 @@
-<div class="query-relation">
+<div class="query-relation" :class="isMobile() ? 'mobile' : null">
   <div v-if="showrelationslist" class="back-btn" @click="back">
     <span class="back-link">
       <span v-t="'sdk.relations.back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
     </span>
   </div>
   <div class="header">
-    <div style="width: 100%; display: flex; justify-content: space-between; font-size: 1.5em">
-      <span>
-        <span  v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
+    <div style="width: 100%; display: flex; justify-content: space-between;" :style="{fontSize: isMobile() ? '1em' : '1.5em'}">
+      <span class="relation-tile">
+        <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
-      <span v-if="table.rows.length">
+      <span class="relations-download" v-if="table.rows.length">
         <span v-if="showDownloadButtons.shapefile" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
               :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip="'sdk.tooltips.download_shapefile'"></span>
         <span v-if="showDownloadButtons.gpx" class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"

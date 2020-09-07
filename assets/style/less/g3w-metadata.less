@@ -1,6 +1,13 @@
 #project-catalog {
   background: transparent;
   #project-catalog-container{
+    &.mobile {
+      .metadata-nav-bar li a.metadata-item-tab {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+      }
+    }
     .metadata-nav-bar{
       display: flex;
       justify-content: space-between;
@@ -16,6 +23,7 @@
         width: 100%;
         margin:1px;
         a.metadata-item-tab {
+          height: 100%;
           margin:0;
           font-size: 1.1em;
           border-bottom: 4px solid #e2e2e2;

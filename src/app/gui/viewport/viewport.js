@@ -437,8 +437,8 @@ const ViewportService = function() {
       }
     } else contentEl.css('padding-left', 15);
     return {
-      reducedWidth: reducedWidth,
-      reducedHeight: reducedHeight
+      reducedWidth,
+      reducedHeight
     }
   };
 

@@ -6,7 +6,7 @@
         <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
           <div class="box box-primary">
             <div class="box-header with-border" data-widget="collapse">
-              <div class="box-title query-layer-title">{{ layer.title }}
+              <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
               <div class="box-features-action">
