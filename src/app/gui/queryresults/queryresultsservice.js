@@ -502,8 +502,8 @@ proto._addComponent = function(component) {
 };
 
 proto._printSingleAtlas = function({atlas={}, features=[]}={}){
-  const {name:template, field_name='fid'} = atlas;
-  const values = features.map(feature => feature.attributes.g3w_fid);
+  const {name:template, atlas: {field_name='fid'}} = atlas;
+  const values = features.map(feature => feature.attributes[field_name === 'fid' ?  'g3w_fid': field_name]);
   return this.printService.printAtlas({
     field: field_name,
     values,

@@ -383,7 +383,7 @@ const translations = {
           layer_not_querable: "Layer is not querable",
           autocomplete: {
             inputshort: {
-              pre: "Please eneter",
+              pre: "Please enter",
               post: "or more characters"
             }
           }

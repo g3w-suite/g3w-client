@@ -26,7 +26,7 @@
           </select>
         </template>
         <template v-else>
-          <select-atlas-field-values @set-values="setAtlasValues" :atlas="state.atlas"></select-atlas-field-values>
+          <select-atlas-field-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="state.isShow"></select-atlas-field-values>
         </template>
       </div>
       <div class="box-footer" style="background-color: transparent">

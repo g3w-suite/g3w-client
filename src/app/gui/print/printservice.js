@@ -118,9 +118,7 @@ proto._getOptionsPrint = function() {
 };
 
 proto.setPrintAreaAfterCloseContent = function() {
-  this._map.on('postrender', () => {
-    this._setPrintArea()
-  });
+  this._map.once('postrender', this._setPrintArea.bind(this));
   this.stopLoading();
 };
 
@@ -260,14 +258,14 @@ proto._setCurrentScala = function(resolution) {
 };
 
 proto._setMoveendMapEvent = function() {
-  this._moveMapKeyEvent = this._map.on('moveend', () => {
-    this._setPrintArea();
-  })
+  this._moveMapKeyEvent = this._map.on('moveend', this._setPrintArea.bind(this));
 };
 
 proto._showPrintArea = function() {
-  this._setPrintArea();
-  this._mapService.startDrawGreyCover();
+  if (this.state.atlas === undefined) {
+    this._setPrintArea();
+    this._mapService.startDrawGreyCover();
+  }
 };
 
 proto._initPrintConfig = function() {
@@ -285,9 +283,10 @@ proto._initPrintConfig = function() {
 
 proto.showPrintArea = function(bool) {
   // close content if open
+  this.state.isShow = bool;
   GUI.closeContent()
     .then(mapComponent => {
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         this._mapService = mapComponent.getService();
         this._mapUnits = this._mapService.getMapUnits();
         this._mapService.getMap().once('postrender', evt => {
