@@ -3,7 +3,7 @@
 G3W-CLIENT client module for G3W-SUITE.
 
 
-The following instructions are for a Ubuntu 16.04 LTS.
+The following instructions are for a Ubuntu 18.04 LTS.
 
 ## Installation of node.js
 
@@ -56,7 +56,7 @@ The main gulp commands to use in develop enviroment are:
 2."Admin Command". It used to build and copy the client files (.js, .css, etc..) and index.html template to g3w-admin client folders
 
   ```bash
-      npm run g3w-admin
+      npm run admin
    ```
 
 # Internalization
