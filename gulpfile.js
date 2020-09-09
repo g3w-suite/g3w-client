@@ -110,7 +110,7 @@ function setNODE_ENV() {
 
 setNODE_ENV();
 
-gulp.task('g3w_admin_python3', function(){
+gulp.task('g3w_admin_python3', function() {
   g3w_admin_version = 'py3';
 });
 
@@ -135,6 +135,7 @@ gulp.task('browserify', [], function() {
     appliesTo: { includeExtensions: ['.html', '.xml'] }
   }).transform(imgurify);
 
+
   const bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
@@ -147,14 +148,12 @@ gulp.task('browserify', [], function() {
       .pipe(source('build.js'))
       .pipe(buffer())
       .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
-      .pipe(gulpif(!production,sourcemaps.init({ loadMaps: true })))
       .pipe(gulpif(production, uglify({
         compress: {
           drop_console: true
         }
       }).on('error', gutil.log)))
       .pipe(rename('app.js'))
-      .pipe(gulpif(!production, sourcemaps.write('./')))
       .pipe(gulp.dest(clientFolder+'/js/'))
   };
 
@@ -448,14 +447,19 @@ function set_current_hash_version() {
 
 gulp.task('g3w-admin-client:clear', function() {
   const del_files = build_all ? [
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/js/*',
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/css/*',
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/js/*',
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/css/*',
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_template+'/'+client_version+'/index.html',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/js/*',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/css/*',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
   ]: [
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/js/app.*',
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static+'/'+client_version+'/css/app.*',
-    conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
-
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/js/app.*',
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/css/app.*',
+    conf.g3w_admin_paths['py2'].g3w_admin_client_dest_template+'/'+client_version+'/index.html',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/js/app.*',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/css/app.*',
+    conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/index.html'
   ];
   return del(del_files, {
     force: true
@@ -465,13 +469,13 @@ gulp.task('g3w-admin-client:clear', function() {
 gulp.task('g3w-admin-client:static',function(){
   gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
     .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_static+'/'+client_version+'/'))
-    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_static+'/'+client_version+'/'))
 });
 
 gulp.task('g3w-admin-client:template',function(){
   gulp.src(clientFolder+'/index.html')
     .pipe(gulp.dest(conf.g3w_admin_paths['py2'].g3w_admin_client_dest_template+'/'+client_version+'/'))
-    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/'));
+    .pipe(gulp.dest(conf.g3w_admin_paths['py3'].g3w_admin_client_dest_template+'/'+client_version+'/'))
 });
 
 gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
@@ -499,6 +503,9 @@ gulp.task('g3w-admin:client_only_all', ['set_build_all_to_false', 'g3w-admin']);
 gulp.task('g3w-admin:client_only', ['set_build_all_to_false', 'g3w-admin']);
 //python3
 gulp.task('g3w-admin-py3:client_only',['g3w_admin_python3', 'set_build_all_to_false', 'g3w-admin']);
+//dev
+gulp.task('g3w-admin-dev:client_only',['g3w_admin_dev', 'set_build_all_to_false', 'g3w-admin']);
+
 
 // this is useful o pre creare
 gulp.task('add_external_resources_to_main_html',  function() {
