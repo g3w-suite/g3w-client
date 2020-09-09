@@ -3,8 +3,21 @@ const base = require('core/utils/utils').base;
 const convertObjectToUrlParams = require('core/utils/utils').convertObjectToUrlParams;
 const PrintProvider = require('../printerprovider');
 const ProjectsRegistry = require('core/project/projectsregistry');
+const OUTPUT_FORMATS =   {
+  pdf: 'application/pdf',
+  jpg: 'image/jpeg'
+};
+
+const COMMON_REQUEST_PARAMETERS = {
+  SERVICE: 'WMS',
+  VERSION: '1.3.0',
+};
 
 function PrinterQGISProvider() {
+  this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
+  ProjectsRegistry.onbefore('setCurrentProject', project=> {
+    this._currentLayerStore = project.getLayersStores();
+  });
   base(this);
 }
 
@@ -53,14 +66,30 @@ proto.GET = function({url, params, mime_type}) {
   })
 };
 
-proto._getParamsFromOptions = function(layers, options) {
+proto._getAtlasParamsFromOptions = function(options={}){
+  const {field, values, template, download=false} = options;
+  const EXPRESSION_PARAM = field === 'fid' ? 'FIDS_FILTER' : 'EXP_FILTER';
+  const multiValues = values.length > 1;
+  const EXPRESSION = EXPRESSION_PARAM === 'EXP_FILTER' ?
+    `${field}${multiValues ? ' IN (' : '='}${values.map(value => '\''+value+'\'').join()}${multiValues ? ')' : ''}`
+    : `${values.join()}`;
+  const params = {
+    ...COMMON_REQUEST_PARAMETERS,
+    REQUEST: 'GetPrintAtlas',
+    [EXPRESSION_PARAM]: EXPRESSION,
+    TEMPLATE: template
+  };
+  if (download) params.DOWNLOAD = 1;
+  return params;
+};
+
+proto._getParamsFromOptions = function(layers=[], options={}) {
   const { rotation, dpi, format, crs, template, maps=[]} = options;
-  layers = layers.map((layer) => {
+  layers = layers.map(layer => {
     return layer.getPrintLayerName()
   });
   const params = {
-    SERVICE: 'WMS',
-    VERSION: '1.3.0',
+    ...COMMON_REQUEST_PARAMETERS,
     REQUEST: 'GetPrint',
     TEMPLATE: template,
     DPI: dpi,
@@ -77,39 +106,42 @@ proto._getParamsFromOptions = function(layers, options) {
   return params;
 };
 
+proto.getUrl = function(){
+  return this._currentLayerStore.getWmsUrl();
+};
+
+proto.printAtlas = function(options={}, method='GET'){
+  const url = this.getUrl();
+  const params = this._getAtlasParamsFromOptions(options);
+  return this[method]({
+    url,
+    params,
+    mime_type: OUTPUT_FORMATS.pdf
+  })
+};
+
 proto.print = function(options={}, method="GET") {
-  const layersStore = ProjectsRegistry.getCurrentProject().getLayersStore();
-  let url = layersStore.getWmsUrl();
+  const url = this.getUrl();
   // reverse of layer because the order is important
-  let layers = _.reverse(layersStore.getLayers({
+  const layers = this._currentLayerStore.getLayers({
     PRINTABLE: {
       scale: options.scale
     },
     SERVERTYPE: 'QGIS'
-  }));
+  }).reverse();
   if (layers.length) {
-    options.crs = layersStore.getProjection().getCode();
+    options.crs = this._currentLayerStore.getProjection().getCode();
     const params = this._getParamsFromOptions(layers, options);
-    const formats = {
-      pdf: 'application/pdf',
-      jpg: 'image/jpeg'
-    };
-    const mime_type = formats[params.FORMAT];
+    const mime_type = OUTPUT_FORMATS[params.FORMAT];
     return this[method]({
       url,
       params,
       mime_type
     })
-  } else
-    return Promise.resolve({
-      layers: !!layers.length
-    })
-
+  } else return Promise.resolve({layers: false})
 };
 
-
 module.exports = PrinterQGISProvider;
-
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi?MAP=/home/marco/geodaten/projekte/composertest.qgs&SERVICE=WMS&VERSION=1.3.0

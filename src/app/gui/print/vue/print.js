@@ -1,9 +1,9 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
 const inherit = require('core/utils/utils').inherit;
 const Component = require('gui/vue/component');
 const PrintService = require('gui/print/printservice');
 const base = require('core/utils/utils').base;
-const t = require('core/i18n/i18n.service').t;
 const compiledTemplate = createCompiledTemplate(require('./print.html'));
 
 const vueComponentOptions = {
@@ -18,12 +18,18 @@ const vueComponentOptions = {
       }
     }
   },
+  components: {
+    SelectAtlasFieldValues
+  },
   computed: {
     disabled() {
-      return this.state.output.loading;
+      return this.state.output.loading || (!!this.state.atlas && this.state.atlasValues.length === 0);
     }
   },
   methods: {
+    setAtlasValues(values=[]){
+      this.state.atlasValues = values;
+    },
     onChangeTemplate() {
       this.$options.service.changeTemplate();
     },
@@ -44,7 +50,7 @@ const vueComponentOptions = {
       }
       this.$options.service.changeRotation();
     },
-    print: function() {
+    print() {
       this.$options.service.print()
     }
   }
@@ -57,11 +63,12 @@ function PrintComponent(options={}) {
   this.internalComponent = null;
   const service = options.service || new PrintService;
   this.setService(service);
+  // init service
   this._service.init();
   this.setInternalComponent = function () {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
-      service: service
+      service
     });
     this.state.visible = service.state.visible;
     this.internalComponent.state = service.state;

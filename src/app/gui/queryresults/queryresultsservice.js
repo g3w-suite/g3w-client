@@ -1,4 +1,4 @@
-const {base, inherit, noop } = require('core/utils/utils');
+const {base, inherit, noop, downloadFile } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -7,14 +7,16 @@ const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const ComponentsRegistry = require('gui/componentsregistry');
+const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 // set formats for download single feature
 const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'csv', 'xls'];
 
 function QueryResultsService() {
+  this.printService = new PrintService();
   this._currentLayerIds = [];
-  ProjectsRegistry.onafter('setCurrentProject', (project) => {
+  ProjectsRegistry.onafter('setCurrentProject', project => {
     this._setRelations(project);
     this._setAtlasActions(project);
   });
@@ -24,6 +26,7 @@ function QueryResultsService() {
     'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
   };
   this._relations = [];
+  this._atlas = [];
   const project = this._project = ProjectsRegistry.getCurrentProject();
   // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
@@ -148,8 +151,12 @@ proto._setRelations = function(project) {
   this._relations = projectRelations ? _.groupBy(projectRelations,'referencedLayer'):  [];
 };
 
+proto.getAtlasByLayerId = function(layerId) {
+  return this._atlas.filter(atlas => atlas.atlas.qgs_layer_id === layerId);
+};
+
 proto._setAtlasActions = function(project){
-  const atlasactions = project.getPrint().find(printconfig => printconfig === 'atlas');
+  this._atlas = project.getPrint().filter(printconfig => printconfig.atlas) || [];
 };
 
 proto.setTitle = function(querytitle) {
@@ -235,6 +242,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       attributes: [],
       features: [],
       hasgeometry: false,
+      atlas: this.getAtlasByLayerId(layerId),
       download,
       show: true,
       expandable: true,
@@ -243,7 +251,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       formStructure,
       error: ''
     };
-    
+
     if (featuresForLayer.features && featuresForLayer.features.length) {
       const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
         try {
@@ -361,8 +369,13 @@ proto.setActionsForLayers = function(layers) {
         hint: `sdk.tooltips.download_${format}`,
         cbk: this.downloadFeatures.bind(this, format)
       });
-    })
-
+    });
+    this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
+      id: `printatlas`,
+      class: GUI.getFontClass('print'),
+      hint: `sdk.tooltips.atlas`,
+      cbk: this.printAtlas.bind(this)
+    });
   });
   this.addActionsForLayers(this.state.layersactions);
 };
@@ -486,6 +499,69 @@ proto._addVectorLayersDataToQueryResponse = function() {
 //function to add c custom componet in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
+};
+
+proto._printSingleAtlas = function({atlas={}, features=[]}={}){
+  const {name:template, field_name='fid'} = atlas;
+  const values = features.map(feature => feature.attributes.g3w_fid);
+  return this.printService.printAtlas({
+    field: field_name,
+    values,
+    template,
+    download: true
+  }).then(({url}) =>{
+      GUI.setLoadingContent(true);
+      downloadFile({
+        url,
+        filename: template,
+        mime_type: 'application/pdf'
+      }).catch(error=>{
+        GUI.showUserMessage({
+          type: 'alert',
+          error
+        })
+      }).finally(()=>{
+        GUI.setLoadingContent(false);
+      })
+  })
+};
+
+proto.printAtlas = function(layer, feature){
+  let {id:layerId, features} = layer;
+  features = feature ? [feature]: features;
+  const atlasLayer = this.getAtlasByLayerId(layerId);
+  if (atlasLayer.length > 1) {
+    let inputs='';
+    atlasLayer.forEach((atlas, index) => {
+      inputs += `<input id="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
+                 <label for="${index}">${atlas.name}</label>
+                 <br>`;
+    });
+
+    GUI.showModalDialog({
+      title: "Seleziona Template",
+      message: inputs,
+      buttons: {
+        success: {
+          label: "OK",
+          className: "btn-success",
+          callback: ()=> {
+            const index = $('input[name="template"]:checked').attr('id');
+            if (index !== null || index !== undefined) {
+              const atlas = atlasLayer[index];
+              this._printSingleAtlas({
+                atlas,
+                features
+              })
+            }
+          }
+        }
+      }
+    })
+  } else this._printSingleAtlas({
+      atlas: atlasLayer[0],
+      features
+    })
 };
 
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){

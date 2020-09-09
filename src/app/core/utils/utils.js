@@ -262,13 +262,31 @@ const utils = {
     document.execCommand('copy');
     document.body.removeChild(tempinput);
   },
-  downloadFile({filename, content, mime_type='text/plain'}={}){
-    const temapAncor = document.createElement('a');
-    const bb = new Blob([content], {type: mime_type});
-    temapAncor.setAttribute('href', window.URL.createObjectURL(bb));
-    temapAncor.setAttribute('download', filename);
-    temapAncor.dataset.downloadurl = [mime_type, temapAncor.download, temapAncor.href].join(':');
-    temapAncor.click();
+  downloadFile({filename, content, url, mime_type='text/plain'}={}){
+    const download = blob =>{
+      let temapAncor = document.createElement('a');
+      temapAncor.setAttribute('href', window.URL.createObjectURL(blob));
+      temapAncor.setAttribute('download', filename);
+      temapAncor.dataset.downloadurl = [mime_type, temapAncor.download, temapAncor.href].join(':');
+      temapAncor.click();
+      temapAncor = null;
+    };
+    return new Promise((resolve, reject) =>{
+      if (content) {
+        const blob = new Blob([content], {type: mime_type});
+        download(blob);
+        resolve();
+      } else if (url) {
+       fetch(url)
+         .then( response => response.blob())
+         .then(blob =>{
+           download(blob);
+           resolve();
+         }).catch(()=>{
+          reject()
+        })
+      }
+    })
   },
   downloadCSVLayerFeatures({layer, alias=true}={}) {
     const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');

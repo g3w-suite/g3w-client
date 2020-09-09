@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const { base, inherit, downloadFile} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -20,13 +19,12 @@ function PrintComponentService() {
     loading: false
   };
   this._moveMapKeyEvent = null;
-  // istanzio il componete page per la visualizzazione del pdf
   this._page = null;
   this._mapService = null;
   this._map = null;
   this._mapUnits;
   this._scalesResolutions = {};
-  this.init = function () {
+  this.init = function(){
     this._project = ProjectsRegistry.getCurrentProject();
     this.state.print = this._project.state.print || [];
     this.state.visible = this.state.print.length > 0;
@@ -46,20 +44,7 @@ function PrintComponentService() {
       maxx: [0, 0],
       maxy: [0, 0]
     };
-    if (this.state.visible) {
-      this.state.template = this.state.print[0].name;
-      this.state.rotation = 0;
-      this.state.inner = [0, 0, 0, 0];
-      this.state.center = null;
-      this.state.size = null;
-      this.state.scale = scale;
-      this.state.scala = null;
-      this.state.dpis = dpis;
-      this.state.dpi = dpis[0];
-      this.state.formats = formats;
-      this.state.output.format = formats[0].value;
-      this.state.maps = this.state.print[0].maps;
-    }
+    this.state.visible && this.setInitState();
   };
 }
 
@@ -67,16 +52,35 @@ inherit(PrintComponentService, G3WObject);
 
 const proto = PrintComponentService.prototype;
 
+proto.setInitState = function(){
+  this.state.template = this.state.print[0].name;
+  this.state.atlas = this.state.print[0].atlas;
+  this.state.atlasValues = [];
+  this.state.rotation = 0;
+  this.state.inner = [0, 0, 0, 0];
+  this.state.center = null;
+  this.state.size = null;
+  this.state.scale = scale;
+  this.state.scala = null;
+  this.state.dpis = dpis;
+  this.state.dpi = dpis[0];
+  this.state.formats = formats;
+  this.state.output.format = formats[0].value;
+  this.state.maps = this.state.print[0].maps;
+};
+
 proto.changeTemplate = function() {
   if (!this.state.template) return;
-  const {maps} = this.state.print.find(print => print.name === this.state.template);
+  const isPreviousAtlas = this.state.atlas;
+  const {atlas, maps} = this.state.print.find(print => print.name === this.state.template);
   this.state.maps = maps;
-  this._setPrintArea();
+  this.state.atlas = atlas;
+  this.state.atlasValues = [];
+  this.state.atlas ? this._clearPrint() : isPreviousAtlas ? this.showPrintArea(true) : this._setPrintArea();
 };
 
 proto.changeScale = function() {
-  if (!this.state.scala) return;
-  this._setPrintArea();
+  this.state.scala && this._setPrintArea();
 };
 
 proto.changeRotation = function() {
@@ -117,28 +121,49 @@ proto.setPrintAreaAfterCloseContent = function() {
   this._map.on('postrender', () => {
     this._setPrintArea()
   });
-  this.stopLoading()
+  this.stopLoading();
 };
 
 proto.print = function() {
-  this.state.output.url = null;
-  this.state.output.layers = true;
-  this._page = new PrintPage({
-    service: this
-  });
-  GUI.setContent({
-    content: this._page,
-    title: 'print',
-    perc:100
-  });
-  const options = this._getOptionsPrint();
-  this.printService.print(options, method=this.state.output.method).then((data) => {
-    this.state.output.url = data.url;
-    this.state.output.layers = data.layers;
-    this.state.output.mime_type = data.mime_type;
-  }).catch(()=> {
-    this.showError();
-  })
+  if (this.state.atlas) {
+    this.state.loading = true;
+    this.printService.printAtlas({
+      template: this.state.template,
+      field: this.state.atlas.field_name || 'fid',
+      values: this.state.atlasValues,
+      download: true
+    }).then(({url}) => {
+      downloadFile({
+        url,
+        filename: this.state.template,
+        mime_type: 'application/pdf'
+      }).catch(()=> {
+        this.showError();
+      }).finally(() =>{
+        this.state.loading = false;
+      })
+    })
+  } else {
+    this.state.output.url = null;
+    this.state.output.layers = true;
+    this._page = new PrintPage({
+      service: this
+    });
+    GUI.setContent({
+      content: this._page,
+      title: 'print',
+      perc: 100
+    });
+    const options = this._getOptionsPrint();
+    this.printService.print(options, method=this.state.output.method)
+      .then(data => {
+        this.state.output.url = data.url;
+        this.state.output.layers = data.layers;
+        this.state.output.mime_type = data.mime_type;
+      }).catch(()=> {
+      this.showError();
+    })
+  }
 };
 
 proto.startLoading = function() {
@@ -189,7 +214,7 @@ proto._setPrintArea = function() {
   });
 };
 
-proto._clearPrint = function() {
+proto._clearPrint = function(reset=false) {
   ol.Observable.unByKey(this._moveMapKeyEvent);
   this._moveMapKeyEvent = null;
   this._mapService.stopDrawGreyCover();
@@ -226,10 +251,10 @@ proto._setInitialScalaSelect = function() {
 };
 
 proto._setCurrentScala = function(resolution) {
-  Object.entries(this._scalesResolutions).forEach(([scala, res]) => {
-    if (res === resolution) {
+  Object.entries(this._scalesResolutions).find(([scala, res]) => {
+    if (resolution <= res) {
       this.state.scala = scala;
-      return false
+      return true
     }
   });
 };
@@ -258,15 +283,14 @@ proto._initPrintConfig = function() {
   }
 };
 
-
 proto.showPrintArea = function(bool) {
   // close content if open
   GUI.closeContent()
-    .then((mapComponent) => {
+    .then(mapComponent => {
       requestAnimationFrame(() => {
         this._mapService = mapComponent.getService();
         this._mapUnits = this._mapService.getMapUnits();
-        this._mapService.getMap().once('postrender', (evt) => {
+        this._mapService.getMap().once('postrender', evt => {
           this._map = evt.map;
           if (bool) {
             this._setMoveendMapEvent();

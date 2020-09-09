@@ -2126,7 +2126,6 @@ proto.setInnerGreyCoverBBox = function(options={}) {
   else this._drawShadow.rotation = rotation;
 
   this._drawShadow.outer &&  map.render();
-
 };
 
 // grey map precompose mapcompose

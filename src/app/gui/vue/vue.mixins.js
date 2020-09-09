@@ -1,4 +1,24 @@
 const GUI = require('gui/gui');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+
+const autocompleteMixin = {
+  methods: {
+    async autocompleteRequest({layerId, field, value}={}){
+      let data = [];
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      try {
+        data = await layer.getFilterData({
+          suggest: `${field}|${value}`,
+          unique: field
+        })
+      } catch(error) {}
+      return data.map(value => ({
+        id:value,
+        text:value
+      }))
+    }
+  }
+};
 
 const fieldsMixin = {
   methods: {
@@ -190,5 +210,6 @@ module.exports = {
   geoMixin,
   fieldsMixin,
   mediaMixin,
-  resizeMixin
+  resizeMixin,
+  autocompleteMixin
 };

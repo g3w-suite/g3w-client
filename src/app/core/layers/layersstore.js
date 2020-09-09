@@ -252,8 +252,7 @@ proto.getLayersDict = function(options = {}) {
 
 // return layers array
 proto.getLayers = function(options={}) {
-  const layers = this.getLayersDict(options);
-  return _.values(layers);
+  return this.getLayersDict(options);
 };
 
 proto.getBaseLayers = function() {

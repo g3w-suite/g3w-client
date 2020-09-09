@@ -130,6 +130,7 @@ const translations = {
           download_gpx: "Scarica GPX",
           download_csv: "Scarica CSV",
           download_xls: "Scarica XLS",
+          atlas: "Stampa Atlas"
         },
         mapcontrols: {
           query: {
@@ -167,6 +168,9 @@ const translations = {
               },
               download_xls: {
                 hint: "Scarica la feature in XLS"
+              },
+              atlas: {
+                hint: 'Stampa Atlas'
               }
             }
           },
@@ -497,6 +501,7 @@ const translations = {
           download_gpx: "Download GPX",
           download_csv: "Download CSV",
           download_xls: "Download XLS",
+          atlas: "Print Atlas"
         },
         mapcontrols: {
           query: {
@@ -534,6 +539,9 @@ const translations = {
               },
               download_xls: {
                 hint: "Download feature XLS"
+              },
+              atlas: {
+                hint: 'Print Atlas'
               }
             }
           },

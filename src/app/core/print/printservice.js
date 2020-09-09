@@ -17,5 +17,8 @@ proto.print = function(options={}, method="GET") {
   return this.provider.print(options, method);
 };
 
+proto.printAtlas = function(options={}, method="GET") {
+  return this.provider.printAtlas(options, method);
+};
 
 module.exports = PrintService;

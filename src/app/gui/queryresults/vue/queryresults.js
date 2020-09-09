@@ -36,6 +36,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    printAtlas(layer){
+      this.$options.queryResultsService.printAtlas(layer)
+    },
     saveLayerResult(layer, type="csv") {
       this.$options.queryResultsService.saveLayerResult({layer, type});
     },
@@ -238,11 +241,6 @@ const vueComponentOptions = {
   },
   watch: {
     'state.layers': function(layers) {
-      if (layers.length && layers.length === 1 && layers[0].features.length && this.state.zoomToResult) {
-        //   this.zoomToLayerFeaturesExtent(layers[0], {
-        //     maxZoom: 8
-        //   });
-      }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
       })

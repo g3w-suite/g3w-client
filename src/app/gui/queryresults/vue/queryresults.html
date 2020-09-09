@@ -9,22 +9,28 @@
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
-              <div class="box-features-action">
-                <span v-if="layer.hasgeometry && layer.features.length > 1" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-left"
+              <div class="box-features-action" v-if="layer.features.length > 1">
+                <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-left"
                       data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
-                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
+                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')">
+                  </span>
                 </span>
-                  <span v-if="layer.download.shapefile && layer.features.length > 1" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
+                  <span v-if="layer.download.shapefile" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')"></span>
                 </span>
-                  <span v-if="layer.download.gpx && layer.features.length > 1" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
+                  <span v-if="layer.download.gpx" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
                   <span class="action-button-icon"  :class="g3wtemplate.getFontClass('gpx')" @click.stop="saveLayerResult(layer, 'gpx')"></span>
                 </span>
-                  <span v-if="layer.download.csv && layer.features.length > 1" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
+                  <span v-if="layer.download.csv" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
                   <span  class="action-button-icon" :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer, 'csv')"></span>
                 </span>
-                  <span v-if="layer.download.xls && layer.features.length > 1" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
+                  <span v-if="layer.download.xls" class="action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('xls')" @click.stop="saveLayerResult(layer, 'xls')"></span>
+                </span>
+               <span v-if="layer.atlas.length" @click.stop="printAtlas(layer)" class="action-button skin-tooltip-left"
+                      data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
+                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')">
+                  </span>
                 </span>
               </div>
               <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>

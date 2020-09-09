@@ -44,14 +44,12 @@ const InternalComponent = Vue.extend({
       }
     }
   },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.state.layers && this.$options.service.startLoading();
-    });
+  async mounted() {
+    await this.$nextTick();
+    this.state.layers && this.$options.service.startLoading();
   },
   beforeDestroy() {
-    if (this.state.url &&this.state.method === 'POST' )
-      window.URL.revokeObjectURL(this.state.url);
+    (this.state.url && this.state.method === 'POST') && window.URL.revokeObjectURL(this.state.url);
   }
 });
 
