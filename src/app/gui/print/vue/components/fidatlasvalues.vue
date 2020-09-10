@@ -70,8 +70,14 @@
         this.$emit('set-values', Array.from(values));
       },
       reset(bool){
-        bool && this.$emit('set-values', []);
+        if(bool){
+          this.value = '';
+          this.$emit('set-values', []);
+        }
       }
+    },
+    beforeDestroy() {
+      this.value = null;
     }
   }
 </script>
