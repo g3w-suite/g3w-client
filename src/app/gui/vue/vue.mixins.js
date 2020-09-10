@@ -206,10 +206,28 @@ const resizeMixin = {
   }
 };
 
+const select2Mixin = {
+  mixins: [resizeMixin],
+  methods: {
+    resize() {
+      this.select2 && this.select2.select2('close');
+    }
+  },
+  beforeDestroy() {
+    //destroy a select2  dom element
+    this.select2 && this.select2.select2('destroy');
+    // remove all event
+    this.select2.off();
+    this.select2 = null;
+  }
+};
+
+
 module.exports = {
   geoMixin,
   fieldsMixin,
   mediaMixin,
   resizeMixin,
-  autocompleteMixin
+  autocompleteMixin,
+  select2Mixin
 };

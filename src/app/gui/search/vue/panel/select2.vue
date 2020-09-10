@@ -8,13 +8,15 @@
 </template>
 
 <script>
+  import { ALLVALUE }  from '../../constants';
   const autocompleteOptions = require('gui/external/select2/options/autocomplete');
   const { t } = require('core/i18n/i18n.service');
   const { debounce } = require('core/utils/utils');
-  import { ALLVALUE }  from '../../constants';
+  const {select2Mixin} = require('gui/vue/vue.mixins');
   export default {
     name: "select2",
     props: ['forminput','autocompleteRequest'],
+    mixins: [select2Mixin],
     methods: {
       _initSelect2Element() {
         const { type, attribute } = this.forminput;
@@ -48,7 +50,7 @@
             value,
             type: this.forminput.type
           });
-        })
+        });
       }
     },
     watch : {
@@ -65,10 +67,6 @@
     async mounted() {
       await this.$nextTick();
       this._initSelect2Element();
-    },
-    beforeDestroy() {
-      this.select2.select2('destroy');
-      this.select2 = null;
     }
   }
 </script>

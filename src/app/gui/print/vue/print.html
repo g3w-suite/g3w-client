@@ -25,8 +25,11 @@
             <option v-for="format in state.formats" :value="format.value">{{ format.label }}</option>
           </select>
         </template>
+        <template v-else-if="state.atlas.field_name">
+          <select-atlas-field-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></select-atlas-field-values>
+        </template>
         <template v-else>
-          <select-atlas-field-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="state.isShow"></select-atlas-field-values>
+          <fid-atlas-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></fid-atlas-values>
         </template>
       </div>
       <div class="box-footer" style="background-color: transparent">
@@ -39,7 +42,8 @@
 </ul>
 <script>
   import Atlas_autocomplete from "./components/autocomplete";
+  import Fidatlasvalues from "./components/fidatlasvalues";
   export default {
-    components: {Atlas_autocomplete}
+    components: {Fidatlasvalues, Atlas_autocomplete}
   }
 </script>

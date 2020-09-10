@@ -13,7 +13,6 @@ const SearchPanelComponent = Vue.extend({
     Select2
   },
   data: function() {
-    this.select2 = null;
     return {
      state: this.$options.service.state
     }

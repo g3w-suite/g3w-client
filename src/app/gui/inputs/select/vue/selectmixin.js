@@ -30,10 +30,6 @@ const selectMixin = {
           value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
       })
     }
-  },
-  beforeDestroy() {
-    this.select2 && this.select2.select2('destroy');
-    this.select2 = null;
   }
 };
 

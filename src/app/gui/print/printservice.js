@@ -127,7 +127,7 @@ proto.print = function() {
     this.state.loading = true;
     this.printService.printAtlas({
       template: this.state.template,
-      field: this.state.atlas.field_name || 'fid',
+      field: this.state.atlas.field_name || '$id',
       values: this.state.atlasValues,
       download: true
     }).then(({url}) => {

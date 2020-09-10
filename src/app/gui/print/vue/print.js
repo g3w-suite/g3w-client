@@ -1,5 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
+import FidAtlasValues from './components/fidatlasvalues.vue';
 const inherit = require('core/utils/utils').inherit;
 const Component = require('gui/vue/component');
 const PrintService = require('gui/print/printservice');
@@ -19,7 +20,8 @@ const vueComponentOptions = {
     }
   },
   components: {
-    SelectAtlasFieldValues
+    SelectAtlasFieldValues,
+    FidAtlasValues
   },
   computed: {
     disabled() {

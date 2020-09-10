@@ -659,7 +659,7 @@ const ViewportComponent = Vue.extend({
       viewportService.closeUserMessage();
     }
   },
-  mounted() {
+  async mounted() {
     const sidebarWidth = $('#g3w-sidebar').width();
     const handleResizeViewport = ()=>{
       this.state.resized.start = true;
@@ -686,21 +686,16 @@ const ViewportComponent = Vue.extend({
             }
           }, resizePercentageContent);
         });
-        $(document).mouseup((evt) => {
-          $(document).unbind('mousemove');
-        });
+        $(document).mouseup(evt => $(document).unbind('mousemove'));
       });
     };
-    this.$nextTick(() => {
-      const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
-      this.media.matches = mediaQueryEventMobile.matches;
-      mediaQueryEventMobile.addListener((event) => {
-        if (event.type === 'change') {
-          this.media.matches = event.currentTarget.matches;
-        }
-      });
-      handleResizeViewport();
-    })
+    await this.$nextTick();
+    const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
+    this.media.matches = mediaQueryEventMobile.matches;
+    mediaQueryEventMobile.addListener((event) => {
+      if (event.type === 'change') this.media.matches = event.currentTarget.matches;
+    });
+    handleResizeViewport();
   }
 });
 

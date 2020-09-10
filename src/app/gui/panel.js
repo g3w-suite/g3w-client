@@ -48,9 +48,7 @@ proto.mount = function(parent) {
   $(parent).append(iCinstance.$el);
   iCinstance.$nextTick(function() {
     $(parent).localize();
-    if (panel.onShow) {
-      panel.onShow();
-    }
+    panel.onShow && panel.onShow();
   });
   return resolvedValue(true);
 };
@@ -60,9 +58,7 @@ proto.unmount = function() {
   const d = $.Deferred();
   panel.$destroy(true);
   $(panel.$el).remove();
-  if (panel.onClose) {
-    panel.onClose();
-  }
+  panel.onClose &&  panel.onClose();
   this.internalComponent = null;
   d.resolve();
   return d.promise();
