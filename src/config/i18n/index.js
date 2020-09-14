@@ -20,7 +20,9 @@ const translations = {
           no_layers: 'Nessun Layer visibile',
           scale: "Scala",
           format: "Formato",
-          rotation: "Rotazione"
+          rotation: "Rotazione",
+          fids_instruction: "Valori accettati: da 0 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
+          fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6"
         },
         querybuilder: {
           search: {
@@ -392,7 +394,9 @@ const translations = {
           no_layers: 'No Layer to print',
           scale: "Scale",
           format: "Format",
-          rotation: "Rotation"
+          rotation: "Rotation",
+          fids_instruction: "Values accepted: from 0 to value of [max]. Is possible to insert a range ex. 4-6",
+          fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6"
         },
         querybuilder: {
           search: {

@@ -175,7 +175,7 @@ const utils = {
     });
     return d.promise();
   },
-
+  trimValue: value => value.replace(/ /g,''),
   sanitizeUrl({url, reserverParameters=[]}={}){
     const checkUrl = new URL(url);
     reserverParameters.forEach((param) => {
