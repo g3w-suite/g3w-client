@@ -1,9 +1,10 @@
 const Input = require('gui/inputs/input');
 const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
 const WidgetMixins = require('gui/inputs/widgetmixins');
+const {resizeMixin} = require('gui/vue/vue.mixins');
 
 const DateTimePickerInput = Vue.extend({
-  mixins: [Input, WidgetMixins],
+  mixins: [Input, WidgetMixins, resizeMixin],
   template: require('./datetimepicker.html'),
   data: function() {
     const uniqueValue = getUniqueDomId();
@@ -14,13 +15,16 @@ const DateTimePickerInput = Vue.extend({
     }
   },
   methods: {
+    resize(){
+      $(`#${this.iddatetimepicker}`) && $(`#${this.iddatetimepicker}`).data("DateTimePicker").hide();
+    },
     timeOnly : function() {
       return !this.state.input.options.formats[0].date;
     },
     stateValueChanged(value) {
       const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
       const date = moment(value).format(datetimedisplayformat);
-      $('#'+this.idinputdatetimepiker).val(date);
+      $(`#${this.iddatetimepicker}`).val(date);
     }
   },
   mounted: function() {

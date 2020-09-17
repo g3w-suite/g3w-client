@@ -52,9 +52,7 @@ const SidebarItem = Vue.extend({
     }
   },
   created() {
-    this.component.openClose = () =>{
-      this.$refs.anchor_click.click();
-    };
+    this.component.openClose = () => this.$refs.anchor_click.click();
   },
   async mounted() {
     await this.$nextTick();
@@ -116,12 +114,8 @@ function SidebarService() {
     this.state.components.push(component);
     const children = $('#g3w-sidebarcomponents').children(':visible');
     const childrenLength = children.length;
-    if (position === null || position === undefined || position < 0 || position >= childrenLength)
-      $('#g3w-sidebarcomponents').append(DOMComponent);
-    else
-      children.each(function (index, element) {
-        position === index && $(DOMComponent).insertBefore(element);
-      });
+    if (position === null || position === undefined || position < 0 || position >= childrenLength) $('#g3w-sidebarcomponents').append(DOMComponent);
+    else children.each(function (index, element) {position === index && $(DOMComponent).insertBefore(element)});
     //mount componet to g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
     // check if componentonent has iniService method

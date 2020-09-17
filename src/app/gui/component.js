@@ -1,5 +1,6 @@
 const {inherit, merge, noop, base, capitalize_first_letter} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 // Class Component (Base)
@@ -33,32 +34,35 @@ const Component = function(options={}) {
       this._reload();
     }
   };
-
-  this.init = function(options = {}) {
-    this.vueComponent = this.createVueComponent(options.vueComponentObject);
-    this._components = options.components || [];
-    const service = options.service || noop ;
-    const {template} = options;
-    this.setService(service);
-    this._service.init ? this._service.init(options): null;
-    template && this.setInternalComponentTemplate(template);
-    this.setInternalComponent = function() {
-      const InternalComponent = Vue.extend(this.vueComponent);
-      this.internalComponent = new InternalComponent({
-        service: this._service,
-        template
-      });
-      this.internalComponent.state = this.getService().state;
-    };
-    this.setInternalComponent();
-  };
   merge(this, options);
   base(this);
+  // add events options
+  this.events = options.events;
+  this.events && this.handleEventsComponent();
 };
 
 inherit(Component, G3WObject);
 
 const proto = Component.prototype;
+
+proto.init = function(options = {}) {
+  this.vueComponent = this.createVueComponent(options.vueComponentObject);
+  this._components = options.components || [];
+  const service = options.service || noop ;
+  const {template} = options;
+  this.setService(service);
+  this._service.init ? this._service.init(options): null;
+  template && this.setInternalComponentTemplate(template);
+  this.setInternalComponent = function() {
+    const InternalComponent = Vue.extend(this.vueComponent);
+    this.internalComponent = new InternalComponent({
+      service: this._service,
+      template
+    });
+    this.internalComponent.state = this.getService().state;
+  };
+  this.setInternalComponent();
+};
 
 proto.getId = function() {
   return this.id;
@@ -90,6 +94,19 @@ proto.getService = function() {
 
 proto.setService = function(service) {
   this._service = service;
+};
+
+proto.handleEventsComponent = function(){
+  const {open, visible} = this.events;
+  if (open) {
+    const {cb=()=>{}, content=false} = open;
+    const setStateOpenFalse = ()=>this.state.open = false;
+    let key;
+    this.onafter('setOpen', (bool)=>{
+      cb(bool);
+      content && (bool ? GUI.on('closecontent', setStateOpenFalse) : GUI.off('closecontent', setStateOpenFalse));
+    });
+  }
 };
 
 proto.insertComponentAt = function(index, Component) {
@@ -238,7 +255,6 @@ proto.setInternalComponentTemplate = function(template) {
 proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
-
 
 // hook function to show componet
 proto.show = function() {};

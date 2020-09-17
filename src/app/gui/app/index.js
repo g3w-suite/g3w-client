@@ -295,6 +295,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   // add component to template
   this._addComponent = function(component, placeholder, options={}) {
     this._addComponents([component], placeholder, options);
+    return true;
   };
 
   // registry component
@@ -511,7 +512,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
     };
     //hide spinner
-    GUI.hideSpinner = function(id){
+    GUI.hideSpinner = function(id='loadspinner'){
       $("#"+id).remove();
     };
     /* end spinner*/
@@ -569,11 +570,13 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.showContent = (options={}) => {
       options.perc = !this._isMobile ? options.perc || 100 : 100;
       GUI.setContent(options);
+      return true;
     };
 
     GUI.showContextualContent = (options = {}) => {
       options.perc = !this._isMobile ? options.perc || 50  : 100;
       GUI.setContent(options)
+      return true;
     };
     // add component to stack (append)
     // Differeces between pushContent and setContent are :

@@ -22,9 +22,6 @@ const SelectInput = Vue.extend({
     }
   },
   methods: {
-    resize() {
-     this.select2 && this.open && $(this.$el).find('select').select2('close');
-    },
     async pickLayerValue(){
       try {
         const value = await this.pickLayerInputService.pick();
