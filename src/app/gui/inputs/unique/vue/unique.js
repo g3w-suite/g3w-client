@@ -24,6 +24,7 @@ const UniqueInput = Vue.extend({
     this.$nextTick(()=> {
       if (this.state.input.options.editable) {
         this.select2 = $(`#${this.id}`).select2({
+          dropdownParent: $('#g3w-view-content'),
           tags: true,
           language: this.getLanguage()
         });

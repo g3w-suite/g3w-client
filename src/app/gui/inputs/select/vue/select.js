@@ -65,6 +65,7 @@ const SelectInput = Vue.extend({
     if (this.autocomplete) {
       this.select2 = selectElement.select2({
         minimumInputLength: 1,
+        dropdownParent: $('#g3w-view-content'),
         language,
         ajax: {
           delay: 250,
@@ -93,6 +94,7 @@ const SelectInput = Vue.extend({
       });
     } else this.select2 = selectElement.select2({
           language,
+          dropdownParent: $('#g3w-view-content'),
           minimumResultsForSearch: this.isMobile() ? -1 : null
         });
     ///register events

@@ -46,6 +46,7 @@
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
+        dropdownParent: $('#g3w-search-form'),
         minimumInputLength: 1,
         ajax: {
           delay: 500,

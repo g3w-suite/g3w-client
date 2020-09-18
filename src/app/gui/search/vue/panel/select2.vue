@@ -23,6 +23,7 @@
         const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({
           width: '100%',
+          dropdownParent:$('#g3w-search-form'),
           minimumInputLength: isAutocomplete && 3 || 0,
           ajax: isAutocomplete ? {
             delay: 500,

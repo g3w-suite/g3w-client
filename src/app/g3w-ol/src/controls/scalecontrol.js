@@ -35,6 +35,7 @@ proto.layout = function(map) {
   const element = $(this.element);
   const select2 = element.children('select').select2({
     tags: true,
+    dropdownParent:$(map.getTargetElement()),
     width: '120px',
     height: '20px',
     language: {
@@ -63,7 +64,10 @@ proto.layout = function(map) {
       return newTag
     }
   });
-
+  //get change mapsize to close
+  map.on('change:size', ()=>{
+    select2.select2('close');
+  });
   function deleteLastCustomScale() {
     select2.find('option').each((index, option) => {
       if (self.scales.indexOf(1*option.value) === -1) {
@@ -95,9 +99,7 @@ proto.layout = function(map) {
       };
       addCustomTag(data);
       isMapResolutionChanged = false;
-    } else {
-      selectedOnClick = false;
-    }
+    } else selectedOnClick = false;
   });
   const setChangeResolutionHandler = () =>{
     map.getView().on('change:resolution', () => {

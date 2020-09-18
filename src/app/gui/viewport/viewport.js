@@ -456,7 +456,7 @@ const ViewportService = function() {
   this._setViewSizes = function() {
     const primaryView = this.state.primaryView;
     const secondaryView = this._otherView(primaryView);
-    const viewportWidth = Math.round(this._viewportWidth()); // remove  for zoom in zoom out issue
+    const viewportWidth = this._viewportWidth(); // remove  for zoom in zoom out issue
     //all viewport height
     const viewportHeight = this._viewportHeight();
     // assign all width and height of the view to primary view (map)
@@ -491,9 +491,9 @@ const ViewportService = function() {
   this._viewportWidth = function() {
     const main_sidebar = $(".main-sidebar");
     const offset = main_sidebar.length && main_sidebar.offset().left;
-    const width = main_sidebar.length && main_sidebar.innerWidth();
+    const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
     const sideBarSpace = width + offset;
-    return $(window).innerWidth() - sideBarSpace;
+    return $('#app')[0].getBoundingClientRect().width - sideBarSpace;
   };
 
   this.resizeViewComponents = function(type, sizes={}, perc){
