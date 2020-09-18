@@ -88,6 +88,9 @@ module.exports = {
       return this.fieldIs(type, value);
     }
   },
+  beforeCreate() {
+    this.delayType = 'debounce';
+  },
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
     this.showDownloadButtons = {

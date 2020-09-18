@@ -1,4 +1,5 @@
 const GUI = require('gui/gui');
+const {throttle, debounce} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -193,16 +194,24 @@ const geoMixin = {
   }
 };
 
+const DELAY_TYPE = {
+  throttle,
+  debounce
+};
+
 const resizeMixin = {
   created(){
-    GUI.on('resize', this.resize);
+    const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
+    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this)): null;
+    GUI.on('resize', this.delayResize);
   },
   async mounted(){
     await this.$nextTick();
     this.resize && this.resize();
   },
   beforeDestroy(){
-    GUI.off('resize', this.resize)
+    GUI.off('resize', this.delayResize);
+    this.delayResize = null;
   }
 };
 

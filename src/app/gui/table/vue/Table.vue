@@ -96,6 +96,9 @@
         $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
       }
     },
+    beforeCreate(){
+      this.delayType = 'debounce';
+    },
     created() {},
     mounted() {
       this.setContentKey = GUI.onafter('setContent', this.resize);
@@ -106,8 +109,7 @@
           'justify-content': 'space-between',
           'font-size': '0.8em',
           'margin-top': '5px'
-        })
-        //$('#layer_attribute_table_previous, #layer_attribute_table_next').hide();
+        });
         $('.dataTables_filter').css('float', 'right');
         $('.dataTables_paginate').css('margin', '0');
       };

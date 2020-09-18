@@ -97,6 +97,9 @@
         }
         return component;
       }
+    },
+    beforeCreate() {
+      this.delayType = 'debounce';
     }
   }
 </script>
