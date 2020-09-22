@@ -72,6 +72,7 @@ const font = {
   draw: "fas fa-draw-polygon",
   chart: "fas fa-chart-bar",
   'chart-line': "fas fa-chart-line",
+  'chart-area': "fas fa-chart-area",
   run: "fas fa-play",
   warning: "fas fa-exclamation-circle",
   alert: "fas fa-exclamation-triangle",

@@ -99,22 +99,16 @@ proto.setService = function(service) {
 proto.handleEventsComponent = function(){
   const {open, visible} = this.events;
   if (open) {
-    const {cb=()=>{}, content=false} = open;
-    const setStateOpenFalse = ()=>this.state.open = false;
-    let key;
-    this.onafter('setOpen', (bool)=>{
+    const {when="after", cb=()=>{}, guiEvents=[]} = open;
+    const setStateOpenFalse = ()=> this.setOpen(false);
+    this[`on${when}`]('setOpen', bool => {
       cb(bool);
-      content && (bool ? GUI.on('closecontent', setStateOpenFalse) : GUI.off('closecontent', setStateOpenFalse));
     });
   }
 };
 
 proto.insertComponentAt = function(index, Component) {
   this._components.splice(index, 0, Component);
-};
-
-proto.destroy = function() {
-  //TODO
 };
 
 proto.removeCompomentAt = function(index) {
@@ -255,6 +249,10 @@ proto.setInternalComponentTemplate = function(template) {
 proto.getInternalTemplate = function() {
   return this.vueComponent.template;
 };
+
+proto.destroy = function() {};
+
+proto.click = function(){};
 
 // hook function to show componet
 proto.show = function() {};

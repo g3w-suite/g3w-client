@@ -24,6 +24,11 @@ proto.isIframe = function() {
   return ApplicationService.isIframe();
 };
 
+proto.getGid = function(){
+  const {gid} = this.config;
+  return gid && gid.split(':')[1];
+};
+
 proto.getConfig = function() {
   return this.config;
 };

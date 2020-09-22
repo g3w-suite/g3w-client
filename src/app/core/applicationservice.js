@@ -106,6 +106,13 @@ const ApplicationService = function() {
     })
   };
 
+  this.registerLeavePage = function({bool=false, message=''}={}){
+    const _return = !bool ? undefined : bool;
+    window.onbeforeunload = function(event) {
+      return _return;
+    };
+  };
+
   this.unregisterOnlineOfflineEvent = function() {
     window.removeEventListener('online');
     window.removeEventListener('offline');

@@ -39,8 +39,8 @@ const SidebarItem = Vue.extend({
         sidebarService.state.components.forEach((component) => {
           if (component !== this.component) {
             if (component.state.open) {
-            $(component.getInternalComponent().$el).siblings('a').click() ;
-             component.setOpen(component.isolate);
+              component.click();
+              component.setOpen(component.isolate);
             }
           }
         });
@@ -120,7 +120,15 @@ function SidebarService() {
     component.mount("#g3w-sidebarcomponent-placeholder");
     // check if componentonent has iniService method
     component.initService && component.initService();
+    // add click handler
+    this.setComponentClickHandler(component);
     return true;
+  };
+
+  this.setComponentClickHandler = function(component){
+    component.click = ()=>{
+      $(component.getInternalComponent().$el).siblings('a').click();
+    };
   };
 
   // get component by id
