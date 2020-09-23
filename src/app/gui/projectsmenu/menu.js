@@ -15,7 +15,6 @@ const InternalComponent = Vue.extend({
       state: null,
       loading: false
     }
-
   },
   methods: {
     trigger: function(item) {

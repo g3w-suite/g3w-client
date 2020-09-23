@@ -87,7 +87,7 @@ const AppUI = Vue.extend({
     getLogoLink: function() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
-    openProjectsMenu: function() {
+    openProjectsMenu() {
       GUI.openProjectsMenu();
     }
   },

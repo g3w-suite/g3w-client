@@ -4,8 +4,8 @@ const inherit = require('core/utils/utils').inherit;
 const Stack = require('gui/utils/utils').barstack;
 const G3WObject = require('core/g3wobject');
 const base = require('core/utils/utils').base;
+const GUI = require('gui/gui');
 const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
-
 const SIDEBAREVENTBUS = new Vue();
 
 //sidebar item is a <li> dom element of the sidebar . Where is possible set
@@ -31,12 +31,11 @@ const SidebarItem = Vue.extend({
   },
   methods: {
     onClickItem: function(evt) {
-      const sidebarService = this.$options.service;
       // force to close
       this.component.isolate && evt.stopPropagation();
       if (!this.component.isolate) {
         // set state of opened component
-        sidebarService.state.components.forEach((component) => {
+        this.$options.service.state.components.forEach(component => {
           if (component !== this.component) {
             if (component.state.open) {
               component.click();
@@ -44,9 +43,7 @@ const SidebarItem = Vue.extend({
             }
           }
         });
-        if (!this.component.collapsible && isMobile.any) {
-          SIDEBAREVENTBUS.$emit('sidebaritemclick');
-        }
+        !this.component.collapsible && isMobile.any && SIDEBAREVENTBUS.$emit('sidebaritemclick');
       }
       this.component.setOpen(!this.component.state.open);
     }
@@ -146,6 +143,15 @@ function SidebarService() {
   // get all components
   this.getComponents = function() {
     return this.state.components;
+  };
+
+  this.closeOpenComponents = function(){
+    this.getComponents().forEach(component =>{
+      if (component.getOpen()){
+        component.click();
+        component.setOpen(false);
+      }
+    })
   };
 
   this.reloadComponent = function(id) {
@@ -248,5 +254,5 @@ const SidebarComponent = Vue.extend({
 
 module.exports = {
   SidebarService: sidebarService,
-  SidebarComponent: SidebarComponent
+  SidebarComponent
 };

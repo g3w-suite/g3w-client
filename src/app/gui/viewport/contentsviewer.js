@@ -154,7 +154,7 @@ proto.layout = function(parentWidth, parentHeight) {
   Vue.nextTick(() => {
     const contentsdata = this.stack.state.contentsdata;
     // el.parent() is div g3w-view-content
-    const height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - el.siblings('.g3w_contents_back').outerHeight(true);
+    const height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - 10; // margin 10 from bottom
     el.height(height);
     el.children().first().height(height);
     contentsdata.forEach((data) => {

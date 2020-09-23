@@ -662,6 +662,7 @@ const ApplicationTemplate = function({ApplicationService}) {
           GUI.hideSidebar();
           $('#main-navbar.navbar-collapse').removeClass('in');
         }
+        ApplicationTemplate.Services.sidebar.closeOpenComponents();
         GUI.setContent({
           content: new ProjectsMenuComponent(),
           title: '',
