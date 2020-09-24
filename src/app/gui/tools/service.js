@@ -55,7 +55,6 @@ inherit(Service, G3WObject);
 const proto = Service.prototype;
 
 proto.reload = function() {
-  console.log('qui')
   this.removeTools();
 };
 

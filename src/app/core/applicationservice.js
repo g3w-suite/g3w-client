@@ -412,6 +412,7 @@ const ApplicationService = function() {
 
   this.clearInitConfig = function() {
     window.initConfig = null;
+    this._initConfig = null;
   };
 
   this._changeProject = function({gid, host}={}) {
@@ -424,7 +425,7 @@ const ApplicationService = function() {
     //remove tools
     this.obtainInitConfig({
       host
-    }).then((initConfig) => {
+    }).then(initConfig => {
         ProjectsRegistry.setProjects(initConfig.group.projects);
         ProjectsRegistry.getProject(gid)
           .then((project) => {

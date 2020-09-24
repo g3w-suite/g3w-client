@@ -160,11 +160,13 @@ function SidebarService() {
     })
   };
   //remove component
-  this.removeComponent = function(component) {
+  this.removeComponent = function(component, options={}) {
+    const {position} = options;
     this.state.components.forEach((sidebarComponent, index) => {
       if (component === sidebarComponent) {
         component.unmount();
         this.state.components.splice(index, 1);
+        position !== undefined && $('#g3w-sidebarcomponents').children()[position].remove();
         return false;
       }
     })

@@ -313,8 +313,9 @@ const ApplicationTemplate = function({ApplicationService}) {
     })
   };
 
-  this._removeComponent = function(componentId) {
-    ComponentsRegistry.unregisterComponent(componentId);
+  this._removeComponent = function(componentId, placeholder, options) {
+    const component = ComponentsRegistry.unregisterComponent(componentId);
+    placeholder && ApplicationTemplate.Services[placeholder] && ApplicationTemplate.Services[placeholder].removeComponent(component, options);
   };
 
   this._showModalOverlay = function(bool=false, message) {

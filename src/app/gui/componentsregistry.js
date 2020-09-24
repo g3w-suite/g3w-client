@@ -30,6 +30,7 @@ function ComponentsRegistry() {
       }
       this.components[id] = null;
     }
+    return component;
   };
   base(this);
 }
