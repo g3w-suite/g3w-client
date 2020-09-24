@@ -147,22 +147,21 @@ const QueryBuilder = Vue.extend({
     this.operators = operators;
     this.currentlayer = this.edit ? this.layers.find(layer => layer.id === this.$options.options.layerId) : this.layers[0];
   },
-  mounted(){
-    this.$nextTick(()=>{
-      this.select2 = $('#query_builder_layers_select').select2({
-        width: '100%',
-      });
-      if (this.edit) {
-         const index = this.layers.indexOf(this.currentlayer);
-         this.select2.val(index);
-         this.select2.trigger('change');
-      }
-      this.select2.on('select2:select', (evt) => {
-        this.currentlayer = this.layers[evt.params.data.id];
-        this.select.field = null;
-        this.select.value = null;
-        this.reset();
-      });
+  async mounted(){
+    await this.$nextTick();
+    this.select2 = $('#query_builder_layers_select').select2({
+      width: '100%',
+    });
+    if (this.edit) {
+      const index = this.layers.indexOf(this.currentlayer);
+      this.select2.val(index);
+      this.select2.trigger('change');
+    }
+    this.select2.on('select2:select', (evt) => {
+      this.currentlayer = this.layers[evt.params.data.id];
+      this.select.field = null;
+      this.select.value = null;
+      this.reset();
     });
   },
   beforeDestroy(){

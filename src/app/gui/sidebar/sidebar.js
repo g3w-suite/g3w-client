@@ -4,7 +4,6 @@ const inherit = require('core/utils/utils').inherit;
 const Stack = require('gui/utils/utils').barstack;
 const G3WObject = require('core/g3wobject');
 const base = require('core/utils/utils').base;
-const GUI = require('gui/gui');
 const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
 const SIDEBAREVENTBUS = new Vue();
 
@@ -37,9 +36,10 @@ const SidebarItem = Vue.extend({
         // set state of opened component
         this.$options.service.state.components.forEach(component => {
           if (component !== this.component) {
-            if (component.state.open) {
-              component.click();
-              component.setOpen(component.isolate);
+            if (component.getOpen()) {
+              component.click({
+                open:component.isolate
+              });
             }
           }
         });
@@ -100,7 +100,7 @@ function SidebarService() {
     sidebarItem.title = component.title || sidebarItem.title;
     sidebarItem.info = component.info || sidebarItem.info;
     sidebarItem.actions = component.actions || sidebarItem.actions;
-    sidebarItem.open = component.state.open;//(component.open === undefined) ? sidebarItem.open : component.open;
+    sidebarItem.open = component.state.open; //(component.open === undefined) ? sidebarItem.open : component.open;
     sidebarItem.icon = component.icon || sidebarItem.icon;
     sidebarItem.iconColor = component.iconColor;
     sidebarItem.state = component.state || true;
@@ -123,21 +123,16 @@ function SidebarService() {
   };
 
   this.setComponentClickHandler = function(component){
-    component.click = ()=>{
+    component.click = ({open=false}={}) => {
+      open = open || false;
       $(component.getInternalComponent().$el).siblings('a').click();
-    };
+      component.setOpen(open);
+    }
   };
 
   // get component by id
   this.getComponent = function(id) {
-    let Component;
-    for (const component of this.state.components) {
-      if (component.getId() === id) {
-        Component = component;
-        break;
-      }
-    }
-    return Component;
+    return this.state.components.find(component => component.getId() === id)
   };
 
   // get all components
@@ -147,26 +142,20 @@ function SidebarService() {
 
   this.closeOpenComponents = function(){
     this.getComponents().forEach(component =>{
-      if (component.getOpen()){
-        component.click();
-        component.setOpen(false);
-      }
+      component.getOpen() && component.click({open: false});
     })
   };
 
   this.reloadComponent = function(id) {
     const component = this.getComponent(id);
-    component.reload();
+    component && component.reload();
   };
 
   this.reloadComponents = function() {
     // force close of the panel
     this.closePanel();
-    this.state.components.forEach((component) => {
-      if (component.collapsible && component.state.open) {
-        $(component.getInternalComponent().$el).siblings().click();
-        component.setOpen(false);
-      }
+    this.state.components.forEach(component => {
+      if (component.collapsible && component.state.open) component.click({open: false});
       component.reload();
     })
   };
@@ -187,18 +176,14 @@ function SidebarService() {
       const parent = "#g3w-sidebarpanel-placeholder";
       this.stack.push(panel, {
         parent: parent
-      }).then((content) => {
-        resolve(content)
-      })
+      }).then(content => resolve(content))
     })
   };
 
   // close panel
   this.closePanel = function() {
     this.closeSidebarPanel();
-    this.stack.pop().then((content) => {
-      content = null;
-    })
+    this.stack.pop().then(content => content = null);
   };
   base(this);
 }
@@ -220,7 +205,6 @@ const SidebarComponent = Vue.extend({
       }
     },
     computed: {
-      // quanti pannelli sono attivi nello stack
       panelsinstack: function(){
         return this.panels.length > 0;
       },

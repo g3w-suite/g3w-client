@@ -84,9 +84,11 @@ const ApplicationTemplate = function({ApplicationService}) {
                 id:"querybuilder",
                 class: G3WTemplate.getFontClass('filter'),
                 tooltip: 'Query Builder',
-                fnc:()=> {
+                fnc:() => {
+                  GUI.closeContent();
+                  ApplicationTemplate.Services.sidebar.closeOpenComponents();
                   QueryBuilderUIFactory.show({
-                    type: 'sidebar'
+                    type: 'sidebar' // sidebar or modal
                   });
                 },
                 style: {
@@ -241,12 +243,13 @@ const ApplicationTemplate = function({ApplicationService}) {
 
   //register all services
   this._setUpServices = function() {
-    _.forEach(ApplicationTemplate.Services, function(service, element) {
+    Object.keys(ApplicationTemplate.Services).forEach(element => {
+      const service = ApplicationTemplate.Services[element];
       ApplicationService.registerService(element, service);
     });
-    _.forEach(GUI.getComponents(), function(component) {
+    Object.values(GUI.getComponents()).forEach(component => {
       ApplicationService.registerService(component.id, component.getService());
-    })
+    });
     ApplicationTemplate.Services.viewport.on('resize', ()=>{
       GUI.emit('resize')
     })
@@ -427,6 +430,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.closeContent = function() {
       this.emit('closecontent', false);
       return viewport.ViewportService.closeContent();
+    };
+
+    GUI.closeOpenSideBarComponent = function(){
+      ApplicationTemplate.Services.sidebar.closeOpenComponents();
     };
 
     // show results info/search

@@ -22,6 +22,7 @@ const TableComponent = function(options = {}) {
   const internalComponent = new InternalComponent({
     service
   });
+
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
 
@@ -41,6 +42,8 @@ const proto = TableComponent.prototype;
 // overwrite show method
 proto.show = function(options = {}) {
   const service = this.getService();
+  // close all sidebar open component
+  GUI.closeOpenSideBarComponent();
   service.getData()
     .then(() => {
       GUI.showContent({
@@ -51,12 +54,8 @@ proto.show = function(options = {}) {
         title: options.title
       });
     })
-    .catch((err) => {
-      GUI.notify.error(t("info.server_error"));
-    })
-    .finally(() => {
-      this.emit('show')
-    })
+    .catch(err => GUI.notify.error(t("info.server_error")))
+    .finally(() => this.emit('show'));
 };
 
 proto.unmount = function() {
