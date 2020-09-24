@@ -80,6 +80,7 @@ const AddLayerComponent = {
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
       type = type[type.length-1].toLowerCase();
+      const input_file = $(this.$refs.input_file);
       if (SUPPORTED_FORMAT.indexOf(type) !== -1) {
         this.clearError();
         this.layer.name = name;
@@ -88,11 +89,11 @@ const AddLayerComponent = {
         this.layer.type = type;
         if (this.layer.type === 'zip') {
           this.layer.data = evt.target.files[0];
-          $('input:file').val(null);
+          input_file.val(null);
         } else {
           reader.onload = (evt) => {
             this.layer.data = evt.target.result;
-            $('input:file').val(null);
+            input_file.val(null);
           };
           reader.readAsText(evt.target.files[0]);
         }
@@ -104,7 +105,7 @@ const AddLayerComponent = {
         const layer = _.cloneDeep(this.layer);
         this.service.addExternalLayer(layer)
           .then(() =>{
-            $('#modal-addlayer').modal('hide');
+            $(this.$refs.modal_addlayer).modal('hide');
             this.clearLayer();
           })
           .catch(()=>{

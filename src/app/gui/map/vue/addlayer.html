@@ -1,5 +1,5 @@
 <!-- Modal -->
-<div class="modal fade" id="modal-addlayer" role="dialog">
+<div class="modal fade" id="modal-addlayer" ref="modal_addlayer" role="dialog">
   <div class="modal-dialog">
     <!-- Modal content-->
     <div class="modal-content">
@@ -18,7 +18,7 @@
         <chrome-picker v-model="layer.color" @change-color="onChangeColor" style="width:90%;margin:auto"></chrome-picker>
         <bar-loader :loading="loading"></bar-loader>
         <form id="addcustomlayer">
-          <input type="file" title=" " @change="onAddLayer($event)" accept=".kml,.geojson, .KML, .GEOJSON, .zip">
+          <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" accept=".kml,.geojson, .KML, .GEOJSON, .zip">
           <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
           <h4 v-if="layer.name">{{ layer.name }}</h4>
           <div>

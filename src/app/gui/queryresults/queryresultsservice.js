@@ -51,7 +51,7 @@ function QueryResultsService() {
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
-      this.state.layers =  layers;
+      this.state.layers = layers;
       this.setActionsForLayers(layers);
     },
     addComponent: function(component) {
@@ -424,10 +424,9 @@ proto.registerVectorLayer = function(vectorLayer) {
 };
 
 proto.unregisterVectorLayer = function(vectorLayer) {
-  const index = this._vectorLayers.indexOf(vectorLayer);
-  if ( index !== -1) {
-    this._vectorLayers.splice(index, 1);
-  }
+  const vectorId = vectorLayer.get('id');
+  this._vectorLayers = this._vectorLayers.filter(layer => layer === vectorLayer);
+  this.state.layers = this.state.layers.filter(layer => layer.id !== vectorId);
 };
 
 proto._addVectorLayersDataToQueryResponse = function() {
