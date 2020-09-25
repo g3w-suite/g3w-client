@@ -8,6 +8,9 @@ function MapLayer(config={}) {
   this.iframe_internal = config.iframe_internal || false;
   this.extent = config.extent;
   this.projection = config.projection;
+  this.layer = null;
+  this.layers = []; // store all enabled layers
+  this.allLayers = []; // store all layers
   base(this);
 }
 
@@ -21,6 +24,20 @@ proto.getId = function(){
 
 proto.getOLLayer = function() {
   console.log('every sub classes has to be override')
+};
+
+proto.update = function(mapState={}, extraParams={}) {
+  this._updateLayers(mapState, extraParams);
+};
+
+proto.checkLayerDisabled = function(layer, resolution, mapUnits) {
+  layer.setDisabled(resolution, mapUnits);
+  return layer.isDisabled();
+};
+
+// check which layers has to be disabled
+proto.checkLayersDisabled = function(resolution, mapUnits) {
+  this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
 };
 
 module.exports = MapLayer;

@@ -5,6 +5,7 @@
         <transition :duration="500" name="fade">
           <bar-loader :loading="state.loading"></bar-loader>
         </transition>
+        <helpdiv message='sdk.print.help'></helpdiv>
         <label for="templates">Template</label>
         <select class="form-control" @change="onChangeTemplate" v-model="state.template" :style="{marginBottom: this.state.atlas && '10px'}" id="templates" placeholder="Seleziona il template">
           <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>

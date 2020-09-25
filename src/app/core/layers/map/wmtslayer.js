@@ -10,9 +10,6 @@ function WMSTLayer(options={}, extraParams={}, method='GET') {
   };
   this.extraParams = extraParams;
   this._method = method;
-  this.layers = []; // store all enabled layers
-  this.allLayers = []; // store all layers
-
   base(this,options);
 }
 

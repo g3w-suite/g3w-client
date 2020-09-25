@@ -21,8 +21,9 @@ const translations = {
           scale: "Scala",
           format: "Formato",
           rotation: "Rotazione",
-          fids_instruction: "Valori accettati: da 0 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
-          fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6"
+          fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
+          fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
+          help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto QGIS (tramite la gestione dei temi) e non quelli visualizzati sulla mappa"
         },
         querybuilder: {
           search: {
@@ -395,8 +396,9 @@ const translations = {
           scale: "Scale",
           format: "Format",
           rotation: "Rotation",
-          fids_instruction: "Values accepted: from 0 to value of [max]. Is possible to insert a range ex. 4-6",
-          fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6"
+          fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
+          fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
+          help: "The layers shown in the print could be those defined on the QGIS project (through the management of themes) and not those displayed on the map"
         },
         querybuilder: {
           search: {

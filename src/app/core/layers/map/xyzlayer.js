@@ -6,7 +6,6 @@ const RasterLayers = require('g3w-ol/src/layers/rasters');
 function XYZLayer(options, method="GET") {
   base(this, options);
   this._method = method;
-  this.layer = null;
 }
 
 inherit(XYZLayer, MapLayer);
@@ -31,6 +30,7 @@ proto.getLayerConfigs = function(){
 
 proto.addLayer = function(layer){
   this.layer = layer;
+  this.allLayers.push(layer);
 };
 
 proto.toggleLayer = function(){
@@ -66,11 +66,11 @@ proto._makeOlLayer = function(){
   this._olLayer.getSource().on('imageloaderror', () => {
     this.emit("loaderror");
   });
-
   return this._olLayer
 };
 
-proto._updateLayer = function(mapState, extraParams) {
+proto._updateLayer = function(mapState={}, extraParams={}) {
+  this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   this._olLayer.setVisible(this.layer.isVisible());
 };
 

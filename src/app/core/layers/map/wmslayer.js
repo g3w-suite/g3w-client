@@ -10,8 +10,6 @@ function WMSLayer(options={}, extraParams={}, method='GET') {
   };
   this.extraParams = extraParams;
   this._method = method;
-  this.layers = []; // store all enabled layers
-  this.allLayers = []; // store all layers
   base(this, options);
 }
 
@@ -65,9 +63,6 @@ proto.toggleLayer = function(layer) {
   this._updateLayers();
 };
 
-proto.update = function(mapState={}, extraParams={}) {
-  this._updateLayers(mapState, extraParams);
-};
 
 proto.isVisible = function(){
   return this._getVisibleLayers().length > 0;
@@ -124,23 +119,10 @@ proto._makeOlLayer = function(withLayers) {
   return olLayer
 };
 
-proto.checkLayerDisabled = function(layer, resolution, mapUnits) {
-  layer.setDisabled(resolution, mapUnits);
-  return layer.isDisabled();
-};
-
-// check which layers has to be disabled
-proto.checkLayersDisabled = function(resolution, mapUnits) {
-  this.allLayers.forEach((layer) => {
-    this.checkLayerDisabled(layer, resolution, mapUnits);
-  });
-};
-
 //update Layers
 proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
-  const {mapUnits} = mapState;
-  this.checkLayersDisabled(mapState.resolution, mapUnits);
+  this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';

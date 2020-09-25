@@ -14,9 +14,7 @@
     </ul>
     <div class="tab-content">
       <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="tree">
-        <div id="toc_layer_help_text" v-t="'catalog_items.helptext'">
-          <span class="info_helptext_button">i</span>
-        </div>
+        <helpdiv message="catalog_items.helptext"></helpdiv>
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
