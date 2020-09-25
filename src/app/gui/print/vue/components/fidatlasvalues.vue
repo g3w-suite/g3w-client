@@ -4,7 +4,7 @@
       <span>fids [max: {{atlas.feature_count - 1 }}]</span>
     </label>
     <input class="form-control" v-model="value" @keydown.space.prevent></input>
-    <div id="fid-print-atals-instruction" style="margin-top: 5px;">
+    <div id="fid-print-atals-instruction" style="margin-top: 5px; color: #ffffff">
       <div id="fids_intruction" v-t="'sdk.print.fids_instruction'" style="white-space: pre-line"></div>
       <div id="fids_examples_values" style="margin-top: 3px; font-weight: bold" v-t="'sdk.print.fids_example'"></div>
     </div>
