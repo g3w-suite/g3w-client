@@ -93,7 +93,7 @@
               </div>
             </div>
             <div v-if="findAttributeFormMetadataAttribute('crs')" class="row">
-              <div v-t="'sdk.metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label skin-color-dark"></div>
+              <div class="col-sm-3 metadata-label skin-color-dark">CRS</div>
               <div class="col-sm-9 value">
                 <div v-for="crs in state.metadata.crs">
                   <span>{{ crs }}</span>

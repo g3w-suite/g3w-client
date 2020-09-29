@@ -73,6 +73,7 @@ const font = {
   chart: "fas fa-chart-bar",
   'chart-line': "fas fa-chart-line",
   'chart-area': "fas fa-chart-area",
+  'chart-pie': "fas fa-chart-pie",
   run: "fas fa-play",
   warning: "fas fa-exclamation-circle",
   alert: "fas fa-exclamation-triangle",
