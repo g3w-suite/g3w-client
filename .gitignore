@@ -14,3 +14,4 @@
 /src/plugins/
 /src/app/dev/
 /src/config/keys/index.js
+/cypress.env.json

@@ -13,9 +13,7 @@ function BaseLayer(config = {}, options={}) {
     };
     this._mapLayer = new WMSLayer(config);
     this._mapLayer.addLayer(this);
-  } else {
-    this._mapLayer = this;
-  }
+  } else this._mapLayer = this;
 }
 
 inherit(BaseLayer, ImageLayer);
@@ -73,6 +71,5 @@ proto.setVisible = function(bool) {
 proto.getMapLayer = function() {
   return this._mapLayer;
 };
-
 
 module.exports = BaseLayer;

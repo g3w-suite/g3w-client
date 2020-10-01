@@ -4,7 +4,6 @@
     "babel-plugin-transform-es2015-classes",
     "transform-remove-strict-mode",
     "transform-object-rest-spread",
-    "transform-runtime",
     "transform-async-to-generator",
     "transform-array-find",
     "transform-vue-jsx",
