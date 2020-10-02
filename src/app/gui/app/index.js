@@ -658,6 +658,11 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI.setLoadingContent = function(loading = false) {
       ApplicationTemplate.Services.viewport.setLoadingContent(loading);
+      return loading && new Promise((resolve)=>{
+        setTimeout(()=>{
+          resolve()
+        }, 200)
+      })
     };
 
     GUI.openProjectsMenu = function() {
