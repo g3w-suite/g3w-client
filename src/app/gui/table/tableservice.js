@@ -116,11 +116,12 @@ proto._setLayout = function() {
 
 proto._returnGeometry = function(feature) {
   let geometry;
-  if (feature.attributes) {
-    geometry = feature.geometry;
-  } else if (feature.geometry) {
-    geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
-  }
+  const mapService = GUI.getComponent('map').getService();
+  const layerCode = this.layer.getProjection().getCode();
+  const mapCode = mapService.getProjection().getCode();
+  if (feature.attributes) geometry = feature.geometry;
+  else if (feature.geometry) geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
+  (geometry && layerCode !== mapCode) && geometry.transform(layerCode, mapCode);
   return geometry;
 };
 
