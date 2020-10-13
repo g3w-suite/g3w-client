@@ -1,8 +1,8 @@
 <template>
   <select :name="forminput.attribute" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
-    <option :value="value" v-for="value in forminput.options.values" :key="value">
-      <span v-if="value === allvalue " v-t="'sdk.search.all'"></span>
-      <span v-else>{{ value }}</span>
+    <option :value="keyvalue.value" v-for="keyvalue in forminput.options.values" :key="keyvalue.value">
+      <span v-if="keyvalue.value === allvalue " v-t="'sdk.search.all'"></span>
+      <span v-else>{{ keyvalue.key }}</span>
     </option>
   </select>
 </template>
@@ -24,7 +24,9 @@
         this.select2 = $(this.$el).select2({
           width: '100%',
           dropdownParent:$('#g3w-search-form'),
-          minimumInputLength: isAutocomplete && 3 || 0,
+          minimumInputLength: isAutocomplete && 2 || 0,
+          allowClear: isAutocomplete,
+          placeholder : isAutocomplete ? '' : null,
           ajax: isAutocomplete ? {
             delay: 500,
             transport: async ({data:{q:value}}, success, failure) => {
@@ -52,6 +54,9 @@
             type: this.forminput.type
           });
         });
+        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', ()=>{
+          this.forminput.value = null;
+        })
       }
     },
     watch : {

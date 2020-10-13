@@ -9,7 +9,7 @@ function CheckBoxService(options={}) {
   options.validatorOptions =  {
     values: options.state.input.options.values.map(value => value)
   };
-  if (options.state.value === null)
+  if (options.state.value === null && !options.state.forceNull)
     options.state.value = value.value;
   base(this, options);
 }
@@ -19,7 +19,7 @@ inherit(CheckBoxService, Service);
 const proto = CheckBoxService.prototype;
 
 proto.convertCheckedToValue = function(checked) {
-  cheched = checked === null ||  checked === undefined ? false : checked;
+  checked = checked === null ||  checked === undefined ? false : checked;
   const option = this.state.input.options.values.find((value) => {
     return value.checked === checked
   });

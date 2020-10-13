@@ -86,7 +86,7 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     const mapScale = getScaleFromResolution(resolution, mapUnits);
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
     this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
-  } else this.state.disabled = false;
+  } else this.state.disabled = this.state.groupdisabled;
 };
 
 proto.getMultiLayerId = function() {

@@ -82,8 +82,11 @@ const translations = {
                     personprimary: 'Riferimenti',
                     contactvoicetelephone: 'Telefono',
                     contactorganization: 'Organizzazione',
+                    ContactOrganization: 'Organizzazione',
                     contactposition: 'Posizione',
-                    contactperson: 'Persona'
+                    ContactPosition : 'Posizione',
+                    contactperson: 'Persona',
+                    ContactPerson: 'Persona',
                   }
                 },
                 wms_url: "WMS"
@@ -457,8 +460,11 @@ const translations = {
                     personprimary: 'Refereces',
                     contactvoicetelephone: 'Phone',
                     contactorganization: 'Organization',
+                    ContactOrganization: 'Organization',
                     contactposition: 'Position',
-                    contactperson: 'Person'
+                    ContactPosition: 'Position',
+                    contactperson: 'Person',
+                    ContactPerson: 'Person'
                   }
                 },
                 wms_url: "WMS"

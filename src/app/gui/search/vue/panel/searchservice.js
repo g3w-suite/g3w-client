@@ -1,5 +1,5 @@
 import { ALLVALUE }  from '../../constants';
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -250,9 +250,9 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
   const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
-      subscribe.value = ALLVALUE;
+      subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
       subscribe.options.disabled = subscribe.type !== 'autocompletefield' || invalidValue ;
-      subscribe.options.values.splice(1);
+      subscribe.type === 'autocompletefield' ? subscribe.options.values.splice(0) : subscribe.options.values.splice(1);
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
@@ -302,7 +302,9 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.searchLayer.getFilterData({
             field: fieldParams,
             unique: uniqueParams
-          }).then(data => {data = uniqueParams ? data : data.data[0].features || [];
+          }).then(data => {
+            data = uniqueParams ? data : data.data[0].features || [];
+            data = this.valuesToKeysValues(data);
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
               if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
@@ -343,6 +345,17 @@ proto.setInputDependencies = function({master, slave}={}) {
   this.inputdependencies[master].push(slave);
 };
 
+proto.valuesToKeysValues = function(values=[]){
+  if (values.length) {
+    const type = toRawType(values[0]);
+    values = type !== 'Object' ? values.map(value =>({
+      key:value,
+      value
+    })): values
+  }
+  return values;
+};
+
 proto.createInputsFormFromFilter = function({filter=[]}={}) {
   let id = 0;
   const filterLenght = filter.length - 1;
@@ -359,6 +372,7 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       forminput.options.values = forminput.options.values === undefined ? [] : forminput.options.values;
+      forminput.options.values = this.valuesToKeysValues(forminput.options.values);
       //check if has a dependance
       const { options:{ dependance } } = forminput;
       if (dependance) {
@@ -371,8 +385,11 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
           slave: forminput
         });
       }
-      forminput.options.values[0] !== ALLVALUE && forminput.options.values.unshift(ALLVALUE);
-      forminput.value = ALLVALUE;
+      if (forminput.type !== 'autocompletefield') {
+        if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
+        else forminput.options.values.push({value:ALLVALUE});
+        forminput.value = ALLVALUE;
+      }
     }
     this.state.forminputs.push(forminput);
     id+=1;

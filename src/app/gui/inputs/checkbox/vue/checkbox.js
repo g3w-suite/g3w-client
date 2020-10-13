@@ -31,11 +31,13 @@ const CheckBoxInput = Vue.extend({
     }
   },
   created() {
-    this.value = this.service.convertValueToChecked();
+    this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
   },
-  mounted: function() {
-    this.setLabel();
-    this.change();
+  mounted() {
+    if (!this.state.forceNull) {
+      this.setLabel();
+      this.change();
+    }
   }
 });
 

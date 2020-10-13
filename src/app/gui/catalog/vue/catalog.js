@@ -301,7 +301,7 @@ const vueComponentOptions = {
       const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
       const turnOnOffSubGroups = (parentChecked, currentLayersIds, node) => {
         if (node.nodes) {
-          node.disabled = !parentChecked;
+          //node.disabled = !parentChecked;
           const isGroupChecked = (node.checked && parentChecked);
           const groupLayers = {
             checked: isGroupChecked,

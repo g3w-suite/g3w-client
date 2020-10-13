@@ -11,7 +11,7 @@ const Projection = function(options={}) {
     const proj4def = proj4.defs(options.crs);
     if ( proj4def.axis !== undefined) this._axisOrientation = proj4def.axis;
     if (options.crs === 'EPSG:3045' || options.crs === 'EPSG:6708' || options.crs === 'EPSG:4269') this._axisOrientation = 'neu';
-  };
+  }
   ol.proj.Projection.call(this, {
     code: options.crs,
     extent: options.extent ? options.extent : degrees ? GENERIC_GRID_EXTENT_DEGREE: GENERIC_GRID_EXTENT,
