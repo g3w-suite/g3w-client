@@ -137,4 +137,9 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   } else this._olLayer.setVisible(false);
 };
 
+proto.setupCustomMapParamsToLegendUrl = function(params={}){
+  if (this.layer) this.layer.setMapParamstoLegendUrl(params);
+  else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
+};
+
 module.exports = WMSLayer;

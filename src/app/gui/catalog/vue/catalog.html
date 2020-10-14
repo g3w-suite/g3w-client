@@ -1,9 +1,9 @@
 <!-- item template -->
 <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
   <div class="tabbable-line">
-    <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist">
+    <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click="delegationClickEventTab">
       <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab === 'layers' && 'hasLayers' }" :style="{width: hasBaseLayers ? '32%' : '48%'}">
-        <a href="#tree" aria-controls="tree" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
+        <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
       </li>
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: activeTab === 'baselayers' }" :style="{width: !hasLayers ? '100%' : '32%'}">
         <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
@@ -13,7 +13,7 @@
       </li>
     </ul>
     <div class="tab-content">
-      <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="tree">
+      <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
@@ -53,7 +53,11 @@
   <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"
       tabindex="-1" v-if="layerMenu.show"
       :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
-    <li class="title">{{ layerMenu.layer.title}}</li>
+    <li class="title">
+      <div>{{ layerMenu.layer.title}}</div>
+      <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id)}}</div>
+    </li>
+
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
@@ -107,7 +111,7 @@
       <div @click.prevent.stop="copyWmsUrl($event, layerMenu.layer.id)" style="display: flex; max-width:300px; align-items: center;">
         <span class="menu-icon" :class="g3wtemplate.getFontClass('map')"></span>
         <div style="display: inline-flex; justify-content: space-between; width: 100%; align-items: baseline">
-          <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" :title="copywmsurltooltip">WMS URL</span>
+          <span class="item-text catalog-menu-wms skin-tooltip-top" data-toggle="tooltip" v-t-tooltip="'sdk.catalog.menu.wms.copy'">WMS URL</span>
           <span @click.prevent.stop="" class="bold catalog-menu-wms wms-url-tooltip skin-tooltip-top"
             :class="g3wtemplate.getFontClass('eye')"
             data-placement="top" data-toggle="tooltip" :title="getWmsUrl(layerMenu.layer.id)">

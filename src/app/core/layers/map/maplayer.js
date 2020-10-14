@@ -40,4 +40,8 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
   this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
 };
 
+proto.setupCustomMapParamsToLegendUrl = function(params={}){
+  //to owerwrite for each map layer subclass
+};
+
 module.exports = MapLayer;

@@ -11,6 +11,8 @@ function WMSLegend({layer, params}) {
     iconlabelspace,
     symbolwidth,
     symbolheight,
+    crs,
+    bbox,
     sld_version='1.1.0'
   } = params;
   const LAYER = layer.getWMSLayerName({
@@ -25,6 +27,8 @@ function WMSLegend({layer, params}) {
     `&LAYERFONTCOLOR=${color}`,
     `&LAYERTITLE=${layertitle}`,
     `&ITEMFONTSIZE=${fontsize}`,
+    `${crs ? '&CRS=' + crs: ''}`,
+    `${bbox ? '&BBOX=' + bbox.join(','): ''}`,
     `${boxspace ? '&BOXSPACE=' + boxspace: ''}`,
     `${layerspace ? '&LAYERSPACE=' + layerspace: ''}`,
     `${layertitlespace ? '&LAYERTITLESPACE=' + layertitlespace: ''}`,
@@ -35,6 +39,5 @@ function WMSLegend({layer, params}) {
     `&LAYER=${LAYER}`
   ].join('');
 }
-
 
 module.exports = WMSLegend;

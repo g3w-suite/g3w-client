@@ -116,7 +116,7 @@ function MapService(options={}) {
   else {
     this.project = ProjectsRegistry.getCurrentProject();
     //on after setting current project
-    const keysetCurrentProject = ProjectsRegistry.onafter('setCurrentProject', (project) => {
+    const keysetCurrentProject = ProjectsRegistry.onafter('setCurrentProject', project => {
       this.removeLayers();
       this._removeListeners();
       this.project = project;
@@ -125,9 +125,8 @@ function MapService(options={}) {
         this._setupMapLayers();
         this._setupVectorLayers();
         this._checkMapControls();
-        this.viewer.map.getView().on("change:resolution", (evt) => {
-          this._updateMapView();
-        });
+        this.setUpMapOlEvents();
+        this.setupCustomMapParamsToLegendUrl();
       };
       ApplicationService.isIframe() && changeProjectCallBack();
       this.getMap().once('change:size', changeProjectCallBack);
@@ -140,7 +139,14 @@ function MapService(options={}) {
   }
   this._setupListeners();
   this._marker = null;
-
+  this.debounces =  {
+    setupCustomMapParamsToLegendUrl: {
+      fnc: (...args) => {
+        this._setupCustomMapParamsToLegendUrl(...args)
+      },
+      delay: 1000
+    }
+  };
   this.setters = {
     setupControls(){
       return this._setupControls()
@@ -178,11 +184,7 @@ function MapService(options={}) {
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
       this._setupAllLayers();
-      // set change resolution
-      const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", (evt) => {
-        this._updateMapView();
-      });
-      this._keyEvents.ol.push(keyolchangeresolution);
+      this.setUpMapOlEvents();
       this.emit('viewerset');
     },
     controlClick: function(active) {}
@@ -265,6 +267,20 @@ function MapService(options={}) {
 inherit(MapService, G3WObject);
 
 const proto = MapService.prototype;
+
+proto.setUpMapOlEvents = function(){
+  // set change resolution
+  this._keyEvents.ol.forEach(keyEvent => ol.Observable.unByKey(keyEvent));
+  const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", (evt) => {
+    this._updateMapView();
+    this.setupCustomMapParamsToLegendUrl();
+  });
+  const keyolmoveeend = this.viewer.map.on("moveend", (evt) => {
+    this.setupCustomMapParamsToLegendUrl();
+  });
+  this._keyEvents.ol.push(keyolmoveeend);
+  this._keyEvents.ol.push(keyolchangeresolution);
+};
 
 //clear methods to remove all listeners events
 proto.clear = function() {
@@ -1472,6 +1488,19 @@ proto.addMapLayers = function(mapLayers) {
   })
 };
 
+proto._setupCustomMapParamsToLegendUrl = function(){
+  const size = this.getMap() && this.getMap().getSize().filter(value => value > 0) || null;
+  const bbox = size && size.length === 2 ? this.getMap().getView().calculateExtent(size): null;
+  //setup initial legend parameter
+  this.getMapLayers().forEach(mapLayer => {
+    mapLayer.setupCustomMapParamsToLegendUrl && mapLayer.setupCustomMapParamsToLegendUrl({
+      crs: this.getEpsg(),
+      bbox: bbox || this.project.state.initextent
+    })
+  });
+  this.emit('change-map-legend-params')
+};
+
 proto.addMapLayer = function(mapLayer) {
   this._mapLayers.push(mapLayer);
   this.addLayerToMap(mapLayer)
@@ -1584,7 +1613,6 @@ proto._setupViewer = function(width, height) {
     stopEvent: false
   });
 
-  VIEW = this.viewer.map.getView()
   this.viewer.map.addOverlay(this._marker);
   this.emit('ready');
 };
@@ -1795,9 +1823,9 @@ proto.getOverviewMapLayers = function(project) {
     });
     overviewMapLayers.push(mapLayer.getOLLayer(true));
   });
-
   return overviewMapLayers.reverse();
 };
+
 
 proto.updateMapLayer = function(mapLayer, options={force: false}) {
   !options.force ? mapLayer.update(this.state, this.getResolution()) : mapLayer.update(this.state, {"time": Date.now()})
@@ -1805,12 +1833,12 @@ proto.updateMapLayer = function(mapLayer, options={force: false}) {
 
 // run update function on ech mapLayer
 proto.updateMapLayers = function(options={}) {
-  this.getMapLayers().forEach((mapLayer) => {
+  this.getMapLayers().forEach(mapLayer => {
     this.updateMapLayer(mapLayer, options)
   });
   const baseLayers = this.getBaseLayers();
   //updatebase layer
-  Object.values(baseLayers).forEach((baseLayer) => {
+  Object.values(baseLayers).forEach(baseLayer => {
     baseLayer.update(this.state, this.layersExtraParams);
   })
 };

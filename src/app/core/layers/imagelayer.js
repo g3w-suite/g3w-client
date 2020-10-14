@@ -42,6 +42,8 @@ function ImageLayer(config={}, options={}) {
   base(this, config, options);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;
+  this.legendUrl = null;
+  this.customParams = {};
   this.setup(config, options);
 }
 
@@ -154,17 +156,27 @@ proto.getIconUrlFromLegend = function() {
 };
 
 proto.getLegendUrl = function(params={}) {
-  return LegendService.get({
+  this.legendUrl = LegendService.get({
     layer: this,
-    params
+    params: {
+      ...params,
+      ...this.customParams
+    }
   });
+  return this.legendUrl;
+};
+
+proto.setMapParamstoLegendUrl = function({bbox, crs}){
+  this.customParams = {
+    ...this.customParams,
+    bbox,
+    crs
+  }
 };
 
 proto.getWFSLayerName = function() {
   let layerName = this.config.origname;
-  if (this.config.source && this.config.source.layers) {
-    layerName = this.config.source.layers;
-  }
+  if (this.config.source && this.config.source.layers) layerName = this.config.source.layers;
   return layerName;
 };
 

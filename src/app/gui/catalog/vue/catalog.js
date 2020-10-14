@@ -1,7 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-import ApplicationState from "../../../core/applicationstate";
 const ApplicationService = require('core/applicationservice');
-const {inherit, base, downloadFile} = require('core/utils/utils');
+const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
@@ -22,7 +21,7 @@ const vueComponentOptions = {
       legend: this.$options.legend,
       showlegend: false,
       currentBaseLayer: null,
-      copywmsurltooltip: t('sdk.catalog.menu.wms.copy'),
+      activeTab: 'layers',
       // to show context menu right click
       layerMenu: {
         show: false,
@@ -51,16 +50,14 @@ const vueComponentOptions = {
   directives: {
     //create a vue directive fro click outside contextmenu
     'click-outside-layer-menu': {
-      bind: function (el, binding, vnode) {
+      bind(el, binding, vnode) {
         this.event = function (event) {
-          if(!(el === event.target || el.contains(event.target))) {
-            vnode.context[binding.expression](event);
-          }
+          (!(el === event.target || el.contains(event.target))) && vnode.context[binding.expression](event);
         };
         //add event listener click
         document.body.addEventListener('click', this.event)
       },
-      unbind: function (el) {
+      unbind(el) {
         document.body.removeEventListener('click', this.event)
       }
     }
@@ -69,34 +66,32 @@ const vueComponentOptions = {
     'chrome-picker': ChromeComponent
   },
   computed: {
-    project: function() {
+    project() {
       return this.state.prstate.currentProject
     },
-    title: function() {
+    title() {
       return this.project.state.name;
     },
-    baselayers: function() {
+    baselayers() {
       return this.project.state.baselayers;
     },
-    hasBaseLayers: function(){
+    hasBaseLayers(){
       return this.project.state.baselayers.length > 0;
     },
-    hasLayers: function() {
+    hasLayers() {
       let layerstresslength = 0;
-      this.state.layerstrees.forEach((layerstree) => {
-        layerstresslength+=layerstree.tree.length;
-      });
+      this.state.layerstrees.forEach(layerstree => layerstresslength+=layerstree.tree.length);
       return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
-    },
-    activeTab() {
-      return this.project.state.catalog_tab || 'layers';
     }
   },
   methods: {
-    showLegend: function(bool) {
+    delegationClickEventTab(evt){
+     this.activeTab = evt.target.attributes['aria-controls'].value;
+    },
+    showLegend(bool) {
       this.showlegend = bool;
     },
-    setBaseLayer: function(id) {
+    setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
     },
@@ -124,7 +119,7 @@ const vueComponentOptions = {
       }
       return !customimage ? `${GUI.getResourcesUrl()}images/${image}`: image;
     },
-    _hideMenu: function() {
+    _hideMenu() {
       this.layerMenu.show = false;
     },
     zoomToLayer: function() {
@@ -137,11 +132,14 @@ const vueComponentOptions = {
       let canZoom = false;
       if (layer.bbox) {
         const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-        canZoom = bbox.find((coordinate) => {
-          return coordinate > 0;
-        });
+        canZoom = bbox.find(coordinate => coordinate > 0);
       }
       return canZoom;
+    },
+    getGeometryType(layerId){
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      const geometryType = originalLayer.config.geometrytype;
+      return geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -221,7 +219,7 @@ const vueComponentOptions = {
         this._hideMenu();
       })
     },
-    showAttributeTable: function(layerId) {
+    showAttributeTable(layerId) {
       this.layerMenu.loading.data_table = false;
       GUI.closeContent();
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -241,7 +239,7 @@ const vueComponentOptions = {
         title: layer.getName()
       });
     },
-    startEditing: function() {
+    startEditing() {
       let layer;
       const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
       catallogLayersStores.forEach((layerStore) => {
@@ -256,13 +254,13 @@ const vueComponentOptions = {
       this._hideMenu();
       this.showColorMenu(false);
     },
-    onChangeColor: function(val) {
+    onChangeColor(val) {
       const mapService = GUI.getComponent('map').getService();
       this.layerMenu.colorMenu.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       layer.setStyle(mapService.setExternalLayerStyle(val));
     },
-    showColorMenu: function(bool, evt) {
+    showColorMenu(bool, evt) {
       if(bool) {
         const elem = $(evt.target);
         this.layerMenu.colorMenu.top = elem.offset().top;
@@ -272,10 +270,6 @@ const vueComponentOptions = {
     }
   },
   created() {
-    const ApplicationState = ApplicationService.getState();
-    this.$watch(()=> ApplicationState.lng, ()=>{
-      this.copywmsurltooltip = t('sdk.catalog.menu.wms.copy');
-    });
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
       if (node.external && !node.source) {
@@ -297,7 +291,6 @@ const vueComponentOptions = {
     // event that set all visible or not all children layer of the folder and if parent is mutually exclusive turn off all layer
     CatalogEventHub.$on('treenodestoogled', (storeid, nodes, isGroupChecked) => {
       let layersIds = [];
-
       const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
       const turnOnOffSubGroups = (parentChecked, currentLayersIds, node) => {
         if (node.nodes) {
@@ -374,6 +367,7 @@ const vueComponentOptions = {
   },
   beforeMount(){
     this.currentBaseLayer = this.project.state.initbaselayer;
+    this.activeTab = this.project.state.catalog_tab || this.activeTab;
   }
 };
 
@@ -396,7 +390,7 @@ const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-
 Vue.component('tristate-tree', {
   ...compiledTristateTreeTemplate,
   props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
-  data: function () {
+  data() {
     return {
       expanded: this.layerstree.expanded,
       isFolderChecked: true,
@@ -406,11 +400,8 @@ Vue.component('tristate-tree', {
     }
   },
   computed: {
-    isFolder: function() {
-      let _visibleChilds = 0;
-      let _childsLength = 0;
-      const isFolder = !!this.layerstree.nodes;
-      return isFolder
+    isFolder() {
+      return !!this.layerstree.nodes
     },
     showscalevisibilityclass(){
       return !this.isFolder && this.layerstree.scalebasedvisibility
@@ -418,18 +409,18 @@ Vue.component('tristate-tree', {
     showScaleVisibilityToolip(){
       return this.showscalevisibilityclass && this.isDisabled && this.layerstree.checked;
     },
-    isTable: function() {
+    isTable() {
       if (!this.isFolder) {
         return !this.layerstree.geolayer && !this.layerstree.external;
       }
     },
-    isHidden: function() {
+    isHidden() {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
     },
-    selected: function() {
+    selected() {
       this.layerstree.selected = this.layerstree.disabled && this.layerstree.selected ? false : this.layerstree.selected;
     },
-    isHighLight: function() {
+    isHighLight() {
       return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
     },
     isDisabled() {
@@ -442,24 +433,22 @@ Vue.component('tristate-tree', {
     }
   },
   methods: {
-    toggle: function(isFolder) {
+    toggle(isFolder) {
       if (isFolder) {
         this.layerstree.checked = !this.layerstree.checked;
         this.isFolderChecked = this.layerstree.checked && !this.layerstree.disabled;
         CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
-      } else {
-        CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
-      }
+      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
     },
-    expandCollapse: function() {
+    expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
-    select: function () {
+    select () {
       if (!this.isFolder && !this.layerstree.external && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
-    triClass: function () {
+    triClass () {
       return this.layerstree.checked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
     },
     downloadExternalLayer(download) {
@@ -486,16 +475,15 @@ Vue.component('tristate-tree', {
         CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.layerstree.checked, this.parent_mutually_exclusive);
     }
   },
-  mounted: function() {
+  async mounted() {
     if (this.isFolder && !this.root) {
-      this.layerstree.nodes.forEach((node) => {
+      this.layerstree.nodes.forEach(node => {
         if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
           if (node.id) node.uncheckable = true;
       })
     }
-    this.$nextTick(()=>{
-      $('span.scalevisibility').tooltip();
-    })
+    await this.$nextTick();
+    $('span.scalevisibility').tooltip();
   }
 });
 
@@ -544,15 +532,18 @@ const compiledLegendItemsTemplate = createCompiledTemplate(require('./legend_ite
 
 Vue.component('layerslegend-items',{
   ...compiledLegendItemsTemplate,
-  props: ['layers', 'legend'],
+  props: ['layers', 'legend', 'active'],
   data() {
     return {
       legendurls: []
     }
   },
   watch: {
-    layers(layers) {
-      this.getLegendSrc(layers);
+    layers: {
+      handler(layers){
+        this.mapReady && this.getLegendUrl(layers)
+      },
+      immediate: false
     }
   },
   methods: {
@@ -587,7 +578,7 @@ Vue.component('layerslegend-items',{
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
-        const url = this.getLegendUrl(layer, this.legend);
+        const url = `${this.getLegendUrl(layer, this.legend)}`;
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
@@ -643,9 +634,17 @@ Vue.component('layerslegend-items',{
       }
     }
   },
-  created() {
-    this.getLegendSrc(this.layers);
-  }
+  created(){
+    this.mapReady = false;
+  },
+  async mounted() {
+    await this.$nextTick();
+    const mapService = GUI.getComponent('map').getService();
+    mapService.on('change-map-legend-params', ()=>{
+      this.mapReady = true;
+      this.getLegendSrc(this.layers);
+    })
+  },
 });
 
 function CatalogComponent(options={}) {
