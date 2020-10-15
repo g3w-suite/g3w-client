@@ -120,13 +120,18 @@ Licensed under MIT
   &.selected ul.layer-categories {
     background-color: @sidebar-dark-bg;
   }
-  span.tree-node-title {
+  div.tree-node-title {
     &.disabled {
       color: darken(@color-white, 40%);
     }
     cursor: pointer;
-    white-space: pre-line;
-    width: 85%;
+    width: 80%;
+    display: inline-flex;
+    > span {
+      overflow: hidden;
+      white-space: normal;
+      text-overflow: ellipsis;
+    }
   }
 }
 

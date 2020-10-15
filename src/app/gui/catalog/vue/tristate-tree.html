@@ -34,7 +34,7 @@
       class="checkbox-layer"></span>
   </template>
 
-  <span v-show="!layerstree.hidden || isFolder"
+  <div v-show="!layerstree.hidden || isFolder"
     class="tree-node-title skin-tooltip-top"
     data-placement="top"
     :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
@@ -44,8 +44,8 @@
       bold: isFolder,
       highlightlayer: isHighLight,
       scalevisibility : showscalevisibilityclass
-    }"> {{ layerstree.title }}
-  </span>
+    }"> <span>{{ layerstree.title }}</span>
+  </div>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">
     <tristate-tree
