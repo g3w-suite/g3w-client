@@ -1,5 +1,5 @@
 const GENERIC_GRID_EXTENT =  [0,0,8388608,8388608];
-const GENERIC_GRID_EXTENT_DEGREE =  [-172.54,23.81,-47.74, 86.46];
+const GENERIC_GRID_EXTENT_DEGREE = [-180,-90, 180, 90];
 
 const Projection = function(options={}) {
   if (!options.crs) return null;

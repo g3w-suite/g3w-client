@@ -125,7 +125,7 @@ RasterLayers._WMSLayer = function(options={}) {
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom, extent} = options;
+  const {url, projection, maxZoom, minZoom} = options;
   if (!url) return;
   const sourceOptions = {
     url,
@@ -139,9 +139,20 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
       type: 'tile',
       sourceOptions
     });
+
+  if (projection.getUnits() === 'degrees') {
+    const extent = projection.getExtent();
+    const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
+    resolutions.splice(0,1);
+    sourceOptions.tileGrid =  new ol.tilegrid.TileGrid({
+      extent,
+      resolutions
+    })
+  }
+
   const source = new ol.source.XYZ(sourceOptions);
   return new ol.layer.Tile({
-    extent: projection.getAxisOrientation() === 'neu' ? [extent[1], extent[0], extent[3], extent[2]]: extent,
+    projection,
     source
   });
 };

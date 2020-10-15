@@ -269,17 +269,20 @@ inherit(MapService, G3WObject);
 const proto = MapService.prototype;
 
 proto.setUpMapOlEvents = function(){
+  const dynamicLegend = this.project.getContextBaseLegend();
   // set change resolution
   this._keyEvents.ol.forEach(keyEvent => ol.Observable.unByKey(keyEvent));
   const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", (evt) => {
     this._updateMapView();
-    this.setupCustomMapParamsToLegendUrl();
+    dynamicLegend && this.setupCustomMapParamsToLegendUrl();
   });
-  const keyolmoveeend = this.viewer.map.on("moveend", (evt) => {
-    this.setupCustomMapParamsToLegendUrl();
-  });
-  this._keyEvents.ol.push(keyolmoveeend);
   this._keyEvents.ol.push(keyolchangeresolution);
+  if (dynamicLegend) {
+    const keyolmoveeend = this.viewer.map.on("moveend", (evt) => {
+      this.setupCustomMapParamsToLegendUrl();
+    });
+    this._keyEvents.ol.push(keyolmoveeend);
+  } else this.setupCustomMapParamsToLegendUrl(false);
 };
 
 //clear methods to remove all listeners events
@@ -1488,16 +1491,18 @@ proto.addMapLayers = function(mapLayers) {
   })
 };
 
-proto._setupCustomMapParamsToLegendUrl = function(){
-  const size = this.getMap() && this.getMap().getSize().filter(value => value > 0) || null;
-  const bbox = size && size.length === 2 ? this.getMap().getView().calculateExtent(size): null;
-  //setup initial legend parameter
-  this.getMapLayers().forEach(mapLayer => {
-    mapLayer.setupCustomMapParamsToLegendUrl && mapLayer.setupCustomMapParamsToLegendUrl({
-      crs: this.getEpsg(),
-      bbox: bbox || this.project.state.initextent
-    })
-  });
+proto._setupCustomMapParamsToLegendUrl = function(bool=true){
+  if (bool) {
+    const size = this.getMap() && this.getMap().getSize().filter(value => value > 0) || null;
+    const bbox = size && size.length === 2 ? this.getMap().getView().calculateExtent(size): null;
+    //setup initial legend parameter
+    this.getMapLayers().forEach(mapLayer => {
+      mapLayer.setupCustomMapParamsToLegendUrl && mapLayer.setupCustomMapParamsToLegendUrl({
+        crs: this.getEpsg(),
+        bbox: bbox || this.project.state.initextent
+      })
+    });
+  }
   this.emit('change-map-legend-params')
 };
 

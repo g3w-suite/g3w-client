@@ -20,7 +20,8 @@ function Project(config={}, options={}) {
     layerstree,
     overviewprojectgid,
     baselayers,
-    initbaselayer
+    initbaselayer,
+    context_base_legend
     ows_method <POST or GET>
     wms_use_layer_ids: <TRUE OR FALSE>
     search_endpoint : 'ows', 'api'
@@ -74,6 +75,10 @@ proto.setActiveCatalogTab = function(tab='layers') {
 
 proto.isWmsUseLayerIds = function() {
   return this.state.wms_use_layer_ids;
+};
+
+proto.getContextBaseLegend = function(){
+  return this.state.context_base_legend;
 };
 
 // check if multi

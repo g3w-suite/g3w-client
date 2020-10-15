@@ -12,6 +12,7 @@ const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const CatalogEventHub = new Vue();
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
+const DEFAULT_ACTIVE_TAB = 'layers';
 
 const vueComponentOptions = {
   ...compiledTemplate,
@@ -21,7 +22,7 @@ const vueComponentOptions = {
       legend: this.$options.legend,
       showlegend: false,
       currentBaseLayer: null,
-      activeTab: 'layers',
+      activeTab: null,
       // to show context menu right click
       layerMenu: {
         show: false,
@@ -269,6 +270,14 @@ const vueComponentOptions = {
       this.layerMenu.colorMenu.show = bool;
     }
   },
+  watch: {
+    'state.prstate.currentProject': {
+      handler(project){
+        this.activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+      },
+      immediate: false
+    }
+  },
   created() {
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
@@ -367,7 +376,6 @@ const vueComponentOptions = {
   },
   beforeMount(){
     this.currentBaseLayer = this.project.state.initbaselayer;
-    this.activeTab = this.project.state.catalog_tab || this.activeTab;
   }
 };
 
@@ -541,9 +549,15 @@ Vue.component('layerslegend-items',{
   watch: {
     layers: {
       handler(layers){
-        this.mapReady && this.getLegendUrl(layers)
+        this.mapReady && this.getLegendSrc(layers)
       },
       immediate: false
+    },
+    active(bool) {
+      if (bool && this.waitinglegendsurls.length) {
+        this.legendurls = [...this.waitinglegendsurls];
+        this.waitinglegendsurls = [];
+      }
     }
   },
   methods: {
@@ -557,7 +571,7 @@ Vue.component('layerslegend-items',{
     getLegendUrl: function(layer, params={}) {
       let legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
-      catalogLayers.forEach((layerStore) => {
+      catalogLayers.forEach(layerStore => {
         if (layerStore.getLayerById(layer.id)) {
           legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
           return false
@@ -572,6 +586,7 @@ Vue.component('layerslegend-items',{
       };
       const self = this;
       this.legendurls = [];
+      this.waitinglegendsurls = [];
       await this.$nextTick();
       // need to filter geolayer
       const layers = _layers.filter(layer => layer.geolayer);
@@ -592,11 +607,12 @@ Vue.component('layerslegend-items',{
         if (method === 'GET')
           for (const url in urlLayersName ) {
             const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}`: url;
-            this.legendurls.push({
+            const legendUrlObject = {
               loading: true,
               url: legendUrl,
               error: false
-            });
+            };
+            this.active ? this.legendurls.push(legendUrlObject) : this.waitinglegendsurls.push(legendUrlObject);
           }
         else {
           for (const url in urlLayersName ) {
@@ -618,7 +634,7 @@ Vue.component('layerslegend-items',{
               url: null,
               error: false
             };
-            self.legendurls.push(legendUrlObject);
+            self.active ? self.legendurls.push(legendUrlObject): self.waitinglegendsurls.push(legendUrlObject);
             xhr.onload = function() {
               const data = this.response;
               if (data !== undefined)
@@ -636,6 +652,7 @@ Vue.component('layerslegend-items',{
   },
   created(){
     this.mapReady = false;
+    this.waitinglegendsurls = [] // urls that are waiting to be loaded
   },
   async mounted() {
     await this.$nextTick();
