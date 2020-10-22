@@ -15,7 +15,7 @@
             <span v-t="'sdk.metadata.groups.spatial.title'" style="font-weight: bold"></span>
           </a></li>
         <li>
-          <a data-toggle="tab" href="#layers" class="metadata-item-tab layers">
+          <a data-toggle="tab" href="#metadata_layers" class="metadata-item-tab layers">
             <i :class="iconsClass.bars" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.layers.title'"  style="font-weight: bold"></span>
           </a>
@@ -23,27 +23,27 @@
       </ul>
     </div>
     <div class="col-sm-12 metadata-body tab-content">
-            <div id="general" class="tab-pane fade in active nano-content">
-              <template>
-                <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
-                  <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
-                </div>
-              </template>
-            </div>
-            <div id="spatial" class="tab-pane fade">
-              <div class="container-fluid">
-                <template>
-                  <div v-for="(data, key) in state.groups.spatial" class="row row-info">
-                    <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
-                  </div>
-                </template>
-              </div>
-            </div>
-            <div id="layers" class="tab-pane fade">
-              <metadata-layer :state="layer" v-for="layer in state.groups.layers.layers.value"></metadata-layer>
-            </div>
+      <div id="general" class="tab-pane fade in active">
+        <template>
+          <div v-for="(data, key) in state.groups.general" class="row h_100 row-info">
+            <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
           </div>
+        </template>
+      </div>
+      <div id="spatial" class="tab-pane fade">
+        <div class="container-fluid">
+          <template>
+            <div v-for="(data, key) in state.groups.spatial" class="row row-info">
+              <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div id="metadata_layers" class="tab-pane fade">
+        <metadata-layer :state="layer" v-for="layer in state.groups.layers.layers.value"></metadata-layer>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>

@@ -93,27 +93,27 @@ proto.removeLayers = function() {
   })
 };
 
-proto.getLayersDict = function(options = {}) {
-  if (!options) {
+proto.getLayersDict = function(filter = {}, options={}) {
+  if (!filter) {
     return this._layers;
   }
-  const filterPrintable = options.PRINTABLE;
-  const filterActive = options.ACTIVE;
-  const filterQueryable = options.QUERYABLE;
-  const filterFilterable = options.FILTERABLE;
-  const filterEditable = options.EDITABLE;
-  const filterVisible = options.VISIBLE;
-  const filterSelected = options.SELECTED;
-  const filterCached = options.CACHED;
-  const filterSelectedOrAll = options.SELECTEDORALL;
-  const filterAllNotSelected = options.ALLNOTSELECTED;
-  const filterServerType = options.SERVERTYPE;
-  const filterBaseLayer = options.BASELAYER;
-  const filterGeoLayer = options.GEOLAYER;
-  const filterVectorLayer = options.VECTORLAYER;
-  const filterHidden = options.HIDDEN;
-  const filterDisabled = options.DISABLED;
-  const filterIds = options.IDS;
+  const filterPrintable = filter.PRINTABLE;
+  const filterActive = filter.ACTIVE;
+  const filterQueryable = filter.QUERYABLE;
+  const filterFilterable = filter.FILTERABLE;
+  const filterEditable = filter.EDITABLE;
+  const filterVisible = filter.VISIBLE;
+  const filterSelected = filter.SELECTED;
+  const filterCached = filter.CACHED;
+  const filterSelectedOrAll = filter.SELECTEDORALL;
+  const filterAllNotSelected = filter.ALLNOTSELECTED;
+  const filterServerType = filter.SERVERTYPE;
+  const filterBaseLayer = filter.BASELAYER;
+  const filterGeoLayer = filter.GEOLAYER;
+  const filterVectorLayer = filter.VECTORLAYER;
+  const filterHidden = filter.HIDDEN;
+  const filterDisabled = filter.DISABLED;
+  const filterIds = filter.IDS;
   if (_.isUndefined(filterQueryable)
     && _.isUndefined(filterFilterable)
     && _.isUndefined(filterEditable)
@@ -167,7 +167,8 @@ proto.getLayersDict = function(options = {}) {
 
   if (typeof filterFilterable === 'boolean') {
     layers = layers.filter((layer) => {
-      return filterFilterable === layer.isFilterable();
+      const condition = options.filtrable || null;
+      return filterFilterable === layer.isFilterable(condition);
     });
   }
 
@@ -251,8 +252,8 @@ proto.getLayersDict = function(options = {}) {
 };
 
 // return layers array
-proto.getLayers = function(options={}) {
-  return Object.values(this.getLayersDict(options));
+proto.getLayers = function(filter={}, options={}) {
+  return Object.values(this.getLayersDict(filter, options));
 };
 
 proto.getBaseLayers = function() {

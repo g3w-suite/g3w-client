@@ -54,13 +54,14 @@ function Layer(config={}, options={}) {
     selected: config.selected || false,
     disabled: config.disabled || false,
     metadata: config.metadata,
-    metadata_querable: this.isQueryable({onMap:false}),
-    openattributetable: this.canShowTable(),
+    metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
+    openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
     removable: config.removable || false,
     source: config.source,
     infoformat: this.getInfoFormat(),
     geolayer: false,
-    visible: config.visible || false
+    visible: config.visible || false,
+    tochighlightable: false
   };
 
 
@@ -436,8 +437,32 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
   return queryEnabled;
 };
 
-proto.isFilterable = function() {
-  return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
+proto.getOws = function(){
+  return this.config.ows;
+};
+
+proto.getTocHighlightable = function(){
+  return this.state.tochighlightable
+};
+
+proto.setTocHighlightable = function(bool=false) {
+  this.state.tochighlightable = bool;
+};
+
+/*
+ condition: plain object with configuration layer attribute and value
+* */
+proto.isFilterable = function(condition=null) {
+  let isFiltrable = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
+  if (isFiltrable && condition) {
+    const conditionalFiltrable = Object.keys(condition).reduce((bool, attribute) =>{
+      const layer_config_value = this.get(attribute);
+      const condition_attribute_values = condition[attribute];
+      return bool && Array.isArray(layer_config_value) ? layer_config_value.indexOf(condition_attribute_values) !== -1 : condition_attribute_values === layer_config_value;
+    }, true);
+    isFiltrable = isFiltrable && conditionalFiltrable;
+  }
+  return isFiltrable;
 };
 
 proto.isEditable = function() {

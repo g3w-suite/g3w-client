@@ -245,7 +245,6 @@ const ApplicationService = function() {
         mapcontrols: config.group.mapcontrols,
         background_color: config.group.background_color,
         crs: config.group.crs,
-        proj4: config.group.proj4,
         minscale: config.group.minscale,
         maxscale: config.group.maxscale,
         main_map_title: config.main_map_title,

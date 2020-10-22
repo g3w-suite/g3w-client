@@ -721,14 +721,13 @@ proto._setupControls = function() {
             };
             const querymultilayers = this.project.isQueryMultiLayers(controlType);
             const layers = getMapLayersByFilter(layersFilterObject);
-            let queryResultsPromise = getQueryLayersPromisesByCoordinates(
-              layers,
-              {
-                map,
-                querymultilayers,
-                feature_count,
-                coordinates
-            });
+            let queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
+              map,
+              querymultilayers,
+              feature_count,
+              coordinates
+              }
+            );
             const queryResultsPanel = showQueryResults('');
             queryResultsPromise.then((responses) => {
                 const layersResults = responses;
@@ -754,6 +753,11 @@ proto._setupControls = function() {
           break;
         case 'querybypolygon':
           if (!isMobile.any) {
+            const condition = {
+              filtrable: {
+                ows: 'WFS'
+              }
+            };
             const getControlLayers = () =>{
               const controlQuerableLayers = getMapLayersByFilter({
                 QUERYABLE: true,
@@ -762,7 +766,7 @@ proto._setupControls = function() {
               const controlFiltrableLayers = getMapLayersByFilter({
                 FILTERABLE: true,
                 SELECTEDORALL: true
-              });
+              }, condition);
               return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
             };
             control = this.createMapControl(controlType, {
@@ -791,7 +795,7 @@ proto._setupControls = function() {
                   VISIBLE: true
                 };
                 const queryResultsPanel = showQueryResults('');
-                const layers = getMapLayersByFilter(layersFilterObject);
+                const layers = getMapLayersByFilter(layersFilterObject, condition);
                 let queryResulsPromise = getQueryLayersPromisesByCoordinates(
                   layers,
                   {
@@ -818,7 +822,7 @@ proto._setupControls = function() {
                       const querymultilayers = this.project.isQueryMultiLayers(controlType);
                       let filterGeometry = geometry;
                       if (querymultilayers) {
-                        const layers = getMapLayersByFilter(layerFilterObject).filter(layer => excludeLayers.indexOf(layer) === -1);
+                        const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
                         queriesPromise = getQueryLayersPromisesByGeometry(layers,
                           {
                             geometry,
@@ -830,7 +834,7 @@ proto._setupControls = function() {
                       } else {
                         const d = $.Deferred();
                         queriesPromise = d.promise();
-                        const layers = getMapLayersByFilter(layerFilterObject);
+                        const layers = getMapLayersByFilter(layerFilterObject, condition);
                         if (layers.length === 0) d.resolve([]);
                         else {
                           const queryResponses = [];
@@ -895,16 +899,23 @@ proto._setupControls = function() {
           break;
         case 'querybbox':
           if (!isMobile.any) {
+            const condition = {
+              filtrable: {
+                ows: 'WFS'
+              }
+            };
             const getControlLayers = ()=>{
-              return this.filterableLayersAvailable() ? getMapLayersByFilter({
+              const layers = this.filterableLayersAvailable() ? getMapLayersByFilter({
                 SELECTEDORALL: true,
                 FILTERABLE: true
-              }) : [];
+              }, condition) : [];
+              layers.forEach(layer => layer.setTocHighlightable(true));
+              return layers;
             };
-
+            let controlLayers = getControlLayers();
             control = this.createMapControl(controlType, {
               options: {
-                layers: getControlLayers(),
+                layers: controlLayers,
                 help: "sdk.mapcontrols.querybybbox.help"
               }
             });
@@ -912,7 +923,7 @@ proto._setupControls = function() {
               this._changeMapMapControls.push({
                 control,
                 getVisible: () => {
-                  const controlLayers = getControlLayers();
+                  controlLayers = getControlLayers();
                   return control.checkVisible(controlLayers);
                 }
               });
@@ -921,9 +932,9 @@ proto._setupControls = function() {
                 FILTERABLE: true,
                 VISIBLE: true
               };
-              control.on('toggled', (evt)=>{
+              control.on('toggled', evt => {
                 if (evt.target.isToggled()) {
-                  const layers = getMapLayersByFilter(layersFilterObject);
+                  const layers = getMapLayersByFilter(layersFilterObject, condition);
                   if (layers.length === 0) {
                     GUI.showUserMessage({
                       type: "warning",
@@ -938,11 +949,11 @@ proto._setupControls = function() {
                 let filterBBox = bbox;
                 const center = ol.extent.getCenter(bbox);
                 this.getMap().getView().setCenter(center);
-                const layers = getMapLayersByFilter(layersFilterObject);
+                const layers = getMapLayersByFilter(layersFilterObject, condition);
                 let queriesPromise;
                 const querymultilayers = this.project.isQueryMultiLayers(controlType);
                 if (querymultilayers) {
-                  const layers = getMapLayersByFilter(layersFilterObject);
+                  const layers = getMapLayersByFilter(layersFilterObject, condition);
                   queriesPromise = getQueryLayersPromisesByGeometry(layers, {
                     geometry: bbox,
                     bbox: true,
@@ -955,7 +966,7 @@ proto._setupControls = function() {
                   const queryResponses = [];
                   const feature_count = this.project.getQueryFeatureCount();
                   let layersLenght = layers.length;
-                  layers.forEach((layer) => {
+                  layers.forEach(layer => {
                     const filter = new Filter();
                     const mapCrs = this.getCrs();
                     const layerCrs = layer.getProjection().getCode();
@@ -967,7 +978,7 @@ proto._setupControls = function() {
                     layer.query({
                       filter: filter,
                       feature_count
-                    }).then((response) => {
+                    }).then(response => {
                       queryResponses.push(response)
                     }).always(() => {
                       layersLenght -= 1;
@@ -994,9 +1005,7 @@ proto._setupControls = function() {
                   })
                   .fail((error) => {
                     let msg = t("info.server_error");
-                    if (error) {
-                      msg += ' '+error;
-                    }
+                    if (error) msg += ' '+error;
                     GUI.notify.error(msg);
                     GUI.closeContent();
                   })
@@ -1967,7 +1976,6 @@ proto.getResolutionForZoomToExtent = function(extent){
 };
 
 proto.goToBBox = function(bbox) {
-  bbox = this.isAxisOrientationInverted() ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
   this.viewer.fit(bbox);
 };
 

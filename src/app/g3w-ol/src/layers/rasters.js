@@ -143,7 +143,11 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
   if (projection.getUnits() === 'degrees') {
     const extent = projection.getExtent();
     const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
+    // needed to remove the first resolutis because in this version of ol createXYZ doesn't  accept maxResolution options .
+    // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculate by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
+    // we need to calculate to Math.min instead so we have to remove the first resolution
     resolutions.splice(0,1);
+    //////////////////////////////////////////
     sourceOptions.tileGrid =  new ol.tilegrid.TileGrid({
       extent,
       resolutions

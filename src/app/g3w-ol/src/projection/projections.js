@@ -2,14 +2,13 @@ const Projection = require('./projection');
 const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {
-  get: function(crs, proj4def, extent) {
-    crs = Projections.normalizeCrs(crs);
+  get: function(crs={},  extent) {
+    crs.epsg = Projections.normalizeEpsg(crs.epsg);
     const _proj =  ol.proj.projections ? ol.proj.projections : ol.proj;
-    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs) !== -1 ?  _proj.get(crs) : null;
+    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  _proj.get(crs.epsg) : null;
     if (cachedProjection) return cachedProjection;
     const projection = new Projection({
       crs,
-      proj4def,
       extent
     });
     _proj.add ? _proj.add(crs, projection) : _proj.addProjection(projection);
@@ -17,18 +16,62 @@ const Projections = {
     return projection;
   },
   normalizeCrs: function(crs) {
-    if (typeof crs === 'number') return "EPSG:"+crs;
+    if (typeof crs === 'number') return `EPSG:${crs}`;
     crs = crs.replace(/[^\d\.\-]/g, "");
-    if (crs !== '') return "EPSG:"+parseInt(crs);
+    if (crs !== '') return `EPSG:${parseInt(crs)}`;
+  },
+  normalizeEpsg(epsg){
+    return this.normalizeCrs(epsg);
   },
   setApplicationProjections() {
-    Projections.get("EPSG:3045", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-    Projections.get("EPSG:6708", "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-    Projections.get("EPSG:32632", "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs");
-    Projections.get("EPSG:32633", "+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs");
-    Projections.get("EPSG:25833", "+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs");
-    Projections.get("EPSG:23032", "+proj=utm +zone=32 +ellps=intl +units=m +no_defs ");
-    Projections.get("EPSG:23033", "+proj=utm +zone=33 +ellps=intl +units=m +no_defs");
+    Projections.get({
+      epsg: "EPSG:3045",
+      proj4:"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+      axisinverted: true,
+      geographic: false,
+     });
+
+    Projections.get({
+      epsg:"EPSG:6708",
+      proj4:"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+      axisinverted: true,
+      geographic: false
+    });
+
+    Projections.get({
+      epsg:"EPSG:32632",
+      proj4:"+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs",
+      axisinverted: false,
+      geographic: false
+    });
+
+    Projections.get({
+      epsg:"EPSG:32633",
+      proj4:"+proj=utm +zone=33 +ellps=WGS84 +datum=WGS84 +units=m +no_defs",
+      axisinverted: false,
+      geographic: false
+    });
+
+    Projections.get({
+      epsg:"EPSG:25833",
+      proj4:"+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs",
+      axisinverted: false,
+      geographic: false
+    });
+
+    Projections.get({
+      epsg:"EPSG:23032",
+      proj4:"+proj=utm +zone=32 +ellps=intl +units=m +no_defs",
+      axisinverted: false,
+      geographic: false,
+    });
+
+    Projections.get({
+      epsg:"EPSG:23033",
+      proj4:"+proj=utm +zone=33 +ellps=intl +units=m +no_defs",
+      axisinverted: false,
+      geographic: false
+   });
   }
 };
 

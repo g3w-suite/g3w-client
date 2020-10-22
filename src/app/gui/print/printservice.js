@@ -240,11 +240,11 @@ proto._setAllScalesBasedOnMaxResolution = function(maxResolution) {
       handleScala(scala);
     }
   });
-  this.state.scale = _.orderBy(scale, ['value'], ['asc']);
+  this.state.scale = scale;
 };
 
 proto._setInitialScalaSelect = function() {
-  this.state.scala = this.state.scale[this.state.scale.length-1].value;
+  this.state.scala = this.state.scale[0].value;
   $('#scala').val(this.state.scala);
 };
 

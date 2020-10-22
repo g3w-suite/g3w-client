@@ -15,7 +15,7 @@ proto.setup = function(config={}, options={}) {
     console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
     return;
   }
-  const {project} = options;
+  const { project } = options;
   this.config.map_crs = 1*project.getProjection().getCode().split('EPSG:')[1];
   this.config.multilayerid = config.multilayer;
   // state extend of layer setting geolayer property to true
@@ -33,14 +33,8 @@ proto.setup = function(config={}, options={}) {
     ows_method: config.ows_method,
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
   });
-  if (config.projection) {
-    if (config.projection.getCode() === config.crs)
-      this.config.projection = config.projection;
-    else
-      this.config.projection = Projections.get(config.crs,config.proj4);
-  } else if (config.attributions) {
-    this.config.attributions = config.attributions;
-  }
+  if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
+  if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
 
@@ -101,8 +95,8 @@ proto.getOwsMethod = function() {
   return this.config.ows_method;
 };
 
-proto.setProjection = function(crs, proj4) {
-  this.config.projection = Projections.get(crs,proj4);
+proto.setProjection = function(crs={}) {
+  this.config.projection = Projections.get(crs);
 };
 
 proto.getProjection = function() {
@@ -110,9 +104,7 @@ proto.getProjection = function() {
 };
 
 proto.getCrs = function() {
-  if (this.config.projection) {
-    return this.config.projection.getCode();
-  }
+  if (this.config.projection) return this.config.projection.getCode();
 };
 
 proto.isCached = function() {
@@ -120,9 +112,7 @@ proto.isCached = function() {
 };
 
 proto.getCacheUrl = function() {
-  if (this.isCached()) {
-    return this.config.cache_url;
-  }
+  if (this.isCached()) return this.config.cache_url;
 };
 
 // return if layer has inverted axis

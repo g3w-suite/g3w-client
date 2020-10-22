@@ -42,9 +42,8 @@
     :class="{
       disabled: layerstree.disabled,
       bold: isFolder,
-      highlightlayer: isHighLight,
       scalevisibility : showscalevisibilityclass
-    }"> <span>{{ layerstree.title }}</span>
+    }"> <span :class="{highlightlayer: isHighLight}">{{ layerstree.title }}</span>
   </div>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">

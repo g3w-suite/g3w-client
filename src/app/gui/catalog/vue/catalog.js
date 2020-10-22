@@ -1,5 +1,4 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
@@ -124,7 +123,7 @@ const vueComponentOptions = {
       this.layerMenu.show = false;
     },
     zoomToLayer: function() {
-      const  bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
+      const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox);
       this._hideMenu();
@@ -366,10 +365,8 @@ const vueComponentOptions = {
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
       if (id === 'querybbox') {
-        control.getInteraction().on('propertychange', (evt) => {
-          if(evt.key === 'active') {
-            this.state.highlightlayers = !evt.oldValue;
-          }
+        control.getInteraction().on('propertychange', evt => {
+          if (evt.key === 'active') this.state.highlightlayers = !evt.oldValue;
         })
       }
     });
@@ -403,8 +400,7 @@ Vue.component('tristate-tree', {
       expanded: this.layerstree.expanded,
       isFolderChecked: true,
       controltoggled: false,
-      n_childs: null,
-      ishighligtable: false
+      n_childs: null
     }
   },
   computed: {
@@ -429,7 +425,8 @@ Vue.component('tristate-tree', {
       this.layerstree.selected = this.layerstree.disabled && this.layerstree.selected ? false : this.layerstree.selected;
     },
     isHighLight() {
-      return this.highlightlayers && !this.isFolder && this.ishighligtable && this.layerstree.visible;
+      const id = this.layerstree.id;
+      return this.highlightlayers && !this.isFolder && CatalogLayersStoresRegistry.getLayerById(id).getTocHighlightable() && this.layerstree.visible;
     },
     isDisabled() {
       return (!this.isFolder && !this.isTable && !this.layerstree.checked) || this.layerstree.disabled || this.layerstree.groupdisabled
@@ -475,13 +472,7 @@ Vue.component('tristate-tree', {
     }
   },
   created() {
-    if (!this.isFolder) {
-      const layer = CatalogLayersStoresRegistry.getLayerById(this.layerstree.id);
-      this.ishighligtable = layer && layer.isFilterable();
-    } else {
-      if (!this.layerstree.checked)
-        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.layerstree.checked, this.parent_mutually_exclusive);
-    }
+    (this.isFolder && !this.layerstree.checked) && CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.layerstree.checked, this.parent_mutually_exclusive);
   },
   async mounted() {
     if (this.isFolder && !this.root) {

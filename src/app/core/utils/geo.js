@@ -380,7 +380,7 @@ const geoutils = {
   getMapLayerById: function(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
-  getMapLayersByFilter(filter) {
+  getMapLayersByFilter(filter, options={}) {
     filter = filter || {};
     const mapFilter = {
       GEOLAYER: true
@@ -388,7 +388,7 @@ const geoutils = {
     Object.assign(filter, mapFilter);
     let layers = [];
     MapLayersStoreRegistry.getQuerableLayersStores().forEach((layerStore) => {
-      layers = layerStore.getLayers(filter);
+      layers = layerStore.getLayers(filter, options);
     });
     return layers || [];
   },

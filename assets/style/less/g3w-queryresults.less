@@ -90,7 +90,7 @@
         }
         .box-header {
           display: flex;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           align-items: baseline;
           font-weight: bold !important;
           font-size: 1.2em !important;
@@ -100,6 +100,12 @@
             margin-left: 0;
             font-weight: bold !important;
             font-size: 1.2em !important;
+            &.query-layer-title {
+              padding: 5px;
+              overflow: hidden;
+              white-space: normal;
+              text-overflow: ellipsis;
+            }
           }
         }
       }

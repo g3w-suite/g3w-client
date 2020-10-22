@@ -13,7 +13,6 @@ function Project(config={}, options={}) {
     gid,
     name,
     crs,
-    proj4,
     extent,
     initextent,
     layers,
@@ -35,7 +34,7 @@ function Project(config={}, options={}) {
   // process layers
   this._processLayers();
   // set the project projection
-  this._projection = Projections.get(this.state.crs, this.state.proj4);
+  this._projection = Projections.get(this.state.crs);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
   this.setters = {
@@ -165,7 +164,7 @@ proto._buildLayersStore = function() {
   const layers = this.getLayers();
   layers.forEach(layerConfig => {
     // add projection
-    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs, layerConfig.proj4) : this._projection;
+    layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
     //add ows_method
     layerConfig.ows_method = this.getOwsMethod();
     layerConfig.wms_use_layer_ids = this.state.wms_use_layer_ids;

@@ -114,7 +114,6 @@ proto.setupState = function() {
   this.state.minScale = this.config.minscale;
   this.state.maxScale = this.config.maxscale;
   this.state.crs = this.config.crs;
-  this.state.proj4 = this.config.proj4;
   this.setProjects(this.config.projects);
 };
 
@@ -145,7 +144,6 @@ proto.setProjects = function(projects) {
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
     project.crs = this.config.crs;
-    project.proj4 = this.config.proj4;
     project.vectorurl = this.config.vectorurl;
     project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
     this._groupProjects.push(project);
