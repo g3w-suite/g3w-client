@@ -86,7 +86,7 @@ const vueComponentOptions = {
   },
   methods: {
     delegationClickEventTab(evt){
-     this.activeTab = evt.target.attributes['aria-controls'].value;
+     this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
     },
     showLegend(bool) {
       this.showlegend = bool;

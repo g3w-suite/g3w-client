@@ -1,7 +1,7 @@
 <!-- item template -->
 <div id="catalog" @contextmenu.prevent.stop="" class="tabbable-panel catalog">
   <div class="tabbable-line">
-    <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click="delegationClickEventTab">
+    <ul class="nav nav-tabs catalalog-nav-tabs" role="tablist" @click.capture="delegationClickEventTab">
       <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab === 'layers' && 'hasLayers' }" :style="{width: hasBaseLayers ? '32%' : '48%'}">
         <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
       </li>
@@ -12,7 +12,7 @@
         <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
       </li>
     </ul>
-    <div class="tab-content">
+    <div class="tab-content catalog-tab-content">
       <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">

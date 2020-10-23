@@ -59,12 +59,12 @@ Licensed under MIT
   color: @color-white;
 }
 
-.tabbable-line > .tab-content {
+.tabbable-line > .tab-content.catalog-tab-content {
   margin-top: -3px;
   border: 0;
   color:@color-white;
   /*border-top: 1px solid #eee;*/
-  padding: 5px 0;
+  padding: 5px 0 0 0;
 }
 .portlet .tabbable-line > .tab-content {
   padding-bottom: 0;
@@ -258,11 +258,13 @@ Licensed under MIT
 #baselayers {
   #baselayers-content {
     display:grid;
-    grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
+    grid-template-columns: repeat(2, 165px);
     grid-gap: 5px;
     padding: 0;
     .baseselayer-text {
       white-space: pre-line;
+      font-weight: bold;
     }
     .baselayer {
       cursor: pointer;
