@@ -40,10 +40,10 @@
         <ul id="baselayers-content">
           <li v-if="!baselayer.fixed" v-for="baselayer in baselayers" :key="baselayer.title">
             <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
-            <div class="text-center">{{ baselayer.title }}</div>
+            <div class="baseselayer-text text-center">{{ baselayer.title }}</div>
           <li @click.stop="setBaseLayer(null)">
             <img :src="getSrcBaseLayerImage(null)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === null ? 1 : 0.5}">
-            <div class="text-center" v-t="'nobaselayer'"></div>
+            <div class="baseselayer-text text-center" v-t="'nobaselayer'"></div>
           </li>
         </ul>
       </div>

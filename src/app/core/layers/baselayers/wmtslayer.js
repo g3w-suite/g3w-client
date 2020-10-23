@@ -15,12 +15,13 @@ const proto = WMTSLayer.prototype;
 proto._makeOlLayer = function() {
   //use this config to get params
   const {url, layer, attributions, matrixSet, format, style, requestEncoding, crs} = this.config;
+  const projection = this.getProjectionFromCrs(crs);
   const olLayer = BasesLayers.WMTS.get({
     url,
     layer,
     attributions,
     format,
-    crs,
+    projection,
     requestEncoding,
     matrixSet,
     style

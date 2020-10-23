@@ -1,5 +1,6 @@
 import { BING_API_KEY } from 'config/keys';
 const Projections = require('../projection/projections');
+const RasterLayers = require('./rasters');
 const BaseLayers = {};
 
 BaseLayers.OSM = new ol.layer.Tile({
@@ -11,11 +12,12 @@ BaseLayers.OSM = new ol.layer.Tile({
 
 BaseLayers.TMS =  {
   get: function({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
-    let source;
+    let layer;
     switch(source_type) {
       case 'xyz':
-        source = new ol.source.XYZ({
+        layer = RasterLayers.XYZLayer({
           url,
+          visible,
           minZoom,
           maxZoom,
           attributions,
@@ -23,25 +25,21 @@ BaseLayers.TMS =  {
         });
         break;
       case 'arcgismapserver':
-        source = new ol.source.TileArcGISRest({
+        layer = TiledArgisMapServer({
           url,
+          visible,
           projection,
           attributions
         });
         break;
       default:
     }
-    return new ol.layer.Tile({
-      visible,
-      source,
-      basemap: true
-    })
+    return layer;
   }
 };
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
-    const projection = Projections.get(crs);
+  get: function({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;

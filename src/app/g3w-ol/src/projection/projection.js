@@ -9,7 +9,7 @@ const Projection = function(options={}) {
   const degrees = geographic;
   ol.proj.Projection.call(this, {
     code: epsg,
-    extent: options.extent ? options.extentextent : degrees ? GENERIC_GRID_EXTENT_DEGREE: GENERIC_GRID_EXTENT,
+    extent: options.extent ? options.extent : degrees ? GENERIC_GRID_EXTENT_DEGREE: GENERIC_GRID_EXTENT,
     axisOrientation: this._axisOrientation,
     units: degrees ? 'degrees' : 'm'
   });

@@ -13,13 +13,13 @@ inherit(ARCGISMAPSERVERLayer, BaseLayer);
 const proto = ARCGISMAPSERVERLayer.prototype;
 
 proto._makeOlLayer = function() {
-  console.log(this.config)
   // here configuration to create TMS
-  const {url, attributions, crs:{epsg="'EPSG:3857'"}} = this.config;
+  const {url, attributions, crs} = this.config;
+  const projection = this.getProjectionFromCrs(crs);
   const olLayer = BasesLayers.TMS.get({
     url,
     source_type: 'arcgismapserver',
-    projection: epsg,
+    projection,
     attributions
   });
   return olLayer

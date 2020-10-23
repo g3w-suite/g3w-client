@@ -1,5 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
+const Projections = require('g3w-ol/src/projection/projections');
 const WMSLayer = require('../map/wmslayer');
 const ImageLayer = require('core/layers/imagelayer');
 
@@ -19,6 +19,11 @@ function BaseLayer(config = {}, options={}) {
 inherit(BaseLayer, ImageLayer);
 
 const proto = BaseLayer.prototype;
+
+proto.getProjectionFromCrs = function(crs={}){
+  crs.epsg = crs.epsg ? crs.epsg : "EPSG:3857";
+  return Projections.get(crs);
+};
 
 proto._makeOlLayer = function() {
   //TO OVERWRITE

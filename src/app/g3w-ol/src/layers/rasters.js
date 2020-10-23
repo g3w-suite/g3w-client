@@ -61,12 +61,15 @@ RasterLayers.ImageArgisMapServer = function(options={}){
 };
 
 RasterLayers.TiledArgisMapServer = function(options={}){
+  const {url, visible=true, extent, projection, attributions} = options;
   const source = new ol.source.TileArcGISRest({
-    url: options.url
+    url,
+    projection,
+    attributions
   });
-
   return  new ol.layer.Tile({
-    extent: options.extent,
+    extent,
+    visible,
     source
   })
 };
@@ -125,7 +128,7 @@ RasterLayers._WMSLayer = function(options={}) {
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom} = options;
+  const {url, projection, maxZoom, minZoom, visible=true} = options;
   if (!url) return;
   const sourceOptions = {
     url,
@@ -156,6 +159,7 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
 
   const source = new ol.source.XYZ(sourceOptions);
   return new ol.layer.Tile({
+    visible,
     projection,
     source
   });

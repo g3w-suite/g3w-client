@@ -28,7 +28,6 @@ proto._makeOlLayer = function(){
       olLayer = BasesLayers.BING.Aerial;
       break;
   }
-
   return olLayer
 };
 
