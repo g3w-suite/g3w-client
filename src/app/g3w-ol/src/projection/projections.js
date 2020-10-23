@@ -3,7 +3,6 @@ const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {
   get: function(crs={},  extent) {
-    crs.epsg = Projections.normalizeEpsg(crs.epsg);
     const _proj =  ol.proj.projections ? ol.proj.projections : ol.proj;
     const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  _proj.get(crs.epsg) : null;
     if (cachedProjection) return cachedProjection;
@@ -14,14 +13,6 @@ const Projections = {
     _proj.add ? _proj.add(crs, projection) : _proj.addProjection(projection);
     ADDEDPROJECTIONS.push(crs);
     return projection;
-  },
-  normalizeCrs: function(crs) {
-    if (typeof crs === 'number') return `EPSG:${crs}`;
-    crs = crs.replace(/[^\d\.\-]/g, "");
-    if (crs !== '') return `EPSG:${parseInt(crs)}`;
-  },
-  normalizeEpsg(epsg){
-    return this.normalizeCrs(epsg);
   },
   setApplicationProjections() {
     Projections.get({

@@ -1,5 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils//utils');
+const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
@@ -34,6 +34,7 @@ function Project(config={}, options={}) {
   // process layers
   this._processLayers();
   // set the project projection
+  this.state.crs = crsToCrsObject(this.state.crs);
   this._projection = Projections.get(this.state.crs);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
@@ -163,6 +164,8 @@ proto._buildLayersStore = function() {
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
   layers.forEach(layerConfig => {
+    //check and set crs in objectformat
+    layerConfig.crs = crsToCrsObject(layerConfig.crs);
     // add projection
     layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
     //add ows_method

@@ -39,10 +39,9 @@ BaseLayers.TMS =  {
   }
 };
 
-
 BaseLayers.WMTS = {
   get: function({url, layer, visible, attributions, matrixSet, crs, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
-    const projection = Projections.get(`EPSG:${crs}`);
+    const projection = Projections.get(crs);
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;

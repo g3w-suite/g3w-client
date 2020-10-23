@@ -1,3 +1,4 @@
+const { toRawType } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
@@ -590,6 +591,24 @@ const geoutils = {
         } else dissolvedFeature = null;
     }
     return dissolvedFeature;
+  },
+  normalizeEpsg: function(epsg) {
+    if (typeof epsg === 'number') return `EPSG:${epsg}`;
+    epsg = epsg.replace(/[^\d\.\-]/g, "");
+    if (epsg !== '') return `EPSG:${parseInt(epsg)}`;
+  },
+  crsToCrsObject(crs){
+    if (crs === null || crs === undefined) return crs;
+    if  (toRawType(crs) === 'Object' && crs.epsg) {
+      crs.epsg = geoutils.normalizeEpsg(crs.epsg);
+    } else
+      crs = {
+        epsg: geoutils.normalizeEpsg(crs),
+        proj4: "",
+        axisinverted: false,
+        geographic: false
+      };
+    return crs;
   }
 };
 

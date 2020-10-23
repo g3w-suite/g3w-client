@@ -14,13 +14,14 @@ const proto = TMSLayer.prototype;
 
 proto._makeOlLayer = function() {
   // here configuration to create TMS
-  const {url, attributions, minZoom, maxZoom} = this.config;
+  const {url, attributions, minZoom, maxZoom, crs:{epsg}} = this.config;
+
   const olLayer = BasesLayers.TMS.get({
     url,
     minZoom,
     maxZoom,
     attributions,
-    projection: `EPSG:${this.config.crs}`
+    projection: epsg
   });
   return olLayer
 };

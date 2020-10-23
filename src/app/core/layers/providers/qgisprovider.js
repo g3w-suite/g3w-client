@@ -72,7 +72,7 @@ proto.query = function(options={}) {
   const filter = options.filter || null;
   const isVector = this._layer.getType() !== "table";
   isVector && this.setProjections();
-  const crs = isVector ? this._layer.getSourceType() === 'spatialite' ? `EPSG:${this._layer.getCrs()}` : this._projections.map.getCode() : null;
+  const CRS = isVector ? this._layer.getSourceType() === 'spatialite' ? this._layer.getCrs() : this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
   const layers = options.layers;
   const {I,J} = options;
@@ -90,7 +90,7 @@ proto.query = function(options={}) {
       QUERY_LAYERS: layerNames,
       INFO_FORMAT: this._infoFormat,
       FEATURE_COUNT: feature_count,
-      CRS: crs,
+      CRS,
       I,
       J,
       FILTER: filter.get(),
@@ -517,7 +517,7 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
   return d.promise();
 };
 
-proto._createVectorLayer = function(options) {
+proto._createVectorLayer = function(options={}) {
   const vector = new VectorLayer(options);
   return vector;
 };

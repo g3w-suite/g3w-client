@@ -51,9 +51,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
     HEIGHT: size[1],
   };
   if (!('STYLES' in params)) params['STYLES'] = '';
-
   const bbox = this._projections.map.getAxisOrientation().substr(0, 2) === 'ne' ? [extent[1], extent[0], extent[3], extent[2]] : extent;
-
   params['BBOX'] = bbox.join(',');
   return params;
 };

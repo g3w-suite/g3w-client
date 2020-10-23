@@ -16,7 +16,7 @@ proto.setup = function(config={}, options={}) {
     return;
   }
   const { project } = options;
-  this.config.map_crs = 1*project.getProjection().getCode().split('EPSG:')[1];
+  this.config.map_crs = project.getProjection().getCode();
   this.config.multilayerid = config.multilayer;
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox
@@ -104,7 +104,7 @@ proto.getProjection = function() {
 };
 
 proto.getCrs = function() {
-  if (this.config.projection) return this.config.projection.getCode();
+  return this.config.projection && this.config.projection.getCode() || null;
 };
 
 proto.isCached = function() {

@@ -98,7 +98,6 @@ proto._makeOlLayer = function() {
     projection: this.config.projection
   };
 
-
   const olLayer = new RasterLayers.WMSTLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('tileloadstart', () => {

@@ -81,11 +81,11 @@ proto.isWMS = function() {
 };
 
 proto.isLayerProjectionASMapProjection = function() {
-  return this.config.crs === this.config.map_crs;
+  return this.config.crs.epsg === this.config.map_crs;
 };
 
 proto.getCrs = function() {
-  return this.config.crs;
+  return this.config.crs.epsg;
 };
 
 proto.isExternalWMS = function() {

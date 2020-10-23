@@ -1112,7 +1112,7 @@ proto._setupControls = function() {
             options: {
               isMobile: isMobile.any,
               bbox: this.project.state.initextent,
-              mapCrs: 'EPSG:'+this.project.state.crs,
+              mapCrs: this.project.state.crs.epsg,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
@@ -1980,12 +1980,12 @@ proto.goToBBox = function(bbox) {
 };
 
 proto.goToWGS84 = function(coordinates,zoom){
-  coordinates = ol.proj.transform(coordinates,'EPSG:4326','EPSG:'+this.project.state.crs);
+  coordinates = ol.proj.transform(coordinates,'EPSG:4326',this.project.state.crs.epsg);
   this.goTo(coordinates,zoom);
 };
 
 proto.extentToWGS84 = function(extent){
-  return ol.proj.transformExtent(extent,'EPSG:'+this.project.state.crs,'EPSG:4326');
+  return ol.proj.transformExtent(extent,this.project.state.crs.epsg,'EPSG:4326');
 };
 
 proto.getResolutionForMeters = function(meters) {
@@ -2285,7 +2285,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer  = (layer) => {
+  const loadExternalLayer = (layer) => {
     if (layer) {
       const extent = layer.getSource().getExtent();
       externalLayer.bbox = {
