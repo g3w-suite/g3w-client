@@ -1,5 +1,5 @@
 const t = require('core/i18n/i18n.service').t;
-const {inherit, base, copyUrl, uniqueId} = require('core/utils/utils');
+const {inherit, base, copyUrl, uniqueId, debounce, throttle} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   shpToGeojson,
@@ -19,8 +19,6 @@ const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
-const debounce = require('core/utils/utils').debounce;
-const throttle = require('core/utils/utils').throttle;
 const SETTINGS = {
   zoom : {
     maxScale: 2000,
@@ -706,7 +704,10 @@ proto._setupControls = function() {
             add: true,
             toggled: true
           });
-          const eventKey = control.on('picked', throttle((e) => {
+          let canRun = true;
+          const runQuery = throttle(e => {
+            if (!canRun) return;
+            canRun = false;
             const coordinates = e.coordinates;
             // commented zoom to coordinate
             //this.getMap().getView().setCenter(coordinates);
@@ -721,31 +722,35 @@ proto._setupControls = function() {
             };
             const querymultilayers = this.project.isQueryMultiLayers(controlType);
             const layers = getMapLayersByFilter(layersFilterObject);
-            let queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
-              map,
-              querymultilayers,
-              feature_count,
-              coordinates
+            const queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
+                map,
+                querymultilayers,
+                feature_count,
+                coordinates
               }
             );
             const queryResultsPanel = showQueryResults('');
-            queryResultsPromise.then((responses) => {
+            queryResultsPromise
+              .then(responses => {
                 const layersResults = responses;
                 const results = {
                   query: layersResults[0] ? layersResults[0].query: null,
                   data: []
                 };
-                layersResults.forEach((result) => {
-                  if (result.data)
-                    result.data.forEach(data => {results.data.push(data)});
-                });
+                layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
                 queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
               })
-              .fail(function() {
+              .fail(() => {
                 GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
-              });
-          }));
+              })
+              .always(()=>{
+                setTimeout(()=>{
+                  canRun = true;
+                })
+              })
+          }, 800);
+          const eventKey = control.on('picked', runQuery);
           control.setEventKey({
             eventType: 'picked',
             eventKey
@@ -783,113 +788,112 @@ proto._setupControls = function() {
                   return control.checkVisibile(controlLayers);
                 }
               });
-              const showQueryResults = GUI.showContentFactory('query');
-              const eventKey = control.on('picked', throttle((e) => {
-                let results = {};
-                let geometry;
+              let canRun = true;
+              const runQuery = throttle(e => {
+                if (!canRun) return;
+                canRun = false;
                 const coordinates = e.coordinates;
                 this.getMap().getView().setCenter(coordinates);
-                let layersFilterObject = {
+                const layersFilterObject = {
                   QUERYABLE: true,
                   SELECTED: true,
                   VISIBLE: true
                 };
                 const queryResultsPanel = showQueryResults('');
                 const layers = getMapLayersByFilter(layersFilterObject, condition);
-                let queryResulsPromise = getQueryLayersPromisesByCoordinates(
-                  layers,
-                  {
-                    map,
-                    feature_count,
-                    coordinates
-                  });
-                queryResulsPromise.then((responses) => {
-                  let layersResults = responses;
-                  let queriesPromise;
-                  results = {};
-                  // unify results of the promises
-                  results.query = layersResults[0] ? layersResults[0].query : null;
-                  if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
-                    geometry = layersResults[0].data[0].features[0].getGeometry();
-                    const excludeLayers = [layersResults[0].data[0].layer];
-                    if (geometry) {
-                      let filter = new Filter();
-                      let layerFilterObject = {
-                        ALLNOTSELECTED: true,
-                        FILTERABLE: true,
-                        VISIBLE: true
-                      };
-                      const querymultilayers = this.project.isQueryMultiLayers(controlType);
-                      let filterGeometry = geometry;
-                      if (querymultilayers) {
+                const queryResulsPromise = getQueryLayersPromisesByCoordinates(layers, {
+                  map,
+                  feature_count,
+                  coordinates
+                });
+                let geometry;
+                queryResulsPromise
+                  .then(responses => {
+                    let layersResults = responses;
+                    let queriesPromise;
+                    const results = {};
+                    // unify results of the promises
+                    results.query = layersResults[0] ? layersResults[0].query : null;
+                    if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
+                      geometry = layersResults[0].data[0].features[0].getGeometry();
+                      const excludeLayers = [layersResults[0].data[0].layer];
+                      if (geometry) {
+                        const filter = new Filter();
+                        const layerFilterObject = {
+                          ALLNOTSELECTED: true,
+                          FILTERABLE: true,
+                          VISIBLE: true
+                        };
+                        const querymultilayers = this.project.isQueryMultiLayers(controlType);
+                        let filterGeometry = geometry;
+                        if (querymultilayers) {
                         const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
-                        queriesPromise = getQueryLayersPromisesByGeometry(layers,
-                          {
-                            geometry,
-                            bbox:false,
-                            feature_count,
-                            projection: this.getProjection()
+                          queriesPromise = getQueryLayersPromisesByGeometry(layers,
+                            {
+                              geometry,
+                              bbox:false,
+                              feature_count,
+                              projection: this.getProjection()
+                            }
+                          )
+                        } else {
+                          const d = $.Deferred();
+                          queriesPromise = d.promise();
+                          const layers = getMapLayersByFilter(layerFilterObject, condition);
+                          if (layers.length === 0) d.resolve([]);
+                          else {
+                            const queryResponses = [];
+                            const feature_count = this.project.getQueryFeatureCount();
+                            const mapCrs = this.getCrs();
+                            let layersLenght = layers.length;
+                            layers.forEach(layer=> {
+                              const layerCrs = layer.getProjection().getCode();
+                              if (mapCrs !== layerCrs) filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                              filter.setGeometry(filterGeometry);
+                              layer.query({
+                                filter,
+                                feature_count
+                              }).then((response) => {
+                                queryResponses.push(response)
+                              }).always(() => {
+                                layersLenght -= 1;
+                                if (layersLenght === 0) d.resolve(queryResponses)
+                              })
+                            });
                           }
-                        )
-                      } else {
-                        const d = $.Deferred();
-                        queriesPromise = d.promise();
-                        const layers = getMapLayersByFilter(layerFilterObject, condition);
-                        if (layers.length === 0) d.resolve([]);
-                        else {
-                          const queryResponses = [];
-                          const feature_count = this.project.getQueryFeatureCount();
-                          const mapCrs = this.getCrs();
-                          let layersLenght = layers.length;
-                          layers.forEach((layer) => {
-                            const layerCrs = layer.getProjection().getCode();
-                            if (mapCrs !== layerCrs)
-                              filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
-                            filter.setGeometry(filterGeometry);
-                            layer.query({
-                              filter,
-                              feature_count
-                            }).then((response) => {
-                              queryResponses.push(response)
-                            }).always(() => {
-                              layersLenght -= 1;
-                              if (layersLenght === 0)
-                                d.resolve(queryResponses)
-                            })
-                          });
                         }
                       }
-                      this.highlightGeometry(geometry);
-                    }
-                    queriesPromise
-                      .then((args) => {
-                        layersResults = args;
-                        const results = {
-                          query: layersResults[0] ? layersResults[0].query : null,
-                          data: []
-                        };
-                        layersResults.forEach((result) => {
-                          if (result.data)
-                            result.data.forEach(data => {results.data.push(data)});
-                        });
-                        queryResultsPanel.setZoomToResults(false);
-                        queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
-                      })
-                      .fail((error) => {
+                      queriesPromise
+                        .then(args => {
+                          layersResults = args;
+                          const results = {
+                            query: layersResults[0] ? layersResults[0].query : null,
+                            data: []
+                          };
+                          layersResults.forEach(result => (result.data) && result.data.forEach(data => results.data.push(data)));
+                          results.data.length && this.highlightGeometry(geometry);
+                          queryResultsPanel.setZoomToResults(false);
+                          queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
+                        })
+                        .fail((error) => {
                         GUI.notify.error(t("info.server_error"));
                         GUI.closeContent();
                       })
-                      .always(() => {
+                        .always(() => {
                         this.clearHighlightGeometry();
                       });
-                  } else
-                    queryResultsPanel.setQueryResponse([]);
-                })
+                    } else queryResultsPanel.setQueryResponse([]);
+                  })
                   .fail(() => {
                     GUI.notify.error(t("info.server_error"));
                     GUI.closeContent();
+                  }).
+                  always(()=>{
+                    canRun = true;
                   })
-              }));
+                }, 800);
+              const showQueryResults = GUI.showContentFactory('query');
+              const eventKey = control.on('picked', runQuery);
               control.setEventKey({
                 eventType: 'picked',
                 eventKey
@@ -944,7 +948,10 @@ proto._setupControls = function() {
                   }
                 }
               });
-              const eventKey = control.on('bboxend', (e) => {
+              let canRun = true;
+              const runQuery = throttle(e => {
+                if (!canRun) return;
+                canRun = false;
                 let bbox = e.extent;
                 let filterBBox = bbox;
                 const center = ol.extent.getCenter(bbox);
@@ -991,7 +998,7 @@ proto._setupControls = function() {
                 const queryResultsPanel = showQueryResults('');
                 queryResultsPanel.setZoomToResults(false);
                 queriesPromise
-                  .then((args) => {
+                  .then(args => {
                     layersResults = args;
                     const results = {
                       query: layersResults[0] ? layersResults[0].query: null,
@@ -1008,8 +1015,13 @@ proto._setupControls = function() {
                     if (error) msg += ' '+error;
                     GUI.notify.error(msg);
                     GUI.closeContent();
-                  })
-                });
+                  }).always(()=>{
+                    setTimeout(()=>{
+                      canRun = true;
+                    });
+                })
+              }, 1000);
+              const eventKey = control.on('bboxend', runQuery);
               control.setEventKey({
                 eventType: 'bboxend',
                 eventKey

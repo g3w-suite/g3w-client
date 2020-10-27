@@ -84,7 +84,7 @@ proto._doRequest = function(filter, params = {}, layers) {
   const layerNames = layers ? layers.map(layer => this._getTypeName(layer.getQueryLayerName())).join(','): this._layerName;
   params = Object.assign(params, {
     SERVICE: 'WFS',
-    VERSION: '1.3.0',
+    VERSION: '1.1.0',
     REQUEST: 'GetFeature',
     TYPENAME: layerNames,
     OUTPUTFORMAT: infoFormat,
@@ -120,7 +120,8 @@ proto._doRequest = function(filter, params = {}, layers) {
       default:
         break;
     }
-    params.FILTER = featureRequest.children[0].innerHTML;
+    //params.FILTER = featureRequest.children[0].innerHTML;
+    params.FILTER = `(${featureRequest.children[0].innerHTML})`.repeat(layers ? layers.length : 1);
     const queryPromise = httpMethod === 'GET' ? this._get(url, params) : this._post(url, params);
     queryPromise.then((response) => {
         d.resolve(response)
