@@ -1,6 +1,7 @@
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
 const noop = require('core/utils/utils').noop;
+const Layer = require('core/layers/layer');
 const {coordinatesToGeometry} =  require('core/utils/geo');
 
 const TableService = function(options = {}) {
@@ -99,7 +100,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
 proto.addFeature = function(feature) {
   const tableFeature = {
     attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry: this._returnGeometry(feature)
+    geometry: this.layer.getType() !== Layer.LayerTypes.TABLE && this._returnGeometry(feature)
   };
   this.state.features.push(tableFeature);
 };
