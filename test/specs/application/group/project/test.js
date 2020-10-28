@@ -32,11 +32,7 @@ export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={})
           testConfig: testConfig.queries,
           mapcontrols
         })
-      if (Object.keys(testConfig.searches).length)
-        TestSearches({
-          testConfig: testConfig.searches,
-          searches: project.getSearches()
-        })
+
       if (Object.keys(testConfig.catalog).length)
         TestCatalog({
           gid,

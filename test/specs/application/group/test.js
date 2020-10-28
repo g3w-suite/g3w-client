@@ -5,8 +5,8 @@ export default function TestGroup({groupId, testConfig={}}={}) {
   const startGroupProject = projects[0];
   let mapcontrols;
   describe(`#Group[${groupId}]`, function(){
+    this.timeout(0);
     before(async ()=>{
-      this.timeout(0);
       const urls = Service.setUrls({
         groupId,
         lng

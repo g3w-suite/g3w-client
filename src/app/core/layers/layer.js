@@ -452,13 +452,15 @@ proto.setTocHighlightable = function(bool=false) {
 /*
  condition: plain object with configuration layer attribute and value
 * */
-proto.isFilterable = function(condition=null) {
+proto.isFilterable = function(conditions=null) {
   let isFiltrable = !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.FILTERABLE));
-  if (isFiltrable && condition) {
-    const conditionalFiltrable = Object.keys(condition).reduce((bool, attribute) =>{
+  if (isFiltrable && conditions) {
+    const conditionalFiltrable = Object.keys(conditions).reduce((bool, attribute) =>{
       const layer_config_value = this.get(attribute);
-      const condition_attribute_values = condition[attribute];
-      return bool && Array.isArray(layer_config_value) ? layer_config_value.indexOf(condition_attribute_values) !== -1 : condition_attribute_values === layer_config_value;
+      const condition_attribute_values = conditions[attribute];
+      return bool && Array.isArray(layer_config_value) ?
+        layer_config_value.indexOf(condition_attribute_values) !== -1 :
+        condition_attribute_values === layer_config_value;
     }, true);
     isFiltrable = isFiltrable && conditionalFiltrable;
   }

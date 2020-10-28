@@ -12,7 +12,8 @@ export default function TestCatalog({gid, testConfig={}}={}) {
       const testDisabledLayersCount = testConfig.layers.disabled.count;
       const testVisibleLayersCount = testConfig.layers.visible.count;
       const testTableLayersCount = testConfig.layers.table.count;
-      const testVectorLayersCount = testConfig.layers.vector.count;
+      const testGeoSpatialLayersCount = testConfig.layers.geospatial.count;
+      const testFiltrableLayer = testConfig.layers.filtrable.count;
       const disabledLayers = ServiceCatalog.getLayersByType({
         layers,
         type: 'disabled'
@@ -25,15 +26,20 @@ export default function TestCatalog({gid, testConfig={}}={}) {
         layers,
         type: 'table'
       });
-      const vectorLayers = ServiceCatalog.getLayersByType({
+      const geoSpatialLayers = ServiceCatalog.getLayersByType({
         layers,
-        type: 'vector'
+        type: 'geolayer'
+      });
+      const filtrableLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'filtrable'
       });
       expect(layers).to.be.length(count);
       expect(disabledLayers).to.be.length(testDisabledLayersCount);
       expect(visibleLayers).to.be.length(testVisibleLayersCount);
       expect(tableLayers).to.be.length(testTableLayersCount);
-      expect(vectorLayers).to.be.length(testVectorLayersCount);
+      expect(geoSpatialLayers).to.be.length(testGeoSpatialLayersCount);
+      expect(filtrableLayers).to.be.length(testFiltrableLayer);
     })
   })
 }

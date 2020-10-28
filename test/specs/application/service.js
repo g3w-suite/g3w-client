@@ -1,4 +1,5 @@
 import { server as serverConfig } from '../../../src/config';
+import { LOGIN as LoginConfig} from '../../config/config';
 const ApplicationService = require('core/applicationservice');
 const XHR = require('core/utils/utils').XHR;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -43,22 +44,24 @@ const getUrl = function(type) {
 }
 
 const Authentication = async function({lng='en'}) {
-  return await doAuthentication({
+  const csrftoken = await doAuthentication({
     lng
   });
+  return csrftoken;
 }
 
 async function doAuthentication({lng='en'}={}) {
+  const {username, password} = LoginConfig;
   const url = urls.login;
-  const response = await fetch(url)
+  const response = await fetch(url);
   const csrftoken = response.headers.get('csrftoken');
   //set document cookie
   document.cookie = `csrftoken=${csrftoken}`;
   await XHR.post({
     url,
     data: {
-      username: 'admin01',
-      password: 'kote@25#t',
+      username,
+      password,
       csrfmiddlewaretoken: csrftoken
     }
   });

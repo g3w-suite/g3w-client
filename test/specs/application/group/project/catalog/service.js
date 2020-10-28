@@ -24,7 +24,7 @@ export function getLayersByType({layers=[], type}={}) {
     case 'table':
       filterLayers = layers.filter(layer => !layer.geolayer);
       break;
-    case 'vector':
+    case 'geolayer':
       filterLayers = layers.filter(layer => layer.geolayer);
       break;
     case 'disabled':
@@ -36,7 +36,9 @@ export function getLayersByType({layers=[], type}={}) {
       filterLayers = layers.filter(layer => layer.geolayer);
       break;
     case 'filtrable':
-      filterLayers = layers.filter(layer => layer.geolayer);
+      filterLayers = layers.filter(layer => {
+        return CatalogLayersStoresRegistry.getLayerById(layer.id).isFilterable({ows: 'WFS'});
+      });
       break;
     }
     return filterLayers;
