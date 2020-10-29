@@ -5,8 +5,10 @@ const HeaderItem = require('gui/header/headeritem');
 const GUI = require('gui/gui');
 const layout = require('./layout');
 const compiledTemplate = Vue.compile(require('./app.html'));
+const { resizeMixin } = require('gui/vue/vue.mixins');
 const AppUI = Vue.extend({
   ...compiledTemplate,
+  mixins: [resizeMixin],
   data() {
     return {
       customcredits: false,
@@ -77,6 +79,11 @@ const AppUI = Vue.extend({
     },
   },
   methods: {
+    resize(){
+      const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
+        this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidht;
+      this.$refs.main_title_project_title.style.maxWidth = `${max_width - 80}px`;
+    },
     showCustomModalContent(id){
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
@@ -95,6 +102,10 @@ const AppUI = Vue.extend({
     'language'(lng, currentlng) {
       currentlng && ApplicationService.changeLanguage(lng);
     }
+  },
+  beforeCreate() {
+    this.delayType = 'debounce';
+    this.delayTime = 0;
   },
   created() {
     this.custom_modals = [];
@@ -124,30 +135,35 @@ const AppUI = Vue.extend({
       this.customcredits = credits !== 'None' && credits
     });
   },
-  mounted: function() {
+  async mounted() {
+    const rightNavBarElements = this.$refs.mainnavbar.getElementsByTagName('ul');
+    const elementLenght = rightNavBarElements.length;
+    this.rightNavbarWidht = 0;
+    for (let i = 0; i < elementLenght; i++ ) {
+      this.rightNavbarWidht+= rightNavBarElements.item(i).offsetWidth;
+    }
     this.language = this.appconfig.user.i18n;
-    this.$nextTick(function(){
-      /* start to render LayoutManager layout */
-      layout.loading(false);
-      layout.setup();
-      //Fix the problem with right sidebar and layout boxed
-      layout.pushMenu.expandOnHover();
-      layout.controlSidebar._fix($(".control-sidebar-bg"));
-      layout.controlSidebar._fix($(".control-sidebar"));
-      const controlsidebarEl = layout.options.controlSidebarOptions.selector;
-      function setFloatBarMaxHeight() {
-        $(controlsidebarEl).css('max-height',$(window).innerHeight());
-        $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
-      }
+    await this.$nextTick();
+    /* start to render LayoutManager layout */
+    layout.loading(false);
+    layout.setup();
+    //Fix the problem with right sidebar and layout boxed
+    layout.pushMenu.expandOnHover();
+    layout.controlSidebar._fix($(".control-sidebar-bg"));
+    layout.controlSidebar._fix($(".control-sidebar"));
+    const controlsidebarEl = layout.options.controlSidebarOptions.selector;
+    function setFloatBarMaxHeight() {
+      $(controlsidebarEl).css('max-height',$(window).innerHeight());
+      $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
+    }
+    setFloatBarMaxHeight();
+    function setModalHeight(){
+      $('#g3w-modal-overlay').css('height',$(window).height());
+    }
+    $(window).resize(function() {
       setFloatBarMaxHeight();
-      function setModalHeight(){
-        $('#g3w-modal-overlay').css('height',$(window).height());
-      }
-      $(window).resize(function() {
-        setFloatBarMaxHeight();
-        setModalHeight();
-      });
-    })
+      setModalHeight();
+    });
   },
 });
 

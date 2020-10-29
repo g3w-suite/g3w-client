@@ -202,7 +202,7 @@ const DELAY_TYPE = {
 const resizeMixin = {
   created(){
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
-    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this)): null;
+    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
     GUI.on('resize', this.delayResize);
   },
   async mounted(){
@@ -212,6 +212,7 @@ const resizeMixin = {
   beforeDestroy(){
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
+    this.delayTime = null;
   }
 };
 

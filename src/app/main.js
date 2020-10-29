@@ -21,8 +21,10 @@ const bootstrap = function() {
       applicationTemplate.init();
     })
     .catch(({error=null, language}) => {
-      if (error && error.responseJSON && error.responseJSON.error.data)
-        error = error.responseJSON.error.data;
+      if (error) {
+        if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
+        else if (error.statusText) error = error.statusText;
+      }
       Application.fail({
         language,
         error
