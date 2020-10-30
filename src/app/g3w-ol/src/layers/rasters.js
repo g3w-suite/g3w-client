@@ -114,7 +114,6 @@ RasterLayers._WMSLayer = function(options={}) {
 
   let imageClass;
   let source;
-  console.log(tiled)
   if (tiled) {
     source = new ol.source.TileWMS(sourceOptions);
     imageClass = ol.layer.Tile;
