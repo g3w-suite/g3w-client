@@ -52,6 +52,7 @@ function LayerFactory() {
       case Layer.ServerTypes.OSM:
       case Layer.ServerTypes.BING:
       case Layer.ServerTypes.TMS:
+      case Layer.ServerTypes.WMS:
       case Layer.ServerTypes.WMTS:
       case Layer.ServerTypes.ARCGISMAPSERVER:
         LayerClass = BaseLayers[serverType];

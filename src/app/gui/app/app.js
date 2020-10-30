@@ -81,8 +81,8 @@ const AppUI = Vue.extend({
   methods: {
     resize(){
       const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
-        this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidht;
-      this.$refs.main_title_project_title.style.maxWidth = `${max_width - 80}px`;
+        this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
+      this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;
     },
     showCustomModalContent(id){
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
@@ -136,14 +136,19 @@ const AppUI = Vue.extend({
     });
   },
   async mounted() {
+    this.logoWidth = 0;
     const rightNavBarElements = this.$refs.mainnavbar.getElementsByTagName('ul');
     const elementLenght = rightNavBarElements.length;
-    this.rightNavbarWidht = 0;
+    this.rightNavbarWidth = 0;
     for (let i = 0; i < elementLenght; i++ ) {
-      this.rightNavbarWidht+= rightNavBarElements.item(i).offsetWidth;
+      this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
     }
     this.language = this.appconfig.user.i18n;
     await this.$nextTick();
+    this.$refs.img_logo.addEventListener('load', ()=>{
+      this.logoWidth = this.$refs.img_logo.offsetWidth;
+      this.resize();
+    }, {once: true});
     /* start to render LayoutManager layout */
     layout.loading(false);
     layout.setup();

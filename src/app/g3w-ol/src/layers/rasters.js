@@ -31,10 +31,10 @@ RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams, method='GET'){
+RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
   const options = {
-    layerObj: layerObj,
-    extraParams: extraParams || {},
+    layerObj,
+    extraParams,
     method
   };
   return RasterLayers._WMSLayer(options);
@@ -79,7 +79,7 @@ RasterLayers._WMSLayer = function(options={}) {
   const iframe_internal = layerObj.iframe_internal || false;
   const method = options.method || 'GET';
   const extraParams = options.extraParams;
-  const tiled = options.tiled || false;
+  const tiled = layerObj.tiled || false;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
     LAYERS: layerObj.layers || '',
@@ -114,6 +114,7 @@ RasterLayers._WMSLayer = function(options={}) {
 
   let imageClass;
   let source;
+  console.log(tiled)
   if (tiled) {
     source = new ol.source.TileWMS(sourceOptions);
     imageClass = ol.layer.Tile;

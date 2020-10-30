@@ -1,5 +1,4 @@
 import { BING_API_KEY } from 'config/keys';
-const Projections = require('../projection/projections');
 const RasterLayers = require('./rasters');
 const BaseLayers = {};
 
@@ -35,6 +34,19 @@ BaseLayers.TMS =  {
       default:
     }
     return layer;
+  }
+};
+
+BaseLayers.WMS = {
+  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
+    return RasterLayers.WMSLayer({
+      url,
+      projection,
+      attributions,
+      layers,
+      tiled: singleTile,
+      opacity
+    })
   }
 };
 

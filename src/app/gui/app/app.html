@@ -15,8 +15,8 @@
             <i :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
-            <a v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
-              <img :src="logo_url">
+            <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
+              <img ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
               <div class="main_title">{{ main_title }}</div>

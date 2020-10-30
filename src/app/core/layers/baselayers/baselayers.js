@@ -3,7 +3,8 @@ const BaseLayers = {
   'Bing': require('./binglayer'),
   'TMS': require('./tmslayer'),
   'ARCGISMAPSERVER': require('./arcgislayer'),
-  'WMTS': require('./wmtslayer')
+  'WMTS': require('./wmtslayer'),
+  'WMS': require('./wmslayer')
 };
 
 module.exports = BaseLayers;

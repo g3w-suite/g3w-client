@@ -586,6 +586,7 @@ Layer.ServerTypes = {
   BING: "Bing",
   LOCAL: "Local",
   TMS: "TMS",
+  WMS: "WMS",
   WMTS: "WMTS",
   G3WSUITE: "G3WSUITE"
 };
