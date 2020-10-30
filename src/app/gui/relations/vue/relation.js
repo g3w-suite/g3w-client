@@ -103,24 +103,23 @@ module.exports = {
       this.reloadLayout();
     })
   },
-  mounted () {
+  async mounted() {
     this.relation.title = this.relation.name;
-    this.$nextTick(() => {
-      $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
-      if (!this.one) {
-        relationDataTable = $('#relationtable').DataTable( {
-          "pageLength": 10,
-          "bLengthChange": false,
-          "scrollResize": true,
-          "scrollCollapse": true,
-          "scrollX": true,
-          "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
-          "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
-        });
-        $('.row-form').tooltip();
-        this.resize();
-      }
-    })
+    await this.$nextTick()
+    $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
+    if (!this.one) {
+      relationDataTable = $('#relationtable').DataTable( {
+        "pageLength": 10,
+        "bLengthChange": false,
+        "scrollResize": true,
+        "scrollCollapse": true,
+        "scrollX": true,
+        "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
+        "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
+      });
+      $('.row-form').tooltip();
+      this.resize();
+    }
   },
   beforeDestroy(){
     relationDataTable.destroy();

@@ -16,7 +16,8 @@ const DateTimePickerInput = Vue.extend({
   },
   methods: {
     resize(){
-      $(`#${this.iddatetimepicker}`) && $(`#${this.iddatetimepicker}`).data("DateTimePicker").hide();
+      const domeDataPicker = $(`#${this.iddatetimepicker}`);
+      domeDataPicker && domeDataPicker.data("DateTimePicker") && domeDataPicker.data("DateTimePicker").hide();
     },
     timeOnly : function() {
       return !this.state.input.options.formats[0].date;

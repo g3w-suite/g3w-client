@@ -1,7 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
 const t = require('core/i18n/i18n.service').t;
-const XHR = require('core/utils/utils').XHR;
+const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const { geometryFields } =  require('core/utils/geo');

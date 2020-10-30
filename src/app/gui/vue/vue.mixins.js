@@ -41,10 +41,8 @@ const fieldsMixin = {
       } else if (value && typeof value == 'object' && value.coordinates) {
         return Fields.GEO;
       } else if(value && Array.isArray(value)) {
-        if (value.length && value[0].photo)
-          return Fields.PHOTO;
-        else
-          return Fields.SIMPLE
+        if (value.length && value[0].photo) return Fields.PHOTO;
+        else return Fields.SIMPLE
       } else if (value.toString().toLowerCase().match(PhotoPattern)) {
         return Fields.PHOTO;
       } else if (value.toString().match(URLPattern)) {

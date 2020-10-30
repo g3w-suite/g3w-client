@@ -121,6 +121,11 @@ const vueComponentOptions = {
     },
     _hideMenu() {
       this.layerMenu.show = false;
+      this.layerMenu.loading.data_table = false;
+      this.layerMenu.loading.shp = false;
+      this.layerMenu.loading.csv = false;
+      this.layerMenu.loading.gpx = false;
+      this.layerMenu.loading.xls = false;
     },
     zoomToLayer: function() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
@@ -212,7 +217,7 @@ const vueComponentOptions = {
     downloadGpx(layerId) {
       this.layerMenu.loading.gpx = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getGpx().catch((err) => {
+      layer.getGpx().catch(err => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.gpx = false;
