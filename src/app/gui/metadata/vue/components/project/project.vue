@@ -11,13 +11,13 @@
         </li>
         <li>
           <a data-toggle="tab" href="#spatial" class="metadata-item-tab spatial">
-            <i :class="iconsClass.globe"  aria-hidden="true"></i>
+            <i :class="iconsClass.globe" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.spatial.title'" style="font-weight: bold"></span>
           </a></li>
         <li>
           <a data-toggle="tab" href="#metadata_layers" class="metadata-item-tab layers">
             <i :class="iconsClass.bars" aria-hidden="true"></i>
-            <span v-t="'sdk.metadata.groups.layers.title'"  style="font-weight: bold"></span>
+            <span v-t="'sdk.metadata.groups.layers.title'" style="font-weight: bold"></span>
           </a>
         </li>
       </ul>
@@ -31,7 +31,7 @@
         </template>
       </div>
       <div id="spatial" class="tab-pane fade">
-        <div class="container-fluid">
+        <div>
           <template>
             <div v-for="(data, key) in state.groups.spatial" class="row row-info">
               <component :data="data" :fieldName="key" :is="setComponent(key)"></component>
@@ -105,6 +105,12 @@
 </script>
 
 <style scoped>
+  .metadata-nav-bar li a {
+    text-align: center;
+  }
+  .metadata-nav-bar li a i {
+    margin-right: 5px;
+  }
   .metadata-item-tab {
     margin-right: 10px;
     -webkit-border-radius: 3px;
@@ -117,10 +123,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding-left: 0;
-  }
-
-  .metadata-body div {
-    margin-top: 10px;
+    padding-right: 0;
   }
 
   .tab-title {
@@ -130,7 +133,9 @@
   }
 
   .row-info {
-    padding-bottom: 5px;
+    margin: 0 !important;
+    padding-top: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #e2e2e2;
   }
 
