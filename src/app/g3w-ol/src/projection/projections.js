@@ -10,8 +10,8 @@ const Projections = {
       crs,
       extent
     });
-    _proj.add ? _proj.add(crs, projection) : _proj.addProjection(projection);
-    ADDEDPROJECTIONS.push(crs);
+    _proj.add ? _proj.add(crs.epsg, projection) : _proj.addProjection(projection);
+    ADDEDPROJECTIONS.push(crs.epsg);
     return projection;
   },
   setApplicationProjections() {
