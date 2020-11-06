@@ -174,8 +174,8 @@ proto._run = function() {
   })
 };
 
-proto.changeInput = function({id, value} = {}) {
-  const input = this.state.forminputs.find(input => id == input.id);
+proto.changeInput = function({attribute, value} = {}) {
+  const input = this.state.forminputs.find(input => attribute === input.attribute);
   input.value = value;
 };
 

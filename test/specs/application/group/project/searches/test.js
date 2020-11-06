@@ -1,12 +1,12 @@
 const {assert, expect} = require('chai');
 const SearchService = require('gui/search/vue/panel/searchservice');
 export default function TestSearches({searches=[], testConfig={}}={}) {
+  const count = testConfig.count;
   describe('#Test searches', function() {
     it(`count searches`, function() {
-      const count = testConfig.count;
       expect(searches).to.be.length(count)
     })
-    testConfig.searches.forEach(searchTest => {
+    count > 0 && testConfig.searches.forEach(searchTest => {
       const {id, count, attributes} = searchTest;
       const search = searches.find(search => search.id === searchTest.id);
       const service = new SearchService(search);
