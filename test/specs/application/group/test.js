@@ -3,8 +3,8 @@ import TestProject from './project/test'
 export default function TestGroup({groupId, testConfig={}}={}) {
   const { lng, projects, plugins } = testConfig;
   const startGroupProject = projects[0];
-  let mapcontrols, searches;
   describe(`#Group[${groupId}]`, function(){
+    let mapcontrols;
     this.timeout(0);
     before(async ()=>{
       const urls = Service.setUrls({
@@ -17,14 +17,17 @@ export default function TestGroup({groupId, testConfig={}}={}) {
       const [type, id] = startGroupProject.gid.split(':');
       const url = `${urls.initconfig}${type}/${id}`;
       const applicationConfig = await Service.getProjetsRegistry(url);
-      ({mapcontrols, searches} = applicationConfig);
+      mapcontrols= applicationConfig.mapcontrols;
     })
-    projects.forEach(projectTestConfig => {
-      TestProject({
-        testConfig: projectTestConfig,
-        plugins,
-        mapcontrols,
+    it('Projects', ()=>{
+      projects.forEach(projectTestConfig => {
+        TestProject({
+          testConfig: projectTestConfig,
+          plugins,
+          mapcontrols,
+        })
       })
     })
+
   })
 }

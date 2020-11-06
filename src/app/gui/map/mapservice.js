@@ -597,6 +597,154 @@ proto._checkMapControls = function(){
   })
 };
 
+proto.runQueryByPolygon = function({coordinates, feature_count, condition={filtrable: {ows: 'WFS'}}, controlType='querybypolygon'}={}) {
+  return new Promise((resolve, reject) =>{
+    const map = this.getMap();
+    const layersFilterObject = {QUERYABLE: true, SELECTED: true, VISIBLE: true};
+    const layers = getMapLayersByFilter(layersFilterObject, condition);
+    feature_count = feature_count || this.project.getQueryFeatureCount();
+    const queryResulsPromise = getQueryLayersPromisesByCoordinates(layers, {
+      map,
+      feature_count,
+      coordinates
+    });
+    queryResulsPromise
+      .then(responses => {
+        let layersResults = responses;
+        let queriesPromise;
+        const results = {};
+        // unify results of the promises
+        results.query = layersResults[0] ? layersResults[0].query : null;
+        if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
+          const geometry = layersResults[0].data[0].features[0].getGeometry();
+          const excludeLayers = [layersResults[0].data[0].layer];
+          if (geometry) {
+            const filter = new Filter();
+            const layerFilterObject = {
+              ALLNOTSELECTED: true,
+              FILTERABLE: true,
+              VISIBLE: true
+            };
+            const querymultilayers = this.project.isQueryMultiLayers(controlType);
+            let filterGeometry = geometry;
+            if (querymultilayers) {
+              const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
+              queriesPromise = getQueryLayersPromisesByGeometry(layers,
+                {
+                  geometry,
+                  bbox: false,
+                  feature_count,
+                  projection: this.getProjection()
+                }
+              )
+            }
+            else {
+              const d = $.Deferred();
+              queriesPromise = d.promise();
+              const layers = getMapLayersByFilter(layerFilterObject, condition);
+              if (layers.length === 0) d.resolve([]);
+              else {
+                const queryResponses = [];
+                const mapCrs = this.getCrs();
+                let layersLenght = layers.length;
+                layers.forEach(layer => {
+                  const layerCrs = layer.getProjection().getCode();
+                  if (mapCrs !== layerCrs) filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                  filter.setGeometry(filterGeometry);
+                  layer.query({
+                    filter,
+                    feature_count
+                  }).then((response) => {
+                    queryResponses.push(response)
+                  }).always(() => {
+                    layersLenght -= 1;
+                    if (layersLenght === 0) d.resolve(queryResponses)
+                  })
+                });
+              }
+            }
+            queriesPromise.then(response =>{
+              resolve({
+                response,
+                geometry
+              });
+            }).fail(err =>{
+              reject(err);
+            })
+          }
+        }
+        else
+          resolve({
+            response: []
+          });
+      })
+      .fail(err => reject(err))
+  });
+};
+
+proto.runQueryBBOX = function({bbox, feature_count, controlType='querybbox', condition={filtrable: {ows: 'WFS'}}, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+    const layers = getMapLayersByFilter(layersFilterObject, condition);
+    let queriesPromise;
+    const querymultilayers = this.project.isQueryMultiLayers(controlType);
+    feature_count = feature_count ||  this.project.getQueryFeatureCount();
+    if (querymultilayers) {
+      const layers = getMapLayersByFilter(layersFilterObject, condition);
+      queriesPromise = getQueryLayersPromisesByGeometry(layers, {
+        geometry: bbox,
+        bbox: true,
+        feature_count,
+        projection: this.getProjection()
+      })
+    } else {
+      const d = $.Deferred();
+      queriesPromise = d.promise();
+      const queryResponses = [];
+      let layersLenght = layers.length;
+      let filterBBox = bbox;
+      layers.forEach(layer => {
+        const filter = new Filter();
+        const mapCrs = this.getCrs();
+        const layerCrs = layer.getProjection().getCode();
+        if (mapCrs !== layerCrs) {
+          const geometry = ol.geom.Polygon.fromExtent(bbox);
+          filterBBox = geometry.transform(mapCrs, layerCrs).getExtent();
+        }
+        filter.setBBOX(filterBBox);
+        layer.query({
+          filter,
+          feature_count
+        }).then(response => {
+          queryResponses.push(response)
+        }).always(() => {
+          layersLenght -= 1;
+          if (layersLenght === 0)
+            d.resolve(queryResponses)
+        })
+      });
+    }
+    return queriesPromise;
+};
+
+proto.runQuery = function({map, coordinates, controlType='query', feature_count}={}){
+  map = map || this.getMap();
+  feature_count = feature_count || this.project.getQueryFeatureCount();
+  const layersFilterObject = {
+    QUERYABLE: true,
+    SELECTEDORALL: true,
+    VISIBLE: true
+  };
+  const querymultilayers = this.project.isQueryMultiLayers(controlType);
+  const layers = getMapLayersByFilter(layersFilterObject);
+  const queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
+      map,
+      querymultilayers,
+      feature_count,
+      coordinates
+    }
+  );
+  return queryResultsPromise;
+};
+
 proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
@@ -705,41 +853,27 @@ proto._setupControls = function() {
             toggled: true
           });
           let canRun = true;
+          const showQueryResults = GUI.showContentFactory('query');
           const runQuery = throttle(e => {
             if (!canRun) return;
             canRun = false;
             const coordinates = e.coordinates;
-            // commented zoom to coordinate
-            //this.getMap().getView().setCenter(coordinates);
-            // show marker
-            this.showMarker(coordinates);
-            const showQueryResults = GUI.showContentFactory('query');
-            // get querable layer
-            const layersFilterObject = {
-              QUERYABLE: true,
-              SELECTEDORALL: true,
-              VISIBLE: true
-            };
-            const querymultilayers = this.project.isQueryMultiLayers(controlType);
-            const layers = getMapLayersByFilter(layersFilterObject);
-            const queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
-                map,
-                querymultilayers,
-                feature_count,
-                coordinates
-              }
-            );
             const queryResultsPanel = showQueryResults('');
-            queryResultsPromise
-              .then(responses => {
-                const layersResults = responses;
-                const results = {
-                  query: layersResults[0] ? layersResults[0].query: null,
-                  data: []
-                };
-                layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
-                queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
-              })
+            this.runQuery({
+              coordinates,
+              feature_count,
+              controlType,
+              map,
+            }).then(responses => {
+              const layersResults = responses;
+              const results = {
+                query: layersResults[0] ? layersResults[0].query: null,
+                data: []
+              };
+              layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
+              results.data.length && this.showMarker(coordinates);
+              queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
+            })
               .fail(() => {
                 GUI.notify.error(t("info.server_error"));
                 GUI.closeContent();
@@ -748,7 +882,7 @@ proto._setupControls = function() {
                 setTimeout(()=>{
                   canRun = true;
                 })
-              })
+              });
           }, 800);
           const eventKey = control.on('picked', runQuery);
           control.setEventKey({
@@ -789,110 +923,36 @@ proto._setupControls = function() {
                 }
               });
               let canRun = true;
-              const runQuery = throttle(e => {
+              const showQueryResults = GUI.showContentFactory('query');
+              const runQuery = throttle( e => {
                 if (!canRun) return;
                 canRun = false;
                 const coordinates = e.coordinates;
-                this.getMap().getView().setCenter(coordinates);
-                const layersFilterObject = {
-                  QUERYABLE: true,
-                  SELECTED: true,
-                  VISIBLE: true
-                };
                 const queryResultsPanel = showQueryResults('');
-                const layers = getMapLayersByFilter(layersFilterObject, condition);
-                const queryResulsPromise = getQueryLayersPromisesByCoordinates(layers, {
-                  map,
+                this.runQueryByPolygon({
                   feature_count,
                   coordinates
+                }).then(({response, geometry}) => {
+                  layersResults = response;
+                  const results = {
+                    query: layersResults[0] ? layersResults[0].query : null,
+                    data: []
+                  };
+                  layersResults.forEach(result => (result.data) && result.data.forEach(data => results.data.push(data)));
+                  if (results.data.length) {
+                    this.getMap().getView().setCenter(coordinates);
+                    this.highlightGeometry(geometry);
+                  }
+                  queryResultsPanel.setZoomToResults(false);
+                  queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
+                }).catch(err => {
+                  GUI.notify.error(t("info.server_error"));
+                  GUI.closeContent();
+                }).finally(() => {
+                  canRun = true;
+                  this.clearHighlightGeometry();
                 });
-                let geometry;
-                queryResulsPromise
-                  .then(responses => {
-                    let layersResults = responses;
-                    let queriesPromise;
-                    const results = {};
-                    // unify results of the promises
-                    results.query = layersResults[0] ? layersResults[0].query : null;
-                    if (layersResults[0] && layersResults[0].data.length && layersResults[0].data[0].features.length) {
-                      geometry = layersResults[0].data[0].features[0].getGeometry();
-                      const excludeLayers = [layersResults[0].data[0].layer];
-                      if (geometry) {
-                        const filter = new Filter();
-                        const layerFilterObject = {
-                          ALLNOTSELECTED: true,
-                          FILTERABLE: true,
-                          VISIBLE: true
-                        };
-                        const querymultilayers = this.project.isQueryMultiLayers(controlType);
-                        let filterGeometry = geometry;
-                        if (querymultilayers) {
-                        const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
-                          queriesPromise = getQueryLayersPromisesByGeometry(layers,
-                            {
-                              geometry,
-                              bbox:false,
-                              feature_count,
-                              projection: this.getProjection()
-                            }
-                          )
-                        } else {
-                          const d = $.Deferred();
-                          queriesPromise = d.promise();
-                          const layers = getMapLayersByFilter(layerFilterObject, condition);
-                          if (layers.length === 0) d.resolve([]);
-                          else {
-                            const queryResponses = [];
-                            const feature_count = this.project.getQueryFeatureCount();
-                            const mapCrs = this.getCrs();
-                            let layersLenght = layers.length;
-                            layers.forEach(layer=> {
-                              const layerCrs = layer.getProjection().getCode();
-                              if (mapCrs !== layerCrs) filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
-                              filter.setGeometry(filterGeometry);
-                              layer.query({
-                                filter,
-                                feature_count
-                              }).then((response) => {
-                                queryResponses.push(response)
-                              }).always(() => {
-                                layersLenght -= 1;
-                                if (layersLenght === 0) d.resolve(queryResponses)
-                              })
-                            });
-                          }
-                        }
-                      }
-                      queriesPromise
-                        .then(args => {
-                          layersResults = args;
-                          const results = {
-                            query: layersResults[0] ? layersResults[0].query : null,
-                            data: []
-                          };
-                          layersResults.forEach(result => (result.data) && result.data.forEach(data => results.data.push(data)));
-                          results.data.length && this.highlightGeometry(geometry);
-                          queryResultsPanel.setZoomToResults(false);
-                          queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
-                        })
-                        .fail((error) => {
-                        GUI.notify.error(t("info.server_error"));
-                        GUI.closeContent();
-                      })
-                        .always(() => {
-                        this.clearHighlightGeometry();
-                      });
-                    } else queryResultsPanel.setQueryResponse([]);
-                  })
-                  .fail(() => {
-                    GUI.notify.error(t("info.server_error"));
-                    GUI.closeContent();
-                  }).
-                  always(()=>{
-                    canRun = true;
-                  })
-                }, 800);
-              const showQueryResults = GUI.showContentFactory('query');
+              }, 800);
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
                 eventType: 'picked',
@@ -952,48 +1012,14 @@ proto._setupControls = function() {
               const runQuery = throttle(e => {
                 if (!canRun) return;
                 canRun = false;
-                let bbox = e.extent;
-                let filterBBox = bbox;
-                const center = ol.extent.getCenter(bbox);
-                this.getMap().getView().setCenter(center);
-                const layers = getMapLayersByFilter(layersFilterObject, condition);
-                let queriesPromise;
-                const querymultilayers = this.project.isQueryMultiLayers(controlType);
-                if (querymultilayers) {
-                  const layers = getMapLayersByFilter(layersFilterObject, condition);
-                  queriesPromise = getQueryLayersPromisesByGeometry(layers, {
-                    geometry: bbox,
-                    bbox: true,
-                    feature_count,
-                    projection: this.getProjection()
-                  })
-                } else {
-                  const d = $.Deferred();
-                  queriesPromise = d.promise();
-                  const queryResponses = [];
-                  const feature_count = this.project.getQueryFeatureCount();
-                  let layersLenght = layers.length;
-                  layers.forEach(layer => {
-                    const filter = new Filter();
-                    const mapCrs = this.getCrs();
-                    const layerCrs = layer.getProjection().getCode();
-                    if (mapCrs !== layerCrs) {
-                      const geometry = ol.geom.Polygon.fromExtent(bbox);
-                      filterBBox = geometry.transform(mapCrs, layerCrs).getExtent();
-                    }
-                    filter.setBBOX(filterBBox);
-                    layer.query({
-                      filter: filter,
-                      feature_count
-                    }).then(response => {
-                      queryResponses.push(response)
-                    }).always(() => {
-                      layersLenght -= 1;
-                      if (layersLenght === 0)
-                        d.resolve(queryResponses)
-                    })
-                  });
-                }
+                const bbox = e.extent;
+                const queriesPromise = this.runQueryBBOX({
+                  bbox,
+                  feature_count,
+                  layersFilterObject,
+                  condition,
+                  controlType
+                });
                 const showQueryResults = GUI.showContentFactory('query');
                 const queryResultsPanel = showQueryResults('');
                 queryResultsPanel.setZoomToResults(false);
@@ -1004,10 +1030,13 @@ proto._setupControls = function() {
                       query: layersResults[0] ? layersResults[0].query: null,
                       data: []
                     };
-                    layersResults.forEach((result) => {
-                      if (result.data)
-                        result.data.forEach(data => {results.data.push(data)});
+                    layersResults.forEach(result => {
+                      result.data && result.data.forEach(data => {results.data.push(data)});
                     });
+                    if (results.data.length) {
+                      const center = ol.extent.getCenter(bbox);
+                      this.getMap().getView().setCenter(center);
+                    }
                     queryResultsPanel.setQueryResponse(results, bbox, this.state.resolution);
                   })
                   .fail((error) => {

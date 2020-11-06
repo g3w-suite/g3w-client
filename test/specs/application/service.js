@@ -105,7 +105,6 @@ const getProjetsRegistry = async function(url) {
     await promise;
     return config;
   } catch(error) {
-    console.log(error)
     Promise.reject({
       error
     })

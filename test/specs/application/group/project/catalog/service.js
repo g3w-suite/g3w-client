@@ -6,9 +6,9 @@ export function getCatalogInfoTree(gid) {
     groups: [],
     layers: []
   };
-  const traverseLayerTrees = (nodes)=>{
+  const traverseLayerTrees = nodes=>{
     nodes.forEach(node => {
-      if(node.nodes) {
+      if (node.nodes) {
         info.groups.push(node);
         traverseLayerTrees(node.nodes)
       } else info.layers.push(node);
@@ -25,15 +25,13 @@ export function getLayersByType({layers=[], type}={}) {
       filterLayers = layers.filter(layer => !layer.geolayer);
       break;
     case 'geolayer':
-      filterLayers = layers.filter(layer => layer.geolayer);
-      break;
     case 'disabled':
     case 'visible':
     case 'checked':
       filterLayers = layers.filter(layer => layer[type]);
       break;
     case 'querable':
-      filterLayers = layers.filter(layer => layer.geolayer);
+      filterLayers = layers.filter(layer => layer.isQueryable());
       break;
     case 'filtrable':
       filterLayers = layers.filter(layer => {
