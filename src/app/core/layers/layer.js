@@ -412,7 +412,7 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  this.state.visible = !this.state.groupdisabled && this.state.checked && !this.isDisabled();
+  this.state.visible = this.isGeoLayer() ? !this.state.groupdisabled && this.state.checked && !this.isDisabled() : this.state.visible;
   return this.state.visible;
 };
 

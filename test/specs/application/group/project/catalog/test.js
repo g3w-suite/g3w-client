@@ -33,10 +33,10 @@ export default function TestCatalog({gid, testConfig={}}={}) {
       const count = testConfig.layers.count;
       expect(layers).to.be.length(count);
     })
-    // it(`Test catalog Layers visible`, () => {
-    //   const count = testConfig.layers.visible.count;
-    //   expect(visibleLayers).to.be.length(count);
-    // })
+    it(`Test catalog Layers visible`, () => {
+      const count = testConfig.layers.visible.count;
+      expect(visibleLayers).to.be.length(count);
+    })
     it(`Test catalog Layers disabled`, () => {
       const count = testConfig.layers.disabled.count;
       expect(disabledLayers).to.be.length(count);

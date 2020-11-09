@@ -34,7 +34,6 @@ export default function TestQuery ({mapcontrols=[], testConfig}={}) {
               const response = await promise;
               const results = geoutils.parseQueryLayersPromiseResponses(response);
               const {data=[]} = results;
-              expect(data).to.be.length(1);
               const layerResult = data.find(obj => obj.layer.getId() === id);
               expect(layerResult.features).to.be.length(count);
             })

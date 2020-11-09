@@ -597,12 +597,11 @@ proto._checkMapControls = function(){
   })
 };
 
-proto.runQueryByPolygon = function({coordinates, feature_count, condition={filtrable: {ows: 'WFS'}}, controlType='querybypolygon'}={}) {
+proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQueryFeatureCount(), condition={filtrable: {ows: 'WFS'}}, controlType='querybypolygon', querymultilayers=this.project.isQueryMultiLayers(controlType)}={}) {
   return new Promise((resolve, reject) =>{
     const map = this.getMap();
     const layersFilterObject = {QUERYABLE: true, SELECTED: true, VISIBLE: true};
     const layers = getMapLayersByFilter(layersFilterObject, condition);
-    feature_count = feature_count || this.project.getQueryFeatureCount();
     const queryResulsPromise = getQueryLayersPromisesByCoordinates(layers, {
       map,
       feature_count,
@@ -625,7 +624,6 @@ proto.runQueryByPolygon = function({coordinates, feature_count, condition={filtr
               FILTERABLE: true,
               VISIBLE: true
             };
-            const querymultilayers = this.project.isQueryMultiLayers(controlType);
             let filterGeometry = geometry;
             if (querymultilayers) {
               const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
@@ -682,11 +680,9 @@ proto.runQueryByPolygon = function({coordinates, feature_count, condition={filtr
   });
 };
 
-proto.runQueryBBOX = function({bbox, feature_count, controlType='querybbox', condition={filtrable: {ows: 'WFS'}}, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+proto.runQueryBBOX = function({bbox, feature_count=this.project.getQueryFeatureCount(), controlType='querybbox', querymultilayers=this.project.isQueryMultiLayers(controlType), condition={filtrable: {ows: 'WFS'}}, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     const layers = getMapLayersByFilter(layersFilterObject, condition);
     let queriesPromise;
-    const querymultilayers = this.project.isQueryMultiLayers(controlType);
-    feature_count = feature_count ||  this.project.getQueryFeatureCount();
     if (querymultilayers) {
       const layers = getMapLayersByFilter(layersFilterObject, condition);
       queriesPromise = getQueryLayersPromisesByGeometry(layers, {
@@ -725,15 +721,12 @@ proto.runQueryBBOX = function({bbox, feature_count, controlType='querybbox', con
     return queriesPromise;
 };
 
-proto.runQuery = function({map, coordinates, controlType='query', feature_count}={}){
-  map = map || this.getMap();
-  feature_count = feature_count || this.project.getQueryFeatureCount();
+proto.runQuery = function({map=this.getMap(), coordinates, controlType='query', querymultilayers=this.project.isQueryMultiLayers(controlType), feature_count=this.project.getQueryFeatureCount()}={}){
   const layersFilterObject = {
     QUERYABLE: true,
     SELECTEDORALL: true,
     VISIBLE: true
   };
-  const querymultilayers = this.project.isQueryMultiLayers(controlType);
   const layers = getMapLayersByFilter(layersFilterObject);
   const queryResultsPromise = getQueryLayersPromisesByCoordinates(layers, {
       map,
