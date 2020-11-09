@@ -1,7 +1,12 @@
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-export function getCatalogInfoTree(gid) {
-  const projectLayersStore = CatalogLayersStoresRegistry.getLayersStore(gid);
-  const layersTree = projectLayersStore.getLayersTree()[0];
+let CatalogLayersStores = null;
+
+export function init(gid) {
+  CatalogLayersStores = CatalogLayersStoresRegistry.getLayersStore(gid);
+}
+
+export function getCatalogInfoTree() {
+  const layersTree = CatalogLayersStores.getLayersTree()[0];
   const info = {
     groups: [],
     layers: []
@@ -17,6 +22,36 @@ export function getCatalogInfoTree(gid) {
   traverseLayerTrees(layersTree.nodes);
   return info;
 };
+
+export function getOpenAttributeLayers(){
+  return CatalogLayersStores.getLayers().filter(layer => {
+    return layer.canShowTable();
+  })
+};
+
+export function getDownloadableLayers(){
+  const download = {
+    csv:[],
+    gpx:[],
+    shp:[],
+    xls:[]
+  }
+  CatalogLayersStores.getLayers().forEach(layer => {
+    layer.isCsvDownlodable() && download.csv.push(layer);
+    layer.isShpDownlodable() && download.shp.push(layer);
+    layer.isGpxDownlodable() && download.gpx.push(layer);
+    layer.isXlsDownlodable() && download.xls.push(layer);
+  })
+  return download;
+}
+
+export function getDataTable(layer) {
+  return new Promise((resolve, reject) =>{
+    layer.getDataTable()
+      .then(response =>resolve(response))
+      .fail( err =>reject(err))
+  })
+}
 
 export function getLayersByType({layers=[], type}={}) {
   let filterLayers;
@@ -35,7 +70,7 @@ export function getLayersByType({layers=[], type}={}) {
       break;
     case 'filtrable':
       filterLayers = layers.filter(layer => {
-        return CatalogLayersStoresRegistry.getLayerById(layer.id).isFilterable({ows: 'WFS'});
+        return CatalogLayersStores.getLayerById(layer.id).isFilterable({ows: 'WFS'});
       });
       break;
     }
@@ -43,6 +78,10 @@ export function getLayersByType({layers=[], type}={}) {
 };
 
 export default {
+  init,
   getCatalogInfoTree,
-  getLayersByType
+  getLayersByType,
+  getOpenAttributeLayers,
+  getDataTable,
+  getDownloadableLayers
 }

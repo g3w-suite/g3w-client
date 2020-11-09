@@ -1,57 +1,115 @@
 import ServiceCatalog from './service';
 const {assert, expect} = require('chai');
 export default function TestCatalog({gid, testConfig={}}={}) {
-  const {layers, groups} = ServiceCatalog.getCatalogInfoTree(gid);
   describe(`#Catalog `, function() {
-   const visibleLayers = ServiceCatalog.getLayersByType({
-     layers,
-     type: 'visible'
-   });
-   const disabledLayers = ServiceCatalog.getLayersByType({
-     layers,
-     type: 'disabled'
-   });
-   const tableLayers = ServiceCatalog.getLayersByType({
-     layers,
-     type: 'table'
-   });
-   const geoSpatialLayers = ServiceCatalog.getLayersByType({
-     layers,
-     type: 'geolayer'
-   });
-   const filtrableLayers = ServiceCatalog.getLayersByType({
-     layers,
-     type: 'filtrable'
-   });
+    this.timeout(0);
+    ServiceCatalog.init(gid);
+    let layers, groups, visibleLayers, disabledLayers, tableLayers, geoSpatialLayers,
+      filtrableLayers, openAttributeTableLayers, downloadableLayers
+    before(function() {
+      const infoTree = ServiceCatalog.getCatalogInfoTree();
 
-   it(`Test catalog groups`, function() {
+      layers = infoTree.layers;
+      groups = infoTree.groups
+
+      visibleLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'visible'
+      });
+
+      disabledLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'disabled'
+      });
+
+      tableLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'table'
+      });
+
+      geoSpatialLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'geolayer'
+      });
+
+      filtrableLayers = ServiceCatalog.getLayersByType({
+        layers,
+        type: 'filtrable'
+      });
+
+      openAttributeTableLayers = ServiceCatalog.getOpenAttributeLayers();
+
+    })
+
+    it(`Test catalog groups`, function() {
      const count = testConfig.groups.count;
      expect(groups).to.be.length(count)
     })
 
-   it(`Test catalog Layers count`, () => {
+    it(`Test catalog Layers count`, () => {
       const count = testConfig.layers.count;
       expect(layers).to.be.length(count);
     })
+
     it(`Test catalog Layers visible`, () => {
       const count = testConfig.layers.visible.count;
       expect(visibleLayers).to.be.length(count);
     })
+
     it(`Test catalog Layers disabled`, () => {
       const count = testConfig.layers.disabled.count;
       expect(disabledLayers).to.be.length(count);
     })
+
     it(`Test catalog Layers table`, () => {
       const count = testConfig.layers.table.count;
       expect(tableLayers).to.be.length(count);
     })
+
     it(`Test catalog Layers geoSpatial`, () => {
       const count = testConfig.layers.geospatial.count;
       expect(geoSpatialLayers).to.be.length(count);
     })
+
     it(`Test catalog Layers filtrable`, () => {
       const count = testConfig.layers.filtrable.count;
       expect(filtrableLayers).to.be.length(count);
+    })
+
+    it(`Test catalog Layers open attribute table`, async () => {
+      const count = testConfig.openattributetable.count;
+      const promises = []
+      expect(openAttributeTableLayers).to.be.length(count);
+      openAttributeTableLayers.forEach(layer =>{
+        promises.push(ServiceCatalog.getDataTable(layer))
+      })
+      try {
+        const responses = await Promise.all(promises);
+        expect(responses).to.be.length(count);
+      } catch (e) {
+        assert.fail();
+      }
+    })
+
+    describe('Download formats', ()=>{
+      const downloadableLayers = ServiceCatalog.getDownloadableLayers();
+      const {csv, shp, gpx, xls} = downloadableLayers;
+      it('CSV', async ()=>{
+
+      })
+
+      it('SHP', async()=>{
+
+      })
+
+      it('GPX', async()=>{
+
+      })
+
+      it('XLS', async()=>{
+
+      })
+
     })
   })
 }

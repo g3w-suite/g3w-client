@@ -185,7 +185,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
     if (this.state.openattributetable) {
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
-        .done((response) => {
+        .done(response => {
           const data = response.data;
           const count = response.count;
           const title = this.getTitle();
@@ -200,9 +200,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           };
           d.resolve(dataTableObject)
         })
-        .fail((err) => {
-          d.reject(err)
-        })
+        .fail(err => d.reject(err))
     } else if (this.isFilterable()) {
       provider = this.getProvider('filter');
       const filter = new Filter();
@@ -210,7 +208,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       provider.query({
         filter
       })
-        .done((response) => {
+        .done(response => {
           const data = provider.digestFeaturesForLayers(response.data);
           const dataTableObject = {
             headers: data[0].attributes,
@@ -219,12 +217,9 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
           };
           d.resolve(dataTableObject)
         })
-        .fail((err) => {
-          d.reject(err)
-        })
-    } else {
+        .fail(err => d.reject(err))
+    } else
       d.reject()
-    }
   }
   return d.promise();
 };
@@ -323,19 +318,19 @@ proto.getSourceType = function() {
 };
 
 proto.isShpDownlodable = function() {
-  return this.config.download;
+  return !this.isBaseLayer() && this.config.download;
 };
 
 proto.isXlsDownlodable = function(){
-  return this.config.download_xls;
+  return !this.isBaseLayer() && this.config.download_xls;
 };
 
 proto.isGpxDownlodable = function(){
-  return this.config.download_gpx;
+  return !this.isBaseLayer() && this.config.download_gpx;
 };
 
 proto.isCsvDownlodable = function(){
-  return this.config.download_csv;
+  return !this.isBaseLayer() && this.config.download_csv;
 };
 
 proto.getEditingLayer = function() {

@@ -77,7 +77,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         search: searchText,
         formatter: this.formatter,
         ordering
-      }).then((data) => {
+      }).then(data => {
         let features = data.features;
         this.addFeatures(features);
         this.state.pagination = !!data.count;
