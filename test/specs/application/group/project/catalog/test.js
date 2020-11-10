@@ -5,7 +5,7 @@ export default function TestCatalog({gid, testConfig={}}={}) {
     this.timeout(0);
     ServiceCatalog.init(gid);
     let layers, groups, visibleLayers, disabledLayers, tableLayers, geoSpatialLayers,
-      filtrableLayers, openAttributeTableLayers, downloadableLayers
+      filtrableLayers, openAttributeTableLayers
     before(function() {
       const infoTree = ServiceCatalog.getCatalogInfoTree();
 
@@ -94,22 +94,20 @@ export default function TestCatalog({gid, testConfig={}}={}) {
     describe('Download formats', ()=>{
       const downloadableLayers = ServiceCatalog.getDownloadableLayers();
       const {csv, shp, gpx, xls} = downloadableLayers;
-      it('CSV', async ()=>{
-
+      Object.keys(downloadableLayers).forEach(type => {
+        it(`${type.toUpperCase()}`, async ()=>{
+          const count = testConfig.download[type] ? testConfig.download[type].count : 0;
+          if (count > 0) {
+            const promises = [];
+            expect(downloadableLayers[type]).to.be.length(count);
+            downloadableLayers[type].forEach(layer => {
+              promises.push(layer[`get${type.charAt(0).toUpperCase()}${type.slice(1)}`]())
+            })
+            const responses = await Promise.all(promises);
+            expect(responses).to.be.length(count);
+          } else assert.isOk(`${type.toUpperCase()}`, 'skipped')
+        })
       })
-
-      it('SHP', async()=>{
-
-      })
-
-      it('GPX', async()=>{
-
-      })
-
-      it('XLS', async()=>{
-
-      })
-
     })
   })
 }

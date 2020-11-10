@@ -32,6 +32,12 @@ module.exports = {
   },
   proxyRes: function(proxyRes, req, res) {
     const {url, method, headers} = req;
+    const contentDisposition = proxyRes.headers['content-disposition'];
+    if (contentDisposition) {
+      const fileName = contentDisposition.split('filename=')
+      if (proxyRes.statusCode == 200)
+        return proxyRes
+    }
     if (req.method == 'GET') {
       const set_cookie = proxyRes.headers['set-cookie'];
       if (set_cookie) res.writeHead(200, {'csrftoken': set_cookie[0].split(';')[0].split('csrftoken=')[1] })

@@ -26,7 +26,7 @@ function PrintComponentService() {
   this._scalesResolutions = {};
   this.init = function(){
     this._project = ProjectsRegistry.getCurrentProject();
-    this.state.print = this._project.state.print || [];
+    this.state.print = this._project.getPrint() || [];
     this.state.visible = this.state.print.length > 0;
     this.state.isShow = false;
     this.state.url = null;
