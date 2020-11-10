@@ -18,32 +18,32 @@ export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={})
       assert.instanceOf(project, Project);
     });
     it('hook for sub projects test to wait before async ', function() {
-      if (Object.keys(testConfig.layers).length)
+      if (testConfig.layers && Object.keys(testConfig.layers).length)
         TestLayers({
           layers: project.getLayers(),
           testConfig: testConfig.layers
         });
-      if (Object.keys(testConfig.relations).length)
+      if (testConfig.relations && Object.keys(testConfig.relations).length)
         TestRelations({
           relations: project.getRelations(),
           testConfig: testConfig.relations
         });
-      if (Object.keys(testConfig.queries).length)
+      if (testConfig.queries && Object.keys(testConfig.queries).length)
         TestQuery({
           testConfig: testConfig.queries,
           mapcontrols
         })
-      if (Object.keys(testConfig.searches).length)
+      if (testConfig.searches && Object.keys(testConfig.searches).length)
         TestSearches({
           searches: project.getSearches(),
           testConfig: testConfig.searches,
         })
-      if (Object.keys(testConfig.catalog).length)
+      if (testConfig.catalog && Object.keys(testConfig.catalog).length)
         TestCatalog({
           gid,
           testConfig: testConfig.catalog,
         })
-      if (Object.keys(testConfig.print).length)
+      if (testConfig.print && Object.keys(testConfig.print).length)
         TestPrint({
           print: project.getPrint(),
           testConfig: testConfig.print,

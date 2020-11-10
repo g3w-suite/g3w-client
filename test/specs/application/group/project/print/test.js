@@ -13,7 +13,8 @@ export default function TestSearches({print=[], testConfig={}}={}) {
     templates.forEach((template => {
       it(`Print template ${template.name}`, async() => {
         try {
-          const response = await printService.doPrint(template)
+          const { atlas } = print.find(print => print.name === template.template);
+          const response = await printService.doPrint(template, atlas)
           assert.isOk(true);
         } catch (e) {
           assert.fail();
