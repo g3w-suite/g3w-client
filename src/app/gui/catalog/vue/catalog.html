@@ -55,7 +55,7 @@
       :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li class="title">
       <div>{{ layerMenu.layer.title}}</div>
-      <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id)}}</div>
+      <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
 
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">

@@ -2321,6 +2321,8 @@ proto.addExternalLayer = async function(externalLayer, download) {
   const layer = this.getLayerByName(name);
   const loadExternalLayer = (layer) => {
     if (layer) {
+      const features = layer.getSource().getFeatures();
+      if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
       const extent = layer.getSource().getExtent();
       externalLayer.bbox = {
         minx: extent[0],

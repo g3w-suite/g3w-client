@@ -141,10 +141,17 @@ const vueComponentOptions = {
       }
       return canZoom;
     },
-    getGeometryType(layerId){
-      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      const geometryType = originalLayer.config.geometrytype;
-      return geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
+    getGeometryType(layerId, external){
+      let geometryType;
+      if (external){
+        const layer = this.state.externallayers.find(layer => layer.id === layerId);
+        geometryType = layer.geometryType;
+      } else {
+        const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+        geometryType = originalLayer.config.geometrytype;
+        geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
+      }
+      return geometryType;
     },
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
