@@ -9,6 +9,7 @@ const Projections = {
       crs,
       extent
     });
+    ol.proj.addProjection(projection);
     ADDEDPROJECTIONS.push(crs.epsg);
     return projection;
   },

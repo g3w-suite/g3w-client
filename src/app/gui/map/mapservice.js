@@ -43,6 +43,7 @@ function MapService(options={}) {
   this._mapControls = [];
   this._changeMapMapControls = [];
   this._mapLayers = [];
+  this._externalLayers = [];
   this.mapBaseLayers = {};
   this.layersExtraParams = {};
   this.state = {
@@ -1816,7 +1817,7 @@ proto._setupVectorLayers = function() {
 
 proto.removeLayers = function() {
   this._removeMapLayers();
-  //this.viewer.removeLayers();
+  this.removeExternalLayers()
 };
 
 proto.removeAllLayers = function(){
@@ -2272,6 +2273,14 @@ proto.stopDrawGreyCover = function() {
   map.render();
 };
 
+proto.removeExternalLayers = function(){
+  this._externalLayers.forEach(layer =>{
+    const name = layer.get('name');
+    this.removeExternalLayer(name);
+  });
+  this._externalLayers = [];
+};
+
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
   const catalogService = GUI.getComponent('catalog').getService();
@@ -2319,7 +2328,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = (layer) => {
+  const loadExternalLayer = layer => {
     if (layer) {
       const features = layer.getSource().getFeatures();
       if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
@@ -2332,6 +2341,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
       };
       externalLayer.checked = true;
       map.addLayer(layer);
+      this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
       catalogService.addExternalLayer(externalLayer);
       map.getView().fit(extent);

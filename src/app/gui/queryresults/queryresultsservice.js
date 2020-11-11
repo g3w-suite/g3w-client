@@ -418,22 +418,21 @@ proto.triggerLayerAction = function(action,layer,feature) {
 };
 
 proto.registerVectorLayer = function(vectorLayer) {
-  if (this._vectorLayers.indexOf(vectorLayer) === -1) {
-    this._vectorLayers.push(vectorLayer);
-  }
+  (this._vectorLayers.indexOf(vectorLayer) === -1) && this._vectorLayers.push(vectorLayer);
 };
 
 proto.unregisterVectorLayer = function(vectorLayer) {
-  const vectorId = vectorLayer.get('id');
-  this._vectorLayers = this._vectorLayers.filter(layer => layer === vectorLayer);
-  this.state.layers = this.state.layers.filter(layer => layer.id !== vectorId);
+  this._vectorLayers = this._vectorLayers.filter(layer => {
+    this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== vectorLayer.get('id'));
+    return layer !== vectorLayer;
+  });
 };
 
 proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, coordinates, resolution) => {
     const mapService = ComponentsRegistry.getComponent('map').getService();
     let isVisible = false;
-    this._vectorLayers.forEach((vectorLayer) => {
+    this._vectorLayers.forEach(vectorLayer => {
       let features = [];
       let feature,
         intersectGeom;

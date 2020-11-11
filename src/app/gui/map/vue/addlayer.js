@@ -16,23 +16,21 @@ const EPSG = [
 
 //Vue color componet
 const ChromeComponent = VueColor.Chrome;
-ChromeComponent.mounted =  function() {
-  this.$nextTick(function() {
-    // remove all the tihing that aren't useful
-    $('.vue-color__chrome__toggle-btn').remove();
-    $('.vue-color__editable-input__label').remove();
-    $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
-    $('.vue-color__chrome').css({
-      'box-shadow': '0 0 0 0',
-      'border': '1px solid #97A1A8'
-    });
+ChromeComponent.mounted = async function() {
+  await this.$nextTick();    // remove all the tihing that aren't useful
+  $('.vue-color__chrome__toggle-btn').remove();
+  $('.vue-color__editable-input__label').remove();
+  $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
+  $('.vue-color__chrome').css({
+    'box-shadow': '0 0 0 0',
+    'border': '1px solid #97A1A8'
   });
 };
 
 const AddLayerComponent = {
   template: require('./addlayer.html'),
   props: ['service'],
-  data: function() {
+  data() {
     return {
       options: EPSG,
       error: false,
@@ -72,10 +70,10 @@ const AddLayerComponent = {
       this.error = false;
       this.error_message = null;
     },
-    onChangeColor: function(val) {
+    onChangeColor(val) {
       this.layer.color = val;
     },
-    onAddLayer: function(evt) {
+    onAddLayer(evt) {
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
@@ -99,7 +97,7 @@ const AddLayerComponent = {
         }
       } else this.setError('unsupported_format');
     },
-    addLayer: function() {
+    addLayer() {
       if (this.layer.name) {
         this.loading = true;
         const layer = _.cloneDeep(this.layer);
@@ -116,7 +114,7 @@ const AddLayerComponent = {
           })
       }
     },
-    clearLayer: function() {
+    clearLayer() {
       this.clearError();
       this.loading = false;
       this.layer.name = null;
@@ -137,14 +135,23 @@ const AddLayerComponent = {
       this.layer.data = null;
     }
   },
-  created: function() {
+  created() {
     this.layer.crs = this.service.getCrs();
     this.service.on('addexternallayer', () => {
-      $('#modal-addlayer').modal('show');
+      this.modal.modal('show');
+    });
+  },
+  async mounted(){
+    await this.$nextTick();
+    this.modal =  $('#modal-addlayer').modal('hide');
+    this.modal.on('hidden.bs.modal',  () => {
+      this.clearLayer();
     });
   },
   beforeDestroy() {
-    this.clearLayer()
+    this.clearLayer();
+    this.modal.modal('hide');
+    this.modal.remove();
   }
 };
 
