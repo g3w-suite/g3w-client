@@ -475,22 +475,25 @@ const ApplicationTemplate = function({ApplicationService}) {
     /* ------------------ */
 
     GUI.notify = {
-      warning(message){
+      warning(message, autoclose=false){
         GUI.showUserMessage({
           type: 'warning',
-          message
+          message,
+          autoclose
         })
       },
-      error(message){
+      error(message, autoclose=false){
         GUI.showUserMessage({
           type: 'alert',
-          message
+          message,
+          autoclose
         })
       },
-      info(message){
+      info(message, autoclose=false){
         GUI.showUserMessage(({
           type: 'info',
-          message
+          message,
+          autoclose
         }))
       },
       success(message){

@@ -106,7 +106,7 @@ function MapService(options={}) {
 
   this._mapLayerLoadError = () => {
     if (!this._layersLoadingError) {
-      GUI.notify.warning(t('sdk.errors.layers.load'));
+      GUI.notify.warning('sdk.errors.layers.load');
       this._layersLoadingError = true;
     }
     this._decrementLoaders();
@@ -2415,9 +2415,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
         return loadExternalLayer(vectorLayer);
         break;
     }
-  } else {
-    GUI.notify.info(t("layer_is_added"));
-  }
+  } else GUI.notify.warning("layer_is_added", true);
 };
 
 proto.setExternalLayerStyle = function(color) {
