@@ -239,6 +239,9 @@
 .box-body {
   .border-radius(0; 0; @box-border-radius; @box-border-radius);
   padding: @box-padding;
+  &.mobile {
+    padding: 5px;
+  }
   .no-header & {
     .border-top-radius(@box-border-radius);
   }

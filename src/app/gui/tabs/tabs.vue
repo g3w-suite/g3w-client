@@ -2,7 +2,7 @@
   <div class="tabs-wrapper">
     <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
-        <a data-toggle="tab" :href="'#'+ ids[index]" :style="{fontSize: isMobile() ? '1.0em': '1.2em'}">{{tab.name}}</a>
+        <a data-toggle="tab" :href="'#'+ ids[index]" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1.0em': '1.2em'}">{{tab.name}}</a>
       </li>
     </ul>
     <div class="tab-content">
@@ -83,5 +83,8 @@
   }
   .tab-content {
     margin-top: 10px;
+  }
+  .nav-tabs > li > a.mobile {
+    padding: 5px 10px;
   }
 </style>

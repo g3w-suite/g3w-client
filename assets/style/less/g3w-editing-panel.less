@@ -2,10 +2,32 @@
   margin-bottom: 50px;
   .panel {
     border: 0 !important;
+    &.mobile {
+      margin-bottom: 5px;
+      .panel-heading {
+        display: flex;
+        justify-content: space-between;
+        .panel-title {
+          margin-top: auto;
+          margin-bottom: auto;
+        }
+        .start-editing {
+          margin:auto;
+          margin-right: 0;
+          padding: 6px;
+        }
+      }
+      .toolbox {
+        .panel-body {
+          padding: 5px !important;
+        }
+      }
+    }
   }
   .panel-heading {
-    padding: 5px 10px 5px 10px
+    padding: 5px 10px 5px 10px;
   }
+
 
   .toolbox .dropdown-content {
     display: none;

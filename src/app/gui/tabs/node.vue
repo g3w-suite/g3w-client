@@ -1,8 +1,8 @@
 <template>
   <div class="tab-node group">
-    <h5 class="title group-title" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="row">
-      <div v-for="column in columnNumber" :class="columnClass">
+    <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
+    <div v-for="row in rows" class="row" :class="{'mobile': isMobile()}">
+      <div v-for="column in columnNumber" :class="columnClass" >
         <template v-if="getNode(row, column)">
           <component v-if="getNodeType(getNode(row, column)) === 'field'"
             :state="getField(getNode(row, column))"
@@ -112,7 +112,7 @@
         return rowCount;
       },
       columnClass() {
-        return COLUMNCLASSES[this.columnNumber];
+        return `${COLUMNCLASSES[this.columnNumber]} ${this.isMobile() ? 'mobile' : ''}` ;
       },
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) ?  parseInt(this.node.columncount): 1;
@@ -188,8 +188,20 @@
     padding: 5px;
     border-radius: 2px;
   }
+  .group-title.mobile {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
   .row {
     margin-bottom: 5px;
+  }
+
+  .row.mobile{
+    margin-bottom: 0 !important;
+  }
+
+  .row div.mobile {
+    padding-right: 0 !important;
   }
 
 </style>

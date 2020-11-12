@@ -160,6 +160,7 @@
       .contents {
         height: 100%;
         padding-left: 0;
+        padding-right: 0;
         .content-header-component {
           margin-top: 5px;
           font-weight: bold;
@@ -192,6 +193,10 @@
         margin-top: 10px;
         margin-bottom: 10px;
         font-size: 1em;
+        &.mobile {
+          margin-bottom: 5px;
+          margin-top: 5px;
+        }
       }
       span {
         i.panel-button {
@@ -210,6 +215,9 @@
           -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           -o-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           border-radius: 30%;
+          &.mobile {
+            margin-top: 3px;
+          }
         }
       }
     }

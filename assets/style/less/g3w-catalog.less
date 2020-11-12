@@ -262,6 +262,10 @@ Licensed under MIT
     grid-template-columns: repeat(2, 160px);
     grid-gap: 5px;
     padding: 0;
+    margin: 5px;
+    &.mobile{
+      grid-template-columns: repeat(auto-fill, minmax(80px, 110px));
+    }
     .baseselayer-text {
       white-space: pre-line;
       font-weight: bold;

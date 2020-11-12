@@ -39,11 +39,11 @@
           <span v-t="previousTitle"></span>
         </div>
       </div>
-      <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;" class="g3w-span-button fa-stack fa-lg pull-right">
+      <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;"  :class="{'mobile': isMobile()}" class="g3w-span-button fa-stack fa-lg pull-right">
         <i :class="g3wtemplate.getFontClass('circle')"  class="fa-stack-2x panel-button"></i>
         <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
       </span>
-      <div class="panel-title" v-if="!previousTitle && showtitle && contentTitle">
+      <div class="panel-title" v-if="!previousTitle && showtitle && contentTitle" :class="{'mobile': isMobile()}">
         <span id="contenttitle" v-t:pre="contentTitle.title"><span v-t="contentTitle.post_title"></span></span>
       </div>
     </div>

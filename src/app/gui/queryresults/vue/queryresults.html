@@ -5,7 +5,7 @@
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
         <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
           <div class="box box-primary">
-            <div class="box-header with-border" data-widget="collapse">
+            <div class="box-header with-border"  :class="{'mobile': isMobile()}" data-widget="collapse">
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
@@ -35,9 +35,9 @@
               </div>
               <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>
             </div>
-            <div class="box-body">
+            <div class="box-body" :class="{'mobile': isMobile()}">
               <template v-if="hasFormStructure(layer)">
-                <table class="table">
+                <table class="table" :class="{'mobile': isMobile()}">
                   <thead>
                     <tr>
                       <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length * 30}px`, maxWidth:  `${state.layersactions[layer.id].length * 30}px`}"></th>
@@ -89,7 +89,7 @@
                   </tbody>
                 </table>
               </template>
-              <table v-else class="table">
+              <table v-else class="table" :class="{'mobile': isMobile()}">
                 <thead>
                   <tr>
                     <th v-if="state.layersactions[layer.id].length" :style="{width: `${state.layersactions[layer.id].length * 30}px`, maxWidth:  `${state.layersactions[layer.id].length * 30}px`}"></th>

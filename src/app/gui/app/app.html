@@ -6,20 +6,18 @@
       <div class="container-fluid">
         <div class="navbar-header">
           <button ref='navbar_toggle' type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
+            <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('ellips-v')"></i>
           </button>
           <!-- Toggle button on navbar only for mobile -->
           <a v-if="isMobile()" href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-            <i :class="g3wtemplate.getFontClass('bars')"></i>
+            <i style="font-size: 1.3em;" :class="g3wtemplate.getFontClass('bars')"></i>
           </a>
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
             <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
               <img ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
-              <div class="main_title">{{ main_title }}</div>
+              <div  v-if="!isMobile()" class="main_title">{{ main_title }}</div>
               <div class="sub_title">{{project_title}}</div>
             </div>
           </div>
