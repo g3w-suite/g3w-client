@@ -324,6 +324,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     else mapService.stopDrawGreyCover();
   };
 
+  this._isSidebarVisible = function() {
+    return !$('body').hasClass('sidebar-collapse');
+  };
+
   this._showSidebar = function() {
     $('body').addClass('sidebar-open');
     $('body').removeClass('sidebar-collapse')
@@ -540,6 +544,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     // SIDEBAR //
     GUI.showSidebar = this._showSidebar.bind(this);
     GUI.hideSidebar = this._hideSidebar.bind(this);
+    GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
 
     // RELOAD COMPONENTS
     GUI.reloadComponents = function(){

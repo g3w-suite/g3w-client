@@ -426,6 +426,10 @@ proto.getProjection = function() {
   return this.project.getProjection();
 };
 
+proto.isMapHidden = function(){
+  return this.state.hidden;
+};
+
 proto.isAxisOrientationInverted = function() {
   return this.getProjection().getAxisOrientation() === 'neu' ? true : false;
 };
@@ -1919,6 +1923,7 @@ proto.addInteraction = function(interaction, close) {
 };
 
 proto.removeInteraction = function(interaction) {
+  interaction && interaction.setActive(false);
   this.viewer.map.removeInteraction(interaction);
 };
 
@@ -2116,6 +2121,7 @@ proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
     this.setupControls();
+    this.setHidden((width === 0 || height === 0));
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();
@@ -2123,7 +2129,7 @@ proto.layout = function({width, height}) {
       hidemap.map.updateSize()
     });
     this._updateMapView();
-    this._updateMapControlsLayout({width, height})
+    this._updateMapControlsLayout({width, height});
   }
 };
 

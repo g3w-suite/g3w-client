@@ -1,3 +1,4 @@
+import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
 const {throttle, debounce} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -218,7 +219,7 @@ const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
     resize() {
-      this.select2 && this.select2.select2('close');
+      this.select2 && !ApplicationState.ismobile && this.select2.select2('close');
     }
   },
   beforeDestroy() {

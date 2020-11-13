@@ -200,8 +200,5 @@
     margin-bottom: 0 !important;
   }
 
-  .row div.mobile {
-    padding-right: 0 !important;
-  }
 
 </style>

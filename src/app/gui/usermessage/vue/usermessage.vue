@@ -1,5 +1,5 @@
 <template>
-  <div class="usermessage-content" :style="style">
+  <div class="usermessage-content" :style="style" :class="{'mobile': addClassMobile()}">
     <div class="usermessage-header-content">
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
@@ -22,6 +22,7 @@
 </template>
 
 <script>
+  const GUI = require('gui/gui');
   const COLORS = {
     success: {
       backgroundColor: '#62ac62',
@@ -85,6 +86,10 @@
       }
     },
     methods: {
+      addClassMobile(){
+        console.log(this.isMobile() && !GUI.isSidebarVisible())
+        return this.isMobile() && !GUI.isSidebarVisible();
+      },
       closeUserMessage(){
         this.$emit('close-usermessage')
       },
@@ -159,6 +164,11 @@
     -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
   }
 
+  .usermessage-content.mobile {
+    padding: 0;
+    min-width: 100%;
+  }
+
   .usermessage-header-content {
     display: flex;
     align-items: baseline;
@@ -172,8 +182,17 @@
     font-size: 1.3em;
   }
 
+  .usermessage-content.mobile .usermessage-header-icontype {
+    padding: 0 0 0 5px;
+    font-size: 1.1em;
+  }
+
  .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
+  }
+
+  .usermessage-content.mobile  .usermessage-header-title h4 {
+    margin: 3px;
   }
 
  .usermessage-header-right {

@@ -1,3 +1,4 @@
+import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
 module.exports = function({steps={}}={}) {
   return {
@@ -25,7 +26,8 @@ module.exports = function({steps={}}={}) {
         style: {
           alignSelf: 'flex-start',
           listStyle: 'none',
-          padding: '10px !important'
+          padding: `${ApplicationState.ismobile ? 5 : 10}px !important`,
+          marginBottom: 0
         }
       }, Object.values(this.steps).map((step, index) => {
         const state = {
@@ -36,7 +38,7 @@ module.exports = function({steps={}}={}) {
         return h('li',
           {
             style: {
-              fontWeight: !step.done && index === this.currentStep && 'bold' || null,
+              fontWeight: (step.done || !step.done && index === this.currentStep) && 'bold' || null,
               marginBottom: '5px',
               color: step.done && "green"
             }
@@ -44,6 +46,7 @@ module.exports = function({steps={}}={}) {
           [h('i', {
             style: {
               marginRight: '5px',
+              fontWeight: step.done && 'bold'
             },
             class: {
               [GUI.getFontClass('arrow-right')]: state.current,
