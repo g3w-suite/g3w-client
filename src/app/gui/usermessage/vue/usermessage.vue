@@ -87,7 +87,6 @@
     },
     methods: {
       addClassMobile(){
-        console.log(this.isMobile() && !GUI.isSidebarVisible())
         return this.isMobile() && !GUI.isSidebarVisible();
       },
       closeUserMessage(){
