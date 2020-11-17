@@ -19,6 +19,7 @@ function QueryResultsService() {
   ProjectsRegistry.onafter('setCurrentProject', project => {
     this._setRelations(project);
     this._setAtlasActions(project);
+    this.state.download_data = false;
   });
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
@@ -31,6 +32,7 @@ function QueryResultsService() {
   // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
   this.state = {
+    download_data: false,
     zoomToResult: true,
     components: []
   };
@@ -59,7 +61,9 @@ function QueryResultsService() {
     },
     addActionsForLayers: function(actions) {},
     postRender: function(element) {},
-    closeComponent: function() {}
+    closeComponent: function() {
+      this.state.download_data = false;
+    }
   };
   base(this);
   this._setRelations(project);
@@ -564,11 +568,13 @@ proto.printAtlas = function(layer, feature){
 };
 
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
+  if (this.state.download_data) return;
   const data = {};
   features = features ?  Array.isArray(features) ? features : [features]: features;
   data.fids = features.map(feature => feature.attributes['g3w_fid']).join(',');
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   let promise = Promise.resolve();
+  this.state.download_data = true;
   GUI.setLoadingContent(true);
   switch(type) {
     case 'shapefile':
@@ -587,6 +593,7 @@ proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
   promise.catch((err) => {
     GUI.notify.error(t("info.server_error"));
   }).finally(()=>{
+    this.state.download_data = false;
     GUI.setLoadingContent(false);
   })
 };
@@ -605,7 +612,7 @@ proto.downloadGpx = function({id:layerId}={}, feature){
 proto.downloadXls = function({id:layerId}={}, feature){
   const fid = feature ? feature.attributes['g3w_fid'] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  layer.getXls({fid}).catch((err) => {
+  layer.getXls({fid}).catch(err => {
     GUI.notify.error(t("info.server_error"));
   }).finally(() => {
     this.layerMenu.loading.shp = false;

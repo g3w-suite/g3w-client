@@ -141,12 +141,11 @@ const vueComponentOptions = {
       }
       return canZoom;
     },
-    getGeometryType(layerId, external){
+    getGeometryType(layerId){
       let geometryType;
-      if (external){
-        const layer = this.state.externallayers.find(layer => layer.id === layerId);
-        geometryType = layer.geometryType;
-      } else {
+      const layer = this.state.externallayers.find(layer => layer.id === layerId);
+      if (layer) geometryType = layer.geometryType;
+      else {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         geometryType = originalLayer.config.geometrytype;
         geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
