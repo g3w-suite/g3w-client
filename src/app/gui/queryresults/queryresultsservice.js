@@ -1,3 +1,4 @@
+const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
@@ -32,7 +33,6 @@ function QueryResultsService() {
   // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
   this.state = {
-    download_data: false,
     zoomToResult: true,
     components: []
   };
@@ -61,9 +61,7 @@ function QueryResultsService() {
     },
     addActionsForLayers: function(actions) {},
     postRender: function(element) {},
-    closeComponent: function() {
-      this.state.download_data = false;
-    }
+    closeComponent: function() {}
   };
   base(this);
   this._setRelations(project);
@@ -349,6 +347,7 @@ proto.setActionsForLayers = function(layers) {
     if (layer.hasgeometry)
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
+        download: false,
         class: GUI.getFontClass('marker'),
         hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
         cbk: this.goToGeometry.bind(this)
@@ -360,6 +359,7 @@ proto.setActionsForLayers = function(layers) {
       });
       relations && relations.length && this.state.layersactions[layer.id].push({
         id: 'show-query-relations',
+        download: false,
         class: GUI.getFontClass('relation'),
         hint: 'sdk.mapcontrols.query.actions.relations.hint',
         cbk: QueryResultsService.showQueryRelations,
@@ -369,6 +369,7 @@ proto.setActionsForLayers = function(layers) {
     DOWNLOAD_FEATURE_FORMATS.forEach(format => {
       layer.download[format] && this.state.layersactions[layer.id].push({
         id: `download_${format}_feature`,
+        download: true,
         class: GUI.getFontClass(format),
         hint: `sdk.tooltips.download_${format}`,
         cbk: this.downloadFeatures.bind(this, format)
@@ -376,6 +377,7 @@ proto.setActionsForLayers = function(layers) {
     });
     this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
       id: `printatlas`,
+      download: true,
       class: GUI.getFontClass('print'),
       hint: `sdk.tooltips.atlas`,
       cbk: this.printAtlas.bind(this)
@@ -568,13 +570,12 @@ proto.printAtlas = function(layer, feature){
 };
 
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
-  if (this.state.download_data) return;
   const data = {};
   features = features ?  Array.isArray(features) ? features : [features]: features;
   data.fids = features.map(feature => feature.attributes['g3w_fid']).join(',');
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   let promise = Promise.resolve();
-  this.state.download_data = true;
+  const download_caller_id = ApplicationService.setDownload(true);
   GUI.setLoadingContent(true);
   switch(type) {
     case 'shapefile':
@@ -593,7 +594,7 @@ proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
   promise.catch((err) => {
     GUI.notify.error(t("info.server_error"));
   }).finally(()=>{
-    this.state.download_data = false;
+    ApplicationService.setDownload(false, download_caller_id);
     GUI.setLoadingContent(false);
   })
 };

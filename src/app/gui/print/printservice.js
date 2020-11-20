@@ -1,4 +1,5 @@
 const { base, inherit, downloadFile} = require('core/utils/utils');
+const ApplicationService = require('core/applicationservice');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -123,45 +124,57 @@ proto.setPrintAreaAfterCloseContent = function() {
 };
 
 proto.print = function() {
-  if (this.state.atlas) {
-    this.state.loading = true;
-    this.printService.printAtlas({
-      template: this.state.template,
-      field: this.state.atlas.field_name || '$id',
-      values: this.state.atlasValues,
-      download: true
-    }).then(({url}) => {
-      downloadFile({
-        url,
-        filename: this.state.template,
-        mime_type: 'application/pdf'
-      }).catch(()=> {
-        this.showError();
-      }).finally(() =>{
-        this.state.loading = false;
+  const caller_download_id = ApplicationService.setDownload(true);
+  return new Promise((resolve, reject) => {
+    if (this.state.atlas) {
+      this.state.loading = true;
+      this.printService.printAtlas({
+        template: this.state.template,
+        field: this.state.atlas.field_name || '$id',
+        values: this.state.atlasValues,
+        download: true
+      }).then(({url}) => {
+        downloadFile({
+          url,
+          filename: this.state.template,
+          mime_type: 'application/pdf'
+        }).then(()=>{
+          resolve();
+        }).catch(()=> {
+          this.showError();
+          reject();
+        }).finally(() =>{
+          this.state.loading = false;
+          ApplicationService.setDownload(false, caller_download_id);
+        })
       })
-    })
-  } else {
-    this.state.output.url = null;
-    this.state.output.layers = true;
-    this._page = new PrintPage({
-      service: this
-    });
-    GUI.setContent({
-      content: this._page,
-      title: 'print',
-      perc: 100
-    });
-    const options = this._getOptionsPrint();
-    this.printService.print(options, method=this.state.output.method)
-      .then(data => {
-        this.state.output.url = data.url;
-        this.state.output.layers = data.layers;
-        this.state.output.mime_type = data.mime_type;
-      }).catch(()=> {
-      this.showError();
-    })
-  }
+    } else {
+      this.state.output.url = null;
+      this.state.output.layers = true;
+      this._page = new PrintPage({
+        service: this
+      });
+      GUI.setContent({
+        content: this._page,
+        title: 'print',
+        perc: 100
+      });
+      const options = this._getOptionsPrint();
+      this.printService.print(options, method=this.state.output.method)
+        .then(data => {
+          this.state.output.url = data.url;
+          this.state.output.layers = data.layers;
+          this.state.output.mime_type = data.mime_type;
+          resolve();
+        })
+        .catch(err=> {
+          this.showError();
+          reject(err);
+        })
+        .finally(()=>ApplicationService.setDownload(false, caller_download_id))
+    }
+  })
+
 };
 
 proto.startLoading = function() {

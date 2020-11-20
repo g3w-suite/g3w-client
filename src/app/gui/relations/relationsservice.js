@@ -20,7 +20,8 @@ proto.getRelations = function(options={}) {
 
 proto.saveRelations = function(type){
   this._options.type = type;
-  return RelationsService.save(this._options);
+  const caller_download_id = ApplicationService.setDownload(true);
+  RelationsService.save(this._options).finally(()=> ApplicationService.setDownload(false, caller_download_id));
 };
 
 proto.buildRelationTable = function(relations=[], id) {

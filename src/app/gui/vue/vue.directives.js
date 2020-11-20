@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const {t, tPlugin} = require('core/i18n/i18n.service');
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId, toRawType } = require('core/utils/utils');
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
@@ -17,9 +17,11 @@ const GlobalDirective = {
       directives[id].unwatch = unwatch;
     };
     const unbindWatch = ({attr, el})=>{
-      const unique_attr_id =  el.getAttribute(attr);
-      directives[unique_attr_id].unwatch();
-      delete directives[unique_attr_id];
+      const unique_attr_id = el.getAttribute(attr);
+      if (unique_attr_id) {
+        directives[unique_attr_id].unwatch();
+        delete directives[unique_attr_id];
+      }
     };
     const runHandlerOnUpdate = ({el, attrId, attr, oldValue})=>{
       const unique_attr_id =  el.getAttribute(attrId);
@@ -210,6 +212,31 @@ const GlobalDirective = {
         })
       }
     });
+
+    Vue.directive("download", {
+      bind(el, binding) {
+        const listen = toRawType(binding.value) === 'Boolean' ? binding.value : true;
+        listen && ApplicationState.download && el.classList.add('g3w-disabled');
+        if (listen) {
+          const unique_v_download_attr = createDirectiveObj({
+            el,
+            attr: 'g3w-v-download-id'
+          });
+          setUnwatch({
+            id: unique_v_download_attr,
+            unwatch: vm.$watch(() => ApplicationState.download, bool => {
+              el.classList.toggle('g3w-disabled', bool)
+            })
+          })
+        }
+      },
+      unbind(el){
+        unbindWatch({
+          el,
+          attr: 'g3w-v-download-id'
+        })
+      }
+    })
   }
 };
 

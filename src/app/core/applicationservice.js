@@ -7,6 +7,7 @@ const base = require('core/utils/utils').base;
 const changeLanguage = require('core/i18n/i18n.service').changeLanguage;
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
+const {uniqueId} = require('core/utils/utils');
 const RouterService = require('core/router');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
@@ -29,6 +30,7 @@ const ApplicationService = function() {
   ApplicationState.online = navigator.onLine;
   ApplicationState.ismobile= isMobile.any;
   this.complete = false;
+  this.download_caller_id = null;
   // store all services sidebar etc..
   this._applicationServices = {};
   this.config = {};
@@ -83,6 +85,21 @@ const ApplicationService = function() {
 
   this.getCurrentProject = function() {
     return ProjectsRegistry.getCurrentProject();
+  };
+
+  this.setDownload = function(bool=false, download_caller_id){
+    if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
+      ApplicationState.download = false;
+      this.download_caller_id = null;
+    } else if (bool && this.download_caller_id === null) {
+      ApplicationState.download = bool;
+      this.download_caller_id = uniqueId();
+    }
+    return this.download_caller_id;
+  };
+
+  this.getDownload = function(){
+    return ApplicationState.download;
   };
 
   this.changeLanguage = function(lng){
@@ -448,8 +465,9 @@ const ApplicationService = function() {
                 });
                 // change current project project
                 ProjectsRegistry.setCurrentProject(project);
+                ApplicationState.download = false;
               })
-              .fail((err) => {
+              .fail(err => {
                 console.log(err);
               })
           })

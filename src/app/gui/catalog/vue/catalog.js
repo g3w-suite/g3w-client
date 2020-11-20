@@ -1,4 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
@@ -191,42 +192,50 @@ const vueComponentOptions = {
       ancorEement = null;
     },
     downloadShp(layerId) {
+      const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.shp = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getShp().catch((err) => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.shp = false;
+        ApplicationService.setDownload(false, caller_download_id);
         this._hideMenu();
       })
     },
     downloadCsv(layerId) {
+      const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.csv = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getCsv().catch((err) => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.csv = false;
+        ApplicationService.setDownload(false, caller_download_id);
         this._hideMenu();
       })
     },
     downloadXls(layerId) {
+      const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.xls = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getXls().catch((err) => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.xls = false;
+        ApplicationService.setDownload(false, caller_download_id);
         this._hideMenu();
       })
     },
     downloadGpx(layerId) {
+      const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.gpx = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getGpx().catch(err => {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.gpx = false;
+        ApplicationService.setDownload(false, caller_download_id);
         this._hideMenu();
       })
     },

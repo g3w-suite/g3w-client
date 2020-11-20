@@ -169,23 +169,21 @@ const ApplicationTemplate = function({ApplicationService}) {
           self._setDataTableLanguage();
         });
       },
-      mounted: function() {
-        this.$nextTick(function() {
-          self._buildTemplate();
-          // setup Font, Css class methods
-          self._setUpTemplateDependencies(this);
-          $(document).localize();
-          self._setViewport(self.templateConfig.viewport);
-          const skinColor = $('.navbar').css('background-color');
-          GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
-          this.$nextTick(()=> {
-            self.emit('ready');
-            //getSkinColor
-            GUI.ready();
-          })
-        });
+      async mounted() {
+        await this.$nextTick();
+        self._buildTemplate();
+        // setup Font, Css class methods
+        self._setUpTemplateDependencies(this);
+        $(document).localize();
+        self._setViewport(self.templateConfig.viewport);
+        const skinColor = $('.navbar').css('background-color');
+        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
+        await this.$nextTick();
+        self.emit('ready');
+        //getSkinColor
+        GUI.ready();
       }
-    });
+    })
   };
 
   this._setupLayout = function(){
@@ -257,9 +255,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   // build template function
   this._buildTemplate = function() {
     floatbar.FloatbarService.init(layout);
-    // recupero i plceholders dalla configurazione del template
     const placeholdersConfig = this.templateConfig.placeholders;
-    // ciclo su ogni placeholder
     Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
       this._addComponents(options.components, placeholder);
     });
@@ -591,7 +587,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI.showContextualContent = (options = {}) => {
       options.perc = !this._isMobile ? options.perc || 50  : 100;
-      GUI.setContent(options)
+      GUI.setContent(options);
       return true;
     };
     // add component to stack (append)

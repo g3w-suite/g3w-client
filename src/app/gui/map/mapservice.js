@@ -225,6 +225,7 @@ function MapService(options={}) {
   };
 
   this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
+
   this._keyEvents.eventemitter.push({
     event: 'cataloglayerunselected',
     listener: this._onCatalogUnSelectLayer
@@ -1635,7 +1636,6 @@ proto._setupViewer = function(width, height) {
       project: this.project
     })
   });
-
   this._setSettings();
   this.state.size = this.viewer.map.getSize();
   //set mapunit

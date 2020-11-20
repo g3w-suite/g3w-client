@@ -4,6 +4,8 @@ const STATE = Vue.observable({
   iframe: false,
   online: false,
   ismobile: false,
+  download: false,
+  upload: false,
   lng: 'en'
 });
 

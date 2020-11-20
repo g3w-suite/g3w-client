@@ -43,21 +43,19 @@ const vueComponentOptions = {
       const mapService = this.$options.service.createCopyMapExtentUrl();
     }
   },
-  mounted: function() {
+  async mounted() {
     const mapService = this.$options.service;
     mapService.once('ready', ()=>{
       this.ready = true;
     });
     this.crs = mapService.getCrs();
-    this.$nextTick(() => {
-      mapService.setMapControlsContainer($('.g3w-map-controls'));
-      $('#permalink').tooltip()
-    });
+    this.$nextTick();
+    mapService.setMapControlsContainer($('.g3w-map-controls'));
+    $('#permalink').tooltip()
     // listen of after addHideMap
-    mapService.onafter('addHideMap', ({ratio, layers=[], mainview=false, switchable=false} = {}) => {
-      this.$nextTick(() => {
-        mapService._addHideMap({ratio, layers, mainview, switchable});
-      })
+    mapService.onafter('addHideMap', async ({ratio, layers=[], mainview=false, switchable=false} = {}) => {
+      await this.$nextTick()
+      mapService._addHideMap({ratio, layers, mainview, switchable});
     })
   },
   destroyed() {
