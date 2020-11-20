@@ -1,8 +1,8 @@
 const {assert, expect} = require('chai');
 const SearchService = require('gui/search/vue/panel/searchservice');
 export default function TestSearches({searches=[], testConfig={}}={}) {
-  const count = testConfig.count;
   describe('#Test searches', function() {
+    const count = testConfig.count;
     it(`count searches`, function() {
       expect(searches).to.be.length(count)
     })

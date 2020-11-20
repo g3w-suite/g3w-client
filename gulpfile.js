@@ -481,11 +481,22 @@ gulp.task('add_external_resources_to_main_html',  function() {
 /**
  * Run test once and exit
  */
-gulp.task('test', function (done) {
-  new Server({
-    configFile: __dirname + '/test/config/karma.app.config.js',
-    singleRun: true
-  }, done).start();
+gulp.task('test', async (done) =>  {
+  const testPath = `${__dirname}${conf.test.path}`;
+  const testGroupFolders = fs.readdirSync(testPath).filter(file => {
+    return file !== 'group_template' && file === '3857' && fs.statSync(testPath+'/'+file).isDirectory();
+  });
+  for (let i=0; i< testGroupFolders.length; i++) {
+    const configFile = `${testPath}${testGroupFolders[i]}/karma.config.js`;
+    const promise = new Promise((resolve)=>{
+      new Server({
+        configFile,
+        singleRun: true
+      }, ()=>{resolve()}).start();
+    });
+    await promise;
+  }
+  done
 });
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult

@@ -1,56 +1,75 @@
 import { server as serverConfig } from '../../../src/config';
 import { LOGIN as LoginConfig} from '../../config/config';
+const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const XHR = require('core/utils/utils').XHR;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Application = require('gui/app/index');
-const GUI = require('gui/gui');
 window.g3wsdk = require('api');
+const MapComponent = require('gui/map/vue/map');
+const mapDOM = {
+  width: 1168,
+  height: 899
+}
+let ApplicationTemplate;
 
-const bootstrap = function() {
-  return new Promise((resolve, reject) => {
-    //create the Application instance passing the template configuration
-    // and the applicationService instance that is useful to work with project API
-    const applicationTemplate = new Application({
-      ApplicationService
-    });
-    // Listen ready event emit after build interface
-    applicationTemplate.on('ready', () =>  {
-      resolve();
-    });
-    //call initialize applicationTemplate method
-    applicationTemplate.init();
+const setupFakeGUIMethods = function(){
+  GUI.notify = {};
+  GUI.setContent = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
+}
+
+const initApplicationTemplate = function(){
+  ApplicationTemplate = new Application({
+    ApplicationService
+  });
+  ApplicationTemplate._setUpServices();
+  const templateConfig = ApplicationTemplate._createTemplateConfig();
+  const { placeholders:{sidebar}, othercomponents, viewport } = templateConfig;
+  //viewport component
+  Object.values(viewport.components).forEach(component =>{
+    ApplicationTemplate._addComponent(component, component.getId())
   })
-
-};
+  GUI.getComponent('map').getService().setupViewer(mapDOM.width, mapDOM.height);
+  GUI.getComponent('map').getService().getMap().setSize([mapDOM.width, mapDOM.height]);
+  //othercomponent
+  ApplicationTemplate._addComponents(othercomponents);
+  sidebar.components.forEach(component =>{
+    try {
+      ApplicationTemplate._addComponent(component, component.getId())
+    } catch(err) {
+      console.log(err)
+    }
+  })
+  setupFakeGUIMethods();
+}
 
 const urls = {
   login: null,
   initconfig: null
 }
 
-const setUrls = function({groupId, lng}){
+export const setUrls = function({groupId, lng}){
   urls.initconfig = `/${serverConfig.urls.initconfig}/${groupId}/`;
   urls.login = `/${lng}/login/?next=/${lng}/`;
   return urls;
 };
 
-const getUrls = function() {
+export const getUrls = function() {
   return urls;
 }
 
-const getUrl = function(type) {
+export const getUrl = function(type) {
   return urls[type];
 }
 
-const Authentication = async function({lng='en'}) {
+export const Authentication = async function({lng='en'}) {
   const csrftoken = await doAuthentication({
     lng
   });
   return csrftoken;
 }
 
-async function doAuthentication({lng='en'}={}) {
+export async function doAuthentication({lng='en'}={}) {
   const {username, password} = LoginConfig;
   const url = urls.login;
   const response = await fetch(url);
@@ -68,7 +87,7 @@ async function doAuthentication({lng='en'}={}) {
   return csrftoken;
 }
 
-const getInitConfig = async function(url) {
+export const getInitConfig = async function(url) {
   try {
     const initConfig = await ApplicationService.getInitConfig(url);
     return initConfig;
@@ -79,7 +98,7 @@ const getInitConfig = async function(url) {
   }
 }
 
-const getApplicationConfig = async function(url) {
+export const getApplicationConfig = async function(url) {
   try {
     const initConfig = await getInitConfig(url);
     return ApplicationService.createApplicationConfig(initConfig);
@@ -88,7 +107,7 @@ const getApplicationConfig = async function(url) {
   }
 }
 
-const getProjetsRegistry = async function(url) {
+export const getProjetsRegistry = async function(url) {
   try {
     const config = await getApplicationConfig(url);
     ApplicationService.setConfig(config);
@@ -96,6 +115,7 @@ const getProjetsRegistry = async function(url) {
     const promise = new Promise((resolve, reject) => {
       ProjectsRegistry.init(config)
         .then(() =>{
+          initApplicationTemplate();
           resolve();
         })
         .fail((error)=> {
@@ -111,7 +131,7 @@ const getProjetsRegistry = async function(url) {
   }
 }
 
-function getProject(gid) {
+export function getProject(gid) {
   return new Promise((resolve, reject) => {
     ProjectsRegistry.getProject(gid).then(project => {
       resolve(project);
@@ -121,8 +141,11 @@ function getProject(gid) {
   })
 };
 
+export function getApplicationLayout() {
+  return ApplicationService.getConfig().layout || {};
+}
+
 export default {
-  bootstrap,
   setUrls,
   getUrls,
   getUrl,
@@ -130,5 +153,6 @@ export default {
   getInitConfig,
   getApplicationConfig,
   getProjetsRegistry,
-  getProject
+  getProject,
+  getApplicationLayout
 };

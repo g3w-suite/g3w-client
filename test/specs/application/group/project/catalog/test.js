@@ -6,17 +6,14 @@ export default function TestCatalog({gid, testConfig={}}={}) {
     ServiceCatalog.init(gid);
     let layers, groups, visibleLayers, disabledLayers, tableLayers, geoSpatialLayers,
       filtrableLayers, openAttributeTableLayers
-    before(function() {
+    before(() => {
       const infoTree = ServiceCatalog.getCatalogInfoTree();
-
       layers = infoTree.layers;
-      groups = infoTree.groups
-
+      groups = infoTree.groups;
       visibleLayers = ServiceCatalog.getLayersByType({
         layers,
         type: 'visible'
       });
-
       disabledLayers = ServiceCatalog.getLayersByType({
         layers,
         type: 'disabled'
@@ -38,12 +35,11 @@ export default function TestCatalog({gid, testConfig={}}={}) {
       });
 
       openAttributeTableLayers = ServiceCatalog.getOpenAttributeLayers();
-
     })
 
     it(`Test catalog groups`, function() {
-     const count = testConfig.groups.count;
-     expect(groups).to.be.length(count)
+      const count = testConfig.groups.count;
+      expect(groups).to.be.length(count)
     })
 
     it(`Test catalog Layers count`, () => {
@@ -89,6 +85,11 @@ export default function TestCatalog({gid, testConfig={}}={}) {
       } catch (e) {
         assert.fail();
       }
+    })
+
+    it('test catalog menu context', ()=>{
+      ServiceCatalog.testContextMenu();
+      assert.isOk(true)
     })
 
     describe('Download formats', ()=>{

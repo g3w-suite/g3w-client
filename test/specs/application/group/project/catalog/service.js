@@ -1,8 +1,11 @@
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import { getApplicationLayout } from '../../../service';
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry')
+const GUI = require('gui/gui');
 let CatalogLayersStores = null;
 
 export function init(gid) {
   CatalogLayersStores = CatalogLayersStoresRegistry.getLayersStore(gid);
+  catalogComponent = GUI.getComponent('catalog');
 }
 
 export function getCatalogInfoTree() {
@@ -21,6 +24,21 @@ export function getCatalogInfoTree() {
   }
   traverseLayerTrees(layersTree.nodes);
   return info;
+};
+
+export function testContextMenu() {
+  const vueCatalogComponent = catalogComponent.getInternalComponent();
+  const layers = getCatalogInfoTree().layers;
+  layers.forEach(layer => {
+    const layerId = layer.id;
+    vueCatalogComponent.canZoom(layer);
+    vueCatalogComponent.getGeometryType(layerId);
+    vueCatalogComponent.showAttributeTable(layerId);
+    vueCatalogComponent.canDownloadShp(layerId);
+    vueCatalogComponent.canDownloadGpx(layerId);
+    vueCatalogComponent.canDownloadXls(layerId);
+    vueCatalogComponent.canShowWmsUrl(layerId);
+  })
 };
 
 export function getOpenAttributeLayers(){
@@ -83,5 +101,6 @@ export default {
   getLayersByType,
   getOpenAttributeLayers,
   getDataTable,
-  getDownloadableLayers
+  getDownloadableLayers,
+  testContextMenu
 }

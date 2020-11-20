@@ -10,6 +10,7 @@ const Project = require('core/project/project');
 export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={}){
   const {gid} = testConfig;
   describe('#Test Project', function() {
+    this.timeout(0);
     let project;
     before(async ()=> {
       project = await Service.getProject(gid);
@@ -32,22 +33,20 @@ export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={})
         TestQuery({
           testConfig: testConfig.queries,
           mapcontrols
-        })
+        });
       if (testConfig.searches && Object.keys(testConfig.searches).length)
         TestSearches({
           searches: project.getSearches(),
           testConfig: testConfig.searches,
-        })
+        });
       if (testConfig.catalog && Object.keys(testConfig.catalog).length)
         TestCatalog({
           gid,
-          testConfig: testConfig.catalog,
-        })
-      if (testConfig.print && Object.keys(testConfig.print).length)
-        TestPrint({
-          print: project.getPrint(),
-          testConfig: testConfig.print,
-        })
+            testConfig: testConfig.catalog,
+        });
+      TestPrint({
+        print: project.getPrint(),
+      });
     })
   })
 }

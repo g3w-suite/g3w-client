@@ -1,25 +1,19 @@
 import printService from './service';
 const {assert, expect} = require('chai');
-export default function TestSearches({print=[], testConfig={}}={}) {
-  const count = testConfig.count || 0;
-  const templates = Array.isArray(testConfig.templates) ? testConfig.templates : [];
+export default function TestSearches({print=[]}={}) {
   describe('#Test prints', function() {
     before(()=>{
-      count && printService.init();
+      print.length && printService.init();
     })
-    it(`Count`, function() {
-      expect(print).to.be.length(count)
-    })
-    templates.forEach((template => {
-      it(`Print template ${template.name}`, async() => {
+    print.forEach(config => {
+      it(`Print template ${config.name}`, async() => {
         try {
-          const { atlas } = print.find(print => print.name === template.template);
-          const response = await printService.doPrint(template, atlas)
+          const response = await printService.doPrint()
           assert.isOk(true);
         } catch (e) {
           assert.fail();
         }
       })
-    }))
+    })
   })
 }
