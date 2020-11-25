@@ -100,7 +100,10 @@
                   <template v-if="feature.show" v-for="feature in layer.features">
                     <tr @click="toggleFeatureBoxAndZoom(layer,feature)" @mouseover="trigger('highlightgeometry',layer,feature)" @mouseout="trigger('clearHighlightGeometry')" class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
                       <td v-if="state.layersactions[layer.id].length">
-                        <span v-if="showAction({action:action, layer:layer, feature:feature})" @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]"  class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
+                        <span v-if="showAction({action:action, layer:layer, feature:feature})"
+                          @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]"
+                          v-download="action.download"
+                          class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
                           <span :class="'action-button-icon ' + action.class"></span>
                         </span>
                       </td>
