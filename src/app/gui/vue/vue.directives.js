@@ -213,20 +213,48 @@ const GlobalDirective = {
       }
     });
 
+    Vue.directive("online", {
+      bind(el, binding) {
+        // show if online
+        const showOnline = binding.arg && binding.arg === 'hide' ? false : true;
+        const showHideHandler = bool =>{
+          bool = showOnline ?  bool : !bool;
+          el.classList.toggle('g3w-hide', !bool)
+        };
+        showHideHandler(ApplicationState.online);
+        const unique_v_online_notify_attr = createDirectiveObj({
+          el,
+          attr: 'g3w-v-offline-id'
+        });
+        setUnwatch({
+          id: unique_v_online_notify_attr,
+          unwatch: vm.$watch(() => ApplicationState.online, showHideHandler)
+        })
+      },
+      unbind(){
+        unbindWatch({
+          el,
+          attr: 'g3w-v-offline-id'
+        })
+      }
+    });
+
     Vue.directive("download", {
       bind(el, binding) {
+        const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
         const listen = toRawType(binding.value) === 'Boolean' ? binding.value : true;
-        listen && ApplicationState.download && el.classList.add('g3w-disabled');
+        const downloadHandler = bool => {
+          el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool: bool)
+        };
         if (listen) {
           const unique_v_download_attr = createDirectiveObj({
             el,
             attr: 'g3w-v-download-id'
           });
+          downloadHandler(listen && ApplicationState.download);
           setUnwatch({
             id: unique_v_download_attr,
-            unwatch: vm.$watch(() => ApplicationState.download, bool => {
-              el.classList.toggle('g3w-disabled', bool)
-            })
+            unwatch: vm.$watch(() => ApplicationState.download, downloadHandler)
           })
         }
       },

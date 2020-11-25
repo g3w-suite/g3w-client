@@ -484,7 +484,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
 gulp.task('test', async (done) =>  {
   const testPath = `${__dirname}${conf.test.path}`;
   const testGroupFolders = fs.readdirSync(testPath).filter(file => {
-    return file !== 'group_template' && file === '3857' && fs.statSync(testPath+'/'+file).isDirectory();
+    return file !== 'group_template' && fs.statSync(testPath+'/'+file).isDirectory();
   });
   for (let i=0; i< testGroupFolders.length; i++) {
     const configFile = `${testPath}${testGroupFolders[i]}/karma.config.js`;
