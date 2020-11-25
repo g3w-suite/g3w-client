@@ -509,13 +509,13 @@ proto._printSingleAtlas = function({atlas={}, features=[]}={}){
   let {name:template, atlas: {field_name}} = atlas;
   field_name = field_name || '$id';
   const values = features.map(feature => feature.attributes[field_name === '$id' ?  'g3w_fid': field_name]);
+  const download_caller_id = ApplicationService.setDownload(true);
   return this.printService.printAtlas({
     field: field_name,
     values,
     template,
     download: true
   }).then(({url}) =>{
-      GUI.setLoadingContent(true);
       downloadFile({
         url,
         filename: template,
@@ -526,6 +526,7 @@ proto._printSingleAtlas = function({atlas={}, features=[]}={}){
           error
         })
       }).finally(()=>{
+        ApplicationService.setDownload(false, download_caller_id);
         GUI.setLoadingContent(false);
       })
   })
