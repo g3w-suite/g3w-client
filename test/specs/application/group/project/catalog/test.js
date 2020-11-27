@@ -88,8 +88,8 @@ export default function TestCatalog({gid, testConfig={}}={}) {
     })
 
     it('test catalog menu context', ()=>{
-      ServiceCatalog.testContextMenu();
-      assert.isOk(true)
+      const context_status = ServiceCatalog.testContextMenu();
+      assert.isOk(context_status.status, context_status.message)
     })
 
     describe('Download formats', ()=>{

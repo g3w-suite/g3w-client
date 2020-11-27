@@ -2,6 +2,7 @@ import { getApplicationLayout } from '../../../service';
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry')
 const GUI = require('gui/gui');
 let CatalogLayersStores = null;
+const CATALOG_CONTEX_MENU_GEOMETRIES_TYPES = ['Point', 'MultiPoint', 'LinesString', 'MultiLineString', 'Polygon', 'MultiPolygon', '']
 
 export function init(gid) {
   CatalogLayersStores = CatalogLayersStoresRegistry.getLayersStore(gid);
@@ -29,16 +30,27 @@ export function getCatalogInfoTree() {
 export function testContextMenu() {
   const vueCatalogComponent = catalogComponent.getInternalComponent();
   const layers = getCatalogInfoTree().layers;
-  layers.forEach(layer => {
+  let context_catalog_check = {
+    status: true,
+    message: null
+  };
+  const layersLength = layers.length;
+  for (let i = 0; i < layersLength -1; i++){
+    const layer = layers[i];
     const layerId = layer.id;
     vueCatalogComponent.canZoom(layer);
-    vueCatalogComponent.getGeometryType(layerId);
+    const geometryType = vueCatalogComponent.getGeometryType(layerId);
+    if (CATALOG_CONTEX_MENU_GEOMETRIES_TYPES.indexOf(geometryType) === -1) {
+      context_catalog_check.status = false;
+      context_catalog_check.message = `Layer ${layer.title} Geometry error: Type ${geometryType}`;
+    };
     vueCatalogComponent.showAttributeTable(layerId);
     vueCatalogComponent.canDownloadShp(layerId);
     vueCatalogComponent.canDownloadGpx(layerId);
     vueCatalogComponent.canDownloadXls(layerId);
     vueCatalogComponent.canShowWmsUrl(layerId);
-  })
+  }
+  return context_catalog_check
 };
 
 export function getOpenAttributeLayers(){

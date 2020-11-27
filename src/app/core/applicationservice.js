@@ -102,6 +102,14 @@ const ApplicationService = function() {
     return ApplicationState.download;
   };
 
+  this.loadingPlugin = function(plugin){
+    ApplicationState.plugins.push(plugin);
+  };
+
+  this.loadedPlugin = function(plugin) {
+    ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
+  };
+
   this.changeLanguage = function(lng){
     changeLanguage(lng);
     ApplicationState.lng = lng;

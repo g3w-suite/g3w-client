@@ -18,14 +18,38 @@ function PluginsRegistry() {
 
   // initilize plugin
   this.init = function(options={}) {
-    this.pluginsBaseUrl = options.pluginsBaseUrl;
-    // plugin configurations
-    this.pluginsConfigs = options.pluginsConfigs;
-    // plugins that aren't in configuration server but in project
-    this.otherPluginsConfig = options.otherPluginsConfig;
-    this.setOtherPlugins();
-    this.setDependencyPluginConfig();
-    return this._loadPlugins();
+    return new Promise(async (resolve, reject) =>{
+      this.pluginsBaseUrl = options.pluginsBaseUrl;
+      // plugin configurations
+      this.pluginsConfigs = options.pluginsConfigs;
+      this.addLoadingPlugins();
+      // plugins that aren't in configuration server but in project
+      this.otherPluginsConfig = options.otherPluginsConfig;
+      this.setOtherPlugins();
+      this.setDependencyPluginConfig();
+      try {
+        const plugins = await this._loadPlugins();
+        resolve(plugins);
+      } catch(error){
+        reject(error);
+      } finally {
+        this.removeLoadingPlugins();
+      }
+    })
+  };
+
+  this.addLoadingPlugins = function(){
+    const ApplicationService = require('core/applicationservice');
+    Object.keys(this.pluginsConfigs).forEach(plugin => {
+      ApplicationService.loadingPlugin(plugin);
+    });
+  };
+
+  this.removeLoadingPlugins = function(){
+    const ApplicationService = require('core/applicationservice');
+    Object.keys(this.pluginsConfigs).forEach(plugin => {
+      ApplicationService.loadedPlugin(plugin);
+    });
   };
 
   this._loadPlugins = function() {
@@ -55,28 +79,38 @@ function PluginsRegistry() {
 
   // reaload plugin in case of change map
   this.reloadPlugins = function(initConfig, project) {
-    const scripts = $('script');
-    const plugins = this.getPlugins();
-    for (const pluginName in plugins) {
-      const plugin = plugins[pluginName];
-      // unload plugin e remove from DOM
-      plugin.unload();
-      delete this._plugins[pluginName];
-      scripts.each((index, scr) => {
-        this._loadedPluginUrls.forEach((pluginUrl, idx) => {
-          if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
-            scr.parentNode.removeChild( scr );
-            this._loadedPluginUrls.splice(idx, 1);
-            return false;
-          }})
-      });
-    }
-    this._loadedPluginUrls = [];
-    //setup plugins
-    this.otherPluginsConfig = project.getState();
-    this.setPluginsConfig(initConfig.group.plugins);
-    this.setOtherPlugins();
-    return this._loadPlugins();
+    return new Promise(async (resolve, reject) => {
+      const scripts = $('script');
+      const plugins = this.getPlugins();
+      for (const pluginName in plugins) {
+        const plugin = plugins[pluginName];
+        // unload plugin e remove from DOM
+        plugin.unload();
+        delete this._plugins[pluginName];
+        scripts.each((index, scr) => {
+          this._loadedPluginUrls.forEach((pluginUrl, idx) => {
+            if (scr.getAttribute('src') === pluginUrl && pluginUrl.indexOf(pluginName) !== -1) {
+              scr.parentNode.removeChild( scr );
+              this._loadedPluginUrls.splice(idx, 1);
+              return false;
+            }})
+        });
+      }
+      this._loadedPluginUrls = [];
+      //setup plugins
+      this.otherPluginsConfig = project.getState();
+      this.setPluginsConfig(initConfig.group.plugins);
+      this.addLoadingPlugins();
+      this.setOtherPlugins();
+      try {
+        const plugins = await this._loadPlugins();
+        resolve(plugins);
+      } catch(error){
+        reject(error)
+      } finally {
+        this.removeLoadingPlugins();
+      }
+    })
   };
 
   this.setPluginsConfig = function(config) {

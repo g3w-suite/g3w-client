@@ -2,6 +2,7 @@ import {viewport as viewportConstraints} from 'gui/constraints';
 import userMessage from 'gui/usermessage/vue/usermessage.vue';
 import onlineNotify from 'gui/notifications/online/vue/online.vue';
 import downloadNotify from 'gui/notifications/download/vue/download.vue';
+import pluginsNotify from 'gui/notifications/plugins/vue/plugins.vue';
 const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
@@ -585,7 +586,8 @@ const ViewportComponent = Vue.extend({
   components: {
     userMessage,
     onlineNotify,
-    downloadNotify
+    downloadNotify,
+    pluginsNotify
   },
   ...compiledTemplate,
   data: function() {

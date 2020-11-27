@@ -1095,7 +1095,7 @@ proto._setupControls = function() {
                 GUI.off('closecontent', closeContentFnc);
               })
             }
-          })
+          });
           break;
         case 'scaleline':
           conntrol = this.createMapControl(controlType, {
@@ -1151,7 +1151,7 @@ proto._setupControls = function() {
             add: false,
             options: {
               isMobile: isMobile.any,
-              bbox: this.project.state.initextent,
+              bbox: this.project.state.extent,
               mapCrs: this.project.state.crs.epsg,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
@@ -1159,7 +1159,7 @@ proto._setupControls = function() {
               fontIcon: GUI.getFontClass('search')
             }
           });
-          control.on('addresschosen', (evt) => {
+          control.on('addresschosen', evt => {
             const coordinate = evt.coordinate;
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);

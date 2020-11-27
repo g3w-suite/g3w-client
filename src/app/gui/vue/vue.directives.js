@@ -213,6 +213,29 @@ const GlobalDirective = {
       }
     });
 
+    Vue.directive("plugins", {
+      bind(el) {
+        const showHideHandler = plugins =>{
+          el.classList.toggle('g3w-hide', plugins.length === 0)
+        };
+        showHideHandler(ApplicationState.plugins);
+        const unique_v_plugins_notify_attr = createDirectiveObj({
+          el,
+          attr: 'g3w-v-plugins-id'
+        });
+        setUnwatch({
+          id: unique_v_plugins_notify_attr,
+          unwatch: vm.$watch(() => ApplicationState.plugins, showHideHandler)
+        })
+      },
+      unbind(el){
+        unbindWatch({
+          el,
+          attr: 'g3w-v-plugins-id'
+        })
+      }
+    });
+
     Vue.directive("online", {
       bind(el, binding) {
         // show if online

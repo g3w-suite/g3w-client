@@ -6,7 +6,8 @@ const STATE = Vue.observable({
   ismobile: false,
   download: false,
   upload: false,
-  lng: 'en'
+  lng: 'en',
+  plugins: []
 });
 
 export default STATE;

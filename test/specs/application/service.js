@@ -15,7 +15,7 @@ let ApplicationTemplate;
 
 const setupFakeGUIMethods = function(){
   GUI.notify = {};
-  GUI.setContent = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
+  GUI.setContent =  GUI.getFontClass = GUI.showContentFactory = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
 }
 
 const initApplicationTemplate = function(){
@@ -29,8 +29,26 @@ const initApplicationTemplate = function(){
   Object.values(viewport.components).forEach(component =>{
     ApplicationTemplate._addComponent(component, component.getId())
   })
-  GUI.getComponent('map').getService().setupViewer(mapDOM.width, mapDOM.height);
-  GUI.getComponent('map').getService().getMap().setSize([mapDOM.width, mapDOM.height]);
+  setupFakeGUIMethods();
+  const mapService = GUI.getComponent('map').getService();
+
+  const mapcontainer = document.createElement('div');
+  mapcontainer.id = "g3w-maps";
+
+  const mapdiv = document.createElement('div');
+  mapdiv.id = 'map';
+
+  const mapcontrols = document.createElement('div');
+  mapcontainer.classList.add('g3w-map-controls');
+  mapcontainer.classList.add('rv');
+
+  mapdiv.appendChild(mapcontrols);
+  mapcontainer.appendChild(mapdiv);
+  document.body.appendChild(mapcontainer);
+
+  mapService.setMapControlsContainer($(mapcontrols));
+  mapService.layout({width: mapDOM.width, height: mapDOM.height});
+  mapService.getMap().setSize([mapDOM.width, mapDOM.height]);
   //othercomponent
   ApplicationTemplate._addComponents(othercomponents);
   sidebar.components.forEach(component =>{
@@ -40,7 +58,6 @@ const initApplicationTemplate = function(){
       console.log(err)
     }
   })
-  setupFakeGUIMethods();
 }
 
 const urls = {

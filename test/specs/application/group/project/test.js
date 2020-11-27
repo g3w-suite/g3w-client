@@ -5,6 +5,7 @@ import TestQuery from './queries/querytest';
 import TestSearches from './searches/test';
 import TestCatalog from './catalog/test'
 import TestPrint from './print/test'
+import MapTest from './map/test';
 const Project = require('core/project/project');
 
 export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={}){
@@ -42,8 +43,13 @@ export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={})
       if (testConfig.catalog && Object.keys(testConfig.catalog).length)
         TestCatalog({
           gid,
-            testConfig: testConfig.catalog,
+          testConfig: testConfig.catalog,
         });
+      if (testConfig.map)
+        MapTest({
+          mapcontrols,
+          testConfig: testConfig.map
+        })
       TestPrint({
         print: project.getPrint(),
       });

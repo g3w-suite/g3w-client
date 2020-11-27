@@ -149,8 +149,8 @@ const vueComponentOptions = {
       else {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         geometryType = originalLayer.config.geometrytype;
-        geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
       }
+      geometryType = geometryType && geometryType !== 'NoGeometry' ? geometryType : '' ;
       return geometryType;
     },
     canShowWmsUrl(layerId) {

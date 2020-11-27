@@ -88,7 +88,8 @@ const font = {
   'vector-square': "fas fa-vector-square",
   download: "fas fa-download",
   credits: "fas fa-euro-sign",
-  filter: "fas fa-filter"
+  filter: "fas fa-filter",
+  plugin: "fas fa-plug"
 };
 
 const Vueappplugin = {
