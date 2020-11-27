@@ -282,16 +282,13 @@ proto._showPrintArea = function() {
 };
 
 proto._initPrintConfig = function() {
-  let resolution;
   if (!this._initialized) {
     const maxResolution = this._map.getView().getMaxResolution();
     this._setAllScalesBasedOnMaxResolution(maxResolution);
-    this._setInitialScalaSelect();
     this._initialized = true;
-  } else {
-    resolution = this._map.getView().getResolution();
-    this._setCurrentScala(resolution);
   }
+  const resolution = this._map.getView().getResolution();
+  this._setCurrentScala(resolution);
 };
 
 proto.showPrintArea = function(bool) {
