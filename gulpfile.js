@@ -91,9 +91,7 @@ gulp.task('browserify', [], function() {
     cache: {},
     packageCache: {}
   });
-  if (!production) {
-    bundler = watchify(bundler);
-  }
+  if (!production) bundler = watchify(bundler);
   // trasformation
   bundler.transform(vueify)
     .transform(babelify, {
@@ -105,7 +103,6 @@ gulp.task('browserify', [], function() {
   const bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
-        console.log(err);
         this.emit('end');
         del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
           process.exit();

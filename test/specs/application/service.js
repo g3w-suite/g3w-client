@@ -1,9 +1,11 @@
 import { server as serverConfig } from '../../../src/config';
 import { LOGIN as LoginConfig} from '../../config/config';
+window.g3wsdk = require('api'); //usefull for plugiin
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const XHR = require('core/utils/utils').XHR;
 const ProjectsRegistry = require('core/project/projectsregistry');
+const PluginsRegistry = require('core/plugin/pluginsregistry');
 const Application = require('gui/app/index');
 window.g3wsdk = require('api');
 const MapComponent = require('gui/map/vue/map');
@@ -124,10 +126,15 @@ export const getApplicationConfig = async function(url) {
   }
 }
 
+export function setPluginsConfig(config){
+  PluginsRegistry.setPluginsConfig(config);
+};
+
 export const getProjetsRegistry = async function(url) {
   try {
     const config = await getApplicationConfig(url);
     ApplicationService.setConfig(config);
+    ApplicationService.setupI18n(); //setup i18n
     ProjectsRegistry.clear();
     const promise = new Promise((resolve, reject) => {
       ProjectsRegistry.init(config)
@@ -171,5 +178,6 @@ export default {
   getApplicationConfig,
   getProjetsRegistry,
   getProject,
-  getApplicationLayout
+  getApplicationLayout,
+  setPluginsConfig
 };

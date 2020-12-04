@@ -136,6 +136,7 @@ const translations = {
           download_gpx: "Scarica GPX",
           download_csv: "Scarica CSV",
           download_xls: "Scarica XLS",
+          show_chart: "Mostra Grafico",
           atlas: "Stampa Atlas"
         },
         mapcontrols: {
@@ -150,6 +151,9 @@ const translations = {
               },
               relations: {
                 hint: "Visualizza Relazioni"
+              },
+              relations_charts: {
+                hint: "Visualizza grafici relazioni"
               },
               download_features_shapefile:{
                 hint: 'Scarica features in Shapefile'
@@ -513,6 +517,7 @@ const translations = {
           download_gpx: "Download GPX",
           download_csv: "Download CSV",
           download_xls: "Download XLS",
+          show_chart: "Show Chart",
           atlas: "Print Atlas"
         },
         mapcontrols: {
@@ -527,6 +532,9 @@ const translations = {
               },
               relations: {
                 hint: "Show Relations"
+              },
+              relations_charts: {
+                hint: "Show relations chart"
               },
               download_features_shapefile:{
                 hint: 'Download features Shapefile'

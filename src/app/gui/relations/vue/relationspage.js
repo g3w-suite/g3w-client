@@ -10,7 +10,8 @@ const compiledTemplate = createCompiledTemplate(require('./relationspage.html'))
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
-  data: function() {
+  data() {
+    this. chartRelationIds = this.$options.chartRelationIds || [];
     return {
       loading: false,
       state: null,
@@ -18,6 +19,7 @@ const InternalComponent = Vue.extend({
       table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
       relation: this.$options.relation || null,
       relations: this.$options.relations,
+      showChartButton: false,
       feature: this.$options.feature,
       currentview: this.$options.currentview,
       previousview: this.$options.currentview
@@ -39,6 +41,13 @@ const InternalComponent = Vue.extend({
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },
+    showChart(container){
+      const relationLayerId = this.relation.referencingLayer;
+      GUI.getComponent('queryresults').getService().showChart([relationLayerId], container)
+    },
+    hideChart(container){
+      GUI.getComponent('queryresults').getService().hideChart(container)
+    },
     showRelation: function(relation) {
       GUI.setLoadingContent(true);
       this.loading = true;
@@ -51,6 +60,7 @@ const InternalComponent = Vue.extend({
         fid
       }).then((response) => {
         const relations = getFeaturesFromResponseVectorApi(response);
+        this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
         this.previousview = 'relations';
@@ -82,7 +92,7 @@ const InternalComponent = Vue.extend({
 const RelationsPage = function(options={}) {
   base(this);
   const service = options.service || new Service();
-  const {layer, relation=null, relations=[], feature=null, table=null} = options;
+  const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[]} = options;
   const currentview = options.currentview || 'relations';
   this.setService(service);
   const internalComponent = new InternalComponent({
@@ -90,6 +100,7 @@ const RelationsPage = function(options={}) {
     service,
     relations,
     relation,
+    chartRelationIds,
     feature,
     currentview,
     layer,

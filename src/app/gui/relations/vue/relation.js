@@ -1,15 +1,16 @@
 import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 import { createCompiledTemplate } from 'gui/vue/utils';
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
 const RelationPageEventBus = require('./relationeventbus');
+const GUI = require('gui/gui');
 const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
 let relationDataTable;
 
 module.exports = {
   ...compiledTemplate,
-  props: ['table', 'relation', 'previousview'],
+  props: ['table', 'relation', 'previousview', 'showChartButton'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
@@ -19,7 +20,8 @@ module.exports = {
   data(){
     return {
       feature: null,
-      fields: null
+      fields: null,
+      chart: false
     }
   },
   computed: {
@@ -42,9 +44,16 @@ module.exports = {
         const width =  $('#relationtable_wrapper').width() - 60;
         $('.row-wrap-tabs .tabs-wrapper').width(width);
       }
+      relationDataTable.columns.adjust();
     },
     saveRelation(type){
       this.$emit('save-relation', type)
+    },
+    async showChart(){
+      this.chart = !this.chart;
+      await this.$nextTick();
+      this.chartContainer = this.chartContainer ||  $('#chart_content');
+      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer);
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
@@ -88,6 +97,12 @@ module.exports = {
       return this.fieldIs(type, value);
     }
   },
+  watch: {
+    async chart(){
+      await this.$nextTick();
+      this.resize();
+    }
+  },
   beforeCreate() {
     this.delayType = 'debounce';
   },
@@ -105,7 +120,7 @@ module.exports = {
   },
   async mounted() {
     this.relation.title = this.relation.name;
-    await this.$nextTick()
+    await this.$nextTick();
     $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
     if (!this.one) {
       relationDataTable = $('#relationtable').DataTable( {
@@ -114,15 +129,33 @@ module.exports = {
         "scrollResize": true,
         "scrollCollapse": true,
         "scrollX": true,
+        "responsive": true,
         "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
         "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
       });
       $('.row-form').tooltip();
       this.resize();
     }
+    if (this.showChartButton) {
+      const sidebarWidth = $('#g3w-sidebar').width();
+      $(this.$refs.resizecharttable).mousedown((evt) => {
+        const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : sidebarWidth;
+        $(document).mousemove((evt) => {
+          const size =  (evt.pageX+2) - sidebarHeaderSize;
+          this.$refs.tablecontent.style.width = `${size}px`;
+          this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
+        });
+        $(document).mouseup(evt => {
+          $(document).unbind('mousemove');
+          GUI.emit('resize');
+        });
+      });
+    }
   },
   beforeDestroy(){
     relationDataTable.destroy();
     relationDataTable = null;
+    this.chartContainer && this.$emit('hide-chart', this.chartContainer);
+    this.chartContainer = null;
   }
 };

@@ -31,6 +31,10 @@ const vueComponentObject = {
         disabled
       });
     },
+    resizeForm(){
+      const perc = GUI.getContentPercentage();
+      GUI.setContentPercentage(perc == 100 ? 50 : 100)
+    },
     switchComponent(index) {
       this.switchcomponent = true;
       this.$options.service.setComponentByIndex(index);

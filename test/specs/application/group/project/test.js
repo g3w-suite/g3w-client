@@ -6,9 +6,10 @@ import TestSearches from './searches/test';
 import TestCatalog from './catalog/test'
 import TestPrint from './print/test'
 import MapTest from './map/test';
+import TestPlugins from './plugins'
 const Project = require('core/project/project');
 
-export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={}){
+export default function TestProject({plugins={}, testConfig={}, mapcontrols=[]}={}){
   const {gid} = testConfig;
   describe('#Test Project', function() {
     this.timeout(0);
@@ -53,6 +54,10 @@ export default function TestProject({plugins, testConfig={}, mapcontrols=[]}={})
       TestPrint({
         print: project.getPrint(),
       });
+      TestPlugins({
+        plugins,
+        testConfig: testConfig.plugins
+      })
     })
   })
 }

@@ -578,6 +578,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.resetContextualMapComponent = function() {
       viewport.ViewportService.resetContextualMapComponent();
     };
+
     //  (100%) content
     GUI.showContent = (options={}) => {
       options.perc = !this._isMobile ? options.perc || 100 : 100;
@@ -620,6 +621,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.getContentPercentage = function(){
       return viewport.ViewportService.getContentPercentage();
     };
+
+    GUI.setContentPercentage = function(perc=50){
+      viewport.ViewportService.setContentPercentage(perc);
+    };
+
+
     
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
       const options = {
@@ -630,6 +637,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       const projectVueMenuComponent = new ProjectsMenuComponent(options).getInternalComponent();
       return projectVueMenuComponent.$mount().$el;
     };
+
 
     GUI._setContent = (options={}) => {
       GUI.closeUserMessage();

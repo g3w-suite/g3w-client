@@ -274,6 +274,11 @@ const ViewportService = function() {
     return this.state.secondaryPerc;
   };
 
+  this.setContentPercentage = function(perc){
+    this.state.secondaryPerc = perc;
+    this._layoutComponents();
+  };
+
   this.contentLength = function() {
     return this.state.content.contentsdata.length;
   };

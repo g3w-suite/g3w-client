@@ -18,24 +18,27 @@
           :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>
         <span v-if="showDownloadButtons.xls" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
           :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
+        <span v-if="showChartButton" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('chart')" @click="showChart" v-t-tooltip="'sdk.tooltips.show_chart'"></span>
       </span>
     </div>
   </div>
-  <div v-if="table.rows.length">
-    <table id="relationtable" class="table table-striped" width="100%" >
-      <thead>
+  <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px" ref="relationwrapper">
+    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" ref="tablecontent">
+      <table id="relationtable" class="table table-striped" width="100%" >
+        <thead>
         <tr>
           <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>
           <th v-for="column in table.columns">{{ column }}</th>
         </tr>
-      </thead>
-      <tbody>
+        </thead>
+        <tbody>
         <template v-for="row in table.rows">
           <tr :class="{'selected': table.rowFormStructure === row}">
             <td @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
               <span style="max-width: 15px; width: 15px;" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
+                    class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                    data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">
@@ -49,8 +52,12 @@
             </template>
           </tr>
         </template>
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
+    <div v-show="chart" id="resize-chart-and-table" style="width: 4px; cursor: col-resize; background-color: #dddddd; margin: 0 3px 0 3px;" ref="resizecharttable"></div>
+    <div v-show="chart" id="chart_content" style="width: 30%; padding-bottom: 5px" ref="chartcontent">
+    </div>
   </div>
   <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
 </div>

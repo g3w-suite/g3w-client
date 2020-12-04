@@ -2,9 +2,12 @@
     <component
         :loading="loading"
         @save-relation="saveRelations"
+        @show-chart="showChart"
+        @hide-chart="hideChart"
         :ref="currentview"
         :previousview="previousview"
         :is="currentview"
+        :showChartButton="showChartButton"
         :relations="relations"
         :relation="relation"
         :feature="feature"

@@ -2,9 +2,9 @@ import Service from '../service';
 import TestProject from './project/test'
 export default function TestGroup({groupId, testConfig={}}={}) {
   describe(`#Group[${groupId}]`, function(){
-    const { lng, projects, plugins } = testConfig;
+    const { lng, projects } = testConfig;
     const startGroupProject = projects[0];
-    let mapcontrols;
+    let mapcontrols, plugins;
     this.timeout(0);
     before(async ()=>{
       const urls = Service.setUrls({
@@ -18,6 +18,8 @@ export default function TestGroup({groupId, testConfig={}}={}) {
       const url = `${urls.initconfig}${type}/${id}`;
       const applicationConfig = await Service.getProjetsRegistry(url);
       mapcontrols = applicationConfig.mapcontrols;
+      plugins = applicationConfig.plugins
+      Service.setPluginsConfig(plugins);
     })
 
     projects.forEach(projectTestConfig => {

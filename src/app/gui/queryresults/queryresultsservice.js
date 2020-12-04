@@ -21,6 +21,7 @@ function QueryResultsService() {
     this._setRelations(project);
     this._setAtlasActions(project);
     this.state.download_data = false;
+    this.plotLayerIds = [];
   });
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
@@ -29,6 +30,7 @@ function QueryResultsService() {
   };
   this._relations = [];
   this._atlas = [];
+  this.plotLayerIds = [];
   const project = this._project = ProjectsRegistry.getCurrentProject();
   // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
@@ -64,6 +66,11 @@ function QueryResultsService() {
     closeComponent: function() {}
   };
   base(this);
+
+  this.addLayersPlotIds = function(layerIds=[]) {
+    this.plotLayerIds = layerIds;
+  };
+
   this._setRelations(project);
   this._setAtlasActions(project);
   this._addVectorLayersDataToQueryResponse();
@@ -348,6 +355,7 @@ proto.setActionsForLayers = function(layers) {
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         download: false,
+        mouseover: true,
         class: GUI.getFontClass('marker'),
         hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
         cbk: this.goToGeometry.bind(this)
@@ -357,15 +365,34 @@ proto.setActionsForLayers = function(layers) {
       const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
         return relation.type === 'MANY';
       });
-      relations && relations.length && this.state.layersactions[layer.id].push({
-        id: 'show-query-relations',
-        download: false,
-        class: GUI.getFontClass('relation'),
-        hint: 'sdk.mapcontrols.query.actions.relations.hint',
-        cbk: QueryResultsService.showQueryRelations,
-        relations
-      });
+      if (relations && relations.length) {
+        const chartRelationIds = [];
+        relations.forEach(relation => {
+          const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
+          id && chartRelationIds.push(id);
+        });
+
+       this.state.layersactions[layer.id].push({
+          id: 'show-query-relations',
+          download: false,
+          class: GUI.getFontClass('relation'),
+          hint: 'sdk.mapcontrols.query.actions.relations.hint',
+          cbk: QueryResultsService.showQueryRelations,
+          relations,
+         chartRelationIds
+        });
+
+        chartRelationIds.length && this.state.layersactions[layer.id].push({
+         id: 'show-plots-relations',
+         download: false,
+         opened: true,
+         class: GUI.getFontClass('chart'),
+         hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
+         cbk: this.showRelationsChart.bind(this, chartRelationIds)
+       });
+      }
     }
+
     DOWNLOAD_FEATURE_FORMATS.forEach(format => {
       layer.download[format] && this.state.layersactions[layer.id].push({
         id: `download_${format}_feature`,
@@ -386,11 +413,9 @@ proto.setActionsForLayers = function(layers) {
   this.addActionsForLayers(this.state.layersactions);
 };
 
-proto.trigger = function(actionId, layer, feature) {
+proto.trigger = function(actionId, layer, feature, index) {
   const actionMethod = this._actions[actionId];
-  if (actionMethod) {
-    actionMethod(layer, feature);
-  }
+  actionMethod && actionMethod(layer, feature, index);
   if (layer) {
     const layerActions = this.state.layersactions[layer.id];
     if (layerActions) {
@@ -401,15 +426,15 @@ proto.trigger = function(actionId, layer, feature) {
         }
       });
       if (action) {
-        this.triggerLayerAction(action,layer,feature);
+        this.triggerLayerAction(action,layer,feature, index);
       }
     }
   }
 };
 
-proto.triggerLayerAction = function(action,layer,feature) {
+proto.triggerLayerAction = function(action,layer,feature, index) {
   if (action.cbk) {
-    action.cbk(layer,feature, action)
+    action.cbk(layer,feature, action, index)
   }
   if (action.route) {
     let url;
@@ -530,6 +555,19 @@ proto._printSingleAtlas = function({atlas={}, features=[]}={}){
         GUI.setLoadingContent(false);
       })
   })
+};
+
+proto.showChart = function(ids, container){
+  this.emit('show-chart', ids, container);
+};
+
+proto.hideChart = function(container){
+  this.emit('hide-chart', container);
+};
+
+proto.showRelationsChart = function(ids=[], layer, feature, action, index){
+  const container = $(`#${layer.id}_${index} td`);
+  this.emit('show-chart', ids, container);
 };
 
 proto.printAtlas = function(layer, feature){
@@ -680,6 +718,7 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
+      chartRelationIds: action.chartRelationIds,
       feature: feature,
       layer
     }),
