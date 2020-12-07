@@ -666,37 +666,34 @@ const ViewportComponent = Vue.extend({
     },
     closeUserMessage(){
       viewportService.closeUserMessage();
+    },
+    moveFnc(evt){
+      const size =  this.state.split === 'h' ? 'width' : 'height';
+      evt.preventDefault();
+      const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : GUI.getSize({element:'sidebar', what:'width'}) : $('#main-navbar').height();
+      const viewPortSize = $(this.$el)[size]();
+      let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
+      if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
+        mapSize = viewPortSize -  viewportConstraints.resize.content.min;
+      else if( mapSize < viewportConstraints.resize.map.min)
+        mapSize = viewportConstraints.resize.map.min;
+      const contentSize = viewPortSize - mapSize;
+      const resizePercentageMap = Math.round((mapSize / viewPortSize) * 100);
+      const resizePercentageContent = 100 - resizePercentageMap;
+      viewportService.resizeViewComponents(this.state.split, {
+        map: {
+          [size]: mapSize
+        },
+        content: {
+          [size]: contentSize
+        }
+      }, resizePercentageContent);
     }
   },
   async mounted() {
     const sidebarWidth = $('#g3w-sidebar').width();
     const handleResizeViewport = ()=>{
       this.state.resized.start = true;
-      $('#resize-map-and-content').mousedown((evt) => {
-        const size =  this.state.split === 'h' ? 'width' : 'height';
-        evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : sidebarWidth : $('#main-navbar').height();
-        const viewPortSize = $(this.$el)[size]();
-        $(document).mousemove((evt) => {
-          let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
-          if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
-            mapSize = viewPortSize -  viewportConstraints.resize.content.min;
-          else if( mapSize < viewportConstraints.resize.map.min)
-            mapSize = viewportConstraints.resize.map.min;
-          const contentSize = viewPortSize - mapSize;
-          const resizePercentageMap = Math.round((mapSize / viewPortSize) * 100);
-          const resizePercentageContent = 100 - resizePercentageMap;
-          viewportService.resizeViewComponents(this.state.split, {
-            map: {
-              [size]: mapSize
-            },
-            content: {
-              [size]: contentSize
-            }
-          }, resizePercentageContent);
-        });
-        $(document).mouseup(evt => $(document).unbind('mousemove'));
-      });
     };
     await this.$nextTick();
     const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");

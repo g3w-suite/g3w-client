@@ -36,6 +36,11 @@ const ApplicationTemplate = function({ApplicationService}) {
   // useful to build a difference layout/compoìnent based on mobile or not
   this._isMobile = isMobile.any;
   this._isIframe = appLayoutConfig.iframe;
+  this.sizes = {
+    sidebar: {
+      width:0
+    }
+  };
   this.init = function() {
     // create Vue App
     this._createApp();
@@ -146,6 +151,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     }
   };
 
+
   //Vue app
   this._createApp = function() {
     this._setDataTableLanguage();
@@ -180,6 +186,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
         await this.$nextTick();
         self.emit('ready');
+        self.sizes.sidebar.width = $('#g3w-sidebar').width();
         //getSkinColor
         GUI.ready();
       }
@@ -355,6 +362,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     /* PLUBLIC INTERFACE */
     /* Common methods */
     GUI.layout = layout;
+    GUI.getSize = ({element, what}) => {
+      if (element && what)
+        return this.sizes[element][what];
+    };
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
     /* Metodos to define */

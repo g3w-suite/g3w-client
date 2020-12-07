@@ -23,7 +23,11 @@
     </user-message>
   </transition>
   <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
-    <div v-show="state.resized.start && state.secondaryPerc < 100" id="resize-map-and-content" :class="`split-${state.split}`"></div>
+    <g3w-resize id="resize-map-and-content" :show="this.state.resized.start && state.secondaryPerc < 100"
+      :moveFnc="moveFnc"
+      :orientation="state.split"
+      :style="{backgroundColor:'transparent'}"
+      :class="`split-${state.split}`"></g3w-resize>
     <div id="application-notifications">
       <online-notify></online-notify>
       <download-notify></download-notify>

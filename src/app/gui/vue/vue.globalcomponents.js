@@ -4,6 +4,7 @@ import GeospatialComponet  from './global-components/geo.vue';
 import Skeleton from './global-components/skeleton.vue';
 import BarLoader from './global-components/bar-loader';
 import HelpDiv from './global-components/helpdiv.vue';
+import Resize from './global-components/resize.vue'
 
 const GlobalComponents = {
   install(Vue) {
@@ -13,6 +14,7 @@ const GlobalComponents = {
     Vue.component(BarLoader.name, BarLoader);
     Vue.component(Skeleton.name, Skeleton);
     Vue.component(HelpDiv.name, HelpDiv);
+    Vue.component(Resize.name, Resize);
   }
 };
 

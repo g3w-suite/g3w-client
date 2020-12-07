@@ -35,15 +35,16 @@
   </template>
 
   <div v-show="!layerstree.hidden || isFolder"
-    class="tree-node-title skin-tooltip-top"
-    data-placement="top"
-    :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
-    v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''"
-    :class="{
-      disabled: layerstree.disabled,
-      bold: isFolder,
-      scalevisibility : showscalevisibilityclass
-    }"> <span :class="{highlightlayer: isHighLight}">{{ layerstree.title }}</span>
+    class="tree-node-title"
+    :class="{disabled: layerstree.disabled, bold: isFolder}">
+      <span
+        :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}"
+        class="skin-tooltip-top"
+        data-placement="top"
+        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
+        {{ layerstree.title }}
+      </span>
   </div>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">

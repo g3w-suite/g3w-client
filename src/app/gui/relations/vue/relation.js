@@ -3,8 +3,8 @@ import Field from 'gui/fields/g3w-field.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
-const RelationPageEventBus = require('./relationeventbus');
 const GUI = require('gui/gui');
+const RelationPageEventBus = require('./relationeventbus');
 const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
 let relationDataTable;
 
@@ -36,15 +36,15 @@ module.exports = {
     async resize(){
       await this.$nextTick();
       const tableHeight = $(".content").height();
-      const tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-      const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_realtion .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
-      $('.query-relation  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - OtherElementHeight );
-      if (this.table.rowFormStructure) {
-        await this.$nextTick();
-        const width =  $('#relationtable_wrapper').width() - 60;
-        $('.row-wrap-tabs .tabs-wrapper').width(width);
-      }
-      relationDataTable.columns.adjust();
+      setTimeout(()=>{
+        const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_relation .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
+        $('.query-relation  div.dataTables_scrollBody').height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+        if (this.table.rowFormStructure) {
+          const width =  $(this.$refs.relationwrapper).width() - 60;
+          $('.row-wrap-tabs .tabs-wrapper').width(width);
+        }
+      });
+      relationDataTable &&  relationDataTable.columns.adjust();
     },
     saveRelation(type){
       this.$emit('save-relation', type)
@@ -95,6 +95,15 @@ module.exports = {
     },
     is: function(type,value) {
       return this.fieldIs(type, value);
+    },
+    moveFnc(evt){
+      const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : GUI.getSize({
+        element: 'sidebar',
+        what: 'width'
+      });
+      const size = evt.pageX+2 - sidebarHeaderSize;
+      this.$refs.tablecontent.style.width = `${size}px`;
+      this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
     }
   },
   watch: {
@@ -134,22 +143,8 @@ module.exports = {
         "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
       });
       $('.row-form').tooltip();
+      this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
       this.resize();
-    }
-    if (this.showChartButton) {
-      const sidebarWidth = $('#g3w-sidebar').width();
-      $(this.$refs.resizecharttable).mousedown((evt) => {
-        const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : sidebarWidth;
-        $(document).mousemove((evt) => {
-          const size =  (evt.pageX+2) - sidebarHeaderSize;
-          this.$refs.tablecontent.style.width = `${size}px`;
-          this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-        });
-        $(document).mouseup(evt => {
-          $(document).unbind('mousemove');
-          GUI.emit('resize');
-        });
-      });
     }
   },
   beforeDestroy(){
@@ -157,5 +152,6 @@ module.exports = {
     relationDataTable = null;
     this.chartContainer && this.$emit('hide-chart', this.chartContainer);
     this.chartContainer = null;
+    this.tableHeaderHeight = null;
   }
 };

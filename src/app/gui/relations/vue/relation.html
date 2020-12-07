@@ -24,7 +24,7 @@
     </div>
   </div>
   <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px" ref="relationwrapper">
-    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" ref="tablecontent">
+    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" style="margin-right: 3px" ref="tablecontent">
       <table id="relationtable" class="table table-striped" width="100%" >
         <thead>
         <tr>
@@ -55,8 +55,8 @@
         </tbody>
       </table>
     </div>
-    <div v-show="chart" id="resize-chart-and-table" style="width: 4px; cursor: col-resize; background-color: #dddddd; margin: 0 3px 0 3px;" ref="resizecharttable"></div>
-    <div v-show="chart" id="chart_content" style="width: 30%; padding-bottom: 5px" ref="chartcontent">
+    <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'"></g3w-resize>
+    <div v-show="chart" id="chart_content" style="width: 30%; padding-bottom: 5px; margin-bottom: 5px; margin-left: 3px;" ref="chartcontent">
     </div>
   </div>
   <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
