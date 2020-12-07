@@ -31,7 +31,7 @@
       }
     },
     methods: {
-Fnc(evt) {
+      wrapMoveFnc(evt) {
         this.domElementMoveListen.addEventListener('mouseup', this.stop, {once: true});
         this.moveFnc(evt);
       },
