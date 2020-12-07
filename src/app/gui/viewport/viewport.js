@@ -6,6 +6,7 @@ import pluginsNotify from 'gui/notifications/plugins/vue/plugins.vue';
 const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
+let SIDEBARWIDTH;
 
 // calsse servizio della viewport
 const ViewportService = function() {
@@ -550,6 +551,7 @@ const ViewportService = function() {
     };
     // GUI ready event
     GUI.on('ready',() => {
+      SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
       this._layout();
       GUI.on('guiresized',() => {
         triggerResize();
@@ -670,7 +672,7 @@ const ViewportComponent = Vue.extend({
     moveFnc(evt){
       const size =  this.state.split === 'h' ? 'width' : 'height';
       evt.preventDefault();
-      const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : GUI.getSize({element:'sidebar', what:'width'}) : $('#main-navbar').height();
+      const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH : $('#main-navbar').height();
       const viewPortSize = $(this.$el)[size]();
       let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
       if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
@@ -691,7 +693,6 @@ const ViewportComponent = Vue.extend({
     }
   },
   async mounted() {
-    const sidebarWidth = $('#g3w-sidebar').width();
     const handleResizeViewport = ()=>{
       this.state.resized.start = true;
     };

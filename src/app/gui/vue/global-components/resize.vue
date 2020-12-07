@@ -31,14 +31,17 @@
       }
     },
     methods: {
-      start(){
-        this.domElementMoveListen.addEventListener('mousemove', this.moveFnc);
-        this.domElementMoveListen.addEventListener('mouseup', this.stop)
+Fnc(evt) {
+        this.domElementMoveListen.addEventListener('mouseup', this.stop, {once: true});
+        this.moveFnc(evt);
       },
-      async stop(emit=true){
-        this.domElementMoveListen.removeEventListener('mousemove', this.moveFnc);
+      start(){
+        this.domElementMoveListen.addEventListener('mousemove', this.wrapMoveFnc);
+      },
+      async stop(){
+        this.domElementMoveListen.removeEventListener('mousemove', this.wrapMoveFnc);
         await this.$nextTick();
-        emit && GUI.emit('resize');
+        GUI.emit('resize');
       }
     },
     watch:{
@@ -67,7 +70,6 @@
       }
     },
     destroyed() {
-      this.stop(false);
       this.domElementMoveListen = null;
     }
   }
