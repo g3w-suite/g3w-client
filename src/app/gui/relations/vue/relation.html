@@ -56,7 +56,7 @@
       </table>
     </div>
     <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'"></g3w-resize>
-    <div v-show="chart" id="chart_content" style="width: 30%; padding-bottom: 5px; margin-bottom: 5px; margin-left: 3px;" ref="chartcontent">
+    <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0'}" style="padding-bottom: 5px; margin-bottom: 5px; margin-left: 3px;" ref="chartcontent">
     </div>
   </div>
   <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>

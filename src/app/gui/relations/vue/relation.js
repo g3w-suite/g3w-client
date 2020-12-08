@@ -105,7 +105,7 @@ module.exports = {
     }
   },
   watch: {
-    async chart(){
+    async chart(bool){
       await this.$nextTick();
       this.resize();
     }
