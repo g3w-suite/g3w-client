@@ -1754,7 +1754,7 @@ proto._setupBaseLayers = function(){
     return;
   }
   this.mapBaseLayers = {};
-  baseLayers.forEach((layer) => {
+  baseLayers.forEach(layer => {
     const baseMapLayer = layer.getMapLayer();
     this.registerMapLayerListeners(baseMapLayer);
     this.mapBaseLayers[layer.getId()] = baseMapLayer;
@@ -1831,6 +1831,7 @@ proto.removeAllLayers = function(){
 proto.addLayerToMap = function(layer) {
   const olLayer = layer.getOLLayer();
   olLayer && this.getMap().addLayer(olLayer);
+  PIPPO = this.getMap()
 };
 
 proto._setMapProjectionToLayers = function(layers) {

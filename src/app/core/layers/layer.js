@@ -589,11 +589,14 @@ Layer.SourceTypes = {
   VIRTUAL:'virtual',
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
+  ORACLE: 'oracle',
   MSSQL: 'mssql',
   CSV: 'delimitedtext',
   OGR: 'ogr',
   GDAL: 'gdal',
   WMS: 'wms',
+  WFS: 'wfs',
+  ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"
 };
 

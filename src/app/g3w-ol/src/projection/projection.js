@@ -1,5 +1,9 @@
-const GENERIC_GRID_EXTENT =  [0,0,8388608,8388608];
+//const GENERIC_GRID_EXTENT =  [0,0,8388608,8388608];
+const GENERIC_GRID_EXTENT = ol.proj.get('EPSG:3857').getExtent();
 const GENERIC_GRID_EXTENT_DEGREE = [-180,-90, 180, 90];
+const CUSTOM_PROJECTIONS_EXTENT = {
+  'EPSG:3876':[18835101.07,4367049.45,22702879.51,9383109.87]
+};
 
 const Projection = function(options={}) {
   if (!options.crs) return null;
@@ -9,7 +13,7 @@ const Projection = function(options={}) {
   const degrees = geographic;
   ol.proj.Projection.call(this, {
     code: epsg,
-    extent: options.extent ? options.extent : degrees ? GENERIC_GRID_EXTENT_DEGREE: GENERIC_GRID_EXTENT,
+    extent: options.extent ? options.extent : degrees ? GENERIC_GRID_EXTENT_DEGREE: CUSTOM_PROJECTIONS_EXTENT[epsg] || GENERIC_GRID_EXTENT,
     axisOrientation: this._axisOrientation,
     units: degrees ? 'degrees' : 'm'
   });

@@ -5,7 +5,7 @@
       <span v-for="info in featureInfo()"><b>{{ info.key }}</b>: {{ info.value }} </span>
     </div>
   </div>
-  <table v-if="!loading" class="table table-bordered table-hover">
+  <table v-show="!loading" class="table table-bordered table-hover">
     <thead>
     </thead>
     <tbody>

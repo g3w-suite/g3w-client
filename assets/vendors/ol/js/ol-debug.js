@@ -59324,7 +59324,6 @@ ol.source.Source = function(options) {
    */
   this.state_ = options.state !== undefined ?
     options.state : ol.source.State.READY;
-
   /**
    * @private
    * @type {boolean}
@@ -74458,6 +74457,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
   this.sourceZ_ = 0;
 
   var targetExtent = targetTileGrid.getTileCoordExtent(this.wrappedTileCoord_);
+  console.log(targetExtent)
   var maxTargetExtent = this.targetTileGrid_.getExtent();
   var maxSourceExtent = this.sourceTileGrid_.getExtent();
 
@@ -74525,13 +74525,11 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
       sourceExtent = ol.extent.getIntersection(sourceExtent, maxSourceExtent);
     }
   }
-
   if (!ol.extent.getArea(sourceExtent)) {
     this.state = ol.TileState.EMPTY;
   } else {
     var sourceRange = sourceTileGrid.getTileRangeForExtentAndZ(
         sourceExtent, this.sourceZ_);
-
     for (var srcX = sourceRange.minX; srcX <= sourceRange.maxX; srcX++) {
       for (var srcY = sourceRange.minY; srcY <= sourceRange.maxY; srcY++) {
         var tile = getTileFunction(this.sourceZ_, srcX, srcY, pixelRatio);
@@ -74677,6 +74675,7 @@ goog.require('ol.tilecoord');
  * @return {ol.TileUrlFunctionType} Tile URL function.
  */
 ol.TileUrlFunction.createFromTemplate = function(template, tileGrid) {
+  console.log(template)
   var zRegEx = /\{z\}/g;
   var xRegEx = /\{x\}/g;
   var yRegEx = /\{y\}/g;
@@ -75143,6 +75142,7 @@ ol.source.Tile.prototype.getTileCoordForTileUrlFunction = function(tileCoord, op
  * @inheritDoc
  */
 ol.source.Tile.prototype.refresh = function() {
+  console.log('qui')
   this.tileCache.clear();
   this.changed();
 };
@@ -75444,7 +75444,6 @@ goog.require('ol.tilegrid');
  * @api
  */
 ol.source.TileImage = function(options) {
-
   ol.source.UrlTile.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
@@ -75634,6 +75633,7 @@ ol.source.TileImage.prototype.getTileCacheForProjection = function(projection) {
  * @private
  */
 ol.source.TileImage.prototype.createTile_ = function(z, x, y, pixelRatio, projection, key) {
+  console.log(x)
   var tileCoord = [z, x, y];
   var urlTileCoord = this.getTileCoordForTileUrlFunction(
       tileCoord, projection);
@@ -75688,7 +75688,7 @@ ol.source.TileImage.prototype.getTile = function(z, x, y, pixelRatio, projection
           }.bind(this), this.reprojectionErrorThreshold_,
           this.renderReprojectionEdges_);
       newTile.key = key;
-
+      console.log(tile)
       if (tile) {
         newTile.interimTile = tile;
         newTile.refreshInterimChain();

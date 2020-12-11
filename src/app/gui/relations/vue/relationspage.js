@@ -73,19 +73,19 @@ const InternalComponent = Vue.extend({
     setRelationsList: function() {
       this.previousview = 'relation';
       this.currentview = 'relations';
+      this.loading = false;
     }
   },
   beforeMount () {
     if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
   },
-  mounted() {
-    this.$nextTick(()=> {
-      if (this.error)
-        requestAnimationFrame(() => {
-          GUI.popContent()
-        });
-      this.error = false;
-    });
+  async mounted() {
+    await this.$nextTick();
+    if (this.error)
+      requestAnimationFrame(() => {
+        GUI.popContent()
+      });
+    this.error = false;
   }
 });
 

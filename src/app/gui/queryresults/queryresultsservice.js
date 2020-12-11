@@ -719,7 +719,7 @@ QueryResultsService.showQueryRelations = function(layer, feature, action) {
     content: new RelationsPage({
       relations: action.relations,
       chartRelationIds: action.chartRelationIds,
-      feature: feature,
+      feature,
       layer
     }),
     backonclose: true,

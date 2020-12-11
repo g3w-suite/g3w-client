@@ -425,6 +425,7 @@ proto.setLayersTree = function(layerstree, name) {
 proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
   const _layerstree = options.layerstree || null;
+  const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
     if (full === true) {
@@ -434,7 +435,9 @@ proto.createLayersTree = function(groupName, options={}) {
         _.forIn(obj, (layer) => {
           let lightlayer = {};
           if (!_.isNil(layer.id)) {
-            lightlayer.id = layer.id;
+            if (tocLayersId.find(toclayerId => toclayerId === layer.id))
+              lightlayer.id = layer.id;
+            else lightlayer = null;
           }
           if (!_.isNil(layer.nodes)) {
             lightlayer.title = layer.name;
@@ -444,7 +447,7 @@ proto.createLayersTree = function(groupName, options={}) {
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes, lightlayer.nodes)
           }
-          newobj.push(lightlayer);
+          lightlayer && newobj.push(lightlayer);
         });
       };
       traverse(_layerstree, layerstree);
