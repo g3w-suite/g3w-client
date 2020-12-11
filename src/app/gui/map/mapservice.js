@@ -1831,7 +1831,6 @@ proto.removeAllLayers = function(){
 proto.addLayerToMap = function(layer) {
   const olLayer = layer.getOLLayer();
   olLayer && this.getMap().addLayer(olLayer);
-  PIPPO = this.getMap()
 };
 
 proto._setMapProjectionToLayers = function(layers) {
