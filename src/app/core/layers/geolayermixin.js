@@ -26,6 +26,7 @@ proto.setup = function(config={}, options={}) {
     bbox: config.bbox || null,
     visible: config.visible || false,
     checked: config.visible || false,
+    epsg: config.crs.epsg,
     hidden: config.hidden || false,
     scalebasedvisibility: config.scalebasedvisibility || false,
     minscale: config.minscale,
