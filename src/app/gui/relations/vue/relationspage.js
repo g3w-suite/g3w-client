@@ -65,6 +65,7 @@ const InternalComponent = Vue.extend({
     setRelationsList: function() {
       this.previousview = 'relation';
       this.currentview = 'relations';
+      this.loading = false;
     }
   },
   beforeMount () {

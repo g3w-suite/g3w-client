@@ -130,7 +130,7 @@ const vueComponentOptions = {
     zoomToLayer: function() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
       const mapService = GUI.getComponent('map').getService();
-      mapService.goToBBox(bbox);
+      mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
       this._hideMenu();
     },
     canZoom(layer) {

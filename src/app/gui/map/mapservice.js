@@ -2015,7 +2015,8 @@ proto.getResolutionForZoomToExtent = function(extent){
   return resolution
 };
 
-proto.goToBBox = function(bbox) {
+proto.goToBBox = function(bbox, epsg=this.getEpsg()) {
+  bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
   this.viewer.fit(bbox);
 };
 
