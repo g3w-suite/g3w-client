@@ -1060,9 +1060,7 @@ proto._setupControls = function() {
           // streetview
           control = this.createMapControl(controlType, {});
           control.setProjection(this.getProjection());
-          this.on('viewerset', () => {
-            this.viewer.map.addLayer(control.getLayer());
-          });
+          this.viewer.map.addLayer(control.getLayer());
           const streetViewService = new StreetViewService();
           streetViewService.init().then(()=> {
             const position = {
