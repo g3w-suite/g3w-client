@@ -21,17 +21,17 @@ const StreetViewControl = function(options) {
   });
   this._layer = new ol.layer.Vector({
     source: streetVectorSource,
-    style: function(feature) {
+    style(feature) {
       const coordinates = feature.getGeometry().getCoordinates();
       this._lastposition = this._lastposition ? this._lastposition : coordinates;
       const dx = coordinates[0] - this._lastposition[0];
       const dy = coordinates[1] - this._lastposition[1];
       const rotation = -Math.atan2(dy, dx);
-      let styles = [
+      const styles = [
         new ol.style.Style({
           text: new ol.style.Text({
             text: '\ue905',
-            font: 'bold 15px icomoon',
+            font: 'bold 18px icomoon',
             fill: new ol.style.Fill({
               color: '#ffffff'
             })
@@ -56,7 +56,6 @@ ol.inherits(StreetViewControl, InteractionControl);
 
 const proto = StreetViewControl.prototype;
 
-
 proto.getLayer = function() {
   return this._layer;
 };
@@ -67,18 +66,15 @@ proto.setProjection = function(projection) {
 
 proto.setPosition = function(position) {
   const self = this;
-  let lnglat;
   let pixel;
-  if (!this._sv) {
-    this._sv = new google.maps.StreetViewService();
-  }
+  if (!this._sv) this._sv = new google.maps.StreetViewService();
   this._sv.getPanorama({location: position}, function (data) {
     self._panorama = new google.maps.StreetViewPanorama(
       document.getElementById('streetview')
     );
     self._panorama.addListener('position_changed', function() {
       if (self.isToggled()) {
-        lnglat = ol.proj.transform([this.getPosition().lng(), this.getPosition().lat()], 'EPSG:4326', self._projection.getCode());
+        const lnglat = ol.proj.transform([this.getPosition().lng(), this.getPosition().lat()], 'EPSG:4326', self._projection.getCode());
         self._layer.getSource().getFeatures()[0].setGeometry(
           new ol.geom.Point(lnglat)
         );
@@ -106,9 +102,7 @@ proto.setMap = function(map) {
       type: 'picked',
       coordinates: e.coordinate
     });
-    if (this._autountoggle) {
-      this.toggle();
-    }
+    this._autountoggle && this.toggle();
   });
 };
 
@@ -126,11 +120,8 @@ proto.clear = function() {
 
 proto.toggle = function(toggle) {
   InteractionControl.prototype.toggle.call(this, toggle);
-  if (!this.isToggled()) {
-    this.clear()
-  } else {
-    this._layer.getSource().addFeatures([this._streetViewFeature]);
-  }
+  if (!this.isToggled()) this.clear();
+  else this._layer.getSource().addFeatures([this._streetViewFeature]);
 };
 
 module.exports = StreetViewControl;
