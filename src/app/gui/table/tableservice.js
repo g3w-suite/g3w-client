@@ -9,7 +9,7 @@ const TableService = function(options = {}) {
   this.layer = options.layer;
   this.formatter = options.formatter;
   const headers = this.getHeaders();
-  this.selectedfeaturesid = [];
+  this.selectedfeaturesid = new Set();
   this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
     pageLengths: [10, 25, 50],
@@ -64,7 +64,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
       });
     else {
       let searchText = search.value && search.value.length > 0 ? search.value : null;
-      this.selectedfeaturesid = this.state.features.filter(feature => feature.selected).map(feature=> feature.id);
+      this.state.features.filter(feature => feature.selected).forEach(feature=> this.selectedfeaturesid.add(feature.id));
       this.state.features.splice(0);
       if (!order.length) {
         order.push({
@@ -103,7 +103,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
 proto.addFeature = function(feature) {
   const tableFeature = {
     id: feature.id,
-    selected: this.selectedfeaturesid.indexOf(feature.id) !== -1,
+    selected: this.selectedfeaturesid.has(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.layer.getType() !== Layer.LayerTypes.TABLE && this._returnGeometry(feature)
   };
