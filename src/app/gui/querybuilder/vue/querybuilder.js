@@ -124,7 +124,7 @@ const QueryBuilder = Vue.extend({
     };
     const project = ProjectsRegistry.getCurrentProject();
     this.layers = project.getLayers().filter(layer => {
-      return !layer.baseLayer && layer.geometrytype && layer.geometrytype !== 'NoGeometry' && Array.isArray(layer.fields);
+      return !layer.baselayer && layer.geometrytype && layer.geometrytype !== 'NoGeometry' && Array.isArray(layer.fields);
     }).map(layer => {
       const relations = project.getRelationsByLayerId({
         layerId: layer.id,

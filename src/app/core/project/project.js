@@ -174,7 +174,7 @@ proto._buildLayersStore = function() {
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });
-    layersStore.addLayer(layer);
+    layer && layersStore.addLayer(layer);
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {

@@ -13,7 +13,7 @@ function Layer(config={}, options={}) {
   config.title = config.title || config.name;
   config.download = !!config.download;
   config.geolayer = false;
-  config.baseLayer =  false;
+  config.baselayer = !!config.baselayer;
   config.fields = config.fields || {};
   config.urls = {
     query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
@@ -276,9 +276,7 @@ proto.getTableFields = function() {
 };
 
 proto.getTableHeaders = function(){
-  return this.getTableFields().filter(field => {
-    return geometryFields.indexOf(field.name) === -1
-  });
+  return this.getTableFields().filter(field => geometryFields.indexOf(field.name) === -1);
 };
 
 proto.getProject = function() {
@@ -589,11 +587,14 @@ Layer.SourceTypes = {
   VIRTUAL:'virtual',
   POSTGIS: 'postgres',
   SPATIALITE: 'spatialite',
+  ORACLE: 'oracle',
   MSSQL: 'mssql',
   CSV: 'delimitedtext',
   OGR: 'ogr',
   GDAL: 'gdal',
   WMS: 'wms',
+  WFS: 'wfs',
+  ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"
 };
 

@@ -21,6 +21,12 @@ const ProvidersForServerTypes = {
       data: Providers.qgis,
       search: Providers.qgis
     },
+    'oracle': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: Providers.qgis,
+      search: Providers.qgis
+    },
     'mssql': {
       query: Providers.wms,
       filter: Providers.wfs,

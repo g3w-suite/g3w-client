@@ -13,25 +13,26 @@ function LayerFactory() {
     return layerClass ? new layerClass(config, options) : null
   };
 
-  this.get = function(config) {
+  this.get = function(config={}) {
     let LayerClass;
     const serverType = config.servertype;
     switch (serverType) {
       case Layer.ServerTypes.QGIS:
-        LayerClass = ImageLayer;
-        if (config.source && config.geometrytype) {
-          if ([
+        if (config.source) {
+          if (config.geometrytype) {
+            if ([
               Layer.SourceTypes.VIRTUAL,
               Layer.SourceTypes.POSTGIS,
               Layer.SourceTypes.MYSQL,
               Layer.SourceTypes.SPATIALITE,
               Layer.SourceTypes.CSV,
+              Layer.SourceTypes.ORACLE,
               Layer.SourceTypes.OGR
-            ].indexOf(config.source.type) > -1) {
-            if (config.geometrytype && config.geometrytype === 'NoGeometry') {
-              LayerClass = TableLayer;
+            ].find(sourcetype => sourcetype === config.source.type)) {
+              if (config.geometrytype && config.geometrytype === 'NoGeometry') LayerClass = TableLayer;
+              else LayerClass = ImageLayer;
             }
-          }
+          } else if (config.source.type === Layer.SourceTypes.WMS) LayerClass = ImageLayer;
         }
         break;
       case Layer.ServerTypes.OGC:
