@@ -26,6 +26,7 @@ function LayerFactory() {
               Layer.SourceTypes.MYSQL,
               Layer.SourceTypes.SPATIALITE,
               Layer.SourceTypes.CSV,
+              Layer.SourceTypes.ORACLE,
               Layer.SourceTypes.OGR
             ].find(sourcetype => sourcetype === config.source.type)) {
               if (config.geometrytype && config.geometrytype === 'NoGeometry') LayerClass = TableLayer;

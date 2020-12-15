@@ -9,6 +9,7 @@ const TableService = function(options = {}) {
   this.layer = options.layer;
   this.formatter = options.formatter;
   const headers = this.getHeaders();
+  this.selectedfeaturesid = [];
   this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
     pageLengths: [10, 25, 50],
@@ -25,7 +26,7 @@ const TableService = function(options = {}) {
     state: false,
     fnc: noop
   };
-  GUI.onbefore('setContent', (options)=>{
+  GUI.onbefore('setContent', options =>{
     const {perc} = options;
     this._async.state = perc === 100;
   })
@@ -34,17 +35,18 @@ const TableService = function(options = {}) {
 const proto = TableService.prototype;
 
 proto.getHeaders = function() {
-  return this.layer.getTableHeaders();
+  //add null as firs vale of header because need to add a custom input selector fro datatable purpose
+  return [null, ...this.layer.getTableHeaders()];
 };
 
 // function need to work with pagination
 proto.setDataForDataTable = function() {
   const data = [];
-  this.state.features.forEach((feature) => {
+  this.state.features.forEach(feature => {
     const attributes = feature.attributes ? feature.attributes : feature.properties;
-    const values = [];
-    this.state.headers.forEach((header) => {
-      values.push(attributes[header.name]);
+    const values = [null];
+    this.state.headers.forEach(header => {
+      header && values.push(attributes[header.name]);
     });
     data.push(values)
   });
@@ -62,10 +64,11 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
       });
     else {
       let searchText = search.value && search.value.length > 0 ? search.value : null;
+      this.selectedfeaturesid = this.state.features.filter(feature => feature.selected).map(feature=> feature.id);
       this.state.features.splice(0);
       if (!order.length) {
         order.push({
-          column: 0,
+          column: 1,
           dir: 'asc'
         })
       }
@@ -78,7 +81,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         formatter: this.formatter,
         ordering
       }).then(data => {
-        let features = data.features;
+        const {features} = data;
         this.addFeatures(features);
         this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
@@ -99,16 +102,16 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
 
 proto.addFeature = function(feature) {
   const tableFeature = {
+    id: feature.id,
+    selected: this.selectedfeaturesid.indexOf(feature.id) !== -1,
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.layer.getType() !== Layer.LayerTypes.TABLE && this._returnGeometry(feature)
   };
   this.state.features.push(tableFeature);
 };
 
-proto.addFeatures = function(features) {
-  features.forEach((feature) => {
-    this.addFeature(feature);
-  });
+proto.addFeatures = function(features=[]) {
+  features.forEach(feature => this.addFeature(feature));
 };
 
 proto._setLayout = function() {
@@ -126,21 +129,17 @@ proto._returnGeometry = function(feature) {
   return geometry;
 };
 
-proto.zoomAndHighLightSelectedFeature = function(feature, zoom=true) {
-  let geometry = feature.geometry;
+proto.zoomAndHighLightFeature = function(feature, zoom=true) {
+  const geometry = feature.geometry;
   if (geometry) {
     const mapService = GUI.getComponent('map').getService();
-    if (this._async.state) {
-      this._async.fnc = mapService.highlightGeometry.bind(mapService, geometry, {zoom});
-    } else {
-      mapService.highlightGeometry(geometry , {
-        zoom
-      });
-    }
+    if (this._async.state) this._async.fnc = mapService.highlightGeometry.bind(mapService, geometry, {zoom});
+    else mapService.highlightGeometry(geometry , { zoom });
   }
 };
 
 proto.clear = function(){
+  this.selectedfeaturesid = null;
   this._async.state && setTimeout(()=> {
     this._async.fnc();
     this._async.state = false;

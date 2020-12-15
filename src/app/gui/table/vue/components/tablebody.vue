@@ -3,18 +3,20 @@
     <tr role="row" class="feature_attribute"
         style="cursor: pointer"
         v-for="(feature, index) in features" :key="feature.id"
-        @mouseover="zoomAndHighLightSelectedFeature(feature, false)"
-        @click="[selectedRow !== index && zoomAndHighLightSelectedFeature(feature, index), toggleRow(index)]"
+        @mouseover="zoomAndHighLightFeature(feature, false)"
+        @click="zoomAndHighLightFeature(feature, index)"
         :selected="selectedRow === index"
-        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}]">
-      <td v-for="header in headers" :tab-index="1">
-        <field :state="{value: feature.attributes[header.name]}"></field>
+        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
+      <td v-for="(header, hindex) in headers" :tab-index="1">
+        <select-row :feature="feature" v-if="hindex===0"></select-row>
+        <field v-else :state="{value: feature.attributes[header.name]}"></field>
       </td>
     </tr>
   </tbody>
 </template>
 
 <script>
+  import SelectRow from './selectrow.vue'
   const Field = require('gui/fields/g3w-field.vue');
   export default {
     name: "table-body",
@@ -27,7 +29,7 @@
         required: true,
         type: Array
       },
-      zoomAndHighLightSelectedFeature: {
+      zoomAndHighLightFeature: {
         type: Function
       },
     },
@@ -36,13 +38,9 @@
         selectedRow: null
       }
     },
-    methods: {
-      toggleRow(index) {
-        this.selectedRow = this.selectedRow === index ? null : index;
-      }
-    },
     components: {
-      Field
+      Field,
+      SelectRow
     }
   }
 </script>

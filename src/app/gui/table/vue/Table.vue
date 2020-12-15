@@ -1,12 +1,15 @@
 <template>
   <div id="open_attribute_table">
-    <table v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
+    <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
       <thead>
         <tr>
-          <th v-for="header in state.headers">{{ header.label }}</th>
+          <th v-for="(header, index) in state.headers">
+            <span style="max-width: 30px" v-if="index === 0"></span>
+            <span v-else>{{ header.label }}</span>
+          </th>
         </tr>
       </thead>
-      <table-body :headers="state.headers" :features="state.features" :zoomAndHighLightSelectedFeature="zoomAndHighLightSelectedFeature"></table-body>
+      <table-body :headers="state.headers" :features="state.features" :zoomAndHighLightFeature="zoomAndHighLightFeature"></table-body>
     </table>
     <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
@@ -15,7 +18,8 @@
 
 <script>
   import TableBody from "./components/tablebody.vue";
-  const Field = require('gui/fields/g3w-field.vue');
+  import SelectRow from './components/selectrow.vue';
+  import Field from 'gui/fields/g3w-field.vue';
   const debounce = require('core/utils/utils').debounce;
   const {resizeMixin} = require('gui/vue/vue.mixins');
   const GUI = require('gui/gui');
@@ -39,55 +43,65 @@
       _setLayout: function() {
         this.$options.service._setLayout();
       },
-      zoomAndHighLightSelectedFeature: function(feature, zoom=true) {
-        feature.geometry && this.$options.service.zoomAndHighLightSelectedFeature(feature, zoom);
+      zoomAndHighLightFeature: function(feature, zoom=true) {
+        feature.geometry && this.$options.service.zoomAndHighLightFeature(feature, zoom);
       },
-      reloadLayout() {
-        this.$nextTick(() => {
-          dataTable.columns.adjust();
-        });
+      async reloadLayout() {
+        await this.$nextTick();
+        dataTable && dataTable.columns.adjust();
       },
       hasHeaders() {
         return !!this.state.headers.length;
       },
       createdContentBody() {
-        fieldsComponents = fieldsComponents.filter((fieldComponent) => {
+        fieldsComponents = fieldsComponents.filter(fieldComponent => {
           fieldComponent.$destroy();
           return false;
         });
         const trDomeElements = $('#layer_attribute_table tbody tr');
         trDomeElements.css('cursor', 'pointer');
-        trDomeElements.each((index, element) => {
+        trDomeElements.each((index, rowElement) => {
           const feature = this.state.features[index];
           const hasGeometry = !!feature.geometry;
-          $(element).addClass('feature_attribute');
-          $(element).on('click', ()=> {
-            const selected = $(element).attr("selected");
-            trDomeElements.attr('selected', false);
-            $(element).attr( "selected", !selected );
-            hasGeometry && !selected && this.zoomAndHighLightSelectedFeature(feature);
+          $(rowElement).addClass('feature_attribute');
+          feature.selected && $(rowElement).addClass('selected');
+          $(rowElement).on('click', ()=> {
+            hasGeometry && this.zoomAndHighLightFeature(feature);
           });
-          $(element).on('mouseover', () => {
-            hasGeometry && this.zoomAndHighLightSelectedFeature(feature, false);
+          $(rowElement).on('mouseover', () => {
+            hasGeometry && this.zoomAndHighLightFeature(feature, false);
           });
-          $(element).children().each((index, element)=> {
+          $(rowElement).children().each((index, element)=> {
             const header = this.state.headers[index];
-            const fieldClass = Vue.extend(Field);
-            const fieldInstance = new fieldClass({
-              propsData: {
-                state: {
-                  value: feature.attributes[header.name]
+            let contentDOM;
+            if (header === null) {
+              const SelectRowClass = Vue.extend(SelectRow);
+              const SelectRowInstance = new SelectRowClass({
+                propsData: {
+                  feature
                 }
-              }
-            });
-            fieldInstance.$mount();
-            fieldsComponents.push(fieldInstance);
-            $(element).html(fieldInstance.$el);
+              });
+              SelectRowInstance.$on('checked', feature =>{
+                feature.selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
+              });
+              contentDOM = SelectRowInstance.$mount().$el;
+            } else {
+              const fieldClass = Vue.extend(Field);
+              const fieldInstance = new fieldClass({
+                propsData: {
+                  state: {
+                    value: feature.attributes[header.name]
+                  }
+                }
+              });
+              fieldInstance.$mount();
+              fieldsComponents.push(fieldInstance);
+              contentDOM = fieldInstance.$el
+            }
+            $(element).html(contentDOM);
           })
         });
-        setTimeout(()=> {
-          this.reloadLayout()
-        }, 0)
+        setTimeout(()=> this.reloadLayout(), 0)
       },
       async resize() {
         await this.$nextTick();
@@ -99,8 +113,7 @@
     beforeCreate(){
       this.delayType = 'debounce';
     },
-    created() {},
-    mounted() {
+    async mounted() {
       this.setContentKey = GUI.onafter('setContent', this.resize);
       const hideElements = () => {
         $('.dataTables_info, .dataTables_length').hide();
@@ -113,56 +126,51 @@
         $('.dataTables_filter').css('float', 'right');
         $('.dataTables_paginate').css('margin', '0');
       };
-      this.$nextTick(() => {
-        this.first = false;
-        if (this.state.pagination) {
-          //pagination
-          dataTable = $('#open_attribute_table table').DataTable({
-            "lengthMenu": this.state.pageLengths,
-            "scrollX": true,
-            "scrollCollapse": true,
-            "order": [ 0, 'asc' ],
-            "columns": this.state.headers,
-            "ajax": debounce((data, callback) => {
-              //remove listeners
-              const trDomeElements = $('#open_attribute_table table tr');
-              trDomeElements.each(element => {
-                $(element).off('click');
-                $(element).off('mouseover');
-              });
-              this.$options.service.getData(data)
-                .then((serverData) => {
-                  callback(serverData);
-                  this.$nextTick(() => {
-                    this.createdContentBody();
-                    if (this.isMobile()) {
-                      hideElements();
-                    }
-                  })
-                })
-                .catch((error) => {
-                  console.log(error)
-                })
-            }, 800),
-            "serverSide": true,
-            "processing": true,
-            //"responsive": true,
-            "deferLoading": this.state.allfeatures
-          });
-        } else {
-          // no pagination all data
-          dataTable = $('#open_attribute_table table').DataTable({
-            "lengthMenu": this.state.pageLengths,
-            "scrollX": true,
-            "scrollCollapse": true,
-            "order": [ 0, 'asc' ],
-            //"responsive": true,
-          });
-        }
-        if (this.isMobile()) {
-          hideElements();
-        }
-      });
+      await this.$nextTick();
+      this.first = false;
+      const commonDataTableOptions = {
+        "lengthMenu": this.state.pageLengths,
+        "scrollX": true,
+        "scrollCollapse": true,
+        "order": [ 1, 'asc' ],
+        "columnDefs": [ {
+          "targets": 0,
+          "orderable": false,
+          "width": '1%'
+        } ]
+      };
+      if (this.state.pagination) {
+        //pagination
+
+        dataTable = $('#open_attribute_table table').DataTable({
+          ...commonDataTableOptions,
+          "columns": this.state.headers,
+          "ajax": debounce((data, callback) => {
+            //remove listeners
+            const trDomeElements = $('#open_attribute_table table tr');
+            trDomeElements.each(element => {
+              $(element).off('click');
+              $(element).off('mouseover');
+            });
+            this.$options.service.getData(data)
+              .then(async serverData => {
+                callback(serverData);
+                await this.$nextTick();
+                this.createdContentBody();
+                this.isMobile() && hideElements();
+              })
+              .catch((error) => {
+                console.log(error)
+              })
+          }, 800),
+          "serverSide": true,
+          "processing": true,
+          "deferLoading": this.state.allfeatures
+        });
+      } else
+        // no pagination all data
+        dataTable = $('#open_attribute_table table').DataTable(commonDataTableOptions);
+      this.isMobile() && hideElements();
     },
     beforeDestroy() {
       GUI.un('setContent', this.setContentKey);
