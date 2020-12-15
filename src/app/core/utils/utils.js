@@ -344,7 +344,21 @@ const utils = {
     }
   },
   XHR: {
+    addGlobalParam(key, value){
+      this.globalParams[key] = value;
+    },
+    removeGlobalParam(key){
+      delete this.globalParams[key];
+    },
+    setGlobalParams(params={}){
+      this.globalParams = params;
+    },
+    globalParams: {},
     get({url, params={}}={}) {
+      params = {
+        ...params,
+        ...this.globalParams
+      };
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
@@ -354,6 +368,10 @@ const utils = {
       })
     },
     post({url, data, formdata = false, contentType} = {}) {
+      data = {
+        ...data,
+        ...this.globalParams
+      };
       return new Promise((resolve, reject) => {
         if (formdata) {
           const formdata = new FormData();

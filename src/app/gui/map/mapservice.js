@@ -1609,11 +1609,11 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const projection = this.getProjection();
   const extent = project.state.extent;
   const maxxRes = ol.extent.getWidth(extent) / width;
-  const minyRes = ol.extent.getHeight(extent) / height;
-  const maxResolution = Math.min(maxxRes,minyRes);
+  const maxyRes = ol.extent.getHeight(extent) / height;
+  const maxResolution = Math.max(maxxRes,maxyRes);
   const initxRes = ol.extent.getWidth(initextent) / width;
   const inityRes = ol.extent.getHeight(initextent) / height;
-  const resolution = Math.min(initxRes,inityRes);
+  const resolution = Math.max(initxRes,inityRes);
   const center = ol.extent.getCenter(initextent);
   return {
     projection,
@@ -1992,12 +1992,18 @@ proto.zoomToExtent = function(extent, options={}) {
   });
 };
 
+proto.compareExtentWithProjectMaxExtent = function(extent){
+  const projectExtent = this.project.state.extent;
+  const inside = ol.extent.containsExtent(projectExtent, extent);
+  return inside ? extent : projectExtent;
+};
+
 proto.getResolutionForZoomToExtent = function(extent){
   let resolution;
   const map = this.getMap();
-  const projectInitExtent = this.project.state.initextent;
-  const projectMaxResolution = map.getView().getResolutionForExtent(projectInitExtent, map.getSize());
-  const inside = ol.extent.containsExtent(projectInitExtent, extent);
+  const projectExtent = this.project.state.extent;
+  const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
+  const inside = ol.extent.containsExtent(projectExtent, extent);
   // max resolution of the map
   const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
   // check if
@@ -2015,7 +2021,7 @@ proto.getResolutionForZoomToExtent = function(extent){
 
 proto.goToBBox = function(bbox, epsg=this.getEpsg()) {
   bbox = epsg === this.getEpsg() ? bbox : ol.proj.transformExtent(bbox, epsg, this.getEpsg());
-  this.viewer.fit(bbox);
+  this.viewer.fit(this.compareExtentWithProjectMaxExtent(bbox));
 };
 
 proto.goToWGS84 = function(coordinates,zoom){

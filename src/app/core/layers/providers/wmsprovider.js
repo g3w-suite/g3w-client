@@ -1,6 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
-const utils = require('core/utils/utils');
+const {base, inherit, appendParams, XHR} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
@@ -70,7 +68,7 @@ proto.query = function(options={}) {
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, resolution, size});
   this[METHOD]({url, layers, params })
-    .then((response) => {
+    .then(response => {
       const data = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve({
         data,
@@ -80,9 +78,7 @@ proto.query = function(options={}) {
         }
       });
     })
-    .fail((err) =>{
-      d.reject(err);
-    });
+    .catch(err => d.reject(err));
   return d.promise();
 };
 
@@ -90,20 +86,21 @@ proto.GET = function({url, params}) {
   let sourceParam = url.split('SOURCE');
   if (sourceParam.length) {
     url = sourceParam[0];
-    if (sourceParam.length > 1) {
-      sourceParam = '&SOURCE' + sourceParam[1];
-    } else {
-      sourceParam = '';
-    }
+    if (sourceParam.length > 1) sourceParam = '&SOURCE' + sourceParam[1];
+    else sourceParam = '';
   }
-  url = utils.appendParams(url, params);
+  url = appendParams(url, params);
   url = `${url}${sourceParam && sourceParam}`;
-  return $.get(url)
+  return XHR.get({
+    url
+  })
 };
 
-
 proto.POST = function({url, params}) {
-  return $.post(url, params)
+  return XHR.post({
+    url,
+    data: params
+  })
 };
 
 

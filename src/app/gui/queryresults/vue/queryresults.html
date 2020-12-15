@@ -120,14 +120,6 @@
                           class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
                           <span :class="'action-button-icon ' + action.class"></span>
                         </span>
-                        <select>
-                          <option v-if="showAction({action:action, layer:layer, feature:feature})"
-                            @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
-                            v-download="action.download"
-                            class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                            <span :class="'action-button-icon ' + action.class"></span>
-                          </option>
-                        </select>
                       </td>
                       <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">
                         <span>{{feature.attributes[attribute.name]}}</span>

@@ -13,7 +13,7 @@ function Layer(config={}, options={}) {
   config.title = config.title || config.name;
   config.download = !!config.download;
   config.geolayer = false;
-  config.baseLayer =  false;
+  config.baselayer = !!config.baselayer;
   config.fields = config.fields || {};
   config.urls = {
     query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,

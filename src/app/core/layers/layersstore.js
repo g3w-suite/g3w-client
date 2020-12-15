@@ -153,101 +153,36 @@ proto.getLayersDict = function(filter = {}, options={}) {
     layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
   }
 
-  if (typeof filterActive === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterActive === !layer.isDisabled();
-    });
-  }
+  if (typeof filterActive === 'boolean') layers = layers.filter(layer => filterActive === !layer.isDisabled());
 
-  if (typeof filterQueryable === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterQueryable === layer.isQueryable();
-    });
-  }
+  if (typeof filterQueryable === 'boolean') layers = layers.filter(layer => filterQueryable === layer.isQueryable());
 
-  if (typeof filterFilterable === 'boolean') {
-    layers = layers.filter((layer) => {
-      const condition = options.filtrable || null;
-      return filterFilterable === layer.isFilterable(condition);
-    });
-  }
+  if (typeof filterFilterable === 'boolean') layers = layers.filter(layer => filterFilterable === layer.isFilterable(options.filtrable || null));
 
-  if (typeof filterEditable === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterEditable === layer.isEditable();
-    });
-  }
+  if (typeof filterEditable === 'boolean') layers = layers.filter(layer => filterEditable === layer.isEditable());
 
-  if (typeof filterVisible === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterVisible === layer.isVisible();
-    });
-  }
+  if (typeof filterVisible === 'boolean') layers = layers.filter(layer => filterVisible === layer.isVisible());
 
-  if (typeof filterCached === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterCached === layer.isCached();
-    });
-  }
+  if (typeof filterCached === 'boolean') layers = layers.filter(layer => filterCached === layer.isCached());
 
-  if (typeof filterSelected === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterSelected === layer.isSelected();
-    });
-  }
+  if (typeof filterSelected === 'boolean') layers = layers.filter(layer => filterSelected === layer.isSelected());
 
-  if (typeof filterBaseLayer === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterBaseLayer === layer.isBaseLayer();
-    });
-  }
+  if (typeof filterBaseLayer === 'boolean') layers = layers.filter(layer => filterBaseLayer === layer.isBaseLayer());
 
-  if (typeof filterGeoLayer === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterGeoLayer === layer.state.geolayer;
-    });
-  }
+  if (typeof filterGeoLayer === 'boolean') layers = layers.filter(layer => filterGeoLayer === layer.state.geolayer);
 
-  if (typeof filterVectorLayer === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterVectorLayer === layer.isType('vector');
-    });
-  }
+  if (typeof filterVectorLayer === 'boolean') layers = layers.filter(layer => filterVectorLayer === layer.isType('vector'));
 
-  if (typeof filterHidden === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterHidden == layer.isHidden();
-    });
-  }
+  if (typeof filterHidden === 'boolean') layers = layers.filter(layer => filterHidden == layer.isHidden());
 
-  if (typeof filterDisabled === 'boolean') {
-    layers = layers.filter((layer) => {
-      return filterDisabled === layer.isDisabled();
-    });
-  }
+  if (typeof filterDisabled === 'boolean') layers = layers.filter(layer => filterDisabled === layer.isDisabled());
 
-  if (typeof filterServerType === 'string' && filterServerType !=='') {
-    layers = layers.filter((layer) => {
-      return filterServerType === layer.getServerType();
-    });
-  }
+  if (typeof filterServerType === 'string' && filterServerType !=='') layers = layers.filter(layer => filterServerType === layer.getServerType());
 
-
-  if (filterPrintable) {
-    layers = layers.filter((layer) => {
-      return layer.state.geolayer && layer.isPrintable({
-        scale: filterPrintable.scale
-      })
-    })
-  }
-
+  if (filterPrintable) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: filterPrintable.scale}));
 
   // return only not selected
-  if (filterAllNotSelected) {
-    layers = layers.filter((layer) => {
-      return !layer.isSelected();
-    });
-  }
+  if (filterAllNotSelected) layers = layers.filter((layer) => !layer.isSelected());
   return layers;
 };
 
