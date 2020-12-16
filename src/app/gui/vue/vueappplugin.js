@@ -90,7 +90,8 @@ const font = {
   download: "fas fa-download",
   credits: "fas fa-euro-sign",
   filter: "fas fa-filter",
-  plugin: "fas fa-plug"
+  plugin: "fas fa-plug",
+  invert: "fas fa-exchange-alt"
 };
 
 const Vueappplugin = {

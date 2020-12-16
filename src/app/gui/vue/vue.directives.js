@@ -53,7 +53,8 @@ const GlobalDirective = {
     });
 
     Vue.directive('t-tooltip', {
-      bind(_el, binding){
+      bind(_el, binding) {
+        binding.modifiers.create && $(_el).tooltip();
         const unique_v_t_tooltip_attr = createDirectiveObj({
           el:_el,
           attr: 'g3w-v-t-tooltip-id'

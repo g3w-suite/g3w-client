@@ -1,6 +1,12 @@
 const translations = {
   it: {
     translation: {
+      attribute_table: {
+        tools: {
+          filter: "Filtra",
+          invert: "Inverti Selezione"
+        }
+      },
       sdk: {
         search: {
           all: 'TUTTE',
@@ -374,7 +380,7 @@ const translations = {
       dataTable: {
         previous: "Precedente",
         next: "Successivo",
-        lengthMenu: "Visualizza _MENU_ righe",
+        lengthMenu: "Visualizza _MENU_",
         info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
         nodatafilterd: "Nessun risultato trovato",
         infoFiltered: "(Filtrati da _MAX_ total righe)"
@@ -383,6 +389,12 @@ const translations = {
   },
   en: {
     translation: {
+      attribute_table: {
+        tools: {
+          filter: "Filter",
+          invert: "Invert Selection"
+        }
+      },
       sdk: {
         search: {
           all: 'ALL',
@@ -754,7 +766,7 @@ const translations = {
       dataTable: {
         previous: "Previous",
         next: "Next",
-        lengthMenu: "Show _MENU_ items",
+        lengthMenu: "Show _MENU_",
         info: "Showing _START_ to _END_ of _TOTAL_ entries",
         no_data: "No data",
         nodatafilterd: "No matching records found",

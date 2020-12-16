@@ -8,7 +8,7 @@
         :selected="selectedRow === index"
         :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
       <td v-for="(header, hindex) in headers" :tab-index="1">
-        <select-row :feature="feature" v-if="hindex===0"></select-row>
+        <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"></select-row>
         <field v-else :state="{value: feature.attributes[header.name]}"></field>
       </td>
     </tr>
@@ -32,6 +32,9 @@
       zoomAndHighLightFeature: {
         type: Function
       },
+      addRemoveSelectedFeature: {
+        type: Function
+      }
     },
     data() {
       return {

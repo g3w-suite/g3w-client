@@ -1,0 +1,24 @@
+<template>
+  <div v-show="tools.show" style="display: flex; justify-content: space-between; width: 50px; padding: 3px;">
+    <div class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('filter')" v-t-tooltip.create="'attribute_table.tools.filter'"></div>
+    <div class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('invert')" v-t-tooltip.create="'attribute_table.tools.invert'" @click.stop="switchSelection"></div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: "g3w-table-toolbar",
+    props: {
+      tools: {
+        type: Object
+      },
+      switchSelection: {
+        type: Function
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+</style>

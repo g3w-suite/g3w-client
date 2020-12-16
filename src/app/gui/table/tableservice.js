@@ -3,6 +3,10 @@ const t = require('core/i18n/i18n.service').t;
 const noop = require('core/utils/utils').noop;
 const Layer = require('core/layers/layer');
 const {coordinatesToGeometry} =  require('core/utils/geo');
+const SELECTION_STATE = {
+  ALL: '__ALL__',
+  EXCLUDE: '__EXCLUDE__'
+};
 
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
@@ -20,19 +24,27 @@ const TableService = function(options = {}) {
     loading: false,
     allfeatures: 0,
     featurescount: 0,
-    pagination: true
+    pagination: true,
+    selectAll: false,
+    tools: {
+      show: false,
+      geolayer: this.layer.state.geolayer
+    }
   };
   this._async = {
     state: false,
     fnc: noop
   };
-  GUI.onbefore('setContent', options =>{
-    const {perc} = options;
-    this._async.state = perc === 100;
+  GUI.onbefore('setContent', options => {
+    this._async.state = options.perc === 100;
   })
 };
 
 const proto = TableService.prototype;
+
+proto.createFilter = function(){
+  console.log('Creating filter ....')
+};
 
 proto.getHeaders = function() {
   //add null as firs vale of header because need to add a custom input selector fro datatable purpose
@@ -53,6 +65,48 @@ proto.setDataForDataTable = function() {
   return data;
 };
 
+proto.addRemoveSelectedFeature = function(feature){
+  feature.selected = !feature.selected;
+  if (this.state.selectAll) {
+    this.state.selectAll = false;
+    this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
+    this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
+    this.selectedfeaturesid.add(feature.id);
+  } else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
+    feature.selected ? this.selectedfeaturesid.delete(feature.id) : this.selectedfeaturesid.add(feature.id);
+    const size = this.selectedfeaturesid.size;
+    if ( size === 1) {
+      this.selectedfeaturesid.clear();
+      this.selectedfeaturesid.add(SELECTION_STATE.ALL);
+      this.statate.selectAll = true;
+    } else if (size -1 === this.state.allfeatures){
+      this.selectedfeaturesid.clear();
+    }
+  } else this.selectedfeaturesid[feature.selected ? 'add' : 'delete'](feature.id);
+  this.state.tools.show = this.selectedfeaturesid.size > 0;
+};
+
+proto.switchSelection = function(){
+  if (this.state.selectAll) this.selectAllFeatures();
+  else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
+    this.selectedfeaturesid.delete(SELECTION_STATE.EXCLUDE);
+    const selectedId = Array.from(this.selectedfeaturesid);
+    this.state.features.forEach(feature => feature.selected = selectedId.indexOf(feature.id) !== -1)
+  } else {
+    const selectedId = Array.from(this.selectedfeaturesid);
+    this.state.features.forEach(feature => feature.selected = selectedId.indexOf(feature.id) === -1);
+    this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
+  }
+};
+
+proto.selectAllFeatures = function(){
+  this.state.selectAll = !this.state.selectAll;
+  this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+  this.selectedfeaturesid.clear();
+  this.state.selectAll && this.selectedfeaturesid.add(SELECTION_STATE.ALL);
+  this.state.tools.show = this.state.selectAll;
+};
+
 proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}} = {}) {
   // reset features before load
   return new Promise((resolve, reject) => {
@@ -64,7 +118,6 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
       });
     else {
       let searchText = search.value && search.value.length > 0 ? search.value : null;
-      this.state.features.filter(feature => feature.selected).forEach(feature=> this.selectedfeaturesid.add(feature.id));
       this.state.features.splice(0);
       if (!order.length) {
         order.push({
@@ -103,7 +156,8 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
 proto.addFeature = function(feature) {
   const tableFeature = {
     id: feature.id,
-    selected: this.selectedfeaturesid.has(feature.id),
+    selected: this.selectedfeaturesid.has(SELECTION_STATE.ALL) ||
+              this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE) ? !this.selectedfeaturesid.has(feature.id) :this.selectedfeaturesid.has(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.layer.getType() !== Layer.LayerTypes.TABLE && this._returnGeometry(feature)
   };

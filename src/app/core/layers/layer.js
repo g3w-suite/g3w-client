@@ -59,7 +59,8 @@ function Layer(config={}, options={}) {
     infoformat: this.getInfoFormat(),
     geolayer: false,
     visible: config.visible || false,
-    tochighlightable: false
+    tochighlightable: false,
+    filterIds: new Set()
   };
 
 
@@ -99,6 +100,30 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+//filter Ids layer methods
+
+proto.addFilterId = function(id){
+  this.state.filterIds.add(id);
+};
+
+proto.addFilterIds = function(ids=[]){
+  ids.forEach(id => this.addFilterId(id));
+};
+
+proto.removeFilterId = function(id) {
+  this.state.filterIds.delete(id);
+};
+
+proto.removeFilterIds = function(ids=[]) {
+  ids.forEach(id => this.removeFilterId(id));
+};
+
+proto.clearFilterIds = function(){
+  this.state.filterIds.clear();
+};
+
+// end filter ids methods
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()

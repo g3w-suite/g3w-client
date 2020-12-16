@@ -1,7 +1,7 @@
 <template>
   <span>
-    <input type="checkbox" :id="id" @click.stop="select($event)" :checked="feature.selected" class="magic-checkbox">
-    <label :for="id"><span style="padding-left:1px"></span></label>
+    <input type="checkbox" :id="id" :checked="feature.selected" class="magic-checkbox">
+    <label @click.capture.stop.prevent="select" :for="id"><span style="padding:5px"></span></label>
   </span>
 </template>
 
@@ -20,11 +20,12 @@
       }
     },
     methods: {
-      select(evt){
-        evt.stopImmediatePropagation();
-        this.feature.selected = !this.feature.selected;
-        this.$emit('checked', this.feature);
+      select(){
+        this.$emit('selected', this.feature);
       }
+    },
+    destroyed(){
+      this.$off('selected')
     }
   }
 </script>
