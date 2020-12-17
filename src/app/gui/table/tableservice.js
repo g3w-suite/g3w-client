@@ -13,6 +13,7 @@ const TableService = function(options = {}) {
   this.layer = options.layer;
   this.formatter = options.formatter;
   const headers = this.getHeaders();
+  this.allfeaturesnumber;
   this.selectedfeaturesid = new Set();
   this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
   this.state = {
@@ -101,10 +102,19 @@ proto.switchSelection = function(){
 
 proto.selectAllFeatures = function(){
   this.state.selectAll = !this.state.selectAll;
-  this.state.features.forEach(feature => feature.selected = this.state.selectAll);
   this.selectedfeaturesid.clear();
-  this.state.selectAll && this.selectedfeaturesid.add(SELECTION_STATE.ALL);
-  this.state.tools.show = this.state.selectAll;
+  this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+  if (this.state.allfeatures === this.allfeaturesnumber) {
+    this.state.selectAll && this.selectedfeaturesid.add(SELECTION_STATE.ALL);
+    this.state.tools.show = this.state.selectAll;
+  } else {
+    if (!this.state.selectAll) {
+      this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
+      this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
+    }
+    this.state.features.forEach(feature => this.selectedfeaturesid.add(feature.id));
+    this.state.tools.show = this.state.selectAll;
+  }
 };
 
 proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}} = {}) {
@@ -139,6 +149,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
+        this.allfeaturesnumber = this.allfeaturesnumber === undefined ? this.state.allfeatures : this.allfeaturesnumber;
         resolve({
           data: this.setDataForDataTable(),
           recordsFiltered: this.state.allfeatures,
@@ -166,6 +177,8 @@ proto.addFeature = function(feature) {
 
 proto.addFeatures = function(features=[]) {
   features.forEach(feature => this.addFeature(feature));
+  this.state.tools.show = this.selectedfeaturesid.size > 0;
+  this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL);
 };
 
 proto._setLayout = function() {
@@ -194,6 +207,7 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
 
 proto.clear = function(){
   this.selectedfeaturesid = null;
+  this.allfeaturesnumber = null;
   this._async.state && setTimeout(()=> {
     this._async.fnc();
     this._async.state = false;

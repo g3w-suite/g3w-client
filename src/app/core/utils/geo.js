@@ -247,13 +247,15 @@ const geoutils = {
       });
 
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
+      const fillColor = ol.color.asArray(color);
+      fillColor.splice(3,1,0.5);
       style = new ol.style.Style({
         stroke: new ol.style.Stroke({
           color,
           width: 4
         }),
         fill: new ol.style.Fill({
-          color: 'rgba(255, 255, 0, 0.5)'
+          color: ol.color.asString(fillColor)
         })
       });
     }

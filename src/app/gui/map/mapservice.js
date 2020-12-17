@@ -45,6 +45,42 @@ function MapService(options={}) {
   this._mapLayers = [];
   this._externalLayers = [];
   this.mapBaseLayers = {};
+  this.defaultsLayers = {
+    _style: {
+      highlightLayer: {
+        color: undefined
+      },
+      selectionLayer: {
+        color: 'red'
+      }
+    },
+    highlightLayer:new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style:(feature) => {
+        let styles = [];
+        const geometryType = feature.getGeometry().getType();
+        const style = createSelectedStyle({
+          geometryType,
+          color: this.defaultsLayers._style.highlightLayer.color
+        });
+        styles.push(style);
+        return styles;
+      }
+    }),
+    selectionLayer:new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: (feature) => {
+        let styles = [];
+        const geometryType = feature.getGeometry().getType();
+        const style = createSelectedStyle({
+          geometryType,
+          color:this.defaultsLayers._style.selectionLayer.color
+        });
+        styles.push(style);
+        return styles;
+      }
+    })
+  };
   this.layersExtraParams = {};
   this.state = {
     mapUnits: 'm',
@@ -1741,6 +1777,7 @@ proto._setupAllLayers = function() {
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
+  this._setUpDefaultLayers()
 };
 
 //SETUP BASELAYERS
@@ -1811,15 +1848,40 @@ proto._setupVectorLayers = function() {
     VECTORLAYER: true
   });
   this._setMapProjectionToLayers(layers);
-  layers.forEach((layer) => {
+  layers.forEach(layer => {
     const mapVectorLayer = layer.getMapLayer();
     this.addLayerToMap(mapVectorLayer)
   })
 };
 
+proto._setUpDefaultLayers = function(){
+  // follow the order that i want
+  this.getMap().addLayer(this.defaultsLayers.selectionLayer);
+  this.getMap().addLayer(this.defaultsLayers.highlightLayer);
+};
+
+proto.removeDefaultLayers = function(){
+  this.defaultsLayers.selectionLayer.getSource().clear();
+  this.defaultsLayers.highlightLayer.getSource().clear();
+  this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
+  this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
+};
+
+proto.setDefaultLayerStyle = function(type, style={}){
+  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = style;
+};
+
+proto.resetDefaultLayerStyle = function(type, style={}){
+  if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = {
+    color: type === 'highlightLayer' ? undefined : 'red'
+  };
+};
+
+
 proto.removeLayers = function() {
   this._removeMapLayers();
-  this.removeExternalLayers()
+  this.removeExternalLayers();
+  this.removeDefaultLayers();
 };
 
 proto.removeAllLayers = function(){
@@ -2038,12 +2100,27 @@ proto.getResolutionForMeters = function(meters) {
   return meters / Math.max(viewport.clientWidth,viewport.clientHeight);
 };
 
-let highlightLayer = null;
 let animatingHighlight = false;
+
+/*
+* geometries = array of geometries
+* action: add, clear, remove :
+*                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
+*                             clear: remove selectionLayer
+*                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
+* */
+proto.selectionFeatures = function(action='add', options={}){
+  const {geometries=[], color='red'} = options;
+  this.defaultsLayers.selectionLayer;
+};
+
 
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();
   const {color} = options;
+  this.setDefaultLayerStyle('highlightLayer', {
+    color
+  });
   let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
   let hide = options.hide;
   if (hide) {
@@ -2066,7 +2143,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
   if (geometryObj instanceof ol.geom.Geometry){
     geometry = geometryObj;
   } else {
-    let format = new ol.format.GeoJSON;
+    const format = new ol.format.GeoJSON;
     geometry = format.readGeometry(geometryObj);
   }
   if (zoom) {
@@ -2075,26 +2152,18 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
   }
   if (highlight) {
     const feature = new ol.Feature({
-      geometry: geometry
+      geometry
     });
-    if (!highlightLayer) {
-      highlightLayer = new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style: defaultStyle
-      });
-      highlightLayer.setMap(this.viewer.map);
-    }
-    if (customStyle) {
-      highlightLayer.setStyle(customStyle);
-    }
+    const highlightLayer = this.defaultsLayers.highlightLayer;
+
+    customStyle && highlightLayer.setStyle(customStyle);
 
     highlightLayer.getSource().clear();
     highlightLayer.getSource().addFeature(feature);
     if (hide) {
       const callback = ()=> {
         highlightLayer.getSource().clear();
-        if (customStyle)
-          highlightLayer.setStyle(defaultStyle);
+        customStyle && highlightLayer.setStyle(defaultStyle);
       };
       hide(callback);
     } else if (duration) {
@@ -2102,8 +2171,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
         animatingHighlight = true;
         setTimeout(() => {
           highlightLayer.getSource().clear();
-          if (customStyle)
-            highlightLayer.setStyle(defaultStyle);
+          customStyle && highlightLayer.setStyle(defaultStyle);
           animatingHighlight = false;
         }, duration)
       }
@@ -2112,9 +2180,8 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
 };
 
 proto.clearHighlightGeometry = function() {
-  if (highlightLayer && !animatingHighlight) {
-    highlightLayer.getSource().clear();
-  }
+  !animatingHighlight && this.defaultsLayers.highlightLayer.getSource().clear();
+  this.resetDefaultLayerStyle('highlightLayer');
 };
 
 proto.refreshMap = function(options) {

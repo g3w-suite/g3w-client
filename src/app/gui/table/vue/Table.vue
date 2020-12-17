@@ -5,7 +5,7 @@
         <tr>
           <th v-for="(header, index) in state.headers">
             <span v-if="index === 0">
-              <input type="checkbox" id="attribute_table_select_all_rows" :checked="state.selectAll" class="magic-checkbox">
+              <input type="checkbox" id="attribute_table_select_all_rows" :checked="state.selectAll" class="magic-checkbox" :disabled="state.features.length === 0">
               <label style="margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow" for="attribute_table_select_all_rows"><span style="padding:5px"></span></label>
             </span>
             <span v-else>{{ header.label }}</span>
@@ -48,7 +48,7 @@
         this.$options.service.switchSelection();
       },
       selectAllRow(){
-        this.$options.service.selectAllFeatures();
+        this.state.features.length && this.$options.service.selectAllFeatures();
       },
       _setLayout: function() {
         this.$options.service._setLayout();
