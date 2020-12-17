@@ -368,7 +368,6 @@ const utils = {
       })
     },
     post({url, data, formdata = false, contentType} = {}) {
-      data = !formdata ? JSON.stringify({...JSON.parse(data), ...this.globalParams}) : {...data, ...this.globalParams};
       return new Promise((resolve, reject) => {
         if (formdata) {
           const formdata = new FormData();

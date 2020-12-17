@@ -51,7 +51,7 @@ function MapService(options={}) {
         color: undefined
       },
       selectionLayer: {
-        color: 'red'
+        color: 'orange'
       }
     },
     highlightLayer:new ol.layer.Vector({
@@ -2109,11 +2109,26 @@ let animatingHighlight = false;
 *                             clear: remove selectionLayer
 *                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
 * */
-proto.selectionFeatures = function(action='add', options={}){
-  const {geometries=[], color='red'} = options;
-  this.defaultsLayers.selectionLayer;
+proto.setSelectionFeatures = function(action='add', options={}){
+  const {feature, color} = options;
+  color && this.setDefaultLayerStyle('selectionLayer', {color})
+  const source = this.defaultsLayers.selectionLayer.getSource();
+  switch (action) {
+    case 'add':
+      source.addFeature(feature);
+      break;
+    case 'remove':
+      source.removeFeature(feature);
+      break;
+    case 'clear':
+      source.clear();
+      break;
+  }
 };
 
+proto.clearSelectionFeatures = function(){
+  this.defaultsLayers.selectionLayer.getSource().clear();
+};
 
 proto.highlightGeometry = function(geometryObj, options = {}) {
   this.clearHighlightGeometry();

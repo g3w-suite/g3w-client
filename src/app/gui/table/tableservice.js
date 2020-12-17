@@ -15,7 +15,10 @@ const TableService = function(options = {}) {
   const headers = this.getHeaders();
   this.allfeaturesnumber;
   this.selectedfeaturesid = new Set();
-  this.projection = this.layer.state.geolayer  ? this.layer.getProjection() : null;
+  this.geolayer = this.layer.state.geolayer;
+  this.projection = this.geolayer  ? this.layer.getProjection() : null;
+  this.mapService = GUI.getComponent('map').getService();
+  this.olFeatures = {};
   this.state = {
     pageLengths: [10, 25, 50],
     features: [],
@@ -29,7 +32,7 @@ const TableService = function(options = {}) {
     selectAll: false,
     tools: {
       show: false,
-      geolayer: this.layer.state.geolayer
+      geolayer: this.geolayer
     }
   };
   this._async = {
@@ -66,8 +69,34 @@ proto.setDataForDataTable = function() {
   return data;
 };
 
+proto.setSelectionFeatures = function(feature){
+  if (this.geolayer) {
+    if (!feature) {
+      Object.values(this.olFeatures).forEach(featureObject => {
+        featureObject.added && this.mapService.setSelectionFeatures('remove', {
+          feature: featureObject.feature
+        });
+        featureObject.added = false
+      });
+    } else if (feature.geometry){
+      const featureObject = this.olFeatures[feature.id];
+      if (feature.selected) {
+        !featureObject.added && this.mapService.setSelectionFeatures('add', {
+          feature: featureObject.feature
+        });
+      } else {
+        this.mapService.setSelectionFeatures('remove', {
+          feature: featureObject.feature
+        });
+      }
+      featureObject.added = feature.selected;
+    }
+  }
+};
+
 proto.addRemoveSelectedFeature = function(feature){
   feature.selected = !feature.selected;
+  this.setSelectionFeatures(feature);
   if (this.state.selectAll) {
     this.state.selectAll = false;
     this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
@@ -79,12 +108,13 @@ proto.addRemoveSelectedFeature = function(feature){
     if ( size === 1) {
       this.selectedfeaturesid.clear();
       this.selectedfeaturesid.add(SELECTION_STATE.ALL);
-      this.statate.selectAll = true;
+      this.state.selectAll = true;
     } else if (size -1 === this.state.allfeatures){
       this.selectedfeaturesid.clear();
     }
   } else this.selectedfeaturesid[feature.selected ? 'add' : 'delete'](feature.id);
   this.state.tools.show = this.selectedfeaturesid.size > 0;
+  !this.state.tools.show && this.setSelectionFeatures();
 };
 
 proto.switchSelection = function(){
@@ -92,10 +122,16 @@ proto.switchSelection = function(){
   else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
     this.selectedfeaturesid.delete(SELECTION_STATE.EXCLUDE);
     const selectedId = Array.from(this.selectedfeaturesid);
-    this.state.features.forEach(feature => feature.selected = selectedId.indexOf(feature.id) !== -1)
+    this.state.features.forEach(feature => {
+      feature.selected = selectedId.indexOf(feature.id) !== -1;
+      this.setSelectionFeatures(feature);
+    })
   } else {
     const selectedId = Array.from(this.selectedfeaturesid);
-    this.state.features.forEach(feature => feature.selected = selectedId.indexOf(feature.id) === -1);
+    this.state.features.forEach(feature => {
+      feature.selected = selectedId.indexOf(feature.id) === -1;
+      this.setSelectionFeatures(feature);
+    });
     this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
   }
 };
@@ -107,6 +143,7 @@ proto.selectAllFeatures = function(){
   if (this.state.allfeatures === this.allfeaturesnumber) {
     this.state.selectAll && this.selectedfeaturesid.add(SELECTION_STATE.ALL);
     this.state.tools.show = this.state.selectAll;
+    this.state.selectAll ? this.state.features.forEach(feature => this.setSelectionFeatures(feature)) : this.setSelectionFeatures();
   } else {
     if (!this.state.selectAll) {
       this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
@@ -170,8 +207,13 @@ proto.addFeature = function(feature) {
     selected: this.selectedfeaturesid.has(SELECTION_STATE.ALL) ||
               this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE) ? !this.selectedfeaturesid.has(feature.id) :this.selectedfeaturesid.has(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry: this.layer.getType() !== Layer.LayerTypes.TABLE && this._returnGeometry(feature)
+    geometry: this.geolayer && this._returnGeometry(feature),
   };
+  if (this.geolayer && tableFeature.geometry) this.olFeatures[feature.id] = this.olFeatures[feature.id] || {
+    feature: new ol.Feature(tableFeature.geometry),
+    added: false
+  };
+  tableFeature.selected && this.setSelectionFeatures(tableFeature);
   this.state.features.push(tableFeature);
 };
 
@@ -187,9 +229,8 @@ proto._setLayout = function() {
 
 proto._returnGeometry = function(feature) {
   let geometry;
-  const mapService = GUI.getComponent('map').getService();
   const layerCode = this.layer.getProjection().getCode();
-  const mapCode = mapService.getProjection().getCode();
+  const mapCode = this.mapService.getProjection().getCode();
   if (feature.attributes) geometry = feature.geometry;
   else if (feature.geometry) geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
   (geometry && layerCode !== mapCode) && geometry.transform(layerCode, mapCode);
@@ -199,15 +240,17 @@ proto._returnGeometry = function(feature) {
 proto.zoomAndHighLightFeature = function(feature, zoom=true) {
   const geometry = feature.geometry;
   if (geometry) {
-    const mapService = GUI.getComponent('map').getService();
-    if (this._async.state) this._async.fnc = mapService.highlightGeometry.bind(mapService, geometry, {zoom});
-    else mapService.highlightGeometry(geometry , { zoom });
+    if (this._async.state) this._async.fnc = this.mapService.highlightGeometry.bind(mapService, geometry, {zoom});
+    else this.mapService.highlightGeometry(geometry , { zoom });
   }
 };
 
 proto.clear = function(){
   this.selectedfeaturesid = null;
   this.allfeaturesnumber = null;
+  this.setSelectionFeatures();
+  this.mapService = null;
+  this.olFeatures = null;
   this._async.state && setTimeout(()=> {
     this._async.fnc();
     this._async.state = false;
