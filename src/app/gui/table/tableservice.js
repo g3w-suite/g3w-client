@@ -149,7 +149,10 @@ proto.selectAllFeatures = function(){
       this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
       this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
     }
-    this.state.features.forEach(feature => this.selectedfeaturesid.add(feature.id));
+    this.state.features.forEach(feature => {
+      this.setSelectionFeatures(feature);
+      this.selectedfeaturesid.add(feature.id)
+    });
     this.state.tools.show = this.state.selectAll;
   }
 };
