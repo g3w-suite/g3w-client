@@ -44,6 +44,9 @@
       TableBody
     },
     methods: {
+      clearAllSelection(){
+        this.$options.service.clearAllSelection();
+      },
       switchSelection(){
         this.$options.service.switchSelection();
       },
@@ -194,7 +197,8 @@
       const G3WTableToolbarInstance = new G3WTableToolbarClass({
         propsData: {
           tools: this.state.tools,
-          switchSelection: this.switchSelection
+          switchSelection: this.switchSelection,
+          clearAllSelection: this.clearAllSelection
         }
       });
       $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);

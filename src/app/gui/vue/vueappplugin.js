@@ -91,7 +91,8 @@ const font = {
   credits: "fas fa-euro-sign",
   filter: "fas fa-filter",
   plugin: "fas fa-plug",
-  invert: "fas fa-exchange-alt"
+  invert: "fas fa-exchange-alt",
+  clear: "fas fa-broom"
 };
 
 const Vueappplugin = {

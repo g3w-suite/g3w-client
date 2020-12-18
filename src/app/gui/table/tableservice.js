@@ -136,6 +136,19 @@ proto.switchSelection = function(){
   }
 };
 
+proto.clearAllSelection = function(){
+  this.state.selectAll = false;
+  this.selectedfeaturesid.clear();
+  this.state.features.forEach(feature => feature.selected = false);
+  this.state.tools.show = false;
+  Object.values(this.olFeatures).forEach(featureObject => {
+    featureObject.added && this.mapService.setSelectionFeatures('remove', {
+      feature: featureObject.feature
+    });
+    featureObject.added = false
+  });
+};
+
 proto.selectAllFeatures = function(){
   this.state.selectAll = !this.state.selectAll;
   this.selectedfeaturesid.clear();

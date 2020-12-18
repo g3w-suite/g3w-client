@@ -4,7 +4,8 @@ const translations = {
       attribute_table: {
         tools: {
           filter: "Filtra",
-          invert: "Inverti Selezione"
+          invert: "Inverti Selezione",
+          clear: "Annulla selezione"
         }
       },
       sdk: {
@@ -392,7 +393,8 @@ const translations = {
       attribute_table: {
         tools: {
           filter: "Filter",
-          invert: "Invert Selection"
+          invert: "Invert Selection",
+          clear: "Clear Selection"
         }
       },
       sdk: {
