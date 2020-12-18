@@ -1,9 +1,10 @@
 const translations = {
   it: {
     translation: {
-      attribute_table: {
+      layer_selection_filter: {
         tools: {
-          filter: "Filtra",
+          filter: "Aggiungi Filtro",
+          nofilter: "Rimuovi filtro",
           invert: "Inverti Selezione",
           clear: "Annulla selezione"
         }
@@ -390,11 +391,12 @@ const translations = {
   },
   en: {
     translation: {
-      attribute_table: {
+      layer_selection_filter: {
         tools: {
-          filter: "Filter",
+          filter: "Add Filter",
+          nofilter: "Remove Filter",
           invert: "Invert Selection",
-          clear: "Clear Selection"
+          clear: "Clear Selection",
         }
       },
       sdk: {

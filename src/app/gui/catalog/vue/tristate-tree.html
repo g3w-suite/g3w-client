@@ -45,6 +45,10 @@
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
         {{ layerstree.title }}
       </span>
+      <div v-if="false">
+        <span class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
+        <span class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('filter')" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
+      </div>
   </div>
 
   <ul v-if="isFolder" v-show="layerstree.expanded">

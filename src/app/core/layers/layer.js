@@ -59,10 +59,11 @@ function Layer(config={}, options={}) {
     infoformat: this.getInfoFormat(),
     geolayer: false,
     visible: config.visible || false,
-    tochighlightable: false,
-    filterIds: new Set()
+    tochighlightable: false
   };
 
+  // add selectionIds
+  this.selectionIds = new Set();
 
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
@@ -94,6 +95,7 @@ function Layer(config={}, options={}) {
       })
     };
   }
+
   base(this);
 }
 
@@ -101,29 +103,52 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
-//filter Ids layer methods
+//selection Ids layer methods
 
-proto.addFilterId = function(id){
-  this.state.filterIds.add(id);
+proto.setSelectionIdsAll = function(){
+  this.clearSelectionIds();
+  this.selectionIds.add(Layer.SELECTION_STATE.ALL);
 };
 
-proto.addFilterIds = function(ids=[]){
-  ids.forEach(id => this.addFilterId(id));
+proto.setExcludeSelection = function(){
+  this.selectionIds.delete(Layer.SELECTION_STATE.ALL);
+  this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
 };
 
-proto.removeFilterId = function(id) {
-  this.state.filterIds.delete(id);
+proto.removeExludeSelection = function(){
+  this.selectionIds.delete(Layer.SELECTION_STATE.EXCLUDE);
 };
 
-proto.removeFilterIds = function(ids=[]) {
-  ids.forEach(id => this.removeFilterId(id));
+proto.excludeSelectionId = function(id){
+  this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
+  this.selectionIds.add(id);
 };
 
-proto.clearFilterIds = function(){
-  this.state.filterIds.clear();
+proto.getSelectionIds = function(){
+  return this.selectionIds;
 };
 
-// end filter ids methods
+proto.addSelectionId = function(id){
+  this.selectionIds.add(id);
+};
+
+proto.addSelectionIds = function(ids=[]){
+  ids.forEach(id => this.addSelectionId(id));
+};
+
+proto.deleteSelectionId = function(id) {
+  this.selectionIds.delete(id);
+};
+
+proto.deleteSelectionIds = function(ids=[]) {
+  ids.forEach(id => this.deleteSelectionId(id));
+};
+
+proto.clearSelectionIds = function(){
+  this.selectionIds.clear();
+};
+
+// end selection ids methods
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
@@ -641,6 +666,12 @@ Layer.EDITOPS = {
   INSERT: 1,
   UPDATE: 2,
   DELETE: 4
+};
+
+//selection state
+Layer.SELECTION_STATE = {
+  ALL: '__ALL__',
+  EXCLUDE: '__EXCLUDE__'
 };
 
 module.exports = Layer;

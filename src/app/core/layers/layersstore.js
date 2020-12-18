@@ -336,6 +336,8 @@ proto.setLayersTree = function(layerstree, name) {
       if (layer.id !== undefined) {
         obj[key] = this.getLayerById(layer.id).getState();
         obj[key].groupdisabled = currentGroupDisabled;
+        obj[key].filter = false;
+        obj[key].selection = false;
       }
       if (layer.nodes) {
         const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
@@ -367,11 +369,10 @@ proto.createLayersTree = function(groupName, options={}) {
       return this.state.layerstree;
     } else {
       let traverse = (obj, newobj) => {
-        _.forIn(obj, (layer) => {
+        _.forIn(obj, layer => {
           let lightlayer = {};
           if (!_.isNil(layer.id)) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id))
-              lightlayer.id = layer.id;
+            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) lightlayer.id = layer.id;
             else lightlayer = null;
           }
           if (!_.isNil(layer.nodes)) {

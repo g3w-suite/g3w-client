@@ -1,12 +1,8 @@
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
 const noop = require('core/utils/utils').noop;
-const Layer = require('core/layers/layer');
 const {coordinatesToGeometry} =  require('core/utils/geo');
-const SELECTION_STATE = {
-  ALL: '__ALL__',
-  EXCLUDE: '__EXCLUDE__'
-};
+const { SELECTION_STATE } = require('core/layers/layer');
 
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
@@ -14,7 +10,7 @@ const TableService = function(options = {}) {
   this.formatter = options.formatter;
   const headers = this.getHeaders();
   this.allfeaturesnumber;
-  this.selectedfeaturesid = new Set();
+  this.selectedfeaturesid = this.layer.getSelectionIds();
   this.geolayer = this.layer.state.geolayer;
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
   this.mapService = GUI.getComponent('map').getService();
@@ -99,15 +95,14 @@ proto.addRemoveSelectedFeature = function(feature){
   this.setSelectionFeatures(feature);
   if (this.state.selectAll) {
     this.state.selectAll = false;
-    this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
-    this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
-    this.selectedfeaturesid.add(feature.id);
+    this.layer.setExcludeSelection();
+    this.layer.addSelectionId(feature.id);
   } else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
-    feature.selected ? this.selectedfeaturesid.delete(feature.id) : this.selectedfeaturesid.add(feature.id);
+    feature.selected ? this.layer.deleteSelectionId(feature.id) : this.layer.addSelectionId(feature.id);
     const size = this.selectedfeaturesid.size;
-    if ( size === 1) {
+    if (size === 1) {
       this.selectedfeaturesid.clear();
-      this.selectedfeaturesid.add(SELECTION_STATE.ALL);
+      this.layer.setSelectionIdsAll();
       this.state.selectAll = true;
     } else if (size -1 === this.state.allfeatures){
       this.selectedfeaturesid.clear();
@@ -120,19 +115,20 @@ proto.addRemoveSelectedFeature = function(feature){
 proto.switchSelection = function(){
   if (this.state.selectAll) this.selectAllFeatures();
   else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
-    this.selectedfeaturesid.delete(SELECTION_STATE.EXCLUDE);
+    this.layer.removeExludeSelection();
     const selectedId = Array.from(this.selectedfeaturesid);
     this.state.features.forEach(feature => {
       feature.selected = selectedId.indexOf(feature.id) !== -1;
       this.setSelectionFeatures(feature);
-    })
+    });
+    this.checkSelectAll();
   } else {
     const selectedId = Array.from(this.selectedfeaturesid);
     this.state.features.forEach(feature => {
       feature.selected = selectedId.indexOf(feature.id) === -1;
       this.setSelectionFeatures(feature);
     });
-    this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
+    this.layer.setExcludeSelection();
   }
 };
 
@@ -151,22 +147,29 @@ proto.clearAllSelection = function(){
 
 proto.selectAllFeatures = function(){
   this.state.selectAll = !this.state.selectAll;
-  this.selectedfeaturesid.clear();
   this.state.features.forEach(feature => feature.selected = this.state.selectAll);
   if (this.state.allfeatures === this.allfeaturesnumber) {
-    this.state.selectAll && this.selectedfeaturesid.add(SELECTION_STATE.ALL);
+    this.layer.clearSelectionIds();
+    this.state.selectAll && this.layer.setSelectionIdsAll();
     this.state.tools.show = this.state.selectAll;
     this.state.selectAll ? this.state.features.forEach(feature => this.setSelectionFeatures(feature)) : this.setSelectionFeatures();
   } else {
     if (!this.state.selectAll) {
-      this.selectedfeaturesid.delete(SELECTION_STATE.ALL);
-      this.selectedfeaturesid.add(SELECTION_STATE.EXCLUDE);
+      this.layer.setExcludeSelection();
+      this.state.features.forEach(feature => {
+        this.setSelectionFeatures(feature);
+        this.layer.addSelectionId.add(feature.id);
+      });
+    } else {
+      this.state.features.forEach(feature => {
+        this.setSelectionFeatures(feature);
+        this.layer[this.selectedfeaturesid.has(feature.id) ? 'deleteSelectionId' : 'addSelectionId'](feature.id);
+      });
+      if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE) && this.selectedfeaturesid.size === 1){
+        this.layer.setSelectionIdsAll();
+      }
     }
-    this.state.features.forEach(feature => {
-      this.setSelectionFeatures(feature);
-      this.selectedfeaturesid.add(feature.id)
-    });
-    this.state.tools.show = this.state.selectAll;
+    this.state.tools.show = true;
   }
 };
 
@@ -198,11 +201,11 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         ordering
       }).then(data => {
         const {features} = data;
-        this.addFeatures(features);
         this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
         this.allfeaturesnumber = this.allfeaturesnumber === undefined ? this.state.allfeatures : this.allfeaturesnumber;
+        this.addFeatures(features);
         resolve({
           data: this.setDataForDataTable(),
           recordsFiltered: this.state.allfeatures,
@@ -233,10 +236,15 @@ proto.addFeature = function(feature) {
   this.state.features.push(tableFeature);
 };
 
+proto.checkSelectAll = function(){
+  if (this.selectedfeaturesid.has(SELECTION_STATE.ALL)) this.state.selectAll = true;
+  else this.state.selectAll = this.state.features.length > 0 && (this.state.features.length === this.state.features.filter(feature => feature.selected).length);
+};
+
 proto.addFeatures = function(features=[]) {
   features.forEach(feature => this.addFeature(feature));
   this.state.tools.show = this.selectedfeaturesid.size > 0;
-  this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL);
+  this.checkSelectAll();
 };
 
 proto._setLayout = function() {
@@ -262,7 +270,7 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
 };
 
 proto.clear = function(){
-  this.selectedfeaturesid = null;
+  this.selectedfeaturesid.clear();
   this.allfeaturesnumber = null;
   this.setSelectionFeatures();
   this.mapService = null;
