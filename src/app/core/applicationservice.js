@@ -432,6 +432,10 @@ const ApplicationService = function() {
     delete this._applicationServices[element];
   };
 
+  this.getApplicationService = function(type){
+    return this._applicationServices[type];
+  };
+
   this.getService = function(element) {
     return this._applicationServices[element];
   };

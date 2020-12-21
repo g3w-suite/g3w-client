@@ -1,6 +1,8 @@
 const Projections = require('g3w-ol/src/projection/projections');
 const { getScaleFromResolution } = require('g3w-ol/src/utils/utils');
 const { sanitizeUrl } = require('core/utils/utils');
+const {createFeatureFromGeometry} = require('core/utils/geo');
+const GUI = require('gui/gui');
 
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
@@ -18,6 +20,8 @@ proto.setup = function(config={}, options={}) {
   const { project } = options;
   this.config.map_crs = project.getProjection().getCode();
   this.config.multilayerid = config.multilayer;
+  // Features that contain
+  this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
   // and adding informations of bbox
   _.extend(this.state, {
@@ -37,6 +41,41 @@ proto.setup = function(config={}, options={}) {
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
+};
+
+proto.getOlSelectionFeatures = function(){
+  return this.olSelectionFeatures;
+};
+
+proto.addOlSelectionFeature = function({id, geometry}={}){
+  this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
+    feature: createFeatureFromGeometry(geometry),
+    added: false
+  };
+};
+
+proto.setOlSelectionFeatures = function(feature, action='add'){
+  const mapService = GUI.getComponent('map').getService();
+  if (!feature) {
+    Object.values(this.olSelectionFeatures).forEach(featureObject => {
+      featureObject.added && mapService.setSelectionFeatures('remove', {
+        feature: featureObject.feature
+      });
+      featureObject.added = false
+    });
+  } else {
+    const featureObject = this.olSelectionFeatures[feature.id];
+    if (action === 'add') {
+      !featureObject.added && mapService.setSelectionFeatures(action, {
+        feature: featureObject.feature
+      });
+    } else {
+      mapService.setSelectionFeatures(action, {
+        feature: featureObject.feature
+      });
+    }
+    featureObject.added = feature.selected;
+  }
 };
 
 proto._sanitizeSourceUrl = function(type='wms'){

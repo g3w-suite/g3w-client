@@ -171,6 +171,9 @@ const geoutils = {
     }
     return style
   },
+  createFeatureFromGeometry(geometry){
+    return geometry && new ol.Feature(geometry);
+  },
   createOlLayer: function(options = {}) {
     const id = options.id;
     const features = options.features;

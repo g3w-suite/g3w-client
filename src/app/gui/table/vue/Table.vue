@@ -181,7 +181,7 @@
                 this.createdContentBody();
                 this.isMobile() && hideElements();
               })
-              .catch((error) => {
+              .catch(error => {
                 console.log(error)
               })
           }, 800),

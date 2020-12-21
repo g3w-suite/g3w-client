@@ -45,9 +45,9 @@
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
         {{ layerstree.title }}
       </span>
-      <div v-if="false">
-        <span class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
-        <span class="skin-color action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" :class="g3wtemplate.getFontClass('filter')" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
+      <div v-if="!isFolder && !layerstree.external && layerstree.selection">
+        <span class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" @click.caputure.prevent.stop="clearSelection" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
+        <span class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), filtered ? 'active' : '']" @click.caputure.prevent.stop="toggleFilter" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
       </div>
   </div>
 

@@ -254,6 +254,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     });
     Object.values(GUI.getComponents()).forEach(component => {
       ApplicationService.registerService(component.id, component.getService());
+      console.log(component.id, component.getService())
     });
     ApplicationTemplate.Services.viewport.on('resize', ()=>{
       GUI.emit('resize')
@@ -312,7 +313,11 @@ const ApplicationTemplate = function({ApplicationService}) {
       if (placeholderService) register = placeholderService.addComponents(components, options);
     }
     Object.entries(components).forEach(([key, component])=> {
-      register && ComponentsRegistry.registerComponent(component);
+      if (register) {
+        ComponentsRegistry.registerComponent(component);
+        ApplicationService.registerService(component.id, component.getService())
+      }
+
     })
   };
 

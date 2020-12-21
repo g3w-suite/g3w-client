@@ -298,6 +298,11 @@ const vueComponentOptions = {
     }
   },
   created() {
+    CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
+      const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
+      layer.clearSelectionIds();
+    });
+
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
       if (node.external && !node.source) {
@@ -420,7 +425,8 @@ Vue.component('tristate-tree', {
       expanded: this.layerstree.expanded,
       isFolderChecked: true,
       controltoggled: false,
-      n_childs: null
+      n_childs: null,
+      filtered: false
     }
   },
   computed: {
@@ -458,6 +464,12 @@ Vue.component('tristate-tree', {
     }
   },
   methods: {
+    toggleFilter(){
+      this.filtered = !this.filtered;
+    },
+    clearSelection(){
+      CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
+    },
     toggle(isFolder) {
       if (isFolder) {
         this.layerstree.checked = !this.layerstree.checked;

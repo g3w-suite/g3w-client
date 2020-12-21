@@ -58,6 +58,8 @@ function Layer(config={}, options={}) {
     source: config.source,
     infoformat: this.getInfoFormat(),
     geolayer: false,
+    selection: false,
+    filterd: false,
     visible: config.visible || false,
     tochighlightable: false
   };
@@ -104,10 +106,10 @@ inherit(Layer, G3WObject);
 const proto = Layer.prototype;
 
 //selection Ids layer methods
-
 proto.setSelectionIdsAll = function(){
-  this.clearSelectionIds();
+  this.selectionIds.clear();
   this.selectionIds.add(Layer.SELECTION_STATE.ALL);
+  this.setSelection(true);
 };
 
 proto.setExcludeSelection = function(){
@@ -130,6 +132,7 @@ proto.getSelectionIds = function(){
 
 proto.addSelectionId = function(id){
   this.selectionIds.add(id);
+  !this.getSelection() && this.setSelection(true);
 };
 
 proto.addSelectionIds = function(ids=[]){
@@ -138,6 +141,7 @@ proto.addSelectionIds = function(ids=[]){
 
 proto.deleteSelectionId = function(id) {
   this.selectionIds.delete(id);
+  this.selectionIds.size === 0 && this.setSelection(false);
 };
 
 proto.deleteSelectionIds = function(ids=[]) {
@@ -146,8 +150,9 @@ proto.deleteSelectionIds = function(ids=[]) {
 
 proto.clearSelectionIds = function(){
   this.selectionIds.clear();
+  this.isGeoLayer() && this.setOlSelectionFeatures();
+  this.setSelection(false);
 };
-
 // end selection ids methods
 
 proto.getWMSLayerName = function() {
@@ -443,6 +448,23 @@ proto.isSelected = function() {
 
 proto.setSelected = function(bool) {
   this.state.selected = bool;
+};
+
+proto.setSelection = function(bool=false){
+  this.state.selection = bool;
+  !bool && this.emit('unselectionall');
+};
+
+proto.getSelection = function(){
+  return this.state.selection;
+};
+
+proto.setFiltered = function(bool=false){
+  this.state.filterd = bool;
+};
+
+proto.getFiltered = function(){
+  return this.state.filtered;
 };
 
 proto.setDisabled = function(bool) {

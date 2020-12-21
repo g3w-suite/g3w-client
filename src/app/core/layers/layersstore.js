@@ -22,6 +22,10 @@ function LayersStore(config={}) {
   this._isQueryable = _.isBoolean(config.queryable) ? config.queryable : true;
   this._layers = this.config.layers || {};
   this.setters = {
+    setLayerSelection({layerId, selection}){
+      const layer = this.getLayerById(layerId);
+      console.log(layer)
+    },
     setLayersVisible: function (layersIds, visible, checked=true) {
       const layers = [];
       layersIds.forEach((layerId) => {
@@ -32,21 +36,19 @@ function LayersStore(config={}) {
       });
       return layers;
     },
-    setLayerSelected: function(layerId, selected) {
+    setLayerSelected(layerId, selected) {
       const layers = this.getLayers();
-      layers.forEach((layer) => {
-        layer.state.selected = ((layerId === layer.getId()) && selected) || false;
-      })
+      layers.forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
     },
-    addLayers: function(layers) {
+    addLayers(layers) {
       layers.forEach((layer) => {
         this.addLayer(layer);
       })
     },
-    addLayer: function(layer) {
+    addLayer(layer) {
       this._addLayer(layer);
     },
-    removeLayer: function(layerId) {
+    removeLayer(layerId) {
       this._removeLayer(layerId);
     }
   };
@@ -336,8 +338,6 @@ proto.setLayersTree = function(layerstree, name) {
       if (layer.id !== undefined) {
         obj[key] = this.getLayerById(layer.id).getState();
         obj[key].groupdisabled = currentGroupDisabled;
-        obj[key].filter = false;
-        obj[key].selection = false;
       }
       if (layer.nodes) {
         const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
@@ -390,7 +390,7 @@ proto.createLayersTree = function(groupName, options={}) {
     }
   } else {
     const geoLayers = this.getGeoLayers();
-    geoLayers.forEach((layer) => {
+    geoLayers.forEach(layer => {
       layerstree.push({
         id: layer.getId(),
         name: layer.getName(),

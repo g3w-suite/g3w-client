@@ -282,17 +282,17 @@ function MapService(options={}) {
 
   this.once('viewerset', ()=> {
     //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
+    MapLayersStoreRegistry.getLayersStores().forEach(layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
 
     // LISTEN ON EVERY ADDED LAYERSSTORE
-    MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
+    MapLayersStoreRegistry.onafter('addLayersStore', layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
 
     // LISTENER ON REMOVE LAYERSTORE
-    MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
+    MapLayersStoreRegistry.onafter('removeLayersStore', layerStore => {
       this._removeEventsKeysToLayersStore(layerStore);
     });
   });
@@ -1734,7 +1734,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   this._layersStoresEventKeys[layerStoreId] = [];
   //SETVISIBILITY EVENT
   const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
-    layersIds.forEach((layerId) => {
+    layersIds.forEach(layerId => {
       const layer = layerStore.getLayerById(layerId);
       const mapLayer = this.getMapLayerForLayer(layer);
       mapLayer && this.updateMapLayer(mapLayer)
@@ -1744,7 +1744,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     setLayersVisible: layerVisibleKey
   });
   //ADD LAYER
-  const addLayerKey = layerStore.onafter('addLayer', (layer) => {
+  const addLayerKey = layerStore.onafter('addLayer', layer => {
     if (layer.getType() === 'vector') {
       const mapLayer = layer.getMapLayer();
       this.addLayerToMap(mapLayer);
@@ -1754,7 +1754,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     addLayer: addLayerKey
   });
   // REMOVE LAYER
-  const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
+  const removeLayerKey = layerStore.onafter('removeLayer',  layer => {
     if (layer.getType() === 'vector') {
       const olLayer = layer.getOLLayer();
       this.viewer.map.removeLayer(olLayer);

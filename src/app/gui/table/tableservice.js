@@ -11,10 +11,15 @@ const TableService = function(options = {}) {
   const headers = this.getHeaders();
   this.allfeaturesnumber;
   this.selectedfeaturesid = this.layer.getSelectionIds();
-  this.geolayer = this.layer.state.geolayer;
+  this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
   this.mapService = GUI.getComponent('map').getService();
-  this.olFeatures = {};
+  this.clearAllSelection = () => {
+    this.state.features.forEach(feature => feature.selected = false);
+    this.state.tools.show = false;
+    this.state.selectAll = false;
+  };
+  this.layer.on('unselectionall', this.clearAllSelection);
   this.state = {
     pageLengths: [10, 25, 50],
     features: [],
@@ -28,7 +33,6 @@ const TableService = function(options = {}) {
     selectAll: false,
     tools: {
       show: false,
-      geolayer: this.geolayer
     }
   };
   this._async = {
@@ -66,28 +70,8 @@ proto.setDataForDataTable = function() {
 };
 
 proto.setSelectionFeatures = function(feature){
-  if (this.geolayer) {
-    if (!feature) {
-      Object.values(this.olFeatures).forEach(featureObject => {
-        featureObject.added && this.mapService.setSelectionFeatures('remove', {
-          feature: featureObject.feature
-        });
-        featureObject.added = false
-      });
-    } else if (feature.geometry){
-      const featureObject = this.olFeatures[feature.id];
-      if (feature.selected) {
-        !featureObject.added && this.mapService.setSelectionFeatures('add', {
-          feature: featureObject.feature
-        });
-      } else {
-        this.mapService.setSelectionFeatures('remove', {
-          feature: featureObject.feature
-        });
-      }
-      featureObject.added = feature.selected;
-    }
-  }
+  const action = feature && feature.selected ? 'add' : 'remove';
+  this.geolayer && this.layer.setOlSelectionFeatures(feature, action);
 };
 
 proto.addRemoveSelectedFeature = function(feature){
@@ -105,9 +89,9 @@ proto.addRemoveSelectedFeature = function(feature){
       this.layer.setSelectionIdsAll();
       this.state.selectAll = true;
     } else if (size -1 === this.state.allfeatures){
-      this.selectedfeaturesid.clear();
+      this.layer.clearSelectionIds();
     }
-  } else this.selectedfeaturesid[feature.selected ? 'add' : 'delete'](feature.id);
+  } else this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
   this.state.tools.show = this.selectedfeaturesid.size > 0;
   !this.state.tools.show && this.setSelectionFeatures();
 };
@@ -132,33 +116,20 @@ proto.switchSelection = function(){
   }
 };
 
-proto.clearAllSelection = function(){
-  this.state.selectAll = false;
-  this.selectedfeaturesid.clear();
-  this.state.features.forEach(feature => feature.selected = false);
-  this.state.tools.show = false;
-  Object.values(this.olFeatures).forEach(featureObject => {
-    featureObject.added && this.mapService.setSelectionFeatures('remove', {
-      feature: featureObject.feature
-    });
-    featureObject.added = false
-  });
-};
-
 proto.selectAllFeatures = function(){
   this.state.selectAll = !this.state.selectAll;
   this.state.features.forEach(feature => feature.selected = this.state.selectAll);
   if (this.state.allfeatures === this.allfeaturesnumber) {
-    this.layer.clearSelectionIds();
     this.state.selectAll && this.layer.setSelectionIdsAll();
     this.state.tools.show = this.state.selectAll;
-    this.state.selectAll ? this.state.features.forEach(feature => this.setSelectionFeatures(feature)) : this.setSelectionFeatures();
+    if (this.state.selectAll) this.state.features.forEach(feature => this.setSelectionFeatures(feature));
+    else this.layer.clearSelectionIds();
   } else {
     if (!this.state.selectAll) {
       this.layer.setExcludeSelection();
       this.state.features.forEach(feature => {
         this.setSelectionFeatures(feature);
-        this.layer.addSelectionId.add(feature.id);
+        this.layer.addSelectionId(feature.id);
       });
     } else {
       this.state.features.forEach(feature => {
@@ -201,9 +172,9 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
         ordering
       }).then(data => {
         const {features} = data;
-        this.state.pagination = !!data.count;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
+        this.state.pagination = !!data.count && (this.state.featurescount < this.state.allfeatures);
         this.allfeaturesnumber = this.allfeaturesnumber === undefined ? this.state.allfeatures : this.allfeaturesnumber;
         this.addFeatures(features);
         resolve({
@@ -228,10 +199,10 @@ proto.addFeature = function(feature) {
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.geolayer && this._returnGeometry(feature),
   };
-  if (this.geolayer && tableFeature.geometry) this.olFeatures[feature.id] = this.olFeatures[feature.id] || {
-    feature: new ol.Feature(tableFeature.geometry),
-    added: false
-  };
+  this.geolayer && tableFeature.geometry && this.layer.addOlSelectionFeature({
+    id: tableFeature.id,
+    geometry: tableFeature.geometry
+  });
   tableFeature.selected && this.setSelectionFeatures(tableFeature);
   this.state.features.push(tableFeature);
 };
@@ -270,11 +241,9 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
 };
 
 proto.clear = function(){
-  this.selectedfeaturesid.clear();
+  this.layer.off('unselectionall', this.clearAllSelection);
   this.allfeaturesnumber = null;
-  this.setSelectionFeatures();
   this.mapService = null;
-  this.olFeatures = null;
   this._async.state && setTimeout(()=> {
     this._async.fnc();
     this._async.state = false;
