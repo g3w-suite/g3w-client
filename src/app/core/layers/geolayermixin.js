@@ -52,6 +52,7 @@ proto.addOlSelectionFeature = function({id, geometry}={}){
     feature: createFeatureFromGeometry(geometry),
     added: false
   };
+  return this.olSelectionFeatures[id];
 };
 
 proto.setOlSelectionFeatures = function(feature, action='add'){
@@ -64,17 +65,18 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
       featureObject.added = false
     });
   } else {
-    const featureObject = this.olSelectionFeatures[feature.id];
+    const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
     if (action === 'add') {
       !featureObject.added && mapService.setSelectionFeatures(action, {
         feature: featureObject.feature
       });
+      featureObject.added = true;
     } else {
       mapService.setSelectionFeatures(action, {
         feature: featureObject.feature
       });
+      featureObject.added = false;
     }
-    featureObject.added = feature.selected;
   }
 };
 

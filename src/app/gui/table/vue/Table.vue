@@ -45,7 +45,7 @@
     },
     methods: {
       clearAllSelection(){
-        this.$options.service.clearAllSelection();
+        this.$options.service.clearLayerSelection();
       },
       switchSelection(){
         this.$options.service.switchSelection();

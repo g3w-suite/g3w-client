@@ -54,7 +54,7 @@
                             @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
                             v-download="action.download"
                             class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                            <span :class="'action-button-icon ' + action.class"></span>
+                            <span :class="[`action-button-icon ${action.class}`, action.toggled ? 'toggled': '']"></span>
                           </span>
 <!--                          <span class="action-button-icon fas fa-download" style="padding: 5px" @click.capture="showDownloadAction">-->
 <!--                            <span class="skin-border-color download_content_action"-->
@@ -118,7 +118,7 @@
                           @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
                           v-download="action.download"
                           class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                          <span :class="'action-button-icon ' + action.class"></span>
+                          <span :class="[`action-button-icon ${action.class}`, !action.toggled ? 'toggled': '']"></span>
                         </span>
                       </td>
                       <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">

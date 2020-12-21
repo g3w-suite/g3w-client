@@ -7,7 +7,6 @@ const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
-const ComponentsRegistry = require('gui/componentsregistry');
 const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
@@ -25,8 +24,8 @@ function QueryResultsService() {
   });
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
-    'highlightgeometry': QueryResultsService.highlightGeometry,
-    'clearHighlightGeometry': QueryResultsService.clearHighlightGeometry
+    'highlightgeometry': this.highlightGeometry.bind(this),
+    'clearHighlightGeometry': this.clearHighlightGeometry.bind(this)
   };
   this._relations = [];
   this._atlas = [];
@@ -85,6 +84,7 @@ function QueryResultsService() {
   };
   GUI.onbefore('setContent', (options)=>{
     const {perc} = options;
+    this.mapService = this.mapService || ApplicationService.getApplicationService('map');
     if (perc === 100 && GUI.isMobile()) {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
       this._asyncFnc.goToGeometry.async = true;
@@ -132,11 +132,10 @@ proto.setZoomToResults = function(bool=true) {
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
-  const mapService = ComponentsRegistry.getComponent('map').getService();
   const features = layer.features;
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
-    this._asyncFnc.todo = mapService.zoomToFeatures.bind(mapService, features, options);
-  else mapService.zoomToFeatures(features, options);
+    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
+  else this.mapService.zoomToFeatures(features, options);
 };
 
 proto.clearState = function() {
@@ -348,8 +347,16 @@ proto._parseAttributes = function(layerAttributes, feature) {
 };
 
 proto.setActionsForLayers = function(layers) {
-  layers.forEach((layer) => {
+  layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+    this.state.layersactions[layer.id].push({
+      id: 'selection',
+      download: false,
+      class: GUI.getFontClass('success'),
+      hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+      toggled: false,
+      cbk: this.addToSelection.bind(this)
+    });
     //in case of geometry
     if (layer.hasgeometry)
       this.state.layersactions[layer.id].push({
@@ -377,7 +384,7 @@ proto.setActionsForLayers = function(layers) {
           download: false,
           class: GUI.getFontClass('relation'),
           hint: 'sdk.mapcontrols.query.actions.relations.hint',
-          cbk: QueryResultsService.showQueryRelations,
+          cbk: this.showQueryRelations,
           relations,
          chartRelationIds
         });
@@ -461,7 +468,6 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 
 proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, coordinates, resolution) => {
-    const mapService = ComponentsRegistry.getComponent('map').getService();
     let isVisible = false;
     this._vectorLayers.forEach(vectorLayer => {
       let features = [];
@@ -478,8 +484,8 @@ proto._addVectorLayersDataToQueryResponse = function() {
       if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
       if (Array.isArray(coordinates)) {
         if (coordinates.length === 2) {
-          const pixel = mapService.viewer.map.getPixelFromCoordinate(coordinates);
-          mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+          const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+          this.mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
             features.push(feature);
           },  {
             layerFilter: function(layer) {
@@ -660,16 +666,27 @@ proto.downloadXls = function({id:layerId}={}, feature){
   })
 };
 
+proto.addToSelection = function(layer, feature, action){
+  //action.toggled = !action.toggled;
+  const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+  const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+  const hasAlreadySelectioned = _layer.hasSelectionId(fid);
+  _layer[hasAlreadySelectioned ? 'deleteSelectionId': 'addSelectionId'](fid);
+  feature.geometry && _layer.setOlSelectionFeatures({
+    id: fid,
+    geometry: feature.geometry
+  }, hasAlreadySelectioned ? 'remove': 'add');
+};
+
 proto.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
-    const mapService = ComponentsRegistry.getComponent('map').getService();
     if (this._asyncFnc.goToGeometry.async) {
-      this._asyncFnc.todo = mapService.highlightGeometry.bind(mapService, feature.geometry, {
+      this._asyncFnc.todo = this.mapService.highlightGeometry.bind(this.mapService, feature.geometry, {
         layerId: layer.id,
         duration: 1500
       });
     } else setTimeout(() => {
-      mapService.highlightGeometry(feature.geometry, {
+      this.mapService.highlightGeometry(feature.geometry, {
         layerId: layer.id,
         duration: 1500
       });
@@ -682,39 +699,20 @@ proto.saveLayerResult = function({layer, type='csv'}={}) {
   this.downloadFeatures(type, layer, layer.features);
 };
 
-QueryResultsService.zoomToElement = function(layer, feature) {
-  //TODO
-};
-
-QueryResultsService.goToGeometry = function(layer, feature) {
-  if (feature.geometry) {
-    setTimeout(() => {
-      const mapService = ComponentsRegistry.getComponent('map').getService();
-      // mapService.highlightGeometry(feature.geometry, {
-      //   layerId: layer.id,
-      //   duration: 1500
-      // });
-    }, 0)
-  }
-};
-
-QueryResultsService.highlightGeometry = function(layer, feature) {
-  if (feature.geometry) {
-    const mapService = ComponentsRegistry.getComponent('map').getService();
-    mapService.highlightGeometry(feature.geometry, {
+proto.highlightGeometry = function(layer, feature) {
+  feature.geometry &&  this.mapService.highlightGeometry(feature.geometry, {
       layerId: layer.id,
       zoom: false,
       duration: Infinity
     });
-  }
+
 };
 
-QueryResultsService.clearHighlightGeometry = function(layer, feature) {
-  const mapService = ComponentsRegistry.getComponent('map').getService();
-  mapService.clearHighlightGeometry();
+proto.clearHighlightGeometry = function(layer, feature) {
+  this.mapService.clearHighlightGeometry();
 };
 
-QueryResultsService.showQueryRelations = function(layer, feature, action) {
+proto.showQueryRelations = function(layer, feature, action) {
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,

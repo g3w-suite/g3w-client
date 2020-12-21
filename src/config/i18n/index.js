@@ -151,6 +151,9 @@ const translations = {
           query: {
             tooltip: 'Interroga Layer',
             actions: {
+              add_selection: {
+                hint: "Aggiungi alla selezione"
+              },
               zoom_to_features_extent:{
                 hint: "Zoom sulle features"
               },
@@ -540,6 +543,9 @@ const translations = {
           query: {
             tooltip: 'Query layer',
             actions: {
+              add_selection: {
+                hint: "Add to selection"
+              },
               zoom_to_features_extent:{
                 hint: "Zoom to features extent"
               },

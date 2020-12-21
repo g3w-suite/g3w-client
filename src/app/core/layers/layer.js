@@ -135,12 +135,21 @@ proto.addSelectionId = function(id){
   !this.getSelection() && this.setSelection(true);
 };
 
+proto.hasSelectionId = function(id){
+  if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) return true;
+  else if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionIds.has(id);
+  else return this.selectionIds.has(id) ;
+};
+
 proto.addSelectionIds = function(ids=[]){
   ids.forEach(id => this.addSelectionId(id));
 };
 
 proto.deleteSelectionId = function(id) {
-  this.selectionIds.delete(id);
+  if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) {
+    this.selectionIds.clear();
+    this.excludeSelectionId(id);
+  } else this.selectionIds.delete(id);
   this.selectionIds.size === 0 && this.setSelection(false);
 };
 

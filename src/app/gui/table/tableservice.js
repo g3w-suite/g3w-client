@@ -116,6 +116,10 @@ proto.switchSelection = function(){
   }
 };
 
+proto.clearLayerSelection = function(){
+  this.layer.clearSelectionIds();
+};
+
 proto.selectAllFeatures = function(){
   this.state.selectAll = !this.state.selectAll;
   this.state.features.forEach(feature => feature.selected = this.state.selectAll);
@@ -194,8 +198,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
 proto.addFeature = function(feature) {
   const tableFeature = {
     id: feature.id,
-    selected: this.selectedfeaturesid.has(SELECTION_STATE.ALL) ||
-              this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE) ? !this.selectedfeaturesid.has(feature.id) :this.selectedfeaturesid.has(feature.id),
+    selected: this.layer.hasSelectionId(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.geolayer && this._returnGeometry(feature),
   };
