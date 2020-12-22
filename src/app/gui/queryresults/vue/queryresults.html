@@ -10,6 +10,10 @@
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
               <div class="box-features-action" v-if="layer.features.length > 1">
+                <span  @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
+                  data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
+                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
+                </span>
                 <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-left"
                       data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
@@ -50,11 +54,12 @@
                           @mouseout="trigger({id:'clearHighlightGeometry'})" class="featurebox-header"
                           :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1? '' : 'featurebox-header-open']">
                         <td v-if="state.layersactions[layer.id].length">
-                          <span v-if="showAction({action: action, layer:layer, feature:feature})"
+                          <span v-if="showAction({action: action, index: index, layer:layer, feature:feature})"
                             @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
                             v-download="action.download"
+                            :class="{'toggled': action.state && action.state.toggled[index] }"
                             class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                            <span :class="[`action-button-icon ${action.class}`, action.toggled ? 'toggled': '']"></span>
+                            <span :class="`action-button-icon ${action.class}`"></span>
                           </span>
 <!--                          <span class="action-button-icon fas fa-download" style="padding: 5px" @click.capture="showDownloadAction">-->
 <!--                            <span class="skin-border-color download_content_action"-->
@@ -114,11 +119,12 @@
                         @mouseout="trigger({id:'clearHighlightGeometry'})"
                         class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
                       <td v-if="state.layersactions[layer.id].length">
-                        <span v-if="showAction({action:action, layer:layer, feature:feature})"
+                        <span v-if="showAction({action:action, layer:layer, index:index, feature:feature})"
                           @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
                           v-download="action.download"
+                          :class="{'toggled': action.state && action.state.toggled[index] }"
                           class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                          <span :class="[`action-button-icon ${action.class}`, !action.toggled ? 'toggled': '']"></span>
+                          <span :class="`action-button-icon ${action.class}`"></span>
                         </span>
                       </td>
                       <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">

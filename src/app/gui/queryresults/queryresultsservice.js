@@ -99,6 +99,7 @@ const proto = QueryResultsService.prototype;
 
 proto.clear = function() {
   this.runAsyncTodo();
+  this.unlistenerEventsActions();
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -347,6 +348,7 @@ proto._parseAttributes = function(layerAttributes, feature) {
 };
 
 proto.setActionsForLayers = function(layers) {
+  this.unlistenerlayeractionevents = [];
   layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
     this.state.layersactions[layer.id].push({
@@ -354,9 +356,20 @@ proto.setActionsForLayers = function(layers) {
       download: false,
       class: GUI.getFontClass('success'),
       hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-      toggled: false,
+      state: Vue.observable({
+        toggled: layer.features.map(feature => false)
+      }),
+      init: ({feature, index, action}={})=>{
+        this.checkFeatureSelection({
+          layerId: layer.id,
+          index,
+          feature,
+          action
+        })
+      },
       cbk: this.addToSelection.bind(this)
     });
+    this.listenClearSelection(layer, 'selection');
     //in case of geometry
     if (layer.hasgeometry)
       this.state.layersactions[layer.id].push({
@@ -666,16 +679,72 @@ proto.downloadXls = function({id:layerId}={}, feature){
   })
 };
 
-proto.addToSelection = function(layer, feature, action){
-  //action.toggled = !action.toggled;
+proto.listenClearSelection = function(layer, actionId){
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+  const handler = ()=>{
+    const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
+    action.state.toggled = layer.features.map(feature => false);
+  };
+  _layer.on('unselectionall', handler);
+  this.unlistenerlayeractionevents.push({
+    layer:_layer,
+    event:'unselectionall',
+    handler
+  })
+};
+
+proto.unlistenerEventsActions = function(){
+  this.unlistenerlayeractionevents.forEach(obj => {
+    obj.layer.off(obj.event, obj.handler)
+  });
+  this.unlistenerlayeractionevents = null;
+};
+
+proto.selectionFeaturesLayer = function(layer) {
+  const layerId = layer.id;
+  const action = this.state.layersactions[layerId].find(action => action.id === 'selection');
+  const bool = action.state.toggled.reduce((accumulator, current) => accumulator && current, true);
+  const _layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  layer.features.forEach((feature, index) => {
+    action.state.toggled.splice(index, 1, bool);
+    this._addRemoveSelectionFeature(_layer, feature, bool ? 'remove' : 'add');
+  })
+};
+
+proto._addRemoveSelectionFeature = function(layer, feature, force){
   const fid = feature ? 1*feature.attributes['g3w_fid']: null;
-  const hasAlreadySelectioned = _layer.hasSelectionId(fid);
-  _layer[hasAlreadySelectioned ? 'deleteSelectionId': 'addSelectionId'](fid);
-  feature.geometry && _layer.setOlSelectionFeatures({
-    id: fid,
-    geometry: feature.geometry
-  }, hasAlreadySelectioned ? 'remove': 'add');
+  const hasAlreadySelectioned = layer.hasSelectionId(fid);
+  if (force === undefined) {
+    layer[hasAlreadySelectioned ? 'deleteSelectionId': 'addSelectionId'](fid);
+    feature.geometry && layer.setOlSelectionFeatures({
+      id: fid,
+      geometry: feature.geometry
+    }, hasAlreadySelectioned ? 'remove': 'add');
+  } else if (!hasAlreadySelectioned && force === 'add') {
+      layer.addSelectionId(fid);
+      feature.geometry && layer.setOlSelectionFeatures({
+        id: fid,
+        geometry: feature.geometry
+      }, 'add');
+    } else if (hasAlreadySelectioned && force === 'remove'){
+      layer.deleteSelectionId(fid);
+      feature.geometry && layer.setOlSelectionFeatures({
+        id: fid,
+        geometry: feature.geometry
+      }, 'remove');
+    }
+};
+
+proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
+  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+  action.state.toggled[index] = layer.hasSelectionId(fid);
+};
+
+proto.addToSelection = function(layer, feature, action, index){
+  action.state.toggled.splice(index, 1, !action.state.toggled[index]);
+  const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+  this._addRemoveSelectionFeature(_layer, feature);
 };
 
 proto.goToGeometry = function(layer, feature) {

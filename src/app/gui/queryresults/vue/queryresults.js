@@ -90,6 +90,9 @@ const vueComponentOptions = {
       }
       return false;
     },
+    selectionFeaturesLayer(layer) {
+      this.$options.queryResultsService.selectionFeaturesLayer(layer);
+    },
     zoomToLayerFeaturesExtent(layer) {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
         highlight: true
@@ -243,7 +246,8 @@ const vueComponentOptions = {
       }
       return fields;
     },
-    showAction({action, layer, feature} = {}){
+    showAction({action, layer, index,  feature} = {}){
+      action.init && action.init({feature, index, action});
       return typeof action.condition === 'function' ? action.condition({layer, feature}) : true;
     }
   },
