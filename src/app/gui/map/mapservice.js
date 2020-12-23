@@ -1877,7 +1877,6 @@ proto.resetDefaultLayerStyle = function(type, style={}){
   };
 };
 
-
 proto.removeLayers = function() {
   this._removeMapLayers();
   this.removeExternalLayers();
@@ -2128,6 +2127,10 @@ proto.setSelectionFeatures = function(action='add', options={}){
 
 proto.clearSelectionFeatures = function(){
   this.defaultsLayers.selectionLayer.getSource().clear();
+};
+
+proto.seSelectionLayerVisible = function(visible=true) {
+  this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
 proto.highlightGeometry = function(geometryObj, options = {}) {

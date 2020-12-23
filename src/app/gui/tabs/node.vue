@@ -34,7 +34,7 @@
                 </div>
                 <span>
                   <span class="query_relation_field_message">
-                    <span v-t="'mapcontrols.query.input_relation'"></span><span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span></span>
+                    <span></span><span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span></span>
                 </span>
               </div>
               <template v-else>

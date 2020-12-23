@@ -33,9 +33,14 @@ function QueryResultsService() {
   const project = this._project = ProjectsRegistry.getCurrentProject();
   // userful to set right order for query result based on toc order layers
   this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
+  // set reactive state
   this.state = {
     zoomToResult: true,
-    components: []
+    components: [],
+    layers: [],
+    query: null,
+    loading: false,
+    layersactions: {}
   };
   this.init = function() {
     this.clearState();
@@ -54,7 +59,7 @@ function QueryResultsService() {
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
-      this.state.layers = layers;
+      layers.forEach(layer => this.state.layers.push(layer));
       this.setActionsForLayers(layers);
     },
     addComponent: function(component) {
@@ -140,7 +145,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
 };
 
 proto.clearState = function() {
-  this.state.layers = [];
+  this.state.layers.splice(0);
   this.state.query = {};
   this.state.querytitle = "";
   this.state.loading = true;
@@ -351,13 +356,15 @@ proto.setActionsForLayers = function(layers) {
   this.unlistenerlayeractionevents = [];
   layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+    const toggled = {};
+    layer.features.map((feature, index) => toggled[index] = false);
     this.state.layersactions[layer.id].push({
       id: 'selection',
       download: false,
       class: GUI.getFontClass('success'),
       hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
       state: Vue.observable({
-        toggled: layer.features.map(feature => false)
+        toggled
       }),
       init: ({feature, index, action}={})=>{
         this.checkFeatureSelection({
@@ -422,6 +429,7 @@ proto.setActionsForLayers = function(layers) {
         cbk: this.downloadFeatures.bind(this, format)
       });
     });
+
     this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
       id: `printatlas`,
       download: true,
@@ -683,7 +691,7 @@ proto.listenClearSelection = function(layer, actionId){
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   const handler = ()=>{
     const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
-    action.state.toggled = layer.features.map(feature => false);
+    layer.features.forEach((feature, index) => action.state.toggled[index] = false);
   };
   _layer.on('unselectionall', handler);
   this.unlistenerlayeractionevents.push({
@@ -703,10 +711,10 @@ proto.unlistenerEventsActions = function(){
 proto.selectionFeaturesLayer = function(layer) {
   const layerId = layer.id;
   const action = this.state.layersactions[layerId].find(action => action.id === 'selection');
-  const bool = action.state.toggled.reduce((accumulator, current) => accumulator && current, true);
+  const bool = Object.values(action.state.toggled).reduce((acculmulator, value) => acculmulator && value, true);
   const _layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   layer.features.forEach((feature, index) => {
-    action.state.toggled.splice(index, 1, bool);
+    action.state.toggled[index] = !bool;
     this._addRemoveSelectionFeature(_layer, feature, bool ? 'remove' : 'add');
   })
 };
@@ -742,7 +750,7 @@ proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
 };
 
 proto.addToSelection = function(layer, feature, action, index){
-  action.state.toggled.splice(index, 1, !action.state.toggled[index]);
+  action.state.toggled[index] = !action.state.toggled[index];
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   this._addRemoveSelectionFeature(_layer, feature);
 };

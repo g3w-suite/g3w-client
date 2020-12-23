@@ -58,8 +58,12 @@ function Layer(config={}, options={}) {
     source: config.source,
     infoformat: this.getInfoFormat(),
     geolayer: false,
-    selection: false,
-    filterd: false,
+    selection: {
+      active: false
+    },
+    filter: {
+      active: false
+    },
     visible: config.visible || false,
     tochighlightable: false
   };
@@ -131,8 +135,13 @@ proto.getSelectionIds = function(){
 };
 
 proto.addSelectionId = function(id){
-  this.selectionIds.add(id);
-  !this.getSelection() && this.setSelection(true);
+  if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionIds.has(id)) {
+    this.selectionIds.delete(id);
+    this.selectionIds.size === 1 && this.setSelectionIdsAll();
+  } else {
+    this.selectionIds.add(id);
+    !this.getSelection() && this.setSelection(true);
+  }
 };
 
 proto.hasSelectionId = function(id){
@@ -149,7 +158,8 @@ proto.deleteSelectionId = function(id) {
   if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) {
     this.selectionIds.clear();
     this.excludeSelectionId(id);
-  } else this.selectionIds.delete(id);
+  } else this.selectionIds[this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](id);
+  if (this.selectionIds.size === 1 && this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.setSelectionIdsAll();
   this.selectionIds.size === 0 && this.setSelection(false);
 };
 
@@ -163,6 +173,10 @@ proto.clearSelectionIds = function(){
   this.setSelection(false);
 };
 // end selection ids methods
+
+proto.toggleFilter = function(){
+  this.state.filter.active = !this.state.filter.active;
+};
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
@@ -452,20 +466,20 @@ proto.setType = function(type) {
 };
 
 proto.isSelected = function() {
-  return this.state.selected;
+  return this.state.selected.active;
 };
 
 proto.setSelected = function(bool) {
-  this.state.selected = bool;
+  this.state.selected.active = bool;
 };
 
 proto.setSelection = function(bool=false){
-  this.state.selection = bool;
+  this.state.selection.active = bool;
   !bool && this.emit('unselectionall');
 };
 
 proto.getSelection = function(){
-  return this.state.selection;
+  return this.state.selection.active;
 };
 
 proto.setFiltered = function(bool=false){

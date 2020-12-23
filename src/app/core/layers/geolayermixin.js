@@ -55,6 +55,16 @@ proto.addOlSelectionFeature = function({id, geometry}={}){
   return this.olSelectionFeatures[id];
 };
 
+proto.showAllOlSelectionFeatures = function(){
+  const mapService = GUI.getComponent('map').getService();
+  Object.values(this.olSelectionFeatures).forEach(featureObject =>{
+    !featureObject.added && mapService.setSelectionFeatures('add', {
+      feature: featureObject.feature
+    });
+    featureObject.added = true;
+  })
+};
+
 proto.setOlSelectionFeatures = function(feature, action='add'){
   const mapService = GUI.getComponent('map').getService();
   if (!feature) {

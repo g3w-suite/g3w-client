@@ -11,7 +11,7 @@
               </div>
               <div class="box-features-action" v-if="layer.features.length > 1">
                 <span  @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
-                  data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
+                  data-placement="left" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                 </span>
                 <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-left"
@@ -61,22 +61,11 @@
                             class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
                             <span :class="`action-button-icon ${action.class}`"></span>
                           </span>
-<!--                          <span class="action-button-icon fas fa-download" style="padding: 5px" @click.capture="showDownloadAction">-->
-<!--                            <span class="skin-border-color download_content_action"-->
-<!--                                  style="display: none; position: absolute; border: 2px solid; border-radius: 3px; background-color: #ffffff">-->
-<!--                              <span v-if="showAction({action: action, layer:layer, feature:feature}) && action.download"-->
-<!--                                    @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id].filter(action => action.download)"-->
-<!--                                    v-download="action.download"-->
-<!--                                    class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">-->
-<!--                                <span :class="'action-button-icon ' + action.class"></span>-->
-<!--                              </span>-->
-<!--                            </span>-->
-<!--                          </span>-->
                         </td>
                         <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
-                        <td class="collapsed "v-if="!hasLayerOneFeature(layer)">
+                        <td class="collapsed" v-if="!hasLayerOneFeature(layer)">
                           <span class="fa link morelink skin-color" :class="[collapsedFeatureBox(layer,feature) ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
                         </td>
                       </tr>

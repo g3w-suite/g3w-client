@@ -44,6 +44,9 @@
       TableBody
     },
     methods: {
+      activeDeactiveLayerFilter(){
+        this.$options.service.activeDeactiveLayerFilter();
+      },
       clearAllSelection(){
         this.$options.service.clearLayerSelection();
       },
@@ -198,7 +201,8 @@
         propsData: {
           tools: this.state.tools,
           switchSelection: this.switchSelection,
-          clearAllSelection: this.clearAllSelection
+          clearAllSelection: this.clearAllSelection,
+          activeDeactiveLayerFilter: this.activeDeactiveLayerFilter
         }
       });
       $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);

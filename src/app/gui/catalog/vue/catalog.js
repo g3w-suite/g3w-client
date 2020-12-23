@@ -464,8 +464,8 @@ Vue.component('tristate-tree', {
     }
   },
   methods: {
-    toggleFilter(){
-      this.filtered = !this.filtered;
+    toggleFilterLayer(){
+      this.layerstree.filter.active = !this.layerstree.filter.active;
     },
     clearSelection(){
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);

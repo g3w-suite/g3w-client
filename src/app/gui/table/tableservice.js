@@ -14,6 +14,7 @@ const TableService = function(options = {}) {
   this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
   this.mapService = GUI.getComponent('map').getService();
+  this.getAll = this.selectedfeaturesid.size > 0;
   this.clearAllSelection = () => {
     this.state.features.forEach(feature => feature.selected = false);
     this.state.tools.show = false;
@@ -29,10 +30,11 @@ const TableService = function(options = {}) {
     loading: false,
     allfeatures: 0,
     featurescount: 0,
-    pagination: true,
+    pagination: false,
     selectAll: false,
     tools: {
       show: false,
+      filter: this.layer.state.filter
     }
   };
   this._async = {
@@ -46,8 +48,8 @@ const TableService = function(options = {}) {
 
 const proto = TableService.prototype;
 
-proto.createFilter = function(){
-  console.log('Creating filter ....')
+proto.activeDeactiveLayerFilter = function(){
+  this.layer.toggleFilter();
 };
 
 proto.getHeaders = function() {
@@ -91,7 +93,14 @@ proto.addRemoveSelectedFeature = function(feature){
     } else if (size -1 === this.state.allfeatures){
       this.layer.clearSelectionIds();
     }
-  } else this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
+  } else {
+    this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
+    const size = this.selectedfeaturesid.size;
+    if (size === this.allfeaturesnumber) {
+      this.state.selectAll = true;
+      this.layer.setSelectionIdsAll();
+    }
+  }
   this.state.tools.show = this.selectedfeaturesid.size > 0;
   !this.state.tools.show && this.setSelectionFeatures();
 };
@@ -126,8 +135,22 @@ proto.selectAllFeatures = function(){
   if (this.state.allfeatures === this.allfeaturesnumber) {
     this.state.selectAll && this.layer.setSelectionIdsAll();
     this.state.tools.show = this.state.selectAll;
-    if (this.state.selectAll) this.state.features.forEach(feature => this.setSelectionFeatures(feature));
-    else this.layer.clearSelectionIds();
+    if (this.state.selectAll && !this.getAll ) {
+      this.layer.getDataTable({}).then(data =>{
+        const {features} = data;
+        this.geolayer && features && features.forEach(feature => {
+          feature.geometry && this.layer.addOlSelectionFeature({
+            id: feature.id,
+            geometry: this._returnGeometry(feature)
+          });
+          this.layer.setOlSelectionFeatures(feature, 'add');
+        });
+        this.getAll = true;
+      })
+    } else if (this.state.selectAll && this.getAll) {
+      this.layer.showAllOlSelectionFeatures();
+    }
+    !this.state.selectAll && this.layer.clearSelectionIds();
   } else {
     if (!this.state.selectAll) {
       this.layer.setExcludeSelection();
@@ -168,18 +191,22 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLengths
       }
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0  ? 1 : (start/length) + 1;
-      this.layer.getDataTable({
+      const getDataPromise = this.selectedfeaturesid.size === 0 || this.state.pagination ? this.layer.getDataTable({
         page: this.currentPage,
         page_size: length,
         search: searchText,
         formatter: this.formatter,
         ordering
-      }).then(data => {
+      }) : this.layer.getDataTable({
+        ordering,
+        formatter: this.formatter
+      });
+      getDataPromise.then(data => {
         const {features} = data;
         this.state.allfeatures = data.count || this.state.features.length;
         this.state.featurescount += features.length;
-        this.state.pagination = !!data.count && (this.state.featurescount < this.state.allfeatures);
         this.allfeaturesnumber = this.allfeaturesnumber === undefined ? this.state.allfeatures : this.allfeaturesnumber;
+        this.state.pagination = data.count > 0 && (this.state.featurescount < this.allfeaturesnumber);
         this.addFeatures(features);
         resolve({
           data: this.setDataForDataTable(),
