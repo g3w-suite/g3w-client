@@ -25,6 +25,7 @@ const TableService = function(options = {}) {
   this.layer.on('unselectionall', this.clearAllSelection);
   this.state = {
     pageLengths: [10, 25, 50],
+    pageLength: this.layer.getAttributeTablePageLength() || 10,
     features: [],
     title: this.layer.getTitle(),
     headers,
@@ -226,8 +227,13 @@ proto.setFilteredFeature = function(featuresIndex=[]){
   else this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
 };
 
-proto.getData = function({start = 0, order = [], length = this.state.pageLengths[0], search={value:null}, firstCall=false} = {}) {
+proto.setAttributeTablePageLength = function(length){
+  this.layer.setAttributeTablePageLength(length);
+};
+
+proto.getData = function({start = 0, order = [], length = this.state.pageLength, search={value:null}, firstCall=false} = {}) {
   // reset features before load
+  this.setAttributeTablePageLength(length);
   return new Promise((resolve, reject) => {
     if (!this.state.headers.length)
       resolve({

@@ -64,6 +64,9 @@ function Layer(config={}, options={}) {
     filter: {
       active: false
     },
+    attributetable: {
+      pageLength: null,
+    },
     visible: config.visible || false,
     tochighlightable: false
   };
@@ -108,6 +111,17 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+// global state
+proto.setAttributeTablePageLength = function(pageLength){
+  this.state.attributetable.pageLength = pageLength
+};
+
+proto.getAttributeTablePageLength = function(){
+  return this.state.attributetable.pageLength;
+};
+
+// end global state
 
 //selection Ids layer methods
 proto.setSelectionIdsAll = function(){

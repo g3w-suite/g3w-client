@@ -33,7 +33,9 @@ const vueComponentObject = {
     },
     resizeForm(){
       const perc = GUI.getContentPercentage();
-      GUI.setContentPercentage(perc == 100 ? 50 : 100)
+      const currentFormPercentage = perc == 100 ? 50 : 100;
+      GUI.setContentPercentage(currentFormPercentage);
+      this.$options.service.setCurrentFormPercentage(currentFormPercentage)
     },
     switchComponent(index) {
       this.switchcomponent = true;
@@ -94,6 +96,7 @@ function FormComponent(options = {}) {
   const components = options.components || [
     {id: options.id, title: options.title, name:options.name, component: BodyFormComponent}
   ];
+  options.perc = options.layer.getFormPercentage() !== null ? options.layer.getFormPercentage() : options.perc;
   // initialize component
   this.init(options);
   this.getService().addComponents(components);

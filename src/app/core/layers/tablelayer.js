@@ -100,12 +100,16 @@ function TableLayer(config={}, options={}) {
           this.config.editing.format = vector.format;
           this.config.editing.constraints = constraints || {};
           this.config.editing.style = vector.style || {};
+          this.config.editing.form = {
+            perc: null
+          };
           this._setOtherConfigParameters(vector);
           vector.style && this.setColor(vector.style.color);
           // creare an instace of editor
           this._editor = new Editor({
             layer: this
           });
+
           resolve(this);
           this.setReady(true);
         })
@@ -131,6 +135,14 @@ function TableLayer(config={}, options={}) {
 inherit(TableLayer, Layer);
 
 const proto = TableLayer.prototype;
+
+proto.setFormPercentage = function(perc){
+  this.config.editing.form.perc = perc;
+};
+
+proto.getFormPercentage = function(){
+  return this.config.editing.form.perc;
+};
 
 proto.clone = function() {
   return _.cloneDeep(this);

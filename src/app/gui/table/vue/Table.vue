@@ -155,6 +155,7 @@
       this.first = false;
       const commonDataTableOptions = {
         "lengthMenu": this.state.pageLengths,
+        "pageLength": this.state.pageLength,
         "scrollX": true,
         "scrollCollapse": true,
         "sSearch": false,
@@ -202,6 +203,9 @@
           this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
         });
         dataTable.on('search.dt', debounceSearch);
+        dataTable.on('length.dt', (evt, settings, length)=>{
+          this.$options.service.setAttributeTablePageLength(length)
+        })
       }
 
       this.isMobile() && hideElements();
@@ -218,7 +222,7 @@
     },
     beforeDestroy() {
       GUI.un('setContent', this.setContentKey);
-      dataTable.destroy();
+      dataTable.destroy(true);
       dataTable = null;
     }
   }

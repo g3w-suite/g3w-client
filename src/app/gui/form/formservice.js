@@ -5,35 +5,34 @@ const G3WObject = require('core/g3wobject');
 function FormService() {
   this.state = null;
   this.eventBus = new Vue();
+  this.layer;
   this.setters = {
-    setInitForm: function (options) {
+    setInitForm(options) {
       this._setInitForm(options);
     },
-    setFormStructure: function (formStructure) {
+    setFormStructure(formStructure) {
       this.state.formstructure = formStructure;
     },
     // setter change fields
-    setFormFields: function (fields) {
+    setFormFields(fields) {
       this.state.fields = fields;
     },
     setupFields: function () {
       this._setupFields();
     },
-    // setter sinsert data into form
-    setFormData: function (fields) {
+    // setter insert data into form
+    setFormData(fields) {
       this.setFormFields(fields);
     },
     // setter single field
-    setField: function (field) {
-    },
+    setField(field) {},
     // settere state
-    setState: function (state) {
+    setState(state) {
       this._setState(state);
     },
     // setter add action
-    addActionsForForm: function (actions) {
-    },
-    postRender: function (element) {
+    addActionsForForm(actions) {},
+    postRender(element) {
       // hook for listener to chenge DOM
     }
   };
@@ -43,7 +42,7 @@ function FormService() {
   };
   // init form options paased for example by editor
   this._setInitForm = function (options = {}) {
-    const layer = options.layer;
+    this.layer = options.layer;
     const fields = options.fields;
     this.title = options.title || 'Form';
     this.formId = options.formId;
@@ -69,14 +68,10 @@ function FormService() {
     };
     this.setFormFields(fields);
     this.setFormStructure(options.formStructure);
-    if (layer && options.formStructure) {
-      const fieldsoutofformstructure = layer.getFieldsOutOfFormStructure().map((field) => {
-        return field.field_name;
-      });
+    if (this.layer && options.formStructure) {
+      const fieldsoutofformstructure = this.layer.getFieldsOutOfFormStructure().map(field => field.field_name);
       this.state.fieldsoutofformstructure = {
-        fields: fields.filter((field) => {
-          return fieldsoutofformstructure.indexOf(field.name) > -1;
-        })
+        fields: fields.filter(field => fieldsoutofformstructure.indexOf(field.name) > -1)
       }
     }
   };
@@ -88,6 +83,10 @@ function FormService() {
 inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
+
+proto.setCurrentFormPercentage = function(perc){
+  this.layer.setFormPercentage(perc)
+};
 
 proto.setLoading = function(bool=false) {
   this.state.loading = bool;
