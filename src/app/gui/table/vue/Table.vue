@@ -5,7 +5,7 @@
         <tr>
           <th v-for="(header, index) in state.headers">
             <span v-if="index === 0">
-              <input type="checkbox" id="attribute_table_select_all_rows" :checked="state.selectAll" class="magic-checkbox" :disabled="state.features.length === 0">
+              <input type="checkbox" id="attribute_table_select_all_rows" :checked="state.selectAll" class="magic-checkbox" :disabled="state.nofilteredrow || state.features.length === 0">
               <label style="margin-bottom:0 !important;" @click.capture.stop.prevent="selectAllRow" for="attribute_table_select_all_rows"><span style="padding:5px"></span></label>
             </span>
             <span v-else>{{ header.label }}</span>
@@ -157,6 +157,7 @@
         "lengthMenu": this.state.pageLengths,
         "scrollX": true,
         "scrollCollapse": true,
+        "sSearch": false,
         "order": [ 1, 'asc' ],
         "dom": '<"#g3w-table-toolbar">flrtip',
         "columnDefs": [ {
@@ -192,9 +193,17 @@
           "processing": true,
           "deferLoading": this.state.allfeatures
         });
-      } else
-        // no pagination all data
-        dataTable = $('#open_attribute_table table').DataTable(commonDataTableOptions);
+      } else { // no pagination all data
+        dataTable = $('#open_attribute_table table').DataTable({
+          ...commonDataTableOptions,
+          searchDelay: 600
+        });
+        const debounceSearch = debounce(() => {
+          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
+        });
+        dataTable.on('search.dt', debounceSearch);
+      }
+
       this.isMobile() && hideElements();
       const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
       const G3WTableToolbarInstance = new G3WTableToolbarClass({

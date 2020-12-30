@@ -1,6 +1,9 @@
 .skin-purple {
   .skin-border-color {
     border-color: @purple !important;
+    &.lighten {
+      border-color: lighten(@purple, 30%) !important;
+    }
   }
   .skin-background-color {
     background-color: @purple !important;

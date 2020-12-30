@@ -44,7 +44,7 @@ proto.show = function(options = {}) {
   const service = this.getService();
   // close all sidebar open component
   GUI.closeOpenSideBarComponent();
-  service.getData()
+  service.getData({firstCall: true})
     .then(() => {
       GUI.showContent({
         content: this,

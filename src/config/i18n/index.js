@@ -783,6 +783,790 @@ const translations = {
         infoFiltered: "(filtered from _MAX_ total records)"
       }
     },
+  },
+  fi: {
+    translation: {
+      layer_selection_filter: {
+        tools: {
+          filter: "Lisätä Suodattaa",
+          nofilter: "Poista Suodattaa",
+          invert: "Käänteinen Valinta",
+          clear: "Peruuttaa Valinta",
+        }
+      },
+      sdk: {
+        search: {
+          all: 'KAIKKI',
+          no_results: "Ei tuloksia",
+          searching: "Haetaan ...",
+          error_loading: "Virhe ladattaessa tietoja.",
+          layer_not_searchable: "Taso ei ole haettavissa.",
+          layer_not_querable: "Tasolle ei voi suorittaa kyselyitä.",
+          autocomplete: {
+            inputshort: {
+              pre: "Syötä",
+              post: "tai useampi merkki"
+            }
+          }
+        },
+        print: {
+          no_layers: 'Ei tulostettavia tasoja',
+          scale: "Mittakaava",
+          format: "Formaatti",
+          rotation: "Kierto",
+          fids_instruction: "Hyväksytyt arvot: yhdestä arvoon [max]. Salittua syöttää myös väli, esim. 4-6.",
+          fids_example: "Esimerkiksi 1,4-6 tulostuu id 1,4,5,6.",
+          help: "Tulosteessa esiintyvät tasot voivat olla QGIS-projektissa määriteltyjä (teemojen hallinnan avulla), ei kartalla esiintyviä."
+        },
+        querybuilder: {
+          search: {
+            run: "Suorita",
+            info: "Informaatio",
+            delete: "Poista",
+            edit: "Muokkaa"
+          },
+          messages: {
+            changed: 'Tallennettu'
+          },
+          panel: {
+            button: {
+              all: 'KAIKKI',
+              save: 'TALLENNA',
+              test: 'TESTI',
+              clear: 'TYHJENNÄ',
+              run: 'SUORITA',
+              manual: 'MANUAALINEN'
+            },
+            layers: 'TASOT',
+            fields: 'KENTÄT',
+            values: 'ARVOT',
+            operators: 'OPERAATTORIT',
+            expression: 'LAUSEKE'
+          },
+          error_run: 'Tapahtui virhe. Tarkista kysely.',
+          error_test: "Kyselyä suorittaessa tapahtui virhe.",
+          delete: 'Haluatko poistaa sen?',
+          additem: 'Anna nimi uudelle haulle.'
+        },
+        errors: {
+          layers: {
+            load: "Jotkin tasot eivät ole saatavilla."
+          },
+          unsupported_format: 'Ei tuettu formaatti',
+          add_external_layer: 'Tason latausvirhe'
+        },
+        metadata: {
+          title: 'Metatiedot',
+          groups: {
+            general: {
+              title: 'YLEINEN',
+              fields: {
+                title: 'OTSIKKO',
+                name: 'NIMI',
+                description: "KUVAUS",
+                abstract: "TIIVISTELMÄ",
+                keywords: 'AVAINSANAT',
+                fees: "MAKSUT",
+                accessconstraints: "PÄÄSYRAJOITUKSET",
+                contactinformation: "YHTEYSTIEDOT",
+                subfields: {
+                  contactinformation: {
+                    contactelectronicmailaddress: "Sähköposti",
+                    personprimary: 'Viitteet',
+                    contactvoicetelephone: 'Puhelin',
+                    contactorganization: 'Organisaatio',
+                    ContactOrganization: 'Organisaatio',
+                    contactposition: 'Asema',
+                    ContactPosition: 'Asema',
+                    contactperson: 'Yhteyshenkilö',
+                    ContactPerson: 'Yhteyshenkilö'
+                  }
+                },
+                wms_url: "WMS"
+              }
+            },
+            spatial:{
+              title: 'SPATIAL',
+              fields : {
+                crs: 'EPSG',
+                extent: 'BBOX'
+              }
+            },
+            layers: {
+              title: 'TASOT',
+              fields: {
+                layers: 'TASOT',
+                subfields: {
+                  crs: 'EPSG',
+                  bbox: 'BBOX',
+                  title: "OTSIKKO",
+                  name: 'NIMI',
+                  geometrytype: 'GEOMETRIA',
+                  source: 'LÄHDE',
+                  attributes: 'ATTRIBUUTIT',
+                  abstract: 'TIIVISTELMÄ',
+                  attribution: 'ATTRIBUUTIO',
+                  keywords: "AVAINSANAT",
+                  metadataurl:'METATIEDON URL',
+                  dataurl: "DATA URL"
+                }
+              },
+              groups : {
+                general: 'YLEINEN',
+                spatial: 'SPATIAL'
+              }
+            }
+          }
+        },
+        tooltips: {
+          relations: {
+            form_to_row: "Rivinäkymä",
+            row_to_form: "Taulukkonäkymä"
+          },
+          copy_map_extent_url: 'Kopioi kartan katselulinkki',
+          download_shapefile: "Lataa SHP-tiedosto",
+          download_gpx: "Lataa GPX-tiedosto",
+          download_csv: "Lataa CSV-tiedosto",
+          download_xls: "Lataa XLS-tiedosto",
+          show_chart: "Näytä kaavio",
+          atlas: "Tulosta Atlas"
+        },
+        mapcontrols: {
+          query: {
+            tooltip: 'Kyselytaso',
+            actions: {
+              add_selection: {
+                hint: 'Lisää/Poista valinta'
+              },
+              zoom_to_features_extent:{
+                hint: "Tarkenna ominaisuuden laajuuteen"
+              },
+              zoom_to_feature: {
+                hint: "Tarkenna ominaisuuteen"
+              },
+              relations: {
+                hint: "Näytä relaatiot"
+              },
+              relations_charts: {
+                hint: "Näytä relaatiokaavio"
+              },			  
+              download_features_shapefile:{
+                hint: 'Lataa ominaisuuden SHP-tiedosto'
+              },
+              download_shapefile: {
+                hint: 'Lataa ominaisuuden SHP-tiedosto'
+              },
+              download_features_gpx: {
+                hint: "Lataa ominaisuuden GPX-tiedosto"
+              },
+              download_gpx: {
+                hint: "Lataa ominaisuuden GPX-tiedosto"
+              },
+              download_features_csv: {
+                hint: "Lataa ominaisuuden CSV-tiedosto"
+              },
+              download_csv: {
+                hint: "Lataa ominaisuuden CSV-tiedosto"
+              },
+              download_features_xls: {
+                hint: "Lataa ominaisuuden XLS-tiedosto"
+              },
+              download_xls: {
+                hint: "Lataa ominaisuuden XLS-tiedosto"
+              },
+              atlas: {
+                hint: 'Tulosta Atlas'
+              }
+            }
+          },
+          querybypolygon: {
+            tooltip: 'Kysely monikulmiolla',
+            help: `<h4>Ohje - Kysely monikulmiolla</h4>
+                  <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Valitse monikulmiotaso luettelosta.</li>
+                    <li style="font-size:0.8em;">Tarkista, että taso on näkyvillä.</li>
+                    <li style="font-size:0.8em;">Valitse ominaisuus valitulla tasolla.</li>
+                  </ul>`
+          },
+          querybybbox: {
+            tooltip: 'Tasoon kohdituva BBox-kysely',
+            nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
+            help: `<h4>Ohje - Tasoon kohdistuva BBox-kysely</h4>
+                   <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
+                   </ul>`
+          },
+          addlayer: {
+            tooltip: 'Lisää taso'
+          },
+          geolocation: {
+            tooltip: 'Maantieteellinen sijainti'
+          },
+          measures: {
+            length: {
+              tooltip: "Pituus",
+              help: "Piirrä murtoviiva kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen.",
+            },
+            area: {
+              tooltip: "Alue",
+              help: "Piirrä monikulmio kartalle. Paina <br>CANC, mikäli haluat poistaa edellisen pisteen."
+            }
+          },
+          scale: {
+            no_valid_scale: "Väärä mittakaava"
+          }
+        },
+        relations: {
+          relation_data: 'Relaation tiedot',
+          no_relations_found: 'Relaatiota ei löytynyt.',
+          back_to_relations: 'Takaisin relaatioihin',
+          list_of_relations_feature: 'Lista ominaisuuden relaatioista',
+          error_missing_father_field: "Kenttä puuttu"
+        },
+        workflow: {
+          steps: {
+            title: 'Vaiheet'
+          }
+        },
+        form: {
+          loading: 'Ladataan...',
+          inputs: {
+            messages: {
+              errors: {
+                picklayer: "Ominaisuuksia ei valiitu. Tarkista, että taso on muokattavissa tai näkyvissä nykyisellä mittakaavalla."
+              }
+            },
+            tooltips:{
+              picklayer: "Valitse arvo karttatasolta"
+            },
+            input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
+            input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
+            input_validation_min_field: "Arvon tulee olla suurempi tai yhtäsuuri kuin kentän arvo.",
+            input_validation_max_field: "Arvon tulee olla pienempi tai yhtäsuuri kuin kentän arvo.",
+            input_validation_exclude_values: "Arvon tulee olla uniikki.",
+            integer: "kokonaisluku",
+            bigint: "kokonaisluku",
+            text: "teksti",
+            varchar: "teksti",
+            textarea: "teksti",
+            string: "merkkijono",
+            date: "päiväys",
+            float: "liukuluku",
+            table: "taulukko"
+          },
+          footer: {
+            "required_fields": "Vaaditut kentät"
+          },
+          messages: {
+            qgis_input_widget_relation: "Käytä relaatioiden määrittämiseen tähän tarkoitettua toimintoa"
+          }
+        },
+        catalog: {
+          menu: {
+            wms: {
+              title:"",
+              copy: "Paina tästä kopioidaksesi url:n.",
+              copied: "Kopioitu."
+            },
+            download: {
+              shp: 'Lataa SHP-tiedosto',
+              gpx: 'Lataa GPX-tiedosto',
+              csv: 'Lataa CSV-tiedosto',
+              xls: 'Lataa XLS-tiedosto'
+            }
+          }
+        },
+        wps: {
+          list_process: "Lista prosesseista",
+          tooltip: 'Valitse kartalta'
+        }
+      },
+      credits: {
+        g3wSuiteFramework: "Sovellus perustuu OS framework",
+        g3wSuiteDescription: "Julkaise ja hallinnoi QGIS-projekteja verkossa.",
+        productOf: "Frameworkin on kehittänyt",
+      },
+      logout: "Kirjaudu ulos",
+      no_other_projects: "Ei projekteja tälle ryhmälle",
+      yes: "Kyllä",
+      no: "Ei",
+      back: "Palaa",
+      backto: "Takaisin ",
+      changemap: "Vaihda karttaa",
+      component: "Yleinen komponentti",
+      search: "Hae",
+      no_results: "Ei hakutuloksia",
+      print: "Tulosta",
+      create_print: "Luo tuloste",
+      dosearch: "Hae",
+      catalog: "Kartta",
+      data: "Data",
+      baselayers: "Taustakartta",
+      tools: "Työkalut",
+      tree: "Tasot",
+      legend: "Merkintöjen selite",
+      nobaselayer: "Ei taustakarttaa",
+      street_search: "Hae osoite",
+      show: "Näytä",
+      hide: "Piilota",
+      copy_form_data: "Kopioi tiedot",
+      paste_form_data: "Liitä",
+      copy_form_data_from_feature: "Kopioi tiedot kartalta",
+      error_map_loading: "Virhe ladattessa karttaa",
+      check_internet_connection_or_server_admin: "Tarkista internetyhteys tai ota yhteyttä ylläpitäjään.",
+      could_not_load_vector_layers: "Yhteysvirhe, tasoja ei voida ladata.",
+      server_saver_error: "Virhe tallentaessa palvelimelle.",
+      server_error: "Yhteysvirhe palvelimeen",
+      save: "Tallenna",
+      cancel: "Peruuta",
+      close: "Sulje",
+      add: "Lisää",
+      exitnosave: "Poistu tallentamatta",
+      annul: "Peruuta",
+      layer_is_added: "Taso on jo lisätty.",
+      sidebar: {},
+      info: {
+        title: "Tulokset",
+        open_link: "Avaa liitetiedosto",
+        server_error: "Palvelimella tapahtui virhe.",
+        no_results: "Ei tuloksia haulle/kyselylle.",
+        link_button: "Avaa"
+      },
+      mapcontrols: {
+        geolocations: {
+          error: "Sijaintiasi ei saada"
+        },
+        nominatim: {
+          placeholder: "Osoite ...",
+          noresults: "Ei tuloksia",
+          notresponseserver: "Ei vastausta palvelimelta"
+        },
+        add_layer_control: {
+          header: "Lisää taso",
+          select_projection: "Valitse tason projektio",
+          select_color: "Valitse tason väri",
+          drag_layer: "Vedä ja pudota taso tähän"
+        },
+        query: {
+          input_relation: "Paina näyttääksesi relaatiot"
+        },
+        length: {
+          tooltip: "Pituus"
+        },
+        area: {
+          tooltip: "Pinta-ala"
+        }
+      },
+      catalog_items: {
+        helptext: "Napsauta hiiren kakkospainikkeella yksittäistä tasoa päästäksesi lisäominaisuuksiin.",
+        contextmenu: {
+          zoomtolayer: "Tarkenna tasoon",
+          open_attribute_table: "Avaa attribuuttitaulu",
+          show_metadata: "Metatiedot"
+        }
+      },
+      dataTable: {
+        previous: "Edellinen",
+        next: "Seuraava",
+        lengthMenu: "Show _MENU_ items",
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        no_data: "Ei tietoja",
+        nodatafilterd: "Vastaavia tietueita ei löytynyt",
+        infoFiltered: "(filtered from _MAX_ total records)"
+      }
+    },
+  },
+  se: {
+    translation: {
+      layer_selection_filter: {
+        tools: {
+          filter: "Lägg till Filtrera",
+          nofilter: "Avlägsna Filtrera",
+          invert: "Invertera Urval",
+          clear: "Annullera Urval",
+        }
+      },
+      sdk: {
+        search: {
+          all: 'ALLA',
+          no_results: "Inga resultat",
+          searching: "Sökning ...",
+          error_loading: "Fel vid laddning av uppgifter.",
+          layer_not_searchable: "Nivån kan inte sökas.",
+          layer_not_querable: "Förfrågningar kan inte göras på nivån.",
+          autocomplete: {
+            inputshort: {
+              pre: "Mata in",
+              post: "eller flera tecken"
+            }
+          }
+        },
+        print: {
+          no_layers: 'Inga nivåer att skriva ut',
+          scale: "Skala",
+          format: "Format",
+          rotation: "Rotation",
+          fids_instruction: "Godkända värden: Från ett till värdet [max]. Mellanslag tillåts, t.ex. 4-6.",
+          fids_example: "Exempelvis 1,4-6 skriver ut id 1,4,5,6.",
+          help: "Nivåerna på utskriften kan vara specificerade i ett QGIS-projekt (med hjälp av temahantering), inte sådana som visas på karta."
+        },
+        querybuilder: {
+          search: {
+            run: "Utför",
+            info: "Information",
+            delete: "Ta bort",
+            edit: "Redigera"
+          },
+          messages: {
+            changed: 'Sparat'
+          },
+          panel: {
+            button: {
+              all: 'ALLA',
+              save: 'SPARA',
+              test: 'TEST',
+              clear: 'TÖM',
+              run: 'UTFÖR',
+              manual: 'MANUELL'
+            },
+            layers: 'NIVÅER',
+            fields: 'FÄLT',
+            values: 'VÄRDEN',
+            operators: 'OPERATÖRER',
+            expression: 'KLAUSUL'
+          },
+          error_run: 'Ett fel inträffade. Kontrollera förfrågan.',
+          error_test: "Ett fel inträffade när förfrågan utfördes.",
+          delete: 'Vill du ta bort den?',
+          additem: 'Ge den nya sökningen ett namn.'
+        },
+        errors: {
+          layers: {
+            load: "Vissa nivåer är inte tillgängliga."
+          },
+          unsupported_format: 'Formatet stöds inte',
+          add_external_layer: 'Fel vid laddning av nivån'
+        },
+        metadata: {
+          title: 'Metadata',
+          groups: {
+            general: {
+              title: 'ALLMÄN',
+              fields: {
+                title: 'RUBRIK',
+                name: 'NAMN',
+                description: "BESKRIVNING",
+                abstract: "SAMMANDRAG",
+                keywords: 'NYCKELORD',
+                fees: "AVGIFTER",
+                accessconstraints: "ÅTKOMSTBEGRÄNSNINGAR",
+                contactinformation: "KONTAKTUPPGIFTER",
+                subfields: {
+                  contactinformation: {
+                    contactelectronicmailaddress: "E-post",
+                    personprimary: 'Referenser',
+                    contactvoicetelephone: 'Telefon',
+                    contactorganization: 'Organisation',
+                    ContactOrganization: 'Organisation',
+                    contactposition: 'Ställning',
+                    ContactPosition: 'Ställning',
+                    contactperson: 'Kontaktperson',
+                    ContactPerson: 'Kontaktperson'
+                  }
+                },
+                wms_url: "WMS"
+              }
+            },
+            spatial:{
+              title: 'SPATIAL',
+              fields : {
+                crs: 'EPSG',
+                extent: 'BBOX'
+              }
+            },
+            layers: {
+              title: 'NIVÅER',
+              fields: {
+                layers: 'NIVÅER',
+                subfields: {
+                  crs: 'EPSG',
+                  bbox: 'BBOX',
+                  title: "RUBRIK",
+                  name: 'NAMN',
+                  geometrytype: 'GEOMETRI',
+                  source: 'KÄLLA',
+                  attributes: 'ATTRIBUT',
+                  abstract: 'SAMMANDRAG',
+                  attribution: 'TILLSKRIVNING',
+                  keywords: "NYCKELORD",
+                  metadataurl:'METADATA URL',
+                  dataurl: "DATA URL"
+                }
+              },
+              groups : {
+                general: 'ALLMÄN',
+                spatial: 'SPATIAL'
+              }
+            }
+          }
+        },
+        tooltips: {
+          relations: {
+            form_to_row: "Radvy",
+            row_to_form: "Tabellvy"
+          },
+          copy_map_extent_url: 'Kopiera länk till karta',
+          download_shapefile: "Ladda SHP-fil",
+          download_gpx: "Ladda GPX-fil",
+          download_csv: "Ladda CSV-fil",
+          download_xls: "Ladda XLS-fil",
+          show_chart: "Visa diagram", //Tero 9.12.2020
+          atlas: "Skriv ut Atlas"
+        },
+        mapcontrols: {
+          query: {
+            tooltip: 'Förfrågningsnivå',
+            actions: {
+              add_selection: {
+                hint: "Lägg till/Avlägsna Urval"
+              },
+              zoom_to_features_extent:{
+                hint: "Zooma till egenskapens omfattning"
+              },
+              zoom_to_feature: {
+                hint: "Zooma till egenskapen"
+              },
+              relations: {
+                hint: "Visa relationerna"
+              },
+              relations_charts: {
+                hint: "Visa relationsdiagrammet" //Tero 9.12.2020
+              },			  
+              download_features_shapefile:{
+                hint: 'Ladda egenskapens SHP-fil'
+              },
+              download_shapefile: {
+                hint: 'Ladda egenskapens SHP-fil'
+              },
+              download_features_gpx: {
+                hint: "Ladda egenskapens GPX-fil"
+              },
+              download_gpx: {
+                hint: "Ladda egenskapens GPX-fil"
+              },
+              download_features_csv: {
+                hint: "Ladda egenskapens CSV-fil"
+              },
+              download_csv: {
+                hint: "Ladda egenskapens CSV-fil"
+              },
+              download_features_xls: {
+                hint: "Ladda egenskapens XLS-fil"
+              },
+              download_xls: {
+                hint: "Ladda egenskapens XLS-fil"
+              },
+              atlas: {
+                hint: 'Skriv ut Atlas'
+              }
+            }
+          },
+          querybypolygon: {
+            tooltip: 'Förfrågan med polygon',
+            help: `<h4>Ohje - Förfrågan med polygon</h4>
+                  <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Välj polygonnivå i listan.</li>
+                    <li style="font-size:0.8em;">Kontrollera att nivån är synlig.</li>
+                    <li style="font-size:0.8em;">Välj egenskap på önskad nivå.</li>
+                  </ul>`
+          },
+          querybybbox: {
+            tooltip: 'BBox-förfrågan som riktar sig till en nivå',
+            nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
+            help: `<h4>Ohje - BBox-förfrågan som riktar sig till nivån</h4>
+                   <ul style="padding-left: 10px;">
+                    <li style="font-size:0.8em;">Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
+                   </ul>`
+          },
+          addlayer: {
+            tooltip: 'Lägg till nivå'
+          },
+          geolocation: {
+            tooltip: 'Geografiskt läge'
+          },
+          measures: {
+            length: {
+              tooltip: "Längd",
+              help: "Rita upp en bruten linje på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt.",
+            },
+            area: {
+              tooltip: "Område",
+              help: "Rita upp en polygon på kartan. Tryck <br>CANC, om du vill ta bort föregående punkt."
+            }
+          },
+          scale: {
+            no_valid_scale: "Fel skala"
+          }
+        },
+        relations: {
+          relation_data: 'Relationsuppgifter',
+          no_relations_found: 'Inga relationer hittades.',
+          back_to_relations: 'Tillbaka till relationerna',
+          list_of_relations_feature: 'Lista på egenskapens relationer',
+          error_missing_father_field: "Fält saknas"
+        },
+        workflow: {
+          steps: {
+            title: 'Skeden'
+          }
+        },
+        form: {
+          loading: 'Laddning...',
+          inputs: {
+            messages: {
+              errors: {
+                picklayer: "Inga egenskaper har valts. Kontroller att nivån kan redigeras eller att den syns med nuvarande skala."
+              }
+            },
+            tooltips:{
+              picklayer: "Välj värde på kartnivå"
+            },
+            input_validation_mutually_exclusive: "Fälten utesluter varandra.",
+            input_validation_error: "Obligatoriskt fält eller fel datatyp.",
+            input_validation_min_field: "Värdet ska vara större eller lika stort som värdet i fältet.",
+            input_validation_max_field: "Värdet ska vara mindre eller lika stort som värdet i fältet.",
+            input_validation_exclude_values: "Värdet ska vara unikt.",
+            integer: "heltal",
+            bigint: "heltal",
+            text: "text",
+            varchar: "text",
+            textarea: "text",
+            string: "teckensträng",
+            date: "datum",
+            float: "flyttal",
+            table: "tabell"
+          },
+          footer: {
+            "required_fields": "Obligatoriska fält"
+          },
+          messages: {
+            qgis_input_widget_relation: "Använd den specifika funktinen för att bestämma relationer"
+          }
+        },
+        catalog: {
+          menu: {
+            wms: {
+              title:"",
+              copy: "Tryck här för att kopiera url.",
+              copied: "Kopierad."
+            },
+            download: {
+              shp: 'Ladda SHP-fil',
+              gpx: 'Ladda GPX-fil',
+              csv: 'Ladda CSV-fil',
+              xls: 'Ladda XLS-fil'
+            }
+          }
+        },
+        wps: {
+          list_process: "Lista på processer",
+          tooltip: 'Välj på kartan'
+        }
+      },
+      credits: {
+        g3wSuiteFramework: "Tillämpningen baserar på OS framework",
+        g3wSuiteDescription: "Publicera och hantera QGIS-projekt på nätet.",
+        productOf: "Framework har utvecklats av",
+      },
+      logout: "Logga ut",
+      no_other_projects: "Inga projekt för denna grupp",
+      yes: "Ja",
+      no: "Nej",
+      back: "Gå tillbaka",
+      backto: "Tillbaka ",
+      changemap: "Byt karta",
+      component: "Allmän komponent",
+      search: "Sök",
+      no_results: "Inga sökresultat",
+      print: "Skriv ut",
+      create_print: "Skapa utskrift",
+      dosearch: "Sök",
+      catalog: "Karta",
+      data: "Data",
+      baselayers: "Bakgrundskarta",
+      tools: "Verktyg",
+      tree: "Nivåer",
+      legend: "Förklaring till beteckningarna",
+      nobaselayer: "Ingen bakgrundskarta",
+      street_search: "Sök adress",
+      show: "Visa",
+      hide: "Dölj",
+      copy_form_data: "Kopiera uppgifterna",
+      paste_form_data: "Infoga",
+      copy_form_data_from_feature: "Kopiera uppgifter från kartan",
+      error_map_loading: "Fel vid laddning av kartan",
+      check_internet_connection_or_server_admin: "Kontrollera internetanslutningen eller kontakta administratören.",
+      could_not_load_vector_layers: "Fel i anslutningen, nivåer kan inte laddas.",
+      server_saver_error: "Fel vid lagring på servern.",
+      server_error: "Fel på anslutningen till servern",
+      save: "Spara",
+      cancel: "Ånga",
+      close: "Stäng",
+      add: "Lägg till",
+      exitnosave: "Lämna programmet utan att spara",
+      annul: "Ångra",
+      layer_is_added: "Nivån har redan lagts till.",
+      sidebar: {},
+      info: {
+        title: "Resultat",
+        open_link: "Öppna filbilaga",
+        server_error: "Ett fel uppstod på servern.",
+        no_results: "Inga resultat för sökningen/förfrågan.",
+        link_button: "Öppna"
+      },
+      mapcontrols: {
+        geolocations: {
+          error: "Du kan inte lokaliseras"
+        },
+        nominatim: {
+          placeholder: "Adress ...",
+          noresults: "Inga resultat",
+          notresponseserver: "Inget svar från servern"
+        },
+        add_layer_control: {
+          header: "Lägg till nivå",
+          select_projection: "Välj projektion för nivån",
+          select_color: "Välj färg på nivån",
+          drag_layer: "Dra och släpp nivån hit"
+        },
+        query: {
+          input_relation: "Tryck för att visa relationerna"
+        },
+        length: {
+          tooltip: "Längd"
+        },
+        area: {
+          tooltip: "Areal"
+        }
+      },
+      catalog_items: {
+        helptext: "Högerklicka på en enskild nivå för att komma till tilläggsegenskaperna.",
+        contextmenu: {
+          zoomtolayer: "Zooma till nivå",
+          open_attribute_table: "Öppna attributtabellen",
+          show_metadata: "Metadata"
+        }
+      },
+      dataTable: {
+        previous: "Föregående",
+        next: "Nästa",
+        lengthMenu: "Show _MENU_ items",
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        no_data: "Inga uppgifter",
+        nodatafilterd: "Inga motsvarande poster hittades",
+        infoFiltered: "(filtered from _MAX_ total records)"
+      }
+    },
   }
 };
 

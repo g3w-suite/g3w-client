@@ -134,12 +134,14 @@
           content: new RelationPage({
             currentview: 'relations',
             relations: [relation],
+            chartRelationIds: [relation.referencingLayer],
             feature: this.feature,
             layer: {
               id: this.layerid
             }
           }),
-          perc: 100
+          perc: 100,
+          closable: false
         })
       },
       getNodes(row) {

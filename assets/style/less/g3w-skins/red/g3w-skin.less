@@ -1,6 +1,9 @@
 .skin-red {
   .skin-border-color {
     border-color: @red !important;
+    &.lighten {
+      border-color: lighten(@red, 30%);
+    }
   }
   .skin-background-color {
     background-color: @red !important;

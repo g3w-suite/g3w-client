@@ -7,16 +7,7 @@ table.dataTable {
   }
 }
 
-.dataTables_filter {
-  input[type=search] {
-    &:focus {
-      outline: none;
-    }
-    border-color: #FFFFFF !important;
-    background-color: #ffffff;
-    width: 150px;
-  }
-}
+
 
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: 1px solid #dcdcdc !important;
@@ -78,6 +69,13 @@ table.dataTable {
 .table.mobile {
   thead tr th, tbody tr td{
     padding: 3px;
+  }
+}
+
+.form-control {
+  &.search {
+    height: 25px !important;
+    margin-left: 1px !important;
   }
 }
 

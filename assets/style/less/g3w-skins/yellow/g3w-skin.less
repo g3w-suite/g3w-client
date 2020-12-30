@@ -1,6 +1,9 @@
 .skin-yellow {
   .skin-border-color {
     border-color: @yellow !important;
+    &.lighten {
+      border-color: lighten(@yellow, 30%) !important;
+    }
   }
   .skin-background-color {
     background-color: @yellow;

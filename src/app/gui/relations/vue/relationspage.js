@@ -58,13 +58,13 @@ const InternalComponent = Vue.extend({
         layer: this.$options.layer,
         relation,
         fid
-      }).then((response) => {
+      }).then(response => {
         const relations = getFeaturesFromResponseVectorApi(response);
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
         this.previousview = 'relations';
-      }).catch((err) => {
+      }).catch(err => {
       }).finally(() => {
         GUI.setLoadingContent(false);
         this.loading = true;

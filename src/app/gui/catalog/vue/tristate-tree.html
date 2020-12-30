@@ -1,7 +1,7 @@
 <li
   class="tree-item"
   @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
-  @click="select()"
+  @click.stop="select"
   :class="{
     selected: !isFolder || !isTable ? layerstree.selected : false,
     itemmarginbottom: !isFolder,  disabled: isDisabled  }">

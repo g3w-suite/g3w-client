@@ -113,6 +113,7 @@ const proto = Layer.prototype;
 proto.setSelectionIdsAll = function(){
   this.selectionIds.clear();
   this.selectionIds.add(Layer.SELECTION_STATE.ALL);
+  this.isGeoLayer() && this.showAllOlSelectionFeatures();
   this.setSelection(true);
 };
 
@@ -132,6 +133,13 @@ proto.excludeSelectionId = function(id){
 
 proto.getSelectionIds = function(){
   return this.selectionIds;
+};
+
+proto.invertSelectionIds = function(){
+  if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionIds.delete(Layer.SELECTION_STATE.EXCLUDE);
+  else if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) this.selectionIds.delete(Layer.SELECTION_STATE.ALL);
+  else if (this.selectionIds.size === 0) this.setSelectionIdsAll();
+  else this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
 };
 
 proto.addSelectionId = function(id){
@@ -160,7 +168,7 @@ proto.deleteSelectionId = function(id) {
     this.excludeSelectionId(id);
   } else this.selectionIds[this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](id);
   if (this.selectionIds.size === 1 && this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.setSelectionIdsAll();
-  this.selectionIds.size === 0 && this.setSelection(false);
+  else this.selectionIds.size === 0 && this.setSelection(false);
 };
 
 proto.deleteSelectionIds = function(ids=[]) {
@@ -466,11 +474,11 @@ proto.setType = function(type) {
 };
 
 proto.isSelected = function() {
-  return this.state.selected.active;
+  return this.state.selected;
 };
 
 proto.setSelected = function(bool) {
-  this.state.selected.active = bool;
+  this.state.selected = bool;
 };
 
 proto.setSelection = function(bool=false){

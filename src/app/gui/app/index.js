@@ -87,7 +87,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: G3WTemplate.getFontClass('filter'),
+                class: G3WTemplate.getFontClass('calculator'),
                 tooltip: 'Query Builder',
                 fnc:() => {
                   GUI.closeContent();
@@ -211,11 +211,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     Vue.component('app', App);
   };
 
-  // dataTable Translations
+  // dataTable Translations and custom extentions
   this._setDataTableLanguage = function(dataTable=null) {
     const lngOptions = {
       "language": {
-        "sSearch": t("dosearch"),
+        "sSearch": '',
+        "searchPlaceholder": t("dosearch"),
         "sLengthMenu": t("dataTable.lengthMenu"),
         "paginate": {
           "previous": t("dataTable.previous"),
@@ -226,6 +227,11 @@ const ApplicationTemplate = function({ApplicationService}) {
         "infoFiltered": t("dataTable.infoFiltered")
       }
     };
+    //set form control class to filter
+    $.extend( $.fn.dataTableExt.oStdClasses, {
+      "sFilterInput": "form-control search"
+    });
+
     !dataTable ? $.extend( true, $.fn.dataTable.defaults, lngOptions) : dataTable.dataTable( {"oLanguage": lngOptions});
   };
 

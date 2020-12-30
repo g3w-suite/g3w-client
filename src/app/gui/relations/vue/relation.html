@@ -5,7 +5,7 @@
     </span>
   </div>
   <div class="header">
-    <div style="width: 100%; display: flex; justify-content: space-between;" :style="{fontSize: isMobile() ? '1em' : '1.5em'}">
+    <div style="width: 100%; display: flex; justify-content: space-between;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}">
       <span class="relation-tile">
         <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
@@ -55,9 +55,9 @@
         </tbody>
       </table>
     </div>
-    <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'"></g3w-resize>
+    <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"></g3w-resize>
     <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0'}" style="padding-bottom: 5px; margin-bottom: 5px; margin-left: 3px;" ref="chartcontent">
     </div>
   </div>
-  <div v-else style="font-weight: bold; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
+  <div v-else style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
 </div>

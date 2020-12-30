@@ -38,10 +38,11 @@ module.exports = {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       setTimeout(()=>{
+        const datatatbleBody = $('.query-relation  div.dataTables_scrollBody');
         const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_relation .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
-        $('.query-relation  div.dataTables_scrollBody').height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+        datatatbleBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
         if (this.table.rowFormStructure) {
-          const width =  $(this.$refs.relationwrapper).width() - 60;
+          const width = datatatbleBody.width() - 60;
           $('.row-wrap-tabs .tabs-wrapper').width(width);
         }
       });

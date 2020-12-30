@@ -65,6 +65,16 @@ proto.showAllOlSelectionFeatures = function(){
   })
 };
 
+proto.setInversionOlSelectionFeatures = function(){
+  const mapService = GUI.getComponent('map').getService();
+  Object.values(this.olSelectionFeatures).forEach(featureObject => {
+    mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
+      feature: featureObject.feature
+    });
+    featureObject.added = !featureObject.added
+  });
+};
+
 proto.setOlSelectionFeatures = function(feature, action='add'){
   const mapService = GUI.getComponent('map').getService();
   if (!feature) {
