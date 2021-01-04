@@ -7,10 +7,7 @@ const STATE = Vue.observable({
   download: false,
   upload: false,
   lng: 'en',
-  plugins: [],
-  tokens: {
-    filter: null
-  }
+  plugins: []
 });
 
 export default STATE;

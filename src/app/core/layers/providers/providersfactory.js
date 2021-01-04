@@ -13,43 +13,50 @@ const ProvidersForServerTypes = {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'postgres': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'oracle': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'mssql': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'spatialite': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'ogr': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'delimitedtext': {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
+      filtertoken: Providers.qgis
     },
     'wms': {
       query: Providers.wms,
@@ -95,7 +102,7 @@ const ProvidersForServerTypes = {
 };
 
 function ProviderFactory() {
-  this.build = function(providerType,serverType,sourceType,options) {
+  this.build = function(providerType, serverType, sourceType,options) {
     // return instace of seletced provider
     const providerClass = this.get(providerType,serverType,sourceType);
     if (providerClass) {
@@ -104,7 +111,7 @@ function ProviderFactory() {
     return null;
   };
 
-  this.get = function(providerType,serverType,sourceType) {
+  this.get = function(providerType, serverType, sourceType) {
     return ProvidersForServerTypes[serverType][sourceType][providerType];
   }
 }

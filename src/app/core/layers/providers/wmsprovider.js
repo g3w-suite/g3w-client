@@ -24,6 +24,7 @@ const proto = WMSDataProvider.prototype;
 
 proto._getRequestParameters = function({layers, feature_count, coordinates, resolution, size}) {
   const layerNames = layers ? layers.map(layer => layer.getWMSInfoLayerName()).join(',') : this._layer.getWMSInfoLayerName();
+  const filtertokens = layers ? layers.map(layer => layer.getFilterToken()).join(',') : this._layer.getFilterToken();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
@@ -34,6 +35,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
     CRS: this._projections.map.getCode(),
     LAYERS: layerNames,
     QUERY_LAYERS: layerNames,
+    filtertokens,
     INFO_FORMAT: this._infoFormat,
     FEATURE_COUNT: feature_count,
     // TOLLERANCE PARAMETERS FOR QGIS
@@ -102,6 +104,5 @@ proto.POST = function({url, params}) {
     data: params
   })
 };
-
 
 module.exports = WMSDataProvider;

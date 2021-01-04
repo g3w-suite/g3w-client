@@ -303,6 +303,11 @@ const vueComponentOptions = {
       layer.clearSelectionIds();
     });
 
+    CatalogEventHub.$on('activefiltertokenlayer', (storeid, layerstree) => {
+      const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
+      layer.activeFilterToken(layerstree.filter.active);
+    });
+
     CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
       if (node.external && !node.source) {
@@ -466,6 +471,7 @@ Vue.component('tristate-tree', {
   methods: {
     toggleFilterLayer(){
       this.layerstree.filter.active = !this.layerstree.filter.active;
+      CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
     clearSelection(){
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
@@ -613,23 +619,26 @@ Vue.component('layerslegend-items',{
       await this.$nextTick();
       // need to filter geolayer
       const layers = _layers.filter(layer => layer.geolayer);
+      const urlFiltersTokens = {};
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
+        const {filtertoken} = layer;
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = `${this.getLegendUrl(layer, this.legend)}`;
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
-          if (!urlLayersName[prefix])
-            urlLayersName[prefix] = [];
+          if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
+          if (!urlFiltersTokens[prefix])  urlFiltersTokens[prefix] = [];
           urlLayersName[prefix].unshift(layerName);
+          filtertoken && urlFiltersTokens[prefix].push(filtertoken)
         }
       }
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}`: url;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}&filtertokens=${urlFiltersTokens[url].join(',')}`: url;
             const legendUrlObject = {
               loading: true,
               url: legendUrl,

@@ -65,8 +65,7 @@ proto.getLength = function() {
 };
 
 proto.getRelations = function({type=null}={}) {
-  if (!type)
-    return this._relations;
+  if (!type) return this._relations;
   else {
     if (['ONE','MANY'].indexOf(type) !== -1) {
       const relations = {};

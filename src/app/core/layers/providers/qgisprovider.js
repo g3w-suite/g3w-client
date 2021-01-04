@@ -25,6 +25,8 @@ function QGISProvider(options = {}) {
   this._configUrl = this._layer.getUrl('config');
   // widget url
   this._widgetUrls = this._layer.getUrl('widget');
+  //filtertokenurl
+  this._filtertokenUrl = this._layer.getUrl('filtertoken');
   // layer name
   this._layerName = this._layer.getName() || null; // get name  from QGIS layer, because the query are proxed from g3w-server
   this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
@@ -33,12 +35,22 @@ function QGISProvider(options = {}) {
 inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
+/*
+* token: current token if provide
+* action: create, update, delete
+* */
+proto.getFilterToken = function({token, action='create', filter={}}){
+  return XHR.get({
+    url: this._filtertokenUrl
+  })
+};
 
 proto.getFilterData = async function({field, suggest={}, unique}={}){
   const params = {
     field,
     suggest,
-    unique
+    unique,
+    filtertoken: this._layer.getFilterToken()
   };
   try {
     const response = await XHR.get({
@@ -74,9 +86,9 @@ proto.query = function(options={}) {
   isVector && this.setProjections();
   const CRS = isVector ? this._layer.getSourceType() === 'spatialite' ? this._layer.getCrs() : this._projections.map.getCode() : null;
   const queryUrl = options.queryUrl || this._queryUrl;
-  const layers = options.layers;
-  const {I,J} = options;
+  const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+  const filtertokens = layers ? layers.map(layer => layer.getFilterToken()).join(',') : this._layer.getFilterToken();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
     if (filter.getType() !== 'geometry' && this._layer.getSourceType() !== 'spatialite')
@@ -86,6 +98,7 @@ proto.query = function(options={}) {
       SERVICE: 'WMS',
       VERSION: '1.3.0',
       REQUEST: 'GetFeatureInfo',
+      filtertokens,
       LAYERS: layerNames,
       QUERY_LAYERS: layerNames,
       INFO_FORMAT: this._infoFormat,
@@ -96,7 +109,6 @@ proto.query = function(options={}) {
       FILTER: filter.get(),
       WITH_GEOMETRY: isVector ? 1: 0
     };
-
     XHR.get({
       url,
       params
@@ -128,13 +140,11 @@ proto.getConfig = function() {
   return d.promise();
 };
 
-proto.getWidgetData = function(options) {
-  options = options || {};
-  const type = options.type;
-  const fields = options.fields;
+proto.getWidgetData = function(options={}) {
+  const {type, fields} = options;
   const url = this._widgetUrls[type];
   return $.get(url, {
-    fields: fields
+    fields
   });
 };
 
@@ -174,6 +184,7 @@ proto.commit = function(commitItems) {
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
 proto.getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
+  const filtertoken = this._layer.getFilterToken();
   // filter null value
   Object.entries(params).forEach(([key, value]) => {
     if (value === null)
@@ -197,7 +208,10 @@ proto.getFeatures = function(options={}, params={}) {
     if (filter) {
       if (filter.bbox) {
         const bbox = filter.bbox;
-        filter = {in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`};
+        filter = {
+          in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`,
+          filtertoken
+        };
         const jsonFilter = JSON.stringify(filter);
         promise = XHR.post({
           url,
@@ -209,7 +223,7 @@ proto.getFeatures = function(options={}, params={}) {
         promise = RelationsService.getRelations(options);
       }
     } else promise = XHR.post({url,contentType: "application/json"});
-    promise.then((response) => {
+    promise.then(response => {
         const {vector, result, featurelocks} = response;
         if (result) {
           const {data, geometrytype} = vector;
@@ -265,7 +279,6 @@ proto.getFeatures = function(options={}, params={}) {
         d.reject(err)
       })
   }
-
   return d.promise();
 };
 

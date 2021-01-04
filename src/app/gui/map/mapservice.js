@@ -1740,6 +1740,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
       mapLayer && this.updateMapLayer(mapLayer)
     });
   });
+
   this._layersStoresEventKeys[layerStoreId].push({
     setLayersVisible: layerVisibleKey
   });
@@ -1834,7 +1835,14 @@ proto._setupMapLayers = function() {
       layers.reverse().forEach((sub_layer) => {
         mapLayer.addLayer(sub_layer);
       });
-      mapLayers.push(mapLayer)
+      mapLayers.push(mapLayer);
+      //filter token listener handler
+      layers.forEach(layer => {
+        layer.on('filtertokenchange', ()=>{
+          this.updateMapLayer(mapLayer)
+        })
+      })
+      ///
     }
   });
   this.addMapLayers(mapLayers);
@@ -1937,7 +1945,6 @@ proto.getOverviewMapLayers = function(project) {
   });
   return overviewMapLayers.reverse();
 };
-
 
 proto.updateMapLayer = function(mapLayer, options={force: false}) {
   !options.force ? mapLayer.update(this.state, this.getResolution()) : mapLayer.update(this.state, {"time": Date.now()})
@@ -2225,7 +2232,7 @@ proto.layout = function({width, height}) {
 
 // function to remove maplayers
 proto._removeMapLayers = function() {
-  this.getMapLayers().forEach((mapLayer) => {
+  this.getMapLayers().forEach(mapLayer => {
     this.unregisterMapLayerListeners(mapLayer);
     this.viewer.map.removeLayer(mapLayer.getOLLayer());
   });

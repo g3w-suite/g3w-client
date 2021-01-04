@@ -21,11 +21,13 @@ function Layer(config={}, options={}) {
   };
   const {project} = options;
   if (!this.isBaseLayer()) {
+    //filtertoken
     //set url to get varios type of data
     const projectType = project.getType();
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = project.getVectorUrl();
+    this.config.urls.filtertoken = `${vectorUrl}filtertoken/${config.id}`;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
     this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
@@ -48,6 +50,7 @@ function Layer(config={}, options={}) {
   // dinamic layer values
   this.state = {
     id: config.id,
+    filtertoken: config.fitertoken,
     title: config.title,
     selected: config.selected || false,
     disabled: config.disabled || false,
@@ -96,6 +99,9 @@ function Layer(config={}, options={}) {
       filter: ProviderFactory.build('filter', serverType, sourceType, {
         layer: this
       }),
+      filtertoken: ProviderFactory.build('filtertoken', serverType, sourceType, {
+        layer: this
+      }),
       search: ProviderFactory.build('search', serverType, sourceType, {
         layer: this
       }),
@@ -104,7 +110,6 @@ function Layer(config={}, options={}) {
       })
     };
   }
-
   base(this);
 }
 
@@ -123,6 +128,60 @@ proto.getAttributeTablePageLength = function(){
 
 // end global state
 
+//filtren token
+
+proto.toggleFilterToken = function(){
+  this.state.filter.active = !this.state.filter.active;
+  this.activeFilterToken(this.state.filter.active);
+};
+
+proto.activeFilterToken = async function(bool){
+  if (bool){
+    const token = await this.createFilterToken();
+    this.state.filtertoken = token;
+  } else {
+    await this.deleteFilterToken();
+    this.state.filtertoken = null;
+  }
+  this.emit('filtertokenchange')
+};
+
+proto.deleteFilterToken = async function(){
+  if (this.providers['filtertoken']){
+    try {
+      await this.providers['filtertoken'].getFilterToken({
+        action: 'delete'
+      })
+    } catch(err) {
+      console.log('Error deleteing filtertoken')
+    }
+  }
+};
+
+proto.createFilterToken = async function(){
+  // create filter token
+  if (this.providers['filtertoken']){
+    try {
+      await this.providers['filtertoken'].getFilterToken({
+        token: this.state.filtertoken,
+        action: this.state.filtertoken ? 'update' : 'create'
+      })
+    } catch(err){
+      console.log('Error create update token');
+    }
+  }
+};
+
+proto.getFilterToken = function(){
+  return this.state.filtertoken;
+};
+
+proto.setFilterToken = function(token){
+  this.state.filtertoken = token;
+};
+
+// end filter token
+
 //selection Ids layer methods
 proto.setSelectionIdsAll = function(){
   this.selectionIds.clear();
@@ -136,7 +195,7 @@ proto.setExcludeSelection = function(){
   this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
 };
 
-proto.removeExludeSelection = function(){
+proto.removeExcludeSelection = function(){
   this.selectionIds.delete(Layer.SELECTION_STATE.EXCLUDE);
 };
 
@@ -195,10 +254,6 @@ proto.clearSelectionIds = function(){
   this.setSelection(false);
 };
 // end selection ids methods
-
-proto.toggleFilter = function(){
-  this.state.filter.active = !this.state.filter.active;
-};
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()
@@ -277,9 +332,10 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
     ordering,
     search,
     formatter,
-    suggest
+    suggest,
+    filtertoken: this.getFilterToken()
   };
-  if (!(this.getProvider('filter')  || this.getProvider('data'))) {
+  if (!(this.getProvider('filter') || this.getProvider('data'))) {
    d.reject();
   } else {
     if (this.state.openattributetable) {

@@ -36,7 +36,7 @@ function WMSLegend({layer, params}) {
     `${iconlabelspace ? '&ICONLABELSPACE=' + iconlabelspace: ''}`,
     `${symbolwidth ? '&SYMBOLWIDTH=' + symbolwidth : ''}`,
     `${symbolheight ? '&SYMBOLHEIGHT=' + symbolheight : ''}`,
-    `&LAYER=${LAYER}`
+    `&LAYER=${LAYER}`,
   ].join('');
 }
 

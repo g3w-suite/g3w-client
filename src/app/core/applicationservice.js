@@ -102,10 +102,6 @@ const ApplicationService = function() {
     return ApplicationState.download;
   };
 
-  this.setFilterToken = function(token) {
-    ApplicationState.tokens.filter = token;
-  };
-
   this.loadingPlugin = function(plugin){
     ApplicationState.plugins.push(plugin);
   };

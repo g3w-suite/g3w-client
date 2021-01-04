@@ -51,8 +51,8 @@ const TableService = function(options = {}) {
 
 const proto = TableService.prototype;
 
-proto.activeDeactiveLayerFilter = function(){
-  this.layer.toggleFilter();
+proto.activeDeactiveLayerFilter = async function(){
+  await this.layer.toggleFilterToken();
 };
 
 proto.getHeaders = function() {
