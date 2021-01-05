@@ -26,6 +26,10 @@ const TableComponent = function(options = {}) {
   this.setInternalComponent(internalComponent);
   internalComponent.state = service.state;
 
+  service.on('redraw', ()=>{
+    this.layout();
+  })
+
   this.unmount = function() {
     return base(this, 'unmount')
   };

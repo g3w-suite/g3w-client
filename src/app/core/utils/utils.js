@@ -344,7 +344,6 @@ const utils = {
     }
   },
   XHR: {
-
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
         url ?

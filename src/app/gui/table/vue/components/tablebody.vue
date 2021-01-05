@@ -34,6 +34,12 @@
       },
       addRemoveSelectedFeature: {
         type: Function
+      },
+      filter: {
+        type: Object,
+        default: {
+          active: false
+        }
       }
     },
     data() {

@@ -1,3 +1,4 @@
+import ApplicationState from 'core/applicationstate';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -27,7 +28,7 @@ function Layer(config={}, options={}) {
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = project.getVectorUrl();
-    this.config.urls.filtertoken = `${vectorUrl}filtertoken/${config.id}`;
+    this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
     this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
@@ -50,7 +51,6 @@ function Layer(config={}, options={}) {
   // dinamic layer values
   this.state = {
     id: config.id,
-    filtertoken: config.fitertoken,
     title: config.title,
     selected: config.selected || false,
     disabled: config.disabled || false,
@@ -128,30 +128,33 @@ proto.getAttributeTablePageLength = function(){
 
 // end global state
 
-//filtren token
+//filter token
+proto.setFilterActive = function(bool=false){
+  this.state.filter.active = bool;
+  this.selectionIds.clear();
+};
 
-proto.toggleFilterToken = function(){
+proto.getFilterActive = function(){
+  return this.state.filter.active;
+};
+
+proto.toggleFilterToken = async function(){
   this.state.filter.active = !this.state.filter.active;
-  this.activeFilterToken(this.state.filter.active);
+  await this.activeFilterToken(this.state.filter.active);
+  return this.state.filter.active;
 };
 
 proto.activeFilterToken = async function(bool){
-  if (bool){
-    const token = await this.createFilterToken();
-    this.state.filtertoken = token;
-  } else {
-    await this.deleteFilterToken();
-    this.state.filtertoken = null;
-  }
-  this.emit('filtertokenchange')
+  await bool ? this.createFilterToken() : this.deleteFilterToken();
 };
 
 proto.deleteFilterToken = async function(){
+  const ApplicationService = require('core/applicationservice');
   if (this.providers['filtertoken']){
     try {
-      await this.providers['filtertoken'].getFilterToken({
-        action: 'delete'
-      })
+      await this.providers['filtertoken'].deleteFilterToken();
+      ApplicationService.setFilterToken(null);
+      this.emit('filtertokenchange');
     } catch(err) {
       console.log('Error deleteing filtertoken')
     }
@@ -159,25 +162,30 @@ proto.deleteFilterToken = async function(){
 };
 
 proto.createFilterToken = async function(){
-  // create filter token
+  const ApplicationService = require('core/applicationservice');
   if (this.providers['filtertoken']){
+    let filtertoken = null;
     try {
-      await this.providers['filtertoken'].getFilterToken({
-        token: this.state.filtertoken,
-        action: this.state.filtertoken ? 'update' : 'create'
-      })
+      if (this.selectionIds.size > 0) {
+        // create filter token
+        if (this.selectionIds.has('ALL')) {
+          console.log('qui')
+          await this.providers['filtertoken'].deleteFilterToken();
+        } else {
+          const params = {};
+          if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE))
+            params.fidsout = Array.from(this.selectionIds).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
+          else params.fidsin = Array.from(this.selectionIds).join(',');
+          filtertoken = await this.providers['filtertoken'].getFilterToken(params);
+        }
+        ApplicationService.setFilterToken(filtertoken);
+        this.emit('filtertokenchange');
+      }
+
     } catch(err){
       console.log('Error create update token');
     }
   }
-};
-
-proto.getFilterToken = function(){
-  return this.state.filtertoken;
-};
-
-proto.setFilterToken = function(token){
-  this.state.filtertoken = token;
 };
 
 // end filter token
@@ -188,20 +196,7 @@ proto.setSelectionIdsAll = function(){
   this.selectionIds.add(Layer.SELECTION_STATE.ALL);
   this.isGeoLayer() && this.showAllOlSelectionFeatures();
   this.setSelection(true);
-};
-
-proto.setExcludeSelection = function(){
-  this.selectionIds.delete(Layer.SELECTION_STATE.ALL);
-  this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
-};
-
-proto.removeExcludeSelection = function(){
-  this.selectionIds.delete(Layer.SELECTION_STATE.EXCLUDE);
-};
-
-proto.excludeSelectionId = function(id){
-  this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
-  this.selectionIds.add(id);
+  this.state.filter.active && this.createFilterToken();
 };
 
 proto.getSelectionIds = function(){
@@ -213,6 +208,8 @@ proto.invertSelectionIds = function(){
   else if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) this.selectionIds.delete(Layer.SELECTION_STATE.ALL);
   else if (this.selectionIds.size === 0) this.setSelectionIdsAll();
   else this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
+  this.isGeoLayer() && this.setInversionOlSelectionFeatures();
+  this.state.filter.active && this.createFilterToken();
 };
 
 proto.addSelectionId = function(id){
@@ -223,6 +220,7 @@ proto.addSelectionId = function(id){
     this.selectionIds.add(id);
     !this.getSelection() && this.setSelection(true);
   }
+  this.state.filter.active && this.createFilterToken();
 };
 
 proto.hasSelectionId = function(id){
@@ -238,10 +236,12 @@ proto.addSelectionIds = function(ids=[]){
 proto.deleteSelectionId = function(id) {
   if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) {
     this.selectionIds.clear();
-    this.excludeSelectionId(id);
-  } else this.selectionIds[this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](id);
+    this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
+  }
+  this.selectionIds[this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](id);
   if (this.selectionIds.size === 1 && this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.setSelectionIdsAll();
   else this.selectionIds.size === 0 && this.setSelection(false);
+  this.state.filter.active && this.createFilterToken();
 };
 
 proto.deleteSelectionIds = function(ids=[]) {
@@ -333,7 +333,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
     search,
     formatter,
     suggest,
-    filtertoken: this.getFilterToken()
+    filtertoken: ApplicationState.tokens.filtertoken
   };
   if (!(this.getProvider('filter') || this.getProvider('data'))) {
    d.reject();
@@ -551,9 +551,13 @@ proto.setSelected = function(bool) {
   this.state.selected = bool;
 };
 
-proto.setSelection = function(bool=false){
+proto.setSelection = async function(bool=false){
   this.state.selection.active = bool;
-  !bool && this.emit('unselectionall');
+  if (!bool) {
+    this.state.filter.active && await this.deleteFilterToken();
+    this.state.filter.active = false;
+    this.emit('unselectionall');
+  }
 };
 
 proto.getSelection = function(){

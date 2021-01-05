@@ -12,7 +12,7 @@
           </th>
         </tr>
       </thead>
-      <table-body :headers="state.headers" :features="state.features" :addRemoveSelectedFeature="addRemoveSelectedFeature" :zoomAndHighLightFeature="zoomAndHighLightFeature"></table-body>
+      <table-body :headers="state.headers" :filter=state.tools.filter :features="state.features" :addRemoveSelectedFeature="addRemoveSelectedFeature" :zoomAndHighLightFeature="zoomAndHighLightFeature"></table-body>
     </table>
     <div id="noheaders" v-t="'dataTable.no_data'" v-else>
     </div>
@@ -200,7 +200,7 @@
           searchDelay: 600
         });
         const debounceSearch = debounce(() => {
-          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
+          this.$options.service.setFilteredFeature(dataTable.search() ? dataTable.rows( {search:'applied'} )[0]: undefined)
         });
         dataTable.on('search.dt', debounceSearch);
         dataTable.on('length.dt', (evt, settings, length)=>{
@@ -219,6 +219,13 @@
         }
       });
       $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
+      this.$options.service.on('redraw', (data)=>{
+        dataTable.clear();
+        dataTable.rows.add(data);
+        dataTable.draw(false);
+        this.createdContentBody();
+        this.isMobile() && hideElements();
+      })
     },
     beforeDestroy() {
       GUI.un('setContent', this.setContentKey);

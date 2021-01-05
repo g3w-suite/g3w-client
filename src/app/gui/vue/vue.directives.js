@@ -84,6 +84,7 @@ const GlobalDirective = {
         });
       },
       unbind(el){
+        $(el).tooltip('hide');
         unbindWatch({
           attr:'g3w-v-t-tooltip-id',
           el

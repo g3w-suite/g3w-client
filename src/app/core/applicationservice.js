@@ -47,6 +47,9 @@ const ApplicationService = function() {
     },
     offline(){
       this.setOffline();
+    },
+    setFilterToken(filtertoken){
+      this._setFilterToken(filtertoken)
     }
   };
   base(this);
@@ -108,6 +111,14 @@ const ApplicationService = function() {
 
   this.loadedPlugin = function(plugin) {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
+  };
+
+  this._setFilterToken = function(filtertoken){
+    ApplicationState.tokens.filtertoken = filtertoken;
+  };
+
+  this.getFilterToken = function(){
+    return ApplicationState.tokens.filtertoken;
   };
 
   this.changeLanguage = function(lng){
@@ -345,11 +356,9 @@ const ApplicationService = function() {
       if (this._initConfig) resolve(this._initConfig);
       else XHR.get({
         url
-      }).then((initConfig) => {
-        resolve(initConfig);
-      }).catch((error) => {
-        reject(error);
-      });
+      })
+        .then(initConfig => resolve(initConfig))
+        .catch(error => reject(error));
     })
   };
 

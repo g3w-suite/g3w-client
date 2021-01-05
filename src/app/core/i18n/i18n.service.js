@@ -5,6 +5,12 @@ const plugins18nConfig = {
   },
   en: {
     plugins: {}
+  },
+  fi: {
+    plugins: {}
+  },
+  se: {
+    plugins: {}
   }
 };
 

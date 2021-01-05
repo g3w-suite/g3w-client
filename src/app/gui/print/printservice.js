@@ -113,6 +113,7 @@ proto._getOptionsPrint = function() {
     dpi: this.state.dpi,
     template: this.state.template,
     maps,
+    scale: this.state.scala,
     format: this.state.output.format
   };
   return options;

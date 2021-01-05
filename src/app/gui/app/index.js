@@ -224,7 +224,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         },
         "info": t("dataTable.info"),
         "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": t("dataTable.infoFiltered")
+        "infoFiltered": ''
       }
     };
     //set form control class to filter

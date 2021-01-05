@@ -4,8 +4,8 @@ const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol/src/projection/projections');
-
 function Project(config={}, options={}) {
+  const ApplicationService = require('core/applicationservice');
   /* structure 'project' object
   {
     id,
@@ -20,6 +20,7 @@ function Project(config={}, options={}) {
     overviewprojectgid,
     baselayers,
     initbaselayer,
+    filtertoken,
     context_base_legend
     ows_method <POST or GET>
     wms_use_layer_ids: <TRUE OR FALSE>
@@ -27,6 +28,8 @@ function Project(config={}, options={}) {
     wps: [] // array of wps service
   }
   */
+  const {filtertoken} = config;
+  //filtertoken && filtertoken.token && ApplicationService.setFilterToken(filtertoken.token);
   // for future implementation catalog tab actived
   config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
@@ -163,6 +166,8 @@ proto._buildLayersStore = function() {
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
+  const {filtertoken} = this.state;
+  const filtertokenlayersid = []; //filtertoken && filtertoken.layers || [];
   layers.forEach(layerConfig => {
     //check and set crs in objectformat
     layerConfig.crs = crsToCrsObject(layerConfig.crs);
@@ -174,7 +179,10 @@ proto._buildLayersStore = function() {
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });
-    layer && layersStore.addLayer(layer);
+    if (layer){
+      layersStore.addLayer(layer);
+      filtertokenlayersid.indexOf(layer.getId()) !== -1 && layer.setFilterActive(true);
+    }
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {

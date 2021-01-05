@@ -1839,7 +1839,7 @@ proto._setupMapLayers = function() {
       //filter token listener handler
       layers.forEach(layer => {
         layer.on('filtertokenchange', ()=>{
-          this.updateMapLayer(mapLayer)
+          this.updateMapLayer(mapLayer, {force: true});
         })
       })
       ///

@@ -1,5 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+import ApplicationState from 'core/applicationstate';
+const {base, inherit} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
@@ -123,7 +123,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   if (visibleLayers.length > 0) {
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
     let params = {
-      filtertokens: visibleLayers.map(layer => layer.getFilterToken()).join(''),
+      filtertoken: ApplicationState.tokens.filtertoken,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`

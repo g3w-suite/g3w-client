@@ -1,12 +1,16 @@
+const {inherit } = require('core/utils/utils');
+const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
 const noop = require('core/utils/utils').noop;
 const {coordinatesToGeometry} =  require('core/utils/geo');
 const { SELECTION_STATE } = require('core/layers/layer');
+const PAGELENGTHS = [10, 25, 50];
 
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
   this.layer = options.layer;
+
   this.formatter = options.formatter;
   const headers = this.getHeaders();
   this.allfeaturesnumber;
@@ -22,10 +26,9 @@ const TableService = function(options = {}) {
     this.state.tools.show = false;
     this.state.selectAll = false;
   };
-  this.layer.on('unselectionall', this.clearAllSelection);
   this.state = {
-    pageLengths: [10, 25, 50],
-    pageLength: this.layer.getAttributeTablePageLength() || 10,
+    pageLengths: PAGELENGTHS,
+    pageLength: this.layer.getAttributeTablePageLength() || PAGELENGTHS[0],
     features: [],
     title: this.layer.getTitle(),
     headers,
@@ -46,8 +49,19 @@ const TableService = function(options = {}) {
   };
   GUI.onbefore('setContent', options => {
     this._async.state = options.perc === 100;
-  })
+  });
+  this.layer.on('unselectionall', this.clearAllSelection);
+  this.layer.on('filtertokenchange', async ()=>{
+    let data = [];
+    if (!this.state.pagination) {
+      const tabledata = await this.reloadData();
+      data = tabledata.data;
+    }
+    this.emit('redraw', data)
+  });
 };
+
+inherit(TableService, G3WObject);
 
 const proto = TableService.prototype;
 
@@ -84,28 +98,31 @@ proto.addRemoveSelectedFeature = function(feature){
   this.setSelectionFeatures(feature);
   if (this.state.selectAll) {
     this.state.selectAll = false;
-    this.layer.setExcludeSelection();
-    this.layer.addSelectionId(feature.id);
+    this.layer.deleteSelectionId(feature.id);
   } else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
     this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
     const size = this.selectedfeaturesid.size;
     if (size === 1) {
-      this.selectedfeaturesid.clear();
-      this.layer.setSelectionIdsAll();
+      !this.state.tools.filter.active && this.layer.setSelectionIdsAll();
       this.state.selectAll = true;
-    } else if (size -1 === this.state.features.length){
-      this.layer.clearSelectionIds();
-    }
+    } else if (size -1 === this.state.features.length) this.layer.clearSelectionIds();
   } else {
     this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
     const size = this.selectedfeaturesid.size;
     if (size === this.allfeaturesnumber) {
       this.state.selectAll = true;
-      this.layer.setSelectionIdsAll();
+      !this.state.tools.filter.active && this.layer.setSelectionIdsAll();
     }
   }
   this.state.tools.show = this.selectedfeaturesid.size > 0;
   !this.state.tools.show && this.setSelectionFeatures();
+  if (!this.state.pagination){
+    if (this.filteredfeatures && this.filteredfeatures.length) {
+      this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.filteredfeatures.length;
+    }
+  } else {
+
+  }
 };
 
 proto.clearLayerSelection = function(){
@@ -138,8 +155,7 @@ proto.switchSelection = function(){
         feature.selected = !feature.selected;
       });
       this.layer.invertSelectionIds();
-      this.geolayer && this.layer.setInversionOlSelectionFeatures();
-      this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL);
+      this.checkSelectAll();
       this.state.tools.show = this.selectedfeaturesid.size > 0;
     } else { // filter
       this.checkFilteredFeaturesForNoPagination(true);
@@ -219,12 +235,16 @@ proto.selectAllFeatures = function(){
   }
 };
 
-proto.setFilteredFeature = function(featuresIndex=[]){
-  const featuresIndexLenth = featuresIndex.length;
-  this.state.nofilteredrow = featuresIndexLenth === 0;
-  this.filteredfeatures = featuresIndexLenth === 0 || featuresIndexLenth === this.allfeaturesnumber ? null : featuresIndex;
-  if (this.state.nofilteredrow) this.state.selectAll = false;
-  else this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
+proto.setFilteredFeature = function(featuresIndex){
+  if (featuresIndex === undefined){
+    this.checkSelectAll();
+  } else {
+    const featuresIndexLength =  featuresIndex.length;
+    this.state.nofilteredrow = featuresIndexLength === 0;
+    this.filteredfeatures = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? null : featuresIndex;
+    if (this.state.nofilteredrow) this.state.selectAll = false;
+    else this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
+  }
 };
 
 proto.setAttributeTablePageLength = function(length){
@@ -289,7 +309,7 @@ proto.addFeature = function(feature) {
     id: feature.id,
     selected: this.layer.hasSelectionId(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry: this.geolayer && this._returnGeometry(feature),
+    geometry: this.geolayer && this._returnGeometry(feature)
   };
   this.geolayer && tableFeature.geometry && this.layer.addOlSelectionFeature({
     id: tableFeature.id,
@@ -300,14 +320,20 @@ proto.addFeature = function(feature) {
 };
 
 proto.checkSelectAll = function(){
-  if (this.selectedfeaturesid.has(SELECTION_STATE.ALL)) this.state.selectAll = true;
-  else this.state.selectAll = this.state.features.length > 0 && (this.state.features.length === this.state.features.filter(feature => feature.selected).length);
+  this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || this.state.features.reduce((accumulator, feature) => accumulator && feature.selected, true);
 };
 
 proto.addFeatures = function(features=[]) {
   features.forEach(feature => this.addFeature(feature));
-  this.state.tools.show = this.selectedfeaturesid.size > 0;
+  this.state.tools.show = this.layer.getFilterActive() ||  this.selectedfeaturesid.size > 0;
   this.checkSelectAll();
+};
+
+
+proto.reloadData = async function(){
+  this.state.features.splice(0);
+  const data = await this.getData();
+  return data;
 };
 
 proto._setLayout = function() {

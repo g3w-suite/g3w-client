@@ -1,5 +1,5 @@
-const { base, inherit } = require('core/utils/utils');
-const { XHR } = require('core/utils/utils');
+import ApplicationState from 'core/applicationstate';
+const { base, inherit, XHR} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
 const RelationsService = require('core/relations/relationsservice');
@@ -39,10 +39,27 @@ const proto = QGISProvider.prototype;
 * token: current token if provide
 * action: create, update, delete
 * */
-proto.getFilterToken = function({token, action='create', filter={}}){
-  return XHR.get({
-    url: this._filtertokenUrl
+
+proto.deleteFilterToken = async function(){
+  await XHR.get({
+    url: this._filtertokenUrl,
+    params:{
+      mode: 'delete'
+    }
   })
+};
+
+proto.getFilterToken = async function(params={}){
+  try {
+    const {data={} } = await XHR.get({
+      url: this._filtertokenUrl,
+      params
+    });
+    return data.filtertoken;
+  } catch(err){
+    return Promise.reject(err);
+  }
+
 };
 
 proto.getFilterData = async function({field, suggest={}, unique}={}){
@@ -50,7 +67,7 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
     field,
     suggest,
     unique,
-    filtertoken: this._layer.getFilterToken()
+    filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
     const response = await XHR.get({
@@ -88,7 +105,6 @@ proto.query = function(options={}) {
   const queryUrl = options.queryUrl || this._queryUrl;
   const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
-  const filtertokens = layers ? layers.map(layer => layer.getFilterToken()).join(',') : this._layer.getFilterToken();
   if (filter) {
     // check if geomemtry filter. If not i have to remove projection layer
     if (filter.getType() !== 'geometry' && this._layer.getSourceType() !== 'spatialite')
@@ -98,7 +114,7 @@ proto.query = function(options={}) {
       SERVICE: 'WMS',
       VERSION: '1.3.0',
       REQUEST: 'GetFeatureInfo',
-      filtertokens,
+      filtertoken: ApplicationState.tokens.filtertoken,
       LAYERS: layerNames,
       QUERY_LAYERS: layerNames,
       INFO_FORMAT: this._infoFormat,
@@ -184,7 +200,6 @@ proto.commit = function(commitItems) {
 // METODS LOADING EDITING FEATURES (READ/WRITE) //
 proto.getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
-  const filtertoken = this._layer.getFilterToken();
   // filter null value
   Object.entries(params).forEach(([key, value]) => {
     if (value === null)
@@ -210,7 +225,7 @@ proto.getFeatures = function(options={}, params={}) {
         const bbox = filter.bbox;
         filter = {
           in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`,
-          filtertoken
+          filtertoken: ApplicationState.tokens.filtertoken
         };
         const jsonFilter = JSON.stringify(filter);
         promise = XHR.post({
