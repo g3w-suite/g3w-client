@@ -51,14 +51,15 @@ const TableService = function(options = {}) {
     this._async.state = options.perc === 100;
   });
   this.layer.on('unselectionall', this.clearAllSelection);
-  this.layer.on('filtertokenchange', async ()=>{
+  this.filterChangeHandler = async ()=>{
     let data = [];
     if (!this.state.pagination) {
       const tabledata = await this.reloadData();
       data = tabledata.data;
     }
     this.emit('redraw', data)
-  });
+  };
+  this.layer.on('filtertokenchange', this.filterChangeHandler);
 };
 
 inherit(TableService, G3WObject);
@@ -329,7 +330,6 @@ proto.addFeatures = function(features=[]) {
   this.checkSelectAll();
 };
 
-
 proto.reloadData = async function(){
   this.state.features.splice(0);
   const data = await this.getData();
@@ -360,6 +360,7 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
 
 proto.clear = function(){
   this.layer.off('unselectionall', this.clearAllSelection);
+  this.layer.off('filtertokenchange', this.filterChangeHandler);
   this.allfeaturesnumber = null;
   this.mapService = null;
   this._async.state && setTimeout(()=> {
