@@ -1,5 +1,5 @@
 <template>
-  <tbody id="table_body_attributes">
+  <tbody id="table_body_attributes" >
     <tr role="row" class="feature_attribute"
         style="cursor: pointer"
         v-for="(feature, index) in features" :key="feature.id"

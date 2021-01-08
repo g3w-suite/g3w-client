@@ -10,16 +10,15 @@ const PAGELENGTHS = [10, 25, 50];
 const TableService = function(options = {}) {
   this.currentPage = 0; // number of pages
   this.layer = options.layer;
-
   this.formatter = options.formatter;
   const headers = this.getHeaders();
   this.allfeaturesnumber;
   this.filteredfeatures = null;
-  this.selectedfeaturesid = this.layer.getSelectionIds();
+  this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
   this.mapService = GUI.getComponent('map').getService();
-  this.getAll = this.selectedfeaturesid.size > 0;
+  this.getAll = this.selectedfeaturesfid.size > 0;
   this.paginationfilter = false;
   this.clearAllSelection = () => {
     this.state.features.forEach(feature => feature.selected = false);
@@ -53,11 +52,11 @@ const TableService = function(options = {}) {
   this.layer.on('unselectionall', this.clearAllSelection);
   this.filterChangeHandler = async ()=>{
     let data = [];
+    const emitRedraw = !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
-      const tabledata = await this.reloadData();
-      data = tabledata.data;
+      data = emitRedraw ? await this.reloadData() : null;
     }
-    this.emit('redraw', data)
+    emitRedraw && this.emit('redraw', data);
   };
   this.layer.on('filtertokenchange', this.filterChangeHandler);
 };
@@ -66,7 +65,7 @@ inherit(TableService, G3WObject);
 
 const proto = TableService.prototype;
 
-proto.activeDeactiveLayerFilter = async function(){
+proto.toggleFilterToken = async function(){
   await this.layer.toggleFilterToken();
 };
 
@@ -89,75 +88,71 @@ proto.setDataForDataTable = function() {
   return data;
 };
 
-proto.setSelectionFeatures = function(feature){
-  const action = feature && feature.selected ? 'add' : 'remove';
-  this.geolayer && this.layer.setOlSelectionFeatures(feature, action);
-};
-
 proto.addRemoveSelectedFeature = function(feature){
   feature.selected = !feature.selected;
-  this.setSelectionFeatures(feature);
   if (this.state.selectAll) {
     this.state.selectAll = false;
-    this.layer.deleteSelectionId(feature.id);
-  } else if (this.selectedfeaturesid.has(SELECTION_STATE.EXCLUDE)) {
-    this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
-    const size = this.selectedfeaturesid.size;
+    this.layer.excludeSelectionFid(feature.id, this.state.pagination);
+  } else if (this.selectedfeaturesfid.has(SELECTION_STATE.EXCLUDE)) {
+    this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
+    const size = this.selectedfeaturesfid.size;
     if (size === 1) {
-      !this.state.tools.filter.active && this.layer.setSelectionIdsAll();
+      !this.state.tools.filter.active && this.layer.setSelectionFidsAll();
       this.state.selectAll = true;
-    } else if (size -1 === this.state.features.length) this.layer.clearSelectionIds();
+    } else if (size -1 === this.state.features.length) this.layer.clearSelectionFids();
   } else {
-    this.layer[feature.selected ? 'addSelectionId' : 'deleteSelectionId'](feature.id);
-    const size = this.selectedfeaturesid.size;
+    this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
+    const size = this.selectedfeaturesfid.size;
     if (size === this.allfeaturesnumber) {
       this.state.selectAll = true;
-      !this.state.tools.filter.active && this.layer.setSelectionIdsAll();
+      !this.state.tools.filter.active && this.layer.setSelectionFidsAll();
     }
   }
-  this.state.tools.show = this.selectedfeaturesid.size > 0;
-  !this.state.tools.show && this.setSelectionFeatures();
+  this.state.tools.show = this.selectedfeaturesfid.size > 0;
   if (!this.state.pagination){
     if (this.filteredfeatures && this.filteredfeatures.length) {
       this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.filteredfeatures.length;
     }
-  } else {
-
   }
 };
 
-proto.clearLayerSelection = function(){
-  this.layer.clearSelectionIds();
-};
-
 proto.getAllFeatures = function(){
-  this.layer.getDataTable({}).then(data =>{
-    const {features} = data;
-    if (this.geolayer && features) {
-      const LoadedFeaturesId = this.state.features.map(feature => feature.id);
-      features.forEach(feature => {
-        if (LoadedFeaturesId.indexOf(feature.id) === -1) {
-          feature.geometry && this.layer.addOlSelectionFeature({
-            id: feature.id,
-            geometry: this._returnGeometry(feature)
+  GUI.setLoadingContent(true);
+  return new Promise((resolve, reject) =>{
+    this.layer.getDataTable({})
+      .then(data =>{
+        const {features} = data;
+        if (this.geolayer && features) {
+          const LoadedFeaturesId = this.state.features.map(feature => feature.id);
+          features.forEach(feature => {
+            if (LoadedFeaturesId.indexOf(feature.id) === -1) {
+              feature.geometry && this.layer.addOlSelectionFeature({
+                id: feature.id,
+                geometry: this._returnGeometry(feature)
+              });
+            }
           });
-          this.layer.setOlSelectionFeatures(feature, 'add');
+          resolve();
         }
-      });
-    }
-    this.getAll = true;
-  });
+        this.getAll = true;
+      })
+      .fail(()=>{
+        reject();
+      })
+      .always(()=>GUI.setLoadingContent(false))
+  })
+
 };
 
-proto.switchSelection = function(){
+proto.switchSelection = async function(){
   if (!this.state.pagination) { // no pagination
     if (this.filteredfeatures === null) { //no filter
       this.state.features.forEach(feature => {
         feature.selected = !feature.selected;
       });
-      this.layer.invertSelectionIds();
+      this.layer.invertSelectionFids();
       this.checkSelectAll();
-      this.state.tools.show = this.selectedfeaturesid.size > 0;
+      this.state.tools.show = this.selectedfeaturesfid.size > 0;
     } else { // filter
       this.checkFilteredFeaturesForNoPagination(true);
     }
@@ -167,34 +162,32 @@ proto.switchSelection = function(){
       feature.selected = !feature.selected;
       selected = feature.selected;
     });
-    if (this.paginationfilter) {
-      this.state.selectAll = selected;
-      !this.getAll && this.getAllFeatures();
-    }
-    this.layer.invertSelectionIds();
-    this.geolayer && this.layer.setInversionOlSelectionFeatures();
-    this.state.selectAll = this.paginationfilter ? this.state.selectAll : this.selectedfeaturesid.has(SELECTION_STATE.ALL);
-    this.state.tools.show = this.selectedfeaturesid.size > 0;
+    !this.getAll && await this.getAllFeatures();
+    this.state.selectAll = this.paginationfilter ? selected: this.state.selectAll;
+    this.layer.invertSelectionFids();
+    this.state.tools.show = this.selectedfeaturesfid.size > 0;
   }
+};
+
+proto.clearLayerSelection = function(){
+  this.layer.clearSelectionFids();
 };
 
 proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
   const filtered = this.filteredfeatures !== null;
   if (filtered) {
     if (this.filteredfeatures.length === this.allfeaturesnumber) {
-      this.state.selectAll && this.layer.setSelectionIdsAll();
+      this.state.selectAll && this.layer.setSelectionFidsAll();
       this.state.tools.show = this.state.selectAll;
     } else {
       let selected = false;
       this.state.features.forEach((feature, index) =>{
         if (this.filteredfeatures.indexOf(index) !== -1) {
           feature.selected = inversion ? !feature.selected: this.state.selectAll;
-          this.layer[this.selectedfeaturesid.has(feature.id) ? 'deleteSelectionId' : 'addSelectionId'](feature.id);
-          this.setSelectionFeatures(feature);
+          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
         } else if (inversion) {
           feature.selected = !feature.selected;
-          this.layer[this.selectedfeaturesid.has(feature.id) ? 'deleteSelectionId' : 'addSelectionId'](feature.id);
-          this.setSelectionFeatures(feature);
+          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
         }
         selected = selected || feature.selected;
       });
@@ -205,7 +198,7 @@ proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
   return filtered;
 };
 
-proto.selectAllFeatures = function(){
+proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
@@ -213,38 +206,32 @@ proto.selectAllFeatures = function(){
       this.checkFilteredFeaturesForNoPagination();
     } else {
       this.state.tools.show = this.state.selectAll;
-      if (this.state.selectAll) this.layer.setSelectionIdsAll();
-      else this.clearLayerSelection();
-      this.state.features.forEach(feature => {
-        feature.selected = this.state.selectAll;
-      });
+      this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
     }
   } else { //pagination
     if (this.paginationfilter) { // filtered
       this.state.features.forEach(feature => {
         feature.selected = this.state.selectAll;
-        this.layer[feature.selected ? 'addSelectionId': 'deleteSelectionId'](feature.id);
-        this.setSelectionFeatures(feature);
+        this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
       });
     } else {
       this.state.features.forEach(feature => feature.selected = this.state.selectAll);
-      !this.getAll && this.getAllFeatures();
-      this.state.selectAll && this.layer.setSelectionIdsAll();
-      this.state.selectAll ? this.layer.setSelectionIdsAll() : this.clearLayerSelection();
+      !this.getAll && await this.getAllFeatures();
+      this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
     }
-    this.state.tools.show = this.state.selectAll || this.selectedfeaturesid.size > 0;
+    this.state.tools.show = this.state.selectAll || this.selectedfeaturesfid.size > 0;
   }
 };
 
 proto.setFilteredFeature = function(featuresIndex){
-  if (featuresIndex === undefined){
-    this.checkSelectAll();
-  } else {
+  if (featuresIndex === undefined) this.checkSelectAll();
+  else {
     const featuresIndexLength =  featuresIndex.length;
     this.state.nofilteredrow = featuresIndexLength === 0;
     this.filteredfeatures = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? null : featuresIndex;
     if (this.state.nofilteredrow) this.state.selectAll = false;
-    else this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
+    else this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
   }
 };
 
@@ -254,6 +241,7 @@ proto.setAttributeTablePageLength = function(length){
 
 proto.getData = function({start = 0, order = [], length = this.state.pageLength, search={value:null}, firstCall=false} = {}) {
   // reset features before load
+  GUI.setLoadingContent(true);
   this.setAttributeTablePageLength(length);
   return new Promise((resolve, reject) => {
     if (!this.state.headers.length)
@@ -283,24 +271,27 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
         ordering,
         formatter: this.formatter
       });
-      getDataPromise.then(data => {
-        const {features=[]} = data;
-        this.state.allfeatures = data.count || this.state.features.length;
-        this.state.featurescount = features.length;
-        this.allfeaturesnumber = this.allfeaturesnumber === undefined ? data.count : this.allfeaturesnumber;
-        this.paginationfilter = data.count !== this.allfeaturesnumber;
-        this.state.pagination = firstCall ? features.length < this.allfeaturesnumber : this.state.pagination;
-        this.addFeatures(features);
-        resolve({
-          data: this.setDataForDataTable(),
-          recordsFiltered: data.count,
-          recordsTotal: data.count
-        });
-      })
+      getDataPromise
+        .then(data => {
+          const {features=[]} = data;
+          this.state.allfeatures = data.count || this.state.features.length;
+          this.state.featurescount = features.length;
+          this.allfeaturesnumber = this.allfeaturesnumber === undefined ? data.count : this.allfeaturesnumber;
+          this.paginationfilter = data.count !== this.allfeaturesnumber;
+          this.state.pagination = firstCall ? features.length < this.allfeaturesnumber : this.state.pagination;
+          this.addFeatures(features);
+          resolve({
+            data: this.setDataForDataTable(),
+            recordsFiltered: data.count,
+            recordsTotal: data.count
+          });
+        })
         .fail((err) => {
           GUI.notify.error(t("info.server_error"));
           reject(err);
-        });
+        }).always(()=>{
+          GUI.setLoadingContent(false);
+        })
     }
   });
 };
@@ -308,7 +299,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
 proto.addFeature = function(feature) {
   const tableFeature = {
     id: feature.id,
-    selected: this.layer.hasSelectionId(feature.id),
+    selected: this.state.tools.filter.active || this.layer.hasSelectionFid(feature.id),
     attributes: feature.attributes ? feature.attributes : feature.properties,
     geometry: this.geolayer && this._returnGeometry(feature)
   };
@@ -316,24 +307,23 @@ proto.addFeature = function(feature) {
     id: tableFeature.id,
     geometry: tableFeature.geometry
   });
-  tableFeature.selected && this.setSelectionFeatures(tableFeature);
   this.state.features.push(tableFeature);
 };
 
 proto.checkSelectAll = function(){
-  this.state.selectAll = this.selectedfeaturesid.has(SELECTION_STATE.ALL) || this.state.features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || this.state.features.reduce((accumulator, feature) => accumulator && feature.selected, true);
 };
 
 proto.addFeatures = function(features=[]) {
   features.forEach(feature => this.addFeature(feature));
-  this.state.tools.show = this.layer.getFilterActive() ||  this.selectedfeaturesid.size > 0;
+  this.state.tools.show = this.layer.getFilterActive() ||  this.selectedfeaturesfid.size > 0;
   this.checkSelectAll();
 };
 
 proto.reloadData = async function(){
   this.state.features.splice(0);
-  const data = await this.getData();
-  return data;
+  const tabledata = await this.getData();
+  return tabledata.data || [];
 };
 
 proto._setLayout = function() {

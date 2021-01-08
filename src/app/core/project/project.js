@@ -167,7 +167,7 @@ proto._buildLayersStore = function() {
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
   const {filtertoken} = this.state;
-  const filtertokenlayersid = []; //filtertoken && filtertoken.layers || [];
+  const filtertokenlayersid = filtertoken && filtertoken.layers || [];
   layers.forEach(layerConfig => {
     //check and set crs in objectformat
     layerConfig.crs = crsToCrsObject(layerConfig.crs);
@@ -181,7 +181,7 @@ proto._buildLayersStore = function() {
     });
     if (layer){
       layersStore.addLayer(layer);
-      filtertokenlayersid.indexOf(layer.getId()) !== -1 && layer.setFilterActive(true);
+      filtertokenlayersid.indexOf(layer.getId()) !== -1 && layer.deleteFilterToken();
     }
   });
   // create layerstree from layerstore

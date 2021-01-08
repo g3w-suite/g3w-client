@@ -300,7 +300,7 @@ const vueComponentOptions = {
   created() {
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
       const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
-      layer.clearSelectionIds();
+      layer.clearSelectionFids();
     });
 
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {

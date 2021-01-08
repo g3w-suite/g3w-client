@@ -74,8 +74,8 @@ function Layer(config={}, options={}) {
     tochighlightable: false
   };
 
-  // add selectionIds
-  this.selectionIds = new Set();
+  // add selectionFids
+  this.selectionFids = new Set();
 
   // refferred to (layersstore);
   this._layersstore = config.layersstore || null;
@@ -131,7 +131,6 @@ proto.getAttributeTablePageLength = function(){
 //filter token
 proto.setFilterActive = function(bool=false){
   this.state.filter.active = bool;
-  this.selectionIds.clear();
 };
 
 proto.getFilterActive = function(){
@@ -154,7 +153,7 @@ proto.deleteFilterToken = async function(){
     try {
       await this.providers['filtertoken'].deleteFilterToken();
       ApplicationService.setFilterToken(null);
-      this.emit('filtertokenchange');
+      this.emit('filtertokenchange', );
     } catch(err) {
       console.log('Error deleteing filtertoken')
     }
@@ -166,90 +165,92 @@ proto.createFilterToken = async function(){
   if (this.providers['filtertoken']){
     let filtertoken = null;
     try {
-      if (this.selectionIds.size > 0) {
+      if (this.selectionFids.size > 0) {
         // create filter token
-        if (this.selectionIds.has('ALL')) {
-          console.log('qui')
+        if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) {
           await this.providers['filtertoken'].deleteFilterToken();
         } else {
           const params = {};
-          if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE))
-            params.fidsout = Array.from(this.selectionIds).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
-          else params.fidsin = Array.from(this.selectionIds).join(',');
+          if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE))
+            params.fidsout = Array.from(this.selectionFids).filter(id => id !== Layer.SELECTION_STATE.EXCLUDE).join(',');
+          else params.fidsin = Array.from(this.selectionFids).join(',');
           filtertoken = await this.providers['filtertoken'].getFilterToken(params);
         }
         ApplicationService.setFilterToken(filtertoken);
         this.emit('filtertokenchange');
       }
-
     } catch(err){
       console.log('Error create update token');
     }
   }
 };
-
 // end filter token
-
 //selection Ids layer methods
-proto.setSelectionIdsAll = function(){
-  this.selectionIds.clear();
-  this.selectionIds.add(Layer.SELECTION_STATE.ALL);
+
+proto.setSelectionFidsAll = function(){
+  this.selectionFids.clear();
+  this.selectionFids.add(Layer.SELECTION_STATE.ALL);
   this.isGeoLayer() && this.showAllOlSelectionFeatures();
   this.setSelection(true);
   this.state.filter.active && this.createFilterToken();
 };
 
-proto.getSelectionIds = function(){
-  return this.selectionIds;
+proto.getSelectionFids = function(){
+  return this.selectionFids;
 };
 
-proto.invertSelectionIds = function(){
-  if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionIds.delete(Layer.SELECTION_STATE.EXCLUDE);
-  else if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) this.selectionIds.delete(Layer.SELECTION_STATE.ALL);
-  else if (this.selectionIds.size === 0) this.setSelectionIdsAll();
-  else this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
+proto.invertSelectionFids = function(){
+  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
+  else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
+  else if (this.selectionFids.size > 0) this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
   this.isGeoLayer() && this.setInversionOlSelectionFeatures();
   this.state.filter.active && this.createFilterToken();
+  this.setSelection(this.selectionFids.size > 0);
 };
 
-proto.addSelectionId = function(id){
-  if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionIds.has(id)) {
-    this.selectionIds.delete(id);
-    this.selectionIds.size === 1 && this.setSelectionIdsAll();
+proto.hasSelectionFid = function(fid){
+  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) return true;
+  else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionFids.has(fid);
+  else return this.selectionFids.has(fid) ;
+};
+
+proto.includeSelectionFid = async function(fid, createToken=true){
+  if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionFids.has(fid)) {
+    this.selectionFids.delete(fid);
+    this.selectionFids.size === 1 && this.setSelectionFidsAll();
   } else {
-    this.selectionIds.add(id);
+    this.selectionFids.add(fid);
     !this.getSelection() && this.setSelection(true);
   }
-  this.state.filter.active && this.createFilterToken();
+  this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'add');
+  createToken && this.state.filter.active && await this.createFilterToken();
 };
 
-proto.hasSelectionId = function(id){
-  if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) return true;
-  else if (this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionIds.has(id);
-  else return this.selectionIds.has(id) ;
+proto.includeSelectionFids = function(fids=[]){
+  fids.forEach(fid => this.includeSelectionFid(fid));
 };
 
-proto.addSelectionIds = function(ids=[]){
-  ids.forEach(id => this.addSelectionId(id));
-};
-
-proto.deleteSelectionId = function(id) {
-  if (this.selectionIds.has(Layer.SELECTION_STATE.ALL)) {
-    this.selectionIds.clear();
-    this.selectionIds.add(Layer.SELECTION_STATE.EXCLUDE);
+proto.excludeSelectionFid = async function(fid) {
+  if (this.selectionFids.has(Layer.SELECTION_STATE.ALL) || this.selectionFids.size === 0) {
+    this.selectionFids.clear();
+    this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
   }
-  this.selectionIds[this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](id);
-  if (this.selectionIds.size === 1 && this.selectionIds.has(Layer.SELECTION_STATE.EXCLUDE)) this.setSelectionIdsAll();
-  else this.selectionIds.size === 0 && this.setSelection(false);
-  this.state.filter.active && this.createFilterToken();
+  this.selectionFids[this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) ? 'add' : 'delete'](fid);
+  if (this.selectionFids.size === 1 && this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.setselectionFidsAll();
+  const isLastFeatureSelected  = this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'remove');
+  this.state.filter.active && await this.createFilterToken();
+  if (this.selectionFids.size === 0 || isLastFeatureSelected) {
+    this.selectionFids.clear();
+    this.setSelection(false);
+  }
 };
 
-proto.deleteSelectionIds = function(ids=[]) {
-  ids.forEach(id => this.deleteSelectionId(id));
+proto.excludeSelectionFids = function(fids=[]) {
+  fids.forEach(fid => this.excludeSelectionFid(fid));
 };
 
-proto.clearSelectionIds = function(){
-  this.selectionIds.clear();
+proto.clearSelectionFids = function(){
+  this.selectionFids.clear();
   this.isGeoLayer() && this.setOlSelectionFeatures();
   this.setSelection(false);
 };
@@ -555,7 +556,7 @@ proto.setSelection = async function(bool=false){
   this.state.selection.active = bool;
   if (!bool) {
     this.state.filter.active && await this.deleteFilterToken();
-    this.state.filter.active = false;
+    this.state.filter.active = bool;
     this.emit('unselectionall');
   }
 };

@@ -356,29 +356,31 @@ proto.setActionsForLayers = function(layers) {
   this.unlistenerlayeractionevents = [];
   layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
-    const toggled = {};
-    layer.features.map((feature, index) => toggled[index] = false);
-    this.state.layersactions[layer.id].push({
-      id: 'selection',
-      download: false,
-      class: GUI.getFontClass('success'),
-      hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-      state: Vue.observable({
-        toggled
-      }),
-      init: ({feature, index, action}={})=>{
-        this.checkFeatureSelection({
-          layerId: layer.id,
-          index,
-          feature,
-          action
-        })
-      },
-      cbk: this.addToSelection.bind(this)
-    });
-    this.listenClearSelection(layer, 'selection');
     //in case of geometry
-    if (layer.hasgeometry)
+    if (layer.hasgeometry) {
+      // selection action
+      const toggled = {};
+      layer.features.map((feature, index) => toggled[index] = false);
+      this.state.layersactions[layer.id].push({
+        id: 'selection',
+        download: false,
+        class: GUI.getFontClass('success'),
+        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+        state: Vue.observable({
+          toggled
+        }),
+        init: ({feature, index, action}={})=>{
+          this.checkFeatureSelection({
+            layerId: layer.id,
+            index,
+            feature,
+            action
+          })
+        },
+        cbk: this.addToSelection.bind(this)
+      });
+      this.listenClearSelection(layer, 'selection');
+      //end selection action
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         download: false,
@@ -387,6 +389,8 @@ proto.setActionsForLayers = function(layers) {
         hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
         cbk: this.goToGeometry.bind(this)
       });
+    }
+
     // in case of relations
     if (this._relations) {
       const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
@@ -715,44 +719,41 @@ proto.selectionFeaturesLayer = function(layer) {
   const _layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   layer.features.forEach((feature, index) => {
     action.state.toggled[index] = !bool;
-    this._addRemoveSelectionFeature(_layer, feature, bool ? 'remove' : 'add');
+    this._addRemoveSelectionFeature(_layer, feature, index, bool ? 'remove' : 'add');
   })
 };
 
-proto._addRemoveSelectionFeature = function(layer, feature, force){
+proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
   const fid = feature ? 1*feature.attributes['g3w_fid']: null;
-  const hasAlreadySelectioned = layer.hasSelectionId(fid);
+  const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (force === undefined) {
-    layer[hasAlreadySelectioned ? 'deleteSelectionId': 'addSelectionId'](fid);
-    feature.geometry && layer.setOlSelectionFeatures({
-      id: fid,
-      geometry: feature.geometry
-    }, hasAlreadySelectioned ? 'remove': 'add');
-  } else if (!hasAlreadySelectioned && force === 'add') {
-      layer.addSelectionId(fid);
-      feature.geometry && layer.setOlSelectionFeatures({
-        id: fid,
-        geometry: feature.geometry
-      }, 'add');
-    } else if (hasAlreadySelectioned && force === 'remove'){
-      layer.deleteSelectionId(fid);
-      feature.geometry && layer.setOlSelectionFeatures({
-        id: fid,
-        geometry: feature.geometry
-      }, 'remove');
-    }
+    layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
+  } else if (!hasAlreadySelectioned && force === 'add') await layer.includeSelectionFid(fid);
+    else if (hasAlreadySelectioned && force === 'remove') await layer.excludeSelectionFid(fid);
+  if (layer.getFilterActive()) {
+    const currentLayer = this.state.layers.find(_layer => _layer.id === layer.getId());
+    layer.getSelectionFids().size > 0 && currentLayer && currentLayer.features.splice(index, 1);
+    this.mapService.clearHighlightGeometry();
+    this.state.layers.length === 1 && !this.state.layers[0].features.length && this.state.layers.splice(0);
+  }
 };
 
 proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  const fid = feature ? 1*feature.attributes['g3w_fid']: null;
-  action.state.toggled[index] = layer.hasSelectionId(fid);
+  if (feature) {
+    const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+    action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
+    feature.geometry && layer.addOlSelectionFeature({
+      id: fid,
+      geometry: feature.geometry
+    })
+  }
 };
 
 proto.addToSelection = function(layer, feature, action, index){
   action.state.toggled[index] = !action.state.toggled[index];
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
-  this._addRemoveSelectionFeature(_layer, feature);
+  this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
 proto.goToGeometry = function(layer, feature) {

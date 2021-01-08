@@ -12,28 +12,28 @@ function TableLayer(config={}, options={}) {
   // setters
   this.setters = {
     // delete all features
-    clearFeatures: function () {
+    clearFeatures() {
       this._clearFeatures();
     },
-    addFeature: function (feature) {
+    addFeature(feature) {
       this._addFeature(feature);
     },
-    deleteFeature: function (feature) {
+    deleteFeature(feature) {
       this._deleteFeature(feature);
     },
-    updateFeature: function (feature) {
+    updateFeature(feature) {
       this._updateFeature(feature);
     },
-    setFeatures: function (features) {
+    setFeatures(features) {
       this._setFeatures(features);
     },
     // get data from every sources (server, wms, etc..)
     // throught provider related to featuresstore
-    getFeatures: function (options={}) {
+    getFeatures(options={}) {
       const d = $.Deferred();
       this._featuresstore.getFeatures(options)
         .then((promise) => {
-          promise.then((features) => {
+          promise.then(features => {
             this.emit('getFeatures', features);
             return d.resolve(features);
           }).fail((err) => {
@@ -45,7 +45,7 @@ function TableLayer(config={}, options={}) {
         });
       return d.promise();
     },
-    commit: function(commitItems) {
+    commit(commitItems) {
       const d = $.Deferred();
       this._featuresstore.commit(commitItems)
         .then((promise) => {
@@ -62,7 +62,7 @@ function TableLayer(config={}, options={}) {
         });
       return d.promise();
     },
-    setColor: function(color) {
+    setColor(color) {
       this._setColor(color)
     }
   };
@@ -113,7 +113,7 @@ function TableLayer(config={}, options={}) {
           resolve(this);
           this.setReady(true);
         })
-        .fail((err) => {
+        .fail(err => {
           reject(this);
           this.setReady(false);
         })
@@ -182,7 +182,7 @@ proto.getLayerForEditing = async function({vectorurl, project_type}={}) {
     return await editableLayer.layerForEditing;
   } catch(err) {
     return err
-  };
+  }
 };
 
 proto.getEditingSource = function() {
@@ -211,7 +211,7 @@ proto.getEditingConstrains = function() {
 
 proto.isFieldRequired = function(fieldName) {
   let required = false;
-  this.getEditingFields().forEach((field) => {
+  this.getEditingFields().forEach(field => {
     if (fieldName === field.name) {
       required = !!field.validate.required;
       return false;
@@ -224,12 +224,8 @@ proto.isFieldRequired = function(fieldName) {
 proto.unlock = function() {
   const d = $.Deferred();
   this._featuresstore.unlock()
-    .then(() => {
-      d.resolve()
-    })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .then(() => d.resolve())
+    .fail(err => d.reject(err))
   return d.promise();
 };
 
@@ -240,10 +236,7 @@ proto._setOtherConfigParameters = function(config) {
 // return layer fields
 proto.getEditingFields = function(editable=false) {
   let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
-  if (editable)
-    fields = fields.filter((field) => {
-      return field.editable;
-    });
+  if (editable) fields = fields.filter(field => field.editable);
   return fields;
 };
 
@@ -261,9 +254,7 @@ proto.getEditingMediaFields = function(options=null){
 
 proto.getFieldsLabel = function() {
   const labels = [];
-  this.getEditingFields().forEach((field) => {
-    labels.push(field.label)
-  });
+  this.getEditingFields().forEach(field => labels.push(field.label));
   return labels;
 };
 
@@ -289,12 +280,8 @@ proto.getEditingConfig = function(options={}) {
   const d = $.Deferred();
   const provider = this.getProvider('data');
   provider.getConfig(options)
-    .then((config) => {
-      d.resolve(config);
-    })
-    .fail((err) => {
-      d.reject(err)
-    });
+    .then(config => d.resolve(config))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -308,14 +295,9 @@ proto.getWidgetData = function(options) {
   const provider = this.getProvider('data');
   const d = $.Deferred();
   provider.getWidgetData(options)
-    .then((response) => {
-      d.resolve(response);
-    })
-    .fail((err) => {
-      d.reject(err)
-    });
+    .then(response => d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise()
-
 };
 
 proto.getCommitUrl = function() {
@@ -393,9 +375,7 @@ proto._setFeatures = function(features) {
 };
 
 proto.addFeatures = function(features) {
-  features.forEach((feature) => {
-    this.addFeature(feature);
-  });
+  features.forEach(feature => this.addFeature(feature));
 };
 
 proto._addFeature = function(feature) {
@@ -417,9 +397,9 @@ proto.addLockIds = function(lockIds) {
 };
 
 proto.setFieldsWithValues = function(feature, fields) {
-  const createAttributesFromFields = (fields) => {
+  const createAttributesFromFields = fields => {
     const attributes = {};
-    fields.forEach((field) => {
+    fields.forEach(field => {
       if (field.type === 'child') {
         attributes[field.name] = createAttributesFromFields(field.fields);
       } else if (field.value === 'null') {
@@ -445,15 +425,11 @@ proto.getFieldsWithValues = function(obj, options={}) {
   else feature = obj && this.getFeatureById(obj);
   if (feature) {
     const attributes = feature.getProperties();
-    fields = fields.filter((field) =>  {
-      return exclude.indexOf(field.name) === -1;
-    });
+    fields = fields.filter(field =>  exclude.indexOf(field.name) === -1);
     fields.forEach((field) => {
       field.value = attributes[field.name];
       if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
-        const _configField = this.getEditingFields().find((_field) => {
-          return _field.name === field.name
-        });
+        const _configField = this.getEditingFields().find(_field => _field.name === field.name);
         const options = _configField.input.options;
         field.input.options.loading = options.loading;
         field.input.options.values = options.values;
@@ -478,7 +454,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
 proto._createRelations = function(projectRelations) {
   const relations = [];
   const layerId = this.getId();
-  projectRelations.forEach((relation) => {
+  projectRelations.forEach(relation => {
     if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
       relations.push(relation);
   });
@@ -514,7 +490,7 @@ proto.getRelationById = function(id) {
 
 proto.getRelationAttributes = function(relationName) {
   let fields = [];
-  this._relations.forEach((relation) => {
+  this._relations.forEach(relation => {
     if (relation.name === relationName) {
       fields = relation.fields;
       return false
@@ -525,7 +501,7 @@ proto.getRelationAttributes = function(relationName) {
 
 proto.getRelationsAttributes = function() {
   const fields = {};
-  this.state.relations.forEach((relation) => {
+  this.state.relations.forEach(relation => {
     fields[relation.name] = relation.fields;
   });
   return fields;
@@ -544,26 +520,22 @@ proto.isFather = function() {
 };
 
 proto.getChildren = function() {
-  if (!this.isFather())
-    return [];
+  if (!this.isFather()) return [];
   return this._relations.getChildren(this.getId());
 };
 
 proto.getFathers = function() {
-  if (!this.isChild())
-    return [];
+  if (!this.isChild()) return [];
   return this._relations.getFathers(this.getId());
 };
 
 proto.hasChildren = function() {
-  if (!this.hasRelations())
-    return false;
+  if (!this.hasRelations()) return false;
   return this._relations.hasChildren(this.getId());
 };
 
 proto.hasFathers = function() {
-  if (!this.hasRelations())
-    return false;
+  if (!this.hasRelations()) return false;
   return this._relations.hasFathers(this.getId());
 };
 

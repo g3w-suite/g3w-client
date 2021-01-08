@@ -130,7 +130,6 @@ module.exports = {
     SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
     this.relation.title = this.relation.name;
     await this.$nextTick();
-    $('.query-relation .header span[data-toggle="tooltip"]').tooltip();
     if (!this.one) {
       relationDataTable = $('#relationtable').DataTable( {
         "pageLength": 10,

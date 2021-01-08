@@ -1,7 +1,9 @@
 <template>
   <span>
     <input type="checkbox" :id="id" :checked="feature.selected" class="magic-checkbox">
-    <label @click.capture.stop.prevent="select" :for="id"><span style="padding:5px"></span></label>
+    <label @click.capture.stop.prevent="select" :for="id">
+      <span></span>
+    </label>
   </span>
 </template>
 

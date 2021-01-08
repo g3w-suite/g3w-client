@@ -1,6 +1,6 @@
 <template>
-  <div id="open_attribute_table">
-    <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped display compact nowrap" style="width:100%">
+  <div id="open_attribute_table" style="margin-top: 5px">
+    <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped row-border compact nowrap" style="width:100%">
       <thead>
         <tr>
           <th v-for="(header, index) in state.headers">
@@ -44,8 +44,8 @@
       TableBody
     },
     methods: {
-      activeDeactiveLayerFilter(){
-        this.$options.service.activeDeactiveLayerFilter();
+      toggleFilterToken(){
+        this.$options.service.toggleFilterToken();
       },
       clearAllSelection(){
         this.$options.service.clearLayerSelection();
@@ -157,10 +157,11 @@
         "lengthMenu": this.state.pageLengths,
         "pageLength": this.state.pageLength,
         "scrollX": true,
+        "processing": false,
         "scrollCollapse": true,
         "sSearch": false,
         "order": [ 1, 'asc' ],
-        "dom": '<"#g3w-table-toolbar">flrtip',
+        "dom": 'l<"#g3w-table-toolbar">frtip',
         "columnDefs": [ {
           "targets": 0,
           "orderable": false,
@@ -191,7 +192,6 @@
               })
           }, 800),
           "serverSide": true,
-          "processing": true,
           "deferLoading": this.state.allfeatures
         });
       } else { // no pagination all data
@@ -201,7 +201,7 @@
         });
         const debounceSearch = debounce(() => {
           this.$options.service.setFilteredFeature(dataTable.search() ? dataTable.rows( {search:'applied'} )[0]: undefined)
-        });
+        }, 600);
         dataTable.on('search.dt', debounceSearch);
         dataTable.on('length.dt', (evt, settings, length)=>{
           this.$options.service.setAttributeTablePageLength(length)
@@ -215,16 +215,20 @@
           tools: this.state.tools,
           switchSelection: this.switchSelection,
           clearAllSelection: this.clearAllSelection,
-          activeDeactiveLayerFilter: this.activeDeactiveLayerFilter
+          toggleFilterToken: this.toggleFilterToken
         }
       });
       $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
-      this.$options.service.on('redraw', (data)=>{
+      this.$options.service.on('redraw', data =>{
         dataTable.clear();
-        dataTable.rows.add(data);
         dataTable.draw(false);
-        this.createdContentBody();
-        this.isMobile() && hideElements();
+        dataTable.search('');
+        setTimeout(()=>{
+          dataTable.rows.add(data);
+          dataTable.draw(false);
+          this.createdContentBody();
+          this.isMobile() && hideElements();
+        })
       })
     },
     beforeDestroy() {

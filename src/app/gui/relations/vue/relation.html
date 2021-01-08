@@ -9,23 +9,23 @@
       <span class="relation-tile">
         <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
-      <span class="relations-download" v-if="table.rows.length">
-        <span v-if="showDownloadButtons.shapefile" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip="'sdk.tooltips.download_shapefile'"></span>
-        <span v-if="showDownloadButtons.gpx" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('gpx')" v-download @click="saveRelation('gpx')" v-t-tooltip="'sdk.tooltips.download_gpx'"></span>
-        <span v-if="showDownloadButtons.csv" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip="'sdk.tooltips.download_csv'"></span>
-        <span v-if="showDownloadButtons.xls" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-          :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip="'sdk.tooltips.download_xls'"></span>
-        <span v-if="showChartButton" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('chart')" @click="showChart" v-t-tooltip="'sdk.tooltips.show_chart'"></span>
-      </span>
     </div>
   </div>
   <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px" ref="relationwrapper">
-    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" style="margin-right: 3px" ref="tablecontent">
-      <table id="relationtable" class="table table-striped" width="100%" >
+    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" style="margin-right: 3px; position: relative" ref="tablecontent">
+      <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.3em; top: 4px; position: absolute; z-index: 10;">
+        <span v-if="showDownloadButtons.shapefile" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip.create="'sdk.tooltips.download_shapefile'"></span>
+        <span v-if="showDownloadButtons.gpx" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('gpx')" v-download @click="saveRelation('gpx')" v-t-tooltip.create="'sdk.tooltips.download_gpx'"></span>
+        <span v-if="showDownloadButtons.csv" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip.create="'sdk.tooltips.download_csv'"></span>
+        <span v-if="showDownloadButtons.xls" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip.create="'sdk.tooltips.download_xls'"></span>
+        <span v-if="showChartButton" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
+              :class="g3wtemplate.getFontClass('chart')" @click="showChart" v-t-tooltip.create="'sdk.tooltips.show_chart'"></span>
+      </div>
+      <table id="relationtable" class="table table-striped row-border" width="100%" >
         <thead>
         <tr>
           <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>

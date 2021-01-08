@@ -75,6 +75,11 @@ proto.setInversionOlSelectionFeatures = function(){
   });
 };
 
+proto.setOlSelectionFeatureByFid = function(fid, action){
+  const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
+  return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
+};
+
 proto.setOlSelectionFeatures = function(feature, action='add'){
   const mapService = GUI.getComponent('map').getService();
   if (!feature) {
@@ -98,6 +103,7 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
       featureObject.added = false;
     }
   }
+  return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
 };
 
 proto._sanitizeSourceUrl = function(type='wms'){
