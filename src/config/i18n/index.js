@@ -3,7 +3,7 @@ const translations = {
     translation: {
       layer_selection_filter: {
         tools: {
-          filter: "Aggiungi Filtro",
+          filter: "Aggiungi/Rimuovi Filtro",
           nofilter: "Rimuovi filtro",
           invert: "Inverti Selezione",
           clear: "Annulla selezione"
@@ -241,8 +241,9 @@ const translations = {
         },
         workflow: {
           steps: {
-            title: 'Passi'
-          }
+            title: 'Passi',
+          },
+          next: 'Avanti'
         },
         form: {
           loading: 'Caricamento ...',
@@ -396,7 +397,7 @@ const translations = {
     translation: {
       layer_selection_filter: {
         tools: {
-          filter: "Add Filter",
+          filter: "Add/Remove Filter",
           nofilter: "Remove Filter",
           invert: "Invert Selection",
           clear: "Clear Selection",
@@ -633,8 +634,9 @@ const translations = {
         },
         workflow: {
           steps: {
-            title: 'Steps'
-          }
+            title: 'Steps',
+          },
+          next: 'Next'
         },
         form: {
           loading: 'Loading ...',
@@ -788,7 +790,7 @@ const translations = {
     translation: {
       layer_selection_filter: {
         tools: {
-          filter: "Lisätä Suodattaa",
+          filter: "Lisätä/Poista Suodattaa",
           nofilter: "Poista Suodattaa",
           invert: "Käänteinen Valinta",
           clear: "Peruuttaa Valinta",
@@ -1026,7 +1028,8 @@ const translations = {
         workflow: {
           steps: {
             title: 'Vaiheet'
-          }
+          },
+          next: "Seuraava",
         },
         form: {
           loading: 'Ladataan...',
@@ -1180,7 +1183,7 @@ const translations = {
     translation: {
       layer_selection_filter: {
         tools: {
-          filter: "Lägg till Filtrera",
+          filter: "Lägg till/Avlägsna Filtrera",
           nofilter: "Avlägsna Filtrera",
           invert: "Invertera Urval",
           clear: "Annullera Urval",
@@ -1418,7 +1421,9 @@ const translations = {
         workflow: {
           steps: {
             title: 'Skeden'
-          }
+          },
+          next: "Nästa",
+
         },
         form: {
           loading: 'Laddning...',

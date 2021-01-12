@@ -32,11 +32,11 @@ proto.run = function(inputs, context, queques) {
       // change state to running
       this.state.running = true;
       this._task.run(inputs, context, queques)
-        .then((outups) => {
+        .then(outputs => {
           this.stop();
-          d.resolve(outups);
+          d.resolve(outputs);
         })
-        .fail((err) => {
+        .fail(err => {
           this.stop();
           d.reject(err);
         })

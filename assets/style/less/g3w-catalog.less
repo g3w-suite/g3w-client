@@ -197,8 +197,21 @@ Licensed under MIT
 
 .catalog {
   padding:3px;
-  .catalalog-nav-tabs >li {
-    font-size: 1em;
+  .catalalog-nav-tabs {
+    display: flex;
+    flex: 1 1 0;
+    > li {
+      font-size: 1em;
+      white-space: initial;
+      display: flex;
+      flex: 1 1 0;
+      align-items: stretch;
+      a {
+        text-align: center;
+        height: 100%;
+        width: 100%;
+      }
+    }
   }
 }
 
@@ -271,7 +284,7 @@ Licensed under MIT
   #baselayers-content {
     display:grid;
     justify-content: center;
-    grid-template-columns: repeat(2, 160px);
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     grid-gap: 5px;
     padding: 0;
     margin: 5px;

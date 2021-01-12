@@ -171,6 +171,7 @@ proto.start = function(options={}) {
       type: 'tool',
       position: 'left',
       size: 'small',
+      closable: false,
       hooks: {
         body: stepsComponent
       }
@@ -178,13 +179,13 @@ proto.start = function(options={}) {
   }
 
   this._flow.start(this)
-    .then((outputs) => {
+    .then(outputs => {
       showUserMessage && setTimeout(()=>{
         this.clearUserMessagesSteps();
         d.resolve(outputs)
       }, 500) || d.resolve(outputs);
     })
-    .fail((error) => {
+    .fail(error => {
       if (showUserMessage){
        this.clearUserMessagesSteps();
       }
@@ -228,8 +229,10 @@ proto.clearUserMessagesSteps = function(){
 };
 
 proto._resetUserMessaggeStepsDone = function() {
-  Object.keys(this._userMessageSteps).forEach((type) => {
-    this._userMessageSteps[type].done = false;
+  Object.keys(this._userMessageSteps).forEach(type => {
+    const userMessageSteps = this._userMessageSteps[type];
+    userMessageSteps.done = false;
+    if (userMessageSteps.buttonnext) userMessageSteps.buttonnext.disabled = true;
   })
 };
 

@@ -37,7 +37,7 @@ const vueComponentOptions = {
   },
   methods: {
     showDownloadAction(evt){
-      const display = evt.target.children[0].style.display
+      const display = evt.target.children[0].style.display;
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
     },
     printAtlas(layer){

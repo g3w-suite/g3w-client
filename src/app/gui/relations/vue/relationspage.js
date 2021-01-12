@@ -41,9 +41,9 @@ const InternalComponent = Vue.extend({
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },
-    showChart(container){
+    showChart(container, relationData){
       const relationLayerId = this.relation.referencingLayer;
-      GUI.getComponent('queryresults').getService().showChart([relationLayerId], container)
+      GUI.getComponent('queryresults').getService().showChart([relationLayerId], container, relationData)
     },
     hideChart(container){
       GUI.getComponent('queryresults').getService().hideChart(container)

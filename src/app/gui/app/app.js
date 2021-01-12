@@ -108,6 +108,7 @@ const AppUI = Vue.extend({
     this.delayTime = 0;
   },
   created() {
+    this.language = this.appconfig._i18n.lng;
     this.custom_modals = [];
     this.custom_header_items_position = {
       0: [],

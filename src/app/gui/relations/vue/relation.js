@@ -11,7 +11,7 @@ let SIDEBARWIDTH;
 
 module.exports = {
   ...compiledTemplate,
-  props: ['table', 'relation', 'previousview', 'showChartButton'],
+  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
@@ -55,7 +55,11 @@ module.exports = {
       this.chart = !this.chart;
       await this.$nextTick();
       this.chartContainer = this.chartContainer ||  $('#chart_content');
-      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer);
+      const relationData = {
+        relations: [this.relation],
+        fid: this.feature.attributes['g3w_fid'],
+      };
+      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;

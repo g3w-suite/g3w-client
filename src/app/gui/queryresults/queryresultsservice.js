@@ -588,8 +588,8 @@ proto._printSingleAtlas = function({atlas={}, features=[]}={}){
   })
 };
 
-proto.showChart = function(ids, container){
-  this.emit('show-chart', ids, container);
+proto.showChart = function(ids, container, relationData){
+  this.emit('show-chart', ids, container, relationData);
 };
 
 proto.hideChart = function(container){
@@ -598,7 +598,12 @@ proto.hideChart = function(container){
 
 proto.showRelationsChart = function(ids=[], layer, feature, action, index){
   const container = $(`#${layer.id}_${index} td`);
-  this.emit('show-chart', ids, container);
+  const relations = this._relations[layer.id];
+  const relationData = {
+    relations,
+    fid: feature.attributes['g3w_fid']
+  };
+  this.emit('show-chart', ids, container, relationData);
 };
 
 proto.printAtlas = function(layer, feature){

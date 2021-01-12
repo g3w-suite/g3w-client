@@ -289,6 +289,18 @@ const GlobalDirective = {
           attr: 'g3w-v-download-id'
         })
       }
+    });
+
+    Vue.directive('select2', {
+      inserted(el, binding, vnode){
+        vnode.context._select2 = $(el).select2();
+        vnode.context._select2.on('change:select2', ()=>{
+          alert('ciao')
+        })
+      },
+      unbind(ele, binding, vnode){
+        console.log(vnode)
+      }
     })
   }
 };

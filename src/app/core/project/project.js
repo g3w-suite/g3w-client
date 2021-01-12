@@ -166,8 +166,6 @@ proto._buildLayersStore = function() {
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
-  const {filtertoken} = this.state;
-  const filtertokenlayersid = filtertoken && filtertoken.layers || [];
   layers.forEach(layerConfig => {
     //check and set crs in objectformat
     layerConfig.crs = crsToCrsObject(layerConfig.crs);
@@ -179,10 +177,7 @@ proto._buildLayersStore = function() {
     const layer = LayerFactory.build(layerConfig, {
       project: this
     });
-    if (layer){
-      layersStore.addLayer(layer);
-      filtertokenlayersid.indexOf(layer.getId()) !== -1 && layer.deleteFilterToken();
-    }
+    layer && layersStore.addLayer(layer);
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
