@@ -526,6 +526,7 @@ const ViewportService = function() {
       });
       if (event) setTimeout(()=> {
         this.emit(event);
+        GUI.emit(event);
       }, 0)
     });
   };

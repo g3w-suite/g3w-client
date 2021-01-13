@@ -632,7 +632,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
     // remove last content from stack
     GUI.popContent = function() {
-      viewport.ViewportService.popContent()
+      viewport.ViewportService.popContent();
     };
     //return number of component of stack
     GUI.getContentLength = function() {
@@ -648,8 +648,6 @@ const ApplicationTemplate = function({ApplicationService}) {
       viewport.ViewportService.setContentPercentage(perc);
     };
 
-
-    
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
       const options = {
         projects: projects && Array.isArray(projects) && projects,
