@@ -6,7 +6,8 @@ const translations = {
           filter: "Aggiungi/Rimuovi Filtro",
           nofilter: "Rimuovi filtro",
           invert: "Inverti Selezione",
-          clear: "Annulla selezione"
+          clear: "Annulla selezione",
+          show_features_on_map: "Mostra features visibili su mappa"
         }
       },
       sdk: {
@@ -401,6 +402,7 @@ const translations = {
           nofilter: "Remove Filter",
           invert: "Invert Selection",
           clear: "Clear Selection",
+          show_features_on_map: "Show features visible on map"
         }
       },
       sdk: {
@@ -794,6 +796,7 @@ const translations = {
           nofilter: "Poista Suodattaa",
           invert: "Käänteinen Valinta",
           clear: "Peruuttaa Valinta",
+          show_features_on_map: "Show features visible on map"
         }
       },
       sdk: {
@@ -1187,6 +1190,7 @@ const translations = {
           nofilter: "Avlägsna Filtrera",
           invert: "Invertera Urval",
           clear: "Annullera Urval",
+          show_features_on_map: "Show features visible on map"
         }
       },
       sdk: {
