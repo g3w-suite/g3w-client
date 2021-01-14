@@ -128,10 +128,10 @@ proto.query = function(options={}) {
     XHR.get({
       url,
       params
-    }).then((response) => {
+    }).then(response => {
       const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve(featuresForLayers);
-    }).catch((err) => {
+    }).catch(err => {
       d.reject(err);
     });
   } else d.reject();
@@ -147,12 +147,8 @@ proto.getConfig = function() {
     return;
   }
   $.get(url)
-    .then((config) => {
-      d.resolve(config);
-    })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .then(config => d.resolve(config))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
