@@ -68,6 +68,12 @@ module.exports = function({steps={}}={}) {
                 flexDirection: step.buttonnext && 'row-reverse'
               }
             }),
+            step.dynamic !== undefined && h('span', {
+              style: {
+                alignSelf: 'center',
+                padding: '3px',
+              }
+            }, step.dynamic),
             step.buttonnext && h('button', {
               on: {
                 click(){

@@ -8,9 +8,16 @@ const STATE = Vue.observable({
   upload: false,
   lng: 'en',
   plugins: [],
+  keys: {
+    vendorkeys: {
+      google: null,
+      bing: null
+    }
+  },
   tokens: {
     filtertoken: null
   }
 });
+
 
 export default STATE;
