@@ -602,7 +602,7 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index){
   const relationData = {
     relations,
     fid: feature.attributes['g3w_fid'],
-    height: 350
+    height: 400
   };
   this.emit('show-chart', ids, container, relationData);
 };
