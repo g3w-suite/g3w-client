@@ -160,7 +160,7 @@ gulp.task('less',['fonts'], function () {
 
 
 gulp.task('fonts', function () {
-  return gulp.src([path.join(assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'), '!./src/libs/**/node_modules/**/','./src/libs/plugins/**/*.{eot,ttf,woff,woff2}'])
+  return gulp.src([path.join(assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'), '!./src/libs/**/node_modules/**/',`${pluginsFolder}/**/*.{eot,ttf,woff,woff2}`])
     .pipe(flatten())
     .pipe(gulp.dest(clientFolder+'/fonts/'))
 });
@@ -290,10 +290,10 @@ gulp.task('watch',function() {
   watch('./src/**/*.{png,jpg}',
     prepareRunSequence('images','browser:reload')
   );
-  watch('./src/plugins/**/plugin.js',
+  watch(`${pluginsFolder}/**/plugin.js`,
     prepareRunSequence('plugins','browser:reload')
   );
-  watch('./src/plugins/**/style/less/plugin.less',
+  watch(`${pluginsFolder}/**/style/less/plugin.less`,
     prepareRunSequence('less','browser:reload')
   );
   watch([path.join(pluginsFolder,'*', 'index.*.html')],

@@ -11,7 +11,7 @@ The following instructions are for a Ubuntu 18.04 LTS.
 sudo apt-get install -y nodejs-legacy npm
 ```
 
-Note: You have to install Node version >= v8.11.1
+Note: You have to install Node version = v10.x.x
 
 
 ## Clone sdk and template repository
@@ -39,6 +39,15 @@ After server side installation you can customize local server configuration thro
        ~/../g3w-client$ nano config.js
      ```
 
+Go to ***g3w-client/src/config/keys*** folder and create a new ***index.js*** from index.template.js setting your GOOGLE and BING KEYS
+
+```js{1,2}
+export const GOOGLE_API_KEY = '<INSERT HERE YOUR GOOGLE API KEY>';
+export const BING_API_KEY = '<INSERT HERE YOUR BING API KEY>';
+export default {
+  GOOGLE_API_KEY,
+  BING_API_KEY
+}```
 
 ## Development Task Command
 
@@ -62,5 +71,10 @@ The main gulp commands to use in develop enviroment are:
 # Internalization
 It is possible to add internalization translation adding/modified  g3w-client/src/config/i18n/index.js
 
+#Run web client
+After add a group and at least one qgis project in admin you can run web client application following the below rules:
 
+Es ADMIN_URL: http://localhost:8000/en/map/group1-maps/qdjango/1/ where http://localhost:8000/en/map/<group_name_in_lower_case>/<project_type>/<id_project>/
+
+Es CLIENT_URL: http://localhost:3000/?project=group1-maps/qdjango/1 where http://localhost:3000/?project=<group_name_in_lower_case>/<project_type>/<id_project>
 
