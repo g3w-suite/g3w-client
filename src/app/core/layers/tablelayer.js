@@ -4,7 +4,6 @@ const Layer = require('./layer');
 const Editor = require('core/editing/editor');
 const FeaturesStore = require('./features/featuresstore');
 const Feature = require('./features/feature');
-const Relations = require('core/relations/relations');
 
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
@@ -32,7 +31,7 @@ function TableLayer(config={}, options={}) {
     getFeatures(options={}) {
       const d = $.Deferred();
       this._featuresstore.getFeatures(options)
-        .then((promise) => {
+        .then(promise => {
           promise.then(features => {
             this.emit('getFeatures', features);
             return d.resolve(features);
@@ -86,9 +85,7 @@ function TableLayer(config={}, options={}) {
   };
   // call base layer
   base(this, config, options);
-  const projectRelations = project.getRelations();
-  // create relations
-  this._relations = this._createRelations(projectRelations);
+
   // get configuration from server if is editable
   this._editatbleLayer;
   if (this.isEditable()) {
@@ -451,18 +448,6 @@ proto.getFieldsWithValues = function(obj, options={}) {
   return fields;
 };
 
-proto._createRelations = function(projectRelations) {
-  const relations = [];
-  const layerId = this.getId();
-  projectRelations.forEach(relation => {
-    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
-      relations.push(relation);
-  });
-  return new Relations({
-    relations
-  });
-};
-
 proto.createNewFeature = function() {
   let feature = new ol.Feature();
   const properties = {};
@@ -475,72 +460,6 @@ proto.createNewFeature = function() {
   });
   feature.setNew();
   return feature;
-};
-
-// retunr relations of layer
-proto.getRelations = function() {
-  return this._relations
-};
-
-proto.getRelationById = function(id) {
-  return this._relations.getArray().find(relation => {
-    relation.getId() === id;
-  })
-};
-
-proto.getRelationAttributes = function(relationName) {
-  let fields = [];
-  this._relations.forEach(relation => {
-    if (relation.name === relationName) {
-      fields = relation.fields;
-      return false
-    }
-  });
-  return fields;
-};
-
-proto.getRelationsAttributes = function() {
-  const fields = {};
-  this.state.relations.forEach(relation => {
-    fields[relation.name] = relation.fields;
-  });
-  return fields;
-};
-
-proto.isChild = function() {
-  if (!this.getRelations())
-    return false;
-  return this._relations.isChild(this.getId());
-};
-
-proto.isFather = function() {
-  if (!this.getRelations())
-    return false;
-  return this._relations.isFather(this.getId());
-};
-
-proto.getChildren = function() {
-  if (!this.isFather()) return [];
-  return this._relations.getChildren(this.getId());
-};
-
-proto.getFathers = function() {
-  if (!this.isChild()) return [];
-  return this._relations.getFathers(this.getId());
-};
-
-proto.hasChildren = function() {
-  if (!this.hasRelations()) return false;
-  return this._relations.hasChildren(this.getId());
-};
-
-proto.hasFathers = function() {
-  if (!this.hasRelations()) return false;
-  return this._relations.hasFathers(this.getId());
-};
-
-proto.hasRelations = function() {
-  return !!this._relations;
 };
 
 

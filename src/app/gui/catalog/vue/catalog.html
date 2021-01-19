@@ -37,7 +37,7 @@
         </ul>
       </div>
       <div class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
-        <ul id="baselayers-content" :class="{'mobile': isMobile()}">
+        <ul id="baselayers-content" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(auto-fill, minmax(${baselayers.length > 4 ? 80 : 120}px, 1fr))`}">
           <li v-if="!baselayer.fixed" v-for="baselayer in baselayers" :key="baselayer.title">
             <img :src="getSrcBaseLayerImage(baselayer)" @click.stop="setBaseLayer(baselayer.id)" class="img-responsive img-thumbnail baselayer" :style="{opacity: currentBaseLayer === baselayer.id ? 1 : 0.5}" >
             <div class="baseselayer-text text-center">{{ baselayer.title }}</div>

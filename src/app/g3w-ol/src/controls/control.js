@@ -98,7 +98,7 @@ proto._handleClick = function(event) {
   // remove all the other, eventually toggled, interactioncontrols
   const controls = map.getControls();
   controls.forEach((control) => {
-    if(control.id && control.toggle && (control.id !== this.id)) {
+    if (control.id && control.toggle && (control.id !== this.id)) {
       control.toggle(false);
       if (control.name === 'reset') {
         resetControl = control;
@@ -160,7 +160,6 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-// funzione che abilita e disabilita il controllo
 proto.setEnable = function(bool) {
   const controlButton = $(this.element).find('button').first();
   if (bool)  {

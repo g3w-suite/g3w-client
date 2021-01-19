@@ -16,7 +16,7 @@ function Relations(options={}) {
     father_child: {} // info parent child
   };
   let relation;
-  relations.forEach((relationConfig) => {
+  relations.forEach(relationConfig => {
     relation = new Relation(relationConfig);
     this._relations[relation.getId()] = relation;
   });

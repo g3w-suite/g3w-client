@@ -428,7 +428,7 @@ proto.createMapImage = function({map, background} = {}) {
 proto.getApplicationAttribution = function() {
   const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
-    return `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`;
+    return header_terms_of_use_link ? `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>` : `<span class="skin-color" style="font-weight: bold">${header_terms_of_use_text}</span>`;
   } else return false
 };
 
@@ -1095,6 +1095,7 @@ proto._setupControls = function() {
           break;
         case 'streetview':
           // streetview
+          let active = false;
           control = this.createMapControl(controlType, {});
           control.setProjection(this.getProjection());
           this.viewer.map.addLayer(control.getLayer());
@@ -1106,6 +1107,7 @@ proto._setupControls = function() {
             };
             const closeContentFnc = () => {
               control.clearMarker();
+              active = false;
             };
             streetViewService.onafter('postRender', (position) => {
               control.setPosition(position);
@@ -1115,8 +1117,9 @@ proto._setupControls = function() {
                 control,
                 visible: true
               });
-              control.on('picked', throttle((e) => {
+              control.on('picked', throttle(e => {
                 GUI.off('closecontent', closeContentFnc);
+                active = true;
                 const coordinates = e.coordinates;
                 const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
                 position.lat = lonlat[1];
@@ -1125,7 +1128,7 @@ proto._setupControls = function() {
                 GUI.on('closecontent', closeContentFnc);
               }));
               control.on('disabled', () => {
-                GUI.closeContent();
+                active && GUI.closeContent();
                 GUI.off('closecontent', closeContentFnc);
               })
             }
@@ -1453,7 +1456,7 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
     visible,
     mapcontrol: addToMapControls && visible
   });
-  control.on('controlclick', (active) => {
+  control.on('controlclick', active => {
     this.controlClick(active);
   });
   $(control.element).find('button').tooltip({
@@ -1554,7 +1557,7 @@ proto._removeControls = function() {
 };
 
 proto._unToggleControls = function({close=true} = {}) {
-  this._mapControls.forEach((controlObj) => {
+  this._mapControls.forEach(controlObj => {
     if (controlObj.control.isToggled && controlObj.control.isToggled()) {
       controlObj.control.toggle(false);
       close && GUI.closeContent();
@@ -1569,9 +1572,7 @@ proto.deactiveMapControls = function() {
 };
 
 proto.addMapLayers = function(mapLayers) {
-  mapLayers.reverse().forEach((mapLayer) => {
-    this.addMapLayer(mapLayer)
-  })
+  mapLayers.reverse().forEach(mapLayer => this.addMapLayer(mapLayer));
 };
 
 proto._setupCustomMapParamsToLegendUrl = function(bool=true){
@@ -1994,7 +1995,7 @@ proto.removeInteraction = function(interaction) {
 };
 
 proto._watchInteraction = function(interaction) {
-  interaction.on('change:active',(e) => {
+  interaction.on('change:active', e  => {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
       this.emit('mapcontrol:active', e.target);
     }

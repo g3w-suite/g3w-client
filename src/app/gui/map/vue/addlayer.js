@@ -89,7 +89,7 @@ const AddLayerComponent = {
           this.layer.data = evt.target.files[0];
           input_file.val(null);
         } else {
-          reader.onload = (evt) => {
+          reader.onload = evt => {
             this.layer.data = evt.target.result;
             input_file.val(null);
           };

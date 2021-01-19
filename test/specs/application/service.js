@@ -17,7 +17,7 @@ let ApplicationTemplate;
 
 const setupFakeGUIMethods = function(){
   GUI.notify = {};
-  GUI.setContent =  GUI.getFontClass = GUI.showContentFactory = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
+  GUI.setContent =  GUI.getFontClass = GUI.showContentFactory = GUI.setLoadingContent = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
 }
 
 const initApplicationTemplate = function(){

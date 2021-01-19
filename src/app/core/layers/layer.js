@@ -4,10 +4,12 @@ const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Filter = require('core/layers/filter/filter');
 const { geometryFields } =  require('core/utils/geo');
+const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
+  const ProjectsRegistry = require('core/project/projectsregistry');
   this.config = config;
   // assign some attribute
   config.id = config.id || 'Layer';
@@ -20,7 +22,10 @@ function Layer(config={}, options={}) {
     query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
     ...(config.urls || {})
   };
-  const {project} = options;
+  const {project=ProjectsRegistry.getCurrentProject()} = options;
+  const projectRelations = project.getRelations();
+  // create relations
+  this._relations = this._createRelations(projectRelations);
   if (!this.isBaseLayer()) {
     //filtertoken
     //set url to get varios type of data
@@ -116,6 +121,86 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+//relations
+proto._createRelations = function(projectRelations) {
+  const relations = [];
+  const layerId = this.getId();
+  projectRelations.forEach(relation => {
+    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
+      relations.push(relation);
+  });
+  return new Relations({
+    relations
+  });
+};
+
+// retunr relations of layer
+proto.getRelations = function() {
+  return this._relations
+};
+
+proto.getRelationById = function(id) {
+  return this._relations.getArray().find(relation => {
+    relation.getId() === id;
+  })
+};
+
+proto.getRelationAttributes = function(relationName) {
+  let fields = [];
+  this._relations.forEach(relation => {
+    if (relation.name === relationName) {
+      fields = relation.fields;
+      return false
+    }
+  });
+  return fields;
+};
+
+proto.getRelationsAttributes = function() {
+  const fields = {};
+  this.state.relations.forEach(relation => {
+    fields[relation.name] = relation.fields;
+  });
+  return fields;
+};
+
+proto.isChild = function() {
+  if (!this.getRelations())
+    return false;
+  return this._relations.isChild(this.getId());
+};
+
+proto.isFather = function() {
+  if (!this.getRelations())
+    return false;
+  return this._relations.isFather(this.getId());
+};
+
+proto.getChildren = function() {
+  if (!this.isFather()) return [];
+  return this._relations.getChildren(this.getId());
+};
+
+proto.getFathers = function() {
+  if (!this.isChild()) return [];
+  return this._relations.getFathers(this.getId());
+};
+
+proto.hasChildren = function() {
+  if (!this.hasRelations()) return false;
+  return this._relations.hasChildren(this.getId());
+};
+
+proto.hasFathers = function() {
+  if (!this.hasRelations()) return false;
+  return this._relations.hasFathers(this.getId());
+};
+
+proto.hasRelations = function() {
+  return !!this._relations;
+};
+//end relations
+
 
 // global state
 proto.setAttributeTablePageLength = function(pageLength){
