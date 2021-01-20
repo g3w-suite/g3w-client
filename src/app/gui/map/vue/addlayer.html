@@ -9,8 +9,8 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label v-t="'mapcontrols.add_layer_control.select_projection'" for="proiezione-layer"></label>
-          <select class="form-control" id="proiezione-layer" v-model="layer.crs">
+          <label v-t="'mapcontrols.add_layer_control.select_projection'" for="projection-layer"></label>
+          <select class="form-control" id="projection-layer" v-model="layer.crs">
             <option v-for="option in options" :value="option">{{option}}</option>
           </select>
         </div>
@@ -26,6 +26,13 @@
           </div>
           <p style="font-weight: bold">[.gml, .geojson, .kml, .zip(shapefile)]</p>
         </form>
+        <div class="select_field" :class="{'g3w-disabled': !fields || fields.length === 0}">
+          <label v-t="'mapcontrols.add_layer_control.select_field_to_show'" for="g3w-select-field-layer"></label>
+          <select class="form-control" id="g3w-select-field-layer" v-model="field">
+            <option :value="null">---</option>
+            <option v-for="field in fields" :key="field" :value="field">{{ field }}</option>
+          </select>
+        </div>
       </div>
       <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
       <div class="modal-footer">

@@ -1,4 +1,4 @@
-const { toRawType } = require('core/utils/utils');
+const { toRawType, uniqueId } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
@@ -174,6 +174,7 @@ const geoutils = {
   createFeatureFromGeometry(geometry){
     return geometry && new ol.Feature(geometry);
   },
+
   createOlLayer: function(options = {}) {
     const id = options.id;
     const features = options.features;
@@ -228,6 +229,143 @@ const geoutils = {
     olLayer.setStyle(style);
     return olLayer;
   },
+  async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
+    let format;
+    let layer;
+    const createVectorLayer = (format, data, epsg=crs) => {
+      let vectorLayer;
+      const features = format.readFeatures(data, {
+        dataProjection: epsg,
+        featureProjection: mapCrs || epsg
+      });
+      if (features.length) {
+        const vectorSource = new ol.source.Vector({
+          features,
+        });
+        vectorLayer = new ol.layer.Vector({
+          source: vectorSource,
+          name,
+          _fields: Object.keys(features[0].getProperties()).filter(property => geometryFields.indexOf(property) < 0),
+          id: uniqueId()
+        });
+        style && vectorLayer.setStyle(style);
+      }
+      return vectorLayer;
+    };
+    switch (type) {
+      case 'gml':
+        format = new ol.format.WMSGetFeatureInfo();
+        layer = createVectorLayer(format, data);
+        break;
+      case 'geojson':
+        format = new ol.format.GeoJSON();
+        layer = createVectorLayer(format, data);
+        break;
+      case 'kml':
+        format = new ol.format.KML({
+          extractStyles: false
+        });
+        layer = createVectorLayer(format, data,  "EPSG:4326");
+        break;
+      case 'zip':
+        const promise = new Promise((resolve, reject) =>{
+          geoutils.shpToGeojson({
+            url: data,
+            encoding: 'big5',
+            EPSG: crs
+          }, geojson => {
+            const data = JSON.stringify(geojson);
+            format = new ol.format.GeoJSON({});
+            resolve(createVectorLayer(format, data, "EPSG:4326"));
+          });
+        });
+        try {
+          return await promise;
+        } catch(err) {
+          return Promise.reject();
+        }
+        break;
+    }
+    return layer;
+  },
+  createStyleFunctionToVectorLayer(options={}){
+    let {color, field} = options;
+    color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
+    const defaultStyle = {
+      'Point': new ol.style.Style({
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({
+            color
+          }),
+          radius: 5,
+          stroke: new ol.style.Stroke({
+            color,
+            width: 1
+          })
+        })
+      }),
+      'LineString': new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'Polygon': new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.5)'
+        }),
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'MultiPoint': new ol.style.Style({
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({
+            color
+          }),
+          radius: 5,
+          stroke: new ol.style.Stroke({
+            color,
+            width: 1
+          })
+        })
+      }),
+      'MultiLineString': new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'MultiPolygon': new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.5)'
+        }),
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      })
+    };
+    const styleFunction = function(feature, resolution) {
+      const style = defaultStyle[feature.getGeometry().getType()];
+      field && style.setText(new ol.style.Text({
+        text: `${feature.get(field)}`,
+        font: 'bold',
+        scale: 2,
+        fill: new ol.style.Fill({
+          color
+        }),
+        stroke: new ol.style.Stroke(({
+          color: '#FFFFFF',
+          width: 2
+        }))
+      }));
+      return style;
+    };
+    styleFunction._field = field;
+    return styleFunction;
+  },
   createSelectedStyle({geometryType, color='rgb(255,255,0)'}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
@@ -264,6 +402,7 @@ const geoutils = {
     }
     return style;
   },
+
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
     return properties.filter((property) => {

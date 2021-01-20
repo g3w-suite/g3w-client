@@ -1,3 +1,4 @@
+const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
 const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json', 'gml'];
 
 const EPSG = [
@@ -36,10 +37,13 @@ const AddLayerComponent = {
       error: false,
       error_message: null,
       loading: false,
+      fields:[],
+      field: null,
       layer: {
         name: null,
         type: null,
         crs: null,
+        mapCrs: null,
         color: {
           hex: '#194d33',
           rgba: {
@@ -73,7 +77,7 @@ const AddLayerComponent = {
     onChangeColor(val) {
       this.layer.color = val;
     },
-    onAddLayer(evt) {
+    async onAddLayer(evt) {
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
@@ -81,27 +85,44 @@ const AddLayerComponent = {
       const input_file = $(this.$refs.input_file);
       if (SUPPORTED_FORMAT.indexOf(type) !== -1) {
         this.clearError();
+        this.layer.mapCrs = this.service.getEpsg();
         this.layer.name = name;
         this.layer.title = name;
         this.layer.id = name;
         this.layer.type = type;
-        if (this.layer.type === 'zip') {
-          this.layer.data = evt.target.files[0];
-          input_file.val(null);
-        } else {
-          reader.onload = evt => {
-            this.layer.data = evt.target.result;
+        const promiseData = new Promise((resolve, reject) =>{
+          if (this.layer.type === 'zip') {
+            const data = evt.target.files[0];
             input_file.val(null);
-          };
-          reader.readAsText(evt.target.files[0]);
+            resolve(data);
+          } else {
+            reader.onload = evt => {
+              const data = evt.target.result;
+              input_file.val(null);
+              resolve(data);
+            };
+            reader.readAsText(evt.target.files[0]);
+          }
+        });
+        this.layer.data = await promiseData;
+        this.fields.splice(0);
+        try {
+          this.vectorLayer = await createVectorLayerFromFile(this.layer);
+          await this.$nextTick();
+          this.fields = this.vectorLayer.get('_fields');
+        } catch(err){
+          this.setError('add_external_layer');
         }
       } else this.setError('unsupported_format');
     },
     addLayer() {
-      if (this.layer.name) {
+      if (this.vectorLayer){
         this.loading = true;
-        const layer = _.cloneDeep(this.layer);
-        this.service.addExternalLayer(layer)
+        this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
+          color:this.layer.color,
+          field: this.field
+        }));
+        this.service.addExternalLayer(this.vectorLayer)
           .then(() =>{
             $(this.$refs.modal_addlayer).modal('hide');
             this.clearLayer();
@@ -133,20 +154,20 @@ const AddLayerComponent = {
         a: 1
       };
       this.layer.data = null;
+      this.vectorLayer = null;
+      this.fields = [];
+      this.field = null;
     }
   },
   created() {
+    this.vectorLayer;
     this.layer.crs = this.service.getCrs();
-    this.service.on('addexternallayer', () => {
-      this.modal.modal('show');
-    });
+    this.service.on('addexternallayer', () => this.modal.modal('show'));
   },
   async mounted(){
     await this.$nextTick();
     this.modal =  $('#modal-addlayer').modal('hide');
-    this.modal.on('hidden.bs.modal',  () => {
-      this.clearLayer();
-    });
+    this.modal.on('hidden.bs.modal',  () => this.clearLayer());
   },
   beforeDestroy() {
     this.clearLayer();

@@ -1,4 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+const { createStyleFunctionToVectorLayer } = require('core/utils/geo');
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
@@ -278,7 +279,11 @@ const vueComponentOptions = {
       const mapService = GUI.getComponent('map').getService();
       this.layerMenu.colorMenu.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
-      layer.setStyle(mapService.setExternalLayerStyle(val));
+      const style = layer.getStyle();
+      layer.setStyle(createStyleFunctionToVectorLayer({
+        color: val,
+        field: style._field
+      }));
     },
     showColorMenu(bool, evt) {
       if(bool) {

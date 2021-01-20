@@ -2522,25 +2522,25 @@ proto.addExternalLayer = async function(externalLayer, download) {
   } else GUI.notify.warning("layer_is_added", true);
 };
 
-proto.setExternalLayerStyle = function(color) {
+proto.setExternalLayerStyle = function(color, field) {
   color = color.rgba;
   color = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ','  + color.a + ')';
   const defaultStyle = {
     'Point': new ol.style.Style({
       image: new ol.style.Circle({
         fill: new ol.style.Fill({
-          color: color
+          color
         }),
         radius: 5,
         stroke: new ol.style.Stroke({
-          color: color,
+          color,
           width: 1
         })
       })
     }),
     'LineString': new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: color,
+        color,
         width: 3
       })
     }),
@@ -2549,25 +2549,25 @@ proto.setExternalLayerStyle = function(color) {
         color: 'rgba(255,255,255,0.5)'
       }),
       stroke: new ol.style.Stroke({
-        color: color,
+        color,
         width: 3
       })
     }),
     'MultiPoint': new ol.style.Style({
       image: new ol.style.Circle({
         fill: new ol.style.Fill({
-          color: color
+          color
         }),
         radius: 5,
         stroke: new ol.style.Stroke({
-          color: color,
+          color,
           width: 1
         })
       })
     }),
     'MultiLineString': new ol.style.Style({
       stroke: new ol.style.Stroke({
-        color: color,
+        color,
         width: 3
       })
     }),
@@ -2576,7 +2576,7 @@ proto.setExternalLayerStyle = function(color) {
         color: 'rgba(255,255,255,0.5)'
       }),
       stroke: new ol.style.Stroke({
-        color: color,
+        color,
         width: 3
       })
     })
@@ -2589,7 +2589,6 @@ proto.setExternalLayerStyle = function(color) {
       return defaultStyle[feature.getGeometry().getType()];
     }
   };
-
   return styleFunction
 };
 

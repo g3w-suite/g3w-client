@@ -363,6 +363,7 @@ const translations = {
         add_layer_control: {
           header: "Aggiungi Layer",
           select_projection: "Seleziona il sistema di proiezione del layer",
+          select_field_to_show: "Seleziona il campo da visualizzare sulla mappa",
           select_color: "Seleziona il colore del Layer",
           drag_layer: "Trascina il layer in questa area"
         },
@@ -756,6 +757,7 @@ const translations = {
         add_layer_control: {
           header: "Add Layer",
           select_projection: "Select layer projection",
+          select_field_to_show: "Select Field to show on map",
           select_color: "Select Layer Color",
           drag_layer: "Drag and drop layer here"
         },
@@ -1150,6 +1152,7 @@ const translations = {
         add_layer_control: {
           header: "Lisää taso",
           select_projection: "Valitse tason projektio",
+          select_field_to_show : "Select Field to show on map",
           select_color: "Valitse tason väri",
           drag_layer: "Vedä ja pudota taso tähän"
         },
@@ -1545,6 +1548,7 @@ const translations = {
         add_layer_control: {
           header: "Lägg till nivå",
           select_projection: "Välj projektion för nivån",
+          select_field_to_show: "Select Field to show on map",
           select_color: "Välj färg på nivån",
           drag_layer: "Dra och släpp nivån hit"
         },
