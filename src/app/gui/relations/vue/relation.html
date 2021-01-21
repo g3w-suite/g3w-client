@@ -12,7 +12,7 @@
     </div>
   </div>
   <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px" ref="relationwrapper">
-    <div id="table_content" :style="{width: chart ? '70%' : '100%'}" style="margin-right: 3px; position: relative" ref="tablecontent">
+    <div id="table_content" :style="{width: chart ? '70%' : '100%', marginRight: chart ? '8px' : '3px'}" style="position: relative" ref="tablecontent">
       <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.3em; top: 4px; position: absolute; z-index: 10;">
         <span v-if="showDownloadButtons.shapefile" v-download class="action-button-icon action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip"
               :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip.create="'sdk.tooltips.download_shapefile'"></span>
@@ -56,7 +56,7 @@
       </table>
     </div>
     <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"></g3w-resize>
-    <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0'}" style="padding-bottom: 5px; margin-bottom: 5px; margin-left: 3px;" ref="chartcontent">
+    <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0'}" style="padding-bottom: 5px; margin-bottom: 5px; margin-left: 8px;" ref="chartcontent">
     </div>
   </div>
   <div v-else style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
