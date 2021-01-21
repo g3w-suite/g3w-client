@@ -13,7 +13,7 @@ function StreetViewService() {
   };
 
   this.init = function() {
-    const KEY = ApplicationState.keys.vendorkeys.google || GOOGLE_API_KEY
+    const KEY = ApplicationState.keys.vendorkeys.google || GOOGLE_API_KEY;
     return new Promise((resolve) => {
       $script(`https://maps.googleapis.com/maps/api/js?key=${KEY}`, () => {
         resolve()

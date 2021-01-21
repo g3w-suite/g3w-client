@@ -280,10 +280,9 @@ const vueComponentOptions = {
       this.layerMenu.colorMenu.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       const style = layer.getStyle();
-      layer.setStyle(createStyleFunctionToVectorLayer({
-        color: val,
-        field: style._field
-      }));
+      style._g3w_options.color = val;
+      layer.setStyle(style);
+
     },
     showColorMenu(bool, evt) {
       if(bool) {

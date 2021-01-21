@@ -140,6 +140,66 @@ const geoutils = {
     };
     reader.readAsArrayBuffer(url);
   },
+  getDefaultLayerStyle(geometryType, options={}){
+    const {color} = options;
+    const defaultStyle = {
+      'Point': new ol.style.Style({
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({
+            color
+          }),
+          radius: 5,
+          stroke: new ol.style.Stroke({
+            color,
+            width: 1
+          })
+        })
+      }),
+      'LineString': new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'Polygon': new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.5)'
+        }),
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'MultiPoint': new ol.style.Style({
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({
+            color
+          }),
+          radius: 5,
+          stroke: new ol.style.Stroke({
+            color,
+            width: 1
+          })
+        })
+      }),
+      'MultiLineString': new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      }),
+      'MultiPolygon': new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.5)'
+        }),
+        stroke: new ol.style.Stroke({
+          color,
+          width: 3
+        })
+      })
+    };
+    return defaultStyle[geometryType]
+  },
   createLayerStyle: function(styleObj) {
     let style;
     const styles = {};
@@ -289,66 +349,10 @@ const geoutils = {
     return layer;
   },
   createStyleFunctionToVectorLayer(options={}){
-    let {color, field} = options;
-    color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
-    const defaultStyle = {
-      'Point': new ol.style.Style({
-        image: new ol.style.Circle({
-          fill: new ol.style.Fill({
-            color
-          }),
-          radius: 5,
-          stroke: new ol.style.Stroke({
-            color,
-            width: 1
-          })
-        })
-      }),
-      'LineString': new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color,
-          width: 3
-        })
-      }),
-      'Polygon': new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(255,255,255,0.5)'
-        }),
-        stroke: new ol.style.Stroke({
-          color,
-          width: 3
-        })
-      }),
-      'MultiPoint': new ol.style.Style({
-        image: new ol.style.Circle({
-          fill: new ol.style.Fill({
-            color
-          }),
-          radius: 5,
-          stroke: new ol.style.Stroke({
-            color,
-            width: 1
-          })
-        })
-      }),
-      'MultiLineString': new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color,
-          width: 3
-        })
-      }),
-      'MultiPolygon': new ol.style.Style({
-        fill: new ol.style.Fill({
-          color: 'rgba(255,255,255,0.5)'
-        }),
-        stroke: new ol.style.Stroke({
-          color,
-          width: 3
-        })
-      })
-    };
     const styleFunction = function(feature, resolution) {
-      const style = defaultStyle[feature.getGeometry().getType()];
+      let {color, field} = options;
+      color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
+      const style = geoutils.getDefaultLayerStyle(feature.getGeometry().getType(), {color});
       field && style.setText(new ol.style.Text({
         text: `${feature.get(field)}`,
         font: 'bold',
@@ -363,7 +367,7 @@ const geoutils = {
       }));
       return style;
     };
-    styleFunction._field = field;
+    styleFunction._g3w_options = options;
     return styleFunction;
   },
   createSelectedStyle({geometryType, color='rgb(255,255,0)'}={}) {
