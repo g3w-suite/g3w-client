@@ -10,12 +10,12 @@ const STATE = Vue.observable({
   plugins: [],
   keys: {
     vendorkeys: {
-      google: null,
-      bing: null
+      google: void 0,
+      bing: void 0
     }
   },
   tokens: {
-    filtertoken: null
+    filtertoken: void 0
   }
 });
 

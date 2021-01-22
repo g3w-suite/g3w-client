@@ -7,7 +7,7 @@ const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregis
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
-const NONVALIDVALUES = [null, undefined, ALLVALUE];
+const NONVALIDVALUES = [null, void 0, ALLVALUE];
 
 function SearchService(config={}) {
   this.debounces =  {
@@ -56,7 +56,7 @@ proto.createSingleFieldParameter = function({field, value, operator='eq', logico
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
-  if (value !== undefined) {
+  if (value !== void 0) {
     const fieldParam = this.createSingleFieldParameter({
       field,
       value,
@@ -73,7 +73,19 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
       field
     })
   }
-  return fields.length && fields.join() || null;
+  return fields.length && fields.join() || void 0;
+};
+
+proto.getUniqueValuesFromField = async function({field, value, unique}){
+  let data = [];
+  try {
+    data = await this.searchLayer.getFilterData({
+      field,
+      suggest: value !== void 0 ? `${field}|${value}` : void 0,
+      unique
+    })
+  } catch(err){}
+  return data;
 };
 
 proto.autocompleteRequest = async function({field, value}={}){
@@ -86,7 +98,9 @@ proto.autocompleteRequest = async function({field, value}={}){
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {}
+  } catch(error) {
+    console.log(error)
+  }
   return data.map(value => ({
     id:value,
     text:value
@@ -233,7 +247,7 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
 
 proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
-  return dependance && {
+  return dependance && this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE && {
    [dependance]: this.cachedependencies[dependance]._currentValue
   } || null;
 };
@@ -246,13 +260,17 @@ proto.getDependanceCurrentValue = function(field) {
 
 // fill all dependencies inputs based on value
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
-  const isRoot = this.inputdependance[field] === undefined;
-  const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
+  const isRoot = this.inputdependance[field] === void 0;
+  const invalidValue = value===ALLVALUE || value === null || value === void 0 || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
-      subscribe.options.disabled = subscribe.type !== 'autocompletefield' || invalidValue ;
-      subscribe.type === 'autocompletefield' ? subscribe.options.values.splice(0) : subscribe.options.values.splice(1);
+      //subscribe.options.disabled = subscribe.type !== 'autocompletefield' || invalidValue ;
+      if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
+      else {
+        subscribe.options._allvalues = subscribe.options._allvalues ||  [...subscribe.options.values];
+        value === ALLVALUE ? subscribe.options.values = [...subscribe.options._allvalues] : subscribe.options.values.splice(1);
+      }
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
@@ -261,14 +279,14 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
       let rootValues;
       if (isRoot) {
         const cachedValue = this.cachedependencies[field] && this.cachedependencies[field][value];
-        isCached = cachedValue !== undefined;
+        isCached = cachedValue !== void 0;
         rootValues = isCached && cachedValue;
       } else {
         const dependenceCurrentValue = this.getDependanceCurrentValue(field);
         const cachedValue = this.cachedependencies[field]
           && this.cachedependencies[field][dependenceCurrentValue]
           && this.cachedependencies[field][dependenceCurrentValue][value];
-        isCached = cachedValue !== undefined;
+        isCached = cachedValue !== void 0;
         rootValues = isCached && cachedValue;
       }
       if (isCached) {
@@ -279,7 +297,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             for (let i = 0; i < values.length; i++) {
               subscribe.options.values.push(values[i]);
             }
-            subscribe.options.disabled = false;
+            //subscribe.options.disabled = false;
           }
           resolve()
         }
@@ -298,7 +316,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             field,
             value
           });
-          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : undefined;
+          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : void 0;
           this.searchLayer.getFilterData({
             field: fieldParams,
             unique: uniqueParams
@@ -322,7 +340,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 const dependenceValue =  this.getDependanceCurrentValue(field);
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
-              subscribe.options.disabled = false;
+              //subscribe.options.disabled = false;
             }
           }).catch(error => {
             reject(error)
@@ -341,7 +359,7 @@ proto.getDependencies = function(field){
 };
 
 proto.setInputDependencies = function({master, slave}={}) {
-  this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
+  this.inputdependencies[master] = this.inputdependencies[master] !== void 0 ? this.inputdependencies[master] : [];
   this.inputdependencies[master].push(slave);
 };
 
@@ -356,10 +374,11 @@ proto.valuesToKeysValues = function(values=[]){
   return values;
 };
 
-proto.createInputsFormFromFilter = function({filter=[]}={}) {
+proto.createInputsFormFromFilter = async function({filter=[]}={}) {
   let id = 0;
   const filterLenght = filter.length - 1;
-  filter.forEach((input, index) => {
+  for (let index = 0; index <= filterLenght; index ++) {
+    const input = filter[index];
     const forminput = {
       label: input.label,
       attribute: input.attribute,
@@ -368,10 +387,20 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
       value: null,
       operator: input.op,
       logicop: index === filterLenght ? null : input.logicop,
-      id: input.id || id
+      id: input.id || id,
+      loading: false
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
-      forminput.options.values = forminput.options.values === undefined ? [] : forminput.options.values;
+      if (forminput.options.values === void 0) forminput.options.values = [];
+       else if (forminput.options.dependance){
+        forminput.loading = true;
+        try {
+          forminput.options.values =  await this.getUniqueValuesFromField({unique: forminput.attribute})
+        } catch(err){
+          forminput.options.values = []
+        }
+        forminput.loading = false;
+      };
       forminput.options.values = this.valuesToKeysValues(forminput.options.values);
       //check if has a dependance
       const { options:{ dependance } } = forminput;
@@ -379,7 +408,8 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
         //set dependance of input
         this.inputdependance[forminput.attribute] = dependance;
         this.state.loading[dependance] = false;
-        forminput.options.disabled = true;
+        // set disabled false for back compatibility
+        forminput.options.disabled = false;
         this.setInputDependencies({
           master: dependance,
           slave: forminput
@@ -393,7 +423,7 @@ proto.createInputsFormFromFilter = function({filter=[]}={}) {
     }
     this.state.forminputs.push(forminput);
     id+=1;
-  });
+  }
 };
 
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {

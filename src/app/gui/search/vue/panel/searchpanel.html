@@ -25,7 +25,7 @@
             <span>{{  forminput.label || forminput.attribute }}</span>
             <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
           </label>
-          <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance]"></bar-loader>
+          <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"></bar-loader>
           <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
         </div>
         <div v-if="forminput.logicop" class="search-logicop skin-border-color">
