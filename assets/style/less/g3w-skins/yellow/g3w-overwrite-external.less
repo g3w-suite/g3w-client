@@ -17,4 +17,10 @@
   .c3-title {
     fill: @yellow;
   }
+  .select2-container--default .select2-results__option--highlighted[aria-selected]{
+    background-color: @yellow !important;
+  }
+  .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: lighten(@yellow, 20%);
+  }
 }

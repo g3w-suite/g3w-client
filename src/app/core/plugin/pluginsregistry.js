@@ -32,8 +32,6 @@ function PluginsRegistry() {
         resolve(plugins);
       } catch(error){
         reject(error);
-      } finally {
-        this.removeLoadingPlugins();
       }
     })
   };
@@ -45,11 +43,9 @@ function PluginsRegistry() {
     });
   };
 
-  this.removeLoadingPlugins = function(){
+  this.removeLoadingPlugin = function(plugin, ready){
     const ApplicationService = require('core/applicationservice');
-    Object.keys(this.pluginsConfigs).forEach(plugin => {
-      ApplicationService.loadedPlugin(plugin);
-    });
+    ApplicationService.loadedPlugin(plugin, ready);
   };
 
   this._loadPlugins = function() {
@@ -107,8 +103,6 @@ function PluginsRegistry() {
         resolve(plugins);
       } catch(error){
         reject(error)
-      } finally {
-        this.removeLoadingPlugins();
       }
     })
   };

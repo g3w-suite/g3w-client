@@ -4,6 +4,7 @@ const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('./pluginsregistry');
+const TIMEOUT = 10000;
 
 const Plugin = function() {
   base(this);
@@ -19,7 +20,11 @@ const Plugin = function() {
   this._services = {
     'search': GUI.getComponent('search').getService(),
     'tools': GUI.getComponent('tools').getService()
-  }
+  };
+  // timeout to remove loading plugin after timeout
+  this._timeout = setTimeout(()=>{
+    PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+  }, TIMEOUT)
 };
 
 inherit(Plugin,G3WObject);
@@ -46,16 +51,20 @@ proto.setApi = function(api={}) {
 
 proto.setReady = function(bool) {
   this._ready = bool;
-  this.emit('set-ready', bool)
+  this.emit('set-ready', bool, this.name);
+  setTimeout(()=>{
+    clearTimeout(this._timeout);
+    PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+  }, )
 };
 
 proto.isReady = function() {
   return new Promise((resolve, reject) => {
-    if (this._ready) resolve();
+    if (this._ready) resolve(this._ready);
     else
-      this.once('set-ready', (bool) => {
+      this.once('set-ready', (bool, name) => {
         this._ready = bool;
-        resolve();
+        resolve(this._ready);
       })
   })
 };

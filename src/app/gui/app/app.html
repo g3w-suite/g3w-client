@@ -63,8 +63,8 @@
               </a>
             </li>
             <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[3]" :key="state.id"></header-item>
-            <li v-if="languages" style="margin-top: 9px; margin-left: 3px;">
-              <select class="form-control skin-color" v-model="language" style="cursor:pointer">
+            <li v-if="languages" class="g3w-languages" style="margin-top: 9px; margin-left: 10px; margin-right: -7px;">
+              <select v-select2="'language'" class="form-control" v-model="language" style="cursor:pointer">
                 <option v-for="_language in languages" :key="_language[0]" :value="_language[0]" :selected="_language[0] == 'en' && 'selected'">{{_language[1]}}</option>
               </select>
             </li>

@@ -10,6 +10,17 @@
     border-color: darken(@yellow, 10%);
     background-color: @yellow;
   }
+  .g3w-languages {
+    .select2-selection__rendered {
+      color: @yellow !important;
+    }
+    .select2-container--open .select2-selection__arrow b {
+      border-color: transparent transparent @yellow transparent !important;
+    }
+    .select2-container--focus .select2-selection__arrow b, .select2-container--default .select2-selection__arrow b{
+      border-color: @yellow transparent transparent transparent !important;
+    }
+  }
 }
 
 

@@ -109,7 +109,11 @@ const ApplicationService = function() {
     ApplicationState.plugins.push(plugin);
   };
 
-  this.loadedPlugin = function(plugin) {
+  /*
+  * plugin: name of plugin
+  * ready: Boolen - true if loaded and ready otherwise non ready - TO DO
+  * */
+  this.loadedPlugin = function(plugin, ready) {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
 
