@@ -23,7 +23,7 @@ function LayerFactory() {
             if ([
               Layer.SourceTypes.VIRTUAL,
               Layer.SourceTypes.POSTGIS,
-              Layer.SourceTypes.MYSQL,
+              Layer.SourceTypes.MSSQL,
               Layer.SourceTypes.SPATIALITE,
               Layer.SourceTypes.CSV,
               Layer.SourceTypes.ORACLE,
