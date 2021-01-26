@@ -1,8 +1,8 @@
-import TestEditing from 'editing/test'
-import TestQPlotly from './qplotly/test'
-import TestCDU from './cdu/test'
-import TestCadastre from './cadastre/test'
-import TestLaw from './law/test'
+import TestEditing from './editing/test';
+import TestQPlotly from './qplotly/test';
+import TestCDU from './cdu/test';
+import TestCadastre from './cadastre/test';
+import TestLaw from './law/test';
 
 const Test = {
   editing: TestEditing,

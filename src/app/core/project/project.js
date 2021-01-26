@@ -5,7 +5,6 @@ const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol/src/projection/projections');
 function Project(config={}, options={}) {
-  const ApplicationService = require('core/applicationservice');
   /* structure 'project' object
   {
     id,
@@ -28,8 +27,6 @@ function Project(config={}, options={}) {
     wps: [] // array of wps service
   }
   */
-  const {filtertoken} = config;
-  //filtertoken && filtertoken.token && ApplicationService.setFilterToken(filtertoken.token);
   // for future implementation catalog tab actived
   config.catalog_tab = config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
