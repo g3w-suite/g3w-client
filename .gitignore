@@ -15,3 +15,4 @@
 /src/app/dev/
 /src/config/keys/index.js
 /cypress.env.json
+/test/config/

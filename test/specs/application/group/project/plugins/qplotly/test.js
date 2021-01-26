@@ -1,0 +1,1 @@
+export default function TestQPlotly({config={}, testConfig={}}={}){};
