@@ -1,7 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
-const merge = require('core/utils/utils').merge;
+const {base, merge, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const AddLayerComponent = require('./addlayer');
 const MapService = require('../mapservice');
@@ -50,13 +48,15 @@ const vueComponentOptions = {
     });
     this.crs = mapService.getCrs();
     await this.$nextTick();
-    mapService.setMapControlsContainer($('.g3w-map-controls'));
+    mapService.setMapControlsContainer($(this.$refs['g3w-map-controls']));
     $('#permalink').tooltip();
     // listen of after addHideMap
     mapService.onafter('addHideMap', async ({ratio, layers=[], mainview=false, switchable=false} = {}) => {
       await this.$nextTick();
       mapService._addHideMap({ratio, layers, mainview, switchable});
     });
+    // FIXED ISSUE ON IFRAME OR SMALL WINDOW BROWSER SIZE - TO UNDERSTAND
+    setTimeout(()=> $(window).trigger('resize'));
   },
   destroyed() {
     this.service.clear();
