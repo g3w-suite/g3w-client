@@ -1,5 +1,5 @@
 const path = require('path');
-const { proxy } = require('../../config');
+const { proxy, pluginsFolder } = require('../../config');
 const vendorsFiles = require('./vendors'); // import vendors files
 const SERVER = proxy.url;
 
@@ -12,7 +12,8 @@ module.exports = {
   autoWatch: false,
   files: [...vendorsFiles, path.join(__dirname,'../specs/**/*.specs.js')],
   preprocessors: {
-    [path.join(__dirname,'../specs/**/*.specs.js')]: ['browserify']
+    [path.join(__dirname,'../specs/**/*.specs.js')]: ['browserify'],
+    [path.join(__dirname, pluginsFolder, 'test/specs/**/*.specs.js')]: ['browserify']
   },
   exclude: [path.join(__dirname,'../../node_modules/'),path.join(__dirname,'../../src/plugins/**/node_modules/')],
   proxies: {
