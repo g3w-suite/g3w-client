@@ -16,7 +16,6 @@ export default function TestProject({plugins={}, testConfig={}, mapcontrols=[]}=
     let project;
     before(async ()=> {
       project = await Service.getProject(gid);
-      console.log(project)
     })
     it(`Project[${gid}]: is instance of Project`, function() {
       assert.instanceOf(project, Project);
@@ -56,7 +55,8 @@ export default function TestProject({plugins={}, testConfig={}, mapcontrols=[]}=
         print: project.getPrint(),
       });
       TestPlugins({
-        plugins,
+        plugins: plugins,
+        projectGid: gid,
         testConfig: testConfig.plugins
       })
     })
