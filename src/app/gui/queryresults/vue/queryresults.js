@@ -1,8 +1,7 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const GUI = require('gui/gui');

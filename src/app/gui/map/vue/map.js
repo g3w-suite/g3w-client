@@ -55,8 +55,6 @@ const vueComponentOptions = {
       await this.$nextTick();
       mapService._addHideMap({ratio, layers, mainview, switchable});
     });
-    // FIXED ISSUE ON IFRAME OR SMALL WINDOW BROWSER SIZE - TO UNDERSTAND
-    setTimeout(()=> $(window).trigger('resize'));
   },
   destroyed() {
     this.service.clear();

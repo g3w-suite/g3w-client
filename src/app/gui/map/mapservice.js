@@ -2227,8 +2227,8 @@ proto.layout = function({width, height}) {
       hidemap.map.updateSize()
     });
     this._updateMapView();
-    this._updateMapControlsLayout({width, height});
   }
+  this._updateMapControlsLayout({width, height});
 };
 
 // function to remove maplayers
