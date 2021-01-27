@@ -412,12 +412,16 @@ proto.setActionsForLayers = function(layers) {
           relations,
          chartRelationIds
         });
-
+        const toggled = {};
+        layer.features.map((feature, index) => toggled[index] = false);
         chartRelationIds.length && this.state.layersactions[layer.id].push({
          id: 'show-plots-relations',
          download: false,
          opened: true,
          class: GUI.getFontClass('chart'),
+         state: Vue.observable({
+           toggled
+         }),
          hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
          cbk: this.showRelationsChart.bind(this, chartRelationIds)
        });
@@ -598,6 +602,7 @@ proto.hideChart = function(container){
 
 proto.showRelationsChart = function(ids=[], layer, feature, action, index){
   const container = $(`#${layer.id}_${index} td`);
+  action.state.toggled[index] = !action.state.toggled[index];
   const relations = this._relations[layer.id];
   const relationData = {
     relations,
