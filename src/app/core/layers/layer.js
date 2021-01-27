@@ -238,7 +238,7 @@ proto.deleteFilterToken = async function(){
     try {
       await this.providers['filtertoken'].deleteFilterToken();
       ApplicationService.setFilterToken(null);
-      this.emit('filtertokenchange', );
+      this.emit('filtertokenchange', this.getId());
     } catch(err) {
       console.log('Error deleteing filtertoken')
     }
@@ -262,7 +262,7 @@ proto.createFilterToken = async function(){
           filtertoken = await this.providers['filtertoken'].getFilterToken(params);
         }
         ApplicationService.setFilterToken(filtertoken);
-        this.emit('filtertokenchange');
+        this.emit('filtertokenchange', this.getId());
       }
     } catch(err){
       console.log('Error create update token');
@@ -642,7 +642,7 @@ proto.setSelection = async function(bool=false){
   if (!bool) {
     this.state.filter.active && await this.deleteFilterToken();
     this.state.filter.active = bool;
-    this.emit('unselectionall');
+    this.emit('unselectionall', this.getId());
   }
 };
 
