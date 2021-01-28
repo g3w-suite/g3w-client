@@ -99,30 +99,36 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+            style="color: #ffffff; font-weight: bold; opacity: 1; position: absolute; right: 25px; top: 20px">
             <span aria-hidden="true">&times;</span>
           </button>
           <div style="display: flex; flex-direction: column; justify-content: space-around; justify-items: center; align-items: center">
             <div class="customcredits" v-if="!!customcredits" v-html="customcredits"></div>
             <div v-if="powered_by">
               <div class="g3w-credits-block">
-                <div v-t="'credits.g3wSuiteFramework'" class="credit-title-logo"></div>
+                <div v-t="'credits.g3wSuiteFramework'" style="background-color: #95ad36; padding: 5px; border-radius:3px; color: #ffffff" class="credit-title-logo"></div>
                 <a target="_blank" href="https://g3wsuite.gis3w.it/">
                   <img class="g3w-suite-logo" :src="g3w_suite_logo" alt="">
                 </a>
                 <div v-t="'credits.g3wSuiteDescription'" style="margin-top: 10px;"></div>
               </div>
-              <div v-t="'credits.productOf'" class="credit-title-logo g3w-credits-block"></div>
-              <a style="text-align: center!important;" href="http://www.gis3w.it" target="_blank">
-                <img :src="credits_logo" class="img-responsive center-block" alt="">
-              </a>
-              <address id="address-credits" style="line-height: 1.5; text-align: center; margin-top: 20px;">
-                <i :class="g3wtemplate.getFontClass('marker')" aria-hidden="true"></i>
-                <span> Montecatini Terme - Italy</span></br>
-                <i :class="g3wtemplate.getFontClass('mobile')" aria-hidden="true"></i>
-                <span>  +39 393 8534336</span></br>
-                <i :class="g3wtemplate.getFontClass('mail')" aria-hidden="true"></i>
-                <span><a href="mailto:info@gis3w.it" style="color:#000000"> info@gis3w.it</a></span>
+              <div v-t:pre ="'credits.productOf'" class="credit-title-logo g3w-credits-block" style="font-size: 1em; display: flex; justify-content: center">
+                <a style="text-align: center!important;" href="http://www.gis3w.it" target="_blank">
+                  <img width="60" style="margin-left: 5px" :src="credits_logo" class="img-responsive center-block" alt="">
+                </a>
+              </div>
+              <address id="address-credits"  style="line-height: 1.3; text-align: center; margin-top: 5px; display: flex; justify-content: center">
+                <span style="padding: 2px">
+                  <span style="color: #95ad36; font-weight: bold" :class="g3wtemplate.getFontClass('marker')" aria-hidden="true"></span> Montecatini Terme - Italy
+                </span>
+                <span style="padding: 2px">
+                  <span style="color: #95ad36" :class="g3wtemplate.getFontClass('mobile')" aria-hidden="true"></span>  +39 393 8534336
+                </span>
+                <span style="padding: 2px">
+                  <span style="color: #95ad36" :class="g3wtemplate.getFontClass('mail')" aria-hidden="true"></span>
+                  <a href="mailto:info@gis3w.it" style="color:#000000"> info@gis3w.it</a>
+                </span>
               </address>
             </div>
           </div>

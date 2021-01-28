@@ -32,7 +32,7 @@ const translations = {
           rotation: "Rotazione",
           fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
           fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
-          help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto QGIS (tramite la gestione dei temi) e non quelli visualizzati sulla mappa"
+          help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto e non quelli visualizzati sulla mappa"
         },
         querybuilder: {
           search: {
@@ -428,7 +428,7 @@ const translations = {
           rotation: "Rotation",
           fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
           fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
-          help: "The layers shown in the print could be those defined on the QGIS project (through the management of themes) and not those displayed on the map"
+          help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
         },
         querybuilder: {
           search: {
@@ -823,7 +823,7 @@ const translations = {
           rotation: "Kierto",
           fids_instruction: "Hyväksytyt arvot: yhdestä arvoon [max]. Salittua syöttää myös väli, esim. 4-6.",
           fids_example: "Esimerkiksi 1,4-6 tulostuu id 1,4,5,6.",
-          help: "Tulosteessa esiintyvät tasot voivat olla QGIS-projektissa määriteltyjä (teemojen hallinnan avulla), ei kartalla esiintyviä."
+          help: "Tulosteessa esiintyvät tasot voivat olla projektissa määriteltyjä ei kartalla esiintyviä."
         },
         querybuilder: {
           search: {
@@ -1218,7 +1218,7 @@ const translations = {
           rotation: "Rotation",
           fids_instruction: "Godkända värden: Från ett till värdet [max]. Mellanslag tillåts, t.ex. 4-6.",
           fids_example: "Exempelvis 1,4-6 skriver ut id 1,4,5,6.",
-          help: "Nivåerna på utskriften kan vara specificerade i ett QGIS-projekt (med hjälp av temahantering), inte sådana som visas på karta."
+          help: "Nivåerna på utskriften kan vara specificerade i ett projekt inte sådana som visas på karta."
         },
         querybuilder: {
           search: {
