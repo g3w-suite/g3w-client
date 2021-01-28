@@ -199,7 +199,11 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       csv: false,
       xls: false
     };
+    let filter = {};
+    let selection ={};
     if (layer instanceof Layer) {
+      filter = layer.state.filter;
+      selection = layer.state.selection;
       extractRelations = true;
       download.shapefile = layer.isShpDownlodable();
       download.gpx = layer.isGpxDownlodable();
@@ -259,6 +263,8 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       atlas: this.getAtlasByLayerId(layerId),
       download,
       show: true,
+      filter,
+      selection,
       expandable: true,
       hasImageField: false,
       relationsattributes: layerRelationsAttributes,
@@ -308,12 +314,8 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
   };
   featuresForLayers.forEach((featuresForLayer) => {
-    if (!Array.isArray(featuresForLayer))
-      _handleFeatureFoLayer(featuresForLayer);
-    else
-      featuresForLayer.forEach((featuresForLayer) => {
-        _handleFeatureFoLayer(featuresForLayer);
-      })
+    if (!Array.isArray(featuresForLayer)) _handleFeatureFoLayer(featuresForLayer);
+    else featuresForLayer.forEach((featuresForLayer) => _handleFeatureFoLayer(featuresForLayer));
   });
   return layers;
 };
@@ -370,7 +372,7 @@ proto.setActionsForLayers = function(layers) {
           toggled
         }),
         init: ({feature, index, action}={})=>{
-          this.checkFeatureSelection({
+          layer.selection.active !== void 0 && this.checkFeatureSelection({
             layerId: layer.id,
             index,
             feature,
@@ -560,7 +562,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
   });
 };
 
-//function to add c custom componet in query result
+//function to add custom componet in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
 };
@@ -721,6 +723,11 @@ proto.unlistenerEventsActions = function(){
     obj.layer.off(obj.event, obj.handler)
   });
   this.unlistenerlayeractionevents = null;
+};
+
+proto.addRemoveFilter = function(layer){
+  const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+  _layer.toggleFilterToken();
 };
 
 proto.selectionFeaturesLayer = function(layer) {

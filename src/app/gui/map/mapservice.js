@@ -2413,7 +2413,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     } catch(err) {
       color = 'blue'
     }
-    name = vectorLayer.get('name');
+    name = vectorLayer.get('name') || vectorLayer.get('id');
     type = 'vector';
     externalLayer = {
       name,

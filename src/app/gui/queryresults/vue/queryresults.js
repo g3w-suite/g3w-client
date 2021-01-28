@@ -48,6 +48,9 @@ const vueComponentOptions = {
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;
     },
+    addRemoveFilter(layer){
+      this.$options.queryResultsService.addRemoveFilter(layer);
+    },
     hasOneLayerAndOneFeature(layer) {
       const one = this.hasLayerOneFeature(layer);
       if (one) {
@@ -197,12 +200,8 @@ const vueComponentOptions = {
       });
     },
     getBoxId(layer, feature, relation_index) {
-      let boxid;
-      if (!_.isNil(relation_index)) {
-        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
-      } else {
-        boxid = layer.id + '_' + feature.id;
-      }
+      const boxid = (!_.isNil(relation_index)) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
+      console.log(boxid)
       return boxid;
     },
     toggleFeatureBox(layer, feature, relation_index) {
@@ -293,9 +292,7 @@ function QueryResultsComponent(options={}) {
   };
 
   this._service.onafter('setLayersData', async () => {
-    if (!this.internalComponent) {
-      this.setInternalComponent();
-    }
+    !this.internalComponent && this.setInternalComponent();
     this.createLayersFeaturesBoxes();
     await this.internalComponent.$nextTick();
     $('.action-button[data-toggle="tooltip"]').tooltip();
@@ -304,7 +301,7 @@ function QueryResultsComponent(options={}) {
   this.createLayersFeaturesBoxes = function() {
     const layersFeaturesBoxes = {};
     const layers = this._service.state.layers;
-    layers.forEach((layer) => {
+    layers.forEach(layer => {
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }

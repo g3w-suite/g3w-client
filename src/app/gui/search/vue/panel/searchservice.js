@@ -98,9 +98,7 @@ proto.autocompleteRequest = async function({field, value}={}){
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {
-    console.log(error)
-  }
+  } catch(error) {}
   return data.map(value => ({
     id:value,
     text:value
@@ -116,7 +114,7 @@ proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=thi
           filter,
           queryUrl,
           feature_count
-        }).then((results) => {
+        }).then(results => {
           results = {
             data: results
           };

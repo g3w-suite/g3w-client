@@ -1,5 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+import ApplicationState from '../../../applicationstate';
+const {base, inherit} = require('core/utils/utils');
 const convertObjectToUrlParams = require('core/utils/utils').convertObjectToUrlParams;
 const PrintProvider = require('../printerprovider');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -74,7 +74,8 @@ proto._getAtlasParamsFromOptions = function(options={}){
     ...COMMON_REQUEST_PARAMETERS,
     REQUEST: 'GetPrintAtlas',
     EXP_FILTER: EXPRESSION,
-    TEMPLATE: template
+    TEMPLATE: template,
+    filtertoken: ApplicationState.tokens.filtertoken
   };
   if (download) params.DOWNLOAD = 1;
   return params;
@@ -92,7 +93,8 @@ proto._getParamsFromOptions = function(layers=[], options={}) {
     DPI: dpi,
     FORMAT: format,
     CRS: crs,
-    LAYERS: layers.join()
+    LAYERS: layers.join(),
+    filtertoken: ApplicationState.tokens.filtertoken
   };
 
   maps.forEach(({name, scale, extent}) => {
