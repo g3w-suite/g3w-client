@@ -360,29 +360,31 @@ proto.setActionsForLayers = function(layers) {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
     //in case of geometry
     if (layer.hasgeometry) {
-      // selection action
-      const toggled = {};
-      layer.features.map((feature, index) => toggled[index] = false);
-      this.state.layersactions[layer.id].push({
-        id: 'selection',
-        download: false,
-        class: GUI.getFontClass('success'),
-        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-        state: Vue.observable({
-          toggled
-        }),
-        init: ({feature, index, action}={})=>{
-          layer.selection.active !== void 0 && this.checkFeatureSelection({
-            layerId: layer.id,
-            index,
-            feature,
-            action
-          })
-        },
-        cbk: this.addToSelection.bind(this)
-      });
-      this.listenClearSelection(layer, 'selection');
-      //end selection action
+      if (layer.selection.active !== void 0) {
+        // selection action
+        const toggled = {};
+        layer.features.map((feature, index) => toggled[index] = false);
+        this.state.layersactions[layer.id].push({
+          id: 'selection',
+          download: false,
+          class: GUI.getFontClass('success'),
+          hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+          state: Vue.observable({
+            toggled
+          }),
+          init: ({feature, index, action}={})=>{
+            layer.selection.active !== void 0 && this.checkFeatureSelection({
+              layerId: layer.id,
+              index,
+              feature,
+              action
+            })
+          },
+          cbk: this.addToSelection.bind(this)
+        });
+        this.listenClearSelection(layer, 'selection');
+        //end selection action
+      }
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         download: false,
@@ -392,7 +394,6 @@ proto.setActionsForLayers = function(layers) {
         cbk: this.goToGeometry.bind(this)
       });
     }
-
     // in case of relations
     if (this._relations) {
       const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
