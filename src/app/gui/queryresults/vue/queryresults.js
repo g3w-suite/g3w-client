@@ -201,7 +201,6 @@ const vueComponentOptions = {
     },
     getBoxId(layer, feature, relation_index) {
       const boxid = (!_.isNil(relation_index)) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
-      console.log(boxid)
       return boxid;
     },
     toggleFeatureBox(layer, feature, relation_index) {

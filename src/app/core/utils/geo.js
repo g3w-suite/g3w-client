@@ -126,15 +126,16 @@ const geoutils = {
 
     const reader = new FileReader();
     reader.onload = function(e) {
-      let URL = window.URL || window.webkitURL || window.mozURL || window.msURL,
-        zip = new JSZip(e.target.result),
-        shpString =  zip.file(/.shp$/i)[0].name,
-        dbfString = zip.file(/.dbf$/i)[0].name;
       try {
+        let URL = window.URL || window.webkitURL || window.mozURL || window.msURL,
+          zip = new JSZip(e.target.result),
+          shpString =  zip.file(/.shp$/i)[0].name,
+          dbfString = zip.file(/.dbf$/i)[0].name;
+
         SHPParser.load(URL.createObjectURL(new Blob([zip.file(shpString).asArrayBuffer()])), shpLoader, returnData);
         DBFParser.load(URL.createObjectURL(new Blob([zip.file(dbfString).asArrayBuffer()])), encoding, dbfLoader, returnData);
       } catch(error){
-        console.log(error)
+        returnData()
       }
 
     };
@@ -334,9 +335,11 @@ const geoutils = {
             encoding: 'big5',
             EPSG: crs
           }, geojson => {
-            const data = JSON.stringify(geojson);
-            format = new ol.format.GeoJSON({});
-            resolve(createVectorLayer(format, data, "EPSG:4326"));
+            if (geojson) {
+              const data = JSON.stringify(geojson);
+              format = new ol.format.GeoJSON({});
+              resolve(createVectorLayer(format, data, "EPSG:4326"));
+            } else reject()
           });
         });
         try {
