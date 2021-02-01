@@ -401,13 +401,14 @@ const ViewportService = function() {
     }
   };
 
-  this._prepareContentView = function(options) {
+  this._prepareContentView = function(options={}) {
     this.state.content.preferredPerc = options.perc || this.getDefaultViewPerc('content');
     this.state.content.title = options.title;
     this.state.content.split =  options.split ? options.split : null;
     this.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
     this.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
+    this.state.content.size = options.size;
     this.state.content.showgoback = _.isNil(options.showgoback) ? true : options.showgoback;
   };
 
