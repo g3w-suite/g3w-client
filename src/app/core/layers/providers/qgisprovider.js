@@ -198,7 +198,7 @@ proto.getFeatures = function(options={}, params={}) {
   const d = $.Deferred();
   // filter null value
   Object.entries(params).forEach(([key, value]) => {
-    if (value === null)
+    if (value === null || value === void 0)
       delete params[key]
   });
   const layerType = this._layer.getType();

@@ -798,7 +798,7 @@ const translations = {
           nofilter: "Poista Suodattaa",
           invert: "Käänteinen Valinta",
           clear: "Peruuttaa Valinta",
-          show_features_on_map: "Show features visible on map"
+          show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
         }
       },
       sdk: {
@@ -1193,7 +1193,7 @@ const translations = {
           nofilter: "Avlägsna Filtrera",
           invert: "Invertera Urval",
           clear: "Annullera Urval",
-          show_features_on_map: "Show features visible on map"
+          show_features_on_map: "Visa funktioner som är synliga på kartan"
         }
       },
       sdk: {

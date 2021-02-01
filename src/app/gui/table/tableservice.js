@@ -20,6 +20,10 @@ const TableService = function(options = {}) {
   this.mapService = GUI.getComponent('map').getService();
   this.getAll = this.selectedfeaturesfid.size > 0;
   this.paginationfilter = false;
+  this.mapBBoxEventHandlerKey = {
+    key: null,
+    cb: null
+  };
   this.clearAllSelection = () => {
     this.state.features.forEach(feature => feature.selected = false);
     this.state.tools.show = false;
@@ -38,6 +42,11 @@ const TableService = function(options = {}) {
     selectAll: false,
     nofilteredrow: false,
     tools: {
+      geolayer: {
+        show: this.geolayer,
+        active: false,
+        in_bbox: void 0
+      },
       show: false,
       filter: this.layer.state.filter
     }
@@ -261,14 +270,17 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       }
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0  ? 1 : (start/length) + 1;
+      const in_bbox = this.state.tools.geolayer.in_bbox;
       const getDataPromise = this.state.pagination ? this.layer.getDataTable({
         page: this.currentPage,
         page_size: length,
         search: searchText,
+        in_bbox,
         formatter: this.formatter,
         ordering
       }) : this.layer.getDataTable({
         ordering,
+        in_bbox,
         formatter: this.formatter
       });
       getDataPromise
@@ -294,6 +306,31 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
         })
     }
   });
+};
+
+proto.setInBBoxParam = function(){
+  this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : void 0;
+};
+
+proto.getDataFromBBOX = async function(){
+  this.state.tools.geolayer.active = !this.state.tools.geolayer.active;
+  if (this.state.tools.geolayer.active) {
+    this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
+      this.setInBBoxParam();
+      this.emit('ajax-reload');
+    } : async ()=>{
+      this.setInBBoxParam();
+      await this.getData();
+      this.filterChangeHandler();
+    };
+    this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
+    this.mapBBoxEventHandlerKey.cb();
+  } else {
+    ol.Observable.unByKey(this.mapBBoxEventHandlerKey.key);
+    this.mapBBoxEventHandlerKey.cb();
+    this.mapBBoxEventHandlerKey.key = null;
+    this.mapBBoxEventHandlerKey.cb = null;
+  }
 };
 
 proto.addFeature = function(feature) {

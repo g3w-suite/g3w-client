@@ -28,7 +28,7 @@ const TableComponent = function(options = {}) {
 
   service.on('redraw', ()=>{
     this.layout();
-  })
+  });
 
   this.unmount = function() {
     return base(this, 'unmount')

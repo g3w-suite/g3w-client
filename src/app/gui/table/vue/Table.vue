@@ -44,6 +44,9 @@
       TableBody
     },
     methods: {
+      getDataFromBBOX(){
+        this.$options.service.getDataFromBBOX();
+      },
       toggleFilterToken(){
         this.$options.service.toggleFilterToken();
       },
@@ -194,6 +197,7 @@
           "serverSide": true,
           "deferLoading": this.state.allfeatures
         });
+        this.$options.service.on('ajax-reload', dataTable.ajax.reload)
       } else { // no pagination all data
         dataTable = $('#open_attribute_table table').DataTable({
           ...commonDataTableOptions,
@@ -213,9 +217,11 @@
       const G3WTableToolbarInstance = new G3WTableToolbarClass({
         propsData: {
           tools: this.state.tools,
+          geolayer: this.state.geolayer,
           switchSelection: this.switchSelection,
           clearAllSelection: this.clearAllSelection,
-          toggleFilterToken: this.toggleFilterToken
+          toggleFilterToken: this.toggleFilterToken,
+          getDataFromBBOX: this.getDataFromBBOX
         }
       });
       $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
@@ -232,6 +238,8 @@
       })
     },
     beforeDestroy() {
+      this.$options.service.off('ajax-reload');
+      this.$options.service.off('redraw');
       GUI.un('setContent', this.setContentKey);
       dataTable.destroy(true);
       dataTable = null;
