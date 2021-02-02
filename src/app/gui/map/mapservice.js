@@ -1096,46 +1096,47 @@ proto._setupControls = function() {
         case 'streetview':
           // streetview
           let active = false;
-          control = this.createMapControl(controlType, {});
-          control.setProjection(this.getProjection());
-          this.viewer.map.addLayer(control.getLayer());
           const streetViewService = new StreetViewService();
-          streetViewService.init().then(()=> {
-            const position = {
-              lat: null,
-              lng: null
-            };
-            const closeContentFnc = () => {
-              control.clearMarker();
-              active = false;
-            };
-            streetViewService.onafter('postRender', (position) => {
-              control.setPosition(position);
-            });
-            if (control) {
-              this._setMapControlVisible({
-                control,
-                visible: true
+          control = this.createMapControl(controlType, {});
+          streetViewService.init()
+            .then(()=> {
+              control.setProjection(this.getProjection());
+              this.viewer.map.addLayer(control.getLayer());
+              const position = {
+                lat: null,
+                lng: null
+              };
+              const closeContentFnc = () => {
+                control.clearMarker();
+                active = false;
+              };
+              streetViewService.onafter('postRender', (position) => {
+                control.setPosition(position);
               });
-              control.on('picked', throttle(e => {
-                GUI.off('closecontent', closeContentFnc);
-                active = true;
-                const coordinates = e.coordinates;
-                const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
-                position.lat = lonlat[1];
-                position.lng = lonlat[0];
-                streetViewService.showStreetView(position);
-                GUI.on('closecontent', closeContentFnc);
-              }));
-              control.on('disabled', () => {
-                active && GUI.closeContent();
-                GUI.off('closecontent', closeContentFnc);
-              })
-            }
-          });
+              if (control) {
+                this._setMapControlVisible({
+                  control,
+                  visible: true
+                });
+                control.on('picked', throttle(e => {
+                  GUI.off('closecontent', closeContentFnc);
+                  active = true;
+                  const coordinates = e.coordinates;
+                  const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
+                  position.lat = lonlat[1];
+                  position.lng = lonlat[0];
+                  streetViewService.showStreetView(position);
+                  GUI.on('closecontent', closeContentFnc);
+                }));
+                control.on('disabled', () => {
+                  active && GUI.closeContent();
+                  GUI.off('closecontent', closeContentFnc);
+                })
+              }
+            }).catch(() => this.removeControl(controlType));
           break;
         case 'scaleline':
-          conntrol = this.createMapControl(controlType, {
+          control = this.createMapControl(controlType, {
             add: false,
             options: {
               position: 'br'
