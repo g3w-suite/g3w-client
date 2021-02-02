@@ -57,15 +57,7 @@
                           @mouseover="trigger({id:'highlightgeometry'},layer,feature)"
                           @mouseout="trigger({id:'clearHighlightGeometry'})" class="featurebox-header"
                           :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1? '' : 'featurebox-header-open']">
-                        <td v-if="state.layersactions[layer.id].length">
-                          <span v-if="showAction({action: action, index: index, layer:layer, feature:feature})"
-                            @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
-                            v-download="action.download"
-                            :class="{'toggled': action.state && action.state.toggled[index] }"
-                            class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                            <span :class="`action-button-icon ${action.class}`"></span>
-                          </span>
-                        </td>
+                        <actions :layer="layer" :featureIndex="index" :trigger="trigger" :feature="feature" :actions="state.layersactions[layer.id]"></actions>
                         <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">
                           <span>{{feature.attributes[attribute.name]}}</span>
                         </td>
@@ -111,15 +103,7 @@
                         @mouseover="trigger({id:'highlightgeometry'},layer,feature)"
                         @mouseout="trigger({id:'clearHighlightGeometry'})"
                         class="featurebox-header" :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
-                      <td v-if="state.layersactions[layer.id].length">
-                        <span v-if="showAction({action:action, layer:layer, index:index, feature:feature})"
-                          @click.stop="trigger(action,layer,feature, index)" v-for="action in state.layersactions[layer.id]"
-                          v-download="action.download"
-                          :class="{'toggled': action.state && action.state.toggled[index] }"
-                          class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-                          <span :class="`action-button-icon ${action.class}`"></span>
-                        </span>
-                      </td>
+                      <actions :layer="layer" :featureIndex="index" :trigger="trigger" :feature="feature" :actions="state.layersactions[layer.id]"></actions>
                       <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">
                         <span>{{feature.attributes[attribute.name]}}</span>
                       </td>

@@ -1,5 +1,6 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
+import Actions from './actions.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
@@ -24,7 +25,8 @@ const vueComponentOptions = {
   },
   components: {
     Tabs,
-    'g3w-link': Link
+    'g3w-link': Link,
+    actions: Actions
   },
   computed: {
     hasLayers() {
@@ -242,10 +244,6 @@ const vueComponentOptions = {
         fields.push(_field);
       }
       return fields;
-    },
-    showAction({action, layer, index,  feature} = {}){
-      action.init && action.init({feature, index, action});
-      return typeof action.condition === 'function' ? action.condition({layer, feature}) : true;
     }
   },
   watch: {
