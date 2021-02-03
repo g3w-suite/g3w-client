@@ -4,6 +4,7 @@ const STATE = Vue.observable({
   iframe: false,
   online: false,
   ismobile: false,
+  baseLayerId: null,
   lng: 'en'
 });
 

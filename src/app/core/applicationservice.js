@@ -106,6 +106,14 @@ const ApplicationService = function() {
     })
   };
 
+  this.getBaseLayerId = function(){
+    return ApplicationState.baseLayerId;
+  };
+
+  this.setBaseLayerId = function(baseLayerId) {
+    ApplicationState.baseLayerId = baseLayerId;
+  };
+
   this.registerLeavePage = function({bool=false, message=''}={}){
     const _return = !bool ? undefined : bool;
     window.onbeforeunload = function(event) {

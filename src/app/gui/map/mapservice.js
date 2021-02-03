@@ -121,6 +121,7 @@ function MapService(options={}) {
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
+        this._setupBaseLayers();
         this._setupMapLayers();
         this._setupVectorLayers();
         this._checkMapControls();
@@ -225,6 +226,7 @@ function MapService(options={}) {
   };
 
   this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
+
   this._keyEvents.eventemitter.push({
     event: 'cataloglayerunselected',
     listener: this._onCatalogUnSelectLayer
@@ -245,17 +247,17 @@ function MapService(options={}) {
 
   this.once('viewerset', ()=> {
     //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoreRegistry.getLayersStores().forEach((layersStore) => {
+    MapLayersStoreRegistry.getLayersStores().forEach(layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
 
     // LISTEN ON EVERY ADDED LAYERSSTORE
-    MapLayersStoreRegistry.onafter('addLayersStore', (layersStore) => {
+    MapLayersStoreRegistry.onafter('addLayersStore', layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
 
     // LISTENER ON REMOVE LAYERSTORE
-    MapLayersStoreRegistry.onafter('removeLayersStore', (layerStore) => {
+    MapLayersStoreRegistry.onafter('removeLayersStore', layerStore => {
       this._removeEventsKeysToLayersStore(layerStore);
     });
   });
@@ -391,7 +393,7 @@ proto.createMapImage = function({map, background} = {}) {
 proto.getApplicationAttribution = function() {
   const {header_terms_of_use_link, header_terms_of_use_text} = this.config.group;
   if (header_terms_of_use_text) {
-    return `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>`;
+    return header_terms_of_use_link ? `<a href="${header_terms_of_use_link}">${header_terms_of_use_text}</a>` : `<span class="skin-color" style="font-weight: bold">${header_terms_of_use_text}</span>`;
   } else return false
 };
 
@@ -1148,7 +1150,7 @@ proto._setupControls = function() {
             add: false,
             options: {
               isMobile: isMobile.any,
-              bbox: this.project.state.initextent,
+              bbox: this.project.state.extent,
               mapCrs: this.project.state.crs.epsg,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
@@ -1156,7 +1158,7 @@ proto._setupControls = function() {
               fontIcon: GUI.getFontClass('search')
             }
           });
-          control.on('addresschosen', (evt) => {
+          control.on('addresschosen', evt => {
             const coordinate = evt.coordinate;
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
@@ -1416,7 +1418,7 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
     visible,
     mapcontrol: addToMapControls && visible
   });
-  control.on('controlclick', (active) => {
+  control.on('controlclick', active => {
     this.controlClick(active);
   });
   $(control.element).find('button').tooltip({
@@ -1517,7 +1519,7 @@ proto._removeControls = function() {
 };
 
 proto._unToggleControls = function({close=true} = {}) {
-  this._mapControls.forEach((controlObj) => {
+  this._mapControls.forEach(controlObj => {
     if (controlObj.control.isToggled && controlObj.control.isToggled()) {
       controlObj.control.toggle(false);
       close && GUI.closeContent();
@@ -1532,9 +1534,7 @@ proto.deactiveMapControls = function() {
 };
 
 proto.addMapLayers = function(mapLayers) {
-  mapLayers.reverse().forEach((mapLayer) => {
-    this.addMapLayer(mapLayer)
-  })
+  mapLayers.reverse().forEach(mapLayer => this.addMapLayer(mapLayer));
 };
 
 proto._setupCustomMapParamsToLegendUrl = function(bool=true){
@@ -1633,7 +1633,6 @@ proto._setupViewer = function(width, height) {
       project: this.project
     })
   });
-
   this._setSettings();
   this.state.size = this.viewer.map.getSize();
   //set mapunit
@@ -1674,7 +1673,7 @@ proto.getMapUnits = function() {
 
 proto._removeListeners = function() {
   if (this._setBaseLayerListenerKey) {
-    this.project.un('setBaseLayer',this._setBaseLayerListenerKey);
+    this.project.un('setBaseLayer', this._setBaseLayerListenerKey);
   }
 };
 
@@ -1682,8 +1681,8 @@ proto._removeListeners = function() {
 proto._removeEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   if (this._layersStoresEventKeys[layerStoreId]) {
-    this._layersStoresEventKeys[layerStoreId].forEach((eventObj) => {
-      _.forEach(eventObj, (eventKey, event) => {
+    this._layersStoresEventKeys[layerStoreId].forEach(eventObj => {
+      Object.entries(eventObj).forEach(([event, eventKey]) => {
         layerStore.un(event, eventKey);
       })
     });
@@ -1698,17 +1697,18 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   this._layersStoresEventKeys[layerStoreId] = [];
   //SETVISIBILITY EVENT
   const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
-    layersIds.forEach((layerId) => {
+    layersIds.forEach(layerId => {
       const layer = layerStore.getLayerById(layerId);
       const mapLayer = this.getMapLayerForLayer(layer);
       mapLayer && this.updateMapLayer(mapLayer)
     });
   });
+
   this._layersStoresEventKeys[layerStoreId].push({
     setLayersVisible: layerVisibleKey
   });
   //ADD LAYER
-  const addLayerKey = layerStore.onafter('addLayer', (layer) => {
+  const addLayerKey = layerStore.onafter('addLayer', layer => {
     if (layer.getType() === 'vector') {
       const mapLayer = layer.getMapLayer();
       this.addLayerToMap(mapLayer);
@@ -1718,7 +1718,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
     addLayer: addLayerKey
   });
   // REMOVE LAYER
-  const removeLayerKey = layerStore.onafter('removeLayer',  (layer) => {
+  const removeLayerKey = layerStore.onafter('removeLayer',  layer => {
     if (layer.getType() === 'vector') {
       const olLayer = layer.getOLLayer();
       this.viewer.map.removeLayer(olLayer);
@@ -1748,17 +1748,14 @@ proto._setupBaseLayers = function(){
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
-  if (!baseLayers.length){
-    return;
-  }
-  this.mapBaseLayers = {};
-  baseLayers.forEach((layer) => {
+  if (!baseLayers.length)return;
+  baseLayers.forEach(layer => {
     const baseMapLayer = layer.getMapLayer();
     this.registerMapLayerListeners(baseMapLayer);
     this.mapBaseLayers[layer.getId()] = baseMapLayer;
   });
   const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
-  reverseBaseLayers.forEach((baseMapLayer) => {
+  reverseBaseLayers.forEach(baseMapLayer => {
     baseMapLayer.update(this.state, this.layersExtraParams);
     this.addLayerToMap(baseMapLayer)
   });
@@ -1811,15 +1808,16 @@ proto._setupVectorLayers = function() {
     VECTORLAYER: true
   });
   this._setMapProjectionToLayers(layers);
-  layers.forEach((layer) => {
+  layers.forEach(layer => {
     const mapVectorLayer = layer.getMapLayer();
     this.addLayerToMap(mapVectorLayer)
   })
 };
 
 proto.removeLayers = function() {
+  this._removeBaseLayers();
   this._removeMapLayers();
-  this.removeExternalLayers()
+  this.removeExternalLayers();
 };
 
 proto.removeAllLayers = function(){
@@ -1877,7 +1875,6 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
-
 proto.updateMapLayer = function(mapLayer, options={force: false}) {
   !options.force ? mapLayer.update(this.state, this.getResolution()) : mapLayer.update(this.state, {"time": Date.now()})
 };
@@ -1926,7 +1923,7 @@ proto.removeInteraction = function(interaction) {
 };
 
 proto._watchInteraction = function(interaction) {
-  interaction.on('change:active',(e) => {
+  interaction.on('change:active', e  => {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
       this.emit('mapcontrol:active', e.target);
     }
@@ -2128,13 +2125,20 @@ proto.layout = function({width, height}) {
       hidemap.map.updateSize()
     });
     this._updateMapView();
-    this._updateMapControlsLayout({width, height});
   }
+  this._updateMapControlsLayout({width, height});
+};
+
+//remove BaseLayers
+proto._removeBaseLayers = function(){
+  Object.keys(this.mapBaseLayers).forEach(baseLayerId=>{
+    this.viewer.map.removeLayer(this.mapBaseLayers[baseLayerId].getOLLayer())
+  })
 };
 
 // function to remove maplayers
 proto._removeMapLayers = function() {
-  this.getMapLayers().forEach((mapLayer) => {
+  this.getMapLayers().forEach(mapLayer => {
     this.unregisterMapLayerListeners(mapLayer);
     this.viewer.map.removeLayer(mapLayer.getOLLayer());
   });

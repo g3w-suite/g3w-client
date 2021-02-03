@@ -1,4 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
@@ -94,6 +95,7 @@ const vueComponentOptions = {
     setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
+      ApplicationService.setBaseLayerId(id);
     },
     getSrcBaseLayerImage(baseLayer) {
       const type = baseLayer && baseLayer.servertype || baseLayer;
