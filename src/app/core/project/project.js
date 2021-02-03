@@ -139,9 +139,13 @@ proto._processLayers = function() {
   };
   // call trasverse function to
   traverse(this.state.layerstree);
+  const ApplicationService = require('core/applicationservice');
+  const baseLayerId = ApplicationService.getBaseLayerId();
   for (let i=0; i < this.state.baselayers.length; i++) {
     const baseLayerConfig = this.state.baselayers[i];
-    baseLayerConfig.visible = this.state.initbaselayer && (baseLayerConfig.id === this.state.initbaselayer) || !!baseLayerConfig.fixed ;
+    const baseLayerVisibleId = baseLayerId !== null ? baseLayerId : this.state.initbaselayer;
+    const visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
+    baseLayerConfig.visible = visible;
     baseLayerConfig.baselayer = true;
   }
 };

@@ -43,7 +43,6 @@ function MapService(options={}) {
   this._mapControls = [];
   this._changeMapMapControls = [];
   this._mapLayers = [];
-  this.mapBaseLayers = {};
   this._externalLayers = [];
   this.mapBaseLayers = {};
   this.defaultsLayers = {
@@ -158,6 +157,7 @@ function MapService(options={}) {
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
+        this._setupBaseLayers();
         this._setupMapLayers();
         this._setupVectorLayers();
         this._checkMapControls();
@@ -1721,8 +1721,8 @@ proto._removeListeners = function() {
 proto._removeEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   if (this._layersStoresEventKeys[layerStoreId]) {
-    this._layersStoresEventKeys[layerStoreId].forEach((eventObj) => {
-      _.forEach(eventObj, (eventKey, event) => {
+    this._layersStoresEventKeys[layerStoreId].forEach(eventObj => {
+      Object.entries(eventObj).forEach(([event, eventKey]) => {
         layerStore.un(event, eventKey);
       })
     });
@@ -1886,6 +1886,7 @@ proto.resetDefaultLayerStyle = function(type, style={}){
 };
 
 proto.removeLayers = function() {
+  this._removeBaseLayers();
   this._removeMapLayers();
   this.removeExternalLayers();
   this.removeDefaultLayers();
@@ -2228,6 +2229,13 @@ proto.layout = function({width, height}) {
     this._updateMapView();
   }
   this._updateMapControlsLayout({width, height});
+};
+
+//remove BaseLayers
+proto._removeBaseLayers = function(){
+  Object.keys(this.mapBaseLayers).forEach(baseLayerId=>{
+    this.viewer.map.removeLayer(this.mapBaseLayers[baseLayerId].getOLLayer())
+  })
 };
 
 // function to remove maplayers

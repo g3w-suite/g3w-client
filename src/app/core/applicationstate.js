@@ -6,6 +6,7 @@ const STATE = Vue.observable({
   ismobile: false,
   download: false,
   upload: false,
+  baselayerId: null,
   lng: 'en',
   plugins: [],
   keys: {

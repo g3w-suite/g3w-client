@@ -96,6 +96,7 @@ const vueComponentOptions = {
     setBaseLayer(id) {
       this.currentBaseLayer = id;
       this.project.setBaseLayer(id);
+      ApplicationService.setBaseLayerId(id);
     },
     getSrcBaseLayerImage(baseLayer) {
       const type = baseLayer && baseLayer.servertype || baseLayer;
