@@ -1,4 +1,4 @@
-<li  v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}">
+<li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}">
   <a @click.prevent="onClickItem" ref="anchor_click" href="#" style="display: flex; justify-content: space-between; align-items: center">
     <div>
       <i :class="icon" :style="{color: iconColor}"></i>

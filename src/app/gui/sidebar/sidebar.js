@@ -80,9 +80,7 @@ function SidebarService() {
   // add component to sidebar
   this.addComponents = function(components, options={}) {
     //for each component of the sidebar it is call addComponent method
-    components.forEach((component) => {
-      this.addComponent(component, options);
-    });
+    components.forEach(component => this.addComponent(component, options));
     return true;
   };
   // add each component to the sidebar
@@ -166,7 +164,8 @@ function SidebarService() {
       if (component === sidebarComponent) {
         component.unmount();
         this.state.components.splice(index, 1);
-        position !== undefined && $('#g3w-sidebarcomponents').children()[position].remove();
+        if (position !== undefined) $('#g3w-sidebarcomponents').children(':visible')[position].remove();
+        else $('#g3w-sidebarcomponents').children(`#${component.id}`).remove();
         return false;
       }
     })
