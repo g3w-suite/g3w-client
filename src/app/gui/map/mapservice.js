@@ -43,6 +43,7 @@ function MapService(options={}) {
   this._mapControls = [];
   this._changeMapMapControls = [];
   this._mapLayers = [];
+  this.mapBaseLayers = {};
   this._externalLayers = [];
   this.mapBaseLayers = {};
   this.defaultsLayers = {
@@ -1712,7 +1713,7 @@ proto.getMapUnits = function() {
 
 proto._removeListeners = function() {
   if (this._setBaseLayerListenerKey) {
-    this.project.un('setBaseLayer',this._setBaseLayerListenerKey);
+    this.project.un('setBaseLayer', this._setBaseLayerListenerKey);
   }
 };
 
@@ -1788,17 +1789,14 @@ proto._setupBaseLayers = function(){
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
-  if (!baseLayers.length){
-    return;
-  }
-  this.mapBaseLayers = {};
+  if (!baseLayers.length)return;
   baseLayers.forEach(layer => {
     const baseMapLayer = layer.getMapLayer();
     this.registerMapLayerListeners(baseMapLayer);
     this.mapBaseLayers[layer.getId()] = baseMapLayer;
   });
   const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
-  reverseBaseLayers.forEach((baseMapLayer) => {
+  reverseBaseLayers.forEach(baseMapLayer => {
     baseMapLayer.update(this.state, this.layersExtraParams);
     this.addLayerToMap(baseMapLayer)
   });

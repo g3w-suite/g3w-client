@@ -312,6 +312,13 @@ proto.setInBBoxParam = function(){
   this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : void 0;
 };
 
+proto.resetMapBBoxEventHandlerKey = function(){
+  ol.Observable.unByKey(this.mapBBoxEventHandlerKey.key);
+  this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
+  this.mapBBoxEventHandlerKey.key = null;
+  this.mapBBoxEventHandlerKey.cb = null;
+};
+
 proto.getDataFromBBOX = async function(){
   this.state.tools.geolayer.active = !this.state.tools.geolayer.active;
   if (this.state.tools.geolayer.active) {
@@ -325,12 +332,7 @@ proto.getDataFromBBOX = async function(){
     };
     this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
     this.mapBBoxEventHandlerKey.cb();
-  } else {
-    ol.Observable.unByKey(this.mapBBoxEventHandlerKey.key);
-    this.mapBBoxEventHandlerKey.cb();
-    this.mapBBoxEventHandlerKey.key = null;
-    this.mapBBoxEventHandlerKey.cb = null;
-  }
+  } else this.resetMapBBoxEventHandlerKey();
 };
 
 proto.addFeature = function(feature) {
@@ -388,6 +390,7 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
 proto.clear = function(){
   this.layer.off('unselectionall', this.clearAllSelection);
   this.layer.off('filtertokenchange', this.filterChangeHandler);
+  this.resetMapBBoxEventHandlerKey();
   this.allfeaturesnumber = null;
   this.mapService = null;
   this._async.state && setTimeout(()=> {
