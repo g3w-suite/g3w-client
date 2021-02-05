@@ -408,7 +408,7 @@ const ViewportService = function() {
     this.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
     this.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
-    this.state.content.size = options.size;
+    this.state.content.style = options.style || {};
     this.state.content.showgoback = _.isNil(options.showgoback) ? true : options.showgoback;
   };
 
