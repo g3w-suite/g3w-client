@@ -214,7 +214,7 @@ proto.getAttributeTablePageLength = function(){
 // end global state
 
 //filter token
-proto.setFilterActive = function(bool=false){
+proto.setFilter = function(bool=false){
   this.state.filter.active = bool;
 };
 
@@ -305,7 +305,7 @@ proto.includeSelectionFid = async function(fid, createToken=true){
     this.selectionFids.size === 1 && this.setSelectionFidsAll();
   } else {
     this.selectionFids.add(fid);
-    !this.getSelection() && this.setSelection(true);
+    !this.isSelectionActive() && this.setSelection(true);
   }
   this.isGeoLayer() && this.setOlSelectionFeatureByFid(fid, 'add');
   createToken && this.state.filter.active && await this.createFilterToken();
@@ -647,16 +647,16 @@ proto.setSelection = async function(bool=false){
   }
 };
 
-proto.getSelection = function(){
+proto.isSelectionActive = function(){
   return this.state.selection.active;
 };
 
-proto.setFiltered = function(bool=false){
-  this.state.filterd = bool;
+proto.getSelection = function(){
+  return this.state.selection;
 };
 
-proto.getFiltered = function(){
-  return this.state.filtered;
+proto.getFilter = function(){
+  return this.state.filter;
 };
 
 proto.setDisabled = function(bool) {
