@@ -43,6 +43,14 @@ proto.setup = function(config={}, options={}) {
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
 
+proto.clearOlSelectionFeatures = function(){
+  this.olSelectionFeatures = null;
+};
+
+proto.getOlSelectionFeature = function(id){
+  return this.olSelectionFeatures[id];
+};
+
 proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };

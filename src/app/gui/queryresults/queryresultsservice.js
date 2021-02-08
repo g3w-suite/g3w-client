@@ -745,6 +745,16 @@ proto.selectionFeaturesLayer = function(layer) {
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
   const fid = feature ? 1*feature.attributes['g3w_fid']: null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
+  if (!hasAlreadySelectioned) {
+    if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
+      const layerEpsg = layer.getEpsg();
+      const mapEpsg = this.mapService.getEpsg();
+      layer.addOlSelectionFeature({
+        id: fid,
+        geometry: (layerEpsg !== mapEpsg) ? feature.geometry.transform(layerEpsg, mapEpsg) : feature.geometry
+      })
+    }
+  }
   if (force === undefined) {
     layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
   } else if (!hasAlreadySelectioned && force === 'add') await layer.includeSelectionFid(fid);
@@ -760,14 +770,8 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
 proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   if (feature) {
-    const layerEpsg = layer.getEpsg();
-    const mapEpsg = this.mapService.getEpsg();
     const fid = feature ? 1*feature.attributes['g3w_fid']: null;
     action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
-    feature.geometry && layer.addOlSelectionFeature({
-      id: fid,
-      geometry: (layerEpsg !== mapEpsg) ? feature.geometry.transform(layerEpsg, mapEpsg) : feature.geometry
-    })
   }
 };
 

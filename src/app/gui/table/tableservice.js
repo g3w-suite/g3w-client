@@ -339,13 +339,15 @@ proto.addFeature = function(feature) {
   const tableFeature = {
     id: feature.id,
     selected: this.state.tools.filter.active || this.layer.hasSelectionFid(feature.id),
-    attributes: feature.attributes ? feature.attributes : feature.properties,
-    geometry: this.geolayer && this._returnGeometry(feature)
+    attributes: feature.attributes ? feature.attributes : feature.properties
   };
-  this.geolayer && tableFeature.geometry && this.layer.addOlSelectionFeature({
-    id: tableFeature.id,
-    geometry: tableFeature.geometry
-  });
+  if (this.geolayer && feature.geometry) {
+    const olSelectionFeature = this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
+      id: tableFeature.id,
+      geometry: this._returnGeometry(feature)
+    });
+    tableFeature.geometry = olSelectionFeature.feature.getGeometry();
+  }
   this.state.features.push(tableFeature);
 };
 

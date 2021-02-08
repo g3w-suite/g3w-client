@@ -387,6 +387,10 @@ const geoutils = {
       style = new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
+          stroke: !fill && new ol.style.Stroke({
+            color,
+            width: 4
+          }),
           fill: fill && new ol.style.Fill({
             color
           })

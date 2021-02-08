@@ -828,6 +828,9 @@ proto.canShowTable = function() {
   return false
 };
 
+//function called in case of change project to remove all sored information
+proto.clear = function(){};
+
 /// LAYER PROPERTIES
 // Layer Types
 Layer.LayerTypes = {
