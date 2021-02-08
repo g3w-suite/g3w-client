@@ -373,7 +373,7 @@ const geoutils = {
     styleFunction._g3w_options = options;
     return styleFunction;
   },
-  createSelectedStyle({geometryType, color='rgb(255,255,0)'}={}) {
+  createSelectedStyle({geometryType, color='rgb(255,255,0)', fill=true}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
       style = new ol.style.Style({
@@ -387,7 +387,7 @@ const geoutils = {
       style = new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
-          fill: new ol.style.Fill({
+          fill: fill && new ol.style.Fill({
             color
           })
         }),
@@ -402,7 +402,7 @@ const geoutils = {
           color,
           width: 4
         }),
-        fill: new ol.style.Fill({
+        fill: fill && new ol.style.Fill({
           color: ol.color.asString(fillColor)
         })
       });

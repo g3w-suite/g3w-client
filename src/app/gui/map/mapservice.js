@@ -51,7 +51,7 @@ function MapService(options={}) {
         color: undefined
       },
       selectionLayer: {
-        color: 'orange'
+        color: 'red'
       }
     },
     highlightLayer:new ol.layer.Vector({
@@ -74,7 +74,8 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color
+          color:this.defaultsLayers._style.selectionLayer.color,
+          fill: false
         });
         styles.push(style);
         return styles;

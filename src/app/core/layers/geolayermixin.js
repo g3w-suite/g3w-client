@@ -171,6 +171,10 @@ proto.getProjection = function() {
   return this.config.projection;
 };
 
+proto.getEpsg = function(){
+  return this.config.crs.epsg;
+};
+
 proto.getCrs = function() {
   return this.config.projection && this.config.projection.getCode() || null;
 };
