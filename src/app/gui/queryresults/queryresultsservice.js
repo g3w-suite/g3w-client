@@ -747,11 +747,9 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (!hasAlreadySelectioned) {
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-      const layerEpsg = layer.getEpsg();
-      const mapEpsg = this.mapService.getEpsg();
       layer.addOlSelectionFeature({
         id: fid,
-        geometry: (layerEpsg !== mapEpsg) ? feature.geometry.transform(layerEpsg, mapEpsg) : feature.geometry
+        geometry: feature.geometry
       })
     }
   }
