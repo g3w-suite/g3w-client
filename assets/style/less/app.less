@@ -51,9 +51,16 @@ table.dataTable > tbody > tr.child ul.dtr-details > li {
 }
 
 .g3w-disabled {
+  cursor: not-allowed;
   pointer-events: none;
   opacity: 0.4;
 }
+
+.g3w-hide {
+  display: none !important;
+}
+
+*:focus {outline:none}
 
 // core less styles
 @import "g3w-custom-fonts";

@@ -7,18 +7,12 @@ table.dataTable {
   }
 }
 
-.dataTables_filter {
-  input[type=search] {
-    &:focus {
-      outline: none;
-    }
-    border-color: #FFFFFF !important;
-    background-color: #ffffff;
-  }
+.dataTables_scroll{
+  border: 1px solid #cccccc;
 }
 
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
-  border-bottom: 1px solid #dcdcdc !important;
+  border-bottom: 0;
 }
 
 .bootbox.dialogFullScreen {
@@ -78,5 +72,18 @@ table.dataTable {
   thead tr th, tbody tr td{
     padding: 3px;
   }
+}
+
+.form-control {
+  &.search {
+    height: 25px !important;
+    margin-left: 1px !important;
+    max-width: 160px;
+  }
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+  color: #ffffff;
+  font-weight: bold;
 }
 

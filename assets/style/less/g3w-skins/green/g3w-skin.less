@@ -1,6 +1,9 @@
 .skin-green {
   .skin-border-color {
     border-color: @green !important;
+    &.lighten {
+      border-color: lighten(@green, 30%) !important;
+    }
   }
   .skin-background-color {
     background-color: @green !important;
