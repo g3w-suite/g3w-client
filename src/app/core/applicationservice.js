@@ -285,6 +285,7 @@ const ApplicationService = function() {
     if (window.initConfig) {
       production = true;
       this._initConfig = window.initConfig;
+      this.setInitVendorKeys(initConfig);
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -314,6 +315,7 @@ const ApplicationService = function() {
           this._initConfig = initConfig;
           // set initConfig
           window.initConfig = initConfig;
+          this.setInitVendorKeys(initConfig);
           return initConfig;
         } catch(error) {
           return Promise.reject(error);
@@ -420,6 +422,23 @@ const ApplicationService = function() {
   this.clearInitConfig = function() {
     window.initConfig = null;
     this._initConfig = null;
+  };
+
+  this.setInitVendorKeys = function(config={}){
+   const vendorkeys = config.group.vendorkeys || {};
+   config.group.baselayers.forEach(baselayer =>{
+     if (baselayer.apikey) {
+       const type = baselayer.servertype ? baselayer.servertype.toLowerCase() : null;
+       vendorkeys[type] = baselayer.apikey
+     }
+   });
+   this.setVendorKeys(vendorkeys);
+  };
+
+  this.setVendorKeys = function(keys={}){
+    Object.keys(keys).forEach(key =>{
+      ApplicationState.keys.vendorkeys[key] = keys[key];
+    })
   };
 
   this._changeProject = function({gid, host}={}) {

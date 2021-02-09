@@ -13,7 +13,6 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
       const data = this.response;
       if (data !== undefined) imageTile.getImage().src = window.URL.createObjectURL(data);
       else imageTile.setState(ol.TileState.ERROR);
-
     };
     xhr.onerror = function() {
       image.setState(ol.TileState.ERROR);

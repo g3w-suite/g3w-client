@@ -344,7 +344,7 @@ const vueComponentOptions = {
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
       const mapservice = GUI.getComponent('map').getService();
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      if(!layer.isSelected()) {
+      if (!layer.isSelected()) {
         CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
         // emit signal of select layer from catalog
         mapservice.emit('cataloglayerselected', layer);
@@ -461,7 +461,7 @@ Vue.component('tristate-tree', {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
-    select () {
+    select() {
       if (!this.isFolder && !this.layerstree.external && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
@@ -601,8 +601,7 @@ Vue.component('layerslegend-items',{
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
-          if (!urlLayersName[prefix])
-            urlLayersName[prefix] = [];
+          if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
           urlLayersName[prefix].unshift(layerName);
         }
       }

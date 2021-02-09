@@ -5,7 +5,14 @@ const STATE = Vue.observable({
   online: false,
   ismobile: false,
   baseLayerId: null,
-  lng: 'en'
+  lng: 'en',
+  keys: {
+    vendorkeys: {
+      google: void 0,
+      bing: void 0
+    }
+  }
 });
+
 
 export default STATE;

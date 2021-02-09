@@ -18,8 +18,7 @@ inherit(WMSLayer, MapLayer);
 const proto = WMSLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  if (!this._olLayer)
-    this._olLayer = this._makeOlLayer(withLayers);
+  if (!this._olLayer) this._olLayer = this._makeOlLayer(withLayers);
   return this._olLayer;
 };
 
@@ -40,10 +39,10 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  if (!this.allLayers.find((_layer) => { return layer === _layer})) {
+  if (!this.allLayers.find(_layer => layer === _layer)) {
     this.allLayers.push(layer);
   }
-  if (!this.layers.find((_layer) => { return layer === _layer})) {
+  if (!this.layers.find(_layer =>  layer === _layer)) {
     this.layers.push(layer);
   }
 };
@@ -62,7 +61,6 @@ proto.toggleLayer = function(layer) {
   });
   this._updateLayers();
 };
-
 
 proto.isVisible = function(){
   return this._getVisibleLayers().length > 0;
@@ -96,9 +94,7 @@ proto._makeOlLayer = function(withLayers) {
     iframe_internal: this.iframe_internal
   };
   if (withLayers) {
-    wmsConfig.layers = this.layers.map((layer) => {
-      return layer.getWMSLayerName();
-    });
+    wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   }
   const representativeLayer = this.layers[0];
   if (representativeLayer) {
@@ -139,7 +135,10 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
 
 proto.setupCustomMapParamsToLegendUrl = function(params={}){
   if (this.layer) this.layer.setMapParamstoLegendUrl(params);
-  else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
+  else this.layers.forEach(layer => {
+    layer.setMapParamstoLegendUrl(params)
+  });
+
 };
 
 module.exports = WMSLayer;

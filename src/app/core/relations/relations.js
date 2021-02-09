@@ -16,7 +16,7 @@ function Relations(options={}) {
     father_child: {} // info parent child
   };
   let relation;
-  relations.forEach((relationConfig) => {
+  relations.forEach(relationConfig => {
     relation = new Relation(relationConfig);
     this._relations[relation.getId()] = relation;
   });
@@ -65,8 +65,7 @@ proto.getLength = function() {
 };
 
 proto.getRelations = function({type=null}={}) {
-  if (!type)
-    return this._relations;
+  if (!type) return this._relations;
   else {
     if (['ONE','MANY'].indexOf(type) !== -1) {
       const relations = {};

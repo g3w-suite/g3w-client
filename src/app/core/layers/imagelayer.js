@@ -1,6 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
-const mixin = require('core/utils/utils').mixin;
+const {base, inherit, mixin } = require('core/utils/utils');
 const Layer = require('core/layers/layer');
 const VectorLayer = require('./vectorlayer');
 const WMSLayer = require('./map/wmslayer');

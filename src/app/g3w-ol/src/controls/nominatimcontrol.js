@@ -1,6 +1,6 @@
 const Control = require('./control');
 
-function NominatimControl(options) {
+function NominatimControl(options={}) {
   const self = this;
   this.options = {
     provider: 'osm',
@@ -631,7 +631,7 @@ function NominatimControl(options) {
         limit: options.limit || this.settings.params.limit,
         //countrycodes: options.countrycodes || this.settings.params.countrycodes,
         //'accept-language': options.lang || this.settings.params['accept-language'],
-        viewbox: viewbox,
+        viewbox,
         bounded: 1
       }
     };

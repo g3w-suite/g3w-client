@@ -1,10 +1,12 @@
+import ApplicationState from 'core/applicationstate';
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-const StreetViewControl = function(options) {
+const StreetViewControl = function(options={}) {
   const _options = {
     offline: false,
+    visible: !!ApplicationState.keys.vendorkeys.google,
     name: "streetview",
     tipLabel: "StreetView",
     label: "\ue905",

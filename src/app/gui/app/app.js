@@ -80,9 +80,11 @@ const AppUI = Vue.extend({
   },
   methods: {
     resize(){
-      const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
-        this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
-      this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;
+      if (!this.isIframe) {
+        const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
+          this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
+        this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;
+      }
     },
     showCustomModalContent(id){
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
@@ -108,6 +110,7 @@ const AppUI = Vue.extend({
     this.delayTime = 0;
   },
   created() {
+    this.language = this.appconfig._i18n.lng;
     this.custom_modals = [];
     this.custom_header_items_position = {
       0: [],
@@ -137,7 +140,7 @@ const AppUI = Vue.extend({
   },
   async mounted() {
     this.logoWidth = 0;
-    const rightNavBarElements = this.$refs.mainnavbar.getElementsByTagName('ul');
+    const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
     const elementLenght = rightNavBarElements.length;
     this.rightNavbarWidth = 0;
     for (let i = 0; i < elementLenght; i++ ) {
@@ -145,7 +148,7 @@ const AppUI = Vue.extend({
     }
     this.language = this.appconfig.user.i18n;
     await this.$nextTick();
-    this.$refs.img_logo.addEventListener('load', ()=>{
+    !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
       this.logoWidth = this.$refs.img_logo.offsetWidth;
       this.resize();
     }, {once: true});

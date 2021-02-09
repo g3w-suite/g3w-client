@@ -1,4 +1,4 @@
-import  { GOOGLE_API_KEY } from 'config/keys'
+import ApplicationState from 'core/applicationstate';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;
 const G3WObject = require('core/g3wobject');
@@ -12,11 +12,12 @@ function StreetViewService() {
   };
 
   this.init = function() {
-    return new Promise((resolve) => {
-      $script(`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}`, () => {
+    const KEY = ApplicationState.keys.vendorkeys.google;
+    return KEY ? new Promise((resolve) => {
+      $script(`https://maps.googleapis.com/maps/api/js?key=${KEY}`, () => {
         resolve()
       })
-    })
+    }) : Promise.reject();
   };
 
   base(this);

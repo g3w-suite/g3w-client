@@ -36,6 +36,11 @@ const ApplicationTemplate = function({ApplicationService}) {
   // useful to build a difference layout/compoìnent based on mobile or not
   this._isMobile = isMobile.any;
   this._isIframe = appLayoutConfig.iframe;
+  this.sizes = {
+    sidebar: {
+      width:0
+    }
+  };
   this.init = function() {
     // create Vue App
     this._createApp();
@@ -146,6 +151,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     }
   };
 
+
   //Vue app
   this._createApp = function() {
     this._setDataTableLanguage();
@@ -169,23 +175,22 @@ const ApplicationTemplate = function({ApplicationService}) {
           self._setDataTableLanguage();
         });
       },
-      mounted: function() {
-        this.$nextTick(function() {
-          self._buildTemplate();
-          // setup Font, Css class methods
-          self._setUpTemplateDependencies(this);
-          $(document).localize();
-          self._setViewport(self.templateConfig.viewport);
-          const skinColor = $('.navbar').css('background-color');
-          GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
-          this.$nextTick(()=> {
-            self.emit('ready');
-            //getSkinColor
-            GUI.ready();
-          })
-        });
+      async mounted() {
+        await this.$nextTick();
+        self._buildTemplate();
+        // setup Font, Css class methods
+        self._setUpTemplateDependencies(this);
+        $(document).localize();
+        self._setViewport(self.templateConfig.viewport);
+        const skinColor = $('.navbar').css('background-color');
+        GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
+        await this.$nextTick();
+        self.emit('ready');
+        self.sizes.sidebar.width = $('#g3w-sidebar').width();
+        //getSkinColor
+        GUI.ready();
       }
-    });
+    })
   };
 
   this._setupLayout = function(){
@@ -206,11 +211,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     Vue.component('app', App);
   };
 
-  // dataTable Translations
+  // dataTable Translations and custom extentions
   this._setDataTableLanguage = function(dataTable=null) {
     const lngOptions = {
       "language": {
-        "sSearch": t("dosearch"),
+        "sSearch": '',
+        "searchPlaceholder": t("dosearch"),
         "sLengthMenu": t("dataTable.lengthMenu"),
         "paginate": {
           "previous": t("dataTable.previous"),
@@ -218,9 +224,14 @@ const ApplicationTemplate = function({ApplicationService}) {
         },
         "info": t("dataTable.info"),
         "zeroRecords": t("dataTable.nodatafilterd"),
-        "infoFiltered": t("dataTable.infoFiltered")
+        "infoFiltered": ''
       }
     };
+    //set form control class to filter
+    $.extend( $.fn.dataTableExt.oStdClasses, {
+      "sFilterInput": "form-control search"
+    });
+
     !dataTable ? $.extend( true, $.fn.dataTable.defaults, lngOptions) : dataTable.dataTable( {"oLanguage": lngOptions});
   };
 
@@ -257,9 +268,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   // build template function
   this._buildTemplate = function() {
     floatbar.FloatbarService.init(layout);
-    // recupero i plceholders dalla configurazione del template
     const placeholdersConfig = this.templateConfig.placeholders;
-    // ciclo su ogni placeholder
     Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
       this._addComponents(options.components, placeholder);
     });
