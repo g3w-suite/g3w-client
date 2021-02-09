@@ -1,9 +1,8 @@
 import ApplicationState from 'core/applicationstate';
 const t = require('core/i18n/i18n.service').t;
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit} = require('core/utils/utils');
 const Stack = require('gui/utils/utils').barstack;
 const G3WObject = require('core/g3wobject');
-const base = require('core/utils/utils').base;
 const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
 const SIDEBAREVENTBUS = new Vue();
 
@@ -29,7 +28,7 @@ const SidebarItem = Vue.extend({
       };
   },
   methods: {
-    onClickItem: function(evt) {
+    onClickItem(evt) {
       // force to close
       this.component.isolate && evt.stopPropagation();
       if (!this.component.isolate) {
@@ -71,7 +70,8 @@ function SidebarService() {
     components: [],
     gui: {
       title: ''
-    }
+    },
+    disabled: false
   };
   //inizialize method
   this.init = function(layout) {
@@ -94,6 +94,10 @@ function SidebarService() {
       service: this,
       info,
       component
+    });
+    //listen event disable-sidebar
+    component.on('disable-sidebar', bool => {
+      this.state.disabled = bool
     });
     sidebarItem.title = component.title || sidebarItem.title;
     sidebarItem.info = component.info || sidebarItem.info;
@@ -202,7 +206,7 @@ const SidebarComponent = Vue.extend({
         bOpen: true,
         bPageMode: false,
         header: t('main navigation'),
-        gui: sidebarService.state.gui
+        state: sidebarService.state
       }
     },
     computed: {

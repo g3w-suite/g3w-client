@@ -100,7 +100,6 @@ proto.handleEventsComponent = function(){
   const {open, visible} = this.events;
   if (open) {
     const {when="after", cb=()=>{}, guiEvents=[]} = open;
-    const setStateOpenFalse = ()=> this.setOpen(false);
     this[`on${when}`]('setOpen', bool => {
       cb(bool);
     });
