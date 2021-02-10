@@ -30,6 +30,7 @@ const translations = {
           scale: "Scala",
           format: "Formato",
           rotation: "Rotazione",
+          download_image: "Scarica Immagine",
           fids_instruction: "Valori accettati: da 1 al valore massimo indicato da [max]. Possibile indicare anche range di valori es. 4-6",
           fids_example: "Es. 1,4-6 verranno stampati gli id 1,4,5,6",
           help: "I layers mostrati nella stampa potrebbero essere quelli definiti sul progetto e non quelli visualizzati sulla mappa"
@@ -426,6 +427,7 @@ const translations = {
           scale: "Scale",
           format: "Format",
           rotation: "Rotation",
+          download_image: "Download Image",
           fids_instruction: "Values accepted: from 1 to value of [max]. Is possible to insert a range ex. 4-6",
           fids_example: "Ex. 1,4-6 will be printed id 1,4,5,6",
           help: "The layers shown in the print could be those defined on the project and not those displayed on the map"
@@ -821,6 +823,7 @@ const translations = {
           scale: "Mittakaava",
           format: "Formaatti",
           rotation: "Kierto",
+          download_image: "Lataa kuva",
           fids_instruction: "Hyväksytyt arvot: yhdestä arvoon [max]. Salittua syöttää myös väli, esim. 4-6.",
           fids_example: "Esimerkiksi 1,4-6 tulostuu id 1,4,5,6.",
           help: "Tulosteessa esiintyvät tasot voivat olla projektissa määriteltyjä ei kartalla esiintyviä."
@@ -1216,6 +1219,7 @@ const translations = {
           scale: "Skala",
           format: "Format",
           rotation: "Rotation",
+          download_image: "Ladda ner bild",
           fids_instruction: "Godkända värden: Från ett till värdet [max]. Mellanslag tillåts, t.ex. 4-6.",
           fids_example: "Exempelvis 1,4-6 skriver ut id 1,4,5,6.",
           help: "Nivåerna på utskriften kan vara specificerade i ett projekt inte sådana som visas på karta."

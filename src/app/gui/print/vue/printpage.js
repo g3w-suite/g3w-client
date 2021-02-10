@@ -1,7 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils'
-const inherit = require('core/utils/utils').inherit;
-const imageToDataURL = require('core/utils/utils').imageToDataURL;
-const base = require('core/utils/utils').base;
+const {inherit, base, imageToDataURL} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
 
@@ -11,7 +9,6 @@ const InternalComponent = Vue.extend({
     return {
       state: null,
       showdownloadbutton: false,
-      jpegimageurl: null,
       downloadImageName: ''
     }
   },
@@ -23,22 +20,16 @@ const InternalComponent = Vue.extend({
   watch: {
     'state.url': function(url) {
       if (url) {
-        $('#printoutput').load(url, (response, status) => {
+        $(this.$refs.printoutput).load(url, (response, status) => {
           this.$options.service.stopLoading();
-          if (status === 'error') {
-            this.$options.service.showError();
-          } else {
-            if (this.state.format === 'jpg' || this.state.format === 'png' ) {
-              this.downloadImageName = `download.${this.state.format}`;
-              imageToDataURL({
-                src: this.state.url,
-                type: `image/${this.state.format}`,
-                callback: (url) => {
-                  this.showdownloadbutton = true;
-                  this.jpegimageurl = url;
-                }
-              })
-            }
+          status === 'error' && this.$options.service.showError();
+          if (this.state.format === 'jpg' || this.state.format === 'png' ) {
+            this.downloadImageName = `download.${this.state.format}`;
+            imageToDataURL({
+              src: this.state.url,
+              type: `image/${this.state.format}`,
+              callback: url => this.showdownloadbutton = true
+            })
           }
         });
       }

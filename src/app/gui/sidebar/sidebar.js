@@ -234,10 +234,7 @@ const SidebarComponent = Vue.extend({
     },
     created() {
       this.iframe = ApplicationState.iframe;
-      //this.ismobile = ApplicationState.ismobile;
-      SIDEBAREVENTBUS.$on('sidebaritemclick', ()=> {
-        $('.sidebar-toggle').click();
-      })
+      SIDEBAREVENTBUS.$on('sidebaritemclick', ()=> $('.sidebar-toggle').click())
     }
 });
 

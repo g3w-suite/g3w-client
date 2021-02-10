@@ -896,6 +896,7 @@ proto._setupControls = function() {
             canRun = false;
             const coordinates = e.coordinates;
             const queryResultsPanel = showQueryResults('');
+            GUI.closeOpenSideBarComponent();
             this.runQuery({
               coordinates,
               feature_count,
@@ -964,6 +965,7 @@ proto._setupControls = function() {
               const runQuery = throttle( e => {
                 if (!canRun) return;
                 canRun = false;
+                GUI.closeOpenSideBarComponent();
                 const coordinates = e.coordinates;
                 const queryResultsPanel = showQueryResults('');
                 this.runQueryByPolygon({
@@ -1034,6 +1036,7 @@ proto._setupControls = function() {
                 VISIBLE: true
               };
               control.on('toggled', evt => {
+                console.log('qui')
                 if (evt.target.isToggled()) {
                   const layers = getMapLayersByFilter(layersFilterObject, condition);
                   if (layers.length === 0) {
@@ -1047,6 +1050,7 @@ proto._setupControls = function() {
               });
               let canRun = true;
               const runQuery = throttle(e => {
+                GUI.closeOpenSideBarComponent();
                 if (!canRun) return;
                 canRun = false;
                 const bbox = e.extent;
