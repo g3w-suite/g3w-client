@@ -8,8 +8,9 @@ const InternalComponent = Vue.extend({
   data: function() {
     return {
       state: null,
-      showdownloadbutton: false,
-      downloadImageName: ''
+      disableddownloadbutton: true,
+      downloadImageName: '',
+      format: null
     }
   },
   computed: {
@@ -17,20 +18,28 @@ const InternalComponent = Vue.extend({
       return this.state.loading && this.state.layers;
     }
   },
+  methods: {
+    downloadImage(){
+      this.disableddownloadbutton = true;
+      if (this.format === 'jpg' || this.format === 'png' ) {
+        this.downloadImageName = `download.${this.state.format}`;
+        imageToDataURL({
+          src: this.state.url,
+          type: `image/${this.state.format}`,
+          callback: url => setTimeout(() =>  this.disableddownloadbutton = false)
+        })
+      }
+    }
+  },
   watch: {
-    'state.url': function(url) {
+    'state.url': async function(url) {
       if (url) {
+        this.format = this.state.format;
+        await this.$nextTick();
         $(this.$refs.printoutput).load(url, (response, status) => {
           this.$options.service.stopLoading();
           status === 'error' && this.$options.service.showError();
-          if (this.state.format === 'jpg' || this.state.format === 'png' ) {
-            this.downloadImageName = `download.${this.state.format}`;
-            imageToDataURL({
-              src: this.state.url,
-              type: `image/${this.state.format}`,
-              callback: url => this.showdownloadbutton = true
-            })
-          }
+          this.disableddownloadbutton = false;
         });
       }
     }
