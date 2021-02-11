@@ -1,5 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils'
 const {inherit, base, imageToDataURL} = require('core/utils/utils');
+const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
 
@@ -19,14 +20,19 @@ const InternalComponent = Vue.extend({
     }
   },
   methods: {
+    setLoading(bool=false){
+      GUI.disableSideBar(bool);
+      this.state.loading = bool;
+      this.disableddownloadbutton = bool;
+    },
     downloadImage(){
-      this.disableddownloadbutton = true;
+      this.setLoading(true);
       if (this.format === 'jpg' || this.format === 'png' ) {
         this.downloadImageName = `download.${this.state.format}`;
         imageToDataURL({
           src: this.state.url,
           type: `image/${this.state.format}`,
-          callback: url => setTimeout(() =>  this.disableddownloadbutton = false)
+          callback: url => setTimeout(() => this.setLoading(false))
         })
       }
     }
@@ -39,7 +45,7 @@ const InternalComponent = Vue.extend({
         $(this.$refs.printoutput).load(url, (response, status) => {
           this.$options.service.stopLoading();
           status === 'error' && this.$options.service.showError();
-          this.disableddownloadbutton = false;
+          this.setLoading(false);
         });
       }
     }

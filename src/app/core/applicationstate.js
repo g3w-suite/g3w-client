@@ -9,6 +9,11 @@ const STATE = Vue.observable({
   baseLayerId: null,
   lng: 'en',
   plugins: [],
+  gui: {
+    sidebar: {
+      disabled: false
+    }
+  },
   keys: {
     vendorkeys: {
       google: void 0,

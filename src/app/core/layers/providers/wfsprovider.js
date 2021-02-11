@@ -24,16 +24,15 @@ proto.getData = function() {
 
 // query method
 proto.query = function(options={}, params = {}) {
-  const feature_count = options.feature_count || 10;
+  const {reproject=true, feature_count=10, filter} = options;
   params.MAXFEATURES = feature_count;
-  const filter = options.filter;
   const d = $.Deferred();
   const layers = options.layers;
-  this._doRequest(filter, params, layers)
-    .then((response) => {
+  this._doRequest(filter, params, layers, reproject)
+    .then(response => {
       const projections = {
         map: this._layer.getMapProjection(),
-        layer: this._layer.getProjection()
+        layer: reproject ? this._layer.getProjection(): null
       };
       const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);
       d.resolve({
@@ -74,7 +73,7 @@ proto._get = function(url, params) {
 };
 
 //request to server
-proto._doRequest = function(filter, params = {}, layers) {
+proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   const d = $.Deferred();
   filter = filter || new Filter();
   const layer = layers ? layers[0]: this._layer;
@@ -82,13 +81,14 @@ proto._doRequest = function(filter, params = {}, layers) {
   const url = layer.getQueryUrl();
   const infoFormat = layer.getInfoFormat();
   const layerNames = layers ? layers.map(layer => this._getTypeName(layer.getQueryLayerName())).join(','): this._layerName;
+  const SRSNAME = reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode();
   params = Object.assign(params, {
     SERVICE: 'WFS',
     VERSION: '1.1.0',
     REQUEST: 'GetFeature',
     TYPENAME: layerNames,
     OUTPUTFORMAT: infoFormat,
-    SRSNAME: layer.getProjection().getCode()
+    SRSNAME
   });
   if (filter) {
     const filterType = filter.getType();
@@ -120,20 +120,16 @@ proto._doRequest = function(filter, params = {}, layers) {
       default:
         break;
     }
-    //params.FILTER = featureRequest.children[0].innerHTML;
     params.FILTER = `(${featureRequest.children[0].innerHTML})`.repeat(layers ? layers.length : 1);
     const queryPromise = httpMethod === 'GET' ? this._get(url, params) : this._post(url, params);
-    queryPromise.then((response) => {
+    queryPromise.then(response => {
         d.resolve(response)
-      }).fail((err) => {
-        if (err.status === 200)
-          d.resolve(err.responseText);
-        else
-          d.reject(err)
+      }).fail(err => {
+        if (err.status === 200) d.resolve(err.responseText);
+        else d.reject(err)
       })
-  } else {
-    d.reject()
-  }
+  } else d.reject()
+
   return d.promise()
 };
 

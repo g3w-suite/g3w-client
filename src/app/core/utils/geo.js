@@ -420,7 +420,8 @@ const geoutils = {
       return geometryFields.indexOf(property) === -1;
     });
   },
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false}={}) {
+
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     const size = map.getSize();
     if (!layers.length)
@@ -428,7 +429,7 @@ const geoutils = {
     const queryResponses = [];
     const mapProjection = map.getView().getProjection();
     const resolution = map.getView().getResolution();
-    if (querymultilayers) {
+    if (querymultilayers) { // case of multilayers
            const multiLayers = {};
       layers.forEach(layer => {
         const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
@@ -447,18 +448,17 @@ const geoutils = {
           feature_count,
           coordinates,
           mapProjection,
+          reproject,
           resolution,
           size,
           layers
-        }).then((response)=> {
-          queryResponses.push(response);
-        }).always(() => {
-          layersLenght -= 1;
-          if (layersLenght === 0)
-            d.resolve(queryResponses)
-        })
+        }).then(response => queryResponses.push(response))
+          .always(() => {
+            layersLenght -= 1;
+            layersLenght === 0 && d.resolve(queryResponses);
+          })
       }
-    } else {
+    } else { // single layers
       let layersLenght = layers.length;
       layers.forEach((layer) => {
         layer.query({
@@ -481,12 +481,9 @@ const geoutils = {
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
-    const bbox = options.bbox;
-    const projection = options.projection;
+    const {bbox, projection, reproject=true, feature_count=10} = options;
     const queryResponses = [];
-    const feature_count = options.feature_count || 10;
-    if (!layers.length)
-      d.resolve([]);
+    if (!layers.length) d.resolve([]);
     const mapCrs = projection.getCode();
     const multiLayers = _.groupBy(layers, function(layer) {
       return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
@@ -499,7 +496,7 @@ const geoutils = {
       const multilayer = multiLayers[key][0];
       const provider = multilayer.getProvider('filter');
       const layerCrs = multilayer.getProjection().getCode();
-      if (mapCrs !== layerCrs) {
+      if (reproject && (mapCrs !== layerCrs)) {
         if (bbox) {
           const geometry = ol.geom.Polygon.fromExtent(filterGeometry);
           filterGeometry = geometry.transform(mapCrs, layerCrs).getExtent();
@@ -511,8 +508,9 @@ const geoutils = {
       provider.query({
         filter,
         layers,
+        reproject,
         feature_count
-      }).then((response)=> {
+      }).then(response=> {
         queryResponses.push(response);
       }).always(() => {
         layersLenght -= 1;

@@ -128,6 +128,7 @@ proto.print = function() {
   const caller_download_id = ApplicationService.setDownload(true);
   return new Promise((resolve, reject) => {
     if (this.state.atlas) {
+      GUI.disableSideBar(true);
       this.state.loading = true;
       this.printService.printAtlas({
         template: this.state.template,
@@ -147,9 +148,11 @@ proto.print = function() {
         }).finally(() =>{
           this.state.loading = false;
           ApplicationService.setDownload(false, caller_download_id);
+          GUI.disableSideBar(false);
         })
       })
     } else {
+      GUI.disableSideBar(true);
       this.state.output.url = null;
       this.state.output.layers = true;
       this._page = new PrintPage({

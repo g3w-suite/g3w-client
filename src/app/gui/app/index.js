@@ -575,7 +575,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.disableSideBar = function(bool=true) {
-      bool ? $('#disable-sidebar').show() : $('#disable-sidebar').hide()
+      ApplicationState.gui.sidebar.disabled = bool;
     };
 
     // VIEWPORT //

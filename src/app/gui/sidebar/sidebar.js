@@ -95,10 +95,6 @@ function SidebarService() {
       info,
       component
     });
-    //listen event disable-sidebar
-    component.on('disable-sidebar', bool => {
-      this.state.disabled = bool
-    });
     sidebarItem.title = component.title || sidebarItem.title;
     sidebarItem.info = component.info || sidebarItem.info;
     sidebarItem.actions = component.actions || sidebarItem.actions;
@@ -210,6 +206,9 @@ const SidebarComponent = Vue.extend({
       }
     },
     computed: {
+      disabled(){
+        return ApplicationState.gui.sidebar.disabled;
+      },
       panelsinstack: function(){
         return this.panels.length > 0;
       },

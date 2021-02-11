@@ -53,7 +53,7 @@ const vueComponentOptions = {
       this.$options.service.changeRotation();
     },
     print() {
-      this.$options._print();
+      this.$options.service.print();
     }
   }
 };
@@ -67,18 +67,10 @@ function PrintComponent(options={}) {
   this.setService(service);
   // init service
   this._service.init();
-  this.print = async ()=>{
-    this.emit('disable-sidebar', true);
-    try {
-      await this._service.print();
-    } catch(err){}
-    setTimeout(()=>this.emit('disable-sidebar', false), 500);
-  };
   this.setInternalComponent = function () {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
-      service,
-      _print: this.print
+      service
     });
     this.state.visible = service.state.visible;
     this.internalComponent.state = service.state;

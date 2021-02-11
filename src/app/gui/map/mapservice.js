@@ -641,7 +641,7 @@ proto._checkMapControls = function(){
   })
 };
 
-proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQueryFeatureCount(), condition={filtrable: {ows: 'WFS'}}, controlType='querybypolygon', querymultilayers=this.project.isQueryMultiLayers(controlType)}={}) {
+proto.runQueryByPolygon = function({coordinates, reproject=true, feature_count=this.project.getQueryFeatureCount(), controlType='querybypolygon', querymultilayers=this.project.isQueryMultiLayers(controlType), condition={filtrable: {ows: 'WFS'}}}={}) {
   return new Promise((resolve, reject) =>{
     const map = this.getMap();
     const layersFilterObject = {QUERYABLE: true, SELECTED: true, VISIBLE: true};
@@ -649,6 +649,7 @@ proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQ
     const queryResulsPromise = getQueryLayersPromisesByCoordinates(layers, {
       map,
       feature_count,
+      reproject,
       coordinates
     });
     queryResulsPromise
@@ -675,6 +676,7 @@ proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQ
                 {
                   geometry,
                   bbox: false,
+                  reproject,
                   feature_count,
                   projection: this.getProjection()
                 }
@@ -691,12 +693,13 @@ proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQ
                 let layersLenght = layers.length;
                 layers.forEach(layer => {
                   const layerCrs = layer.getProjection().getCode();
-                  if (mapCrs !== layerCrs) filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
+                  if (reproject && (mapCrs !== layerCrs)) filterGeometry = geometry.clone().transform(mapCrs, layerCrs);
                   filter.setGeometry(filterGeometry);
                   layer.query({
                     filter,
+                    reproject,
                     feature_count
-                  }).then((response) => {
+                  }).then(response => {
                     queryResponses.push(response)
                   }).always(() => {
                     layersLenght -= 1;
@@ -724,7 +727,7 @@ proto.runQueryByPolygon = function({coordinates, feature_count=this.project.getQ
   });
 };
 
-proto.runQueryBBOX = function({bbox, feature_count=this.project.getQueryFeatureCount(), controlType='querybbox', querymultilayers=this.project.isQueryMultiLayers(controlType), condition={filtrable: {ows: 'WFS'}}, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+proto.runQueryBBOX = function({bbox, reproject=true, feature_count=this.project.getQueryFeatureCount(), controlType='querybbox', querymultilayers=this.project.isQueryMultiLayers(controlType), condition={filtrable: {ows: 'WFS'}}, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     const layers = getMapLayersByFilter(layersFilterObject, condition);
     let queriesPromise;
     if (querymultilayers) {
@@ -732,6 +735,7 @@ proto.runQueryBBOX = function({bbox, feature_count=this.project.getQueryFeatureC
       queriesPromise = getQueryLayersPromisesByGeometry(layers, {
         geometry: bbox,
         bbox: true,
+        reproject,
         feature_count,
         projection: this.getProjection()
       })
@@ -743,15 +747,17 @@ proto.runQueryBBOX = function({bbox, feature_count=this.project.getQueryFeatureC
       let filterBBox = bbox;
       layers.forEach(layer => {
         const filter = new Filter();
-        const mapCrs = this.getCrs();
+        /*const mapCrs = this.getCrs();
         const layerCrs = layer.getProjection().getCode();
         if (mapCrs !== layerCrs) {
           const geometry = ol.geom.Polygon.fromExtent(bbox);
           filterBBox = geometry.transform(mapCrs, layerCrs).getExtent();
         }
+        */
         filter.setBBOX(filterBBox);
         layer.query({
           filter,
+          reproject,
           feature_count
         }).then(response => {
           queryResponses.push(response)
@@ -970,7 +976,9 @@ proto._setupControls = function() {
                 const queryResultsPanel = showQueryResults('');
                 this.runQueryByPolygon({
                   feature_count,
-                  coordinates
+                  reproject: false,
+                  coordinates,
+                  controlType
                 }).then(({response, geometry}) => {
                   layersResults = response;
                   const results = {
@@ -1036,7 +1044,6 @@ proto._setupControls = function() {
                 VISIBLE: true
               };
               control.on('toggled', evt => {
-                console.log('qui')
                 if (evt.target.isToggled()) {
                   const layers = getMapLayersByFilter(layersFilterObject, condition);
                   if (layers.length === 0) {
@@ -1057,6 +1064,7 @@ proto._setupControls = function() {
                 const queriesPromise = this.runQueryBBOX({
                   bbox,
                   feature_count,
+                  reproject: false,
                   layersFilterObject,
                   condition,
                   controlType
