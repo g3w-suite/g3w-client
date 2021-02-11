@@ -853,6 +853,11 @@ Layer.ServerTypes = {
   WMS: "WMS",
   WMTS: "WMTS",
   G3WSUITE: "G3WSUITE"
+  /*
+
+ ADD ALSO TO PROVIDER FACTORY
+
+ */
 };
 
 // Source Types
@@ -869,6 +874,11 @@ Layer.SourceTypes = {
   WFS: 'wfs',
   ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"
+  /*
+
+ ADD TO PROVIDER FACTORY
+
+ */
 };
 
 // Layer Capabilities

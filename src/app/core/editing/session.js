@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const History = require('./history');
 const SessionsRegistry = require('./sessionsregistry');
@@ -14,7 +13,8 @@ function Session(options={}) {
     },
     stop: function() {
       this._stop();
-    }
+    },
+    saveChangesOnServer(){} // hook to get informed that are saved on server
   };
   base(this, options);
 
@@ -356,7 +356,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
     }
     if (!relations) commitItems.relations = {};
     this._editor.commit(commitItems)
-      .then((response) => {
+      .then(response => {
         if (response && response.result) {
           const {response:data} = response;
           const {new_relations={}} = data;
@@ -368,6 +368,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
             })
           }
           this._history.clear();
+          this.saveChangesOnServer();
         }
         d.resolve(commitItems, response)
       })

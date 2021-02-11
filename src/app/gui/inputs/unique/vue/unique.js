@@ -12,12 +12,11 @@ const UniqueInput = Vue.extend({
     return {id}
   },
   watch: {
-    'state.input.options.values'(values) {
+    async 'state.input.options.values'(values) {
       this.state.value = this.state.value ? this.state.value: null;
       this.state.value !== null && values.indexOf(this.state.value) === -1 && this.service.addValueToValues(this.state.value);
-      this.$nextTick(() => {
-        this.state.value && this.select2.val(this.state.value).trigger('change');
-      })
+      await this.$nextTick();
+      this.state.value && this.select2.val(this.state.value).trigger('change');
     }
   },
   mounted() {
@@ -28,7 +27,7 @@ const UniqueInput = Vue.extend({
           tags: true,
           language: this.getLanguage()
         });
-        this.select2.on('select2:select', (event) => {
+        this.select2.on('select2:select', event => {
           const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
           this.changeSelect(value);
         })
