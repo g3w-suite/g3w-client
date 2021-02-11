@@ -481,7 +481,7 @@ const geoutils = {
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
-    const {bbox, projection, reproject=true, feature_count=10} = options;
+    const {bbox, projection, feature_count=10} = options;
     const queryResponses = [];
     if (!layers.length) d.resolve([]);
     const mapCrs = projection.getCode();
@@ -495,20 +495,16 @@ const geoutils = {
       const layers = _multilayer;
       const multilayer = multiLayers[key][0];
       const provider = multilayer.getProvider('filter');
-      const layerCrs = multilayer.getProjection().getCode();
-      if (reproject && (mapCrs !== layerCrs)) {
-        if (bbox) {
-          const geometry = ol.geom.Polygon.fromExtent(filterGeometry);
-          filterGeometry = geometry.transform(mapCrs, layerCrs).getExtent();
-        } else {
-          filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        }
+      if (bbox) {
+        filter.setBBOX(filterGeometry)
+      } else {
+        const layerCrs = multilayer.getProjection().getCode();
+        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
+        filter.setGeometry(filterGeometry)
       }
-      bbox && filter.setBBOX(filterGeometry) ||  filter.setGeometry(filterGeometry);
       provider.query({
         filter,
         layers,
-        reproject,
         feature_count
       }).then(response=> {
         queryResponses.push(response);

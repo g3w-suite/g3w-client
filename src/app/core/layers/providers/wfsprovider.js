@@ -24,7 +24,7 @@ proto.getData = function() {
 
 // query method
 proto.query = function(options={}, params = {}) {
-  const {reproject=true, feature_count=10, filter} = options;
+  const {reproject=false, feature_count=10, filter} = options;
   params.MAXFEATURES = feature_count;
   const d = $.Deferred();
   const layers = options.layers;
@@ -121,7 +121,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
         break;
     }
     params.FILTER = `(${featureRequest.children[0].innerHTML})`.repeat(layers ? layers.length : 1);
-    const queryPromise = httpMethod === 'GET' ? this._get(url, params) : this._post(url, params);
+    const queryPromise = httpMethod === 'GET' && filterType !== 'geometry' ? this._get(url, params) : this._post(url, params);
     queryPromise.then(response => {
         d.resolve(response)
       }).fail(err => {
