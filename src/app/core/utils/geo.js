@@ -232,7 +232,8 @@ const geoutils = {
     }
     return style
   },
-  ({id,geometry}={}){
+
+  createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
       const feature = new ol.Feature(geometry);
       id && feature.setId(id);
