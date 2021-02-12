@@ -231,7 +231,7 @@ proto.commit = function(commitItems) {
     }
   }) : [];
   this._layer.commit(commitItems)
-    .then((promise) => {
+    .then(promise => {
       promise
         .then(response => {
           this.applyCommitResponse(response, relations);

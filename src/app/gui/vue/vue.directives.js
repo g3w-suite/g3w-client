@@ -41,7 +41,7 @@ const GlobalDirective = {
     };
 
     Vue.directive("disabled", (el, binding) => {
-      binding.value ? el.setAttribute('disabled','disabled') : el.removeAttribute('disabled');
+      binding.value ? el.classList.add('g3w-disabled') : el.classList.remove('g3w-disabled');
     });
 
     Vue.directive("checked",(el, binding) => {

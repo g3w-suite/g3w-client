@@ -232,8 +232,12 @@ const geoutils = {
     }
     return style
   },
-  createFeatureFromGeometry(geometry){
-    return geometry && new ol.Feature(geometry);
+  ({id,geometry}={}){
+    if (geometry) {
+      const feature = new ol.Feature(geometry);
+      id && feature.setId(id);
+      return feature;
+    }
   },
 
   createOlLayer: function(options = {}) {

@@ -390,16 +390,16 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       if (forminput.options.values === void 0) forminput.options.values = [];
-       else if (forminput.options.dependance){
+      else if (forminput.options.dependance){
         forminput.loading = true;
-        try {
-          forminput.options.values =  await this.getUniqueValuesFromField({unique: forminput.attribute})
-        } catch(err){
-          forminput.options.values = []
-        }
-        forminput.loading = false;
-      };
-      forminput.options.values = this.valuesToKeysValues(forminput.options.values);
+        this.getUniqueValuesFromField({unique: forminput.attribute})
+          .then(values => {
+            values.splice(0,0,forminput.options.values[0])
+            forminput.options.values = this.valuesToKeysValues(values);
+          })
+          .catch(()=> forminput.options.values = [])
+          .finally(()=> forminput.loading = false)
+      } else forminput.options.values = this.valuesToKeysValues(forminput.options.values);
       //check if has a dependance
       const { options:{ dependance } } = forminput;
       if (dependance) {

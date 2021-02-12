@@ -51,13 +51,36 @@ proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
 
+proto.updateOlSelectionFeature = function(id, geometry){
+  const featureObject = this.olSelectionFeatures[id];
+  if (featureObject) {
+    geometry = new ol.geom[geometry.type](geometry.coordinates);
+    const feature = featureObject.feature;
+    const mapService = GUI.getComponent('map').getService();
+    feature.setGeometry(geometry);
+    mapService.setSelectionFeatures('update', {
+      feature
+    })
+  }
+};
+
+proto.deleteOlSelectionFeature = function(id){
+  const featureObject = this.olSelectionFeatures[id];
+  if (featureObject) {
+    mapService.setSelectionFeatures('remove', {
+      feature: featureObject.feature
+    });
+    delete this.olSelectionFeatures[id];
+  }
+};
+
 proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
 proto.addOlSelectionFeature = function({id, geometry}={}){
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromGeometry(geometry),
+    feature: createFeatureFromGeometry({id, geometry}),
     added: false
   };
   return this.olSelectionFeatures[id];

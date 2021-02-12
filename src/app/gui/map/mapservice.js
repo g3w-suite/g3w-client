@@ -2125,7 +2125,7 @@ let animatingHighlight = false;
 * */
 proto.setSelectionFeatures = function(action='add', options={}){
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {color})
+  color && this.setDefaultLayerStyle('selectionLayer', {color});
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
@@ -2133,6 +2133,11 @@ proto.setSelectionFeatures = function(action='add', options={}){
       break;
     case 'remove':
       source.removeFeature(feature);
+      break;
+    case 'update':
+      const id = feature.getId();
+      const addedFeature = source.getFeatureById(id);
+      addedFeature.setGeometry(feature.getGeometry());
       break;
     case 'clear':
       source.clear();

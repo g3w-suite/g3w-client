@@ -1,5 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils/utils');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Layer = require('./layer');
 const Editor = require('core/editing/editor');
 const FeaturesStore = require('./features/featuresstore');
@@ -35,26 +35,21 @@ function TableLayer(config={}, options={}) {
           promise.then(features => {
             this.emit('getFeatures', features);
             return d.resolve(features);
-          }).fail((err) => {
-            return d.reject(err);
-          })
+          }).fail(err => d.reject(err))
         })
-        .fail((err) => {
-          d.reject(err);
-        });
+        .fail(err => d.reject(err));
       return d.promise();
     },
     commit(commitItems) {
       const d = $.Deferred();
       this._featuresstore.commit(commitItems)
-        .then((promise) => {
+        .then(promise => {
           promise
-            .then((response) => {
-              return d.resolve(response);
+            .then(response => {
+              response && response.result && this.syncSelectionFilterFeatures(commitItems);
+              d.resolve(response)
             })
-            .fail((err) => {
-              return d.reject(err);
-          })
+            .fail(err => d.reject(err))
         })
         .fail((err)  => {
           d.reject(err);
@@ -132,6 +127,22 @@ function TableLayer(config={}, options={}) {
 inherit(TableLayer, Layer);
 
 const proto = TableLayer.prototype;
+
+//sync selection
+proto.syncSelectionFilterFeatures = function(commitItems){
+  try {
+    const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
+    if (layer.isGeoLayer() && layer.isSelectionActive()){
+      commitItems.update.forEach(updateItem =>{
+        const {id, geometry} = updateItem;
+        layer.hasSelectionFid(id) && layer.updateOlSelectionFeature(id,geometry);
+      });
+      commitItems.delete.forEach(id =>{
+        layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
+      })
+    }
+  } catch(err){}
+};
 
 proto.setFormPercentage = function(perc){
   this.config.editing.form.perc = perc;

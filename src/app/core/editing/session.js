@@ -14,7 +14,7 @@ function Session(options={}) {
     stop: function() {
       this._stop();
     },
-    saveChangesOnServer(){} // hook to get informed that are saved on server
+    saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
   };
   base(this, options);
 
@@ -368,7 +368,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
             })
           }
           this._history.clear();
-          this.saveChangesOnServer();
+          this.saveChangesOnServer(commitItems);
         }
         d.resolve(commitItems, response)
       })
