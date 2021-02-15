@@ -314,7 +314,6 @@ proto.setInBBoxParam = function(){
 
 proto.resetMapBBoxEventHandlerKey = function(){
   ol.Observable.unByKey(this.mapBBoxEventHandlerKey.key);
-  this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
   this.mapBBoxEventHandlerKey.key = null;
   this.mapBBoxEventHandlerKey.cb = null;
 };
@@ -332,7 +331,10 @@ proto.getDataFromBBOX = async function(){
     };
     this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
     this.mapBBoxEventHandlerKey.cb();
-  } else this.resetMapBBoxEventHandlerKey();
+  } else {
+    this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
+    this.resetMapBBoxEventHandlerKey();
+  }
 };
 
 proto.addFeature = function(feature) {

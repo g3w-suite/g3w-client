@@ -238,7 +238,9 @@ proto.deleteFilterToken = async function(){
     try {
       await this.providers['filtertoken'].deleteFilterToken();
       ApplicationService.setFilterToken(null);
-      this.emit('filtertokenchange', this.getId());
+      this.emit('filtertokenchange', {
+        layerId: this.getId()
+      });
     } catch(err) {
       console.log('Error deleteing filtertoken')
     }
@@ -262,7 +264,9 @@ proto.createFilterToken = async function(){
           filtertoken = await this.providers['filtertoken'].getFilterToken(params);
         }
         ApplicationService.setFilterToken(filtertoken);
-        this.emit('filtertokenchange', this.getId());
+        this.emit('filtertokenchange', {
+          layerId: this.getId()
+        });
       }
     } catch(err){
       console.log('Error create update token');

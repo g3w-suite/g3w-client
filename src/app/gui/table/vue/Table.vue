@@ -238,6 +238,7 @@
       })
     },
     beforeDestroy() {
+      this.$options.service.clear();
       this.$options.service.off('ajax-reload');
       this.$options.service.off('redraw');
       GUI.un('setContent', this.setContentKey);
