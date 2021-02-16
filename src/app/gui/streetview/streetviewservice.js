@@ -19,7 +19,6 @@ function StreetViewService() {
       })
     }) : Promise.reject();
   };
-
   base(this);
 }
 

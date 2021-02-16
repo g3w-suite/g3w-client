@@ -483,6 +483,13 @@ const geoutils = {
     }
     return d.promise();
   },
+  transformBBOX({bbox, sourceCrs, destinationCrs}={}){
+    const point1 = new ol.geom.Point([bbox[0], bbox[1]]);
+    const point2 = new ol.geom.Point([bbox[2], bbox[3]]);
+    point1.transform(sourceCrs, destinationCrs);
+    point2.transform(sourceCrs, destinationCrs);
+    return [...point1.getCoordinates(), ...point2.getCoordinates()];
+  },
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
