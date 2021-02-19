@@ -51,6 +51,7 @@ const TableService = function(options = {}) {
       filter: this.layer.state.filter
     }
   };
+  // pagination filter features
   this._async = {
     state: false,
     fnc: noop
@@ -125,32 +126,31 @@ proto.addRemoveSelectedFeature = function(feature){
   }
 };
 
-proto.getAllFeatures = function(){
+proto.getAllFeatures = function(params){
   GUI.setLoadingContent(true);
   return new Promise((resolve, reject) =>{
-    this.layer.getDataTable({})
+    this.layer.getDataTable(params || {})
       .then(data =>{
         const {features} = data;
         if (this.geolayer && features) {
-          const LoadedFeaturesId = this.state.features.map(feature => feature.id);
-          features.forEach(feature => {
-            if (LoadedFeaturesId.indexOf(feature.id) === -1) {
-              feature.geometry && this.layer.addOlSelectionFeature({
-                id: feature.id,
-                geometry: this._returnGeometry(feature)
-              });
-            }
-          });
-          resolve();
+          if (!params){
+            const LoadedFeaturesId = this.state.features.map(feature => feature.id);
+            features.forEach(feature => {
+              if (LoadedFeaturesId.indexOf(feature.id) === -1) {
+                feature.geometry && this.layer.addOlSelectionFeature({
+                  id: feature.id,
+                  geometry: this._returnGeometry(feature)
+                });
+              }
+            });
+            this.getAll = true;
+          }
+          resolve(features);
         }
-        this.getAll = true;
       })
-      .fail(()=>{
-        reject();
-      })
+      .fail(()=> reject())
       .always(()=>GUI.setLoadingContent(false))
   })
-
 };
 
 proto.switchSelection = async function(){
@@ -220,10 +220,28 @@ proto.selectAllFeatures = async function(){
     }
   } else { //pagination
     if (this.paginationfilter) { // filtered
-      this.state.features.forEach(feature => {
-        feature.selected = this.state.selectAll;
-        this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
-      });
+      if (this.state.featurescount >= this.state.allfeatures)
+        this.state.features.forEach(feature => {
+          feature.selected = this.state.selectAll;
+          this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
+        });
+      else {
+        const {search, ordering, formatter, in_bbox } = this.paginationParams;
+        const features = await this.getAllFeatures({
+          search,
+          ordering,
+          formatter,
+          in_bbox
+        });
+        features.forEach(feature =>{
+          !this.getAll && this.geolayer && feature.geometry && this.layer.addOlSelectionFeature({
+            id: feature.id,
+            geometry: this._returnGeometry(feature)
+          });
+          this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
+        })
+      }
+      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
     } else {
       this.state.features.forEach(feature => feature.selected = this.state.selectAll);
       !this.getAll && await this.getAllFeatures();
@@ -271,14 +289,17 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0  ? 1 : (start/length) + 1;
       const in_bbox = this.state.tools.geolayer.in_bbox;
-      const getDataPromise = this.state.pagination ? this.layer.getDataTable({
+      this.paginationParams = {
         page: this.currentPage,
         page_size: length,
         search: searchText,
         in_bbox,
         formatter: this.formatter,
         ordering
-      }) : this.layer.getDataTable({
+      };
+      const getDataPromise = this.state.pagination ?
+        this.layer.getDataTable(this.paginationParams) :
+        this.layer.getDataTable({
         ordering,
         in_bbox,
         formatter: this.formatter
