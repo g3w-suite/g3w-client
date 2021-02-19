@@ -18,8 +18,8 @@
               :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip.create="'sdk.tooltips.download_csv'"></span>
         <span v-if="showDownloadButtons.xls" v-download class="action-button-icon action-button skin-tooltip-top" data-placement="top" data-toggle="tooltip"
               :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip.create="'sdk.tooltips.download_xls'"></span>
-        <span v-if="showChartButton" v-download class="action-button-icon action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip"
-              :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click="showChart"  v-t-tooltip.create="'sdk.tooltips.show_chart'"></span>
+        <span v-if="showChartButton"  class="action-button-icon action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip"
+              :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click="showChart" v-t-tooltip.create="'sdk.tooltips.show_chart'"></span>
       </div>
     </div>
   </div>

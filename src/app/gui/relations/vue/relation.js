@@ -4,6 +4,7 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
 const GUI = require('gui/gui');
+const {throttle} = require('core/utils/utils');
 const RelationPageEventBus = require('./relationeventbus');
 const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
 let relationDataTable;
@@ -50,16 +51,6 @@ module.exports = {
     },
     saveRelation(type){
       this.$emit('save-relation', type)
-    },
-    async showChart(){
-      this.chart = !this.chart;
-      await this.$nextTick();
-      this.chartContainer = this.chartContainer ||  $('#chart_content');
-      const relationData = {
-        relations: [this.relation],
-        fid: this.feature.attributes['g3w_fid'],
-      };
-      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
@@ -128,6 +119,17 @@ module.exports = {
     };
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
+    });
+
+    this.showChart = throttle(async ()=> {
+      this.chart = !this.chart;
+      await this.$nextTick();
+      this.chartContainer = this.chartContainer ||  $('#chart_content');
+      const relationData = {
+        relations: [this.relation],
+        fid: this.feature.attributes['g3w_fid'],
+      };
+      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
     })
   },
   async mounted() {

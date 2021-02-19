@@ -1,5 +1,5 @@
 const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile } = require('core/utils/utils');
+const {base, inherit, noop, downloadFile, throttle } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -380,7 +380,7 @@ proto.setActionsForLayers = function(layers) {
               action
             })
           },
-          cbk: this.addToSelection.bind(this)
+          cbk: throttle(this.addToSelection.bind(this))
         });
         this.listenClearSelection(layer, 'selection');
         //end selection action
@@ -391,7 +391,7 @@ proto.setActionsForLayers = function(layers) {
         mouseover: true,
         class: GUI.getFontClass('marker'),
         hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
-        cbk: this.goToGeometry.bind(this)
+        cbk: throttle(this.goToGeometry.bind(this))
       });
     }
     // in case of relations
@@ -426,7 +426,7 @@ proto.setActionsForLayers = function(layers) {
            toggled
          }),
          hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
-         cbk: this.showRelationsChart.bind(this, chartRelationIds)
+         cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
        });
       }
     }
