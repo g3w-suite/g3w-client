@@ -160,16 +160,16 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-proto.setEnable = function(bool) {
+proto.setEnable = function(bool, toggled) {
   const controlButton = $(this.element).find('button').first();
-  if (bool)  {
+  if (bool) {
     controlButton.removeClass('g3w-ol-disabled');
-  } else {
+    toggled && controlButton.addClass('g3w-ol-toggled');
+  }
+  else {
     controlButton.addClass('g3w-ol-disabled');
     controlButton.removeClass('g3w-ol-toggled');
-    if (this._interaction) {
-      this._interaction.setActive(false);
-    }
+    this._interaction && this._interaction.setActive(false);
   }
   this._enabled = bool;
 };
