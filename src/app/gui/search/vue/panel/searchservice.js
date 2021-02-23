@@ -394,8 +394,9 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
         forminput.loading = true;
         this.getUniqueValuesFromField({unique: forminput.attribute})
           .then(values => {
-            values.splice(0,0,forminput.options.values[0])
-            forminput.options.values = this.valuesToKeysValues(values);
+            values = this.valuesToKeysValues(values);
+            values.splice(0,0,forminput.options.values[0]);
+            forminput.options.values = values;
           })
           .catch(()=> forminput.options.values = [])
           .finally(()=> forminput.loading = false)

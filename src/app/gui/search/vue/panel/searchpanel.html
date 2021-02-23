@@ -22,7 +22,7 @@
         </div>
         <div v-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || forminput.loading">
           <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-            <span>{{  forminput.label || forminput.attribute }}</span>
+            <span>{{forminput.label || forminput.attribute }}</span>
             <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
           </label>
           <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"></bar-loader>
