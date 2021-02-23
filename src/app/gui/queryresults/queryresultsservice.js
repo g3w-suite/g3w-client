@@ -604,7 +604,7 @@ proto.hideChart = function(container){
 };
 
 proto.showRelationsChart = function(ids=[], layer, feature, action, index){
-  const container = $(`#${layer.id}_${index} td`);
+  const container = $(`#${layer.id}_${index} > td`);
   action.state.toggled[index] = !action.state.toggled[index];
   const relations = this._relations[layer.id];
   const relationData = {
