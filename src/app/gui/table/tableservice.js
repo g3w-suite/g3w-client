@@ -211,6 +211,7 @@ proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
+    console.log('qui')
     if (this.filteredfeatures !== null) {  //check if filter is set (no pagination)
       this.checkFilteredFeaturesForNoPagination();
     } else {
@@ -252,7 +253,10 @@ proto.selectAllFeatures = async function(){
 };
 
 proto.setFilteredFeature = function(featuresIndex){
-  if (featuresIndex === undefined) this.checkSelectAll();
+  if (featuresIndex === undefined) {
+    this.filteredfeatures = null;
+    this.checkSelectAll();
+  }
   else {
     const featuresIndexLength =  featuresIndex.length;
     this.state.nofilteredrow = featuresIndexLength === 0;
