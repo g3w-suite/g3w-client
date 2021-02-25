@@ -1,12 +1,11 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const GUI = require('gui/gui');
-const fieldsMixin = require('gui/vue/vue.mixins').fieldsMixin;
+const {fieldsMixin } = require('gui/vue/vue.mixins');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
@@ -15,7 +14,7 @@ const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
 const vueComponentOptions = {
   ...compiledTemplate,
   mixins: [fieldsMixin],
-  data: function() {
+  data() {
     return {
       state: this.$options.queryResultsService.state,
       layersFeaturesBoxes: {},
@@ -63,24 +62,24 @@ const vueComponentOptions = {
     hasFieldOutOfFormStructure(layer) {
       return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
     },
-    isArray: function (value) {
-      return _.isArray(value);
+    isArray (value) {
+      return Array.isArray(value);
     },
-    isSimple: function(layer,attributeName,attributeValue) {
+    isSimple(layer,attributeName,attributeValue) {
       return !this.isArray(attributeValue) && this.fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
     },
-    isLink: function(layer,attributeName,attributeValue) {
+    isLink(layer,attributeName,attributeValue) {
       return this.fieldIs(Fields.LINK,layer,attributeName,attributeValue);
     },
-    is: function(type,layer,attributeName,attributeValue) {
+    is(type,layer,attributeName,attributeValue) {
       return this.fieldIs(type,layer,attributeName,attributeValue);
     },
-    checkField: function(type, fieldname, attributes) {
+    checkField(type, fieldname, attributes) {
       return attributes.find((attribute) => {
         return (attribute.name === fieldname) && (attribute.type === type);
       }) ? true : false;
     },
-    layerHasFeatures: function(layer) {
+    layerHasFeatures(layer) {
       if (layer.features) {
         return layer.features.length > 0;
       }
@@ -91,23 +90,23 @@ const vueComponentOptions = {
         highlight: true
       });
     },
-    layerHasActions: function(layer) {
+    layerHasActions(layer) {
       return this.state.layersactions[layer.id].length > 0;
     },
-    featureHasActions: function(layer,feature) {
+    featureHasActions(layer,feature) {
       return this.geometryAvailable(feature);
     },
-    geometryAvailable: function(feature) {
+    geometryAvailable(feature) {
       return feature.geometry ? true : false;
     },
     attributesSubset: function(attributes) {
       const _attributes = _.filter(attributes, function(attribute) {
-        return attribute.type != 'image';
+        return attribute.show && attribute.type != 'image';
       });
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
-    relationsAttributesSubset: function(relationAttributes) {
+    relationsAttributesSubset(relationAttributes) {
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         if (_.isArray(value)) return;
@@ -116,7 +115,7 @@ const vueComponentOptions = {
       const end = Math.min(maxSubsetLength, attributes.length);
       return attributes.slice(0, end);
     },
-    relationsAttributes: function(relationAttributes) {
+    relationsAttributes(relationAttributes) {
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
         attributes.push({label: attribute, value: value})
@@ -126,7 +125,7 @@ const vueComponentOptions = {
     attributesSubsetLength: function(attributes) {
       return this.attributesSubset(attributes).length;
     },
-    cellWidth: function(index,layer) {
+    cellWidth(index,layer) {
       const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
       const subsetLength = this.attributesSubsetLength(layer.attributes);
       const diff = headerLength - subsetLength;
@@ -140,7 +139,7 @@ const vueComponentOptions = {
         return baseCellWidth;
       }
     },
-    featureBoxColspan: function(layer) {
+    featureBoxColspan(layer) {
       let colspan = this.attributesSubsetLength(layer.attributes);
       if (layer.expandable) colspan += 1;
       if (layer.hasgeometry) colspan += 1;
@@ -178,7 +177,7 @@ const vueComponentOptions = {
         return attribute.name === field_name;
       })
     },
-    collapsedFeatureBox: function(layer, feature, relation_index) {
+    collapsedFeatureBox(layer, feature, relation_index) {
       const boxid = !_.isNil(relation_index) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
       const collapsed = this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
       return collapsed;
@@ -191,34 +190,29 @@ const vueComponentOptions = {
       });
     },
     getBoxId(layer, feature, relation_index) {
-      let boxid;
-      if (!_.isNil(relation_index)) {
-        boxid = layer.id + '_' + feature.id+ '_' + relation_index;
-      } else {
-        boxid = layer.id + '_' + feature.id;
-      }
+      const boxid = (!_.isNil(relation_index)) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
       return boxid;
     },
-    toggleFeatureBox: function(layer, feature, relation_index) {
+    toggleFeatureBox(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
       requestAnimationFrame(() => {
         this.showFeatureInfo(layer, boxid);
       })
     },
-    toggleFeatureBoxAndZoom: function(layer, feature, relation_index) {
+    toggleFeatureBoxAndZoom(layer, feature, relation_index) {
       this.toggleFeatureBox(layer, feature, relation_index);
     },
     trigger: function(action,layer,feature) {
       this.$options.queryResultsService.trigger(action,layer,feature);
     },
-    showFullPhoto: function(url) {
+    showFullPhoto(url) {
       this.$options.queryResultsService.showFullPhoto(url);
     },
-    openLink: function(link_url) {
+    openLink(link_url) {
       window.open(link_url, '_blank');
     },
-    fieldIs: function(TYPE,layer,attributeName,attributeValue) {
+    fieldIs(TYPE,layer,attributeName,attributeValue) {
       const fieldType = this.getFieldType(attributeValue);
       return fieldType === TYPE;
     },
@@ -240,7 +234,7 @@ const vueComponentOptions = {
     }
   },
   watch: {
-    'state.layers': function(layers) {
+    'state.layers'(layers) {
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
       })
@@ -282,9 +276,7 @@ function QueryResultsComponent(options={}) {
   };
 
   this._service.onafter('setLayersData', async () => {
-    if (!this.internalComponent) {
-      this.setInternalComponent();
-    }
+    !this.internalComponent && this.setInternalComponent();
     this.createLayersFeaturesBoxes();
     await this.internalComponent.$nextTick();
     $('.action-button[data-toggle="tooltip"]').tooltip();
@@ -293,7 +285,7 @@ function QueryResultsComponent(options={}) {
   this.createLayersFeaturesBoxes = function() {
     const layersFeaturesBoxes = {};
     const layers = this._service.state.layers;
-    layers.forEach((layer) => {
+    layers.forEach(layer => {
       if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
         layer.expandable = false;
       }
