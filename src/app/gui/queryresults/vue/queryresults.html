@@ -114,7 +114,7 @@
                     <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                       <td :colspan="attributesSubsetLength(layer.attributes)+(state.layersactions[layer.id].length ? 1 : 0)+(!hasLayerOneFeature(layer)*1)">
                         <table class="feature_attributes">
-                            <tr v-for="attribute in layer.attributes">
+                            <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
                                 <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>

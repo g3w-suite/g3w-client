@@ -113,7 +113,7 @@ const vueComponentOptions = {
     },
     attributesSubset: function(attributes) {
       const _attributes = _.filter(attributes, function(attribute) {
-        return attribute.type != 'image';
+        return attribute.show && attribute.type != 'image';
       });
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);

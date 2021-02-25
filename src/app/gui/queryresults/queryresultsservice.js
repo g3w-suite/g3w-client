@@ -235,7 +235,9 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
             getRelationFieldsFromFormStructure(node);
           }
         }
-        let fields = layer.getFields();
+        const fields = layer.getFields().filter(field => {
+          return field.show
+        }); // get features show
         formStructure = {
           structure,
           fields
@@ -285,18 +287,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       })) : [];
       layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0]);
-      layerObj.attributes.forEach((attribute) => {
+      layerObj.attributes.forEach(attribute => {
         if (formStructure) {
-          const relationField = formStructure.fields.find((field)=>{
-            return field.name === attribute.name;
-          });
+          const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
           !relationField && formStructure.fields.push(attribute);
         }
-        if (attribute.type === 'image') {
-          layerObj.hasImageField = true;
-        }
+        if (attribute.type === 'image') layerObj.hasImageField = true;
       });
-      featuresForLayer.features.forEach((feature) => {
+      featuresForLayer.features.forEach(feature => {
         const fid = feature.getId() ? feature.getId() : id;
         const geometry = feature.getGeometry();
         if (geometry) layerObj.hasgeometry = true;
