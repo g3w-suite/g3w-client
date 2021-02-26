@@ -187,7 +187,7 @@ proto.clearLayerSelection = function(){
 };
 
 proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
-  const filtered = this.filteredfeatures;
+  const filtered = this.filteredfeatures.length > 0;
   if (filtered) {
     if (this.filteredfeatures.length === this.allfeaturesnumber) {
       this.state.selectAll && this.layer.setSelectionFidsAll();
@@ -215,7 +215,7 @@ proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
-    if (this.filteredfeatures) {  //check if filter is set (no pagination)
+    if (this.filteredfeatures.length > 0) {  //check if filter is set (no pagination)
       this.checkFilteredFeaturesForNoPagination();
     } else {
       this.state.tools.show = this.state.selectAll;
@@ -255,17 +255,30 @@ proto.selectAllFeatures = async function(){
   }
 };
 
-proto.setNoPaginationFilteredFeatures = function(){
-  this.filteredfeatures = this.nopaginationsfilter.table || Object.values(this.nopaginationsfilter.columns).reduce((accumultator, column)=>{
-    accumultator || !!column;
-  })
+proto.addNoPaginationFilteredFeatures = function(featuresIndex){
+  this.filteredfeatures = this.filteredfeatures ? [...featuresIndex, ...this.filteredfeatures] : [...featuresIndex];
+};
+
+proto.removeNoPaginationFilteredFeatures = function(featuresIndex=[]){
+  const featuresIndexLength = featuresIndex.length;
+  for (let i = 0; i < featuresIndexLength; i++){
+    const featureIndex = featuresIndex[i];
+    const findIndex = this.filteredfeatures.indexOf(featureIndex);
+    findIndex !== -1 && this.filteredfeatures.splice(findIndex,1);
+  }
 };
 
 proto.setFilteredFeature = function(featuresIndex, column){
   if (featuresIndex === undefined) {
-    if (column !== undefined) this.nopaginationsfilter.columns[column] = false;
-    else this.nopaginationsfilter.table = false;
-    this.setNoPaginationFilteredFeatures();
+    let oldFeaturesIndex;
+    if (column !== undefined) {
+      oldFeaturesIndex = this.nopaginationsfilter.columns[column];
+      this.nopaginationsfilter.columns[column] = false;
+    } else {
+      oldFeaturesIndex = this.nopaginationsfilter.table;
+      this.nopaginationsfilter.table = false;
+    }
+    this.removeNoPaginationFilteredFeatures(oldFeaturesIndex);
     this.checkSelectAll();
   } else {
     const featuresIndexLength =  featuresIndex.length;
@@ -273,7 +286,7 @@ proto.setFilteredFeature = function(featuresIndex, column){
     if (column !== undefined) this.nopaginationsfilter.columns[column] = filtered;
     else this.nopaginationsfilter.table = filtered;
     this.state.nofilteredrow = featuresIndexLength === 0;
-    this.setNoPaginationFilteredFeatures();
+    this.addNoPaginationFilteredFeatures(featuresIndex);
     if (this.state.nofilteredrow) this.state.selectAll = false;
     else this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
   }
