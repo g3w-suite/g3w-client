@@ -205,7 +205,6 @@ proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
         selected = selected || feature.selected;
       });
       this.state.tools.show = selected;
-      this.setFilteredFeature(this.filteredfeatures);
     }
   }
   return filtered;
