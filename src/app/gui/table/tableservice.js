@@ -13,7 +13,11 @@ const TableService = function(options = {}) {
   this.formatter = options.formatter;
   const headers = this.getHeaders();
   this.allfeaturesnumber;
-  this.filteredfeatures = null;
+  this.filteredfeatures = false;
+  this.nopaginationsfilter = {
+    table: false,
+    columns: {}
+  };
   this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
@@ -60,13 +64,13 @@ const TableService = function(options = {}) {
     this._async.state = options.perc === 100;
   });
   this.layer.on('unselectionall', this.clearAllSelection);
-  this.filterChangeHandler = async ()=>{
+  this.filterChangeHandler = async ({filtertoken}={})=>{
     let data = [];
     const emitRedraw = !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
       data = emitRedraw ? await this.reloadData() : null;
     }
-    emitRedraw && this.emit('redraw', data);
+    emitRedraw && this.emit('redraw', data)
   };
   this.layer.on('filtertokenchange', this.filterChangeHandler);
 };
@@ -155,15 +159,15 @@ proto.getAllFeatures = function(params){
 
 proto.switchSelection = async function(){
   if (!this.state.pagination) { // no pagination
-    if (this.filteredfeatures === null) { //no filter
+    if (this.filteredfeatures) { //no filter
+      this.checkFilteredFeaturesForNoPagination(true);
+    } else { // filter
       this.state.features.forEach(feature => {
         feature.selected = !feature.selected;
       });
       this.layer.invertSelectionFids();
       this.checkSelectAll();
       this.state.tools.show = this.selectedfeaturesfid.size > 0;
-    } else { // filter
-      this.checkFilteredFeaturesForNoPagination(true);
     }
   } else { // pagination
     let selected = false;
@@ -183,7 +187,7 @@ proto.clearLayerSelection = function(){
 };
 
 proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
-  const filtered = this.filteredfeatures !== null;
+  const filtered = this.filteredfeatures;
   if (filtered) {
     if (this.filteredfeatures.length === this.allfeaturesnumber) {
       this.state.selectAll && this.layer.setSelectionFidsAll();
@@ -211,8 +215,7 @@ proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
-    console.log('qui')
-    if (this.filteredfeatures !== null) {  //check if filter is set (no pagination)
+    if (this.filteredfeatures) {  //check if filter is set (no pagination)
       this.checkFilteredFeaturesForNoPagination();
     } else {
       this.state.tools.show = this.state.selectAll;
@@ -252,15 +255,25 @@ proto.selectAllFeatures = async function(){
   }
 };
 
-proto.setFilteredFeature = function(featuresIndex){
+proto.setNoPaginationFilteredFeatures = function(){
+  this.filteredfeatures = this.nopaginationsfilter.table || Object.values(this.nopaginationsfilter.columns).reduce((accumultator, column)=>{
+    accumultator || !!column;
+  })
+};
+
+proto.setFilteredFeature = function(featuresIndex, column){
   if (featuresIndex === undefined) {
-    this.filteredfeatures = null;
+    if (column !== undefined) this.nopaginationsfilter.columns[column] = false;
+    else this.nopaginationsfilter.table = false;
+    this.setNoPaginationFilteredFeatures();
     this.checkSelectAll();
-  }
-  else {
+  } else {
     const featuresIndexLength =  featuresIndex.length;
+    const filtered = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? false : featuresIndex;
+    if (column !== undefined) this.nopaginationsfilter.columns[column] = filtered;
+    else this.nopaginationsfilter.table = filtered;
     this.state.nofilteredrow = featuresIndexLength === 0;
-    this.filteredfeatures = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? null : featuresIndex;
+    this.setNoPaginationFilteredFeatures();
     if (this.state.nofilteredrow) this.state.selectAll = false;
     else this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
   }
