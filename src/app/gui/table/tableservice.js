@@ -159,7 +159,7 @@ proto.getAllFeatures = function(params){
 
 proto.switchSelection = async function(){
   if (!this.state.pagination) { // no pagination
-    if (this.filteredfeatures) { //no filter
+    if (this.filteredfeatures.length > 0) { //no filter
       this.checkFilteredFeaturesForNoPagination(true);
     } else { // filter
       this.state.features.forEach(feature => {
