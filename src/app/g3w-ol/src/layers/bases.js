@@ -3,9 +3,11 @@ const BaseLayers = {};
 
 BaseLayers.OSM = {};
 
-BaseLayers.OSM.get = function({title, id}={}){
+BaseLayers.OSM.get = function({title, id, url}={}){
   return new ol.layer.Tile({
-    source: new ol.source.OSM(),
+    source: new ol.source.OSM({
+      url
+    }),
     id: id || 'osm',
     title: title || 'OSM',
     basemap: true
