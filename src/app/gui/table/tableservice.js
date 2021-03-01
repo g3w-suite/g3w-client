@@ -282,8 +282,12 @@ proto.setFilteredFeature = function(featuresIndex, column){
   } else {
     const featuresIndexLength =  featuresIndex.length;
     const filtered = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? false : featuresIndex;
-    if (column !== undefined) this.nopaginationsfilter.columns[column] = filtered;
-    else this.nopaginationsfilter.table = filtered;
+    if (column !== undefined) {
+      this.nopaginationsfilter.columns[column] = filtered ? this.nopaginationsfilter.columns[column] : filtered;
+    }
+    else {
+      this.nopaginationsfilter.table = filtered ? this.nopaginationsfilter.table : filtered;
+    }
     this.state.nofilteredrow = featuresIndexLength === 0;
     this.addNoPaginationFilteredFeatures(featuresIndex);
     if (this.state.nofilteredrow) this.state.selectAll = false;

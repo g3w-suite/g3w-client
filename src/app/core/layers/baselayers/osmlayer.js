@@ -12,7 +12,10 @@ inherit(OSMLayer, BaseLayer);
 const proto = OSMLayer.prototype;
 
 proto._makeOlLayer = function() {
-  const olLayer = BasesLayers.OSM;
+  const olLayer = BasesLayers.OSM.get({
+    id: this.config.name,
+    title: this.config.title
+  });
   return olLayer
 };
 

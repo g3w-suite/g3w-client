@@ -1,12 +1,16 @@
 const RasterLayers = require('./rasters');
 const BaseLayers = {};
 
-BaseLayers.OSM = new ol.layer.Tile({
-  source: new ol.source.OSM(),
-  id: 'osm',
-  title: 'OSM',
-  basemap: true
-});
+BaseLayers.OSM = {};
+
+BaseLayers.OSM.get = function({title, id}={}){
+  return new ol.layer.Tile({
+    source: new ol.source.OSM(),
+    id: id || 'osm',
+    title: title || 'OSM',
+    basemap: true
+  });
+};
 
 BaseLayers.TMS =  {
   get: function({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
