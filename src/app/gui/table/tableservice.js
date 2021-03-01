@@ -1,4 +1,5 @@
-const {inherit } = require('core/utils/utils');
+import ApplicationState from 'core/applicationstate';
+const {inherit, debounce } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
@@ -16,7 +17,8 @@ const TableService = function(options = {}) {
   this.filteredfeatures = false;
   this.nopaginationsfilter = {
     table: false,
-    columns: {}
+    columns: {},
+    map: []
   };
   this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
@@ -64,11 +66,19 @@ const TableService = function(options = {}) {
     this._async.state = options.perc === 100;
   });
   this.layer.on('unselectionall', this.clearAllSelection);
-  this.filterChangeHandler = async ({filtertoken}={})=>{
+  this.filterChangeHandler = async ({type}={})=>{
     let data = [];
-    const emitRedraw = !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
+    const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
-      data = emitRedraw ? await this.reloadData() : null;
+      data = emitRedraw ? await this.reloadData() : [];
+      if (this.state.tools.geolayer.active) {
+        this.nopaginationsfilter.map && this.removeNoPaginationFilteredFeatures(this.nopaginationsfilter.map);
+        this.nopaginationsfilter.map = [];
+        data.forEach((data, index) =>{
+          this.nopaginationsfilter.map[index] = index;
+        });
+        this.addNoPaginationFilteredFeatures(this.nopaginationsfilter.map);
+      }
     }
     emitRedraw && this.emit('redraw', data)
   };
@@ -190,7 +200,8 @@ proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
   const filtered = this.filteredfeatures.length > 0;
   if (filtered) {
     if (this.filteredfeatures.length === this.allfeaturesnumber) {
-      this.state.selectAll && this.layer.setSelectionFidsAll();
+      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+      this.state.selectAll ? this.layer.setSelectionFidsAll() : this.layer.clearSelectionFids();
       this.state.tools.show = this.state.selectAll;
     } else {
       let selected = false;
@@ -283,9 +294,10 @@ proto.setFilteredFeature = function(featuresIndex, column){
     const featuresIndexLength =  featuresIndex.length;
     const filtered = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? false : featuresIndex;
     if (column !== undefined) {
+      this.nopaginationsfilter.columns[column] && this.removeNoPaginationFilteredFeatures(this.nopaginationsfilter.columns[column]);
       this.nopaginationsfilter.columns[column] = filtered ? this.nopaginationsfilter.columns[column] : filtered;
-    }
-    else {
+    } else {
+      this.nopaginationsfilter.table && this.removeNoPaginationFilteredFeatures(this.nopaginationsfilter.table);
       this.nopaginationsfilter.table = filtered ? this.nopaginationsfilter.table : filtered;
     }
     this.state.nofilteredrow = featuresIndexLength === 0;
@@ -380,13 +392,18 @@ proto.getDataFromBBOX = async function(){
       this.emit('ajax-reload');
     } : async ()=>{
       this.setInBBoxParam();
-      await this.getData();
-      this.filterChangeHandler();
+      this.filterChangeHandler({
+        type: 'in_bbox'
+      });
     };
     this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
     this.mapBBoxEventHandlerKey.cb();
   } else {
     this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
+    if (!this.state.pagination) {
+      this.nopaginationsfilter.map && this.removeNoPaginationFilteredFeatures(this.nopaginationsfilter.map);
+      this.nopaginationsfilter.map = [];
+    }
     this.resetMapBBoxEventHandlerKey();
   }
 };
