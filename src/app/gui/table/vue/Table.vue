@@ -215,18 +215,14 @@
           searchDelay: 600
         });
         const debounceSearch = debounce(() => {
-          this.$options.service.setFilteredFeature(dataTable.search() ? dataTable.rows( {search:'applied'} )[0]: undefined)
+          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
         }, 600);
         eventHandlers.nopagination['search.dt'] = debounceSearch;
         dataTable.on('search.dt', debounceSearch);
         dataTable.on('length.dt', (evt, settings, length)=> this.$options.service.setAttributeTablePageLength(length));
         this.changeColumn = debounce(async (event, index) =>{
-          dataTable.off('search.dt', debounceSearch);
-          const search = event.target.value.trim();
           dataTable.columns(index).search(event.target.value.trim()).draw();
-          const filterRows = dataTable.rows( {search:'applied'})[0];
-          this.$options.service.setFilteredFeature(search ? filterRows: undefined, index);
-          dataTable.on('search.dt', debounceSearch);
+          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
         });
       }
 
