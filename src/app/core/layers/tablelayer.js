@@ -249,7 +249,8 @@ proto.getEditingFields = function(editable=false) {
 };
 
 proto.isEditingFieldEditable = function(field) {
-  return this.getEditingFields().find(_field => _field.name === field).editable;
+  const find_field = this.getEditingFields().find(_field => _field.name === field);
+  return find_field ? find_field.editable : false;
 };
 
 proto.getEditingNotEditableFields = function() {
