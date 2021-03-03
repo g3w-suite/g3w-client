@@ -1,4 +1,4 @@
-const id = require('core/utils/utils').getUniqueDomId();
+const {getUniqueDomId} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const templateCompiled = Vue.compile( require('./lineXY.html'));
 const C3XYLine = {
@@ -11,7 +11,7 @@ const C3XYLine = {
   },
   data() {
     return {
-      id: `graphline${id}`,
+      id: `graphline${getUniqueDomId()}`,
       selectitems: [],
       data: [],
       components: [],
