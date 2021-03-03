@@ -67,7 +67,8 @@ function QueryResultsService() {
     },
     addActionsForLayers: function(actions) {},
     postRender: function(element) {},
-    closeComponent: function() {}
+    closeComponent: function() {},
+    openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
 
@@ -450,38 +451,27 @@ proto.setActionsForLayers = function(layers) {
   this.addActionsForLayers(this.state.layersactions);
 };
 
-proto.trigger = function(actionId, layer, feature, index) {
+proto.trigger = function(actionId, layer, feature, index, container) {
   const actionMethod = this._actions[actionId];
   actionMethod && actionMethod(layer, feature, index);
   if (layer) {
     const layerActions = this.state.layersactions[layer.id];
     if (layerActions) {
-      let action;
-      layerActions.forEach((layerAction) => {
-        if (layerAction.id === actionId) {
-          action = layerAction;
-        }
-      });
-      if (action) {
-        this.triggerLayerAction(action,layer,feature, index);
-      }
+      const action = layerActions.find(layerAction => layerAction.id === actionId);
+      action && this.triggerLayerAction(action,layer,feature, index, container);
     }
   }
 };
 
-proto.triggerLayerAction = function(action,layer,feature, index) {
-  if (action.cbk) {
-    action.cbk(layer,feature, action, index)
-  }
+proto.triggerLayerAction = function(action,layer,feature, index, container) {
+  action.cbk && action.cbk(layer,feature, action, index, container);
   if (action.route) {
     let url;
     let urlTemplate = action.route;
     url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
       return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
     });
-    if (url && url !== '') {
-      GUI.goto(url);
-    }
+    url && url !== '' && GUI.goto(url);
   }
 };
 
@@ -601,8 +591,7 @@ proto.hideChart = function(container){
   this.emit('hide-chart', container);
 };
 
-proto.showRelationsChart = function(ids=[], layer, feature, action, index){
-  const container = $(`#${layer.id}_${index} > td`);
+proto.showRelationsChart = function(ids=[], layer, feature, action, index, container){
   action.state.toggled[index] = !action.state.toggled[index];
   const relations = this._relations[layer.id];
   const relationData = {
