@@ -27,7 +27,7 @@ const vueComponentOptions = {
     'g3w-link': Link
   },
   computed: {
-    hasLayers: function() {
+    hasLayers() {
       return this.hasResults || !!this.state.components.length;
     },
     hasResults() {
@@ -44,6 +44,9 @@ const vueComponentOptions = {
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;
     },
+    getContainerFromFeatureLayer({layer, index}={}){
+      return $(`#${layer.id}_${index} > td`);
+    },
     hasOneLayerAndOneFeature(layer) {
       const one = this.hasLayerOneFeature(layer);
       if (one) {
@@ -52,6 +55,15 @@ const vueComponentOptions = {
         this.layersFeaturesBoxes[boxid].collapsed = false;
         this.$options.queryResultsService.onceafter('postRender', () => {
           this.showFeatureInfo(layer, boxid);
+          this.$options.queryResultsService.openCloseFeatureResult({
+            open:true,
+            layer,
+            feature,
+            container: this.getContainerFromFeatureLayer({
+              layer,
+              index: 0
+            })
+          })
         });
       }
       return one;
@@ -193,18 +205,30 @@ const vueComponentOptions = {
       const boxid = (!_.isNil(relation_index)) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
       return boxid;
     },
-    toggleFeatureBox(layer, feature, relation_index) {
+    async toggleFeatureBox(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
-      requestAnimationFrame(() => {
-        this.showFeatureInfo(layer, boxid);
-      })
+      await this.$nextTick();
+      this.showFeatureInfo(layer, boxid);
+      setTimeout(()=>{
+        const index = layer.features.indexOf(feature);
+        this.$options.queryResultsService.openCloseFeatureResult({
+          open: !this.layersFeaturesBoxes[boxid].collapsed,
+          layer,
+          feature,
+          container: this.getContainerFromFeatureLayer({
+            layer,
+            index
+          })
+        })
+      });
     },
     toggleFeatureBoxAndZoom(layer, feature, relation_index) {
-      this.toggleFeatureBox(layer, feature, relation_index);
+      !this.hasLayerOneFeature(layer) && this.toggleFeatureBox(layer, feature, relation_index);
     },
-    trigger: function(action,layer,feature) {
-      this.$options.queryResultsService.trigger(action,layer,feature);
+    trigger(action,layer,feature, index) {
+      const container = this.getContainerFromFeatureLayer({layer, index});
+      this.$options.queryResultsService.trigger(action.id,layer,feature, index, container);
     },
     showFullPhoto(url) {
       this.$options.queryResultsService.showFullPhoto(url);

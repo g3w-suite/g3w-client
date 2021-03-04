@@ -63,7 +63,8 @@ function QueryResultsService() {
     postRender: function(element) {},
     closeComponent: function() {
       this.state.download_data = false;
-    }
+    },
+    openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
   this._setRelations(project);
@@ -378,40 +379,27 @@ proto.setActionsForLayers = function(layers) {
   this.addActionsForLayers(this.state.layersactions);
 };
 
-proto.trigger = function(actionId, layer, feature) {
+proto.trigger = function(actionId, layer, feature, index, container) {
   const actionMethod = this._actions[actionId];
-  if (actionMethod) {
-    actionMethod(layer, feature);
-  }
+  actionMethod && actionMethod(layer, feature, index);
   if (layer) {
     const layerActions = this.state.layersactions[layer.id];
     if (layerActions) {
-      let action;
-      layerActions.forEach((layerAction) => {
-        if (layerAction.id === actionId) {
-          action = layerAction;
-        }
-      });
-      if (action) {
-        this.triggerLayerAction(action,layer,feature);
-      }
+      const action = layerActions.find(layerAction => layerAction.id === actionId);
+      action && this.triggerLayerAction(action,layer,feature, index, container);
     }
   }
 };
 
-proto.triggerLayerAction = function(action,layer,feature) {
-  if (action.cbk) {
-    action.cbk(layer,feature, action)
-  }
+proto.triggerLayerAction = function(action,layer,feature, index, container) {
+  action.cbk && action.cbk(layer,feature, action, index, container);
   if (action.route) {
     let url;
     let urlTemplate = action.route;
     url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
       return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
     });
-    if (url && url !== '') {
-      GUI.goto(url);
-    }
+    url && url !== '' && GUI.goto(url);
   }
 };
 
@@ -492,7 +480,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
   });
 };
 
-//function to add c custom componet in query result
+//function to add custom componet in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
 };
