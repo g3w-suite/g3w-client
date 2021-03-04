@@ -73,7 +73,7 @@ const TableService = function(options = {}) {
         this.setNoPaginationFilteredFeatures(mapFilterFeaturesIndex);
       }
     }
-    emitRedraw && this.emit('redraw', data)
+    emitRedraw && this.emit('redraw', data);
   };
   this.layer.on('filtertokenchange', this.filterChangeHandler);
 };
@@ -162,9 +162,18 @@ proto.getAllFeatures = function(params){
 
 proto.switchSelection = async function(){
   if (!this.state.pagination) { // no pagination
-    if (this.nopaginationsfilter.length > 0) { //no filter
-      this.checkFilteredFeaturesForNoPagination(true);
-    } else { // filter
+    if (this.nopaginationsfilter.length) { //filtered
+      let selected = false;
+      const filterFeatures = [];
+      this.state.features.forEach((feature, index) =>{
+        if (this.nopaginationsfilter.indexOf(index) !== -1) filterFeatures.push(feature);
+        feature.selected = !feature.selected;
+        this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](feature.id);
+        selected = selected || feature.selected;
+      });
+      this.state.tools.show = selected;
+      this.checkSelectAll(filterFeatures)
+    } else { // no filter
       this.state.features.forEach(feature => {
         feature.selected = !feature.selected;
       });
@@ -189,37 +198,20 @@ proto.clearLayerSelection = function(){
   this.layer.clearSelectionFids();
 };
 
-proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
-  const filtered = this.nopaginationsfilter.length > 0;
-  if (filtered) {
-    if (this.nopaginationsfilter.length === this.allfeaturesnumber) {
-      this.state.features.forEach(feature => feature.selected = this.state.selectAll);
-      this.state.selectAll ? this.layer.setSelectionFidsAll() : this.layer.clearSelectionFids();
-      this.state.tools.show = this.state.selectAll;
-    } else {
-      let selected = false;
-      this.state.features.forEach((feature, index) =>{
-        if (this.nopaginationsfilter.indexOf(index) !== -1) {
-          feature.selected = inversion ? !feature.selected: this.state.selectAll;
-          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
-        } else if (inversion) {
-          feature.selected = !feature.selected;
-          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
-        }
-        selected = selected || feature.selected;
-      });
-      this.state.tools.show = selected;
-    }
-  }
-  return filtered;
-};
-
 proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
-    if (this.nopaginationsfilter.length > 0) {  //check if filter is set (no pagination)
-      this.checkFilteredFeaturesForNoPagination();
+    if (this.nopaginationsfilter.length) {  //check if filter is set (no pagination)
+      let selected = false;
+      this.state.features.forEach((feature, index) =>{
+        if (this.nopaginationsfilter.indexOf(index) !== -1) {
+          feature.selected = this.state.selectAll;
+          this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
+          selected = selected || feature.selected;
+        }
+      });
+      this.state.tools.show = selected;
     } else {
       this.state.tools.show = this.state.selectAll;
       this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
@@ -260,8 +252,8 @@ proto.selectAllFeatures = async function(){
 
 proto.setFilteredFeature = function(featuresIndex){
   this.nopaginationsfilter = featuresIndex;
-  this.checkSelectAll();
-  this.state.nofilteredrow = featuresIndex.length === 0;
+  this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
+    : this.nopaginationsfilter.map(index=> this.state.features[index]));
 };
 
 proto.setAttributeTablePageLength = function(length){
@@ -381,8 +373,8 @@ proto.addFeature = function(feature) {
   this.state.features.push(tableFeature);
 };
 
-proto.checkSelectAll = function(){
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || this.state.features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+proto.checkSelectAll = function(features=this.state.features){
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || features.reduce((accumulator, feature) => accumulator && feature.selected, true);
 };
 
 proto.addFeatures = function(features=[]) {
