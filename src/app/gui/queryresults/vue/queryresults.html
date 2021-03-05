@@ -51,7 +51,7 @@
                           :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1? '' : 'featurebox-header-open']">
                         <td v-if="state.layersactions[layer.id].length">
                           <span v-if="showAction({action: action, layer:layer, feature:feature})"
-                            @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]"
+                            @click.stop="trigger(action,layer,feature)" v-for="action in state.layersactions[layer.id]"
                             class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
                             <span :class="'action-button-icon ' + action.class"></span>
                           </span>
@@ -102,7 +102,7 @@
                         @mouseout="trigger({id:'clearHighlightGeometry'}, layer, feature, index)" class="featurebox-header"
                         :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1? '' : 'featurebox-header-open']">
                       <td v-if="state.layersactions[layer.id].length">
-                        <span v-if="showAction({action:action, layer:layer, feature:feature})" @click.stop="trigger(action.id,layer,feature)" v-for="action in state.layersactions[layer.id]"  class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
+                        <span v-if="showAction({action:action, layer:layer, feature:feature})" @click.stop="trigger(action,layer,feature)" v-for="action in state.layersactions[layer.id]"  class="action-button skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
                           <span :class="'action-button-icon ' + action.class"></span>
                         </span>
                       </td>
