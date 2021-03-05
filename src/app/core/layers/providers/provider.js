@@ -83,7 +83,9 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
       });
       break;
     default:
-      if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
+      // set true all layer come from qgisserver
+      if (true) {
+      //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
         response =  this._handleXMLStringResponseBeforeConvertToJSON({
           layers,
           response,

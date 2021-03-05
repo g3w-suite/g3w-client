@@ -22,6 +22,7 @@ function QueryResultsService() {
     this.state.download_data = false;
     this.plotLayerIds = [];
   });
+  this.unlistenerlayeractionevents = [];
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': this.highlightGeometry.bind(this),
@@ -192,6 +193,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerId;
   const _handleFeatureFoLayer = (featuresForLayer) => {
     let formStructure;
+    let sourceType;
     let extractRelations = false;
     const layer = featuresForLayer.layer;
     const download = {
@@ -210,6 +212,10 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       download.gpx = layer.isGpxDownlodable();
       download.csv = layer.isCsvDownlodable();
       download.xls = layer.isXlsDownlodable();
+      try {
+        sourceType = layer.getSourceType()
+      } catch(err){}
+
       layerAttributes = layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
@@ -287,7 +293,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         name: attribute.name
       })) : [];
       layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
-      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0]);
+      layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
       layerObj.attributes.forEach(attribute => {
         if (formStructure) {
           const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
@@ -334,7 +340,7 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
   }
 };
 
-proto._parseAttributes = function(layerAttributes, feature) {
+proto._parseAttributes = function(layerAttributes, feature, sourceType) {
   const featureAttributes = feature.getProperties();
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
@@ -347,7 +353,8 @@ proto._parseAttributes = function(layerAttributes, feature) {
     return featureAttributesNames.map((featureAttributesName) => {
       return {
         name: featureAttributesName,
-        label: featureAttributesName
+        label: featureAttributesName,
+        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms'
       }
     })
   }
