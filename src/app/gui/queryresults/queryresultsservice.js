@@ -22,6 +22,7 @@ function QueryResultsService() {
     this.state.download_data = false;
     this.plotLayerIds = [];
   });
+  this.unlistenerlayeractionevents = [];
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
     'highlightgeometry': this.highlightGeometry.bind(this),

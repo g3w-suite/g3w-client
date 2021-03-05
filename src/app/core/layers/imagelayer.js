@@ -95,7 +95,8 @@ proto.isArcgisMapserver = function() {
 };
 
 proto._getBaseLayerName = function() {
-  const baseLayerName = (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  //const baseLayerName = (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
+  const baseLayerName = this.isWmsUseLayerIds() ? this.getId() : this.getName();
   return baseLayerName
 };
 
