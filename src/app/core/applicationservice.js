@@ -266,7 +266,7 @@ const ApplicationService = function() {
         },
         // needed by ProjectsRegistry to get informations about project configuration
         getProjectConfigUrl: function(project) {
-          return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}`;
+          return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
         },
         plugins: config.group.plugins,
         tools: config.tools,
