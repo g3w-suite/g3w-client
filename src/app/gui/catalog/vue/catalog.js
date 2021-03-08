@@ -23,6 +23,7 @@ const vueComponentOptions = {
       showlegend: false,
       currentBaseLayer: null,
       activeTab: null,
+      loading: false,
       // to show context menu right click
       layerMenu: {
         show: false,
@@ -293,8 +294,14 @@ const vueComponentOptions = {
   },
   watch: {
     'state.prstate.currentProject': {
-      handler(project){
-        this.activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+      async handler(project){
+        const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+        this.loading = activeTab === 'baselayers';
+        await this.$nextTick();
+        setTimeout(()=>{
+          this.loading = false;
+          this.activeTab = activeTab;
+        }, activeTab === 'baselayers' ? 500 : 0)
       },
       immediate: false
     }

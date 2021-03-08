@@ -364,17 +364,16 @@ proto.createLayersTree = function(groupName, options={}) {
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
   if (_layerstree) {
-    if (full === true) {
-      return this.state.layerstree;
-    } else {
+    if (full === true) return this.state.layerstree;
+    else {
       let traverse = (obj, newobj) => {
-        _.forIn(obj, layer => {
+        obj.forEach(layer => {
           let lightlayer = {};
-          if (!_.isNil(layer.id)) {
+          if (layer.id !== null && layer.id !== undefined) {
             if (tocLayersId.find(toclayerId => toclayerId === layer.id)) lightlayer.id = layer.id;
             else lightlayer = null;
           }
-          if (!_.isNil(layer.nodes)) {
+          if (layer.nodes !== null && layer.nodes !== undefined) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
             lightlayer.nodes = [];
