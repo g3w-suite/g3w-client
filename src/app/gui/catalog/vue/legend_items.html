@@ -1,7 +1,7 @@
 <div class="legend-item">
   <figure v-for="legendurl in legendurls" :key="legendurl.url">
     <bar-loader :loading="legendurl.loading"></bar-loader>
-    <img style="max-width: 100%" v-show="!legendurl.loading && !legendurl.error" :src="legendurl.url" @error="setError(legendurl)" @load="urlLoaded(legendurl)">
+    <img v-show="!legendurl.loading && !legendurl.error" :src="legendurl.url" @error="setError(legendurl)" @load="urlLoaded(legendurl)">
     <span class="divider"></span>
   </figure>
 </div>
