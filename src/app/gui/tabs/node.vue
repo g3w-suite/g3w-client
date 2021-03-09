@@ -125,7 +125,7 @@
     methods: {
       getRelationName(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
-        return relation.name;
+        return relation && relation.name;
       },
       showRelation(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
