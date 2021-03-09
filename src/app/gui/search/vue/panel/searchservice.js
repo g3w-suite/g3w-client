@@ -177,6 +177,12 @@ proto._run = function() {
   this.doSearch().then(results => {
     queryResultsService.onceafter('postRender', () => {
       this.state.searching = false;
+      const {data=[]} = results;
+      if (this.project.state.autozoom_query && data.length){
+        queryResultsService.zoomToLayerFeaturesExtent({features: data[0].features}, {
+          highlight: true
+        })
+      }
     });
     queryResultsService.setQueryResponse(results);
   }).catch((error) => {
