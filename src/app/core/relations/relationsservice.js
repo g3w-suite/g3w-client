@@ -13,18 +13,14 @@ proto.createUrl = function(options={}){
   const ProjectsRegistry = require('core/project/projectsregistry');
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
-  const {layer={}, relation={}, fid, type='data'} = options;
+  const {layer={}, relation={}, fid, type='data', value} = options;
   let layerId;
   const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
   if (father !== undefined) layerId = layer.id === father ? child: father;
   else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  const field = relation.fieldRef ? relation.fieldRef.referencingField: relation.childField;
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
-  let  value = fid;
-  if (typeof value === 'string') {
-    value = value.split('.');
-    value = value.length === 1 ? value[0]: value[1];
-  }
-  return `${dataUrl}?relationonetomany=${relationId}|${value}`;
+  return `${dataUrl}?field=${field}|eq|${value}`; // PATCH TO ISSUE ON FID QGISSERVER
 };
 
 proto.getRelations = function(options={}) {

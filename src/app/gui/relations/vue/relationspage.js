@@ -47,9 +47,11 @@ const InternalComponent = Vue.extend({
       this.relation = relation;
       const relationLayerId = relation.referencingLayer;
       const fid = this.feature.attributes['g3w_fid'];
+      const value = this.feature.attributes[relation.fieldRef.referencedField] !== undefined ? this.feature.attributes[relation.fieldRef.referencedField] : fid;
       this.$options.service.getRelations({
         layer: this.$options.layer,
         relation,
+        value,
         fid
       }).then((response) => {
         const relations = getFeaturesFromResponseVectorApi(response);
