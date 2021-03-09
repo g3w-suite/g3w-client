@@ -205,9 +205,12 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
-      filter = layer.state.filter;
-      selection = layer.state.selection;
-      extractRelations = true;
+      // set selection filtere and relation if not wms
+      if (layer.getSourceType() !== 'wms'){
+        filter = layer.state.filter;
+        selection = layer.state.selection;
+        extractRelations = true;
+      }
       download.shapefile = layer.isShpDownlodable();
       download.gpx = layer.isGpxDownlodable();
       download.csv = layer.isCsvDownlodable();
@@ -364,33 +367,33 @@ proto.setActionsForLayers = function(layers) {
   this.unlistenerlayeractionevents = [];
   layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+    if (layer.selection.active !== undefined) {
+      // selection action
+      const toggled = {};
+      layer.features.map((feature, index) => toggled[index] = false);
+      this.state.layersactions[layer.id].push({
+        id: 'selection',
+        download: false,
+        class: GUI.getFontClass('success'),
+        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+        state: Vue.observable({
+          toggled
+        }),
+        init: ({feature, index, action}={})=>{
+          layer.selection.active !== void 0 && this.checkFeatureSelection({
+            layerId: layer.id,
+            index,
+            feature,
+            action
+          })
+        },
+        cbk: throttle(this.addToSelection.bind(this))
+      });
+      this.listenClearSelection(layer, 'selection');
+      //end selection action
+    }
     //in case of geometry
     if (layer.hasgeometry) {
-      if (layer.selection.active !== void 0) {
-        // selection action
-        const toggled = {};
-        layer.features.map((feature, index) => toggled[index] = false);
-        this.state.layersactions[layer.id].push({
-          id: 'selection',
-          download: false,
-          class: GUI.getFontClass('success'),
-          hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-          state: Vue.observable({
-            toggled
-          }),
-          init: ({feature, index, action}={})=>{
-            layer.selection.active !== void 0 && this.checkFeatureSelection({
-              layerId: layer.id,
-              index,
-              feature,
-              action
-            })
-          },
-          cbk: throttle(this.addToSelection.bind(this))
-        });
-        this.listenClearSelection(layer, 'selection');
-        //end selection action
-      }
       this.state.layersactions[layer.id].push({
         id: 'gotogeometry',
         download: false,

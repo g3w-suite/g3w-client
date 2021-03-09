@@ -57,30 +57,6 @@
     </div>
     <div v-show="state.content.loading" class="bar-loader"></div>
   </div>
-  <transition name="fade" :duration="{ enter: 800, leave: 500 }">
-    <user-message
-            v-if="usermessage.show"
-            @close-usermessage="closeUserMessage"
-            :title="usermessage.title"
-            :textMessage="usermessage.textMessage"
-            :message="usermessage.message"
-            :draggable="usermessage.draggable"
-            :closable="usermessage.closable"
-            :position="usermessage.position"
-            :autoclose="usermessage.autoclose"
-            :size="usermessage.size"
-            :type="usermessage.type">
-      <template v-if="hooks.header" v-slot:header>
-        <component :is="hooks.header"></component>
-      </template>
-      <template v-if="hooks.body" v-slot:body>
-        <component :is="hooks.body"></component>
-      </template>
-      <template v-if="hooks.footer" v-slot:footer>
-        <component :is="usermessage.hooks.footer"></component>
-      </template>
-    </user-message>
-</transition>
 </div>
 <script>
   import DownloadNotify from "../notifications/download/vue/download";
