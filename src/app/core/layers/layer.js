@@ -765,7 +765,8 @@ proto.getQueryLayerOrigName = function() {
 };
 
 proto.getInfoFormat = function(ogcService) {
-  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
+  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
+  //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
 };
 
 proto.getInfoUrl = function() {
