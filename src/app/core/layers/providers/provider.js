@@ -75,77 +75,59 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   const layer = layers[0];
   const infoFormat = layer.getInfoFormat();
   switch(infoFormat) {
-    case 'json':
     case 'application/json':
       return this._parseGeoJsonResponse({
         layers,
         response,
-        projections,
-        infoFormat
+        projections
       });
       break;
+    case 'application/vnd.ogc.gml':
     default:
-      // set true all layer come from qgisserver
-      if (true) {
+      //IN CASE OF application/vnd.ogc.gml alway pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-        response =  this._handleXMLStringResponseBeforeConvertToJSON({
-          layers,
-          response,
-          wms
-        });
-        return this._getHandledResponsesFromResponse({
-          response,
-          layers,
-          projections
-          //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
-        });
-      } else {
-        //case of
-        if ( /msGMLOutput/.test(response)) {
-          return layers.map((layer) => {
-            const layers = layer.getQueryLayerOrigName();
-            const parser = new ol.format.WMSGetFeatureInfo({
-              layers
-            });
-            const features = parser.readFeatures(response);
-            return {
-              layer,
-              features
-            }
-          })
-        } else {
-          return layers.map((layer) => {
-            return this._handleWMSMultilayers({
-              layer,
-              response,
-              projections
-            })
-          })
-        }
-      }
+      response =  this._handleXMLStringResponseBeforeConvertToJSON({
+        layers,
+        response,
+        wms
+      });
+      return this._getHandledResponsesFromResponse({
+        response,
+        layers,
+        projections
+        //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
+      });
   }
 };
 
-proto._parseGeoJsonResponse = function({layers=[], response, projections, infoFormat}={}) {
+//method to handle application/json response qgis
+proto._parseGeoJsonResponse = function({layers=[], response, projections}={}) {
   const layersFeatures = [];
-  const data = infoFormat === 'json' ? response.vector && response.vector.data: response;
-  const AllFeatures = data && this._parseLayerGeoJSON(data, projections) || [];
-  layers.forEach(layer =>{
-    const layerId = layer.getId();
-    const fields = layer.getFields().filter(field => field.show);
-    const features = infoFormat === 'application/json' && AllFeatures.filter(feature => {
-      const fid = feature.getId(); // get id of the feature
-      if (fid.indexOf(layerId) === -1) return false;
+  const layersId = layers.map(layer => {
+    layersFeatures.push({
+      layer,
+      features: []
+    });
+    return layer.getWMSLayerName()
+  });
+  const data = response;
+  const features = data && this._parseLayerGeoJSON(data, projections) || [];
+  features.filter(feature => {
+    const fid = feature.getId().split(`.`); // get id of the feature
+    const currentLayerId = fid[0];
+    const g3w_fid = fid.length === 2 ? fid[1] : fid[0];
+    const index =  layersId.indexOf(currentLayerId);
+    if (index !== -1) {
+      const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
       const properties = feature.getProperties();
-      const g3w_fid = fid.split(`${layerId}.`);
-      feature.set('g3w_fid', g3w_fid.length === 2 ? g3w_fid[1] : fid);
+      feature.set('g3w_fid', g3w_fid);
       fields.forEach(field=>{
         if (properties[field.name] === undefined) {
           properties[field.label] !== undefined && feature.set(field.name, properties[field.label])
         }
       });
-      return feature;
-    }) || features;
+      layersFeatures[index].features.push(feature);
+    }
   });
   return layersFeatures;
 };

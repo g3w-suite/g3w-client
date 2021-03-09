@@ -93,13 +93,9 @@ proto._makeOlLayer = function(withLayers) {
     projection: this.config.projection,
     iframe_internal: this.iframe_internal
   };
-  if (withLayers) {
-    wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
-  }
+  if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
-  if (representativeLayer) {
-    wmsConfig.url = representativeLayer.getWmsUrl();
-  }
+  if (representativeLayer) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('imageloadstart', () => {
