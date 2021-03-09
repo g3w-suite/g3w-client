@@ -76,10 +76,12 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   const infoFormat = layer.getInfoFormat();
   switch(infoFormat) {
     case 'json':
+    case 'application/json':
       return this._parseGeoJsonResponse({
-        layer,
+        layers,
         response,
-        projections
+        projections,
+        infoFormat
       });
       break;
     default:
@@ -124,13 +126,28 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   }
 };
 
-proto._parseGeoJsonResponse = function({layer, response, projections}={}) {
-  const data = response.vector && response.vector.data;
-  const features = data && this._parseLayerGeoJSON(data, projections) || [];
-  return [{
-    layer,
-    features
-  }]
+proto._parseGeoJsonResponse = function({layers=[], response, projections, infoFormat}={}) {
+  const layersFeatures = [];
+  const data = infoFormat === 'json' ? response.vector && response.vector.data: response;
+  const AllFeatures = data && this._parseLayerGeoJSON(data, projections) || [];
+  layers.forEach(layer =>{
+    const layerId = layer.getId();
+    const fields = layer.getFields().filter(field => field.show);
+    const features = infoFormat === 'application/json' && AllFeatures.filter(feature => {
+      const fid = feature.getId(); // get id of the feature
+      if (fid.indexOf(layerId) === -1) return false;
+      const properties = feature.getProperties();
+      const g3w_fid = fid.split(`${layerId}.`);
+      feature.set('g3w_fid', g3w_fid.length === 2 ? g3w_fid[1] : fid);
+      fields.forEach(field=>{
+        if (properties[field.name] === undefined) {
+          properties[field.label] !== undefined && feature.set(field.name, properties[field.label])
+        }
+      });
+      return feature;
+    }) || features;
+  });
+  return layersFeatures;
 };
 
 proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
