@@ -65,13 +65,6 @@ const TableService = function(options = {}) {
     const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
       data = emitRedraw ? await this.reloadData() : [];
-      if (this.state.tools.geolayer.active) {
-        const mapFilterFeaturesIndex= [];
-        data.forEach((data, index) =>{
-          mapFilterFeaturesIndex[index] = index;
-        });
-        this.setNoPaginationFilteredFeatures(mapFilterFeaturesIndex);
-      }
     }
     emitRedraw && this.emit('redraw', data);
   };
@@ -349,10 +342,6 @@ proto.getDataFromBBOX = async function(){
     this.mapBBoxEventHandlerKey.cb();
   } else {
     this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
-    if (!this.state.pagination) {
-      this.nopaginationsfilter.map && this.removeNoPaginationFilteredFeatures(this.nopaginationsfilter.map);
-      this.nopaginationsfilter.map = [];
-    }
     this.resetMapBBoxEventHandlerKey();
   }
 };
