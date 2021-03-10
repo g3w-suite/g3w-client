@@ -239,8 +239,7 @@ proto.deleteFilterToken = async function(){
       await this.providers['filtertoken'].deleteFilterToken();
       ApplicationService.setFilterToken(null);
       this.emit('filtertokenchange', {
-        layerId: this.getId(),
-        filtertoken: null
+        layerId: this.getId()
       });
     } catch(err) {
       console.log('Error deleteing filtertoken')
@@ -266,8 +265,7 @@ proto.createFilterToken = async function(){
         }
         ApplicationService.setFilterToken(filtertoken);
         this.emit('filtertokenchange', {
-          layerId: this.getId(),
-          filtertoken
+          layerId: this.getId()
         });
       }
     } catch(err){
@@ -768,7 +766,6 @@ proto.getQueryLayerOrigName = function() {
 
 proto.getInfoFormat = function(ogcService) {
   return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
-  //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
 };
 
 proto.getInfoUrl = function() {
