@@ -11,6 +11,13 @@ function WMSLegend({layer, params}) {
     iconlabelspace,
     symbolwidth,
     symbolheight,
+    itemfontfamily,
+    layerfontfamily,
+    layerfontbold,
+    itemfontbold,
+    layerfontitalic,
+    itemfontitalic,
+    rulelabel,
     crs,
     bbox,
     sld_version='1.1.0'
@@ -36,7 +43,14 @@ function WMSLegend({layer, params}) {
     `${iconlabelspace ? '&ICONLABELSPACE=' + iconlabelspace: ''}`,
     `${symbolwidth ? '&SYMBOLWIDTH=' + symbolwidth : ''}`,
     `${symbolheight ? '&SYMBOLHEIGHT=' + symbolheight : ''}`,
-    `&LAYER=${LAYER}`
+    `${layerfontfamily ? '&LAYERFONTFAMILY=' + layerfontfamily : ''}`,
+    `${itemfontfamily ? '&ITEMFONTFAMILY=' + itemfontfamily : ''}`,
+    `${layerfontbold ? '&LAYERFONTBOLD=' + layerfontbold : ''}`,
+    `${itemfontbold ? '&ITEMFONTBOLD=' + itemfontbold : ''}`,
+    `${layerfontitalic ? '&LAYERFONTITALIC=' + layerfontitalic : ''}`,
+    `${itemfontitalic ? '&ITEMFONTITALIC=' + itemfontitalic : ''}`,
+    `${rulelabel ? '&RULELABEL=' + rulelabel : ''}`,
+    `&LAYER=${LAYER}`,
   ].join('');
 }
 
