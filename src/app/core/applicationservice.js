@@ -483,6 +483,10 @@ const ApplicationService = function() {
     })
   };
 
+  this.reloadCurrentProject = function(){
+    // TODO
+  };
+
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
     this._gid = gid;

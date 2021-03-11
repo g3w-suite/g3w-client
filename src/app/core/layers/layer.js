@@ -53,7 +53,7 @@ function Layer(config={}, options={}) {
     };
   }
 
-  // dinamic layer values
+  // dinamic layer values useful for layerstree
   this.state = {
     id: config.id,
     title: config.title,
@@ -64,6 +64,7 @@ function Layer(config={}, options={}) {
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
     removable: config.removable || false,
     source: config.source,
+    styles: config.styles,
     infoformat: this.getInfoFormat(),
     geolayer: false,
     selection: {
@@ -632,6 +633,11 @@ proto.isType = function(type) {
 
 proto.setType = function(type) {
   this.type = type;
+};
+
+//get syle form layer
+proto.getStyles = function(){
+  return this.config.styles;
 };
 
 proto.isSelected = function() {

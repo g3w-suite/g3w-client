@@ -1965,7 +1965,12 @@ proto.registerMapLayerListeners = function(mapLayer) {
   mapLayer.on('loaderror', this._mapLayerLoadError);
   //listen change filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
-    mapLayer.layers.forEach(layer => layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true})));
+    mapLayer.layers.forEach(layer => {
+      layer.onbefore('changeCurrentStyle', ()=>{
+        this.updateMapLayer(mapLayer, {force: true})
+      });
+      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+    });
   ///
 };
 
@@ -1976,7 +1981,10 @@ proto.unregisterMapLayerListeners = function(mapLayer) {
   mapLayer.off('loaderror', this._mapLayerLoadError);
   // try to remove layer filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
-    mapLayer.layers.forEach(layer => layer.removeEvent('filtertokenchange'));
+    mapLayer.layers.forEach(layer => {
+      layer.un('changeCurrentStyle');
+      layer.removeEvent('filtertokenchange')
+    });
 };
 
 proto.setTarget = function(elId) {

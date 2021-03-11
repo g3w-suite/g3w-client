@@ -10,6 +10,7 @@ function WMSLayer(options={}, extraParams={}, method='GET') {
   };
   this.extraParams = extraParams;
   this._method = method;
+  this.set_style = false;
   base(this, options);
 }
 
@@ -44,6 +45,11 @@ proto.addLayer = function(layer) {
   }
   if (!this.layers.find(_layer =>  layer === _layer)) {
     this.layers.push(layer);
+  }
+  //check if i have to set set style
+  const styles = layer.state.styles;
+  if (!this.set_styles && (styles && Array.isArray(styles) && styles.length > 1)){
+    this.set_style = true;
   }
 };
 
@@ -120,6 +126,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
     let params = {
       filtertoken: ApplicationState.tokens.filtertoken,
+      STYLES: this.set_style ? visibleLayers.map(layer => layer.state.styles ? layer.state.styles.find(style => style.current).name : '').join(','): undefined,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`

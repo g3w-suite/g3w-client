@@ -35,8 +35,13 @@ function ImageLayer(config={}, options={}) {
     scalebasedvisibility,
     wfscapabilities
     ows_method
-    wms_use_layer_ids
+    wms_use_layer_ids,
+    styles
   }*/
+  this.setters = {
+    changeCurrentStyle(){},
+  };
+
   base(this, config, options);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;

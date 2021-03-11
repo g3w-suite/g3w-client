@@ -383,7 +383,9 @@ const translations = {
         contextmenu: {
           zoomtolayer: "Zoom to Layer",
           open_attribute_table: "Apri la tabella degli attibuti",
-          show_metadata: "Metadati"
+          show_metadata: "Metadati",
+          styles: "Stili",
+          vector_color_menu:"Setta/Cambia Colore"
         }
       },
       dataTable: {
@@ -778,7 +780,9 @@ const translations = {
         contextmenu: {
           zoomtolayer: "Zoom to Layer",
           open_attribute_table: "Open Attribute Table",
-          show_metadata: "Metadata"
+          show_metadata: "Metadata",
+          styles: 'Styles',
+          vector_color_menu:"Set/Change Color"
         }
       },
       dataTable: {
@@ -1174,7 +1178,9 @@ const translations = {
         contextmenu: {
           zoomtolayer: "Tarkenna tasoon",
           open_attribute_table: "Avaa attribuuttitaulu",
-          show_metadata: "Metatiedot"
+          show_metadata: "Metatiedot",
+          styles: "Tyylejä",
+          vector_color_menu: "Aseta/muuta väriä"
         }
       },
       dataTable: {
@@ -1571,7 +1577,9 @@ const translations = {
         contextmenu: {
           zoomtolayer: "Zooma till nivå",
           open_attribute_table: "Öppna attributtabellen",
-          show_metadata: "Metadata"
+          show_metadata: "Metadata",
+          styles: "Stilar",
+          vector_color_menu: "Ställ in/ändra färg"
         }
       },
       dataTable: {

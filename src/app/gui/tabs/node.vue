@@ -78,7 +78,8 @@
     },
     data() {
       return {
-        context: this.contenttype
+        context: this.contenttype,
+        editing_required: false
       }
     },
     computed: {
@@ -90,9 +91,9 @@
             node.relation = true;
             return true
           } else {
-            return !!this.fields.find((field) => {
+            return !!this.fields.find(field => {
               const field_name = node.field_name ? node.field_name.replace(/ /g,"_") :  node.field_name;
-              return field.name === field_name || node.relation
+              return field.name === field_name || node.relation;
             })
           }
         });
