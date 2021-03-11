@@ -78,8 +78,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
     isVector && this.setProjections();
     const data = response.result ?  unique ? response.data :  {
       data: this._parseGeoJsonResponse({
-        layer: this._layer,
-        response,
+        layers: [this._layer],
+        response:response.vector.data,
         projections: this._projections
       })
     }: Promise.reject();
@@ -90,7 +90,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
 };
 
 proto.setProjections = function() {
-  this._projections.layer = this._layer.getProjection();
+  //COMMENTED LAYER PROJECTION: EXPECT ONLY RESULT IN MAP PROJECTION
+  //this._projections.layer = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || this._projections.layer;
 };
 

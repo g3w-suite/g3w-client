@@ -269,7 +269,6 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
-      //subscribe.options.disabled = subscribe.type !== 'autocompletefield' || invalidValue ;
       if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
       else {
         subscribe.options._allvalues = subscribe.options._allvalues ||  [...subscribe.options.values];
@@ -301,7 +300,6 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             for (let i = 0; i < values.length; i++) {
               subscribe.options.values.push(values[i]);
             }
-            //subscribe.options.disabled = false;
           }
           resolve()
         }
@@ -344,7 +342,6 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 const dependenceValue =  this.getDependanceCurrentValue(field);
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
-              //subscribe.options.disabled = false;
             }
           }).catch(error => {
             reject(error)

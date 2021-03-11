@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit, toRawType} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields } =  require('core/utils/geo');
@@ -114,10 +113,16 @@ proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=tr
   const data = response;
   const features = data && this._parseLayerGeoJSON(data, projections) || [];
   features.filter(feature => {
-    const fid = feature.getId().split(`.`); // get id of the feature
-    const currentLayerId = fid[0];
-    const g3w_fid = fid.length === 2 ? fid[1] : fid[0];
-    const index =  layersId.indexOf(currentLayerId);
+    let index;
+    const featureId = feature.getId();
+    let g3w_fid = featureId;
+    // in case of wms getfeature without filter return string conatin layerName or layerid
+    if (toRawType(featureId) === 'String' && Number.isNaN(1*featureId)) {
+      const fid = feature.getId().split(`.`); // get id of the feature
+      const currentLayerId = fid[0];
+      g3w_fid = fid.length === 2 ? fid[1] : fid[0];
+      index =  layersId.indexOf(currentLayerId);
+    } else index = 0; // force to 0 only one layer (search)
     if (index !== -1) {
       const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
       const properties = feature.getProperties();
