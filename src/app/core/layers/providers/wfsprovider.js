@@ -6,16 +6,11 @@ const Filter = require('core/layers/filter/filter');
 function WFSDataProvider(options={}) {
   base(this, options);
   this._name = 'wfs';
-  this._layerName = this._getTypeName(this._layer.getQueryLayerName())
 }
 
 inherit(WFSDataProvider, DataProvider);
 
 const proto = WFSDataProvider.prototype;
-
-proto._getTypeName = function(layerQueryName) {
-  return layerQueryName.replace(/[/\s]/g, '_') ;
-};
 
 proto.getData = function() {
   const d = $.Deferred();
@@ -80,7 +75,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   const httpMethod = layer.getOwsMethod();
   const url = layer.getQueryUrl();
   const infoFormat = layer.getInfoFormat();
-  const layerNames = layers ? layers.map(layer => this._getTypeName(layer.getQueryLayerName())).join(','): this._layerName;
+  const layerNames = layers ? layers.map(layer => layer.getWFSLayerName()).join(','): layer.getWFSLayerName();
   const SRSNAME = reproject ? layer.getProjection().getCode() : this._layer.getMapProjection().getCode();
   params = Object.assign(params, {
     SERVICE: 'WFS',
@@ -128,7 +123,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
         if (err.status === 200) d.resolve(err.responseText);
         else d.reject(err)
       })
-  } else d.reject()
+  } else d.reject();
 
   return d.promise()
 };

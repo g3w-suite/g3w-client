@@ -79,7 +79,8 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
       return this._parseGeoJsonResponse({
         layers,
         response,
-        projections
+        projections,
+        wms
       });
       break;
     case 'application/vnd.ogc.gml':
@@ -101,14 +102,14 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
 };
 
 //method to handle application/json response qgis
-proto._parseGeoJsonResponse = function({layers=[], response, projections}={}) {
+proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=true}={}) {
   const layersFeatures = [];
   const layersId = layers.map(layer => {
     layersFeatures.push({
       layer,
       features: []
     });
-    return layer.getWMSLayerName()
+    return wms ? layer.getWMSLayerName() : layer.getWFSLayerName();
   });
   const data = response;
   const features = data && this._parseLayerGeoJSON(data, projections) || [];

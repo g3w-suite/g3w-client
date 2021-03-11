@@ -112,6 +112,10 @@ proto.getWMSLayerName = function({type='map'}={}) {
   return layerName;
 };
 
+proto.getWFSLayerName = function(){
+  return this.getQueryLayerName().replace(/[/\s]/g, '_')
+};
+
 proto.getWMSInfoLayerName = function() {
   return this._getBaseLayerName();
 };
@@ -174,12 +178,6 @@ proto.setMapParamstoLegendUrl = function({bbox, crs}){
     bbox,
     crs
   }
-};
-
-proto.getWFSLayerName = function() {
-  let layerName = this.config.origname;
-  if (this.config.source && this.config.source.layers) layerName = this.config.source.layers;
-  return layerName;
 };
 
 proto.getWfsCapabilities = function() {
