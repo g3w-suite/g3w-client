@@ -149,7 +149,7 @@ const AppUI = Vue.extend({
     this.language = this.appconfig.user.i18n;
     await this.$nextTick();
     !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
-      this.logoWidth = this.$refs.img_logo.offsetWidth;
+      this.logoWidth = this.$refs.img_logo.offsetWidth + 15; // added marging
       this.resize();
     }, {once: true});
     /* start to render LayoutManager layout */
