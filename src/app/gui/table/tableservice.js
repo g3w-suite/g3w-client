@@ -1,4 +1,4 @@
-const {inherit, debounce } = require('core/utils/utils');
+const {inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;

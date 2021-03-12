@@ -69,7 +69,7 @@ proto._getFeatures = function(options={}) {
   const d = $.Deferred();
   if (this._provider) {
     this._provider.getFeatures(options)
-      .then((options) => {
+      .then(options => {
         const features = this._filterFeaturesResponse(options);
         this.addFeatures(features);
         d.resolve(features);
