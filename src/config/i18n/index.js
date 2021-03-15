@@ -1199,8 +1199,8 @@ const translations = {
   },
   se: {
     translation: {
+      sign_in:"Logga in",
       layer_selection_filter: {
-        sign_in:"Logga in",
         tools: {
           filter: "Lägg till/Avlägsna Filtrera",
           nofilter: "Avlägsna Filtrera",
