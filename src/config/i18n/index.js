@@ -1,6 +1,7 @@
 const translations = {
   it: {
     translation: {
+      sign_in: "Accedi",
       layer_selection_filter: {
         tools: {
           filter: "Aggiungi/Rimuovi Filtro",
@@ -400,6 +401,7 @@ const translations = {
   },
   en: {
     translation: {
+      sign_in: "Sign in",
       layer_selection_filter: {
         tools: {
           filter: "Add/Remove Filter",
@@ -798,6 +800,7 @@ const translations = {
   },
   fi: {
     translation: {
+      sign_in:"Kirjaudu sisään",
       layer_selection_filter: {
         tools: {
           filter: "Lisätä/Poista Suodattaa",
@@ -1197,6 +1200,7 @@ const translations = {
   se: {
     translation: {
       layer_selection_filter: {
+        sign_in:"Logga in",
         tools: {
           filter: "Lägg till/Avlägsna Filtrera",
           nofilter: "Avlägsna Filtrera",

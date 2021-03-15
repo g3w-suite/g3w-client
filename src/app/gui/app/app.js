@@ -66,6 +66,9 @@ const AppUI = Vue.extend({
     user: function() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
+    login_url(){
+      return this.appconfig.user.login_url
+    },
     numberOfProjectsInGroup: function() {
       return this.appconfig.projects.length;
     },

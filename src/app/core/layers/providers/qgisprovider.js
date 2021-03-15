@@ -174,18 +174,6 @@ proto.commit = function(commitItems) {
   const d = $.Deferred();
   //check if editing or not;
   const url = this._commitUrl;
-  //check if had to trnaform geometry
-  if (this._layer.getType() === 'vector' && this._layer.getCrs() !== this._layer.getMapCrs()){
-    Object.keys(commitItems).forEach(key => {
-      if (key === 'add' || key === 'update'){
-        commitItems[key].forEach(feature =>{
-          const geometry = new ol.geom[feature.geometry.type](feature.geometry.coordinates);
-          geometry.transform(this._layer.getMapCrs(), this._layer.getCrs());
-          feature.geometry.coordinates = geometry.getCoordinates();
-        })
-      }
-    })
-  }
   const jsonCommits = JSON.stringify(commitItems);
   $.post({
     url: url,
@@ -245,7 +233,8 @@ proto.getFeatures = function(options={}, params={}) {
           const parser = Parsers[layerType].get({
             type: 'json'
           });
-          const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
+          //const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
+          const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs() } : {};
           const lockIds = featurelocks.map(featureLock => {
             return featureLock.featureid
           });
