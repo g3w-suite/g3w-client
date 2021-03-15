@@ -1,6 +1,6 @@
 <template>
   <div id="project-catalog">
-    <h4 class="content-header-component skin-color">{{ state.name }}</h4>
+    <h4 style="text-align: center" class="content-header-component skin-color">{{ state.name }}</h4>
     <div id="project-catalog-container" style="padding:0" :class="isMobile() ? 'mobile' : null">
       <ul role="tablist" class="nav nav-tabs metadata-nav-bar">
         <li class="active">
