@@ -19,12 +19,14 @@
     mixins: [select2Mixin],
     methods: {
       _initSelect2Element() {
-        const { type, attribute } = this.forminput;
+        const { type, attribute, options } = this.forminput;
+        // get numgigaut and validate it
+        const numdigaut = options.numdigaut && !Number.isNaN(1*options.numdigaut) && 1*options.numdigaut > 0 && 1*options.numdigaut || 2;
         const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({
           width: '100%',
           dropdownParent:$('#g3w-search-form'),
-          minimumInputLength: isAutocomplete && 2 || 0,
+          minimumInputLength: isAutocomplete && numdigaut || 0,
           allowClear: isAutocomplete,
           placeholder : isAutocomplete ? '' : null,
           ajax: isAutocomplete ? {
