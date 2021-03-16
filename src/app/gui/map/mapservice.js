@@ -1863,15 +1863,15 @@ proto._setupVectorLayers = function() {
 
 proto._setUpDefaultLayers = function(){
   // follow the order that i want
-  this.getMap().addLayer(this.defaultsLayers.selectionLayer);
   this.getMap().addLayer(this.defaultsLayers.highlightLayer);
+  this.getMap().addLayer(this.defaultsLayers.selectionLayer);
 };
 
 proto.removeDefaultLayers = function(){
-  this.defaultsLayers.selectionLayer.getSource().clear();
   this.defaultsLayers.highlightLayer.getSource().clear();
-  this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
+  this.defaultsLayers.selectionLayer.getSource().clear();
   this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
+  this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
 };
 
 proto.setDefaultLayerStyle = function(type, style={}){
