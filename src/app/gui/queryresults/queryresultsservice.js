@@ -107,6 +107,7 @@ const proto = QueryResultsService.prototype;
 proto.clear = function() {
   this.runAsyncTodo();
   this.unlistenerEventsActions();
+  this.mapService.clearHighlightGeometry();
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -139,8 +140,15 @@ proto.setZoomToResults = function(bool=true) {
   this.state.zoomToResult = bool;
 };
 
+proto.highlightFeatures = function(layer){
+  const {features} = layer;
+  this.mapService.highlightFeatures(features, {
+    duration: this.getHighlightDuration()
+  })
+};
+
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
-  const features = layer.features;
+  const {features} = layer;
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
     this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
   else this.mapService.zoomToFeatures(features, options);
@@ -777,17 +785,21 @@ proto.addToSelection = function(layer, feature, action, index){
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
+proto.getHighlightDuration = function(){
+  return this.state.layers.length === 1 ? Infinity : 1500;
+};
+
 proto.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
     if (this._asyncFnc.goToGeometry.async) {
       this._asyncFnc.todo = this.mapService.highlightGeometry.bind(this.mapService, feature.geometry, {
         layerId: layer.id,
-        duration: 1500
+        duration: this.getHighlightDuration()
       });
     } else setTimeout(() => {
       this.mapService.highlightGeometry(feature.geometry, {
         layerId: layer.id,
-        duration: 1500
+        duration: this.getHighlightDuration()
       });
     }, 0)
   }

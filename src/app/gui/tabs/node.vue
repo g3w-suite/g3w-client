@@ -28,13 +28,15 @@
               </node>
             </div>
             <template v-else>
-              <div style="cursor: pointer" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
+              <div style="cursor: pointer" v-disabled="getRelationName(getNode(row, column)) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
                 <span>
                   <span class="query_relation_field_message">
-                    <span></span><span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name) }}</span></span>
+                    <span></span>
+                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+                  </span>
                 </span>
               </div>
               <template v-else>

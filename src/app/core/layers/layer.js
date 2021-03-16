@@ -414,10 +414,11 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
   return response;
 };
 
-proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, suggest=null, formatter=0 , in_bbox} = {}) {
+proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
+    field,
     page,
     page_size,
     ordering,

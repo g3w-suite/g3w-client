@@ -2030,11 +2030,11 @@ proto.goToRes = function(coordinates, resolution){
   });
 };
 
-proto.zoomToFeatures = function(features, options={highlight: false}) {
+proto.getGeometryAndExtentFromFeatures = function(features=[]){
   let extent;
   let geometryType;
+  let geometry;
   let geometryCoordinates = [];
-  const {highlight} = options;
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
@@ -2042,23 +2042,33 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
       const featureExtent = [...geometry.getExtent()];
       extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
       geometryType = geometryType ? geometryType : geometry.getType();
-      if (highlight) {
-        const coordinates = geometry.getCoordinates();
-        if (geometryType.includes('Multi'))
-          geometryCoordinates = [...geometryCoordinates, ...coordinates];
-        else geometryCoordinates.push(coordinates);
-      }
+      const coordinates = geometry.getCoordinates();
+      if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
+      else geometryCoordinates.push(coordinates);
     }
   }
-  if (highlight && extent) {
-    try {
-      const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
-      options.highLightGeometry = new ol.geom[olClassGeomType]();
-      options.highLightGeometry.setCoordinates(geometryCoordinates);
-    } catch(e) {
-      console.log(e);
-    }
+  try {
+    const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
+    geometry = new ol.geom[olClassGeomType]();
+    geometry.setCoordinates(geometryCoordinates);
+  } catch(err){}
+  return {
+    extent,
+    geometry
   }
+};
+
+proto.highlightFeatures = function(features, options={}){
+  const {geometry} = this.getGeometryAndExtentFromFeatures(features);
+  //force zoom false
+  options.zoom = false;
+  this.highlightGeometry(geometry, options);
+};
+
+proto.zoomToFeatures = function(features, options={highlight: false}) {
+  const {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
+  const {highlight} = options;
+  if (highlight && extent) options.highLightGeometry = geometry;
   extent && this.zoomToExtent(extent, options);
 };
 
@@ -2067,7 +2077,8 @@ proto.zoomToExtent = function(extent, options={}) {
   const resolution = this.getResolutionForZoomToExtent(extent);
   this.goToRes(center, resolution);
   options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
-    zoom: false
+    zoom: false,
+    duration: options.duration
   });
 };
 

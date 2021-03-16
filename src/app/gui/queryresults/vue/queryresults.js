@@ -29,6 +29,9 @@ const vueComponentOptions = {
     actions: Actions
   },
   computed: {
+    onelayerresult(){
+      return this.state.layers.length  === 1;
+    },
     hasLayers() {
       return this.hasResults || !!this.state.components.length;
     },
@@ -272,9 +275,13 @@ const vueComponentOptions = {
   },
   watch: {
     'state.layers'(layers) {
+      this.onelayerresult = layers.length === 1;
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
       })
+    },
+    onelayerresult(bool) {
+      bool && this.$options.queryResultsService.highlightFeatures(this.state.layers[0]);
     }
   },
   beforeMount() {

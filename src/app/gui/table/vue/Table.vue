@@ -2,7 +2,7 @@
   <div id="open_attribute_table" style="margin-top: 5px">
     <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped row-border compact nowrap" style="width:100%">
       <thead>
-        <tr v-if="!state.pagination">
+        <tr>
           <th></th>
           <th v-if="index > 0" v-for="(header, index) in state.headers">
             <input type="text" style="height: 25px;" class="form-control column-search" @keyup="changeColumn($event, index)" :placeholder="header.name"/>
@@ -179,6 +179,7 @@
         "columnDefs": [ {
           "targets": 0,
           "orderable": false,
+          "searchable": false,
           "width": '1%'
         } ]
       };
@@ -208,7 +209,10 @@
           "serverSide": true,
           "deferLoading": this.state.allfeatures
         });
-        this.$options.service.on('ajax-reload', dataTable.ajax.reload)
+        this.$options.service.on('ajax-reload', dataTable.ajax.reload);
+        this.changeColumn = debounce(async (event, index) =>{
+          dataTable.columns(index).search(event.target.value.trim()).draw();
+        });
       } else { // no pagination all data
         dataTable = $('#open_attribute_table table').DataTable({
           ...commonDataTableOptions,

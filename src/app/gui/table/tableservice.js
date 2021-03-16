@@ -253,7 +253,7 @@ proto.setAttributeTablePageLength = function(length){
   this.layer.setAttributeTablePageLength(length);
 };
 
-proto.getData = function({start = 0, order = [], length = this.state.pageLength, search={value:null}, firstCall=false} = {}) {
+proto.getData = function({start = 0, order = [], length = this.state.pageLength, columns=[], search={value:null}, firstCall=false} = {}) {
   // reset features before load
   GUI.setLoadingContent(true);
   this.setAttributeTablePageLength(length);
@@ -276,7 +276,9 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0  ? 1 : (start/length) + 1;
       const in_bbox = this.state.tools.geolayer.in_bbox;
+      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|like|${column.search.value}|and`).join(',') : undefined;
       this.paginationParams = {
+        field: field || undefined,
         page: this.currentPage,
         page_size: length,
         search: searchText,
