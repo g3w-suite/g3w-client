@@ -122,7 +122,7 @@ const AppUI = Vue.extend({
       3: [],
       4: []
     };
-    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter((customitem) => {
+    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
       if (customitem !== null) {
         const id = customitem.id = uniqueId();
         customitem.type === 'modal' && this.custom_modals.push({
@@ -137,9 +137,7 @@ const AppUI = Vue.extend({
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then((credits)=> {
-      this.customcredits = credits !== 'None' && credits
-    });
+    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
     this.logoWidth = 0;

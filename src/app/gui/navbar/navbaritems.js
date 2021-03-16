@@ -1,7 +1,5 @@
-const t = require('core/i18n/i18n.service').t;
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const base = require('core/utils/utils').base;
 
 // service sidebar
 function navbaritemsService() {
@@ -10,10 +8,8 @@ function navbaritemsService() {
       left:[],
       right:[]
     }
-
   };
-  this.addItem = function(item, position) {
-    position = position || 'right';
+  this.addItem = function(item, position='right') {
     this.state.items[position].push(item);
   };
 
@@ -23,28 +19,26 @@ function navbaritemsService() {
 inherit(navbaritemsService, G3WObject);
 
 const navbaritemsservice = new navbaritemsService();
-const compiledTemplate = Vue.compile(require('./navbarleftitems.html'));
+const compiledTemplateLeft = Vue.compile(require('./navbarleftitems.html'));
 
 const NavbarLeftItemsComponent = Vue.extend({
-  ...compiledTemplate,
+  ...compiledTemplateLeft,
   data: function() {
     return {
       items: navbaritemsservice.state.items.left
     }
-  },
-  computed: {},
-  methods: {}
+  }
 });
 
+const compiledTemplateRight = Vue.compile(require('./navbarrightitems.html'));
+
 const NavbarRightItemsComponent = Vue.extend({
-  template: require('./navbarrightitems.html'),
+  ...compiledTemplateRight,
   data: function() {
     return {
       items: navbaritemsservice.state.items.right
     }
-  },
-  computed: {},
-  methods: {}
+  }
 });
 
 

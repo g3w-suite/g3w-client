@@ -16,9 +16,21 @@
   }
   .customheaderlink {
     a.imagelink {
-      padding:5px;
+      padding:14px;
     }
   }
+
+  @media (max-width: 767px) {
+    .dropdown.user {
+      .dropdown-menu{
+        width: 100%;
+        .user-header {
+          display: none;
+        }
+      }
+    }
+  }
+
 }
 
 
