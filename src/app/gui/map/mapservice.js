@@ -2167,9 +2167,9 @@ proto.seSelectionLayerVisible = function(visible=true) {
   this.defaultsLayers.selectionLayer.setVisible(visible);
 };
 
-proto.highlightGeometry = function(geometryObj, options = {}) {
-  this.clearHighlightGeometry();
-  const {color} = options;
+proto.highlightGeometry = function(geometryObj, options = {clear:true}) {
+  const {color, clear=true} = options;
+  clear && this.clearHighlightGeometry();
   this.setDefaultLayerStyle('highlightLayer', {
     color
   });
@@ -2207,10 +2207,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       geometry
     });
     const highlightLayer = this.defaultsLayers.highlightLayer;
-
     customStyle && highlightLayer.setStyle(customStyle);
-
-    highlightLayer.getSource().clear();
     highlightLayer.getSource().addFeature(feature);
     if (hide) {
       const callback = ()=> {

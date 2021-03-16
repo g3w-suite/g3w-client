@@ -149,6 +149,7 @@ proto.highlightFeatures = function(layer){
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const {features} = layer;
+  options.highlight = this.getHighlightDuration() !== Infinity;
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
     this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
   else this.mapService.zoomToFeatures(features, options);
@@ -791,15 +792,21 @@ proto.getHighlightDuration = function(){
 
 proto.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
+    const duration = this.getHighlightDuration();
+    const clear = duration !== Infinity;
     if (this._asyncFnc.goToGeometry.async) {
       this._asyncFnc.todo = this.mapService.highlightGeometry.bind(this.mapService, feature.geometry, {
         layerId: layer.id,
-        duration: this.getHighlightDuration()
+        clear,
+        highlight: clear,
+        duration
       });
     } else setTimeout(() => {
       this.mapService.highlightGeometry(feature.geometry, {
         layerId: layer.id,
-        duration: this.getHighlightDuration()
+        clear,
+        highlight: clear,
+        duration
       });
     }, 0)
   }
