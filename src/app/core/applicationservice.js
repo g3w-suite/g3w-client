@@ -427,6 +427,8 @@ const ApplicationService = function() {
           this.registerOnlineOfflineEvent();
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;
+          // set current project gid
+          this._gid = ProjectsRegistry.getCurrentProject().getGid();
           resolve(true);
         }).fail((error) => {
           reject(error);
@@ -483,8 +485,15 @@ const ApplicationService = function() {
     })
   };
 
+  this.reloadCurrentProject = function(){
+    return this.changeProject({
+      gid: ProjectsRegistry.getCurrentProject().getGid()
+    })
+  };
+
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
+    const reload = this._gid === gid;
     this._gid = gid;
     const aliasUrl = ProjectsRegistry.getProjectAliasUrl(gid);
     const mapUrl = ProjectsRegistry.getProjectUrl(gid);
@@ -495,8 +504,10 @@ const ApplicationService = function() {
       host
     }).then(initConfig => {
         ProjectsRegistry.setProjects(initConfig.group.projects);
-        ProjectsRegistry.getProject(gid)
-          .then((project) => {
+        ProjectsRegistry.getProject(gid, {
+          reload // force to reload configuration
+        })
+          .then(project => {
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {

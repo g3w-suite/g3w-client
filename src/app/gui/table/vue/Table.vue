@@ -2,6 +2,12 @@
   <div id="open_attribute_table" style="margin-top: 5px">
     <table ref="attribute_table" v-if="hasHeaders()"  id="layer_attribute_table" class="table table-striped row-border compact nowrap" style="width:100%">
       <thead>
+        <tr v-if="!state.pagination">
+          <th></th>
+          <th v-if="index > 0" v-for="(header, index) in state.headers">
+            <input type="text" style="height: 25px;" class="form-control column-search" @keyup="changeColumn($event, index)" :placeholder="header.name"/>
+          </th>
+        </tr>
         <tr>
           <th v-for="(header, index) in state.headers">
             <span v-if="index === 0">
@@ -29,6 +35,14 @@
   const GUI = require('gui/gui');
   let dataTable;
   let fieldsComponents = [];
+  let eventHandlers = {
+    pagination: {
+
+    },
+    nopagination: {
+
+    }
+  };
   export default {
     name: "G3WTable",
     mixins: [resizeMixin],
@@ -80,20 +94,17 @@
           fieldComponent.$destroy();
           return false;
         });
-        const trDomeElements = $('#layer_attribute_table tbody tr');
-        trDomeElements.css('cursor', 'pointer');
-        trDomeElements.each((index, rowElement) => {
+        const trDomeElements = dataTable.rows().nodes();
+        //trDomeElements
+        trDomeElements.each((rowElement, index) => {
+          $(rowElement).css('cursor', 'pointer');
           if (this.state.features.length) {
             const feature = this.state.features[index];
             const hasGeometry = !!feature.geometry;
             $(rowElement).addClass('feature_attribute');
             feature.selected && $(rowElement).addClass('selected');
-            $(rowElement).on('click', ()=> {
-              hasGeometry && this.zoomAndHighLightFeature(feature);
-            });
-            $(rowElement).on('mouseover', () => {
-              hasGeometry && this.zoomAndHighLightFeature(feature, false);
-            });
+            $(rowElement).on('click', ()=> hasGeometry && this.zoomAndHighLightFeature(feature));
+            $(rowElement).on('mouseover', () => hasGeometry && this.zoomAndHighLightFeature(feature, false));
             $(rowElement).children().each((index, element)=> {
               const header = this.state.headers[index];
               let contentDOM;
@@ -204,12 +215,15 @@
           searchDelay: 600
         });
         const debounceSearch = debounce(() => {
-          this.$options.service.setFilteredFeature(dataTable.search() ? dataTable.rows( {search:'applied'} )[0]: undefined)
+          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
         }, 600);
+        eventHandlers.nopagination['search.dt'] = debounceSearch;
         dataTable.on('search.dt', debounceSearch);
-        dataTable.on('length.dt', (evt, settings, length)=>{
-          this.$options.service.setAttributeTablePageLength(length)
-        })
+        dataTable.on('length.dt', (evt, settings, length)=> this.$options.service.setAttributeTablePageLength(length));
+        this.changeColumn = debounce(async (event, index) =>{
+          dataTable.columns(index).search(event.target.value.trim()).draw();
+          this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
+        });
       }
 
       this.isMobile() && hideElements();
@@ -228,7 +242,6 @@
       this.$options.service.on('redraw', data =>{
         dataTable.clear();
         dataTable.draw(false);
-        dataTable.search('');
         setTimeout(()=>{
           dataTable.rows.add(data);
           dataTable.draw(false);

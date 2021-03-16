@@ -1830,7 +1830,6 @@ proto._setupMapLayers = function() {
         id: multilayerId,
         projection: this.getProjection()
       }, {});
-      this.registerMapLayerListeners(mapLayer);
       mapLayer.addLayer(layer);
       mapLayers.push(mapLayer)
     } else {
@@ -1838,19 +1837,12 @@ proto._setupMapLayers = function() {
         id: multilayerId,
         projection: this.getProjection()
       }, this.layersExtraParams);
-      this.registerMapLayerListeners(mapLayer);
-      layers.reverse().forEach((sub_layer) => {
+      layers.reverse().forEach(sub_layer => {
         mapLayer.addLayer(sub_layer);
       });
       mapLayers.push(mapLayer);
-      //filter token listener handler
-      layers.forEach(layer => {
-        layer.on('filtertokenchange', ()=>{
-          this.updateMapLayer(mapLayer, {force: true});
-        })
-      })
-      ///
     }
+    this.registerMapLayerListeners(mapLayer);
   });
   this.addMapLayers(mapLayers);
   this.updateMapLayers();
@@ -1960,14 +1952,10 @@ proto.updateMapLayer = function(mapLayer, options={force: false}) {
 
 // run update function on ech mapLayer
 proto.updateMapLayers = function(options={}) {
-  this.getMapLayers().forEach(mapLayer => {
-    this.updateMapLayer(mapLayer, options)
-  });
+  this.getMapLayers().forEach(mapLayer => this.updateMapLayer(mapLayer, options));
   const baseLayers = this.getBaseLayers();
   //updatebase layer
-  Object.values(baseLayers).forEach(baseLayer => {
-    baseLayer.update(this.state, this.layersExtraParams);
-  })
+  Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
 };
 
 // register map Layer listeners of creation
@@ -1975,6 +1963,15 @@ proto.registerMapLayerListeners = function(mapLayer) {
   mapLayer.on('loadstart', this._incrementLoaders);
   mapLayer.on('loadend', this._decrementLoaders);
   mapLayer.on('loaderror', this._mapLayerLoadError);
+  //listen change filter token
+  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+    mapLayer.layers.forEach(layer => {
+      layer.onbefore('changeCurrentStyle', ()=>{
+        this.updateMapLayer(mapLayer, {force: true})
+      });
+      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+    });
+  ///
 };
 
 // unregister listeners of mapLayers creation
@@ -1982,6 +1979,12 @@ proto.unregisterMapLayerListeners = function(mapLayer) {
   mapLayer.off('loadstart', this._incrementLoaders );
   mapLayer.off('loadend', this._decrementLoaders );
   mapLayer.off('loaderror', this._mapLayerLoadError);
+  // try to remove layer filter token
+  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+    mapLayer.layers.forEach(layer => {
+      layer.un('changeCurrentStyle');
+      layer.removeEvent('filtertokenchange')
+    });
 };
 
 proto.setTarget = function(elId) {

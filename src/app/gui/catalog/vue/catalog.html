@@ -58,7 +58,17 @@
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
-
+    <li v-if="layerMenu.layer.styles" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
+      <span class="menu-icon" :class="g3wtemplate.getFontClass('palette')"></span>
+      <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
+      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+      <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0" :style="{ top: layerMenu.stylesMenu.top + 'px', left: layerMenu.stylesMenu.left +   'px' }">
+        <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
+          <span v-if="style.current" style="font-size: 0.5em;" :class="g3wtemplate.getFontClass('circle')"></span>
+          <span>{{style.name}}</span>
+        </li>
+      </ul>
+    </li>
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
@@ -68,7 +78,9 @@
       <span class="menu-icon" :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)"> Setta/Cambia Colore <i :class="g3wtemplate.getFontClass('arrow-right')" style="padding-left:10px;" aria-hidden="true"></i>
+    <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
+      <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
+      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
         <li style="padding:0;">
           <chrome-picker

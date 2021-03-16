@@ -13,7 +13,7 @@ const TableService = function(options = {}) {
   this.formatter = options.formatter;
   const headers = this.getHeaders();
   this.allfeaturesnumber;
-  this.filteredfeatures = null;
+  this.nopaginationsfilter = [];
   this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
@@ -60,11 +60,11 @@ const TableService = function(options = {}) {
     this._async.state = options.perc === 100;
   });
   this.layer.on('unselectionall', this.clearAllSelection);
-  this.filterChangeHandler = async ()=>{
+  this.filterChangeHandler = async ({type}={})=>{
     let data = [];
-    const emitRedraw = !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
+    const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
-      data = emitRedraw ? await this.reloadData() : null;
+      data = emitRedraw ? await this.reloadData() : [];
     }
     emitRedraw && this.emit('redraw', data);
   };
@@ -120,8 +120,8 @@ proto.addRemoveSelectedFeature = function(feature){
   }
   this.state.tools.show = this.selectedfeaturesfid.size > 0;
   if (!this.state.pagination){
-    if (this.filteredfeatures && this.filteredfeatures.length) {
-      this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.filteredfeatures.length;
+    if (this.nopaginationsfilter.length) {
+      this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.nopaginationsfilter.length;
     }
   }
 };
@@ -155,15 +155,24 @@ proto.getAllFeatures = function(params){
 
 proto.switchSelection = async function(){
   if (!this.state.pagination) { // no pagination
-    if (this.filteredfeatures === null) { //no filter
+    if (this.nopaginationsfilter.length) { //filtered
+      let selected = false;
+      const filterFeatures = [];
+      this.state.features.forEach((feature, index) =>{
+        if (this.nopaginationsfilter.indexOf(index) !== -1) filterFeatures.push(feature);
+        feature.selected = !feature.selected;
+        this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](feature.id);
+        selected = selected || feature.selected;
+      });
+      this.state.tools.show = selected;
+      this.checkSelectAll(filterFeatures)
+    } else { // no filter
       this.state.features.forEach(feature => {
         feature.selected = !feature.selected;
       });
       this.layer.invertSelectionFids();
       this.checkSelectAll();
       this.state.tools.show = this.selectedfeaturesfid.size > 0;
-    } else { // filter
-      this.checkFilteredFeaturesForNoPagination(true);
     }
   } else { // pagination
     let selected = false;
@@ -182,38 +191,20 @@ proto.clearLayerSelection = function(){
   this.layer.clearSelectionFids();
 };
 
-proto.checkFilteredFeaturesForNoPagination = function(inversion=false){
-  const filtered = this.filteredfeatures !== null;
-  if (filtered) {
-    if (this.filteredfeatures.length === this.allfeaturesnumber) {
-      this.state.selectAll && this.layer.setSelectionFidsAll();
-      this.state.tools.show = this.state.selectAll;
-    } else {
-      let selected = false;
-      this.state.features.forEach((feature, index) =>{
-        if (this.filteredfeatures.indexOf(index) !== -1) {
-          feature.selected = inversion ? !feature.selected: this.state.selectAll;
-          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
-        } else if (inversion) {
-          feature.selected = !feature.selected;
-          this.layer[this.selectedfeaturesfid.has(feature.id) ? 'excludeSelectionFid' : 'includeSelectionFid'](feature.id);
-        }
-        selected = selected || feature.selected;
-      });
-      this.state.tools.show = selected;
-      this.setFilteredFeature(this.filteredfeatures);
-    }
-  }
-  return filtered;
-};
-
 proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
   if (!this.state.pagination) { //no pagination no filter
-    console.log('qui')
-    if (this.filteredfeatures !== null) {  //check if filter is set (no pagination)
-      this.checkFilteredFeaturesForNoPagination();
+    if (this.nopaginationsfilter.length) {  //check if filter is set (no pagination)
+      let selected = false;
+      this.state.features.forEach((feature, index) =>{
+        if (this.nopaginationsfilter.indexOf(index) !== -1) {
+          feature.selected = this.state.selectAll;
+          this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
+          selected = selected || feature.selected;
+        }
+      });
+      this.state.tools.show = selected;
     } else {
       this.state.tools.show = this.state.selectAll;
       this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
@@ -253,17 +244,9 @@ proto.selectAllFeatures = async function(){
 };
 
 proto.setFilteredFeature = function(featuresIndex){
-  if (featuresIndex === undefined) {
-    this.filteredfeatures = null;
-    this.checkSelectAll();
-  }
-  else {
-    const featuresIndexLength =  featuresIndex.length;
-    this.state.nofilteredrow = featuresIndexLength === 0;
-    this.filteredfeatures = featuresIndexLength === 0 || featuresIndexLength === this.allfeaturesnumber ? null : featuresIndex;
-    if (this.state.nofilteredrow) this.state.selectAll = false;
-    else this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || featuresIndex.reduce((accumulator, index) => this.state.features[index].selected && accumulator, true);
-  }
+  this.nopaginationsfilter = featuresIndex;
+  this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
+    : this.nopaginationsfilter.map(index=> this.state.features[index]));
 };
 
 proto.setAttributeTablePageLength = function(length){
@@ -351,8 +334,9 @@ proto.getDataFromBBOX = async function(){
       this.emit('ajax-reload');
     } : async ()=>{
       this.setInBBoxParam();
-      await this.getData();
-      this.filterChangeHandler();
+      this.filterChangeHandler({
+        type: 'in_bbox'
+      });
     };
     this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
     this.mapBBoxEventHandlerKey.cb();
@@ -378,8 +362,8 @@ proto.addFeature = function(feature) {
   this.state.features.push(tableFeature);
 };
 
-proto.checkSelectAll = function(){
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || this.state.features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+proto.checkSelectAll = function(features=this.state.features){
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || features.reduce((accumulator, feature) => accumulator && feature.selected, true);
 };
 
 proto.addFeatures = function(features=[]) {

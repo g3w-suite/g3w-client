@@ -92,7 +92,10 @@ const font = {
   filter: "fas fa-filter",
   plugin: "fas fa-plug",
   invert: "fas fa-exchange-alt",
-  clear: "fas fa-broom"
+  clear: "fas fa-broom",
+  palette: "fas fa-palette",
+  layers: "fas fa-layer-group",
+  'sign-in': "fas fa-sign-in-alt"
 };
 
 const Vueappplugin = {

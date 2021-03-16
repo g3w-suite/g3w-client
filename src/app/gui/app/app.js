@@ -66,6 +66,9 @@ const AppUI = Vue.extend({
     user: function() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
+    login_url(){
+      return this.appconfig.user.login_url
+    },
     numberOfProjectsInGroup: function() {
       return this.appconfig.projects.length;
     },
@@ -119,7 +122,7 @@ const AppUI = Vue.extend({
       3: [],
       4: []
     };
-    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter((customitem) => {
+    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
       if (customitem !== null) {
         const id = customitem.id = uniqueId();
         customitem.type === 'modal' && this.custom_modals.push({
@@ -134,9 +137,7 @@ const AppUI = Vue.extend({
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then((credits)=> {
-      this.customcredits = credits !== 'None' && credits
-    });
+    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
     this.logoWidth = 0;
@@ -149,7 +150,7 @@ const AppUI = Vue.extend({
     this.language = this.appconfig.user.i18n;
     await this.$nextTick();
     !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
-      this.logoWidth = this.$refs.img_logo.offsetWidth;
+      this.logoWidth = this.$refs.img_logo.offsetWidth + 15; // added marging
       this.resize();
     }, {once: true});
     /* start to render LayoutManager layout */

@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit, toRawType} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 const { geometryFields } =  require('core/utils/geo');
@@ -75,62 +74,68 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   const layer = layers[0];
   const infoFormat = layer.getInfoFormat();
   switch(infoFormat) {
-    case 'json':
+    case 'application/json':
       return this._parseGeoJsonResponse({
-        layer,
+        layers,
         response,
-        projections
+        projections,
+        wms
       });
       break;
+    case 'application/vnd.ogc.gml':
     default:
-      // set true all layer come from qgisserver
-      if (true) {
+      //IN CASE OF application/vnd.ogc.gml alway pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-        response =  this._handleXMLStringResponseBeforeConvertToJSON({
-          layers,
-          response,
-          wms
-        });
-        return this._getHandledResponsesFromResponse({
-          response,
-          layers,
-          projections
-          //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
-        });
-      } else {
-        //case of
-        if ( /msGMLOutput/.test(response)) {
-          return layers.map((layer) => {
-            const layers = layer.getQueryLayerOrigName();
-            const parser = new ol.format.WMSGetFeatureInfo({
-              layers
-            });
-            const features = parser.readFeatures(response);
-            return {
-              layer,
-              features
-            }
-          })
-        } else {
-          return layers.map((layer) => {
-            return this._handleWMSMultilayers({
-              layer,
-              response,
-              projections
-            })
-          })
-        }
-      }
+      response =  this._handleXMLStringResponseBeforeConvertToJSON({
+        layers,
+        response,
+        wms
+      });
+      return this._getHandledResponsesFromResponse({
+        response,
+        layers,
+        projections
+        //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
+      });
   }
 };
 
-proto._parseGeoJsonResponse = function({layer, response, projections}={}) {
-  const data = response.vector && response.vector.data;
+//method to handle application/json response qgis
+proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=true}={}) {
+  const layersFeatures = [];
+  const layersId = layers.map(layer => {
+    layersFeatures.push({
+      layer,
+      features: []
+    });
+    return wms ? layer.getWMSLayerName() : layer.getWFSLayerName();
+  });
+  const data = response;
   const features = data && this._parseLayerGeoJSON(data, projections) || [];
-  return [{
-    layer,
-    features
-  }]
+  features.filter(feature => {
+    let index;
+    const featureId = feature.getId();
+    let g3w_fid = featureId;
+    // in case of wms getfeature without filter return string conatin layerName or layerid
+    if (toRawType(featureId) === 'String' && Number.isNaN(1*featureId)) {
+      const fid = feature.getId().split(`.`); // get id of the feature
+      const currentLayerId = fid[0];
+      g3w_fid = fid.length === 2 ? fid[1] : fid[0];
+      index =  layersId.indexOf(currentLayerId);
+    } else index = 0; // force to 0 only one layer (search)
+    if (index !== -1) {
+      const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
+      const properties = feature.getProperties();
+      feature.set('g3w_fid', g3w_fid);
+      fields.forEach(field=>{
+        if (properties[field.name] === undefined) {
+          properties[field.label] !== undefined && feature.set(field.name, properties[field.label])
+        }
+      });
+      layersFeatures[index].features.push(feature);
+    }
+  });
+  return layersFeatures;
 };
 
 proto._handleWMSMultilayers = function({layer, response, projections} = {}) {

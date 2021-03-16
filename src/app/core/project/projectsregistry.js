@@ -167,7 +167,9 @@ proto.getCurrentProject = function() {
   return this.state.currentProject;
 };
 
-proto.getProject = function(projectGid) {
+// method to get project configuration - added reload to force to get configuratn project from server
+proto.getProject = function(projectGid, options={reload:false}) {
+  const {reload} = options;
   const d = $.Deferred();
   const pendingProject = this._groupProjects.find((project) => {
     return project.gid === projectGid;
@@ -176,13 +178,13 @@ proto.getProject = function(projectGid) {
     d.reject("Project doesn't exist");
     return d.promise();
   }
-  const projectConfig = this._projectConfigs[projectGid];
+  const projectConfig = !reload && this._projectConfigs[projectGid];
   if (projectConfig) {
     const project = new Project(projectConfig);
     d.resolve(project);
   } else {
     this._getProjectFullConfig(pendingProject)
-      .then((projectFullConfig) => {
+      .then(projectFullConfig => {
         const projectConfig = _.merge(pendingProject, projectFullConfig);
         projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
         // setupu project relations

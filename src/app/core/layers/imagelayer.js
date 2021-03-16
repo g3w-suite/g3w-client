@@ -35,8 +35,13 @@ function ImageLayer(config={}, options={}) {
     scalebasedvisibility,
     wfscapabilities
     ows_method
-    wms_use_layer_ids
+    wms_use_layer_ids,
+    styles
   }*/
+  this.setters = {
+    changeCurrentStyle(){},
+  };
+
   base(this, config, options);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;
@@ -95,9 +100,7 @@ proto.isArcgisMapserver = function() {
 };
 
 proto._getBaseLayerName = function() {
-  //const baseLayerName = (!this.isExternalWMS() || (this.isExternalWMS() && !this.isLayerProjectionASMapProjection())) && this.isWmsUseLayerIds() ? this.getId() : this.getName();
-  const baseLayerName = this.isWmsUseLayerIds() ? this.getId() : this.getName();
-  return baseLayerName
+  return this.isWmsUseLayerIds() ? this.getId() : this.getName();
 };
 
 proto.getWMSLayerName = function({type='map'}={}) {
@@ -107,6 +110,10 @@ proto.getWMSLayerName = function({type='map'}={}) {
     layerName = this.config.source.layers || this.config.source.layer;
   }
   return layerName;
+};
+
+proto.getWFSLayerName = function(){
+  return this.getQueryLayerName().replace(/[/\s]/g, '_')
 };
 
 proto.getWMSInfoLayerName = function() {
@@ -171,12 +178,6 @@ proto.setMapParamstoLegendUrl = function({bbox, crs}){
     bbox,
     crs
   }
-};
-
-proto.getWFSLayerName = function() {
-  let layerName = this.config.origname;
-  if (this.config.source && this.config.source.layers) layerName = this.config.source.layers;
-  return layerName;
 };
 
 proto.getWfsCapabilities = function() {

@@ -257,9 +257,9 @@ proto._getAllParentLayersId = function(layerstree, node) {
 
 proto._mutuallyExclude = function(layerId) {
   let parentLayersTree = this.state.layerstree;
-  let traverse = (obj) => {
+  let traverse = obj => {
     Object.entries(obj).forEach(([key, layer]) => {
-      if (!_.isNil(layer.nodes)) {
+      if (layer.nodes !== null && layer.nodes !== undefined) {
         let found = layer.nodes.reduce((previous, node) => {
           return node.id === layerId ||  previous ;
         }, false);

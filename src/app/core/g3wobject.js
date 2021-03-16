@@ -68,7 +68,8 @@ proto.onbeforeasync = function(setter, listener, priority) {
 proto.un = function(setter, key) {
   // cicle on after before (key) and for each settersListeners (array) find key
   Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
-    settersListeners[setter].forEach((setterListener, idx) => {
+    if (key === undefined) settersListeners[setter].splice(0);
+    else settersListeners[setter].forEach((setterListener, idx) => {
       if (setterListener.key === key) {
         settersListeners[setter].splice(idx, 1);
       }

@@ -19,21 +19,20 @@ const UniqueInput = Vue.extend({
       this.state.value && this.select2.val(this.state.value).trigger('change');
     }
   },
-  mounted() {
-    this.$nextTick(()=> {
-      if (this.state.input.options.editable) {
-        this.select2 = $(`#${this.id}`).select2({
-          dropdownParent: $('#g3w-view-content'),
-          tags: true,
-          language: this.getLanguage()
-        });
-        this.select2.on('select2:select', event => {
-          const value = event.params.data.$value? event.params.data.$value : event.params.data.id;
-          this.changeSelect(value);
-        })
-      }
-
-    })
+  async mounted() {
+    await this.$nextTick()
+    if (this.state.input.options.editable) {
+      this.select2 = $(`#${this.id}`).select2({
+        dropdownParent: $('#g3w-view-content'),
+        tags: true,
+        language: this.getLanguage()
+      });
+      this.select2.val(this.state.value).trigger('change');
+      this.select2.on('select2:select', event => {
+        const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
+        this.changeSelect(value);
+      })
+    }
   }
 });
 

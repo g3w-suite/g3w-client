@@ -45,7 +45,15 @@ const vueComponentOptions = {
           top:0,
           left: 0,
           color: null
-        }
+        },
+        //styleMenu
+        //colorMenu
+        stylesMenu: {
+          show: false,
+          top:0,
+          left: 0,
+          style: null
+        },
       }
     }
   },
@@ -124,6 +132,7 @@ const vueComponentOptions = {
     },
     _hideMenu() {
       this.layerMenu.show = false;
+      this.layerMenu.styles = false;
       this.layerMenu.loading.data_table = false;
       this.layerMenu.loading.shp = false;
       this.layerMenu.loading.csv = false;
@@ -283,8 +292,30 @@ const vueComponentOptions = {
       layer.setStyle(style);
 
     },
+    setCurrentLayerStyle(index){
+      let changed = false;
+      this.layerMenu.layer.styles.forEach((style, idx) =>{
+        if (idx === index) {
+          this.layerMenu.stylesMenu.style = style.name;
+          changed = !style.current;
+          style.current = true;
+        } else style.current = false;
+      });
+      if (changed) {
+        const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
+        layer && layer.changeCurrentStyle();
+      }
+    },
+    showStylesMenu(bool, evt) {
+      if (bool) {
+        const elem = $(evt.target);
+        this.layerMenu.stylesMenu.top = elem.offset().top;
+        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
+      }
+      this.layerMenu.stylesMenu.show = bool;
+    },
     showColorMenu(bool, evt) {
-      if(bool) {
+      if (bool) {
         const elem = $(evt.target);
         this.layerMenu.colorMenu.top = elem.offset().top;
         this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);

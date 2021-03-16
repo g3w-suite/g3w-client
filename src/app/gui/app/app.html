@@ -14,7 +14,7 @@
           </a>
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
             <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
-              <img ref="img_logo" :src="logo_url">
+              <img style="max-width: 250px;" ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
               <div  v-if="!isMobile()" class="main_title">{{ main_title }}</div>
@@ -22,10 +22,16 @@
             </div>
           </div>
         </div>
-        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar">
+        <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden">
           <navbarleftitems></navbarleftitems>
           <navbarrightitems></navbarrightitems>
           <ul class="nav navbar-nav navbar-right app-navbar-nav">
+            <li v-if="!user" class="dropdown user user-menu">
+              <a :href="login_url">
+                <i :class="g3wtemplate.getFontClass('sign-in')" aria-hidden="true"></i>
+                <span v-t="'sign_in'"></span>
+              </a>
+            </li>
             <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[0]" :key="state.id"></header-item>
             <li id="changemaps" class="dropdown user" v-if="numberOfProjectsInGroup > 1">
               <a href="#" @click="openProjectsMenu" class="dropdown-toggle" data-toggle="dropdown">

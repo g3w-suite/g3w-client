@@ -372,9 +372,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
         }
         d.resolve(commitItems, response)
       })
-      .fail((err) => {
-        d.reject(err);
-      });
+      .fail(err => d.reject(err));
   }
   return d.promise();
 

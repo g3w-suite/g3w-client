@@ -78,8 +78,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
     isVector && this.setProjections();
     const data = response.result ?  unique ? response.data :  {
       data: this._parseGeoJsonResponse({
-        layer: this._layer,
-        response,
+        layers: [this._layer],
+        response:response.vector.data,
         projections: this._projections
       })
     }: Promise.reject();
@@ -90,7 +90,8 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
 };
 
 proto.setProjections = function() {
-  this._projections.layer = this._layer.getProjection();
+  //COMMENTED LAYER PROJECTION: EXPECT ONLY RESULT IN MAP PROJECTION
+  //this._projections.layer = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || this._projections.layer;
 };
 
@@ -163,12 +164,8 @@ proto.getWidgetData = function(options={}) {
 proto.unlock = function() {
   const d = $.Deferred();
   $.post(this._unlockUrl)
-    .then((response) => {
-      d.resolve(response);
-    })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .then(response => d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise()
 };
 
@@ -183,12 +180,8 @@ proto.commit = function(commitItems) {
     data: jsonCommits,
     contentType: "application/json"
   })
-    .then(function(response) {
-      d.resolve(response);
-    })
-    .fail(function(err) {
-      d.reject(err);
-    });
+    .then(response => d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -240,11 +233,12 @@ proto.getFeatures = function(options={}, params={}) {
           const parser = Parsers[layerType].get({
             type: 'json'
           });
+          //const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
           const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs() } : {};
-          const lockIds = featurelocks.map((featureLock) => {
+          const lockIds = featurelocks.map(featureLock => {
             return featureLock.featureid
           });
-          parser(data, parser_options).forEach((feature) => {
+          parser(data, parser_options).forEach(feature => {
             const featureId = `${feature.getId()}`;
             if (lockIds.indexOf(featureId) > -1) {
               features.push(new Feature({

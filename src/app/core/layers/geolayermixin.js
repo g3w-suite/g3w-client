@@ -210,6 +210,10 @@ proto.getCrs = function() {
   return this.config.projection && this.config.projection.getCode() || null;
 };
 
+proto.getMapCrs = function(){
+  return this.config.map_crs;
+};
+
 proto.isCached = function() {
   return this.config.cache_url && this.config.cache_url !== '';
 };
