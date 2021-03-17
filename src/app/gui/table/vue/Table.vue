@@ -5,7 +5,7 @@
         <tr>
           <th></th>
           <th v-if="index > 0" v-for="(header, index) in state.headers">
-            <input type="text" style="height: 25px;" class="form-control column-search" @keyup="changeColumn($event, index)" :placeholder="header.name"/>
+            <input type="text" style="height: 25px; min-width: 40px; padding: 2px;" class="form-control column-search" @keyup="changeColumn($event, index)" :placeholder="header.name"/>
           </th>
         </tr>
         <tr>
