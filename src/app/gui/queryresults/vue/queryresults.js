@@ -1,8 +1,8 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
-import Actions from './actions.vue';
+import HeaderFeatureBody from './headerfeaturebody.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
-const {base, inherit} = require('core/utils/utils');
+const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const GUI = require('gui/gui');
@@ -26,7 +26,7 @@ const vueComponentOptions = {
   components: {
     Tabs,
     'g3w-link': Link,
-    actions: Actions
+    'header-feature-body': HeaderFeatureBody
   },
   computed: {
     onelayerresult(){
@@ -111,11 +111,6 @@ const vueComponentOptions = {
     },
     selectionFeaturesLayer(layer) {
       this.$options.queryResultsService.selectionFeaturesLayer(layer);
-    },
-    zoomToLayerFeaturesExtent(layer) {
-      this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
-        highlight: true
-      });
     },
     layerHasActions(layer) {
       return this.state.layersactions[layer.id].length > 0;
@@ -205,7 +200,7 @@ const vueComponentOptions = {
       })
     },
     collapsedFeatureBox(layer, feature, relation_index) {
-      const boxid = !_.isNil(relation_index) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
+      const boxid = relation_index !== null && relation_index !== undefined ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
       const collapsed = this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
       return collapsed;
     },
@@ -217,7 +212,7 @@ const vueComponentOptions = {
       });
     },
     getBoxId(layer, feature, relation_index) {
-      const boxid = (!_.isNil(relation_index)) ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
+      const boxid = relation_index !== null && relation_index !== undefined ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
       return boxid;
     },
     async toggleFeatureBox(layer, feature, relation_index) {
@@ -281,8 +276,16 @@ const vueComponentOptions = {
       })
     },
     onelayerresult(bool) {
-      bool && this.$options.queryResultsService.highlightFeatures(this.state.layers[0]);
+      bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
     }
+  },
+  created(){
+    //PUT HERE THROTTLED FUNCTION
+    this.zoomToLayerFeaturesExtent = throttle((layer) => {
+      this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
+        highlight: true
+      });
+    })
   },
   beforeMount() {
     this.isMobile() && GUI.hideSidebar();

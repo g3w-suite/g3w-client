@@ -140,16 +140,20 @@ proto.setZoomToResults = function(bool=true) {
   this.state.zoomToResult = bool;
 };
 
-proto.highlightFeatures = function(layer){
+proto.highlightFeaturesPermanently = function(layer){
   const {features} = layer;
   this.mapService.highlightFeatures(features, {
-    duration: this.getHighlightDuration()
+    duration: Infinity
   })
+};
+
+proto.isOneLayerResult = function(){
+  return this.state.layers.length === 1;
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const {features} = layer;
-  options.highlight = this.getHighlightDuration() !== Infinity;
+  options.highlight = !this.isOneLayerResult();
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
     this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
   else this.mapService.zoomToFeatures(features, options);
@@ -377,31 +381,6 @@ proto.setActionsForLayers = function(layers) {
   this.unlistenerlayeractionevents = [];
   layers.forEach(layer => {
     if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
-    if (layer.selection.active !== undefined) {
-      // selection action
-      const toggled = {};
-      layer.features.map((feature, index) => toggled[index] = false);
-      this.state.layersactions[layer.id].push({
-        id: 'selection',
-        download: false,
-        class: GUI.getFontClass('success'),
-        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-        state: Vue.observable({
-          toggled
-        }),
-        init: ({feature, index, action}={})=>{
-          layer.selection.active !== void 0 && this.checkFeatureSelection({
-            layerId: layer.id,
-            index,
-            feature,
-            action
-          })
-        },
-        cbk: throttle(this.addToSelection.bind(this))
-      });
-      this.listenClearSelection(layer, 'selection');
-      //end selection action
-    }
     //in case of geometry
     if (layer.hasgeometry) {
       this.state.layersactions[layer.id].push({
@@ -467,7 +446,35 @@ proto.setActionsForLayers = function(layers) {
       hint: `sdk.tooltips.atlas`,
       cbk: this.printAtlas.bind(this)
     });
+
+    if (layer.selection.active !== undefined) {
+      // selection action
+      const toggled = {};
+      layer.features.map((feature, index) => toggled[index] = false);
+      this.state.layersactions[layer.id].push({
+        id: 'selection',
+        download: false,
+        class: GUI.getFontClass('success'),
+        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+        state: Vue.observable({
+          toggled
+        }),
+        init: ({feature, index, action}={})=>{
+          layer.selection.active !== void 0 && this.checkFeatureSelection({
+            layerId: layer.id,
+            index,
+            feature,
+            action
+          })
+        },
+        cbk: throttle(this.addToSelection.bind(this))
+      });
+      this.listenClearSelection(layer, 'selection');
+      //end selection action
+    }
+
   });
+
   this.addActionsForLayers(this.state.layersactions);
 };
 
@@ -786,29 +793,19 @@ proto.addToSelection = function(layer, feature, action, index){
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
-proto.getHighlightDuration = function(){
-  return this.state.layers.length === 1 ? Infinity : 1500;
-};
 
 proto.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
-    const duration = this.getHighlightDuration();
-    const clear = duration !== Infinity;
-    if (this._asyncFnc.goToGeometry.async) {
-      this._asyncFnc.todo = this.mapService.highlightGeometry.bind(this.mapService, feature.geometry, {
+    const handlerOptions = {
+      mapServiceMethod: this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry',
+      firstParam: this.isOneLayerResult() ? [feature] : feature.geometry,
+      options: this.isOneLayerResult() ? {} : {
         layerId: layer.id,
-        clear,
-        highlight: clear,
-        duration
-      });
-    } else setTimeout(() => {
-      this.mapService.highlightGeometry(feature.geometry, {
-        layerId: layer.id,
-        clear,
-        highlight: clear,
-        duration
-      });
-    }, 0)
+        duration: 1500
+      }
+    };
+    if (this._asyncFnc.goToGeometry.async) this._asyncFnc.todo = this.mapService[handlerOptions.mapServiceMethod].bind(this.mapService, handlerOptions.firstParam, handlerOptions.options);
+    else setTimeout(() => this.mapService[handlerOptions.mapServiceMethod](handlerOptions.firstParam, handlerOptions.options))
   }
 };
 
@@ -823,11 +820,11 @@ proto.highlightGeometry = function(layer, feature) {
       zoom: false,
       duration: Infinity
     });
-
 };
 
-proto.clearHighlightGeometry = function(layer, feature) {
+proto.clearHighlightGeometry = function(layer) {
   this.mapService.clearHighlightGeometry();
+  this.isOneLayerResult() && this.highlightFeaturesPermanently(layer);
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
