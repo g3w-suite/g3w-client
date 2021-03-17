@@ -620,13 +620,15 @@ proto.hideChart = function(container){
 
 proto.showRelationsChart = function(ids=[], layer, feature, action, index, container){
   action.state.toggled[index] = !action.state.toggled[index];
-  const relations = this._relations[layer.id];
-  const relationData = {
-    relations,
-    fid: feature.attributes['g3w_fid'],
-    height: 400
-  };
-  this.emit('show-chart', ids, container, relationData);
+  if (action.state.toggled[index]){
+    const relations = this._relations[layer.id];
+    const relationData = {
+      relations,
+      fid: feature.attributes['g3w_fid'],
+      height: 400
+    };
+    this.emit('show-chart', ids, container, relationData)
+  } else this.hideChart(container)
 };
 
 proto.printAtlas = function(layer, feature){
