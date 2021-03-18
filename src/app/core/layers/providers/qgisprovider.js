@@ -209,6 +209,7 @@ proto.getFeatures = function(options={}, params={}) {
     const features = [];
     let filter = options.filter || null;
     if (filter) {
+      // filterbbox
       if (filter.bbox) {
         const bbox = filter.bbox;
         filter = {
@@ -221,9 +222,18 @@ proto.getFeatures = function(options={}, params={}) {
           data: jsonFilter,
           contentType: "application/json"
         })
+        // filter fid
       } else if (filter.fid) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
+        //fidins fidsout
+      } else if (filter.fidsin || filter.fidsout) {
+        const jsonFilter = JSON.stringify(filter);
+        promise = XHR.post({
+          url,
+          data: jsonFilter,
+          contentType: "application/json"
+        })
       }
     } else promise = XHR.post({url,contentType: "application/json"});
     promise.then(response => {

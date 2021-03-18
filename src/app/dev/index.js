@@ -6,8 +6,7 @@ const GUI = require('gui/gui');
 ApplicationService.once('ready', function(){});
 
 // Handle project configuration to insert custom element on project
-ProjectsRegistry.oncebefore('setCurrentProject', project => {
-});
+ProjectsRegistry.oncebefore('setCurrentProject', project => {});
 
 //Ready GUI
 GUI.once('ready', function(){});

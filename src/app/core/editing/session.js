@@ -59,11 +59,11 @@ proto.unregister = function(){
 proto._start = function(options={}) {
   const d = $.Deferred();
   this._editor.start(options)
-    .then((features) => {
+    .then(features => {
       this.state.started = true;
       d.resolve(features);
     })
-    .fail((err) => {
+    .fail(err => {
       d.reject(err);
     });
   return d.promise();

@@ -1,10 +1,10 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const { base, inherit} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 
 function PluginService(options={}) {
   base(this, options);
+  this.plugin;
   this._api = {
     own: null,
     dependencies: {}
@@ -19,6 +19,16 @@ function PluginService(options={}) {
 inherit(PluginService, G3WObject);
 
 const proto = PluginService.prototype;
+
+// set owner plugin of the service
+proto.setPlugin = function(plugin){
+  this.plugin = plugin;
+};
+
+// return the instance of the plugin owner of the service
+proto.getPlugin = function(){
+  return this.plugin;
+};
 
 proto.isIframe = function() {
   return ApplicationService.isIframe();
@@ -38,10 +48,8 @@ proto.setConfig = function(config) {
 };
 
 proto.setApi = function({dependency, api} = {}) {
-  if (!dependency)
-    this._api.own = api;
-  else
-    this._api.dependencies[dependency] = api;
+  if (!dependency) this._api.own = api;
+  else this._api.dependencies[dependency] = api;
 };
 
 proto.getApi = function({dependency} = {}) {

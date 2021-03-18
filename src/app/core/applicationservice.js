@@ -402,6 +402,12 @@ const ApplicationService = function() {
 
   //boostrap plugins
   this._bootstrapPlugins = function() {
+    this._config.plugins.iframe = {
+      gid: 'qdjango:1',
+      editing: {
+        qgis_layer_id: "edifici20180829155021867"
+      }
+    };
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
       pluginsConfigs: this._config.plugins,
