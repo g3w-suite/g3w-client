@@ -141,9 +141,10 @@ const AppUI = Vue.extend({
   },
   async mounted() {
     this.logoWidth = 0;
+    await this.$nextTick();
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
     const elementLenght = rightNavBarElements.length;
-    this.rightNavbarWidth = 0;
+    this.rightNavbarWidth = 15; // margin right
     for (let i = 0; i < elementLenght; i++ ) {
       this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
     }

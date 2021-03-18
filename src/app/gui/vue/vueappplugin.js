@@ -95,7 +95,8 @@ const font = {
   clear: "fas fa-broom",
   palette: "fas fa-palette",
   layers: "fas fa-layer-group",
-  'sign-in': "fas fa-sign-in-alt"
+  'sign-in': "fas fa-sign-in-alt",
+  language: "fas fa-language"
 };
 
 const Vueappplugin = {

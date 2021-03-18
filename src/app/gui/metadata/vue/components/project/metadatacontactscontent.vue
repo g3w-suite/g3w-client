@@ -17,7 +17,7 @@
             </template>
             <div v-else>
               <template v-if="key === 'contactelectronicmailaddress'">
-                <a :href="'mailto:' + sanitizeValue(value)">{{sanitizeValue(value)}}</a>
+                <a style="font-weight: bold" :href="'mailto:' + sanitizeValue(value)">{{sanitizeValue(value)}}</a>
               </template>
               <template v-else>
                 {{ sanitizeValue(value) }}

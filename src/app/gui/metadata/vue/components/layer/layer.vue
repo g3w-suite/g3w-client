@@ -1,9 +1,9 @@
 <template>
   <div class="row-info">
     <h4 @click="showHideInfo" class="layer_header" data-toggle="collapse" :data-target="'#' + state.id">
-      <i class="layer-header-icon" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>
+      <i class="layer-header-icon action-button nohover" :class="[isSpatial ? g3wtemplate.font['map']: g3wtemplate.font['table']]" aria-hidden="true"></i>
       <span class="layer-name">{{ state.name }}</span>
-      <span class="open-close" :class="[show ? g3wtemplate.getFontClass('minus') :g3wtemplate.getFontClass('plus')]"></span>
+      <span class="action-button nohover open-close" :class="[show ? g3wtemplate.getFontClass('minus') :g3wtemplate.getFontClass('plus')]"></span>
     </h4>
     <div :id="state.id" class="collapse">
       <ul class="metadata-nav-tabs nav nav-tabs" role="tablist">

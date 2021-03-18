@@ -1,22 +1,22 @@
 <template>
   <div id="project-catalog">
-    <h4 style="text-align: center" class="content-header-component skin-color">{{ state.name }}</h4>
+<!--    <h4 class="content-header-component skin-color">{{ state.name }}</h4>-->
     <div id="project-catalog-container" style="padding:0" :class="isMobile() ? 'mobile' : null">
       <ul role="tablist" class="nav nav-tabs metadata-nav-bar">
         <li class="active">
           <a data-toggle="tab" href="#general"  class="metadata-item-tab general">
-            <i :class="g3wtemplate.getFontClass('info')" aria-hidden="true"></i>
+            <i class="action-button nohover" :class="g3wtemplate.getFontClass('info')" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.general.title'"  style="font-weight: bold"></span>
           </a>
         </li>
         <li>
           <a data-toggle="tab" href="#spatial" class="metadata-item-tab spatial">
-            <i :class="iconsClass.globe" aria-hidden="true"></i>
+            <i class="action-button nohover" :class="iconsClass.globe" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.spatial.title'" style="font-weight: bold"></span>
           </a></li>
         <li>
           <a data-toggle="tab" href="#metadata_layers" class="metadata-item-tab layers">
-            <i :class="iconsClass.bars" aria-hidden="true"></i>
+            <i class="action-button nohover":class="iconsClass.bars" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.layers.title'" style="font-weight: bold"></span>
           </a>
         </li>
@@ -51,10 +51,8 @@
   import MetadataTabContent from './metadatatabcontent.vue';
   import MetadataBBOXContent from './metadatabboxcontent.vue';
   import MetadataContactsContent from './metadatacontactscontent.vue';
-  const {resizeMixin} = require('gui/vue/vue.mixins');
   export default {
     name: "project",
-    mixins: [resizeMixin],
     data() {
       return {
         state: this.$options.state,
@@ -72,14 +70,6 @@
       'metadata-contacts-content': MetadataContactsContent
     },
     methods: {
-      resize(){
-        setTimeout(()=>{
-          const projectcatalogheight = $('#project-catalog').outerHeight();
-          const titleHeight= $('.content-header-component').outerHeight();
-          const metadatanavbarHeight = $('.metadata-nav-bar').outerHeight();
-          $('.metadata-body').height(projectcatalogheight - titleHeight - metadatanavbarHeight - 50);
-        })
-      },
       isArrayorObject(value) {
         return Array.isArray(value) || typeof value === 'object';
       },
@@ -97,9 +87,6 @@
         }
         return component;
       }
-    },
-    beforeCreate() {
-      this.delayType = 'debounce';
     }
   }
 </script>
@@ -136,7 +123,7 @@
     margin: 0 !important;
     padding-top: 10px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e2e2e2;
+    border-bottom: 1px solid #eeeeee;
   }
 
   .row-info .label {
