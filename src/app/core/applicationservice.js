@@ -170,6 +170,10 @@ const ApplicationService = function() {
     return ApplicationState;
   };
 
+  this.disableApplication = function(bool=false){
+    ApplicationState.gui.app.disabled = bool;
+  };
+
   this.setApplicationLanguage = function(lng='en') {
     ApplicationState.lng = lng;
   };
@@ -403,11 +407,11 @@ const ApplicationService = function() {
   //boostrap plugins
   this._bootstrapPlugins = function() {
     this._config.plugins.iframe = {
-      gid: 'qdjango:1',
-      editing: {
-        qgis_layer_id: "edifici20180829155021867"
-      }
+      gid: 'qdjango:1'
     };
+    //check if load plugin iframe in case of not iframe
+    // if (this._config.plugins.iframe && !ApplicationState.iframe)
+    //   delete this._config.plugins.iframe;
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
       pluginsConfigs: this._config.plugins,

@@ -1,8 +1,6 @@
-const noop = require('core/utils/utils').noop;
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit, noop} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const RouterService = require('core/router');
-const base = require('core/utils/utils').base;
 const ComponentsRegistry = require('gui/componentsregistry');
 
 // API della GUI.

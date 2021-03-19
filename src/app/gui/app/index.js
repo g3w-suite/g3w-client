@@ -484,6 +484,12 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.showPanel = sidebar.SidebarService.showPanel.bind(sidebar.SidebarService);
     GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
 
+
+    ///
+    GUI.disableApplication = function(bool=false){
+      ApplicationService.disableApplication(bool);
+    };
+
     //showusermessage
 
     GUI.showUserMessage = function(options={}) {

@@ -10,6 +10,9 @@ const STATE = Vue.observable({
   lng: 'en',
   plugins: [],
   gui: {
+    app: {
+      disabled: false
+    },
     sidebar: {
       disabled: false
     }

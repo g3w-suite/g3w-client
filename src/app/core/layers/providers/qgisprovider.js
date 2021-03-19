@@ -227,7 +227,7 @@ proto.getFeatures = function(options={}, params={}) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
         //fidins fidsout
-      } else if (filter.fidsin || filter.fidsout) {
+      } else if (filter.field) {
         const jsonFilter = JSON.stringify(filter);
         promise = XHR.post({
           url,

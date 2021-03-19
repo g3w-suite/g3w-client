@@ -15,13 +15,17 @@ const AppUI = Vue.extend({
       current_custom_modal_content: null,
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
-      language: null
+      language: null,
+
     }
   },
   components: {
     HeaderItem
   },
   computed: {
+    app(){
+      return this.appState.gui.app;
+    },
     languages() {
       return this.appconfig.i18n;
     },

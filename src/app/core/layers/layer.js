@@ -695,10 +695,8 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
   if (!onMap) return queryableForCababilities;
   // if querable check if is visible or disabled
   if (queryableForCababilities) {
-       queryEnabled = (this.isVisible() && !this.isDisabled());
-    if (!_.isUndefined(this.config.infowhennotvisible) && (this.config.infowhennotvisible === true)) {
-      queryEnabled = true;
-    }
+    queryEnabled = this.isVisible() && !this.isDisabled();
+    if (this.config.infowhennotvisible !== undefined && this.config.infowhennotvisible === true) queryEnabled = true;
   }
   return queryEnabled;
 };
