@@ -20,6 +20,9 @@
                 <span v-if="layer.download.gpx" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
                   <span class="action-button-icon"  :class="g3wtemplate.getFontClass('gpx')" @click.stop="saveLayerResult(layer, 'gpx')"></span>
                 </span>
+                <span v-if="layer.download.gpkg" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpkg.hint'">
+                  <span class="action-button-icon"  :class="g3wtemplate.getFontClass('gpkg')" @click.stop="saveLayerResult(layer, 'gpkg')"></span>
+                </span>
                 <span v-if="layer.download.csv" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
                   <span  class="action-button-icon" :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer, 'csv')"></span>
                 </span>

@@ -65,7 +65,8 @@
       <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0" :style="{ top: layerMenu.stylesMenu.top + 'px', left: layerMenu.stylesMenu.left +   'px' }">
         <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
           <span v-if="style.current" style="font-size: 0.5em;" :class="g3wtemplate.getFontClass('circle')"></span>
-          <span>{{style.name}}</span>
+          <span>{{style.name}}
+            <span v-if="style.name ===  layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">(<span v-t="'default'"></span>)</span></span>
         </li>
       </ul>
     </li>
@@ -104,6 +105,13 @@
         <bar-loader :loading="layerMenu.loading.gpx"></bar-loader>
         <span class="menu-icon" :class="g3wtemplate.getFontClass('gpx')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpx'"></span>
+      </div>
+    </li>
+    <li v-if="canDownloadGpkg(layerMenu.layer.id)">
+      <div @click.prevent.stop="downloadGpk(layerMenu.layer.id)" v-download>
+        <bar-loader :loading="layerMenu.loading.gpkg"></bar-loader>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('gpkg')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>
       </div>
     </li>
     <li v-if="canDownloadCsv(layerMenu.layer.id)">

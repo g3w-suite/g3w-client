@@ -37,6 +37,7 @@ const vueComponentOptions = {
           shp: false,
           csv: false,
           gpx: false,
+          gpkg: false,
           xls: false
         },
         //colorMenu
@@ -52,7 +53,8 @@ const vueComponentOptions = {
           show: false,
           top:0,
           left: 0,
-          style: null
+          style: null,
+          default: null
         },
       }
     }
@@ -137,6 +139,7 @@ const vueComponentOptions = {
       this.layerMenu.loading.shp = false;
       this.layerMenu.loading.csv = false;
       this.layerMenu.loading.gpx = false;
+      this.layerMenu.loading.gpkg = false;
       this.layerMenu.loading.xls = false;
     },
     zoomToLayer: function() {
@@ -175,6 +178,10 @@ const vueComponentOptions = {
     canDownloadGpx(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isGpxDownlodable(): false;
+    },
+    canDownloadGpkg(layerId) {
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isGpkgDownlodable(): false;
     },
     canDownloadCsv(layerId){
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -246,6 +253,18 @@ const vueComponentOptions = {
         GUI.notify.error(t("info.server_error"));
       }).finally(() => {
         this.layerMenu.loading.gpx = false;
+        ApplicationService.setDownload(false, caller_download_id);
+        this._hideMenu();
+      })
+    },
+    downloadGpkg(layerId) {
+      const caller_download_id = ApplicationService.setDownload(true);
+      this.layerMenu.loading.gpkg = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getGpkg().catch(err => {
+        GUI.notify.error(t("info.server_error"));
+      }).finally(() => {
+        this.layerMenu.loading.gpkg = false;
         ApplicationService.setDownload(false, caller_download_id);
         this._hideMenu();
       })

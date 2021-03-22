@@ -1,6 +1,7 @@
 const translations = {
   it: {
     translation: {
+      default:"predefinito",
       sign_in: "Accedi",
       layer_selection_filter: {
         tools: {
@@ -145,6 +146,7 @@ const translations = {
           copy_map_extent_url: 'Copia map view link',
           download_shapefile: "Scarica Shapefile",
           download_gpx: "Scarica GPX",
+          download_gpkg: "Scarica GPKG",
           download_csv: "Scarica CSV",
           download_xls: "Scarica XLS",
           show_chart: "Mostra Grafico",
@@ -178,8 +180,14 @@ const translations = {
               download_features_gpx: {
                 hint: "Scarica features in GPX"
               },
+              download_features_gpkg: {
+                hint: "Scarica features in GPKG"
+              },
               download_gpx: {
                 hint: "Scarica feature in GPX"
+              },
+              download_gpkg: {
+                hint: "Scarica feature in GPKG"
               },
               download_features_csv: {
                 hint: "Scarica features in CSV"
@@ -401,6 +409,7 @@ const translations = {
   },
   en: {
     translation: {
+      default:"default",
       sign_in: "Sign in",
       layer_selection_filter: {
         tools: {
@@ -544,6 +553,7 @@ const translations = {
           copy_map_extent_url: 'Copy map view link',
           download_shapefile: "Download Shapefile",
           download_gpx: "Download GPX",
+          download_gpkg: "Download GPKG",
           download_csv: "Download CSV",
           download_xls: "Download XLS",
           show_chart: "Show Chart",
@@ -577,8 +587,14 @@ const translations = {
               download_features_gpx: {
                 hint: "Download feature GPX"
               },
+              download_features_gpkg: {
+                hint: "Download feature GPKG"
+              },
               download_gpx: {
                 hint: "Download feature GPX"
+              },
+              download_gpkg: {
+                hint: "Download feature GPKG"
               },
               download_features_csv: {
                 hint: "Download features CSV"
@@ -800,6 +816,7 @@ const translations = {
   },
   fi: {
     translation: {
+      default:"oletuksena",
       sign_in:"Kirjaudu sisään",
       layer_selection_filter: {
         tools: {
@@ -943,6 +960,7 @@ const translations = {
           copy_map_extent_url: 'Kopioi kartan katselulinkki',
           download_shapefile: "Lataa SHP-tiedosto",
           download_gpx: "Lataa GPX-tiedosto",
+          download_gpkg: "Lataa GPKG-tiedosto",
           download_csv: "Lataa CSV-tiedosto",
           download_xls: "Lataa XLS-tiedosto",
           show_chart: "Näytä kaavio",
@@ -976,8 +994,14 @@ const translations = {
               download_features_gpx: {
                 hint: "Lataa ominaisuuden GPX-tiedosto"
               },
+              download_features_gpkg: {
+                hint: "Lataa ominaisuuden GPKG-tiedosto"
+              },
               download_gpx: {
                 hint: "Lataa ominaisuuden GPX-tiedosto"
+              },
+              download_gpkg: {
+                hint: "Lataa ominaisuuden GPKG-tiedosto"
               },
               download_features_csv: {
                 hint: "Lataa ominaisuuden CSV-tiedosto"
@@ -1199,6 +1223,7 @@ const translations = {
   },
   se: {
     translation: {
+      default: "standard",
       sign_in:"Logga in",
       layer_selection_filter: {
         tools: {
@@ -1342,6 +1367,7 @@ const translations = {
           copy_map_extent_url: 'Kopiera länk till karta',
           download_shapefile: "Ladda SHP-fil",
           download_gpx: "Ladda GPX-fil",
+          download_gpkg: "Ladda GPKG-fil",
           download_csv: "Ladda CSV-fil",
           download_xls: "Ladda XLS-fil",
           show_chart: "Visa diagram", //Tero 9.12.2020
@@ -1375,8 +1401,14 @@ const translations = {
               download_features_gpx: {
                 hint: "Ladda egenskapens GPX-fil"
               },
+              download_features_gpkg: {
+                hint: "Ladda egenskapens GPKG-fil"
+              },
               download_gpx: {
                 hint: "Ladda egenskapens GPX-fil"
+              },
+              download_gpkg: {
+                hint: "Ladda egenskapens GPKG-fil"
               },
               download_features_csv: {
                 hint: "Ladda egenskapens CSV-fil"
