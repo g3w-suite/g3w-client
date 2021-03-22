@@ -11,7 +11,7 @@ const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 // set formats for download single feature
-const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'csv', 'xls'];
+const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'gpkg', 'csv', 'xls'];
 
 function QueryResultsService() {
   this.printService = new PrintService();
@@ -689,6 +689,9 @@ proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
       break;
     case 'gpx':
       promise = layer.getGpx({data});
+      break;
+    case 'gpkg':
+      promise = layer.getGpkg({data});
       break;
   }
   promise.catch((err) => {

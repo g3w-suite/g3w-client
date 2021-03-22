@@ -39,6 +39,7 @@ function Layer(config={}, options={}) {
     this.config.urls.csv = `${vectorUrl}csv/${suffixUrl}`;
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
+    this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
@@ -54,6 +55,7 @@ function Layer(config={}, options={}) {
   }
 
   // dinamic layer values useful for layerstree
+  const defaultstyle = config.styles && config.styles.find(style => style.current).name
   this.state = {
     id: config.id,
     title: config.title,
@@ -65,6 +67,7 @@ function Layer(config={}, options={}) {
     removable: config.removable || false,
     source: config.source,
     styles: config.styles,
+    defaultstyle,
     infoformat: this.getInfoFormat(),
     geolayer: false,
     selection: {
@@ -381,6 +384,15 @@ proto.getGpx = function({data}={}){
   })
 };
 
+proto.getGpkg = function({data}={}){
+  const url = this.getUrl('gpkg');
+  return XHR.fileDownload({
+    url,
+    data,
+    httpMethod: "GET"
+  })
+};
+
 proto.getCsv = function({data}={}){
   const url = this.getUrl('csv');
   return XHR.fileDownload({
@@ -576,6 +588,10 @@ proto.isGpxDownlodable = function(){
   return !this.isBaseLayer() && this.config.download_gpx;
 };
 
+proto.isGpkgDownlodable = function(){
+  return !this.isBaseLayer() && this.config.download_gpkg;
+};
+
 proto.isCsvDownlodable = function(){
   return !this.isBaseLayer() && this.config.download_csv;
 };
@@ -636,10 +652,6 @@ proto.setType = function(type) {
   this.type = type;
 };
 
-//get syle form layer
-proto.getStyles = function(){
-  return this.config.styles;
-};
 
 proto.isSelected = function() {
   return this.state.selected;
