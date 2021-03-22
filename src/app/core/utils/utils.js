@@ -102,14 +102,14 @@ const utils = {
     // who call base
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
-      // This function constructor (that inherith from superClass_). Call the superclass constructor.
+      // This function constructor (that inherit from superClass_). Call the superclass constructor.
       //It is a easy way to cal super class in binding to this
       return caller.superClass_.constructor.apply(
           me, Array.prototype.slice.call(arguments, 1));
     }
     const args = Array.prototype.slice.call(arguments, 2);
     let foundCaller = false;
-    //constructor is the costructor function of the object
+    //constructor is the constructor function of the object
     for (let ctor = me.constructor;
          ctor; ctor = ctor.superClass_ && ctor.superClass_.constructor) {
       if (ctor.prototype[opt_methodName] === caller) {
