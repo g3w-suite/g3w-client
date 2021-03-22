@@ -59,12 +59,13 @@ proto.setVisible = function(visible) {
   this.state.visible = visible;
 };
 
-proto.getStyle = function() {
-  return this.config.style;
+//get syle form layer
+proto.getStyles = function(){
+  return this.config.source.external  ? this.config.source.styles : this.config.styles;
 };
 
-proto.setStyle = function(style) {
-  this.config.style = style;
+proto.getStyle = function(){
+  return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
 };
 
 proto.isDisabled = function() {

@@ -93,13 +93,9 @@ proto._makeOlLayer = function(withLayers) {
     projection: this.config.projection,
     iframe_internal: this.iframe_internal
   };
-  if (withLayers) {
-    wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
-  }
+  if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
-  if (representativeLayer) {
-    wmsConfig.url = representativeLayer.getWmsUrl();
-  }
+  if (representativeLayer) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('imageloadstart', () => {
@@ -121,8 +117,10 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
+    const STYLES = visibleLayers.map(layer => layer.getStyle()).join(',');
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
     let params = {
+      STYLES,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`
