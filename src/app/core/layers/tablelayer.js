@@ -70,7 +70,6 @@ function TableLayer(config={}, options={}) {
   // color
   this._color = null;
   options.project = options.project || ProjectsRegistry.getCurrentProject();
-  const {project} = options;
   this.layerId = config.id;
   // add urls
   config.urls = config.urls || {};
@@ -91,7 +90,7 @@ function TableLayer(config={}, options={}) {
           this.config.editing.fields = vector.fields;
           this.config.editing.format = vector.format;
           this.config.editing.constraints = constraints || {};
-          this.config.editing.style = vector.style || {};
+          this.config.editing.style = vector.style;
           this.config.editing.form = {
             perc: null
           };
@@ -203,6 +202,11 @@ proto.readEditingFeatures = function() {
 
 proto.getEditingLayer = function() {
   return this;
+};
+
+//check if is editingLayer useful to get editingstyle
+proto.isEditingLayer = function(){
+  return !!this.config.editing
 };
 
 proto.getEditingStyle = function() {
@@ -377,6 +381,11 @@ proto.setSource = function(source) {
 
 proto.getSource = function() {
   return this._featuresstore;
+};
+
+// get editing style
+proto.getEditingStyle = function(){
+  return this.config.editing.style;
 };
 
 proto._setFeatures = function(features) {
