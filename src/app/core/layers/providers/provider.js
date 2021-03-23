@@ -307,7 +307,8 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     }
   });
   //PATCH id strange
-  response = response.replaceAll(String.fromCharCode(0), '0');
+  const strangeChar = new RegExp(`${String.fromCharCode(0)}`, "g")
+  response = response.replace(strangeChar, '0');
   ///
   return response;
 };

@@ -305,11 +305,11 @@ const ApplicationService = function() {
         i18n: config.i18n,
         layout: config.group.layout || {},
         // needed by ProjectService
-        getWmsUrl: function(project) {
+        getWmsUrl(project) {
           return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
         },
         // needed by ProjectsRegistry to get informations about project configuration
-        getProjectConfigUrl: function(project) {
+        getProjectConfigUrl(project) {
           return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
         },
         plugins: config.group.plugins,
@@ -333,6 +333,8 @@ const ApplicationService = function() {
       return window.initConfig;
       // case development need to ask to api
     } else {
+      // LOAD DEVELOPMENT CONFIGURATION
+      require('../dev/index');
       let projectPath;
       let queryTuples;
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
@@ -363,6 +365,8 @@ const ApplicationService = function() {
           return initConfig;
         } catch(error) {
           return Promise.reject(error);
+        } finally {
+          this.emit('initconfig')
         }
       }
     }
@@ -406,16 +410,6 @@ const ApplicationService = function() {
 
   //boostrap plugins
   this._bootstrapPlugins = function() {
-    //TESTTTTTTT
-    if (this.getCurrentProject().state.gid === 'qdjango:1')
-      this._config.plugins.iframe = {
-        gid: 'qdjango:1',
-        plugins: {
-          editing: {
-            visible: false
-          }
-        }
-      };
     //check if load plugin iframe in case of not iframe
     // if (this._config.plugins.iframe && !ApplicationState.iframe)
     //   delete this._config.plugins.iframe;
@@ -433,8 +427,6 @@ const ApplicationService = function() {
       this.setupI18n();
       //first time l'application service is not ready
       if (!ApplicationState.ready) {
-        // LOAD DEVELOPMENT CONFIGURATION
-        if (!production) require('../dev/index');
         $.when(
           // register project
           ProjectsRegistry.init(this._config),

@@ -226,9 +226,17 @@ proto.getFeatures = function(options={}, params={}) {
       } else if (filter.fid) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
-        //fidins fidsout
       } else if (filter.field) {
         const jsonFilter = JSON.stringify(filter);
+        promise = XHR.post({
+          url,
+          data: jsonFilter,
+          contentType: "application/json"
+        })
+      } else if (filter.nofeatures){
+        const jsonFilter = JSON.stringify({
+          field: 'id|eq|-999999'
+        });
         promise = XHR.post({
           url,
           data: jsonFilter,
