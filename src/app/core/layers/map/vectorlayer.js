@@ -89,13 +89,11 @@ proto._makeStyle = function(styleConfig) {
 proto.getFeatures = function(options={}) {
   const d = $.Deferred();
   this.provider.getFeatures(options)
-    .then((features) => {
+    .then(features => {
       this.addFeatures(features);
       d.resolve(features);
     })
-    .fail((err) => {
-      d.reject(err)
-    });
+    .fail(err => d.reject(err));
   return d.promise()
 };
 
@@ -104,15 +102,12 @@ proto.addFeatures = function(features=[]) {
 };
 
 proto.addFeature = function(feature) {
-  if (feature) {
-    this.getSource().addFeature(feature)
-  }
+  feature && this.getSource().addFeature(feature)
 };
 
 proto.getOLLayer = function() {
-  if (this._olLayer) {
-    return this._olLayer
-  } else {
+  if (this._olLayer) return this._olLayer;
+  else {
     const id = this.id;
     const geometryType =  this.geometryType;
     const color = this.color;
@@ -133,8 +128,7 @@ proto.setOLLayer = function(olLayer) {
 };
 
 proto.getSource = function() {
-  if (!this._olLayer)
-    this.getOLLayer();
+  !this._olLayer && this.getOLLayer();
   return this._olLayer.getSource();
 };
 

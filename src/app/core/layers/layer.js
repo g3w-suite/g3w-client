@@ -564,6 +564,11 @@ proto.hasFormStructure = function() {
   return !!this.config.editor_form_structure;
 };
 
+//get custom style for future implementation
+proto.getCustomStyle = function(){
+  return this.config.customstyle;
+};
+
 proto.getState = function() {
   return this.state;
 };

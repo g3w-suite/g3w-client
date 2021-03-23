@@ -85,9 +85,8 @@ proto._getFeatures = function(options={}) {
 
 //filter features to add
 proto._filterFeaturesResponse = function(options={}) {
-  const features = options.features || [];
-  const featurelocks = options.featurelocks || [];
-  const featuresToAdd = features.filter((feature) => {
+  const {features=[], featurelocks=[]} = options;
+  const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
     const added = this._loadedIds.indexOf(featureId) !== -1;
     if (!added) this._loadedIds.push(featureId);
