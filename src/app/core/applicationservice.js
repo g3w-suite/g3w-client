@@ -406,9 +406,16 @@ const ApplicationService = function() {
 
   //boostrap plugins
   this._bootstrapPlugins = function() {
-    this._config.plugins.iframe = {
-      gid: 'qdjango:1'
-    };
+    //TESTTTTTTT
+    if (this.getCurrentProject().state.gid === 'qdjango:1')
+      this._config.plugins.iframe = {
+        gid: 'qdjango:1',
+        plugins: {
+          editing: {
+            visible: false
+          }
+        }
+      };
     //check if load plugin iframe in case of not iframe
     // if (this._config.plugins.iframe && !ApplicationState.iframe)
     //   delete this._config.plugins.iframe;

@@ -58,7 +58,7 @@ function PluginsRegistry() {
   this.setDependencyPluginConfig = function(){
     for (pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
-      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach((pluginName) =>{
+      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName =>{
         this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
       })
     }
