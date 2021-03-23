@@ -301,6 +301,9 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
       response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}>`)
     }
   });
+  //PATCH id strange
+  response = response.replaceAll(String.fromCharCode(0), '0');
+  ///
   return response;
 };
 
