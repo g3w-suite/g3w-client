@@ -58,6 +58,13 @@ function GUI() {
     this.emit('guiresized');
   };
 
+  //ready GUI
+  this.isReady = function(){
+    return new Promise(resolve =>{
+      this.isready ? resolve() : this.once('ready', resolve);
+    })
+  };
+
   /* spinner */
   this.showSpinner = function(options){};
   this.hideSpinner = function(id){};

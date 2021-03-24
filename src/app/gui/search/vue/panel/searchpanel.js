@@ -1,5 +1,4 @@
 import Select2 from './select2.vue'
-import {ALLVALUE} from "../../constants";
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
 const inherit = require('core/utils/utils').inherit;
 const base = require('core/utils/utils').base;

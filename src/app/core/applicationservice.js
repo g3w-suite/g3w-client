@@ -410,9 +410,6 @@ const ApplicationService = function() {
 
   //boostrap plugins
   this._bootstrapPlugins = function() {
-    //check if load plugin iframe in case of not iframe
-    // if (this._config.plugins.iframe && !ApplicationState.iframe)
-    //   delete this._config.plugins.iframe;
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
       pluginsConfigs: this._config.plugins,
@@ -438,12 +435,20 @@ const ApplicationService = function() {
           ApplicationState.ready = this.initialized = true;
           // set current project gid
           this._gid = ProjectsRegistry.getCurrentProject().getGid();
+          //IFRAME CHECK
+          ApplicationState.iframe && this.startIFrameService();
           resolve(true);
         }).fail((error) => {
           reject(error);
         })
       }
     });
+  };
+
+  //iframeservice
+  this.startIFrameService = function(){
+    const iframeService = require('core/iframe/service');
+    iframeService.init();
   };
 
   this.registerWindowEvent = function({evt, cb} ={}) {

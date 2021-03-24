@@ -151,7 +151,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     }
   };
 
-
   //Vue app
   this._createApp = function() {
     this._setDataTableLanguage();

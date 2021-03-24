@@ -1711,7 +1711,6 @@ proto._setupViewer = function(width, height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
-  this.emit('ready');
 };
 
 proto.getMapUnits = function() {
@@ -2247,6 +2246,7 @@ proto.layout = function({width, height}) {
     this.setupViewer(width,height);
     this.setupControls();
     this.setHidden((width === 0 || height === 0));
+    this.emit('ready');
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();

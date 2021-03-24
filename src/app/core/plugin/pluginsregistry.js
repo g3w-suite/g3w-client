@@ -1,5 +1,4 @@
-const base = require('core/utils/utils').base;
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const OTHERPLUGINS = ['law'];
 
@@ -16,7 +15,7 @@ function PluginsRegistry() {
   };
   base(this);
 
-  // initilize plugin
+  // initialize plugin
   this.init = function(options={}) {
     return new Promise(async (resolve, reject) =>{
       this.pluginsBaseUrl = options.pluginsBaseUrl;

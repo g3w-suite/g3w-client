@@ -426,6 +426,12 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
   return response;
 };
 
+//getFeatures
+proto.getFeatures = function(params={}){
+  const provider = this.getProvider('data');
+  return provider.getFeatures({editing: false}, params)
+};
+
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
   let provider;
