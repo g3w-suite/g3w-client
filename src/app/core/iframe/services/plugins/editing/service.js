@@ -16,22 +16,6 @@ function EditingService() {
     }
   };
 
-  this.init = async function(){
-    const plugin = PluginsRegistry.getPlugin(this.pluginName);
-    if (plugin) {
-      this.setDependencyApi(plugin.getApi());
-      this.setReady(true);
-    } else {
-      PluginsRegistry.onafter('registerPlugin', async plugin =>{
-        await plugin.isReady();
-        if (plugin.getName() === this.pluginName) {
-          this.setDependencyApi(plugin.getApi());
-          this.setReady(true);
-        }
-      })
-    }
-  };
-
   this.subscribersHandlers = {
     addfeature: properties =>feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
     savedfeature: ({toolbox, qgis_layer_id}={}) => ()=> {

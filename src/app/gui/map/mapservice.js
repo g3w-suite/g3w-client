@@ -1718,9 +1718,7 @@ proto.getMapUnits = function() {
 };
 
 proto._removeListeners = function() {
-  if (this._setBaseLayerListenerKey) {
-    this.project.un('setBaseLayer', this._setBaseLayerListenerKey);
-  }
+  this._setBaseLayerListenerKey && this.project.un('setBaseLayer', this._setBaseLayerListenerKey);
 };
 
 // remove all events of layersStore

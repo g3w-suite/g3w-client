@@ -137,7 +137,6 @@ proto.createExpressionFromFilterObject = function(filter={}){
 };
 
 proto.createExpressionFromField = function({layerName, field, value, operator='eq'}){
-  console.log(field, value)
   const filter = this.createSingleExpressionElement({
     attribute: field,
     value,

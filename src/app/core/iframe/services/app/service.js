@@ -1,8 +1,10 @@
 const ProjectsRegistry = require('core/project/projectsregistry');
-const { createFilterFormField } = require('core/utils/utils');
+const BaseService = require('../baseservice');
+const {base, inherit,  createFilterFormField } = require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function AppService(){
+  base(this);
   this.mapControls = {
     query: {
       control: null,
@@ -19,24 +21,23 @@ function AppService(){
 
   this.project = ProjectsRegistry.getCurrentProject();
   this.mapService = GUI.getComponent('map').getService();
-  this.mapService.once('ready', ()=>{
-    this._map = this.mapService.getMap();
-    this._mapCrs = this.mapService.getCrs();
-    this._iFrameSetCurrentAfterKey;
-    // set alias url to project
-    this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
+  this.init = async function(){
+    this.mapService.once('ready', ()=>{
+      this._map = this.mapService.getMap();
+      this._mapCrs = this.mapService.getCrs();
+      this._iFrameSetCurrentAfterKey;
+      // set alias url to project
+      this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
         this.project = project;
         this.projectsDialog && this.projectsDialog.modal('hide');
       });
-    const projects = ProjectsRegistry.getListableProjects().map(project => {
-        project.title = this.filterProjectName(project.title);
-        return project;
-      });
-    this.mapControls.query.control = this.mapService.getMapControlByType({
+
+      this.mapControls.query.control = this.mapService.getMapControlByType({
         type: 'query'
       });
-    this.setReady(true);
-  });
+      this.setReady(true);
+    });
+  };
 
   // function to intercept window parent result responses
   this.redirectresults = function(bool=false){
@@ -106,5 +107,7 @@ function AppService(){
     this._mapService.removeControlById('iframe-change-map');
   }
 }
+
+inherit(AppService, BaseService);
 
 module.exports = new AppService;

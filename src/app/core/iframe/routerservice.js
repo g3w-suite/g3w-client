@@ -1,11 +1,13 @@
-
 const GUI = require('gui/gui');
 
 function IframePluginService(options={}) {
-
   this.init = async function() {
     await GUI.isReady();
     this.services = require('./services/index');
+
+    //initialize all service
+    const promises = Object.values(this.services).map(service => service.init());
+
     this.postMessage({
       id:null,
       action:"app:ready",
@@ -13,10 +15,10 @@ function IframePluginService(options={}) {
         result: true
       }
     });
+
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
   };
-
 
   this.postMessage = function (message={}) {
     if (window.parent) {

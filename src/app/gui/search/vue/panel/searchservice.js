@@ -221,14 +221,14 @@ proto.getDependanceCurrentValue = function(field) {
 // fill all dependencies inputs based on value
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
   const isRoot = this.inputdependance[field] === void 0;
-  const invalidValue = value===ALLVALUE || value === null || value === void 0 || value.toString().trim() === '';
+  const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
       if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
       else {
         subscribe.options._allvalues = subscribe.options._allvalues ||  [...subscribe.options.values];
-        value === ALLVALUE ? subscribe.options.values = [...subscribe.options._allvalues] : subscribe.options.values.splice(1);
+        invalidValue ? subscribe.options.values = [...subscribe.options._allvalues] : subscribe.options.values.splice(1);
       }
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};
@@ -267,16 +267,16 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.cachedependencies[field][dependenceValue] = this.cachedependencies[field][dependenceValue] || {};
           this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
         }
-        // exclude autocomplet subscribers
+        // exclude autocomplete subscribers
         const notAutocompleteSubscribers = subscribers.filter( subscribe => subscribe.type !== 'autocompletefield');
         if (notAutocompleteSubscribers.length) {
           const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
-          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : void 0;
+          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : undefined;
           this.searchLayer.getFilterData({
-            filter: fieldParams,
+            field: fieldParams,
             unique: uniqueParams
           }).then(data => {
             data = uniqueParams ? data : data.data[0].features || [];

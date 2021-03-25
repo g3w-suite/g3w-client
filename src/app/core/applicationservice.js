@@ -436,7 +436,7 @@ const ApplicationService = function() {
           // set current project gid
           this._gid = ProjectsRegistry.getCurrentProject().getGid();
           //IFRAME CHECK
-          ApplicationState.iframe && this.startIFrameService();
+          !ApplicationState.iframe && this.startIFrameService();
           resolve(true);
         }).fail((error) => {
           reject(error);

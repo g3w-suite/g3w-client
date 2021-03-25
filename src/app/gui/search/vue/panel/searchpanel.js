@@ -32,7 +32,6 @@ const SearchPanelComponent = Vue.extend({
       return this.$options.service.autocompleteRequest(params);
     },
     changeDependencyFields({attribute:field, value}) {
-      console.log(field, value)
       const subscribers = this.$options.service.getDependencies(field);
       return subscribers.length ? this.$options.service.fillDependencyInputs({
         field,

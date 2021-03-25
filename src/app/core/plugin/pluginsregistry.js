@@ -5,6 +5,7 @@ const OTHERPLUGINS = ['law'];
 function PluginsRegistry() {
   this.config = null;
   this._plugins = {};
+  this._configurationPlugins = [];
   this.pluginsConfigs = {};
   this._loadedPluginUrls = [];
   this.setters = {
@@ -21,6 +22,7 @@ function PluginsRegistry() {
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
       this.pluginsConfigs = options.pluginsConfigs;
+      Object.keys(this.pluginsConfigs).forEach(pluginName => this._configurationPlugins.push(pluginName));
       this.addLoadingPlugins();
       // plugins that aren't in configuration server but in project
       this.otherPluginsConfig = options.otherPluginsConfig;
@@ -141,6 +143,11 @@ function PluginsRegistry() {
 
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
+  };
+
+  // method to check if a plugin is in confiuration and will be added to apllication
+  this.isPluginInConfiguration = function(pluginName){
+    return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
   this.isTherePlugin = function(pluginName){
