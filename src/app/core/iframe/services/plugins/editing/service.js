@@ -1,8 +1,9 @@
-import BaseService from '../service';
-
+const BasePluginService = require('../service');
 const {base, inherit} = g3wsdk.core.utils;
+
 function EditingService() {
   base(this);
+  this.pluginName = 'editing';
   //subscribers editing handler
   //set properties used by varius
   this.config =  {
@@ -14,6 +15,23 @@ function EditingService() {
       delete: 'deletefeature'
     }
   };
+
+  this.init = async function(){
+    const plugin = PluginsRegistry.getPlugin(this.pluginName);
+    if (plugin) {
+      this.setDependencyApi(plugin.getApi());
+      this.setReady(true);
+    } else {
+      PluginsRegistry.onafter('registerPlugin', async plugin =>{
+        await plugin.isReady();
+        if (plugin.getName() === this.pluginName) {
+          this.setDependencyApi(plugin.getApi());
+          this.setReady(true);
+        }
+      })
+    }
+  };
+
   this.subscribersHandlers = {
     addfeature: properties =>feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
     savedfeature: ({toolbox, qgis_layer_id}={}) => ()=> {
@@ -113,9 +131,9 @@ function EditingService() {
   }
 }
 
-inherit(EditingService, BaseService);
+inherit(EditingService, BasePluginService);
 
-export default new EditingService();
+module.exports = new EditingService();
 
 
 
