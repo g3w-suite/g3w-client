@@ -1,3 +1,5 @@
+const Filter = require('core/layers/filter/filter');
+const Expression = require('core/layers/filter/expression');
 /**
  * Decimal adjustment of a number.
  *
@@ -417,6 +419,60 @@ const utils = {
         })
       })
     }
+  },
+  createSingleFieldParameter({field, value, operator='eq', logicop=null}){
+    logicop = logicop && `|${logicop}`;
+    return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
+  },
+  // method to create filter for search based on
+  createFilterFormInputs({layer, search_endpoint='ows', inputs={}}){
+    let filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const expression = new Expression();
+        const layerName = layer.getWMSLayerName();
+        expression.createExpressionFromFilter(inputs, layerName);
+        filter = new Filter();
+        filter.setExpression(expression.get());
+        break;
+      case 'api':
+        const inputsLength = inputs.length -1 ;
+        const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
+            field: input.attribute,
+            value: input.value,
+            operator: input.operator,
+            logicop: index < inputsLength ?  input.logicop: null
+          })
+        );
+        filter = fields.join() || null;
+        break;
+    }
+    return filter;
+  },
+  createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
+    let filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const expression = new Expression();
+        const layerName = layer.getWMSLayerName();
+        expression.createExpressionFromField({
+          layerName,
+          field,
+          value,
+          operator
+        });
+        filter = new Filter();
+        filter.setExpression(expression.get());
+        break;
+      case 'api':
+        filter = utils.createSingleFieldParameter({
+            field,
+            value,
+            operator
+          });
+        break;
+    }
+    return filter;
   }
 };
 

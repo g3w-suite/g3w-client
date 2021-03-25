@@ -54,11 +54,13 @@ inherit(Project, G3WObject);
 
 const proto = Project.prototype;
 
+proto.getSearchEndPoint = function(){
+  return this.state.search_endpoint;
+};
+
 proto.setSearchEndPoint = function(){
   const {search_endpoint, search=[]} = this.state;
-  search.forEach(search => {
-    search.search_endpoint = search_endpoint;
-  });
+  search.forEach(search => search.search_endpoint = search_endpoint);
 };
 
 proto.getAliasUrl = function() {

@@ -59,7 +59,6 @@ proto.getFilterToken = async function(params={}){
   } catch(err){
     return Promise.reject(err);
   }
-
 };
 
 proto.getFilterData = async function({field, suggest={}, unique}={}){

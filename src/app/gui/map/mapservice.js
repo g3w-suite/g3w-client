@@ -2033,15 +2033,25 @@ proto.getGeometryAndExtentFromFeatures = function(features=[]){
   let extent;
   let geometryType;
   let geometry;
+  let coordinates;
   let geometryCoordinates = [];
   for (let i=0; i < features.length; i++) {
     const feature = features[i];
     const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
     if (geometry) {
-      const featureExtent = [...geometry.getExtent()];
-      extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
-      geometryType = geometryType ? geometryType : geometry.getType();
-      const coordinates = geometry.getCoordinates();
+      if (geometry instanceof ol.geom.Geometry) {
+        const featureExtent = [...geometry.getExtent()];
+        extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
+        geometryType = geometryType ? geometryType : geometry.getType();
+        coordinates = geometry.getCoordinates();
+        if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
+        else geometryCoordinates.push(coordinates);
+      } else {
+        const featureExtent = feature.bbox;
+        extent = !extent ? featureExtent : ol.extent.extend(extent, featureExtent);
+        geometryType = geometry.type;
+        coordinates = geometry.coordinates;
+      }
       if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
       else geometryCoordinates.push(coordinates);
     }
@@ -2246,7 +2256,7 @@ proto.layout = function({width, height}) {
     this.setupViewer(width,height);
     this.setupControls();
     this.setHidden((width === 0 || height === 0));
-    this.emit('ready');
+    //this.emit('ready');
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();

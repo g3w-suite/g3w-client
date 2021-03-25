@@ -1,12 +1,10 @@
 import { ALLVALUE }  from '../../constants';
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const Filter = require('core/layers/filter/filter');
-const Expression = require('core/layers/filter/expression');
 const NONVALIDVALUES = [null, void 0, ALLVALUE];
 
 function SearchService(config={}) {
@@ -49,15 +47,10 @@ inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
 
-proto.createSingleFieldParameter = function({field, value, operator='eq', logicop=null}){
-  logicop = logicop && `|${logicop}`;
-  return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
-};
-
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
   if (value !== void 0) {
-    const fieldParam = this.createSingleFieldParameter({
+    const fieldParam = createSingleFieldParameter({
       field,
       value,
       operator: this.getFilterInputFromField(field).op
@@ -105,35 +98,15 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=this.url, feature_count=10000} ={}) {
+proto.doSearch = async function({filter, searchType=this.search_endpoint, queryUrl=this.url, feature_count=10000} ={}) {
   filter = filter || this.createFilter(searchType);
-  return new Promise((resolve, reject) => {
-    switch (searchType) {
-      case 'ows':
-        this.searchLayer.search({
-          filter,
-          queryUrl,
-          feature_count
-        }).then(results => {
-          results = {
-            data: results
-          };
-          resolve(results);
-        }).fail(error => {
-          reject(error)
-        });
-        break;
-      case 'api':
-        this.searchLayer.getFilterData({
-          field: filter
-        }).then(response => {
-          resolve(response)
-        }).catch(error => {
-          reject(error);
-        });
-        break;
-    }
-  })
+  const response = await this.searchLayer.getFeatures({
+    filter,
+    searchType,
+    queryUrl,
+    feature_count
+  });
+  return response;
 };
 
 proto.filterValidFormInputs = function(){
@@ -144,29 +117,12 @@ proto.filterValidFormInputs = function(){
 * type wms, vector (for vector api)
 * */
 proto.createFilter = function(type='ows'){
-  let filter;
   const inputs = this.filterValidFormInputs();
-  switch (type) {
-    case 'ows':
-      const expression = new Expression();
-      const layerName = this.searchLayer.getWMSLayerName();
-      expression.createExpressionFromFilter(inputs, layerName);
-      filter = new Filter();
-      filter.setExpression(expression.get());
-      break;
-    case 'api':
-      const inputsLength = inputs.length -1 ;
-      const fields = inputs.map((input, index) => this.createSingleFieldParameter({
-          field: input.attribute,
-          value: input.value,
-          operator: input.operator,
-          logicop: index < inputsLength ?  input.logicop: null
-        })
-      );
-      filter = fields.join() || null;
-      break;
-  }
-  return filter;
+  return createFilterFormInputs({
+    layer: this.searchLayer,
+    inputs,
+    search_endpoint: type
+  })
 };
 
 proto._run = function() {
@@ -192,8 +148,8 @@ proto._run = function() {
   })
 };
 
-proto.changeInput = function({attribute, value} = {}) {
-  const input = this.state.forminputs.find(input => attribute === input.attribute);
+proto.changeInput = function({id, value} = {}) {
+  const input = this.state.forminputs.find(input => id == input.id);
   input.value = value;
 };
 
@@ -320,7 +276,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           });
           const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : void 0;
           this.searchLayer.getFilterData({
-            field: fieldParams,
+            filter: fieldParams,
             unique: uniqueParams
           }).then(data => {
             data = uniqueParams ? data : data.data[0].features || [];

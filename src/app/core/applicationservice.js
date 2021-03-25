@@ -447,7 +447,7 @@ const ApplicationService = function() {
 
   //iframeservice
   this.startIFrameService = function(){
-    const iframeService = require('core/iframe/service');
+    const iframeService = require('core/iframe/routerservice');
     iframeService.init();
   };
 

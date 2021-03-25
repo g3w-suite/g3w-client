@@ -136,7 +136,18 @@ proto.createExpressionFromFilterObject = function(filter={}){
   return rootFilter;
 };
 
-proto.createExpressionFromFilterArray = function(inputs=[], layerName){
+proto.createExpressionFromField = function({layerName, field, value, operator='eq'}){
+  console.log(field, value)
+  const filter = this.createSingleExpressionElement({
+    attribute: field,
+    value,
+    operator
+  });
+  this._expression = `${layerName}:${filter}`;
+  return this;
+};
+
+proto.createExpressionFromFilterArray = function(inputs=[]){
   let filter = '';
   // set logicop of last element to null
   const inputsLength = inputs.length - 1;

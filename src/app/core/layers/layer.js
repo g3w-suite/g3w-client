@@ -23,6 +23,7 @@ function Layer(config={}, options={}) {
     ...(config.urls || {})
   };
   const {project=ProjectsRegistry.getCurrentProject()} = options;
+  this.config.search_endpoint = project.getSearchEndPoint();
   const projectRelations = project.getRelations();
   // create relations
   this._relations = this._createRelations(projectRelations);
@@ -55,7 +56,7 @@ function Layer(config={}, options={}) {
   }
 
   // dinamic layer values useful for layerstree
-  const defaultstyle = config.styles && config.styles.find(style => style.current).name
+  const defaultstyle = config.styles && config.styles.find(style => style.current).name;
   this.state = {
     id: config.id,
     title: config.title,
@@ -125,6 +126,13 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+//get search_endpoint
+
+proto.getSearchEndPoint = function(){
+  return this.config.search_endpoint;
+};
+
 //relations
 proto._createRelations = function(projectRelations) {
   const relations = [];
@@ -410,27 +418,6 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-/*
-* getFilterData is a function to get data feature based on fields and suggets
-* params:
-* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
-* - fields: Array of object with type of suggest (see above)
-* */
-proto.getFilterData = async function({field, suggest={}, unique}={}){
-  const provider =  this.getProvider('data');
-  const response = await provider.getFilterData({
-    field,
-    suggest,
-    unique
-  });
-  return response;
-};
-
-//getFeatures
-proto.getFeatures = function(params={}){
-  const provider = this.getProvider('data');
-  return provider.getFeatures({editing: false}, params)
-};
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
@@ -489,6 +476,53 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
       d.reject()
   }
   return d.promise();
+};
+
+//getFeatures
+proto.getFeatures = function(options={}, params={}){
+  return new Promise(async (resolve, reject) =>{
+    switch (this.config.search_endpoint) {
+      case 'ows':
+        this.search(options, params)
+          .then(results => {
+            results = {
+              data: results
+            };
+            resolve(results);
+          }).fail(error => reject(error));
+        break;
+      case 'api':
+        const {filter, suggest={}, unique} = options;
+        try {
+          const response = await this.getFilterData({
+            filter,
+            suggest,
+            unique
+          });
+          resolve(response);
+        } catch(err){
+          reject(err);
+        }
+        break;
+    }
+  })
+
+};
+
+/*
+* getFilterData is a function to get data feature based on fields and suggets
+* params:
+* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
+* - fields: Array of object with type of suggest (see above)
+* */
+proto.getFilterData = async function({filter, suggest={}, unique}={}){
+  const provider =  this.getProvider('data');
+  const response = await provider.getFilterData({
+    field: filter,
+    suggest,
+    unique
+  });
+  return response;
 };
 
 // search method
