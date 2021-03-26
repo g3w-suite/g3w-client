@@ -7,14 +7,13 @@ export default function TestSearches({searches=[], testConfig={}}={}) {
       expect(searches).to.be.length(count)
     })
     count > 0 && testConfig.searches.forEach(searchTest => {
-      const {id, count, attributes} = searchTest;
+      const {id, count, forminput} = searchTest;
       const search = searches.find(search => search.id === searchTest.id);
       const service = new SearchService(search);
-      Object.entries(attributes).forEach(([attribute, value]) => {
-        service.changeInput({
-          attribute,
-          value
-        })
+      service.changeInput({
+        id:forminput.id,
+        attribute:forminput.attribute,
+        value: forminput.value
       })
       it(`#search id[${id}] count [${count}]`, async function(){
         const results = await service.doSearch();
