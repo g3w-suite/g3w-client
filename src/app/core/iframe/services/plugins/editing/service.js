@@ -4,6 +4,8 @@ const {base, inherit} = g3wsdk.core.utils;
 function EditingService() {
   base(this);
   this.pluginName = 'editing';
+
+  this.subscribevents = [];
   //subscribers editing handler
   //set properties used by varius
   this.config =  {
@@ -23,24 +25,38 @@ function EditingService() {
     this.dependencyApi.showPanel({
       toolboxes: [qgis_layer_id]
     });
-    this.dependencyApi.subscribe('cancelform', this.subscribersHandlers.cancelform(qgis_layer_id));
   };
 
   //run after each action
   this.stopAction = async function(){
-
+    this.resetSubscribeEvents()
   };
-
   ////
 
   this.subscribersHandlers = {
-    addfeature: properties =>feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
+    addfeature: ({properties}={}) => feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
     savedfeature: ({toolbox, qgis_layer_id}={}) => ()=> {
       this.commitChanges(qgis_layer_id, {toolbox})
     },
-    cancelform: qgis_layer_id => () => this.stopEditing(qgis_layer_id)
+    cancelform: ({qgis_layer_id}) => () => this.stopEditing(qgis_layer_id),
+    closeeditingpanel: ()=> () => this.stopAction()
   };
 
+  // method to add subscribe refenrence
+  this.addSubscribeEvents = function(event, options={}){
+    const handler = this.subscribersHandlers[event](options);
+    this.dependencyApi.subscribe(event, handler);
+    this.subscribevents.push({
+      event,
+      handler
+    })
+  };
+
+  this.resetSubscribeEvents = function(){
+    this.subscribevents.forEach(({event, handler}) =>{
+      this.dependencyApi.unsubscribe(event, handler);
+    })
+  };
 
   //add function
   this.add = async function(options={}){
@@ -49,7 +65,7 @@ function EditingService() {
     await this.startAction({
       qgis_layer_id
     });
-
+    //body of function
     const feature = geometry && this.dependencyApi.addNewFeature(qgis_layer_id, {
       geometry,
       properties
@@ -59,16 +75,12 @@ function EditingService() {
     options.tools =  [feature ? this.config.tools.update.attributes : this.config.tools.add];
     options.action = 'add';
     const toolbox = await this.startEditing(qgis_layer_id, options);
-
-    if (!feature) {
-      // if no feature meaning no geometry is set to message
-      this.dependencyApi.subscribe('addfeature', this.subscribersHandlers.addfeature(properties));
-      this.dependencyApi.subscribe('savedfeature', this.subscribersHandlers.savedfeature({toolbox, qgis_layer_id}));
-    } else
-      await this.commitChanges(qgis_layer_id, {
-        toolbox
-      });
-    await this.stopAction();
+    // in case of no feature add avent subscribe
+    !feature && this.addSubscribeEvents('addfeature', {properties});
+    // add all event required
+    this.addSubscribeEvents('savedfeature', {toolbox, qgis_layer_id});
+    this.addSubscribeEvents('cancelform', {qgis_layer_id});
+    this.addSubscribeEvents('closeeditingpanel')
   };
 
 
@@ -104,6 +116,7 @@ function EditingService() {
 
   this.stopEditing = function(qgis_layer_id) {
     return new Promise((resolve, reject) =>{
+      this.stopAction();
       this.dependencyApi.stopEditing(qgis_layer_id)
         .then(()=> {
           this.dependencyApi.resetDefault();

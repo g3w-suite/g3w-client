@@ -9,6 +9,7 @@ function IframePluginService(options={}) {
     for (let i=0; i < serviceNames.length; i++){
       await this.services[serviceNames[i]].init();
     }
+
     this.postMessage({
       id:null,
       action:"app:ready",
@@ -17,11 +18,34 @@ function IframePluginService(options={}) {
       }
     });
 
+    setTimeout(()=>{
+      var MESSAGE = {
+        qgis_layer_id: 'edifici20180829155021867',
+        properties: {
+          altezza: 16,
+          anno_costr: "2016-04-03",
+          antincendio: "Checked",
+          barriere: "Checked",
+          cat_ed: "C",
+          data_bar: "2018-08-29",
+          data_inc: "2018-08-29",
+          data_uscite: "2018-08-29",
+          indirizzo: "A106",
+          nome: "IFRAME ADD",
+          tipo: "Commercial",
+          volume: 200
+        }
+      }
+      this.services.editing.add(MESSAGE)
+    }, 4000)
+
 
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
   };
 
+
+  // method to post message to parent
   this.postMessage = function (message={}) {
     if (window.parent) {
       window.parent.postMessage(message, "*")

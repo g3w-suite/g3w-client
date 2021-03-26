@@ -26,16 +26,18 @@ function AppService(){
       this.mapService.once('ready', ()=>{
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
-        this._iFrameSetCurrentAfterKey;
+
         // set alias url to project
         this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
           this.project = project;
           this.projectsDialog && this.projectsDialog.modal('hide');
         });
 
+        //get map control
         this.mapControls.query.control = this.mapService.getMapControlByType({
           type: 'query'
         });
+
         this.setReady(true);
         resolve();
       });
@@ -44,15 +46,20 @@ function AppService(){
   };
 
   // function to intercept window parent result responses
-  this.redirectresults = function(bool=false){
-    this._mapControls.query.control.overwriteEventHandler({
-      eventType: this._mapControls.query.eventType,
-      handler: (evt) => {
-        const {coordinates} = evt;
-        const layers = this._setQueryLayers();
-        alert('Query')
-      }
-    });
+  this.queryresults = function(options={}){
+    const {controls, outputformat} = options;
+    return new Promise((resolve, reject) =>{
+      this.mapControls.query.control.overwriteEventHandler({
+        eventType: this.mapControls.query.eventType,
+        handler: evt  => {
+          const {coordinates} = evt;
+          resolve({
+
+          })
+        }
+      });
+    })
+
   };
 
   // method to show change map mapcontrol
