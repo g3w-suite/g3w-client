@@ -9,6 +9,9 @@ const STATE = Vue.observable({
   baseLayerId: null,
   lng: 'en',
   plugins: [],
+  map: {
+    epsg: ''
+  },
   gui: {
     app: {
       disabled: false

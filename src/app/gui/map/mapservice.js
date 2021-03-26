@@ -2254,7 +2254,7 @@ proto.layout = function({width, height}) {
     this.setupViewer(width,height);
     this.setupControls();
     this.setHidden((width === 0 || height === 0));
-    //this.emit('ready');
+    this.emit('ready');
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();

@@ -149,16 +149,16 @@ proto.createExpressionFromField = function({layerName, field, value, operator='e
 proto.createExpressionFromFilterArray = function(inputs=[]){
   let filter = '';
   // set logicop of last element to null
-  const inputsLength = inputs.length - 1;
+  const inputsLength = inputs.length ? inputs.length - 1 : inputs.length;
   inputs.forEach((input, index) => {
     const filterElement = this.createSingleExpressionElement(input);
     filter = `${filter}${(input.logicop && index === inputsLength) ? filterElement.substring(0, filterElement.length - (input.logicop.length+1)): filterElement}`;
   });
-  return filter;
+  return filter || undefined;
 };
 
 proto.createExpressionFromFilter = function(filter, layerName) {
-  const filterParam = Array.isArray(filter) ? this.createExpressionFromFilterArray(filter) : this.createExpressionFromFilterObject(filter);
+  const filterParam = Array.isArray(filter)  ? this.createExpressionFromFilterArray(filter) : this.createExpressionFromFilterObject(filter);
   if (filterParam) this._expression = `${layerName}:${filterParam}`;
   return this
 };

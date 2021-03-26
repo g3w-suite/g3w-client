@@ -23,7 +23,7 @@
     </user-message>
   </transition>
   <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
-    <g3w-resize id="resize-map-and-content" :show="this.state.resized.start && state.secondaryPerc < 100"
+    <g3w-resize id="resize-map-and-content" :show="this.state.resized.start && state.secondaryPerc < 100 && state.secondaryPerc > 0 "
       :moveFnc="moveFnc"
       :orientation="state.split"
       :style="{backgroundColor:'transparent'}"

@@ -417,6 +417,11 @@ const ApplicationService = function() {
     });
   };
 
+  //set EPSG of Application is usefule for example to wms request for table layer
+  this.setEPSGApplication  = function(project){
+    ApplicationState.map.epsg = project.state.crs.epsg;
+  };
+
   //  bootstrap (when called init)
   this.bootstrap = function() {
     return new Promise((resolve, reject) => {
@@ -434,9 +439,12 @@ const ApplicationService = function() {
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;
           // set current project gid
-          this._gid = ProjectsRegistry.getCurrentProject().getGid();
+          const project = ProjectsRegistry.getCurrentProject();
+          this._gid = project.getGid();
+          //sett
+          this.setEPSGApplication(project);
           //IFRAME CHECK
-          !ApplicationState.iframe && this.startIFrameService();
+          ApplicationState.iframe && this.startIFrameService();
           resolve(true);
         }).fail((error) => {
           reject(error);
@@ -542,6 +550,7 @@ const ApplicationService = function() {
                 });
                 // change current project project
                 ProjectsRegistry.setCurrentProject(project);
+                this.setEPSGApplication(project);
                 ApplicationState.download = false;
               })
               .fail(err => {

@@ -21,22 +21,26 @@ function AppService(){
 
   this.project = ProjectsRegistry.getCurrentProject();
   this.mapService = GUI.getComponent('map').getService();
-  this.init = async function(){
-    this.mapService.once('ready', ()=>{
-      this._map = this.mapService.getMap();
-      this._mapCrs = this.mapService.getCrs();
-      this._iFrameSetCurrentAfterKey;
-      // set alias url to project
-      this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
-        this.project = project;
-        this.projectsDialog && this.projectsDialog.modal('hide');
-      });
+  this.init = function(){
+    return new Promise((resolve, reject) =>{
+      this.mapService.once('ready', ()=>{
+        this._map = this.mapService.getMap();
+        this._mapCrs = this.mapService.getCrs();
+        this._iFrameSetCurrentAfterKey;
+        // set alias url to project
+        this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
+          this.project = project;
+          this.projectsDialog && this.projectsDialog.modal('hide');
+        });
 
-      this.mapControls.query.control = this.mapService.getMapControlByType({
-        type: 'query'
+        this.mapControls.query.control = this.mapService.getMapControlByType({
+          type: 'query'
+        });
+        this.setReady(true);
+        resolve();
       });
-      this.setReady(true);
-    });
+    })
+
   };
 
   // function to intercept window parent result responses
@@ -75,7 +79,7 @@ function AppService(){
     return new Promise(async (resolve, reject) => {
       const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
       const layer = this.project.getLayerById(qgis_layer_id);
-      const {data} = await layer.getFeatures({
+      const {data} = await layer.searchFeatures({
         filter: createFilterFormField({
           layer,
           search_endpoint: this.project.getSearchEndPoint(),

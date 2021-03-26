@@ -86,8 +86,9 @@ const AppUI = Vue.extend({
     },
   },
   methods: {
-    resize(){
+    async resize(){
       if (!this.isIframe) {
+        await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
           this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;

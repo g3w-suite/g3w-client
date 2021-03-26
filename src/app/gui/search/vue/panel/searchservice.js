@@ -3,9 +3,10 @@ const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldPara
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
+const Layer = require('core/layers/layer');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const NONVALIDVALUES = [null, void 0, ALLVALUE];
+const NONVALIDVALUES = [null, undefined, ALLVALUE];
 
 function SearchService(config={}) {
   this.debounces =  {
@@ -34,7 +35,7 @@ function SearchService(config={}) {
   this.filter = null;
   this.inputs = [];
   this.state.title = config.name;
-  this.search_endpoint = config.search_endpoint || 'ows';
+  this.search_endpoint = config.search_endpoint || this.project.getSearchEndPoint();
   this.url = options.queryurl;
   this.filter = options.filter;
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
@@ -98,14 +99,21 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = async function({filter, searchType=this.search_endpoint, queryUrl=this.url, feature_count=10000} ={}) {
-  filter = filter || this.createFilter(searchType);
-  const response = await this.searchLayer.getFeatures({
-    filter,
-    searchType,
-    queryUrl,
-    feature_count
-  });
+proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPointTypeFromLayer(), queryUrl=this.url, feature_count=10000} ={}) {
+  filter = filter || this.createFilter(search_endpoint);
+  // call a generic method of layer
+  let response;
+  try {
+    response = await this.searchLayer.searchFeatures({
+      search_endpoint,
+      filter,
+      queryUrl,
+      feature_count
+    });
+  } catch(err){
+    console.log(err)
+  }
+
   return response;
 };
 
@@ -113,15 +121,21 @@ proto.filterValidFormInputs = function(){
   return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
 };
 
+// method to get right search_endpoint type based on layer type
+// Table layers always get from api search_endpoint
+proto.getSearchEndPointTypeFromLayer = function(){
+  return this.searchLayer.getType() !== Layer.LayerTypes.TABLE ? this.search_endpoint : "api";
+};
+
 /*
 * type wms, vector (for vector api)
 * */
-proto.createFilter = function(type='ows'){
+proto.createFilter = function(search_endpoint= this.getSearchEndPointTypeFromLayer()){
   const inputs = this.filterValidFormInputs();
   return createFilterFormInputs({
     layer: this.searchLayer,
     inputs,
-    search_endpoint: type
+    search_endpoint
   })
 };
 
@@ -220,16 +234,27 @@ proto.getDependanceCurrentValue = function(field) {
 
 // fill all dependencies inputs based on value
 proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
-  const isRoot = this.inputdependance[field] === void 0;
+  const isRoot = this.inputdependance[field] === undefined;
+  //check id inpute father is valid to search on subscribers
   const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
     subscribers.forEach(subscribe => {
-      subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
+      // in case of atuocomplete reset values to empty array
       if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
       else {
-        subscribe.options._allvalues = subscribe.options._allvalues ||  [...subscribe.options.values];
-        invalidValue ? subscribe.options.values = [...subscribe.options._allvalues] : subscribe.options.values.splice(1);
+        //set starting all values
+        if (subscribe.options._allvalues === undefined)
+          subscribe.options._allvalues = [...subscribe.options.values];
+        //case of father is set an empty invalid value (all value exmaple)
+        if (invalidValue) {
+          //subscribe has to set all valaues
+          subscribe.options.values.splice(0);
+          setTimeout(()=>{
+            subscribe.options.values = [...subscribe.options._allvalues]
+          });
+        } else subscribe.options.values.splice(1); //otherwise has to get first __ALL_VALUE
       }
+      subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
@@ -245,7 +270,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
         const cachedValue = this.cachedependencies[field]
           && this.cachedependencies[field][dependenceCurrentValue]
           && this.cachedependencies[field][dependenceCurrentValue][value];
-        isCached = cachedValue !== void 0;
+        isCached = cachedValue !== undefined;
         rootValues = isCached && cachedValue;
       }
       if (isCached) {
@@ -299,9 +324,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
             }
-          }).catch(error => {
-            reject(error)
-          }).finally(() => {
+          }).catch(error => reject(error))
+            .finally(() => {
             this.state.loading[field] = false;
             resolve();
           })

@@ -478,10 +478,12 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   return d.promise();
 };
 
-//getFeatures
-proto.getFeatures = function(options={}, params={}){
+//search Features methods
+proto.searchFeatures = function(options={}, params={}){
+  const {search_endpoint=this.config.search_endpoint} = options;
+  console.log(search_endpoint)
   return new Promise(async (resolve, reject) =>{
-    switch (this.config.search_endpoint) {
+    switch (search_endpoint) {
       case 'ows':
         this.search(options, params)
           .then(results => {

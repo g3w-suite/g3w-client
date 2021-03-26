@@ -4,10 +4,11 @@ function IframePluginService(options={}) {
   this.init = async function() {
     await GUI.isReady();
     this.services = require('./services/index');
-
     //initialize all service
-    const promises = Object.values(this.services).map(service => service.init());
-
+    const serviceNames = Object.keys(this.services);
+    for (let i=0; i < serviceNames.length; i++){
+      await this.services[serviceNames[i]].init();
+    }
     this.postMessage({
       id:null,
       action:"app:ready",
@@ -15,6 +16,7 @@ function IframePluginService(options={}) {
         result: true
       }
     });
+
 
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
@@ -32,11 +34,13 @@ function IframePluginService(options={}) {
     if (evt && evt.data) {
       const { id, action, data:params } = evt.data;
       const [context, func] = action.split(':');
-      let result;
+      let result = false;
       let data;
       try {
-        data = await this.services[context][func](params);
-        result = true;
+        if (this.services[context].getReady()) {
+          data = await this.services[context][func](params);
+          result = true;
+        }
       } catch(err){
         result = false;
         data = err;

@@ -101,7 +101,7 @@ proto.query = function(options={}) {
   const filter = options.filter || null;
   const isVector = this._layer.getType() !== "table";
   isVector && this.setProjections();
-  const CRS = isVector ? this._projections.map.getCode() : null;
+  const CRS = isVector ? this._projections.map.getCode() : ApplicationState.map.epsg;
   const queryUrl = options.queryUrl || this._queryUrl;
   const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();

@@ -6,7 +6,6 @@ function BasePluginService(){
   base(this);
   // common attributes between plugin service
   this.pluginName;
-
   this.dependencyApi ={};
   this.init = async function(){
     // check if the plugin in in configuration

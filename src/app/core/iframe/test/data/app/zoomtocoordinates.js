@@ -1,4 +1,4 @@
-export default {
+var MESSAGE = {
   id: null,
   action: 'app:zoomtocoordinates',
   data: {

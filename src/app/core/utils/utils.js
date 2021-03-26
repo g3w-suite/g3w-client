@@ -425,7 +425,7 @@ const utils = {
     return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
   },
   // method to create filter for search based on
-  createFilterFormInputs({layer, search_endpoint='ows', inputs={}}){
+  createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
     let filter;
     switch (search_endpoint) {
       case 'ows':
@@ -444,11 +444,12 @@ const utils = {
             logicop: index < inputsLength ?  input.logicop: null
           })
         );
-        filter = fields.join() || null;
+        filter = fields.length ? fields.join() : undefined;
         break;
     }
     return filter;
   },
+  //method to create filter from field based on search_endpoint
   createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
     let filter;
     switch (search_endpoint) {
