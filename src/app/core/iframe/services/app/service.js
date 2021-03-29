@@ -1,6 +1,7 @@
+const {base, inherit,  createFilterFormField } = require('core/utils/utils');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const BaseService = require('../baseservice');
-const {base, inherit,  createFilterFormField } = require('core/utils/utils');
+const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 
 function AppService(){
@@ -45,21 +46,13 @@ function AppService(){
 
   };
 
+  this.getresults = async function(){
+    DataRouterService.setOutptPromise()
+  };
+
   // function to intercept window parent result responses
   this.queryresults = function(options={}){
-    const {controls, outputformat} = options;
-    return new Promise((resolve, reject) =>{
-      this.mapControls.query.control.overwriteEventHandler({
-        eventType: this.mapControls.query.eventType,
-        handler: evt  => {
-          const {coordinates} = evt;
-          resolve({
-
-          })
-        }
-      });
-    })
-
+    DataRouterService.setOutputPromise();
   };
 
   // method to show change map mapcontrol
@@ -86,14 +79,20 @@ function AppService(){
     return new Promise(async (resolve, reject) => {
       const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
       const layer = this.project.getLayerById(qgis_layer_id);
-      const {data} = await layer.searchFeatures({
-        filter: createFilterFormField({
+      const search_endpoint = this.project.getSearchEndPoint();
+      const { data } = await DataRouterService.getData('search:searchFeatures', {
+        inputs: {
           layer,
-          search_endpoint: this.project.getSearchEndPoint(),
-          field,
-          value
-        })
+          search_endpoint,
+          filter: createFilterFormField({
+            layer,
+            search_endpoint,
+            field,
+            value
+          })
+        }
       });
+
       const {features} = data[0];
       this.mapService.zoomToFeatures(features, {
         highlight

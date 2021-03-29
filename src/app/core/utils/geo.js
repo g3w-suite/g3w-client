@@ -426,7 +426,7 @@ const geoutils = {
     });
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false, reproject=true}={}) {
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     const size = map.getSize();
     if (!layers.length)
@@ -434,16 +434,14 @@ const geoutils = {
     const queryResponses = [];
     const mapProjection = map.getView().getProjection();
     const resolution = map.getView().getResolution();
-    if (querymultilayers) { // case of multilayers
-           const multiLayers = {};
+    if (multilayers) { // case of multilayers
+      const multiLayers = {};
       layers.forEach(layer => {
         const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
-        if (multiLayers[key])
-          multiLayers[key].push(layer);
-        else
-          multiLayers[key] = [layer];
+        if (multiLayers[key]) multiLayers[key].push(layer);
+        else multiLayers[key] = [layer];
       });
-      let layersLenght = Object.keys(multiLayers).length;
+      let layersLength = Object.keys(multiLayers).length;
       for (let key in multiLayers) {
         const _multilayer = multiLayers[key];
         const layers = _multilayer;
@@ -459,13 +457,13 @@ const geoutils = {
           layers
         }).then(response => queryResponses.push(response))
           .always(() => {
-            layersLenght -= 1;
-            layersLenght === 0 && d.resolve(queryResponses);
+            layersLength -= 1;
+            layersLength === 0 && d.resolve(queryResponses);
           })
       }
     } else { // single layers
-      let layersLenght = layers.length;
-      layers.forEach((layer) => {
+      let layersLength = layers.length;
+      layers.forEach(layer => {
         layer.query({
           feature_count,
           coordinates,
@@ -475,14 +473,14 @@ const geoutils = {
         }).then((response) => {
           queryResponses.push(response)
         }).always(() => {
-          layersLenght -= 1;
-          if (layersLenght === 0)
-            d.resolve(queryResponses)
+          layersLength -= 1;
+          layersLength === 0 && d.resolve(queryResponses)
         })
       });
     }
     return d.promise();
   },
+
   transformBBOX({bbox, sourceCrs, destinationCrs}={}){
     const point1 = new ol.geom.Point([bbox[0], bbox[1]]);
     const point2 = new ol.geom.Point([bbox[2], bbox[3]]);
@@ -490,6 +488,7 @@ const geoutils = {
     point2.transform(sourceCrs, destinationCrs);
     return [...point1.getCoordinates(), ...point2.getCoordinates()];
   },
+
   getQueryLayersPromisesByGeometry(layers, options={}) {
     const d = $.Deferred();
     let filterGeometry = options.geometry;
@@ -500,7 +499,7 @@ const geoutils = {
     const multiLayers = _.groupBy(layers, function(layer) {
       return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
     });
-    let layersLenght = Object.keys(multiLayers).length;
+    let layersLength = Object.keys(multiLayers).length;
     for (let key in multiLayers) {
       const filter = new Filter();
       const _multilayer = multiLayers[key];
@@ -521,13 +520,13 @@ const geoutils = {
       }).then(response=> {
         queryResponses.push(response);
       }).always(() => {
-        layersLenght -= 1;
-        if (layersLenght === 0)
-          d.resolve(queryResponses)
+        layersLength -= 1;
+        layersLength === 0 && d.resolve(queryResponses)
       })
     }
     return d.promise();
   },
+
   parseQueryLayersPromiseResponses(responses) {
     const results = {
       query: responses[0] ? responses[0].query: null,

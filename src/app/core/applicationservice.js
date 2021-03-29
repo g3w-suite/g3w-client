@@ -1,14 +1,11 @@
 import appConfig from 'config'
 import ApplicationState from './applicationstate';
-const i18ninit = require('core/i18n/i18n.service').init;
-const inherit = require('core/utils/utils').inherit;
-const XHR = require('core/utils/utils').XHR;
-const base = require('core/utils/utils').base;
-const changeLanguage = require('core/i18n/i18n.service').changeLanguage;
+const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
+const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
-const {uniqueId} = require('core/utils/utils');
 const RouterService = require('core/router');
+const RouterDataService =  require('core/data/routerservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
@@ -16,6 +13,7 @@ const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
+
 
 // install global components
 Vue.use(GlobalComponents);
@@ -445,10 +443,10 @@ const ApplicationService = function() {
           this.setEPSGApplication(project);
           //IFRAME CHECK
           ApplicationState.iframe && this.startIFrameService();
+          // initilize routerdataservice
+          RouterDataService.init();
           resolve(true);
-        }).fail((error) => {
-          reject(error);
-        })
+        }).fail(error => reject(error))
       }
     });
   };

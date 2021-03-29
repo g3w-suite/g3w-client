@@ -549,7 +549,7 @@ proto.search = function(options={}, params={}) {
 proto.query = function(options={}) {
   const d = $.Deferred();
   const { filter } = options;
-  const provider = this.getProvider(filter? 'filter' : 'query');
+  const provider = this.getProvider(filter ? 'filter' : 'query');
   if (provider)
     provider.query(options)
       .done(response => d.resolve(response))
