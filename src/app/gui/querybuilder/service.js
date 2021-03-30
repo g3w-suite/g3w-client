@@ -76,7 +76,7 @@ proto.run = function({layerId, filter, showResult=true}={}){
     const _filter = new Filter();
     _filter.setExpression(expression.get());
     try {
-      const data = await DataRouterService.getData('search:features', {
+      const {data} = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
           filter: _filter,
@@ -101,7 +101,7 @@ proto.run = function({layerId, filter, showResult=true}={}){
 
 proto.test = async function({layerId, filter}={}){
   try {
-    const {data} = await this.run({
+    const data = await this.run({
       layerId,
       filter,
       showResult: false

@@ -5,7 +5,7 @@
     </div>
     <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
       <slot name="field">
-        <span style="word-wrap: break-word;">{{ state.value }}</span>
+        <span style="word-wrap: break-word;" v-html="state.value"></span>
       </slot>
     </div>
   </div>
