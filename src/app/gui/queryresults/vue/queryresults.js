@@ -294,10 +294,7 @@ const vueComponentOptions = {
     this.state.zoomToResult = true;
   },
   async destroyed() {
-    await this.$nextTick();
-    setTimeout(()=>{
-      this.$options.queryResultsService.clear();
-    })
+    this.$options.queryResultsService.clear();
   }
 };
 

@@ -4,7 +4,6 @@ const DataRouterService = require('core/data/routerservice');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
-const Layer = require('core/layers/layer');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
@@ -36,7 +35,7 @@ function SearchService(config={}) {
   this.filter = null;
   this.inputs = [];
   this.state.title = config.name;
-  this.search_endpoint = config.search_endpoint || this.project.getSearchEndPoint();
+  this.search_endpoint = config.search_endpoint;
   this.url = options.queryurl;
   this.filter = options.filter;
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
@@ -100,8 +99,8 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPointTypeFromLayer(), queryUrl=this.url, feature_count=10000} ={}) {
-  filter = filter || this.createFilter(search_endpoint);
+proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000} ={}) {
+  filter = filter || this.createFilter();
   // call a generic method of layer
   let response;
   this.state.searching = true;
@@ -131,16 +130,18 @@ proto.filterValidFormInputs = function(){
   return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
 };
 
-// method to get right search_endpoint type based on layer type
-// Table layers always get from api search_endpoint
-proto.getSearchEndPointTypeFromLayer = function(){
-  return this.searchLayer.getType() !== Layer.LayerTypes.TABLE ? this.search_endpoint : "api";
+/**
+ *
+ * @returns {string|*|string}
+ */
+proto.getSearchEndPoint = function(){
+  return this.search_endpoint || this.searchLayer.getSearchEndPoint()
 };
 
 /*
 * type wms, vector (for vector api)
 * */
-proto.createFilter = function(search_endpoint= this.getSearchEndPointTypeFromLayer()){
+proto.createFilter = function(search_endpoint=this.getSearchEndPoint()){
   const inputs = this.filterValidFormInputs();
   return createFilterFormInputs({
     layer: this.searchLayer,

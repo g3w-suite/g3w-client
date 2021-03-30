@@ -424,6 +424,32 @@ const utils = {
     logicop = logicop && `|${logicop}`;
     return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
   },
+  createFilterFromString({layer, search_endpoint='ows', filter=''}){
+    const stringFilter = filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const layerName = layer.getWMSLayerName();
+        const expression = new Expression({
+           layerName,
+           filter:stringFilter
+         });
+         filter = new Filter();
+         filter.setExpression(expression.get());
+        break;
+      case 'api':
+        const inputsLength = inputs.length -1 ;
+        const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
+            field: input.attribute,
+            value: input.value,
+            operator: input.operator,
+            logicop: index < inputsLength ?  input.logicop: null
+          })
+        );
+        filter = fields.length ? fields.join() : undefined;
+        break;
+    }
+    return filter;
+  },
   // method to create filter for search based on
   createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
     let filter;

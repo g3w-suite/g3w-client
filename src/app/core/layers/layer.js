@@ -130,7 +130,7 @@ const proto = Layer.prototype;
 //get search_endpoint
 
 proto.getSearchEndPoint = function(){
-  return this.config.search_endpoint;
+  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
 };
 
 //relations

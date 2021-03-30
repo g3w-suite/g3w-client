@@ -1,11 +1,9 @@
 const DataRouterService = require('core/data/routerservice');
-const Expression = require('core/layers/filter/expression');
-const Filter = require('core/layers/filter/filter');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const GUI = require('gui/gui');
-const uniqueId = require('core/utils/utils').uniqueId;
+const {uniqueId, createFilterFromString} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
 const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
@@ -65,22 +63,22 @@ proto.getValues = async function({layerId, field}={}){
   } else return valuesField;
 };
 
-proto.run = function({layerId, filter, showResult=true}={}){
+proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
   return new Promise(async (resolve, reject) => {
     const layer = this._getLayerById(layerId);
-    const layerName = layer.getWMSLayerName();
-    const expression = new Expression({
-      layerName,
-      filter
+    //TEMPORARY FORCE TO OWS SEARCH POINT
+    const search_endpoint = 'ows'; //layer.getSearchEndPoint();
+    const filter = createFilterFromString({
+      layer,
+      search_endpoint,
+      filter: stringFilter
     });
-    const _filter = new Filter();
-    _filter.setExpression(expression.get());
     try {
       const {data} = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
-          filter: _filter,
-          search_endpoint: 'ows',
+          filter,
+          search_endpoint,
           feature_count: 100
         },
         outputs: {
@@ -88,13 +86,13 @@ proto.run = function({layerId, filter, showResult=true}={}){
         }
       });
       resolve(data);
-    } catch(err){
+    } catch(error){
       GUI.showUserMessage({
         type: 'alert',
         message: 'sdk.querybuilder.error_run',
         autoclose: true
       });
-      reject(erro)
+      reject(error)
     }
   })
 };
