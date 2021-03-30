@@ -750,12 +750,10 @@ proto._setupControls = function() {
             toggled: true
           });
           let canRun = true;
-          const showQueryResults = GUI.showContentFactory('query');
           const runQuery = throttle(async e => {
             if (!canRun) return;
             canRun = false;
             const coordinates = e.coordinates;
-            const queryResultsPanel = showQueryResults('');
             GUI.closeOpenSideBarComponent();
             try {
               const results = await DataRouterService.getData('query:coordinates', {
@@ -767,7 +765,6 @@ proto._setupControls = function() {
                 }
               });
               results.data.length && this.showMarker(coordinates);
-              queryResultsPanel.setQueryResponse(results, coordinates, this.state.resolution);
             } catch(error) {
               GUI.notify.error(t("info.server_error"));
               GUI.closeContent();
@@ -813,20 +810,17 @@ proto._setupControls = function() {
                 }
               });
               let canRun = true;
-              const showQueryResults = GUI.showContentFactory('query');
               const runQuery = throttle(async e => {
                 if (!canRun) return;
                 canRun = false;
                 GUI.closeOpenSideBarComponent();
                 const coordinates = e.coordinates;
-                const queryResultsPanel = showQueryResults('');
                 // ask for coordinates
-                const results = await DataRouterService.getData('query:coordinates', {
-                  inputs: {
-                    map,
-                    feature_count,
-                    coordinates
-                  }
+                const getCoordinatesData = DataRouterService.getService('query');
+                const results = await getCoordinatesData.coordinates({
+                  map,
+                  feature_count,
+                  coordinates
                 });
                 if (results && results.data.length && results.data[0].features.length) {
                   const geometry = results.data[0].features[0].getGeometry();
@@ -840,12 +834,7 @@ proto._setupControls = function() {
                         multilayers: this.project.isQueryMultiLayers(controlType)
                       }
                     });
-                    if (results.data.length) {
-                      map.getView().setCenter(coordinates);
-                      this.highlightGeometry(geometry);
-                    }
-                    queryResultsPanel.setZoomToResults(false);
-                    queryResultsPanel.setQueryResponse(results, geometry, this.state.resolution);
+                    results.data.length && map.getView().setCenter(coordinates);
                   } catch(error){
                     GUI.notify.error(t("info.server_error"));
                     GUI.closeContent();
@@ -914,9 +903,6 @@ proto._setupControls = function() {
                 if (!canRun) return;
                 canRun = false;
                 const bbox = e.extent;
-                const showQueryResults = GUI.showContentFactory('query');
-                const queryResultsPanel = showQueryResults('');
-                queryResultsPanel.setZoomToResults(false);
                 try {
                   const results = await DataRouterService.getData('query:bbox', {
                     inputs: {
@@ -932,7 +918,6 @@ proto._setupControls = function() {
                     const center = ol.extent.getCenter(bbox);
                     this.getMap().getView().setCenter(center);
                   }
-                  queryResultsPanel.setQueryResponse(results, bbox, this.state.resolution);
                 } catch(error){
                   let msg = t("info.server_error");
                   if (error) msg += ' '+error;
@@ -1906,8 +1891,7 @@ proto.getGeometryAndExtentFromFeatures = function(features=[]){
   }
   try {
     const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
-    geometry = new ol.geom[olClassGeomType]();
-    geometry.setCoordinates(geometryCoordinates);
+    geometry = new ol.geom[olClassGeomType](geometryCoordinates);
   } catch(err){}
   return {
     extent,

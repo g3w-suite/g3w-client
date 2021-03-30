@@ -16,6 +16,7 @@ const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'gpkg', 'csv', 'xls'];
 function QueryResultsService() {
   this.printService = new PrintService();
   this._currentLayerIds = [];
+
   ProjectsRegistry.onafter('setCurrentProject', project => {
     this._setRelations(project);
     this._setAtlasActions(project);
@@ -49,7 +50,7 @@ function QueryResultsService() {
 
   this._vectorLayers = [];
   this.setters = {
-    setQueryResponse: function(queryResponse, coordinates, resolution ) {
+    setQueryResponse: function(queryResponse) {
       this.clearState();
       this.state.query = queryResponse.query;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
@@ -96,7 +97,7 @@ function QueryResultsService() {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
       this._asyncFnc.goToGeometry.async = true;
     }
-  })
+  });
 }
 
 // Make the public service en Event Emitter
@@ -739,10 +740,8 @@ proto.listenClearSelection = function(layer, actionId){
 };
 
 proto.unlistenerEventsActions = function(){
-  this.unlistenerlayeractionevents.forEach(obj => {
-    obj.layer.off(obj.event, obj.handler)
-  });
-  this.unlistenerlayeractionevents = null;
+  this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
+  this.unlistenerlayeractionevents = [];
 };
 
 proto.addRemoveFilter = function(layer){
@@ -750,6 +749,10 @@ proto.addRemoveFilter = function(layer){
   _layer.toggleFilterToken();
 };
 
+/**
+ *
+ * @param layer
+ */
 proto.selectionFeaturesLayer = function(layer) {
   const layerId = layer.id;
   const action = this.state.layersactions[layerId].find(action => action.id === 'selection');
@@ -761,6 +764,15 @@ proto.selectionFeaturesLayer = function(layer) {
   })
 };
 
+/**
+ *
+ * @param layer
+ * @param feature
+ * @param index
+ * @param force
+ * @returns {Promise<void>}
+ * @private
+ */
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
   const fid = feature ? 1*feature.attributes['g3w_fid']: null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
@@ -792,13 +804,24 @@ proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   }
 };
 
+/**
+ *
+ * @param layer
+ * @param feature
+ * @param action
+ * @param index
+ */
 proto.addToSelection = function(layer, feature, action, index){
   action.state.toggled[index] = !action.state.toggled[index];
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
-
+/**
+ *
+ * @param layer
+ * @param feature
+ */
 proto.goToGeometry = function(layer, feature) {
   if (feature.geometry) {
     const handlerOptions = {

@@ -17,11 +17,13 @@ function IframePluginService(options={}) {
         result: true
       }
     });
-
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
   };
 
+  this.outputDataPlace = function(data, options={}){
+    console.log(data);
+  };
 
   // method to post message to parent
   this.postMessage = function (message={}) {

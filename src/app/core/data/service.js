@@ -8,7 +8,13 @@ function BaseService(){
 const proto = BaseService.prototype;
 
 proto.handleResponse = function(response){
-  //  to overwrite
+  const layersResults = response;
+  const results = {
+    query: layersResults[0] ? layersResults[0].query: null,
+    data: []
+  };
+  layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
+  return results;
 };
 
 module.exports = BaseService;

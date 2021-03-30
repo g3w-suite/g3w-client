@@ -389,6 +389,20 @@ const ApplicationTemplate = function({ApplicationService}) {
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
+    //Function called from DataRouterservice fro output
+    /**
+     *
+     * @param data
+     * @param options
+     */
+    GUI.outputDataPlace = function(data, options={}){
+      const {title=''}=options;
+      const showQueryResults = this.showContentFactory('query');
+      const queryResultsPanel = showQueryResults(title);
+      queryResultsPanel.setQueryResponse(data);
+      return queryResultsPanel;
+    };
+
     GUI.showContentFactory = function(type) {
       let showPanelContent;
       switch (type) {

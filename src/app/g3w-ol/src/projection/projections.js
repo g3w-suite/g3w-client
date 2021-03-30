@@ -69,6 +69,8 @@ const Projections = {
       axisinverted: false,
       geographic: false
    });
+    //REGISTER AT THE END THE CUSTOM PROJECTIONS
+    ol.proj.proj4.register(proj4)
   }
 };
 

@@ -10,7 +10,7 @@ function FeaturesStore(options={}) {
   this._lockIds = []; // store locked features
   this.setters = {
     addFeatures: function(features) {
-      features.forEach((feature) => {
+      features.forEach(feature => {
         this._addFeature(feature);
       })
     },

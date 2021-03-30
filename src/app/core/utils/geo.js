@@ -263,7 +263,7 @@ const geoutils = {
             image: new ol.style.Circle({
               radius: 5,
               fill: new ol.style.Fill({
-                color: color
+                color
               })
             })
           });
@@ -273,7 +273,7 @@ const geoutils = {
           style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               width: 3,
-              color: color
+              color
             })
           });
           break;
@@ -285,7 +285,7 @@ const geoutils = {
               width: 1
             }),
             fill: new ol.style.Fill({
-              color: color
+              color
             })
           });
           olLayer.setOpacity(0.6);

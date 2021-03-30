@@ -4,9 +4,14 @@ const BaseService = require('../service');
 function SearchService(){
   base(this);
   // method to searchfeature features
-  this.searchFeatures = function(options={layer, search_endpoint, filter, queryUrl, feature_count}){
+  this.features = async function(options={layer, search_endpoint, filter, queryUrl, feature_count}){
     const {layer, ...params} = options;
-    return layer.searchFeatures(params);
+    let data;
+    try {
+      data = await layer.searchFeatures(params);
+    } catch (err){
+    }
+    return data;
   }
 }
 

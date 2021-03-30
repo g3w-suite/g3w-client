@@ -1,5 +1,6 @@
 import { ALLVALUE }  from '../../constants';
 const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
+const DataRouterService = require('core/data/routerservice');
 const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -103,17 +104,26 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPointT
   filter = filter || this.createFilter(search_endpoint);
   // call a generic method of layer
   let response;
+  this.state.searching = true;
+  GUI.closeContent();
   try {
-    response = await this.searchLayer.searchFeatures({
-      search_endpoint,
-      filter,
-      queryUrl,
-      feature_count
+    response = await DataRouterService.getData('search:features', {
+      inputs:{
+        layer: this.searchLayer,
+        search_endpoint,
+        filter,
+        queryUrl,
+        feature_count
+      },
+      outputs: {
+        title: this.state.title
+      }
     });
   } catch(err){
-    console.log(err)
+    GUI.notify.error(t('server_error'));
+    GUI.closeContent();
   }
-
+  this.state.searching = false;
   return response;
 };
 
@@ -140,26 +150,7 @@ proto.createFilter = function(search_endpoint= this.getSearchEndPointTypeFromLay
 };
 
 proto._run = function() {
-  this.state.searching = true;
-  GUI.closeContent();
-  const showQueryResults = GUI.showContentFactory('query');
-  const queryResultsService = showQueryResults(this.state.title);
-  this.doSearch().then(results => {
-    queryResultsService.onceafter('postRender', () => {
-      this.state.searching = false;
-      const {data=[]} = results;
-      if (this.project.state.autozoom_query && data.length){
-        queryResultsService.zoomToLayerFeaturesExtent({features: data[0].features}, {
-          highlight: true
-        })
-      }
-    });
-    queryResultsService.setQueryResponse(results);
-  }).catch((error) => {
-    GUI.notify.error(t('server_error'));
-    GUI.closeContent();
-    this.state.searching = false;
-  })
+  this.doSearch();
 };
 
 proto.changeInput = function({id, value} = {}) {

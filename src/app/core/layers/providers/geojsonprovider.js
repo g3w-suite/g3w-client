@@ -24,11 +24,12 @@ proto.getFeatures = function(options = {}) {
   const data = options.data;
   const projection = options.projection || "EPSG:4326";
   const mapProjection = options.mapProjection;
-  const parseFeatures = (data) => {
+  const parseFeatures = data => {
     const parser = new ol.format.GeoJSON();
     return parser.readFeatures(data, {
       featureProjection: mapProjection,
-      defaultDataProjection: projection
+      //defaultDataProjection: projection // ol v. 4.5
+      dataProjection: projection
     });
   };
   if (data) {

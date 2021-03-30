@@ -47,13 +47,9 @@ function AppService(){
   };
 
   this.getresults = async function(){
-    DataRouterService.setOutptPromise()
+    DataRouterService.setOutputPlace()
   };
 
-  // function to intercept window parent result responses
-  this.queryresults = function(options={}){
-    DataRouterService.setOutputPromise();
-  };
 
   // method to show change map mapcontrol
   this.showchangemap = function(bool=false){
@@ -80,7 +76,7 @@ function AppService(){
       const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
       const layer = this.project.getLayerById(qgis_layer_id);
       const search_endpoint = this.project.getSearchEndPoint();
-      const { data } = await DataRouterService.getData('search:searchFeatures', {
+      const { data } = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
           search_endpoint,
@@ -90,6 +86,9 @@ function AppService(){
             field,
             value
           })
+        },
+        outputs: {
+          show: false
         }
       });
 

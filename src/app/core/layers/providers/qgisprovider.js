@@ -200,7 +200,7 @@ proto.getFeatures = function(options={}, params={}) {
     let promise;
     url = this._editingUrl;
     if (!url) {
-      d.reject('Url non valido');
+      d.reject('Url not valid');
       return;
     }
     const urlParams = $.param(params);

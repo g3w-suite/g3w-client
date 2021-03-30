@@ -1,3 +1,4 @@
+const DataRouterService = require('core/data/routerservice');
 const Expression = require('core/layers/filter/expression');
 const Filter = require('core/layers/filter/filter');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -65,41 +66,42 @@ proto.getValues = async function({layerId, field}={}){
 };
 
 proto.run = function({layerId, filter, showResult=true}={}){
-  const layer = this._getLayerById(layerId);
-  const layerName = layer.getWMSLayerName();
-  const expression = new Expression({
-    layerName,
-    filter
-  });
-  const _filter = new Filter();
-  _filter.setExpression(expression.get());
-  return new Promise((resolve, reject) => {
-    layer.search({
-      filter: _filter,
-      feature_count: 100
-    }).then((data) =>{
-      if (showResult){
-        const showQueryResults = GUI.showContentFactory('query');
-        const queryResultsPanel = showQueryResults();
-        queryResultsPanel.setQueryResponse({
-          data
-        });
-      }
-      resolve(data)
-    }).fail((err)=>{
+  return new Promise(async (resolve, reject) => {
+    const layer = this._getLayerById(layerId);
+    const layerName = layer.getWMSLayerName();
+    const expression = new Expression({
+      layerName,
+      filter
+    });
+    const _filter = new Filter();
+    _filter.setExpression(expression.get());
+    try {
+      const data = await DataRouterService.getData('search:features', {
+        inputs: {
+          layer,
+          filter: _filter,
+          search_endpoint: 'ows',
+          feature_count: 100
+        },
+        outputs: {
+          show: showResult
+        }
+      });
+      resolve(data);
+    } catch(err){
       GUI.showUserMessage({
         type: 'alert',
         message: 'sdk.querybuilder.error_run',
         autoclose: true
       });
-      reject(err)
-    })
-  });
+      reject(erro)
+    }
+  })
 };
 
 proto.test = async function({layerId, filter}={}){
   try {
-    const data = await this.run({
+    const {data} = await this.run({
       layerId,
       filter,
       showResult: false
