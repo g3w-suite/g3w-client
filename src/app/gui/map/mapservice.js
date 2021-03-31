@@ -858,7 +858,11 @@ proto._setupControls = function() {
           }
           break;
         case 'screenshot':
-          if (!isMobile.any) {
+          //check if wms externl is on map. CORS PROBLEM
+          const findWmsExternal = this.getMapLayers().find(({layers=[]}) => {
+            return !!layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false)
+          });
+          if (!isMobile.any && !findWmsExternal) {
             control = this.createMapControl(controlType, {
               options: {
                 onclick: async () => {
