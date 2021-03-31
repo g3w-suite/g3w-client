@@ -10,20 +10,11 @@ function Routerservice() {
   this.currentoutplutplaces =  [...this.defaultoutputplaces]; // array contains all
   //
   this.ouputplaces = {
-    gui(data, options={}){
-      GUI.outputDataPlace(data, options);
-      // queryResultsService.onceafter('postRender', () => {
-      //   this.state.searching = false;
-      //   const {data=[]} = results;
-      //   if (this.project.state.autozoom_query && data.length){
-      //     queryResultsService.zoomToLayerFeaturesExtent({features: data[0].features}, {
-      //       highlight: true
-      //     })
-      //   }
-      // });
+    gui(dataPromise, options={}){
+      GUI.outputDataPlace(dataPromise, options);
     },
-    iframe(data, options={}){
-      IFrameRouterService.outputDataPlace(data, options);
+    iframe(dataPromise, options={}){
+      IFrameRouterService.outputDataPlace(dataPromise, options);
     }
   };
 
@@ -48,15 +39,13 @@ function Routerservice() {
     const [serviceName, method] = serviceAndMethod.split(':');
     const service = this.getService(serviceName);
     const { inputs={}, outputs={}} = options;
-    // set if we want to output data to places: default true
-    const {show=true} = outputs;
-    const data = await service[method](inputs);
-    show && this.currentoutplutplaces.forEach(place =>{
+    //retur a promise and not the data
+    const data =  service[method](inputs);
+    outputs && this.currentoutplutplaces.forEach(place =>{
       this.ouputplaces[place](data, outputs);
     });
     //return always data
-    return data;
-
+    return await data;
   };
 
   /**

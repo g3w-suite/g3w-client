@@ -31,6 +31,7 @@ function SearchService(config={}) {
   this.inputdependencies = [];
   this.cachedependencies = {};
   this.project = ProjectsRegistry.getCurrentProject();
+  this.mapService = GUI.getComponent('map').getService();
   this.searchLayer = null;
   this.filter = null;
   this.inputs = [];
@@ -99,14 +100,13 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000} ={}) {
+proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=true} ={}) {
   filter = filter || this.createFilter();
   // call a generic method of layer
-  let response;
+  let data;
   this.state.searching = true;
-  GUI.closeContent();
   try {
-    response = await DataRouterService.getData('search:features', {
+    data = await DataRouterService.getData('search:features', {
       inputs:{
         layer: this.searchLayer,
         search_endpoint,
@@ -114,16 +114,21 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         queryUrl,
         feature_count
       },
-      outputs: {
+      outputs: show && {
         title: this.state.title
       }
     });
+    // in case of autozoom_query
+    if (this.project.state.autozoom_query && data && data.data.length){
+      this.mapService.zoomToFeatures(data.data[0].features)
+    }
   } catch(err){
     GUI.notify.error(t('server_error'));
     GUI.closeContent();
   }
   this.state.searching = false;
-  return response;
+
+  return data;
 };
 
 proto.filterValidFormInputs = function(){

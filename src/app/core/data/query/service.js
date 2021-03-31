@@ -127,7 +127,7 @@ function QueryService(){
         .then(response => {
           const results = this.handleResponse(response);
           resolve(results);
-          })
+        })
         .fail(reject)
     });
 

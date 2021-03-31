@@ -389,18 +389,24 @@ const ApplicationTemplate = function({ApplicationService}) {
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
+
     //Function called from DataRouterservice fro output
     /**
      *
      * @param data
      * @param options
      */
-    GUI.outputDataPlace = function(data, options={}){
-      const {title=''}=options;
+    GUI.outputDataPlace = async function(dataPromise, options={}){
+      const {title=''} = options;
       const showQueryResults = this.showContentFactory('query');
-      const queryResultsPanel = showQueryResults(title);
-      queryResultsPanel.setQueryResponse(data);
-      return queryResultsPanel;
+      const queryResultsService = showQueryResults(title);
+      try {
+        const data = await dataPromise;
+        queryResultsService.setQueryResponse(data);
+      } catch(err){
+        console.log(err);
+      }
+      return queryResultsService;
     };
 
     GUI.showContentFactory = function(type) {
@@ -415,6 +421,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
       return showPanelContent;
     };
+
     GUI.showForm = function(options) {
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time

@@ -1,3 +1,4 @@
+import {EXPRESSION_OPERATORS} from '../layers/filter/operators'
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 /**
@@ -437,15 +438,12 @@ const utils = {
          filter.setExpression(expression.get());
         break;
       case 'api':
-        const inputsLength = inputs.length -1 ;
-        const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
-            field: input.attribute,
-            value: input.value,
-            operator: input.operator,
-            logicop: index < inputsLength ?  input.logicop: null
-          })
-        );
-        filter = fields.length ? fields.join() : undefined;
+        filter = stringFilter.replace(/\s|'|"/g, '');
+        Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
+          const re = new RegExp(value, "g");
+          const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
+          filter = filter.replace(re, replaceValue)
+        });
         break;
     }
     return filter;

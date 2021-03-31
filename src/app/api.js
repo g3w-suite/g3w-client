@@ -11,6 +11,12 @@ g3w.core = {
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),
+  data: {
+    DataRouterService: require('core/data/routerservice')
+  },
+  iframe: {
+    IFrameRouterService: require('core/iframe/routerservice')
+  },
   errors: {
     parsers: {
       Server: require('core/errors/parser/servererrorparser')

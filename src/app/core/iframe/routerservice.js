@@ -14,15 +14,17 @@ function IframePluginService(options={}) {
       id:null,
       action:"app:ready",
       response: {
-        result: true
+        result: true,
+        layers:[]
       }
     });
+
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
   };
 
-  this.outputDataPlace = function(data, options={}){
-    console.log(data);
+  this.outputDataPlace = async function(dataPromise, options={}){
+    const data = await dataPromise;
   };
 
   // method to post message to parent

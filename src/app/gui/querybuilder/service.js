@@ -67,7 +67,7 @@ proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
   return new Promise(async (resolve, reject) => {
     const layer = this._getLayerById(layerId);
     //TEMPORARY FORCE TO OWS SEARCH POINT
-    const search_endpoint = 'ows'; //layer.getSearchEndPoint();
+    const search_endpoint = layer.getSearchEndPoint();
     const filter = createFilterFromString({
       layer,
       search_endpoint,
@@ -81,9 +81,7 @@ proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
           search_endpoint,
           feature_count: 100
         },
-        outputs: {
-          show: showResult
-        }
+        outputs: showResult
       });
       resolve(data);
     } catch(error){

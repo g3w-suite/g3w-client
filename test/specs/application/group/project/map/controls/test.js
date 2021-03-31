@@ -1,4 +1,5 @@
 const GUI = require('gui/gui');
+const DataRouterService = require('core/data/routerservice');
 const {assert, expect} = require('chai');
 
 export default function MapControls ({mapcontrols, mapService, testConfig}={}) {
@@ -15,7 +16,6 @@ export default function MapControls ({mapcontrols, mapService, testConfig}={}) {
               results = await control.nominatim.query(search.query)
               expect(results).to.be.length(search.count);
             } catch (error) {
-              console.log(error)
               assert.isOk(false);
             }
           })
