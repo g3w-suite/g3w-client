@@ -1,6 +1,7 @@
-const queryService = require('./query/service');
-const searchService = require('./search/service');
+const queryService = require('core/data/query/service');
+const searchService = require('core/data/search/service');
 const IFrameRouterService = require('core/iframe/routerservice');
+const { splitContextAndMethod } =require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function Routerservice() {
@@ -31,15 +32,15 @@ function Routerservice() {
 
   /**
    *
-   * @param serviceAndMethod 'String contain type of service(search or query): method'
+   * @param contextAndMethod 'String contain type of service(search or query): method'
    * @param options
    * @returns {Promise<void>}
    */
-  this.getData = async function(serviceAndMethod, options={}){
-    const [serviceName, method] = serviceAndMethod.split(':');
-    const service = this.getService(serviceName);
+  this.getData = async function(contextAndMethod, options={}){
+    const {context, method} = splitContextAndMethod(contextAndMethod);
+    const service = this.getService(context);
     const { inputs={}, outputs={}} = options;
-    //retur a promise and not the data
+    //return a promise and not the data
     const data =  service[method](inputs);
     outputs && this.currentoutplutplaces.forEach(place =>{
       this.ouputplaces[place](data, outputs);

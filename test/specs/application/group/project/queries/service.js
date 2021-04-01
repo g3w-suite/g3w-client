@@ -1,38 +1,45 @@
 const Filter = require('core/layers/filter/filter');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const DataRouterService = require('core/data/routerservice');
 
-const doQuery = function({mapService, coordinates}={}){
-  return new Promise((resolve, reject) =>{
-    mapService.runQuery({
+const doQuery = function({coordinates}={}){
+  return DataRouterService.getData('query:coordinates', {
+    inputs: {
       coordinates
-    }).then(response => {
-      resolve(response);
-    }).fail(err => reject(err))
-  });
+    },
+    outputs: false
+  })
 };
 
 const doQueryBBOX = ({mapService, bbox}={}) => {
-  return new Promise((resolve, reject) =>{
-    mapService.runQueryBBOX({bbox}).then(response =>{
-      resolve(response[0].data)
-    }).fail(err =>{
-      reject(err)
-    })
+  return DataRouterService.getData('query:bbox', {
+    inputs: {
+      bbox
+    },
+    outputs: false
   })
 }
 
-const doQueryByPolygon = function({layer, mapService, coordinates}={}){
+const doQueryByPolygon = async function({layer, coordinates}={}){
   const setSelectedLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   setSelectedLayer.setSelected(true);
-  return new Promise((resolve, reject) =>{
-    mapService.runQueryByPolygon({
+  const {data=[]} = await DataRouterService.getData('query:coordinates', {
+    inputs: {
       coordinates
-    }).then(({response}) =>{
-      resolve(response[0].data)
-    }).catch(err =>{
-      reject(err);
-    })
+    },
+    outputs: false
   })
+  if (data.length && data[0].features.length) {
+    const geometry = data[0].features[0].getGeometry();
+    const excludeLayers = [data[0].layer];
+    return DataRouterService.getData('query:polygon', {
+      inputs: {
+        excludeLayers,
+        geometry,
+      },
+      outputs: false
+    });
+  }
 }
 
 module.exports = {

@@ -1,3 +1,4 @@
+const { splitContextAndMethod } =require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function IframePluginService(options={}) {
@@ -39,12 +40,12 @@ function IframePluginService(options={}) {
   this.getMessage = async evt => {
     if (evt && evt.data) {
       const { id, action, data:params } = evt.data;
-      const [context, func] = action.split(':');
+      const {context, method} = splitContextAndMethod(action);
       let result = false;
       let data;
       try {
         if (this.services[context].getReady()) {
-          data = await this.services[context][func](params);
+          data = await this.services[context][method](params);
           result = true;
         }
       } catch(err){

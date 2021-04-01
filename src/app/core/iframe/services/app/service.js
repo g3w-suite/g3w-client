@@ -76,7 +76,7 @@ function AppService(){
       const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
       const layer = this.project.getLayerById(qgis_layer_id);
       const search_endpoint = this.project.getSearchEndPoint();
-      const { data } = await DataRouterService.getData('search:features', {
+      const { data=[] } = await DataRouterService.getData('search:features', {
         inputs: {
           layer,
           search_endpoint,
@@ -87,15 +87,12 @@ function AppService(){
             value
           })
         },
-        outputs: {
-          show: false
-        }
+        outputs: false
       });
-
-      const {features} = data[0];
-      this.mapService.zoomToFeatures(features, {
+      data.length && this.mapService.zoomToFeatures(data[0].features, {
         highlight
       });
+
       resolve({
         result: true
       })

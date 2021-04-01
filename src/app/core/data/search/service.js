@@ -1,5 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
-const BaseService = require('../service');
+const BaseService = require('core/data/service');
 
 function SearchService(){
   base(this);

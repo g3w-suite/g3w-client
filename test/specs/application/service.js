@@ -2,6 +2,7 @@ import { server as serverConfig } from '../../../src/config';
 import { LOGIN as LoginConfig} from '../../config/config';
 window.g3wsdk = require('api'); //usefull for plugiin
 const GUI = require('gui/gui');
+const DataRouterService = require('core/data/routerservice');
 const ApplicationService = require('core/applicationservice');
 const XHR = require('core/utils/utils').XHR;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -136,6 +137,7 @@ export const getProjetsRegistry = async function(url) {
     ApplicationService.setConfig(config);
     ApplicationService.setupI18n(); //setup i18n
     ProjectsRegistry.clear();
+    DataRouterService.init();
     const promise = new Promise((resolve, reject) => {
       ProjectsRegistry.init(config)
         .then(() =>{

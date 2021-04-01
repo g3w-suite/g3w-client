@@ -760,15 +760,14 @@ proto._setupControls = function() {
             const coordinates = e.coordinates;
             GUI.closeOpenSideBarComponent();
             try {
-              const results = await DataRouterService.getData('query:coordinates', {
+              const {data=[]} = await DataRouterService.getData('query:coordinates', {
                 inputs: {
                   coordinates,
                   feature_count,
                   multilayers: this.project.isQueryMultiLayers(controlType),
-                  map
                 }
               });
-              results.data.length && this.showMarker(coordinates);
+              data.length && this.showMarker(coordinates);
             } catch(error) {
               GUI.notify.error(t("info.server_error"));
               GUI.closeContent();
@@ -820,31 +819,35 @@ proto._setupControls = function() {
                 GUI.closeOpenSideBarComponent();
                 const coordinates = e.coordinates;
                 // ask for coordinates
-                const getCoordinatesData = DataRouterService.getService('query');
-                const results = await getCoordinatesData.coordinates({
-                  map,
-                  feature_count,
-                  coordinates
-                });
-                if (results && results.data.length && results.data[0].features.length) {
-                  const geometry = results.data[0].features[0].getGeometry();
-                  const excludeLayers = [results.data[0].layer];
-                  try {
-                    const results = await DataRouterService.getData('query:polygon', {
+                try {
+                 const {data=[]} = await DataRouterService.getData('query:coordinates', {
+                    inputs: {
+                      feature_count,
+                      coordinates
+                    },
+                   outputs: {
+                      show({data=[]}){
+                        return data.length === 0;
+                      }
+                   }
+                  });
+                  if (data.length && data[0].features.length) {
+                    const geometry = data[0].features[0].getGeometry();
+                    const excludeLayers = [data[0].layer];
+                    const {data:[]} = await DataRouterService.getData('query:polygon', {
                       inputs: {
-                        mapCrs: this.getCrs(),
                         excludeLayers,
                         geometry,
                         multilayers: this.project.isQueryMultiLayers(controlType)
                       }
                     });
-                    results.data.length && map.getView().setCenter(coordinates);
-                  } catch(error){
-                    GUI.notify.error(t("info.server_error"));
-                    GUI.closeContent();
+                    data.length && map.getView().setCenter(coordinates);
                   }
-                  canRun = true;
+                } catch(err){
+                  GUI.notify.error(t("info.server_error"));
+                  GUI.closeContent();
                 }
+                canRun = true;
               }, 800);
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
@@ -911,7 +914,6 @@ proto._setupControls = function() {
                   const results = await DataRouterService.getData('query:bbox', {
                     inputs: {
                       bbox,
-                      map,
                       feature_count,
                       layersFilterObject,
                       condition,

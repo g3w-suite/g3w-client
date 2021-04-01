@@ -15,10 +15,10 @@ export default function TestSearches({searches=[], testConfig={}}={}) {
         attribute:forminput.attribute,
         value: forminput.value
       })
-      it(`#search id[${id}] count [${count}]`, async function(){
-        const results = await service.doSearch();
-        expect(results.data[0].features).to.be.length(count)
-      })
+      // it(`#search id[${id}] count [${count}]`, async function(){
+      //   const results = await service.doSearch();
+      //   expect(results.data[0].features).to.be.length(count)
+      // })
     })
   })
 }

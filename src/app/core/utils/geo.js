@@ -2,6 +2,7 @@ const { toRawType, uniqueId } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const GUI = require('gui/gui');
 const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
 
 const geoutils = {
@@ -426,7 +427,8 @@ const geoutils = {
     });
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, multilayers=false, reproject=true}={}) {
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, multilayers=false, reproject=true}={}) {
+    const map = GUI.getComponent('map').getService().getMap();
     const d = $.Deferred();
     const size = map.getSize();
     if (!layers.length)

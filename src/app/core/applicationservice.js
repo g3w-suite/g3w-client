@@ -13,6 +13,8 @@ const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
+//timeout value
+const TIMEOUT = 60000; // 1 minute
 
 
 // install global components
@@ -420,11 +422,16 @@ const ApplicationService = function() {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
+
   //  bootstrap (when called init)
   this.bootstrap = function() {
     return new Promise((resolve, reject) => {
       // setup All i18n configuration
       this.setupI18n();
+      // run Timeout
+      const timeout = setTimeout(() =>{
+        reject('Timeout')
+      }, TIMEOUT);
       //first time l'application service is not ready
       if (!ApplicationState.ready) {
         $.when(
@@ -433,6 +440,9 @@ const ApplicationService = function() {
           // inizialize api service
           ApiService.init(this._config)
         ).then(() => {
+          // clear TIMEOUT
+          clearTimeout(timeout);
+          //clear
           this.registerOnlineOfflineEvent();
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;
@@ -523,11 +533,18 @@ const ApplicationService = function() {
     this.obtainInitConfig({
       host
     }).then(initConfig => {
+      // run Timeout
+      const timeout = setTimeout(() =>{
+        reject('Timeout')
+      }, TIMEOUT);
         ProjectsRegistry.setProjects(initConfig.group.projects);
         ProjectsRegistry.getProject(gid, {
           reload // force to reload configuration
         })
           .then(project => {
+            //clearTimeout
+            clearTimeout(timeout);
+            ///
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {

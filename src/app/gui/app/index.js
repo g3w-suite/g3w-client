@@ -397,15 +397,15 @@ const ApplicationTemplate = function({ApplicationService}) {
      * @param options
      */
     GUI.outputDataPlace = async function(dataPromise, options={}){
-      const {title=''} = options;
+      // show options (function) set if show data or not
+      const {title='', show} = options;
       const showQueryResults = this.showContentFactory('query');
       const queryResultsService = showQueryResults(title);
       try {
         const data = await dataPromise;
-        queryResultsService.setQueryResponse(data);
-      } catch(err){
-        console.log(err);
-      }
+        if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
+        else GUI.closeContent();
+      } catch(err){}
       return queryResultsService;
     };
 

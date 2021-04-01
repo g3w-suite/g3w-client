@@ -103,6 +103,7 @@ const utils = {
   // goole closure library implementation
   base: function(me, opt_methodName, var_args) {
     // who call base
+    // noinspection JSAnnotator
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
       // This function constructor (that inherit from superClass_). Call the superclass constructor.
@@ -498,6 +499,13 @@ const utils = {
         break;
     }
     return filter;
+  },
+  splitContextAndMethod(string=''){
+    const [context, method] = string.split(':')
+    return {
+      context,
+      method
+    }
   }
 };
 
