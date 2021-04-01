@@ -25,7 +25,16 @@ function IframePluginService(options={}) {
   };
 
   this.outputDataPlace = async function(dataPromise, options={}){
+    const {action='app:results'} = options;
     const data = await dataPromise;
+    this.postMessage({
+      id: null,
+      action,
+      response: {
+        result,
+        data
+      }
+    })
   };
 
   // method to post message to parent

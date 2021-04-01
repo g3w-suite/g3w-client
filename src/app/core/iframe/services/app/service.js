@@ -7,13 +7,8 @@ const GUI = require('gui/gui');
 function AppService(){
   base(this);
   this.mapControls = {
-    query: {
-      control: null,
-      eventType: 'picked'
-    },
-    queryBBox: {
-      control: null,
-      eventType: null
+    screenshot: {
+      control: null
     },
     changeMap: {
       control: null
@@ -34,9 +29,8 @@ function AppService(){
           this.projectsDialog && this.projectsDialog.modal('hide');
         });
 
-        //get map control
-        this.mapControls.query.control = this.mapService.getMapControlByType({
-          type: 'query'
+        this.mapControls.screenshot.control = this.mapService.getMapControlByType({
+          type: 'screenshot'
         });
 
         this.setReady(true);
@@ -47,7 +41,14 @@ function AppService(){
   };
 
   this.getresults = async function(){
-    DataRouterService.setOutputPlace()
+    DataRouterService.setOutputPlaces(['iframe'])
+  };
+
+  this.screenshot = async function({capture=true}){
+    capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
+      const blob = await this.mapService.createMapImage();
+      console.log(blob)
+    }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
 
@@ -58,7 +59,7 @@ function AppService(){
       options: {
         add: true,
         name: "change-map",
-        tipLabel: "Cambio mappa",
+        tipLabel: "Change Map",
         customClass: GUI.getFontClass('change-map'),
         onclick: async () => {
           this._changeProjectModalWindow({
@@ -92,10 +93,7 @@ function AppService(){
       data.length && this.mapService.zoomToFeatures(data[0].features, {
         highlight
       });
-
-      resolve({
-        result: true
-      })
+      resolve();
     })
 
   };
@@ -109,7 +107,6 @@ function AppService(){
 
   this.clear = function(){
     ProjectsRegistry.un('setCurrentProject', this._iFrameSetCurrentAfterKey);
-    this._mapControls.query.control.resetOriginalHandlerEvent(this._mapControls.query.eventType);
     this._mapService.removeControlById('iframe-change-map');
   }
 }

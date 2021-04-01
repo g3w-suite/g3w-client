@@ -725,7 +725,7 @@ proto._setupControls = function() {
                   } catch (e) {
                     GUI.showUserMessage({
                       type: 'alert',
-                      message: t("info.server_error"),
+                      message: t("mapcontrols.screenshot.error"),
                       autoclose: true
                     })
                   }

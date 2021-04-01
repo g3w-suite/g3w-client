@@ -385,8 +385,12 @@ const translations = {
         },
         area: {
           tooltip: "Area"
+        },
+        screenshot: {
+          error: "Errore nella creazione dello screeshot"
         }
-      },
+      }
+      ,
       catalog_items: {
         helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         contextmenu: {
@@ -791,6 +795,9 @@ const translations = {
         },
         area: {
           tooltip: "Area"
+        },
+        screenshot: {
+          error: "Screenshot error creation"
         }
       },
       catalog_items: {
@@ -1198,6 +1205,9 @@ const translations = {
         },
         area: {
           tooltip: "Pinta-ala"
+        },
+        screenshot: {
+          error: "Screenshot error creation"
         }
       },
       catalog_items: {
@@ -1606,6 +1616,9 @@ const translations = {
         },
         area: {
           tooltip: "Areal"
+        },
+        screenshot: {
+          error: "Screenshot error creation"
         }
       },
       catalog_items: {
