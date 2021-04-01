@@ -37,9 +37,9 @@ proto.parse = function({type='responseJSON'}={}) {
   else if (type === 'String') {
     if (typeof this._error === 'string')
       return this._error;
-    else {
+    else
       return traverseErrorMessage(this._error);
-    }
+
 
   } else return t("server_saver_error");
 };

@@ -122,12 +122,8 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
     if (this.project.state.autozoom_query && data && data.data.length){
       this.mapService.zoomToFeatures(data.data[0].features)
     }
-  } catch(err){
-    GUI.notify.error(t('server_error'));
-    GUI.closeContent();
-  }
+  } catch(err){}
   this.state.searching = false;
-
   return data;
 };
 

@@ -11,7 +11,8 @@ proto.handleResponse = function(response){
   const layersResults = response;
   const results = {
     query: layersResults[0] ? layersResults[0].query: null,
-    data: []
+    data: [],
+    result: true // set result
   };
   layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
   return results;

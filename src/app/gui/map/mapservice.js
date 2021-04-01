@@ -4,8 +4,6 @@ const G3WObject = require('core/g3wobject');
 const {
   shpToGeojson,
   createSelectedStyle,
-  getQueryLayersPromisesByCoordinates,
-  getQueryLayersPromisesByGeometry,
   getMapLayersByFilter} = require('core/utils/geo');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
@@ -415,13 +413,8 @@ proto.createMapImage = function({map, background} = {}) {
   return new Promise((resolve, reject) => {
     try {
       const canvas = this.getMapCanvas(map);
-      if (navigator.msSaveBlob) {
-        resolve(canvas.msToBlob());
-      } else {
-        canvas.toBlob(function(blob) {
-          resolve(blob);
-        });
-      }
+      if (navigator.msSaveBlob) resolve(canvas.msToBlob());
+      else canvas.toBlob(blob => resolve(blob));
     } catch (err) {
       reject(err);
     }
@@ -730,7 +723,11 @@ proto._setupControls = function() {
                     const blobImage = await this.createMapImage();
                     saveAs(blobImage, `map_${Date.now()}.png`);
                   } catch (e) {
-                    GUI.notify.error(t("info.server_error"));
+                    GUI.showUserMessage({
+                      type: 'alert',
+                      message: t("info.server_error"),
+                      autoclose: true
+                    })
                   }
                   return true;
                 }
@@ -768,12 +765,9 @@ proto._setupControls = function() {
                 }
               });
               data.length && this.showMarker(coordinates);
-            } catch(error) {
-              GUI.notify.error(t("info.server_error"));
-              GUI.closeContent();
-            }
-            setTimeout(()=> canRun = true)
-          }, 800);
+            } catch(error) {}
+            canRun = true
+          });
           const eventKey = control.on('picked', runQuery);
           control.setEventKey({
             eventType: 'picked',
@@ -820,7 +814,7 @@ proto._setupControls = function() {
                 const coordinates = e.coordinates;
                 // ask for coordinates
                 try {
-                 const {data=[]} = await DataRouterService.getData('query:coordinates', {
+                 const {data:dataCoordinates=[]} = await DataRouterService.getData('query:coordinates', {
                     inputs: {
                       feature_count,
                       coordinates
@@ -831,10 +825,10 @@ proto._setupControls = function() {
                       }
                    }
                   });
-                  if (data.length && data[0].features.length) {
-                    const geometry = data[0].features[0].getGeometry();
-                    const excludeLayers = [data[0].layer];
-                    const {data:[]} = await DataRouterService.getData('query:polygon', {
+                  if (dataCoordinates.length && dataCoordinates[0].features.length) {
+                    const geometry = dataCoordinates[0].features[0].getGeometry();
+                    const excludeLayers = [dataCoordinates[0].layer];
+                    const {data=[]} = await DataRouterService.getData('query:polygon', {
                       inputs: {
                         excludeLayers,
                         geometry,
@@ -843,12 +837,9 @@ proto._setupControls = function() {
                     });
                     data.length && map.getView().setCenter(coordinates);
                   }
-                } catch(err){
-                  GUI.notify.error(t("info.server_error"));
-                  GUI.closeContent();
-                }
-                canRun = true;
-              }, 800);
+                } catch(err){}
+                canRun = true
+              });
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
                 eventType: 'picked',
@@ -911,7 +902,7 @@ proto._setupControls = function() {
                 canRun = false;
                 const bbox = e.extent;
                 try {
-                  const results = await DataRouterService.getData('query:bbox', {
+                  const {data=[]} = await DataRouterService.getData('query:bbox', {
                     inputs: {
                       bbox,
                       feature_count,
@@ -920,20 +911,13 @@ proto._setupControls = function() {
                       multilayers: this.project.isQueryMultiLayers(controlType)
                     }
                   });
-                  if (results.data.length) {
+                  if (data.length) {
                     const center = ol.extent.getCenter(bbox);
                     this.getMap().getView().setCenter(center);
                   }
-                } catch(error){
-                  let msg = t("info.server_error");
-                  if (error) msg += ' '+error;
-                  GUI.notify.error(msg);
-                  GUI.closeContent();
-                }
-
-                setTimeout(()=> canRun = true);
-
-              }, 1000);
+                } catch(err){}
+                canRun = true;
+              });
               const eventKey = control.on('bboxend', runQuery);
               control.setEventKey({
                 eventType: 'bboxend',

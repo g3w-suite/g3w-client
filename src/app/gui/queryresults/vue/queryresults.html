@@ -14,6 +14,10 @@
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>
+                <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button skin-tooltip-bottom"
+                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
+                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
+                </span>
                 <span v-if="layer.download.shapefile" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')"></span>
                 </span>
@@ -28,10 +32,6 @@
                 </span>
                 <span v-if="layer.download.xls" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('xls')" @click.stop="saveLayerResult(layer, 'xls')"></span>
-                </span>
-                <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button skin-tooltip-bottom"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
-                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                 </span>
                 <span @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
                        data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'">

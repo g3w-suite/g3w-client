@@ -430,6 +430,14 @@ proto.setActionsForLayers = function(layers) {
       }
     }
 
+    this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
+      id: `printatlas`,
+      download: true,
+      class: GUI.getFontClass('print'),
+      hint: `sdk.tooltips.atlas`,
+      cbk: this.printAtlas.bind(this)
+    });
+
     DOWNLOAD_FEATURE_FORMATS.forEach(format => {
       layer.download[format] && this.state.layersactions[layer.id].push({
         id: `download_${format}_feature`,
@@ -440,13 +448,6 @@ proto.setActionsForLayers = function(layers) {
       });
     });
 
-    this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
-      id: `printatlas`,
-      download: true,
-      class: GUI.getFontClass('print'),
-      hint: `sdk.tooltips.atlas`,
-      cbk: this.printAtlas.bind(this)
-    });
 
     if (layer.selection.active !== undefined) {
       // selection action

@@ -1,7 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const t = require('core/i18n/i18n.service').t;
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit, toRawType} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -367,6 +366,44 @@ const ApplicationTemplate = function({ApplicationService}) {
       return VueApp.g3wtemplate.getFontClass(type);
     };
   };
+
+  /**
+   * Convert error to user message showed
+   * @param error
+   * @returns {string}
+   */
+  GUI.errorToMessage = function(error){
+    let message = 'server_error';
+    console.log(error)
+    switch (toRawType(error)) {
+      case 'Error':
+        message = `CLIENT - ${error.message}`;
+        break;
+      case 'Object':
+        if (error.responseJSON) {
+          error = error.responseJSON;
+          if (error.result === false){
+            const {code='', data='', message:msg=''} = error.error;
+            message = `${code.toUpperCase()} ${data} ${msg}`;
+          }
+        } else if (error.responseText){
+          message = error.responseText;
+        }
+        else if (error.responseText) {
+          message = error.responseText;
+          break;
+        }
+        break;
+      case 'Array':
+        message = error.map(error => GUI.errorToMessage(error)).join(' ');
+        break;
+      case 'String':
+      default:
+        message = error;
+    }
+    return message;
+  };
+
   // setup Interaces
   this._setupInterface = function() {
     /* PLUBLIC INTERFACE */
@@ -405,7 +442,14 @@ const ApplicationTemplate = function({ApplicationService}) {
         const data = await dataPromise;
         if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
         else GUI.closeContent();
-      } catch(err){}
+      } catch(error){
+        const message = this.errorToMessage(error);
+        this.showUserMessage({
+          type: 'alert',
+          message
+        });
+        this.closeContent();
+      }
       return queryResultsService;
     };
 

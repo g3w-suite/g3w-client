@@ -66,7 +66,6 @@ proto.getValues = async function({layerId, field}={}){
 proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
   return new Promise(async (resolve, reject) => {
     const layer = this._getLayerById(layerId);
-    //TEMPORARY FORCE TO OWS SEARCH POINT
     const search_endpoint = layer.getSearchEndPoint();
     const filter = createFilterFromString({
       layer,

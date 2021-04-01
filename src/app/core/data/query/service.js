@@ -5,6 +5,7 @@ const BaseService = require('core/data/service');
 const {
   getQueryLayersPromisesByCoordinates,
   getQueryLayersPromisesByGeometry,
+  getQueryLayersPromisesByBBOX,
   getMapLayersByFilter} = require('core/utils/geo');
 
 function QueryService(){
@@ -52,6 +53,7 @@ function QueryService(){
         if (layers.length === 0) d.resolve([]);
         else {
           const queryResponses = [];
+          const queryErrors = [];
           let layersLenght = layers.length;
           layers.forEach(layer => {
             const layerCrs = layer.getProjection().getCode();
@@ -60,9 +62,12 @@ function QueryService(){
               filter,
               feature_count
             }).then(response => queryResponses.push(response))
+              .fail(error => queryErrors.push(error))
               .always(() => {
                 layersLenght -= 1;
-                layersLenght === 0 && d.resolve(queryResponses)
+                if (layersLenght === 0){
+                  queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+                }
               })
           });
         }
@@ -86,36 +91,11 @@ function QueryService(){
   this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     return new Promise((resolve, reject) =>{
       const layers = getMapLayersByFilter(layersFilterObject, condition);
-      let queriesPromise;
-      if (multilayers) {
-        const layers = getMapLayersByFilter(layersFilterObject, condition);
-        queriesPromise = getQueryLayersPromisesByGeometry(layers, {
-          geometry: bbox,
-          bbox: true,
-          feature_count,
-          projection: this.project.getProjection()
-        })
-      } else {
-        const d = $.Deferred();
-        queriesPromise = d.promise();
-        const queryResponses = [];
-        let layersLenght = layers.length;
-        let filterBBox = bbox;
-        layers.forEach(layer => {
-          const filter = new Filter();
-          filter.setBBOX(filterBBox);
-          layer.query({
-            filter,
-            feature_count
-          }).then(response => {
-            queryResponses.push(response)
-          }).always(() => {
-            layersLenght -= 1;
-            if (layersLenght === 0)
-              d.resolve(queryResponses)
-          })
-        });
-      }
+      const queriesPromise = getQueryLayersPromisesByBBOX(layers, {
+        bbox,
+        feature_count,
+        multilayers,
+      });
       queriesPromise
         .then(response => {
           const results = this.handleResponse(response);
@@ -153,9 +133,7 @@ function QueryService(){
           const results = this.handleResponse(response);
           resolve(results);
         })
-        .fail(error=>{
-          reject(error)
-        })
+        .fail(error=>reject(error))
     });
 
   };

@@ -9,7 +9,11 @@ function Routerservice() {
   this.defaultoutputplaces = ['gui'];
   // set current outputplaces
   this.currentoutplutplaces =  [...this.defaultoutputplaces]; // array contains all
-  //
+
+  /**
+   * Object contain outplut function to show results
+   * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
+   */
   this.ouputplaces = {
     gui(dataPromise, options={}){
       GUI.outputDataPlace(dataPromise, options);
@@ -41,11 +45,12 @@ function Routerservice() {
     const service = this.getService(context);
     const { inputs={}, outputs={}} = options;
     //return a promise and not the data
-    const data =  service[method](inputs);
+    const dataPromise = service[method](inputs);
     outputs && this.currentoutplutplaces.forEach(place =>{
-      this.ouputplaces[place](data, outputs);
+      this.ouputplaces[place](dataPromise, outputs);
     });
     //return always data
+    const data = await dataPromise;
     return await data;
   };
 

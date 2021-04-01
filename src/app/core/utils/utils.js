@@ -352,8 +352,8 @@ const utils = {
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
-            .then(result => resolve(result))
-            .fail(err => reject(err))
+            .then(response => resolve(response))
+            .fail(error => reject(error))
         : reject('No url')
       })
     },
@@ -370,10 +370,10 @@ const utils = {
             data: formdata,
             processData: false,
             contentType: false
-          }).then((response) => {
+          }).then(response => {
               resolve(response)
             })
-            .fail((error) => {
+            .fail(error => {
               reject(error);
             })
         } else if (contentType) {
@@ -383,18 +383,18 @@ const utils = {
             data,
             processData: false,
             contentType: contentType || false
-          }).then((response) => {
+          }).then(response => {
             resolve(response)
           })
-            .fail((error) => {
+            .fail(error => {
               reject(error);
             })
         } else {
           $.post(url, data)
-            .then((response) => {
+            .then(response => {
               resolve(response)
             })
-            .fail((error) => {
+            .fail(error => {
               reject(error)
             })
         }

@@ -493,10 +493,10 @@ proto.searchFeatures = function(options={}, params={}){
           }).fail(error => reject(error));
         break;
       case 'api':
-        const {filter, suggest={}, unique} = options;
+        const {filter:field, suggest={}, unique} = options;
         try {
           const response = await this.getFilterData({
-            field:filter,
+            field,
             suggest,
             unique
           });
