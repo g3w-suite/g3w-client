@@ -7,15 +7,17 @@ function BaseService(){
 
 const proto = BaseService.prototype;
 
-proto.handleResponse = function(response){
-  const layersResults = response;
-  const results = {
-    query: layersResults[0] ? layersResults[0].query: null,
-    data: [],
-    result: true // set result
-  };
-  layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
-  return results;
+/**
+ *
+ * @param request is a Promise(jquery promise at moment
+ * @returns {Promise<unknown>}
+ */
+proto.handleRequest = function(request){
+  //  OVERWRITE TO SERVICE
+};
+
+proto.handleResponse = async function(response){
+  //  OVERWRITE TO SERVICE
 };
 
 module.exports = BaseService;

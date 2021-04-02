@@ -545,47 +545,72 @@ const geoutils = {
     return [...point1.getCoordinates(), ...point2.getCoordinates()];
   },
 
-  getQueryLayersPromisesByGeometry(layers, options={}) {
+  /**
+   *
+   * @param layers
+   * @param multilayers
+   * @param bbox
+   * @param geometry
+   * @param projection
+   * @param feature_count
+   * @returns {JQuery.Promise<any, any, any>}
+   */
+  getQueryLayersPromisesByGeometry(layers, {multilayers=false, bbox, geometry, projection, feature_count=10} ={}) {
     const d = $.Deferred();
-    let filterGeometry = options.geometry;
-    const {bbox, projection, feature_count=10} = options;
     const queryResponses = [];
     const queryErrors = [];
-    if (!layers.length) d.resolve([]);
     const mapCrs = projection.getCode();
-    const multiLayers = _.groupBy(layers, function(layer) {
-      return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
-    });
-    const numberRequestd = Object.keys(multiLayers).length;
-    let layersLength = numberRequestd;
-    for (let key in multiLayers) {
-      const filter = new Filter();
-      const _multilayer = multiLayers[key];
-      const layers = _multilayer;
-      const multilayer = multiLayers[key][0];
-      const provider = multilayer.getProvider('filter');
-      if (bbox) {
-        filter.setBBOX(filterGeometry)
-      } else {
-        const layerCrs = multilayer.getProjection().getCode();
-        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        filter.setGeometry(filterGeometry)
+    const filter = new Filter();
+    if (multilayers) {
+      let filterGeometry = geometry;
+      if (!layers.length) d.resolve([]);
+      const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+      const numberRequestd = Object.keys(multiLayers).length;
+      let layersLength = numberRequestd;
+      for (let key in multiLayers) {
+        const _multilayer = multiLayers[key];
+        const layers = _multilayer;
+        const multilayer = multiLayers[key][0];
+        const provider = multilayer.getProvider('filter');
+        // in case of boox geometry
+        if (bbox) filter.setBBOX(filterGeometry);
+        else {
+          const layerCrs = multilayer.getProjection().getCode();
+          if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
+          filter.setGeometry(filterGeometry)
+        }
+        provider.query({
+          filter,
+          layers,
+          feature_count
+        }).then(response => queryResponses.push(response))
+          .fail(error => queryErrors.push(error))
+          .always(() => {
+            layersLength -= 1;
+            if (layersLength === 0)
+              queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
+          })
       }
-      provider.query({
-        filter,
-        layers,
-        feature_count
-      }).then(response=> {
-        queryResponses.push(response);
-      })
-        .fail(error => {
-          queryErrors.push(error);
-        })
-        .always(() => {
-        layersLength -= 1;
-        if (layersLength === 0)
-          queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
-      })
+    } else {
+      if (layers.length === 0) d.resolve([]);
+      else {
+        let layersLenght = layers.length;
+        layers.forEach(layer => {
+          const layerCrs = layer.getProjection().getCode();
+          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          layer.query({
+            filter,
+            feature_count
+          }).then(response => queryResponses.push(response))
+            .fail(error => queryErrors.push(error))
+            .always(() => {
+              layersLenght -= 1;
+              if (layersLenght === 0){
+                queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+              }
+            })
+        });
+      }
     }
     return d.promise();
   },

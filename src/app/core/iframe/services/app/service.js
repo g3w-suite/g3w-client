@@ -39,7 +39,10 @@ function AppService(){
     })
 
   };
-
+  /**
+   *
+   * @returns {Promise<void>}
+   */
   this.getresults = async function(){
     DataRouterService.setOutputPlaces(['iframe'])
   };
@@ -47,12 +50,13 @@ function AppService(){
   this.screenshot = async function({capture=true}){
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
       const blob = await this.mapService.createMapImage();
-      console.log(blob)
     }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
-
-  // method to show change map mapcontrol
+  /**
+   *
+   * @param bool
+   */
   this.showchangemap = function(bool=false){
     this.mapControls.changeMap.control =  this.mapService.createMapControl('onclick', {
       id: "iframe-change-map",

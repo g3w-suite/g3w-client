@@ -507,7 +507,6 @@ proto.searchFeatures = function(options={}, params={}){
         break;
     }
   })
-
 };
 
 /*

@@ -69,8 +69,30 @@ function Routerservice() {
     this.currentoutplutplaces = places;
   };
 
-  this.addOutputPlace = function(place){
-    place && this.currentoutplutplaces.idexOf(place) === -1 && this.currentoutplutplaces.push(place);
+  /**
+   *
+   * @param place
+   */
+  this.addCurrentOutputPlace = function(place){
+    place && this.currentoutplutplaces.indexOf(place) === -1 && this.currentoutplutplaces.push(place);
+  };
+
+  /**
+   *
+   * @param place
+   * @param method has to get two parameters data (promise) and options (Object)
+   * ex {
+   * place: <newplace>
+   * method: function(dataPromise, options={}){}
+   *   }
+   */
+  this.addNewOutputPlace = function({place, method=()=>{}}={}){
+    let added = false;
+    if (this.ouputplaces[place] === undefined) {
+      this.ouputplaces[place] = method;
+      added = true;
+    }
+    return added;
   };
 
   // reset default configuration

@@ -258,7 +258,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     });
     Object.values(GUI.getComponents()).forEach(component => {
       ApplicationService.registerService(component.id, component.getService());
-      console.log(component.id, component.getService())
     });
     ApplicationTemplate.Services.viewport.on('resize', ()=>{
       GUI.emit('resize')
@@ -374,7 +373,6 @@ const ApplicationTemplate = function({ApplicationService}) {
    */
   GUI.errorToMessage = function(error){
     let message = 'server_error';
-    console.log(error)
     switch (toRawType(error)) {
       case 'Error':
         message = `CLIENT - ${error.message}`;
@@ -388,10 +386,6 @@ const ApplicationTemplate = function({ApplicationService}) {
           }
         } else if (error.responseText){
           message = error.responseText;
-        }
-        else if (error.responseText) {
-          message = error.responseText;
-          break;
         }
         break;
       case 'Array':
@@ -446,7 +440,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         const message = this.errorToMessage(error);
         this.showUserMessage({
           type: 'alert',
-          message
+          message,
+          textMessage: true
         });
         this.closeContent();
       }

@@ -26,7 +26,7 @@ function IframePluginService(options={}) {
 
   this.outputDataPlace = async function(dataPromise, options={}){
     const {action='app:results'} = options;
-    const data = await dataPromise;
+    const {result, data=[]} = await dataPromise;
     this.postMessage({
       id: null,
       action,
