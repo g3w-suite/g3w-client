@@ -112,6 +112,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         search_endpoint,
         filter,
         queryUrl,
+        formatter: 1, // set formatter to 1
         feature_count
       },
       outputs: show && {

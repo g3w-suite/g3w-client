@@ -61,10 +61,11 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}){
   const params = {
     field,
     suggest,
+    formatter,
     unique,
     filtertoken: ApplicationState.tokens.filtertoken
   };
