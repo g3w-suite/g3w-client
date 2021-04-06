@@ -237,7 +237,7 @@ proto.unlock = function() {
   const d = $.Deferred();
   this._featuresstore.unlock()
     .then(() => d.resolve())
-    .fail(err => d.reject(err))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -250,6 +250,11 @@ proto.getEditingFields = function(editable=false) {
   let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
   if (editable) fields = fields.filter(field => field.editable);
   return fields;
+};
+
+proto.isPkField = function(field){
+  const find_field = this.getEditingFields().find(_field => _field.name === field);
+  return find_field && find_field.pk;
 };
 
 proto.isEditingFieldEditable = function(field) {
