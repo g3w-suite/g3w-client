@@ -23,6 +23,7 @@ function Layer(config={}, options={}) {
     ...(config.urls || {})
   };
   const {project=ProjectsRegistry.getCurrentProject()} = options;
+  this.config.search_endpoint = project.getSearchEndPoint();
   const projectRelations = project.getRelations();
   // create relations
   this._relations = this._createRelations(projectRelations);
@@ -55,7 +56,7 @@ function Layer(config={}, options={}) {
   }
 
   // dinamic layer values useful for layerstree
-  const defaultstyle = config.styles && config.styles.find(style => style.current).name
+  const defaultstyle = config.styles && config.styles.find(style => style.current).name;
   this.state = {
     id: config.id,
     title: config.title,
@@ -125,6 +126,13 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+//get search_endpoint
+
+proto.getSearchEndPoint = function(){
+  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
+};
+
 //relations
 proto._createRelations = function(projectRelations) {
   const relations = [];
@@ -410,21 +418,6 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-/*
-* getFilterData is a function to get data feature based on fields and suggets
-* params:
-* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
-* - fields: Array of object with type of suggest (see above)
-* */
-proto.getFilterData = async function({field, suggest={}, unique}={}){
-  const provider =  this.getProvider('data');
-  const response = await provider.getFilterData({
-    field,
-    suggest,
-    unique
-  });
-  return response;
-};
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
@@ -485,6 +478,54 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   return d.promise();
 };
 
+//search Features methods
+proto.searchFeatures = function(options={}, params={}){
+  const {search_endpoint=this.config.search_endpoint} = options;
+  return new Promise(async (resolve, reject) =>{
+    switch (search_endpoint) {
+      case 'ows':
+        this.search(options, params)
+          .then(results => {
+            results = {
+              data: results
+            };
+            resolve(results);
+          }).fail(error => reject(error));
+        break;
+      case 'api':
+        const {filter:field, suggest={}, unique} = options;
+        try {
+          const response = await this.getFilterData({
+            field,
+            suggest,
+            unique
+          });
+          resolve(response);
+        } catch(err){
+          reject(err);
+        }
+        break;
+    }
+  })
+};
+
+/*
+* getFilterData is a function to get data feature based on fields and suggets
+* params:
+* - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
+* - fields: Array of object with type of suggest (see above)
+* */
+proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}){
+  const provider =  this.getProvider('data');
+  const response = await provider.getFilterData({
+    field,
+    suggest,
+    formatter,
+    unique
+  });
+  return response;
+};
+
 // search method
 proto.search = function(options={}, params={}) {
   // check option feature_count
@@ -508,7 +549,7 @@ proto.search = function(options={}, params={}) {
 proto.query = function(options={}) {
   const d = $.Deferred();
   const { filter } = options;
-  const provider = this.getProvider(filter? 'filter' : 'query');
+  const provider = this.getProvider(filter ? 'filter' : 'query');
   if (provider)
     provider.query(options)
       .done(response => d.resolve(response))
@@ -712,10 +753,8 @@ proto.isQueryable = function({onMap} = {onMap:false}) {
   if (!onMap) return queryableForCababilities;
   // if querable check if is visible or disabled
   if (queryableForCababilities) {
-       queryEnabled = (this.isVisible() && !this.isDisabled());
-    if (!_.isUndefined(this.config.infowhennotvisible) && (this.config.infowhennotvisible === true)) {
-      queryEnabled = true;
-    }
+    queryEnabled = this.isVisible() && !this.isDisabled();
+    if (this.config.infowhennotvisible !== undefined && this.config.infowhennotvisible === true) queryEnabled = true;
   }
   return queryEnabled;
 };

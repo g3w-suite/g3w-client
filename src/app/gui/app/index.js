@@ -1,7 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const t = require('core/i18n/i18n.service').t;
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit, toRawType} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -151,7 +150,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     }
   };
 
-
   //Vue app
   this._createApp = function() {
     this._setDataTableLanguage();
@@ -260,7 +258,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     });
     Object.values(GUI.getComponents()).forEach(component => {
       ApplicationService.registerService(component.id, component.getService());
-      console.log(component.id, component.getService())
     });
     ApplicationTemplate.Services.viewport.on('resize', ()=>{
       GUI.emit('resize')
@@ -368,6 +365,39 @@ const ApplicationTemplate = function({ApplicationService}) {
       return VueApp.g3wtemplate.getFontClass(type);
     };
   };
+
+  /**
+   * Convert error to user message showed
+   * @param error
+   * @returns {string}
+   */
+  GUI.errorToMessage = function(error){
+    let message = 'server_error';
+    switch (toRawType(error)) {
+      case 'Error':
+        message = `CLIENT - ${error.message}`;
+        break;
+      case 'Object':
+        if (error.responseJSON) {
+          error = error.responseJSON;
+          if (error.result === false){
+            const {code='', data='', message:msg=''} = error.error;
+            message = `${code.toUpperCase()} ${data} ${msg}`;
+          }
+        } else if (error.responseText){
+          message = error.responseText;
+        }
+        break;
+      case 'Array':
+        message = error.map(error => GUI.errorToMessage(error)).join(' ');
+        break;
+      case 'String':
+      default:
+        message = error;
+    }
+    return message;
+  };
+
   // setup Interaces
   this._setupInterface = function() {
     /* PLUBLIC INTERFACE */
@@ -390,6 +420,34 @@ const ApplicationTemplate = function({ApplicationService}) {
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
+
+    //Function called from DataRouterservice fro output
+    /**
+     *
+     * @param data
+     * @param options
+     */
+    GUI.outputDataPlace = async function(dataPromise, options={}){
+      // show options (function) set if show data or not
+      const {title='', show} = options;
+      const showQueryResults = this.showContentFactory('query');
+      const queryResultsService = showQueryResults(title);
+      try {
+        const data = await dataPromise;
+        if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
+        else GUI.closeContent();
+      } catch(error){
+        const message = this.errorToMessage(error);
+        this.showUserMessage({
+          type: 'alert',
+          message,
+          textMessage: true
+        });
+        this.closeContent();
+      }
+      return queryResultsService;
+    };
+
     GUI.showContentFactory = function(type) {
       let showPanelContent;
       switch (type) {
@@ -402,6 +460,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
       return showPanelContent;
     };
+
     GUI.showForm = function(options) {
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
@@ -483,6 +542,12 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI.showPanel = sidebar.SidebarService.showPanel.bind(sidebar.SidebarService);
     GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
+
+
+    ///
+    GUI.disableApplication = function(bool=false){
+      ApplicationService.disableApplication(bool);
+    };
 
     //showusermessage
 

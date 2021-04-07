@@ -15,6 +15,11 @@ const SelectInput = Vue.extend({
     }
   },
   template: require('./select.html'),
+  computed:{
+    showNullOption(){
+      return this.state.nullOption === undefined || this.state.nullOption === true;
+    }
+  },
   watch: {
     'state.input.options.values'(values) {
      if (!this.autocomplete && !this.state.value && values.length)
@@ -60,12 +65,13 @@ const SelectInput = Vue.extend({
   },
   async mounted() {
     await this.$nextTick();
-    const selectElement = $(this.$el).find('select');
+    const selectElement = $(this.$refs.select);
     const language =  this.getLanguage();
+    const dropdownParent = this.state.dropdownParent === undefined && $('#g3w-view-content');
     if (this.autocomplete) {
       this.select2 = selectElement.select2({
         minimumInputLength: 1,
-        dropdownParent: $('#g3w-view-content'),
+        dropdownParent,
         language,
         ajax: {
           delay: 250,
@@ -76,13 +82,10 @@ const SelectInput = Vue.extend({
             this.resetValues();
             this.service.getData({
               search
-            }).then((values) => {
-              success(values)
-            }).catch((err) => {
-              failure(err)
-            })
+            }).then(values => success(values))
+              .catch(err => failure(err))
           },
-          processResults:  (data, params) => {
+          processResults: (data, params) => {
             params.page = params.page || 1;
             return {
               results: data,
@@ -94,12 +97,12 @@ const SelectInput = Vue.extend({
       });
     } else this.select2 = selectElement.select2({
           language,
-          dropdownParent: $('#g3w-view-content'),
+          dropdownParent,
           minimumResultsForSearch: this.isMobile() ? -1 : null
         });
     ///register events
     this.state.value && this.select2.val(this.state.value).trigger('change');
-    this.select2.on('select2:select', (event) => {
+    this.select2.on('select2:select', event => {
       const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
       this.changeSelect(value);
     });

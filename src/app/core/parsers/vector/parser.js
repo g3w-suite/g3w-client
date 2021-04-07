@@ -26,7 +26,8 @@ const VectorParser = function() {
   this._parseLayerGeoJSON = function(data, options) {
     const {crs, mapCrs} = options;
     const geojson = new ol.format.GeoJSON({
-      defaultDataProjection: crs,
+      //defaultDataProjection: crs, //ol vs4.5
+      dataProjection: crs,
       featureProjection: mapCrs || crs,
       geometryName: "geometry"
     });

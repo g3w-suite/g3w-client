@@ -1,14 +1,11 @@
 import appConfig from 'config'
 import ApplicationState from './applicationstate';
-const i18ninit = require('core/i18n/i18n.service').init;
-const inherit = require('core/utils/utils').inherit;
-const XHR = require('core/utils/utils').XHR;
-const base = require('core/utils/utils').base;
-const changeLanguage = require('core/i18n/i18n.service').changeLanguage;
+const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
+const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
-const {uniqueId} = require('core/utils/utils');
 const RouterService = require('core/router');
+const RouterDataService =  require('core/data/routerservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
@@ -16,6 +13,9 @@ const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
+//timeout value
+const TIMEOUT = 60000; // 1 minute
+
 
 // install global components
 Vue.use(GlobalComponents);
@@ -170,6 +170,10 @@ const ApplicationService = function() {
     return ApplicationState;
   };
 
+  this.disableApplication = function(bool=false){
+    ApplicationState.gui.app.disabled = bool;
+  };
+
   this.setApplicationLanguage = function(lng='en') {
     ApplicationState.lng = lng;
   };
@@ -301,11 +305,11 @@ const ApplicationService = function() {
         i18n: config.i18n,
         layout: config.group.layout || {},
         // needed by ProjectService
-        getWmsUrl: function(project) {
+        getWmsUrl(project) {
           return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
         },
         // needed by ProjectsRegistry to get informations about project configuration
-        getProjectConfigUrl: function(project) {
+        getProjectConfigUrl(project) {
           return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
         },
         plugins: config.group.plugins,
@@ -329,6 +333,8 @@ const ApplicationService = function() {
       return window.initConfig;
       // case development need to ask to api
     } else {
+      // LOAD DEVELOPMENT CONFIGURATION
+      require('../dev/index');
       let projectPath;
       let queryTuples;
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
@@ -359,6 +365,8 @@ const ApplicationService = function() {
           return initConfig;
         } catch(error) {
           return Promise.reject(error);
+        } finally {
+          this.emit('initconfig')
         }
       }
     }
@@ -409,32 +417,54 @@ const ApplicationService = function() {
     });
   };
 
+  //set EPSG of Application is usefule for example to wms request for table layer
+  this.setEPSGApplication  = function(project){
+    ApplicationState.map.epsg = project.state.crs.epsg;
+  };
+
+
   //  bootstrap (when called init)
   this.bootstrap = function() {
     return new Promise((resolve, reject) => {
       // setup All i18n configuration
       this.setupI18n();
+      // run Timeout
+      const timeout = setTimeout(() =>{
+        reject('Timeout')
+      }, TIMEOUT);
       //first time l'application service is not ready
       if (!ApplicationState.ready) {
-        // LOAD DEVELOPMENT CONFIGURATION
-        if (!production) require('../dev/index');
         $.when(
           // register project
           ProjectsRegistry.init(this._config),
           // inizialize api service
           ApiService.init(this._config)
         ).then(() => {
+          // clear TIMEOUT
+          clearTimeout(timeout);
+          //clear
           this.registerOnlineOfflineEvent();
           this.emit('ready');
           ApplicationState.ready = this.initialized = true;
           // set current project gid
-          this._gid = ProjectsRegistry.getCurrentProject().getGid();
+          const project = ProjectsRegistry.getCurrentProject();
+          this._gid = project.getGid();
+          //sett
+          this.setEPSGApplication(project);
+          //IFRAME CHECK
+          ApplicationState.iframe && this.startIFrameService();
+          // initilize routerdataservice
+          RouterDataService.init();
           resolve(true);
-        }).fail((error) => {
-          reject(error);
-        })
+        }).fail(error => reject(error))
       }
     });
+  };
+
+  //iframeservice
+  this.startIFrameService = function(){
+    const iframeService = require('core/iframe/routerservice');
+    iframeService.init();
   };
 
   this.registerWindowEvent = function({evt, cb} ={}) {
@@ -503,11 +533,18 @@ const ApplicationService = function() {
     this.obtainInitConfig({
       host
     }).then(initConfig => {
+      // run Timeout
+      const timeout = setTimeout(() =>{
+        reject('Timeout')
+      }, TIMEOUT);
         ProjectsRegistry.setProjects(initConfig.group.projects);
         ProjectsRegistry.getProject(gid, {
           reload // force to reload configuration
         })
           .then(project => {
+            //clearTimeout
+            clearTimeout(timeout);
+            ///
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {
@@ -528,6 +565,7 @@ const ApplicationService = function() {
                 });
                 // change current project project
                 ProjectsRegistry.setCurrentProject(project);
+                this.setEPSGApplication(project);
                 ApplicationState.download = false;
               })
               .fail(err => {

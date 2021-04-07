@@ -100,7 +100,7 @@ const ViewportService = function() {
 
   this.showUserMessage = function({title, message, type, position, size, draggable, textMessage=false, closable, autoclose, hooks={}}={}) {
     this.closeUserMessage();
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       this.state.usermessage.show = true;
       this.state.usermessage.message = message;
       this.state.usermessage.textMessage = textMessage;
@@ -120,6 +120,8 @@ const ViewportService = function() {
 
   this.closeUserMessage = function() {
     this.state.usermessage.show = false;
+    this.state.usermessage.textMessage = false;
+    this.state.usermessage.message = '';
   };
 
   this.getState = function() {

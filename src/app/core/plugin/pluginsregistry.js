@@ -1,11 +1,11 @@
-const base = require('core/utils/utils').base;
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
   this.config = null;
   this._plugins = {};
+  this._configurationPlugins = [];
   this.pluginsConfigs = {};
   this._loadedPluginUrls = [];
   this.setters = {
@@ -16,12 +16,13 @@ function PluginsRegistry() {
   };
   base(this);
 
-  // initilize plugin
+  // initialize plugin
   this.init = function(options={}) {
     return new Promise(async (resolve, reject) =>{
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
       this.pluginsConfigs = options.pluginsConfigs;
+      Object.keys(this.pluginsConfigs).forEach(pluginName => this._configurationPlugins.push(pluginName));
       this.addLoadingPlugins();
       // plugins that aren't in configuration server but in project
       this.otherPluginsConfig = options.otherPluginsConfig;
@@ -58,7 +59,7 @@ function PluginsRegistry() {
   this.setDependencyPluginConfig = function(){
     for (pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
-      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach((pluginName) =>{
+      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName =>{
         this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
       })
     }
@@ -142,6 +143,11 @@ function PluginsRegistry() {
 
   this.getPlugin = function(pluginName) {
     return this._plugins[pluginName];
+  };
+
+  // method to check if a plugin is in confiuration and will be added to apllication
+  this.isPluginInConfiguration = function(pluginName){
+    return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
   this.isTherePlugin = function(pluginName){

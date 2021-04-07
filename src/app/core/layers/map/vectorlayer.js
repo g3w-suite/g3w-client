@@ -1,6 +1,5 @@
 const inherit = require('core/utils/utils').inherit;
-const createOlLayer = require('core/utils/geo').createOlLayer;
-const createLayerStyle = require('core/utils/geo').createLayerStyle;
+const {createOlLayer, createLayerStyle} = require('core/utils/geo');
 const GUI = require('gui/gui');
 
 const G3WObject = require('core/g3wobject');

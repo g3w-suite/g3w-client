@@ -28,7 +28,7 @@
               </node>
             </div>
             <template v-else>
-              <div style="cursor: pointer" v-disabled="getRelationName(getNode(row, column)) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
+              <div style="cursor: pointer" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>

@@ -1,3 +1,6 @@
+import {EXPRESSION_OPERATORS} from '../layers/filter/operators'
+const Filter = require('core/layers/filter/filter');
+const Expression = require('core/layers/filter/expression');
 /**
  * Decimal adjustment of a number.
  *
@@ -100,16 +103,17 @@ const utils = {
   // goole closure library implementation
   base: function(me, opt_methodName, var_args) {
     // who call base
+    // noinspection JSAnnotator
     const caller = arguments.callee.caller;
     if (caller.superClass_) {
-      // This function constructor (that inherith from superClass_). Call the superclass constructor.
+      // This function constructor (that inherit from superClass_). Call the superclass constructor.
       //It is a easy way to cal super class in binding to this
       return caller.superClass_.constructor.apply(
           me, Array.prototype.slice.call(arguments, 1));
     }
     const args = Array.prototype.slice.call(arguments, 2);
     let foundCaller = false;
-    //constructor is the costructor function of the object
+    //constructor is the constructor function of the object
     for (let ctor = me.constructor;
          ctor; ctor = ctor.superClass_ && ctor.superClass_.constructor) {
       if (ctor.prototype[opt_methodName] === caller) {
@@ -348,8 +352,8 @@ const utils = {
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
-            .then(result => resolve(result))
-            .fail(err => reject(err))
+            .then(response => resolve(response))
+            .fail(error => reject(error))
         : reject('No url')
       })
     },
@@ -366,10 +370,10 @@ const utils = {
             data: formdata,
             processData: false,
             contentType: false
-          }).then((response) => {
+          }).then(response => {
               resolve(response)
             })
-            .fail((error) => {
+            .fail(error => {
               reject(error);
             })
         } else if (contentType) {
@@ -379,18 +383,18 @@ const utils = {
             data,
             processData: false,
             contentType: contentType || false
-          }).then((response) => {
+          }).then(response => {
             resolve(response)
           })
-            .fail((error) => {
+            .fail(error => {
               reject(error);
             })
         } else {
           $.post(url, data)
-            .then((response) => {
+            .then(response => {
               resolve(response)
             })
-            .fail((error) => {
+            .fail(error => {
               reject(error)
             })
         }
@@ -416,6 +420,91 @@ const utils = {
           reject()
         })
       })
+    }
+  },
+  createSingleFieldParameter({field, value, operator='eq', logicop=null}){
+    logicop = logicop && `|${logicop}`;
+    return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
+  },
+  createFilterFromString({layer, search_endpoint='ows', filter=''}){
+    const stringFilter = filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const layerName = layer.getWMSLayerName();
+        const expression = new Expression({
+           layerName,
+           filter:stringFilter
+         });
+         filter = new Filter();
+         filter.setExpression(expression.get());
+        break;
+      case 'api':
+        filter = stringFilter.replace(/\s|'|"/g, '');
+        Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
+          const re = new RegExp(value, "g");
+          const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
+          filter = filter.replace(re, replaceValue)
+        });
+        break;
+    }
+    return filter;
+  },
+  // method to create filter for search based on
+  createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
+    let filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const expression = new Expression();
+        const layerName = layer.getWMSLayerName();
+        expression.createExpressionFromFilter(inputs, layerName);
+        filter = new Filter();
+        filter.setExpression(expression.get());
+        break;
+      case 'api':
+        const inputsLength = inputs.length -1 ;
+        const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
+            field: input.attribute,
+            value: input.value,
+            operator: input.operator,
+            logicop: index < inputsLength ?  input.logicop: null
+          })
+        );
+        filter = fields.length ? fields.join() : undefined;
+        break;
+    }
+    return filter;
+  },
+  //method to create filter from field based on search_endpoint
+  createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
+    let filter;
+    switch (search_endpoint) {
+      case 'ows':
+        const expression = new Expression();
+        const layerName = layer.getWMSLayerName();
+        expression.createExpressionFromField({
+          layerName,
+          field,
+          value,
+          operator
+        });
+        filter = new Filter();
+        filter.setExpression(expression.get());
+        break;
+      case 'api':
+        filter = utils.createSingleFieldParameter({
+            field,
+            value,
+            operator
+          });
+        break;
+    }
+    return filter;
+  },
+  splitContextAndMethod(string=''){
+    const [context, method] = string.split(':')
+    return {
+      context,
+      method
     }
   }
 };

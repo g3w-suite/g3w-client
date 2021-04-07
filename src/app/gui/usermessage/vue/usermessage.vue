@@ -15,7 +15,8 @@
       </div>
     </div>
     <slot name="body">
-      <div class="usermessage-message" v-t="message"></div>
+      <div v-if="textMessage" class="usermessage-message">{{ message }}</div>
+      <div v-else class="usermessage-message" v-t="message"></div>
     </slot>
     <slot name="footer"></slot>
   </div>

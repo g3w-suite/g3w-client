@@ -10,22 +10,22 @@ const ChangesManager = require('./changesmanager');
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {
   this.setters = {
-    save: function() {
+    save() {
       this._save();
     },
-    addFeature: function(feature) {
+    addFeature(feature) {
       this._addFeature(feature);
     },
-    updateFeature: function(feature) {
+    updateFeature(feature) {
       this._updateFeature(feature);
     },
-    deleteFeature: function(feature) {
+    deleteFeature(feature) {
       this._deleteFeature(feature);
     },
-    setFeatures: function(features=[]) {
+    setFeatures(features=[]) {
       this._setFeatures(features);
     },
-    getFeatures: function(options={}) {
+    getFeatures(options={}) {
       return this._getFeatures(options);
     }
   };
@@ -244,13 +244,13 @@ proto.commit = function(commitItems) {
 };
 
 //start editing function
-proto.start = function(options) {
+proto.start = function(options={}) {
   const d = $.Deferred();
   // load features of layer based on filter type
   this.getFeatures(options)
-    .then((promise) => {
+    .then(promise => {
       promise
-        .then((features) => {
+        .then(features => {
           // the features are already inside featuresstore
           d.resolve(features);
           //if all ok set to started

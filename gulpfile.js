@@ -103,6 +103,7 @@ gulp.task('browserify', [], function() {
   const bundle = function() {
     return bundler.bundle()
       .on('error', function(err){
+        console.log(err);
         this.emit('end');
         del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
           process.exit();

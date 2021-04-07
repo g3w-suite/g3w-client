@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -77,6 +76,7 @@ proto.getService = function() {
 //set plugin service
 proto.setService = function(service) {
   this.service = service;
+  service.setPlugin(this);
 };
 
 proto.getName = function() {
@@ -116,14 +116,27 @@ proto.registerPlugin = function(projectId) {
 
 proto.setupGui = function() {};
 
+//proto.getDependencyPluginsObject
+
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {
-  pluginsName = pluginsName || this.dependencies;
-  const pluginPromises = pluginsName.map((pluginName) => {
+  this.dependencies = pluginsName || this.dependencies;
+  const pluginPromises = this.dependencies.map(pluginName => {
     return this.getDependencyPlugin(pluginName)
   });
   return Promise.all(pluginPromises)
 };
+
+// create to not replace above plugin method used by non changed old  plugin
+proto.getDependencyPluginsObject = async function(pluginsName){
+  const pluginsApiObject = {};
+  const promises = await this.getDependencyPlugins(pluginsName);
+  this.dependencies.forEach((pluginName, index) =>{
+    pluginsApiObject[pluginName] = promises[index];
+  });
+  return pluginsApiObject
+};
+
 
 // method to get plugin dependency
 proto.getDependencyPlugin = function(pluginName) {

@@ -1,8 +1,6 @@
 import Select2 from './select2.vue'
-import {ALLVALUE} from "../../constants";
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit, debounce} = require('core/utils/utils');
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 const compiledTemplate = Vue.compile(require('./searchpanel.html'));
@@ -45,8 +43,14 @@ const SearchPanelComponent = Vue.extend({
       input.value = input.value || input.value === 0 ? input.value : null;
       this.changeInput(input);
     },
-    changeInput({ attribute, value}={}) {
-      this.$options.service.changeInput({attribute, value});
+    changeInput({id, attribute, value}) {
+      try {
+        //try to trim value inside try catch some cases tha trim doesn't work to avoid
+        value = value.trim();
+      } catch(err){
+
+      }
+      this.$options.service.changeInput({id, value});
       this.state.searching = true;
       this.changeDependencyFields({
         attribute,

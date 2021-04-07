@@ -59,13 +59,13 @@ proto.getFilterToken = async function(params={}){
   } catch(err){
     return Promise.reject(err);
   }
-
 };
 
-proto.getFilterData = async function({field, suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}){
   const params = {
     field,
     suggest,
+    formatter,
     unique,
     filtertoken: ApplicationState.tokens.filtertoken
   };
@@ -102,7 +102,7 @@ proto.query = function(options={}) {
   const filter = options.filter || null;
   const isVector = this._layer.getType() !== "table";
   isVector && this.setProjections();
-  const CRS = isVector ? this._projections.map.getCode() : null;
+  const CRS = isVector ? this._projections.map.getCode() : ApplicationState.map.epsg;
   const queryUrl = options.queryUrl || this._queryUrl;
   const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
@@ -196,12 +196,14 @@ proto.getFeatures = function(options={}, params={}) {
   const layerType = this._layer.getType();
   // check if data are requested in read or write mode;
   let url;
+  //set contentType
+  const contentType = "application/json";
   //editing mode
   if (options.editing) {
     let promise;
     url = this._editingUrl;
     if (!url) {
-      d.reject('Url non valido');
+      d.reject('Url not valid');
       return;
     }
     const urlParams = $.param(params);
@@ -209,6 +211,7 @@ proto.getFeatures = function(options={}, params={}) {
     const features = [];
     let filter = options.filter || null;
     if (filter) {
+      // filterbbox
       if (filter.bbox) {
         const bbox = filter.bbox;
         filter = {
@@ -219,13 +222,30 @@ proto.getFeatures = function(options={}, params={}) {
         promise = XHR.post({
           url,
           data: jsonFilter,
-          contentType: "application/json"
+          contentType
         })
+        // filter fid
       } else if (filter.fid) {
         const options = filter.fid;
         promise = RelationsService.getRelations(options);
+      } else if (filter.field) {
+        const jsonFilter = JSON.stringify(filter);
+        promise = XHR.post({
+          url,
+          data: jsonFilter,
+          contentType
+        })
+      } else if (filter.nofeatures){
+        const jsonFilter = JSON.stringify({
+          field: 'id|eq|-999999'
+        });
+        promise = XHR.post({
+          url,
+          data: jsonFilter,
+          contentType
+        })
       }
-    } else promise = XHR.post({url,contentType: "application/json"});
+    } else promise = XHR.post({url,contentType});
     promise.then(response => {
         const {vector, result, featurelocks} = response;
         if (result) {
@@ -235,6 +255,7 @@ proto.getFeatures = function(options={}, params={}) {
           });
           //const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
           const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs() } : {};
+          //get lockIds
           const lockIds = featurelocks.map(featureLock => {
             return featureLock.featureid
           });
@@ -246,7 +267,7 @@ proto.getFeatures = function(options={}, params={}) {
               }));
             }
           });
-          // resolve with featers locked and requested
+          // resolve with features locked and requested
           d.resolve({
             features,
             featurelocks
@@ -268,9 +289,9 @@ proto.getFeatures = function(options={}, params={}) {
     url+=  urlParams ? '?' + urlParams : '';
     $.get({
       url: url,
-      contentType: "application/json"
+      contentType
     })
-      .then((response) => {
+      .then(response => {
         const vector = response.vector;
         const data = vector.data;
         d.resolve({
@@ -278,9 +299,7 @@ proto.getFeatures = function(options={}, params={}) {
           count: vector.count
         })
       })
-      .fail((err) => {
-        d.reject(err)
-      })
+      .fail(err => d.reject(err))
   }
   return d.promise();
 };
@@ -292,9 +311,7 @@ proto._loadLayerData = function(mode, customUrlParameters) {
       noVectorlayerCodes.push(layerCode);
     }
   });
-  const vectorLayersSetup = noVectorlayerCodes.map((layerCode) => {
-    return this._setupVectorLayer(layerCode);
-  });
+  const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
   this.emit('loadingvectorlayersstart');
   $.when.apply(this, vectorLayersSetup)
     .then(() => {
@@ -308,9 +325,7 @@ proto._loadLayerData = function(mode, customUrlParameters) {
           this.setReady(true);
         })
         .fail(() =>  {
-          this._layers.forEach((layer) => {
-            layer.vector = null;
-          });
+          this._layers.forEach(layer => layer.vector = null);
           d.reject();
           this.emit('errorloadingvectorlayersend');
           this.setReady(false);
@@ -340,7 +355,7 @@ proto.reloadVectorData = function(layerCode) {
   const d = $.Deferred();
   const bbox = this._mapService.state.bbox;
   this._createVectorLayerFromConfig(layerCode)
-    .then((vectorLayer) => {
+    .then(vectorLayer => {
       this._getVectorLayerData(vectorLayer, bbox)
         .then((vectorDataResponse) => {
           this.setVectorLayerData(vectorLayer[this._editingApiField], vectorDataResponse);
@@ -359,20 +374,12 @@ proto.loadAllVectorsData = function(layerCodes) {
   if (loadedExtent && ol.extent.containsExtent(loadedExtent, bbox)) {
     return resolvedValue();
   }
-  if (!loadedExtent) {
-    this._loadedExtent = bbox;
-  } else {
-    this._loadedExtent = ol.extent.extend(loadedExtent, bbox);
-  }
+  this._loadedExtent = !loadedExtent ? bbox : ol.extent.extend(loadedExtent, bbox);
   if (layerCodes) {
     layers = [];
-    layerCodes.forEach((layerCode) => {
-      layers.push(this._layers[layerCode]);
-    });
+    layerCodes.forEach(layerCode => layers.push(this._layers[layerCode]));
   }
-  const vectorDataRequests = layers.map((Layer) => {
-    return this._loadVectorData(Layer.vector, bbox);
-  });
+  const vectorDataRequests = layers.map(Layer => this._loadVectorData(Layer.vector, bbox));
 
   $.when.apply(this, vectorDataRequests)
     .then(() => {
@@ -405,7 +412,7 @@ proto._createVectorLayerFromConfig = function(layerCode) {
   const layerConfig = this._layers[layerCode];
   const d = $.Deferred();
   this._getVectorLayerConfig(layerConfig[this._editingApiField])
-    .then((vectorConfigResponse) => {
+    .then(vectorConfigResponse => {
       let vectorConfig = vectorConfigResponse.vector;
       vectorConfig = this._checkVectorGeometryTypeFromConfig(vectorConfig);
       const crsLayer = layerConfig.crs || this._mapService.getProjection().getCode();
@@ -438,7 +445,7 @@ proto._createVectorLayerFromConfig = function(layerCode) {
 proto._setupVectorLayer = function(layerCode) {
   const d = $.Deferred();
   this._createVectorLayerFromConfig(layerCode)
-    .then((vectorLayer) => {
+    .then(vectorLayer => {
       const layerConfig = this._layers[layerCode];
       layerConfig.vector = vectorLayer;
       d.resolve(layerCode);
@@ -451,7 +458,7 @@ proto._setupVectorLayer = function(layerCode) {
 
 proto._loadVectorData = function(vectorLayer, bbox) {
   return self._getVectorLayerData(vectorLayer, bbox)
-    .then((vectorDataResponse) => {
+    .then(vectorDataResponse => {
       this.setVectorLayerData(vectorLayer[this._editingApiField], vectorDataResponse);
       if (this._editingMode && vectorDataResponse.featurelocks) {
         this.setVectorFeaturesLock(vectorLayer, vectorDataResponse.featurelocks);
@@ -492,7 +499,7 @@ proto.lockFeatures = function(layerName) {
   const bbox = this._mapService.state.bbox;
   const vectorLayer = this._layers[layerName].vector;
   $.get(this._baseUrl+layerName+"/?lock" + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-    .done((data) => {
+    .done(data => {
       this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
       d.resolve(data);
     })
@@ -505,26 +512,17 @@ proto.lockFeatures = function(layerName) {
 proto._getVectorLayerConfig = function(layerApiField) {
   const d = $.Deferred();
   $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
-    .done((data) => {
-      d.resolve(data);
-    })
-    .fail(() => {
-      d.reject();
-    });
+    .done(data => d.resolve(data))
+    .fail(() => d.reject());
   return d.promise();
 };
 
 proto._getVectorLayerData = function(vectorLayer, bbox) {
   const d = $.Deferred();
   const lock = this.getMode() == 'w' ? true : false;
-  let apiUrl;
-  if (lock) {
-    apiUrl = this._baseUrl+vectorLayer[this._editingApiField]+"/?editing";
-  } else {
-    apiUrl = this._baseUrl+vectorLayer[this._editingApiField]+"/?"
-  }
+  const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
   $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-    .done((data) => {
+    .done(data => {
       d.resolve(data);
     })
     .fail(() => {

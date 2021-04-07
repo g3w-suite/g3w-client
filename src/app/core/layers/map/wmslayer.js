@@ -86,6 +86,7 @@ proto._getVisibleLayers = function() {
   });
 };
 
+
 proto._makeOlLayer = function(withLayers) {
   const wmsConfig = {
     url: this.config.url,

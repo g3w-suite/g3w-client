@@ -21,15 +21,11 @@ export default function TestQuery ({mapcontrols=[], testConfig}={}) {
         })
         for (const layer of layers) {
           const { id, features } = layer;
-          const promise = new Service.query.run({
-            coordinates,
-            mapService
-          })
           it ('#features query', async function() {
             const {count} = features;
-            const response = await promise;
-            const results = geoutils.parseQueryLayersPromiseResponses(response);
-            const {data=[]} = results;
+            const {data=[] } = await Service.query.run({
+              coordinates
+            });
             const layerResult = data.find(obj => obj.layer.getId() === id);
             expect(layerResult.features).to.be.length(count);
           })
@@ -46,8 +42,7 @@ export default function TestQuery ({mapcontrols=[], testConfig}={}) {
           expect(bbox).to.be.length(4);
         })
         it('#response QueryBBOX', async function () {
-          const data = await Service.querybbox.run({
-            mapService,
+          const {data=[]} = await Service.querybbox.run({
             bbox
           })
           layers.forEach(layer => {
@@ -67,8 +62,7 @@ export default function TestQuery ({mapcontrols=[], testConfig}={}) {
           expect(coordinates).to.be.length(2);
         })
         it('#response QueryByPolygon', async function() {
-          const data = await Service.querybypolygon.run({
-            mapService,
+          const {data=[]} = await Service.querybypolygon.run({
             coordinates,
             layer
           })

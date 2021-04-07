@@ -9,6 +9,7 @@
             :closable="usermessage.closable"
             :position="usermessage.position"
             :autoclose="usermessage.autoclose"
+            :textMessage="usermessage.textMessage"
             :size="usermessage.size"
             :type="usermessage.type">
       <template v-if="hooks.header" v-slot:header>
@@ -23,7 +24,7 @@
     </user-message>
   </transition>
   <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
-    <g3w-resize id="resize-map-and-content" :show="this.state.resized.start && state.secondaryPerc < 100"
+    <g3w-resize id="resize-map-and-content" :show="this.state.resized.start && state.secondaryPerc < 100 && state.secondaryPerc > 0 "
       :moveFnc="moveFnc"
       :orientation="state.split"
       :style="{backgroundColor:'transparent'}"
@@ -58,9 +59,3 @@
     <div v-show="state.content.loading" class="bar-loader"></div>
   </div>
 </div>
-<script>
-  import DownloadNotify from "../notifications/download/vue/download";
-  export default {
-    components: {DownloadNotify}
-  }
-</script>

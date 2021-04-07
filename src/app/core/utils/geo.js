@@ -2,6 +2,7 @@ const { toRawType, uniqueId } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const GUI = require('gui/gui');
 const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
 
 const geoutils = {
@@ -263,7 +264,7 @@ const geoutils = {
             image: new ol.style.Circle({
               radius: 5,
               fill: new ol.style.Fill({
-                color: color
+                color
               })
             })
           });
@@ -273,7 +274,7 @@ const geoutils = {
           style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               width: 3,
-              color: color
+              color
             })
           });
           break;
@@ -285,7 +286,7 @@ const geoutils = {
               width: 1
             }),
             fill: new ol.style.Fill({
-              color: color
+              color
             })
           });
           olLayer.setOpacity(0.6);
@@ -426,24 +427,68 @@ const geoutils = {
     });
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, map, feature_count=10, querymultilayers=false, reproject=true}={}) {
+  /**
+   *
+   * @param layers
+   * @param bbox
+   * @param feature_count
+   * @param multilayers
+   * @returns {JQuery.Promise<any, any, any>}
+   */
+  getQueryLayersPromisesByBBOX(layers, { bbox, feature_count=10, multilayers=false}){
+    let queriesPromise;
+    if (multilayers) {
+      const map = GUI.getComponent('map').getService().getMap();
+      queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
+        geometry: bbox,
+        bbox: true,
+        feature_count,
+        projection: map.getView().getProjection()
+      })
+    } else {
+      const d = $.Deferred();
+      queriesPromise = d.promise();
+      const queryResponses = [];
+      const queryErrors = [];
+      let layersLenght = layers.length;
+      let filterBBox = bbox;
+      layers.forEach(layer => {
+        const filter = new Filter();
+        filter.setBBOX(filterBBox);
+        layer.query({
+          filter,
+          feature_count
+        }).then(response => {
+          queryResponses.push(response)
+        }).fail(error => queryErrors.push(error))
+          .always(() => {
+            layersLenght -= 1;
+            if (layersLenght === 0)
+              queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+        })
+      });
+    }
+    return queriesPromise
+  },
+
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
+    if (!layers.length) return d.resolve(layers);
+    const map = GUI.getComponent('map').getService().getMap();
     const size = map.getSize();
-    if (!layers.length)
-      return d.resolve(layers);
     const queryResponses = [];
+    const queryErrors = [];
     const mapProjection = map.getView().getProjection();
     const resolution = map.getView().getResolution();
-    if (querymultilayers) { // case of multilayers
-           const multiLayers = {};
+    if (multilayers) { // case of multilayers
+      const multiLayers = {};
       layers.forEach(layer => {
         const key = `${layer.getInfoFormat()}:${layer.getInfoUrl()}:${layer.getMultiLayerId()}`;
-        if (multiLayers[key])
-          multiLayers[key].push(layer);
-        else
-          multiLayers[key] = [layer];
+        if (multiLayers[key]) multiLayers[key].push(layer);
+        else multiLayers[key] = [layer];
       });
-      let layersLenght = Object.keys(multiLayers).length;
+      const numberOfRequests = Object.keys(multiLayers).length;
+      let layersLength = numberOfRequests;
       for (let key in multiLayers) {
         const _multilayer = multiLayers[key];
         const layers = _multilayer;
@@ -458,31 +503,40 @@ const geoutils = {
           size,
           layers
         }).then(response => queryResponses.push(response))
+          .fail(error => queryErrors.push(error))
           .always(() => {
-            layersLenght -= 1;
-            layersLenght === 0 && d.resolve(queryResponses);
+            layersLength -= 1;
+            if (layersLength === 0) {
+              queryErrors.length === numberOfRequests ? d.reject(queryErrors) : d.resolve(queryResponses);
+            }
           })
       }
     } else { // single layers
-      let layersLenght = layers.length;
-      layers.forEach((layer) => {
+      let layersLength = layers.length;
+      let rejectedResponses = 0;
+      layers.forEach(layer => {
         layer.query({
           feature_count,
           coordinates,
           mapProjection,
           size,
           resolution,
-        }).then((response) => {
+        }).then(response => {
           queryResponses.push(response)
+        }).fail(error =>{
+          rejectedResponses+=1;
+          queryErrors.push(error);
         }).always(() => {
-          layersLenght -= 1;
-          if (layersLenght === 0)
-            d.resolve(queryResponses)
+          layersLength -= 1;
+          if (layersLength === 0) {
+            rejectedResponses < layers.length ? d.resolve(queryResponses) : d.reject(queryErrors)
+          }
         })
       });
     }
     return d.promise();
   },
+
   transformBBOX({bbox, sourceCrs, destinationCrs}={}){
     const point1 = new ol.geom.Point([bbox[0], bbox[1]]);
     const point2 = new ol.geom.Point([bbox[2], bbox[3]]);
@@ -490,44 +544,77 @@ const geoutils = {
     point2.transform(sourceCrs, destinationCrs);
     return [...point1.getCoordinates(), ...point2.getCoordinates()];
   },
-  getQueryLayersPromisesByGeometry(layers, options={}) {
+
+  /**
+   *
+   * @param layers
+   * @param multilayers
+   * @param bbox
+   * @param geometry
+   * @param projection
+   * @param feature_count
+   * @returns {JQuery.Promise<any, any, any>}
+   */
+  getQueryLayersPromisesByGeometry(layers, {multilayers=false, bbox, geometry, projection, feature_count=10} ={}) {
     const d = $.Deferred();
-    let filterGeometry = options.geometry;
-    const {bbox, projection, feature_count=10} = options;
     const queryResponses = [];
-    if (!layers.length) d.resolve([]);
+    const queryErrors = [];
     const mapCrs = projection.getCode();
-    const multiLayers = _.groupBy(layers, function(layer) {
-      return `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`;
-    });
-    let layersLenght = Object.keys(multiLayers).length;
-    for (let key in multiLayers) {
-      const filter = new Filter();
-      const _multilayer = multiLayers[key];
-      const layers = _multilayer;
-      const multilayer = multiLayers[key][0];
-      const provider = multilayer.getProvider('filter');
-      if (bbox) {
-        filter.setBBOX(filterGeometry)
-      } else {
-        const layerCrs = multilayer.getProjection().getCode();
-        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-        filter.setGeometry(filterGeometry)
+    const filter = new Filter();
+    if (multilayers) {
+      let filterGeometry = geometry;
+      if (!layers.length) d.resolve([]);
+      const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+      const numberRequestd = Object.keys(multiLayers).length;
+      let layersLength = numberRequestd;
+      for (let key in multiLayers) {
+        const _multilayer = multiLayers[key];
+        const layers = _multilayer;
+        const multilayer = multiLayers[key][0];
+        const provider = multilayer.getProvider('filter');
+        // in case of boox geometry
+        if (bbox) filter.setBBOX(filterGeometry);
+        else {
+          const layerCrs = multilayer.getProjection().getCode();
+          if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
+          filter.setGeometry(filterGeometry)
+        }
+        provider.query({
+          filter,
+          layers,
+          feature_count
+        }).then(response => queryResponses.push(response))
+          .fail(error => queryErrors.push(error))
+          .always(() => {
+            layersLength -= 1;
+            if (layersLength === 0)
+              queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
+          })
       }
-      provider.query({
-        filter,
-        layers,
-        feature_count
-      }).then(response=> {
-        queryResponses.push(response);
-      }).always(() => {
-        layersLenght -= 1;
-        if (layersLenght === 0)
-          d.resolve(queryResponses)
-      })
+    } else {
+      if (layers.length === 0) d.resolve([]);
+      else {
+        let layersLenght = layers.length;
+        layers.forEach(layer => {
+          const layerCrs = layer.getProjection().getCode();
+          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          layer.query({
+            filter,
+            feature_count
+          }).then(response => queryResponses.push(response))
+            .fail(error => queryErrors.push(error))
+            .always(() => {
+              layersLenght -= 1;
+              if (layersLenght === 0){
+                queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+              }
+            })
+        });
+      }
     }
     return d.promise();
   },
+
   parseQueryLayersPromiseResponses(responses) {
     const results = {
       query: responses[0] ? responses[0].query: null,
@@ -542,6 +629,7 @@ const geoutils = {
   getMapLayerById: function(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
+
   getMapLayersByFilter(filter, options={}) {
     filter = filter || {};
     const mapFilter = {
@@ -554,15 +642,18 @@ const geoutils = {
     });
     return layers || [];
   },
+
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
+
   getFeaturesFromResponseVectorApi: function(response={}) {
     if (response.result) {
       const features = response.vector.data.features || [];
       return features;
     } else return null;
   },
+
   splitGeometryLine(splitGeometry, lineGeometry) {
     let splitted = false;
     const splittedSegments = [];
@@ -603,6 +694,7 @@ const geoutils = {
     splittedSegments.push(olFromJsts.write(restOfLine));
     return splitted && splittedSegments || []
   },
+
   splitFeatures({features=[], splitfeature} ={}){
     const splitterdGeometries = [];
     features.forEach(feature => {
@@ -614,6 +706,7 @@ const geoutils = {
     });
     return splitterdGeometries;
   },
+
   splitFeature({feature, splitfeature} ={}){
     const geometries = {
       feature: feature.getGeometry(), //geometry of the feature to split
@@ -681,10 +774,12 @@ const geoutils = {
     }
     return splittedFeatureGeometries;
   },
+
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
   },
+
   multiGeometryToSingleGeometries(geometry){
     const geometryType = geometry.getType();
     let geometries = [];
@@ -702,6 +797,7 @@ const geoutils = {
     }
     return geometries;
   },
+
   dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();
     const featuresLength = features.length;
@@ -753,11 +849,13 @@ const geoutils = {
     }
     return dissolvedFeature;
   },
+
   normalizeEpsg: function(epsg) {
     if (typeof epsg === 'number') return `EPSG:${epsg}`;
     epsg = epsg.replace(/[^\d\.\-]/g, "");
     if (epsg !== '') return `EPSG:${parseInt(epsg)}`;
   },
+
   crsToCrsObject(crs){
     if (crs === null || crs === undefined) return crs;
     if  (toRawType(crs) === 'Object' && crs.epsg) {

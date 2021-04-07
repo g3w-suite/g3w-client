@@ -15,13 +15,17 @@ const AppUI = Vue.extend({
       current_custom_modal_content: null,
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
-      language: null
+      language: null,
+
     }
   },
   components: {
     HeaderItem
   },
   computed: {
+    app(){
+      return this.appState.gui.app;
+    },
     languages() {
       return this.appconfig.i18n;
     },
@@ -82,8 +86,9 @@ const AppUI = Vue.extend({
     },
   },
   methods: {
-    resize(){
+    async resize(){
       if (!this.isIframe) {
+        await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
           this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;
