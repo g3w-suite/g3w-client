@@ -7,11 +7,10 @@
     :class="g3wtemplate.font['crosshairs']" class="skin-color">
   </span>
   <div slot="body">
-    <select style="width:100%;" v-disabled="!editable || loadingState === 'loading' || loadingState === 'error'" class="form-control">
-      <option></option>
+    <select ref="select" style="width:100%;" v-disabled="!editable || loadingState === 'loading' || loadingState === 'error'" class="form-control">
+      <option v-if="showNullOption"></option>
       <option :value="getValue(value.value)" v-for="value in state.input.options.values">{{ value.key }}</option>
     </select>
   </div>
-
   <p v-if="loadingState === 'error'" class="error-input-message" slot="message" v-t="'server_error'"></p>
 </baseinput>
