@@ -1,0 +1,15 @@
+<baseinput :state="state">
+    <input
+      slot="body"
+      @change="checkValue"
+      @blur="checkValue"
+      style="width:100%; padding-right: 5px;"
+      class="form-control"
+      v-disabled="!editable"
+      :class="{'input-error-validation' : notvalid}"
+      v-model="state.value"
+      min="min"
+      max="max"
+      type="range"
+      :step="step">
+</baseinput>

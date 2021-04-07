@@ -12,7 +12,9 @@ const InputsServices = {
   'select': require('./select/service'),
   'media': require('./media/service'),
   'select_autocomplete': require('./select/service'),
-  'picklayer': require('./service')
+  'picklayer': require('./service'),
+  'color': require('./service'),
+  'slider': require('./range/service')
 };
 
 module.exports = InputsServices;
