@@ -3,7 +3,7 @@
     :placeholder="state.default"
     type="color"
     slot="body"
-    @keyup="change()"
+    @change="change"
     v-disabled="!editable"
     :field="state.name"
     class="form-control"

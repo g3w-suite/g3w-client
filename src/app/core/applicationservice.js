@@ -452,7 +452,9 @@ const ApplicationService = function() {
           //sett
           this.setEPSGApplication(project);
           //IFRAME CHECK
-          ApplicationState.iframe && this.startIFrameService();
+          ApplicationState.iframe && this.startIFrameService({
+            project
+          });
           // initilize routerdataservice
           RouterDataService.init();
           resolve(true);
@@ -462,9 +464,9 @@ const ApplicationService = function() {
   };
 
   //iframeservice
-  this.startIFrameService = function(){
+  this.startIFrameService = function({project}={}){
     const iframeService = require('core/iframe/routerservice');
-    iframeService.init();
+    iframeService.init({project});
   };
 
   this.registerWindowEvent = function({evt, cb} ={}) {

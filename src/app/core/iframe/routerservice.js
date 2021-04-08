@@ -2,7 +2,8 @@ const { splitContextAndMethod } =require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function IframePluginService(options={}) {
-  this.init = async function() {
+  //project is current project send by application service
+  this.init = async function({project}={}) {
     await GUI.isReady();
     this.services = require('./services/index');
     //initialize all service
@@ -10,13 +11,15 @@ function IframePluginService(options={}) {
     for (let i=0; i < serviceNames.length; i++){
       await this.services[serviceNames[i]].init();
     }
-
     this.postMessage({
       id:null,
       action:"app:ready",
       response: {
         result: true,
-        layers:[]
+        layers: project.state.layers.map(layer =>({
+          id: layer.id,
+          name: layer.name
+        }))
       }
     });
 
