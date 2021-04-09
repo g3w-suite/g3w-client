@@ -1,7 +1,6 @@
 import ApplicationState  from 'core/applicationstate';
 const InputServices = require('./services');
-const BaseInput = require('./baseinput/baseinput').BaseInput;
-const BaseInputMixin= require('./baseinput/baseinput').BaseInputMixin;
+const {BaseInput, BaseInputMixin}  = require('./baseinput/baseinput');
 const Input = {
   props: ['state'],
   mixins: [BaseInputMixin],
@@ -10,8 +9,7 @@ const Input = {
   },
   watch: {
     'notvalid'(newValid){
-      if (newValid) 
-        this.service.setErrorMessage(this.state)
+      if (newValid) this.service.setErrorMessage(this.state)
     },
   },
   created() {

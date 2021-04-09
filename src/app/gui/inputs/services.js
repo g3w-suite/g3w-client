@@ -14,7 +14,8 @@ const InputsServices = {
   'select_autocomplete': require('./select/service'),
   'picklayer': require('./service'),
   'color': require('./service'),
-  'slider': require('./sliderrange/service')
+  'slider': require('./sliderrange/service'),
+  'lonlat': require('./lonlat/service')
 };
 
 module.exports = InputsServices;

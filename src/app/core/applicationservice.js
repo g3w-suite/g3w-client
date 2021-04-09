@@ -523,6 +523,13 @@ const ApplicationService = function() {
     })
   };
 
+  /**
+   * Change project method that do all request and rebuild interface
+   * @param gid
+   * @param host
+   * @returns {JQuery.Promise<any, any, any>}
+   * @private
+   */
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
     const reload = this._gid === gid;
@@ -550,7 +557,7 @@ const ApplicationService = function() {
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {
-                // remove all toos
+                // remove all tools
                 ProjectsRegistry.onceafter('setCurrentProject', ()=>{
                   GUI.getComponent('tools').getService().reload();
                   // reload metadati
@@ -570,19 +577,14 @@ const ApplicationService = function() {
                 this.setEPSGApplication(project);
                 ApplicationState.download = false;
               })
-              .fail(err => {
-                console.log(err);
-              })
+              .fail(err => console.log)
           })
-          .fail(() => {
-            d.reject();
-          });
+          .fail(() => d.reject());
       })
-      .catch((error) => {
-        d.reject(error);
-      });
+      .catch(error => d.reject(error));
     return d.promise();
   };
+
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();
   }

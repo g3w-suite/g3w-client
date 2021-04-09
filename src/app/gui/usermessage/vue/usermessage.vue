@@ -208,6 +208,7 @@
   .usermessage-message {
     width: 100%;
     padding: 5px;
+    max-height: 100px;
     font-weight: bold;
     font-size: 1.1em;
     align-self: flex-start;

@@ -15,6 +15,7 @@ const InputsComponents = {
   'picklayer_input': require('./picklayer/vue/picklayer'),
   'color_input': require('./color/vue/color'),
   'slider_input': require('./sliderrange/vue/sliderrange'),
+  'lonlat_input': require('./lonlat/vue/lonlat')
 };
 
 module.exports = InputsComponents;

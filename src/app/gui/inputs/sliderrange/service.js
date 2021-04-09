@@ -11,6 +11,10 @@ function SliderRangeService(options={}) {
     max: 1*state.input.options.max
   });
   this.setValidator(validator);
+  this.validate = function(){
+    this.state.value = 1*this.state.value;
+    this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
+  }
 }
 
 inherit(SliderRangeService, Service);
@@ -21,8 +25,5 @@ proto.changeInfoMessage = function(){
   this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
 };
 
-proto.isValueInRange = function(value, min, max) {
-  return value <= max && value >= min;
-};
 
 module.exports = SliderRangeService;

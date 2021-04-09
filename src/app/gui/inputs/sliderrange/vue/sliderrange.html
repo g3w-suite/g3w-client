@@ -2,7 +2,7 @@
     <div slot="body" >
         <span style="font-weight: bold">{{state.value}}</span>
         <input slot="body"
-            @change="checkValue"
+            @change="change"
             style="width:100%; padding-right: 5px;"
             v-disabled="!editable"
             :class="{'input-error-validation' : notvalid}"

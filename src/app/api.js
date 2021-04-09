@@ -11,6 +11,9 @@ g3w.core = {
   ApiService: require('core/apiservice'),
   Router: require('core/router'),
   i18n: require('core/i18n/i18n.service'),
+  task:{
+    TaskService: require('core/task/service')
+  },
   data: {
     DataRouterService: require('core/data/routerservice')
   },

@@ -1,0 +1,44 @@
+<div>
+  <baseinput :state="state">
+    <label slot="label" :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}}
+      <span v-if="state.validate && state.validate.required">*</span>
+    </label>
+    <div slot="body">
+      <input
+       :id="lonId"
+       @change="changeLon"
+       :class="{'input-error-validation' : notvalid}"
+       @input="changeLon"
+       class="form-control"
+       style="width:100%; margin-bottom: 5px;"
+       v-disabled="!editable"
+       v-model="state.values.lon"
+       type="number"
+       :step="state.step || 1"
+       min="-180"
+       max="180"
+       placeholder="Lon">
+    </div>
+  </baseinput>
+  <baseinput :state="state">
+    <label slot="label" :for="latId" class="col-sm-4 control-label">{{ state.labels.lat }}
+      <span v-if="state.validate && state.validate.required">*</span>
+    </label>
+    <div slot="body" >
+      <input
+        :id="latId"
+        @change="changeLat"
+        @input="changeLat"
+        class="form-control"
+        style="width:100%; margin-bottom: 5px;"
+        v-disabled="!editable"
+        v-model="state.values.lat"
+        type="number"
+        :step="state.step || 1"
+        :class="{'input-error-validation' : notvalid}"
+        min="-90"
+        max="90"
+        placeholder="Lon">
+    </div>
+  </baseinput>
+</div>
