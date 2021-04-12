@@ -33,7 +33,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
     VERSION: '1.3.0',
     REQUEST: 'GetFeatureInfo',
     CRS: this._projections.map.getCode(),
-    LAYERS: layerNames,
+    //LAYERS: layerNames,
     QUERY_LAYERS: layerNames,
     filtertoken: ApplicationState.tokens.filtertoken,
     INFO_FORMAT: this._infoFormat,

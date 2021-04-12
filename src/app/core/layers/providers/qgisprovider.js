@@ -115,7 +115,7 @@ proto.query = function(options={}) {
       VERSION: '1.3.0',
       REQUEST: 'GetFeatureInfo',
       filtertoken: ApplicationState.tokens.filtertoken,
-      LAYERS: layerNames,
+      //LAYERS: layerNames,
       QUERY_LAYERS: layerNames,
       INFO_FORMAT: this._infoFormat,
       FEATURE_COUNT: feature_count,
