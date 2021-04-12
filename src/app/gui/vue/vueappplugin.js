@@ -98,7 +98,8 @@ const font = {
   layers: "fas fa-layer-group",
   'sign-in': "fas fa-sign-in-alt",
   language: "fas fa-language",
-  target: "fas fa-bullseye"
+  target: "fas fa-bullseye",
+  pin: "fas fa-map-pin"
 };
 
 const Vueappplugin = {
