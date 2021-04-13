@@ -20,11 +20,11 @@ function EditingService() {
 
   // METHODS CALLD FROM EACH ACTION METHOD
 
-  // run beafore each action
+  // run before each action
   this.startAction = async function({qgis_layer_id}){
     // set same mode autosave
-    this.dependencyApi.setSaveMode('autosave', {
-      ask: false
+    this.dependencyApi.setSaveConfig({
+      mode: 'autosave'
     });
 
     this.dependencyApi.showPanel({
