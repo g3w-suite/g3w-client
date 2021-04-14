@@ -1,4 +1,8 @@
-<div>
+<div style="position: relative">
+  <div  style="display: flex;justify-content: flex-end;height: 35px;margin-right: 12px; margin-bottom: 5px">
+    <button @click.prevent="toggleGetCoordinate" :style="{border: getCoordinateActive ? '2px solid' : 0}" class="skin-color skin-border-color" style="border-radius: 5px; font-weight: bold; font-size: 20px; cursor: pointer" :class="g3wtemplate.font['crosshairs']"></button>
+  </div>
+
   <baseinput :state="state">
     <label slot="label" :for="lonId" class="col-sm-4 control-label">{{state.labels.lon}}
       <span v-if="state.validate && state.validate.required">*</span>
@@ -37,4 +41,5 @@
         placeholder="Lon">
     </div>
   </baseinput>
+
 </div>

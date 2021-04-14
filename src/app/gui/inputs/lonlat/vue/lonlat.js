@@ -1,7 +1,6 @@
 const { getUniqueDomId } = require('core/utils/utils');
-const GUI = require('gui/gui');
 const Input = require('gui/inputs/input');
-const DEFAULT_EPSG = 'EPSG:4326';
+
 
 
 const FloatInput = Vue.extend({
@@ -9,11 +8,17 @@ const FloatInput = Vue.extend({
   template: require('./lonlat.html'),
   data(){
     return {
+      getCoordinateActive: false,
       lonId: getUniqueDomId(),
       latId: getUniqueDomId()
     }
   },
   methods: {
+    toggleGetCoordinate(){
+      this.getCoordinateActive = !this.getCoordinateActive;
+      if (this.getCoordinateActive)
+        this.service.getCoordinates()
+    },
     changeLonLat() {
       this.change();
       this.setValue();
