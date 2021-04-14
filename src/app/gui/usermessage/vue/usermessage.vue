@@ -81,6 +81,10 @@
         type: Boolean,
         default: false
       },
+      duration: {
+        type: Number,
+        default: 2000
+      },
       closable: {
         type: Boolean,
         default: true
@@ -141,13 +145,14 @@
       ...position,
       }
     },
-    mounted(){
-      this.autoclose && this.$nextTick(() => {
+    async mounted(){
+      if (this.autoclose) {
+        await this.$nextTick();
         const timeout = setTimeout(() =>{
           this.closeUserMessage();
           clearTimeout(timeout)
-        }, 2000)
-      })
+        }, this.duration)
+      }
     }
   }
 </script>
