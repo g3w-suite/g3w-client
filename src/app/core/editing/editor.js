@@ -209,7 +209,6 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
   }
 };
 
-
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
 };
@@ -256,14 +255,10 @@ proto.start = function(options={}) {
           //if all ok set to started
           this._started = true;
         })
-        .fail((err) => {
-          d.reject(err);
-        })
+        .fail(err => d.reject(err))
 
     })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .fail(err => d.reject(err));
   return d.promise()
 };
 
@@ -297,7 +292,7 @@ proto.readEditingFeatures = function(){
 proto.stop = function() {
   const d = $.Deferred();
   this._layer.unlock()
-    .then((response) => {
+    .then(response => {
       this._started = false;
       this._filter.bbox = null;
       this._allfeatures = false;

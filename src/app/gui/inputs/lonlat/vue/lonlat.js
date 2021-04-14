@@ -1,5 +1,8 @@
 const { getUniqueDomId } = require('core/utils/utils');
+const GUI = require('gui/gui');
 const Input = require('gui/inputs/input');
+const DEFAULT_EPSG = 'EPSG:4326';
+
 
 const FloatInput = Vue.extend({
   mixins: [Input],
@@ -11,11 +14,7 @@ const FloatInput = Vue.extend({
     }
   },
   methods: {
-    changeLon(){
-      this.change();
-      this.setValue();
-    },
-    changeLat(){
+    changeLonLat() {
       this.change();
       this.setValue();
     },
@@ -24,8 +23,12 @@ const FloatInput = Vue.extend({
     }
   },
   created(){
+
     this.state.values = this.state.values || {lon:0, lat:0};
     this.setValue();
+  },
+  destroyed(){
+
   }
 });
 

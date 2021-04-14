@@ -9,29 +9,27 @@ function FeaturesStore(options={}) {
   this._loadedIds = []; // store loeckedids
   this._lockIds = []; // store locked features
   this.setters = {
-    addFeatures: function(features) {
+    addFeatures(features) {
       features.forEach(feature => {
         this._addFeature(feature);
       })
     },
-    addFeature: function(feature) {
+    addFeature(feature) {
       this._addFeature(feature);
     },
-    removeFeature: function(feature) {
+    removeFeature(feature) {
       this._removeFeature(feature);
     },
-    updateFeature: function(feature) {
+    updateFeature(feature) {
       this._updateFeature(feature);
     },
-    clear: function() {
+    clear() {
       this._clearFeatures();
-      this._lockIds = [];
-      this._loadedIds = [];
     },
-    getFeatures: function(options={}) {
+    getFeatures(options={}) {
       return this._getFeatures(options);
     },
-    commit: function(commitItems, featurestore) {
+    commit(commitItems, featurestore) {
       return this._commit(commitItems, featurestore);
     }
   };
@@ -58,9 +56,9 @@ proto.getProvider = function() {
 // method unlock features
 proto.unlock = function() {
   const d = $.Deferred();
-  this._provider.unlock().then((response)=>{
-    d.resolve(response);
-  }).fail(err => d.reject(err));
+  this._provider.unlock()
+    .then(response=>d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -74,12 +72,8 @@ proto._getFeatures = function(options={}) {
         this.addFeatures(features);
         d.resolve(features);
       })
-      .fail((err) => {
-        d.reject(err)
-      })
-  } else {
-    d.resolve(this._readFeatures());
-  }
+      .fail(err => d.reject(err))
+  } else d.resolve(this._readFeatures());
   return d.promise();
 };
 
@@ -178,6 +172,8 @@ proto._removeFeature = function(feature) {
 proto._clearFeatures = function() {
   this._features = null;
   this._features = [];
+  this._lockIds = [];
+  this._loadedIds = [];
 };
 
 proto.getDataProvider = function() {

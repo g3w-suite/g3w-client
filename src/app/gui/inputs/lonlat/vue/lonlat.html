@@ -6,15 +6,13 @@
     <div slot="body">
       <input
        :id="lonId"
-       @change="changeLon"
+       @change="changeLonLat"
        :class="{'input-error-validation' : notvalid}"
-       @input="changeLon"
        class="form-control"
        style="width:100%; margin-bottom: 5px;"
        v-disabled="!editable"
        v-model="state.values.lon"
        type="number"
-       :step="state.step || 1"
        min="-180"
        max="180"
        placeholder="Lon">
@@ -27,14 +25,12 @@
     <div slot="body" >
       <input
         :id="latId"
-        @change="changeLat"
-        @input="changeLat"
+        @change="changeLonLat"
         class="form-control"
         style="width:100%; margin-bottom: 5px;"
         v-disabled="!editable"
         v-model="state.values.lat"
         type="number"
-        :step="state.step || 1"
         :class="{'input-error-validation' : notvalid}"
         min="-90"
         max="90"

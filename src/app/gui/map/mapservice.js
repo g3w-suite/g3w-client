@@ -154,6 +154,8 @@ function MapService(options={}) {
     const keysetCurrentProject = ProjectsRegistry.onafter('setCurrentProject', project => {
       this.removeLayers();
       this._removeListeners();
+      // check if reload same project
+      const isSameProject = this.project.getId() === project.getId();
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
@@ -165,7 +167,7 @@ function MapService(options={}) {
         this.setupCustomMapParamsToLegendUrl();
       };
       ApplicationService.isIframe() && changeProjectCallBack();
-      this.getMap().once('change:size', changeProjectCallBack);
+      isSameProject ? changeProjectCallBack() : this.getMap().once('change:size', changeProjectCallBack);
     });
     this._keyEvents.g3wobject.push({
       who: ProjectsRegistry,
@@ -1788,7 +1790,7 @@ proto.registerMapLayerListeners = function(mapLayer) {
   //listen change filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('changeCurrentStyle', ()=>{
+      layer.onbefore('change', ()=>{
         this.updateMapLayer(mapLayer, {force: true})
       });
       layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
@@ -1804,7 +1806,7 @@ proto.unregisterMapLayerListeners = function(mapLayer) {
   // try to remove layer filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.un('changeCurrentStyle');
+      layer.un('change');
       layer.removeEvent('filtertokenchange')
     });
 };

@@ -322,7 +322,7 @@ const vueComponentOptions = {
       });
       if (changed) {
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
-        layer && layer.changeCurrentStyle();
+        layer && layer.change();
       }
     },
     showStylesMenu(bool, evt) {
