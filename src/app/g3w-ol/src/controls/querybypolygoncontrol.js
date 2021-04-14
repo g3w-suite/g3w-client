@@ -1,7 +1,8 @@
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-const VALIDGEOMETRIES = ['Polygon', 'MultiPolygon'];
+const VALIDGEOMETRIES = ['Polygon', 'MultiPolygon', 'PolygonZ', 'MultiPolygonZ',
+  'PolygonM', 'MultiPolygonM', 'PolygonZM', 'MultiPolygonZM', 'Polygon25D', 'MultiPolygon25D' ];
 
 const QueryByPolygonControl = function(options={}) {
   const _options = {
@@ -44,14 +45,12 @@ proto.checkVisibile = function(layers) {
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);
-  this._interaction.on('picked', (e) => {
+  this._interaction.on('picked', e => {
     this.dispatchEvent({
       type: 'picked',
       coordinates: e.coordinate
     });
-    if (this._autountoggle) {
-      this.toggle();
-    }
+    this._autountoggle && this.toggle();
   });
   this.setEnable(false);
 };
