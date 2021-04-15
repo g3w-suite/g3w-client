@@ -1,8 +1,13 @@
 {
   "presets": ["env"],
   "plugins": [
+    "babel-plugin-transform-es2015-classes",
     "transform-remove-strict-mode",
     "transform-object-rest-spread",
-    "transform-vue-jsx"
+    "transform-runtime",
+    "transform-async-to-generator",
+    "transform-array-find",
+    "transform-vue-jsx",
+    "syntax-async-generators"
   ]
 }

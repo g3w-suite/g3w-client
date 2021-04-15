@@ -35,12 +35,8 @@ proto.mount = function(parent, append) {
 };
 
 proto.unmount = function() {
-  if (!this.internalComponent) {
-    return resolve();
-  }
-  if (this.state.resizable) {
-    this.internalComponent.$off('resize-component', this.internalComponent.layout);
-  }
+  if (!this.internalComponent) return resolve();
+  if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
   this.state.open = false;
   // destroy vue component
   this.internalComponent.$destroy(true);

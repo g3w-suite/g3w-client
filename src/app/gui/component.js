@@ -1,6 +1,5 @@
 const {inherit, merge, noop, base, capitalize_first_letter} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
 // Class Component (Base)

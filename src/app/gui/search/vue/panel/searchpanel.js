@@ -1,6 +1,6 @@
 import Select2 from './select2.vue'
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const {base, inherit, debounce} = require('core/utils/utils');
+const {base, inherit} = require('core/utils/utils');
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 const compiledTemplate = Vue.compile(require('./searchpanel.html'));

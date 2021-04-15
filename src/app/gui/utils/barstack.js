@@ -30,7 +30,6 @@ proto.push = function(content, options) {
 // remove last component from stack
 proto.pop = function() {
   const d = $.Deferred();
-  // qui potremo chiedere al pannello se può essere chiuso...
   if (this.state.contentsdata.length) {
     const content = this.state.contentsdata.slice(-1)[0].content;
     this._unmount(content).then(() => {
@@ -122,7 +121,7 @@ proto._setDOMContent = function(content, options) {
 };
 
 // Mount component to parent
-proto._setVueContent = function(content, options) {
+proto._setVueContent = function(content, options={}) {
   const d = $.Deferred();
   const append = options.append || false;
   content.mount(this._parent, append)

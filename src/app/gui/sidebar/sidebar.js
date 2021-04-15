@@ -176,13 +176,14 @@ function SidebarService() {
       this.state.gui.title = panel.title;
       const parent = "#g3w-sidebarpanel-placeholder";
       this.stack.push(panel, {
-        parent: parent
+        parent
       }).then(content => resolve(content))
     })
   };
 
   // close panel
   this.closePanel = function() {
+    this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.pop().then(content => content = null);
   };
