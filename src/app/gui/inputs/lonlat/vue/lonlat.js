@@ -1,9 +1,7 @@
 const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
-
-
-const FloatInput = Vue.extend({
+const LatLontInput = Vue.extend({
   mixins: [Input],
   template: require('./lonlat.html'),
   data(){
@@ -16,8 +14,7 @@ const FloatInput = Vue.extend({
   methods: {
     toggleGetCoordinate(){
       this.getCoordinateActive = !this.getCoordinateActive;
-      if (this.getCoordinateActive)
-        this.service.getCoordinates()
+      this.getCoordinateActive ? this.service.startToGetCoordinates() : this.service.stopToGetCoordinates();
     },
     changeLonLat() {
       this.change();
@@ -28,13 +25,13 @@ const FloatInput = Vue.extend({
     }
   },
   created(){
-
     this.state.values = this.state.values || {lon:0, lat:0};
     this.setValue();
   },
   destroyed(){
-
+    console.log('destroy')
+    //this.service.clear();
   }
 });
 
-module.exports = FloatInput;
+module.exports = LatLontInput;
