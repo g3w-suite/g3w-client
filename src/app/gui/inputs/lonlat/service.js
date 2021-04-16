@@ -1,18 +1,19 @@
 const {base, inherit} = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 const GUI = require('gui/gui');
-const DEFAULT_EPSG = 'EPSG:4326';
 
 function LonLatService(options={}) {
   base(this, options);
   this.coordinatebutton;
   this.mapService =  GUI.getComponent('map').getService();
+  this.mapEpsg = this.mapService.getCrs();
   this.mapControlToggleEventHandler = evt =>{
     if (evt.target.isToggled() && evt.target.isClickMap()){
       this.coordinatebutton.active && this.toggleGetCoordinate();
     }
   };
   this.map = GUI.getComponent('map').getService().getMap();
+  this.outputEpsg = this.state.epsg || this.mapEpsg;
   this.eventMapKey;
 }
 
@@ -43,8 +44,9 @@ proto.startToGetCoordinates = function(){
   this.eventMapKey = this.map.on('click', evt =>{
     evt.originalEvent.stopPropagation();
     evt.preventDefault();
-    this.state.value = [evt.coordinate];
-    const [lon, lat] = evt.coordinate;
+    const coordinate = this.mapEpsg !== this.outputEpsg ? ol.proj.transform(evt.coordinate, this.mapEpsg, this.outputEpsg) : evt.coordinate;
+    this.state.value = [coordinate];
+    const [lon, lat] = coordinate;
     this.state.values.lon = lon;
     this.state.values.lat = lat;
   })
@@ -56,7 +58,7 @@ proto.stopToGetCoordinates = function(){
 };
 
 proto.clear = function(){
-  this.stopToGetCoordinates()
+  this.stopToGetCoordinates();
 };
 
 module.exports = LonLatService;
