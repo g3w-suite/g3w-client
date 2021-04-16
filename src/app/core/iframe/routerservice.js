@@ -6,38 +6,37 @@ function IframePluginService(options={}) {
   this.init = async function({project}={}) {
     await GUI.isReady();
     this.services = require('./services/index');
+    //sett eventResponse handler to alla services
+    this.eventResponseServiceHandler = ({action, response}) => {
+      this.postMessage({
+        id: null,
+        action,
+        response
+      })
+    }
     //initialize all service
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++){
-      await this.services[serviceNames[i]].init();
+      const service = this.services[serviceNames[i]];
+      await service.init();
+      service.on('response', this.eventResponseServiceHandler);
     }
     this.postMessage({
       id:null,
       action:"app:ready",
       response: {
         result: true,
-        layers: project.state.layers.map(layer =>({
-          id: layer.id,
-          name: layer.name
-        }))
+        data: {
+          layers: project.state.layers.map(layer =>({
+            id: layer.id,
+            name: layer.name
+          }))
+        }
       }
     });
 
     if (window.addEventListener) window.addEventListener("message", this.getMessage, false);
     else window.attachEvent("onmessage", this.getMessage);
-  };
-
-  this.outputDataPlace = async function(dataPromise, options={}){
-    const {action='app:results'} = options;
-    const {result, data=[]} = await dataPromise;
-    this.postMessage({
-      id: null,
-      action,
-      response: {
-        result,
-        data
-      }
-    })
   };
 
   // method to post message to parent
@@ -47,11 +46,11 @@ function IframePluginService(options={}) {
     }
   };
 
-
   // method to handle all message from window
   this.getMessage = async evt => {
     if (evt && evt.data) {
       const { id, action, data:params } = evt.data;
+      console.log(params)
       const {context, method} = splitContextAndMethod(action);
       let result = false;
       let data;
@@ -76,6 +75,11 @@ function IframePluginService(options={}) {
   };
 
   this.clear = function() {
+    const serviceNames = Object.keys(this.services);
+    for (let i=0; i < serviceNames.length; i++) {
+      const service = this.services[serviceNames[i]];
+      service.off('response', this.eventResponseServiceHandler)
+    }
     if (window.removeEventListener) window.removeEventListener("message", this.getMessage, false);
     else window.detachEvent("onmessage", this.getMessage);
   }
