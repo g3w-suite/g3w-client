@@ -43,8 +43,9 @@ function AppService(){
    *
    * @returns {Promise<void>}
    */
-  this.getresults = async function(){
-    DataRouterService.setOutputPlaces(['iframe'])
+  this.results = async function({capture=true}){
+    capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
+    return [];
   };
 
   this.screenshot = async function({capture=true}){

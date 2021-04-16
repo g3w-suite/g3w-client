@@ -13,7 +13,8 @@ function IframePluginService(options={}) {
         action,
         response
       })
-    }
+    };
+
     //initialize all service
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++){
@@ -39,6 +40,31 @@ function IframePluginService(options={}) {
     else window.attachEvent("onmessage", this.getMessage);
   };
 
+  this.outputDataPlace = async function(dataPromise, options={}){
+    const {action='app:results'} = options;
+    let {result, data=[]} = await dataPromise;
+    const parser = new ol.format.GeoJSON();
+    let outputData = [];
+    try {
+      outputData = data.map(({layer, features})=>({
+        [layer.getId()]: {
+          features: parser.writeFeatures(features)
+        }
+      }));
+    } catch(err){
+      result: false;
+      outputData: err;
+    }
+    this.postMessage({
+      id: null,
+      action,
+      response: {
+        result,
+        data: outputData
+      }
+    })
+  };
+
   // method to post message to parent
   this.postMessage = function (message={}) {
     if (window.parent) {
@@ -50,7 +76,6 @@ function IframePluginService(options={}) {
   this.getMessage = async evt => {
     if (evt && evt.data) {
       const { id, action, data:params } = evt.data;
-      console.log(params)
       const {context, method} = splitContextAndMethod(action);
       let result = false;
       let data;
