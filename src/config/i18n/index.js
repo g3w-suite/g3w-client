@@ -265,7 +265,8 @@ const translations = {
               }
             },
             tooltips: {
-              picklayer: "Prendi valore dalla mappa"
+              picklayer: "Prendi valore dalla mappa",
+              lonlat: "Clicca sulla mappa per prendere le coordinate"
             },
             input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
@@ -676,7 +677,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Get value from ma layer"
+              picklayer: "Get value from ma layer",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Field mutually exclusive with ",
             input_validation_error: "Mandatory Field or wrong data type",
@@ -1086,7 +1088,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Valitse arvo karttatasolta"
+              picklayer: "Valitse arvo karttatasolta",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
             input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
@@ -1497,7 +1500,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Välj värde på kartnivå"
+              picklayer: "Välj värde på kartnivå",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Fälten utesluter varandra.",
             input_validation_error: "Obligatoriskt fält eller fel datatyp.",

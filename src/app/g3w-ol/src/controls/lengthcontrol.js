@@ -6,6 +6,7 @@ const LengthControl = function(options) {
   const _options = {
     tipLabel: "sdk.mapcontrols.measures.length.tooltip",
     label: "\ue908",
+    clickmap: true, // set ClickMap
     interactionClass: LenghtIteraction
   };
 

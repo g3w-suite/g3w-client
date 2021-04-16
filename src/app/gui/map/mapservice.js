@@ -10,7 +10,6 @@ const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const Filter = require('core/layers/filter/filter');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/src/g3w.ol').helpers;
 const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol/src/utils/utils');
@@ -104,7 +103,8 @@ function MapService(options={}) {
       grid: [],
       length: 0,
       currentIndex: 0,
-      update: true
+      update: true,
+      disabled: false
     },
   };
 
@@ -1282,9 +1282,21 @@ proto.getMapControlByType = function({type}={}) {
   return mapControl && mapControl.control;
 };
 
+/**
+ *
+ *
+ * @param id
+ * @param type
+ * @param control
+ * @param addToMapControls
+ * @param visible
+ */
 proto.addControl = function(id, type, control, addToMapControls=true, visible=true) {
   this.state.mapcontrolready = false;
   this.viewer.map.addControl(control);
+  control.on('toggled', evt =>{
+    this.emit('mapcontrol:toggled', evt)
+  })
   this._mapControls.push({
     id,
     type,
@@ -1407,6 +1419,18 @@ proto.deactiveMapControls = function() {
   })
 };
 
+/**
+ *
+ * Method to disable
+ */
+proto.disableClickMapControls = function(bool=true){
+  this._mapControls.forEach(controlObj => {
+    const {control} = controlObj;
+    const clickmap = control.isClickMap ? control.isClickMap() : false;
+    clickmap && control[bool ? 'disable' : 'enable']();
+  })
+};
+
 proto.addMapLayers = function(mapLayers) {
   mapLayers.reverse().forEach(mapLayer => this.addMapLayer(mapLayer));
 };
@@ -1518,16 +1542,12 @@ proto._setupViewer = function(width, height) {
 
   $(this.viewer.map.getViewport()).prepend('<div id="map-spinner" style="position:absolute; top: 50%; right: 50%"></div>');
 
-  this.viewer.map.getInteractions().forEach((interaction) => {
-    this._watchInteraction(interaction);
-  });
+  this.viewer.map.getInteractions().forEach(interaction => this._watchInteraction(interaction));
 
-  this.viewer.map.getInteractions().on('add', (interaction) => {
-    this._watchInteraction(interaction.element);
-  });
+  this.viewer.map.getInteractions().on('add', interaction => this._watchInteraction(interaction.element));
 
-  this.viewer.map.getInteractions().on('remove',(interaction) => {
-    //this._onRemoveInteraction(interaction);
+  this.viewer.map.getInteractions().on('remove', interaction => {
+    //this._onRemoveInteraction(interaction););
   });
 
   this._marker = new ol.Overlay({
@@ -1829,7 +1849,7 @@ proto.removeInteraction = function(interaction) {
 };
 
 proto._watchInteraction = function(interaction) {
-  interaction.on('change:active', e  => {
+  interaction.on('change:active', e => {
     if ((e.target instanceof ol.interaction.Pointer) && e.target.getActive()) {
       this.emit('mapcontrol:active', e.target);
     }

@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const resolvedValue = require('core/utils/utils').resolve;
+const {inherit, resolve:resolvedValue}= require('core/utils/utils');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 

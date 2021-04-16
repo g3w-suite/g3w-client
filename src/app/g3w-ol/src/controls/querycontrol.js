@@ -8,7 +8,8 @@ const QueryControl = function(options={}){
     name: "querylayer",
     tipLabel: "sdk.mapcontrols.query.tooltip",
     label: options.label || "\uea0f",
-    interactionClass: PickCoordinatesInteraction
+    clickmap: true, // set ClickMap
+    interactionClass: PickCoordinatesInteraction,
   };
   options = utils.merge(options, _options);
   InteractionControl.call(this, options);

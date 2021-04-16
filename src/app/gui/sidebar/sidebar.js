@@ -138,9 +138,12 @@ function SidebarService() {
     return this.state.components;
   };
 
-  this.closeOpenComponents = function(){
+  /**
+   * close fo the moment only conlapsbale
+   */
+  this.closeOpenComponents = function(collapsible=true){
     this.getComponents().forEach(component =>{
-      component.getOpen() && component.click({open: false});
+     component.getOpen() && component.collapsible && component.click({open: false});
     })
   };
 

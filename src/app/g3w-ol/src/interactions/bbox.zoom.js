@@ -11,7 +11,7 @@ _gis3wlib._interaction.prototype.zoomToBox = function(){
   });
 
   map.addInteraction(zoomToBox);
-  zoomToBox.key = zoomToBox.on('boxend', function(e){
+  zoomToBox.key = zoomToBox.on('boxend', evt => {
     const polygon = zoomToBox.getGeometry().getExtent();
     map.getView().fit(polygon, map.getSize());
   });
@@ -33,7 +33,7 @@ _gis3wlib._interaction.prototype.drawBBox = function(callback) {
   });
 
   map.addInteraction(selectBBox);
-  selectBBox.key = selectBBox.on('boxend', (e) => {
+  selectBBox.key = selectBBox.on('boxend', evt => {
     const polygon = selectBBox.getGeometry().getExtent();
     callback(polygon);
   });

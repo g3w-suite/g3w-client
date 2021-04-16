@@ -9,6 +9,7 @@ const StreetViewControl = function(options={}) {
     visible: !!ApplicationState.keys.vendorkeys.google,
     name: "streetview",
     tipLabel: "StreetView",
+    clickmap: true, // set ClickMap
     label: "\ue905",
     interactionClass: PickCoordinatesInteraction
   };

@@ -8,6 +8,7 @@ const QueryBBoxControl = function(options = {}){
     name: "querybbox",
     tipLabel: "sdk.mapcontrols.querybybbox.tooltip",
     label: options.label || "\ue902",
+    clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
     onhover: true
   };
