@@ -60,10 +60,14 @@ function AppService(){
           }
         })
       } catch(err){
-
-
+        this.emit('response', {
+          action:'app:screenshot',
+          response: {
+            result: false,
+            data: err
+          }
+        })
       }
-
     }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
@@ -89,31 +93,54 @@ function AppService(){
     });
   };
 
+  /**
+   * Method to getFeature from DataProvider
+   * @private
+   */
+  this._searchFeature = async function({layer, feature}){
+    const search_endpoint = this.project.getSearchEndPoint();
+    const {field, value} = feature;
+    const { data=[] } = await DataRouterService.getData('search:features', {
+      inputs: {
+        layer,
+        search_endpoint,
+        filter: createFilterFormField({
+          layer,
+          search_endpoint,
+          field,
+          value
+        })
+      },
+      outputs: false
+    });
+    return data;
+  };
+
   //method to zoom to features
   this.zoomtofeature = async function(params={}){
     return new Promise(async (resolve, reject) => {
-      const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
-      const layer = this.project.getLayerById(qgis_layer_id);
-      const search_endpoint = this.project.getSearchEndPoint();
-      const { data=[] } = await DataRouterService.getData('search:features', {
-        inputs: {
+      let {qgis_layer_id, feature, highlight=false} = params;
+      qgis_layer_id = Array.isArray(qgis_layer_id) ? qgis_layer_id : [qgis_layer_id];
+      let foundFeature = false;
+      let layersCount = qgis_layer_id.length;
+      let i = 0;
+      while (!foundFeature && i < layersCount) {
+        const layer = this.project.getLayerById(qgis_layer_id[i]);
+        data = layer && await this._searchFeature({
           layer,
-          search_endpoint,
-          filter: createFilterFormField({
-            layer,
-            search_endpoint,
-            field,
-            value
-          })
-        },
-        outputs: false
-      });
-      data.length && this.mapService.zoomToFeatures(data[0].features, {
-        highlight
-      });
-      resolve();
+          feature
+        });
+        if (data.length) {
+          const features = data[0].features;
+          this.mapService.zoomToFeatures(features, {
+            highlight
+          });
+          foundFeature = features.length > 0;
+          resolve(foundFeature ? qgis_layer_id[i] : null)
+        } else i++;
+      }
+      !foundFeature && resolve(null);
     })
-
   };
 
   this.changeMap = function({gid}) {
