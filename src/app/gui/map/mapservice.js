@@ -1835,8 +1835,22 @@ proto.setTarget = function(elId) {
   this.target = elId;
 };
 
+proto.getCurrentToggledMapControl = function(){
+  const mapControl = this._mapControls.find(({control}) => control && control.isToggled && control.isToggled());
+  return mapControl && mapControl.control;
+};
+
+/**
+ * close: paramt to close eventually right content open
+ * @param interaction
+ * @param close
+ */
 proto.addInteraction = function(interaction, close) {
-  this._unToggleControls({
+
+  const control = this.getCurrentToggledMapControl();
+  const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true ;
+
+  untoggleMapControls && this._unToggleControls({
     close
   });
   this.viewer.map.addInteraction(interaction);
