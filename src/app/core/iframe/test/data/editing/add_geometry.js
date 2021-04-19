@@ -2,7 +2,7 @@ var MESSAGE = {
   id: null,
   action: 'editing:add',
   data: {
-    qgis_layer_id: 'edifici20180829155021867',
+    qgs_layer_id: 'edifici20180829155021867',
     geometry: {
       type: 'MultiPolygon',
       coordinates: []

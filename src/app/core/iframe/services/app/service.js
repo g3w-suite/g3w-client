@@ -119,13 +119,13 @@ function AppService(){
   //method to zoom to features
   this.zoomtofeature = async function(params={}){
     return new Promise(async (resolve, reject) => {
-      let {qgis_layer_id, feature, highlight=false} = params;
-      qgis_layer_id = Array.isArray(qgis_layer_id) ? qgis_layer_id : [qgis_layer_id];
+      let {qgs_layer_id, feature, highlight=false} = params;
+      qgs_layer_id = Array.isArray(qgs_layer_id) ? qgs_layer_id : [qgs_layer_id];
       let foundFeature = false;
-      let layersCount = qgis_layer_id.length;
+      let layersCount = qgs_layer_id.length;
       let i = 0;
       while (!foundFeature && i < layersCount) {
-        const layer = this.project.getLayerById(qgis_layer_id[i]);
+        const layer = this.project.getLayerById(qgs_layer_id[i]);
         data = layer && await this._searchFeature({
           layer,
           feature
@@ -136,7 +136,7 @@ function AppService(){
             highlight
           });
           foundFeature = features.length > 0;
-          resolve(foundFeature ? qgis_layer_id[i] : null)
+          resolve(foundFeature ? qgs_layer_id[i] : null)
         } else i++;
       }
       !foundFeature && resolve(null);

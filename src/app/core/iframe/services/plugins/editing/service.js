@@ -21,28 +21,28 @@ function EditingService() {
   // METHODS CALLD FROM EACH ACTION METHOD
 
   // run before each action
-  this.startAction = async function({qgis_layer_id}){
+  this.startAction = async function({qgs_layer_id}){
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
       mode: 'autosave'
     });
 
     this.dependencyApi.showPanel({
-      toolboxes: [qgis_layer_id]
+      toolboxes: [qgs_layer_id]
     });
   };
 
   //run after each action
   this.stopAction = async function(options={}){
-    const {qgis_layer_id}  = options;
-    qgis_layer_id && await this.stopEditing(qgis_layer_id);
+    const {qgs_layer_id}  = options;
+    qgs_layer_id && await this.stopEditing(qgs_layer_id);
     this.resetSubscribeEvents();
   };
   ////
 
   this.subscribersHandlers = {
     addfeature: ({properties}={}) => feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
-    cancelform: ({qgis_layer_id}) => () => this.stopAction({qgis_layer_id}),
+    cancelform: ({qgs_layer_id}) => () => this.stopAction({qgs_layer_id}),
     closeeditingpanel: ()=> () => this.stopAction()
   };
 
@@ -64,13 +64,13 @@ function EditingService() {
 
   //add function
   this.add = async function(options={}){
-    const {qgis_layer_id, geometry, properties} = options;
+    const {qgs_layer_id, geometry, properties} = options;
     //call method common
     await this.startAction({
-      qgis_layer_id
+      qgs_layer_id
     });
     //body of function
-    const feature = geometry && this.dependencyApi.addNewFeature(qgis_layer_id, {
+    const feature = geometry && this.dependencyApi.addNewFeature(qgs_layer_id, {
       geometry,
       properties
     });
@@ -78,11 +78,11 @@ function EditingService() {
     options.feature = feature;
     options.tools =  [feature ? this.config.tools.update.attributes : this.config.tools.add];
     options.action = 'add';
-    const toolbox = await this.startEditing(qgis_layer_id, options);
+    const toolbox = await this.startEditing(qgs_layer_id, options);
     // in case of no feature add avent subscribe
     !feature && this.addSubscribeEvents('addfeature', {properties});
     // add all event required
-    this.addSubscribeEvents('cancelform', {qgis_layer_id});
+    this.addSubscribeEvents('cancelform', {qgs_layer_id});
     this.addSubscribeEvents('closeeditingpanel')
   };
 
@@ -93,7 +93,7 @@ function EditingService() {
   this.delete = function(){};
 
 
-  this.startEditing = async function(qgis_layer_id, options={}) {
+  this.startEditing = async function(qgs_layer_id, options={}) {
     const {action= 'add', feature, tools} = options;
     const filter = {};
     switch (action) {
@@ -107,7 +107,7 @@ function EditingService() {
         }, '');
         break;
     }
-    const toolbox = await this.dependencyApi.startEditing(qgis_layer_id, {
+    const toolbox = await this.dependencyApi.startEditing(qgs_layer_id, {
       tools,
       feature,
       startstopediting: true, // set ednabel disable editing
@@ -117,10 +117,10 @@ function EditingService() {
   };
 
 
-  this.stopEditing = function(qgis_layer_id) {
+  this.stopEditing = function(qgs_layer_id) {
     return new Promise((resolve, reject) =>{
       this.stopAction();
-      this.dependencyApi.stopEditing(qgis_layer_id)
+      this.dependencyApi.stopEditing(qgs_layer_id)
         .then(()=> {
           this.dependencyApi.resetDefault();
           this.dependencyApi.hidePanel();
@@ -131,14 +131,14 @@ function EditingService() {
   };
 
   //commit changes editing
-  this.commitChanges = function(qgis_layer_id, options={}){
+  this.commitChanges = function(qgs_layer_id, options={}){
     return new Promise( (resolve, reject) =>{
       const {toolbox} = options;
       this.dependencyApi.commitChanges({
         toolbox,
         modal: false
       }).then(async ()=>
-        await this.stopEditing(qgis_layer_id));
+        await this.stopEditing(qgs_layer_id));
         resolve();
     })
 
