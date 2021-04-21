@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit, uniqueId} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Interface for Layers
@@ -27,7 +26,7 @@ function LayersStore(config={}) {
     },
     setLayersVisible: function (layersIds, visible, checked=true) {
       const layers = [];
-      layersIds.forEach((layerId) => {
+      layersIds.forEach(layerId => {
         const layer = this.getLayerById(layerId);
         layer.setVisible(visible);
         checked && layer.setChecked(visible);
@@ -40,9 +39,7 @@ function LayersStore(config={}) {
       layers.forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
     },
     addLayers(layers) {
-      layers.forEach((layer) => {
-        this.addLayer(layer);
-      })
+      layers.forEach(layer => this.addLayer(layer))
     },
     addLayer(layer) {
       this._addLayer(layer);
@@ -224,12 +221,10 @@ proto.getGeoLayers = function() {
 
 proto._getAllSiblingsChildrenLayersId = function(layerstree) {
   let nodeIds = [];
-  let traverse = (layerstree) => {
-    layerstree.nodes.forEach((node) => {
-      if (node.id)
-        nodeIds.push(node.id);
-      else
-        traverse(node);
+  let traverse = layerstree => {
+    layerstree.nodes.forEach(node => {
+      if (node.id) nodeIds.push(node.id);
+      else traverse(node);
     });
   };
   traverse(layerstree);
@@ -238,23 +233,25 @@ proto._getAllSiblingsChildrenLayersId = function(layerstree) {
 
 proto._getAllParentLayersId = function(layerstree, node) {
   let nodeIds = [];
-  let traverse = (layerstree) => {
+  let traverse = layerstree => {
     layerstree.nodes.forEach((node) => {
-      if (node.id)
-        nodeIds.push(node.id);
-      else
-        traverse(node);
+      if (node.id) nodeIds.push(node.id);
+      //else traverse(node);
     });
   };
 
   traverse({
-    nodes: layerstree.nodes.filter((_node) => {
-      return _node !== node;
-    })
+    nodes: layerstree.nodes.filter(_node => _node !== node)
   });
+
   return nodeIds;
 };
 
+/**
+ * Method to check mutually of group  belong to layerId
+ * @param layerId
+ * @private
+ */
 proto._mutuallyExclude = function(layerId) {
   let parentLayersTree = this.state.layerstree;
   let traverse = obj => {
@@ -267,29 +264,33 @@ proto._mutuallyExclude = function(layerId) {
         if (found) {
           let checked_node;
           let nodeIds = [];
-          layer.nodes.forEach((node) => {
+          layer.nodes.forEach(node => {
             if (node.id) {
-              if (node.id !== layerId && node.geolayer)
-                nodeIds.push(node.id);
-              else
-                checked_node = node;
-            } else {
-              nodeIds = nodeIds.concat(this._getAllSiblingsChildrenLayersId(node));
-            }
+              if (node.id !== layerId && node.geolayer) nodeIds.push(node.id);
+              else checked_node = node;
+            } //else nodeIds = nodeIds.concat(this._getAllSiblingsChildrenLayersId(node));
           });
+          //set parent grouplayerstree
+          parentLayersTree = layer;
           if (parentLayersTree.mutually_exclusive) {
             nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree));
           }
           this.setLayersVisible(nodeIds, false);
-          parentLayersTree = layer;
         }
         traverse(layer.nodes);
       }
     });
   };
-  traverse(this.state.layerstree)
+  traverse(parentLayersTree)
 };
 
+/**
+ * Toggle layer called from catalog event
+ * @param layerId
+ * @param visible
+ * @param mutually_exclusive
+ * @returns {*}
+ */
 proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   const layer = this.getLayerById(layerId);
   const checked = layer.isChecked();
@@ -376,6 +377,7 @@ proto.createLayersTree = function(groupName, options={}) {
           if (layer.nodes !== null && layer.nodes !== undefined) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
+            lightlayer.groupId = uniqueId();
             lightlayer.nodes = [];
             lightlayer.checked = layer.checked;
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];

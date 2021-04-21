@@ -293,15 +293,10 @@ proto.stop = function() {
   const d = $.Deferred();
   this._layer.unlock()
     .then(response => {
-      this._started = false;
-      this._filter.bbox = null;
-      this._allfeatures = false;
       this.clear();
       d.resolve(response);
     })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -315,6 +310,9 @@ proto.isStarted = function() {
 };
 
 proto.clear = function() {
+  this._started = false;
+  this._filter.bbox = null;
+  this._allfeatures = false;
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
   this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());

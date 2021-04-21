@@ -57,7 +57,7 @@ proto.getProvider = function() {
 proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
-    .then(response=>d.resolve(response))
+    .then(response=> d.resolve(response))
     .fail(err => d.reject(err));
   return d.promise();
 };

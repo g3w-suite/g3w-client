@@ -7,7 +7,8 @@ function BasePluginService(){
   // common attributes between plugin service
   this.pluginName;
   this.dependencyApi ={};
-  this.init = async function(){
+  this.init = async function({layers={}}={}){
+    this.layers = layers;
     // check if the plugin in in configuration
     if (PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
       const plugin = PluginsRegistry.getPlugin(this.pluginName);

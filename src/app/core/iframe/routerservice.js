@@ -14,12 +14,17 @@ function IframePluginService(options={}) {
         response
       })
     };
-
+    const layers =  project.state.layers.map(layer =>({
+      id: layer.id,
+      name: layer.name
+    }));
     //initialize all service
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++){
       const service = this.services[serviceNames[i]];
-      await service.init();
+      await service.init({
+        layers
+      });
       service.on('response', this.eventResponseServiceHandler);
     }
     this.postMessage({
@@ -28,10 +33,7 @@ function IframePluginService(options={}) {
       response: {
         result: true,
         data: {
-          layers: project.state.layers.map(layer =>({
-            id: layer.id,
-            name: layer.name
-          }))
+          layers
         }
       }
     });

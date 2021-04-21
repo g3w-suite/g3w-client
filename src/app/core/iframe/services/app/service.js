@@ -22,7 +22,6 @@ function AppService(){
       this.mapService.once('ready', ()=>{
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
-
         // set alias url to project
         this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
           this.project = project;
@@ -132,11 +131,13 @@ function AppService(){
         });
         if (data.length) {
           const features = data[0].features;
-          this.mapService.zoomToFeatures(features, {
-            highlight
-          });
-          foundFeature = features.length > 0;
-          resolve(foundFeature ? qgs_layer_id[i] : null)
+          foundFeature = features.length > 0 && features.find(feature => feature.getGeometry());
+          if (foundFeature) {
+            this.mapService.zoomToFeatures(features, {
+              highlight
+            });
+            resolve(qgs_layer_id[i])
+          } else i++;
         } else i++;
       }
       !foundFeature && resolve(null);

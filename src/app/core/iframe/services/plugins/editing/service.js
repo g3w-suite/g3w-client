@@ -1,49 +1,124 @@
 const BasePluginService = require('../service');
 const {base, inherit} = g3wsdk.core.utils;
+const GUI = require('gui/gui');
 
 function EditingService() {
   base(this);
   this.pluginName = 'editing';
-
   this.subscribevents = [];
-  //subscribers editing handler
-  //set properties used by varius
   this.config =  {
     tools: {
-      add: 'addfeature',
-      update: {
-        attributes: 'editattributes'
+      add: {
+        disabled:[
+          {
+            id: 'deletefeature'
+          },
+          {
+            id: 'editmultiattributes'
+          },
+          {
+            id: 'deletePart'
+          },
+          {
+            id: 'splitfeature'
+          },
+          {
+            id: 'mergefeatures'
+          }
+        ]
       },
-      delete: 'deletefeature'
+      update: {
+        disabled: [
+          {
+            id: 'addfeature'
+          },
+          {
+            id: 'deletefeature'
+          },
+          {
+            id: 'editmultiattributes'
+          },
+          {
+            id: 'deletePart'
+          },
+          {
+            id: 'splitfeature'
+          },
+          {
+            id: 'mergefeatures'
+          }
+        ]
+      },
+      delete: {
+        enabled: [
+          {
+            id:'deletefeature',
+            options: {
+              active:true
+            }
+          }
+        ]
+      }
     }
   };
 
-  // METHODS CALLD FROM EACH ACTION METHOD
+  this._getQgsLayerId = function(qgs_layer_id){
+    return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : this.dependencyApi.getEditableLayersId()
+  };
 
+  // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
-  this.startAction = async function({qgs_layer_id}){
+  this.startAction = async function({toolboxes}){
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
-      mode: 'autosave'
+      //mode: 'autosave',
+      cb: {
+        done: ()=> {
+          this.stopEditing(toolboxes)
+        }, // called when commit chenges is done successuffly
+        error: () => {} // called whe commit change receive an error
+      }
     });
-
+    // set toolboxes visible base on value of qgs_layer_id
     this.dependencyApi.showPanel({
-      toolboxes: [qgs_layer_id]
+      toolboxes
     });
   };
 
   //run after each action
   this.stopAction = async function(options={}){
-    const {qgs_layer_id}  = options;
+    const {qgs_layer_id} = options;
     qgs_layer_id && await this.stopEditing(qgs_layer_id);
     this.resetSubscribeEvents();
   };
-  ////
 
+  //// subscribers handlers
   this.subscribersHandlers = {
-    addfeature: ({properties}={}) => feature => Object.keys(properties).forEach(property => feature.set(property, properties[property])),
-    cancelform: ({qgs_layer_id}) => () => this.stopAction({qgs_layer_id}),
-    closeeditingpanel: ()=> () => this.stopAction()
+    canUndo:({activeTool, disableToolboxes=[]}) => bool => {
+      activeTool.setEnabled(!bool);
+      disableToolboxes.forEach(toolbox => toolbox.setEditing(!bool))
+    },
+    canRedo:() =>{},
+    addfeature: ({properties, toolboxes}={}) => feature => {
+      Object.keys(properties).forEach(property => feature.set(property, properties[property]));
+      let activeTool;
+      const disableToolboxes = [];
+      toolboxes.forEach(toolbox => {
+        const addFeatureTool = toolbox.getToolById('addfeature');
+        if (addFeatureTool.isActive()){
+          addFeatureTool.setEnabled(false);
+          activeTool = addFeatureTool;
+        } else {
+          toolbox.setEditing(false);
+          disableToolboxes.push(toolbox)
+        }
+      });
+      this.addSubscribeEvents('canUndo', {
+        activeTool,
+        disableToolboxes
+      })
+    },
+    closeeditingpanel: ({qgs_layer_id})=> () => this.stopAction({qgs_layer_id})
   };
 
   // method to add subscribe refenrence
@@ -56,46 +131,64 @@ function EditingService() {
     })
   };
 
+  /**
+   * Reset subscriber editing plugin events
+   */
   this.resetSubscribeEvents = function(){
     this.subscribevents.forEach(({event, handler}) =>{
       this.dependencyApi.unsubscribe(event, handler);
     })
   };
 
-  //add function
-  this.add = async function(options={}){
-    const {qgs_layer_id, geometry, properties} = options;
+  /**
+   * Method called whe we want add a feature
+   * @param options
+   * @returns {Promise<void>}
+   */
+  this.add = async function(config={}){
+    // extract qgslayerid from configuration message
+    const {qgs_layer_id:configQglLayerId, ...data} = config;
+    const { properties } = data;
+    const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
     //call method common
     await this.startAction({
-      qgs_layer_id
+      toolboxes: qgs_layer_id
     });
-    //body of function
-    const feature = geometry && this.dependencyApi.addNewFeature(qgs_layer_id, {
-      geometry,
-      properties
-    });
+    try {
+      // create options
+      const options = {
+        tools: this.config.tools.add,
+        startstopediting: false,
+        action : 'add'
+      };
 
-    options.feature = feature;
-    options.tools =  [feature ? this.config.tools.update.attributes : this.config.tools.add];
-    options.action = 'add';
-    const toolbox = await this.startEditing(qgs_layer_id, options);
-    // in case of no feature add avent subscribe
-    !feature && this.addSubscribeEvents('addfeature', {properties});
-    // add all event required
-    this.addSubscribeEvents('cancelform', {qgs_layer_id});
-    this.addSubscribeEvents('closeeditingpanel')
+      let toolboxes = await this.startEditing(qgs_layer_id, options);
+      toolboxes = toolboxes.filter(toolboxPromise => toolboxPromise.status === 'fulfilled').map(toolboxPromise => toolboxPromise.value);
+      !GUI.isSidebarVisible() && GUI.showSidebar();
+      const toolbox = toolboxes.length === 1 && toolboxes[0];
+      toolbox && toolbox.setActiveTool(toolbox.getToolById('addfeature'));
+      // // in case of no feature add avent subscribe
+      this.addSubscribeEvents('addfeature', {properties, toolboxes});
+      this.addSubscribeEvents('closeeditingpanel', {qgs_layer_id})
+
+    } catch(err){console.log(err)}
+
   };
-
 
   this.update = function(){};
 
-
   this.delete = function(){};
 
-
-  this.startEditing = async function(qgs_layer_id, options={}) {
-    const {action= 'add', feature, tools} = options;
+  /**
+   * Start editing called when we want to start editing
+   * @param qgs_layer_id
+   * @param options
+   * @returns {Promise<unknown|void>}
+   */
+  this.startEditing = async function(qgs_layer_id=[], options={}) {
+    const {action= 'add', feature} = options;
     const filter = {};
+    options.filter = filter;
     switch (action) {
       case 'add':
         filter.nofeatures = true;
@@ -107,43 +200,33 @@ function EditingService() {
         }, '');
         break;
     }
-    const toolbox = await this.dependencyApi.startEditing(qgs_layer_id, {
-      tools,
-      feature,
-      startstopediting: true, // set ednabel disable editing
-      filter
+    const startEditingPromise = [];
+    qgs_layer_id.forEach(layerid =>{
+      startEditingPromise.push(this.dependencyApi.startEditing(layerid, options))
     });
-    return toolbox;
+    return await Promise.allSettled(startEditingPromise);
+  };
+
+  /**
+   * Stop editing
+   * @param qgs_layer_id
+   * @returns {Promise<unknown>}
+   */
+  this.stopEditing = async function(qgs_layer_id) {
+    const stopEditingPromises = [];
+    qgs_layer_id.forEach(layerid =>{
+      stopEditingPromises.push(this.dependencyApi.stopEditing(layerid))
+    });
+    await Promise.allSettled(stopEditingPromises);
+    this.dependencyApi.resetDefault();
+    this.dependencyApi.hidePanel();
   };
 
 
-  this.stopEditing = function(qgs_layer_id) {
-    return new Promise((resolve, reject) =>{
-      this.stopAction();
-      this.dependencyApi.stopEditing(qgs_layer_id)
-        .then(()=> {
-          this.dependencyApi.resetDefault();
-          this.dependencyApi.hidePanel();
-          resolve();
-        })
-    })
-
-  };
-
-  //commit changes editing
-  this.commitChanges = function(qgs_layer_id, options={}){
-    return new Promise( (resolve, reject) =>{
-      const {toolbox} = options;
-      this.dependencyApi.commitChanges({
-        toolbox,
-        modal: false
-      }).then(async ()=>
-        await this.stopEditing(qgs_layer_id));
-        resolve();
-    })
-
-  };
-
+  /**
+   * Method called wen we want to reset default editing plugin behaviour
+   *
+   * */
   this.clear = function(){
     this.dependencyApi.resetDefault();
   }
