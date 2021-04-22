@@ -74,15 +74,18 @@ function EditingService() {
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
-  this.startAction = async function({toolboxes}){
+  this.startAction = async function({toolboxes, resolve}){
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
       //mode: 'autosave',
       cb: {
         done: ()=> {
-          this.stopEditing(toolboxes)
+          this.stopEditing(toolboxes);
+          resolve();
         }, // called when commit chenges is done successuffly
-        error: () => {} // called whe commit change receive an error
+        error: () => {
+          reject();
+        } // called whe commit change receive an error
       }
     });
     // set toolboxes visible base on value of qgs_layer_id
@@ -157,51 +160,54 @@ function EditingService() {
    * @param options
    * @returns {Promise<void>}
    */
-  this.add = async function(config={}){
-    // extract qgslayerid from configuration message
-    const {qgs_layer_id:configQglLayerId, ...data} = config;
-    const { properties } = data;
-    const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
-    //call method common
-    await this.startAction({
-      toolboxes: qgs_layer_id
-    });
+  this.add =  function(config={}){
+    return new Promise(async (resolve, reject) => {
+      // extract qgslayerid from configuration message
+      const {qgs_layer_id:configQglLayerId, ...data} = config;
+      const { properties } = data;
+      const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
+      //call method common
+      await this.startAction({
+        toolboxes: qgs_layer_id,
+        resolve,
+        reject
+      });
 
-    // create options
-    const options = {
-      tools: this.config.tools.add,
-      startstopediting: false,
-      action : 'add'
-    };
-    // return all toolboxes
-    let toolboxes = await this.startEditing(qgs_layer_id, options);
-    toolboxes = toolboxes.filter(toolboxPromise => toolboxPromise.status === 'fulfilled').map(toolboxPromise => toolboxPromise.value);
-    !GUI.isSidebarVisible() && GUI.showSidebar();
-    const toolbox = toolboxes.length === 1 && toolboxes[0];
-    toolbox && toolbox.setActiveTool(toolbox.getToolById('addfeature'));
-    // // in case of no feature add avent subscribe
-    this.addSubscribeEvents('addfeature', {properties, toolboxes});
-    this.addSubscribeEvents('closeeditingpanel', {qgs_layer_id})
+      // create options
+      const options = {
+        tools: this.config.tools.add,
+        startstopediting: false,
+        action : 'add'
+      };
+      // return all toolboxes
+      let toolboxes = await this.startEditing(qgs_layer_id, options);
+      toolboxes = toolboxes.filter(toolboxPromise => toolboxPromise.status === 'fulfilled').map(toolboxPromise => toolboxPromise.value);
+      !GUI.isSidebarVisible() && GUI.showSidebar();
+      const toolbox = toolboxes.length === 1 && toolboxes[0];
+      toolbox && toolbox.setActiveTool(toolbox.getToolById('addfeature'));
+      // // in case of no feature add avent subscribe
+      this.addSubscribeEvents('addfeature', {properties, toolboxes});
+      this.addSubscribeEvents('closeeditingpanel', {qgs_layer_id})
+    })
   };
 
   this.update = async function(config={}){
-    const {qgs_layer_id:configQglLayerId, ...data} = config;
-    const {feature} = data;
-    const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
-    const response = await this.findFeaturesWithGeometry({
-      qgs_layer_id,
-      feature
-    });
-    const { found, features } = response;
-    if (found){
-      try {
-        //call method common
+    return new Promise(async (resolve, reject)=>{
+      const {qgs_layer_id:configQglLayerId, ...data} = config;
+      const {feature} = data;
+      const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
+      const response = await this.findFeaturesWithGeometry({
+        qgs_layer_id,
+        feature,
+        zoom: true,
+        highlight: true
+      });
+      const { found, features } = response;
+      if (found){
         await this.startAction({
-          toolboxes: [response.qgs_layer_id]
-        });
-
-        this.mapService.zoomToFeatures(features, {
-          highlight:true
+          toolboxes: [response.qgs_layer_id],
+          resolve,
+          reject
         });
 
         // create options
@@ -211,16 +217,15 @@ function EditingService() {
           startstopediting: false,
           action : 'update'
         };
+
         // return all toolboxes
         await this.startEditing([response.qgs_layer_id], options);
         !GUI.isSidebarVisible() && GUI.showSidebar();
         this.addSubscribeEvents('closeeditingpanel', {
           qgs_layer_id: [response.qgs_layer_id]
         })
-      } catch(err){
-        console.log(err)
-      }
-    }
+      } else reject();
+    })
   };
 
   this.delete = function(){};

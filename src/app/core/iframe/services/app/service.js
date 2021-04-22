@@ -67,10 +67,8 @@ function AppService(){
       qgs_layer_id = Array.isArray(qgs_layer_id) ? qgs_layer_id : [qgs_layer_id];
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
-        feature
-      });
-      const {found, features} = response;
-      found && this.mapService.zoomToFeatures(features, {
+        feature,
+        zoom:true,
         highlight
       });
       resolve(response.qgs_layer_id);

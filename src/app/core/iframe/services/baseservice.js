@@ -46,7 +46,7 @@ proto.searchFeature = async function({layer, feature}){
   return data;
 };
 
-proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature}={}){
+proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
   const response = {
     found: false,
     features: [],
@@ -66,6 +66,9 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature}={}){
       if (response.found) {
         response.features = features;
         response.qgs_layer_id = qgs_layer_id[i];
+        zoom && this.mapService.zoomToFeatures(features, {
+            highlight
+          });
       }
       else i++;
     } else i++;
