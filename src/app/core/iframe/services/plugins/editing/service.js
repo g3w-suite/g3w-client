@@ -68,9 +68,7 @@ function EditingService() {
     }
   };
 
-  this._getQgsLayerId = function(qgs_layer_id){
-    return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : this.dependencyApi.getEditableLayersId()
-  };
+
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
@@ -165,7 +163,10 @@ function EditingService() {
       // extract qgslayerid from configuration message
       const {qgs_layer_id:configQglLayerId, ...data} = config;
       const { properties } = data;
-      const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
+      const qgs_layer_id = this.getQgsLayerId({
+        qgs_layer_id: configQglLayerId,
+        noValue: this.dependencyApi.getEditableLayersId()
+      });
       //call method common
       await this.startAction({
         toolboxes: qgs_layer_id,
@@ -191,18 +192,26 @@ function EditingService() {
     })
   };
 
+  /**
+   * Method called when we want update a know feature field
+   * @param config
+   * @returns {Promise<unknown>}
+   */
   this.update = async function(config={}){
     return new Promise(async (resolve, reject)=>{
       const {qgs_layer_id:configQglLayerId, ...data} = config;
       const {feature} = data;
-      const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
+      const qgs_layer_id = this.getQgsLayerId({
+        qgs_layer_id: configQglLayerId,
+        noValue: this.dependencyApi.getEditableLayersId()
+      });
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
         feature,
         zoom: true,
         highlight: true
       });
-      const { found, features } = response;
+      const { found } = response;
       if (found){
         await this.startAction({
           toolboxes: [response.qgs_layer_id],
@@ -269,7 +278,6 @@ function EditingService() {
     this.dependencyApi.resetDefault();
     this.dependencyApi.hidePanel();
   };
-
 
   /**
    * Method called wen we want to reset default editing plugin behaviour

@@ -8,7 +8,6 @@ const G3WObject = require('core/g3wobject');
 function BaseIframeService(options={}){
   base(this);
   this.ready = false;
-  this.layers;
   this.init = function(){
     //overwrite each service
   }
@@ -18,10 +17,31 @@ inherit(BaseIframeService, G3WObject);
 
 const proto = BaseIframeService.prototype;
 
+/**
+ * Common mapService attribute
+ */
 proto.mapService = GUI.getComponent('map').getService();
 
-// sett current roject of all instance
+/**
+ * Common current project attribute
+ */
 proto.project = ProjectsRegistry.getCurrentProject();
+
+/**
+ *
+ * @type {null}
+ */
+proto.layers = undefined;
+
+/**
+ * Return a qgs_layer_id array based on passed qgis_layer_id
+ * @param qgs_layer_id : String , Array of Strings or null/undefined)
+ * @returns Array oa qgs_layer_id strings
+ * @private
+ */
+proto.getQgsLayerId = function({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}){
+  return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : noValue;
+};
 
 /**
  * Method to getFeature from DataProvider
@@ -46,6 +66,14 @@ proto.searchFeature = async function({layer, feature}){
   return data;
 };
 
+/**
+ * Comme method to search feature/s by field and value
+ * @param qgs_layer_id
+ * @param feature
+ * @param zoom
+ * @param highlight
+ * @returns {Promise<{qgs_layer_id: null, features: [], found: boolean}>}
+ */
 proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
   const response = {
     found: false,
@@ -76,15 +104,22 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
   return response;
 };
 
-
-proto.setLayers = function(layers={}){
-  this.layers = layers;
+/**
+ * Set layer function
+ * @param layers
+ */
+proto.setLayers = function(layers=[]){
+  proto.layers = layers;
 };
 
 proto.getLayers = function(){
-  return this.layers;
+  return proto.layers;
 };
 
+/**
+ * Method to set ready the service
+ * @param bool
+ */
 proto.setReady = function(bool=false){
   this.ready = bool;
 };

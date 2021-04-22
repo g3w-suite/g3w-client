@@ -64,7 +64,9 @@ function AppService(){
   this.zoomtofeature = async function(params={}){
     return new Promise(async (resolve, reject) => {
       let {qgs_layer_id, feature, highlight=false} = params;
-      qgs_layer_id = Array.isArray(qgs_layer_id) ? qgs_layer_id : [qgs_layer_id];
+      qgs_layer_id = this.getQgsLayerId({
+        qgs_layer_id
+      });
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
         feature,

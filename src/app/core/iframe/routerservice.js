@@ -6,7 +6,7 @@ function IframePluginService(options={}) {
   this.init = async function({project}={}) {
     await GUI.isReady();
     this.services = require('./services/index');
-    //sett eventResponse handler to alla services
+    //set eventResponse handler to alla services
     this.eventResponseServiceHandler = ({action, response}) => {
       this.postMessage({
         id: null,
@@ -14,6 +14,9 @@ function IframePluginService(options={}) {
         response
       })
     };
+    /*
+    get layer attributes from project layers state
+     */
     const layers =  project.state.layers.map(layer =>({
       id: layer.id,
       name: layer.name
@@ -22,11 +25,14 @@ function IframePluginService(options={}) {
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++){
       const service = this.services[serviceNames[i]];
-      await service.init({
-        layers
-      });
+      // set common layer attribute service just one time
+      service.getLayers() === undefined && service.setLayers(layers);
+      await service.init();
       service.on('response', this.eventResponseServiceHandler);
     }
+    /**
+     * Send post message is ready
+     */
     this.postMessage({
       id:null,
       action:"app:ready",
@@ -42,6 +48,12 @@ function IframePluginService(options={}) {
     else window.attachEvent("onmessage", this.getMessage);
   };
 
+  /**
+   * Outputplace iframe get by DataRouteService
+   * @param dataPromise
+   * @param options
+   * @returns {Promise<void>}
+   */
   this.outputDataPlace = async function(dataPromise, options={}){
     const {action='app:results'} = options;
     let {result, data=[]} = await dataPromise;
@@ -101,6 +113,7 @@ function IframePluginService(options={}) {
     }
   };
 
+  // Called when change map or clear
   this.clear = function() {
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++) {

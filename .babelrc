@@ -3,7 +3,7 @@
   "plugins": [
     "transform-remove-strict-mode",
     "transform-object-rest-spread",
-    "transform-runtime",
+    //"transform-runtime",
     "transform-array-find"
   ]
 }
