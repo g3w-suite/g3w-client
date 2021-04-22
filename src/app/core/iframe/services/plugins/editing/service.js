@@ -14,6 +14,9 @@ function EditingService() {
             id: 'deletefeature'
           },
           {
+            id: 'copyfeatures'
+          },
+          {
             id: 'editmultiattributes'
           },
           {
@@ -31,6 +34,9 @@ function EditingService() {
         disabled: [
           {
             id: 'addfeature'
+          },
+          {
+            id: 'copyfeatures'
           },
           {
             id: 'deletefeature'
@@ -99,6 +105,7 @@ function EditingService() {
       disableToolboxes.forEach(toolbox => toolbox.setEditing(!bool))
     },
     canRedo:() =>{},
+    cancelform:cb=> ()=>{cb()},//run callback
     addfeature: ({properties, toolboxes}={}) => feature => {
       Object.keys(properties).forEach(property => feature.set(property, properties[property]));
       let activeTool;
@@ -113,10 +120,14 @@ function EditingService() {
           disableToolboxes.push(toolbox)
         }
       });
-      this.addSubscribeEvents('canUndo', {
-        activeTool,
-        disableToolboxes
-      })
+      //just one time
+      if (this.subscribevents.find(eventObject => eventObject.event !== 'canUndo')) {
+        const handler = this.addSubscribeEvents('canUndo', {
+          activeTool,
+          disableToolboxes
+        });
+        this.addSubscribeEvents('cancelform', handler);
+      }
     },
     closeeditingpanel: ({qgs_layer_id})=> () => this.stopAction({qgs_layer_id})
   };
@@ -128,7 +139,8 @@ function EditingService() {
     this.subscribevents.push({
       event,
       handler
-    })
+    });
+    return handler;
   };
 
   /**
@@ -154,28 +166,62 @@ function EditingService() {
     await this.startAction({
       toolboxes: qgs_layer_id
     });
-    try {
-      // create options
-      const options = {
-        tools: this.config.tools.add,
-        startstopediting: false,
-        action : 'add'
-      };
 
-      let toolboxes = await this.startEditing(qgs_layer_id, options);
-      toolboxes = toolboxes.filter(toolboxPromise => toolboxPromise.status === 'fulfilled').map(toolboxPromise => toolboxPromise.value);
-      !GUI.isSidebarVisible() && GUI.showSidebar();
-      const toolbox = toolboxes.length === 1 && toolboxes[0];
-      toolbox && toolbox.setActiveTool(toolbox.getToolById('addfeature'));
-      // // in case of no feature add avent subscribe
-      this.addSubscribeEvents('addfeature', {properties, toolboxes});
-      this.addSubscribeEvents('closeeditingpanel', {qgs_layer_id})
-
-    } catch(err){console.log(err)}
-
+    // create options
+    const options = {
+      tools: this.config.tools.add,
+      startstopediting: false,
+      action : 'add'
+    };
+    // return all toolboxes
+    let toolboxes = await this.startEditing(qgs_layer_id, options);
+    toolboxes = toolboxes.filter(toolboxPromise => toolboxPromise.status === 'fulfilled').map(toolboxPromise => toolboxPromise.value);
+    !GUI.isSidebarVisible() && GUI.showSidebar();
+    const toolbox = toolboxes.length === 1 && toolboxes[0];
+    toolbox && toolbox.setActiveTool(toolbox.getToolById('addfeature'));
+    // // in case of no feature add avent subscribe
+    this.addSubscribeEvents('addfeature', {properties, toolboxes});
+    this.addSubscribeEvents('closeeditingpanel', {qgs_layer_id})
   };
 
-  this.update = function(){};
+  this.update = async function(config={}){
+    const {qgs_layer_id:configQglLayerId, ...data} = config;
+    const {feature} = data;
+    const qgs_layer_id = this._getQgsLayerId(configQglLayerId);
+    const response = await this.findFeaturesWithGeometry({
+      qgs_layer_id,
+      feature
+    });
+    const { found, features } = response;
+    if (found){
+      try {
+        //call method common
+        await this.startAction({
+          toolboxes: [response.qgs_layer_id]
+        });
+
+        this.mapService.zoomToFeatures(features, {
+          highlight:true
+        });
+
+        // create options
+        const options = {
+          feature,
+          tools: this.config.tools.update,
+          startstopediting: false,
+          action : 'update'
+        };
+        // return all toolboxes
+        await this.startEditing([response.qgs_layer_id], options);
+        !GUI.isSidebarVisible() && GUI.showSidebar();
+        this.addSubscribeEvents('closeeditingpanel', {
+          qgs_layer_id: [response.qgs_layer_id]
+        })
+      } catch(err){
+        console.log(err)
+      }
+    }
+  };
 
   this.delete = function(){};
 
@@ -194,10 +240,7 @@ function EditingService() {
         filter.nofeatures = true;
         break;
       case 'update':
-        filter.field = Object.entries(feature).reduce((accumulator, [field, value]) =>{
-          const filterString =  `${field}|eq|${value}`;
-          return accumulator ? `${accumulator}|and,${filterString}` : filterString;
-        }, '');
+        filter.field = `${feature.field}|eq|${feature.value}`;
         break;
     }
     const startEditingPromise = [];

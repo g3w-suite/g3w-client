@@ -27,7 +27,6 @@ function BasePluginService(){
     }
   };
 
-
   this.clear = function(){
     //TO OVERWRITE
   };
