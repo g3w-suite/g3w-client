@@ -72,7 +72,7 @@ function EditingService() {
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
-  this.startAction = async function({toolboxes, resolve}){
+  this.startAction = async function({toolboxes, resolve, reject}){
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
       //mode: 'autosave',
