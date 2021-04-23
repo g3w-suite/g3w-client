@@ -77,12 +77,12 @@ function EditingService() {
     this.dependencyApi.setSaveConfig({
       //mode: 'autosave',
       cb: {
-        done: ()=> {
+        done: toolbox => {
           this.stopEditing(toolboxes);
-          resolve();
-        }, // called when commit chenges is done successuffly
-        error: () => {
-          reject();
+          resolve(toolbox && toolbox.getId());
+        }, // called when commit changes is done successuffly
+        error: toolbox => {
+          reject(toolbox && toolbox.getId());
         } // called whe commit change receive an error
       }
     });
