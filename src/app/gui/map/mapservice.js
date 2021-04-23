@@ -1790,8 +1790,9 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
-proto.updateMapLayer = function(mapLayer, options={force: false}) {
-  !options.force ? mapLayer.update(this.state, this.getResolution()) : mapLayer.update(this.state, {"time": Date.now()})
+proto.updateMapLayer = function(mapLayer, options={}) {
+  const { force=false } = options;
+  !force ? mapLayer.update(this.state, {}) : mapLayer.update(this.state, {"time": Date.now()})
 };
 
 // run update function on ech mapLayer

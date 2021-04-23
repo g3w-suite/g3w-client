@@ -30,24 +30,32 @@ function TaskService(){
   this.runTask = async function(options={}){
     const {method='GET', params={}, url, taskUrl, interval=1000, listener=()=>{}} = options;
     try {
-      const response = await XHR[method]({
+      const response =  method === 'GET' ? await XHR.get({
         url,
         params
+      }): await XHR.post({
+        url,
+        data: params.data || {},
+        contentType: params.contentType || "application/json"
       });
-      const {result, taskId} = response;
-      const intervalId = setInterval(async ()=>{
-        const response = await XHR.get({
-          url: `${taskUrl}/${taskId}`
+      const {result, task_id} = response;
+      console.log(result, task_id)
+      if (result){
+        const intervalId = setInterval(async ()=>{
+          const response = await XHR.get({
+            url: `${taskUrl}/${task_id}`
+          });
+          listener(response);
+        }, interval);
+
+        tasks.push({
+          task_id,
+          intervalId,
         });
+
         listener(response);
-      }, interval);
+      } else return Promise.reject(response);
 
-      tasks.push({
-        taskId,
-        intervalId,
-      });
-
-      listener(response);
     } catch(err){
       return Promise.reject(err);
     }
@@ -60,11 +68,9 @@ function TaskService(){
    * }
    */
   this.stopTask = function(options={}){
-    const { taskId } = options;
-    const task = tasks.find(task => task.taskId === taskId);
-    if (task){
-      clearInterval(task.intervalId);
-    }
+    const { task_id } = options;
+    const task = tasks.find(task => task.task_id === task_id);
+    if (task)clearInterval(task.intervalId);
   };
 
   /**
