@@ -178,7 +178,8 @@ function EditingService() {
       const options = {
         tools: this.config.tools.add,
         startstopediting: false,
-        action : 'add'
+        action : 'add',
+        selected: qgs_layer_id.length === 1
       };
       // return all toolboxes
       let toolboxes = await this.startEditing(qgs_layer_id, options);
@@ -209,7 +210,8 @@ function EditingService() {
         qgs_layer_id,
         feature,
         zoom: true,
-        highlight: true
+        highlight: true,
+        selected: qgs_layer_id.length === 1 // set selected toolbox
       });
       const { found } = response;
       if (found){
