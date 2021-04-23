@@ -39,13 +39,15 @@ function TaskService(){
         contentType: params.contentType || "application/json"
       });
       const {result, task_id} = response;
-      console.log(result, task_id)
       if (result){
         const intervalId = setInterval(async ()=>{
           const response = await XHR.get({
             url: `${taskUrl}/${task_id}`
           });
-          listener(response);
+          listener({
+            task_id,
+            response
+          });
         }, interval);
 
         tasks.push({
@@ -53,7 +55,10 @@ function TaskService(){
           intervalId,
         });
 
-        listener(response);
+        listener({
+          task_id,
+          response
+        });
       } else return Promise.reject(response);
 
     } catch(err){
