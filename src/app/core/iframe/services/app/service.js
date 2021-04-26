@@ -38,11 +38,12 @@ function AppService(){
   };
 
   this.screenshot = async function({capture=true}){
+    const action = 'app:screenshot';
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
       try {
         const blob = await this.mapService.createMapImage();
         this.emit('response', {
-          action:'app:screenshot',
+          action,
           response: {
             result: true,
             data: blob
@@ -50,7 +51,7 @@ function AppService(){
         })
       } catch(err){
         this.emit('response', {
-          action:'app:screenshot',
+          action,
           response: {
             result: false,
             data: err
