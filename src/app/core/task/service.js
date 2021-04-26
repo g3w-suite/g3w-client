@@ -42,7 +42,7 @@ function TaskService(){
       if (result){
         const intervalId = setInterval(async ()=>{
           const response = await XHR.get({
-            url: `${taskUrl}/${task_id}`
+            url: `${taskUrl}${task_id}`
           });
           listener({
             task_id,
