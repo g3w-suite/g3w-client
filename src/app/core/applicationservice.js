@@ -30,6 +30,7 @@ const ApplicationService = function() {
   ApplicationState.online = navigator.onLine;
   ApplicationState.ismobile= isMobile.any;
   this.complete = false;
+  this.baseurl = '/'; // set base url
   this.download_caller_id = null;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -257,10 +258,11 @@ const ApplicationService = function() {
       ...appConfig
     };
     try {
-      initConfig =   initConfig ? initConfig :  await this.obtainInitConfig({
-        initConfigUrl:  appConfig.server.urls.initconfig
+      initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
+        initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
       // write urls of static files and media url (base url and vector url)
+      this.baseurl = initConfig.baseurl;
       config.server.urls.baseurl = initConfig.baseurl;
       config.server.urls.frontendurl = initConfig.frontendurl;
       config.server.urls.staticurl = initConfig.staticurl;
@@ -351,7 +353,7 @@ const ApplicationService = function() {
         projectPath = `${this._groupId}/${type_id}`;
       }
       if (projectPath) {
-        const url =  `${host || ''}/${this._initConfigUrl}/${projectPath}`;
+        const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         try {
           const initConfig =  await this.getInitConfig(url);
@@ -495,6 +497,9 @@ const ApplicationService = function() {
 
   this.errorHandler = function(error) {};
 
+  /**
+   * clear initConfig
+   */
   this.clearInitConfig = function() {
     window.initConfig = null;
     this._initConfig = null;
