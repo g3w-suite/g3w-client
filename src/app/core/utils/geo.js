@@ -637,7 +637,7 @@ const geoutils = {
     };
     Object.assign(filter, mapFilter);
     let layers = [];
-    MapLayersStoreRegistry.getQuerableLayersStores().forEach((layerStore) => {
+    MapLayersStoreRegistry.getQuerableLayersStores().forEach(layerStore => {
       layers = layerStore.getLayers(filter, options);
     });
     return layers || [];
