@@ -81,9 +81,7 @@ function IframePluginService(options={}) {
 
   // method to post message to parent
   this.postMessage = function (message={}) {
-    if (window.parent) {
-      window.parent.postMessage(message, "*")
-    }
+    if (window.parent) window.parent.postMessage(message, "*")
   };
 
   // method to handle all message from window

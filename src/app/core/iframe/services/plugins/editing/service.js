@@ -9,7 +9,8 @@ function EditingService() {
   this.isRunning = false;
   this.responseObject = {
     cb: null, // resolve or reject promise method
-    qgs_layer_id : null
+    qgs_layer_id : null,
+    error: null
   };
   this.config =  {
     tools: {
@@ -84,12 +85,14 @@ function EditingService() {
           //set toolbox id
           this.responseObject.cb = resolve;
           this.responseObject.qgs_layer_id = toolbox.getId();
+          this.responseObject.error = null;
           // close panel that fire closeediting panel event
           this.dependencyApi.hidePanel();
         }, // called when commit changes is done successuffly
-        error: toolbox => {
+        error: (toolbox, error) => {
           this.responseObject.cb = reject;
           this.responseObject.qgs_layer_id = toolbox.getId();
+          this.responseObject.error = error
         } // called whe commit change receive an error
       }
     });
@@ -110,7 +113,10 @@ function EditingService() {
   this.subscribersHandlers = {
     canUndo:({activeTool, disableToolboxes=[]}) => bool => {
       //set currenttoolbocx id in editing to null
-     if (bool === false) this.responseObject.qgs_layer_id = null;
+     if (bool === false) {
+       this.responseObject.qgs_layer_id = null;
+       this.responseObject.error = null;
+     }
       activeTool.setEnabled(!bool);
       disableToolboxes.forEach(toolbox => toolbox.setEditing(!bool))
     },
@@ -141,8 +147,11 @@ function EditingService() {
     },
     closeeditingpanel: ({qgs_layer_id})=> () => {
       // response to router service
-      this.responseObject.cb(this.responseObject.qgs_layer_id);
-      // sto action
+      this.responseObject.cb({
+        qgs_layer_id: this.responseObject.qgs_layer_id,
+        error: this.responseObject.error
+      });
+      // stop action
       this.stopAction({qgs_layer_id})
     }
   };
@@ -311,8 +320,10 @@ function EditingService() {
     this.isRunning = false;
     this.responseObject = {
       cb: null, // resolve or reject promise method
-      qgs_layer_id : null
+      qgs_layer_id : null,
+      error: null
     };
+    this.resetSubscribeEvents();
   }
 }
 
