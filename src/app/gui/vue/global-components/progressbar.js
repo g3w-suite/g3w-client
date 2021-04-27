@@ -14,7 +14,7 @@ export default {
       }, [
         createElement('div', {
           style: {
-            width: `${this.progress}%`,
+            width: `${this.progress < 10 ? 10 : this.progress}%`,
             display: 'flex',
             justifyContent:'center',
             fontWeight: 'bold'

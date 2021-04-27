@@ -41,7 +41,9 @@ function QueryService(){
         feature_count,
         projection: this.project.getProjection()
       });
-      return this.handleRequest(request);
+      return this.handleRequest(request, {
+        geometry
+      });
   };
 
   /**
@@ -60,7 +62,9 @@ function QueryService(){
       feature_count,
       multilayers,
     });
-    return this.handleRequest(request);
+    return this.handleRequest(request, {
+      bbox
+    });
   };
 
   /**
@@ -83,7 +87,9 @@ function QueryService(){
         feature_count,
         coordinates
     });
-    return this.handleRequest(request);
+    return this.handleRequest(request, {
+      coordinates
+    });
   };
 
   /**
@@ -91,10 +97,10 @@ function QueryService(){
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  this.handleRequest = function(request){
+  this.handleRequest = function(request, query={}){
     return new Promise((resolve, reject) =>{
       request.then(response => {
-        const results = this.handleResponse(response);
+        const results = this.handleResponse(response, query);
         resolve(results);
       }).fail(error=>reject(error))
     })
@@ -105,10 +111,10 @@ function QueryService(){
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = async function(response){
+  this.handleResponse = async function(response, query={}){
     const layersResults = response;
     const results = {
-      query: layersResults[0] ? layersResults[0].query: null,
+      query,
       data: [],
       result: true // set result to true
     };

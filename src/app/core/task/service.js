@@ -28,7 +28,7 @@ function TaskService(){
    * return a Promise that return a task id
    */
   this.runTask = async function(options={}){
-    const {method='GET', params={}, url, taskUrl, interval=1000, listener=()=>{}} = options;
+    let {method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener=()=>{}} = options;
     try {
       const response =  method === 'GET' ? await XHR.get({
         url,
@@ -41,20 +41,36 @@ function TaskService(){
       const {result, task_id} = response;
       if (result){
         const intervalId = setInterval(async ()=>{
-          const response = await XHR.get({
-            url: `${taskUrl}${task_id}`
-          });
-          listener({
-            task_id,
-            response
-          });
+          // check if timeout is defined
+          timeout = timeout - interval;
+          if (timeout > 0){
+            const response = await XHR.get({
+              url: `${taskUrl}${task_id}`
+            });
+            listener({
+              task_id,
+              timeout: false,
+              response
+            });
+          } else {
+            listener({
+              timeout: true
+            });
+
+            this.stopTask({
+              task_id
+            });
+
+          }
         }, interval);
 
+        // add current task to list of task
         tasks.push({
           task_id,
           intervalId,
         });
 
+        // run first time listener function
         listener({
           task_id,
           response

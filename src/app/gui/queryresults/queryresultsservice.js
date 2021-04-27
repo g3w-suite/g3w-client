@@ -50,13 +50,13 @@ function QueryResultsService() {
 
   this._vectorLayers = [];
   this.setters = {
-    setQueryResponse: function(queryResponse) {
+    setQueryResponse(queryResponse) {
       this.clearState();
       this.state.query = queryResponse.query;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers);
     },
-    setLayersData: function(layers) {
+    setLayersData(layers) {
       // here set the right order of result layers based on toc
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
@@ -64,12 +64,12 @@ function QueryResultsService() {
       layers.forEach(layer => this.state.layers.push(layer));
       this.setActionsForLayers(layers);
     },
-    addComponent: function(component) {
+    addComponent(component) {
       this._addComponent(component)
     },
-    addActionsForLayers: function(actions) {},
-    postRender: function(element) {},
-    closeComponent: function() {},
+    addActionsForLayers(actions) {},
+    postRender(element) {},
+    closeComponent() {},
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
@@ -246,7 +246,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
           all:true
         });
         if (this._relations && this._relations.length) {
-          const getRelationFieldsFromFormStructure = (node) => {
+          const getRelationFieldsFromFormStructure = node => {
             if (!node.nodes) {
               node.name ? node.relation = true : null;
             } else {
@@ -273,6 +273,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerTitle = layer.get('name');
       layerId = layer.get('id');
     } else if (typeof layer === 'string' || layer instanceof String) {
+      sourceType = Layer.LayerTypes.VECTOR;
       const feature = featuresForLayer.features[0];
       layerAttributes = feature ? feature.getProperties() : [];
       layerRelationsAttributes =  [];
@@ -336,9 +337,9 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     }
     else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
   };
-  featuresForLayers.forEach((featuresForLayer) => {
+  featuresForLayers.forEach(featuresForLayer => {
     if (!Array.isArray(featuresForLayer)) _handleFeatureFoLayer(featuresForLayer);
-    else featuresForLayer.forEach((featuresForLayer) => _handleFeatureFoLayer(featuresForLayer));
+    else featuresForLayer.forEach(featuresForLayer => _handleFeatureFoLayer(featuresForLayer));
   });
   return layers;
 };
@@ -368,11 +369,11 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
     });
     return attributes;
   } else {
-    return featureAttributesNames.map((featureAttributesName) => {
+    return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms'
+        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms' || sourceType === undefined
       }
     })
   }
@@ -516,59 +517,55 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 };
 
 proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', (queryResponse, coordinates, resolution) => {
+  this.onbefore('setQueryResponse', queryResponse => {
+    const {query={}} = queryResponse;
+    const {coordinates, bbox, geometry} = query; // extract
     let isVisible = false;
     this._vectorLayers.forEach(vectorLayer => {
       let features = [];
-      let feature,
-        intersectGeom;
       switch (vectorLayer.constructor) {
         case VectorLayer:
-          isVisible = !vectorLayer.isVisible();
+          isVisible = vectorLayer.isVisible();
           break;
         case ol.layer.Vector:
-          isVisible = !vectorLayer.getVisible();
+          isVisible = vectorLayer.getVisible();
           break;
       }
-      if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
-      if (Array.isArray(coordinates)) {
-        if (coordinates.length === 2) {
-          const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
-          this.mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+      if (!isVisible) return true;
+      // case query coordinates
+      if (coordinates && Array.isArray(coordinates)) {
+        const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+        this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
             features.push(feature);
           },  {
-            layerFilter: function(layer) {
-              return layer === vectorLayer;
-            }
-          });
-        } else if (coordinates.length === 4) {
-          intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
-          switch (vectorLayer.constructor) {
-            case VectorLayer:
-              features = vectorLayer.getIntersectedFeatures(intersectGeom);
-              break;
-            case ol.layer.Vector:
-              vectorLayer.getSource().getFeatures().forEach(feature => {
-                if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-                  features.push(feature);
-                }
-              });
-              break;
+          layerFilter(layer) {
+            return layer === vectorLayer;
           }
-        }
-      } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
-        intersectGeom = coordinates;
+        });
+        //case bbox
+      } else if (bbox && Array.isArray(bbox)) {
+        const geometry = ol.geom.Polygon.fromExtent(bbox);
         switch (vectorLayer.constructor) {
           case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(intersectGeom);
+            features = vectorLayer.getIntersectedFeatures(geometry);
             break;
           case ol.layer.Vector:
             vectorLayer.getSource().getFeatures().forEach(feature => {
-              if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-                features.push(feature);
-              }
+              geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
             });
             break;
+        }
+        //case geometry
+      } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
+        switch (vectorLayer.constructor) {
+          case VectorLayer:
+            features = vectorLayer.getIntersectedFeatures(geometry);
+            break;
+           case ol.layer.Vector:
+             vectorLayer.getSource().getFeatures().forEach(feature => {
+               geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+             });
+             break;
         }
       }
       queryResponse.data = queryResponse.data ? queryResponse.data : [];
@@ -671,6 +668,12 @@ proto.printAtlas = function(layer, feature){
     })
 };
 
+/**
+ *
+ * @param type
+ * @param layerId
+ * @param features
+ */
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
   const data = {};
   features = features ?  Array.isArray(features) ? features : [features]: features;

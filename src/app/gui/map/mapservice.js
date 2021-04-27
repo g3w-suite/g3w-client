@@ -822,8 +822,12 @@ proto._setupControls = function() {
                       coordinates
                     },
                    outputs: {
-                      show({data=[]}){
-                        return data.length === 0;
+                      show({data=[], query}){
+                        const show = data.length === 0;
+                        // set coordinates to null to avoid that externalvector added to query result
+                        // response to coordinates
+                        query.coordinates = !show && null;
+                        return show;
                       }
                    }
                   });
@@ -2401,7 +2405,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
             url: data,
             encoding: 'big5',
             EPSG: crs
-          }, (geojson) => {
+          }, geojson => {
             const data = JSON.stringify(geojson);
             format = new ol.format.GeoJSON({});
             layer = createExternalLayer(format, data, "EPSG:4326");
