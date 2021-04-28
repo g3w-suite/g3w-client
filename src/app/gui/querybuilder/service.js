@@ -41,7 +41,10 @@ proto.getValues = async function({layerId, field}={}){
       const layer = this._getLayerById(layerId);
       const dataUrl = layer.getUrl('data');
       const response = await XHR.get({
-        url: dataUrl
+        url: dataUrl,
+        params: {
+          ordering:field
+        }
       });
       const features = getFeaturesFromResponseVectorApi(response);
       if (features && features.length) {
