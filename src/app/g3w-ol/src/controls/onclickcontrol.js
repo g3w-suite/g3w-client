@@ -15,7 +15,7 @@ proto.overwriteOnClickEvent = function(clickHandler){
 };
 
 proto.resetOriginalOnClickEvent = function(){
-  this._onclick = this._originalonlick;
+  this._onclick = this._originalonlick || this._onclick;
   this._originalonlick = null;
 };
 
