@@ -59,7 +59,7 @@
       </div>
       <div id="query_builder_message" class="margin-between-element">
         <bar-loader :loading="loading.test"></bar-loader>
-        <span class="bold">{{message}}</span>
+        <span class="bold skin-color" v-show="message" v-t="'sdk.querybuilder.messages.number_of_features'"></span><span class="bold">{{message}}</span>
       </div>
       <div id="query_builder_footer_buttons" class="content-end margin-between-element">
         <button class="query_builder_button btn btn-secondary  bold" @click="test" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.test'"></button>

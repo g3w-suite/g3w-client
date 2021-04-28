@@ -45,7 +45,8 @@ const translations = {
             edit: "Modifica"
           },
           messages: {
-            changed: 'Salvato correttamente'
+            changed: 'Salvato correttamente',
+            number_of_features: "Numero di features"
           },
           panel: {
             button: {
@@ -458,7 +459,8 @@ const translations = {
             edit: "Edit"
           },
           messages: {
-            changed: 'Saved'
+            changed: 'Saved',
+            number_of_features: "Number of features"
           },
           panel: {
             button: {
@@ -869,7 +871,8 @@ const translations = {
             edit: "Muokkaa"
           },
           messages: {
-            changed: 'Tallennettu'
+            changed: 'Tallennettu',
+            number_of_features: "Ominaisuuksien lukumäärä"
           },
           panel: {
             button: {
@@ -1280,7 +1283,8 @@ const translations = {
             edit: "Redigera"
           },
           messages: {
-            changed: 'Sparat'
+            changed: 'Sparat',
+            number_of_features: "Antal funktione"
           },
           panel: {
             button: {

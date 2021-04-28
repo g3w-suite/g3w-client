@@ -88,7 +88,7 @@ const QueryBuilder = Vue.extend({
           layerId,
           filter: this.filter
         });
-        this.message = number_of_features !== undefined ? `numero di features ${number_of_features}` : ''
+        this.message = number_of_features !== undefined ? ` ${number_of_features}` : ''
       } catch(err){
         this.message = err;
       }
