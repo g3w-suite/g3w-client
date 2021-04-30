@@ -68,12 +68,14 @@ function AppService(){
       qgs_layer_id = this.getQgsLayerId({
         qgs_layer_id
       });
+
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
         feature,
         zoom:true,
         highlight
       });
+
       resolve(response.qgs_layer_id);
     })
   };

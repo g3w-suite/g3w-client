@@ -1954,6 +1954,10 @@ proto.zoomToExtent = function(extent, options={}) {
   });
 };
 
+proto.zoomToProjectInitExtent = function(){
+  this.zoomToExtent(this.project.state.initextent);
+};
+
 proto.compareExtentWithProjectMaxExtent = function(extent){
   const projectExtent = this.project.state.extent;
   const inside = ol.extent.containsExtent(projectExtent, extent);

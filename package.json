@@ -52,6 +52,7 @@
     "gulp": "^3.9.1",
     "gulp-clean-css": "^2.0.2",
     "gulp-concat": "^2.6.1",
+    "gulp-csso": "^4.0.1",
     "gulp-filenames": "^4.0.1",
     "gulp-filter": "^4.0.0",
     "gulp-flatten": "^0.2.0",

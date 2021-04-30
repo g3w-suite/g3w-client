@@ -84,23 +84,28 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
   let i = 0;
   while (!response.found && i < layersCount) {
     const layer = this.project.getLayerById(qgs_layer_id[i]);
-    const data = layer && await this.searchFeature({
-      layer,
-      feature
-    });
-    if (data.length) {
-      const features = data[0].features;
-      response.found = features.length > 0 && !!features.find(feature => feature.getGeometry());
-      if (response.found) {
-        response.features = features;
-        response.qgs_layer_id = qgs_layer_id[i];
-        zoom && this.mapService.zoomToFeatures(features, {
+    try {
+      const data = layer && await this.searchFeature({
+        layer,
+        feature
+      });
+      if (data.length) {
+        const features = data[0].features;
+        response.found = features.length > 0 && !!features.find(feature => feature.getGeometry());
+        if (response.found) {
+          response.features = features;
+          response.qgs_layer_id = qgs_layer_id[i];
+          zoom && this.mapService.zoomToFeatures(features, {
             highlight
           });
-      }
-      else i++;
-    } else i++;
+        }
+        else i++;
+      } else i++;
+    } catch(err){i++}
   }
+  // in case of no response zoom too initial extent
+  !response.found && this.mapService.zoomToProjectInitExtent();
+
   return response;
 };
 

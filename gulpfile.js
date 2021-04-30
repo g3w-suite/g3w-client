@@ -17,6 +17,7 @@ const useref = require('gulp-useref');
 const replace = require('gulp-replace');
 const gulpif = require('gulp-if');
 const uglify = require('gulp-uglify');
+const csso = require('gulp-csso')
 const watch = require('gulp-watch');
 const cleanCSS = require('gulp-clean-css');
 const gutil = require("gulp-util");
@@ -193,9 +194,11 @@ function interpolateVersion(path, separator) {
 gulp.task('html', ['add_external_resources_to_main_html', 'assets'], function() {
   return gulp.src('./src/index.html')
     .pipe(useref())
+    .pipe(gulpif('*.js', uglify()))
     .pipe(gulpif(['css/app.min.css'], cleanCSS({
       keepSpecialComments: 0
     }), replace(/\w+fonts/g, 'fonts')))
+    .pipe(gulpif('*.css', csso()))
     .pipe(rename(function(path) {
       // renamed with version Date.now()
       path.basename = interpolateVersion(path.basename+path.extname, '.min.');
