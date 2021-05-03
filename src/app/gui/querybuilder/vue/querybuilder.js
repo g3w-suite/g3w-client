@@ -63,10 +63,7 @@ const QueryBuilder = Vue.extend({
           layerId: this.currentlayer.id,
           field: this.select.field
         });
-
-      } catch(err){
-
-      }
+      } catch(err){}
       this.loading.values = false;
       await this.$nextTick();
       this.manualvalue = null;
@@ -141,7 +138,10 @@ const QueryBuilder = Vue.extend({
       return {
         id: layer.id,
         label: layer.name,
-        fields: layer.fields.map(field => field.name).filter(field => excludejoinfields.indexOf(field) === -1)
+        fields: layer.fields.map(field => ({
+          label:field.label,
+          name: field.name
+        })).filter(field => excludejoinfields.indexOf(field) === -1)
       }
     });
     this.operators = operators;

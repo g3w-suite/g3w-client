@@ -53,10 +53,10 @@
                 </li>
                 <li class="user-footer">
                   <div class="pull-left" v-if="user.admin_url">
-                    <a :href="user.admin_url" class="btn btn-default btn-flat" ><i :class="g3wtemplate.getFontClass('folder')"></i> Admin</a>
+                    <a :href="user.admin_url" class="btn btn-default btn-flat skin-color bold" ><i :class="g3wtemplate.getFontClass('folder')"></i> Admin</a>
                   </div>
                   <div class="pull-right">
-                    <a :href="user.logout_url" class="btn btn-default btn-flat" v-t="'logout'"><i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i></a>
+                    <a :href="user.logout_url" class="btn btn-default btn-flat skin-color bold" v-t="'logout'"><i :class="g3wtemplate.getFontClass('sign-out')" style="margin-right: 2px;"></i></a>
                   </div>
                 </li>
               </ul>

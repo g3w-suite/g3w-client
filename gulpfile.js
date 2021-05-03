@@ -501,5 +501,4 @@ gulp.task('test', async (done) =>  {
 });
 
 gulp.task('default',['add_external_resources_to_main_html','serve']); // development task - Deafult
-gulp.task('default-hot',['add_external_resources_to_main_html', 'serve-hot']); // development task Hot Module- Deafult
 

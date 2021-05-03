@@ -1,5 +1,7 @@
 function WMSLegend({layer, params}) {
   const {
+    width,
+    height,
     color="white",
     fontsize=10,
     transparent=true,
@@ -27,7 +29,9 @@ function WMSLegend({layer, params}) {
   });
   let url = layer.getWmsUrl({type: 'legend'});
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
-  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}&WIDTH=300`,
+  return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
+    `${width ? '&WIDTH=' + width: ''}`,
+    `${height ? '&HEIGHT=' + height: ''}`,
     `&FORMAT=image/png`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
