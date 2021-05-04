@@ -736,7 +736,7 @@ Vue.component('layerslegend-items',{
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}&filtertoken=${ApplicationService.getFilterToken()}`: url;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
             const legendUrlObject = {
               loading: true,
               url: legendUrl,

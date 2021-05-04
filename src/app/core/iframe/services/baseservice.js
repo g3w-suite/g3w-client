@@ -133,4 +133,17 @@ proto.getReady = function(){
   return this.ready;
 };
 
+/**
+ * Method overwrite single service: Usefult to sto eventually running action
+ * * @returns {Promise<void>}
+ */
+proto.stop = async function(){};
+
+/**
+ * Overwrite each single service
+ */
+proto.clear = function(){
+  //overwrite single service
+};
+
 module.exports = BaseIframeService;

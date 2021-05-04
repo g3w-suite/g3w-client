@@ -92,7 +92,7 @@ function EditingService() {
         error: (toolbox, error) => {
           this.responseObject.cb = reject;
           this.responseObject.qgs_layer_id = toolbox.getId();
-          this.responseObject.error = error
+          this.responseObject.error = error;
         } // called whe commit change receive an error
       }
     });
@@ -311,6 +311,13 @@ function EditingService() {
     this.clear();
   };
 
+  this.stop = function(){
+    return new Promise((resolve, reject)=>{
+      this.dependencyApi.hidePanel();
+      this.once('clear', resolve);
+    })
+  };
+
   /**
    * Method called wen we want to reset default editing plugin behaviour
    *
@@ -324,6 +331,7 @@ function EditingService() {
       error: null
     };
     this.resetSubscribeEvents();
+    this.emit('clear');
   }
 }
 

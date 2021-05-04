@@ -1,8 +1,9 @@
-const { splitContextAndMethod } =require('core/utils/utils');
+const { splitContextAndMethod, uniqueId } = require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function IframePluginService(options={}) {
   //project is current project send by application service
+  this.pendingactions = {};
   this.init = async function({project}={}) {
     await GUI.isReady();
     this.services = require('./services/index');
@@ -17,7 +18,7 @@ function IframePluginService(options={}) {
     /*
     get layer attributes from project layers state
      */
-    const layers =  project.state.layers.map(layer =>({
+    const layers = project.state.layers.map(layer =>({
       id: layer.id,
       name: layer.name
     }));
@@ -84,15 +85,29 @@ function IframePluginService(options={}) {
     if (window.parent) window.parent.postMessage(message, "*")
   };
 
+  this.stopPendingActions = async function(){
+    const promises = [];
+    Object.keys(this.pendingactions).forEach(id => {
+      const {context} = this.pendingactions[id];
+      promises.push(this.services[context].stop());
+      delete this.pendingactions[id];
+    });
+    return Promise.allSettled(promises)
+  };
+
   // method to handle all message from window
   this.getMessage = async evt => {
     if (evt && evt.data) {
-      const { id, action, data:params } = evt.data;
+      const { id = uniqueId(), single=true, action, data:params } = evt.data;
       const {context, method} = splitContextAndMethod(action);
       let result = false;
       let data;
       try {
         if (this.services[context].getReady()) {
+          single && await this.stopPendingActions();
+          this.pendingactions[id] = {
+            context
+          };
           data = await this.services[context][method](params);
           result = true;
         }
@@ -107,7 +122,8 @@ function IframePluginService(options={}) {
           result,
           data
         }
-      })
+      });
+      delete this.pendingactions[id];
     }
   };
 
@@ -118,6 +134,7 @@ function IframePluginService(options={}) {
       const service = this.services[serviceNames[i]];
       service.off('response', this.eventResponseServiceHandler)
     }
+    this.stopPendingActions();
     if (window.removeEventListener) window.removeEventListener("message", this.getMessage, false);
     else window.detachEvent("onmessage", this.getMessage);
   }

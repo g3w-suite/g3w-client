@@ -79,8 +79,6 @@ function AppService(){
       resolve(response.qgs_layer_id);
     })
   };
-
-  this.clear = function(){}
 }
 
 inherit(AppService, BaseService);
