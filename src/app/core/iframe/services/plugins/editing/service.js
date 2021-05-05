@@ -314,6 +314,7 @@ function EditingService() {
   this.stop = function(){
     return new Promise((resolve, reject)=>{
       this.dependencyApi.hidePanel();
+      GUI.hideSidebar();
       this.once('clear', resolve);
     })
   };
