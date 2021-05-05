@@ -1,10 +1,10 @@
 <template>
   <tr @click="toggleFeatureBoxAndZoom(layer,feature)"
-      @mouseover="trigger({id:'highlightgeometry'},layer,feature, index)"
+      @mouseover="trigger({id:'highlightgeometry'}, layer, feature, index)"
       @mouseout="trigger({id:'clearHighlightGeometry'}, layer, feature, index)" class="featurebox-header"
       :class="[collapsedFeatureBox(layer,feature) && layer.features.length > 1 ? '' : 'featurebox-header-open']">
     <actions :layer="layer" :featureIndex="index" :trigger="trigger" :feature="feature" :actions="actions"></actions>
-    <td class="attribute" v-for="attribute in attributesSubset(layer.attributes)">
+    <td class="attribute" v-for="attribute in attributesSubset(layer)">
       <span>{{feature.attributes[attribute.name]}}</span>
     </td>
     <td class="collapsed" v-if="!hasLayerOneFeature(layer)">

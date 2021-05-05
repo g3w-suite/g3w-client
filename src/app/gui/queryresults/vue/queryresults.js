@@ -121,17 +121,29 @@ const vueComponentOptions = {
     geometryAvailable(feature) {
       return feature.geometry ? true : false;
     },
-    attributesSubset: function(attributes) {
-      const _attributes = _.filter(attributes, function(attribute) {
-        return attribute.show && attribute.type != 'image';
-      });
+    extractAttributesFromFirstTabOfFormStructureLayers(layer){
+      const attributes = new Set();
+      const traverseStructure = item => {
+        if (item.nodes) {
+          item.nodes.forEach(node => traverseStructure(node));
+        } else {
+          const field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          field && attributes.add(field);
+        }
+      };
+      layer.formStructure.structure.length && traverseStructure(layer.formStructure.structure[0]);
+      return Array.from(attributes);
+    },
+    attributesSubset(layer) {
+      const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
+      const _attributes = attributes.filter(attribute => attribute.show && attribute.type != 'image');
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
     relationsAttributesSubset(relationAttributes) {
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
-        if (_.isArray(value)) return;
+        if (Array.isArray(value)) return;
         attributes.push({label: attribute, value: value})
       });
       const end = Math.min(maxSubsetLength, attributes.length);
@@ -144,30 +156,26 @@ const vueComponentOptions = {
       });
       return attributes;
     },
-    attributesSubsetLength: function(attributes) {
-      return this.attributesSubset(attributes).length;
+    attributesSubsetLength(layer) {
+      return this.attributesSubset(layer).length;
     },
     cellWidth(index,layer) {
       const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
-      const subsetLength = this.attributesSubsetLength(layer.attributes);
+      const subsetLength = this.attributesSubsetLength(layer);
       const diff = headerLength - subsetLength;
       const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
-      if ((index === subsetLength-1) && diff>0) {
-        return baseCellWidth * (diff+1);
-      }
-      else {
-        return baseCellWidth;
-      }
+      if ((index === subsetLength-1) && diff>0) return baseCellWidth * (diff+1);
+      else return baseCellWidth;
     },
     featureBoxColspan(layer) {
-      let colspan = this.attributesSubsetLength(layer.attributes);
+      let colspan = this.attributesSubsetLength(layer);
       if (layer.expandable) colspan += 1;
       if (layer.hasgeometry) colspan += 1;
       return colspan;
     },
-    relationsAttributesSubsetLength: function(elements) {
+    relationsAttributesSubsetLength(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
     getItemsFromStructure(layer) {

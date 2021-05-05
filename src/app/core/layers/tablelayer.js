@@ -458,8 +458,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
         field.input.options.values = options.values;
       }
       // for editing purpose
-      if (field.validate === undefined)
-        field.validate = {};
+      if (field.validate === undefined) field.validate = {};
       field.forceNull = false;
       field.validate.valid = true;
       field.validate._valid = true; //useful to get previous value in certain case
