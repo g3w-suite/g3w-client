@@ -21,7 +21,6 @@ function AppService(){
         this.mapControls.screenshot.control = this.mapService.getMapControlByType({
           type: 'screenshot'
         });
-
         this.setReady(true);
         resolve();
       });

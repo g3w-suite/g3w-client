@@ -210,9 +210,7 @@ function MapService(options={}) {
       this.state.hidden = bool;
     },
     setupViewer: function(width,height) {
-      if (width === 0 || height === 0) {
-        return
-      }
+      if (width === 0 || height === 0) return;
       if (this.viewer) {
         this.viewer.destroy();
         this.viewer = null;
@@ -641,12 +639,10 @@ proto._setupControls = function() {
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
-  this.getMapLayers().forEach((mapLayer) => {
-    mapLayer.getSource().setAttributions(this.getApplicationAttribution())
-  });
+  this.getMapLayers().forEach(mapLayer => mapLayer.getSource().setAttributions(this.getApplicationAttribution()));
   // check if base layer is set. If true add attribution control
   if (this.getApplicationAttribution() || baseLayers.length) {
-    const attributionControl =  new ol.control.Attribution({
+    const attributionControl = new ol.control.Attribution({
       collapsible: false,
       target: 'map_footer_left'
     });
@@ -2121,18 +2117,18 @@ proto.refreshMap = function(options) {
 proto.layout = function({width, height}) {
   if (!this.viewer) {
     this.setupViewer(width,height);
-    this.setupControls();
+    if (this.viewer) {
+      this.setupControls();
+      this.emit('ready');
+    }
     this.setHidden((width === 0 || height === 0));
-    this.emit('ready');
   } else {
     this.setHidden((width === 0 || height === 0));
     this.getMap().updateSize();
-    this.state.hidemaps.forEach((hidemap) => {
-      hidemap.map.updateSize()
-    });
+    this.state.hidemaps.forEach(hidemap => hidemap.map.updateSize());
     this._updateMapView();
   }
-  this._updateMapControlsLayout({width, height});
+  this._mapControls.length && this._updateMapControlsLayout({width, height});
 };
 
 //remove BaseLayers

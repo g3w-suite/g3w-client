@@ -131,8 +131,10 @@ proto.getSearchParams = function(){
   return this.config.searchParams;
 };
 
-//get search_endpoint
-
+/**
+ *
+ * @returns {*}
+ */
 proto.getSearchEndPoint = function(){
   return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
 };
