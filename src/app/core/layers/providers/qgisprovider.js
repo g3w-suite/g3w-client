@@ -99,7 +99,8 @@ proto.setProjections = function() {
 proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
-  const filter = options.filter || null;
+  let {filter=null} = options;
+  filter = filter && Array.isArray(filter) ? filter : [filter];
   const isVector = this._layer.getType() !== "table";
   isVector && this.setProjections();
   const CRS = isVector ? this._projections.map.getCode() : ApplicationState.map.epsg;
@@ -107,8 +108,9 @@ proto.query = function(options={}) {
   const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
-    // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() !== 'geometry') this._projections.layer = null;
+    // check if geometry filter. If not i have to remove projection layer
+    if (filter[0].getType() !== 'geometry') this._projections.layer = null;
+    filter = filter.map(filter => filter.get()).filter(value => value);
     const url = queryUrl ;
     const params = {
       SERVICE: 'WMS',
@@ -122,7 +124,7 @@ proto.query = function(options={}) {
       CRS,
       I,
       J,
-      FILTER: filter.get(),
+      FILTER: filter && filter.length ? filter.join(';') : undefined,
       WITH_GEOMETRY: isVector ? 1: 0
     };
     XHR.get({

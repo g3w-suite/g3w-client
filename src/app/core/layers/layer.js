@@ -127,6 +127,10 @@ inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
 
+proto.getSearchParams = function(){
+  return this.config.searchParams;
+};
+
 //get search_endpoint
 
 proto.getSearchEndPoint = function(){

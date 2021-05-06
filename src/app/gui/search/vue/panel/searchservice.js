@@ -1,7 +1,6 @@
 import { ALLVALUE }  from '../../constants';
 const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
-const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -26,6 +25,7 @@ function SearchService(config={}) {
   };
   const {options={}} = config;
   const layerid = options.querylayerid || options.layerid || null;
+  const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
   this.inputdependance = {};
   this.inputdependencies = [];
@@ -40,6 +40,7 @@ function SearchService(config={}) {
   this.url = options.queryurl;
   this.filter = options.filter;
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
+  this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
   this.createInputsFormFromFilter({
     filter
   });
@@ -74,7 +75,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
 proto.getUniqueValuesFromField = async function({field, value, unique}){
   let data = [];
   try {
-    data = await this.searchLayer.getFilterData({
+    data = await this.searchLayers[0].getFilterData({
       field,
       suggest: value !== void 0 ? `${field}|${value}` : void 0,
       unique
@@ -108,7 +109,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
   try {
     data = await DataRouterService.getData('search:features', {
       inputs:{
-        layer: this.searchLayer,
+        layer: this.searchLayers,
         search_endpoint,
         filter,
         queryUrl,
@@ -120,10 +121,12 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
       }
     });
     // in case of autozoom_query
-    if (this.project.state.autozoom_query && data && data.data.length){
+    if (this.project.state.autozoom_query && data && data.data.length === 1){
       this.mapService.zoomToFeatures(data.data[0].features)
     }
-  } catch(err){}
+  } catch(err){
+    console.log(err)
+  }
   this.state.searching = false;
   return data;
 };
@@ -146,7 +149,7 @@ proto.getSearchEndPoint = function(){
 proto.createFilter = function(search_endpoint=this.getSearchEndPoint()){
   const inputs = this.filterValidFormInputs();
   return createFilterFormInputs({
-    layer: this.searchLayer,
+    layer: this.searchLayers,
     inputs,
     search_endpoint
   })

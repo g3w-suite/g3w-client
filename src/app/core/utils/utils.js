@@ -449,19 +449,38 @@ const utils = {
     }
     return filter;
   },
-  // method to create filter for search based on
+  /**
+   *
+   * @param layer single layer or an array of layers
+   * @param search_endpoint
+   * @param inputs
+   * @returns {*}
+   */
   createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
+    const isLayerArray = Array.isArray(layer);
     let filter;
+    let filters = []; // in case of layer is an array
     switch (search_endpoint) {
       case 'ows':
-        const expression = new Expression();
-        const layerName = layer.getWMSLayerName();
-        expression.createExpressionFromFilter(inputs, layerName);
-        filter = new Filter();
-        filter.setExpression(expression.get());
+        if (isLayerArray){
+          layer.forEach(layer =>{
+            const expression = new Expression();
+            const layerName = layer.getWMSLayerName();
+            expression.createExpressionFromFilter(inputs, layerName);
+            filter = new Filter();
+            filter.setExpression(expression.get());
+            filters.push(filter);
+          })
+        } else {
+          const expression = new Expression();
+          const layerName = layer.getWMSLayerName();
+          expression.createExpressionFromFilter(inputs, layerName);
+          filter = new Filter();
+          filter.setExpression(expression.get());
+        }
         break;
       case 'api':
-        const inputsLength = inputs.length -1 ;
+        const inputsLength = inputs.length -1;
         const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
             field: input.attribute,
             value: input.value,
@@ -470,9 +489,10 @@ const utils = {
           })
         );
         filter = fields.length ? fields.join() : undefined;
+        isLayerArray && layer.forEach(()=>filters.push(filter));
         break;
     }
-    return filter;
+    return isLayerArray ? filters  : filter;
   },
   //method to create filter from field based on search_endpoint
   createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
