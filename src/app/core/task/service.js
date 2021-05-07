@@ -44,9 +44,14 @@ function TaskService(){
           // check if timeout is defined
           timeout = timeout - interval;
           if (timeout > 0){
-            const response = await XHR.get({
-              url: `${taskUrl}${task_id}`
-            });
+            let response;
+            try {
+              response = await XHR.get({
+                url: `${taskUrl}${task_id}`
+              });
+            } catch(error){
+              response = error;
+            }
             listener({
               task_id,
               timeout: false,
@@ -56,11 +61,9 @@ function TaskService(){
             listener({
               timeout: true
             });
-
             this.stopTask({
               task_id
             });
-
           }
         }, interval);
 
@@ -77,7 +80,7 @@ function TaskService(){
         });
       } else return Promise.reject(response);
 
-    } catch(err){
+    } catch(err) {
       return Promise.reject(err);
     }
   };
