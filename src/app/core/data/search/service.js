@@ -37,9 +37,9 @@ function SearchService(){
       promisesSearch.push(promise);
     }
     const responses = await Promise.allSettled(promisesSearch);
-    responses.forEach(({status, value}) => {
+    responses.forEach(({status, value}={}) => {
       const {data=[]} = value;
-      status === 'fulfilled' && data.length && dataSearch.data.push(data[0]);
+      params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
     });
     return dataSearch;
   }

@@ -301,6 +301,7 @@ const vueComponentOptions = {
     closeLayerMenu() {
       this._hideMenu();
       this.showColorMenu(false);
+      this.layerMenu.stylesMenu.show = false;
     },
     onChangeColor(val) {
       const mapService = GUI.getComponent('map').getService();
@@ -309,7 +310,6 @@ const vueComponentOptions = {
       const style = layer.getStyle();
       style._g3w_options.color = val;
       layer.setStyle(style);
-
     },
     setCurrentLayerStyle(index){
       let changed = false;
@@ -323,7 +323,9 @@ const vueComponentOptions = {
       if (changed) {
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
         layer && layer.change();
+        CatalogEventHub.$emit('layer-change-style');
       }
+      this.closeLayerMenu();
     },
     showStylesMenu(bool, evt) {
       if (bool) {
@@ -723,20 +725,24 @@ Vue.component('layerslegend-items',{
       const layers = _layers.filter(layer => layer.geolayer);
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
+        const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = `${this.getLegendUrl(layer, this.legend)}`;
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
           if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
-          urlLayersName[prefix].unshift(layerName);
+          urlLayersName[prefix].unshift({
+            layerName,
+            style: style && style.name
+          });
         }
       }
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
             const legendUrlObject = {
               loading: true,
               url: legendUrl,
@@ -750,12 +756,14 @@ Vue.component('layerslegend-items',{
             let [_url, params] = url.split('?');
             params = params.split('&');
             const econdedParams = [];
-            params.forEach((param) => {
+            params.forEach(param => {
               const [key, value] = param.split('=');
               econdedParams.push(`${key}=${encodeURIComponent(value)}`);
             });
             params = econdedParams.join('&');
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].join(','))}`;
+            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}
+                      &STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}
+                      ${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
             xhr.open('POST', _url);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.responseType = 'blob';
@@ -783,6 +791,9 @@ Vue.component('layerslegend-items',{
   created(){
     this.mapReady = false;
     this.waitinglegendsurls = [] // urls that are waiting to be loaded
+    CatalogEventHub.$on('layer-change-style', () =>{
+      this.getLegendSrc(this.layers);
+    })
   },
   async mounted() {
     await this.$nextTick();

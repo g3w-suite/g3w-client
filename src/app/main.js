@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 const ApplicationService = require('core/applicationservice');
 // Application instance. It manages the application template
 const Application = require('gui/app/index');

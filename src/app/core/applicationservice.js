@@ -9,18 +9,10 @@ const RouterDataService =  require('core/data/routerservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
-const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
 //timeout value
 const TIMEOUT = 60000; // 1 minute
-
-
-// install global components
-Vue.use(GlobalComponents);
-// install gloabl directive
-Vue.use(GlobalDirective);
 
 //Manage Application
 const ApplicationService = function() {

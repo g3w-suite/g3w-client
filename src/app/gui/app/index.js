@@ -7,6 +7,13 @@ const ComponentsRegistry = require('gui/componentsregistry');
 const GUI = require('gui/gui');
 const VueAppPlugin = require('gui/vue/vueappplugin');
 const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
+const GlobalComponents = require('gui/vue/vue.globalcomponents');
+const GlobalDirective = require('gui/vue/vue.directives');
+
+// install global components
+Vue.use(GlobalComponents);
+// install gloabl directive
+Vue.use(GlobalDirective);
 
 // install Application Filter Plugin
 Vue.use(G3wApplicationFilterPlugin);
