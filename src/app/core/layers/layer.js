@@ -78,7 +78,7 @@ function Layer(config={}, options={}) {
       active: false
     },
     attributetable: {
-      pageLength: null,
+      pageLength: null
     },
     visible: config.visible || false,
     tochighlightable: false

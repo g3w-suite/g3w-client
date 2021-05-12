@@ -449,7 +449,6 @@ proto.setActionsForLayers = function(layers) {
       });
     });
 
-
     if (layer.selection.active !== undefined) {
       // selection action
       const toggled = {};
@@ -778,7 +777,7 @@ proto.selectionFeaturesLayer = function(layer) {
  * @private
  */
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
-  const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+  const fid = feature ? feature.attributes['g3w_fid']: null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (!hasAlreadySelectioned) {
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
@@ -803,7 +802,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
 proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   if (feature) {
-    const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+    const fid = feature ? feature.attributes['g3w_fid']: null;
     action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
   }
 };

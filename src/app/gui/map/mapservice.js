@@ -1095,6 +1095,11 @@ proto._setupControls = function() {
   }
 };
 
+proto.getCenter = function(){
+  const map = this.getMap();
+  return map.getView().getCenter();
+};
+
 proto.getMapExtent = function(){
   const map = this.getMap();
   return map.getView().calculateExtent(map.getSize());
@@ -1847,10 +1852,8 @@ proto.getCurrentToggledMapControl = function(){
  * @param close
  */
 proto.addInteraction = function(interaction, close) {
-
   const control = this.getCurrentToggledMapControl();
   const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true ;
-
   untoggleMapControls && this._unToggleControls({
     close
   });

@@ -60,6 +60,52 @@ function AppService(){
     }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
 
+
+  /**
+   * Eventually send as param the projection in which we would like get center of map
+   * @param params
+   * @returns {Promise<void>}
+   */
+  this.getcenter = async function(params={}){
+    return this.mapService.getCenter();
+  };
+
+  /**
+   * Zoom to coordinates
+   * @param params
+   * @returns {Promise<[]>}
+   */
+  this.zoomtocoordinates = async function(params={}){
+    const {coordinates=[], highlight=false} = params;
+    if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
+      this.mapService.zoomTo(coordinates);
+      return coordinates
+    } else return Promise.reject(coordinates)
+  };
+
+  /**
+   * Eventually send as param the projection in which we would like get center of map
+   * @param params
+   * @returns {Promise<void>}
+   */
+  this.getextent = async function(params={}){
+    return this.mapService.getMapExtent();
+  };
+
+  /**
+   *
+   * @param params
+   * @returns {Promise<[]>}
+   */
+  this.zoomtoextent = async function(params={}){
+    const {extent=[]} = params;
+    if (extent && Array.isArray(extent) && extent.length === 4){
+      this.mapService.goToBBox(extent);
+      return extent;
+    } else return Promise.reject(extent);
+  };
+
+
   //method to zoom to features
   this.zoomtofeature = async function(params={}){
     return new Promise(async (resolve, reject) => {
