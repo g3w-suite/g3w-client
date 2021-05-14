@@ -22,6 +22,13 @@ const Projections = {
     });
 
     this.get({
+      epsg: "EPSG:3004",
+      proj4: "+proj=tmerc +lat_0=0 +lon_0=15 +k=0.9996 +x_0=2520000 +y_0=0 +ellps=intl +towgs84=-104.1,-49.1,-9.9,0.971,-2.917,0.714,-11.68 +units=m +no_defs",
+      axisinverted: false,
+      geographic: false,
+    });
+
+    this.get({
       epsg: "EPSG:3045",
       proj4:"+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
       axisinverted: true,

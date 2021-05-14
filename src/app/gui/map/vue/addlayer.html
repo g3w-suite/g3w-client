@@ -18,13 +18,13 @@
         <chrome-picker v-model="layer.color" @change-color="onChangeColor" style="width:90%;margin:auto"></chrome-picker>
         <bar-loader :loading="loading"></bar-loader>
         <form id="addcustomlayer">
-          <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" accept=".kml,.geojson, .KML, .GEOJSON, .zip">
+          <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" :accept="accepted_extension">
           <h4 v-t="'mapcontrols.add_layer_control.drag_layer'"></h4>
           <h4 class="skin-color" style="font-weight: bold" v-if="layer.name">{{ layer.name }}</h4>
           <div>
             <i :class="g3wtemplate.getFontClass('cloud-upload')" class="fa-5x" aria-hidden="true"></i>
           </div>
-          <p style="font-weight: bold">[.gml, .geojson, .kml, .zip(shapefile)]</p>
+          <p style="font-weight: bold">[.gml, .geojson, .kml, .gpx, .zip(shapefile)]</p>
         </form>
         <div class="select_field" :class="{'g3w-disabled': !fields || fields.length === 0}">
           <label v-t="'mapcontrols.add_layer_control.select_field_to_show'" for="g3w-select-field-layer"></label>

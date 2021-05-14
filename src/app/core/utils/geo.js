@@ -225,6 +225,10 @@ const geoutils = {
       return vectorLayer;
     };
     switch (type) {
+      case 'gpx':
+        format = new ol.format.GPX();
+        layer = createVectorLayer(format, data);
+        break;
       case 'gml':
         format = new ol.format.WMSGetFeatureInfo();
         layer = createVectorLayer(format, data);

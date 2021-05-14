@@ -1,5 +1,5 @@
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
-const SUPPORTED_FORMAT = ['zip', 'geojson', 'kml', 'json', 'gml'];
+const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'KML', 'json', 'gpx', 'gml'];
 
 const EPSG = [
   "EPSG:3003",
@@ -39,6 +39,7 @@ const AddLayerComponent = {
       loading: false,
       fields:[],
       field: null,
+      accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
       layer: {
         name: null,
         type: null,
@@ -58,7 +59,7 @@ const AddLayerComponent = {
         visible: true,
         title: null,
         id: null,
-        external: true
+        external: true,
       }
     }
   },
