@@ -1,7 +1,6 @@
-const inherit = require('core/utils/utils').inherit;
+const {inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
-const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ProjectMetadataComponent = require('./vue/components/project/project');
 const METADATAGROUPS = {
@@ -67,9 +66,7 @@ proto.getLayersMetadata = function() {
 };
 
 proto.getLayerMetadata = function(id) {
-  const layerMetadata = this.state.groups.layers.filter((layer) => {
-    return layer.id === id;
-  });
+  const layerMetadata = this.state.groups.layers.filter(layer => layer.id === id);
   return layerMetadata[0];
 };
 
@@ -87,7 +84,6 @@ proto.showMetadata = function(bool) {
     });
     this.show = true;
   } else GUI.closeContent()
-
 };
 
 proto.reload = function() {

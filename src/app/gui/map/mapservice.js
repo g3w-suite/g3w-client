@@ -269,7 +269,7 @@ function MapService(options={}) {
   });
 
   const extraParamsSet = (extraParams, update) => {
-    update && this.getMapLayers().forEach((mapLayer) => {
+    update && this.getMapLayers().forEach(mapLayer => {
       mapLayer.update(this.state, extraParams);
     })
   };
@@ -1666,10 +1666,9 @@ proto._setupMapLayers = function() {
   });
   this._setMapProjectionToLayers(layers);
   //group layer by mutilayer
-  const multiLayers = _.groupBy(layers, function(layer) {
-    return layer.getMultiLayerId();
-  });
+  const multiLayers = _.groupBy(layers, layer => layer.getMultiLayerId());
   let mapLayers = [];
+  // id is the value of multilayerid
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = `layer_${id}`;
     let mapLayer;

@@ -11,7 +11,7 @@ function PluginService(options={}) {
   };
   this._pluginEvents = {};
   this._appEvents = [];
-  this.init = function(config) {
+  this.init = function(config={}) {
     this.config = config;
   }
 }

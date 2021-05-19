@@ -136,9 +136,7 @@ proto.syncSelectionFilterFeatures = function(commitItems){
         const {id, geometry} = updateItem;
         layer.hasSelectionFid(id) && layer.updateOlSelectionFeature({id,geometry});
       });
-      commitItems.delete.forEach(id =>{
-        layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
-      })
+      commitItems.delete.forEach(id => layer.hasSelectionFid(id) && layer.excludeSelectionFid(id))
     }
   } catch(err){}
 };
@@ -476,16 +474,13 @@ proto.getFieldsWithValues = function(obj, options={}) {
 proto.createNewFeature = function() {
   let feature = new ol.Feature();
   const properties = {};
-  _.forEach(this.getEditingFields(), function(field) {
-    properties[field.name] = null;
-  });
+  this.getEditingFields().forEach(field => properties[field.name] = null);
   feature.setProperties(properties);
   feature = new Feature({
-    feature : feature
+    feature
   });
   feature.setNew();
   return feature;
 };
-
 
 module.exports = TableLayer;

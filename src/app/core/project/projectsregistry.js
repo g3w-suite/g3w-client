@@ -17,7 +17,7 @@ function ProjectsRegistry() {
   this.projectType = null;
   this.overviewproject;
   this.setters = {
-    setCurrentProject: function(project) {
+    setCurrentProject(project) {
       if (this.state.currentProject !== project) {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
@@ -135,7 +135,7 @@ proto.getProjects = function() {
 
 proto.setProjects = function(projects) {
   this.clearProjects();
-  projects.forEach((project) => {
+  projects.forEach(project => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
     project.aliasUrl = project.url || null;
     project.baselayers = this.config.baselayers;
@@ -154,7 +154,7 @@ proto.clearProjects = function() {
 
 proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
-  return _.sortBy(this.getProjects().filter((project) => {
+  return _.sortBy(this.getProjects().filter(project => {
     if (!_.isNil(project.listable)) return project.listable;
     if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false
     return project;
@@ -193,7 +193,7 @@ proto.getProject = function(projectGid, options={reload:false}) {
         // add to project
         d.resolve(project);
       })
-      .fail((error) => {
+      .fail(error => {
         d.reject(error);
       })
   }
@@ -204,7 +204,7 @@ proto._setProjectRelations = function(projectConfig) {
   projectConfig.relations = projectConfig.relations ? projectConfig.relations : [];
   projectConfig.relations = projectConfig.relations.map((relation) => {
     if (relation.type === "ONE") {
-      projectConfig.layers.find((layer) => {
+      projectConfig.layers.find(layer => {
         if (layer.id === relation.referencingLayer) {
           relation.name = layer.name;
           relation.origname = layer.origname;
@@ -218,9 +218,7 @@ proto._setProjectRelations = function(projectConfig) {
 };
 
 proto.getProjectConfigByGid = function(gid) {
-  return this._groupProjects.find((project) => {
-    return project.gid === gid;
-  })
+  return this._groupProjects.find(project => project.gid === gid)
 };
 
 proto.getProjectUrl = function(gid) {
@@ -244,10 +242,10 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
   const d = $.Deferred();
   const url = this.config.getProjectConfigUrl(projectBaseConfig);
   $.get(url)
-    .done((projectFullConfig) => {
+    .done(projectFullConfig => {
       d.resolve(projectFullConfig);
     })
-    .fail((error) => {
+    .fail(error => {
       d.reject(error);
     });
   return d.promise();

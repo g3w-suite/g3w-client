@@ -11,6 +11,9 @@ inherit(BingLayer, BaseLayer);
 
 const proto = BingLayer.prototype;
 
+/**
+ *
+ */
 proto._makeOlLayer = function(){
   let olLayer;
   const subtype = this.config.source ? this.config.source.subtype : null;

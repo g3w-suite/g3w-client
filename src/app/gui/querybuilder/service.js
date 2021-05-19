@@ -6,8 +6,7 @@ const GUI = require('gui/gui');
 const {uniqueId, createFilterFromString} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
-const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
-const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
+const {getFeaturesFromResponseVectorApi, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
@@ -87,6 +86,7 @@ proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
       });
       resolve(data);
     } catch(error){
+      console.log(error)
       GUI.showUserMessage({
         type: 'alert',
         message: 'sdk.querybuilder.error_run',

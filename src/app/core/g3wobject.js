@@ -10,17 +10,11 @@ const throttle = require('core/utils/utils').throttle;
 
 const G3WObject = function() {
   //check if setters property is set. Register the chain of events
-  if (this.setters) {
-    this._setupListenersChain(this.setters)
-  }
+  this.setters && this._setupListenersChain(this.setters);
   // check debounces
-  if (this.debounces) {
-    this._setupDebounces(this.debounces)
-  }
+  this.debounces && this._setupDebounces(this.debounces);
   //check throttles
-  if (this.throttles) {
-    this._setupThrottles(this.throttles)
-  }
+  this.throttles && this._setupThrottles(this.throttles);
 };
 
 inherit(G3WObject, EventEmitter);
@@ -70,9 +64,7 @@ proto.un = function(setter, key) {
   Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
     if (key === undefined) settersListeners[setter].splice(0);
     else settersListeners[setter].forEach((setterListener, idx) => {
-      if (setterListener.key === key) {
-        settersListeners[setter].splice(idx, 1);
-      }
+      if (setterListener.key === key) settersListeners[setter].splice(idx, 1);
     })
   });
 };

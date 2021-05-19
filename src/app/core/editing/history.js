@@ -76,7 +76,7 @@ proto.getRelationStates = function(layerId, {clear=false}={}) {
   const relationStates = [];
   for (let i=0; i < this._states.length; i++) {
     const state = this._states[i];
-    const relationItems = state.items.filter((item) => {
+    const relationItems = state.items.filter(item => {
       const _layerId = Array.isArray(item) ? item[0].layerId: item.layerId;
       return _layerId === layerId
     });
@@ -221,9 +221,7 @@ proto.setItemsFeatureIds = function(unsetnewids=[]) {
       const {items} = state;
       items.forEach(item => {
         const feature = item.feature.getId() === clientid && item.feature;
-        if (feature) {
-          feature.setId(id);
-        }
+        feature && feature.setId(id);
       })
     });
   })
@@ -233,8 +231,7 @@ proto.clear = function(ids) {
   if (ids)
     this._states.forEach((state, idx) => {
       if (ids.indexOf(state.id) !== -1) {
-        if (this._current && this._current === state.id())
-          this.undo();
+        if (this._current && this._current === state.id()) this.undo();
         this._states.splice(idx, 1);
       }
     });
@@ -265,9 +262,7 @@ proto.getLastState = function() {
 proto.getCurrentState = function() {
   let currentState = null;
   if (this._current && this._states.length) {
-    currentState = this._states.find((state) => {
-     return this._current === state.id;
-    });
+    currentState = this._states.find(state => this._current === state.id);
   }
   return currentState;
 };
@@ -321,8 +316,8 @@ proto._getStatesToCommit = function() {
 proto.commit = function() {
   const commitItems = {};
   const statesToCommit = this._getStatesToCommit();
-  statesToCommit.forEach((state) => {
-    state.items.forEach((item) => {
+  statesToCommit.forEach(state => {
+    state.items.forEach(item => {
       let add = true;
       if (Array.isArray(item)) item = item[1];
       commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem, index) => {

@@ -17,7 +17,7 @@ function FormService() {
     setFormFields(fields) {
       this.state.fields = fields;
     },
-    setupFields: function () {
+    setupFields() {
       this._setupFields();
     },
     // setter insert data into form
@@ -152,11 +152,8 @@ proto.isValid = function(input) {
   }, true);
 };
 
-
 proto.addComponents = function(components = []) {
-  for (const component of components) {
-    this.addComponent(component);
-  }
+  for (const component of components) {this.addComponent(component);}
 };
 
 proto.addComponent = function(component) {
@@ -218,9 +215,7 @@ proto.getFields = function() {
 };
 
 proto._getField = function(fieldName){
-  const field = this.state.fields.find((field) => {
-    return field.name === fieldName
-  });
+  const field = this.state.fields.find(field => field.name === fieldName);
   return field;
 };
 

@@ -87,8 +87,8 @@ proto.getArray = function() {
   return relations;
 };
 
-proto.setRelations = function(relations) {
-  this._relations = _.isArray(relations) ? relations : [];
+proto.setRelations = function(relations=[]) {
+  this._relations = Array.isArray(relations) ? relations : [];
 };
 
 proto.getRelationById = function(id) {
@@ -128,17 +128,13 @@ proto.hasFathers = function(fatherId) {
 
 // get children based on father id
 proto.getChildren = function(fatherId) {
-  if (!this.isFather(fatherId)) {
-    return null;
-  }
+  if (!this.isFather(fatherId)) return null;
   return this._relationsInfo.fathers[fatherId];
 };
 
 // get fathers based on childId
 proto.getFathers = function(childId) {
-  if (!this.isChild(childId)) {
-    return null;
-  }
+  if (!this.isChild(childId)) return null;
   return this._relationsInfo.children[childId];
 };
 

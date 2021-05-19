@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
@@ -12,27 +11,18 @@ inherit(XYZLayer, MapLayer);
 
 const proto = XYZLayer.prototype;
 
-proto.getOLLayer = function(){
-  let olLayer = this._olLayer;
-  if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer();
-  }
-  return olLayer;
-};
-
-proto.getSource = function(){
-  return this.getOLLayer().getSource();
-};
-
-proto.getLayerConfigs = function(){
-  return this.layer;
-};
-
+/**
+ *
+ * @param layer
+ */
 proto.addLayer = function(layer){
   this.layer = layer;
   this.allLayers.push(layer);
 };
 
+/**
+ *
+ */
 proto.toggleLayer = function(){
   this._updateLayers();
 };
@@ -48,7 +38,7 @@ proto.isVisible = function(){
 proto._makeOlLayer = function(){
   const projection = this.projection ? this.projection : this.layer.getProjection();
   const layerOptions = {
-    url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
+    url: `${this.layer.getCacheUrl()}/{z}/{x}/{y}.png`,
     maxZoom: 20,
     extent: this.config.extent,
     iframe_internal: this.iframe_internal

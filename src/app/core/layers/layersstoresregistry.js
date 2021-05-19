@@ -7,13 +7,13 @@ function LayersStoresRegistry() {
   this.storesArray = [];
   // to react some application components that are binding to Layerstore
   this.setters = {
-    addLayersStore: function(layersStore, idx) {
+    addLayersStore(layersStore, idx) {
       this._addLayersStore(layersStore, idx);
     },
-    removeLayersStore: function(layerStore) {
+    removeLayersStore(layerStore) {
       this._removeLayersStore(layerStore);
     },
-    removeLayersStores: function() {
+    removeLayersStores() {
       this._removeLayersStores();
     }
   };
@@ -44,9 +44,7 @@ proto.getLayers = function(filter) {
 };
 
 proto.getQuerableLayersStores = function() {
-  return this.getLayersStores().filter((layersStore) => {
-    return layersStore.isQueryable();
-  })
+  return this.getLayersStores().filter(layersStore => layersStore.isQueryable())
 };
 
 proto.getLayersStore = function(id) {
@@ -55,9 +53,7 @@ proto.getLayersStore = function(id) {
 
 proto.getLayersStores = function() {
   const stores = [];
-  this.storesArray.forEach((storeId) => {
-    stores.push(this.stores[storeId]);
-  });
+  this.storesArray.forEach(storeId => stores.push(this.stores[storeId]));
   return stores;
 };
 
@@ -66,15 +62,13 @@ proto._addLayersStore = function(layersStore, idx) {
   this.stores[storeId] = layersStore;
   if (!_.isNil(idx)) this.storesArray.splice(idx,0, storeId);
   else this.storesArray.push(storeId);
-
 };
 
 proto._removeLayersStore = function(layerStore) {
   if (layerStore) {
     const storeId = layerStore.getId();
-    this.storesArray = this.storesArray.filter((_storeId) => _storeId != storeId);
+    this.storesArray = this.storesArray.filter(_storeId => _storeId != storeId);
     delete this.stores[storeId];
-
   }
 };
 
@@ -82,6 +76,5 @@ proto._removeLayersStores = function() {
   this.storesArray = [];
   this.stores = {};
 };
-
 
 module.exports = LayersStoresRegistry;

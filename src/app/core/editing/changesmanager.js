@@ -3,7 +3,7 @@ function ChangesManager() {
   this.execute = function(object, items, reverse) {
     let fnc;
     let feature;
-    items.forEach((item) => {
+    items.forEach(item => {
       feature = item.feature;
       if (reverse) {
         // change to opposite

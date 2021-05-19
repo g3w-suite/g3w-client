@@ -327,7 +327,6 @@ const ApplicationTemplate = function({ApplicationService}) {
         ComponentsRegistry.registerComponent(component);
         ApplicationService.registerService(component.id, component.getService())
       }
-
     })
   };
 
@@ -421,9 +420,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       return ApplicationService.getConfig().resourcesurl;
     },this);
     //LIST
-    GUI.showList = _.bind(floatbar.FloatbarService.showPanel, floatbar.FloatbarService);
-    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel, floatbar.FloatbarService);
-    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel, floatbar.FloatbarService);
+    GUI.showList = floatbar.FloatbarService.showPanel.bind(floatbar.FloatbarService);
+    GUI.closeList = floatbar.FloatbarService.closePanel.bind(floatbar.FloatbarService);
+    GUI.hideList = floatbar.FloatbarService.hidePanel.bind(floatbar.FloatbarService);
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -486,6 +485,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
+
     GUI.closeForm = function() {
       this.emit('closeform', false);
       viewport.ViewportService.removeContent();

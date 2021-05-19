@@ -5,13 +5,13 @@ const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
   this.setters = {
-    start: function(options={}) {
+    start(options={}) {
       return this._start(options);
     },
-    getFeatures: function(options={}) {
+    getFeatures(options={}) {
       return this._getFeatures(options);
     },
-    stop: function() {
+    stop() {
       this._stop();
     },
     saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
@@ -75,11 +75,11 @@ proto._getFeatures = function(options={}) {
   if (!this._allfeatures) {
     this._allfeatures = !options.filter;
     this._editor.getFeatures(options)
-      .then((promise) => {
-        promise.then((features) => {
+      .then(promise => {
+        promise.then(features => {
           this.state.getfeatures = true;
           d.resolve(features);
-        }).fail((err) => {
+        }).fail(err => {
           d.reject(err);
           });
       });
@@ -122,9 +122,7 @@ proto.save = function(options={}) {
 };
 
 proto.updateTemporaryChanges = function(feature) {
-  this._temporarychanges.forEach((change) => {
-    change.feature.setProperties(feature.getProperties());
-  })
+  this._temporarychanges.forEach(change => change.feature.setProperties(feature.getProperties()))
 };
 
 // method to add temporary feature
@@ -151,9 +149,7 @@ proto.pushDelete = function(layerId, feature) {
 proto.pushUpdate = function(layerId, newFeature, oldFeature) {
   // in case of change attribute immediately after create feature
   if (newFeature.isNew()) {
-    const temporarynewfeatureIndex = this._temporarychanges.findIndex((change) => {
-      return change.layerId === layerId && change.feature.getId() === newFeature.getId();
-    });
+    const temporarynewfeatureIndex = this._temporarychanges.findIndex(change => change.layerId === layerId && change.feature.getId() === newFeature.getId());
     if (temporarynewfeatureIndex !== -1) {
       const feature = newFeature.clone();
       feature.add();
@@ -219,10 +215,9 @@ proto._filterChanges = function() {
     own:[],
     dependencies: {}
   };
-  this._temporarychanges.forEach((temporarychange) => {
+  this._temporarychanges.forEach(temporarychange => {
     const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId === id)
-      changes.own.push(change);
+    if (change.layerId === id) changes.own.push(change);
     else {
       if (!changes.dependencies[change.layerId])
         changes.dependencies[change.layerId] = [];
@@ -341,6 +336,13 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
+/**
+ * Metyhod to commit all changes to server
+ * @param ids
+ * @param items
+ * @param relations
+ * @returns {JQuery.Promise<any, any, any>}
+ */
 proto.commit = function({ids=null, items, relations=true}={}) {
   const d = $.Deferred();
   let commitItems;
@@ -348,9 +350,8 @@ proto.commit = function({ids=null, items, relations=true}={}) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
   } else {
-    if (items) {
-      commitItems = items;
-    } else {
+    if (items) commitItems = items;
+    else {
       commitItems = this._history.commit();
       commitItems = this._serializeCommit(commitItems);
     }

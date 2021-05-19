@@ -144,8 +144,7 @@ proto._createRelations = function(projectRelations) {
   const relations = [];
   const layerId = this.getId();
   projectRelations.forEach(relation => {
-    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
-      relations.push(relation);
+    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1) relations.push(relation);
   });
   return new Relations({
     relations
@@ -158,9 +157,7 @@ proto.getRelations = function() {
 };
 
 proto.getRelationById = function(id) {
-  return this._relations.getArray().find(relation => {
-    relation.getId() === id;
-  })
+  return this._relations.getArray().find(relation => relation.getId() == id);
 };
 
 proto.getRelationAttributes = function(relationName) {
@@ -183,14 +180,12 @@ proto.getRelationsAttributes = function() {
 };
 
 proto.isChild = function() {
-  if (!this.getRelations())
-    return false;
+  if (!this.getRelations()) return false;
   return this._relations.isChild(this.getId());
 };
 
 proto.isFather = function() {
-  if (!this.getRelations())
-    return false;
+  if (!this.getRelations()) return false;
   return this._relations.isFather(this.getId());
 };
 
@@ -265,6 +260,10 @@ proto.deleteFilterToken = async function(){
   }
 };
 
+/**
+ * Create filter token based on selection
+ * @returns {Promise<void>}
+ */
 proto.createFilterToken = async function(){
   const ApplicationService = require('core/applicationservice');
   if (this.providers['filtertoken']){
@@ -292,8 +291,10 @@ proto.createFilterToken = async function(){
   }
 };
 // end filter token
-//selection Ids layer methods
 
+/**
+ *
+ */
 proto.setSelectionFidsAll = function(){
   this.selectionFids.clear();
   this.selectionFids.add(Layer.SELECTION_STATE.ALL);
@@ -302,6 +303,10 @@ proto.setSelectionFidsAll = function(){
   this.state.filter.active && this.createFilterToken();
 };
 
+/**
+ *
+ * @returns {Set|Set|Set|Set|Set|Set|*}
+ */
 proto.getSelectionFids = function(){
   return this.selectionFids;
 };
@@ -371,6 +376,11 @@ proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
+/**
+ * * DOWNLOAD SECTION METHODS
+**
+**/
+
 proto.getXls = function({data}={}){
   const url = this.getUrl('xls');
   return XHR.fileDownload({
@@ -416,6 +426,10 @@ proto.getCsv = function({data}={}){
   })
 };
 
+/**
+ * END DOWNLOAD METHODS
+ */
+
 proto.getSourceType = function() {
   return this.config.source ? this.config.source.type : null;
 };
@@ -423,7 +437,6 @@ proto.getSourceType = function() {
 proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
-
 
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
@@ -596,15 +609,13 @@ proto.getConfig = function() {
 };
 
 proto.getEditorFormStructure = function({all=false}={}) {
-  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
-    return !structure.field_name;
-  }) : this.config.editor_form_structure;
+  return this.config.editor_form_structure && !all ?
+    this.config.editor_form_structure.filter(structure => !structure.field_name)
+    : this.config.editor_form_structure;
 };
 
 proto.getFieldsOutOfFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
-    return structure.field_name;
-  }) : []
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => structure.field_name) : []
 };
 
 proto.hasFormStructure = function() {
@@ -660,8 +671,8 @@ proto.isHidden = function() {
   return this.state.hidden;
 };
 
-proto.setHidden = function(bool) {
-  this.state.hidden = _.isBoolean(bool) ? bool: true;
+proto.setHidden = function(bool=true) {
+  this.state.hidden = bool;
 };
 
 proto.isModified = function() {
@@ -703,7 +714,6 @@ proto.isType = function(type) {
 proto.setType = function(type) {
   this.type = type;
 };
-
 
 proto.isSelected = function() {
   return this.state.selected;
@@ -836,7 +846,6 @@ proto.getQueryLayerOrigName = function() {
 proto.getInfoFormat = function(ogcService) {
   return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
   //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
-
 };
 
 proto.getInfoUrl = function() {
@@ -862,9 +871,7 @@ proto.changeAttribute = function(attribute, type, options) {
 };
 
 proto.getAttributeLabel = function(name) {
-  const field = this.getAttributes().find((field) => {
-   return field.name === name;
-  });
+  const field = this.getAttributes().find(field => field.name === name);
   return field && field.label;
 };
 

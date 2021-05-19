@@ -15,7 +15,7 @@ const COMMON_REQUEST_PARAMETERS = {
 
 function PrinterQGISProvider() {
   this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
-  ProjectsRegistry.onbefore('setCurrentProject', project=> {
+  ProjectsRegistry.onbefore('setCurrentProject', project => {
     this._currentLayerStore = project.getLayersStore();
   });
   base(this);

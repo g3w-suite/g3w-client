@@ -24,7 +24,7 @@ function LayersStore(config={}) {
     setLayerSelection({layerId, selection}){
       const layer = this.getLayerById(layerId);
     },
-    setLayersVisible: function (layersIds, visible, checked=true) {
+    setLayersVisible(layersIds, visible, checked=true) {
       const layers = [];
       layersIds.forEach(layerId => {
         const layer = this.getLayerById(layerId);
@@ -140,9 +140,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
   // return only selected
   if (filterSelectedOrAll) {
     let _layers = layers;
-    layers = layers.filter((layer) => {
-      return layer.isSelected();
-    });
+    layers = layers.filter(layer => layer.isSelected());
     layers = layers.length ? layers : _layers;
   }
 
@@ -180,7 +178,7 @@ proto.getLayersDict = function(filter = {}, options={}) {
   if (filterPrintable) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: filterPrintable.scale}));
 
   // return only not selected
-  if (filterAllNotSelected) layers = layers.filter((layer) => !layer.isSelected());
+  if (filterAllNotSelected) layers = layers.filter(layer => !layer.isSelected());
   return layers;
 };
 
@@ -190,9 +188,7 @@ proto.getLayers = function(filter={}, options={}) {
 };
 
 proto.getBaseLayers = function() {
-  return this.getLayersDict({
-    BASELAYER: true
-  });
+  return this.getLayersDict({BASELAYER: true});
 };
 
 proto.getLayerById = function(layerId) {
@@ -200,9 +196,7 @@ proto.getLayerById = function(layerId) {
 };
 
 proto.getLayerByName = function(name) {
-  return this._layers.find((layer) => {
-    return layer.getName() === name;
-  });
+  return this._layers.find(layer => layer.getName() === name);
 };
 
 proto.getLayerAttributes = function(layerId){
@@ -214,9 +208,7 @@ proto.getLayerAttributeLabel = function(layerId,name){
 };
 
 proto.getGeoLayers = function() {
-  return this.getLayers({
-    GEOLAYER: true
-  })
+  return this.getLayers({GEOLAYER: true})
 };
 
 proto._getAllSiblingsChildrenLayersId = function(layerstree) {
@@ -317,7 +309,6 @@ proto.unselectLayer = function(layerId) {
 proto.getProjection = function() {
   return this.config.projection;
 };
-
 
 proto.getExtent = function() {
   return this.config.extent;

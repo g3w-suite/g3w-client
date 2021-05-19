@@ -11,14 +11,21 @@ inherit(OSMLayer, BaseLayer);
 
 const proto = OSMLayer.prototype;
 
+/**
+ *
+ * @returns {string}
+ * @private
+ */
 proto._makeOlLayer = function() {
   const olLayer = BasesLayers.OSM;
+
   olLayer.getSource().on('imageloadstart', () => {
         this.emit("loadstart");
       });
   olLayer.getSource().on('imageloadend', () => {
       this.emit("loadend");
   });
+
   return olLayer
 };
 

@@ -39,7 +39,7 @@ function Project(config={}, options={}) {
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
   this.setters = {
-    setBaseLayer: function(id) {
+    setBaseLayer(id) {
       this.state.baselayers.forEach(baseLayer => {
         this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id === id);
         baseLayer.visible = (baseLayer.id === id);
@@ -115,13 +115,13 @@ proto.getOwsMethod = function() {
 // process layerstree and baselayers of the project
 proto._processLayers = function() {
   //info useful for catalog
-  const traverse = (tree) => {
+  const traverse = tree => {
     for (let i = 0; i < tree.length; i++) {
       const layer = tree[i];
       let layer_name_originale;
       //check if layer (node) of folder
       if (layer.id !== undefined) {
-        this.state.layers.forEach((_layer) => {
+        this.state.layers.forEach(_layer => {
           layer_name_originale = _layer.name;
           if (layer.id === _layer.id) {
             layer.name = _layer.name;

@@ -21,12 +21,124 @@ proto.getId = function(){
   return this.id;
 };
 
-proto.getOLLayer = function() {
-  console.log('every sub classes has to be override')
+proto.getOLLayer = function(withLayers) {
+  this._olLayer = !this._olLayer ? this._makeOlLayer(withLayers) : this._olLayer;
+  return this._olLayer;
 };
 
-proto.update = function(mapState={}, extraParams={}) {
-  this._updateLayers(mapState, extraParams);
+proto.getQueryUrl = function() {
+  const layer = this.layers[0];
+  return (layer.infourl && layer.infourl !== '') ? layer.infourl : this.config.url;
+};
+
+proto.getLayerConfigs = function(){
+  return this.layers;
+};
+
+/**
+ * Get source ol
+ * @returns {*}
+ */
+proto.getSource = function() {
+  return this.getOLLayer().getSource();
+};
+
+/**
+ *
+ * @returns {string}
+ */
+proto.getInfoFormat = function() {
+  return 'application/vnd.ogc.gml';
+};
+
+/**
+ * Called when toggled layer is set on TOC
+ * @param layer
+ */
+proto.toggleLayer = function(layer) {
+  this.layers.forEach(_layer => {
+    if (_layer.id === layer.id){
+      _layer.visible = layer.visible;
+    }
+  });
+  this._updateLayers();
+};
+
+/**
+ * Remove layer from layers
+ * @param layer
+ */
+proto.removeLayer = function(layer) {
+  this.layers = this.layers.filter(_layer => layer !== _layer)
+};
+
+/**
+ *
+ */
+proto.update = function(){
+  //To overwrite
+};
+
+/**
+ * Check if is visible
+ * @returns {boolean}
+ */
+proto.isVisible = function(){
+  return this._getVisibleLayers().length > 0;
+};
+
+/**
+ *
+ * @returns {T[]}
+ */
+proto.getQueryableLayers = function() {
+  return this.layers.filter(layer => layer.isQueryable());
+};
+
+/**
+ * Visible layers
+ * @private
+ */
+proto._getVisibleLayers = function(){
+  return this.layers.filter(layer => layer.isVisible());
+};
+
+/**
+ * Create GetFeatureInfo url
+ * @param coordinate
+ * @param resolution
+ * @param epsg
+ * @param params
+ */
+proto.getGetFeatureInfoUrl = function(coordinate,resolution,epsg,params) {
+  return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
+};
+
+/**
+ * Method generic to get order if set to layer
+ * @param prefix
+ * @param layers
+ */
+proto.getOrderVisibleListLayers = function({prefix, layers=[]}){
+  return `${prefix}${visibleLayers.map(layer => {
+    return layer.getWMSLayerName();
+  }).join(',')}`
+};
+
+/**
+ * Add Layer method used to add layer
+ * @param layer
+ */
+proto.addLayer = function(layer) {
+  !this.allLayers.find(_layer =>  layer === _layer) && this.allLayers.push(layer);
+  !this.layers.find(_layer => layer === _layer) && this.layers.push(layer);
+};
+
+/**
+ * Method to upadet ma layer when something is changed on map
+ */
+proto._updateLayers = function(mapState={}, extraParams={}){
+  // to owerwrite for each specific layer
 };
 
 proto.checkLayerDisabled = function(layer, resolution, mapUnits) {

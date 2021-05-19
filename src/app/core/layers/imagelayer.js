@@ -125,8 +125,8 @@ proto.getPrintLayerName = function() {
 };
 
 proto.getStringBBox = function() {
-  const bbox = this.config.bbox;
-  return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
+  const {minx, miny, maxx, maxy} = this.config.bbox;
+  return `${minx},${miny},${maxx},${maxy}`;
 };
 
 proto.getFullWmsUrl = function() {
@@ -207,7 +207,6 @@ proto.getMapLayer = function(options={}, extraParams) {
   }
   return mapLayer;
 };
-
 
 ImageLayer.WMSServerTypes = [
   Layer.ServerTypes.QGIS,

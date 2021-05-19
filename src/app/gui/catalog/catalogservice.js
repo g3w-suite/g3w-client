@@ -23,11 +23,9 @@ function CatalogService() {
     this.addLayersStoreToLayersTrees(layersStore);
   });
 
-  CatalogLayersStoresRegistry.onafter('addLayersStore', (layersStore) => {
-    this.addLayersStoreToLayersTrees(layersStore);
-  });
+  CatalogLayersStoresRegistry.onafter('addLayersStore', layersStore => this.addLayersStoreToLayersTrees(layersStore));
 
-  CatalogLayersStoresRegistry.onafter('removeLayersStore', (layersStore) => {
+  CatalogLayersStoresRegistry.onafter('removeLayersStore', layersStore => {
     this.state.layerstrees.forEach((layersTree, idx) => {
       if (layersTree.storeid === layersStore.getId()) {
         this.state.layerstrees.splice(idx, 1);
@@ -54,9 +52,7 @@ proto.addExternalLayer = function(layer) {
 
 proto.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
   const nodes = [];
-  layers.forEach((layer) => {
-    nodes.push(layer)
-  });
+  layers.forEach(layer => nodes.push(layer));
   return {
     title,
     nodes

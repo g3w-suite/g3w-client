@@ -55,8 +55,7 @@ proto._canDoGetFeaturesRequest = function(options={}) {
   if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
     const {bbox} = options.filter || {};
     if(bbox) {
-      if(!this._filter.bbox)
-        this._filter.bbox = bbox;
+      if (!this._filter.bbox) this._filter.bbox = bbox;
       else if(!ol.extent.containsExtent(this._filter.bbox, bbox)) {
         this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
       } else
@@ -92,14 +91,12 @@ proto.setLayer = function(layer) {
 };
 
 proto.removeNotEditablePropriertiesFromFeature = function(feature){
-  this._noteditablefileds.forEach(field => {
-    feature.unset([field]);
-  });
+  this._noteditablefileds.forEach(field => feature.unset([field]));
 };
 
 //clone features method
 proto._cloneFeatures = function(features) {
-  return features.map((feature) => feature.clone());
+  return features.map(feature => feature.clone());
 };
 
 proto._addFeaturesFromServer = function(features=[]){
@@ -108,7 +105,7 @@ proto._addFeaturesFromServer = function(features=[]){
 };
 
 proto._doGetFeaturesRequest = function(options={}) {
-  const doRequest = Applicationstate.online &&  !this._allfeatures;
+  const doRequest = Applicationstate.online && !this._allfeatures;
   return doRequest && this._canDoGetFeaturesRequest(options)
 };
 
@@ -119,16 +116,16 @@ proto._getFeatures = function(options={}) {
   if (!doRequest) d.resolve();
   else
     this._layer.getFeatures(options)
-      .then((promise) => {
+      .then(promise => {
         promise.then((features) => {
           this._addFeaturesFromServer(features);
           this._allfeatures = !options.filter;
           return d.resolve(features);
-        }).fail((err) => {
+        }).fail(err => {
           return d.reject(err);
         })
       })
-      .fail(function (err) {
+      .fail(err => {
         d.reject(err);
       });
   return d.promise();
@@ -156,9 +153,7 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
     const layer = this.getLayerById(relationLayerId);
     const editingLayerSource = this.getEditingLayer(relationLayerId).getEditingSource();
     const features = editingLayerSource.readFeatures();
-    features.forEach((feature) => {
-      feature.clearState();
-    });
+    features.forEach(feature => feature.clearState());
     layer.getSource().setFeatures(features);
     layer.applyCommitResponse({
       response,

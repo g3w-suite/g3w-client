@@ -13,13 +13,13 @@ const MapComponent = require('gui/map/vue/map');
 const mapDOM = {
   width: 1168,
   height: 899
-}
+};
 let ApplicationTemplate;
 
 const setupFakeGUIMethods = function(){
   GUI.notify = {};
   GUI.setContent = GUI.disableSideBar = GUI.getFontClass = GUI.showContentFactory = GUI.setLoadingContent = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
-}
+};
 
 const initApplicationTemplate = function(){
   ApplicationTemplate = new Application({
@@ -31,7 +31,7 @@ const initApplicationTemplate = function(){
   //viewport component
   Object.values(viewport.components).forEach(component =>{
     ApplicationTemplate._addComponent(component, component.getId())
-  })
+  });
   setupFakeGUIMethods();
   const mapService = GUI.getComponent('map').getService();
 

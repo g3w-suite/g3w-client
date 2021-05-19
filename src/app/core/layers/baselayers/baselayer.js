@@ -64,9 +64,7 @@ proto.getOLLayer = function() {
 };
 
 proto._updateLayer = function(mapState, extraParams) {
-  if (this.isWMS()) {
-    this._mapLayer.update(mapState, extraParams)
-  }
+  this.isWMS() && this._mapLayer.update(mapState, extraParams)
 };
 
 proto.setVisible = function(bool) {

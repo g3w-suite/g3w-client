@@ -54,5 +54,4 @@ proto.getMapLayer = function() {
   return this._mapLayer;
 };
 
-
 module.exports = VectorLayer;

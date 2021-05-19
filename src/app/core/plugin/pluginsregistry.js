@@ -50,9 +50,7 @@ function PluginsRegistry() {
   };
 
   this._loadPlugins = function() {
-    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => {
-      return this._setup(name, pluginConfig);
-    });
+    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig));
     return Promise.all(pluginLoadPromises)
   };
 

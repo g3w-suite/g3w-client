@@ -416,7 +416,6 @@ const ApplicationService = function() {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
-
   //  bootstrap (when called init)
   this.bootstrap = function() {
     return new Promise((resolve, reject) => {

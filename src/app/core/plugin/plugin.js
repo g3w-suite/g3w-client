@@ -43,11 +43,19 @@ proto.getApi = function() {
   return this._api;
 };
 
+/**
+ * Set Plugin Api used by other plugins
+ * @param api
+ */
 proto.setApi = function(api={}) {
   api.getConfig = this._api.getConfig;
   this._api = api;
 };
 
+/**
+ * emit ready
+ * @param bool
+ */
 proto.setReady = function(bool) {
   this._ready = bool;
   this.emit('set-ready', bool, this.name);
@@ -57,6 +65,10 @@ proto.setReady = function(bool) {
   }, )
 };
 
+/**
+ * Method to get is plugin is ready
+ * @returns {Promise<unknown>}
+ */
 proto.isReady = function() {
   return new Promise((resolve, reject) => {
     if (this._ready) resolve(this._ready);
@@ -121,9 +133,7 @@ proto.setupGui = function() {};
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {
   this.dependencies = pluginsName || this.dependencies;
-  const pluginPromises = this.dependencies.map(pluginName => {
-    return this.getDependencyPlugin(pluginName)
-  });
+  const pluginPromises = this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName));
   return Promise.all(pluginPromises)
 };
 

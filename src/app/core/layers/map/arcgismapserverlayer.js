@@ -19,16 +19,17 @@ proto._makeOlLayer = function() {
     format: this.config.format
   };
   const olLayer = new RasterLayers.TiledArgisMapServer(config);
+
   olLayer.getSource().on('imageloadstart', () => {
     this.emit("loadstart");
   });
   olLayer.getSource().on('imageloadend', () => {
     this.emit("loadend");
   });
-
   olLayer.getSource().on('imageloaderror', ()=> {
     this.emit("loaderror");
   });
+
   return olLayer
 };
 

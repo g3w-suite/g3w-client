@@ -1,9 +1,17 @@
 {
-  "presets": ["env"],
+  "presets": [
+    ["env",
+      {
+        "targets": {
+          "browsers": [
+            "last 2 versions",
+            "IE >= 9"
+          ]
+        }
+      }]
+  ],
   "plugins": [
     "transform-remove-strict-mode",
-    "transform-object-rest-spread",
-    "transform-runtime",
-    "transform-array-find"
+    "transform-object-rest-spread"
   ]
 }

@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import TestGroup from './group/test'
 
 describe('#Test Group of application', async function(){
@@ -6,7 +7,7 @@ describe('#Test Group of application', async function(){
     groupId,
     testConfig
   })
-})
+});
 
 
 

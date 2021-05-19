@@ -4,7 +4,7 @@ const ApplicationService = require('core/applicationservice');
 const GUI = require('gui/gui');
 // Handle ApplicationService on ready event
 ApplicationService.once('ready', function(){});
-//andle obtaininitConfig
+//handle obtaininitConfig
 ApplicationService.once('initconfig', ()=> {
   const {plugins = {}} = DEVCONFIG;
   window.initConfig.group.plugins = {
