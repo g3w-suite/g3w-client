@@ -761,9 +761,9 @@ Vue.component('layerslegend-items',{
               econdedParams.push(`${key}=${encodeURIComponent(value)}`);
             });
             params = econdedParams.join('&');
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}
-                      &STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}
-                      ${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
+            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
+            params+= `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
+            params+= `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
             xhr.open('POST', _url);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.responseType = 'blob';
