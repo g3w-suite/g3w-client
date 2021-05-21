@@ -301,8 +301,10 @@ const vueComponentOptions = {
   beforeDestroy() {
     this.state.zoomToResult = true;
   },
-  async destroyed() {
-    this.$options.queryResultsService.clear();
+  destroyed() {
+    setTimeout(()=>{
+      this.$options.queryResultsService.clear();
+    })
   }
 };
 
