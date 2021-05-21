@@ -156,7 +156,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const {features} = layer;
   options.highlight = !this.isOneLayerResult();
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
-    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
+    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(this.mapService, features, options);
   else this.mapService.zoomToFeatures(features, options);
 };
 
