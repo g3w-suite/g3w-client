@@ -185,29 +185,29 @@ proto._handleWMSMultilayers = function({layer, response, projections} = {}) {
 };
 
 proto._groupFeaturesByFields = function(features) {
-  return _.groupBy(features, (feature) => {
-    return Object.keys(feature);
-  });
+  return _.groupBy(features, feature => Object.keys(feature));
 };
 
 proto._handleWMSMultiLayersResponseFromQGISSERVER = function({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
-  // is a multilayers. Each feature has different fields
+  // is a multilayers. Each feature has different fields. If group has more that one feature spit it and create single features
   Object.keys(groupFeatures).forEach((key, index) => {
     const features = groupFeatures[key];
-    jsonresponse.FeatureCollection.featureMember = {
-      [`layer${index}`]: features,
-      __prefix: prefix
-    };
-    const handledResponse = this._parseLayerFeatureCollection({
-      jsonresponse,
-      layer,
-      projections
+    features.forEach((feature, sub_index) => {
+      jsonresponse.FeatureCollection.featureMember = {
+        [`layer${index}_${sub_index}`]: feature,
+        __prefix: prefix
+      };
+      const handledResponse = this._parseLayerFeatureCollection({
+        jsonresponse,
+        layer,
+        projections
+      });
+      if (handledResponse) {
+        const response = handledResponse[0];
+        response.layer = layer;
+        handledResponses.unshift(response);
+      }
     });
-    if (handledResponse) {
-      const response = handledResponse[0];
-      response.layer = layer;
-      handledResponses.unshift(response);
-    }
   });
 };
 
@@ -231,7 +231,7 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
         features: null,
         __prefix: null
       };
-      jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
+      jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter(feature => {
         const featureMember = feature[layerName];
          if (featureMember) {
            featureMember.g3w_fid = {
@@ -248,7 +248,7 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
       });
       if (featureMemberArrayAndPrefix.features) {
         const prefix = featureMemberArrayAndPrefix.__prefix;
-        // check if features have the same fields. If not group the featues with the same fields
+        // check if features have the same fields. If not group the features with the same fields
         const groupFeatures = this._groupFeaturesByFields(featureMemberArrayAndPrefix.features);
         //check if features have different fields (multilayers)
         if (Object.keys(groupFeatures).length > 1) {
@@ -307,7 +307,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     }
   });
   //PATCH id strange
-  const strangeChar = new RegExp(`${String.fromCharCode(0)}`, "g")
+  const strangeChar = new RegExp(`${String.fromCharCode(0)}`, "g");
   response = response.replace(strangeChar, '0');
   ///
   return response;

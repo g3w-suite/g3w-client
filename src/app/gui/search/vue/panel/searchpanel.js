@@ -10,7 +10,7 @@ const SearchPanelComponent = Vue.extend({
   components:{
     Select2
   },
-  data: function() {
+  data() {
     return {
      state: this.$options.service.state
     }
@@ -59,7 +59,7 @@ const SearchPanelComponent = Vue.extend({
         this.state.searching = false;
       })
     },
-    doSearch: function(event) {
+    doSearch(event) {
      event.preventDefault();
      this.$options.service.run();
     }

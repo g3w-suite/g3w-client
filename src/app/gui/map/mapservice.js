@@ -2118,19 +2118,21 @@ proto.refreshMap = function(options) {
 
 // called when layout (window) resize
 proto.layout = function({width, height}) {
+  const is_hidden = (width <= 0 || height <= 0);
   if (!this.viewer) {
     this.setupViewer(width,height);
     if (this.viewer) {
       this.setupControls();
       this.emit('ready');
     }
-    this.setHidden((width === 0 || height === 0));
   } else {
-    this.setHidden((width === 0 || height === 0));
-    this.getMap().updateSize();
-    this.state.hidemaps.forEach(hidemap => hidemap.map.updateSize());
-    this._updateMapView();
+    if (!is_hidden) {
+      this.getMap().updateSize();
+      this.state.hidemaps.forEach(hidemap => hidemap.map.updateSize());
+      this._updateMapView();
+    }
   }
+  this.setHidden(is_hidden);
   this._mapControls.length && this._updateMapControlsLayout({width, height});
 };
 

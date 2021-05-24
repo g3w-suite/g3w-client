@@ -289,7 +289,7 @@ const vueComponentOptions = {
   },
   created(){
     //PUT HERE THROTTLED FUNCTION
-    this.zoomToLayerFeaturesExtent = throttle((layer) => {
+    this.zoomToLayerFeaturesExtent = throttle(layer => {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
         highlight: true
       });

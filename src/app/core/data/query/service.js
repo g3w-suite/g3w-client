@@ -84,8 +84,8 @@ function QueryService(){
     const layers = getMapLayersByFilter(layersFilterObject);
     const request = getQueryLayersPromisesByCoordinates(layers, {
       multilayers,
-        feature_count,
-        coordinates
+      feature_count,
+      coordinates
     });
     return this.handleRequest(request, {
       coordinates
