@@ -11,7 +11,15 @@ function SearchService(config={}) {
   this.debounces =  {
     run: {
       fnc: (...args) => {
-        this._run(...args)
+        if (GUI.isMobile()){
+         const [width, heigth] = this.mapService.getMap().getSize();
+         if  (width === 0 || heigth === 0) {
+           GUI.hideSidebar();
+           setTimeout(()=>{
+             this._run(...args)
+           }, 600)
+         } else this._run(...args);
+        } else this._run(...args)
       }
     }
   };

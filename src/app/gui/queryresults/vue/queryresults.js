@@ -61,23 +61,6 @@ const vueComponentOptions = {
     },
     hasOneLayerAndOneFeature(layer) {
       const one = this.hasLayerOneFeature(layer);
-      if (one) {
-        const feature = layer.features[0];
-        const boxid = this.getBoxId(layer, feature);
-        this.layersFeaturesBoxes[boxid].collapsed = false;
-        this.$options.queryResultsService.onceafter('postRender', () => {
-          this.showFeatureInfo(layer, boxid);
-          this.$options.queryResultsService.openCloseFeatureResult({
-            open:true,
-            layer,
-            feature,
-            container: this.getContainerFromFeatureLayer({
-              layer,
-              index: 0
-            })
-          })
-        });
-      }
       return one;
     },
     hasFormStructure(layer) {
@@ -279,6 +262,24 @@ const vueComponentOptions = {
   watch: {
     'state.layers'(layers) {
       this.onelayerresult = layers.length === 1;
+      if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
+        const layer = layers[0];
+        const feature = layer.features[0];
+        const boxid = this.getBoxId(layer, feature);
+        this.layersFeaturesBoxes[boxid].collapsed = false;
+        this.$options.queryResultsService.onceafter('postRender', () => {
+          this.showFeatureInfo(layer, boxid);
+          this.$options.queryResultsService.openCloseFeatureResult({
+            open:true,
+            layer,
+            feature,
+            container: this.getContainerFromFeatureLayer({
+              layer,
+              index: 0
+            })
+          })
+        });
+      }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
       })
@@ -294,9 +295,6 @@ const vueComponentOptions = {
         highlight: true
       });
     })
-  },
-  beforeMount() {
-    this.isMobile() && GUI.hideSidebar();
   },
   beforeDestroy() {
     this.state.zoomToResult = true;
