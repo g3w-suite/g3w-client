@@ -748,10 +748,7 @@ proto._setupControls = function() {
             add: true,
             toggled: true
           });
-          let canRun = true;
           const runQuery = throttle(async e => {
-            if (!canRun) return;
-            canRun = false;
             const coordinates = e.coordinates;
             GUI.closeOpenSideBarComponent();
             try {
@@ -764,7 +761,6 @@ proto._setupControls = function() {
               });
               data.length && this.showMarker(coordinates);
             } catch(error) {}
-            canRun = true
           });
           const eventKey = control.on('picked', runQuery);
           control.setEventKey({
@@ -804,10 +800,8 @@ proto._setupControls = function() {
                   return control.checkVisibile(controlLayers);
                 }
               });
-              let canRun = true;
+
               const runQuery = throttle(async e => {
-                if (!canRun) return;
-                canRun = false;
                 GUI.closeOpenSideBarComponent();
                 const coordinates = e.coordinates;
                 // ask for coordinates
@@ -840,7 +834,6 @@ proto._setupControls = function() {
                     data.length && map.getView().setCenter(coordinates);
                   }
                 } catch(err){}
-                canRun = true
               });
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
@@ -897,11 +890,9 @@ proto._setupControls = function() {
                   }
                 }
               });
-              let canRun = true;
+
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
-                if (!canRun) return;
-                canRun = false;
                 const bbox = e.extent;
                 try {
                   const {data=[]} = await DataRouterService.getData('query:bbox', {
@@ -918,7 +909,6 @@ proto._setupControls = function() {
                     this.getMap().getView().setCenter(center);
                   }
                 } catch(err){}
-                canRun = true;
               });
               const eventKey = control.on('bboxend', runQuery);
               control.setEventKey({

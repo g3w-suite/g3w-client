@@ -3,7 +3,7 @@ const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
-const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria'];
+const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 
 const geoutils = {
   geometryFields,
@@ -11,23 +11,55 @@ const geoutils = {
     let geometryClass;
     switch (geometryType) {
       case Geometry.GeometryTypes.POLYGON:
+      case Geometry.GeometryTypes.POLYGONZ:
+      case Geometry.GeometryTypes.POLYGONM:
+      case Geometry.GeometryTypes.POLYGONZM:
+      case Geometry.GeometryTypes.POLYGON25D:
         geometryClass = ol.geom.Polygon;
         break;
       case Geometry.GeometryTypes.MULTIPOLYGON:
+      case Geometry.GeometryTypes.MULTIPOLYGONZ:
+      case Geometry.GeometryTypes.MULTIPOLYGONM:
+      case Geometry.GeometryTypes.MULTIPOLYGONZM:
+      case Geometry.GeometryTypes.MULTIPOLYGON25D:
         geometryClass = ol.geom.MultiPolygon;
         break;
       case Geometry.GeometryTypes.LINESTRING:
+      case Geometry.GeometryTypes.LINESTRINGZ:
+      case Geometry.GeometryTypes.LINESTRINGM:
+      case Geometry.GeometryTypes.LINESTRINGZM:
+      case Geometry.GeometryTypes.LINESTRING25D:
       case Geometry.GeometryTypes.LINE:
+      case Geometry.GeometryTypes.LINEZ:
+      case Geometry.GeometryTypes.LINEM:
+      case Geometry.GeometryTypes.LINEZM:
+      case Geometry.GeometryTypes.LINE25D:
         geometryClass = ol.geom.LineString;
         break;
       case Geometry.GeometryTypes.MULTILINE:
+      case Geometry.GeometryTypes.MULTILINEZ:
+      case Geometry.GeometryTypes.MULTILINEM:
+      case Geometry.GeometryTypes.MULTILINEZM:
+      case Geometry.GeometryTypes.MULTILINE25D:
       case Geometry.GeometryTypes.MULTILINESTRING:
+      case Geometry.GeometryTypes.MULTILINESTRINGZ:
+      case Geometry.GeometryTypes.MULTILINESTRINGM:
+      case Geometry.GeometryTypes.MULTILINESTRINGZM:
+      case Geometry.GeometryTypes.MULTILINESTRING25D:
         geometryClass = ol.geom.MultiLineString;
         break;
       case Geometry.GeometryTypes.POINT:
+      case Geometry.GeometryTypes.POINTZ:
+      case Geometry.GeometryTypes.POINTM:
+      case Geometry.GeometryTypes.POINTZM:
+      case Geometry.GeometryTypes.POINT25D:
         geometryClass = ol.geom.Point;
         break;
-      case (Geometry.GeometryTypes.MULTIPOINT):
+      case Geometry.GeometryTypes.MULTIPOINT:
+      case Geometry.GeometryTypes.MULTIPOINTZ:
+      case Geometry.GeometryTypes.MULTIPOINTM:
+      case Geometry.GeometryTypes.MULTIPOINTZM:
+      case Geometry.GeometryTypes.MULTIPOINT25D:
         geometryClass = ol.geom.MultiPoint;
         break;
       default:
@@ -49,6 +81,54 @@ const geoutils = {
   },
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
+    switch (geometryType) {
+      case Geometry.GeometryTypes.LINESTRINGZ:
+      case Geometry.GeometryTypes.LINESTRINGM:
+      case Geometry.GeometryTypes.LINESTRINGZM:
+      case Geometry.GeometryTypes.LINESTRING25D:
+      case Geometry.GeometryTypes.LINE:
+      case Geometry.GeometryTypes.LINEZ:
+      case Geometry.GeometryTypes.LINEM:
+      case Geometry.GeometryTypes.LINEZM:
+      case Geometry.GeometryTypes.LINE25D:
+        geometryType = 'LineString';
+        break;
+      case Geometry.GeometryTypes.MULTILINESTRINGZ:
+      case Geometry.GeometryTypes.MULTILINESTRINGM:
+      case Geometry.GeometryTypes.MULTILINESTRINGZM:
+      case Geometry.GeometryTypes.MULTILINESTRING25D:
+      case Geometry.GeometryTypes.MULTILINE:
+      case Geometry.GeometryTypes.MULTILINEZ:
+      case Geometry.GeometryTypes.MULTILINEM:
+      case Geometry.GeometryTypes.MULTILINEZM:
+      case Geometry.GeometryTypes.MULTILINE25D:
+        geometryType = 'MultiLineString';
+        break;
+      case Geometry.GeometryTypes.POINTZ:
+      case Geometry.GeometryTypes.POINTM:
+      case Geometry.GeometryTypes.POINTZM:
+      case Geometry.GeometryTypes.POINT25D:
+        geometryType = 'Point';
+        break;
+      case Geometry.GeometryTypes.MULTIPOINTZ:
+      case Geometry.GeometryTypes.MULTIPOINTM:
+      case Geometry.GeometryTypes.MULTIPOINTZM:
+      case Geometry.GeometryTypes.MULTIPOINT25D:
+        geometryType = 'MultiPoint';
+        break;
+      case Geometry.GeometryTypes.POLYGONZ:
+      case Geometry.GeometryTypes.POLYGONM:
+      case Geometry.GeometryTypes.POLYGONZM:
+      case Geometry.GeometryTypes.POLYGON25D:
+        geometryType = 'Polygon';
+        break;
+      case Geometry.GeometryTypes.MULTIPOLYGONZ:
+      case Geometry.GeometryTypes.MULTIPOLYGONM:
+      case Geometry.GeometryTypes.MULTIPOLYGONZM:
+      case Geometry.GeometryTypes.MULTIPOLYGON25D:
+        geometryType = 'MultiPolygon';
+        break;
+    }
     const defaultStyle = {
       'Point': new ol.style.Style({
         image: new ol.style.Circle({
@@ -164,7 +244,15 @@ const geoutils = {
     if (!style) {
       switch (geometryType) {
         case Geometry.GeometryTypes.POINT:
+        case Geometry.GeometryTypes.POINTZ:
+        case Geometry.GeometryTypes.POINTM:
+        case Geometry.GeometryTypes.POINTZM:
+        case Geometry.GeometryTypes.POINT25D:
         case Geometry.GeometryTypes.MULTIPOINT:
+        case Geometry.GeometryTypes.MULTIPOINTZ:
+        case Geometry.GeometryTypes.MULTIPOINTM:
+        case Geometry.GeometryTypes.MULTIPOINTZM:
+        case Geometry.GeometryTypes.MULTIPOINT25D:
           style = new ol.style.Style({
             image: new ol.style.Circle({
               radius: 5,
@@ -175,7 +263,25 @@ const geoutils = {
           });
           break;
         case Geometry.GeometryTypes.LINESTRING:
+        case Geometry.GeometryTypes.LINESTRINGZ:
+        case Geometry.GeometryTypes.LINESTRINGM:
+        case Geometry.GeometryTypes.LINESTRINGZM:
+        case Geometry.GeometryTypes.LINESTRING25D:
         case Geometry.GeometryTypes.MULTILINESTRING:
+        case Geometry.GeometryTypes.MULTILINESTRINGZ:
+        case Geometry.GeometryTypes.MULTILINESTRINGM:
+        case Geometry.GeometryTypes.MULTILINESTRINGZM:
+        case Geometry.GeometryTypes.MULTILINESTRING25D:
+        case Geometry.GeometryTypes.LINE:
+        case Geometry.GeometryTypes.LINEZ:
+        case Geometry.GeometryTypes.LINEM:
+        case Geometry.GeometryTypes.LINEZM:
+        case Geometry.GeometryTypes.LINE25D:
+        case Geometry.GeometryTypes.MULTILINE:
+        case Geometry.GeometryTypes.MULTILINEZ:
+        case Geometry.GeometryTypes.MULTILINEM:
+        case Geometry.GeometryTypes.MULTILINEZM:
+        case Geometry.GeometryTypes.MULTILINE25D:
           style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               width: 3,
@@ -184,7 +290,15 @@ const geoutils = {
           });
           break;
         case Geometry.GeometryTypes.POLYGON:
+        case Geometry.GeometryTypes.POLYGONZ:
+        case Geometry.GeometryTypes.POLYGONM:
+        case Geometry.GeometryTypes.POLYGONZM:
+        case Geometry.GeometryTypes.POLYGON25D:
         case Geometry.GeometryTypes.MULTIPOLYGON:
+        case Geometry.GeometryTypes.MULTIPOLYGONZ:
+        case Geometry.GeometryTypes.MULTIPOLYGONM:
+        case Geometry.GeometryTypes.MULTIPOLYGONZM:
+        case Geometry.GeometryTypes.MULTIPOLYGON25D:
           style =  new ol.style.Style({
             stroke: new ol.style.Stroke({
               color:  "#000000",

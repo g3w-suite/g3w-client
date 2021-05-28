@@ -347,6 +347,12 @@ const utils = {
       }
     }
   },
+  getTimeoutPromise({timeout=600}){
+    const promise = new Promise(resolve =>{
+      setTimeout(resolve, timeout)
+    });
+    return promise;
+  },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {

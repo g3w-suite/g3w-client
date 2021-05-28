@@ -1,14 +1,14 @@
 const queryService = require('core/data/query/service');
 const searchService = require('core/data/search/service');
 const IFrameRouterService = require('core/iframe/routerservice');
-const { splitContextAndMethod } =require('core/utils/utils');
+const { splitContextAndMethod } = require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function Routerservice() {
   //set deafult outputplace
   this.defaultoutputplaces = ['gui'];
   // set current outputplaces
-  this.currentoutplutplaces =  [...this.defaultoutputplaces]; // array contains all
+  this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
 
   /**
    * Object contain outplut function to show results
@@ -46,7 +46,7 @@ function Routerservice() {
     const { inputs={}, outputs={}} = options;
     //return a promise and not the data
     const dataPromise = service[method](inputs);
-    outputs && this.currentoutplutplaces.forEach(place =>{
+    outputs && this.currentoutputplaces.forEach(place =>{
       this.ouputplaces[place](dataPromise, outputs);
     });
     //return always data
@@ -66,7 +66,7 @@ function Routerservice() {
   /*
   * */
   this.setOutputPlaces = function(places=[]){
-    this.currentoutplutplaces = places;
+    this.currentoutputplaces = places;
   };
 
   /**
@@ -74,7 +74,7 @@ function Routerservice() {
    * @param place
    */
   this.addCurrentOutputPlace = function(place){
-    place && this.currentoutplutplaces.indexOf(place) === -1 && this.currentoutplutplaces.push(place);
+    place && this.currentoutputplaces.indexOf(place) === -1 && this.currentoutputplaces.push(place);
   };
 
   /**
@@ -97,7 +97,7 @@ function Routerservice() {
 
   // reset default configuration
   this.resetDefaultOutput = function(){
-    this.currentoutplutplaces = [...this.defaultoutputplaces];
+    this.currentoutputplaces = [...this.defaultoutputplaces];
   };
 
 }
