@@ -885,17 +885,18 @@ proto.setLayersStore = function(layerstore) {
 };
 
 proto.canShowTable = function() {
-  if (this.getServerType() === 'QGIS') {
+  if (this.getServerType() === Layer.ServerTypes.QGIS) {
     if( ([
             Layer.SourceTypes.POSTGIS,
             Layer.SourceTypes.ORACLE,
+            Layer.SourceTypes.WFS,
             Layer.SourceTypes.OGR,
             Layer.SourceTypes.MSSQL,
             Layer.SourceTypes.SPATIALITE
           ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
       return true
     }
-  } else if (this.getServerType() === 'G3WSUITE') {
+  } else if (this.getServerType() === Layer.ServerTypes.G3WSUITE) {
       if (this.get('source').type === "geojson")
         return true
   } else if (this.isFilterable())
