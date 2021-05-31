@@ -67,7 +67,7 @@ const ProvidersForServerTypes = {
     'wfs': {
       query: Providers.wms,
       filter: Providers.wfs,
-      data: Providers.wfs,
+      data: Providers.qgis,
       search: Providers.qgis
     },
     'gdal': {
