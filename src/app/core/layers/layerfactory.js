@@ -25,6 +25,7 @@ function LayerFactory() {
               Layer.SourceTypes.POSTGIS,
               Layer.SourceTypes.MSSQL,
               Layer.SourceTypes.SPATIALITE,
+              Layer.SourceTypes.WFS,
               Layer.SourceTypes.CSV,
               Layer.SourceTypes.ORACLE,
               Layer.SourceTypes.OGR
@@ -39,10 +40,10 @@ function LayerFactory() {
         if(config.source) {
           const type = config.source.type;
           switch (type) {
-            case 'wms':
+            case Layer.SourceTypes.WMS:
               LayerClass = ImageLayer;
               break;
-            case 'wfs':
+            case Layer.SourceTypes.WFS:
               LayerClass = VectorLayer;
           }
         }
