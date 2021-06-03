@@ -34,7 +34,7 @@ inherit(QGISProvider, DataProvider);
 
 const proto = QGISProvider.prototype;
 
-proto.getFilterData = async function({field, suggest={}, unique}={}){
+proto.getFilterData = async function({field, suggest={}, unique, queryUrl}={}){
   const params = {
     field,
     suggest,
@@ -42,7 +42,7 @@ proto.getFilterData = async function({field, suggest={}, unique}={}){
   };
   try {
     const response = await XHR.get({
-      url: `${this._dataUrl}`,
+      url: `${queryUrl ? queryUrl : this._dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";

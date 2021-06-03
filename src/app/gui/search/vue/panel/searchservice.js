@@ -113,6 +113,7 @@ proto.doSearch = function({filter, searchType=this.search_endpoint, queryUrl=thi
         break;
       case 'api':
         this.searchLayer.getFilterData({
+          queryUrl,
           field: filter
         }).then(response => {
           resolve(response)
