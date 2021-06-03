@@ -61,7 +61,7 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}){
+proto.getFilterData = async function({field, suggest={}, unique, formatter=1, queryUrl}={}){
   const params = {
     field,
     suggest,
@@ -71,7 +71,7 @@ proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}
   };
   try {
     const response = await XHR.get({
-      url: `${this._dataUrl}`,
+      url: `${queryUrl ?  queryUrl : this._dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";
