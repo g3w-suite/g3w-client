@@ -40,25 +40,15 @@ proto.getValues = async function({layerId, field}={}){
     try {
       const layer = this._getLayerById(layerId);
       const dataUrl = layer.getUrl('data');
+      console.log(field)
       const response = await XHR.get({
         url: dataUrl,
         params: {
-          ordering:field
+          ordering:field,
+          unique: field
         }
       });
-      const features = getFeaturesFromResponseVectorApi(response);
-      if (features && features.length) {
-        const feature  = features[0];
-        const fields = getAlphanumericPropertiesFromFeature(feature.properties);
-        fields.forEach(field => {
-          this._cacheValues[layerId][field] = new Set();
-        });
-        features.forEach(feature => {
-          fields.forEach(field => {
-            this._cacheValues[layerId][field].add(feature.properties[field]);
-          })
-        });
-      }
+      if (response.result) this._cacheValues[layerId][field] = this._cacheValues[layerId][field] || response.data;
       return this._cacheValues[layerId][field] || [];
     } catch(err) {
       reject();
