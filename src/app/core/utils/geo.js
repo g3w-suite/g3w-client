@@ -358,7 +358,33 @@ const geoutils = {
         layer = createVectorLayer(format, data,  "EPSG:4326");
         break;
       case 'csv':
-        console.log(data)
+        const {headers, separator, values, x, y} = data;
+        const features = [];
+        values.forEach(row =>{
+          const coordinates = [];
+          const properties = {};
+          row.split(separator).forEach((value, index) =>{
+            const field = headers[index];
+            if (field === x) coordinates[0] = 1*value;
+            if (field === y) coordinates[1] = 1*value;
+            properties[field] = value;
+          });
+          const geometry = new ol.geom.Point(coordinates);
+          if (crs !== mapCrs) geometry.transform(crs, mapCrs);
+          const feature = new ol.Feature(geometry);
+          feature.setProperties(properties);
+          features.push(feature);
+        });
+        const source = new ol.source.Vector({
+          features
+        });
+        layer = new ol.layer.Vector({
+          source,
+          name,
+          _fields: headers,
+          id: uniqueId()
+        });
+        style && layer.setStyle(style);
         break;
       case 'zip':
         const promise = new Promise((resolve, reject) =>{

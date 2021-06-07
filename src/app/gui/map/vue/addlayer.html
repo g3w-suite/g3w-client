@@ -27,6 +27,7 @@
           <p style="font-weight: bold">[.gml, .geojson, .kml, .gpx, .csv, .zip(shapefile)]</p>
         </form>
         <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
+          <bar-loader :loading="csv.loading"></bar-loader>
           <div class="select_field">
             <label v-t="'mapcontrols.add_layer_control.select_csv_separator'" for="g3w-select-field-layer"></label>
             <select class="form-control" id="g3w-select-separator" v-model="csv.separator">
@@ -56,7 +57,7 @@
         </div>
       <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
       <div class="modal-footer">
-        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!add"></button>
+        <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!vectorLayer"></button>
         <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal"></button>
       </div>
     </div>

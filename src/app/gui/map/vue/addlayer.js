@@ -34,6 +34,7 @@ const AddLayerComponent = {
   props: ['service'],
   data() {
     return {
+      vectorLayer: null,
       options: EPSG,
       error: false,
       error_message: null,
@@ -42,12 +43,12 @@ const AddLayerComponent = {
       field: null,
       accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
       csv: {
+        loading:false,
         headers: [],
         x: null,
         y: null,
         separators : CSV_SEPARATORS,
         separator: CSV_SEPARATORS[0],
-        valid: true
       },
       layer: {
         name: null,
@@ -112,31 +113,43 @@ const AddLayerComponent = {
               const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
               const [headers, ...values] = csv_data;
               const handle_csv_headers = separator => {
+                let data;
+                this.csv.loading = true;
                 const csv_headers = headers.split(separator);
                 const headers_length = csv_headers.length;
                 if (headers_length > 1) {
                   this.csv.headers = csv_headers;
                   this.csv.x = csv_headers[0];
                   this.csv.y = csv_headers[1];
-                  this.csv.valid = true;
-                  resolve({
+                  data ={
                     headers: csv_headers,
+                    separator,
+                    x: this.csv.x,
+                    y: this.csv.y,
                     values
-                  })
+                  }
                 } else {
-                  this.csv.valid = false;
                   this.csv.headers = this.fields = [];
+                  this.vectorLayer = null;
                 }
+                this.csv.loading = false;
+                return data;
               };
-              handle_csv_headers(this.csv.separator);
+              const data = handle_csv_headers(this.csv.separator);
+              data && resolve(data);
               this.$watch('csv.separator', separator => {
-                handle_csv_headers(separator)
+                const new_data = handle_csv_headers(separator);
+                if (new_data) {
+                  if(!data) resolve(new_data);
+                  else {
+                    this.layer.data = new_data;
+                    this.createVectorLayer()
+                  }
+                }
               })
-              //resolve(data);
             };
             reader.readAsText(evt.target.files[0]);
-          }
-          else {
+          } else {
             reader.onload = evt => {
               const data = evt.target.result;
               input_file.val(null);
@@ -146,15 +159,18 @@ const AddLayerComponent = {
           }
         });
         this.layer.data = await promiseData;
-        this.fields.splice(0);
-        try {
-          this.vectorLayer = await createVectorLayerFromFile(this.layer);
-          await this.$nextTick();
-          this.fields = this.vectorLayer.get('_fields');
-        } catch(err){
-          this.setError('add_external_layer');
-        }
+        await this.createVectorLayer();
       } else this.setError('unsupported_format');
+    },
+    async createVectorLayer(){
+      this.fields.splice(0); //reset eventually the fields
+      try {
+        this.vectorLayer = await createVectorLayerFromFile(this.layer);
+        await this.$nextTick();
+        this.fields = this.vectorLayer.get('_fields');
+      } catch(err){
+        this.setError('add_external_layer');
+      }
     },
     addLayer() {
       if (this.vectorLayer){
@@ -201,9 +217,6 @@ const AddLayerComponent = {
   computed:{
     csv_extension(){
       return this.layer.type === 'csv';
-    },
-    add(){
-      return this.layer.name && this.csv.valid
     }
   },
   created() {
