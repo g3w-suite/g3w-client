@@ -357,6 +357,9 @@ const geoutils = {
         });
         layer = createVectorLayer(format, data,  "EPSG:4326");
         break;
+      case 'csv':
+        console.log(data)
+        break;
       case 'zip':
         const promise = new Promise((resolve, reject) =>{
           geoutils.shpToGeojson({

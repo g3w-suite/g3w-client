@@ -1213,7 +1213,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
       space: false
     };
     // count the mapcontrol insied g3w-map-control container
-    this._mapControls.forEach((control) => {
+    this._mapControls.forEach(control => {
       const map = this.getMap();
       control.control.changelayout ? control.control.changelayout(map) : null;
     });

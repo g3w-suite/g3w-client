@@ -42,8 +42,12 @@ const AddLayerComponent = {
       field: null,
       accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
       csv: {
+        headers: [],
+        x: null,
+        y: null,
         separators : CSV_SEPARATORS,
-        separator: CSV_SEPARATORS[0]
+        separator: CSV_SEPARATORS[0],
+        valid: true
       },
       layer: {
         name: null,
@@ -84,6 +88,7 @@ const AddLayerComponent = {
       this.layer.color = val;
     },
     async onAddLayer(evt) {
+      this.csv.valid = true;
       const reader = new FileReader();
       const name = evt.target.files[0].name;
       let type = evt.target.files[0].name.split('.');
@@ -102,9 +107,36 @@ const AddLayerComponent = {
             input_file.val(null);
             resolve(data);
           } else if (this.layer.type === 'csv') { // in case of csv
-            const data = evt.target.result;
+            reader.onload = evt => {
+              input_file.val(null);
+              const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
+              const [headers, ...values] = csv_data;
+              const handle_csv_headers = separator => {
+                const csv_headers = headers.split(separator);
+                const headers_length = csv_headers.length;
+                if (headers_length > 1) {
+                  this.csv.headers = csv_headers;
+                  this.csv.x = csv_headers[0];
+                  this.csv.y = csv_headers[1];
+                  this.csv.valid = true;
+                  resolve({
+                    headers: csv_headers,
+                    values
+                  })
+                } else {
+                  this.csv.valid = false;
+                  this.csv.headers = this.fields = [];
+                }
+              };
+              handle_csv_headers(this.csv.separator);
+              this.$watch('csv.separator', separator => {
+                handle_csv_headers(separator)
+              })
+              //resolve(data);
+            };
+            reader.readAsText(evt.target.files[0]);
           }
-          else{
+          else {
             reader.onload = evt => {
               const data = evt.target.result;
               input_file.val(null);
@@ -139,9 +171,7 @@ const AddLayerComponent = {
           .catch(()=>{
             this.setError('add_external_layer');
           })
-          .finally(()=>{
-            this.loading = false;
-          })
+          .finally(()=> this.loading = false)
       }
     },
     clearLayer() {
@@ -171,6 +201,9 @@ const AddLayerComponent = {
   computed:{
     csv_extension(){
       return this.layer.type === 'csv';
+    },
+    add(){
+      return this.layer.name && this.csv.valid
     }
   },
   created() {

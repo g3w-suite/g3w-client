@@ -1,10 +1,9 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
-const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
+const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
 const RelationPageEventBus = require('./relationeventbus');
 const compiledTemplate = createCompiledTemplate(require('./relationspage.html'));
 
