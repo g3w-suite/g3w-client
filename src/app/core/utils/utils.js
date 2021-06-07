@@ -446,6 +446,7 @@ const utils = {
         break;
       case 'api':
         filter = stringFilter.replace(/\s|'|"/g, '');
+        console.log(filter)
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
           const re = new RegExp(value, "g");
           const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;

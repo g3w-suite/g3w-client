@@ -376,6 +376,9 @@ const translations = {
           header: "Aggiungi Layer",
           select_projection: "Seleziona il sistema di proiezione del layer",
           select_field_to_show: "Seleziona il campo da visualizzare sulla mappa",
+          select_csv_separator: "Seleziona il separatore",
+          select_csv_x_field: "Seleziona il campo X",
+          select_csv_y_field: "Seleziona il campo Y",
           select_color: "Seleziona il colore del Layer",
           drag_layer: "Trascina il layer in questa area"
         },
@@ -788,6 +791,9 @@ const translations = {
           header: "Add Layer",
           select_projection: "Select layer projection",
           select_field_to_show: "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Select Layer Color",
           drag_layer: "Drag and drop layer here"
         },
@@ -1200,6 +1206,9 @@ const translations = {
           header: "Lisää taso",
           select_projection: "Valitse tason projektio",
           select_field_to_show : "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Valitse tason väri",
           drag_layer: "Vedä ja pudota taso tähän"
         },
@@ -1613,6 +1622,9 @@ const translations = {
           header: "Lägg till nivå",
           select_projection: "Välj projektion för nivån",
           select_field_to_show: "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Välj färg på nivån",
           drag_layer: "Dra och släpp nivån hit"
         },

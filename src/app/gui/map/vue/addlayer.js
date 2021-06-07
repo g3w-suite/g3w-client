@@ -1,5 +1,6 @@
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
-const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'KML', 'json', 'gpx', 'gml'];
+const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'KML', 'json', 'gpx', 'gml', 'csv'];
+const CSV_SEPARATORS = [',', ';'];
 
 const EPSG = [
   "EPSG:3003",
@@ -40,6 +41,10 @@ const AddLayerComponent = {
       fields:[],
       field: null,
       accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
+      csv: {
+        separators : CSV_SEPARATORS,
+        separator: CSV_SEPARATORS[0]
+      },
       layer: {
         name: null,
         type: null,
@@ -92,11 +97,14 @@ const AddLayerComponent = {
         this.layer.id = name;
         this.layer.type = type;
         const promiseData = new Promise((resolve, reject) =>{
-          if (this.layer.type === 'zip') {
+          if (this.layer.type === 'zip') { // in case of shapefile (zip file)
             const data = evt.target.files[0];
             input_file.val(null);
             resolve(data);
-          } else {
+          } else if (this.layer.type === 'csv') { // in case of csv
+            const data = evt.target.result;
+          }
+          else{
             reader.onload = evt => {
               const data = evt.target.result;
               input_file.val(null);
@@ -158,6 +166,11 @@ const AddLayerComponent = {
       this.vectorLayer = null;
       this.fields = [];
       this.field = null;
+    }
+  },
+  computed:{
+    csv_extension(){
+      return this.layer.type === 'csv';
     }
   },
   created() {

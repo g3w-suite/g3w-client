@@ -6,8 +6,6 @@ const GUI = require('gui/gui');
 const {uniqueId, createFilterFromString} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
-const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
-const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
@@ -40,7 +38,6 @@ proto.getValues = async function({layerId, field}={}){
     try {
       const layer = this._getLayerById(layerId);
       const dataUrl = layer.getUrl('data');
-      console.log(field)
       const response = await XHR.get({
         url: dataUrl,
         params: {
