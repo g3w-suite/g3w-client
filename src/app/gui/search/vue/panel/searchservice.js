@@ -334,7 +334,10 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             this.state.loading[field] = false;
             resolve();
           })
-        } else resolve();
+        } else {
+          this.state.loading[field] = false;
+          resolve();
+        }
       }
     } else resolve();
   })

@@ -75,9 +75,7 @@ const geoutils = {
       url,
       encoding,
       EPSG: Number.isInteger(EPSG) ? EPSG : EPSG.split('EPSG:')[1]
-    }, function(geojson) {
-      returnData(geojson)
-    });
+    }, returnData);
   },
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
@@ -389,15 +387,15 @@ const geoutils = {
       case 'zip':
         const promise = new Promise((resolve, reject) =>{
           geoutils.shpToGeojson({
-            url: data,
-            EPSG: crs
-          }, geojson => {
-            if (geojson) {
-              const data = JSON.stringify(geojson);
-              format = new ol.format.GeoJSON({});
-              resolve(createVectorLayer(format, data, "EPSG:4326"));
-            } else reject()
-          });
+              url: data,
+              EPSG: crs
+            }, geojson => {
+              if (geojson) {
+                  const data = JSON.stringify(geojson);
+                  format = new ol.format.GeoJSON({});
+                  resolve(createVectorLayer(format, data, "EPSG:4326"));
+                }
+            });
         });
         try {
           return await promise;

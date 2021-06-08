@@ -43,6 +43,7 @@ const AddLayerComponent = {
       field: null,
       accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
       csv: {
+        valid: false,
         loading:false,
         headers: [],
         x: null,
@@ -102,78 +103,75 @@ const AddLayerComponent = {
         this.layer.title = name;
         this.layer.id = name;
         this.layer.type = type;
-        const promiseData = new Promise((resolve, reject) =>{
-          if (this.layer.type === 'zip') { // in case of shapefile (zip file)
-            const data = evt.target.files[0];
+        if (this.layer.type === 'csv') { // in case of csv
+          reader.onload = evt => {
             input_file.val(null);
-            resolve(data);
-          } else if (this.layer.type === 'csv') { // in case of csv
-            reader.onload = evt => {
-              input_file.val(null);
-              const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
-              const [headers, ...values] = csv_data;
-              const handle_csv_headers = separator => {
-                let data;
-                this.csv.loading = true;
-                const csv_headers = headers.split(separator);
-                const headers_length = csv_headers.length;
-                if (headers_length > 1) {
-                  this.csv.headers = csv_headers;
-                  this.csv.x = csv_headers[0];
-                  this.csv.y = csv_headers[1];
-                  data ={
-                    headers: csv_headers,
-                    separator,
-                    x: this.csv.x,
-                    y: this.csv.y,
-                    values
-                  }
-                } else {
-                  this.csv.headers = this.fields = [];
-                  this.vectorLayer = null;
-                }
-                this.csv.loading = false;
-                return data;
-              };
-              const data = handle_csv_headers(this.csv.separator);
-              data && resolve(data);
-              this.$watch('csv.separator', separator => {
-                const new_data = handle_csv_headers(separator);
-                if (new_data) {
-                  if(!data) resolve(new_data);
-                  else {
-                    this.layer.data = new_data;
-                    this.createVectorLayer()
-                  }
-                }
-              })
+            const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
+            const [headers, ...values] = csv_data;
+            const handle_csv_headers = separator => {
+              let data;
+              this.csv.loading = true;
+              const csv_headers = headers.split(separator);
+              const headers_length = csv_headers.length;
+              if (headers_length > 1) {
+                this.csv.headers = csv_headers;
+                this.fields = csv_headers;
+                this.csv.x = csv_headers[0];
+                this.csv.y = csv_headers[1];
+                data = {
+                  headers: csv_headers,
+                  separator,
+                  x: this.csv.x,
+                  y: this.csv.y,
+                  values
+                };
+                this.csv.valid = true;
+              } else {
+                this.csv.headers = this.fields = [];
+                this.vectorLayer = null;
+                this.csv.valid = false;
+                this.fields.splice(0);
+              }
+              this.csv.loading = false;
+              return data;
             };
-            reader.readAsText(evt.target.files[0]);
-          } else {
-            reader.onload = evt => {
-              const data = evt.target.result;
+            this.layer.data = handle_csv_headers(this.csv.separator);
+            this.$watch('csv.separator', separator => this.layer.data = handle_csv_headers(separator))
+          };
+          reader.readAsText(evt.target.files[0]);
+        } else {
+          const promiseData = new Promise((resolve, reject) =>{
+            if (this.layer.type === 'zip') { // in case of shapefile (zip file)
+              const data = evt.target.files[0];
               input_file.val(null);
               resolve(data);
-            };
-            reader.readAsText(evt.target.files[0]);
-          }
-        });
-        this.layer.data = await promiseData;
-        await this.createVectorLayer();
+            } else {
+              reader.onload = evt => {
+                const data = evt.target.result;
+                input_file.val(null);
+                resolve(data);
+              };
+              reader.readAsText(evt.target.files[0]);
+            }
+          });
+          this.layer.data = await promiseData;
+          try {
+            this.fields.splice(0); //reset eventually the fields
+            await this.createVectorLayer();
+            this.fields = this.vectorLayer.get('_fields');
+          } catch(err){}
+        }
       } else this.setError('unsupported_format');
     },
     async createVectorLayer(){
-      this.fields.splice(0); //reset eventually the fields
       try {
         this.vectorLayer = await createVectorLayerFromFile(this.layer);
         await this.$nextTick();
-        this.fields = this.vectorLayer.get('_fields');
-      } catch(err){
-        this.setError('add_external_layer');
-      }
+      } catch(err){this.setError('add_external_layer');}
     },
-    addLayer() {
-      if (this.vectorLayer){
+    async addLayer() {
+      if (this.vectorLayer || this.csv.valid){
+        this.vectorLayer || await this.createVectorLayer();
         this.loading = true;
         this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
           color:this.layer.color,
@@ -217,10 +215,20 @@ const AddLayerComponent = {
   computed:{
     csv_extension(){
       return this.layer.type === 'csv';
+    },
+    add(){
+      return this.vectorLayer || this.csv.valid;
+    }
+  },
+  watch:{
+    'csv.x'(value){
+      if (value) this.layer.data.x = value
+    },
+    'csv.y'(value){
+      if (value) this.layer.data.y = value
     }
   },
   created() {
-    this.vectorLayer;
     this.layer.crs = this.service.getCrs();
     this.service.on('addexternallayer', () => this.modal.modal('show'));
   },

@@ -261,6 +261,7 @@ const vueComponentOptions = {
   watch: {
     'state.layers'(layers) {
       this.onelayerresult = layers.length === 1;
+      // check if is a single result layer and if has one feature
       if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
         const layer = layers[0];
         const feature = layer.features[0];
@@ -278,6 +279,20 @@ const vueComponentOptions = {
             })
           })
         });
+      } else { // for each layer check if there is one feature (usefult for plugin elevation)
+        const singlefeaturelayers = layers.filter(layer => this.hasLayerOneFeature(layer))
+        singlefeaturelayers.length && this.$options.queryResultsService.onceafter('postRender', () => {
+            singlefeaturelayers.forEach(layer =>
+              this.$options.queryResultsService.openCloseFeatureResult({
+                open:true,
+                layer,
+                feature: layer.features[0],
+                container: this.getContainerFromFeatureLayer({
+                  layer,
+                  index: 0
+                })
+              }))
+        })
       }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
