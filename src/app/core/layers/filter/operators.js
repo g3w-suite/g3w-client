@@ -1,10 +1,10 @@
 export const OPERATORS =  {
-  eq: '=',
-  NOT: '!=',
-  gt: '>',
-  lt: '<',
   gte: '>=',
   lte: '<=',
+  NOT: '!=',
+  eq: '=',
+  gt: '>',
+  lt: '<',
   IN: 'IN',
   'NOT IN': 'NOT IN',
   LIKE: 'LIKE',
@@ -14,9 +14,9 @@ export const OPERATORS =  {
 };
 
 export const EXPRESSION_OPERATORS = {
-  ...OPERATORS,
   'lte=': '<=',
   ltgt: '!=',
-  like: 'LIKE',
   ilike: 'ILIKE',
+  like: 'LIKE',
+  ...OPERATORS,
 };

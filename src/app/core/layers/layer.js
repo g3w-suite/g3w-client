@@ -7,6 +7,7 @@ const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
+  const ProjectsRegistry = require('core/project/projectsregistry');
   this.config = config;
   // assign some attribute
   config.id = config.id || 'Layer';
@@ -19,7 +20,8 @@ function Layer(config={}, options={}) {
     query: config.infourl && config.infourl !== '' ? config.infourl : config.wmsUrl,
     ...(config.urls || {})
   };
-  const {project} = options;
+  const {project=ProjectsRegistry.getCurrentProject()} = options;
+  this.config.search_endpoint = project.getSearchEndPoint();
   if (!this.isBaseLayer()) {
     //set url to get varios type of data
     const projectType = project.getType();
@@ -99,6 +101,13 @@ function Layer(config={}, options={}) {
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+/**
+ *
+ * @returns {*}
+ */
+proto.getSearchEndPoint = function(){
+  return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
+};
 
 proto.getWMSLayerName = function() {
   return this.isWmsUseLayerIds() ? this.getId() : this.getName()

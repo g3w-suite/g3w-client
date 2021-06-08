@@ -1,14 +1,10 @@
-const Expression = require('core/layers/filter/expression');
-const Filter = require('core/layers/filter/filter');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const GUI = require('gui/gui');
-const uniqueId = require('core/utils/utils').uniqueId;
+const {uniqueId, createFilterFromString} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const XHR = require('core/utils/utils').XHR;
-const getFeaturesFromResponseVectorApi = require('core/utils/geo').getFeaturesFromResponseVectorApi;
-const getAlphanumericPropertiesFromFeature = require('core/utils/geo').getAlphanumericPropertiesFromFeature;
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){
@@ -42,21 +38,13 @@ proto.getValues = async function({layerId, field}={}){
       const layer = this._getLayerById(layerId);
       const dataUrl = layer.getUrl('data');
       const response = await XHR.get({
-        url: dataUrl
+        url: dataUrl,
+        params: {
+          ordering:field,
+          unique: field
+        }
       });
-      const features = getFeaturesFromResponseVectorApi(response);
-      if (features && features.length) {
-        const feature  = features[0];
-        const fields = getAlphanumericPropertiesFromFeature(feature.properties);
-        fields.forEach(field => {
-          this._cacheValues[layerId][field] = new Set();
-        });
-        features.forEach(feature => {
-          fields.forEach(field => {
-            this._cacheValues[layerId][field].add(feature.properties[field]);
-          })
-        });
-      }
+      if (response.result) this._cacheValues[layerId][field] = this._cacheValues[layerId][field] || response.data;
       return this._cacheValues[layerId][field] || [];
     } catch(err) {
       reject();
@@ -64,20 +52,37 @@ proto.getValues = async function({layerId, field}={}){
   } else return valuesField;
 };
 
-proto.run = function({layerId, filter, showResult=true}={}){
+proto.run = function({layerId, filter:stringFilter, showResult=true}={}){
   const layer = this._getLayerById(layerId);
-  const layerName = layer.getWMSLayerName();
-  const expression = new Expression({
-    layerName,
-    filter
+  const search_endpoint = layer.getSearchEndPoint();
+  const filter = createFilterFromString({
+    layer,
+    search_endpoint,
+    filter: stringFilter
   });
-  const _filter = new Filter();
-  _filter.setExpression(expression.get());
   return new Promise((resolve, reject) => {
-    layer.search({
-      filter: _filter,
-      feature_count: 100
-    }).then((data) =>{
+    let promise;
+    switch (search_endpoint) {
+      case 'ows':
+        promise = new Promise((resolve, reject) =>{
+          layer.search({
+            filter,
+            feature_count: 100
+          }).then(resolve).fail(reject)
+        });
+        break;
+      case 'api':
+        promise = layer.getFilterData({
+          field: filter
+        });
+        break;
+    }
+    promise.then(data =>{
+      try {
+        data = Array.isArray(data) ? data : data.data;
+      } catch(err){
+        data = []
+      }
       if (showResult){
         const showQueryResults = GUI.showContentFactory('query');
         const queryResultsPanel = showQueryResults();
@@ -86,7 +91,7 @@ proto.run = function({layerId, filter, showResult=true}={}){
         });
       }
       resolve(data)
-    }).fail((err)=>{
+    }).catch(err=>{
       GUI.showUserMessage({
         type: 'alert',
         message: 'sdk.querybuilder.error_run',
