@@ -433,7 +433,7 @@ const utils = {
     return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
-    const stringFilter = filter;
+    let stringFilter = filter;
     switch (search_endpoint) {
       case 'ows':
         const layerName = layer.getWMSLayerName();
@@ -445,7 +445,17 @@ const utils = {
          filter.setExpression(expression.get());
         break;
       case 'api':
-        filter = stringFilter.replace(/\s|'|"/g, '');
+        //remove all blank space between operatos
+        Object.values(EXPRESSION_OPERATORS).forEach(operator =>{
+          const splitStringOperator = stringFilter.split(operator);
+          if (splitStringOperator.length > 1) {
+            splitStringOperator.forEach((token,index) =>{
+              splitStringOperator[index] = token.trim();
+            });
+            stringFilter = splitStringOperator.join(operator);
+          }
+        });
+        filter = stringFilter.replace(/'|"/g, '');
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
           const re = new RegExp(value, "g");
           const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
