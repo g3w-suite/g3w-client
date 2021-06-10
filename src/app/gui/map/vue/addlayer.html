@@ -40,6 +40,7 @@
               <option v-for="header in csv.headers" :key="header" :value="header">{{ header }}</option>
             </select>
           </div>
+
           <div class="select_field" :class="{'g3w-disabled': !csv.headers || csv.headers.length === 0}">
             <label v-t="'mapcontrols.add_layer_control.select_csv_y_field'" for="g3w-select-y-field"></label>
             <select class="form-control" id="g3w-select-y-field" v-model="csv.y">
@@ -48,6 +49,7 @@
           </div>
         </div>
       </div>
+
         <div class="select_field" :class="{'g3w-disabled': !fields || fields.length === 0}">
           <label v-t="'mapcontrols.add_layer_control.select_field_to_show'" for="g3w-select-field-layer"></label>
           <select class="form-control" id="g3w-select-field-layer" v-model="field">
@@ -55,7 +57,7 @@
             <option v-for="field in fields" :key="field" :value="field">{{ field }}</option>
           </select>
         </div>
-      <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
+        <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
       <div class="modal-footer">
         <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!add"></button>
         <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal"></button>

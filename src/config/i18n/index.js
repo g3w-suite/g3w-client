@@ -209,6 +209,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Interroga per poligono',
+            no_geometry: 'Non contiene la geometria nella risposta',
             help: `<h4>Guida - Interrogazione con Poligono</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Seleziona uno strato poligonale in legenda.</li>
@@ -225,6 +226,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "A causa della presenza di alcuni records non corretti il risultato in mappa è parziale"
+              }
+            },
             tooltip: 'Aggiungi Layer'
           },
           geolocation: {
@@ -625,6 +631,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Query By Polygon',
+            no_geometry: 'No geometry on response',
             help: `<h4>Guide - Query By Polygon</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Select a polygon layer on TOC.</li>
@@ -641,6 +648,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+              }
+            },
             tooltip: 'Add Layer'
           },
           geolocation: {
@@ -1040,6 +1052,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Kysely monikulmiolla',
+            no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Kysely monikulmiolla</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Valitse monikulmiotaso luettelosta.</li>
@@ -1056,6 +1069,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+              }
+            },
             tooltip: 'Lisää taso'
           },
           geolocation: {
@@ -1455,6 +1473,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Förfrågan med polygon',
+            no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Förfrågan med polygon</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Välj polygonnivå i listan.</li>
@@ -1471,6 +1490,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+              }
+            },
             tooltip: 'Lägg till nivå'
           },
           geolocation: {

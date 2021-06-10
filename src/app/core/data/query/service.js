@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
 
 const {
@@ -27,6 +28,16 @@ function QueryService(){
    * @returns {Promise<unknown>}
    */
   this.polygon = function({geometry, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+    const polygonLayer = excludeLayers[0];
+    // in case no geometry on polygon layer response
+    if (!geometry) return this.returnExceptionResponse({
+      usermessage: {
+        type: 'warning',
+        message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+        messagetext: true,
+        autoclose: false
+      }
+    });
     const layerFilterObject = {
       ALLNOTSELECTED: true,
       FILTERABLE: true,
@@ -121,6 +132,18 @@ function QueryService(){
     layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
     return results;
   };
+
+  /**
+   * Exxception response has user message attribute
+   */
+  this.returnExceptionResponse = async function({usermessage}){
+    return {
+      data: [],
+      usermessage,
+      result: true,
+      error: true
+    }
+  }
 }
 
 inherit(QueryService, BaseService);

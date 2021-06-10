@@ -2,7 +2,7 @@ const t = require('core/i18n/i18n.service').t;
 const {inherit, base, copyUrl, uniqueId, debounce, throttle} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
-  shpToGeojson,
+  createVectorLayerFromFile,
   createSelectedStyle,
   getMapLayersByFilter} = require('core/utils/geo');
 const DataRouterService = require('core/data/routerservice');
@@ -829,6 +829,11 @@ proto._setupControls = function() {
                         excludeLayers,
                         geometry,
                         multilayers: this.project.isQueryMultiLayers(controlType)
+                      },
+                      outputs: {
+                        show({error=false}){
+                          return !error;
+                        }
                       }
                     });
                     data.length && map.getView().setCenter(coordinates);
@@ -2301,6 +2306,7 @@ proto.addExternalLayer = async function(externalLayer, download) {
     name,
     data,
     color,
+    style,
     type,
     crs;
   const map = this.viewer.map;
@@ -2311,7 +2317,8 @@ proto.addExternalLayer = async function(externalLayer, download) {
     vectorLayer = externalLayer;
     let color;
     try {
-      color = externalLayer.getStyle().getStroke().getColor()
+      const style = externalLayer.getStyle();
+      color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
     } catch(err) {
       color = 'blue'
     }
@@ -2354,73 +2361,18 @@ proto.addExternalLayer = async function(externalLayer, download) {
       return Promise.resolve(layer);
     } else return Promise.reject();
   };
-  const createExternalLayer = (format, data, epsg=crs) => {
-    let vectorLayer;
-    const features = format.readFeatures(data, {
-      dataProjection: epsg,
-      featureProjection: this.getEpsg()
-    });
-    if (features.length) {
-      const vectorSource = new ol.source.Vector({
-        features
-      });
-      vectorLayer = new ol.layer.Vector({
-        source: vectorSource,
-        name,
-        id: uniqueId()
-      });
-      vectorLayer.setStyle(this.setExternalLayerStyle(color));
-    }
-    return vectorLayer;
-  };
   if (!layer) {
-    let format;
-    let layer;
     switch (type) {
-      case 'gml':
-        format = new ol.format.WMSGetFeatureInfo();
-        layer = createExternalLayer(format, data);
-        return loadExternalLayer(layer);
-        break;
-      case 'geojson':
-        format = new ol.format.GeoJSON();
-        layer = createExternalLayer(format, data);
-        return loadExternalLayer(layer);
-        break;
-      case 'kml':
-        format = new ol.format.KML({
-          extractStyles: false
-        });
-        layer = createExternalLayer(format, data,  "EPSG:4326");
-        return loadExternalLayer(layer);
-        break;
-      case 'zip':
-        const promise = new Promise((resolve, reject) =>{
-          shpToGeojson({
-            url: data,
-            encoding: 'big5',
-            EPSG: crs
-          }, geojson => {
-            const data = JSON.stringify(geojson);
-            format = new ol.format.GeoJSON({});
-            layer = createExternalLayer(format, data, "EPSG:4326");
-            loadExternalLayer(layer).then(()=>{
-              resolve(layer)
-            }).catch(()=>{
-              reject()
-            })
-          });
-        });
-        try {
-          return await promise;
-        } catch(err) {
-          return Promise.reject();
-        }
-        break;
       case 'vector':
         return loadExternalLayer(vectorLayer);
         break;
+      default:
+        vectorLayer = await createVectorLayerFromFile({
+          name, type, crs, mapCrs, data, style
+        });
+        return loadExternalLayer(vectorLayer);
     }
+    loadExternalLayer(vectorLayer);
   } else GUI.notify.warning("layer_is_added", true);
 };
 

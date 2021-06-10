@@ -171,21 +171,22 @@ const AddLayerComponent = {
     },
     async addLayer() {
       if (this.vectorLayer || this.csv.valid){
-        this.vectorLayer || await this.createVectorLayer();
         this.loading = true;
-        this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
-          color:this.layer.color,
-          field: this.field
-        }));
-        this.service.addExternalLayer(this.vectorLayer)
-          .then(() =>{
-            $(this.$refs.modal_addlayer).modal('hide');
-            this.clearLayer();
-          })
-          .catch(()=>{
-            this.setError('add_external_layer');
-          })
-          .finally(()=> this.loading = false)
+        //Recreate always the vector layer because we can set the right epsg after first load the file
+        // if we change the epsg of the layer after loaded
+        try {
+          this.vectorLayer = await createVectorLayerFromFile(this.layer);
+          this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
+            color:this.layer.color,
+            field:this.field
+          }));
+          await this.service.addExternalLayer(this.vectorLayer);
+          $(this.$refs.modal_addlayer).modal('hide');
+          this.clearLayer();
+        } catch(err){
+          this.setError('add_external_layer');
+        }
+        this.loading = false
       }
     },
     clearLayer() {

@@ -305,7 +305,7 @@ const vueComponentOptions = {
     },
     onChangeColor(val) {
       const mapService = GUI.getComponent('map').getService();
-      this.layerMenu.colorMenu.color = val;
+      this.layerMenu.layer.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       const style = layer.getStyle();
       style._g3w_options.color = val;

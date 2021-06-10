@@ -445,15 +445,10 @@ const utils = {
          filter.setExpression(expression.get());
         break;
       case 'api':
-        //remove all blank space between operatos
+        //remove all blank space between operators
         Object.values(EXPRESSION_OPERATORS).forEach(operator =>{
-          const splitStringOperator = stringFilter.split(operator);
-          if (splitStringOperator.length > 1) {
-            splitStringOperator.forEach((token,index) =>{
-              splitStringOperator[index] = token.trim();
-            });
-            stringFilter = splitStringOperator.join(operator);
-          }
+          const regexoperator = new RegExp(`\\s+${operator}\\s+`, 'g');
+          stringFilter = stringFilter.replace(regexoperator, `${operator}`);
         });
         filter = stringFilter.replace(/'|"/g, '');
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{

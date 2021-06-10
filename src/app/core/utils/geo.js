@@ -68,15 +68,7 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
-  shpToGeojson: function(config, returnData) {
-    const {EPSG='4326', encoding='utf-8'} = config;
-    const  url = config.url;
-    loadshp({
-      url,
-      encoding,
-      EPSG: Number.isInteger(EPSG) ? EPSG : EPSG.split('EPSG:')[1]
-    }, returnData);
-  },
+
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
@@ -185,6 +177,7 @@ const geoutils = {
     };
     return defaultStyle[geometryType]
   },
+
   createLayerStyle: function(styleObj) {
     let style;
     const styles = {};
@@ -313,6 +306,7 @@ const geoutils = {
     olLayer.setStyle(style);
     return olLayer;
   },
+
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
     let format;
     let layer;
@@ -324,7 +318,7 @@ const geoutils = {
       });
       if (features.length) {
         const vectorSource = new ol.source.Vector({
-          features,
+          features
         });
         vectorLayer = new ol.layer.Vector({
           source: vectorSource,
@@ -359,20 +353,33 @@ const geoutils = {
         const {headers, separator, values, x, y} = data;
         const features = [];
         values.forEach(row =>{
-          const coordinates = [];
           const properties = {};
-          row.split(separator).forEach((value, index) =>{
-            const field = headers[index];
-            if (field === x) coordinates[0] = 1*value;
-            if (field === y) coordinates[1] = 1*value;
-            properties[field] = value;
-          });
-          const geometry = new ol.geom.Point(coordinates);
-          if (crs !== mapCrs) geometry.transform(crs, mapCrs);
-          const feature = new ol.Feature(geometry);
-          feature.setProperties(properties);
-          features.push(feature);
+          const rowvalues = row.split(separator);
+          if (rowvalues.length === headers.length)  {
+            const coordinates = [];
+            rowvalues.forEach((value, index) =>{
+              const field = headers[index];
+              if (field === x) coordinates[0] = 1*value;
+              if (field === y) coordinates[1] = 1*value;
+              properties[field] = value;
+            });
+            // check if all coordinates is right
+            if (coordinates.find(value => Number.isNaN(value)) === undefined){
+              const geometry = new ol.geom.Point(coordinates);
+              if (crs !== mapCrs) geometry.transform(crs, mapCrs);
+              const feature = new ol.Feature(geometry);
+              feature.setProperties(properties);
+              features.push(feature);
+            }
+          }
         });
+        if (!features.length) return Promise.reject();
+        (features.length < values.length) && GUI.showUserMessage({
+          type: 'warning',
+          message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
+          autoclose: false
+        });
+
         const source = new ol.source.Vector({
           features
         });
@@ -385,17 +392,13 @@ const geoutils = {
         style && layer.setStyle(style);
         break;
       case 'zip':
-        const promise = new Promise((resolve, reject) =>{
-          geoutils.shpToGeojson({
-              url: data,
-              EPSG: crs
-            }, geojson => {
-              if (geojson) {
-                  const data = JSON.stringify(geojson);
-                  format = new ol.format.GeoJSON({});
-                  resolve(createVectorLayer(format, data, "EPSG:4326"));
-                }
-            });
+        const promise = new Promise(async (resolve, reject) =>{
+          const buffer = await data.arrayBuffer(data);
+          shp(buffer).then(geojson => {
+            const data = JSON.stringify(geojson);
+            format = new ol.format.GeoJSON({});
+            resolve(createVectorLayer(format, data, "EPSG:4326"));
+          }).catch(err => reject(err))
         });
         try {
           return await promise;
@@ -406,8 +409,9 @@ const geoutils = {
     }
     return layer;
   },
+
   createStyleFunctionToVectorLayer(options={}){
-    const styleFunction = function(feature, resolution) {
+    const styleFunction = (feature, resolution) => {
       let {color, field} = options;
       color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
       const style = geoutils.getDefaultLayerStyle(feature.getGeometry().getType(), {color});
@@ -428,6 +432,7 @@ const geoutils = {
     styleFunction._g3w_options = options;
     return styleFunction;
   },
+
   createSelectedStyle({geometryType, color='rgb(255,255,0)', fill=true}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
