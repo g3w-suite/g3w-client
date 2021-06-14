@@ -213,6 +213,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     const download = {
       shapefile: false,
       gpx: false,
+      gpkg:false,
       csv: false,
       xls: false
     };
@@ -227,6 +228,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       }
       download.shapefile = layer.isShpDownlodable();
       download.gpx = layer.isGpxDownlodable();
+      download.gpkg = layer.isGpkgDownlodable();
       download.csv = layer.isCsvDownlodable();
       download.xls = layer.isXlsDownlodable();
       try {

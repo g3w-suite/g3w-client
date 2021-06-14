@@ -307,6 +307,7 @@ const translations = {
             download: {
               shp: 'Scarica Shapefile',
               gpx: 'Scarica GPX',
+              gpkg: 'Scarica GPKG',
               csv: 'Scarica CSV',
               xls: 'Scarica XLS'
             }
@@ -729,6 +730,7 @@ const translations = {
             download: {
               shp: 'Download Shapefile',
               gpx: 'Download GPX',
+              gpkg: 'Download GPKG',
               csv: 'Download CSV',
               xls: 'Download XLS'
             }
@@ -1150,6 +1152,7 @@ const translations = {
             download: {
               shp: 'Lataa SHP-tiedosto',
               gpx: 'Lataa GPX-tiedosto',
+              gpkg: 'Lataa GPKG-tiedosto',
               csv: 'Lataa CSV-tiedosto',
               xls: 'Lataa XLS-tiedosto'
             }
@@ -1572,6 +1575,7 @@ const translations = {
             download: {
               shp: 'Ladda SHP-fil',
               gpx: 'Ladda GPX-fil',
+              gpkg: 'Ladda GPKG-fil',
               csv: 'Ladda CSV-fil',
               xls: 'Ladda XLS-fil'
             }

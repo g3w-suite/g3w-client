@@ -108,7 +108,7 @@
       </div>
     </li>
     <li v-if="canDownloadGpkg(layerMenu.layer.id)">
-      <div @click.prevent.stop="downloadGpk(layerMenu.layer.id)" v-download>
+      <div @click.prevent.stop="downloadGpkg(layerMenu.layer.id)" v-download>
         <bar-loader :loading="layerMenu.loading.gpkg"></bar-loader>
         <span class="menu-icon" :class="g3wtemplate.getFontClass('gpkg')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.gpkg'"></span>

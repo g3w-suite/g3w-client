@@ -367,7 +367,6 @@ const vueComponentOptions = {
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {
       const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
       layerstree.filter.active =  await layer.toggleFilterToken();
-
     });
 
     /**
@@ -394,6 +393,7 @@ const vueComponentOptions = {
       /*
        */
       if (parent_mutually_exclusive && node.checked){
+        this.$childrens.forEach(children => console.log(children.title));
         parent.checked = true;
         CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
         const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
@@ -532,7 +532,7 @@ const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-
 // tree component
 Vue.component('tristate-tree', {
   ...compiledTristateTreeTemplate,
-  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
+  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
   data() {
     return {
       expanded: this.layerstree.expanded,
