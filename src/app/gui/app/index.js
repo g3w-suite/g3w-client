@@ -455,6 +455,12 @@ const ApplicationTemplate = function({ApplicationService}) {
         (async () =>{
           try {
             const data = await dataPromise;
+            // in case of usermessage show user message
+            data.usermessage && GUI.showUserMessage({
+              type: data.usermessage.type,
+              message: data.usermessage.message,
+              autoclose: data.usermessage.autoclose
+            });
             if (!stop) {
               if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
               else GUI.closeContent();

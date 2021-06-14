@@ -414,11 +414,13 @@ const geoutils = {
     const styleFunction = (feature, resolution) => {
       let {color, field} = options;
       color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
-      const style = geoutils.getDefaultLayerStyle(feature.getGeometry().getType(), {color});
+      const geometryType = feature.getGeometry().getType();
+      const style = geoutils.getDefaultLayerStyle(geometryType, {color});
       field && style.setText(new ol.style.Text({
         text: `${feature.get(field)}`,
         font: 'bold',
         scale: 2,
+        offsetY: 15,
         fill: new ol.style.Fill({
           color
         }),

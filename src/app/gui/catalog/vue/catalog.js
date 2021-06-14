@@ -394,8 +394,10 @@ const vueComponentOptions = {
       /*
        */
       if (parent_mutually_exclusive && node.checked){
-       const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
-       siblingsGroups.forEach(group => {
+        parent.checked = true;
+        CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
+        const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
+        siblingsGroups.forEach(group => {
          if (group.checked) {
            group.checked = false;
            CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
@@ -411,6 +413,7 @@ const vueComponentOptions = {
      * parent: is the  group parent of current group
      */
     CatalogEventHub.$on('treenodestoogled', (storeid, currentgroup, isGroupChecked, parent) => {
+      if (parent && currentgroup.checked) parent.checked = true;
       const {nodes, groupId} = currentgroup;
       // get layestore that contains and handle all layers
       const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);

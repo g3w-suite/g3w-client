@@ -33,6 +33,9 @@ const AddLayerComponent = {
   template: require('./addlayer.html'),
   props: ['service'],
   data() {
+    //add map crs if not present
+    const MAPEPSG = this.service.getCrs();
+    EPSG.find(epsg => epsg === MAPEPSG) === undefined && EPSG.unshift(MAPEPSG);
     return {
       vectorLayer: null,
       options: EPSG,
