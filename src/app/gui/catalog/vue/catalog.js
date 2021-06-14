@@ -393,16 +393,39 @@ const vueComponentOptions = {
       /*
        */
       if (parent_mutually_exclusive && node.checked){
-        this.$childrens.forEach(children => console.log(children.title));
-        parent.checked = true;
         CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
+        // go down tro layer tree inside forder of layer
         const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
         siblingsGroups.forEach(group => {
-         if (group.checked) {
-           group.checked = false;
-           CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
-         }
-       })
+          if (group.checked) {
+            group.checked = false;
+            CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
+          }
+        });
+
+        //go up from parent layer folder to it's father parent folder
+        if (!parent.checked){
+          parent.checked = true;
+          let parentFolder;
+          const parentGroupId = parent.groupId;
+          const getParentFolder = tree => {
+            if (Array.isArray(tree.nodes)) {
+              const find = tree.nodes.find(subtree => {
+                if (Array.isArray(subtree.nodes)){
+                  return subtree.groupId === parentGroupId || getParentFolder(subtree);
+                }
+              });
+              if (find && !parentFolder) {
+                parentFolder = tree;
+                return true;
+              }
+            }
+          };
+          getParentFolder(this.state.layerstrees[0].tree[0]);
+          if (parentFolder) {
+            CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder)
+          }
+        }
       }
     });
 
@@ -574,6 +597,8 @@ Vue.component('tristate-tree', {
   watch:{
     'layerstree.disabled'(bool) {
       this.layerstree.selected = bool && this.layerstree.selected ? false : this.layerstree.selected;
+    },
+    'layerstree.checked'(){
     }
   },
   methods: {
