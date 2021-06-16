@@ -6,10 +6,11 @@ function SearchService(){
   // method to searchfeature features
   this.features = async function(options={layer, search_endpoint, filter, queryUrl, feature_count}){
     const promisesSearch =[];
-    const dataSearch = {
-      data: []
-    };
     const {layer, ...params} = options;
+    const dataSearch = {
+      data: [],
+      type: params.search_endpoint
+    };
     // check if layer is array
     const layers = Array.isArray(layer) ? layer : [layer];
     //check if filter is array

@@ -293,10 +293,13 @@ const GlobalDirective = {
 
     Vue.directive('select2', {
       inserted(el, binding, vnode){
+        const { templateResult, templateSelection } = vnode.data.attrs;
         vnode.context._select2 = $(el).select2({
-          dropdownCssClass: 'skin-color'
+          dropdownCssClass: 'skin-color',
+          templateResult,
+          templateSelection
         });
-        binding.value && vnode.context._select2.on('select2:select', (evt)=>{
+        binding.value && vnode.context._select2.on('select2:select', evt =>{
           vnode.context[binding.value] = evt.params.data.id;
         });
       },

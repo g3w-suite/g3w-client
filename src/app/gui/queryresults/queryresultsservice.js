@@ -41,6 +41,7 @@ function QueryResultsService() {
     components: [],
     layers: [],
     query: null,
+    type: 'ows', // or api in case of search
     loading: false,
     layersactions: {}
   };
@@ -53,6 +54,7 @@ function QueryResultsService() {
     setQueryResponse(queryResponse) {
       this.clearState();
       this.state.query = queryResponse.query;
+      this.state.type = queryResponse.type;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers);
     },
@@ -205,7 +207,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerRelationsAttributes,
     layerTitle,
     layerId;
-  const _handleFeatureFoLayer = (featuresForLayer) => {
+  const _handleFeatureFoLayer = featuresForLayer => {
     let formStructure;
     let sourceType;
     let extractRelations = false;
@@ -235,11 +237,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         sourceType = layer.getSourceType()
       } catch(err){}
 
-      layerAttributes = layer.getAttributes().map(attribute => {
+      // sanitize qattributes layer only if is ows
+      layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
         return sanitizeAttribute
-      });
+      }) : layer.getAttributes();
+
+
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();

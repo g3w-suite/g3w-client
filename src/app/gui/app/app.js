@@ -1,6 +1,6 @@
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const uniqueId = require('core/utils/utils').uniqueId;
+const { uniqueId } = require('core/utils/utils');
 const HeaderItem = require('gui/header/headeritem');
 const GUI = require('gui/gui');
 const layout = require('./layout');
@@ -41,16 +41,20 @@ const AppUI = Vue.extend({
     urls() {
       return this.appconfig.urls;
     },
+    staticurl(){
+      return this.urls.staticurl;
+    },
     powered_by() {
       return this.appconfig.group.powered_by;
     },
+    clienturl(){
+      return this.urls.clienturl;
+    },
     g3w_suite_logo() {
-      const client_url = this.urls.clienturl;
-      return `${client_url}images/g3wsuite_logo.png`;
+      return `${this.clienturl}images/g3wsuite_logo.png`;
     },
     credits_logo: function() {
-      const client_url = this.urls.clienturl;
-      return `${client_url}images/logo_gis3w_156_85.png`;
+      return `${this.clienturl}images/logo_gis3w_156_85.png`;
     },
     logo_url: function() {
       const logo_project_url = this.currentProject.getThumbnail();
@@ -86,6 +90,16 @@ const AppUI = Vue.extend({
     },
   },
   methods: {
+    templateResultLanguages(state) {
+      if (!state.id) return state.text;
+      const flagsurl = `${this.staticurl}img/flags`;
+      const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
+            <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
+            <span>${state.text}</span> 
+          </span>`
+      );
+      return $state;
+    },
     async resize(){
       if (!this.isIframe) {
         await this.$nextTick();

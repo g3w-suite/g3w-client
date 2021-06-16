@@ -1015,9 +1015,15 @@ proto._setupControls = function() {
           }
           break;
         case 'nominatim':
+          const lonlat = coordinates =>{
+            this.zoomToExtent([...coordinates, ...coordinates]);
+            setTimeout(()=>{
+              this.showMarker(coordinates)
+            }), 1000};
           control = this.createMapControl(controlType, {
             add: false,
             options: {
+              lonlat,
               isMobile: isMobile.any,
               bbox: this.project.state.extent,
               mapCrs: this.project.state.crs.epsg,

@@ -3,6 +3,7 @@ const Control = require('./control');
 function NominatimControl(options={}) {
   const self = this;
   this.options = {
+    lonlat: options.lonlat,
     provider: 'osm',
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
@@ -730,45 +731,50 @@ function NominatimControl(options={}) {
       const isNumber = (value) => {
         return typeof value === 'number' && !Number.isNaN(value);
       };
-      let latlon = null;
+      let lonlat = null;
       if (q && q.split(',').length === 2) {
-        latlon = q.split(',');
-        latlon = isNumber(1*latlon[0]) && isNumber(1*latlon[1]) ? latlon : null;
+        lonlat = q.split(',');
+        lonlat = isNumber(1*lonlat[0]) && isNumber(1*lonlat[1]) ? lonlat.map(coordinate => 1*coordinate) : null;
       }
-      const this$1 = this;
-      const ajax = {
-      }, options = this.options;
-      const provider = this.getProvider({
-        query: latlon ? `${latlon[1]},${latlon[0]}`: q,
-        provider: options.provider,
-        key: options.key,
-        lang: options.lang,
-        countrycodes: options.countrycodes,
-        limit: options.limit
-      });
-      if (this.lastQuery === q && this.els.result.firstChild) { return; }
-      this.lastQuery = q;
-      this.clearResults();
-      utils.addClass(this.els.reset, klasses$1.spin);
-      ajax.url = provider.url;
-      ajax.data = provider.params;
-      utils.json(ajax)
-        .done(function(res) {
-          const extent = provider.params.viewbox.split(',').map(coordinate => 1*coordinate);
-          res = res.filter(place => ol.extent.containsXY(extent, place.lon, place.lat));
-          utils.removeClass(this$1.els.reset, klasses$1.spin);
-          const res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
-          this$1.createList(res_);
-          res_ && this$1.listenMapClick();
-          resolve(res_ ? res_ : []);
-        })
-        .fail(function(error){
-          utils.removeClass(this$1.els.reset, klasses$1.spin);
-          const li = utils.createElement(
-            'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
-          this$1.els.result.appendChild(li);
-          reject(error)
-        })
+      if (lonlat) {
+        this.options.lonlat(lonlat);
+      } else {
+        const this$1 = this;
+        const ajax = {
+        }, options = this.options;
+        const provider = this.getProvider({
+          query: q,
+          provider: options.provider,
+          key: options.key,
+          lang: options.lang,
+          countrycodes: options.countrycodes,
+          limit: options.limit
+        });
+        if (this.lastQuery === q && this.els.result.firstChild) { return; }
+        this.lastQuery = q;
+        this.clearResults();
+        utils.addClass(this.els.reset, klasses$1.spin);
+        ajax.url = provider.url;
+        ajax.data = provider.params;
+        utils.json(ajax)
+          .done(function(res) {
+            const extent = provider.params.viewbox.split(',').map(coordinate => 1*coordinate);
+            res = res.filter(place => ol.extent.containsXY(extent, place.lon, place.lat));
+            utils.removeClass(this$1.els.reset, klasses$1.spin);
+            const res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
+            this$1.createList(res_);
+            res_ && this$1.listenMapClick();
+            resolve(res_ ? res_ : []);
+          })
+          .fail(function(error){
+            utils.removeClass(this$1.els.reset, klasses$1.spin);
+            const li = utils.createElement(
+              'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
+            this$1.els.result.appendChild(li);
+            reject(error)
+          })
+      }
+
     })
   };
 

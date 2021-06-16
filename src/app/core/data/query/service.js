@@ -126,6 +126,7 @@ function QueryService(){
     const layersResults = response;
     const results = {
       query,
+      type: 'ows',
       data: [],
       result: true // set result to true
     };

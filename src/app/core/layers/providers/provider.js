@@ -433,7 +433,7 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
 };
 
 proto._reverseFeaturesCoordinates = function(features) {
-  features.forEach((feature) => {
+  features.forEach(feature => {
     const geometry = feature.getGeometry();
     feature.setGeometry(geoutils.reverseGeometry(geometry))
   });

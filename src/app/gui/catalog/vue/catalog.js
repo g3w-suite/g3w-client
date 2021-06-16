@@ -409,22 +409,19 @@ const vueComponentOptions = {
           let parentFolder;
           const parentGroupId = parent.groupId;
           const getParentFolder = tree => {
+            // tree is the currend group
             if (Array.isArray(tree.nodes)) {
               const find = tree.nodes.find(subtree => {
-                if (Array.isArray(subtree.nodes)){
-                  return subtree.groupId === parentGroupId || getParentFolder(subtree);
-                }
+                return Array.isArray(subtree.nodes) ? (subtree.groupId === parentGroupId) || getParentFolder(subtree) : false;
               });
               if (find && !parentFolder) {
                 parentFolder = tree;
                 return true;
               }
-            }
+            } return false;
           };
           getParentFolder(this.state.layerstrees[0].tree[0]);
-          if (parentFolder) {
-            CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder)
-          }
+          parentFolder && CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder);
         }
       }
     });
