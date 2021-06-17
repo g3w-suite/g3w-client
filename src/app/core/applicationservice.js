@@ -1,4 +1,4 @@
-import appConfig from 'config'
+import appConfig from 'config';
 import ApplicationState from './applicationstate';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
 const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
@@ -350,7 +350,7 @@ const ApplicationService = function() {
         try {
           const initConfig =  await this.getInitConfig(url);
           //group, mediaurl, staticurl, user
-          initConfig.staticurl = "../dist/"; // in development force  asset
+          //initConfig.staticurl = "../dist/"; // in development force  asset
           initConfig.clienturl = "../dist/"; // in development force  asset
           this._initConfig = initConfig;
           // set initConfig

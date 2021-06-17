@@ -693,11 +693,11 @@ proto._setupControls = function() {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
             const crs = this.getCrs();
             let undefinedHTML;
-            setCoordinateFormat(this.getMap().getView().getCenter());
             function setCoordinateFormat(coordinate) {
               undefinedHTML =  ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
               return undefinedHTML;
             }
+            setCoordinateFormat(this.getMap().getView().getCenter());
             control = this.createMapControl(controlType, {
               add: false,
               options: {

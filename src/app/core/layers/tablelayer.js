@@ -449,7 +449,7 @@ proto.getFieldsWithValues = function(obj, options={}) {
   if (feature) {
     const attributes = feature.getProperties();
     fields = fields.filter(field =>  exclude.indexOf(field.name) === -1);
-    fields.forEach((field) => {
+    fields.forEach(field => {
       field.value = attributes[field.name];
       if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
@@ -467,6 +467,8 @@ proto.getFieldsWithValues = function(obj, options={}) {
       field.validate.mutually_valid = true;
       field.validate.empty = !field.validate.required;
       field.validate.message = null;
+      //check info
+      //field.info = field.input.options.info;
       // end editing purpose
     });
   }
@@ -476,12 +478,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
 proto.createNewFeature = function() {
   let feature = new ol.Feature();
   const properties = {};
-  _.forEach(this.getEditingFields(), function(field) {
-    properties[field.name] = null;
-  });
+  this.getEditingFields().forEach(field => properties[field.name] = null);
   feature.setProperties(properties);
   feature = new Feature({
-    feature : feature
+    feature
   });
   feature.setNew();
   return feature;

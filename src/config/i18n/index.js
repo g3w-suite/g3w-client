@@ -401,8 +401,7 @@ const translations = {
         screenshot: {
           error: "Errore nella creazione dello screeshot"
         }
-      }
-      ,
+      },
       catalog_items: {
         helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         contextmenu: {

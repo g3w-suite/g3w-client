@@ -81,7 +81,7 @@ function setNODE_ENV() {
 
 setNODE_ENV();
 
-// Broserify Task -- It used to trasform code modularizated in browser compatible way
+// Browserify Task -- It used to trasform code modularizated in browser compatible way
 gulp.task('browserify', [], function() {
   let rebundle;
   let bundler = browserify('./src/app/main.js', {
@@ -122,17 +122,9 @@ gulp.task('browserify', [], function() {
   };
 
   if (!production) {
-    rebundle = function() {
-      return bundle()
-        .pipe(browserSync.reload({stream: true}));
-    };
+    rebundle = () => bundle().pipe(browserSync.reload({stream: true}));
     bundler.on('update', rebundle);
-  }
-  else {
-    rebundle = function(){
-      return bundle();
-    }
-  }
+  } else rebundle = () => bundle();
   return rebundle();
 });
 
