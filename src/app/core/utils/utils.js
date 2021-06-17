@@ -348,9 +348,7 @@ const utils = {
     }
   },
   getTimeoutPromise({timeout=600}){
-    const promise = new Promise(resolve =>{
-      setTimeout(resolve, timeout)
-    });
+    const promise = new Promise(resolve =>setTimeout(resolve, timeout));
     return promise;
   },
   XHR: {
@@ -430,7 +428,7 @@ const utils = {
   },
   createSingleFieldParameter({field, value, operator='eq', logicop=null}){
     logicop = logicop && `|${logicop}`;
-    return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
+    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;
@@ -449,8 +447,13 @@ const utils = {
         Object.values(EXPRESSION_OPERATORS).forEach(operator =>{
           const regexoperator = new RegExp(`\\s+${operator}\\s+`, 'g');
           stringFilter = stringFilter.replace(regexoperator, `${operator}`);
+          let regexsinglequote = new RegExp(`'${operator}`, 'g');
+          stringFilter = stringFilter.replace(regexsinglequote, `${operator}`);
+          regexsinglequote = new RegExp(`${operator}'`, 'g');
+          stringFilter = stringFilter.replace(regexsinglequote, `${operator}`);
         });
-        filter = stringFilter.replace(/'|"/g, '');
+        stringFilter = stringFilter.replace(/'$/g, '');
+        filter = stringFilter.replace(/"/g, '');
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
           const re = new RegExp(value, "g");
           const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
