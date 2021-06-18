@@ -249,7 +249,7 @@ gulp.task('browser-sync', function() {
       baseDir: ["src","."],
       middleware: [proxyMiddleware(conf.proxy.urls)]
     },
-    port: port,
+    port,
     open: false,
     startPath: "/",
     socket: {
