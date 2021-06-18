@@ -457,8 +457,10 @@ const utils = {
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
           const re = new RegExp(value, "g");
           const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
-          filter = filter.replace(re, replaceValue)
+          filter = filter.replace(re, replaceValue);
         });
+        //encode value
+        filter = filter.split('|').map((value, index) => ((index +1) % 3 === 0) ? encodeURIComponent(value) : value).join('|');
         break;
     }
     return filter;
