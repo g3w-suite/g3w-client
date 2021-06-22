@@ -6,7 +6,18 @@ function GeolocationControl() {
     tipLabel: "sdk.mapcontrols.geolocation.tooltip",
     label: "\ue904"
   };
-  this._layer;
+  this._layer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: new ol.style.Style({
+      text: new ol.style.Text({
+        text: '\uf3c5',
+        font: '900 3em "Font Awesome 5 Free"',
+        fill: new ol.style.Fill({
+          color: 'red'
+        })
+      })
+    })
+  });
   InteractionControl.call(this, options);
 }
 
@@ -14,12 +25,23 @@ ol.inherits(GeolocationControl, InteractionControl);
 
 const proto = GeolocationControl.prototype;
 
-proto._showMarker = function(coordinates, show=true){
-  const feature = new ol.Feature({
-    geometry: new ol.geom.Point(coordinates)
-  });
+/**
+ * Method to add market position layer and feature point always on top of map
+ * @param map
+ * @param coordinates
+ * @param show
+ * @private
+ */
+proto._showMarker = function({map, coordinates, show=true}){
   this._layer.getSource().clear();
-  show && setTimeout(()=>this._layer.getSource().addFeature(feature));
+  if (show)  {
+    map.getView().setCenter(coordinates);
+    const feature = new ol.Feature({
+      geometry: new ol.geom.Point(coordinates)
+    });
+    this._layer.getSource().addFeature(feature);
+    map.addLayer(this._layer);
+  } else map.removeLayer(this._layer);
 };
 
 proto.setMap = function(map) {
@@ -31,35 +53,23 @@ proto.setMap = function(map) {
       enableHighAccuracy: true
     }
   });
-  geolocation.once('change:position', e => {
+
+  geolocation.once('change:position', () => {
     const coordinates = geolocation.getPosition();
     if (coordinates) {
-      this._layer = new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style: new ol.style.Style({
-          text: new ol.style.Text({
-            text: '\uf3c5',
-            font: '900 3em "Font Awesome 5 Free"',
-            fill: new ol.style.Fill({
-              color: 'red'
-            })
-          })
-        })
-      });
-      const coordinates = geolocation.getPosition();
-      const view = map.getView();
-      map.addLayer(this._layer);
       $(this.element).removeClass('g3w-ol-disabled');
       this.on('toggled', event => {
-        const toggled = event.target.isToggled();
-        toggled &&  view.setCenter(coordinates);
-        this._showMarker(coordinates, toggled);
+        const coordinates = geolocation.getPosition();
+        const show = event.target.isToggled();
+        this._showMarker({map, coordinates, show});
       });
     } else this.hideControl();
   });
-  geolocation.once('error', (e) => {
+
+  geolocation.once('error', evt => {
     this.hideControl();
-    if (e.code !== 1) this.dispatchEvent('error');
+    this._layer = null;
+    evt.code !== 1 && this.dispatchEvent('error');
   });
 };
 

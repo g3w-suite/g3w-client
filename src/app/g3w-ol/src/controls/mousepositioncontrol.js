@@ -1,5 +1,5 @@
 const MousePositionControl = function(options= {}) {
-  options.target = 'mouse-position-control';
+  options.target = options.target || 'mouse-position-control';
   ol.control.MousePosition.call(this, options);
 };
 
