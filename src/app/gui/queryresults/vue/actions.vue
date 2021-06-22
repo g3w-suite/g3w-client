@@ -6,6 +6,12 @@
           class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
       <span :class="`action-button-icon ${action.class}`"></span>
     </span>
+<!--    <span v-if="showAction(action)"-->
+<!--          @click.stop="trigger(action, layer, feature, featureIndex)" v-for="action in downloadactions" v-download="action.download"-->
+<!--          :class="{'toggled': action.state && action.state.toggled[featureIndex] }"-->
+<!--          class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">-->
+<!--      <span :class="`action-button-icon ${action.class}`"></span>-->
+<!--    </span>-->
   </td>
 </template>
 
@@ -29,6 +35,14 @@
         type: Array,
         default: []
       },
+    },
+    computed:{
+      defaultactions(){
+        return this.actions.filter(action => !action.download);
+      },
+      downloadactions(){
+        return this.actions.filter(action => action.download);
+      }
     },
     methods: {
       showAction(action){

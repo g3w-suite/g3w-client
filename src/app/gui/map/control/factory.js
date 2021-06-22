@@ -8,7 +8,6 @@ const StreetViewControl = require('g3w-ol/src/controls/streetviewcontrol');
 const AddLayersControl = require('g3w-ol/src/controls/addlayers');
 const LengthControl = require('g3w-ol/src/controls/lengthcontrol');
 const AreaControl = require('g3w-ol/src/controls/areacontrol');
-const Control = require('g3w-ol/src/controls/control');
 const OLControl = require('g3w-ol/src/controls/olcontrol');
 const NominatimControl = require('g3w-ol/src/controls/nominatimcontrol');
 const MousePositionControl = require('g3w-ol/src/controls/mousepositioncontrol');

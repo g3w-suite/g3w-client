@@ -17,3 +17,4 @@
 /cypress.env.json
 /test/config/
 /src/app/core/iframe/test/
+/src/config/dev/index.js

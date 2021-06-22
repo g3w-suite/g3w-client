@@ -54,7 +54,18 @@ const GlobalDirective = {
 
     Vue.directive('t-tooltip', {
       bind(_el, binding) {
-        binding.modifiers.create && $(_el).tooltip();
+        // handle automatic creation of tooltip
+        if (binding.modifiers.create) {
+          const domelement = $(_el);
+          domelement.tooltip({
+            trigger : ApplicationState.ismobile ? 'click': 'hover'
+          });
+          // in case of mobile hide tooltip after click
+          ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
+            setTimeout(()=>$(this).tooltip('hide'), 600);
+          });
+        }
+
         const unique_v_t_tooltip_attr = createDirectiveObj({
           el:_el,
           attr: 'g3w-v-t-tooltip-id'

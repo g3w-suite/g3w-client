@@ -25,9 +25,6 @@ const conf = {
   },
   test: {
     path: '/test/config/groups/'
-  },
-  dev: {
-    plugins: {} // write custom plugin configuration to test client plugin during the initial phase of development when server is not already done
   }
 };
 

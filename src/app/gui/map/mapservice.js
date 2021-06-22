@@ -1310,12 +1310,15 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
     visible,
     mapcontrol: addToMapControls && visible
   });
-  control.on('controlclick', active => {
-    this.controlClick(active);
-  });
-  $(control.element).find('button').tooltip({
+  control.on('controlclick', active => this.controlClick(active));
+  const buttonControl = $(control.element).find('button');
+  buttonControl.tooltip({
     placement: 'bottom',
-    trigger : 'hover'
+    trigger : GUI.isMobile()? 'click': 'hover'
+  });
+  // in case of mobile hide tooltip after click
+  GUI.isMobile() && buttonControl.on('shown.bs.tooltip', function(){
+    setTimeout(()=>$(this).tooltip('hide'), 600);
   });
   if (addToMapControls) this._addControlToMapControls(control, visible);
   else {

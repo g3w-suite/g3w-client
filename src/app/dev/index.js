@@ -1,4 +1,4 @@
-const {dev: DEVCONFIG} = require('../../../config');
+import DEVCONFIG from '../../config/dev'
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ApplicationService = require('core/applicationservice');
 const GUI = require('gui/gui');

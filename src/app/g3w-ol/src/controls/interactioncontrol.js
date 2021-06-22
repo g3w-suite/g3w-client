@@ -69,7 +69,7 @@ proto._createModalHelp = function() {
   if (this._onhover) {
     this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
     $(this.element).prepend(this._helpButton);
-    this._helpButton.on('click', (event) => {
+    this._helpButton.on('click', event => {
       event.stopPropagation();
       this._showModalHelp();
     });

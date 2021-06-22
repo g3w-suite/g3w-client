@@ -1,4 +1,4 @@
-const layout = require('./utils').layout;
+const { layout } = require('./utils');
 const Control = function(options={}) {
   const name = options.name || "";
   this._enabled = (options.enabled === false) ? false : true;
@@ -165,8 +165,7 @@ proto.setEnable = function(bool, toggled) {
   if (bool) {
     controlButton.removeClass('g3w-ol-disabled');
     toggled && controlButton.addClass('g3w-ol-toggled');
-  }
-  else {
+  } else {
     controlButton.addClass('g3w-ol-disabled');
     controlButton.removeClass('g3w-ol-toggled');
     this._interaction && this._interaction.setActive(false);

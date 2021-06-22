@@ -13,6 +13,11 @@ const ChromeComponent = VueColor.Chrome;
 const CatalogEventHub = new Vue();
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
+//OFFSETMENU
+const OFFSETMENU = {
+  top: 50,
+  left: 15
+};
 
 const vueComponentOptions = {
   ...compiledTemplate,
@@ -327,11 +332,12 @@ const vueComponentOptions = {
       }
       this.closeLayerMenu();
     },
-    showStylesMenu(bool, evt) {
+    async showStylesMenu(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.stylesMenu.top = elem.offset().top;
-        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
+        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        await this.$nextTick();
       }
       this.layerMenu.stylesMenu.show = bool;
     },
@@ -502,23 +508,14 @@ const vueComponentOptions = {
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
       this._hideMenu();
       await this.$nextTick();
-      const layerId = layerstree.id;
-      const constMenuHeight = ((layerId) => {
-        return (1*this.canShowWmsUrl(layerId)
-          + 1*!!layerstree.bbox
-          + 1*!!layerstree.openattributetable
-          + 1*!!layerstree.color
-          + 1*this.canDownloadShp(layerId)) * 30;
-      })(layerId);
-      this.layerMenu.top = evt.y - constMenuHeight;
       this.layerMenu.left = evt.x;
       this.layerMenu.name = layerstree.name;
       this.layerMenu.layer = layerstree;
       this.layerMenu.show = true;
       this.layerMenu.colorMenu.color = layerstree.color;
-      this.$nextTick(() => {
-        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
-      });
+      await this.$nextTick();
+      this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
+      $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
     });
 
     ControlsRegistry.onafter('registerControl', (id, control) => {

@@ -73,6 +73,19 @@ const buildChanges = {
   }
 };
 
+// FIRST TEST OF CREATE VENDOR FILE FROM NODE_MODULES DEPENDENCIES
+const packageJSON = require('./package.json');
+const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {});
+//////////////
+
+gulp.task('vendor', function() {
+  return browserify()
+    .require(dependencies)
+    .bundle()
+    .pipe(source('vendor.bundle.js'))
+    .pipe(gulp.dest(clientFolder+'/js/'))
+});
+
 
 // production const to set enviromental variable
 function setNODE_ENV() {
@@ -335,11 +348,11 @@ gulp.task('dist', function(done) {
 });
 
 gulp.task('g3w-admin-plugins',function() {
-  gulp.src(distFolder+'/**/js/plugin.js')
+  gulp.src(`${distFolder}/**/js/plugin.js`)
     .pipe(rename(function(path){
       const dirname = path.dirname;
       const pluginname = dirname.replace('/js','');
-      path.dirname = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+      path.dirname = `${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath}/${pluginname}/static/${pluginname}/js/`;
     }))
     .pipe(gulp.dest("."));
 });
@@ -383,7 +396,7 @@ gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done
 
 function set_current_hash_version() {
   ['js', 'css'].forEach(folder => {
-    fs.readdirSync(`${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static}/${client_version}/${folder}`).filter((file) => {
+    fs.readdirSync(`${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static}/${client_version}/${folder}`).filter(file => {
       //exclude datatable
       if (file.indexOf('DataTables-') === -1 && file.indexOf('vendor') !== -1) {
         const hash = file.split('.')[1];
@@ -409,8 +422,8 @@ gulp.task('g3w-admin-client:clear', function() {
 });
 
 gulp.task('g3w-admin-client:static',function(){
-  gulp.src([clientFolder+'/**/*.*','!'+clientFolder+'/index.html','!'+clientFolder+'/js/app.js','!'+clientFolder+'/css/app.css'])
-    .pipe(gulp.dest(conf.g3w_admin_paths['dev'].g3w_admin_client_dest_static+'/'+client_version+'/'));
+  gulp.src([`${clientFolder}/**/*.*`,`!${clientFolder}/index.html`,`!${clientFolder}/js/app.js`,`!${clientFolder}/css/app.css`])
+    .pipe(gulp.dest(`${conf.g3w_admin_paths['dev'].g3w_admin_client_dest_static}/${client_version}/`));
 
 });
 
@@ -435,7 +448,7 @@ gulp.task('set_build_all_to_false', function() {
 
 gulp.task('g3w-admin:client_only',['set_build_all_to_false', 'g3w-admin']);
 
-// this is useful o pre creare
+// this is useful create external assest css and javascript libraries
 gulp.task('add_external_resources_to_main_html',  function() {
   const srcFolder = './src';
   if (build_all) {
