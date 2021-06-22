@@ -18,17 +18,20 @@ proto._showMarker = function(coordinates, show=true){
   const feature = new ol.Feature({
     geometry: new ol.geom.Point(coordinates)
   });
-  if (show) this._layer.getSource().addFeature(feature);
-  else this._layer.getSource().clear();
+  this._layer.getSource().clear();
+  show && setTimeout(()=>this._layer.getSource().addFeature(feature));
 };
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);
   const geolocation = new ol.Geolocation({
     projection: map.getView().getProjection(),
-    tracking: true
+    tracking: true,
+    trackingOptions: {
+      enableHighAccuracy: true
+    }
   });
-  geolocation.once('change:position', (e) => {
+  geolocation.once('change:position', e => {
     const coordinates = geolocation.getPosition();
     if (coordinates) {
       this._layer = new ol.layer.Vector({
@@ -47,13 +50,10 @@ proto.setMap = function(map) {
       const view = map.getView();
       map.addLayer(this._layer);
       $(this.element).removeClass('g3w-ol-disabled');
-      this.on('toggled', (event) => {
+      this.on('toggled', event => {
         const toggled = event.target.isToggled();
         toggled &&  view.setCenter(coordinates);
         this._showMarker(coordinates, toggled);
-      });
-      $(this.element).on('click', () => {
-
       });
     } else this.hideControl();
   });
