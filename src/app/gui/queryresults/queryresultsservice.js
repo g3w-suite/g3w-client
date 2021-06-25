@@ -1,6 +1,6 @@
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
-const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
@@ -48,6 +48,22 @@ function QueryResultsService() {
   this.init = function() {
     this.clearState();
   };
+
+  // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
+  const stroke = new ol.style.Stroke({
+    color: 'black',
+    width: 3
+  });
+  this.resultsQueryLayer = new ol.layer.Vector({
+    style: new ol.style.Style({
+      stroke,
+      image: new ol.style.Circle({
+        stroke,
+        radius: 5
+      }),
+    }),
+    source: new ol.source.Vector()
+  });
 
   this._vectorLayers = [];
   this.setters = {
@@ -117,6 +133,8 @@ proto.clear = function() {
   this.runAsyncTodo();
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
+  this.resultsQueryLayer.getSource().clear();
+  this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
@@ -835,16 +853,48 @@ proto.addToSelection = function(layer, feature, action, index){
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
-
-/*
-Show marker
- */
-proto.showMarker = function(coordinates){
-  this.mapService.showMarker(coordinates);
+proto.removeQueryResultLayerFromMap = function(){
+  this.resultsQueryLayer.getSource().clear();
+  this.mapService.getMap().removeLayer(this.resultsQueryLayer)
 };
 
+// show layerQuery result on map
+proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
+  this.removeQueryResultLayerFromMap();
+  this.resultsQueryLayer.getSource().addFeature(feature);
+  this.mapService.getMap().addLayer(this.resultsQueryLayer);
+  timeout && setTimeout(()=>{
+    this.removeQueryResultLayerFromMap();
+  }, timeout)
+};
+
+/**
+ *
+  Show featureFormCoordinates
+ */
+proto.showCoordinates = function(coordinates){
+  const feature = createFeatureFromCoordinates(coordinates);
+  this.addQueryResultsLayerToMap({feature});
+};
+
+/**
+ * Show BBox
+ * @param bbox
+ */
 proto.showBBOX = function(bbox){
-  this.mapService.showBBOXLayer(bbox, {duration: 1000});
+  const feature = createFeatureFromBBOX(bbox);
+  this.addQueryResultsLayerToMap({feature});
+};
+
+/**
+ * Show Geometry
+ * @param geometry
+ */
+proto.showGeometry = function(geometry){
+  const feature = createFeatureFromGeometry({
+    geometry
+  });
+  this.addQueryResultsLayerToMap({feature});
 };
 
 /**

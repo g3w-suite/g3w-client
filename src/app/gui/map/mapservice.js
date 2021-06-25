@@ -495,26 +495,6 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
-proto.removeBBOXLayer = function(){
-  this._bboxLayer.getSource().clear();
-  this.getMap().removeLayer(this._bboxLayer);
-};
-
-proto.showBBOXLayer = function(bbox, options={duration: 3000}){
-  if (bbox){
-    this.removeBBOXLayer();
-    const geometry = ol.geom.Polygon.fromExtent(bbox);
-    const feature = new ol.Feature({
-      geometry
-    });
-    this._bboxLayer.getSource().addFeature(feature);
-    this.getMap().addLayer(this._bboxLayer);
-    setTimeout(()=>{
-      this.removeBBOXLayer()
-    }, options.duration)
-  }
-};
-
 /**
  * Show Marker on map
  * @param coordinates
@@ -522,21 +502,12 @@ proto.showBBOXLayer = function(bbox, options={duration: 3000}){
  */
 proto.showMarker = function(coordinates, duration=1000) {
   this._marker.setPosition(coordinates);
-  setTimeout(() => {
-    this._marker.setPosition();
-  }, duration)
-};
-
-/**
- * Show BBOX extent
- */
-proto.showBBOX = function(){
-
+  setTimeout(() => this._marker.setPosition(), duration);
 };
 
 // return layer by name
 proto.getLayerByName = function(name) {
-  const layer = this.getMap().getLayers().getArray().find((lyr) => {
+  const layer = this.getMap().getLayers().getArray().find(lyr => {
     const layerName = lyr.get('name');
     return layerName && layerName === name;
   });

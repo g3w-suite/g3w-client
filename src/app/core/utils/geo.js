@@ -210,6 +210,24 @@ const geoutils = {
     return style
   },
 
+  createFeatureFromCoordinates(coordinates){
+    let feature;
+    if (Array.isArray(coordinates) && coordinates.length === 2) {
+      const geometry = new ol.geom.Point(coordinates);
+      feature = new ol.Feature(geometry);
+    }
+    return feature;
+  },
+
+  createFeatureFromBBOX(bbox){
+    let feature;
+    if (Array.isArray(bbox) && bbox.length === 4) {
+      const geometry = ol.geom.Polygon.fromExtent(bbox);
+      feature = new ol.Feature(geometry)
+    }
+    return feature;
+  },
+
   createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
       const feature = new ol.Feature(geometry);

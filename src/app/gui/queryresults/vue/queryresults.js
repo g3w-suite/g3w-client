@@ -48,17 +48,15 @@ const vueComponentOptions = {
         if (query.coordinates) {
           info.icon = 'marker';
           info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
-          info.action = () => {
-            this.$options.queryResultsService.showMarker(query.coordinates);
-          }
+          info.action = () => this.$options.queryResultsService.showCoordinates(query.coordinates);
         } else if (query.bbox)  {
           info.icon = 'square';
-          info.message = `  [${query.bbox}]`;
-          info.action = ()=>{
-            this.$options.queryResultsService.showBBOX(query.bbox);
-          }
+          info.message = `  [${query.bbox.join(' , ')}]`;
+          info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
         } else if (query.geometry) {
-          info.message =  `${query.name} - Feature Id: ${query.fid}`
+          info.icon =  'draw';
+          info.message =  `  ${query.name} - Feature Id: ${query.fid}`;
+          info.action = () =>this.$options.queryResultsService.showGeometry(query.geometry);
         }
       } else if (search){}
 
