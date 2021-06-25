@@ -28,21 +28,19 @@ proto.checkVisible = function(layers){
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart',(e) => {
-    this._startCoordinate = e.coordinate;
+  this._interaction.on('boxstart', evt => {
+    this._startCoordinate = evt.coordinate;
   });
-  this._interaction.on('boxend',(e) => {
+  this._interaction.on('boxend', evt => {
     const start_coordinate = this._startCoordinate;
-    const end_coordinate = e.coordinate;
+    const end_coordinate = evt.coordinate;
     const extent = ol.extent.boundingExtent([start_coordinate, end_coordinate]);
     this.dispatchEvent({
       type: 'bboxend',
-      extent: extent
+      extent
     });
     this._startCoordinate = null;
-    if (this._autountoggle) {
-      this.toggle();
-    }
+    this._autountoggle && this.toggle();
   })
 };
 

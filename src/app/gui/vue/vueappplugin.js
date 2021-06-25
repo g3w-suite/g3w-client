@@ -99,7 +99,8 @@ const font = {
   'sign-in': "fas fa-sign-in-alt",
   language: "fas fa-language",
   target: "fas fa-bullseye",
-  pin: "fas fa-map-pin"
+  pin: "fas fa-map-pin",
+  square: "far fa-square"
 };
 
 const Vueappplugin = {

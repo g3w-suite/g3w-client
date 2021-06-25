@@ -467,8 +467,6 @@ proto.getFieldsWithValues = function(obj, options={}) {
       field.validate.mutually_valid = true;
       field.validate.empty = !field.validate.required;
       field.validate.message = null;
-      //check info
-      //field.info = field.input.options.info;
       // end editing purpose
     });
   }

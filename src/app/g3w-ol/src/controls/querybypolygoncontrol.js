@@ -46,10 +46,10 @@ proto.checkVisibile = function(layers) {
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);
-  this._interaction.on('picked', e => {
+  this._interaction.on('picked', evt => {
     this.dispatchEvent({
       type: 'picked',
-      coordinates: e.coordinate
+      coordinates: evt.coordinate
     });
     this._autountoggle && this.toggle();
   });

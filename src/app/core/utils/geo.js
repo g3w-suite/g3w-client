@@ -444,8 +444,7 @@ const geoutils = {
           width: 4
         })
       });
-    }
-    else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
+    } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
       style = new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
@@ -459,7 +458,6 @@ const geoutils = {
         }),
         zIndex: Infinity
       });
-
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
       const fillColor = ol.color.asArray(color);
       fillColor.splice(3,1,0.5);

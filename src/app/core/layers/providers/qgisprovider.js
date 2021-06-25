@@ -133,9 +133,7 @@ proto.query = function(options={}) {
     }).then(response => {
       const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve(featuresForLayers);
-    }).catch(err => {
-      d.reject(err);
-    });
+    }).catch(err => d.reject(err));
   } else d.reject();
   return d.promise();
 };
@@ -280,11 +278,7 @@ proto.getFeatures = function(options={}, params={}) {
           });
         }
       })
-      .catch(function(err) {
-        d.reject({
-          message: t("info.server_error")
-        });
-      });
+      .catch(err => d.reject({ message: t("info.server_error")}));
   } else {
     url = this._dataUrl;
     const urlParams = $.param(params);
@@ -309,9 +303,7 @@ proto.getFeatures = function(options={}, params={}) {
 proto._loadLayerData = function(mode, customUrlParameters) {
   const d = $.Deferred();
   Obkect.entries(this._layers).forEach(([layerCode, layer]) => {
-    if (_.isNull(layer.vector)) {
-      noVectorlayerCodes.push(layerCode);
-    }
+    if (_.isNull(layer.vector)) noVectorlayerCodes.push(layerCode);
   });
   const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
   this.emit('loadingvectorlayersstart');
@@ -384,13 +376,8 @@ proto.loadAllVectorsData = function(layerCodes) {
   const vectorDataRequests = layers.map(Layer => this._loadVectorData(Layer.vector, bbox));
 
   $.when.apply(this, vectorDataRequests)
-    .then(() => {
-      d.resolve(layerCodes);
-    })
-    .fail(() => {
-      d.reject();
-    });
-
+    .then(() => d.resolve(layerCodes))
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -437,12 +424,9 @@ proto._createVectorLayerFromConfig = function(layerCode) {
       if (layerConfig.style) vectorLayer.setStyle(layerConfig.style);
       d.resolve(vectorLayer);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
-
 
 proto._setupVectorLayer = function(layerCode) {
   const d = $.Deferred();
@@ -452,9 +436,7 @@ proto._setupVectorLayer = function(layerCode) {
       layerConfig.vector = vectorLayer;
       d.resolve(layerCode);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -505,9 +487,7 @@ proto.lockFeatures = function(layerName) {
       this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
       d.resolve(data);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -524,12 +504,8 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
   const lock = this.getMode() == 'w' ? true : false;
   const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
   $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-    .done(data => {
-      d.resolve(data);
-    })
-    .fail(() => {
-      d.reject();
-    });
+    .done(data => d.resolve(data))
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -537,7 +513,6 @@ proto._createVectorLayer = function(options={}) {
   const vector = new VectorLayer(options);
   return vector;
 };
-
 
 proto.cleanUpLayers = function() {
   this._loadedExtent = null;

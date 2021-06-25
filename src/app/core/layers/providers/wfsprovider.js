@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const { base, inherit } = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -34,21 +33,16 @@ proto.query = function(options={}, params = {}) {
         data: featuresForLayers
       });
     })
-    .fail((e) => {
-      d.reject(e);
-    });
+    .fail(e => d.reject(e));
   return d.promise();
 };
 
 proto._post = function(url, params) {
   url = url.match(/\/$/) ? url : `${url}/`;
   const d = $.Deferred();
-  $.post(url, params).then((response) => {
-      d.resolve(response);
-    })
-    .fail((err) => {
-      d.reject(err);
-    });
+  $.post(url, params)
+    .then(response => d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -59,11 +53,9 @@ proto._get = function(url, params) {
   const d = $.Deferred();
   const urlParams = $.param(params);
   url = url + '?' + urlParams;
-  $.get(url).then((response) => {
-    d.resolve(response);
-  }).fail((err) => {
-    d.reject(err);
-  });
+  $.get(url)
+    .then(response => d.resolve(response))
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -88,7 +80,9 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   if (filter) {
     const filterType = filter.getType();
     let featureRequest;
+    // get filter from ol
     const f = ol.format.filter;
+    /////
     filter = filter.get();
     switch (filterType) {
       case 'bbox':

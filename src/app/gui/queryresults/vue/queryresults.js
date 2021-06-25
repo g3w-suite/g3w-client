@@ -36,6 +36,33 @@ const vueComponentOptions = {
     },
     hasResults() {
       return this.state.layers.length > 0
+    },
+    info(){
+      const info = {
+        icon: null,
+        message: null,
+        action: null
+      };
+      const {query, search} = this.state;
+      if (query){
+        if (query.coordinates) {
+          info.icon = 'marker';
+          info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
+          info.action = () => {
+            this.$options.queryResultsService.showMarker(query.coordinates);
+          }
+        } else if (query.bbox)  {
+          info.icon = 'square';
+          info.message = `  [${query.bbox}]`;
+          info.action = ()=>{
+            this.$options.queryResultsService.showBBOX(query.bbox);
+          }
+        } else if (query.geometry) {
+          info.message =  `${query.name} - Feature Id: ${query.fid}`
+        }
+      } else if (search){}
+
+      return info;
     }
   },
   methods: {
@@ -185,9 +212,7 @@ const vueComponentOptions = {
       };
     },
     getLayerAttributeFromStructureItem(layer, field_name) {
-      return layer.attributes.find((attribute) => {
-        return attribute.name === field_name;
-      })
+      return layer.attributes.find(attribute => attribute.name === field_name);
     },
     collapsedFeatureBox(layer, feature, relation_index) {
       const boxid = relation_index !== null && relation_index !== undefined ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
@@ -294,9 +319,7 @@ const vueComponentOptions = {
               }))
         })
       }
-      requestAnimationFrame(() => {
-        this.$options.queryResultsService.postRender(this.$el);
-      })
+      requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el))
     },
     onelayerresult(bool) {
       bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
@@ -314,9 +337,7 @@ const vueComponentOptions = {
     this.state.zoomToResult = true;
   },
   destroyed() {
-    setTimeout(()=>{
-      this.$options.queryResultsService.clear();
-    })
+    setTimeout(()=>this.$options.queryResultsService.clear())
   }
 };
 

@@ -33,6 +33,8 @@ const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
 const prompt = require('gulp-prompt');
+//add md5
+const md5 = require('md5');
 //test
 const Server = require('karma').Server;
 ///
@@ -54,38 +56,24 @@ const buildChanges = {
   vendor: {
     js: {
       changed: false,
-      hash: versionHash,
+      hash: null,
     },
     css: {
       changed: false,
-      hash: versionHash
+      hash: null
     }
   },
   app: {
     js: {
       changed: false,
-      hash: versionHash
+      hash: null
     },
     css: {
       changed: false,
-      hash: versionHash
+      hash: null
     }
   }
 };
-
-// FIRST TEST OF CREATE VENDOR FILE FROM NODE_MODULES DEPENDENCIES
-const packageJSON = require('./package.json');
-const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {});
-//////////////
-
-gulp.task('vendor', function() {
-  return browserify()
-    .require(dependencies)
-    .bundle()
-    .pipe(source('vendor.bundle.js'))
-    .pipe(gulp.dest(clientFolder+'/js/'))
-});
-
 
 // production const to set enviromental variable
 function setNODE_ENV() {
@@ -93,6 +81,32 @@ function setNODE_ENV() {
 }
 
 setNODE_ENV();
+
+//Hash version
+async function setHashValues(done) {
+  const files = {
+    js: ['app'],
+    css: ['app']
+  };
+  if (!build_all) set_current_hash_version();
+  else {
+    files.js.push('vendor');
+    files.css.push('vendor');
+  }
+  for (let type of ['js', 'css']){
+    for (let name of  files[type]){
+      const originalname = `${clientFolder}/${type}/${name}.min.${type}`;
+      const [,buf] = await fs.promises.readFile(originalname);
+      buildChanges[name][type].hash = md5(buf);
+      fs.renameSync(originalname, `${clientFolder}/${type}/${name}.${buildChanges[name][type].hash}.min.${type}`)
+    }
+  }
+  done();
+}
+
+gulp.task('sethasvalues', function(done){
+  setHashValues(done);
+});
 
 // Browserify Task -- It used to trasform code modularizated in browser compatible way
 gulp.task('browserify', [], function() {
@@ -191,27 +205,21 @@ function interpolateVersion(path, separator) {
   if (prepost.length !== 2) {
     return path;
   }
-  return prepost[0] +"."+ versionHash + separator + prepost[1];
+  return prepost[0] +"."+ buildChanges[prepost[0]][prepost[1]].hash + separator + prepost[1];
 }
 
 // this task create a index.html in src/ and add all external libraries and css to it
-gulp.task('html', ['add_external_resources_to_main_html', 'assets'], function() {
+gulp.task('html', ['add_external_resources_to_main_html', 'assets'] , function() {
   return gulp.src('./src/index.html')
     .pipe(useref())
     .pipe(gulpif(['css/app.min.css'], cleanCSS({
       keepSpecialComments: 0
     }), replace(/\w+fonts/g, 'fonts')))
-    .pipe(rename(function(path) {
-      // renamed with version Date.now()
-      path.basename = interpolateVersion(path.basename+path.extname, '.min.');
-      path.extname = "";
-    }))
     .pipe(gulp.dest(clientFolder));
 });
 
 //task used to build django g3w-admin template with the refercenced of all css and js minified and added versionHash
 gulp.task('html:compiletemplate', function() {
-  !build_all && set_current_hash_version();
   return gulp.src('./src/index.html.admin.template')
     .pipe(replace("{VENDOR_CSS}","vendor."+buildChanges.vendor.css.hash+".min.css"))
     .pipe(replace("{APP_CSS}","app."+buildChanges.app.css.hash+".min.css"))
@@ -325,7 +333,7 @@ gulp.task('clean', function() {
 });
 
 gulp.task('cleanup', function() {
-  return del([conf.clientFolder+"/js/app.js",conf.clientFolder+"/css/app.css"],{force:true})
+  return del([`${conf.clientFolder}/js/app.js`,`${conf.clientFolder}/css/app.css`],{force:true})
 });
 
 gulp.task('serve', function(done) {
@@ -343,7 +351,7 @@ gulp.task('serve', function(done) {
   6 - Remove app.js and app.css from g3w-admin client folder
 */
 gulp.task('dist', function(done) {
-  runSequence('clean','production','browserify',['html'],'html:compiletemplate','cleanup',
+  runSequence('clean','production','browserify','html', 'sethasvalues','html:compiletemplate','cleanup',
     done);
 });
 

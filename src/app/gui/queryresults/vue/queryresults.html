@@ -1,4 +1,9 @@
 <div id="search-results" class="queryresults-wrapper">
+  <div v-if="info.message" class="query-info-results"
+       style="display: flex; align-items:center; margin-bottom: 5px; color: #394247">
+    <span @mouseover="info.action" v-if="info.icon" :class="g3wtemplate.getFontClass(info.icon)" style="cursor: pointer; padding-right: 5px;font-weight: bold"></span>
+    <span>{{info.message}}</span>
+  </div>
   <bar-loader :loading="state.loading"></bar-loader>
   <div class="queryresults-container">
     <template v-if="!state.loading">

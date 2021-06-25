@@ -53,7 +53,9 @@
         <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
       </span>
       <div class="panel-title" :style="[state.content.style.title]" v-if="!previousTitle && showtitle && contentTitle" :class="{'mobile': isMobile()}">
-        <span id="contenttitle" v-t:pre="contentTitle.title"><span v-t="contentTitle.post_title"></span></span>
+        <span id="contenttitle" v-t:pre="contentTitle.title">
+          <span v-t="contentTitle.post_title"></span>
+        </span>
       </div>
     </div>
     <div v-show="state.content.loading" class="bar-loader"></div>

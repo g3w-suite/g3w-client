@@ -27,7 +27,7 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({geometry, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  this.polygon = function({geometry, fid, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
     // in case no geometry on polygon layer response
     if (!geometry) return this.returnExceptionResponse({
@@ -53,7 +53,9 @@ function QueryService(){
         projection: this.project.getProjection()
       });
       return this.handleRequest(request, {
-        geometry
+        geometry,
+        fid,
+        name: polygonLayer.getName()
       });
   };
 

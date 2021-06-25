@@ -177,6 +177,9 @@ function MapService(options={}) {
   }
   this._setupListeners();
   this._marker = null;
+  this._bboxLayer = new ol.layer.Vector({
+    source: new ol.source.Vector({})
+  });
   this.debounces =  {
     setupCustomMapParamsToLegendUrl: {
       fnc: (...args) => {
@@ -492,11 +495,43 @@ proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
 
+proto.removeBBOXLayer = function(){
+  this._bboxLayer.getSource().clear();
+  this.getMap().removeLayer(this._bboxLayer);
+};
+
+proto.showBBOXLayer = function(bbox, options={duration: 3000}){
+  if (bbox){
+    this.removeBBOXLayer();
+    const geometry = ol.geom.Polygon.fromExtent(bbox);
+    const feature = new ol.Feature({
+      geometry
+    });
+    this._bboxLayer.getSource().addFeature(feature);
+    this.getMap().addLayer(this._bboxLayer);
+    setTimeout(()=>{
+      this.removeBBOXLayer()
+    }, options.duration)
+  }
+};
+
+/**
+ * Show Marker on map
+ * @param coordinates
+ * @param duration
+ */
 proto.showMarker = function(coordinates, duration=1000) {
   this._marker.setPosition(coordinates);
   setTimeout(() => {
     this._marker.setPosition();
   }, duration)
+};
+
+/**
+ * Show BBOX extent
+ */
+proto.showBBOX = function(){
+
 };
 
 // return layer by name
@@ -819,12 +854,15 @@ proto._setupControls = function() {
                    }
                   });
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
-                    const geometry = dataCoordinates[0].features[0].getGeometry();
+                    const feature = dataCoordinates[0].features[0];
+                    const fid = feature.get('g3w_fid');
+                    const geometry = feature.getGeometry();
                     const excludeLayers = [dataCoordinates[0].layer];
                     const {data=[]} = await DataRouterService.getData('query:polygon', {
                       inputs: {
                         excludeLayers,
                         geometry,
+                        fid,
                         multilayers: this.project.isQueryMultiLayers(controlType)
                       },
                       outputs: {

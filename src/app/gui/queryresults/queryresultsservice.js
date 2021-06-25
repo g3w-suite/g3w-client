@@ -51,14 +51,20 @@ function QueryResultsService() {
 
   this._vectorLayers = [];
   this.setters = {
-    setQueryResponse(queryResponse) {
-      this.clearState();
+    addRemoveQueryResponseData(queryResponse){
+      this.setQueryResponse(queryResponse, {
+        add:false
+      });
+    },
+    setQueryResponse(queryResponse, options={add:false}) {
+      const {add} = options;
+      add && this.clearState();
       this.state.query = queryResponse.query;
       this.state.type = queryResponse.type;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers);
     },
-    setLayersData(layers) {
+    setLayersData(layers, options={add:false}) {
       // here set the right order of result layers based on toc
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
@@ -162,7 +168,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   else this.mapService.zoomToFeatures(features, options);
 };
 
-proto.clearState = function() {
+proto.clearState = function(options={}) {
   this.state.layers.splice(0);
   this.state.query = {};
   this.state.querytitle = "";
@@ -825,6 +831,18 @@ proto.addToSelection = function(layer, feature, action, index){
   action.state.toggled[index] = !action.state.toggled[index];
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   this._addRemoveSelectionFeature(_layer, feature, index);
+};
+
+
+/*
+Show marker
+ */
+proto.showMarker = function(coordinates){
+  this.mapService.showMarker(coordinates);
+};
+
+proto.showBBOX = function(bbox){
+  this.mapService.showBBOXLayer(bbox, {duration: 1000});
 };
 
 /**

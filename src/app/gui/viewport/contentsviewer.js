@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const { base, inherit }= require('core/utils/utils');
 const Stack = require('gui/utils/utils').barstack;
 const Component = require('gui/vue/component');
 const compiledTemplate = Vue.compile(require('./contentsviewer.html'));
@@ -43,21 +42,17 @@ proto.setContent = function(options={}) {
     this.clearContents()
     .then(() => {
       this.addContent(content, options)
-      .then(() => {
-        d.resolve(options);
-      })
+      .then(() => d.resolve(options));
     })
   } else {
     this.addContent(content,options)
-    .then(() => {
-      d.resolve(options);
-    })
+    .then(() => d.resolve(options));
   }
   this.setOpen(true);
   return d.promise();
 };
 
-proto.addContent = function(content, options) {
+proto.addContent = function(content, options={}) {
   const d = $.Deferred();
   // parent element is the internal element
   options.parent = this.internalComponent.$el;
@@ -83,7 +78,7 @@ proto.removeContent = function() {
 proto.popContent = function() {
   return this.stack.pop()
   .then(() => {
-    // updatethe content of contentsdata only after stack is updated
+    // update the content of contentsdata only after stack is updated
     this.contentsdata = this.stack.state.contentsdata;
     this.updateContentVisibility();
   });
@@ -93,7 +88,7 @@ proto.popContent = function() {
 proto.getComponentByClass = function(componentClass) {
   let component;
   const contentdata = this.stack.getContentData();
-  contentdata.forEach((content) => {
+  contentdata.forEach(content => {
     if (content.content instanceof componentClass) {
       component = content.content;
       return false
@@ -106,7 +101,7 @@ proto.getComponentByClass = function(componentClass) {
 proto.getComponentById = function(id) {
   let component;
   const contentdata = this.stack.getContentData();
-  contentdata.forEach((content) => {
+  contentdata.forEach(content => {
     if (content.content.id == id) {
       component = content.content;
       return false
@@ -140,10 +135,7 @@ proto.updateContentVisibility = function() {
 // stack clear because if we want the contentComponente stack
 // it has to be empty stack
 proto.clearContents = function() {
-  return this.stack.clear()
-  .then(() => {
-    this.contentsdata = this.stack.state.contentsdata;
-  })
+  return this.stack.clear().then(() => this.contentsdata = this.stack.state.contentsdata);
 };
 
 // Set layout of the content each time
@@ -157,7 +149,7 @@ proto.layout = function(parentWidth, parentHeight) {
     const height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - 10; // margin 10 from bottom
     el.height(height);
     el.children().first().height(height);
-    contentsdata.forEach((data) => {
+    contentsdata.forEach(data => {
       //check each componentstored in stack
       if (typeof data.content.layout == 'function') {
         //call function layout of each component that are stored into the stack

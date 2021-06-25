@@ -1,5 +1,5 @@
 import { ALLVALUE }  from '../../constants';
-const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
+const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -364,7 +364,6 @@ proto.valuesToKeysValues = function(values=[]){
 };
 
 proto.createInputsFormFromFilter = async function({filter=[]}={}) {
-  let id = 0;
   const filterLenght = filter.length - 1;
   for (let index = 0; index <= filterLenght; index ++) {
     const input = filter[index];
@@ -376,7 +375,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       value: null,
       operator: input.op,
       logicop: index === filterLenght ? null : input.logicop,
-      id: input.id || id,
+      id: input.id || getUniqueDomId(),
       loading: false
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
@@ -412,7 +411,6 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       }
     }
     this.state.forminputs.push(forminput);
-    id+=1;
   }
 };
 
