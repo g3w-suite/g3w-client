@@ -1,5 +1,5 @@
 const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile, throttle } = require('core/utils/utils');
+const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -638,13 +638,15 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
 
 proto.printAtlas = function(layer, feature){
   let {id:layerId, features} = layer;
+  const inputAtlasAttr = 'g3w_atlas_index';
   features = feature ? [feature]: features;
   const atlasLayer = this.getAtlasByLayerId(layerId);
   if (atlasLayer.length > 1) {
     let inputs='';
     atlasLayer.forEach((atlas, index) => {
-      inputs += `<input id="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
-                 <label for="${index}">${atlas.name}</label>
+      const id = getUniqueDomId();
+      inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
+                 <label for="${id}">${atlas.name}</label>
                  <br>`;
     });
 
@@ -656,7 +658,7 @@ proto.printAtlas = function(layer, feature){
           label: "OK",
           className: "btn-success",
           callback: ()=> {
-            const index = $('input[name="template"]:checked').attr('id');
+            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
             if (index !== null || index !== undefined) {
               const atlas = atlasLayer[index];
               this._printSingleAtlas({
