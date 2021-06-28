@@ -67,25 +67,27 @@ function QueryResultsService() {
 
   this._vectorLayers = [];
   this.setters = {
-    addRemoveQueryResponseData(queryResponse){
-      this.setQueryResponse(queryResponse, {
-        add:false
-      });
-    },
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
       add && this.clearState();
       this.state.query = queryResponse.query;
       this.state.type = queryResponse.type;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
-      this.setLayersData(layers);
+      this.setLayersData(layers, options);
     },
     setLayersData(layers, options={add:false}) {
+      const {add} = options;
       // here set the right order of result layers based on toc
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
-      layers.forEach(layer => this.state.layers.push(layer));
+      layers.forEach(layer => {
+        if (!add) this.state.layers.push(layer);
+        else {
+          const findLayer = this.state.layers.find(_layer => _layer === layer);
+          console.log(findLayer)
+        }
+      });
       this.setActionsForLayers(layers);
     },
     addComponent(component) {
@@ -176,6 +178,12 @@ proto.highlightFeaturesPermanently = function(layer){
 
 proto.isOneLayerResult = function(){
   return this.state.layers.length === 1;
+};
+
+//add Feature to already result query
+proto.addLayerFeaturesToResults = function(layer, options={active:true}){
+  const {active} = options;
+  this.mapService.disableClickMapControls(active);
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {

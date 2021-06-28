@@ -1365,14 +1365,10 @@ proto.hideAllControls = function() {
 
 proto.toggleControls = function(toggle, types) {
   this._removeControls();
-  this._mapControls.forEach((controlObj) => {
+  this._mapControls.forEach(controlObj => {
     if (types) {
-      if (types.indexOf(controlObj.type) > -1) {
-        controlObj.visible = toggle;
-      }
-    } else {
-      controlObj.visible = toggle;
-    }
+      if (types.indexOf(controlObj.type) > -1) controlObj.visible = toggle;
+    } else controlObj.visible = toggle;
   });
   this._layoutControls();
 };

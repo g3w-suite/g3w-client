@@ -163,6 +163,9 @@ const translations = {
               zoom_to_features_extent:{
                 hint: "Zoom sulle features"
               },
+              add_features_to_results: {
+                hint: "Aggiungi features ai risultati"
+              },
               zoom_to_feature: {
                 hint: "Zoom sulla feature"
               },
@@ -584,6 +587,9 @@ const translations = {
               },
               zoom_to_features_extent:{
                 hint: "Zoom to features extent"
+              },
+              add_features_to_results: {
+                hint: "Add features to results"
               },
               zoom_to_feature: {
                 hint: "Zoom to feature"
@@ -1007,6 +1013,9 @@ const translations = {
               zoom_to_features_extent:{
                 hint: "Tarkenna ominaisuuden laajuuteen"
               },
+              add_features_to_results: {
+                hint: "Add features to results"
+              },
               zoom_to_feature: {
                 hint: "Tarkenna ominaisuuteen"
               },
@@ -1428,6 +1437,9 @@ const translations = {
               },
               zoom_to_features_extent:{
                 hint: "Zooma till egenskapens omfattning"
+              },
+              add_features_to_results: {
+                hint: "Add features to results"
               },
               zoom_to_feature: {
                 hint: "Zooma till egenskapen"

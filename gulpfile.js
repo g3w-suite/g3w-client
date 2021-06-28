@@ -244,22 +244,15 @@ function proxyMiddleware(urls) {
   return function(req, res, next){
     let doproxy = false;
     let rootUrl;
-    if (req.url.indexOf('plugin.js') > -1) {
-      rootUrl = req.url;
-    } else
-      rootUrl = req.url.split('?')[0];
+    if (req.url.indexOf('plugin.js') > -1) rootUrl = req.url;
+    else rootUrl = req.url.split('?')[0];
     for (let i in urls) {
       if (rootUrl.indexOf(urls[i]) > -1) {
         doproxy = true;
         break;
       }
     }
-    if (doproxy){
-      proxy.web(req,res);
-    }
-    else {
-      next();
-    }
+    doproxy ? proxy.web(req,res) : next();
   }
 }
 

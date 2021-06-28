@@ -64,6 +64,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    addLayerFeaturesToResults(layer){
+      this.$options.queryResultsService.addLayerFeaturesToResults(layer);
+    },
     showDownloadAction(evt){
       const display = evt.target.children[0].style.display;
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
