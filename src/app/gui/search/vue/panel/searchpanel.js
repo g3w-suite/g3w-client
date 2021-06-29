@@ -43,10 +43,12 @@ const SearchPanelComponent = Vue.extend({
       input.value = input.value || input.value === 0 ? input.value : null;
       this.changeInput(input);
     },
-    changeInput({id, attribute, value}) {
+    changeInput(input) {
+      let {id, attribute, value, type} = input;
       try {
         //try to trim value inside try catch some cases tha trim doesn't work to avoid
-        value = value.trim();
+        // to check if has one reason to trim
+        value = type === 'textfield' || type === 'textField' ? value : value.trim();
       } catch(err){}
       this.$options.service.changeInput({id, value});
       this.state.searching = true;
