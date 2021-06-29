@@ -444,9 +444,9 @@ const ApplicationTemplate = function({ApplicationService}) {
      */
     GUI.outputDataPlace = async function(dataPromise, options={}){
       // show options (function) set if show data or not
-      const {title='', show} = options;
+      const {title='', show, add=false} = options;
       const showQueryResults = this.showContentFactory('query');
-      const queryResultsService = showQueryResults(title);
+      const queryResultsService = showQueryResults(title, null, !add);
       //check if waiting output data
       // in case we stop and sobsitute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
@@ -462,7 +462,9 @@ const ApplicationTemplate = function({ApplicationService}) {
               autoclose: data.usermessage.autoclose
             });
             if (!stop) {
-              if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
+              if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data, {
+                add
+              });
               else GUI.closeContent();
             }
           } catch(error) {
@@ -557,11 +559,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     // show results info/search
-    GUI.showQueryResults = function(title, results) {
+    GUI.showQueryResults = function(title, results, reset=true) {
       const perc = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
-      queryResultService.reset();
+      reset && queryResultService.reset();
       results && queryResultService.setQueryResponse(results);
       GUI.showContextualContent({
         perc,

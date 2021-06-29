@@ -627,12 +627,12 @@ const geoutils = {
    * @param feature_count
    * @returns {JQuery.Promise<any, any, any>}
    */
-  getQueryLayersPromisesByGeometry(layers, {multilayers=false, bbox, geometry, projection, feature_count=10} ={}) {
+  getQueryLayersPromisesByGeometry(layers, {multilayers=false, bbox, geometry, filterConfig={}, projection, feature_count=10} ={}) {
     const d = $.Deferred();
     const queryResponses = [];
     const queryErrors = [];
     const mapCrs = projection.getCode();
-    const filter = new Filter();
+    const filter = new Filter(filterConfig);
     if (multilayers) {
       let filterGeometry = geometry;
       if (!layers.length) d.resolve([]);

@@ -62,7 +62,7 @@ proto._get = function(url, params) {
 //request to server
 proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   const d = $.Deferred();
-  filter = filter || new Filter();
+  filter = filter || new Filter({});
   const layer = layers ? layers[0]: this._layer;
   const httpMethod = layer.getOwsMethod();
   const url = layer.getQueryUrl();
@@ -79,6 +79,8 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   });
   if (filter) {
     const filterType = filter.getType();
+    const filterConfig = filter.getConfig();
+    console.log(filterConfig)
     let featureRequest;
     // get filter from ol
     const f = ol.format.filter;
@@ -92,9 +94,10 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
         });
         break;
       case 'geometry':
+        const {spatialMethod = 'intersects'} = filterConfig;
         featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],
-          filter: f.intersects('the_geom', filter)
+          filter: f[spatialMethod]('the_geom', filter)
         });
         break;
       case 'expression':

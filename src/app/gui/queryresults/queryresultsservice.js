@@ -1,5 +1,6 @@
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
+const DataRouterService = require('core/data/routerservice');
 const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -10,6 +11,7 @@ const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
+const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
 // set formats for download single feature
 const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'gpkg', 'csv', 'xls'];
 
@@ -66,10 +68,11 @@ function QueryResultsService() {
   });
 
   this._vectorLayers = [];
+  this._addFeaturesLayerResultInteraction;
   this.setters = {
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
-      add && this.clearState();
+      !add && this.clearState();
       this.state.query = queryResponse.query;
       this.state.type = queryResponse.type;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
@@ -84,11 +87,11 @@ function QueryResultsService() {
       layers.forEach(layer => {
         if (!add) this.state.layers.push(layer);
         else {
-          const findLayer = this.state.layers.find(_layer => _layer === layer);
-          console.log(findLayer)
+          const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
+          findLayer.features = [...findLayer.features, ...layer.features]
         }
       });
-      this.setActionsForLayers(layers);
+      !add && this.setActionsForLayers(layers);
     },
     addComponent(component) {
       this._addComponent(component)
@@ -136,6 +139,7 @@ proto.clear = function() {
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
+  this.removeAddFeaturesLayerResultInteraction();
   this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
@@ -180,10 +184,38 @@ proto.isOneLayerResult = function(){
   return this.state.layers.length === 1;
 };
 
+proto.removeAddFeaturesLayerResultInteraction = function(){
+  if (this._addFeaturesLayerResultInteraction) {
+    this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction);
+    this._addFeaturesLayerResultInteraction = null;
+  }
+};
+
 //add Feature to already result query
-proto.addLayerFeaturesToResults = function(layer, options={active:true}){
-  const {active} = options;
-  this.mapService.disableClickMapControls(active);
+proto.addLayerFeaturesToResults = function(layer){
+  layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
+  if (layer.addfeaturesresults.active) {
+    this._addFeaturesLayerResultInteraction = new PickCoordinatesInteraction();
+    this.mapService.addInteraction(this._addFeaturesLayerResultInteraction, false);
+    this._addFeaturesLayerResultInteraction.on('picked', async evt =>{
+      const {coordinate: coordinates} = evt;
+      const {data=[]} = await DataRouterService.getData('query:coordinates', {
+        inputs: {
+          coordinates,
+          layerIds: [layer.id],
+          multilayers: false,
+        }, outputs: {
+          add: true
+        }
+      })
+    });
+    this.mapService.once('mapcontrol:toggled', evt =>{
+      if (evt.target.isToggled() && evt.target.isClickMap()){
+        layer.addfeaturesresults.active = false;
+        this.removeAddFeaturesLayerResultInteraction()
+      }
+    });
+  } else this.removeAddFeaturesLayerResultInteraction();
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
@@ -331,6 +363,9 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       download,
       show: true,
       filter,
+      addfeaturesresults: {
+        active:false
+      },
       selection,
       expandable: true,
       hasImageField: false,
@@ -513,9 +548,7 @@ proto.setActionsForLayers = function(layers) {
       this.listenClearSelection(layer, 'selection');
       //end selection action
     }
-
   });
-
   this.addActionsForLayers(this.state.layersactions);
 };
 

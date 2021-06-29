@@ -834,6 +834,9 @@ proto._setupControls = function() {
                         excludeLayers,
                         geometry,
                         fid,
+                        filterConfig:{
+                          spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                        },
                         multilayers: this.project.isQueryMultiLayers(controlType)
                       },
                       outputs: {

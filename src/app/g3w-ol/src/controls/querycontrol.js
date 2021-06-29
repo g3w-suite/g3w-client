@@ -21,7 +21,7 @@ const proto = QueryControl.prototype;
 
 proto.setMap = function(map) {
   let eventToggledKey;
-  const querySingleClickFnc = (event) => {
+  const querySingleClickFnc = event => {
     this.dispatchEvent({
       type: 'picked',
       coordinates: event.coordinate

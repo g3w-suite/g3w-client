@@ -19,6 +19,7 @@ const QueryByPolygonControl = function(options={}) {
   const layers = options.layers || [];
   options.visible = this.checkVisibile(layers);
   options.geometryTypes = VALIDGEOMETRIES;
+  this.spatialMethod = 'intersects'; // <contains, intersect>
   InteractionControl.call(this, options);
 };
 
@@ -42,6 +43,18 @@ proto.checkVisibile = function(layers) {
     visible = querableLength > 0 && filterableLength > 0;
   }
   return visible;
+};
+
+/**
+ * Method to set filter operation intersect or Contains
+ */
+
+proto.setSpatialMethod = function(method='intersects'){
+  this.spatialMethod = method;
+};
+
+proto.getSpatialMethod = function(){
+  return this.spatialMethod;
 };
 
 proto.setMap = function(map) {

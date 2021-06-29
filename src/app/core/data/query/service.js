@@ -27,7 +27,7 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({geometry, fid, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  this.polygon = function({geometry, fid, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
     // in case no geometry on polygon layer response
     if (!geometry) return this.returnExceptionResponse({
@@ -50,6 +50,7 @@ function QueryService(){
         multilayers,
         bbox: false,
         feature_count,
+        filterConfig,
         projection: this.project.getProjection()
       });
       return this.handleRequest(request, {
@@ -88,12 +89,16 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, multilayers=false, feature_count}={}){
+  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, feature_count}={}){
     const layersFilterObject = {
       QUERYABLE: true,
       SELECTEDORALL: true,
       VISIBLE: true
     };
+    Array.isArray(layerIds) && layerIds.forEach(layerId => {
+      if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
+      layersFilterObject.IDS.push(layerId);
+    });
     const layers = getMapLayersByFilter(layersFilterObject);
     const request = getQueryLayersPromisesByCoordinates(layers, {
       multilayers,

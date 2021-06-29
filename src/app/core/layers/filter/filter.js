@@ -1,11 +1,32 @@
 // class Filter to build filter
 // useful by provider providers to get data
-function Filter() {
+function Filter(config={}) {
   this._filter = null;
   this._type = null;
+  this.config = config;
 }
 
 const proto = Filter.prototype;
+
+/**
+ * Config methods
+ */
+
+proto.getConfig = function(){
+  return this.config;
+};
+
+proto.setConfig = function(config = {}){
+  this.config = config;
+};
+
+proto.mergeConfig = function(config={}){
+  this.config = {...this.config, ...config};
+};
+
+/***
+ *  end config methods
+ */
 
 proto.getAll = function() {
   this._type = Filter.TYPES.all;
