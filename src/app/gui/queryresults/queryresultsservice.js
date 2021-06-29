@@ -84,14 +84,28 @@ function QueryResultsService() {
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
+      let addedFeatures = false;
       layers.forEach(layer => {
         if (!add) this.state.layers.push(layer);
         else {
+          //get features from add pick layer
+          const {features=[]} = layer;
           const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
-          findLayer.features = [...findLayer.features, ...layer.features]
+          // if get features
+          if (findLayer && features.length){
+            const features_g3w_fids = features.map(feature => feature.attributes.g3w_fid);
+            const featuresToAdd = [];
+            findLayer.features = findLayer.features.filter(feature => {
+              const indexFindFeature = features_g3w_fids.findIndex(g3w_fid => g3w_fid === feature.attributes.g3w_fid);
+              return true
+            });
+            if (featuresToAdd.length) findLayer.features = [...findLayer.features, ...featuresToAdd];
+          }
         }
       });
-      !add && this.setActionsForLayers(layers);
+      // higlilight new feature
+      add && this.state.layers.length === 1 &&  this.highlightFeaturesPermanently(this.state.layers[0]);
+      this.setActionsForLayers(layers, {add});
     },
     addComponent(component) {
       this._addComponent(component)
@@ -134,6 +148,111 @@ inherit(QueryResultsService, G3WObject);
 
 const proto = QueryResultsService.prototype;
 
+proto.setActionsForLayers = function(layers, options={add: false}) {
+  const {add} = options;
+  if (!add) {
+    this.unlistenerlayeractionevents = [];
+    layers.forEach(layer => {
+      if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+      //in case of geometry
+      if (layer.hasgeometry) {
+        this.state.layersactions[layer.id].push({
+          id: 'gotogeometry',
+          download: false,
+          mouseover: true,
+          class: GUI.getFontClass('marker'),
+          hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
+          cbk: throttle(this.goToGeometry.bind(this))
+        });
+      }
+      // in case of relations
+      if (this._relations) {
+        const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
+          return relation.type === 'MANY';
+        });
+        if (relations && relations.length) {
+          const chartRelationIds = [];
+          relations.forEach(relation => {
+            const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
+            id && chartRelationIds.push(id);
+          });
+
+          this.state.layersactions[layer.id].push({
+            id: 'show-query-relations',
+            download: false,
+            class: GUI.getFontClass('relation'),
+            hint: 'sdk.mapcontrols.query.actions.relations.hint',
+            cbk: this.showQueryRelations,
+            relations,
+            chartRelationIds
+          });
+          const toggled = {};
+          layer.features.map((feature, index) => toggled[index] = false);
+          chartRelationIds.length && this.state.layersactions[layer.id].push({
+            id: 'show-plots-relations',
+            download: false,
+            opened: true,
+            class: GUI.getFontClass('chart'),
+            state: Vue.observable({
+              toggled
+            }),
+            hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
+            cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
+          });
+        }
+      }
+
+      this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
+        id: `printatlas`,
+        download: true,
+        class: GUI.getFontClass('print'),
+        hint: `sdk.tooltips.atlas`,
+        cbk: this.printAtlas.bind(this)
+      });
+
+      DOWNLOAD_FEATURE_FORMATS.forEach(format => {
+        layer.download[format] && this.state.layersactions[layer.id].push({
+          id: `download_${format}_feature`,
+          download: true,
+          class: GUI.getFontClass(format),
+          hint: `sdk.tooltips.download_${format}`,
+          cbk: this.downloadFeatures.bind(this, format)
+        });
+      });
+
+      if (layer.selection.active !== undefined) {
+        // selection action
+        const toggled = {};
+        layer.features.map((feature, index) => toggled[index] = false);
+        this.state.layersactions[layer.id].push({
+          id: 'selection',
+          download: false,
+          class: GUI.getFontClass('success'),
+          hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
+          state: Vue.observable({
+            toggled
+          }),
+          init: ({feature, index, action}={})=>{
+            layer.selection.active !== void 0 && this.checkFeatureSelection({
+              layerId: layer.id,
+              index,
+              feature,
+              action
+            })
+          },
+          cbk: throttle(this.addToSelection.bind(this))
+        });
+        this.listenClearSelection(layer, 'selection');
+        //end selection action
+      }
+    });
+    this.addActionsForLayers(this.state.layersactions);
+  }
+};
+
+/**
+ * Clear all
+ */
 proto.clear = function() {
   this.runAsyncTodo();
   this.unlistenerEventsActions();
@@ -180,6 +299,10 @@ proto.highlightFeaturesPermanently = function(layer){
   })
 };
 
+/**
+ * Check if one layer result
+ * @returns {boolean}
+ */
 proto.isOneLayerResult = function(){
   return this.state.layers.length === 1;
 };
@@ -191,7 +314,11 @@ proto.removeAddFeaturesLayerResultInteraction = function(){
   }
 };
 
-//add Feature to already result query
+/**
+ *
+ * Adde feature to Features results
+ * @param layer
+ */
 proto.addLayerFeaturesToResults = function(layer){
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
@@ -199,7 +326,7 @@ proto.addLayerFeaturesToResults = function(layer){
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction, false);
     this._addFeaturesLayerResultInteraction.on('picked', async evt =>{
       const {coordinate: coordinates} = evt;
-      const {data=[]} = await DataRouterService.getData('query:coordinates', {
+      await DataRouterService.getData('query:coordinates', {
         inputs: {
           coordinates,
           layerIds: [layer.id],
@@ -451,105 +578,6 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
       }
     })
   }
-};
-
-proto.setActionsForLayers = function(layers) {
-  this.unlistenerlayeractionevents = [];
-  layers.forEach(layer => {
-    if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
-    //in case of geometry
-    if (layer.hasgeometry) {
-      this.state.layersactions[layer.id].push({
-        id: 'gotogeometry',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('marker'),
-        hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
-        cbk: throttle(this.goToGeometry.bind(this))
-      });
-    }
-    // in case of relations
-    if (this._relations) {
-      const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
-        return relation.type === 'MANY';
-      });
-      if (relations && relations.length) {
-        const chartRelationIds = [];
-        relations.forEach(relation => {
-          const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
-          id && chartRelationIds.push(id);
-        });
-
-       this.state.layersactions[layer.id].push({
-          id: 'show-query-relations',
-          download: false,
-          class: GUI.getFontClass('relation'),
-          hint: 'sdk.mapcontrols.query.actions.relations.hint',
-          cbk: this.showQueryRelations,
-          relations,
-         chartRelationIds
-        });
-        const toggled = {};
-        layer.features.map((feature, index) => toggled[index] = false);
-        chartRelationIds.length && this.state.layersactions[layer.id].push({
-         id: 'show-plots-relations',
-         download: false,
-         opened: true,
-         class: GUI.getFontClass('chart'),
-         state: Vue.observable({
-           toggled
-         }),
-         hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
-         cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
-       });
-      }
-    }
-
-    this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
-      id: `printatlas`,
-      download: true,
-      class: GUI.getFontClass('print'),
-      hint: `sdk.tooltips.atlas`,
-      cbk: this.printAtlas.bind(this)
-    });
-
-    DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-      layer.download[format] && this.state.layersactions[layer.id].push({
-        id: `download_${format}_feature`,
-        download: true,
-        class: GUI.getFontClass(format),
-        hint: `sdk.tooltips.download_${format}`,
-        cbk: this.downloadFeatures.bind(this, format)
-      });
-    });
-
-    if (layer.selection.active !== undefined) {
-      // selection action
-      const toggled = {};
-      layer.features.map((feature, index) => toggled[index] = false);
-      this.state.layersactions[layer.id].push({
-        id: 'selection',
-        download: false,
-        class: GUI.getFontClass('success'),
-        hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-        state: Vue.observable({
-          toggled
-        }),
-        init: ({feature, index, action}={})=>{
-          layer.selection.active !== void 0 && this.checkFeatureSelection({
-            layerId: layer.id,
-            index,
-            feature,
-            action
-          })
-        },
-        cbk: throttle(this.addToSelection.bind(this))
-      });
-      this.listenClearSelection(layer, 'selection');
-      //end selection action
-    }
-  });
-  this.addActionsForLayers(this.state.layersactions);
 };
 
 proto.trigger = function(actionId, layer, feature, index, container) {

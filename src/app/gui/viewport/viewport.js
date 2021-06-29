@@ -162,13 +162,11 @@ const ViewportService = function() {
             this._components[viewName] = component;
             // check if view name is map
             if (viewName === 'map') {
-              // sset de fefault component to map
+              // set de fefault component to map
               this._defaultMapComponent = component;
             }
           })
-          .fail((err) => {
-            console.log(err)
-          })
+          .fail(err => console.log(err));
       }
     })
   };
@@ -180,12 +178,8 @@ const ViewportService = function() {
   };
 
   this.showContextualMap = function(options) {
-    if (!this._contextualMapComponent) {
-      this._contextualMapComponent = this._defaultMapComponent;
-    }
-    if (this._contextualMapComponent != this._defaultMapComponent) {
-      this._toggleMapComponentVisibility(this._defaultMapComponent,false);
-    }
+    if (!this._contextualMapComponent) this._contextualMapComponent = this._defaultMapComponent;
+    if (this._contextualMapComponent != this._defaultMapComponent) this._toggleMapComponentVisibility(this._defaultMapComponent,false);
     if (!this._contextualMapComponent.ismount()) {
       const contextualMapComponent = this._contextualMapComponent;
       contextualMapComponent.mount('#g3w-view-map', true)
@@ -220,9 +214,7 @@ const ViewportService = function() {
   };
 
   this.resetContextualMapComponent = function() {
-    if (this._contextualMapComponent) {
-      this._contextualMapComponent.unmount();
-    }
+    this._contextualMapComponent && this._contextualMapComponent.unmount();
     this._contextualMapComponent = this._defaultMapComponent;
   };
 
@@ -304,8 +296,7 @@ const ViewportService = function() {
           this._layout('pop-content');
           d.resolve(this._components.contentgetCurrentContentData)
         })
-    } else
-      d.reject();
+    } else d.reject();
     return d.promise();
   };
 
@@ -422,18 +413,12 @@ const ViewportService = function() {
     const perc = options.perc || this.getDefaultViewPerc(viewName);
     const split = options.split || 'h';
     let aside;
-    if (this.isPrimaryView(viewName)) {
-      aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
-    } else {
-      aside = true;
-    }
+    if (this.isPrimaryView(viewName)) aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
+    else aside = true;
     this.state[viewName].aside = aside;
     const secondaryPerc = this.isPrimaryView(viewName) ? 100 - perc : perc;
-    if (secondaryPerc > 0) {
-      this.showSecondaryView(split, secondaryPerc);
-    } else {
-      return this.closeSecondaryView();
-    }
+    if (secondaryPerc > 0) this.showSecondaryView(split, secondaryPerc);
+    else return this.closeSecondaryView();
   };
 
   this._getReducedSizes = function() {
@@ -617,7 +602,7 @@ const ViewportComponent = Vue.extend({
     usermessage() {
       return this.state.usermessage;
     },
-    showtitle: function() {
+    showtitle() {
       let showtitle = true;
       const contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
@@ -626,7 +611,7 @@ const ViewportComponent = Vue.extend({
       }
       return showtitle;
     },
-    showContent: function() {
+    showContent() {
       return this.state.content.show;
     },
     styles() {
@@ -642,7 +627,7 @@ const ViewportComponent = Vue.extend({
         }
       }
     },
-    contentTitle: function() {
+    contentTitle() {
       const contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
         const {title, post_title} = contentsData[contentsData.length - 1].options;
@@ -653,22 +638,22 @@ const ViewportComponent = Vue.extend({
       const contentsData = this.state.content.contentsdata;
       return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
     },
-    previousTitle: function() {
+    previousTitle() {
       const contentsData = this.state.content.contentsdata;
       return (contentsData.length > 1 && this.state.content.showgoback) ? contentsData[contentsData.length - 2].options.title : null
     },
-    contentSmallerThenPreferred: function() {
+    contentSmallerThenPreferred() {
       return this.state.secondaryPerc < this.state.content.preferredPerc;
     }
   },
   methods: {
-    closeContent: function() {
+    closeContent() {
       GUI.closeContent();
     },
-    closeMap: function() {
+    closeMap() {
       viewportService.closeMap();
     },
-    gotoPreviousContent: function() {
+    gotoPreviousContent() {
       viewportService.popContent();
     },
     closeUserMessage(){
@@ -698,7 +683,7 @@ const ViewportComponent = Vue.extend({
     }
   },
   async mounted() {
-    const handleResizeViewport = ()=>{
+    const handleResizeViewport = () => {
       this.state.resized.start = true;
     };
     await this.$nextTick();

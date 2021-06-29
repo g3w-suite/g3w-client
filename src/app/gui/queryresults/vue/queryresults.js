@@ -407,6 +407,7 @@ function QueryResultsComponent(options={}) {
     return base(this, 'unmount')
   }
 }
+
 inherit(QueryResultsComponent, Component);
 
 module.exports = QueryResultsComponent;

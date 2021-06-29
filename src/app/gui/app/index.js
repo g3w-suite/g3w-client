@@ -445,8 +445,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.outputDataPlace = async function(dataPromise, options={}){
       // show options (function) set if show data or not
       const {title='', show, add=false} = options;
-      const showQueryResults = this.showContentFactory('query');
-      const queryResultsService = showQueryResults(title, null, !add);
+      const queryResultsService = !add ? this.showContentFactory('query')(title): GUI.getComponent('queryresults').getService();
       //check if waiting output data
       // in case we stop and sobsitute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
@@ -559,11 +558,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     // show results info/search
-    GUI.showQueryResults = function(title, results, reset=true) {
+    GUI.showQueryResults = function(title, results) {
       const perc = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
-      reset && queryResultService.reset();
+      queryResultService.reset();
       results && queryResultService.setQueryResponse(results);
       GUI.showContextualContent({
         perc,
@@ -699,9 +698,11 @@ const ApplicationTemplate = function({ApplicationService}) {
         split: split
       })
     };
+
     GUI.setContextualMapComponent = function(mapComponent) {
       viewport.ViewportService.setContextualMapComponent(mapComponent);
     };
+
     GUI.resetContextualMapComponent = function() {
       viewport.ViewportService.resetContextualMapComponent();
     };
@@ -762,7 +763,6 @@ const ApplicationTemplate = function({ApplicationService}) {
       const projectVueMenuComponent = new ProjectsMenuComponent(options).getInternalComponent();
       return projectVueMenuComponent.$mount().$el;
     };
-
 
     GUI._setContent = (options={}) => {
       GUI.closeUserMessage();
