@@ -94,12 +94,14 @@ function QueryResultsService() {
           // if get features
           if (findLayer && features.length){
             const features_g3w_fids = features.map(feature => feature.attributes.g3w_fid);
-            const featuresToAdd = [];
             findLayer.features = findLayer.features.filter(feature => {
-              const indexFindFeature = features_g3w_fids.findIndex(g3w_fid => g3w_fid === feature.attributes.g3w_fid);
-              return true
+              const indexFindFeature = features_g3w_fids.indexOf(feature.attributes.g3w_fid);
+              if (indexFindFeature !== -1){
+                features.splice(indexFindFeature, 1);
+                return false;
+              } return true;
             });
-            if (featuresToAdd.length) findLayer.features = [...findLayer.features, ...featuresToAdd];
+            if (features.length) findLayer.features = [...findLayer.features, ...features];
           }
         }
       });
