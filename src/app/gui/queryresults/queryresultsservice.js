@@ -92,29 +92,29 @@ function QueryResultsService() {
         if (!add) this.state.layers.push(layer);
         else {
           //get features from add pick layer
-          const {features=[]} = layer;
+          let {features=[]} = layer;
           const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
           // if get features
           if (findLayer && features.length){
+            const removeFeatureIndexes = [];
             const features_g3w_fids = features.map(feature => feature.attributes.g3w_fid);
             findLayer.features = findLayer.features.filter(feature => {
               const indexFindFeature = features_g3w_fids.indexOf(feature.attributes.g3w_fid);
-              if (indexFindFeature !== -1){
-                const featureRemoved = features.splice(indexFindFeature, 1);
-                delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved[0])];
-                return false;
-              } else {
-                this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
-                return true;
-              }
+              const filtered = indexFindFeature === -1;
+              if (!filtered){
+                removeFeatureIndexes.push(indexFindFeature);
+                const featureRemoved = features[indexFindFeature];
+                delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)];
+              } else this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
+              return filtered;
             });
+            features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
             // check if new feature ha to be added
-            if (features.length) {
-              findLayer.features = [...findLayer.features, ...features];
-            }
+            if (features.length) findLayer.features = [...findLayer.features, ...features];
             //in case of removed features
             if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
-               this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false;
+              // used to do all vue reactive thing before update layers
+               setTimeout(()=> this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
             // in case no more features on layer remove interaction pickoordinate to get result from map
             if (findLayer.features.length === 0) {
               this.removeAddFeaturesLayerResultInteraction();
