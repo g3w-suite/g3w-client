@@ -370,7 +370,7 @@ const geoutils = {
       case 'csv':
         const {headers, separator, values, x, y} = data;
         const features = [];
-        values.forEach(row =>{
+        values.forEach((row, index) =>{
           const properties = {};
           const rowvalues = row.split(separator);
           if (rowvalues.length === headers.length)  {
@@ -386,6 +386,7 @@ const geoutils = {
               const geometry = new ol.geom.Point(coordinates);
               if (crs !== mapCrs) geometry.transform(crs, mapCrs);
               const feature = new ol.Feature(geometry);
+              feature.setId(index); // need to add a id incremental
               feature.setProperties(properties);
               features.push(feature);
             }

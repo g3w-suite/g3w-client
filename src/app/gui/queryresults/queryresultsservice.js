@@ -71,7 +71,8 @@ function QueryResultsService() {
   this._vectorLayers = [];
   this._addFeaturesLayerResultInteraction = {
     id: null, // reference to current layer
-    interaction: null // interaction bind to layer
+    interaction: null, // interaction bind to layer,
+    mapcontrol: null // add current toggled map control if toggled
   };
   this.setters = {
     setQueryResponse(queryResponse, options={add:false}) {
@@ -96,10 +97,11 @@ function QueryResultsService() {
           const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
           // if get features
           if (findLayer && features.length){
+            const {external} = findLayer;
             const removeFeatureIndexes = [];
-            const features_g3w_fids = features.map(feature => feature.attributes.g3w_fid);
+            const features_g3w_fids = features.map(feature => !external ? feature.attributes.g3w_fid: feature.id);
             findLayer.features = findLayer.features.filter(feature => {
-              const indexFindFeature = features_g3w_fids.indexOf(feature.attributes.g3w_fid);
+              const indexFindFeature = features_g3w_fids.indexOf(!external ? feature.attributes.g3w_fid: feature.id);
               const filtered = indexFindFeature === -1;
               if (!filtered){
                 removeFeatureIndexes.push(indexFindFeature);
@@ -342,6 +344,8 @@ proto.removeAddFeaturesLayerResultInteraction = function(){
     this._addFeaturesLayerResultInteraction.interaction = null;
   }
   this._addFeaturesLayerResultInteraction.id = null;
+  this._addFeaturesLayerResultInteraction.mapcontrol && this._addFeaturesLayerResultInteraction.mapcontrol.toggle(true);
+  this._addFeaturesLayerResultInteraction.mapcontrol = null;
 };
 
 /**
@@ -354,26 +358,42 @@ proto.addLayerFeaturesToResults = function(layer){
    * Check if layer is current layer to add or clear previous
    */
   if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id){
-    const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id)
+    const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
     layer.addfeaturesresults.active = false;
     this.removeAddFeaturesLayerResultInteraction();
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
+    const {external} = layer;
+    if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
     this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, false);
     this._addFeaturesLayerResultInteraction.interaction.on('picked', async evt =>{
       const {coordinate: coordinates} = evt;
-      await DataRouterService.getData('query:coordinates', {
-        inputs: {
-          coordinates,
-          layerIds: [layer.id],
-          multilayers: false,
-        }, outputs: {
-          add: true
-        }
-      })
+      if (!external)
+        await DataRouterService.getData('query:coordinates',
+          {
+            inputs: {
+              coordinates,
+              layerIds: [layer.id],
+              multilayers: false,
+            }, outputs: {
+              add: true
+            }
+         });
+      else {
+        const vectorLayer = this._vectorLayers.find(vectorLayer => layer.id === vectorLayer.get('id'));
+        const responseObject = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer,{
+          coordinates
+        });
+        this.setQueryResponse({
+          data: [responseObject],
+          query: {
+            coordinates
+          }
+        }, {add:true});
+      }
     });
     this.mapService.once('mapcontrol:toggled', evt =>{
       if (evt.target.isToggled() && evt.target.isClickMap()){
@@ -442,6 +462,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let formStructure;
     let sourceType;
     let extractRelations = false;
+    let external = false;
     const layer = featuresForLayer.layer;
     const download = {
       shapefile: false,
@@ -510,6 +531,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerRelationsAttributes =  [];
       layerTitle = layer.get('name');
       layerId = layer.get('id');
+      external = true;
     } else if (typeof layer === 'string' || layer instanceof String) {
       sourceType = Layer.LayerTypes.VECTOR;
       const feature = featuresForLayer.features[0];
@@ -518,6 +540,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       const split_layer_name = layer.split('_');
       layerTitle = (split_layer_name.length > 4) ? split_layer_name.slice(0, split_layer_name.length -4).join(' '): layer;
       layerId = layer;
+      external = true;
     }
     const layerObj = {
       title: layerTitle,
@@ -533,6 +556,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       addfeaturesresults: {
         active:false
       },
+      external,
       selection,
       expandable: true,
       hasImageField: false,
@@ -645,7 +669,7 @@ proto.triggerLayerAction = function(action,layer,feature, index, container) {
 };
 
 proto.registerVectorLayer = function(vectorLayer) {
-  (this._vectorLayers.indexOf(vectorLayer) === -1) && this._vectorLayers.push(vectorLayer);
+  this._vectorLayers.indexOf(vectorLayer) === -1 && this._vectorLayers.push(vectorLayer);
 };
 
 proto.unregisterVectorLayer = function(vectorLayer) {
@@ -655,63 +679,69 @@ proto.unregisterVectorLayer = function(vectorLayer) {
   });
 };
 
-proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', queryResponse => {
-    const {query={}} = queryResponse;
-    const {coordinates, bbox, geometry} = query; // extract
-    let isVisible = false;
-    this._vectorLayers.forEach(vectorLayer => {
-      let features = [];
-      switch (vectorLayer.constructor) {
-        case VectorLayer:
-          isVisible = vectorLayer.isVisible();
-          break;
-        case ol.layer.Vector:
-          isVisible = vectorLayer.getVisible();
-          break;
+proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
+  let isVisible = false;
+  const {coordinates, bbox, geometry} = query; // extract information about query type
+  let features = [];
+  switch (vectorLayer.constructor) {
+    case VectorLayer:
+      isVisible = vectorLayer.isVisible();
+      break;
+    case ol.layer.Vector:
+      isVisible = vectorLayer.getVisible();
+      break;
+  }
+  if (!isVisible) return true;
+  // case query coordinates
+  if (coordinates && Array.isArray(coordinates)) {
+    const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+    this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
+      features.push(feature);
+    },  {
+      layerFilter(layer) {
+        return layer === vectorLayer;
       }
-      if (!isVisible) return true;
-      // case query coordinates
-      if (coordinates && Array.isArray(coordinates)) {
-        const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
-        this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-            features.push(feature);
-          },  {
-          layerFilter(layer) {
-            return layer === vectorLayer;
-          }
+    });
+    //case bbox
+  } else if (bbox && Array.isArray(bbox)) {
+    const geometry = ol.geom.Polygon.fromExtent(bbox);
+    switch (vectorLayer.constructor) {
+      case VectorLayer:
+        features = vectorLayer.getIntersectedFeatures(geometry);
+        break;
+      case ol.layer.Vector:
+        vectorLayer.getSource().getFeatures().forEach(feature => {
+          geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
         });
-        //case bbox
-      } else if (bbox && Array.isArray(bbox)) {
-        const geometry = ol.geom.Polygon.fromExtent(bbox);
-        switch (vectorLayer.constructor) {
-          case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(geometry);
-            break;
-          case ol.layer.Vector:
-            vectorLayer.getSource().getFeatures().forEach(feature => {
-              geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
-            });
-            break;
-        }
-        //case geometry
-      } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
-        switch (vectorLayer.constructor) {
-          case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(geometry);
-            break;
-           case ol.layer.Vector:
-             vectorLayer.getSource().getFeatures().forEach(feature => {
-               geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
-             });
-             break;
-        }
-      }
-      queryResponse.data = queryResponse.data ? queryResponse.data : [];
-      queryResponse.data.push({
-        features,
-        layer: vectorLayer
-      });
+        break;
+    }
+    //case geometry
+  } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
+    switch (vectorLayer.constructor) {
+      case VectorLayer:
+        features = vectorLayer.getIntersectedFeatures(geometry);
+        break;
+      case ol.layer.Vector:
+        vectorLayer.getSource().getFeatures().forEach(feature => {
+          geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+        });
+        break;
+    }
+  }
+  return {
+    features,
+    layer: vectorLayer
+  };
+};
+
+proto._addVectorLayersDataToQueryResponse = function() {
+  this.onbefore('setQueryResponse', (queryResponse, options={}) => {
+    const {query={}} = queryResponse;
+    const {add=false}= options;
+    !add && this._vectorLayers.forEach(vectorLayer => {
+      const responseObj = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, query);
+      if(!queryResponse.data) queryResponse.data = [];
+      queryResponse.data.push(responseObj);
     })
   });
 };

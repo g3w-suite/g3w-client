@@ -29,7 +29,7 @@ proto.setMap = function(map) {
     this._autountoggle && this.toggle(true);
   };
   if (map) {
-    eventToggledKey = this.on('toggled', (event) => {
+    eventToggledKey = this.on('toggled', event => {
       const toggled = event.target.isToggled();
       toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
     });

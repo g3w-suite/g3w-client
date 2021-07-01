@@ -40,6 +40,8 @@ const font = {
   spinner: "fas fa-spinner",
   minus: "fas fa-minus",
   plus: "fas fa-plus",
+  'plus-circle': "fas fa-plus-circle",
+  'plus-square': "far fa-plus-square",
   grid: "fas fa-th",
   home: "fas fa-home",
   folder: "fas fa-folder",
