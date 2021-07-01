@@ -45,7 +45,8 @@ function QueryResultsService() {
     query: null,
     type: 'ows', // or api in case of search
     loading: false,
-    layersactions: {}
+    layersactions: {},
+    layersFeaturesBoxes:{}
   };
   this.init = function() {
     this.clearState();
@@ -68,7 +69,10 @@ function QueryResultsService() {
   });
 
   this._vectorLayers = [];
-  this._addFeaturesLayerResultInteraction;
+  this._addFeaturesLayerResultInteraction = {
+    id: null, // reference to current layer
+    interaction: null // interaction bind to layer
+  };
   this.setters = {
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
@@ -84,7 +88,6 @@ function QueryResultsService() {
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
       this.state.loading = false;
-      let addedFeatures = false;
       layers.forEach(layer => {
         if (!add) this.state.layers.push(layer);
         else {
@@ -97,11 +100,31 @@ function QueryResultsService() {
             findLayer.features = findLayer.features.filter(feature => {
               const indexFindFeature = features_g3w_fids.indexOf(feature.attributes.g3w_fid);
               if (indexFindFeature !== -1){
-                features.splice(indexFindFeature, 1);
+                const featureRemoved = features.splice(indexFindFeature, 1);
+                delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved[0])];
                 return false;
-              } return true;
+              } else {
+                this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
+                return true;
+              }
             });
-            if (features.length) findLayer.features = [...findLayer.features, ...features];
+            // check if new feature ha to be added
+            if (features.length) {
+              findLayer.features = [...findLayer.features, ...features];
+            }
+            //in case of removed features
+            if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
+               this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false;
+            // in case no more features on layer remove interaction pickoordinate to get result from map
+            if (findLayer.features.length === 0) {
+              this.removeAddFeaturesLayerResultInteraction();
+              this.clearHighlightGeometry(findLayer);
+              // used to do all vue reactive thing before update layers
+              setTimeout(()=> {
+                this.state.layers = this.state.layers.filter(layer => layer.id !== findLayer.id);
+                this.clearHighlightGeometry(findLayer);
+              })
+            }
           }
         }
       });
@@ -149,6 +172,10 @@ function QueryResultsService() {
 inherit(QueryResultsService, G3WObject);
 
 const proto = QueryResultsService.prototype;
+
+proto.getBoxId = function(layer, feature, relation_index){
+  return relation_index !== null && relation_index !== undefined ? `${layer.id}_${feature.id}_${relation_index}` : `${layer.id}_${feature.id}`;
+};
 
 proto.setActionsForLayers = function(layers, options={add: false}) {
   const {add} = options;
@@ -310,10 +337,11 @@ proto.isOneLayerResult = function(){
 };
 
 proto.removeAddFeaturesLayerResultInteraction = function(){
-  if (this._addFeaturesLayerResultInteraction) {
-    this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction);
-    this._addFeaturesLayerResultInteraction = null;
+  if (this._addFeaturesLayerResultInteraction.interaction) {
+    this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
+    this._addFeaturesLayerResultInteraction.interaction = null;
   }
+  this._addFeaturesLayerResultInteraction.id = null;
 };
 
 /**
@@ -322,11 +350,20 @@ proto.removeAddFeaturesLayerResultInteraction = function(){
  * @param layer
  */
 proto.addLayerFeaturesToResults = function(layer){
+  /**
+   * Check if layer is current layer to add or clear previous
+   */
+  if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id){
+    const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id)
+    layer.addfeaturesresults.active = false;
+    this.removeAddFeaturesLayerResultInteraction();
+  }
+  this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
-    this._addFeaturesLayerResultInteraction = new PickCoordinatesInteraction();
-    this.mapService.addInteraction(this._addFeaturesLayerResultInteraction, false);
-    this._addFeaturesLayerResultInteraction.on('picked', async evt =>{
+    this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
+    this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, false);
+    this._addFeaturesLayerResultInteraction.interaction.on('picked', async evt =>{
       const {coordinate: coordinates} = evt;
       await DataRouterService.getData('query:coordinates', {
         inputs: {
@@ -361,6 +398,7 @@ proto.clearState = function(options={}) {
   this.state.querytitle = "";
   this.state.loading = true;
   this.state.layersactions = {};
+  this.state.layersFeaturesBoxes = {};
 };
 
 proto.getState = function() {

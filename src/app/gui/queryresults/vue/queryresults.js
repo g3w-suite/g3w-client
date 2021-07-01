@@ -17,7 +17,6 @@ const vueComponentOptions = {
   data() {
     return {
       state: this.$options.queryResultsService.state,
-      layersFeaturesBoxes: {},
       headerExpandActionCellWidth: headerExpandActionCellWidth,
       headerActionsCellWidth: headerActionsCellWidth,
     }
@@ -28,6 +27,9 @@ const vueComponentOptions = {
     'header-feature-body': HeaderFeatureBody
   },
   computed: {
+    layersFeaturesBoxes() {
+      return this.state.layersFeaturesBoxes;
+    },
     onelayerresult(){
       return this.state.layers.length  === 1;
     },
@@ -87,8 +89,7 @@ const vueComponentOptions = {
       return $(`#${layer.id}_${index} > td`);
     },
     hasOneLayerAndOneFeature(layer) {
-      const one = this.hasLayerOneFeature(layer);
-      return one;
+      return this.hasLayerOneFeature(layer);
     },
     hasFormStructure(layer) {
       return !!layer.formStructure;
@@ -109,15 +110,10 @@ const vueComponentOptions = {
       return this.fieldIs(type,layer,attributeName,attributeValue);
     },
     checkField(type, fieldname, attributes) {
-      return attributes.find((attribute) => {
-        return (attribute.name === fieldname) && (attribute.type === type);
-      }) ? true : false;
+      return attributes.find(attribute => (attribute.name === fieldname) && (attribute.type === type)) ? true : false;
     },
     layerHasFeatures(layer) {
-      if (layer.features) {
-        return layer.features.length > 0;
-      }
-      return false;
+      return layer.features && layer.features.length > 0 ? true: false;
     },
     selectionFeaturesLayer(layer) {
       this.$options.queryResultsService.selectionFeaturesLayer(layer);
@@ -191,7 +187,7 @@ const vueComponentOptions = {
     getItemsFromStructure(layer) {
       let prevtabitems = [];
       const newstructure = [];
-      layer.formStructure.structure.forEach((item) => {
+      layer.formStructure.structure.forEach(item => {
         const _item = this.isAttributeOrTab(layer, item);
         if (_item.type === 'field') {
           newstructure.push(_item);
@@ -215,10 +211,32 @@ const vueComponentOptions = {
     getLayerAttributeFromStructureItem(layer, field_name) {
       return layer.attributes.find(attribute => attribute.name === field_name);
     },
+    getLayerFeatureBox(layer, feature, relation_index){
+      const boxid = this.getBoxId(layer, feature, relation_index);
+      if (this.layersFeaturesBoxes[boxid] === undefined) {
+        this.layersFeaturesBoxes[boxid] = Vue.observable({
+          collapsed: true
+        });
+        this.$watch(()=> this.layersFeaturesBoxes[boxid].collapsed, collapsed => {
+          const index = layer.features.findIndex(_feature => feature.id === _feature.id);
+          this.$options.queryResultsService.openCloseFeatureResult({
+            open:!collapsed,
+            layer,
+            feature,
+            container: this.getContainerFromFeatureLayer({
+              layer,
+              index
+            })
+          })
+        });
+        this.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
+      }
+      return this.layersFeaturesBoxes[boxid];
+    },
+    // to CHECK NOT GOOD
     collapsedFeatureBox(layer, feature, relation_index) {
-      const boxid = relation_index !== null && relation_index !== undefined ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
-      const collapsed = this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
-      return collapsed;
+      const boxid = this.getBoxId(layer, feature, relation_index);
+      return this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
     },
     showFeatureInfo(layer, boxid) {
       this.$options.queryResultsService.emit('show-query-feature-info', {
@@ -228,26 +246,13 @@ const vueComponentOptions = {
       });
     },
     getBoxId(layer, feature, relation_index) {
-      const boxid = relation_index !== null && relation_index !== undefined ? layer.id + '_' + feature.id+ '_' + relation_index : layer.id + '_' + feature.id;
-      return boxid;
+      return this.$options.queryResultsService.getBoxId(layer, feature, relation_index);
     },
     async toggleFeatureBox(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       this.layersFeaturesBoxes[boxid].collapsed = !this.layersFeaturesBoxes[boxid].collapsed;
       await this.$nextTick();
       this.showFeatureInfo(layer, boxid);
-      setTimeout(()=>{
-        const index = layer.features.indexOf(feature);
-        this.$options.queryResultsService.openCloseFeatureResult({
-          open: !this.layersFeaturesBoxes[boxid].collapsed,
-          layer,
-          feature,
-          container: this.getContainerFromFeatureLayer({
-            layer,
-            index
-          })
-        })
-      });
     },
     toggleFeatureBoxAndZoom(layer, feature, relation_index) {
       !this.hasLayerOneFeature(layer) && this.toggleFeatureBox(layer, feature, relation_index);
@@ -258,7 +263,7 @@ const vueComponentOptions = {
         await this.$nextTick();
       }
       const container = this.getContainerFromFeatureLayer({layer, index});
-      this.$options.queryResultsService.trigger(action.id,layer,feature, index, container);
+      this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
     },
     showFullPhoto(url) {
       this.$options.queryResultsService.showFullPhoto(url);
@@ -286,39 +291,34 @@ const vueComponentOptions = {
   },
   watch: {
     'state.layers'(layers) {
+      layers.forEach(layer => {
+        if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
+        layer.features.forEach(feature => {
+          this.getLayerFeatureBox(layer, feature);
+         if (feature.attributes.relations) {
+            const relations = feature.attributes.relations;
+            relations.forEach(relation => {
+              const boxid = layer.id + '_' + feature.id + '_' + relation.name;
+              const elements = relation.elements;
+              elements.forEach((element, index) =>{
+                this.layersFeaturesBoxes[boxid+index] = {
+                  collapsed: true
+                };
+              });
+            })
+          }
+        })
+      });
+
       this.onelayerresult = layers.length === 1;
       // check if is a single result layer and if has one feature
       if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
         const layer = layers[0];
         const feature = layer.features[0];
         const boxid = this.getBoxId(layer, feature);
-        this.layersFeaturesBoxes[boxid].collapsed = false;
         this.$options.queryResultsService.onceafter('postRender', () => {
           this.showFeatureInfo(layer, boxid);
-          this.$options.queryResultsService.openCloseFeatureResult({
-            open:true,
-            layer,
-            feature,
-            container: this.getContainerFromFeatureLayer({
-              layer,
-              index: 0
-            })
-          })
         });
-      } else { // for each layer check if there is one feature (usefult for plugin elevation)
-        const singlefeaturelayers = layers.filter(layer => this.hasLayerOneFeature(layer))
-        singlefeaturelayers.length && this.$options.queryResultsService.onceafter('postRender', () => {
-            singlefeaturelayers.forEach(layer =>
-              this.$options.queryResultsService.openCloseFeatureResult({
-                open:true,
-                layer,
-                feature: layer.features[0],
-                container: this.getContainerFromFeatureLayer({
-                  layer,
-                  index: 0
-                })
-              }))
-        })
       }
       requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el))
     },
@@ -336,6 +336,7 @@ const vueComponentOptions = {
   },
   beforeDestroy() {
     this.state.zoomToResult = true;
+    this.layersFeaturesBoxes = null;
   },
   destroyed() {
     setTimeout(()=>this.$options.queryResultsService.clear())
@@ -353,53 +354,18 @@ function QueryResultsComponent(options={}) {
     this.internalComponent = new InternalComponent({
       queryResultsService: this._service
     });
-    this.createLayersFeaturesBoxes();
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
 
   this.getElement = function() {
-    if (this.internalComponent) {
-      return this.internalComponent.$el;
-    }
+    if (this.internalComponent) return this.internalComponent.$el;
   };
 
   this._service.onafter('setLayersData', async () => {
     !this.internalComponent && this.setInternalComponent();
-    this.createLayersFeaturesBoxes();
     await this.internalComponent.$nextTick();
     $('.action-button[data-toggle="tooltip"]').tooltip();
   });
-
-  this.createLayersFeaturesBoxes = function() {
-    const layersFeaturesBoxes = {};
-    const layers = this._service.state.layers;
-    layers.forEach(layer => {
-      if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) {
-        layer.expandable = false;
-      }
-      layer.features.forEach((feature, index) => {
-        let collapsed = true;
-        let boxid = layer.id+'_'+feature.id;
-        layersFeaturesBoxes[boxid] = {
-          collapsed: collapsed
-        };
-        if (feature.attributes.relations) {
-          boxid = '';
-          const relations = feature.attributes.relations;
-          relations.forEach((relation) => {
-            boxid = layer.id + '_' + feature.id + '_' + relation.name;
-            const elements = relation.elements;
-            elements.forEach((element, index) =>{
-              layersFeaturesBoxes[boxid+index] = {
-                collapsed: true
-              };
-            });
-          })
-        }
-      })
-    });
-    this.internalComponent.layersFeaturesBoxes = layersFeaturesBoxes;
-  };
 
   this.layout = function(width,height) {};
   this.unmount = function() {
