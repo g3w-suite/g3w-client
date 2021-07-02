@@ -166,6 +166,9 @@ const translations = {
               add_features_to_results: {
                 hint: "Aggiungi features ai risultati"
               },
+              remove_feature_from_results: {
+                hint: "Rimuovi feature dai risultati"
+              },
               zoom_to_feature: {
                 hint: "Zoom sulla feature"
               },
@@ -589,7 +592,10 @@ const translations = {
                 hint: "Zoom to features extent"
               },
               add_features_to_results: {
-                hint: "Add features to results"
+                hint: "Add/Remove features to results"
+              },
+              remove_feature_from_results: {
+                hint: "Remove feature from results"
               },
               zoom_to_feature: {
                 hint: "Zoom to feature"
@@ -1014,7 +1020,10 @@ const translations = {
                 hint: "Tarkenna ominaisuuden laajuuteen"
               },
               add_features_to_results: {
-                hint: "Add features to results"
+                hint: "Add/Remove features to results"
+              },
+              remove_feature_from_results: {
+                hint: "Remove feature from results"
               },
               zoom_to_feature: {
                 hint: "Tarkenna ominaisuuteen"
@@ -1439,7 +1448,10 @@ const translations = {
                 hint: "Zooma till egenskapens omfattning"
               },
               add_features_to_results: {
-                hint: "Add features to results"
+                hint: "Add/Remove features to results"
+              },
+              remove_feature_from_results: {
+                hint: "Remove feature from results"
               },
               zoom_to_feature: {
                 hint: "Zooma till egenskapen"

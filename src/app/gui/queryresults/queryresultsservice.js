@@ -75,6 +75,11 @@ function QueryResultsService() {
     mapcontrol: null // add current toggled map control if toggled
   };
   this.setters = {
+    /**
+     *
+     * @param queryResponse
+     * @param options: add is used to know if is a new query request or add/remove query request
+     */
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
       !add && this.clearState();
@@ -85,53 +90,18 @@ function QueryResultsService() {
     },
     setLayersData(layers, options={add:false}) {
       const {add} = options;
-      // here set the right order of result layers based on toc
-      this._currentLayerIds = layers.map(layer => layer.id);
-      this._orderResponseByProjectLayers(layers);
+      if (!add){
+        // here set the right order of result layers based on toc
+        this._currentLayerIds = layers.map(layer => layer.id);
+        this._orderResponseByProjectLayers(layers);
+      }
       this.state.loading = false;
       layers.forEach(layer => {
+        // in case of a new request query
         if (!add) this.state.layers.push(layer);
-        else {
-          //get features from add pick layer
-          let {features=[]} = layer;
-          const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
-          // if get features
-          if (findLayer && features.length){
-            const {external} = findLayer;
-            const removeFeatureIndexes = [];
-            const features_g3w_fids = features.map(feature => !external ? feature.attributes.g3w_fid: feature.id);
-            findLayer.features = findLayer.features.filter(feature => {
-              const indexFindFeature = features_g3w_fids.indexOf(!external ? feature.attributes.g3w_fid: feature.id);
-              const filtered = indexFindFeature === -1;
-              if (!filtered){
-                removeFeatureIndexes.push(indexFindFeature);
-                const featureRemoved = features[indexFindFeature];
-                delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)];
-              } else this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
-              return filtered;
-            });
-            features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
-            // check if new feature ha to be added
-            if (features.length) findLayer.features = [...findLayer.features, ...features];
-            //in case of removed features
-            if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
-              // used to do all vue reactive thing before update layers
-               setTimeout(()=> this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
-            // in case no more features on layer remove interaction pickoordinate to get result from map
-            if (findLayer.features.length === 0) {
-              this.removeAddFeaturesLayerResultInteraction();
-              this.clearHighlightGeometry(findLayer);
-              // used to do all vue reactive thing before update layers
-              setTimeout(()=> {
-                this.state.layers = this.state.layers.filter(layer => layer.id !== findLayer.id);
-                this.clearHighlightGeometry(findLayer);
-              })
-            }
-          }
-        }
+        //get features from add pick layer
+        else this.addRemoveFeaturesToLayerResult(layer);
       });
-      // higlilight new feature
-      add && this.state.layers.length === 1 &&  this.highlightFeaturesPermanently(this.state.layers[0]);
       this.setActionsForLayers(layers, {add});
     },
     addComponent(component) {
@@ -175,6 +145,96 @@ inherit(QueryResultsService, G3WObject);
 
 const proto = QueryResultsService.prototype;
 
+/**
+ * Method to add a feature to current layer result
+ * @param layer
+ * @param feature
+ */
+proto.addFeatureLayerToResult = function(layer, feature){
+  this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
+};
+
+/**
+ * Method to remove a feature from current layer result
+ * @param layer
+ * @param feature
+ */
+proto.removeFeatureLayerFromResult = function(layer, feature){
+  const {id, external} = layer;
+  this.addRemoveFeaturesToLayerResult({
+    id,
+    external,
+    features: [feature]
+  })
+
+};
+
+/**
+ * Based on layer response check if features layer are to add or remove to current state.layers results
+ * @param layer
+ */
+proto.addRemoveFeaturesToLayerResult = function(layer){
+  //extract features from layer object
+  let {features=[]} = layer;
+  // get layer from current state.layers showed on result
+  const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
+  // if get features and find layer
+  if (findLayer && features.length){
+    // get id external layer or not (external is a layer added by mapcontrol addexternlayer)
+    const {external} = findLayer;
+    // is array of idexes od features that we has to remove from state.layer because is already loaded
+    const removeFeatureIndexes = [];
+    // get id of the features
+    const features_ids = features.map(feature => !external ? feature.attributes.g3w_fid: feature.id);
+    // loop nad filter the features that we had to remove)
+    findLayer.features = findLayer.features.filter(feature => {
+      const indexFindFeature = features_ids.indexOf(!external ? feature.attributes.g3w_fid: feature.id);
+      // checi if neeed to filter or not
+      const filtered = indexFindFeature === -1;
+      if (!filtered){
+        removeFeatureIndexes.push(indexFindFeature);
+        const featureRemoved = features[indexFindFeature];
+        delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)];
+      } else this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
+      return filtered;
+    });
+    // filter features to add
+    features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
+    // check if new feature ha to be added
+    if (features.length) findLayer.features = [...findLayer.features, ...features];
+    //in case of removed features
+    if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
+      // used to do all vue reactive thing before update layers
+      setTimeout(() => this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
+    // in case no more features on layer remove interaction pickoordinate to get result from map
+    this.checkIfLayerHasNoFeatures(findLayer);
+  }
+  // higlilight new feature
+  this.state.layers.length === 1 && this.highlightFeaturesPermanently(this.state.layers[0]);
+};
+
+/**
+ * Check and do action if layer has no features after delete feature(s
+ */
+proto.checkIfLayerHasNoFeatures = function(layer){
+  if (layer.features.length === 0) {
+    this.removeAddFeaturesLayerResultInteraction();
+    this.clearHighlightGeometry(layer);
+    // used to do all vue reactive thing before update layers
+    setTimeout(()=> {
+      this.state.layers = this.state.layers.filter(_layer => _layer.id !== layer.id);
+      this.clearHighlightGeometry(layer);
+    })
+  }
+};
+
+/**
+ * Method to create boxid identify to query result hmtl
+ * @param layer
+ * @param feature
+ * @param relation_index
+ * @returns {string}
+ */
 proto.getBoxId = function(layer, feature, relation_index){
   return relation_index !== null && relation_index !== undefined ? `${layer.id}_${feature.id}_${relation_index}` : `${layer.id}_${feature.id}`;
 };
@@ -185,6 +245,17 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     this.unlistenerlayeractionevents = [];
     layers.forEach(layer => {
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+      this.state.layersactions[layer.id].push({
+        id: 'removefeaturefromresult',
+        download: false,
+        mouseover: true,
+        class: GUI.getFontClass('trash'),
+        style: {
+          color: 'red'
+        },
+        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+        cbk: this.removeFeatureLayerFromResult.bind(this)
+      });
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -353,7 +424,7 @@ proto.removeAddFeaturesLayerResultInteraction = function(){
  * Adde feature to Features results
  * @param layer
  */
-proto.addLayerFeaturesToResults = function(layer){
+proto.addLayerFeaturesToResultsAction = function(layer){
   /**
    * Check if layer is current layer to add or clear previous
    */

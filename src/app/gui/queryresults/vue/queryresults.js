@@ -67,7 +67,7 @@ const vueComponentOptions = {
   },
   methods: {
     addLayerFeaturesToResults(layer){
-      this.$options.queryResultsService.addLayerFeaturesToResults(layer);
+      this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
     },
     showDownloadAction(evt){
       const display = evt.target.children[0].style.display;

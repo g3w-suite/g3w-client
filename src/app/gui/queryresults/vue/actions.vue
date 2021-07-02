@@ -4,7 +4,7 @@
           @click.stop="trigger(action, layer, feature, featureIndex)" v-for="action in actions" v-download="action.download"
           :class="{'toggled': action.state && action.state.toggled[featureIndex] }"
           class="action-button  skin-tooltip-right" data-placement="right" data-toggle="tooltip" v-t-title="action.hint">
-      <span :class="`action-button-icon ${action.class}`"></span>
+      <span :style="action.style" :class="`action-button-icon ${action.class}`"></span>
     </span>
   </td>
 </template>
