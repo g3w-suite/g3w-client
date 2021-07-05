@@ -630,7 +630,7 @@ Vue.component('tristate-tree', {
       mapService.removeExternalLayer(name);
     },
     showLayerMenu(layerstree, evt) {
-      if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.geolayer || this.layerstree.external)) {
+      if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
     }

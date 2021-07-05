@@ -66,6 +66,7 @@ function Layer(config={}, options={}) {
     metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
     removable: config.removable || false,
+    downloadable: this.isDownloadable(),
     source: config.source,
     styles: config.styles,
     defaultstyle,
@@ -630,6 +631,11 @@ proto.getSourceType = function() {
   return this.state.source ? this.state.source.type : null;
 };
 
+proto.isDownloadable = function(){
+  return this.isShpDownlodable() || this.isXlsDownlodable() ||
+    this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
+};
+
 proto.isShpDownlodable = function() {
   return !this.isBaseLayer() && this.config.download;
 };
@@ -864,9 +870,7 @@ proto.changeAttribute = function(attribute, type, options) {
 };
 
 proto.getAttributeLabel = function(name) {
-  const field = this.getAttributes().find((field) => {
-   return field.name === name;
-  });
+  const field = this.getAttributes().find(field=> field.name === name);
   return field && field.label;
 };
 
@@ -887,23 +891,25 @@ proto.setLayersStore = function(layerstore) {
 };
 
 proto.canShowTable = function() {
-  if (this.getServerType() === Layer.ServerTypes.QGIS) {
-    if( ([
-            Layer.SourceTypes.POSTGIS,
-            Layer.SourceTypes.ORACLE,
-            Layer.SourceTypes.WFS,
-            Layer.SourceTypes.OGR,
-            Layer.SourceTypes.MSSQL,
-            Layer.SourceTypes.SPATIALITE
-          ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
-      return true
-    }
-  } else if (this.getServerType() === Layer.ServerTypes.G3WSUITE) {
+  if (!this.config.not_show_attributes_table){
+    if (this.getServerType() === Layer.ServerTypes.QGIS) {
+      if( ([
+        Layer.SourceTypes.POSTGIS,
+        Layer.SourceTypes.ORACLE,
+        Layer.SourceTypes.WFS,
+        Layer.SourceTypes.OGR,
+        Layer.SourceTypes.MSSQL,
+        Layer.SourceTypes.SPATIALITE
+      ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
+        return true
+      }
+    } else if (this.getServerType() === Layer.ServerTypes.G3WSUITE) {
       if (this.get('source').type === "geojson")
         return true
-  } else if (this.isFilterable())
-    return true;
-  return false
+    } else if (this.isFilterable())
+      return true;
+    return false;
+  } else return false
 };
 
 //function called in case of change project to remove all sored information
