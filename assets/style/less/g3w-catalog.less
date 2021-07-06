@@ -175,16 +175,6 @@ Licensed under MIT
   padding-right: 3px;
 }
 
-.catalog .child {
-  padding: 5px 3px 1px 30px;
-}
-.catalog .child-categories {
-  padding: 5px 3px 1px 12px;
-}
-.catalog .tree-root {
-  padding-left: 0;
-}
-
 .bold {
   font-weight: bold;
   color: @color-white;
@@ -197,6 +187,24 @@ Licensed under MIT
 
 .catalog {
   padding:3px;
+
+  .tree-root {
+    padding-left: 0;
+  }
+
+  .child-categories {
+    padding: 5px 3px 1px 12px;
+  }
+
+  .child {
+    padding: 5px 3px 1px 30px;
+  }
+
+  .layer-legend {
+    padding: 3px 0 0 60px;
+    background-color: @sidebar-dark-bg;
+  }
+
   .catalalog-nav-tabs {
     display: flex;
     flex: 1 1 0;

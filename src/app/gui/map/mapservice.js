@@ -1309,9 +1309,7 @@ proto.getMapControlByType = function({type}={}) {
 proto.addControl = function(id, type, control, addToMapControls=true, visible=true) {
   this.state.mapcontrolready = false;
   this.viewer.map.addControl(control);
-  control.on('toggled', evt =>{
-    this.emit('mapcontrol:toggled', evt)
-  })
+  control.on('toggled', evt => this.emit('mapcontrol:toggled', evt));
   this._mapControls.push({
     id,
     type,

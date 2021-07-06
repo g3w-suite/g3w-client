@@ -1,4 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+import CatalogEventHub from './catalogeventhub';
+import LayerLegend from './components/layerlegend.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
@@ -10,9 +12,10 @@ const ControlsRegistry = require('gui/map/control/registry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
-const CatalogEventHub = new Vue();
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
+// Temporary Constant to hide legend tab
+const SHOWLEGENDTAB = false;
 //OFFSETMENU
 const OFFSETMENU = {
   top: 50,
@@ -218,61 +221,61 @@ const vueComponentOptions = {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.shp = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getShp().catch((err) => {
-        GUI.notify.error(t("info.server_error"));
-      }).finally(() => {
-        this.layerMenu.loading.shp = false;
-        ApplicationService.setDownload(false, caller_download_id);
-        this._hideMenu();
-      })
+      layer.getShp()
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.shp = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
+        })
     },
     downloadCsv(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.csv = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getCsv().catch((err) => {
-        GUI.notify.error(t("info.server_error"));
-      }).finally(() => {
-        this.layerMenu.loading.csv = false;
-        ApplicationService.setDownload(false, caller_download_id);
-        this._hideMenu();
-      })
+      layer.getCsv()
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.csv = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
+        })
     },
     downloadXls(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.xls = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getXls().catch((err) => {
-        GUI.notify.error(t("info.server_error"));
-      }).finally(() => {
-        this.layerMenu.loading.xls = false;
-        ApplicationService.setDownload(false, caller_download_id);
-        this._hideMenu();
+      layer.getXls()
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.xls = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
       })
     },
     downloadGpx(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.gpx = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getGpx().catch(err => {
-        GUI.notify.error(t("info.server_error"));
-      }).finally(() => {
-        this.layerMenu.loading.gpx = false;
-        ApplicationService.setDownload(false, caller_download_id);
-        this._hideMenu();
+      layer.getGpx()
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.gpx = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
       })
     },
     downloadGpkg(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.gpkg = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      layer.getGpkg().catch(err => {
-        GUI.notify.error(t("info.server_error"));
-      }).finally(() => {
-        this.layerMenu.loading.gpkg = false;
-        ApplicationService.setDownload(false, caller_download_id);
-        this._hideMenu();
-      })
+      layer.getGpkg()
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.gpkg = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
+        })
     },
     showAttributeTable(layerId) {
       this.layerMenu.loading.data_table = false;
@@ -295,7 +298,7 @@ const vueComponentOptions = {
     startEditing() {
       let layer;
       const catallogLayersStores = CatalogLayersStoresRegistry.getLayersStores();
-      catallogLayersStores.forEach((layerStore) => {
+      catallogLayersStores.forEach(layerStore => {
         layer = layerStore.getLayerById(this.layerMenu.layer.id);
         if (layer) {
           layer.getLayerForEditing();
@@ -327,8 +330,12 @@ const vueComponentOptions = {
       });
       if (changed) {
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
-        layer && layer.change();
-        CatalogEventHub.$emit('layer-change-style');
+        if (layer) {
+          layer.change();
+          CatalogEventHub.$emit('layer-change-style', {
+            layerId: layer.getId()
+          });
+        }
       }
       this.closeLayerMenu();
     },
@@ -549,7 +556,10 @@ const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-
 // tree component
 Vue.component('tristate-tree', {
   ...compiledTristateTreeTemplate,
-  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
+  props : ['layerstree', 'storeid', 'legend', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
+  components: {
+    'layerlegend': LayerLegend
+  },
   data() {
     return {
       expanded: this.layerstree.expanded,
@@ -655,7 +665,7 @@ const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
-    data: function() {
+    data() {
       return {}
     },
     computed: {
@@ -682,7 +692,7 @@ Vue.component('layerslegend',{
         deep: true
       },
       'visiblelayers'(visibleLayers) {
-        const show = !!visibleLayers.length;
+        const show = !!visibleLayers.length && SHOWLEGENDTAB;
         this.$emit('showlegend', show)
       }
     },
@@ -695,7 +705,17 @@ const compiledLegendItemsTemplate = createCompiledTemplate(require('./legend_ite
 
 Vue.component('layerslegend-items',{
   ...compiledLegendItemsTemplate,
-  props: ['layers', 'legend', 'active'],
+  props: {
+    layers: {
+      default: []
+    },
+    legend: {
+      type: Object
+    },
+    active: {
+      default: true
+    }
+  },
   data() {
     return {
       legendurls: []

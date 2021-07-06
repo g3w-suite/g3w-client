@@ -9,7 +9,7 @@
         <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
       </li>
       <li v-if="showlegend" role="presentation" :class="{ active: activeTab === 'legend' }">
-        <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
+        <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'">{{showlegend}}</a>
       </li>
     </ul>
     <div class="tab-content catalog-tab-content">
@@ -30,7 +30,7 @@
           </tristate-tree>
         </ul>
         <ul>
-          <tristate-tree  :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+          <tristate-tree :externallayers="state.externallayers"  :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
         <ul v-for="layersgroup in state.layersgroups">
@@ -48,7 +48,9 @@
           </li>
         </ul>
       </div>
-      <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'" v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
+      <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
+        v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id">
+      </layerslegend>
     </div>
   </div>
   <ul id="layer-menu" ref="layer-menu" v-click-outside-layer-menu="closeLayerMenu" tabindex="-1" v-if="layerMenu.show" :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">

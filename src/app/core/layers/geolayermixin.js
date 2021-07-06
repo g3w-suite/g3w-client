@@ -26,6 +26,12 @@ proto.setup = function(config={}, options={}) {
   // and adding informations of bbox
   _.extend(this.state, {
     geolayer: config.geometrytype !== "NoGeometry",
+    legend: {
+      url: null,
+      loading: false,
+      error: false,
+      show: true
+    },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
     visible: config.visible || false,
