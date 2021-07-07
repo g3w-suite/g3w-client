@@ -7,10 +7,13 @@ ApplicationService.once('ready', function(){});
 //andle obtaininitConfig
 ApplicationService.once('initconfig', ()=> {
   const {plugins = {}} = DEVCONFIG;
-  window.initConfig.group.plugins = {
-    ...window.initConfig.group.plugins,
-    ...plugins
-  };
+  Object.keys(plugins).forEach(plugin =>{
+    window.initConfig.group.plugins[plugin] = window.initConfig.group.plugins[plugin] ? {
+        ...window.initConfig.group.plugins[plugin],
+        ...plugins[plugin]
+      } : plugins[plugin]
+   })
+
 });
 // Handle project configuration to insert custom element on project
 ProjectsRegistry.oncebefore('setCurrentProject', project => {});

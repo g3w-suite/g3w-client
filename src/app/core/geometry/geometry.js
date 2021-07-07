@@ -193,6 +193,55 @@ const Geometry = {
       this.GeometryTypes.MULTIPOLYGONZM,
       this.GeometryTypes.MULTIPOLYGON25D
     ].indexOf(geometryType) !== -1;
+  },
+  isPointGeometryType(geometryType){
+    return [
+      Geometry.GeometryTypes.POINT,
+      Geometry.GeometryTypes.POINTZ,
+      Geometry.GeometryTypes.POINTM,
+      Geometry.GeometryTypes.POINTZM,
+      Geometry.GeometryTypes.POINT25D,
+      Geometry.GeometryTypes.MULTIPOINT,
+      Geometry.GeometryTypes.MULTIPOINTZ,
+      Geometry.GeometryTypes.MULTIPOINTM,
+      Geometry.GeometryTypes.MULTIPOINTZM,
+      Geometry.GeometryTypes.MULTIPOINT25D].indexOf(geometryType) !== -1;
+  },
+  isLineGeometryType(geometryType){
+    return [
+      Geometry.GeometryTypes.LINESTRING,
+      Geometry.GeometryTypes.LINESTRINGZ,
+      Geometry.GeometryTypes.LINESTRINGM,
+      Geometry.GeometryTypes.LINESTRINGZM,
+      Geometry.GeometryTypes.LINESTRING25D,
+      Geometry.GeometryTypes.MULTILINESTRING,
+      Geometry.GeometryTypes.MULTILINESTRINGZ,
+      Geometry.GeometryTypes.MULTILINESTRINGM,
+      Geometry.GeometryTypes.MULTILINESTRINGZM,
+      Geometry.GeometryTypes.MULTILINESTRING25D,
+      Geometry.GeometryTypes.LINE,
+      Geometry.GeometryTypes.LINEZ,
+      Geometry.GeometryTypes.LINEM,
+      Geometry.GeometryTypes.LINEZM,
+      Geometry.GeometryTypes.LINE25D,
+      Geometry.GeometryTypes.MULTILINE,
+      Geometry.GeometryTypes.MULTILINEZ,
+      Geometry.GeometryTypes.MULTILINEM,
+      Geometry.GeometryTypes.MULTILINEZM,
+      Geometry.GeometryTypes.MULTILINE25D].indexOf(geometryType) !== -1;
+  },
+  isPolygonGeometryType(geometryType){
+    return [
+      Geometry.GeometryTypes.POLYGON,
+      Geometry.GeometryTypes.POLYGONZ,
+      Geometry.GeometryTypes.POLYGONM,
+      Geometry.GeometryTypes.POLYGONZM,
+      Geometry.GeometryTypes.POLYGON25D,
+      Geometry.GeometryTypes.MULTIPOLYGON,
+      Geometry.GeometryTypes.MULTIPOLYGONZ,
+      Geometry.GeometryTypes.MULTIPOLYGONM,
+      Geometry.GeometryTypes.MULTIPOLYGONZM,
+      Geometry.GeometryTypes.MULTIPOLYGON25D].indexOf(geometryType) !== -1;
   }
 };
 
