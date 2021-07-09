@@ -6,9 +6,10 @@
     selected: !isFolder || !isTable ? layerstree.selected : false,
     itemmarginbottom: !isFolder,  disabled: isDisabled  }">
   <span v-if="isFolder"
-    :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('arrow-down') : g3wtemplate.getFontClass('arrow-right')]"
+    style="padding-right: 2px;"
+    :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('caret-down') : g3wtemplate.getFontClass('caret-right')]"
     @click="expandCollapse"
-    class="root">
+    class="root collapse-expande-collapse-icon">
   </span>
   <span v-if="isFolder"
     @click.stop="toggle(true)"
@@ -17,7 +18,7 @@
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
-        style="padding-left: 45px !important;"
+        style="padding-left: 15px !important;"
         :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
   <template v-else>
@@ -30,15 +31,12 @@
           @click="downloadExternalLayer(layerstree.download)">
     </span>
     <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
-      <span style="font-size: 1.2em; width: 10px;" v-if="layerstree.legend && layerstree.visible" @click.stop="()=> layerstree.legend.show = !layerstree.legend.show" :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')"></span>
+      <span class="collapse-expande-collapse-icon" v-if="layerstree.legend && layerstree.visible" @click.stop="()=> layerstree.legend.show = !layerstree.legend.show"
+        :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')"></span>
       <span :style="{paddingLeft: layerstree.visible && layerstree.legend ? '3px': '16px'}"  @click.stop="toggle(false)"
             :class="g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck')">
       </span>
     </span>
-<!--    <span v-show="!layerstree.hidden"-->
-<!--      @click.stop="toggle(false)"-->
-<!--      :class="[layerstree.checked  ? g3wtemplate.getFontClass('check'): g3wtemplate.getFontClass('uncheck'),  parentFolder ? 'child' : 'root' ]"-->
-<!--      class="checkbox-layer"></span>-->
   </template>
 
   <div v-show="!layerstree.hidden || isFolder"
@@ -57,11 +55,12 @@
         <span v-if="layerstree.selection.active || layerstree.filter.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
       </div>
   </div>
-  <layerlegend v-if="layerstree.legend" :layer="layerstree"></layerlegend>
-  <ul v-if="isFolder" v-show="layerstree.expanded">
+  <layerlegend v-if="legendplace ===  'toc' && layerstree.legend" :layer="layerstree"></layerlegend>
+  <ul v-if="isFolder" :class="{root: root}" class="tree-content-items" v-show="layerstree.expanded">
     <tristate-tree
       :root="false"
       :legendConfig="legend"
+      :legendplace="legendplace"
       :highlightlayers="highlightlayers"
       :parentFolder="isFolder"
       :layerstree="_layerstree"

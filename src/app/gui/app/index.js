@@ -137,7 +137,10 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('map'),
               mobile: true,
               config: {
-                legend: appLayoutConfig.legend
+                legend: {
+                  config: appLayoutConfig.legend,
+                  place: 'toc' // configuration value where to show legend (tab or toc)
+                },
               }
             }),
           ]

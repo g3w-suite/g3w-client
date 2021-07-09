@@ -2,7 +2,7 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 const ApplicationService = require('core/applicationservice');
-const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
+const {inherit, base, downloadFile} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
@@ -15,7 +15,7 @@ const ChromeComponent = VueColor.Chrome;
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
 // Temporary Constant to hide legend tab
-const SHOWLEGENDTAB = false;
+const SHOWLEGENDTAB = true;
 //OFFSETMENU
 const OFFSETMENU = {
   top: 50,
@@ -25,9 +25,10 @@ const OFFSETMENU = {
 const vueComponentOptions = {
   ...compiledTemplate,
   data() {
+    const legend = this.$options.legend;
     return {
       state: null,
-      legend: this.$options.legend,
+      legend,
       showlegend: false,
       currentBaseLayer: null,
       activeTab: null,
@@ -68,7 +69,7 @@ const vueComponentOptions = {
     }
   },
   directives: {
-    //create a vue directive fro click outside contextmenu
+    //create a vue directive from click outside contextmenu
     'click-outside-layer-menu': {
       bind(el, binding, vnode) {
         this.event = function (event) {
@@ -556,7 +557,7 @@ const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-
 // tree component
 Vue.component('tristate-tree', {
   ...compiledTristateTreeTemplate,
-  props : ['layerstree', 'storeid', 'legend', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
+  props : ['layerstree', 'storeid', 'legend', 'legendplace', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
   components: {
     'layerlegend': LayerLegend
   },
@@ -697,7 +698,8 @@ Vue.component('layerslegend',{
       }
     },
     created() {
-      this.$emit('showlegend', !!this.visiblelayers.length);
+      const show = !!this.visiblelayers.length && SHOWLEGENDTAB;
+      this.$emit('showlegend', show);
     }
 });
 
@@ -769,7 +771,7 @@ Vue.component('layerslegend-items',{
         const layer = layers[i];
         const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
-        const url = `${this.getLegendUrl(layer, this.legend)}`;
+        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
@@ -863,18 +865,16 @@ function CatalogComponent(options={}) {
   let listenToMapVisibility = (map) => {
     const mapService = map.getService();
     this.state.visible = !mapService.state.hidden;
-    mapService.onafter('setHidden',(hidden) => {
+    mapService.onafter('setHidden', hidden => {
       this.state.visible = !mapService.state.hidden;
       this.state.expanded = true;
     })
   };
   if (this.mapComponentId) {
     const map = GUI.getComponent(this.mapComponentId);
-    !map && ComponentsRegistry.on('componentregistered', (component) => {
-        if (component.getId() === this.mapComponentId) {
-          listenToMapVisibility(component);
-        }
-      }) || listenToMapVisibility(map);
+    !map && ComponentsRegistry.on('componentregistered', component =>
+      (component.getId() === this.mapComponentId) && listenToMapVisibility(component))
+    || listenToMapVisibility(map);
   }
 }
 

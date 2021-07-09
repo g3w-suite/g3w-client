@@ -27,15 +27,15 @@
     position: relative;
     border-radius: 3px;
     padding: 10px;
-    margin: 5px;
+    margin: 5px 2px 5px 2px;
     white-space: pre-line;
     background-color: rgba(255, 255, 255, 0.1);
   }
   .help_icon{
     text-align: center;
     font-size: 0.7em;
-    margin-top: -5px;
-    margin-left: -5px;
+    margin-top: -4px;
+    margin-left: -4px;
     background-color: #222d32;
     font-weight: bold;
     color: #ffffff;

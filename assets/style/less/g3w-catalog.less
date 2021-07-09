@@ -108,7 +108,7 @@ Licensed under MIT
 }
 
 .catalog ul {
-  padding-left: 1em;
+  //padding-left: 1em;
   line-height: 1.5em;
   list-style-type: none;
 }
@@ -126,6 +126,7 @@ Licensed under MIT
     &.disabled {
       color: darken(@color-white, 40%);
     }
+    padding-left: 2px;
     cursor: pointer;
     width: 80%;
     display: inline-flex;
@@ -161,11 +162,12 @@ Licensed under MIT
 }
 
 .catalog .root {
-  padding: 4px 4px 1px 0.8em;
+  padding: 2px 1px 1px 5px;
 }
 
 .catalog .root.fa-chevron-right {
-  padding-right: 8px;
+  padding-right: 5px;
+  padding-left: 0;
 }
 .catalog .root-categories.fa-chevron-right {
   padding-right: 7px;
@@ -190,6 +192,29 @@ Licensed under MIT
 
   .tree-root {
     padding-left: 0;
+
+    li > .root {
+      padding-left: 5px;
+    }
+    li.tree-item {
+      ul.tree-content-items.root {
+        padding-left: 15px !important;
+      }
+      ul.tree-content-items {
+        padding-left: 20px;
+        padding-top: 2px;
+      }
+    }
+    span.root.collapse-expande-collapse-icon {
+      width: 17px;
+    }
+    span.collapse-expande-collapse-icon {
+      width: 10px;
+    }
+  }
+
+  span.legend-collapse-expande-collapse-icon {
+    font-size: 1.2em;
   }
 
   .child-categories {
@@ -197,11 +222,11 @@ Licensed under MIT
   }
 
   .child {
-    padding: 5px 3px 1px 30px;
+    //padding: 5px 3px 1px 30px;
   }
 
   .layer-legend {
-    padding: 3px 0 0 60px;
+    padding: 3px 0 0 15px;
     background-color: @sidebar-dark-bg;
   }
 
@@ -343,7 +368,7 @@ Licensed under MIT
     font-size: 0.7em;
     margin-top: -5px;
     margin-left: -5px;
-    background-color: #222d32;
+    background-color: @sidebar-dark-bg;
     font-weight: bold;
     color: #ffffff;
     position:absolute;

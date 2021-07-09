@@ -8,13 +8,13 @@
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: activeTab === 'baselayers' }" >
         <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
       </li>
-      <li v-if="showlegend" role="presentation" :class="{ active: activeTab === 'legend' }">
-        <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'">{{showlegend}}</a>
+      <li v-if="legend.place ===  'tab' && showlegend" role="presentation" :class="{ active: activeTab === 'legend' }">
+        <a href="#legend" aria-controls="legend" role="tab" data-toggle="tab" data-i18n="legend" v-t="'legend'"></a>
       </li>
     </ul>
     <div class="tab-content catalog-tab-content">
       <bar-loader :loading="loading"></bar-loader>
-      <div role="tabpanel" class="tab-pane"  :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
+      <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
         <ul class="tree-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
@@ -23,13 +23,14 @@
             class="item"
             :parentFolder="false"
             :root="true"
+            :legendplace="legend.place"
             :parent_mutually_exclusive="false"
             v-for="layerstree in _layerstree.tree"
             :storeid="_layerstree.storeid"
             :key="layerstree.id">
           </tristate-tree>
         </ul>
-        <ul>
+        <ul v-if="state.externallayers.length">
           <tristate-tree :externallayers="state.externallayers"  :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
