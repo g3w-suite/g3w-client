@@ -219,14 +219,15 @@ const vueComponentOptions = {
         });
         this.$watch(()=> this.layersFeaturesBoxes[boxid].collapsed, collapsed => {
           const index = layer.features.findIndex(_feature => feature.id === _feature.id);
+          const container = this.getContainerFromFeatureLayer({
+            layer,
+            index
+          });
           this.$options.queryResultsService.openCloseFeatureResult({
             open:!collapsed,
             layer,
             feature,
-            container: this.getContainerFromFeatureLayer({
-              layer,
-              index
-            })
+            container
           })
         });
         this.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;

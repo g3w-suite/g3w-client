@@ -72,7 +72,8 @@ function QueryResultsService() {
   this._addFeaturesLayerResultInteraction = {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
-    mapcontrol: null // add current toggled map control if toggled
+    mapcontrol: null, // add current toggled map control if toggled
+    toggleeventhandler: null
   };
   this.setters = {
     /**
@@ -166,7 +167,6 @@ proto.removeFeatureLayerFromResult = function(layer, feature){
     external,
     features: [feature]
   })
-
 };
 
 /**
@@ -189,12 +189,13 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     // loop nad filter the features that we had to remove)
     findLayer.features = findLayer.features.filter(feature => {
       const indexFindFeature = features_ids.indexOf(!external ? feature.attributes.g3w_fid: feature.id);
-      // checi if neeed to filter or not
+      // check if need to filter or not
       const filtered = indexFindFeature === -1;
       if (!filtered){
         removeFeatureIndexes.push(indexFindFeature);
         const featureRemoved = features[indexFindFeature];
-        delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)];
+        this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
+        setTimeout(()=> delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)]);
       } else this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
       return filtered;
     });
@@ -209,7 +210,7 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     // in case no more features on layer remove interaction pickoordinate to get result from map
     this.checkIfLayerHasNoFeatures(findLayer);
   }
-  // higlilight new feature
+  // hightlight new feature
   this.state.layers.length === 1 && this.highlightFeaturesPermanently(this.state.layers[0]);
 };
 
@@ -218,12 +219,11 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
  */
 proto.checkIfLayerHasNoFeatures = function(layer){
   if (layer.features.length === 0) {
-    this.removeAddFeaturesLayerResultInteraction();
-    this.clearHighlightGeometry(layer);
     // used to do all vue reactive thing before update layers
-    setTimeout(()=> {
+    setTimeout(() => {
       this.state.layers = this.state.layers.filter(_layer => _layer.id !== layer.id);
       this.clearHighlightGeometry(layer);
+      this.removeAddFeaturesLayerResultInteraction(true);
     })
   }
 };
@@ -360,7 +360,7 @@ proto.clear = function() {
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
-  this.removeAddFeaturesLayerResultInteraction();
+  this.removeAddFeaturesLayerResultInteraction(true);
   this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
@@ -409,14 +409,20 @@ proto.isOneLayerResult = function(){
   return this.state.layers.length === 1;
 };
 
-proto.removeAddFeaturesLayerResultInteraction = function(){
-  if (this._addFeaturesLayerResultInteraction.interaction) {
+/**
+ *
+ * @param toggle boolean If true toggle true the mapcontrol
+ */
+proto.removeAddFeaturesLayerResultInteraction = function(toggle=false){
+  if (this._addFeaturesLayerResultInteraction.interaction)
     this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
-    this._addFeaturesLayerResultInteraction.interaction = null;
-  }
+  this._addFeaturesLayerResultInteraction.interaction = null;
   this._addFeaturesLayerResultInteraction.id = null;
-  this._addFeaturesLayerResultInteraction.mapcontrol && this._addFeaturesLayerResultInteraction.mapcontrol.toggle(true);
+  // check if map control query map is register and if toggled
+  toggle && this._addFeaturesLayerResultInteraction.mapcontrol && this._addFeaturesLayerResultInteraction.mapcontrol.toggle(true);
   this._addFeaturesLayerResultInteraction.mapcontrol = null;
+  this._addFeaturesLayerResultInteraction.toggleeventhandler && this.mapService.off('mapcontrol:toggled', this._addFeaturesLayerResultInteraction.toggleeventhandler);
+  this._addFeaturesLayerResultInteraction.toggleeventhandler = null;
 };
 
 /**
@@ -430,7 +436,8 @@ proto.addLayerFeaturesToResultsAction = function(layer){
    */
   if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id){
     const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
-    layer.addfeaturesresults.active = false;
+    if (layer) layer.addfeaturesresults.active = false;
+    //remove previous add result interaction
     this.removeAddFeaturesLayerResultInteraction();
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
@@ -466,13 +473,14 @@ proto.addLayerFeaturesToResultsAction = function(layer){
         }, {add:true});
       }
     });
-    this.mapService.once('mapcontrol:toggled', evt =>{
+    const eventHandler = evt =>{
       if (evt.target.isToggled() && evt.target.isClickMap()){
         layer.addfeaturesresults.active = false;
-        this.removeAddFeaturesLayerResultInteraction()
       }
-    });
-  } else this.removeAddFeaturesLayerResultInteraction();
+    };
+    this._addFeaturesLayerResultInteraction.toggleeventhandler = eventHandler;
+    this.mapService.once('mapcontrol:toggled', eventHandler);
+  } else this.removeAddFeaturesLayerResultInteraction(true);
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {

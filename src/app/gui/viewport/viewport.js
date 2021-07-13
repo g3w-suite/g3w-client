@@ -361,6 +361,7 @@ const ViewportService = function() {
       secondaryViewComponent.clearContents()
         .then(() => {
           this.state.secondaryVisible = false;
+          this.state.secondaryPerc = 0;
           this._layout(event);
           Vue.nextTick(() => {
             d.resolve();
@@ -587,7 +588,7 @@ const ViewportComponent = Vue.extend({
     pluginsNotify
   },
   ...compiledTemplate,
-  data: function() {
+  data() {
     return {
       state: viewportService.state,
       media: {
@@ -596,6 +597,9 @@ const ViewportComponent = Vue.extend({
     }
   },
   computed: {
+    showresize(){
+      return this.state.resized.start && this.state.secondaryPerc < 100 && this.state.secondaryPerc > 0
+    },
     hooks() {
       return this.usermessage.hooks;
     },
