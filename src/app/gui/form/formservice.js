@@ -7,7 +7,7 @@ function FormService() {
   this.eventBus = new Vue();
   this.layer;
   this.setters = {
-    setInitForm(options) {
+    setInitForm(options={}) {
       this._setInitForm(options);
     },
     setFormStructure(formStructure) {
@@ -17,7 +17,7 @@ function FormService() {
     setFormFields(fields) {
       this.state.fields = fields;
     },
-    setupFields: function () {
+    setupFields() {
       this._setupFields();
     },
     // setter insert data into form
@@ -41,7 +41,7 @@ function FormService() {
     this._setInitForm(options);
   };
   // init form options paased for example by editor
-  this._setInitForm = function (options = {}) {
+  this._setInitForm = function(options = {}) {
     this.layer = options.layer;
     const fields = options.fields;
     this.title = options.title || 'Form';
@@ -218,10 +218,7 @@ proto.getFields = function() {
 };
 
 proto._getField = function(fieldName){
-  const field = this.state.fields.find((field) => {
-    return field.name === fieldName
-  });
-  return field;
+  return this.state.fields.find(field => field.name === fieldName);
 };
 
 proto.getEventBus = function() {

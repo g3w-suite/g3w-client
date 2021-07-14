@@ -9,10 +9,8 @@ const ResetControl = function(options){
       tipLabel: "Pan",
       label: "\ue901"
     };
-  
   options = utils.merge(options,_options);
   InteractionControl.call(this,options);
-
 };
 
 ol.inherits(ResetControl, InteractionControl);

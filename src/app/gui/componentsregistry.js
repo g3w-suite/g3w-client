@@ -1,6 +1,5 @@
 const G3WObject = require('core/g3wobject');
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 
 //class Componet Registry (singleton)
 // store all components added
@@ -25,9 +24,7 @@ function ComponentsRegistry() {
   this.unregisterComponent = function(id) {
     const component = this.components[id];
     if (component) {
-      if (typeof component.destroy === 'function') {
-        component.destroy();
-      }
+      if (typeof component.destroy === 'function') component.destroy();
       this.components[id] = null;
     }
     return component;

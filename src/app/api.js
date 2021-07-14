@@ -1,7 +1,10 @@
+import G3W_CONSTANT from './constant';
 // api file interface for external plugin
 import ApplicationState from 'core/applicationstate';
 const g3w = g3w || {};
-
+//set G3W-CLIENT application constant
+g3w.constant = G3W_CONSTANT;
+//set core api method and objects
 g3w.core = {
   G3WObject: require('core/g3wobject'),
   utils: require('core/utils/utils'),

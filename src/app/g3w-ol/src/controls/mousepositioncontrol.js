@@ -11,7 +11,6 @@ const proto = MousePositionControl.prototype;
 
 proto.offline = true;
 
-
 proto.setEnable = function(bool) {
   bool ? $(this.element) : $(this.element)
 };

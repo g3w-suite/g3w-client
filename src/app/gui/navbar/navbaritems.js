@@ -23,7 +23,7 @@ const compiledTemplateLeft = Vue.compile(require('./navbarleftitems.html'));
 
 const NavbarLeftItemsComponent = Vue.extend({
   ...compiledTemplateLeft,
-  data: function() {
+  data() {
     return {
       items: navbaritemsservice.state.items.left
     }
@@ -34,7 +34,7 @@ const compiledTemplateRight = Vue.compile(require('./navbarrightitems.html'));
 
 const NavbarRightItemsComponent = Vue.extend({
   ...compiledTemplateRight,
-  data: function() {
+  data() {
     return {
       items: navbaritemsservice.state.items.right
     }

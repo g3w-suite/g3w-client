@@ -930,9 +930,8 @@ const geoutils = {
 
   crsToCrsObject(crs){
     if (crs === null || crs === undefined) return crs;
-    if  (toRawType(crs) === 'Object' && crs.epsg) {
-      crs.epsg = geoutils.normalizeEpsg(crs.epsg);
-    } else
+    if  (toRawType(crs) === 'Object' && crs.epsg) crs.epsg = geoutils.normalizeEpsg(crs.epsg);
+    else
       crs = {
         epsg: geoutils.normalizeEpsg(crs),
         proj4: "",

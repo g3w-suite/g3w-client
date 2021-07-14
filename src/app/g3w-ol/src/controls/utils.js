@@ -1,17 +1,15 @@
 const TOPOFFSET = 35;
 module.exports = {
-  layout: function({map, position, element}) {},
-  changeLayoutBottomControl: function({map, position, element, isMobile=false}) {
+  layout({map, position, element}) {},
+  changeLayoutBottomControl({map, position, element, isMobile=false}) {
     const viewPort = map.getViewport();
     const positionCode = (position['top'] ? 't' : 'b') + (position['left'] ? 'l' : 'r');
     const previusControls = $(viewPort).find('.ol-control-' + positionCode + ':visible');
-    if(previusControls.length) {
+    if (previusControls.length) {
       let previusControl;
       previusControls.each((index, elem) => {
-        if(elem != element[0])
-          previusControl = $(elem);
-        else
-          return false
+        if(elem != element[0]) previusControl = $(elem);
+        else return false
       });
       if (previusControl && positionCode==='br') {
         if (!isMobile) {

@@ -1,7 +1,4 @@
-const resolve = require('core/utils/utils').resolve;
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
-const t = require('core/i18n/i18n.service').t;
+const {base, inherit, resolve}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Flow = require('./flow');
 const WorkflowsStack = require('./workflowsstack');
@@ -119,16 +116,11 @@ proto.clearMessages = function() {
 
 proto.getLastStep = function() {
   const length = this._steps.length;
-  if (length) {
-    return this._steps[length]
-  }
-  return null;
+  return length ? this._steps[length] : null;
 };
 
 proto.getRunningStep = function() {
-  return this._steps.find((step) => {
-    return step.isRunning()
-  });
+  return this._steps.find(step => step.isRunning());
 };
 
 //stop all workflow children
@@ -186,9 +178,7 @@ proto.start = function(options={}) {
       }, 500) || d.resolve(outputs);
     })
     .fail(error => {
-      if (showUserMessage){
-       this.clearUserMessagesSteps();
-      }
+      showUserMessage && this.clearUserMessagesSteps();
       d.reject(error);
     });
   this.emit('start');
@@ -207,17 +197,10 @@ proto.stop = function() {
       this.removeChild();
       WorkflowsStack.removeAt(this.getStackIndex());
       // call stop flow
-      this._flow.stop() // ritorna una promessa
-        .then(() => {
-          d.resolve()
-        })
-        .fail((err) => {
-          // mi serve per capire cosa fare
-          d.reject(err)
-        })
-        .always(() => {
-          this.clearMessages();
-        })
+      this._flow.stop()
+        .then(() => d.resolve())
+        .fail(err => d.reject(err))
+        .always(() => this.clearMessages())
   });
   this.emit('stop');
   return d.promise();

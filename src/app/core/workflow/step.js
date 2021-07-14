@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function Step(options={}) {
@@ -63,16 +62,12 @@ proto.stop = function() {
 
 // revert task
 proto.revert = function() {
-  if (this._task && this._task.revert) {
-   this._task.revert();
-  }
+  if (this._task && this._task.revert) this._task.revert();
 };
 
 //panic
 proto.panic = function() {
-  if (this._task && this._task.panic){
-    this._task.panic();
-  }
+  if (this._task && this._task.panic) this._task.panic();
 };
 
 proto.getId = function() {

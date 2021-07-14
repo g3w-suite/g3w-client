@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
@@ -52,7 +53,7 @@ const InternalComponent = Vue.extend({
       this.loading = true;
       this.relation = relation;
       const relationLayerId = relation.referencingLayer;
-      const fid = this.feature.attributes['g3w_fid'];
+      const fid = this.feature.attributes[G3W_FID];
       this.$options.service.getRelations({
         layer: this.$options.layer,
         relation,

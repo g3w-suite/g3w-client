@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
@@ -185,10 +186,10 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     // is array of idexes od features that we has to remove from state.layer because is already loaded
     const removeFeatureIndexes = [];
     // get id of the features
-    const features_ids = features.map(feature => !external ? feature.attributes.g3w_fid: feature.id);
+    const features_ids = features.map(feature => !external ? feature.attributes[G3W_FID]: feature.id);
     // loop nad filter the features that we had to remove)
     findLayer.features = findLayer.features.filter(feature => {
-      const indexFindFeature = features_ids.indexOf(!external ? feature.attributes.g3w_fid: feature.id);
+      const indexFindFeature = features_ids.indexOf(!external ? feature.attributes[G3W_FID]: feature.id);
       // check if need to filter or not
       const filtered = indexFindFeature === -1;
       if (!filtered){
@@ -717,7 +718,7 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms' || sourceType === undefined
+        show: featureAttributesName !== G3W_FID && sourceType === 'wms' || sourceType === undefined
       }
     })
   }
@@ -833,7 +834,7 @@ proto._addComponent = function(component) {
 proto._printSingleAtlas = function({atlas={}, features=[]}={}){
   let {name:template, atlas: {field_name}} = atlas;
   field_name = field_name || '$id';
-  const values = features.map(feature => feature.attributes[field_name === '$id' ?  'g3w_fid': field_name]);
+  const values = features.map(feature => feature.attributes[field_name === '$id' ?  G3W_FID: field_name]);
   const download_caller_id = ApplicationService.setDownload(true);
   return this.printService.printAtlas({
     field: field_name,
@@ -871,7 +872,7 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
     const relations = this._relations[layer.id];
     const relationData = {
       relations,
-      fid: feature.attributes['g3w_fid'],
+      fid: feature.attributes[G3W_FID],
       height: 400
     };
     this.emit('show-chart', ids, container, relationData)
@@ -927,7 +928,7 @@ proto.printAtlas = function(layer, feature){
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
   const data = {};
   features = features ?  Array.isArray(features) ? features : [features]: features;
-  data.fids = features.map(feature => feature.attributes['g3w_fid']).join(',');
+  data.fids = features.map(feature => feature.attributes[G3W_FID]).join(',');
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   let promise = Promise.resolve();
   const download_caller_id = ApplicationService.setDownload(true);
@@ -958,7 +959,7 @@ proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
 };
 
 proto.downloadGpx = function({id:layerId}={}, feature){
-  const fid = feature ? feature.attributes['g3w_fid'] : null;
+  const fid = feature ? feature.attributes[G3W_FID] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   layer.getGpx({fid}).catch((err) => {
     GUI.notify.error(t("info.server_error"));
@@ -969,7 +970,7 @@ proto.downloadGpx = function({id:layerId}={}, feature){
 };
 
 proto.downloadXls = function({id:layerId}={}, feature){
-  const fid = feature ? feature.attributes['g3w_fid'] : null;
+  const fid = feature ? feature.attributes[G3W_FID] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   layer.getXls({fid}).catch(err => {
     GUI.notify.error(t("info.server_error"));
@@ -1028,7 +1029,7 @@ proto.selectionFeaturesLayer = function(layer) {
  * @private
  */
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
-  const fid = feature ? feature.attributes['g3w_fid']: null;
+  const fid = feature ? feature.attributes[G3W_FID]: null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (!hasAlreadySelectioned) {
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
@@ -1053,7 +1054,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
 proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   if (feature) {
-    const fid = feature ? feature.attributes['g3w_fid']: null;
+    const fid = feature ? feature.attributes[G3W_FID]: null;
     action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
   }
 };

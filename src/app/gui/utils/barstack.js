@@ -1,5 +1,4 @@
-const utils = require('core/utils/utils');
-const inherit = require('core/utils/utils').inherit;
+const {resolve, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Component = require('gui/vue/component');
 const Panel = require('gui/panel');
@@ -36,9 +35,7 @@ proto.pop = function() {
       const content = this.state.contentsdata.pop();
       d.resolve(content)
     })
-  } else {
-    d.resolve();
-  }
+  } else d.resolve();
   return d.promise();
 };
 
@@ -55,9 +52,7 @@ proto.clear = function() {
       d.resolve();
     });
   }
-  else {
-    d.resolve();
-  }
+  else d.resolve();
   return d.promise();
 };
 
@@ -77,9 +72,7 @@ proto.getPreviousContentData = function() {
 proto._mount = function(content, options) {
   // check the type of content:
   // JQuery type
-  if (content instanceof jQuery) {
-    return this._setJqueryContent(content);
-  }
+  if (content instanceof jQuery) return this._setJqueryContent(content);
   //String
   else if (_.isString(content)) {
     let jqueryEl = $(content);
@@ -95,9 +88,7 @@ proto._mount = function(content, options) {
     return this._setVueContent(content,options)
   }
   // DOM
-  else {
-    return this._setDOMContent(content);
-  }
+  else return this._setDOMContent(content);
 };
 
 // JQuery append jQuery comonent
@@ -107,7 +98,7 @@ proto._setJqueryContent = function(content, options) {
     content: content,
     options: options
   });
-  return utils.resolve();
+  return resolve();
 };
 
 //Append DOM element
@@ -117,7 +108,7 @@ proto._setDOMContent = function(content, options) {
     content: content,
     options: options
   });
-  return utils.resolve();
+  return resolve();
 };
 
 // Mount component to parent
@@ -151,9 +142,7 @@ proto._checkDuplicateVueContent = function(content) {
   if (!_.isNull(idxToRemove)) {
     const data = this.state.contentsdata[idxToRemove];
     data.content.unmount()
-      .then(() => {
-        this.state.contentsdata.splice(idxToRemove,1);
-      });
+      .then(() => this.state.contentsdata.splice(idxToRemove,1));
   }
 };
 
@@ -162,9 +151,7 @@ proto._unmount = function(content) {
   const d = $.Deferred();
   if (content instanceof Component || content instanceof Panel) {
     content.unmount()
-    .then(() => {
-      d.resolve();
-    });
+    .then(() => d.resolve());
   }
   else {
     $(this._parent).empty();
@@ -174,9 +161,7 @@ proto._unmount = function(content) {
 };
 
 proto.forEach = function(cbk) {
-  this.state.contentsdata.forEach((data) => {
-    cbk(data.content);
-  })
+  this.state.contentsdata.forEach(data => cbk(data.content));
 };
 
 // Get lenght / numbero of element stored in stack

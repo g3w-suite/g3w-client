@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 const {base, inherit, toRawType} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -126,7 +127,7 @@ proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=tr
     if (index !== -1) {
       const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
       const properties = feature.getProperties();
-      feature.set('g3w_fid', g3w_fid);
+      feature.set(G3W_FID, g3w_fid);
       fields.forEach(field=>{
         if (properties[field.name] === undefined) {
           properties[field.label] !== undefined && feature.set(field.name, properties[field.label])

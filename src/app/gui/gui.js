@@ -8,7 +8,7 @@ const ComponentsRegistry = require('gui/componentsregistry');
 // app shold call GUI.ready() when GUI is ready
 function GUI() {
   this.setters = {
-    setContent: function(options={}) {
+    setContent(options={}) {
       this.emit('opencontent', true);
       this._setContent(options)
     }
@@ -57,23 +57,19 @@ function GUI() {
   this.guiResized = function() {
     this.emit('guiresized');
   };
-
   //ready GUI
   this.isReady = function(){
     return new Promise(resolve =>{
       this.isready ? resolve() : this.once('ready', resolve);
     })
   };
-
   /* spinner */
   this.showSpinner = function(options){};
   this.hideSpinner = function(id){};
   /* end spinner */
-
   this.notify = noop;
   this.dialog = noop;
   this.isMobile = noop;
-
   //useful to registere setters
   base(this);
 }

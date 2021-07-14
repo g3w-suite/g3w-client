@@ -157,14 +157,11 @@ const ViewportService = function() {
     Object.entries(components).forEach(([viewName, component]) => {
       // check if component are map or content
       if (Object.keys(this._components).indexOf(viewName) > -1) {
-        component.mount('#g3w-view-'+viewName, true)
+        component.mount(`#g3w-view-${viewName}`, true)
           .then(() => {
             this._components[viewName] = component;
             // check if view name is map
-            if (viewName === 'map') {
-              // set de fefault component to map
-              this._defaultMapComponent = component;
-            }
+            if (viewName === 'map') this._defaultMapComponent = component; // set de default component to map
           })
           .fail(err => console.log(err));
       }
@@ -183,9 +180,7 @@ const ViewportService = function() {
     if (!this._contextualMapComponent.ismount()) {
       const contextualMapComponent = this._contextualMapComponent;
       contextualMapComponent.mount('#g3w-view-map', true)
-        .then(() => {
-          this._components['map'] = contextualMapComponent;
-        });
+        .then(() => this._components['map'] = contextualMapComponent);
     } else {
       this._components['map'] = this._contextualMapComponent;
       this._toggleMapComponentVisibility(this._contextualMapComponent, true);
@@ -204,12 +199,8 @@ const ViewportService = function() {
   };
 
   this.setContextualMapComponent = function(mapComponent) {
-    if (mapComponent === this._defaultMapComponent) {
-      return;
-    }
-    if (this._contextualMapComponent) {
-      this._contextualMapComponent.unmount();
-    }
+    if (mapComponent === this._defaultMapComponent) return;
+    if (this._contextualMapComponent) this._contextualMapComponent.unmount();
     this._contextualMapComponent = mapComponent;
   };
 
@@ -363,16 +354,12 @@ const ViewportService = function() {
           this.state.secondaryVisible = false;
           this.state.secondaryPerc = 0;
           this._layout(event);
-          Vue.nextTick(() => {
-            d.resolve();
-          })
+          Vue.nextTick(() => d.resolve());
         });
     } else {
       this.state.secondaryVisible = false;
       this._layout(event);
-      Vue.nextTick(() => {
-        d.resolve();
-      })
+      Vue.nextTick(() => d.resolve());
     }
     return d.promise();
   };
@@ -693,7 +680,7 @@ const ViewportComponent = Vue.extend({
     await this.$nextTick();
     const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
     this.media.matches = mediaQueryEventMobile.matches;
-    mediaQueryEventMobile.addListener((event) => {
+    mediaQueryEventMobile.addListener(event => {
       if (event.type === 'change') this.media.matches = event.currentTarget.matches;
     });
     handleResizeViewport();

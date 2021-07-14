@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Relation = require('./relation');
 
@@ -8,7 +7,7 @@ function Relations(options={}) {
   const {relations} = options;
   //store relations
   this._relations = {};
-  this._length = relations ? relations.length: 0;
+  this._length = relations ? relations.length : 0;
   // to build relations between layers
   this._relationsInfo = {
     children: {}, // array child (unique ids)
@@ -35,12 +34,8 @@ proto._createRelationsInfo = function() {
     father = relation.getFather();
     child = relation.getChild();
     this._relationsInfo.father_child[father+child] = relationKey;
-    if (!this._relationsInfo.fathers[father]) {
-      this._relationsInfo.fathers[father] = [];
-    }
-    if (!this._relationsInfo.children[child]) {
-      this._relationsInfo.children[child] = [];
-    }
+    if (!this._relationsInfo.fathers[father]) this._relationsInfo.fathers[father] = [];
+    if (!this._relationsInfo.children[child]) this._relationsInfo.children[child] = [];
     this._relationsInfo.fathers[father].push(child);
     this._relationsInfo.children[child].push(father);
   });
@@ -88,7 +83,7 @@ proto.getArray = function() {
 };
 
 proto.setRelations = function(relations) {
-  this._relations = _.isArray(relations) ? relations : [];
+  this._relations = Array.isArray(relations) ? relations : [];
 };
 
 proto.getRelationById = function(id) {
@@ -128,17 +123,13 @@ proto.hasFathers = function(fatherId) {
 
 // get children based on father id
 proto.getChildren = function(fatherId) {
-  if (!this.isFather(fatherId)) {
-    return null;
-  }
+  if (!this.isFather(fatherId)) return null;
   return this._relationsInfo.fathers[fatherId];
 };
 
 // get fathers based on childId
 proto.getFathers = function(childId) {
-  if (!this.isChild(childId)) {
-    return null;
-  }
+  if (!this.isChild(childId)) return null;
   return this._relationsInfo.children[childId];
 };
 

@@ -1,10 +1,8 @@
 // Store all workflow activated
-
 const WorkFlowsStack = function() {
   this._workflows = [];
   this.push = function(workflow) {
-    if (this._workflows.indexOf(workflow) === -1)
-      return this._workflows.push(workflow) - 1;
+    if (this._workflows.indexOf(workflow) === -1) return this._workflows.push(workflow) - 1;
     return this._workflows.indexOf(workflow);
   };
 
@@ -23,9 +21,7 @@ const WorkFlowsStack = function() {
 
   this._getCurrentIndex = function() {
     const currentWorkflow = this.getCurrent();
-    return this._workflows.findIndex((workfow) => {
-      return workfow === currentWorkflow;
-    })
+    return this._workflows.findIndex(workfow => workfow === currentWorkflow)
   };
 
   this.getCurrent = function() {
@@ -34,7 +30,7 @@ const WorkFlowsStack = function() {
 
   this.getLast = function() {
     const length = this._workflows.length;
-    return  length ? this._workflows[length -1] : null;
+    return length ? this._workflows[length -1] : null;
   };
 
   this.getFirst = function() {

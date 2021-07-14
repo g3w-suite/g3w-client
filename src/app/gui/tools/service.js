@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const ProjectRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 
@@ -40,12 +39,10 @@ function Service(options={}){
   for (let toolName in tools) {
     const groupName = toolName.toUpperCase();
     this.addToolGroup(0, groupName);
-    const _tools = tools[toolName].map((tool) => {
-      return {
-        name: tool.name,
-        action: ToolsService.ACTIONS[toolName].bind(null, tool)
-      }
-    });
+    const _tools = tools[toolName].map(tool => ({
+      name: tool.name,
+      action: ToolsService.ACTIONS[toolName].bind(null, tool)
+    }));
     this.addTools(_tools, {position: 0, title: groupName})
   }
 }
@@ -66,9 +63,7 @@ proto._addTool = function(tool, {position : order, title: name}) {
 };
 
 proto._addTools = function(tools, groupName) {
-  tools.forEach((tool) => {
-    this.addTool(tool, groupName)
-  });
+  tools.forEach(tool => this.addTool(tool, groupName));
 };
 
 proto.setLoading = function(bool=false) {
@@ -92,15 +87,11 @@ proto.getState = function() {
 };
 
 proto._removeToolGroup = function(name) {
-  this.state.toolsGroups = this.state.toolsGroups.filter(group =>{
-    return group.name !== name;
-  });
+  this.state.toolsGroups = this.state.toolsGroups.filter(group => group.name !== name);
 };
 
 proto._addToolGroup = function(order, name) {
-  let group = this.state.toolsGroups.find((_group) => {
-    return _group.name === name
-  });
+  let group = this.state.toolsGroups.find(_group => _group.name === name);
   if (!group) {
     group = {
       name,

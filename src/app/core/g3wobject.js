@@ -1,26 +1,16 @@
-const inherit = require('core/utils/utils').inherit;
-const noop = require('core/utils/utils').noop;
-const debounce = require('core/utils/utils').debounce;
-const throttle = require('core/utils/utils').throttle;
+const {inherit, noop, debounce, throttle} = require('core/utils/utils');
 
 /**
  * Base object to handle a setter and its listeners.
  * @constructor
  */
-
 const G3WObject = function() {
   //check if setters property is set. Register the chain of events
-  if (this.setters) {
-    this._setupListenersChain(this.setters)
-  }
+  this.setters && this._setupListenersChain(this.setters);
   // check debounces
-  if (this.debounces) {
-    this._setupDebounces(this.debounces)
-  }
+  this.debounces && this._setupDebounces(this.debounces);
   //check throttles
-  if (this.throttles) {
-    this._setupThrottles(this.throttles)
-  }
+  this.throttles && this._setupThrottles(this.throttles);
 };
 
 inherit(G3WObject, EventEmitter);
@@ -94,9 +84,7 @@ proto._onsetter = function(when, setter, listener, async, priority=0, once=false
     once
   });
   // reader array based on priority
-  settersListeners[setter] = _.sortBy(settersListeneres, function(setterListener) {
-    return setterListener.priority;
-  });
+  settersListeners[setter] = _.sortBy(settersListeneres, setterListener => setterListener.priority);
   // return key
   return listenerKey;
 };
@@ -148,13 +136,11 @@ proto._setupListenersChain = function(setters) {
       const beforeListeners = this.settersListeners['before'][setter];
       // listener counter
       counter = 0;
-      const next = (bool) => {
+      const next = bool => {
         // initilize cont to true (continue)
         let cont = true;
         // check if bool is Boolean
-        if (_.isBoolean(bool)) {
-          cont = bool;
-        }
+        if (_.isBoolean(bool)) cont = bool;
         // check if count is false or we are arrived to the end of onbefore subscriber
         if (cont === false) {
             // found an error so we can abort

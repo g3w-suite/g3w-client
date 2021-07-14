@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -12,22 +11,15 @@ function CatalogService() {
     layerstrees: [],
     layersgroups: []
   };
-
   this.setters = {};
-
   base(this);
-
   const layersStores = CatalogLayersStoresRegistry.getLayersStores();
 
-  layersStores.forEach((layersStore) => {
-    this.addLayersStoreToLayersTrees(layersStore);
-  });
+  layersStores.forEach(layersStore => this.addLayersStoreToLayersTrees(layersStore));
 
-  CatalogLayersStoresRegistry.onafter('addLayersStore', (layersStore) => {
-    this.addLayersStoreToLayersTrees(layersStore);
-  });
+  CatalogLayersStoresRegistry.onafter('addLayersStore', layersStore => this.addLayersStoreToLayersTrees(layersStore));
 
-  CatalogLayersStoresRegistry.onafter('removeLayersStore', (layersStore) => {
+  CatalogLayersStoresRegistry.onafter('removeLayersStore', layersStore => {
     this.state.layerstrees.forEach((layersTree, idx) => {
       if (layersTree.storeid === layersStore.getId()) {
         this.state.layerstrees.splice(idx, 1);
@@ -54,9 +46,7 @@ proto.addExternalLayer = function(layer) {
 
 proto.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
   const nodes = [];
-  layers.forEach((layer) => {
-    nodes.push(layer)
-  });
+  layers.forEach(layer => nodes.push(layer));
   return {
     title,
     nodes

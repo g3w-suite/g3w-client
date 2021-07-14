@@ -44,7 +44,7 @@ proto.layout = function(map) {
   if (map) {
     const position =  this.getPosition();
     const viewPort = map.getViewport();
-    const previusControls = $(viewPort).find('.ol-control-'+this.positionCode);
+    const previusControls = $(viewPort).find(`.ol-control-${this.positionCode}`);
     if (previusControls.length) {
       previusControl = previusControls.last();
       const previousOffset = position.left ? previusControl.position().left : previusControl.position().right;

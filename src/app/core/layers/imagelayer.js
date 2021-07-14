@@ -96,7 +96,7 @@ proto.isExternalWMS = function() {
 };
 
 proto.isArcgisMapserver = function() {
-  return this.isExternalWMS() && this.config.source.type === 'arcgismapserver';
+  return this.isExternalWMS() && this.config.source.type === Layer.SourceTypes.ARCGISMAPSERVER;
 };
 
 proto._getBaseLayerName = function() {
@@ -149,7 +149,7 @@ proto.getWmsUrl = function({type='map'}={}) {
 
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
-  if (this.getServerType() === 'QGIS' && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
+  if (this.getServerType() === Layer.ServerTypes.QGIS && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
     url =`${url}SOURCE=${this.config.source.type}`;
   }
   return url;
@@ -194,7 +194,7 @@ proto.getMapLayer = function(options={}, extraParams) {
     options.extent = this.config.bbox ? [this.config.bbox.minx, this.config.bbox.miny, this.config.bbox.maxx, this.config.bbox.maxy] : null;
     mapLayer = new XYZLayer(options, method);
   } else {
-    if (this.isExternalWMS() && this.config.source && this.config.source.type === 'arcgismapserver') {
+    if (this.isExternalWMS() && this.config.source && this.config.source.type === Layer.SourceTypes.ARCGISMAPSERVER) {
       options = {
         ...options,
         ...this.config.source,

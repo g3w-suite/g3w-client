@@ -1,3 +1,4 @@
+//useful to insert polyfill for old non supported browser methods
 import 'babel-polyfill';
 const ApplicationService = require('core/applicationservice');
 // Application instance. It manages the application template
@@ -15,9 +16,7 @@ const bootstrap = function() {
         ApplicationService
       });
       // Listen ready event emit after build interface
-      applicationTemplate.on('ready', () =>  {
-        ApplicationService.postBootstrap()
-      });
+      applicationTemplate.on('ready', () =>  ApplicationService.postBootstrap());
       //call initialize applicationTemplate method
       applicationTemplate.init();
     })

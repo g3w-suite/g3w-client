@@ -1,8 +1,8 @@
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-const VALIDGEOMETRIES = ['Polygon', 'MultiPolygon', 'PolygonZ', 'MultiPolygonZ',
-  'PolygonM', 'MultiPolygonM', 'PolygonZM', 'MultiPolygonZM', 'Polygon25D', 'MultiPolygon25D' ];
+const { getAllPolygonGeometryTypes } = require('core/geometry/geometry');
+const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {
   const _options = {
@@ -30,10 +30,9 @@ const proto = QueryByPolygonControl.prototype;
 proto.checkVisibile = function(layers) {
   let visible;
   // if no layer or just one
-  if (!layers.length || layers.length === 1) {
-    visible = false;
-  } else {
-    // geometryes to check
+  if (!layers.length || layers.length === 1) visible = false;
+  else {
+    // geometries to check
     // get all layers that haven't the geometries above filterable
     const filterableLayers = layers.filter(layer => layer.isFilterable());
     // gell all layer that have the valid geometries

@@ -3,7 +3,6 @@ const { getScaleFromResolution } = require('g3w-ol/src/utils/utils');
 const { sanitizeUrl } = require('core/utils/utils');
 const {createFeatureFromGeometry} = require('core/utils/geo');
 const GUI = require('gui/gui');
-
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };
@@ -49,10 +48,18 @@ proto.setup = function(config={}, options={}) {
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
 
+/**
+ * Clear all selection openlayer features
+ */
 proto.clearOlSelectionFeatures = function(){
   this.olSelectionFeatures = null;
 };
 
+/**
+ * Get openlayer selection feature by feature id
+ * @param id
+ * @returns {*}
+ */
 proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
@@ -70,6 +77,10 @@ proto.updateOlSelectionFeature = function({id, geometry}={}){
   }
 };
 
+/**
+ * Delete openlayer feature selection by feature id
+ * @param id
+ */
 proto.deleteOlSelectionFeature = function(id){
   const featureObject = this.olSelectionFeatures[id];
   if (featureObject) {
@@ -80,6 +91,10 @@ proto.deleteOlSelectionFeature = function(id){
   }
 };
 
+/**
+ * Get all openlyare feature selection
+ * @returns {{}|null}
+ */
 proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
@@ -143,6 +158,11 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
   return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
 };
 
+/**
+ * Create a get parameter url right
+ * @param type
+ * @private
+ */
 proto._sanitizeSourceUrl = function(type='wms'){
   const sanitizedUrl = sanitizeUrl({
     url: this.config.source.url,
@@ -181,6 +201,11 @@ proto.isPrintable = function({scale}={}) {
   return this.isChecked() && visible && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
 };
 
+/**
+ * Disable layer by check scalevisibility configuration value
+ * @param resolution
+ * @param mapUnits
+ */
 proto.setDisabled = function(resolution, mapUnits='m') {
   if (this.state.scalebasedvisibility) {
     const mapScale = getScaleFromResolution(resolution, mapUnits);

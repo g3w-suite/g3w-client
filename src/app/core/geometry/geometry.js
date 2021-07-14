@@ -194,7 +194,7 @@ const Geometry = {
       this.GeometryTypes.MULTIPOLYGON25D
     ].indexOf(geometryType) !== -1;
   },
-  isPointGeometryType(geometryType){
+  getAllPointGeometryTypes(){
     return [
       Geometry.GeometryTypes.POINT,
       Geometry.GeometryTypes.POINTZ,
@@ -205,9 +205,13 @@ const Geometry = {
       Geometry.GeometryTypes.MULTIPOINTZ,
       Geometry.GeometryTypes.MULTIPOINTM,
       Geometry.GeometryTypes.MULTIPOINTZM,
-      Geometry.GeometryTypes.MULTIPOINT25D].indexOf(geometryType) !== -1;
+      Geometry.GeometryTypes.MULTIPOINT25D
+    ]
   },
-  isLineGeometryType(geometryType){
+  isPointGeometryType(geometryType){
+    return Geometry.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
+  },
+  getAllLineGeometryTypes(){
     return [
       Geometry.GeometryTypes.LINESTRING,
       Geometry.GeometryTypes.LINESTRINGZ,
@@ -228,9 +232,12 @@ const Geometry = {
       Geometry.GeometryTypes.MULTILINEZ,
       Geometry.GeometryTypes.MULTILINEM,
       Geometry.GeometryTypes.MULTILINEZM,
-      Geometry.GeometryTypes.MULTILINE25D].indexOf(geometryType) !== -1;
+      Geometry.GeometryTypes.MULTILINE25D]
   },
-  isPolygonGeometryType(geometryType){
+  isLineGeometryType(geometryType){
+    return Geometry.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
+  },
+  getAllPolygonGeometryTypes(){
     return [
       Geometry.GeometryTypes.POLYGON,
       Geometry.GeometryTypes.POLYGONZ,
@@ -241,7 +248,11 @@ const Geometry = {
       Geometry.GeometryTypes.MULTIPOLYGONZ,
       Geometry.GeometryTypes.MULTIPOLYGONM,
       Geometry.GeometryTypes.MULTIPOLYGONZM,
-      Geometry.GeometryTypes.MULTIPOLYGON25D].indexOf(geometryType) !== -1;
+      Geometry.GeometryTypes.MULTIPOLYGON25D
+    ]
+  },
+  isPolygonGeometryType(geometryType){
+    return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
   }
 };
 

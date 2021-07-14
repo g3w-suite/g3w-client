@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
@@ -125,7 +126,7 @@ module.exports = {
       this.chartContainer = this.chartContainer ||  $('#chart_content');
       const relationData = {
         relations: [this.relation],
-        fid: this.feature.attributes['g3w_fid'],
+        fid: this.feature.attributes[G3W_FID],
       };
       this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
     })

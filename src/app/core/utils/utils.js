@@ -11,9 +11,7 @@ const Expression = require('core/layers/filter/expression');
  */
 function decimalAdjust(type, value, exp) {
   // If the exp is undefined or zero...
-  if (typeof exp === 'undefined' || +exp === 0) {
-    return Math[type](value);
-  }
+  if (typeof exp === 'undefined' || +exp === 0) return Math[type](value);
   value = +value;
   exp = +exp;
   // If the value is not a number or the exp is not an integer...
@@ -63,37 +61,35 @@ const Base64 = {_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012
 let _uid = 0;
 
 const utils = {
-  getUniqueDomId: function() {
+  getUniqueDomId() {
     _uid+=1;
     return `${_uid}_${Date.now()}`;
   },
 
-  uniqueId: function() {
+  uniqueId() {
     return utils.getUniqueDomId();
   },
 
-  basemixin: function mixin(destination, source) {
-      return utils.merge(destination.prototype, source);
+  basemixin(destination, source) {
+    return utils.merge(destination.prototype, source);
   },
 
-  mixin: function mixininstance(destination,source){
-      const sourceInstance = new source;
-      utils.merge(destination, sourceInstance);
-      utils.merge(destination.prototype, source.prototype);
+  mixin(destination,source){
+    const sourceInstance = new source;
+    utils.merge(destination, sourceInstance);
+    utils.merge(destination.prototype, source.prototype);
   },
-  merge: function merge(destination, source) {
-      let key;
-      for (key in source) {
-          if (utils.hasOwn(source, key)) {
-              destination[key] = source[key];
-          }
-      }
+  merge(destination, source) {
+    let key;
+    for (key in source) {
+      if (utils.hasOwn(source, key)) destination[key] = source[key];
+    }
   },
-  hasOwn: function hasOwn(object, key) {
-      return Object.prototype.hasOwnProperty.call(object, key);
+  hasOwn(object, key) {
+    return Object.prototype.hasOwnProperty.call(object, key);
   },
   // google closure library impememtation
-  inherit:function(childCtor, parentCtor) {
+  inherit(childCtor, parentCtor) {
     function tempCtor() {}
     tempCtor.prototype = parentCtor.prototype;
     childCtor.superClass_ = parentCtor.prototype;
@@ -101,7 +97,7 @@ const utils = {
     childCtor.prototype.constructor = childCtor;
   },
   // goole closure library implementation
-  base: function(me, opt_methodName, var_args) {
+  base(me, opt_methodName, var_args) {
     // who call base
     // noinspection JSAnnotator
     const caller = arguments.callee.caller;
@@ -136,19 +132,19 @@ const utils = {
     }
   },
 
-  noop: function(){},
+  noop(){},
 
-  truefnc: function(){return true},
+  truefnc(){return true},
 
-  falsefnc: function(){return true},
+  falsefnc(){return true},
 
-  resolve: function(value){
+  resolve(value){
     const d = $.Deferred();
     d.resolve(value);
     return d.promise();
   },
 
-  reject: function(value){
+  reject(value){
     const d = $.Deferred();
     d.reject(value);
     return d.promise();
@@ -196,11 +192,11 @@ const utils = {
     return url;
   },
 
-  convertObjectToUrlParams: function(params = {}) {
+  convertObjectToUrlParams(params = {}) {
     return $.param(params)
   },
   // Appends query parameters to a URI
-  appendParams: function(uri, params) {
+  appendParams(uri, params) {
     const keyParams = [];
     // Skip any null or undefined parameter values
     Object.keys(params).forEach(function (k) {
@@ -215,7 +211,7 @@ const utils = {
     uri = uri.indexOf('?') === -1 ? uri + '?' : uri + '&';
     return uri + qs;
   },
-  imageToDataURL: function({src, type='image/jpeg', callback=()=>{}}) {
+  imageToDataURL({src, type='image/jpeg', callback=()=>{}}) {
     const image = new Image();
     image.onload = function() {
       const canvas = document.createElement('canvas');
@@ -237,7 +233,7 @@ const utils = {
     return _toString.call(value).slice(8, -1)
   },
   // build throttle function
-  throttle: function(fnc, delay=500) {
+  throttle(fnc, delay=500) {
     let lastCall;
     return function (...args) {
       let previousCall = lastCall;

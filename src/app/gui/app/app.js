@@ -53,34 +53,34 @@ const AppUI = Vue.extend({
     g3w_suite_logo() {
       return `${this.clienturl}images/g3wsuite_logo.png`;
     },
-    credits_logo: function() {
+    credits_logo() {
       return `${this.clienturl}images/logo_gis3w_156_85.png`;
     },
-    logo_url: function() {
+    logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
       return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
-    logo_link: function() {
+    logo_link() {
       const logo_link = this.getLogoLink();
       return logo_link ? logo_link : "#";
     },
-    logo_link_target: function() {
+    logo_link_target() {
       const logo_link = this.getLogoLink();
       return logo_link ? "_blank" : "";
     },
-    project_title: function() {
+    project_title() {
       return this.currentProject.getState().name;
     },
-    user: function() {
+    user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
     login_url(){
       return this.appconfig.user.login_url
     },
-    numberOfProjectsInGroup: function() {
+    numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
     },
-    frontendurl: function() {
+    frontendurl() {
       return this.urls.frontendurl;
     },
     main_title() {
@@ -112,10 +112,10 @@ const AppUI = Vue.extend({
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel: function(){
+    closePanel(){
       sidebarService.closePanel();
     },
-    getLogoLink: function() {
+    getLogoLink() {
       return this.appconfig.logo_link ? this.appconfig.logo_link: null;
     },
     openProjectsMenu() {

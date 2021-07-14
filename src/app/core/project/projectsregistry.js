@@ -17,7 +17,7 @@ function ProjectsRegistry() {
   this.projectType = null;
   this.overviewproject;
   this.setters = {
-    setCurrentProject: function(project) {
+    setCurrentProject(project) {
       if (this.state.currentProject !== project) {
         CatalogLayersStoresRegistry.removeLayersStores();
         MapLayersStoresRegistry.removeLayersStores();
@@ -68,9 +68,7 @@ proto.init = function(config={}) {
       this.initialized = true;
       d.resolve(project);
     })
-    .fail(error => {
-      d.reject(error);
-    })
+    .fail(error => d.reject(error))
   } else {
     const project = this.getCurrentProject();
     d.resolve(project);
@@ -135,7 +133,7 @@ proto.getProjects = function() {
 
 proto.setProjects = function(projects) {
   this.clearProjects();
-  projects.forEach((project) => {
+  projects.forEach(project => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
     project.aliasUrl = project.url || null;
     project.baselayers = this.config.baselayers;
@@ -154,9 +152,9 @@ proto.clearProjects = function() {
 
 proto.getListableProjects = function() {
   const currentProjectId = this.getCurrentProject().getId();
-  return _.sortBy(this.getProjects().filter((project) => {
+  return _.sortBy(this.getProjects().filter(project => {
     if (!_.isNil(project.listable)) return project.listable;
-    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false
+    if (project.id === currentProjectId || (project.overviewprojectgid && project.gid === project.overviewprojectgid)) return false;
     return project;
   }), 'title')
 };
@@ -169,9 +167,7 @@ proto.getCurrentProject = function() {
 proto.getProject = function(projectGid, options={reload:false}) {
   const {reload} = options;
   const d = $.Deferred();
-  const pendingProject = this._groupProjects.find((project) => {
-    return project.gid === projectGid;
-  });
+  const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
   if (!pendingProject) {
     d.reject("Project doesn't exist");
     return d.promise();
@@ -193,18 +189,16 @@ proto.getProject = function(projectGid, options={reload:false}) {
         // add to project
         d.resolve(project);
       })
-      .fail((error) => {
-        d.reject(error);
-      })
+      .fail(error => d.reject(error))
   }
   return d.promise();
 };
 
 proto._setProjectRelations = function(projectConfig) {
   projectConfig.relations = projectConfig.relations ? projectConfig.relations : [];
-  projectConfig.relations = projectConfig.relations.map((relation) => {
+  projectConfig.relations = projectConfig.relations.map(relation => {
     if (relation.type === "ONE") {
-      projectConfig.layers.find((layer) => {
+      projectConfig.layers.find(layer => {
         if (layer.id === relation.referencingLayer) {
           relation.name = layer.name;
           relation.origname = layer.origname;
@@ -218,9 +212,7 @@ proto._setProjectRelations = function(projectConfig) {
 };
 
 proto.getProjectConfigByGid = function(gid) {
-  return this._groupProjects.find((project) => {
-    return project.gid === gid;
-  })
+  return this._groupProjects.find(project => project.gid === gid);
 };
 
 proto.getProjectUrl = function(gid) {
@@ -244,12 +236,8 @@ proto._getProjectFullConfig = function(projectBaseConfig) {
   const d = $.Deferred();
   const url = this.config.getProjectConfigUrl(projectBaseConfig);
   $.get(url)
-    .done((projectFullConfig) => {
-      d.resolve(projectFullConfig);
-    })
-    .fail((error) => {
-      d.reject(error);
-    });
+    .done(projectFullConfig => d.resolve(projectFullConfig))
+    .fail(error => d.reject(error));
   return d.promise();
 };
 

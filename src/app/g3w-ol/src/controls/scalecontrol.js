@@ -1,8 +1,6 @@
 const t = require('core/i18n/i18n.service').t;
 const {getResolutionFromScale, getScaleFromResolution} = require('../utils/utils');
-const SCALES = [
-  1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
-];
+const SCALES = [1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000];
 
 const ScaleControl = function(options= {}) {
   this.isMobile = options.isMobile || false;
@@ -64,15 +62,12 @@ proto.layout = function(map) {
   //get change mapsize to close
   map.on('change:size', ()=> select2.select2('close'));
   function deleteLastCustomScale() {
-    select2.find('option').each((index, option) => {
-      self.scales.indexOf(1*option.value) === -1 && $(option).remove();
-    });
+    select2.find('option').each((index, option) => self.scales.indexOf(1*option.value) === -1 && $(option).remove());
   }
 
   function addCustomTag (data) {
-    if (select2.find("option[value='" + data.id + "']").length) {
-      select2.val(data.id).trigger('change')
-    } else {
+    if (select2.find("option[value='" + data.id + "']").length) select2.val(data.id).trigger('change');
+    else {
       deleteLastCustomScale();
       const newOption = new Option(data.text, data.id, true, true);
       select2.append(newOption).trigger('change');
@@ -94,18 +89,14 @@ proto.layout = function(map) {
       isMapResolutionChanged = false;
     } else selectedOnClick = false;
   });
-  const setChangeResolutionHandler = () =>{
-    map.getView().on('change:resolution', () => {
-      isMapResolutionChanged = !selectedOnClick;
-    });
+  const setChangeResolutionHandler = () => {
+    map.getView().on('change:resolution', () => isMapResolutionChanged = !selectedOnClick);
   };
   setChangeResolutionHandler();
 
-  map.on('change:view', () => {
-    setChangeResolutionHandler();
-  });
+  map.on('change:view', () => setChangeResolutionHandler());
 
-  select2.on('select2:select', function (e) {
+  select2.on('select2:select', function(e) {
     selectedOnClick = true;
     const data = e.params.data;
     if (data.new) {
@@ -123,9 +114,7 @@ proto._setScales = function(map) {
   const mapUnits = map.getView().getProjection().getUnits();
   const currentResolution = map.getView().getResolution();
   const currentScale = parseInt(getScaleFromResolution(currentResolution, mapUnits));
-  this.scales = SCALES.filter((scale) => {
-    return scale < currentScale;
-  });
+  this.scales = SCALES.filter(scale => scale < currentScale);
   this.scales.unshift(currentScale);
   this._createControl();
 };

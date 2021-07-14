@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
-const t = require('core/i18n/i18n.service').t;
 const {base, inherit, toRawType} = require('core/utils/utils');
+const t = require('core/i18n/i18n.service').t;
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -172,9 +172,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   this._createApp = function() {
     this._setDataTableLanguage();
     const self = this;
-    if (isMobile.any || this._isIframe) {
-      $('body').addClass('sidebar-collapse');
-    }
+    if (isMobile.any || this._isIframe) $('body').addClass('sidebar-collapse');
     return new Vue({
       el: '#app',
       created() {
@@ -247,7 +245,6 @@ const ApplicationTemplate = function({ApplicationService}) {
     $.extend( $.fn.dataTableExt.oStdClasses, {
       "sFilterInput": "form-control search"
     });
-
     !dataTable ? $.extend( true, $.fn.dataTable.defaults, lngOptions) : dataTable.dataTable( {"oLanguage": lngOptions});
   };
 
@@ -277,9 +274,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     Object.values(GUI.getComponents()).forEach(component => {
       ApplicationService.registerService(component.id, component.getService());
     });
-    ApplicationTemplate.Services.viewport.on('resize', ()=>{
-      GUI.emit('resize')
-    })
+    ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.emit('resize'));
   };
   // build template function
   this._buildTemplate = function() {
@@ -294,9 +289,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
   //add component not related to placeholder
   this._addOtherComponents = function() {
-    if (this.templateConfig.othercomponents) {
-      this._addComponents(this.templateConfig.othercomponents);
-    }
+    if (this.templateConfig.othercomponents) this._addComponents(this.templateConfig.othercomponents);
   };
   // viewport setting
   this._setViewport = function(viewportOptions) {
@@ -430,7 +423,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     /* Metodos to define */
     GUI.getResourcesUrl = _.bind(function() {
       return ApplicationService.getConfig().resourcesurl;
-    },this);
+    }, this);
     //LIST
     GUI.showList = _.bind(floatbar.FloatbarService.showPanel, floatbar.FloatbarService);
     GUI.closeList = _.bind(floatbar.FloatbarService.closePanel, floatbar.FloatbarService);
@@ -575,24 +568,18 @@ const ApplicationTemplate = function({ApplicationService}) {
       });
       return queryResultService;
     };
-
     GUI.addNavbarItem = function(item) {
       navbaritems.NavbarItemsService.addItem(item)
     };
-
     GUI.removeNavBarItem = function() {};
-
     GUI.showPanel = sidebar.SidebarService.showPanel.bind(sidebar.SidebarService);
     GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
-
-
     ///
     GUI.disableApplication = function(bool=false){
       ApplicationService.disableApplication(bool);
     };
 
     //showusermessage
-
     GUI.showUserMessage = function(options={}) {
       viewport.ViewportService.showUserMessage(options);
     };
@@ -600,9 +587,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.closeUserMessage = function() {
       viewport.ViewportService.closeUserMessage();
     };
-
     /* ------------------ */
-
     GUI.notify = {
       warning(message, autoclose=false){
         GUI.showUserMessage({
@@ -697,8 +682,8 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.showContextualMap = function(perc, split) {
       perc = perc || 30;
       viewport.ViewportService.showContextualMap({
-        perc: perc,
-        split: split
+        perc,
+        split
       })
     };
 
@@ -799,18 +784,15 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.setLoadingContent = function(loading = false) {
       ApplicationTemplate.Services.viewport.setLoadingContent(loading);
       return loading && new Promise((resolve)=>{
-        setTimeout(()=>{
-          resolve()
-        }, 200)
+        setTimeout(resolve, 200)
       })
     };
 
     GUI.openProjectsMenu = function() {
       const contentsComponent = GUI.getComponent('contents');
       // check if is projectmenucomponent
-      if (contentsComponent.getComponentById('projectsmenu')) {
-        GUI.closeContent();
-      } else {
+      if (contentsComponent.getComponentById('projectsmenu')) GUI.closeContent();
+      else {
         if (this.isMobile()) {
           GUI.hideSidebar();
           $('#main-navbar.navbar-collapse').removeClass('in');
@@ -868,7 +850,6 @@ ApplicationTemplate.fail = function({language='en', error }) {
     }
   });
 };
-
 
 module.exports =  ApplicationTemplate;
 

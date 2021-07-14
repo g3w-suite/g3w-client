@@ -32,18 +32,12 @@ function FloatbarService(){
     const modal = options.modal || false;
     options.parent = "#g3w-floatbarpanel-placeholder";
     this.stack.push(panel, options);
-    if (!this._isopen) {
-      this.open();
-    }
+    if (!this._isopen) this.open();
   };
 
   this.closePanel = function(panel){
-    if (panel) {
-      this.stack.remove(panel);
-    }
-    else {
-      this.stack.pop();
-    }
+    if (panel) this.stack.remove(panel);
+    else this.stack.pop();
     if (!this.stack.getLength()) {
       if (this._modal){
         GUI.setModal(false);
@@ -54,9 +48,7 @@ function FloatbarService(){
         $('.control-sidebar-bg').css("z-index","");
         this._modal = false;
       }
-      else {
-        this.close();
-      }
+      else this.close();
     }
   };
 
@@ -70,24 +62,24 @@ const compiledFloatBarTemplate = Vue.compile(require('./floatbar.html'));
 
 const FloatbarComponent = Vue.extend({
     ...compiledFloatBarTemplate,
-    data: function() {
+    data() {
     	return {
         stack: floatbarService.stack.state,
       };
     },
     computed: {
       // active panels on stack
-      panelsinstack: function(){
+      panelsinstack(){
         return this.stack.contentsdata.length>0;
       },
-      panelname: function(){
+      panelname(){
         let name;
         if (this.stack.contentsdata.length){
           name = this.stack.contentsdata.slice(-1)[0].content.getTitle();
         }
         return name;
       },
-      closable: function() {
+      closable() {
         return floatbarService.closable;
       }
     },
@@ -95,17 +87,13 @@ const FloatbarComponent = Vue.extend({
       "stack.contentsdata": function() {
         const children = $("#g3w-floatbarpanel-placeholder").children();
         children.forEach((child, index) => {
-          if (index == children.length-1) {
-            $(child).show();
-          }
-          else {
-            $(child).hide();
-          }
+          if (index == children.length-1) $(child).show();
+          else $(child).hide();
         })
       }
     },
     methods: {
-      closePanel: function(){
+      closePanel(){
         floatbarService.closePanel();
       }
     }

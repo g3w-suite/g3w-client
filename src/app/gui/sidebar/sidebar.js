@@ -10,7 +10,7 @@ const SIDEBAREVENTBUS = new Vue();
 //title, icon type etc ..  is possible to customize component
 const SidebarItem = Vue.extend({
   ...compiledSideBarItemTemplate,
-  data: function() {
+  data() {
     return {
         info: this.$options.info || {
           state: null,
@@ -142,9 +142,7 @@ function SidebarService() {
    * close fo the moment only conlapsbale
    */
   this.closeOpenComponents = function(collapsible=true){
-    this.getComponents().forEach(component =>{
-     component.getOpen() && component.collapsible && component.click({open: false});
-    })
+    this.getComponents().forEach(component =>component.getOpen() && component.collapsible && component.click({open: false}))
   };
 
   this.reloadComponent = function(id) {

@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils/utils');
 const VectorLayer = require('./vectorlayer');
 const GeojsonMapLayer = require('./map/geojson');
 
@@ -14,8 +13,7 @@ inherit(GeojsonLayer, VectorLayer);
 const proto = GeojsonLayer.prototype;
 
 proto.getMapLayer = function() {
-  if (this._mapLayer)
-    return this._mapLayer;
+  if (this._mapLayer) return this._mapLayer;
   const url = this.get('source').url;
   const name = this.getName();
   const id = this.getId();

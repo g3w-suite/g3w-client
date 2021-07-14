@@ -52,10 +52,8 @@ const fieldsMixin = {
       return Fields.SIMPLE;
     },
     sanitizeFieldValue(value) {
-      if (Array.isArray(value) && !value.length)
-        return '';
-      else
-        return value
+      if (Array.isArray(value) && !value.length) return '';
+      else return value
     }
   }
 };
@@ -68,9 +66,7 @@ const mediaMixin = {
   },
   methods: {
     isMedia(value) {
-      if (value && typeof  value === 'object' && value.constructor === Object) {
-        return !!value.mime_type;
-      }
+      if (value && typeof  value === 'object' && value.constructor === Object) return !!value.mime_type;
       return false;
     },
     getMediaType(mime_type) {
@@ -78,7 +74,7 @@ const mediaMixin = {
         type: null,
         options: {}
       };
-      switch (mime_type) {
+      switch(mime_type) {
         case 'image/gif':
         case 'image/png':
         case 'image/jpeg':

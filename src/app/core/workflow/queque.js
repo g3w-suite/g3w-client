@@ -17,16 +17,16 @@ proto.run = function(reverse=false){
 
 proto.flush = function(){
   return this.tasks.splice(0);
-}
+};
 
 proto.getLength = function(){
   return this.tasks.length;
-}
+};
 
 proto.clear = function(){
   this.run();
   this.tasks = [];
-}
+};
 
 module.exports = Queque;
 

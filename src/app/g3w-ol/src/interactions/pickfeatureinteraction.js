@@ -36,11 +36,12 @@ PickFeatureInteraction.handleDownEvent_ = function(event) {
 PickFeatureInteraction.handleUpEvent_ = function(event) {
   if(this.pickedFeature_){
     this.dispatchEvent(
-            new PickFeatureEvent(
-                PickFeatureEventType.PICKED,
-                event.coordinate,
-                this.pickedLayer_,
-                this.pickedFeature_));
+      new PickFeatureEvent(
+        PickFeatureEventType.PICKED,
+        event.coordinate,
+        this.pickedLayer_,
+        this.pickedFeature_)
+    );
   }
   return true;
 };
@@ -55,20 +56,15 @@ PickFeatureInteraction.prototype.featuresAtPixel_ = function(pixel, map) {
   let featureFound = null;
   const intersectingFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
         if (this.features_) {
-          if (this.features_.indexOf(feature) > -1){
-            return feature
-          } else {
-            return null;
-          }
+          if (this.features_.indexOf(feature) > -1)return feature
+          else return null;
         }
         return feature;
       }, {
         layerFilter: this.layerFilter_,
         hitTolerance: (isMobile && isMobile.any) ? 10 : 0
       });
-  if (intersectingFeature) {
-    featureFound = intersectingFeature;
-  }
+  if (intersectingFeature) featureFound = intersectingFeature;
   return featureFound;
 };
 

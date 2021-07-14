@@ -49,7 +49,7 @@ proto.setVisible = function(bool) {
   this._visible = bool;
 };
 
-//shwo help message
+//show help message
 proto._showModalHelp = function() {
   GUI.showUserMessage({
     type: 'info',
@@ -73,12 +73,8 @@ proto._createModalHelp = function() {
       event.stopPropagation();
       this._showModalHelp();
     });
-    $(this.element).hover(() => {
-      this._helpButton.show();
-    });
-    $(this.element).mouseleave(() => {
-      this._helpButton.hide();
-    });
+    $(this.element).hover(() => this._helpButton.show());
+    $(this.element).mouseleave(() => this._helpButton.hide());
   }
 };
 

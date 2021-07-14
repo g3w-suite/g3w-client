@@ -33,13 +33,13 @@ function Project(config={}, options={}) {
   this.state = config;
   // process layers
   this._processLayers();
-  // set the project projection
+  // set the project projection to object crs
   this.state.crs = crsToCrsObject(this.state.crs);
   this._projection = Projections.get(this.state.crs);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
   this.setters = {
-    setBaseLayer: function(id) {
+    setBaseLayer(id) {
       this.state.baselayers.forEach(baseLayer => {
         this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id === id);
         baseLayer.visible = (baseLayer.id === id);
@@ -54,6 +54,7 @@ inherit(Project, G3WObject);
 
 const proto = Project.prototype;
 
+//get search end point value (ows or api)
 proto.getSearchEndPoint = function(){
   return this.state.search_endpoint;
 };
@@ -97,15 +98,11 @@ proto.getRelations = function() {
 };
 
 proto.getRelationById = function(relationId){
-  return this.state.relations.find((relation) => {
-    return relation.id === relationId
-  })
+  return this.state.relations.find(relation => relation.id === relationId);
 };
 
 proto.getRelationsByLayerId = function({layerId, type}={}){
-  return this.state.relations.filter(relation => {
-    return relation.referencedLayer === layerId && (type ? relation.type === type : true);
-  })
+  return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
 };
 
 proto.getOwsMethod = function() {
@@ -115,13 +112,13 @@ proto.getOwsMethod = function() {
 // process layerstree and baselayers of the project
 proto._processLayers = function() {
   //info useful for catalog
-  const traverse = (tree) => {
+  const traverse = tree => {
     for (let i = 0; i < tree.length; i++) {
       const layer = tree[i];
       let layer_name_originale;
       //check if layer (node) of folder
       if (layer.id !== undefined) {
-        this.state.layers.forEach((_layer) => {
+        this.state.layers.forEach(_layer => {
           layer_name_originale = _layer.name;
           if (layer.id === _layer.id) {
             layer.name = _layer.name;
@@ -254,7 +251,7 @@ proto.getCrs = function() {
 * */
 proto.getQgisVersion = function({type}={}) {
   const index = ['major', 'minor', 'patch'].indexOf(type);
-  return index === -1 ? this.state.qgis_version:  +this.state.qgis_version.split('.')[index];
+  return index === -1 ? this.state.qgis_version: +this.state.qgis_version.split('.')[index];
 };
 
 proto.getProjection = function() {

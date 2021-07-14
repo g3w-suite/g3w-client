@@ -1,12 +1,11 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function Relation(config={}) {
   const uniqueSuffix = Date.now();
-  const id = config.id || 'id_' + uniqueSuffix;
-  const name = config.name || 'name_' + uniqueSuffix;
-  const origname = config.origname || 'origname_' + uniqueSuffix;
+  const id = config.id || `id_${uniqueSuffix}`;
+  const name = config.name || `name_${uniqueSuffix}`;
+  const origname = config.origname || `origname_${uniqueSuffix}`;
   this.state = {
     id,
     name,
@@ -66,11 +65,10 @@ proto.getType = function() {
 };
 
 proto.getFields = function() {
-  const fields = {
+  return {
     father: this.state.fatherField,
     child: this.state.childField
   };
-  return fields;
 };
 
 proto.getFatherField = function() {

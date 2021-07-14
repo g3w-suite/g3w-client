@@ -36,8 +36,7 @@ proto.setValue = function(value) {
             || this.state.input.options.values[0]
         }
       }
-    } else
-      this.state.value = this.state.input.options.default;
+    } else this.state.value = this.state.input.options.default;
   }
 };
 
@@ -80,17 +79,14 @@ proto.validate = function() {
         this.state.value = null;
         this.state.validate.empty = true;
         this.state.validate.valid = !this.state.validate.required;
-      } else
-        this.state.validate.valid = this._validator.validate(this.state.value);
+      } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
     if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
       if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
         this.state.validate.valid = false;
         this.state.validate.unique = false;
-      } else
-        this.state.validate.unique = true;
-    } else
-      this.state.validate.valid = this._validator.validate(this.state.value);
+      } else this.state.validate.unique = true;
+    } else this.state.validate.valid = this._validator.validate(this.state.value);
   }
   return this.state.validate.valid;
 };
@@ -115,9 +111,7 @@ proto.setErrorMessage = function(input) {
       `;
     }
     this.state.validate.message = this.state.info || message;
-  } else {
-    this.state.validate.message = this.state.info;
-  }
+  } else this.state.validate.message = this.state.info;
 };
 
 module.exports = Service;

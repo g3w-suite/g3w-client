@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit}= require('core/utils/utils');
 const Validator = require('./validator');
 
 function RangeValidator(options={}) {

@@ -2,7 +2,7 @@ const Projection = require('./projection');
 const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {
-  get: function(crs={},  extent) {
+  get(crs={},  extent) {
     const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  ol.proj.get(crs.epsg) : null;
     if (cachedProjection) return cachedProjection;
     const projection = new Projection({

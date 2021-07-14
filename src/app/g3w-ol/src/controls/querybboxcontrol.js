@@ -22,15 +22,13 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
-proto.checkVisible = function(layers){
+proto.checkVisible = function(layers=[]){
   return layers.length > 0;
 };
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('boxstart', evt => {
-    this._startCoordinate = evt.coordinate;
-  });
+  this._interaction.on('boxstart', evt => this._startCoordinate = evt.coordinate);
   this._interaction.on('boxend', evt => {
     const start_coordinate = this._startCoordinate;
     const end_coordinate = evt.coordinate;

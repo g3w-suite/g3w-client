@@ -1,6 +1,6 @@
 const InteractionControl = require('./interactioncontrol');
 
-const MeasureControl = function(options) {
+const MeasureControl = function(options={}) {
   this._map = null;
   InteractionControl.call(this, options);
 };

@@ -15,9 +15,7 @@ const proto = AddLayersControl.prototype;
 
 proto.setMap = function(map) {
   Control.prototype.setMap.call(this,map);
-  $(this.element).on('click', ()  =>{
-    this.dispatchEvent('addlayer');
-  })
+  $(this.element).on('click', () => this.dispatchEvent('addlayer'));
 };
 
 proto.layout = function(map) {

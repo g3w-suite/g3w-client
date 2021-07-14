@@ -9,7 +9,7 @@ const INCHES_PER_UNIT = {
 const DOTS_PER_INCH = 96; //DPI96
 
 const utils = {
-  getExtentForViewAndSize: function(center, resolution, rotation, size) {
+  getExtentForViewAndSize(center, resolution, rotation, size) {
     const dx = resolution * size[0] / 2;
     const dy = resolution * size[1] / 2;
     const cosRotation = Math.cos(rotation);
@@ -32,7 +32,7 @@ const utils = {
     return [Math.min(x0, x1, x2, x3), Math.min(y0, y1, y2, y3), Math.max(x0, x1, x2, x3), Math.max(y0, y1, y2, y3)]
   },
   // function that create a polygon vector layer from bbox
-  createPolygonLayerFromBBox: function(bbox) {
+  createPolygonLayerFromBBox(bbox) {
     const polygonFeature = new ol.Feature(new ol.geom.Polygon.fromExtent(bbox));
     const vectorSource = new ol.source.Vector({
       features: [polygonFeature]
@@ -42,7 +42,7 @@ const utils = {
     });
     return polygonLayer;
   },
-  reverseGeometry: function(geometry) {
+  reverseGeometry(geometry) {
     const reverseCoordinates = (coordinates) => {
       coordinates.find((coordinate) => {
         if (Array.isArray(coordinate)) {
@@ -60,10 +60,10 @@ const utils = {
     geometry.setCoordinates(coordinates);
     return geometry
   },
-  getScaleFromResolution: function(resolution, units="m") {
+  getScaleFromResolution(resolution, units="m") {
     return Math.round(resolution * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
   },
-  getResolutionFromScale: function(scale, units="m") {
+  getResolutionFromScale(scale, units="m") {
     const normScale = (scale >= 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
     return  1 / (normScale * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
   },

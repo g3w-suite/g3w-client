@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, copyUrl, uniqueId, debounce, throttle} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -447,10 +448,7 @@ proto.getProject = function() {
 proto.getMap = function() {
   try {
     return this.viewer.map;
-  } catch(err) {
-    console.log(err);
-    console.log(arguments.callee.caller);
-  }
+  } catch(err) {}
 };
 
 proto.getMapCanvas = function(map) {
@@ -826,7 +824,7 @@ proto._setupControls = function() {
                   });
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
                     const feature = dataCoordinates[0].features[0];
-                    const fid = feature.get('g3w_fid');
+                    const fid = feature.get(G3W_FID);
                     const geometry = feature.getGeometry();
                     const excludeLayers = [dataCoordinates[0].layer];
                     const {data=[]} = await DataRouterService.getData('query:polygon', {

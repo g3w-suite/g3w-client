@@ -1,7 +1,6 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Queque = require('./queque')
+const Queque = require('./queque');
 
 //Class Flow of workflow step by step
 function Flow() {
