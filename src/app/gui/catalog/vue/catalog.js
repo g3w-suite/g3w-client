@@ -14,8 +14,6 @@ const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
-// Temporary Constant to hide legend tab
-const SHOWLEGENDTAB = true;
 //OFFSETMENU
 const OFFSETMENU = {
   top: 50,
@@ -693,12 +691,12 @@ Vue.component('layerslegend',{
         deep: true
       },
       'visiblelayers'(visibleLayers) {
-        const show = !!visibleLayers.length && SHOWLEGENDTAB;
+        const show = !!visibleLayers.length;
         this.$emit('showlegend', show)
       }
     },
     created() {
-      const show = !!this.visiblelayers.length && SHOWLEGENDTAB;
+      const show = !!this.visiblelayers.length;
       this.$emit('showlegend', show);
     }
 });

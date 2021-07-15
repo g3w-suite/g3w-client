@@ -1,3 +1,4 @@
+import {DEFAULT_EDITING_CAPABILITIES} from 'constant';
 const {base, inherit} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Layer = require('./layer');
@@ -86,10 +87,12 @@ function TableLayer(config={}, options={}) {
     // add state info for the layer
     this.layerForEditing = new Promise((resolve, reject) => {
       this.getEditingConfig()
-        .then(({vector, constraints}={}) => {
+        .then(({vector, constraints={}, capabilities=DEFAULT_EDITING_CAPABILITIES}={}) => {
           this.config.editing.fields = vector.fields;
           this.config.editing.format = vector.format;
-          this.config.editing.constraints = constraints || {};
+          this.config.editing.constraints = constraints;
+          //set default editing capabilities
+          this.config.editing.capabilities = capabilities;
           this.config.editing.style = vector.style;
           this.config.editing.form = {
             perc: null
@@ -219,6 +222,10 @@ proto.setEditingStyle = function(style={}) {
 
 proto.getEditingConstrains = function() {
   return this.config.editing.constraints;
+};
+
+proto.getEditingCapabilities = function(){
+  return this.config.editing.capabilities;
 };
 
 proto.isFieldRequired = function(fieldName) {

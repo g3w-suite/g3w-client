@@ -313,15 +313,13 @@ proto.setUpMapOlEvents = function(){
   const dynamicLegend = this.project.getContextBaseLegend();
   // set change resolution
   this._keyEvents.ol.forEach(keyEvent => ol.Observable.unByKey(keyEvent));
-  const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", (evt) => {
+  const keyolchangeresolution = this.viewer.map.getView().on("change:resolution", evt => {
     this._updateMapView();
     dynamicLegend && this.setupCustomMapParamsToLegendUrl();
   });
   this._keyEvents.ol.push(keyolchangeresolution);
   if (dynamicLegend) {
-    const keyolmoveeend = this.viewer.map.on("moveend", (evt) => {
-      this.setupCustomMapParamsToLegendUrl();
-    });
+    const keyolmoveeend = this.viewer.map.on("moveend", evt => this.setupCustomMapParamsToLegendUrl());
     this._keyEvents.ol.push(keyolmoveeend);
   } else this.setupCustomMapParamsToLegendUrl(false);
 };
