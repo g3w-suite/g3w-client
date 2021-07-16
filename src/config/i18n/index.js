@@ -234,7 +234,7 @@ const translations = {
           addlayer: {
             messages: {
               csv: {
-                warning: "A causa della presenza di alcuni records non corretti il risultato in mappa è parziale"
+                warning: "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:"
               }
             },
             tooltip: 'Aggiungi Layer'
@@ -662,7 +662,7 @@ const translations = {
           addlayer: {
             messages: {
               csv: {
-                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
               }
             },
             tooltip: 'Add Layer'
@@ -1090,7 +1090,7 @@ const translations = {
           addlayer: {
             messages: {
               csv: {
-                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
               }
             },
             tooltip: 'Lisää taso'
@@ -1518,7 +1518,7 @@ const translations = {
           addlayer: {
             messages: {
               csv: {
-                warning: "Due to the presence of some incorrect records, the result in the map is partial"
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
               }
             },
             tooltip: 'Lägg till nivå'

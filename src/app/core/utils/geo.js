@@ -370,6 +370,7 @@ const geoutils = {
       case 'csv':
         const {headers, separator, values, x, y} = data;
         const features = [];
+        const errorrows = [];
         values.forEach((row, index) =>{
           const properties = {};
           const rowvalues = row.split(separator);
@@ -390,14 +391,31 @@ const geoutils = {
               feature.setProperties(properties);
               features.push(feature);
             }
-          }
+          } else errorrows.push({
+            row: index + 1,
+            value: values[index]
+          })
         });
         if (!features.length) return Promise.reject();
-        (features.length < values.length) && GUI.showUserMessage({
-          type: 'warning',
-          message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
-          autoclose: false
-        });
+        if (errorrows.length){
+          GUI.showUserMessage({
+            type: 'warning',
+            message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
+            hooks: {
+              footer: {
+                template: `<select v-select2="errorrows[0].value" class="skin-color" :search="false" style="width:100%">
+                    <option v-for="errorrow in errorrows" :key="errorrow.row" :value="errorrow.value">[{{ errorrow.row}}] {{errorrow.value}}</option>
+                </select>`,
+                data(){
+                  return {
+                    errorrows
+                  };
+                }
+              }
+            },
+            autoclose: false
+          });
+        }
 
         const source = new ol.source.Vector({
           features
