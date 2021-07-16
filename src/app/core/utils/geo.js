@@ -352,7 +352,8 @@ const geoutils = {
       case 'csv':
         const {headers, separator, values, x, y} = data;
         const features = [];
-        values.forEach(row =>{
+        const errorrows = [];
+        values.forEach((row, index) =>{
           const properties = {};
           const rowvalues = row.split(separator);
           if (rowvalues.length === headers.length)  {
@@ -368,17 +369,35 @@ const geoutils = {
               const geometry = new ol.geom.Point(coordinates);
               if (crs !== mapCrs) geometry.transform(crs, mapCrs);
               const feature = new ol.Feature(geometry);
+              feature.setId(index); // need to add a id incremental
               feature.setProperties(properties);
               features.push(feature);
             }
-          }
+          } else errorrows.push({
+            row: index + 1,
+            value: values[index]
+          })
         });
         if (!features.length) return Promise.reject();
-        (features.length < values.length) && GUI.showUserMessage({
-          type: 'warning',
-          message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
-          autoclose: false
-        });
+        if (errorrows.length){
+          GUI.showUserMessage({
+            type: 'warning',
+            message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
+            hooks: {
+              footer: {
+                template: `<select v-select2="errorrows[0].value" class="skin-color" :search="false" style="width:100%">
+                    <option v-for="errorrow in errorrows" :key="errorrow.row" :value="errorrow.value">[{{ errorrow.row}}] {{errorrow.value}}</option>
+                </select>`,
+                data(){
+                  return {
+                    errorrows
+                  };
+                }
+              }
+            },
+            autoclose: false
+          });
+        }
 
         const source = new ol.source.Vector({
           features
@@ -444,8 +463,7 @@ const geoutils = {
           width: 4
         })
       });
-    }
-    else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
+    } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
       style = new ol.style.Style({
         image: new ol.style.Circle({
           radius: 6,
@@ -459,7 +477,6 @@ const geoutils = {
         }),
         zIndex: Infinity
       });
-
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
       const fillColor = ol.color.asArray(color);
       fillColor.splice(3,1,0.5);
