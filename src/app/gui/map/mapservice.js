@@ -68,7 +68,7 @@ function MapService(options={}) {
     }),
     selectionLayer:new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style: (feature) => {
+      style: feature => {
         let styles = [];
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
@@ -193,7 +193,7 @@ function MapService(options={}) {
     setupControls(){
       return this._setupControls()
     },
-    addHideMap: function({ratio, layers=[], mainview=false, switchable=false} = {}) {
+    addHideMap({ratio, layers=[], mainview=false, switchable=false} = {}) {
       const id = `hidemap_${Date.now()}`;
       const idMap = {
         id,
@@ -204,16 +204,16 @@ function MapService(options={}) {
       return idMap;
 
     },
-    updateMapView: function(bbox, resolution, center) {
+    updateMapView(bbox, resolution, center) {
       this.state.bbox = bbox;
       this.state.resolution = resolution;
       this.state.center = center;
       this.updateMapLayers();
     },
-    setHidden: function(bool) {
+    setHidden(bool) {
       this.state.hidden = bool;
     },
-    setupViewer: function(width,height) {
+    setupViewer(width,height) {
       if (width === 0 || height === 0) return;
       if (this.viewer) {
         this.viewer.destroy();
@@ -227,7 +227,7 @@ function MapService(options={}) {
       this.setUpMapOlEvents();
       this.emit('viewerset');
     },
-    controlClick: function(active) {}
+    controlClick(active) {}
   };
 
   this._onCatalogSelectLayer = function(layer) {
@@ -240,9 +240,8 @@ function MapService(options={}) {
           if (mapcontrol.control.getGeometryTypes().indexOf(geometryType) !== -1) {
             mapcontrol.control.setEnable(querable? layer.isVisible(): querable);
             // listen changes
-            querable && this.on('cataloglayertoggled', (_toggledLayer) => {
-              if (layer === _toggledLayer)
-                mapcontrol.control.setEnable(layer.isVisible())
+            querable && this.on('cataloglayertoggled', _toggledLayer => {
+              if (layer === _toggledLayer) mapcontrol.control.setEnable(layer.isVisible())
             })
           } else mapcontrol.control.setEnable(false)
         }
@@ -273,7 +272,7 @@ function MapService(options={}) {
   });
 
   const extraParamsSet = (extraParams, update) => {
-    update && this.getMapLayers().forEach((mapLayer) => {
+    update && this.getMapLayers().forEach(mapLayer => {
       mapLayer.update(this.state, extraParams);
     })
   };
@@ -290,12 +289,10 @@ function MapService(options={}) {
     MapLayersStoreRegistry.getLayersStores().forEach(layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
-
     // LISTEN ON EVERY ADDED LAYERSSTORE
     MapLayersStoreRegistry.onafter('addLayersStore', layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
-
     // LISTENER ON REMOVE LAYERSTORE
     MapLayersStoreRegistry.onafter('removeLayersStore', layerStore => {
       this._removeEventsKeysToLayersStore(layerStore);
@@ -486,7 +483,7 @@ proto.getEpsg = function() {
   return this.viewer.map.getView().getProjection().getCode();
 };
 
-proto.getGetFeatureInfoUrlForLayer = function(layer,coordinates,resolution,epsg,params) {
+proto.getGetFeatureInfoUrlForLayer = function(layer, coordinates, resolution, epsg, params) {
   const mapLayer = this.getMapLayerForLayer(layer);
   return mapLayer.getGetFeatureInfoUrl(coordinates,resolution,epsg,params);
 };
@@ -524,12 +521,9 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
   if (Array.isArray(coordinates)) {
     if (coordinates.length === 2) {
       const pixel = map.getPixelFromCoordinate(coordinates);
-      map.forEachFeatureAtPixel(pixel, function (feature) {
-        features.push(feature);
-        },  {
-        layerFilter: function(layer) {
-          return layer === vectorLayer;
-          }
+      map.forEachFeatureAtPixel(pixel,
+        feature => features.push(feature),
+        {layerFilter(layer) {return layer === vectorLayer;}
       });
     } else if (coordinates.length === 4) {
       intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
@@ -538,10 +532,8 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
           features = vectorLayer.getIntersectedFeatures(intersectGeom);
           break;
         case ol.layer.Vector:
-          vectorLayer.getSource().getFeatures().forEach((feature) => {
-            if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-              features.push(feature);
-              }
+          vectorLayer.getSource().getFeatures().forEach(feature => {
+            intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
           });
           break;
       }
@@ -553,10 +545,8 @@ proto.getVectorLayerFeaturesFromCoordinates = function(layerId, coordinates) {
         features = vectorLayer.getIntersectedFeatures(intersectGeom);
         break;
       case ol.layer.Vector:
-        vectorLayer.getSource().getFeatures().forEach((feature) => {
-          if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-            features.push(feature);
-          }
+        vectorLayer.getSource().getFeatures().forEach(feature => {
+          intersectGeom.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
         });
         break;
     }
@@ -572,13 +562,8 @@ proto.getQueryLayerByCoordinates = function({layer, coordinates} = {}) {
       coordinates,
       mapProjection,
       resolution
-    })
-      .then((response) => {
-        resolve(response)
-      })
-      .fail((err) => {
-        reject(err)
-      })
+    }).then((response) => resolve(response))
+      .fail(err => reject(err))
   })
 };
 
@@ -607,7 +592,7 @@ proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
  */
 
 proto.activeMapControl = function(controlName) {
-  const mapControl = this._mapControls.find((control) => control.type === controlName);
+  const mapControl = this._mapControls.find(control => control.type === controlName);
   const control = mapControl.control;
   !control.isToggled() ? control.toggle() : null;
 };
@@ -694,13 +679,12 @@ proto._setupControls = function() {
           if (!isMobile.any) {
             const coordinateLabels = this.getProjection().getUnits() === 'm' ? ['X', 'Y'] : ['Lng', 'Lat'];
             const crs = this.getCrs();
-            function setCoordinateFormat(coordinate) {
-              return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
-            }
             control = this.createMapControl(controlType, {
               add: false,
               options: {
-                coordinateFormat: setCoordinateFormat,
+                coordinateFormat(coordinate) {
+                  return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
+                },
                 undefinedHTML: false,
                 projection: this.getCrs()
               }
@@ -774,7 +758,7 @@ proto._setupControls = function() {
                 ows: 'WFS'
               }
             };
-            const getControlLayers = () =>{
+            const getControlLayers = () => {
               const controlQuerableLayers = getMapLayersByFilter({
                 QUERYABLE: true,
                 SELECTEDORALL: true
@@ -945,9 +929,7 @@ proto._setupControls = function() {
                 control.clearMarker();
                 active = false;
               };
-              streetViewService.onafter('postRender', (position) => {
-                control.setPosition(position);
-              });
+              streetViewService.onafter('postRender', position => control.setPosition(position));
               if (control) {
                 this._setMapControlVisible({
                   control,
@@ -980,16 +962,14 @@ proto._setupControls = function() {
           break;
         case 'overview':
           if (!isMobile.any) {
-            if (!this.config.overviewproject) {
-              return
-            }
+            if (!this.config.overviewproject) return;
             const overviewProjectGid = this.config.overviewproject.gid;
             if (overviewProjectGid) {
               ProjectsRegistry.getProject(overviewProjectGid)
-              .then((project) => {
+              .then(project => {
                 const overViewMapLayers = this.getOverviewMapLayers(project);
                 const viewOptions = this._calculateViewOptions({
-                  width: 200, // at monent hardocded
+                  width: 200, // at monent hardcoded
                   height: 150,
                   project
                 });
@@ -998,10 +978,7 @@ proto._setupControls = function() {
                 view.on('change:center', function(){
                   const currentCenter = this.getCenter();
                   const center = mainView.constrainCenter(currentCenter);
-                  if (center[0] !== currentCenter[0] || center[1] !== currentCenter[1]) {
-                    view.setCenter(center);
-                  }
-
+                  center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
                 });
                 control = this.createMapControl(controlType, {
                   add: false,
@@ -1020,11 +997,10 @@ proto._setupControls = function() {
           }
           break;
         case 'nominatim':
-          const lonlat = coordinates =>{
+          const lonlat = coordinates => {
             this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(()=>{
-              this.showMarker(coordinates)
-            }), 1000};
+            setTimeout(() => this.showMarker(coordinates), 1000);
+          };
           control = this.createMapControl(controlType, {
             add: false,
             options: {
@@ -1050,10 +1026,8 @@ proto._setupControls = function() {
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
-          control.on('click', throttle((evt) => {
-            this.showMarker(evt.coordinates);
-          }));
-          control.on('error', (e) => {
+          control.on('click', throttle(evt => this.showMarker(evt.coordinates)));
+          control.on('error', evt => {
             GUI.showUserMessage({
               type: 'warning',
               message: "mapcontrols.geolocations.error",
@@ -1064,9 +1038,7 @@ proto._setupControls = function() {
         case 'addlayers':
           if (!isMobile.any) {
             control = this.createMapControl(controlType, {});
-            control.on('addlayer', () => {
-              this.emit('addexternallayer');
-            });
+            control.on('addlayer', () => this.emit('addexternallayer'));
           }
           break;
         case 'length':
@@ -1166,7 +1138,7 @@ proto._setMapControlsGrid = function(length) {
 proto._setMapControlsInsideContainerLenght = function() {
   this.state.mapControl.length = 1;
   // count the mapcontrol insied g3w-map-control container
-  this._mapControls.forEach((control) => {
+  this._mapControls.forEach(control => {
     const map = this.getMap();
     this.state.mapControl.length+=control.mapcontrol ? 1: 0;
     control.control.changelayout ? control.control.changelayout(map) : null;
@@ -1263,17 +1235,11 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
-          changedAndMoreSpace.space && setTimeout(()=>{
-            handleVerticalMapControlDOMElements();
-          })
+          changedAndMoreSpace.space && setTimeout(()=>handleVerticalMapControlDOMElements());
         }
       };
       handleVerticalMapControlDOMElements();
-    } else {
-      if (isMobile.any) {
-        this.setMapControlsAlignement('rv');
-      }
-    }
+    } else isMobile.any && this.setMapControlsAlignement('rv');
   }
 };
 
@@ -1283,8 +1249,7 @@ proto._setMapControlVisible = function({control, visible=true}) {
 
 proto._addControlToMapControls = function(control, visible=true) {
   const controlElement = control.element;
-  if (!visible)
-    control.element.style.display = "none";
+  if (!visible) control.element.style.display = "none";
   $('.g3w-map-controls').append(controlElement);
 };
 
@@ -1371,10 +1336,8 @@ proto.toggleControls = function(toggle, types) {
 };
 
 proto._layoutControls = function() {
-  this._mapControls.forEach((controlObj) => {
-    if (controlObj.visible) {
-      this.viewer.map.addControl(controlObj.control);
-    }
+  this._mapControls.forEach(controlObj => {
+    if (controlObj.visible) this.viewer.map.addControl(controlObj.control);
   })
 };
 
@@ -1407,9 +1370,7 @@ proto.removeControl = function(type) {
 };
 
 proto._removeControls = function() {
-  this._mapControls.forEach((controlObj) => {
-    this.viewer.map.removeControl(controlObj.control);
-  })
+  this._mapControls.forEach(controlObj => this.viewer.map.removeControl(controlObj.control));
 };
 
 proto._unToggleControls = function({close=true} = {}) {
@@ -1474,9 +1435,7 @@ proto.getBaseLayers = function() {
 proto.getMapLayerForLayer = function(layer) {
   const multilayerId = 'layer_'+layer.getMultiLayerId();
   const mapLayers = this.getMapLayers();
-  const mapLayer = mapLayers.find((mapLayer) => {
-    return mapLayer.getId() === multilayerId
-  });
+  const mapLayer = mapLayers.find(mapLayer => mapLayer.getId() === multilayerId);
   return mapLayer;
 };
 
@@ -1581,9 +1540,7 @@ proto._removeEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   if (this._layersStoresEventKeys[layerStoreId]) {
     this._layersStoresEventKeys[layerStoreId].forEach(eventObj => {
-      Object.entries(eventObj).forEach(([event, eventKey]) => {
-        layerStore.un(event, eventKey);
-      })
+      Object.entries(eventObj).forEach(([event, eventKey]) => layerStore.un(event, eventKey));
     });
     delete this._layersStoresEventKeys[layerStoreId];
   }
@@ -1595,7 +1552,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   // check if already store a key of events
   this._layersStoresEventKeys[layerStoreId] = [];
   //SETVISIBILITY EVENT
-  const layerVisibleKey = layerStore.onafter('setLayersVisible',  (layersIds) => {
+  const layerVisibleKey = layerStore.onafter('setLayersVisible',  layersIds => {
     layersIds.forEach(layerId => {
       const layer = layerStore.getLayerById(layerId);
       const mapLayer = this.getMapLayerForLayer(layer);
@@ -1648,7 +1605,7 @@ proto._setupBaseLayers = function(){
   const baseLayers = getMapLayersByFilter({
     BASELAYER: true
   });
-  if (!baseLayers.length)return;
+  if (!baseLayers.length) return;
   baseLayers.forEach(layer => {
     const baseMapLayer = layer.getMapLayer();
     this.registerMapLayerListeners(baseMapLayer);
@@ -1669,9 +1626,7 @@ proto._setupMapLayers = function() {
   });
   this._setMapProjectionToLayers(layers);
   //group layer by mutilayer
-  const multiLayers = _.groupBy(layers, function(layer) {
-    return layer.getMultiLayerId();
-  });
+  const multiLayers = _.groupBy(layers, layer => layer.getMultiLayerId());
   let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = `layer_${id}`;
@@ -1689,9 +1644,7 @@ proto._setupMapLayers = function() {
         id: multilayerId,
         projection: this.getProjection()
       }, this.layersExtraParams);
-      layers.reverse().forEach(sub_layer => {
-        mapLayer.addLayer(sub_layer);
-      });
+      layers.reverse().forEach(sub_layer => mapLayer.addLayer(sub_layer));
       mapLayers.push(mapLayer);
     }
     this.registerMapLayerListeners(mapLayer);
@@ -1754,14 +1707,12 @@ proto.addLayerToMap = function(layer) {
 
 proto._setMapProjectionToLayers = function(layers) {
   // setup mapProjection on ech layers
-  layers.forEach((layer) => {
-    layer.setMapProjection(this.getProjection())
-  });
+  layers.forEach(layer => layer.setMapProjection(this.getProjection()));
 };
 
 proto.createMapLayer = function(layer) {
   layer.setMapProjection(this.getProjection());
-  const multilayerId = 'layer_'+layer.getMultiLayerId();
+  const multilayerId = `layer_${layer.getMultiLayerId()}`;
   const mapLayer = layer.getMapLayer({
     id: multilayerId,
     projection: this.getProjection()
@@ -1776,9 +1727,7 @@ proto.getOverviewMapLayers = function(project) {
     GEOLAYER: true,
     BASELAYER: false,
   });
-  const multiLayers = _.groupBy(projectLayers,function(layer){
-    return layer.getMultiLayerId();
-  });
+  const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
   let overviewMapLayers = [];
 
   Object.entries(multiLayers).forEach(([id, layers]) => {
@@ -1790,9 +1739,7 @@ proto.getOverviewMapLayers = function(project) {
       tiled: tiled
     };
     const mapLayer = new WMSLayer(config);
-    layers.reverse().forEach((layer) => {
-      mapLayer.addLayer(layer);
-    });
+    layers.reverse().forEach(layer => mapLayer.addLayer(layer));
     overviewMapLayers.push(mapLayer.getOLLayer(true));
   });
   return overviewMapLayers.reverse();
@@ -1819,9 +1766,7 @@ proto.registerMapLayerListeners = function(mapLayer) {
   //listen change filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>{
-        this.updateMapLayer(mapLayer, {force: true})
-      });
+      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
       layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
     });
   ///
@@ -2054,9 +1999,7 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     });
     let zoom = (typeof options.zoom === 'boolean') ? options.zoom : true;
     let hide = options.hide;
-    if (hide) {
-      hide = typeof hide === 'function' ? hide: null;
-    }
+    if (hide) hide = typeof hide === 'function' ? hide: null;
     const customStyle = options.style;
     const defaultStyle = function(feature){
       let styles = [];
@@ -2071,9 +2014,8 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
     const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
     const duration = options.duration || SETTINGS.animation.duration;
     let geometry;
-    if (geometryObj instanceof ol.geom.Geometry){
-      geometry = geometryObj;
-    } else {
+    if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
+    else {
       const format = new ol.format.GeoJSON;
       geometry = format.readGeometry(geometryObj);
     }
@@ -2229,7 +2171,7 @@ proto.startDrawGreyCover = function(message) {
   const map = this.viewer.map;
   let x_min, x_max, y_min, y_max, rotation, scale;
   this.stopDrawGreyCover();
-  const postcompose = (evt) => {
+  const postcompose = evt => {
     const ctx = evt.context;
     const size = this.getMap().getSize();
     // Inner polygon,must be counter-clockwise
@@ -2445,13 +2387,9 @@ proto.setExternalLayerStyle = function(color, field) {
   };
   const styleFunction = function(feature, resolution) {
     const featureStyleFunction = feature.getStyleFunction();
-    if (featureStyleFunction) {
-      return featureStyleFunction.call(feature, resolution);
-    } else {
-      return defaultStyle[feature.getGeometry().getType()];
-    }
+    return featureStyleFunction ? featureStyleFunction.call(feature, resolution) : defaultStyle[feature.getGeometry().getType()];
   };
-  return styleFunction
+  return styleFunction;
 };
 
 module.exports = MapService;

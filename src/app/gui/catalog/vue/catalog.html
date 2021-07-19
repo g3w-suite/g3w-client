@@ -16,7 +16,7 @@
       <bar-loader :loading="loading"></bar-loader>
       <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
-        <ul class="tree-root" v-for="_layerstree in state.layerstrees">
+        <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
             :layerstree="layerstree"
@@ -30,8 +30,8 @@
             :key="layerstree.id">
           </tristate-tree>
         </ul>
-        <ul v-if="state.externallayers.length">
-          <tristate-tree :externallayers="state.externallayers"  :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+        <ul class="g3w-external_layers-group" v-if="state.externallayers.length">
+          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
           </tristate-tree>
         </ul>
         <ul v-for="layersgroup in state.layersgroups">

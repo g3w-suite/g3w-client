@@ -198,15 +198,24 @@ Licensed under MIT
     }
     li.tree-item {
       ul.tree-content-items.root {
-        padding-left: 15px !important;
+        padding-left: 18px;
       }
       ul.tree-content-items {
-        padding-left: 20px;
+        padding-left: 14px;
+        &.g3w-lendplace-toc{
+          padding-left: 22px;
+          &.root {
+            padding-left: 18px;
+          }
+        }
         padding-top: 2px;
       }
     }
     span.root.collapse-expande-collapse-icon {
-      width: 17px;
+      width: 20px;
+      &.project-root {
+        width: 17px;
+      }
     }
     span.collapse-expande-collapse-icon {
       width: 10px;
@@ -226,7 +235,7 @@ Licensed under MIT
   }
 
   .layer-legend {
-    padding: 3px 0 0 15px;
+    padding: 3px 0 0 19px;
     background-color: @sidebar-dark-bg;
   }
 
@@ -341,7 +350,18 @@ Licensed under MIT
 }
 
 #catalog {
- #layer-menu {
+  #layers{
+    ul.g3w-external_layers-group{
+      padding-left: 0 !important;
+      li {
+        padding-left: 2px !important;
+        span.checkbox-layer{
+          padding-left: 0 !important;
+        }
+      }
+    }
+  }
+  #layer-menu {
     .wms-url-tooltip {
       .tooltip-inner {
         min-width: 200px;
