@@ -3,7 +3,8 @@ import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
+const shpwrite = require('shp-write');
+const {t} = require('core/i18n/i18n.service');
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -275,6 +276,41 @@ const vueComponentOptions = {
           ApplicationService.setDownload(false, caller_download_id);
           this._hideMenu();
         })
+    },
+    //set feature geometry to epsg84
+    async downloadExternalShapefile(layer){
+      const EPSG4326 = 'EPSG:4326';
+      this.layerMenu.loading.shp = true;
+      const mapService = GUI.getComponent('map').getService();
+      const vectorLayer = mapService.getLayerByName(layer.name);
+      const GeoJSONFormat = new ol.format.GeoJSON();
+      let features = vectorLayer.getSource().getFeatures();
+      if (layer.crs !== EPSG4326){
+        features = features.map(feature => {
+          const clonefeature = feature.clone();
+          clonefeature.getGeometry().transform(layer.crs, EPSG4326);
+          return clonefeature;
+        })
+      }
+      const GeoJSONFile = GeoJSONFormat.writeFeaturesObject(features, {
+        featureProjection: EPSG4326
+      });
+      const name = layer.name.split(`.${layer.type}`)[0];
+      shpwrite.download(GeoJSONFile,{
+        folder: name,
+        types: {
+          point:name,
+          mulipoint: name,
+          polygon: name,
+          multipolygon: name,
+          line: name,
+          polyline: name,
+          multiline: name
+        }
+      });
+      await this.$nextTick();
+      this.layerMenu.loading.shp = false;
+      this._hideMenu();
     },
     showAttributeTable(layerId) {
       this.layerMenu.loading.data_table = false;
@@ -656,7 +692,7 @@ Vue.component('tristate-tree', {
     }
     await this.$nextTick();
     $('span.scalevisibility').tooltip();
-  }
+  },
 });
 
 const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));

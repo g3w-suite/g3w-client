@@ -363,8 +363,9 @@ gulp.task('copy-and-select-plugins', function(done) {
 });
 
 gulp.task('select-plugins', function() {
-  const plugins = fs.readdirSync(distFolder).filter((file) => {
-    return file !== 'client' && fs.statSync(distFolder+'/'+file).isDirectory();
+  const plugins = fs.readdirSync(distFolder).filter(file => {
+    //exclude from list client and all template plugin
+    return (file !== 'client' && file.indexOf('template_') === -1) && fs.statSync(distFolder+'/'+file).isDirectory();
   });
   return gulp.src('./package.json')
     .pipe(prompt.prompt({

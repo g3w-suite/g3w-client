@@ -139,7 +139,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               config: {
                 legend: {
                   config: appLayoutConfig.legend,
-                  place: 'toc' // configuration value where to show legend (tab or toc)
+                  place: 'tab' // configuration value where to show legend (tab or toc)
                 },
               }
             }),

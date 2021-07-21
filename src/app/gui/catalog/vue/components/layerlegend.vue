@@ -20,8 +20,8 @@
         type: Object
       }
     },
-    data() {
-      return null
+    data(){
+      return {}
     },
     computed:{
       legend(){

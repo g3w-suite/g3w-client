@@ -2251,7 +2251,7 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalLayer = async function(externalLayer, download) {
+proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
     data,
@@ -2279,7 +2279,9 @@ proto.addExternalLayer = async function(externalLayer, download) {
       title: name,
       removable: true,
       external: true,
-      download,
+      crs: options.crs,
+      type: options.type,
+      download: options.download || false,
       visible: true,
       color
     };

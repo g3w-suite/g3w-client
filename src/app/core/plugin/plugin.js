@@ -1,6 +1,7 @@
 const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
+const ComponentsFactory = require('gui/componentsfactory');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('./pluginsregistry');
 const TIMEOUT = 10000;
@@ -26,7 +27,7 @@ const Plugin = function() {
   }, TIMEOUT)
 };
 
-inherit(Plugin,G3WObject);
+inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
 
@@ -44,6 +45,7 @@ proto.getApi = function() {
 };
 
 proto.setApi = function(api={}) {
+  //add a common method to get plufin configuration
   api.getConfig = this._api.getConfig;
   this._api = api;
 };
@@ -93,7 +95,7 @@ proto.getConfig = function(name) {
   return PluginsRegistry.getPluginConfig(name);
 };
 
-proto.setConfig = function(config) {
+proto.setConfig = function(config={}) {
   this.config = config;
 };
 
@@ -121,9 +123,7 @@ proto.setupGui = function() {};
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {
   this.dependencies = pluginsName || this.dependencies;
-  const pluginPromises = this.dependencies.map(pluginName => {
-    return this.getDependencyPlugin(pluginName)
-  });
+  const pluginPromises = this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName));
   return Promise.all(pluginPromises)
 };
 
@@ -131,22 +131,17 @@ proto.getDependencyPlugins = function(pluginsName) {
 proto.getDependencyPluginsObject = async function(pluginsName){
   const pluginsApiObject = {};
   const promises = await this.getDependencyPlugins(pluginsName);
-  this.dependencies.forEach((pluginName, index) =>{
-    pluginsApiObject[pluginName] = promises[index];
-  });
+  this.dependencies.forEach((pluginName, index) => pluginsApiObject[pluginName] = promises[index]);
   return pluginsApiObject
 };
-
 
 // method to get plugin dependency
 proto.getDependencyPlugin = function(pluginName) {
   if (!PluginsRegistry.isTherePlugin(pluginName)) return Promise.reject({error:'no plugin'});
   return new Promise((resolve, reject) => {
     const plugin = PluginsRegistry.getPlugin(pluginName);
-    plugin && plugin.isReady().then(() => {
-          resolve(plugin.getApi())
-        })
-    || PluginsRegistry.onafter('registerPlugin',(plugin) => {
+    plugin && plugin.isReady().then(() => resolve(plugin.getApi()))
+    || PluginsRegistry.onafter('registerPlugin',plugin => {
         (plugin.name === pluginName) && plugin.isReady().then(() => {resolve(plugin.getApi())})
       });
   })
@@ -180,7 +175,7 @@ proto.addTools = function({hook="tools", action, html, offline=true, icon, name,
   this._hook = hook;
   const service = this._services[hook];
   const configs = this.config.configs || [this.config];
-  const tools = configs.map((config) => {
+  const tools = configs.map(config => {
     return {
       icon,
       type,
@@ -208,9 +203,43 @@ proto.removeTools = function() {
   service.removeTools();
 };
 
+/**
+ * Method to create sibebar item component
+ */
+proto.createSideBarComponent = function(vueComponentObject, options={}){
+  const {
+    id,
+    title,
+    open=false,
+    collapsible= true,
+    mobile=true,
+    iconConfig={},
+    events={},
+    sidebarOptions={position:1}
+  } = options;
+
+  const PluginSiderBarComponent = ComponentsFactory.build(
+    {
+      vueComponentObject
+    },
+    {
+      id,
+      title,
+      open,
+      collapsible,
+      iconColor: iconConfig.color && iconConfig.color,
+      icon: iconConfig.icon && GUI.getFontClass(iconConfig.icon),
+      mobile,
+      events
+    });
+  GUI.addComponent(PluginSiderBarComponent, 'sidebar', sidebarOptions);
+  this.once('unload', () => GUI.removeComponent(id, 'sidebar', sidebarOptions));
+};
+
 // unload (case change map)
 proto.unload  = function() {
   this.service && this.service.clearAllEvents();
+  this.emit('unload');
   //console.log('UNLOAD can be overwrite by plugin');
 };
 

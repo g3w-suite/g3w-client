@@ -105,5 +105,15 @@ proto.clearAllEvents = function() {
   this._pluginEvents = null
 };
 
+// to owerwrite if we need some condition to load or not the plugin
+proto.loadPlugin = function(){
+  return true
+};
+
+//Called when plugin is removed to clear events and memory
+proto.clear = function(){
+  // to overwrite
+};
+
 
 module.exports = PluginService;

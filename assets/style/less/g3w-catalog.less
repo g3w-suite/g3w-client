@@ -152,13 +152,10 @@ Licensed under MIT
 
 .catalog .tree-item  {
   cursor: pointer;
+  margin-bottom: 3px;
   &.disabled > span {
     color: darken(@color-white, 40%);
   }
-}
-
-.catalog .itemmarginbottom {
-  margin-bottom: 5px;
 }
 
 .catalog .root {
@@ -199,13 +196,31 @@ Licensed under MIT
     li.tree-item {
       ul.tree-content-items.root {
         padding-left: 18px;
+        & > li.itemmarginbottom{
+          & > span.child {
+            span {
+              padding-left: 23px !important;
+            }
+          }
+        }
       }
       ul.tree-content-items {
         padding-left: 14px;
         &.g3w-lendplace-toc{
-          padding-left: 22px;
+          padding-left: 23px;
           &.root {
             padding-left: 18px;
+            & > li.itemmarginbottom{
+              div.layer-legend{
+                padding-left: 56px;
+              }
+              margin-left: -13px;
+              & > span.child {
+                span {
+                  padding-left: 18px !important;
+                }
+              }
+            }
           }
         }
         padding-top: 2px;
@@ -235,7 +250,7 @@ Licensed under MIT
   }
 
   .layer-legend {
-    padding: 3px 0 0 19px;
+    padding: 3px 0 0 35px;
     background-color: @sidebar-dark-bg;
   }
 
@@ -355,9 +370,6 @@ Licensed under MIT
       padding-left: 0 !important;
       li {
         padding-left: 2px !important;
-        span.checkbox-layer{
-          padding-left: 0 !important;
-        }
       }
     }
   }
