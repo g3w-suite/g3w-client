@@ -277,7 +277,11 @@ const vueComponentOptions = {
           this._hideMenu();
         })
     },
-    //set feature geometry to epsg84
+    /**
+     * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
+     * @param layer
+     * @returns {Promise<void>}
+     */
     async downloadExternalShapefile(layer){
       const EPSG4326 = 'EPSG:4326';
       this.layerMenu.loading.shp = true;
