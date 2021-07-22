@@ -2227,7 +2227,7 @@ proto.startDrawGreyCover = function(message) {
   const map = this.viewer.map;
   let x_min, x_max, y_min, y_max, rotation, scale;
   this.stopDrawGreyCover();
-  const postcompose = (evt) => {
+  const postcompose = evt => {
     const ctx = evt.context;
     const size = this.getMap().getSize();
     // Inner polygon,must be counter-clockwise
@@ -2307,7 +2307,7 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalLayer = async function(externalLayer, download) {
+proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
     data,
@@ -2335,7 +2335,9 @@ proto.addExternalLayer = async function(externalLayer, download) {
       title: name,
       removable: true,
       external: true,
-      download,
+      crs: options.crs,
+      type: options.type,
+      download: options.download || false,
       visible: true,
       color
     };

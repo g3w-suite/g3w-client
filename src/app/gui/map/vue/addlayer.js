@@ -180,10 +180,13 @@ const AddLayerComponent = {
         try {
           this.vectorLayer = await createVectorLayerFromFile(this.layer);
           this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
-            color:this.layer.color,
-            field:this.field
+            color: this.layer.color,
+            field: this.field
           }));
-          await this.service.addExternalLayer(this.vectorLayer);
+          await this.service.addExternalLayer(this.vectorLayer,{
+            crs: this.layer.crs,
+            type: this.layer.type
+          });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
         } catch(err){
