@@ -1,5 +1,5 @@
-import { ALLVALUE }  from '../../constants';
-const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
+import { ALLVALUE, RETURN_TYPES}  from '../../constants';
+const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
@@ -47,16 +47,34 @@ function SearchService(config={}) {
   this.search_endpoint = config.search_endpoint;
   this.url = options.queryurl;
   this.filter = options.filter;
+  this.return = options.return || 'data';
+  this.show = this.return === 'data';
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
   this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
-  this.createInputsFormFromFilter({
-    filter
-  });
+  this.createInputsFormFromFilter({filter});
 }
 
 inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
+
+/**
+ * Get return type
+ */
+
+proto.getReturnType = function(){
+  return this.return;
+};
+
+/**
+ * Set return type
+ */
+
+proto.setReturnType = function(returnType='data'){
+  this.return = returnType;
+  //set show only in case return === 'data'
+  this.show = this.return === 'data';
+};
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
@@ -109,7 +127,7 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=true} ={}) {
+proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=this.show} ={}) {
   filter = filter || this.createFilter();
   // call a generic method of layer
   let data;
@@ -122,15 +140,34 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         filter,
         queryUrl,
         formatter: 1, // set formatter to 1
-        feature_count
+        feature_count,
+        raw: this.return === 'search' // parameter to get raw response
       },
       outputs: show && {
         title: this.state.title
       }
     });
-    // in case of autozoom_query
-    if (this.project.state.autozoom_query && data && data.data.length === 1){
-      this.mapService.zoomToFeatures(data.data[0].features)
+    if (show){
+      // in case of autozoom_query
+      if (this.project.state.autozoom_query && data && data.data.length === 1){
+        this.mapService.zoomToFeatures(data.data[0].features)
+      }
+    } else {
+      switch (this.return) {
+        case 'search':
+          GUI.closeContent();
+          // in case of api get first response on array
+          data = data.data[0].data;
+          if (isEmptyObject(data)){
+            const dataPromise = Promise.resolve({});
+            DataRouterService.showCustomOutputDataPromise(dataPromise);
+          } else {
+            const SearchPanel = require('gui/search/vue/panel/searchpanel');
+            const add_panel = new SearchPanel(data);
+            add_panel.show();
+          }
+          break;
+      }
     }
   } catch(err){
     console.log(err)

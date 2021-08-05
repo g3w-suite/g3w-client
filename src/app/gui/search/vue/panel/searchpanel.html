@@ -2,7 +2,7 @@
   <h4 class=""><b>{{ state.title }}</b></h4>
   <slot name="tools"></slot>
   <slot name="form">
-    <form id="g3w-search-form">
+    <form class="g3w-search-form">
       <template v-for="forminput in state.forminputs" :key="forminput.id">
         <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
           <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">

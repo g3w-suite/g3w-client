@@ -66,6 +66,7 @@ function Layer(config={}, options={}) {
     metadata_querable: this.isBaseLayer() ? false: this.isQueryable({onMap:false}),
     openattributetable: this.isBaseLayer() ? false: this.canShowTable(),
     removable: config.removable || false,
+    downloadable: this.isDownloadable(),
     source: config.source,
     styles: config.styles,
     defaultstyle,
@@ -87,7 +88,7 @@ function Layer(config={}, options={}) {
   // add selectionFids
   this.selectionFids = new Set();
 
-  // refferred to (layersstore);
+  // referred to (layersstore);
   this._layersstore = config.layersstore || null;
   /*
     Providers that layer can use
@@ -141,56 +142,40 @@ proto.getSearchEndPoint = function(){
 
 //relations
 proto._createRelations = function(projectRelations) {
-  const relations = [];
   const layerId = this.getId();
-  projectRelations.forEach(relation => {
-    if ([relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1)
-      relations.push(relation);
-  });
+  const relations = projectRelations.filter(relation => [relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1);
   return new Relations({
     relations
   });
 };
 
-// retunr relations of layer
+// return relations of layer
 proto.getRelations = function() {
   return this._relations
 };
 
 proto.getRelationById = function(id) {
-  return this._relations.getArray().find(relation => {
-    relation.getId() === id;
-  })
+  return this._relations.getArray().find(relation => relation.getId() === id);
 };
 
 proto.getRelationAttributes = function(relationName) {
-  let fields = [];
-  this._relations.forEach(relation => {
-    if (relation.name === relationName) {
-      fields = relation.fields;
-      return false
-    }
-  });
-  return fields;
+  const relation = this._relations.find(relation => relation.name === relationName);
+  return relation ? relation.fields : [];
 };
 
 proto.getRelationsAttributes = function() {
   const fields = {};
-  this.state.relations.forEach(relation => {
-    fields[relation.name] = relation.fields;
-  });
+  this.state.relations.forEach(relation => fields[relation.name] = relation.fields);
   return fields;
 };
 
 proto.isChild = function() {
-  if (!this.getRelations())
-    return false;
+  if (!this.getRelations()) return false;
   return this._relations.isChild(this.getId());
 };
 
 proto.isFather = function() {
-  if (!this.getRelations())
-    return false;
+  if (!this.getRelations()) return false;
   return this._relations.isFather(this.getId());
 };
 
@@ -424,7 +409,6 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-
 proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
   const d = $.Deferred();
   let provider;
@@ -486,7 +470,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 
 //search Features methods
 proto.searchFeatures = function(options={}, params={}){
-  const {search_endpoint=this.config.search_endpoint} = options;
+  const {search_endpoint = this.config.search_endpoint} = options;
   return new Promise(async (resolve, reject) =>{
     switch (search_endpoint) {
       case 'ows':
@@ -499,10 +483,11 @@ proto.searchFeatures = function(options={}, params={}){
           }).fail(error => reject(error));
         break;
       case 'api':
-        const {filter:field, suggest={}, unique, queryUrl} = options;
+        const {raw=false, filter:field, suggest={}, unique, queryUrl} = options;
         try {
           const response = await this.getFilterData({
             queryUrl,
+            raw,
             field,
             suggest,
             unique
@@ -522,11 +507,12 @@ proto.searchFeatures = function(options={}, params={}){
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({field, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
     queryUrl,
     field,
+    raw,
     suggest,
     formatter,
     unique
@@ -630,6 +616,11 @@ proto.getSourceType = function() {
   return this.state.source ? this.state.source.type : null;
 };
 
+proto.isDownloadable = function(){
+  return this.isShpDownlodable() || this.isXlsDownlodable() ||
+    this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
+};
+
 proto.isShpDownlodable = function() {
   return !this.isBaseLayer() && this.config.download;
 };
@@ -662,8 +653,8 @@ proto.isHidden = function() {
   return this.state.hidden;
 };
 
-proto.setHidden = function(bool) {
-  this.state.hidden = _.isBoolean(bool) ? bool: true;
+proto.setHidden = function(bool=true) {
+  this.state.hidden = bool;
 };
 
 proto.isModified = function() {
@@ -864,9 +855,7 @@ proto.changeAttribute = function(attribute, type, options) {
 };
 
 proto.getAttributeLabel = function(name) {
-  const field = this.getAttributes().find((field) => {
-   return field.name === name;
-  });
+  const field = this.getAttributes().find(field=> field.name === name);
   return field && field.label;
 };
 

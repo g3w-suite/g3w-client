@@ -1,6 +1,6 @@
 import Select2 from './select2.vue'
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const {base, inherit} = require('core/utils/utils');
+const {base, inherit, uniqueId} = require('core/utils/utils');
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 const compiledTemplate = Vue.compile(require('./searchpanel.html'));
@@ -69,6 +69,7 @@ const SearchPanelComponent = Vue.extend({
 function SearchPanel(options = {}) {
   const service = options.service || new Service(options);
   this.setService(service);
+  this.id = uniqueId();
   const SearchPanel = options.component || SearchPanelComponent;
   const internalPanel = new SearchPanel({
     service

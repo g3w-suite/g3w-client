@@ -21,15 +21,15 @@ const Component = function(options={}) {
   };
   //setters
   this.setters = {
-    setOpen: function(bool) {
+    setOpen(bool) {
       this.state.open = bool;
       this._setOpen(bool);
     },
-    setVisible: function(bool) {
+    setVisible(bool) {
       this.state.visible = bool;
       this._setVisible(bool);
     },
-    reload: function() {
+    reload() {
       this._reload();
     }
   };
@@ -99,9 +99,7 @@ proto.handleEventsComponent = function(){
   const {open, visible} = this.events;
   if (open) {
     const {when="after", cb=()=>{}, guiEvents=[]} = open;
-    this[`on${when}`]('setOpen', bool => {
-      cb(bool);
-    });
+    this[`on${when}`]('setOpen', bool => cb(bool));
   }
 };
 
@@ -147,11 +145,9 @@ proto.setInternalComponent = function(internalComponent, options={}) {
     this.internalComponent = new this.internalComponentClass;
   else this.internalComponent = internalComponent;
   const {events=[]} = options;
-  events.forEach((event)=> {
+  events.forEach(event => {
     const {name, handler} = event;
-    this.internalComponent.$on(name, (data) => {
-      handler && handler(data) || this[`set${capitalize_first_letter(name)}`](data)
-    })
+    this.internalComponent.$on(name, data => handler && handler(data) || this[`set${capitalize_first_letter(name)}`](data));
   })
 };
 
@@ -168,15 +164,11 @@ proto.overwriteServiceMethod = function(methodName, method) {
 };
 
 proto.overwriteServiceMethods = function(methodsOptions) {
-  Object.entries(methodsOptions).forEach(([methodName, method]) => {
-    this.overwriteServiceMethod(methodName, method);
-  })
+  Object.entries(methodsOptions).forEach(([methodName, method]) => this.overwriteServiceMethod(methodName, method))
 };
 
 proto.extendService = function(serviceOptions) {
-  if (this._service) {
-    merge(this._service, serviceOptions);
-  }
+  this._service && merge(this._service, serviceOptions);
 };
 
 proto.extendInternalComponent = function(internalComponentOptions) {
@@ -195,15 +187,11 @@ proto.extendInternalComponent = function(internalComponentOptions) {
         }
       }
     });
-  } else {
-    this.vueComponent = internalComponentOptions;
-  }
+  } else this.vueComponent = internalComponentOptions;
 };
 
 proto.extendInternalComponentComponents = function(components) {
-  if (components) {
-    merge(this.vueComponent.components, components);
-  }
+  components && merge(this.vueComponent.components, components);
 };
 
 proto.extendComponents = function(components) {
@@ -211,17 +199,13 @@ proto.extendComponents = function(components) {
 };
 
 proto.addComponent = function(component) {
-  if (component) {
-    this.vueComponent.components[component.key] = component.value;
-  }
+  if (component) this.vueComponent.components[component.key] = component.value;
 };
 
 proto.extendInternalComponentMethods = function(methods) {
   if (methods) {
     _.forEach(methods, function (value, key) {
-      if (!(value instanceof Function)){
-        delete methods[key];
-      }
+      if (!(value instanceof Function))delete methods[key];
     });
     merge(this.vueComponent.methods, methods);
   }
@@ -230,18 +214,14 @@ proto.extendInternalComponentMethods = function(methods) {
 proto.extendInternalComponentComputed = function(computed) {
   if (computed) {
     _.forEach(computed, function (value, key) {
-      if (!(value instanceof Function)){
-        delete computed[key];
-      }
+      if (!(value instanceof Function))delete computed[key];
     });
     merge(this.vueComponent.computed, computed);
   }
 };
 
 proto.setInternalComponentTemplate = function(template) {
-  if (template) {
-    this.vueComponent.template = template;
-  }
+  if (template) this.vueComponent.template = template;
 };
 
 proto.getInternalTemplate = function() {

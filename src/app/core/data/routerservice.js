@@ -55,6 +55,16 @@ function Routerservice() {
   };
 
   /**
+   * Set a costum datapromiseoutput to applicationa outputs settede
+   * @param dataPromise
+   */
+  this.showCustomOutputDataPromise = function(dataPromise){
+    this.currentoutputplaces.forEach(place =>{
+      this.ouputplaces[place](dataPromise, {});
+    });
+  };
+
+  /**
    *
    * @param serviceName
    * @returns {*}
