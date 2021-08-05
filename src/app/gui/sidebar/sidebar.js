@@ -172,12 +172,14 @@ function SidebarService() {
     })
   };
   // show panel on stack
-  this.showPanel = function(panel) {
+  this.showPanel = function(panel, options={}) {
     return new Promise((resolve, reject) => {
       this.state.gui.title = panel.title;
-      const parent = "#g3w-sidebarpanel-placeholder";
+      const parent =  "#g3w-sidebarpanel-placeholder";
+      this.stack.getCurrentContentData() && $(this.stack.getCurrentContentData().content.internalPanel.$el).hide();
       this.stack.push(panel, {
-        parent
+        parent,
+        ...options
       }).then(content => resolve(content))
     })
   };
@@ -186,8 +188,18 @@ function SidebarService() {
   this.closePanel = function() {
     this.state.gui.title = null;
     this.closeSidebarPanel();
-    this.stack.pop().then(content => content = null);
+    this.stack.pop().then(content => {
+      content = null;
+      this.stack.getCurrentContentData() && $(this.stack.getCurrentContentData().content.internalPanel.$el).show();
+    });
   };
+
+  this.closeAllPanels = function(){
+    this.state.gui.title = null;
+    this.closeSidebarPanel();
+    this.stack.clear();
+  };
+
   base(this);
 }
 
@@ -197,7 +209,7 @@ const sidebarService = new SidebarService;
 const compiledSideBarTemplate = Vue.compile(require('./sidebar.html'));
 const SidebarComponent = Vue.extend({
     ...compiledSideBarTemplate,
-    data: function() {
+    data() {
     	return {
         components: sidebarService.state.components,
         panels: sidebarService.stack.state.contentsdata,
@@ -229,8 +241,11 @@ const SidebarComponent = Vue.extend({
       }
     },
     methods: {
-      closePanel: function() {
+      closePanel() {
         sidebarService.closePanel();
+      },
+      closeAllPanels(){
+        sidebarService.closeAllPanels();
       }
     },
     created() {

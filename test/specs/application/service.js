@@ -13,13 +13,13 @@ const MapComponent = require('gui/map/vue/map');
 const mapDOM = {
   width: 1168,
   height: 899
-}
+};
 let ApplicationTemplate;
 
 const setupFakeGUIMethods = function(){
   GUI.notify = {};
   GUI.setContent = GUI.disableSideBar = GUI.getFontClass = GUI.showContentFactory = GUI.setLoadingContent = GUI.closeContent = GUI.closeOpenSideBarComponent = GUI.notify.error = ()=>{};
-}
+};
 
 const initApplicationTemplate = function(){
   ApplicationTemplate = new Application({
@@ -29,9 +29,7 @@ const initApplicationTemplate = function(){
   const templateConfig = ApplicationTemplate._createTemplateConfig();
   const { placeholders:{sidebar}, othercomponents, viewport } = templateConfig;
   //viewport component
-  Object.values(viewport.components).forEach(component =>{
-    ApplicationTemplate._addComponent(component, component.getId())
-  })
+  Object.values(viewport.components).forEach(component =>{ApplicationTemplate._addComponent(component, component.getId())});
   setupFakeGUIMethods();
   const mapService = GUI.getComponent('map').getService();
 
@@ -61,12 +59,12 @@ const initApplicationTemplate = function(){
       console.log(err)
     }
   })
-}
+};
 
 const urls = {
   login: null,
   initconfig: null
-}
+};
 
 export const setUrls = function({groupId, lng}){
   urls.initconfig = `/${serverConfig.urls.initconfig}/${groupId}/`;
@@ -76,18 +74,18 @@ export const setUrls = function({groupId, lng}){
 
 export const getUrls = function() {
   return urls;
-}
+};
 
 export const getUrl = function(type) {
   return urls[type];
-}
+};
 
 export const Authentication = async function({lng='en'}) {
   const csrftoken = await doAuthentication({
     lng
   });
   return csrftoken;
-}
+};
 
 export async function doAuthentication({lng='en'}={}) {
   const {username, password} = LoginConfig;
@@ -116,20 +114,20 @@ export const getInitConfig = async function(url) {
       error
     };
   }
-}
+};
 
 export const getApplicationConfig = async function(url) {
   try {
     const initConfig = await getInitConfig(url);
     return ApplicationService.createApplicationConfig(initConfig);
-  }catch(error) {
+  } catch(error) {
     return Promise.reject(error);
   }
-}
+};
 
 export function setPluginsConfig(config){
   PluginsRegistry.setPluginsConfig(config);
-};
+}
 
 export const getProjetsRegistry = async function(url) {
   try {
@@ -144,7 +142,7 @@ export const getProjetsRegistry = async function(url) {
           initApplicationTemplate();
           resolve();
         })
-        .fail((error)=> {
+        .fail(error=> {
           reject(error);
         })
     })
@@ -155,7 +153,7 @@ export const getProjetsRegistry = async function(url) {
       error
     })
   }
-}
+};
 
 export function getProject(gid) {
   return new Promise((resolve, reject) => {
@@ -165,7 +163,7 @@ export function getProject(gid) {
       reject(error)
     })
   })
-};
+}
 
 export function getApplicationLayout() {
   return ApplicationService.getConfig().layout || {};

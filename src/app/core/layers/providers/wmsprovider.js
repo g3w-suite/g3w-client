@@ -43,7 +43,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
     FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
     FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
     G3W_TOLERANCE: PIXEL_TOLERANCE * resolution,
-    WITH_GEOMETRY:1,
+    WITH_GEOMETRY: true,
     I: x,
     J: y,
     DPI,

@@ -483,10 +483,11 @@ proto.searchFeatures = function(options={}, params={}){
           }).fail(error => reject(error));
         break;
       case 'api':
-        const {filter:field, suggest={}, unique, queryUrl} = options;
+        const {raw=false, filter:field, suggest={}, unique, queryUrl} = options;
         try {
           const response = await this.getFilterData({
             queryUrl,
+            raw,
             field,
             suggest,
             unique
@@ -506,11 +507,12 @@ proto.searchFeatures = function(options={}, params={}){
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({field, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
     queryUrl,
     field,
+    raw,
     suggest,
     formatter,
     unique

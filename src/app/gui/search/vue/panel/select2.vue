@@ -25,7 +25,7 @@
         const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({
           width: '100%',
-          dropdownParent:$('#g3w-search-form'),
+          dropdownParent:$('.g3w-search-form:visible'),
           minimumInputLength: isAutocomplete && numdigaut || 0,
           allowClear: isAutocomplete,
           placeholder : isAutocomplete ? '' : null,

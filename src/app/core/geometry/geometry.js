@@ -253,6 +253,38 @@ const Geometry = {
   },
   isPolygonGeometryType(geometryType){
     return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
+  },
+  is3DGeometry(geometryType){
+    return [
+      Geometry.GeometryTypes.POINTZ,
+      Geometry.GeometryTypes.POINTM,
+      Geometry.GeometryTypes.POINTZM,
+      Geometry.GeometryTypes.POINT25D,
+      Geometry.GeometryTypes.LINESTRINGZ,
+      Geometry.GeometryTypes.LINESTRINGM,
+      Geometry.GeometryTypes.LINESTRINGZM,
+      Geometry.GeometryTypes.LINESTRING25D,
+      Geometry.GeometryTypes.MULTILINESTRINGZ,
+      Geometry.GeometryTypes.MULTILINESTRINGM,
+      Geometry.GeometryTypes.MULTILINESTRINGZM,
+      Geometry.GeometryTypes.MULTILINESTRING25D,
+      Geometry.GeometryTypes.LINEZ,
+      Geometry.GeometryTypes.LINEM,
+      Geometry.GeometryTypes.LINEZM,
+      Geometry.GeometryTypes.LINE25D,
+      Geometry.GeometryTypes.MULTILINEZ,
+      Geometry.GeometryTypes.MULTILINEM,
+      Geometry.GeometryTypes.MULTILINEZM,
+      Geometry.GeometryTypes.MULTILINE25D,
+      Geometry.GeometryTypes.POLYGONZ,
+      Geometry.GeometryTypes.POLYGONM,
+      Geometry.GeometryTypes.POLYGONZM,
+      Geometry.GeometryTypes.POLYGON25D,
+      Geometry.GeometryTypes.MULTIPOLYGONZ,
+      Geometry.GeometryTypes.MULTIPOLYGONM,
+      Geometry.GeometryTypes.MULTIPOLYGONZM,
+      Geometry.GeometryTypes.MULTIPOLYGON25D
+    ].find( type3D => type3D === geometryType);
   }
 };
 

@@ -19,7 +19,7 @@ inherit(BarStack, G3WObject);
 const proto = BarStack.prototype;
 
 // push componenet on top of parent
-proto.push = function(content, options) {
+proto.push = function(content, options={}) {
   // parent identify the DOM element where insert (append o meno) the component/panel
   this._parent = options.parent;
   // call barstack mount method
@@ -68,7 +68,7 @@ proto.getPreviousContentData = function() {
   return this.state.contentsdata[this.state.contentsdata.length - 2];
 };
 
-// funzione che fa il mopnt del componente
+// mount component
 proto._mount = function(content, options) {
   // check the type of content:
   // JQuery type
@@ -76,10 +76,7 @@ proto._mount = function(content, options) {
   //String
   else if (_.isString(content)) {
     let jqueryEl = $(content);
-    // nel caso in cui content sia testo puro, devo wrapparlo in un tag HTML in modo che $() generi un elemento DOM
-    if (!jqueryEl.length) {
-      jqueryEl = $('<div>'+content+'</div>');
-    }
+    if (!jqueryEl.length) jqueryEl = $('<div>'+content+'</div>');
     return this._setJqueryContent(jqueryEl);
   }
   // Vue
@@ -91,12 +88,12 @@ proto._mount = function(content, options) {
   else return this._setDOMContent(content);
 };
 
-// JQuery append jQuery comonent
+// JQuery append jQuery component
 proto._setJqueryContent = function(content, options) {
   $(this._parent).append(content);
   this.state.contentsdata.push({
-    content: content,
-    options: options
+    content,
+    options
   });
   return resolve();
 };
@@ -105,8 +102,8 @@ proto._setJqueryContent = function(content, options) {
 proto._setDOMContent = function(content, options) {
   this._parent.appendChild(content);
   this.state.contentsdata.push({
-    content: content,
-    options: options
+    content,
+    options
   });
   return resolve();
 };
@@ -135,9 +132,7 @@ proto._checkDuplicateVueContent = function(content) {
   let idxToRemove = null;
   const id = content.getId();
   this.state.contentsdata.forEach((data, idx) => {
-    if (data.content.getId && (data.content.getId() == id)) {
-      idxToRemove = idx;
-    }
+    if (data.content.getId && (data.content.getId() == id)) idxToRemove = idx;
   });
   if (!_.isNull(idxToRemove)) {
     const data = this.state.contentsdata[idxToRemove];

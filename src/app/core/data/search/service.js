@@ -4,9 +4,10 @@ const BaseService = require('core/data/service');
 function SearchService(){
   base(this);
   // method to searchfeature features
-  this.features = async function(options={layer, search_endpoint, filter, queryUrl, feature_count}){
+  this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count}){
     const promisesSearch =[];
     const {layer, ...params} = options;
+    const {raw=false} = options;
     const dataSearch = {
       data: [],
       type: params.search_endpoint
@@ -38,9 +39,16 @@ function SearchService(){
       promisesSearch.push(promise);
     }
     const responses = await Promise.allSettled(promisesSearch);
+
     responses.forEach(({status, value}={}) => {
-      const {data=[]} = value;
-      params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+      if (raw) {
+        dataSearch.data.push(params.search_endpoint === 'api' ? {
+          data: value
+        }: value );
+      } else {
+        const {data=[]} = value;
+        params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+      }
     });
     return dataSearch;
   }

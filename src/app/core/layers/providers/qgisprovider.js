@@ -61,7 +61,7 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
   const params = {
     field,
     suggest,
@@ -70,13 +70,13 @@ proto.getFilterData = async function({field, suggest={}, unique, formatter=1, qu
     filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
-    const response = await XHR.get({
+    let response = await XHR.get({
       url: `${queryUrl ?  queryUrl : this._dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
-    const data = response.result ?  unique ? response.data :  {
+    const data = raw ? response : response.result ?  unique ? response.data :  {
       data: this._parseGeoJsonResponse({
         layers: [this._layer],
         response:response.vector.data,
@@ -99,6 +99,8 @@ proto.setProjections = function() {
 proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
+  // parameter to get rwa response
+  const raw = options.raw || false;
   let {filter=null} = options;
   filter = filter && Array.isArray(filter) ? filter : [filter];
   const isVector = this._layer.getType() !== "table";
@@ -125,13 +127,13 @@ proto.query = function(options={}) {
       I,
       J,
       FILTER: filter && filter.length ? filter.join(';') : undefined,
-      WITH_GEOMETRY: isVector ? 1: 0
+      WITH_GEOMETRY: isVector
     };
     XHR.get({
       url,
       params
     }).then(response => {
-      const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
+      const featuresForLayers = raw ? response : this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve(featuresForLayers);
     }).catch(err => d.reject(err));
   } else d.reject();
