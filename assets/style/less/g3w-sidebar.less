@@ -80,6 +80,9 @@
       padding: 2px;
       margin-bottom: 2px;
       cursor: pointer;
+      &.toggled {
+        border: 1px solid #ffffff;
+      }
       &:hover {
         background-color: lighten(@sidebar-dark-bg,15%);
       }
@@ -96,6 +99,14 @@
 
   #g3w-sidebarcomponents .sidebaritem a .fa-search {
     color: #8DC3E3;
+  }
+
+  #g3w-sidebarcomponents .sidebaritem .action-button {
+    box-shadow: 0 2px 5px rgba(0,0,0, 0.3);
+    border-radius: 3px;
+    &.toggled {
+      border: 1px solid #FFFFFF;
+    }
   }
 
   #g3w-sidebarcomponents .sidebaritem a {

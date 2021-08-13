@@ -239,7 +239,7 @@ proto.getFeatures = function(options={}, params={}) {
         })
       } else if (filter.nofeatures){
         const jsonFilter = JSON.stringify({
-          field: 'id|eq|__G3W__NO_FEATURES__'
+          field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
         });
         promise = XHR.post({
           url,

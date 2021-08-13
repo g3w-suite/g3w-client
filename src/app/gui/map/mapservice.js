@@ -1,6 +1,6 @@
 import {G3W_FID} from 'constant';
 const t = require('core/i18n/i18n.service').t;
-const {inherit, base, copyUrl, uniqueId, debounce, throttle} = require('core/utils/utils');
+const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -640,8 +640,10 @@ proto._setupControls = function() {
     const mapcontrols = this.config.mapcontrols;
     const feature_count = this.project.getQueryFeatureCount();
     const map = this.getMap();
-    mapcontrols.forEach((controlType) => {
+    mapcontrols.forEach(controlType => {
       let control;
+      // mapcontroc can be a String or object with options
+      controlType = toRawType(controlType) === 'String' ? controlType : controlType.name;
       switch (controlType) {
         case 'reset':
           if (!isMobile.any) {
@@ -1095,7 +1097,6 @@ proto.createCopyMapExtentUrl = function(){
   copyUrl(url);
 };
 
-
 proto._setMapControlsGrid = function(length) {
   const grid = this.state.mapControl.grid;
     if (length < 2) {
@@ -1154,9 +1155,7 @@ proto.filterableLayersAvailable = function() {
     FILTERABLE: true,
     SELECTEDORALL: true
   });
-  return layers.some((layer) => {
-    return layer.getProvider('filter') instanceof WFSProvider;
-  });
+  return layers.some(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {
@@ -1346,25 +1345,25 @@ proto.getMapControls = function() {
 };
 
 proto.removeControlById = function(id) {
-  this._mapControls.forEach((controlObj, ctrlIdx) => {
+  this._mapControls.find((controlObj, ctrlIdx) => {
     if (id === controlObj.id) {
       this._mapControls.splice(ctrlIdx, 1);
       const control = controlObj.control;
       this.viewer.map.removeControl(control);
       control.hideControl && control.hideControl();
-      return false;
+      return true;
     }
   })
 };
 
 proto.removeControl = function(type) {
-  this._mapControls.forEach((controlObj, ctrlIdx) => {
+  this._mapControls.find((controlObj, ctrlIdx) => {
     if (type === controlObj.type) {
       this._mapControls.splice(ctrlIdx, 1);
       const control = controlObj.control;
       this.viewer.map.removeControl(control);
       control.hideControl && control.hideControl();
-      return false;
+      return true;
     }
   })
 };
@@ -1795,7 +1794,7 @@ proto.getCurrentToggledMapControl = function(){
 };
 
 /**
- * close: paramt to close eventually right content open
+ * close: param to close eventually right content open
  * @param interaction
  * @param close
  */
@@ -1805,7 +1804,7 @@ proto.addInteraction = function(interaction, close) {
   untoggleMapControls && this._unToggleControls({
     close
   });
-  this.viewer.map.addInteraction(interaction);
+  this.getMap().addInteraction(interaction);
   interaction.setActive(true);
 };
 

@@ -104,6 +104,34 @@ gulp.task('sethasvalues', function(done){
   setHashValues(done);
 });
 
+/**
+ * Start to think in vendor
+ * @type {{name: string, version: string, description: string, main: string, scripts: {preinstall: string, admin: string, "admin:client": string, plugins: string, default: string, test: string, "cy:open": string}, repository: {type: string, url: string}, author: string, license: string, homepage: string, dependencies: {"shp-write": string, vue: string}, resolutions: {"graceful-fs": string}, devDependencies: {"babel-core": string, "babel-plugin-syntax-async-generators": string, "babel-plugin-syntax-jsx": string, "babel-plugin-transform-array-find": string, "babel-plugin-transform-async-to-generator": string, "babel-plugin-transform-es2015-classes": string, "babel-plugin-transform-object-rest-spread": string, "babel-plugin-transform-remove-strict-mode": string, "babel-plugin-transform-runtime": string, "babel-plugin-transform-vue-jsx": string, "babel-polyfill": string, "babel-preset-env": string, babelify: string, "browser-sync": string, browserify: string, chai: string, "chai-http": string, "current-git-branch": string, cypress: string, del: string, "generator-browserify": string, "generator-karma": string, gulp: string, "gulp-clean-css": string, "gulp-concat": string, "gulp-csso": string, "gulp-filenames": string, "gulp-filter": string, "gulp-flatten": string, "gulp-git": string, "gulp-html-extend": string, "gulp-html-replace": string, "gulp-if": string, "gulp-jshint": string, "gulp-less": string, "gulp-merge": string, "gulp-minify-css": string, "gulp-preprocess": string, "gulp-prompt": string, "gulp-refresh": string, "gulp-rename": string, "gulp-replace": string, "gulp-sourcemaps": string, "gulp-streamify": string, "gulp-uglify": string, "gulp-useref": string, "gulp-watch": string, "http-proxy": string, imgurify: string, inquirer: string, jshint: string, "jshint-stylish": string, karma: string, "karma-browserify": string, "karma-chai": string, "karma-chrome-launcher": string, "karma-cli": string, "karma-mocha": string, "karma-requirejs": string, "karma-sinon": string, less: string, "less-plugin-glob": string, md5: string, mocha: string, "node-lessify": string, preprocess: string, requirejs: string, "run-sequence": string, sinon: string, "stream-array": string, "stream-concat": string, stringify: string, "uglify-js": string, "vinyl-buffer": string, "vinyl-paths": string, "vinyl-source-stream": string, vueify: string, watchify: string, yargs: string}}}
+ */
+const packageJSON = require('./package.json');
+const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {}).filter(dep => dep !== 'vue');
+
+
+gulp.task('vendor_node_modules_js', function() {
+  return browserify()
+    .require(dependencies)
+    .bundle()
+    .pipe(source('vendor.node_modules.min.js'))
+    .pipe(buffer())
+    .pipe(uglify())
+    .pipe(gulp.dest(`${clientFolder}/js`));
+});
+
+gulp.task('concatenate_node_modules_vendor_min', ['vendor_node_modules_js'], function() {
+  return gulp.src(`${clientFolder}/js/vendor.*.js`)
+    .pipe(concat('vendor.min.js'))
+    .pipe(gulp.dest(`${clientFolder}/js/`));
+});
+
+
+/**
+ * End vendor task
+ */
 
 // Browserify Task -- It used to trasform code modularizated in browser compatible way
 gulp.task('browserify', [], function() {
@@ -115,7 +143,17 @@ gulp.task('browserify', [], function() {
     cache: {},
     packageCache: {}
   });
-  if (!production) bundler = watchify(bundler);
+  if (!production) {
+    bundler.on('prebundle', bundle => {
+      dependencies.forEach(dep => {
+        bundle.external(dep);
+        bundle.require(dep);
+      });
+    });
+    bundler = watchify(bundler);
+  }
+  else dependencies.forEach(dep => bundler.external(dep)); //add externalmodule node_modules on vendor
+
   // trasformation
   bundler.transform(vueify)
     .transform(babelify, {
@@ -340,6 +378,13 @@ gulp.task('serve', function(done) {
   5 - write django g3w-admin template subtitude suffix .min with current version
   6 - Remove app.js and app.css from g3w-admin client folder
 */
+
+// gulp.task('dist', function(done) {
+//   runSequence('clean','production','browserify','html', 'concatenate_node_modules_vendor_min', 'sethasvalues','html:compiletemplate','cleanup',
+//     done);
+// });
+
+
 gulp.task('dist', function(done) {
   runSequence('clean','production','browserify','html', 'sethasvalues','html:compiletemplate','cleanup',
     done);

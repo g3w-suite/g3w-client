@@ -1,6 +1,9 @@
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const History = require('./history');
+const Layer = require('core/layers/layer');
+const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+const { is3DGeometry } = require('core/geometry/geometry');
 const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
@@ -341,6 +344,33 @@ proto.getCommitItems = function() {
   return this._serializeCommit(commitItems);
 };
 
+/**
+ *
+ * Set geometry: {type} of geojson to a 3D type if needed
+ * @param layerId
+ * @param commitItems
+ */
+proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
+  const {relations} = commitItems;
+  const editingLayer = MapLayersStoreRegistry.getLayerById(layerId).getEditingLayer();
+  // check id there is a editing layer and if is a vector layer
+  if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
+    // get Geometry type layer
+    const geometryType = editingLayer.getGeometryType();
+    // if is a 3D layer i set on geoJON before send it to server
+    if (is3DGeometry(geometryType)){
+      ['add', 'update'].forEach(action =>{
+        commitItems[action].forEach(feature => feature.geometry.type = geometryType)
+      })
+    }
+  }
+  // the same control of relations layers
+  Object.keys(relations).forEach(layerId => this.set3DGeometryType({
+    layerId,
+    commitItems: relations[layerId]
+  }));
+};
+
 proto.commit = function({ids=null, items, relations=true}={}) {
   const d = $.Deferred();
   let commitItems;
@@ -355,6 +385,9 @@ proto.commit = function({ids=null, items, relations=true}={}) {
       commitItems = this._serializeCommit(commitItems);
     }
     if (!relations) commitItems.relations = {};
+    // this.set3DGeometryType({
+    //   commitItems
+    // });
     this._editor.commit(commitItems)
       .then(response => {
         if (response && response.result) {
