@@ -3,6 +3,7 @@ function Screenshotcontrol(options = {}) {
   options.name = "maptoimage";
   options.tipLabel =  "Screenshot";
   options.label = "\ue90f";
+  options.toggled = false;
   OnClickControl.call(this, options);
 }
 

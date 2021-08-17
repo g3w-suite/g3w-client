@@ -1,6 +1,6 @@
 <li
   class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select"
-  :class="{selected: !isFolder || !isTable ? layerstree.selected : false,itemmarginbottom: !isFolder,  disabled: isDisabled  }">
+  :class="{selected: !isFolder || !isTable ? layerstree.selected : false, itemmarginbottom: !isFolder,  disabled: isDisabled, group: isFolder  }">
   <span v-if="isFolder"
     style="padding-right: 2px;"
     :class="[{bold : isFolder}, layerstree.expanded ? g3wtemplate.getFontClass('caret-down') : g3wtemplate.getFontClass('caret-right')]"
@@ -14,7 +14,7 @@
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
-        :style="{paddingLeft: legendplace === 'toc' ? '18px' : '25px'}"
+        :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '18px' : '25px'}"
         :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
   <template v-else>
@@ -26,11 +26,11 @@
           @click="downloadExternalLayer(layerstree.download)">
     </span>
     <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
-      <span class="collapse-expande-collapse-icon" v-if="legendplace === 'toc' && layerstree.legend && layerstree.visible"
+      <span class="collapse-expande-collapse-icon" v-if="this.legendlayerposition === 'toc'"
         @click.stop="()=> layerstree.legend.show = !layerstree.legend.show"
         :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
       </span>
-      <span :style="{paddingLeft: (legendplace === 'toc' && layerstree.visible && layerstree.legend) ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
+      <span :style="{paddingLeft: this.legendlayerposition === 'toc' ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
          (legendplace === 'toc') ? '19px' : '26px'}" @click.stop="toggle(false)"
         :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
       </span>
@@ -52,7 +52,7 @@
         <span v-if="layerstree.selection.active || layerstree.filter.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
       </div>
   </div>
-  <layerlegend v-if="legendplace === 'toc' && layerstree.legend" :layer="layerstree"></layerlegend>
+  <layerlegend v-if="this.legendlayerposition === 'toc'" :layer="layerstree"></layerlegend>
   <ul v-if="isFolder" class="tree-content-items" :class="[`g3w-lendplace-${legendplace}`, {root: root}]" v-show="layerstree.expanded">
     <tristate-tree
       :root="false"

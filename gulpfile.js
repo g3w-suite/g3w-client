@@ -111,7 +111,6 @@ gulp.task('sethasvalues', function(done){
 const packageJSON = require('./package.json');
 const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {}).filter(dep => dep !== 'vue');
 
-
 gulp.task('vendor_node_modules_js', function() {
   return browserify()
     .require(dependencies)
@@ -126,6 +125,10 @@ gulp.task('concatenate_node_modules_vendor_min', ['vendor_node_modules_js'], fun
   return gulp.src(`${clientFolder}/js/vendor.*.js`)
     .pipe(concat('vendor.min.js'))
     .pipe(gulp.dest(`${clientFolder}/js/`));
+});
+
+gulp.task('clean_vendor_node_modules_min', function() {
+  return del([`${clientFolder}/js/vendor.node_modules.min.js`], {force:true});
 });
 
 
@@ -151,8 +154,7 @@ gulp.task('browserify', [], function() {
       });
     });
     bundler = watchify(bundler);
-  }
-  else dependencies.forEach(dep => bundler.external(dep)); //add externalmodule node_modules on vendor
+  } else dependencies.forEach(dep => bundler.external(dep)); //add externalmodule node_modules on vendor
 
   // trasformation
   bundler.transform(vueify)
@@ -173,7 +175,7 @@ gulp.task('browserify', [], function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
-      .pipe(gulpif(production, replace("{G3W_VERSION}",versionHash)))
+      .pipe(gulpif(production, replace("{G3W_VERSION}", conf.version)))
       .pipe(gulpif(production, uglify({
         compress: {
           drop_console: true
@@ -379,15 +381,9 @@ gulp.task('serve', function(done) {
   6 - Remove app.js and app.css from g3w-admin client folder
 */
 
-// gulp.task('dist', function(done) {
-//   runSequence('clean','production','browserify','html', 'concatenate_node_modules_vendor_min', 'sethasvalues','html:compiletemplate','cleanup',
-//     done);
-// });
-
-
 gulp.task('dist', function(done) {
-  runSequence('clean','production','browserify','html', 'sethasvalues','html:compiletemplate','cleanup',
-    done);
+  if (build_all) runSequence('clean','production','browserify','html', 'concatenate_node_modules_vendor_min', 'clean_vendor_node_modules_min', 'sethasvalues','html:compiletemplate','cleanup', done);
+  else runSequence('clean','production','browserify','html', 'sethasvalues','html:compiletemplate','cleanup', done);
 });
 
 gulp.task('g3w-admin-plugins',function() {

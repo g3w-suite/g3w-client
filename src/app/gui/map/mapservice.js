@@ -43,6 +43,8 @@ function MapService(options={}) {
   this._changeMapMapControls = [];
   this._mapLayers = [];
   this._externalLayers = [];
+  // array where store interactions added from plugin or esternal from application
+  this._externalInteractions = [];
   this.mapBaseLayers = {};
   this.defaultsLayers = {
     _style: {
@@ -227,12 +229,12 @@ function MapService(options={}) {
       this.setUpMapOlEvents();
       this.emit('viewerset');
     },
-    controlClick(active) {}
+    controlClick(mapcontrol, info={}) {}
   };
 
   this._onCatalogSelectLayer = function(layer) {
     if (layer) {
-      const geometryType  = layer.getGeometryType();
+      const geometryType = layer.getGeometryType();
       const querable = layer.isQueryable();
       for (let i = 0; i < this._mapControls.length; i++) {
         const mapcontrol = this._mapControls[i];
@@ -1277,11 +1279,18 @@ proto.addControl = function(id, type, control, addToMapControls=true, visible=tr
     visible,
     mapcontrol: addToMapControls && visible
   });
-  control.on('controlclick', active => this.controlClick(active));
+  control.on('controlclick', evt => {
+    const {target:mapcontrol} = evt;
+    const info = {
+      clickmap: mapcontrol.isClickMap && mapcontrol.isClickMap() || false
+    };
+    info.clickmap && this._externalInteractions.forEach(interaction => interaction.setActive(false));
+    this.controlClick(mapcontrol, info)
+  });
   const buttonControl = $(control.element).find('button');
   buttonControl.tooltip({
     placement: 'bottom',
-    trigger : GUI.isMobile()? 'click': 'hover'
+    trigger : GUI.isMobile() ? 'click': 'hover'
   });
   // in case of mobile hide tooltip after click
   GUI.isMobile() && buttonControl.on('shown.bs.tooltip', function(){
@@ -1372,6 +1381,11 @@ proto._removeControls = function() {
   this._mapControls.forEach(controlObj => this.viewer.map.removeControl(controlObj.control));
 };
 
+/**
+ * untoggle mapcontrol
+ * @param close GUI content
+ * @private
+ */
 proto._unToggleControls = function({close=true} = {}) {
   this._mapControls.forEach(controlObj => {
     if (controlObj.control.isToggled && controlObj.control.isToggled()) {
@@ -1796,21 +1810,32 @@ proto.getCurrentToggledMapControl = function(){
 /**
  * close: param to close eventually right content open
  * @param interaction
- * @param close
+ * @param options is an object contain: {
+ *   active: If set new interaction active or not
+ *   active: If set new interaction active or not
+ *   close: if close eventually GUI Content (es. result right content )
+ * }
+ * return object having current toggled control if there is a toggled mapcontrol
  */
-proto.addInteraction = function(interaction, close) {
+proto.addInteraction = function(interaction, options={active:true, close:true}) {
+  const {active=true} = options;
   const control = this.getCurrentToggledMapControl();
-  const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true ;
-  untoggleMapControls && this._unToggleControls({
-    close
-  });
+  const toggled = control && control.isToggled && control.isToggled() || false;
+  const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
+  untoggleMapControls && active && this._unToggleControls(options);
   this.getMap().addInteraction(interaction);
-  interaction.setActive(true);
+  interaction.setActive(active);
+  this._externalInteractions.push(interaction);
+  return {
+    control,
+    toggled// return current toggled map control if toggled
+  }
 };
 
 proto.removeInteraction = function(interaction) {
   interaction && interaction.setActive(false);
   this.viewer.map.removeInteraction(interaction);
+  this._externalInteractions = this._externalInteractions.filter(_interaction => interaction !== _interaction);
 };
 
 proto._watchInteraction = function(interaction) {

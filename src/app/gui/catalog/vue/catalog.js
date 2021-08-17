@@ -25,6 +25,7 @@ const vueComponentOptions = {
   ...compiledTemplate,
   data() {
     const legend = this.$options.legend;
+    legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
     return {
       state: null,
       legend,
@@ -444,7 +445,8 @@ const vueComponentOptions = {
       }
       /*
        */
-      if (parent_mutually_exclusive && node.checked){
+      //indipendentely of parent group  node group is mutally exlusive
+      if (node.checked) {
         CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
         // go down tro layer tree inside forder of layer
         const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
@@ -612,6 +614,9 @@ Vue.component('tristate-tree', {
     isFolder() {
       return !!this.layerstree.nodes
     },
+    legendlayerposition(){
+      return !this.layerstree.exclude_from_legend && this.legendplace === 'toc' && this.layerstree.visible && this.layerstree.legend ? 'toc' : 'tab';
+    },
     showscalevisibilityclass(){
       return !this.isFolder && this.layerstree.scalebasedvisibility
     },
@@ -619,9 +624,7 @@ Vue.component('tristate-tree', {
       return this.showscalevisibilityclass && this.isDisabled && this.layerstree.checked;
     },
     isTable() {
-      if (!this.isFolder) {
-        return !this.layerstree.geolayer && !this.layerstree.external;
-      }
+      return !this.isFolder && !this.layerstree.geolayer && !this.layerstree.external;
     },
     isHidden() {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
@@ -696,7 +699,7 @@ Vue.component('tristate-tree', {
     }
     await this.$nextTick();
     $('span.scalevisibility').tooltip();
-  },
+  }
 });
 
 const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));

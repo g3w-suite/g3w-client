@@ -101,7 +101,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: G3WTemplate.getFontClass('calculator'),
+                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button`,
                 tooltip: 'Query Builder',
                 fnc:() => {
                   GUI.closeContent();
@@ -114,7 +114,6 @@ const ApplicationTemplate = function({ApplicationService}) {
                   color: '#8DC3E3',
                   padding: '6px',
                   fontSize: '1.2em',
-                  boxShadow: '0 2px 5px rgba(0,0,0, 0.3)',
                   borderRadius: '3px',
                   marginRight: '5px'
                 }
@@ -138,8 +137,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               mobile: true,
               config: {
                 legend: {
-                  config: appLayoutConfig.legend,
-                  place: 'tab' // configuration value where to show legend (tab or toc)
+                  config: appLayoutConfig.legend
                 },
               }
             }),

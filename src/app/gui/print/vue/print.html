@@ -1,6 +1,6 @@
 <ul id="print" class="treeview-menu">
   <li>
-    <form id="g3w-search-form" class="form-horizonal">
+    <form class="g3w-search-form form-horizonal">
       <div class="box-body">
         <transition :duration="500" name="fade">
           <bar-loader :loading="state.loading"></bar-loader>
@@ -35,7 +35,7 @@
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span>
-          <button id="printbutton" style="width:100%; font-weight: bold" class="btn skin-button" @click.stop.prevent="print" v-download v-t="'create_print'"></button>
+          <button id="printbutton" style="width:100%; font-weight: bold" class="sidebar-button btn skin-button" @click.stop.prevent="print" v-download v-t="'create_print'"></button>
         </span>
       </div>
     </form>

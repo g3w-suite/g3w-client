@@ -62,6 +62,16 @@ ol.inherits(Control, ol.control.Control);
 
 const proto = Control.prototype;
 
+
+//return if clickmap
+proto.isClickMap = function(){
+  return this.clickmap;
+};
+
+proto.isToggled = function() {
+  return this._toggled;
+};
+
 proto.setEventKey = function({eventType, eventKey}){
   this.eventKeys[eventType] = {
     eventKey,
@@ -91,13 +101,17 @@ proto.getPosition = function(positionCode) {
   return position;
 };
 
+/**
+ * Method to handle toggle map controls
+ * @param event
+ */
 proto._handleClick = function(event) {
   event.preventDefault();
   const map = this.getMap();
   let resetControl = null;
   // remove all the other, eventually toggled, interactioncontrols
   const controls = map.getControls();
-  controls.forEach(control => {
+  this._toggled && controls.forEach(control => {
     if (control.id && control.toggle && (control.id !== this.id)) {
       control.toggle(false);
       if (control.name === 'reset') resetControl = control;

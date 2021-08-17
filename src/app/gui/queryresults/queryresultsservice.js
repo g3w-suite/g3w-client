@@ -246,17 +246,20 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     this.unlistenerlayeractionevents = [];
     layers.forEach(layer => {
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
-      this.state.layersactions[layer.id].push({
-        id: 'removefeaturefromresult',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('trash'),
-        style: {
-          color: 'red'
-        },
-        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-        cbk: this.removeFeatureLayerFromResult.bind(this)
-      });
+      //TO UNCOMMENT WHEN REQUEST
+
+      // this.state.layersactions[layer.id].push({
+      //   id: 'removefeaturefromresult',
+      //   download: false,
+      //   mouseover: true,
+      //   class: GUI.getFontClass('trash'),
+      //   style: {
+      //     color: 'red'
+      //   },
+      //   hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+      //   cbk: this.removeFeatureLayerFromResult.bind(this)
+      // });
+
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -447,7 +450,9 @@ proto.addLayerFeaturesToResultsAction = function(layer){
     const {external} = layer;
     if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
     this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
-    this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, false);
+    this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, {
+      close: false
+    });
     this._addFeaturesLayerResultInteraction.interaction.on('picked', async evt =>{
       const {coordinate: coordinates} = evt;
       if (!external)

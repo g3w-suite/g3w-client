@@ -24,6 +24,7 @@ function Project(config={}, options={}) {
     ows_method <POST or GET>
     wms_use_layer_ids: <TRUE OR FALSE>
     search_endpoint : 'ows', 'api'
+    legend_position: 'tab', 'toc'
     wps: [] // array of wps service
   }
   */
@@ -201,6 +202,22 @@ proto.getBaseLayers = function() {
 proto.getConfigLayers = function() {
   return this.state.layers;
 };
+
+/**
+ * Legend Position
+ */
+
+proto.setLegendPosition = function(legend_position='tab'){
+  this.state.legend_position = legend_position;
+};
+
+proto.getLegendPosition = function(){
+  return this.state.legend_position;
+};
+
+/**
+ * End Legend Position
+ */
 
 proto.getThumbnail = function() {
   return this.state.thumbnail;

@@ -80,7 +80,6 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
   if (filter) {
     const filterType = filter.getType();
     const filterConfig = filter.getConfig();
-    console.log(filterConfig)
     let featureRequest;
     // get filter from ol
     const f = ol.format.filter;

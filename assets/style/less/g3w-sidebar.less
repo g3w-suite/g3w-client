@@ -25,6 +25,15 @@
     width: 100%;
     z-index: 10;
   }
+
+  .sidebar-button {
+    box-shadow: 0 2px 5px rgba(0,0,0, 0.6);
+    border-radius: 3px;
+    &.toggled {
+      box-shadow: 0 2px 5px rgba(0,0,0, 0.2);
+    }
+  }
+
   .g3w-sidebarpanel {
     position: relative;
     color: #FFFFFF;
@@ -79,9 +88,14 @@
       border-radius: .25rem;
       padding: 2px;
       margin-bottom: 2px;
+      color: #FFFFFF;
       cursor: pointer;
       &.toggled {
-        border: 1px solid #ffffff;
+        color: lighten(@sidebar-dark-bg,10%);
+        background-color: #ffffff;
+        &:hover {
+          background-color: #ffffff;
+        }
       }
       &:hover {
         background-color: lighten(@sidebar-dark-bg,15%);
@@ -101,13 +115,6 @@
     color: #8DC3E3;
   }
 
-  #g3w-sidebarcomponents .sidebaritem .action-button {
-    box-shadow: 0 2px 5px rgba(0,0,0, 0.3);
-    border-radius: 3px;
-    &.toggled {
-      border: 1px solid #FFFFFF;
-    }
-  }
 
   #g3w-sidebarcomponents .sidebaritem a {
     .fa-map-o, .fa-map {
