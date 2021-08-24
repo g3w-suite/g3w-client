@@ -1,8 +1,15 @@
 {
-  "presets": ["env"],
+  "presets": [
+    [
+      "env", {
+        "targets": {
+          "browsers": ["last 2 versions"]
+        }
+      }
+    ]
+  ],
   "plugins": [
     "transform-remove-strict-mode",
-    "transform-object-rest-spread",
-    "transform-array-find"
+    "transform-object-rest-spread"
   ]
 }

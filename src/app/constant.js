@@ -4,7 +4,7 @@
  */
 export const G3W_FID = 'g3w_fid'; //fid name field referred of fid feature
 //default editing capabilities
-export const DEFAULT_EDITING_CAPABILITIES = ['create', 'update_geometry', 'update_attributes', 'delete'];
+export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'change_attr_feature', 'delete_feature'];
 
 export default {
   G3W_FID,

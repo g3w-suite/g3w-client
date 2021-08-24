@@ -1,5 +1,9 @@
 //useful to insert polyfill for old non supported browser methods
-import 'babel-polyfill';
+//import 'babel-polyfill'
+//useful to introduce regeneratorRuntime for babel when transform async function and generetor on code
+import "regenerator-runtime";
+//used to import necessary features to polyfill
+//import "core-js-latest/features/promise";
 const ApplicationService = require('core/applicationservice');
 // Application instance. It manages the application template
 const Application = require('gui/app/index');

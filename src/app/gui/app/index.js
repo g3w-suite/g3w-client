@@ -695,7 +695,8 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     //  (100%) content
     GUI.showContent = (options={}) => {
-      options.perc = !this._isMobile ? options.perc || 100 : 100;
+      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
+      options.perc = !this._isMobile ? options.perc || perc_default : 100;
       GUI.setContent(options);
       return true;
     };

@@ -426,44 +426,24 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   if (!(this.getProvider('filter') || this.getProvider('data'))) {
    d.reject();
   } else {
-    if (this.state.openattributetable) {
-      provider = this.getProvider('data');
-      provider.getFeatures({editing: false}, params)
-        .done(response => {
-          const data = response.data;
-          const count = response.count;
-          const title = this.getTitle();
-          const features = data.features && data.features || [];
-          let headers = features.length ? features[0].properties : [];
-          headers = provider._parseAttributes(this.getAttributes(), headers);
-          const dataTableObject = {
-            headers,
-            features,
-            title,
-            count
-          };
-          d.resolve(dataTableObject)
-        })
-        .fail(err => d.reject(err))
-    } else if (this.isFilterable()) {
-      provider = this.getProvider('filter');
-      const filter = new Filter();
-      filter.getAll();
-      provider.query({
-        filter
+    provider = this.getProvider('data');
+    provider.getFeatures({editing: false}, params)
+      .done(response => {
+        const data = response.data;
+        const count = response.count;
+        const title = this.getTitle();
+        const features = data.features && data.features || [];
+        let headers = features.length ? features[0].properties : [];
+        headers = provider._parseAttributes(this.getAttributes(), headers);
+        const dataTableObject = {
+          headers,
+          features,
+          title,
+          count
+        };
+        d.resolve(dataTableObject)
       })
-        .done(response => {
-          const data = provider.digestFeaturesForLayers(response.data);
-          const dataTableObject = {
-            headers: data[0].attributes,
-            features: data[0].features,
-            title: this.getTitle()
-          };
-          d.resolve(dataTableObject)
-        })
-        .fail(err => d.reject(err))
-    } else
-      d.reject()
+      .fail(err => d.reject(err))
   }
   return d.promise();
 };

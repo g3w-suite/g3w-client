@@ -7,7 +7,7 @@ const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'ge
 
 const geoutils = {
   geometryFields,
-  coordinatesToGeometry: function(geometryType, coordinates) {
+  coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
       case Geometry.GeometryTypes.POLYGON:
@@ -178,7 +178,7 @@ const geoutils = {
     return defaultStyle[geometryType]
   },
 
-  createLayerStyle: function(styleObj) {
+  createLayerStyle(styleObj) {
     let style;
     const styles = {};
     if (styleObj) {
@@ -236,7 +236,7 @@ const geoutils = {
     }
   },
 
-  createOlLayer: function(options = {}) {
+  createOlLayer(options = {}) {
     const id = options.id;
     const features = options.features;
     const geometryType = options.geometryType;
@@ -940,7 +940,7 @@ const geoutils = {
     return dissolvedFeature;
   },
 
-  normalizeEpsg: function(epsg) {
+  normalizeEpsg(epsg) {
     if (typeof epsg === 'number') return `EPSG:${epsg}`;
     epsg = epsg.replace(/[^\d\.\-]/g, "");
     if (epsg !== '') return `EPSG:${parseInt(epsg)}`;

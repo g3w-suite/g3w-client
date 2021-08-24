@@ -43,7 +43,7 @@ function MapService(options={}) {
   this._changeMapMapControls = [];
   this._mapLayers = [];
   this._externalLayers = [];
-  // array where store interactions added from plugin or esternal from application
+  // array where store interactions added from plugin or extenal from application
   this._externalInteractions = [];
   this.mapBaseLayers = {};
   this.defaultsLayers = {
@@ -321,6 +321,10 @@ proto.setUpMapOlEvents = function(){
     const keyolmoveeend = this.viewer.map.on("moveend", evt => this.setupCustomMapParamsToLegendUrl());
     this._keyEvents.ol.push(keyolmoveeend);
   } else this.setupCustomMapParamsToLegendUrl(false);
+  // event listener when add or remove layer on map happend
+  // this.viewer.map.getLayers().on("propertychange", evt => {
+  //   console.log(evt.target.get(evt.key))
+  // });
 };
 
 //clear methods to remove all listeners events
@@ -1075,6 +1079,21 @@ proto._setupControls = function() {
     });
     return this.getMapControls()
   }
+};
+
+/**
+ *  Set ZIndex layer from fa stack
+ */
+proto.setZIndexLayer = function({layer, zindex=map.getLayers().getLength()}={}){
+  layer && layer.setZIndex(zindex);
+};
+
+/**
+ *
+ * Get map stack layer position
+ */
+proto.getLayerZindex = function(layer){
+  return layer && layer.getZIndex();
 };
 
 proto.getCenter = function(){

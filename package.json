@@ -20,6 +20,7 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
     "vue": "^2.6.12"
   },
@@ -44,6 +45,7 @@
     "browserify": "^13.3.0",
     "chai": "^4.2.0",
     "chai-http": "^4.3.0",
+    "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
     "cypress": "^7.3.0",
     "del": "^2.2.2",
