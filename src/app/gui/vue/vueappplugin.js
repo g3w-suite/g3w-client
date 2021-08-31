@@ -39,6 +39,7 @@ const font = {
   'cloud-upload': "fas fa-cloud-upload-alt",
   spinner: "fas fa-spinner",
   minus: "fas fa-minus",
+  "minus-square":"far fa-minus-square",
   plus: "fas fa-plus",
   'plus-circle': "fas fa-plus-circle",
   'plus-square': "far fa-plus-square",

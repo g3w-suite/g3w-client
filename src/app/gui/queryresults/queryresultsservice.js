@@ -248,18 +248,6 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     this.unlistenerlayeractionevents = [];
     layers.forEach(layer => {
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
-      //TO UNCOMMENT WHEN REQUEST
-      this.state.layersactions[layer.id].push({
-        id: 'removefeaturefromresult',
-        download: false,
-        mouseover: true,
-        class: GUI.getFontClass('trash'),
-        style: {
-          color: 'red'
-        },
-        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-        cbk: this.removeFeatureLayerFromResult.bind(this)
-      });
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -326,6 +314,17 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         });
       });
 
+      this.state.layersactions[layer.id].push({
+        id: 'removefeaturefromresult',
+        download: false,
+        mouseover: true,
+        class: GUI.getFontClass('minus-square'),
+        style: {
+          color: 'red'
+        },
+        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+        cbk: this.removeFeatureLayerFromResult.bind(this)
+      });
       if (layer.selection.active !== undefined) {
         // selection action
         const toggled = {};
