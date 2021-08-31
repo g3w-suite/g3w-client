@@ -2,7 +2,6 @@ import ApplicationState from 'core/applicationstate';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Filter = require('core/layers/filter/filter');
 const { geometryFields } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
@@ -356,6 +355,33 @@ proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
+/**
+ *
+ * DOWNLOAD METHODS
+ */
+
+proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
+  let promise;
+  switch (type) {
+    case 'shapefile':
+      promise = this.getShp({data, options});
+      break;
+    case 'xls':
+      promise  = this.getXls({data, options});
+      break;
+    case 'csv':
+      promise  = this.getCsv({data, options});
+      break;
+    case 'gpx':
+      promise = this.getGpx({data, options});
+      break;
+    case 'gpkg':
+      promise = this.getGpkg({data, options});
+      break;
+  }
+  return promise;
+};
+
 proto.getXls = function({data}={}){
   const url = this.getUrl('xls');
   return XHR.fileDownload({
@@ -546,9 +572,7 @@ proto.getEditingFields = function() {
 };
 
 proto.getTableFields = function() {
-  return this.config.fields.filter((field) => {
-    return field.show
-  })
+  return this.config.fields.filter(field => field.show);
 };
 
 proto.getTableHeaders = function(){

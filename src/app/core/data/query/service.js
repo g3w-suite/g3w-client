@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 const {base, inherit} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
@@ -27,8 +28,10 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({geometry, fid, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
+    const fid = feature.get(G3W_FID);
+    const geometry = feature.getGeometry();
     // in case no geometry on polygon layer response
     if (!geometry) return this.returnExceptionResponse({
       usermessage: {
@@ -54,9 +57,9 @@ function QueryService(){
         projection: this.project.getProjection()
       });
       return this.handleRequest(request, {
-        geometry,
         fid,
-        name: polygonLayer.getName()
+        layer: polygonLayer,
+        type: 'polygon'
       });
   };
 
@@ -77,7 +80,8 @@ function QueryService(){
       multilayers,
     });
     return this.handleRequest(request, {
-      bbox
+      bbox,
+      type: 'bbox',
     });
   };
 
@@ -106,7 +110,8 @@ function QueryService(){
       coordinates
     });
     return this.handleRequest(request, {
-      coordinates
+      coordinates,
+      type: 'coordinates',
     });
   };
 
@@ -120,7 +125,7 @@ function QueryService(){
       request.then(response => {
         const results = this.handleResponse(response, query);
         resolve(results);
-      }).fail(error=>reject(error))
+      }).fail(reject)
     })
   };
 

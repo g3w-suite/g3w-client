@@ -1,5 +1,5 @@
 //useful to insert polyfill for old non supported browser methods
-//import 'babel-polyfill'
+//import "core-js-latest/modules/es.promise";
 //useful to introduce regeneratorRuntime for babel when transform async function and generetor on code
 import "regenerator-runtime";
 //used to import necessary features to polyfill

@@ -11,8 +11,14 @@ function Routerservice() {
   this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
 
   /**
-   * Object contain outplut function to show results
+   * Object contain output function to show results
    * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
+   * dataPromise: is thre promise request for data,
+   * options: {
+   *   show: method or Boolean to set if show or not the result on output
+   *   before : async function to handle data return from server
+   *   after: method to handle or do some thisn after show data
+   * }
    */
   this.ouputplaces = {
     gui(dataPromise, options={}){

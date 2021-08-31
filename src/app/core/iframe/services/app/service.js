@@ -13,6 +13,10 @@ function AppService(){
     }
   };
 
+  /**
+   * Init service
+   * @returns {Promise<unknown>}
+   */
   this.init = function(){
     return new Promise((resolve, reject) =>{
       this.mapService.once('ready', ()=>{

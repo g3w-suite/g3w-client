@@ -513,9 +513,7 @@ const geoutils = {
 
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
-    return properties.filter((property) => {
-      return geometryFields.indexOf(property) === -1;
-    });
+    return properties.filter(property => geometryFields.indexOf(property) === -1);
   },
 
   /**

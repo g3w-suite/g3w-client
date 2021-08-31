@@ -1,4 +1,5 @@
 import {G3W_FID} from 'constant';
+import QueryPolygonAttributesComponent from './vue/querypolygonaddattributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
@@ -7,6 +8,7 @@ const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
+const ComponentsFactory = require('gui/componentsfactory');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
@@ -247,19 +249,17 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     layers.forEach(layer => {
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
       //TO UNCOMMENT WHEN REQUEST
-
-      // this.state.layersactions[layer.id].push({
-      //   id: 'removefeaturefromresult',
-      //   download: false,
-      //   mouseover: true,
-      //   class: GUI.getFontClass('trash'),
-      //   style: {
-      //     color: 'red'
-      //   },
-      //   hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-      //   cbk: this.removeFeatureLayerFromResult.bind(this)
-      // });
-
+      this.state.layersactions[layer.id].push({
+        id: 'removefeaturefromresult',
+        download: false,
+        mouseover: true,
+        class: GUI.getFontClass('trash'),
+        style: {
+          color: 'red'
+        },
+        hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
+        cbk: this.removeFeatureLayerFromResult.bind(this)
+      });
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -930,32 +930,56 @@ proto.printAtlas = function(layer, feature){
  * @param layerId
  * @param features
  */
-proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
+proto.downloadFeatures = async function(type, {id:layerId}={}, features=[]){
   const data = {};
+  const {query} = this.state;
+  if (query.type === 'polygon'){
+    const promise = new Promise((resolve, reject) => {
+      const {layer, fid} = query;
+      const content = ComponentsFactory.build({
+        vueComponentObject:QueryPolygonAttributesComponent,
+        service: {
+          state: {
+            buttons: [
+              {
+                type:'feature',
+                label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature.label',
+                tooltip: 'sdk.mapcontrols.querybypolygon.download.buttons.feature.tooltip'
+              },
+              {
+                type:'polygon',
+                label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature_polygon.label',
+                tooltip: 'sdk.mapcontrols.querybypolygon.download.buttons.feature_polygon.tooltip'
+              },
+            ],
+          },
+          onClick: type =>{
+            // id type polygon add paramateres to api download
+            if (type === 'polygon') {
+              data.sbp_qgs_layer_id = layer.getId();
+              data.sbp_fid = fid;
+            }
+            GUI.popContent();
+            resolve();
+          }
+        }
+      });
+      GUI.pushContent({
+        content,
+        closable: false
+      })
+    });
+    await promise;
+  }
   features = features ?  Array.isArray(features) ? features : [features]: features;
   data.fids = features.map(feature => feature.attributes[G3W_FID]).join(',');
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  let promise = Promise.resolve();
   const download_caller_id = ApplicationService.setDownload(true);
   GUI.setLoadingContent(true);
-  switch(type) {
-    case 'shapefile':
-      promise = layer.getShp({data});
-      break;
-    case 'xls':
-      promise  = layer.getXls({data});
-      break;
-    case 'csv':
-      promise  = layer.getCsv({data});
-      break;
-    case 'gpx':
-      promise = layer.getGpx({data});
-      break;
-    case 'gpkg':
-      promise = layer.getGpkg({data});
-      break;
-  }
-  promise.catch((err) => {
+  const promise = layer.getDownloadFilefromDownloadDataType(type, {
+    data
+  }) || Promise.resolve();
+  promise.catch(err => {
     GUI.notify.error(t("info.server_error"));
   }).finally(()=>{
     ApplicationService.setDownload(false, download_caller_id);

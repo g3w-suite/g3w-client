@@ -1,4 +1,3 @@
-import {G3W_FID} from 'constant';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -814,14 +813,11 @@ proto._setupControls = function() {
                   });
                   if (dataCoordinates.length && dataCoordinates[0].features.length) {
                     const feature = dataCoordinates[0].features[0];
-                    const fid = feature.get(G3W_FID);
-                    const geometry = feature.getGeometry();
                     const excludeLayers = [dataCoordinates[0].layer];
                     const {data=[]} = await DataRouterService.getData('query:polygon', {
                       inputs: {
                         excludeLayers,
-                        geometry,
-                        fid,
+                        feature,
                         filterConfig:{
                           spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
                         },

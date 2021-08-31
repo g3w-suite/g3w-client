@@ -214,6 +214,19 @@ const translations = {
             }
           },
           querybypolygon: {
+            download: {
+              title: "Attributi associati alle features",
+              buttons:{
+               feature: {
+                 label: "Solo features",
+                 tooltip: ""
+               },
+               feature_polygon: {
+                 label: "Feature+Poligono Interrogazione",
+                 tooltip: ""
+               }
+              }
+            },
             tooltip: 'Interroga per poligono',
             no_geometry: 'Non contiene la geometria nella risposta',
             help: `<h4>Guida - Interrogazione con Poligono</h4>
@@ -642,6 +655,19 @@ const translations = {
             }
           },
           querybypolygon: {
+            download: {
+              title: "Attributes features",
+              buttons:{
+                feature: {
+                  label:"Features only",
+                  tooltip: ""
+                },
+                feature_polygon: {
+                  label:"Feature+Query Polygon",
+                  tooltip: ""
+                }
+              }
+            },
             tooltip: 'Query By Polygon',
             no_geometry: 'No geometry on response',
             help: `<h4>Guide - Query By Polygon</h4>
@@ -1070,6 +1096,19 @@ const translations = {
             }
           },
           querybypolygon: {
+            download: {
+              title: "Attributes features",
+              buttons:{
+                feature: {
+                  label:"Features only",
+                  tooltip: ""
+                },
+                feature_polygon: {
+                  label:"Feature+Query Polygon",
+                  tooltip: ""
+                }
+              }
+            },
             tooltip: 'Kysely monikulmiolla',
             no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Kysely monikulmiolla</h4>
@@ -1498,6 +1537,19 @@ const translations = {
             }
           },
           querybypolygon: {
+            download: {
+              title: "Attributes features",
+              buttons:{
+                feature: {
+                  label:"Features only",
+                  tooltip: ""
+                },
+                feature_polygon: {
+                  label:"Feature+Query Polygon",
+                  tooltip: ""
+                }
+              }
+            },
             tooltip: 'Förfrågan med polygon',
             no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Förfrågan med polygon</h4>
