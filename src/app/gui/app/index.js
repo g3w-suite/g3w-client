@@ -462,7 +462,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               });
               else GUI.closeContent();
               // call after is set with data
-              after && afetr(data);
+              after && after(data);
             }
           } catch(error) {
             const message = this.errorToMessage(error);
