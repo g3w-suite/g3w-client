@@ -54,7 +54,7 @@ function LayersStore(config={}) {
 
 inherit(LayersStore, G3WObject);
 
-proto = LayersStore.prototype;
+const proto = LayersStore.prototype;
 
 proto.isQueryable = function() {
   return this._isQueryable;
