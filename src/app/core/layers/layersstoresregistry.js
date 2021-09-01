@@ -7,13 +7,13 @@ function LayersStoresRegistry() {
   this.storesArray = [];
   // to react some application components that are binding to Layerstore
   this.setters = {
-    addLayersStore: function(layersStore, idx) {
+    addLayersStore(layersStore, idx) {
       this._addLayersStore(layersStore, idx);
     },
-    removeLayersStore: function(layerStore) {
+    removeLayersStore(layerStore) {
       this._removeLayersStore(layerStore);
     },
-    removeLayersStores: function() {
+    removeLayersStores() {
       this._removeLayersStores();
     }
   };

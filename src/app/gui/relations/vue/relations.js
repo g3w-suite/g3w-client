@@ -4,10 +4,10 @@ module.exports =  {
   ...compiledTemplate,
   props: ['relations', 'feature','loading'],
   methods: {
-    showRelation: function(relation) {
+    showRelation(relation) {
       this.$parent.showRelation(relation);
     },
-    featureInfo: function() {
+    featureInfo() {
       let infoFeatures = [];
       let index = 0;
       Object.entries(this.feature.attributes).forEach(([key, value]) => {

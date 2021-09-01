@@ -1,11 +1,11 @@
 const DataRouterService = require('core/data/routerservice');
+const {t} = require('core/i18n/i18n.service');
+const {uniqueId, createFilterFromString, XHR} = require('core/utils/utils');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const GUI = require('gui/gui');
-const {uniqueId, createFilterFromString} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
-const XHR = require('core/utils/utils').XHR;
+
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
 function QueryBuilderService(options={}){

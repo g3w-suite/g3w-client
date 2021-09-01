@@ -29,7 +29,7 @@ export const server = {
 };
 
 export const utils = {
-  merge: function(type) {
+  merge(type) {
     if (type) {
       console.log(CONFIG)
     }

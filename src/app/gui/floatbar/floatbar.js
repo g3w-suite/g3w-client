@@ -84,7 +84,7 @@ const FloatbarComponent = Vue.extend({
       }
     },
     watch: {
-      "stack.contentsdata": function() {
+      "stack.contentsdata"() {
         const children = $("#g3w-floatbarpanel-placeholder").children();
         children.forEach((child, index) => {
           if (index == children.length-1) $(child).show();

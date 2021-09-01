@@ -24,7 +24,7 @@ function LayersStore(config={}) {
     setLayerSelection({layerId, selection}){
       const layer = this.getLayerById(layerId);
     },
-    setLayersVisible: function (layersIds, visible, checked=true) {
+    setLayersVisible (layersIds, visible, checked=true) {
       const layers = [];
       layersIds.forEach(layerId => {
         const layer = this.getLayerById(layerId);

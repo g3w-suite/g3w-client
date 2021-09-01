@@ -1,6 +1,5 @@
 const ApplicationService = require('core/applicationservice');
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 
@@ -24,7 +23,7 @@ function ControlsRegistry() {
   });
 
   this.setters = {
-    registerControl : function(id, control) {
+    registerControl(id, control) {
       this._registerControl(id, control);
     }
   };

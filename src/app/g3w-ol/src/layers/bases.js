@@ -15,7 +15,7 @@ BaseLayers.OSM.get = function({title, id, url}={}){
 };
 
 BaseLayers.TMS =  {
-  get: function({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
+  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
     let layer;
     switch(source_type) {
       case 'xyz':
@@ -56,7 +56,7 @@ BaseLayers.WMS = {
 };
 
 BaseLayers.WMTS = {
-  get: function({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
+  get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;

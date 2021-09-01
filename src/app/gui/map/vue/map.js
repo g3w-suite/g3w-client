@@ -8,7 +8,7 @@ const templateCompiled = createCompiledTemplate(require('./map.html'));
 // map vue component
 const vueComponentOptions = {
   ...templateCompiled,
-  data: function() {
+  data() {
     const {service, target} = this.$options;
     return {
       ready: false,
@@ -22,7 +22,7 @@ const vueComponentOptions = {
     'addlayer': AddLayerComponent
   },
   computed: {
-    mapcontrolsalignement: function() {
+    mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
     disableMapControls(){
@@ -30,7 +30,7 @@ const vueComponentOptions = {
     }
   },
   methods: {
-    showHideControls: function () {
+    showHideControls () {
       const mapControls = this.$options.service.getMapControls();
       mapControls.forEach((control) => {
         if (control.type !== "scaleline")

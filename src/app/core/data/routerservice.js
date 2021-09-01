@@ -99,7 +99,7 @@ function Routerservice() {
    * @param method has to get two parameters data (promise) and options (Object)
    * ex {
    * place: <newplace>
-   * method: function(dataPromise, options={}){}
+   * method(dataPromise, options={}){}
    *   }
    */
   this.addNewOutputPlace = function({place, method=()=>{}}={}){

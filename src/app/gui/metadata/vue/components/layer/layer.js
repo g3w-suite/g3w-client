@@ -1,6 +1,5 @@
-const inherit = require('core/utils/utils').inherit;
+const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
-const base = require('core/utils/utils').base;
 import Layer from './layer.vue'
 
 function LayerComponent({state = {}, service} = {}) {

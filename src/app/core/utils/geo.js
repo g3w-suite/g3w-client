@@ -714,7 +714,7 @@ const geoutils = {
     });
     return results;
   },
-  getMapLayerById: function(layerId) {
+  getMapLayerById(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
 
@@ -735,7 +735,7 @@ const geoutils = {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
 
-  getFeaturesFromResponseVectorApi: function(response={}) {
+  getFeaturesFromResponseVectorApi(response={}) {
     if (response.result) {
       const features = response.vector.data.features || [];
       return features;

@@ -1,15 +1,14 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
 import FidAtlasValues from './components/fidatlasvalues.vue';
-const inherit = require('core/utils/utils').inherit;
+const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const PrintService = require('gui/print/printservice');
-const base = require('core/utils/utils').base;
 const compiledTemplate = createCompiledTemplate(require('./print.html'));
 
 const vueComponentOptions = {
   ...compiledTemplate,
-  data: function() {
+  data() {
     return {
       state: null,
       button: {

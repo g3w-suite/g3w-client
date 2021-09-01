@@ -16,10 +16,10 @@ const BodyFormComponent = Vue.extend({
     G3wFormInputs
   },
   methods: {
-    addToValidate: function(input) {
+    addToValidate(input) {
       this.$emit('addtovalidate', input);
     },
-    changeInput: function(input) {
+    changeInput(input) {
       this.$emit('changeinput', input);
     }
   },

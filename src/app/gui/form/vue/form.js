@@ -1,10 +1,9 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 import ApplicationState from 'core/applicationstate';
-const inherit = require('core/utils/utils').inherit;
+const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../formservice');
-const base = require('core/utils/utils').base;
 const compiledTemplate = createCompiledTemplate(require('./form.html'));
 const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
@@ -13,7 +12,7 @@ const G3wFormFooter = require('gui/form/components/footer/vue/footer');
 //vue component
 const vueComponentObject = {
  ...compiledTemplate,
-  data: function() {
+  data() {
     return {
       state: {},
       switchcomponent: false
@@ -41,14 +40,14 @@ const vueComponentObject = {
       this.switchcomponent = true;
       this.$options.service.setComponentByIndex(index);
     },
-    changeInput: function(input) {
+    changeInput(input) {
       return this.$options.service.isValid(input);
     },
-    addToValidate: function(input) {
+    addToValidate(input) {
       this.$options.service.addToValidate(input);
     },
     // set layout
-    reloadLayout: function() {
+    reloadLayout() {
       const height = $(this.$el).height();
       if(!height)
         return;

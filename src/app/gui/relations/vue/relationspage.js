@@ -48,7 +48,7 @@ const InternalComponent = Vue.extend({
     hideChart(container){
       GUI.getComponent('queryresults').getService().hideChart(container)
     },
-    showRelation: function(relation) {
+    showRelation(relation) {
       GUI.setLoadingContent(true);
       this.loading = true;
       this.relation = relation;
@@ -70,7 +70,7 @@ const InternalComponent = Vue.extend({
         this.loading = true;
       })
     },
-    setRelationsList: function() {
+    setRelationsList() {
       this.previousview = 'relation';
       this.currentview = 'relations';
       this.loading = false;

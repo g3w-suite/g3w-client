@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {inherit, base} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
@@ -14,9 +13,7 @@ const proto = XYZLayer.prototype;
 
 proto.getOLLayer = function(){
   let olLayer = this._olLayer;
-  if (!olLayer){
-    olLayer = this._olLayer = this._makeOlLayer();
-  }
+  if (!olLayer) olLayer = this._olLayer = this._makeOlLayer();
   return olLayer;
 };
 

@@ -1,8 +1,8 @@
 const geom = {
-  distance: function(c1,c2){
+  distance(c1,c2){
     return Math.sqrt(geom.squaredDistance(c1,c2));
   },
-  squaredDistance: function(c1,c2){
+  squaredDistance(c1,c2){
     const x1 = c1[0];
     const y1 = c1[1];
     const x2 = c2[0];
@@ -11,7 +11,7 @@ const geom = {
     const dy = y2 - y1;
     return dx * dx + dy * dy;
   },
-  closestOnSegment: function(coordinate, segment) {
+  closestOnSegment(coordinate, segment) {
     const x0 = coordinate[0];
     const y0 = coordinate[1];
     const start = segment[0];

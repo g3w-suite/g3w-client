@@ -1,13 +1,13 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 const Input = require('gui/inputs/input');
 const selectMixin = require('gui/inputs/select/vue/selectmixin');
-const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
+const {getUniqueDomId} = require('core/utils/utils');
 const compiledTemplate = createCompiledTemplate(require('./unique.html'));
 
 const UniqueInput = Vue.extend({
   mixins: [Input, selectMixin],
   ...compiledTemplate,
-  data: function() {
+  data() {
     const id = `unique_${getUniqueDomId()}`;
     return {id}
   },
@@ -20,7 +20,7 @@ const UniqueInput = Vue.extend({
     }
   },
   async mounted() {
-    await this.$nextTick()
+    await this.$nextTick();
     if (this.state.input.options.editable) {
       this.select2 = $(`#${this.id}`).select2({
         dropdownParent: $('#g3w-view-content'),

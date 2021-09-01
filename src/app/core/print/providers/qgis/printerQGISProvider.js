@@ -1,6 +1,5 @@
 import ApplicationState from '../../../applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const convertObjectToUrlParams = require('core/utils/utils').convertObjectToUrlParams;
+const {base, inherit, convertObjectToUrlParams} = require('core/utils/utils');
 const PrintProvider = require('../printerprovider');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const OUTPUT_FORMATS =   {
@@ -15,9 +14,7 @@ const COMMON_REQUEST_PARAMETERS = {
 
 function PrinterQGISProvider() {
   this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
-  ProjectsRegistry.onbefore('setCurrentProject', project=> {
-    this._currentLayerStore = project.getLayersStore();
-  });
+  ProjectsRegistry.onbefore('setCurrentProject', project=> this._currentLayerStore = project.getLayersStore());
   base(this);
 }
 

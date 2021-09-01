@@ -16,7 +16,7 @@ const OnClikControl = require('g3w-ol/src/controls/onclickcontrol');
 const ScreenshotControl = require('g3w-ol/src/controls/screenshotcontrol');
 
 const ControlsFactory = {
-  create: function(options={}) {
+  create(options={}) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
     if (ControlClass) control = new ControlClass(options);

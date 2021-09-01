@@ -18,7 +18,7 @@
       Field
     },
     methods: {
-      openLink: function(link_url) {
+      openLink(link_url) {
         window.open(link_url, '_blank');
       }
     },

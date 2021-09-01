@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {inherit, base} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const Service = require('gui/inputs/service');
 

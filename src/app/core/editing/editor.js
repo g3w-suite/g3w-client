@@ -1,6 +1,5 @@
 import Applicationstate from 'core/applicationstate';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {inherit, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');

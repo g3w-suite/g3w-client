@@ -51,7 +51,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     usefull to show onaly last waiting request output
     at moment will be an object
     {
-      stop: function to sot to show result
+      stop: method to sot to show result
     }
    */
   this.waitingoutputdataplace = null;

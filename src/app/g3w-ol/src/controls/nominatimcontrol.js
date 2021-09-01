@@ -68,7 +68,7 @@ function NominatimControl(options={}) {
   });
 
   const utils = {
-    toQueryString: function toQueryString(obj) {
+    toQueryString(obj) {
       const this$1 = this;
       return Object.keys(obj).reduce(function (a, k) {
         a.push(
@@ -79,17 +79,17 @@ function NominatimControl(options={}) {
         return a;
       }, []).join('&');
     },
-    encodeUrlXhr: function encodeUrlXhr(url, data) {
+    encodeUrlXhr(url, data) {
       if(data && typeof data === 'object') {
         var str_data = this.toQueryString(data);
         url += (/\?/.test(url) ? '&' : '?') + str_data;
       }
       return url;
     },
-    json: function json(url, data) {
+    json(url, data) {
       return $.get(url, data)
       },
-    jsonp: function jsonp(url, key, callback) {
+    jsonp(url, key, callback) {
         // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
       const head = document.head,
           script = document.createElement('script'),
@@ -121,7 +121,7 @@ function NominatimControl(options={}) {
         // actually make the request
         head.appendChild(script);
       },
-      now: function now() {
+      now() {
         // Polyfill for window.performance.now()
         // @license http://opensource.org/licenses/MIT
         // copyright Paul Irish 2015
@@ -149,21 +149,21 @@ function NominatimControl(options={}) {
         return window.performance.now();
       },
 
-      flyTo: function flyTo(map, coord, duration, resolution) {
+      flyTo(map, coord, duration, resolution) {
         resolution = resolution || 2.388657133911758;
         duration = duration || 500;
         const view = map.getView();
         view.animate({duration: duration, resolution: resolution},
           {duration: duration, center: coord});
       },
-      randomId: function randomId(prefix) {
+      randomId(prefix) {
         const id = this.now().toString(36);
         return prefix ? prefix + id : id;
       },
-      isNumeric: function isNumeric(str) {
+      isNumeric(str) {
         return /^\d+$/.test(str);
       },
-      classRegex: function classRegex(classname) {
+      classRegex(classname) {
         return new RegExp(("(^|\\s+) " + classname + " (\\s+|$)"));
       },
       /**
@@ -172,7 +172,7 @@ function NominatimControl(options={}) {
        * For example: 'class1 class2' or ['class1', 'class2']
        * @param {Number|undefined} timeout Timeout to remove a class.
        */
-      addClass: function addClass(element, classname, timeout) {
+      addClass(element, classname, timeout) {
         const this$1 = this;
 
         if(Array.isArray(element)) {
@@ -193,7 +193,7 @@ function NominatimControl(options={}) {
           }
         }
       },
-      _addClass: function _addClass(el, klass, timeout) {
+      _addClass(el, klass, timeout) {
         const this$1 = this;
 
         // use native if available
@@ -215,7 +215,7 @@ function NominatimControl(options={}) {
        * For example: 'class1 class2' or ['class1', 'class2']
        * @param {Number|undefined} timeout Timeout to add a class.
        */
-      removeClass: function removeClass(element, classname, timeout) {
+      removeClass(element, classname, timeout) {
         const this$1 = this;
 
         if(Array.isArray(element)) {
@@ -236,7 +236,7 @@ function NominatimControl(options={}) {
           }
         }
       },
-      _removeClass: function _removeClass(el, klass, timeout) {
+      _removeClass(el, klass, timeout) {
         const this$1 = this;
 
         if(el.classList) {
@@ -255,7 +255,7 @@ function NominatimControl(options={}) {
        * @param {String} classname Classname.
        * @return {Boolean}
        */
-      hasClass: function hasClass(element, c) {
+      hasClass(element, c) {
         // use native if available
         return element.classList
           ? element.classList.contains(c)
@@ -265,7 +265,7 @@ function NominatimControl(options={}) {
        * @param {Element|Array<Element>} element DOM node or array of nodes.
        * @param {String} classname Classe.
        */
-      toggleClass: function toggleClass(element, classname) {
+      toggleClass(element, classname) {
         const this$1 = this;
 
         if(Array.isArray(element)) {
@@ -294,7 +294,7 @@ function NominatimControl(options={}) {
        * @param {Boolean} find_all (optional)
        * @return (find_all) {Element} : {Array}
        */
-      find: function find(selector, context, find_all) {
+      find(selector, context, find_all) {
         if(context === void 0) context = window.document;
         let simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
           periodRe = /\./g,
@@ -323,11 +323,11 @@ function NominatimControl(options={}) {
         }
         return (find_all) ? matches : matches[0];
       },
-      $: function $(id) {
+      $(id) {
         id = (id[0] === '#') ? id.substr(1, id.length) : id;
         return document.getElementById(id);
       },
-      isElement: function isElement(obj) {
+      isElement(obj) {
         // DOM, Level2
         if('HTMLElement' in window) {
           return (!!obj && obj instanceof HTMLElement);
@@ -336,28 +336,28 @@ function NominatimControl(options={}) {
         return (!!obj && typeof obj === 'object' && obj.nodeType === 1 &&
         !!obj.nodeName);
       },
-      getAllChildren: function getAllChildren(node, tag) {
+      getAllChildren(node, tag) {
         return [].slice.call(node.getElementsByTagName(tag));
       },
-      isEmpty: function isEmpty(str) {
+      isEmpty(str) {
         return (!str || 0 === str.length);
       },
-      emptyArray: function emptyArray(array) {
+      emptyArray(array) {
         while (array.length) {
           array.pop();
         }
       },
-      anyMatchInArray: function anyMatchInArray(source, target) {
+      anyMatchInArray(source, target) {
         return source.some(function (each) {
           return target.indexOf(each) >= 0;
         });
       },
-      everyMatchInArray: function everyMatchInArray(arr1, arr2) {
+      everyMatchInArrayy(arr1, arr2) {
         return arr2.every(function (each) {
           return arr1.indexOf(each) >= 0;
         });
       },
-      anyItemHasValue: function anyItemHasValue(obj, has) {
+      anyItemHasValue(obj, has) {
         const this$1 = this;
         if(has === void 0) has = false;
 
@@ -369,18 +369,18 @@ function NominatimControl(options={}) {
         });
         return has;
       },
-      removeAllChildren: function removeAllChildren(node) {
+      removeAllChildren(node) {
         while (node.firstChild) {
           node.removeChild(node.firstChild);
         }
       },
-      removeAll: function removeAll(collection) {
+      removeAll(collection) {
         let node;
         while ((node = collection[0])) {
           node.parentNode.removeChild(node);
         }
       },
-      getChildren: function getChildren(node, tag) {
+      getChildren(node, tag) {
         return [].filter.call(
           node.childNodes, function (el) {
             return tag
@@ -389,7 +389,7 @@ function NominatimControl(options={}) {
           }
         );
       },
-      template: function template(html, row) {
+      template(html, row) {
         const this$1 = this;
 
         return html.replace(/\{ *([\w_-]+) *\}/g, function (htm, key) {
@@ -397,7 +397,7 @@ function NominatimControl(options={}) {
           return this$1.htmlEscape(value);
         });
       },
-      htmlEscape: function htmlEscape(str) {
+      htmlEscape(str) {
         return String(str)
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
@@ -410,7 +410,7 @@ function NominatimControl(options={}) {
        * obj2's if non existent in obj1
        * @returns obj3 a new object based on obj1 and obj2
        */
-      mergeOptions: function mergeOptions(obj1, obj2) {
+      mergeOptions(obj1, obj2) {
         const obj3 = {};
         for (var attr1 in obj1) {
           obj3[attr1] = obj1[attr1];
@@ -420,7 +420,7 @@ function NominatimControl(options={}) {
         }
         return obj3;
       },
-      createElement: function createElement(node, html) {
+      createElement(node, html) {
         let elem;
         if(Array.isArray(node)) {
           elem = document.createElement(node[0]);
@@ -455,7 +455,7 @@ function NominatimControl(options={}) {
         elem.appendChild(frag);
         return elem;
       },
-      assert: function assert(condition, message) {
+      assert(condition, message) {
         if(message === void 0) message = 'Assertion failed';
 
         if(!condition) {
@@ -884,7 +884,7 @@ function NominatimControl(options={}) {
 
     //one-time fire click
     mapElement.addEventListener('click', {
-      handleEvent: function (evt) {
+      handleEvent (evt) {
         this_.clearResults(true);
         mapElement.removeEventListener(evt.type, this, false);
         this_.registeredListeners.mapClick = false;

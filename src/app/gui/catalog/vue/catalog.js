@@ -151,7 +151,7 @@ const vueComponentOptions = {
       this.layerMenu.loading.gpkg = false;
       this.layerMenu.loading.xls = false;
     },
-    zoomToLayer: function() {
+    zoomToLayer() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
       const mapService = GUI.getComponent('map').getService();
       mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
@@ -677,7 +677,7 @@ Vue.component('tristate-tree', {
         downloadFile(download.file);
       } else if (download.url) {}
     },
-    removeExternalLayer: function(name) {
+    removeExternalLayer(name) {
       const mapService = GUI.getComponent('map').getService();
       mapService.removeExternalLayer(name);
     },
@@ -711,7 +711,7 @@ Vue.component('layerslegend',{
       return {}
     },
     computed: {
-      visiblelayers: function(){
+      visiblelayers(){
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
         let traverse = (obj) => {
@@ -730,7 +730,7 @@ Vue.component('layerslegend',{
     },
     watch: {
       'layerstree': {
-        handler: function(val, old){},
+        handler(val, old){},
         deep: true
       },
       'visiblelayers'(visibleLayers) {
@@ -786,7 +786,7 @@ Vue.component('layerslegend-items',{
     urlLoaded(legendurl){
       legendurl.loading = false;
     },
-    getLegendUrl: function(layer, params={}) {
+    getLegendUrl(layer, params={}) {
       let legendurl;
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach(layerStore => {

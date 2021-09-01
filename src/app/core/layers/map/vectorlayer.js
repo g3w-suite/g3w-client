@@ -1,4 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
+const {inherit} = require('core/utils/utils');
 const {createOlLayer, createLayerStyle} = require('core/utils/geo');
 const GUI = require('gui/gui');
 

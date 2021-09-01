@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {inherit, base} = require('core/utils/utils');
 const FeaturesStore = require('./featuresstore');
 
 // Storage of the feature in vector layer

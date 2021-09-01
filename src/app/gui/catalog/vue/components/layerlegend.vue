@@ -36,7 +36,7 @@
       urlLoaded() {
         this.legend.loading = false;
       },
-      getLegendUrl: function (layer) {
+      getLegendUrl (layer) {
         let legendurl;
         const layerStore = CatalogLayersStoresRegistry.getLayersStores().find(layerStore => layerStore.getLayerById(layer.id));
         legendurl = layerStore && layerStore.getLayerById(layer.id).getLegendUrl(this.legendParams);

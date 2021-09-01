@@ -1,11 +1,11 @@
 const Input = require('gui/inputs/input');
-const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
+const {getUniqueDomId} = require('core/utils/utils');
 const WidgetMixins = require('gui/inputs/widgetmixins');
 
 const CheckBoxInput = Vue.extend({
   mixins: [Input, WidgetMixins],
   template: require('./checkbox.html'),
-  data: function() {
+  data() {
     return {
       value: null,
       label:null,
@@ -20,7 +20,7 @@ const CheckBoxInput = Vue.extend({
     setValue() {
       this.value = this.service.convertValueToChecked();
     },
-    changeCheckBox: function() {
+    changeCheckBox() {
       // convert label
       this.setLabel();
       this.widgetChanged();

@@ -30,7 +30,7 @@
   import SelectRow from './components/selectrow.vue';
   import G3wTableToolbar from './components/g3w-table-toolbar.vue';
   import Field from 'gui/fields/g3w-field.vue';
-  const debounce = require('core/utils/utils').debounce;
+  const {debounce} = require('core/utils/utils');
   const {resizeMixin} = require('gui/vue/vue.mixins');
   const GUI = require('gui/gui');
   let dataTable;
@@ -69,10 +69,10 @@
       selectAllRow(){
         this.state.features.length && this.$options.service.selectAllFeatures();
       },
-      _setLayout: function() {
+      _setLayout() {
         this.$options.service._setLayout();
       },
-      zoomAndHighLightFeature: function(feature, zoom=true) {
+      zoomAndHighLightFeature(feature, zoom=true) {
         feature.geometry && this.$options.service.zoomAndHighLightFeature(feature, zoom);
       },
       addRemoveSelectedFeature(feature){

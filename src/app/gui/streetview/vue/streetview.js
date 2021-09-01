@@ -1,17 +1,16 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const compiledTemplate = createCompiledTemplate(require('./streetview.html'));
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
-  data: function() {
+  data() {
     return {
       state: null
     }
   },
-  mounted: function() {
+  mounted() {
     this.$nextTick(() => {
       const position = this.$options.service.getPosition();
       this.$options.service.postRender(position);

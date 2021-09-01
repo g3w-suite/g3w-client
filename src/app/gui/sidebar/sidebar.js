@@ -62,8 +62,8 @@ function SidebarService() {
   // set setter for close sidebarpanel to catch event
   // of closing panel of the sidebar
   this.setters = {
-    closeSidebarPanel: function() {},
-    openCloseItem: function(bool) {}
+    closeSidebarPanel() {},
+    openCloseItem(bool) {}
   };
   //service state
   this.state = {
@@ -223,16 +223,16 @@ const SidebarComponent = Vue.extend({
       disabled(){
         return ApplicationState.gui.sidebar.disabled;
       },
-      panelsinstack: function(){
+      panelsinstack(){
         return this.panels.length > 0;
       },
-      showmainpanel: function(){
+      showmainpanel(){
         return this.components.length>0 && !this.panelsinstack;
       },
-      componentname: function(){
+      componentname(){
         return this.components.length ? this.components.slice(-1)[0].getTitle(): "";
       },
-      panelname: function(){
+      panelname(){
         let name = "";
         if (this.panels.length){
           name = this.panels.slice(-1)[0].content.getTitle();

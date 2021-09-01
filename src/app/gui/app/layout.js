@@ -123,7 +123,7 @@ $.LayoutManager._init = function() {
    *        $.LayoutManager.layout.fixSidebar()
    */
   $.LayoutManager.layout = {
-    activate: function () {
+    activate () {
       const _this = this;
       _this.fix();
       _this.fixSidebar();
@@ -132,7 +132,7 @@ $.LayoutManager._init = function() {
         _this.fixSidebar();
       });
     },
-    fix: function () {
+    fix () {
       //Get window height and the wrapper height
       const neg = $('.main-header').outerHeight() + $('.main-footer').outerHeight();
       const window_height = $(window).height();
@@ -160,7 +160,7 @@ $.LayoutManager._init = function() {
 
       }
     },
-    fixSidebar: function () {
+    fixSidebar () {
       //Make sure the body tag has the .fixed class
       if (!$("body").hasClass("fixed")) {
         if (typeof $.fn.slimScroll != 'undefined') {
@@ -199,7 +199,7 @@ $.LayoutManager._init = function() {
    * @usage: $.LayoutManager.pushMenu("[data-toggle='offcanvas']")
    */
   $.LayoutManager.pushMenu = {
-    activate: function (toggleBtn) {
+    activate (toggleBtn) {
       //Get the screen sizes
       var screenSizes = $.LayoutManager.options.screenSizes;
 
@@ -237,7 +237,7 @@ $.LayoutManager._init = function() {
         this.expandOnHover();
       }
     },
-    expandOnHover: function () {
+    expandOnHover () {
       const _this = this;
       const screenWidth = $.LayoutManager.options.screenSizes.sm - 1;
       //Expand sidebar on hover
@@ -251,10 +251,10 @@ $.LayoutManager._init = function() {
         }
       });
     },
-    expand: function () {
+    expand () {
       $("body").removeClass('sidebar-collapse').addClass('sidebar-expanded-on-hover');
     },
-    collapse: function () {
+    collapse () {
       if ($('body').hasClass('sidebar-expanded-on-hover')) {
         $('body').removeClass('sidebar-expanded-on-hover').addClass('sidebar-collapse');
       }
@@ -343,7 +343,7 @@ $.LayoutManager._init = function() {
    */
   $.LayoutManager.floatBar = $.LayoutManager.controlSidebar = {
     //instantiate the object
-    activate: function () {
+    activate () {
       //Get the object
       var _this = this;
       //Update options
@@ -380,7 +380,7 @@ $.LayoutManager._init = function() {
       }
     },
     //Open the control sidebar
-    open: function (sidebar, slide) {
+    open (sidebar, slide) {
       //Slide over content
       if (slide) {
         sidebar.addClass('control-sidebar-open');
@@ -391,14 +391,14 @@ $.LayoutManager._init = function() {
       }
     },
     //Close the control sidebar
-    close: function (sidebar, slide) {
+    close (sidebar, slide) {
       if (slide) {
         sidebar.removeClass('control-sidebar-open');
       } else {
         $('body').removeClass('control-sidebar-open');
       }
     },
-    _fix: function (sidebar) {
+    _fix (sidebar) {
       var _this = this;
       if ($("body").hasClass('layout-boxed')) {
         sidebar.css('position', 'absolute');
@@ -413,7 +413,7 @@ $.LayoutManager._init = function() {
         });
       }
     },
-    _fixForFixed: function (sidebar) {
+    _fixForFixed (sidebar) {
       sidebar.css({
         'position': 'fixed',
         'max-height': '100%',
@@ -421,7 +421,7 @@ $.LayoutManager._init = function() {
         'padding-bottom': '50px'
       });
     },
-    _fixForContent: function (sidebar) {
+    _fixForContent (sidebar) {
       $(".content-wrapper, .right-side").css('min-height', sidebar.height());
     }
   };
@@ -439,7 +439,7 @@ $.LayoutManager._init = function() {
     selectors: $.LayoutManager.options.boxWidgetOptions.boxWidgetSelectors,
     icons: $.LayoutManager.options.boxWidgetOptions.boxWidgetIcons,
     animationSpeed: $.LayoutManager.options.animationSpeed,
-    activate: function (_box) {
+    activate (_box) {
       var _this = this;
       if (!_box) {
         _box = document; // activate all boxes per default
@@ -456,7 +456,7 @@ $.LayoutManager._init = function() {
         _this.remove($(this));
       });
     },
-    collapse: function (element) {
+    collapse (element) {
       var _this = this;
       //Find the box parent
       var box = element.parents(".box").first();
@@ -482,7 +482,7 @@ $.LayoutManager._init = function() {
         });
       }
     },
-    remove: function (element) {
+    remove (element) {
       //Find the box parent
       var box = element.parents(".box").first();
       box.slideUp(this.animationSpeed);
@@ -519,10 +519,10 @@ $.LayoutManager.addRefreshButton = function () {
       //File source to be loaded (e.g: ajax/src.php)
       source: "",
       //Callbacks
-      onLoadStart: function (box) {
+      onLoadStart (box) {
         return box;
       }, //Right after the button has been clicked
-      onLoadDone: function (box) {
+      onLoadDone (box) {
         return box;
       } //When the source has been loaded
 
@@ -611,11 +611,11 @@ $.LayoutManager.listCustomPlugin = function () {
 	    // Render options
 	    var settings = $.extend({
 	      //When the user checks the input
-	      onCheck: function (ele) {
+	      onCheck (ele) {
 	        return ele;
 	      },
 	      //When the user unchecks the input
-	      onUncheck: function (ele) {
+	      onUncheck (ele) {
 	        return ele;
 	      }
 	    }, options);

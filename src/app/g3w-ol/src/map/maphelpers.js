@@ -2,7 +2,7 @@ const BaseLayers = require('../layers/bases');
 const Projections = require('../projection/projections');
 
 const MapHelpers = {
-  createViewer: function(opts){
+  createViewer(opts={}){
     return new _Viewer(opts);
   }
 };

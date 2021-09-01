@@ -181,7 +181,7 @@ const GlobalDirective = {
     });
     
     Vue.directive("t", {
-      bind: function (el, binding) {
+      bind (el, binding) {
         const unique_v_t_attr = createDirectiveObj({
           el,
           attr: 'g3w-v-t-id'
@@ -204,7 +204,7 @@ const GlobalDirective = {
     });
 
     Vue.directive("t-plugin", {
-      bind: function (el, binding) {
+      bind (el, binding) {
         const unique_v_t_plugin_attr = createDirectiveObj({
           el,
           attr: 'g3w-v-t-plugin-id'

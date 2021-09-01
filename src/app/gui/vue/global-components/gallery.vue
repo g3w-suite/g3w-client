@@ -51,7 +51,7 @@
       isActive(src) {
         return src === active
       },
-      isRelativePath: function(url) {
+      isRelativePath(url) {
         if (!_.startsWith(url,'/') && !_.startsWith(url,'http')) {
           return ProjectsRegistry.getConfig().mediaurl + url
         }

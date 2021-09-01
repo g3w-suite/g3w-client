@@ -4,11 +4,11 @@ const selectMixin = {
     getLanguage() {
       return getAppLanguage();
     },
-    changeSelect: function(value) {
+    changeSelect(value) {
       this.state.value = value === 'null' ? null : value;
       this.change();
     },
-    getValue: function(value) {
+    getValue(value) {
       return value === null ? 'null' : value;
     },
     resetValues() {

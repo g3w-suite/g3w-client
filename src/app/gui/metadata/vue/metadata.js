@@ -1,6 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const GUI = require('gui/gui');
 const MetadataService = require('gui/metadata/metadataservice');
@@ -8,7 +7,7 @@ const templateCompiled = createCompiledTemplate(require('./metadata.html'));
 
 const InternalComponent = Vue.extend({
   ...templateCompiled,
-  data: function() {
+  data() {
     return {
       state: null
     }

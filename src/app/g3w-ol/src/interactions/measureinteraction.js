@@ -61,7 +61,7 @@ const MeasureIteraction = function(options={}) {
   this._feature = null;
   this._layer = new ol.layer.Vector({
     source: source,
-    style: function(feature) {
+    style(feature) {
       const styles = [
         // linestring
         new ol.style.Style({

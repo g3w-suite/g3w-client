@@ -1,11 +1,8 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {inherit, base} = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 
 function CheckBoxService(options={}) {
-  const value = options.state.input.options.values.find(value => {
-    return value.checked === false;
-  });
+  const value = options.state.input.options.values.find(value => value.checked === false);
   options.validatorOptions =  {
     values: options.state.input.options.values.map(value => value)
   };

@@ -9,7 +9,7 @@ const GUI = require('gui/gui');
 
 const SelectInput = Vue.extend({
   mixins: [Input, selectMixin, select2Mixin],
-  data: function() {
+  data() {
     return {
       showPickLayer: false
     }

@@ -16,7 +16,7 @@ const BaseInputMixin = {
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isVisible: function() {}
+    isVisible() {}
   }
 };
 

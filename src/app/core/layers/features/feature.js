@@ -1,4 +1,4 @@
-const uniqueId = require('core/utils/utils').uniqueId;
+const {uniqueId} = require('core/utils/utils');
 const { geometryFields } =  require('core/utils/geo');
 const Feature = function(options={}) {
   ol.Feature.call(this);

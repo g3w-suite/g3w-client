@@ -83,14 +83,14 @@ module.exports = {
     reloadLayout() {
       relationDataTable && relationDataTable.columns.adjust();
     },
-    back: function() {
+    back() {
       this.$parent.setRelationsList();
     },
-    fieldIs: function(type, value) {
+    fieldIs(type, value) {
       const fieldType = this.getFieldType(value);
       return fieldType === type;
     },
-    is: function(type,value) {
+    is(type,value) {
       return this.fieldIs(type, value);
     },
     moveFnc(evt){

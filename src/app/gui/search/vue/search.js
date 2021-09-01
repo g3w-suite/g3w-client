@@ -1,15 +1,14 @@
 import G3WTool from 'gui/tools/vue/tool.vue'
 import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const Service = require('gui/search/service');
 const templateCompiled = createCompiledTemplate(require('./search.html'));
 
 const vueComponentOptions = {
   ...templateCompiled,
-  data: function() {
+  data() {
     return {
       state: null
     }

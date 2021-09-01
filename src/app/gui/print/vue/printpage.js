@@ -6,7 +6,7 @@ const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
-  data: function() {
+  data() {
     return {
       state: null,
       disableddownloadbutton: true,

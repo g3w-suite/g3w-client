@@ -1,13 +1,13 @@
 import ApplicationState from 'core/applicationstate';
 const Input = require('gui/inputs/input');
-const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
+const {getUniqueDomId} = require('core/utils/utils');
 const WidgetMixins = require('gui/inputs/widgetmixins');
 const {resizeMixin} = require('gui/vue/vue.mixins');
 
 const DateTimePickerInput = Vue.extend({
   mixins: [Input, WidgetMixins, resizeMixin],
   template: require('./datetimepicker.html'),
-  data: function() {
+  data() {
     const uniqueValue = getUniqueDomId();
     return {
       iddatetimepicker: 'datetimepicker_'+ uniqueValue,
@@ -20,7 +20,7 @@ const DateTimePickerInput = Vue.extend({
       const domeDataPicker = $(`#${this.iddatetimepicker}`);
       domeDataPicker && domeDataPicker.data("DateTimePicker") && domeDataPicker.data("DateTimePicker").hide();
     },
-    timeOnly : function() {
+    timeOnly () {
       return !this.state.input.options.formats[0].date;
     },
     stateValueChanged(value) {

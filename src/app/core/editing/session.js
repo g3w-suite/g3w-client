@@ -8,13 +8,13 @@ const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
   this.setters = {
-    start: function(options={}) {
+    start(options={}) {
       return this._start(options);
     },
-    getFeatures: function(options={}) {
+    getFeatures(options={}) {
       return this._getFeatures(options);
     },
-    stop: function() {
+    stop() {
       this._stop();
     },
     saveChangesOnServer(commitItems){} // hook to get informed that are saved on server

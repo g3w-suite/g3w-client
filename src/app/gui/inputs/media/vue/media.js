@@ -1,5 +1,5 @@
 const InputMixins = require('gui/inputs/input');
-const getUniqueDomId = require('core/utils/utils').getUniqueDomId;
+const {getUniqueDomId} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const Service = require('../service');
 const MediaField = require('gui/fields/fields').media_field;
@@ -10,7 +10,7 @@ const MediaInput = Vue.extend({
   components: {
     'g3w-media': MediaField
   },
-  data: function() {
+  data() {
     return {
       data: {
         value: null,
@@ -22,17 +22,17 @@ const MediaInput = Vue.extend({
   },
   template: require('./media.html'),
   methods: {
-    onClick: function(e) {
+    onClick(e) {
       document.getElementById(this.mediaid).click();
     },
-    createImage: function(file, field) {
+    createImage(file, field) {
       const reader = new FileReader();
       reader.onload = function(e) {
         field.value = e.target.result;
       };
       reader.readAsDataURL(file);
     },
-    checkFileSrc: function(value) {
+    checkFileSrc(value) {
       if (_.isNil(value)) {
         value = ''
       }
