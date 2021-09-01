@@ -798,6 +798,7 @@ Vue.component('layerslegend-items',{
       return legendurl;
     },
     async getLegendSrc(_layers) {
+      console.log(_layers)
       const urlMethodsLayersName = {
         GET: {},
         POST: {}
@@ -875,10 +876,8 @@ Vue.component('layerslegend-items',{
   },
   created(){
     this.mapReady = false;
-    this.waitinglegendsurls = [] // urls that are waiting to be loaded
-    CatalogEventHub.$on('layer-change-style', () =>{
-      this.getLegendSrc(this.layers);
-    })
+    this.waitinglegendsurls = []; // urls that are waiting to be loaded
+    CatalogEventHub.$on('layer-change-style', () => this.getLegendSrc(this.layers));
   },
   async mounted() {
     await this.$nextTick();

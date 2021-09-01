@@ -12,6 +12,7 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/src/g3w.ol').helpers;
+const Projections = require('g3w-ol/src/projection/projections');
 const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol/src/utils/utils');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
@@ -1434,13 +1435,17 @@ proto.addMapLayers = function(mapLayers) {
 
 proto._setupCustomMapParamsToLegendUrl = function(bool=true){
   if (bool) {
-    const size = this.getMap() && this.getMap().getSize().filter(value => value > 0) || null;
-    const bbox = size && size.length === 2 ? this.getMap().getView().calculateExtent(size): null;
+    const map = this.getMap();
+    const size = map && map.getSize().filter(value => value > 0) || null;
+    let bbox = size && size.length === 2 ? map.getView().calculateExtent(size) : this.project.state.initextent;
+    // in case of axis orientation inverted i need to iverted the axis
+    bbox = map.getView().getProjection().getAxisOrientation() === "neu" ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
+    const crs = this.getEpsg();
     //setup initial legend parameter
     this.getMapLayers().forEach(mapLayer => {
       mapLayer.setupCustomMapParamsToLegendUrl && mapLayer.setupCustomMapParamsToLegendUrl({
-        crs: this.getEpsg(),
-        bbox: bbox || this.project.state.initextent
+        crs,
+        bbox
       })
     });
   }

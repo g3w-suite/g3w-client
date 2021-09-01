@@ -7,7 +7,7 @@ const GUI = require('gui/gui');
 function PickLayerService(options={}) {
   this.pick_type = options.pick_type || 'wms';
   this.ispicked = false;
-  this.field = options.field || options.value;
+  this.fields = options.fields || [options.value];
   this.layerId = options.layer_id;
   this.contentPerc;
   this.mapService = GUI.getComponent('map').getService();
@@ -38,12 +38,15 @@ proto.bindEscKeyUp = function() {
 proto.pick = function() {
   return new Promise((resolve, reject) => {
     this.bindEscKeyUp();
-    let value;
+    const values = {};
     this.ispicked = true;
-    const afterPick = (feature) => {
+    const afterPick = feature => {
       if (feature) {
-        value = feature.getProperties()[this.field];
-        resolve(value);
+        const attributes = feature.getProperties();
+        this.fields.forEach(field =>{
+          values[field] = attributes[field];
+        });
+        resolve(values);
       } else reject();
       this.ispicked = false;
       this.unpick();
