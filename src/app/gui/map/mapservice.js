@@ -12,7 +12,6 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/src/g3w.ol').helpers;
-const Projections = require('g3w-ol/src/projection/projections');
 const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol/src/utils/utils');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
