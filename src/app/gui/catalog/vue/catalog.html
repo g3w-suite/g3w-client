@@ -65,7 +65,7 @@
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0" :style="{ top: layerMenu.stylesMenu.top + 'px', left: layerMenu.stylesMenu.left +   'px' }">
         <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
-          <span v-if="style.current" style="font-size: 0.5em;" :class="g3wtemplate.getFontClass('circle')"></span>
+          <span v-if="style.current" style="font-size: 0.8em;" :class="g3wtemplate.getFontClass('circle')"></span>
           <span>{{style.name}}
             <span v-if="style.name ===  layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">(<span v-t="'default'"></span>)</span></span>
         </li>

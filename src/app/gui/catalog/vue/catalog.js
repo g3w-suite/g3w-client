@@ -798,7 +798,6 @@ Vue.component('layerslegend-items',{
       return legendurl;
     },
     async getLegendSrc(_layers) {
-      console.log(_layers)
       const urlMethodsLayersName = {
         GET: {},
         POST: {}
