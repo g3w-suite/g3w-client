@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -78,6 +79,19 @@ proto.addLayersStoreToLayersTrees = function(layersStore) {
     tree: layersStore.getLayersTree(),
     storeid: layersStore.getId()
   });
+};
+
+proto.changeView = function(viewName){
+  // set is changing project view
+  ApplicationService.changeProjectView(true);
+  const {currentProject} = this.state.prstate;
+  const viewlayerstree = currentProject.state.views.find(view => view.name === viewName).layerstree;
+  const layerstree = this.state.layerstrees[0].tree[0].nodes;
+  currentProject.setLayersTreePropertiesFromView({
+    viewlayerstree,
+    layerstree
+  });
+  ApplicationService.changeProjectView(false);
 };
 
 module.exports = CatalogService;

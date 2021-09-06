@@ -16,6 +16,9 @@
       <bar-loader :loading="loading"></bar-loader>
       <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
+        <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
+          <changeviews :views="project.state.views" @change-view="changeView"></changeviews>
+        </div>
         <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees">
           <tristate-tree
             :highlightlayers="state.highlightlayers"

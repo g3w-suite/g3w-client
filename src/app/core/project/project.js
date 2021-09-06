@@ -31,6 +31,14 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
+  const {views=[]} = config;
+  if (views.length > 1) {
+    const defaultview = views.find(view => view.default);
+    defaultview && this.setLayersTreePropertiesFromView({
+      viewlayerstree: defaultview.layerstree,
+      layerstree: config.layerstree
+    });
+  }
   this.state = config;
   // process layers
   this._processLayers();
@@ -54,6 +62,23 @@ function Project(config={}, options={}) {
 inherit(Project, G3WObject);
 
 const proto = Project.prototype;
+
+/**
+ * Method to set properties ( checked and visible) from view to layerstre
+ * @param viewlayerstree
+ * @param layerstree
+ */
+proto.setLayersTreePropertiesFromView = function({viewlayerstree=[], layerstree=this.state.layerstree}){
+  const traverse = (viewtree, layerstree) =>{
+    viewtree.forEach((node, index) => {
+      if (node.nodes) {
+        layerstree[index].checked = node.checked;
+        traverse(node.nodes, layerstree[index].nodes);
+      } else layerstree[index].checked = node.visible;
+    });
+  };
+  traverse(viewlayerstree, layerstree);
+};
 
 //get search end point value (ows or api)
 proto.getSearchEndPoint = function(){

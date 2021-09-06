@@ -518,6 +518,15 @@ const ApplicationService = function() {
     })
   };
 
+  // change View
+  this.changeProjectView = function(change){
+    ApplicationState.changeProjectview = change;
+  };
+
+  this.isProjectViewChanging = function(){
+    return ApplicationState.changeProjectview
+  };
+
   this.reloadCurrentProject = function(){
     return this.changeProject({
       gid: ProjectsRegistry.getCurrentProject().getGid()

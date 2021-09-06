@@ -15,7 +15,19 @@ ApplicationService.once('initconfig', ()=> {
    })
 
 });
+
 // Handle project configuration to insert custom element on project
+ProjectsRegistry.oncebefore('createProject', projectConfig => {
+  const {createProject} = DEVCONFIG;
+  createProject && createProject.before && createProject.before(projectConfig);
+});
+
+// Handle project configuration to insert custom element on project
+ProjectsRegistry.onceafter('createProject', projectConfig => {
+  const {createProject} = DEVCONFIG;
+  createProject && createProject.after && setCurrentProject.after(projectConfig);
+});
+
 ProjectsRegistry.oncebefore('setCurrentProject', project => {
   const {setCurrentProject} = DEVCONFIG;
   setCurrentProject && setCurrentProject.before && setCurrentProject.before(project);

@@ -1585,7 +1585,8 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   this._layersStoresEventKeys[layerStoreId] = [];
   //SETVISIBILITY EVENT
   const layerVisibleKey = layerStore.onafter('setLayersVisible',  layersIds => {
-    layersIds.forEach(layerId => {
+    // In case of changing not update map until is false
+    !ApplicationService.isProjectViewChanging() && layersIds.forEach(layerId => {
       const layer = layerStore.getLayerById(layerId);
       const mapLayer = this.getMapLayerForLayer(layer);
       mapLayer && this.updateMapLayer(mapLayer)
@@ -1595,6 +1596,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   this._layersStoresEventKeys[layerStoreId].push({
     setLayersVisible: layerVisibleKey
   });
+
   //ADD LAYER
   const addLayerKey = layerStore.onafter('addLayer', layer => {
     if (layer.getType() === 'vector') {

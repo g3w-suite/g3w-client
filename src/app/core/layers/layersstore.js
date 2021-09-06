@@ -24,7 +24,7 @@ function LayersStore(config={}) {
     setLayerSelection({layerId, selection}){
       const layer = this.getLayerById(layerId);
     },
-    setLayersVisible (layersIds, visible, checked=true) {
+    setLayersVisible(layersIds, visible, checked=true) {
       const layers = [];
       layersIds.forEach(layerId => {
         const layer = this.getLayerById(layerId);
@@ -234,7 +234,7 @@ proto._getAllSiblingsChildrenLayersId = function(layerstree) {
 proto._getAllParentLayersId = function(layerstree, node) {
   let nodeIds = [];
   let traverse = layerstree => {
-    layerstree.nodes.forEach((node) => {
+    layerstree.nodes.forEach(node => {
       if (node.id) nodeIds.push(node.id);
       //else traverse(node);
     });
@@ -294,11 +294,11 @@ proto._mutuallyExclude = function(layerId) {
 proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
   const layer = this.getLayerById(layerId);
   const checked = layer.isChecked();
-  visible = visible !== null ? checked : !checked;
+  visible = visible !== null ? !checked : checked;
   mutually_exclusive &&  this._mutuallyExclude(layerId);
   if (layer.isDisabled()) layer.setVisible(false);
   else this.setLayersVisible([layerId], visible);
-  layer.setChecked(!checked);
+  //layer.setChecked(!checked);
   return layer;
 };
 
@@ -349,6 +349,7 @@ proto.setLayersTree = function(layerstree, name) {
     traverse(layerstree);
     this.state.layerstree.splice(0,0,{
       title: name || this.config.id,
+      root: true,
       expanded: true,
       disabled: false,
       checked: true,

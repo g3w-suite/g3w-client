@@ -1,6 +1,7 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
+import ChangeViewsComponent from './components/changeviews.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
@@ -84,9 +85,16 @@ const vueComponentOptions = {
     }
   },
   components: {
-    'chrome-picker': ChromeComponent
+    'chrome-picker': ChromeComponent,
+    'changeviews': ChangeViewsComponent
+
   },
   computed: {
+    //show or not group toolbar
+    showTocTools(){
+      const {views=[]} = this.project.state;
+      return views.length > 1
+    },
     project() {
       return this.state.prstate.currentProject
     },
@@ -106,6 +114,10 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    //change view method
+    async changeView(view){
+      this.$options.service.changeView(view);
+    },
     delegationClickEventTab(evt){
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
     },
@@ -445,10 +457,10 @@ const vueComponentOptions = {
       }
       /*
        */
-      //indipendentely of parent group  node group is mutally exlusive
-      if (node.checked) {
+      //indipendentely of parent group (excluse parent project root ) node group is mutally exlusive
+      if (node.checked && !parent.root) {
         CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
-        // go down tro layer tree inside forder of layer
+        // go down throw layer tree inside folder of layer
         const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
         siblingsGroups.forEach(group => {
           if (group.checked) {
@@ -458,7 +470,7 @@ const vueComponentOptions = {
         });
 
         //go up from parent layer folder to it's father parent folder
-        if (!parent.checked){
+        if (!parent.checked) {
           parent.checked = true;
           let parentFolder;
           const parentGroupId = parent.groupId;
@@ -483,7 +495,7 @@ const vueComponentOptions = {
     /**
      * Event handler of check group
      * nodes: is children nodes of group
-     * isGroupChecked: boolen id current group is checked or not
+     * isGroupChecked: boolean id current group is checked or not
      * parent: is the  group parent of current group
      */
     CatalogEventHub.$on('treenodestoogled', (storeid, currentgroup, isGroupChecked, parent) => {
@@ -644,7 +656,11 @@ Vue.component('tristate-tree', {
     'layerstree.disabled'(bool) {
       this.layerstree.selected = bool && this.layerstree.selected ? false : this.layerstree.selected;
     },
-    'layerstree.checked'(){
+    'layerstree.checked'() {
+      if (this.isFolder) {
+        this.isFolderChecked = this.layerstree.checked && !this.layerstree.disabled;
+        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.isFolderChecked, this.parent);
+      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent, this.parent_mutually_exclusive);
     }
   },
   methods: {
@@ -655,11 +671,7 @@ Vue.component('tristate-tree', {
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
     toggle(isFolder) {
-      if (isFolder) {
-        this.layerstree.checked = !this.layerstree.checked;
-        this.isFolderChecked = this.layerstree.checked && !this.layerstree.disabled;
-        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.isFolderChecked, this.parent);
-      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent, this.parent_mutually_exclusive);
+      this.layerstree.checked = !this.layerstree.checked;
     },
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
