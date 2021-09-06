@@ -51,9 +51,7 @@
       <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'" v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id"></layerslegend>
     </div>
   </div>
-  <ul id="layer-menu" v-click-outside-layer-menu="closeLayerMenu"
-      tabindex="-1" v-if="layerMenu.show"
-      :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
+  <ul id="layer-menu" ref="layer-menu" v-click-outside-layer-menu="closeLayerMenu" tabindex="-1" v-if="layerMenu.show" :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li class="title">
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>

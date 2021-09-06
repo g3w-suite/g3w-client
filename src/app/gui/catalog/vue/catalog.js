@@ -61,7 +61,7 @@ const vueComponentOptions = {
     }
   },
   directives: {
-    //create a vue directive fro click outside contextmenu
+    //create a vue directive from click outside contextmenu
     'click-outside-layer-menu': {
       bind(el, binding, vnode) {
         this.event = function (event) {
@@ -542,23 +542,14 @@ const vueComponentOptions = {
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
       this._hideMenu();
       await this.$nextTick();
-      const layerId = layerstree.id;
-      const constMenuHeight = ((layerId) => {
-        return (1*this.canShowWmsUrl(layerId)
-          + 1*!!layerstree.bbox
-          + 1*!!layerstree.openattributetable
-          + 1*!!layerstree.color
-          + 1*this.canDownloadShp(layerId)) * 30;
-      })(layerId);
-      this.layerMenu.top = evt.y - constMenuHeight;
       this.layerMenu.left = evt.x;
       this.layerMenu.name = layerstree.name;
       this.layerMenu.layer = layerstree;
       this.layerMenu.show = true;
       this.layerMenu.colorMenu.color = layerstree.color;
-      this.$nextTick(() => {
-        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
-      });
+      await this.$nextTick();
+      this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
+      $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
     });
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
@@ -668,7 +659,7 @@ Vue.component('tristate-tree', {
         downloadFile(download.file);
       } else if (download.url) {}
     },
-    removeExternalLayer: function(name) {
+    removeExternalLayer(name) {
       const mapService = GUI.getComponent('map').getService();
       mapService.removeExternalLayer(name);
     },
@@ -698,11 +689,11 @@ const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
-    data: function() {
+    data() {
       return {}
     },
     computed: {
-      visiblelayers: function(){
+      visiblelayers(){
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
         let traverse = (obj) => {
@@ -721,7 +712,7 @@ Vue.component('layerslegend',{
     },
     watch: {
       'layerstree': {
-        handler: function(val, old){},
+        handler(val, old){},
         deep: true
       },
       'visiblelayers'(visibleLayers) {
@@ -730,7 +721,8 @@ Vue.component('layerslegend',{
       }
     },
     created() {
-      this.$emit('showlegend', !!this.visiblelayers.length);
+      const show = !!this.visiblelayers.length;
+      this.$emit('showlegend', show);
     }
 });
 
