@@ -122,6 +122,14 @@ function QueryResultsService() {
     this.plotLayerIds = layerIds;
   };
 
+  this.getPlotIds = function(){
+    return this.plotLayerIds;
+  };
+
+  this.findPlotId = function(id){
+    return this.plotLayerIds.find(plotId => plotId == id);
+  };
+
   this._setRelations(project);
   this._setAtlasActions(project);
   this._addVectorLayersDataToQueryResponse();
@@ -1183,6 +1191,7 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
+  console.log(action.chartRelationIds)
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,

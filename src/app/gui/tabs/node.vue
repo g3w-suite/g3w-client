@@ -131,13 +131,15 @@
         return relation && relation.name;
       },
       showRelation(relationId) {
+        const chartRelationIds = [];
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         const RelationPage = require('gui/relations/vue/relationspage');
+        GUI.getComponent('queryresults').getService().findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
         GUI.pushContent({
           content: new RelationPage({
             currentview: 'relations',
             relations: [relation],
-            chartRelationIds: [relation.referencingLayer],
+            chartRelationIds,
             feature: this.feature,
             layer: {
               id: this.layerid
