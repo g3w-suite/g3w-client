@@ -9,6 +9,7 @@
     <div class="tab-content">
       <div :id="ids[index]" class="tab-pane fade" v-for="(tab, index) in tabs" :key="ids[index]" :class="{'in active': index === 0}">
         <node
+          :showRelationByField="showRelationByField"
           :feature="feature"
           :layerid="layerid"
           :contenttype="contenttype"
@@ -45,7 +46,11 @@
         required: true
       },
       addToValidate: Function,
-      changeInput: Function
+      changeInput: Function,
+      showRelationByField: {
+        type: Boolean,
+        default: true
+      }
     },
     data() {
       return {

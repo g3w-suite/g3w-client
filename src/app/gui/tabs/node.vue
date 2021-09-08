@@ -15,6 +15,7 @@
           <template v-else>
             <div v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group">
               <node
+                :showRelationByField="showRelationByField"
                 :feature="feature"
                 :layerid="layerid"
                 :contenttype="contenttype"
@@ -28,8 +29,8 @@
               </node>
             </div>
             <template v-else>
-              <div style="cursor: pointer" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
-                <div class="query_relation_field" >
+              <div :style="{cursor: showRelationByField && pointer}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
+                <div v-if="showRelationByField" class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
                 <span>
@@ -73,7 +74,7 @@
   };
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField'],
     components: {
       G3wInput,
       ...Fields
@@ -131,23 +132,27 @@
         return relation && relation.name;
       },
       showRelation(relationId) {
-        const chartRelationIds = [];
-        const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
-        const RelationPage = require('gui/relations/vue/relationspage');
-        GUI.getComponent('queryresults').getService().findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
-        GUI.pushContent({
-          content: new RelationPage({
-            currentview: 'relations',
-            relations: [relation],
-            chartRelationIds,
-            feature: this.feature,
-            layer: {
-              id: this.layerid
-            }
-          }),
-          perc: 100,
-          closable: false
-        })
+        // based on attribute  show relation panel
+        if (this.showRelationByField){
+          const chartRelationIds = [];
+          const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+          const RelationPage = require('gui/relations/vue/relationspage');
+          GUI.getComponent('queryresults').getService().findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
+          GUI.pushContent({
+            content: new RelationPage({
+              currentview: 'relations',
+              relations: [relation],
+              chartRelationIds,
+              feature: this.feature,
+              layer: {
+                id: this.layerid
+              }
+            }),
+            perc: 100,
+            closable: false
+          })
+        }
+
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
