@@ -474,6 +474,25 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
   return d.promise();
 };
 
+/**
+ * Search layer feature by fid
+ * @param fid
+ */
+proto.getFeatureByFid = async function(fid){
+  const url = this.getUrl('data');
+  let feature;
+  try {
+    const response = await XHR.get({
+      url,
+      params: {
+        fid
+      }
+    });
+    feature = response && response.result && response.vector && response.vector.data && response.vector.data.features[0];
+  } catch(err){}
+  return feature
+};
+
 //search Features methods
 proto.searchFeatures = function(options={}, params={}){
   const {search_endpoint = this.config.search_endpoint} = options;

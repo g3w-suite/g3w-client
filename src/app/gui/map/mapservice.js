@@ -1498,9 +1498,31 @@ proto._resetView = function() {
   this.viewer.map.setView(view);
 };
 
+/**
+ *
+ *method to zoom to feature
+ */
+proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
+  const [layerId, fid] = zoom_to_fid.split(separator);
+  if (layerId !== undefined && fid !== undefined){
+    const layer = this.project.getLayerById(layerId);
+    const feature = layer && await layer.getFeatureByFid(fid);
+    if (feature) {
+      const {geometry, bbox} = feature;
+      if (geometry)
+        this.zoomToFeatures([feature], {
+          highlight: true
+        });
+      else if (bbox) this.zoomToExtent(feature.bbox);
+    }
+  }
+};
+
 proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
+  const zoom_to_fid = searchParams.get('zoom_to_fid');
+  zoom_to_fid &&  this.zoomToFid(zoom_to_fid)
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;

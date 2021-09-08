@@ -1191,7 +1191,6 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
-  console.log(action.chartRelationIds)
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
@@ -1199,6 +1198,7 @@ proto.showQueryRelations = function(layer, feature, action) {
       feature,
       layer
     }),
+    perc: 100,
     backonclose: true,
     closable: false
   });
