@@ -33,7 +33,7 @@
         this.legend.error = true;
         this.legend.loading = false;
       },
-      urlLoaded() {
+      async urlLoaded() {
         this.legend.loading = false;
       },
       getLegendUrl (layer) {
@@ -65,8 +65,14 @@
           const urlLayersName = urlMethodsLayersName[method];
           if (method === 'GET') {
             for (const url in urlLayersName) {
-              this.legend.url = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : ''}` : url;
-              this.legend.loading = true;
+              const updated_url_legend  = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : ''}` : url;
+              /*
+                Check if previous url is changed
+               */
+              if (this.legend.url !== updated_url_legend) {
+                this.legend.url = updated_url_legend;
+                this.legend.loading = true;
+              }
             }
           } else {
             for (const url in urlLayersName) {

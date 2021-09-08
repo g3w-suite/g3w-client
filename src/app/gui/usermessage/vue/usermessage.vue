@@ -62,8 +62,8 @@
         default: 'top'
       },
       size: {
-        type: 'String',
-        default: null
+        type: 'String', // values [samll, medium,fullpage]
+        default: 'fullpage'
       },
       message: {
         type: String,
@@ -109,6 +109,7 @@
         case 'medium':
           width = '50%';
           break;
+        case 'fullpage':
         default:
           width = '100%';
       }
@@ -163,7 +164,7 @@
     z-index: 1000;
     position: absolute;
     line-height: normal;
-    padding: 10px;
+    padding: 3px;
     min-width: 250px;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
@@ -194,6 +195,7 @@
 
  .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
+   text-align: center;
   }
 
   .usermessage-content.mobile  .usermessage-header-title h4 {
@@ -212,9 +214,8 @@
 
   .usermessage-message {
     width: 100%;
-    padding: 5px;
+    padding: 0 0 3px 10px;
     max-height: 100px;
-    font-weight: bold;
     font-size: 1.1em;
     align-self: flex-start;
     overflow-y: auto;

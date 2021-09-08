@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {base, inherit} = require('core/utils/utils');
-const Stack = require('gui/utils/utils').barstack;
+const {barstack:Stack} = require('gui/utils/utils');
 const G3WObject = require('core/g3wobject');
 const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
 const SIDEBAREVENTBUS = new Vue();

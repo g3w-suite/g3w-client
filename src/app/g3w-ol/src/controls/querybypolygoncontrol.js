@@ -1,4 +1,4 @@
-const utils = require('../utils');
+const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 const { getAllPolygonGeometryTypes } = require('core/geometry/geometry');
@@ -15,7 +15,7 @@ const QueryByPolygonControl = function(options={}) {
     interactionClass: PickCoordinatesInteraction,
     onhover: true
   };
-  options = utils.merge(options,_options);
+  options = merge(options,_options);
   const layers = options.layers || [];
   options.visible = this.checkVisibile(layers);
   options.geometryTypes = VALIDGEOMETRIES;

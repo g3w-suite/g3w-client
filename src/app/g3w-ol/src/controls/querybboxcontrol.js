@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const {merge} = require('../utils');
+const {createControlUserMessageTool} = require('./utils');
 const InteractionControl = require('./interactioncontrol');
 
 const QueryBBoxControl = function(options = {}){
@@ -12,7 +13,7 @@ const QueryBBoxControl = function(options = {}){
     interactionClass: ol.interaction.DragBox,
     onhover: true
   };
-  options = utils.merge(options,_options);
+  options = merge(options,_options);
   const layers = options.layers || [];
   options.visible = this.checkVisible(layers);
   InteractionControl.call(this, options);

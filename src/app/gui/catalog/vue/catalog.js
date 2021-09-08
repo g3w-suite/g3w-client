@@ -1,7 +1,7 @@
 import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
-import ChangeViewsComponent from './components/changeviews.vue';
+import ChangeMapThemesComponent from './components/changemapthemes.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
@@ -86,14 +86,14 @@ const vueComponentOptions = {
   },
   components: {
     'chrome-picker': ChromeComponent,
-    'changeviews': ChangeViewsComponent
+    'changemapthemes': ChangeMapThemesComponent
 
   },
   computed: {
     //show or not group toolbar
     showTocTools(){
-      const {views=[]} = this.project.state;
-      return views.length > 1
+      const {map_themes=[]} = this.project.state;
+      return map_themes.length > 1
     },
     project() {
       return this.state.prstate.currentProject
@@ -115,8 +115,16 @@ const vueComponentOptions = {
   },
   methods: {
     //change view method
-    async changeView(view){
-      this.$options.service.changeView(view);
+    async changeMapTheme(map_theme){
+      GUI.closeContent();
+      const changes = await this.$options.service.changeMapTheme(map_theme);
+      setTimeout(()=>{
+        this.legend.place === 'tab' ? CatalogEventHub.$emit('layer-change-style') :
+          // get all layer tha changes style
+          Object.keys(changes.layers).filter(layerId => changes.layers[layerId].style).forEach(layerId => CatalogEventHub.$emit('layer-change-style', {
+            layerId
+          }))
+      })
     },
     delegationClickEventTab(evt){
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;

@@ -1,3 +1,4 @@
+const GUI = require('gui/gui');
 const TOPOFFSET = 35;
 module.exports = {
   layout({map, position, element}) {},
@@ -27,5 +28,35 @@ module.exports = {
         }
       }
     }
+  },
+  // method to create user message tool fro map control
+  createControlUserMessageTool(tool={
+    hooks: {
+      body: {
+        template:`<div>
+                <div >
+                  <input type="radio" name="radio" id="g3w-map_theme-0" class="magic-radio" value="view1">
+                  <label  for="g3w-map_theme-0" style="display: flex; justify-content: space-between;">
+                    <span>Intersect</span>
+                  </label>
+                </div>
+                <div>
+                  <input  type="radio" name="radio" id="_cotains" class="magic-radio" value="view2">
+                  <label  for="g3w-map_theme-1" style="display: flex; justify-content: space-between;">
+                    <span>view2</span>
+                  </label>
+                </div>
+              </div>`
+      }
+    },
+    title: 'Scelgli il tipo di operazione'
+  }){
+    GUI.showUserMessage({
+      type: 'tool',
+      message: tool.message,
+      size: tool.size || 'small', // small, medium
+      title: tool.title || '',
+      hooks: tool.hooks
+    })
   }
 };

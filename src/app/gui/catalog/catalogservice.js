@@ -81,17 +81,18 @@ proto.addLayersStoreToLayersTrees = function(layersStore) {
   });
 };
 
-proto.changeView = function(viewName){
+proto.changeMapTheme = async function(mapThemeName){
   // set is changing project view
   ApplicationService.changeProjectView(true);
   const {currentProject} = this.state.prstate;
-  const viewlayerstree = currentProject.state.views.find(view => view.name === viewName).layerstree;
+  const map_theme = currentProject.state.map_themes.find(map_theme => map_theme.theme === mapThemeName).layerstree;
   const layerstree = this.state.layerstrees[0].tree[0].nodes;
-  currentProject.setLayersTreePropertiesFromView({
-    viewlayerstree,
+  const changeMapThemeProjectObj = await currentProject.setLayersTreePropertiesFromMapTheme({
+    map_theme,
     layerstree
   });
   ApplicationService.changeProjectView(false);
+  return changeMapThemeProjectObj;
 };
 
 module.exports = CatalogService;

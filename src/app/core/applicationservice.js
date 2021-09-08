@@ -524,7 +524,7 @@ const ApplicationService = function() {
   };
 
   this.isProjectViewChanging = function(){
-    return ApplicationState.changeProjectview
+    return ApplicationState.changeProjectview;
   };
 
   this.reloadCurrentProject = function(){

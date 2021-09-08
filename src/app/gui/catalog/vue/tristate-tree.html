@@ -14,7 +14,7 @@
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
-        :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '27px'}"
+        :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '24px'}"
         :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
   <template v-else>
@@ -31,7 +31,7 @@
         :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
       </span>
       <span :style="{paddingLeft: this.legendlayerposition === 'toc' ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
-         (legendplace === 'toc') ? '17px' : '27px'}" @click.stop="toggle(false)"
+         (legendplace === 'toc') ? '17px' : '24px'}" @click.stop="toggle(false)"
         :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
       </span>
     </span>

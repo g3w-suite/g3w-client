@@ -147,10 +147,10 @@ proto.setMap = function(map) {
   this._toggled && setTimeout(()=> {this.toggle(true)});
 };
 
-proto._handleClick = function(e) {
+proto._handleClick = function(evt) {
   if (this._enabled) {
     this.toggle();
-    Control.prototype._handleClick.call(this,e);
+    Control.prototype._handleClick.call(this, evt);
   }
 };
 

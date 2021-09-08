@@ -35,8 +35,7 @@ function LayersStore(config={}) {
       return layers;
     },
     setLayerSelected(layerId, selected) {
-      const layers = this.getLayers();
-      layers.forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
+      this.getLayers().forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
     },
     addLayers(layers) {
       layers.forEach(layer => this.addLayer(layer))

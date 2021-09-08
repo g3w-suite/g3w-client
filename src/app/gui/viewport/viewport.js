@@ -113,9 +113,9 @@ const ViewportService = function() {
       this.state.usermessage.autoclose = autoclose;
       this.state.usermessage.closable = closable;
       this.state.usermessage.draggable = draggable;
-      this.state.usermessage.hooks.header = hooks.header;
-      this.state.usermessage.hooks.body = hooks.body;
-      this.state.usermessage.hooks.footer = hooks.footer;
+      this.state.usermessage.hooks.header = hooks.header; // has to be a vue component or vue object
+      this.state.usermessage.hooks.body = hooks.body; // has to be a vue component or vue object
+      this.state.usermessage.hooks.footer = hooks.footer; // has to be a vue component or vue object
     })
   };
 

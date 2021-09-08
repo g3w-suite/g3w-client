@@ -1501,6 +1501,8 @@ proto._resetView = function() {
 proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
+  const zoom_to_fid = searchParams.get('zoom_to_fid');
+  console.log(zoom_to_fid)
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;
@@ -1586,7 +1588,7 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   //SETVISIBILITY EVENT
   const layerVisibleKey = layerStore.onafter('setLayersVisible',  layersIds => {
     // In case of changing not update map until is false
-    !ApplicationService.isProjectViewChanging() && layersIds.forEach(layerId => {
+    layersIds.forEach(layerId => {
       const layer = layerStore.getLayerById(layerId);
       const mapLayer = this.getMapLayerForLayer(layer);
       mapLayer && this.updateMapLayer(mapLayer)

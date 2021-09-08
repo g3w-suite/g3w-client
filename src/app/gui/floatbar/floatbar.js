@@ -1,4 +1,4 @@
-const Stack = require('gui/utils/utils').barstack;
+const {barstack:Stack} = require('gui/utils/utils');
 const GUI = require('gui/gui');
 
 function FloatbarService(){

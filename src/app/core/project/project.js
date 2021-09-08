@@ -31,14 +31,23 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
-  const {views=[]} = config;
-  if (views.length > 1) {
-    const defaultview = views.find(view => view.default);
-    defaultview && this.setLayersTreePropertiesFromView({
-      viewlayerstree: defaultview.layerstree,
+  /**
+   * View
+   *
+   */
+  const {map_themes=[]} = config;
+  if (map_themes.length > 1) {
+    const default_map_theme = map_themes.find(map_theme => map_theme.default);
+    default_map_theme && this.setLayersTreePropertiesFromMapTheme({
+      map_theme: default_map_theme.layerstree,
       layerstree: config.layerstree
     });
   }
+  /*
+   *
+   * End View
+   *
+   */
   this.state = config;
   // process layers
   this._processLayers();
@@ -47,6 +56,7 @@ function Project(config={}, options={}) {
   this._projection = Projections.get(this.state.crs);
   // build a layerstore of the project
   this._layersStore = this._buildLayersStore();
+  ///
   this.setters = {
     setBaseLayer(id) {
       this.state.baselayers.forEach(baseLayer => {
@@ -68,16 +78,52 @@ const proto = Project.prototype;
  * @param viewlayerstree
  * @param layerstree
  */
-proto.setLayersTreePropertiesFromView = function({viewlayerstree=[], layerstree=this.state.layerstree}){
-  const traverse = (viewtree, layerstree) =>{
-    viewtree.forEach((node, index) => {
+proto.setLayersTreePropertiesFromMapTheme = async function({map_theme=[], layerstree=this.state.layerstree}){
+  const changes = {
+    layers: {} // key is the layer id and object has style, visibility change (Boolean)
+  };
+  const promises = [];
+  const traverse = (map_theme, layerstree) =>{
+    map_theme.forEach((node, index) => {
       if (node.nodes) {
+        // case of group
         layerstree[index].checked = node.checked;
+        layerstree[index].expanded = node.expanded;
         traverse(node.nodes, layerstree[index].nodes);
-      } else layerstree[index].checked = node.visible;
+      } else {
+        // case of layer
+        if (layerstree[index].checked !== node.visible) {
+          changes.layers[node.id] = {
+            visibility: true,
+            style: false
+          };
+          layerstree[index].checked = node.visible;
+        }
+        // if has a style settled
+        if (node.style) {
+          const promise = new Promise((resolve, reject) =>{
+            const setCurrentStyleAndResolvePromise = node => {
+              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                visibility: false,
+                style: false
+              };
+              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
+              resolve();
+            };
+            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
+            else// case of starting project creation
+              node => setTimeout(() => {
+                setCurrentStyleAndResolvePromise(node);
+              })(node);
+          });
+          promises.push(promise);
+        }
+      }
     });
   };
-  traverse(viewlayerstree, layerstree);
+  traverse(map_theme, layerstree);
+  await Promise.allSettled(promises);
+  return changes // eventually information about changes (for example style etc..)
 };
 
 //get search end point value (ows or api)

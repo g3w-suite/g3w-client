@@ -192,6 +192,15 @@ proto.getStyle = function(){
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
 };
 
+proto.setCurrentStyle = function(styleName){
+  let changed = false;
+  this.config.styles.forEach(style => {
+    if (style.name === styleName) changed = !style.current;
+    style.current = style.name === styleName;
+  });
+  return changed;
+};
+
 proto.isDisabled = function() {
   return this.state.disabled;
 };

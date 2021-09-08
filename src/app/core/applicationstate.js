@@ -32,5 +32,4 @@ const STATE = Vue.observable({
   }
 });
 
-
 export default STATE;
