@@ -80,6 +80,14 @@ function QueryResultsService() {
     this.plotLayerIds = layerIds;
   };
 
+  this.getPlotIds = function(){
+    return this.plotLayerIds;
+  };
+
+  this.findPlotId = function(id){
+    return this.plotLayerIds.find(plotId => plotId == id);
+  };
+
   this._setRelations(project);
   this._setAtlasActions(project);
   this._addVectorLayersDataToQueryResponse();
