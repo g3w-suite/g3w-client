@@ -209,7 +209,11 @@ const translations = {
                 hint: "Scarica la feature in XLS"
               },
               atlas: {
-                hint: 'Stampa Atlas'
+                hint: "Stampa Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copia URL mappa con estensione a questa geometria",
+                hint_change: "Copiato"
               }
             }
           },
@@ -650,7 +654,11 @@ const translations = {
                 hint: "Download feature XLS"
               },
               atlas: {
-                hint: 'Print Atlas'
+                hint: "Print Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copy map URL with this geometry feature extension",
+                hint_change: "Copied"
               }
             }
           },
@@ -1091,7 +1099,11 @@ const translations = {
                 hint: "Lataa ominaisuuden XLS-tiedosto"
               },
               atlas: {
-                hint: 'Tulosta Atlas'
+                hint: "Tulosta Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copy map URL with this geometry feature extension",
+                hint_change: "Copied"
               }
             }
           },
@@ -1532,7 +1544,11 @@ const translations = {
                 hint: "Ladda egenskapens XLS-fil"
               },
               atlas: {
-                hint: 'Skriv ut Atlas'
+                hint: "Skriv ut Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copy map URL with this geometry feature extension",
+                hint_change: "Copied"
               }
             }
           },

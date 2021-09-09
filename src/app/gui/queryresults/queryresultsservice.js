@@ -1,10 +1,10 @@
 import {G3W_FID} from 'constant';
 import QueryPolygonAttributesComponent from './vue/querypolygonaddattributes.vue';
 const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
+const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
@@ -255,6 +255,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
   if (!add) {
     this.unlistenerlayeractionevents = [];
     layers.forEach(layer => {
+      const is_external_layer_or_wms = layer.external || layer.source ? layer.source.type === 'wms' : false;
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
       //in case of geometry
       if (layer.hasgeometry) {
@@ -322,7 +323,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         });
       });
 
-      this.state.layersactions[layer.id].push({
+      !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'removefeaturefromresult',
         download: false,
         mouseover: true,
@@ -333,6 +334,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
         cbk: this.removeFeatureLayerFromResult.bind(this)
       });
+
       if (layer.selection.active !== undefined) {
         // selection action
         const toggled = {};
@@ -358,9 +360,34 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.listenClearSelection(layer, 'selection');
         //end selection action
       }
+
+      !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
+        id: 'link_zoom_to_fid',
+        class: GUI.getFontClass('link'),
+        hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
+        hint_change: {
+          hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
+          duration: 1000
+        },
+        cbk: this.copyZoomToFidUrl.bind(this)
+      });
     });
     this.addActionsForLayers(this.state.layersactions);
   }
+};
+
+/**
+ * Method copy zoomtofid url
+ * @param layer
+ * @param feature
+ */
+proto.copyZoomToFidUrl = function(layer, feature, action){
+  const fid = feature.attributes[G3W_FID];
+  const url = new URL(location.href);
+  const zoom_to_fid = `${layer.id}|${fid}`;
+  url.searchParams.set('zoom_to_fid', zoom_to_fid);
+  copyUrl(url.toString());
+  action.hint_changed = true;
 };
 
 /**
@@ -553,6 +580,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   const _handleFeatureFoLayer = featuresForLayer => {
     let formStructure;
     let sourceType;
+    let source;
     let extractRelations = false;
     let external = false;
     const layer = featuresForLayer.layer;
@@ -566,6 +594,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
+      source = layer.getSource();
       // set selection filtere and relation if not wms
       if (layer.getSourceType() !== 'wms'){
         filter = layer.state.filter;
@@ -580,7 +609,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
-
       // sanitize qattributes layer only if is ows
       layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
@@ -634,6 +662,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerId = layer;
       external = true;
     }
+
     const layerObj = {
       title: layerTitle,
       id: layerId,
@@ -641,7 +670,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       features: [],
       hasgeometry: false,
       atlas: this.getAtlasByLayerId(layerId),
-      source: '',
+      source,
       download,
       show: true,
       filter,
@@ -736,20 +765,20 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
   }
 };
 
-proto.trigger = function(actionId, layer, feature, index, container) {
+proto.trigger = async function(actionId, layer, feature, index, container) {
   const actionMethod = this._actions[actionId];
   actionMethod && actionMethod(layer, feature, index);
   if (layer) {
     const layerActions = this.state.layersactions[layer.id];
     if (layerActions) {
       const action = layerActions.find(layerAction => layerAction.id === actionId);
-      action && this.triggerLayerAction(action,layer,feature, index, container);
+      action && await this.triggerLayerAction(action,layer,feature, index, container);
     }
   }
 };
 
-proto.triggerLayerAction = function(action,layer,feature, index, container) {
-  action.cbk && action.cbk(layer,feature, action, index, container);
+proto.triggerLayerAction = async function(action,layer,feature, index, container) {
+  action.cbk && await action.cbk(layer,feature, action, index, container);
   if (action.route) {
     let url;
     let urlTemplate = action.route;

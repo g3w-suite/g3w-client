@@ -1097,6 +1097,26 @@ proto.getCenter = function(){
   return map.getView().getCenter();
 };
 
+/**
+ *
+ *method to zoom to feature
+ */
+proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
+  const [layerId, fid] = zoom_to_fid.split(separator);
+  if (layerId !== undefined && fid !== undefined){
+    const layer = this.project.getLayerById(layerId);
+    const feature = layer && await layer.getFeatureByFid(fid);
+    if (feature) {
+      const {geometry, bbox} = feature;
+      if (geometry)
+        this.zoomToFeatures([feature], {
+          highlight: true
+        });
+      else if (bbox) this.zoomToExtent(feature.bbox);
+    }
+  }
+};
+
 proto.getMapExtent = function(){
   const map = this.getMap();
   return map.getView().calculateExtent(map.getSize());
@@ -1496,26 +1516,6 @@ proto._resetView = function() {
   });
   this._setSettings();
   this.viewer.map.setView(view);
-};
-
-/**
- *
- *method to zoom to feature
- */
-proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
-  const [layerId, fid] = zoom_to_fid.split(separator);
-  if (layerId !== undefined && fid !== undefined){
-    const layer = this.project.getLayerById(layerId);
-    const feature = layer && await layer.getFeatureByFid(fid);
-    if (feature) {
-      const {geometry, bbox} = feature;
-      if (geometry)
-        this.zoomToFeatures([feature], {
-          highlight: true
-        });
-      else if (bbox) this.zoomToExtent(feature.bbox);
-    }
-  }
 };
 
 proto._calculateViewOptions = function({project, width, height}={}) {

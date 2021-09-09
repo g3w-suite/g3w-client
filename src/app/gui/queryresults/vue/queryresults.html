@@ -12,7 +12,7 @@
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
-              <span @click.stop="addLayerFeaturesToResults(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.addfeaturesresults.active}"
+              <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.addfeaturesresults.active}"
                 data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                 <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
               </span>
