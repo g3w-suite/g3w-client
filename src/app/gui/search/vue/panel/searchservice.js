@@ -31,7 +31,8 @@ function SearchService(config={}) {
     loading: {},
     searching: false
   };
-  const {options={}} = config;
+  this.config = config;
+  const {type, options={}} = this.config;
   const layerid = options.querylayerid || options.layerid || null;
   const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
@@ -47,8 +48,14 @@ function SearchService(config={}) {
   this.search_endpoint = config.search_endpoint;
   this.url = options.queryurl;
   this.filter = options.filter;
+  /*
+   type:
+     search: search default ,
+     search_1n in case of 1:N
+ */
+  this.type = type || 'search';
   this.return = options.return || 'data';
-  this.show = this.return === 'data';
+  this.show = this.return === 'data' && this.type === 'search';
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
   this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
   this.createInputsFormFromFilter({filter});
@@ -153,20 +160,62 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         this.mapService.zoomToFeatures(data.data[0].features)
       }
     } else {
-      switch (this.return) {
-        case 'search':
-          GUI.closeContent();
-          // in case of api get first response on array
-          data = data.data[0].data;
-          if (isEmptyObject(data)){
-            const dataPromise = Promise.resolve({});
-            DataRouterService.showCustomOutputDataPromise(dataPromise);
-          } else {
-            const SearchPanel = require('gui/search/vue/panel/searchpanel');
-            const add_panel = new SearchPanel(data);
-            add_panel.show();
+      if (this.type === 'search_1n'){
+        const relationId = this.config.options.search_1n_relationid;
+        const {features=[]} = data.data[0] || {};
+        // check if has features on result
+        if (features.length){
+          const relation = this.project.getRelationById(relationId);
+          const inputs = [];
+          if (relation){
+            const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
+            const uniqueValues = new Set();
+            features.forEach(feature => {
+              const value = feature.getProperties()[referencingField];
+              if (!uniqueValues.has(value)) {
+                uniqueValues.add(value);
+                inputs.push({
+                  attribute:referencedField,
+                  logicop: "OR",
+                  operator: "eq",
+                  value
+                })
+              }
+            });
+            const filter = createFilterFormInputs({
+              search_endpoint,
+              inputs
+            });
+            data = await DataRouterService.getData('search:features', {
+              inputs:{
+                layer: this.project.getLayerById(referencedLayer),
+                search_endpoint,
+                filter,
+                formatter: 1, // set formatter to 1
+                feature_count
+              },
+              outputs: {
+                title: this.state.title
+              }
+            });
           }
-          break;
+        } else DataRouterService.showEmptyOutputs();
+      } else{
+        switch (this.return) {
+          case 'search':
+            GUI.closeContent();
+            // in case of api get first response on array
+            data = data.data[0].data;
+            if (isEmptyObject(data)){
+              const dataPromise = Promise.resolve({});
+              DataRouterService.showCustomOutputDataPromise(dataPromise);
+            } else {
+              const SearchPanel = require('gui/search/vue/panel/searchpanel');
+              const add_panel = new SearchPanel(data);
+              add_panel.show();
+            }
+            break;
+        }
       }
     }
   } catch(err){

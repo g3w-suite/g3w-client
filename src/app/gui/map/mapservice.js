@@ -1887,8 +1887,7 @@ proto._watchInteraction = function(interaction) {
   })
 };
 
-proto.zoomTo = function(coordinate, zoom) {
-  zoom = _.isNumber(zoom) ? zoom : 6;
+proto.zoomTo = function(coordinate, zoom=6) {
   this.viewer.zoomTo(coordinate, zoom);
 };
 
@@ -1935,6 +1934,7 @@ proto.getGeometryAndExtentFromFeatures = function(features=[]){
   try {
     const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
     geometry = new ol.geom[olClassGeomType](geometryCoordinates);
+    if (extent === undefined) extent = geometry.getExtent();
   } catch(err){}
   return {
     extent,
@@ -1950,7 +1950,7 @@ proto.highlightFeatures = function(features, options={}){
 };
 
 proto.zoomToFeatures = function(features, options={highlight: false}) {
-  const {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
+  let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
   extent && this.zoomToExtent(extent, options);
