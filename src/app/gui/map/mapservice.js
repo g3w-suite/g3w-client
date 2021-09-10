@@ -1097,6 +1097,26 @@ proto.getCenter = function(){
   return map.getView().getCenter();
 };
 
+/**
+ *
+ *method to zoom to feature
+ */
+proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
+  const [layerId, fid] = zoom_to_fid.split(separator);
+  if (layerId !== undefined && fid !== undefined){
+    const layer = this.project.getLayerById(layerId);
+    const feature = layer && await layer.getFeatureByFid(fid);
+    if (feature) {
+      const {geometry, bbox} = feature;
+      if (geometry)
+        this.zoomToFeatures([feature], {
+          highlight: true
+        });
+      else if (bbox) this.zoomToExtent(feature.bbox);
+    }
+  }
+};
+
 proto.getMapExtent = function(){
   const map = this.getMap();
   return map.getView().calculateExtent(map.getSize());
@@ -1502,7 +1522,7 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
   const zoom_to_fid = searchParams.get('zoom_to_fid');
-  console.log(zoom_to_fid)
+  zoom_to_fid &&  this.zoomToFid(zoom_to_fid)
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;
@@ -1869,8 +1889,7 @@ proto._watchInteraction = function(interaction) {
   })
 };
 
-proto.zoomTo = function(coordinate, zoom) {
-  zoom = _.isNumber(zoom) ? zoom : 6;
+proto.zoomTo = function(coordinate, zoom=6) {
   this.viewer.zoomTo(coordinate, zoom);
 };
 
@@ -1917,6 +1936,7 @@ proto.getGeometryAndExtentFromFeatures = function(features=[]){
   try {
     const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
     geometry = new ol.geom[olClassGeomType](geometryCoordinates);
+    if (extent === undefined) extent = geometry.getExtent();
   } catch(err){}
   return {
     extent,
@@ -1932,7 +1952,7 @@ proto.highlightFeatures = function(features, options={}){
 };
 
 proto.zoomToFeatures = function(features, options={highlight: false}) {
-  const {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
+  let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
   extent && this.zoomToExtent(extent, options);

@@ -42,7 +42,7 @@
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
+                <tabs :layerid="table.layerId" :feature="feature" :showRelationByField="false" :fields="fields" :tabs="table.formStructure"></tabs>
               </td>
             </template>
             <template v-else>

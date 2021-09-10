@@ -61,6 +61,19 @@ function Routerservice() {
   };
 
   /**
+   *Force to show empty output data
+   *
+   * */
+  this.showEmptyOutputs = function(){
+    const dataPromise = Promise.resolve({
+      data: []
+    });
+    this.currentoutputplaces.forEach(place =>{
+      this.ouputplaces[place](dataPromise);
+    });
+  };
+
+  /**
    * Set a costum datapromiseoutput to applicationa outputs settede
    * @param dataPromise
    */

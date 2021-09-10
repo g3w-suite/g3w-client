@@ -264,7 +264,7 @@ const vueComponentOptions = {
         await this.$nextTick();
       }
       const container = this.getContainerFromFeatureLayer({layer, index});
-      this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
+      await this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
     },
     showFullPhoto(url) {
       this.$options.queryResultsService.showFullPhoto(url);
@@ -365,7 +365,6 @@ function QueryResultsComponent(options={}) {
   this._service.onafter('setLayersData', async () => {
     !this.internalComponent && this.setInternalComponent();
     await this.internalComponent.$nextTick();
-    $('.action-button[data-toggle="tooltip"]').tooltip();
   });
 
   this.layout = function(width,height) {};
