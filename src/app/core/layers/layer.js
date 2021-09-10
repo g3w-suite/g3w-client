@@ -25,7 +25,7 @@ function Layer(config={}, options={}) {
   this.config.search_endpoint = project.getSearchEndPoint();
   const projectRelations = project.getRelations();
   // create relations
-  this._relations = this._createRelations(projectRelations);
+  this._relations = this.createRelations(projectRelations);
   if (!this.isBaseLayer()) {
     //filtertoken
     //set url to get varios type of data
@@ -139,8 +139,8 @@ proto.getSearchEndPoint = function(){
   return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
 };
 
-//relations
-proto._createRelations = function(projectRelations) {
+//create relation belong to layer
+proto.createRelations = function(projectRelations) {
   const layerId = this.getId();
   const relations = projectRelations.filter(relation => [relation.referencedLayer, relation.referencingLayer].indexOf(layerId) !== -1);
   return new Relations({

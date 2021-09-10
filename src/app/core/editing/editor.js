@@ -167,14 +167,23 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
   }
 };
 
-proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
+/**
+ * Handel multi fields relations
+ * @param relationId
+ * @param ids
+ * @param fields
+ * @param values
+ */
+proto.setFieldValueToRelationFields = function({relationId, ids, fields, values=[]}={}){
   const SessionsRegistry = require('./sessionsregistry');
   const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
   ids.forEach(id => {
     const feature = editingLayerSource.getFeatureById(id);
     if (feature) {
-      const fieldvalue = feature.get(field);
-      fieldvalue == values[0] && feature.set(field, values[1]);
+      fields.forEach((field, index) => {
+        const fieldvalue = feature.get(field);
+        fieldvalue == values[0] && feature.set(field, values[1][index]);
+      })
     }
   })
 };
@@ -191,12 +200,12 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
       feature.setProperties(idobj.properties);
       relations.forEach(relation =>{
         Object.entries(relation).forEach(([relationId, options]) => {
-          const value = feature.get(options.fatherField);
-          this.setFieldValueToRelationField({
+          const father_values = options.fatherFields.map(fatherField => feature.get(fatherField));
+          this.setFieldValueToRelationFields({
             relationId,
             ids: options.ids,
-            field: options.childField,
-            values:[idobj.clientid, value]
+            fields: options.childFields,
+            values:[idobj.clientid, father_values]
           })
         })
       })
@@ -223,8 +232,8 @@ proto.commit = function(commitItems) {
     return {
       [relationId]:{
         ids: [...add, ...updates],
-        fatherField: layerRelation.getFatherField(),
-        childField: layerRelation.getChildField()
+        fatherFields: layerRelation.getFatherFields(),
+        childFields: layerRelation.getChildFields()
       }
     }
   }) : [];

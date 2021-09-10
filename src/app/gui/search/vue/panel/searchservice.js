@@ -168,18 +168,27 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
           const relation = this.project.getRelationById(relationId);
           const inputs = [];
           if (relation){
-            const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
-            const uniqueValues = new Set();
+            const {referencedLayer, fieldsRef} = relation;
+            const fieldsRefLength = fieldsRef.length;
+            const uniqueValues = []; // to not repeat same request value
             features.forEach(feature => {
-              const value = feature.getProperties()[referencingField];
-              if (!uniqueValues.has(value)) {
-                uniqueValues.add(value);
-                inputs.push({
-                  attribute:referencedField,
-                  logicop: "OR",
-                  operator: "eq",
-                  value
-                })
+              const values = [];
+              fieldsRef.forEach(({referencedField, referencingField}) => {
+                values.push(feature.getProperties()[referencingField]);
+              });
+              const find = uniqueValues.find(uniqueValue => {
+                return uniqueValue.reduce((accumulator, value, valueIndex) => accumulator && value == values[valueIndex], true);
+              });
+              if (!find){
+                values.forEach((value, index) => {
+                  inputs.push({
+                    attribute: fieldsRef[index].referencedField,
+                    logicop: index === fieldsRefLength -1 ? "OR" : "AND", //last logic op to AND between fields in relations
+                    operator: "eq",
+                    value
+                  })
+                });
+                uniqueValues.push(values);
               }
             });
             const filter = createFilterFormInputs({
@@ -199,8 +208,8 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
               }
             });
           }
-        } else DataRouterService.showEmptyOutputs();
-      } else{
+        } else DataRouterService.showEmptyOutputs(); // in case of no child result return empty results
+      } else {
         switch (this.return) {
           case 'search':
             GUI.closeContent();

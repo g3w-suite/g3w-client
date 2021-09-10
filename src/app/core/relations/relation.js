@@ -12,8 +12,8 @@ function Relation(config={}) {
     origname,
     father: config.referencedLayer,
     child: config.referencingLayer,
-    fatherField: config.fieldRef.referencedField,
-    childField: config.fieldRef.referencingField,
+    fatherFields: config.fieldsRef.map(fieldRef => fieldRef.referencedField), // father Fields
+    childFields: config.fieldsRef.map(fieldRef => fieldRef.referencingField), // child fields
     type: config.type
   };
 
@@ -66,17 +66,17 @@ proto.getType = function() {
 
 proto.getFields = function() {
   return {
-    father: this.state.fatherField,
-    child: this.state.childField
+    father: this.state.fatherFields, // temp
+    child: this.state.childFields // temp
   };
 };
 
-proto.getFatherField = function() {
-  return this.state.fatherField;
+proto.getFatherFields = function() {
+  return this.state.fatherFields;
 };
 
-proto.getChildField = function() {
-  return this.state.childField;
+proto.getChildFields = function() {
+  return this.state.childFields;
 };
 
 module.exports = Relation;
