@@ -84,14 +84,22 @@ const ApplicationService = function() {
     return ProjectsRegistry.getCurrentProject();
   };
 
+  /**
+   *
+   * @param bool
+   * @param download_caller_id
+   * @returns {null}
+   */
   this.setDownload = function(bool=false, download_caller_id){
-    if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
-      ApplicationState.download = false;
-      this.download_caller_id = null;
-    } else if (bool && this.download_caller_id === null) {
-      ApplicationState.download = bool;
-      this.download_caller_id = uniqueId();
-    }
+    if (download_caller_id){
+      if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
+        ApplicationState.download = false;
+        this.download_caller_id = null;
+      } else if (bool && this.download_caller_id === null) {
+        ApplicationState.download = bool;
+        this.download_caller_id = uniqueId();
+      }
+    } else ApplicationState.download = bool;
     return this.download_caller_id;
   };
 
