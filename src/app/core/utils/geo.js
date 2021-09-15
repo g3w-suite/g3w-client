@@ -929,10 +929,8 @@ const geoutils = {
             dissolvedFeatureGeometry.getCoordinates() :
             (baseFeatureGeometryType.indexOf('Multi') !== -1 && dissolvedFeatureGeometryType === baseFeatureGeometryType.replace('Multi', '')) ? [dissolvedFeatureGeometry.getCoordinates()]
               : null;
-          if (dissolvedFeatuteGeometryCoordinates)
-            baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
-          else
-            dissolvedFeature = null;
+          if (dissolvedFeatuteGeometryCoordinates) baseFeature.getGeometry().setCoordinates(dissolvedFeatuteGeometryCoordinates);
+          else dissolvedFeature = null;
         } else dissolvedFeature = null;
     }
     return dissolvedFeature;
@@ -955,6 +953,34 @@ const geoutils = {
         geographic: false
       };
     return crs;
+  },
+  /**
+   * Method to get geoiff file create by server
+   *
+   * @param options {
+   *   url: server url end point
+   *   method: "GET" or "POST" - default POST
+   * }
+   * @returns {Promise<Blob>}
+   */
+  async getGeoTIFFfromServer(options={}){
+    const {url, params:{image, csrfmiddlewaretoken, bbox}, method="POST"} = options;
+    const body = new FormData();
+    body.append('image', image);
+    body.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
+    body.append('bbox', bbox);
+    const responseServer = await fetch(url, {
+      method, // *GET, POST, PUT, DELETE, etc.,
+      body
+    });
+    const request = new Request('/dist/client/map_temp.tif');
+    const response = await fetch(request);
+    geoTiff = await response.blob();
+    geoTIFFServer = await responseServer.blob();
+    return {
+      geoTiff,
+      geoTIFFServer
+    };
   }
 };
 

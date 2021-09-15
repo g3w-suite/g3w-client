@@ -422,7 +422,7 @@ const translations = {
           tooltip: "Area"
         },
         screenshot: {
-          error: "Errore nella creazione dello screeshot"
+          error: "Errore nella creazione dello screenshot"
         }
       },
       catalog_items: {

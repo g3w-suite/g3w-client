@@ -215,6 +215,18 @@ gulp.task('less',['fonts'], function () {
     .pipe(gulp.dest(clientFolder+'/css/'))
 });
 
+// compile less file in css
+gulp.task('custom-less', function () {
+  const customLessFolder = path.join(assetsFolder, 'style', 'less', 'g3w-skins-custom', 'belgi');
+  console.log(`${customLessFolder}/css/`)
+  return gulp.src(path.join(customLessFolder, 'main.less'))
+    .pipe(concat('custom.less'))
+    .pipe(less({
+      plugins: [LessGlob] //plugin to manage globs import es: @import path/***
+    }))
+    .pipe(gulp.dest(`${customLessFolder}/css/`))
+});
+
 
 gulp.task('fonts', function () {
   return gulp.src([path.join(assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'), '!./src/libs/**/node_modules/**/',`${pluginsFolder}/**/*.{eot,ttf,woff,woff2}`])

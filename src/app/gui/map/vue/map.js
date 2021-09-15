@@ -76,13 +76,19 @@ function MapComponent(options = {}) {
   const maps_container = options.maps_container || "g3w-maps";
   options.target = target;
   options.maps_container = maps_container;
-  this.setService(new MapService(options));
+  const service = new MapService(options);
+  this.setService(service);
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    service: this._service,
+    service,
     target,
     maps_container
   });
+  /**
+   * add Vue get cookie method
+   *
+   */
+  service.getCookie = this.internalComponent.$cookie.get;
 }
 
 inherit(MapComponent, Component);
