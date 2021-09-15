@@ -718,7 +718,7 @@ proto._setupControls = function() {
                       const bbox = this.getMapBBOX().toString();
                       const csrfmiddlewaretoken = this.getCookie('csrftoken');
                       try {
-                        const {geoTiff, geoTIFFServer} = await getGeoTIFFfromServer({
+                        const geoTIFF = await getGeoTIFFfromServer({
                           url,
                           params: {
                             image: blobImage,
@@ -727,9 +727,8 @@ proto._setupControls = function() {
                           },
                           method: "POST"
                         });
-                        saveAs(geoTiff, `map_temp_file_${Date.now()}.tif`);
-                        saveAs(geoTIFFServer, `map_${Date.now()}.tif`);
-                      } catch(err){
+                        saveAs(geoTIFF, `map_${Date.now()}.tif`);
+                      } catch(err) {
                         console.log(err)
                       }
                     }
@@ -1545,7 +1544,7 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
   const zoom_to_fid = searchParams.get('zoom_to_fid');
-  zoom_to_fid &&  this.zoomToFid(zoom_to_fid)
+  zoom_to_fid &&  this.zoomToFid(zoom_to_fid);
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;

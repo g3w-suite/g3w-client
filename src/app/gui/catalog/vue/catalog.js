@@ -123,7 +123,7 @@ const vueComponentOptions = {
           // get all layer tha changes style
           Object.keys(changes.layers).filter(layerId => changes.layers[layerId].style).forEach(layerId => CatalogEventHub.$emit('layer-change-style', {
             layerId
-          }))
+          }));
       })
     },
     delegationClickEventTab(evt){

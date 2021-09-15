@@ -1,10 +1,11 @@
 <template>
   <ul class="sidebar-menu">
-    <li id="g3w-catalog-toc-views" class="treeview sidebaritem skin-border-color" style="margin-bottom: 5px; border-bottom: 2px solid">
+    <li id="g3w-catalog-toc-views" class="treeview sidebaritem skin-border-color active" style="margin-bottom: 5px; border-bottom: 2px solid">
       <a href="#" ref="g3w-map-theme-ancor" style="display: flex; align-items: center; padding: 5px 5px 5px 2px;">
         <i style="padding: 3px;" :class="g3wtemplate.getFontClass('caret-down')"></i>
         <i style="padding: 0 0 0 4px;" :class="g3wtemplate.getFontClass('eye')"></i>
-        <span class="treeview-label" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">{{ current_map_theme }}</span>
+        <span v-if="current_map_theme " class="treeview-label" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">{{ current_map_theme }}</span>
+        <span v-else class="treeview-label" style="color: #cccccc !important; font-weight: bold">SCEGLI VISTA</span>
       </a>
       <ul id="g3w-catalog-views" class="treeview-menu" >
         <li style="padding: 5px">
@@ -24,9 +25,8 @@
   export default {
     name: "changemapthemes",
     data(){
-      const current_map_theme = this.map_themes.find(map_theme => map_theme.default).theme;
       return {
-        current_map_theme
+        current_map_theme: null
       }
     },
     props: {

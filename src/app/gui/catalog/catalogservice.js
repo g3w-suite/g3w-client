@@ -81,11 +81,10 @@ proto.addLayersStoreToLayersTrees = function(layersStore) {
   });
 };
 
-proto.changeMapTheme = async function(mapThemeName){
+proto.changeMapTheme = async function(map_theme){
   // set is changing project view
   ApplicationService.changeProjectView(true);
   const {currentProject} = this.state.prstate;
-  const map_theme = currentProject.state.map_themes.find(map_theme => map_theme.theme === mapThemeName).layerstree;
   const layerstree = this.state.layerstrees[0].tree[0].nodes;
   const changeMapThemeProjectObj = await currentProject.setLayersTreePropertiesFromMapTheme({
     map_theme,

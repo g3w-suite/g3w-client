@@ -969,18 +969,12 @@ const geoutils = {
     body.append('image', image);
     body.append('csrfmiddlewaretoken', csrfmiddlewaretoken);
     body.append('bbox', bbox);
-    const responseServer = await fetch(url, {
+    const response = await fetch(url, {
       method, // *GET, POST, PUT, DELETE, etc.,
       body
     });
-    const request = new Request('/dist/client/map_temp.tif');
-    const response = await fetch(request);
-    geoTiff = await response.blob();
-    geoTIFFServer = await responseServer.blob();
-    return {
-      geoTiff,
-      geoTIFFServer
-    };
+    geoTIFF = await response.blob();
+    return geoTIFF;
   }
 };
 

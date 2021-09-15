@@ -1,4 +1,4 @@
-const {base, inherit} = require('core/utils//utils');
+const {base, inherit, XHR} = require('core/utils//utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
@@ -31,24 +31,20 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
+  this.state = config;
   /**
    * View
    *
    */
-  const {map_themes=[]} = config;
-  if (map_themes.length > 1) {
-    const default_map_theme = map_themes.find(map_theme => map_theme.default);
-    default_map_theme && this.setLayersTreePropertiesFromMapTheme({
-      map_theme: default_map_theme.layerstree,
-      layerstree: config.layerstree
-    });
-  }
+  //information about api project
+  this.urls = {
+    map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`
+  };
   /*
    *
    * End View
    *
    */
-  this.state = config;
   // process layers
   this._processLayers();
   // set the project projection to object crs
@@ -72,59 +68,6 @@ function Project(config={}, options={}) {
 inherit(Project, G3WObject);
 
 const proto = Project.prototype;
-
-/**
- * Method to set properties ( checked and visible) from view to layerstre
- * @param viewlayerstree
- * @param layerstree
- */
-proto.setLayersTreePropertiesFromMapTheme = async function({map_theme=[], layerstree=this.state.layerstree}){
-  const changes = {
-    layers: {} // key is the layer id and object has style, visibility change (Boolean)
-  };
-  const promises = [];
-  const traverse = (map_theme, layerstree) =>{
-    map_theme.forEach((node, index) => {
-      if (node.nodes) {
-        // case of group
-        layerstree[index].checked = node.checked;
-        layerstree[index].expanded = node.expanded;
-        traverse(node.nodes, layerstree[index].nodes);
-      } else {
-        // case of layer
-        if (layerstree[index].checked !== node.visible) {
-          changes.layers[node.id] = {
-            visibility: true,
-            style: false
-          };
-          layerstree[index].checked = node.visible;
-        }
-        // if has a style settled
-        if (node.style) {
-          const promise = new Promise((resolve, reject) =>{
-            const setCurrentStyleAndResolvePromise = node => {
-              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                visibility: false,
-                style: false
-              };
-              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
-              resolve();
-            };
-            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
-            else// case of starting project creation
-              node => setTimeout(() => {
-                setCurrentStyleAndResolvePromise(node);
-              })(node);
-          });
-          promises.push(promise);
-        }
-      }
-    });
-  };
-  traverse(map_theme, layerstree);
-  await Promise.allSettled(promises);
-  return changes // eventually information about changes (for example style etc..)
-};
 
 //get search end point value (ows or api)
 proto.getSearchEndPoint = function(){
@@ -357,5 +300,82 @@ proto.getInfoFormat = function() {
 proto.getLayersStore = function() {
   return this._layersStore;
 };
+
+/// Map Themes
+
+/**
+ * Method to set properties ( checked and visible) from view to layerstre
+ * @param viewlayerstree
+ * @param layerstree
+ */
+proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}){
+  const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
+  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  const changes = {
+    layers: {} // key is the layer id and object has style, visibility change (Boolean)
+  };
+  const promises = [];
+  const traverse = (mapThemeLayersTree, layerstree) =>{
+    mapThemeLayersTree.forEach((node, index) => {
+      if (node.nodes) {
+        // case of group
+        layerstree[index].checked = node.checked;
+        layerstree[index].expanded = node.expanded;
+        traverse(node.nodes, layerstree[index].nodes);
+      } else {
+        node.style = node.style || mapThemeConfig.styles[node.id];
+        // case of layer
+        if (layerstree[index].checked !== node.visible) {
+          changes.layers[node.id] = {
+            visibility: true,
+            style: false
+          };
+          layerstree[index].checked = node.visible;
+        }
+        // if has a style settled
+        if (node.style) {
+          const promise = new Promise((resolve, reject) =>{
+            const setCurrentStyleAndResolvePromise = node => {
+              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                visibility: false,
+                style: false
+              };
+              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
+              resolve();
+            };
+            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
+            else// case of starting project creation
+              node => setTimeout(() => {
+                setCurrentStyleAndResolvePromise(node);
+              })(node);
+          });
+          promises.push(promise);
+        }
+      }
+    });
+  };
+  traverse(mapThemeLayersTree, layerstree);
+  await Promise.allSettled(promises);
+  return changes // eventually information about changes (for example style etc..)
+};
+
+/**
+ * get map Theme_configuration
+ */
+proto.getMapThemeFromThemeName = async function(map_theme){
+  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
+  if (mapThemeConfig){
+    const {layerstree} = mapThemeConfig;
+    if (layerstree === undefined) {
+      const url = `${this.urls.map_themes}${map_theme}/`;
+      const response = await XHR.get({
+        url
+      });
+      mapThemeConfig.layerstree = response.data;
+    }
+  }
+  return mapThemeConfig;
+};
+
 
 module.exports = Project;
