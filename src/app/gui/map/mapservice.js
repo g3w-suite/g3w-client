@@ -709,10 +709,11 @@ proto._setupControls = function() {
             control = this.createMapControl(controlType, {
               options: {
                 onclick: async () => {
+                  // Start download show Image
+                  ApplicationService.setDownload(true);
                   try {
                     const blobImage = await this.createMapImage();
-                    if (controlType === 'screenshot')
-                      saveAs(blobImage, `map_${Date.now()}.png`);
+                    if (controlType === 'screenshot') saveAs(blobImage, `map_${Date.now()}.png`);
                     else {
                       const url = `/${this.project.getType()}/api/asgeotiff/${this.project.getId()}/`;
                       const bbox = this.getMapBBOX().toString();
@@ -739,6 +740,8 @@ proto._setupControls = function() {
                       autoclose: true
                     })
                   }
+                  // Stop download show Image
+                  ApplicationService.setDownload(false);
                   return true;
                 }
               }
