@@ -360,7 +360,7 @@ const utils = {
         : reject('No url')
       })
     },
-    post({url, data, formdata = false, contentType} = {}) {
+    post({url, data, formdata = false, contentType} = {}, getResponseStatusHeaders=false) {
       return new Promise((resolve, reject) => {
         if (formdata) {
           const formdata = new FormData();
@@ -373,8 +373,12 @@ const utils = {
             data: formdata,
             processData: false,
             contentType: false
-          }).then(response => {
-              resolve(response)
+          }).then((response, status, request) => {
+            getResponseStatusHeaders ? resolve({
+                data: response,
+                status,
+                request
+              }) : resolve(response)
             })
             .fail(error => {
               reject(error);
@@ -386,16 +390,24 @@ const utils = {
             data,
             processData: false,
             contentType: contentType || false
-          }).then(response => {
-            resolve(response)
+          }).then((response, status, request) => {
+            getResponseStatusHeaders ? resolve({
+              data: response,
+              status,
+              request
+            }) : resolve(response)
           })
             .fail(error => {
               reject(error);
             })
         } else {
           $.post(url, data)
-            .then(response => {
-              resolve(response)
+            .then((response, status, request) => {
+              getResponseStatusHeaders ? resolve({
+                data: response,
+                status,
+                request
+              }) : resolve(response)
             })
             .fail(error => {
               reject(error)
@@ -403,7 +415,6 @@ const utils = {
         }
       })
     },
-
     htmlescape(string){
       string = string.replace("&", "&amp;");
       string = string.replace("<", "&lt;");
@@ -411,7 +422,6 @@ const utils = {
       string = string.replace('"', "&quot;");
       return string;
     },
-
     fileDownload({url, data, httpMethod="POST"} = {}) {
       return new Promise((resolve, reject) => {
         $.fileDownload(url, {

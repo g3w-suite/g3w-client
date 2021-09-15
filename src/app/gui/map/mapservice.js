@@ -1,10 +1,11 @@
-const t = require('core/i18n/i18n.service').t;
-const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType} = require('core/utils/utils');
+const {t}= require('core/i18n/i18n.service');
+const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createSelectedStyle,
-  getMapLayersByFilter} = require('core/utils/geo');
+  getMapLayersByFilter,
+  getGeoTIFFfromServer} = require('core/utils/geo');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
@@ -699,6 +700,7 @@ proto._setupControls = function() {
           }
           break;
         case 'screenshot':
+        case 'geoscreenshot':
           //check if wms externl is on map. CORS PROBLEM
           const findWmsExternal = this.getMapLayers().find(({layers=[]}) => {
             return !!layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false)
@@ -709,8 +711,29 @@ proto._setupControls = function() {
                 onclick: async () => {
                   try {
                     const blobImage = await this.createMapImage();
-                    saveAs(blobImage, `map_${Date.now()}.png`);
-                  } catch (e) {
+                    if (controlType === 'screenshot')
+                      saveAs(blobImage, `map_${Date.now()}.png`);
+                    else {
+                      const url = `/${this.project.getType()}/api/asgeotiff/${this.project.getId()}/`;
+                      const bbox = this.getMapBBOX().toString();
+                      const csrfmiddlewaretoken = this.getCookie('csrftoken');
+                      try {
+                        const {geoTiff, geoTIFFServer} = await getGeoTIFFfromServer({
+                          url,
+                          params: {
+                            image: blobImage,
+                            csrfmiddlewaretoken,
+                            bbox
+                          },
+                          method: "POST"
+                        });
+                        saveAs(geoTiff, `map_temp_file_${Date.now()}.tif`);
+                        saveAs(geoTIFFServer, `map_${Date.now()}.tif`);
+                      } catch(err){
+                        console.log(err)
+                      }
+                    }
+                  } catch (err) {
                     GUI.showUserMessage({
                       type: 'alert',
                       message: t("mapcontrols.screenshot.error"),
