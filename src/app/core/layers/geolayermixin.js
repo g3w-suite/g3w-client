@@ -192,11 +192,17 @@ proto.getStyle = function(){
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
 };
 
-proto.setCurrentStyle = function(styleName){
+/**
+ * Mehot to change current style  of layer
+ * @param currentStyleName
+ * @returns {boolean}
+ */
+proto.setCurrentStyle = function(currentStyleName){
   let changed = false;
   this.config.styles.forEach(style => {
-    if (style.name === styleName) changed = !style.current;
-    style.current = style.name === styleName;
+    if (style.name === currentStyleName)
+      changed = !style.current;
+    style.current = style.name === currentStyleName;
   });
   return changed;
 };

@@ -321,6 +321,7 @@ const translations = {
           }
         },
         catalog: {
+          choose_map_theme: "SCEGLI VISTA",
           menu: {
             wms: {
               title:"",
@@ -766,6 +767,7 @@ const translations = {
           }
         },
         catalog: {
+          choose_map_theme: "CHOOSE MAP THEME",
           menu: {
             wms: {
               title:"",
@@ -1211,6 +1213,7 @@ const translations = {
           }
         },
         catalog: {
+          choose_map_theme: "CHOOSE MAP THEME",
           menu: {
             wms: {
               title:"",
@@ -1657,6 +1660,7 @@ const translations = {
           }
         },
         catalog: {
+          choose_map_theme: "CHOOSE MAP THEME",
           menu: {
             wms: {
               title:"",

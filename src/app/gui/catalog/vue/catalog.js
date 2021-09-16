@@ -118,13 +118,15 @@ const vueComponentOptions = {
     async changeMapTheme(map_theme){
       GUI.closeContent();
       const changes = await this.$options.service.changeMapTheme(map_theme);
-      setTimeout(()=>{
-        this.legend.place === 'tab' ? CatalogEventHub.$emit('layer-change-style') :
-          // get all layer tha changes style
-          Object.keys(changes.layers).filter(layerId => changes.layers[layerId].style).forEach(layerId => CatalogEventHub.$emit('layer-change-style', {
+      this.legend.place === 'tab' ? CatalogEventHub.$emit('layer-change-style') :
+        // get all layer tha changes style
+        Object.keys(changes.layers).filter(layerId => changes.layers[layerId].style).forEach(layerId => {
+          const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+          layer.change();
+          CatalogEventHub.$emit('layer-change-style', {
             layerId
-          }));
-      })
+          })
+        });
     },
     delegationClickEventTab(evt){
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
@@ -389,11 +391,12 @@ const vueComponentOptions = {
         } else style.current = false;
       });
       if (changed) {
+        const layerId = this.layerMenu.layer.id;
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
         if (layer) {
           layer.change();
           CatalogEventHub.$emit('layer-change-style', {
-            layerId: layer.getId()
+            layerId
           });
         }
       }
@@ -896,7 +899,11 @@ Vue.component('layerslegend-items',{
   created(){
     this.mapReady = false;
     this.waitinglegendsurls = []; // urls that are waiting to be loaded
-    CatalogEventHub.$on('layer-change-style', () => this.getLegendSrc(this.layers));
+    CatalogEventHub.$on('layer-change-style', (options={}) => {
+      const {layerId} = options;
+      const changeLayersLegend = layerId ? [this.layers.find(layer => layerId === layer.id)] : this.layers;
+      this.getLegendSrc(changeLayersLegend)
+    });
   },
   async mounted() {
     await this.$nextTick();

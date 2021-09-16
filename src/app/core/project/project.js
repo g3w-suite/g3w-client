@@ -323,7 +323,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
         layerstree[index].expanded = node.expanded;
         traverse(node.nodes, layerstree[index].nodes);
       } else {
-        node.style = node.style || mapThemeConfig.styles[node.id];
+        node.style = mapThemeConfig.styles[node.id];
         // case of layer
         if (layerstree[index].checked !== node.visible) {
           changes.layers[node.id] = {

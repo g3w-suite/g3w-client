@@ -5,7 +5,9 @@
         <i style="padding: 3px;" :class="g3wtemplate.getFontClass('caret-down')"></i>
         <i style="padding: 0 0 0 4px;" :class="g3wtemplate.getFontClass('eye')"></i>
         <span v-if="current_map_theme " class="treeview-label" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">{{ current_map_theme }}</span>
-        <span v-else class="treeview-label" style="color: #cccccc !important; font-weight: bold">SCEGLI VISTA</span>
+        <span v-else class="treeview-label" style="color: #cccccc !important; font-weight: bold" >
+          <span v-t="'sdk.catalog.choose_map_theme'"></span>
+        </span>
       </a>
       <ul id="g3w-catalog-views" class="treeview-menu" >
         <li style="padding: 5px">
