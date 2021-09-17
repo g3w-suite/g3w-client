@@ -122,7 +122,6 @@ const vueComponentOptions = {
         // get all layer tha changes style
         Object.keys(changes.layers).filter(layerId => changes.layers[layerId].style).forEach(layerId => {
           const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-          layer.change();
           CatalogEventHub.$emit('layer-change-style', {
             layerId
           })
@@ -394,7 +393,6 @@ const vueComponentOptions = {
         const layerId = this.layerMenu.layer.id;
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
         if (layer) {
-          layer.change();
           CatalogEventHub.$emit('layer-change-style', {
             layerId
           });
@@ -469,35 +467,39 @@ const vueComponentOptions = {
       /*
        */
       //indipendentely of parent group (excluse parent project root ) node group is mutally exlusive
-      if (node.checked && !parent.root) {
+      if (node.checked) {
         CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
         // go down throw layer tree inside folder of layer
-        const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
-        siblingsGroups.forEach(group => {
-          if (group.checked) {
-            group.checked = false;
-            CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
-          }
-        });
-
+        if (parent_mutually_exclusive) {
+          const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
+          siblingsGroups.forEach(group => {
+            if (group.checked) {
+              group.checked = false;
+              CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
+            }
+          });
+        }
+        let parentFolder;
+        let parentGroupId = parent.groupId;
+        const checkAllParentsGroups = tree => {
+          // tree is the currend group
+          if (Array.isArray(tree.nodes)) {
+            tree.checked = true;
+            const find = tree.nodes.find(subtree => {
+              return Array.isArray(subtree.nodes) ?
+                (subtree.groupId === parentGroupId) || checkAllParentsGroups(subtree)
+                : false;
+            });
+            if (find && !parentFolder) {
+              parentFolder = tree;
+              return true;
+            }
+          } return false;
+        };
         //go up from parent layer folder to it's father parent folder
+        checkAllParentsGroups(this.state.layerstrees[0].tree[0]);
         if (!parent.checked) {
           parent.checked = true;
-          let parentFolder;
-          const parentGroupId = parent.groupId;
-          const getParentFolder = tree => {
-            // tree is the currend group
-            if (Array.isArray(tree.nodes)) {
-              const find = tree.nodes.find(subtree => {
-                return Array.isArray(subtree.nodes) ? (subtree.groupId === parentGroupId) || getParentFolder(subtree) : false;
-              });
-              if (find && !parentFolder) {
-                parentFolder = tree;
-                return true;
-              }
-            } return false;
-          };
-          getParentFolder(this.state.layerstrees[0].tree[0]);
           parentFolder && CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder);
         }
       }
@@ -510,7 +512,6 @@ const vueComponentOptions = {
      * parent: is the  group parent of current group
      */
     CatalogEventHub.$on('treenodestoogled', (storeid, currentgroup, isGroupChecked, parent) => {
-      if (parent && currentgroup.checked) parent.checked = true;
       const {nodes, groupId} = currentgroup;
       // get layestore that contains and handle all layers
       const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
@@ -681,7 +682,7 @@ Vue.component('tristate-tree', {
     clearSelection(){
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
-    toggle(isFolder) {
+    toggle() {
       this.layerstree.checked = !this.layerstree.checked;
     },
     expandCollapse() {
@@ -845,6 +846,8 @@ Vue.component('layerslegend-items',{
             style: style && style.name
           });
         }
+        // call change method to layer
+        CatalogLayersStoresRegistry.getLayerById(layer.id).change();
       }
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
@@ -902,7 +905,7 @@ Vue.component('layerslegend-items',{
     CatalogEventHub.$on('layer-change-style', (options={}) => {
       const {layerId} = options;
       const changeLayersLegend = layerId ? [this.layers.find(layer => layerId === layer.id)] : this.layers;
-      this.getLegendSrc(changeLayersLegend)
+      this.getLegendSrc(changeLayersLegend);
     });
   },
   async mounted() {

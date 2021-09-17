@@ -1,7 +1,7 @@
 const {inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {coordinatesToGeometry} =  require('core/utils/geo');
 const { SELECTION_STATE } = require('core/layers/layer');
 const PAGELENGTHS = [10, 25, 50];

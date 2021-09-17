@@ -8,13 +8,13 @@
     class="root collapse-expande-collapse-icon">
   </span>
   <span v-if="isFolder"
-    @click.stop="toggle(true)"
+    @click.stop="toggle()"
     style="color: #ffffff"
     :class="[triClass()]">
   </span>
   <span v-else-if="isTable"
         v-show="!layerstree.hidden"
-        :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '24px'}"
+        :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '18px' : '22px'}"
         :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
   </span>
   <template v-else>
@@ -31,7 +31,7 @@
         :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
       </span>
       <span :style="{paddingLeft: this.legendlayerposition === 'toc' ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
-         (legendplace === 'toc') ? '17px' : '24px'}" @click.stop="toggle(false)"
+         (legendplace === 'toc') ? '18px' : '23px'}" @click.stop="toggle()"
         :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
       </span>
     </span>
@@ -41,7 +41,7 @@
     :class="{disabled: layerstree.disabled, bold: isFolder}">
       <span
         :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}"
-        class="skin-tooltip-top"
+        class="skin-tooltip-top new_line_too_long_text"
         data-placement="top"
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
@@ -53,18 +53,20 @@
       </div>
   </div>
   <layerlegend v-if="this.legendlayerposition === 'toc'" :layer="layerstree"></layerlegend>
-  <ul v-if="isFolder" class="tree-content-items" :class="[`g3w-lendplace-${legendplace}`, {root: root}]" v-show="layerstree.expanded">
-    <tristate-tree
-      :root="false"
-      :legendConfig="legend"
-      :legendplace="legendplace"
-      :highlightlayers="highlightlayers"
-      :parentFolder="isFolder"
-      :layerstree="_layerstree"
-      :storeid="storeid"
-      :parent="layerstree"
-      :parent_mutually_exclusive="!!layerstree.mutually_exclusive"
-      v-for="_layerstree in layerstree.nodes" :key="layerstree.id">
-    </tristate-tree>
+  <ul v-if="isFolder" class="tree-content-items root" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
+    <template v-for="_layerstree in layerstree.nodes" :key="layerstree.id">
+      <tristate-tree
+              :root="false"
+              :legendConfig="legend"
+              :legendplace="legendplace"
+              :highlightlayers="highlightlayers"
+              :parentFolder="isFolder"
+              :layerstree="_layerstree"
+              :storeid="storeid"
+              :parent="layerstree"
+              :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
+      </tristate-tree>
+    </template>
+
   </ul>
 </li>
