@@ -323,7 +323,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           hint: `sdk.tooltips.download_${format}`,
           cbk: this.downloadFeatures.bind(this, format)
         });
-      } else {
+      } else if (layerDownloadFormats.length > 1 ){
         const downloadactions = [];
         DOWNLOAD_FEATURE_FORMATS.forEach(format => {
           layer.download[format] && downloadactions.push({
@@ -335,6 +335,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             cbk: this.downloadFeatures.bind(this, format)
           });
         });
+        //check if has download actions
         this.state.layersactions[layer.id].push({
           id: `downloads`,
           download: false,
