@@ -1,4 +1,8 @@
 <div class="wrapper" v-disabled="app.disabled">
+  <cookie-law theme="dark-lime" :buttonText="cookie_law_buttonText">
+    <div slot="message" v-t="'cookie_law.message'">
+    </div>
+  </cookie-law>
   <header v-if="!isIframe" class="main-header">
     <!-- Logo -->
     <!-- Header Navbar: style can be found in header.less -->

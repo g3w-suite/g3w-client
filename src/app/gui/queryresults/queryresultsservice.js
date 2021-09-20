@@ -312,16 +312,43 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         hint: `sdk.tooltips.atlas`,
         cbk: this.printAtlas.bind(this)
       });
-
-      DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-        layer.download[format] && this.state.layersactions[layer.id].push({
+      // check number of download formats
+      const layerDownloadFormats = Object.entries(layer.download).filter(([format, download]) => download);
+      if (layerDownloadFormats.length === 1) {
+        const [format] = layerDownloadFormats[0];
+        this.state.layersactions[layer.id].push({
           id: `download_${format}_feature`,
           download: true,
           class: GUI.getFontClass(format),
           hint: `sdk.tooltips.download_${format}`,
           cbk: this.downloadFeatures.bind(this, format)
         });
-      });
+      } else {
+        const downloadactions = [];
+        DOWNLOAD_FEATURE_FORMATS.forEach(format => {
+          layer.download[format] && downloadactions.push({
+            id: `download_${format}_feature`,
+            download: true,
+            format,
+            class: GUI.getFontClass(format),
+            hint: `sdk.tooltips.download_${format}`,
+            cbk: this.downloadFeatures.bind(this, format)
+          });
+        });
+        this.state.layersactions[layer.id].push({
+          id: `downloads`,
+          download: false,
+          formats: Vue.observable({
+            show: false,
+            actions: downloadactions
+          }),
+          class: GUI.getFontClass('download'),
+          hint: `Downloads`,
+          cbk: (layer, feature, action) =>{
+            action.formats.show = !action.formats.show;
+          }
+        });
+      }
 
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'removefeaturefromresult',

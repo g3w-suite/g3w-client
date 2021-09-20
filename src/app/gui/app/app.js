@@ -1,6 +1,8 @@
+import CookieLaw from "vue-cookie-law";
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const { uniqueId } = require('core/utils/utils');
+const {t} = require('core/i18n/i18n.service');
 const HeaderItem = require('gui/header/headeritem');
 const GUI = require('gui/gui');
 const layout = require('./layout');
@@ -12,15 +14,15 @@ const AppUI = Vue.extend({
   data() {
     return {
       customcredits: false,
-      current_custom_modal_content: null,
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
       language: null,
-
+      cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
   components: {
-    HeaderItem
+    HeaderItem,
+    CookieLaw
   },
   computed: {
     app(){
@@ -124,7 +126,10 @@ const AppUI = Vue.extend({
   },
   watch: {
     'language'(lng, currentlng) {
-      currentlng && ApplicationService.changeLanguage(lng);
+      if (currentlng) {
+        ApplicationService.changeLanguage(lng);
+        this.cookie_law_buttonText = t('cookie_law.buttonText');
+      }
     }
   },
   beforeCreate() {

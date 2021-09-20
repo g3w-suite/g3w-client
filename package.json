@@ -22,7 +22,8 @@
   "dependencies": {
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue-cookie-law": "^1.13.3"
   },
   "resolutions": {
     "graceful-fs": "4.2.3"

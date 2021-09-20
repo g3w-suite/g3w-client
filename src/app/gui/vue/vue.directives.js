@@ -304,7 +304,7 @@ const GlobalDirective = {
 
     Vue.directive('select2', {
       inserted(el, binding, vnode){
-        const { templateResult, templateSelection, search=true } = vnode.data.attrs || {};
+        const { templateResult, templateSelection, search=true} = vnode.data.attrs || {};
         vnode.context._select2 = $(el).select2({
           dropdownCssClass: 'skin-color',
           templateResult,

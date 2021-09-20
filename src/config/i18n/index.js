@@ -1,6 +1,10 @@
 const translations = {
   it: {
     translation: {
+      cookie_law: {
+        message: "Questo sito utilizza i cookie per garantire una buona usabilità all'utilizzatore finale.",
+        buttonText: "Ho capito!"
+      },
       default:"predefinito",
       sign_in: "Accedi",
       layer_selection_filter: {
@@ -448,6 +452,10 @@ const translations = {
   },
   en: {
     translation: {
+      cookie_law: {
+        message: "This website uses cookies to ensure you get the best experience on our website.",
+        buttonText: "Got It!"
+      },
       default:"default",
       sign_in: "Sign in",
       layer_selection_filter: {
@@ -894,6 +902,10 @@ const translations = {
   },
   fi: {
     translation: {
+      cookie_law: {
+        message: "This website uses cookies to ensure you get the best experience on our website.",
+        buttonText: "Got It!"
+      },
       default:"oletuksena",
       sign_in:"Kirjaudu sisään",
       layer_selection_filter: {
@@ -1340,6 +1352,10 @@ const translations = {
   },
   se: {
     translation: {
+      cookie_law: {
+        message: "This website uses cookies to ensure you get the best experience on our website.",
+        buttonText: "Got It!"
+      },
       default: "standard",
       sign_in:"Logga in",
       layer_selection_filter: {

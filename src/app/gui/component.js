@@ -48,7 +48,7 @@ proto.init = function(options = {}) {
   this.vueComponent = this.createVueComponent(options.vueComponentObject);
   this._components = options.components || [];
   const service = options.service || noop ;
-  const {template} = options;
+  const {template, propsData} = options;
   this.setService(service);
   this._service.init ? this._service.init(options): null;
   template && this.setInternalComponentTemplate(template);
@@ -56,7 +56,8 @@ proto.init = function(options = {}) {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       service: this._service,
-      template
+      template,
+      propsData
     });
     this.internalComponent.state = this.getService().state;
   };
