@@ -325,7 +325,8 @@ const translations = {
           }
         },
         catalog: {
-          choose_map_theme: "SCEGLI VISTA",
+          current_map_theme_prefix: "TEMA",
+          choose_map_theme: "SCEGLI TEMA",
           menu: {
             wms: {
               title:"",
@@ -775,7 +776,8 @@ const translations = {
           }
         },
         catalog: {
-          choose_map_theme: "CHOOSE MAP THEME",
+          current_map_theme_prefix: "THEME",
+          choose_map_theme: "CHOOSE THEME",
           menu: {
             wms: {
               title:"",
@@ -1225,7 +1227,8 @@ const translations = {
           }
         },
         catalog: {
-          choose_map_theme: "CHOOSE MAP THEME",
+          current_map_theme_prefix: "THEME",
+          choose_map_theme: "CHOOSE THEME",
           menu: {
             wms: {
               title:"",
@@ -1676,7 +1679,8 @@ const translations = {
           }
         },
         catalog: {
-          choose_map_theme: "CHOOSE MAP THEME",
+          current_map_theme_prefix: "THEME",
+          choose_map_theme: "CHOOSE THEME",
           menu: {
             wms: {
               title:"",
