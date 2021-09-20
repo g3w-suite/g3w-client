@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 2px; display:flex; justify-content: space-between;" class="skin-background-color">
+  <div style="padding: 2px; display:flex; justify-content: space-between;" class="skin-background-color" @click.prevent.stop="">
     <select  v-select2="'download_format'" :search="false" class="form-control">
       <option v-for="action in formats.actions" :key="action.id" v-t-download="action.download" :value="action.format">
         <span style="font-weight: bold">{{action.format}}</span>
@@ -21,6 +21,9 @@
       }
     },
     props: {
+      featureIndex: {
+        type: Number,
+      },
       feature: {
         type: Object
       },
@@ -39,13 +42,11 @@
       async download(){
         try {
           const action = this.formats.actions.find(action => action.format === this.download_format);
-          this.$watch(()=> ApplicationState.download, bool=>{
-            this.loading = bool;
-          });
+          this.$watch(()=> ApplicationState.download, bool=> this.loading = bool);
           await action.cbk(this.layer, [this.feature]);
         }
         catch(err){}
-        this.formats.show = false;
+        this.formats.show[this.featureIndex].show = false;
       }
     }
   }

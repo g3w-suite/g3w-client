@@ -2,8 +2,8 @@
   <td v-if="actions.length" class="g3w-feature-actions">
     <action v-for="action in actions" :key="action.id" v-bind="$props":action="action">
     </action>
-    <div v-if="downloadformats && downloadformats.formats.show">
-      <downloadformats :formats="downloadformats.formats" :feature="feature" :layer="layer"></downloadformats>
+    <div v-if="downloadformats && showDownloadFormats.show">
+      <downloadformats :formats="downloadformats.formats" :feature="feature" :layer="layer" :featureIndex="featureIndex"></downloadformats>
     </div>
   </td>
 </template>
@@ -38,6 +38,9 @@
     computed: {
       downloadformats(){
         return this.actions.find(action => action.formats);
+      },
+      showDownloadFormats(){
+        return this.downloadformats && this.downloadformats.formats.show[this.featureIndex];
       }
     }
   }

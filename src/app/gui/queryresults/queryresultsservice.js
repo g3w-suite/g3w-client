@@ -339,14 +339,15 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.state.layersactions[layer.id].push({
           id: `downloads`,
           download: false,
-          formats: Vue.observable({
-            show: false,
+          formats: {
+            // array contains object {show: true/false} with length as result features lenght
+            show: layer.features.map( ()=> Vue.observable({ show: false})),
             actions: downloadactions
-          }),
+          },
           class: GUI.getFontClass('download'),
           hint: `Downloads`,
-          cbk: (layer, feature, action) =>{
-            action.formats.show = !action.formats.show;
+          cbk: (layer, feature, action, index) =>{
+            action.formats.show[index].show = !action.formats.show[index].show;
           }
         });
       }
