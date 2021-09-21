@@ -28,6 +28,9 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    setDisabledPrintButton(bool=false){
+      this.button.disabled = bool;
+    },
     setAtlasValues(values=[]){
       this.state.atlasValues = values;
     },

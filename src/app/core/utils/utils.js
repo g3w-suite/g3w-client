@@ -281,12 +281,18 @@ const utils = {
         resolve();
       } else if (url) {
        fetch(url)
-         .then( response => response.blob())
+         .then(async response => {
+           if (response.status === 200) return response.blob();
+           else if (response.status === 400 || response.status === 500){
+             const {message} = await response.json();
+             return Promise.reject(message)
+           }
+         })
          .then(blob =>{
            download(blob);
            resolve();
-         }).catch(()=>{
-          reject()
+         }).catch(error =>{
+          reject(error)
         })
       }
     })

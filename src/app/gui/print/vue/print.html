@@ -27,15 +27,15 @@
           </select>
         </template>
         <template v-else-if="state.atlas.field_name">
-          <select-atlas-field-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></select-atlas-field-values>
+          <select-atlas-field-values @disable-print-button="setDisabledPrintButton" @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></select-atlas-field-values>
         </template>
         <template v-else>
-          <fid-atlas-values @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></fid-atlas-values>
+          <fid-atlas-values @disable-print-button="setDisabledPrintButton" @set-values="setAtlasValues" :atlas="state.atlas" :reset="!state.isShow"></fid-atlas-values>
         </template>
       </div>
       <div class="box-footer" style="background-color: transparent">
         <span>
-          <button id="printbutton" style="width:100%; font-weight: bold" class="sidebar-button btn skin-button" @click.stop.prevent="print" v-download v-t="'create_print'"></button>
+          <button id="printbutton" style="width:100%; font-weight: bold" class="sidebar-button btn skin-button" v-disabled="button.disabled" @click.stop.prevent="print" v-download v-t="'create_print'"></button>
         </span>
       </div>
     </form>

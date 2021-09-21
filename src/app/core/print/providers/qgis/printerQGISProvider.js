@@ -66,7 +66,11 @@ proto.GET = function({url, params, mime_type}) {
 proto._getAtlasParamsFromOptions = function(options={}){
   const {field, values, template, download=false} = options;
   const multiValues = values.length > 1;
-  const EXPRESSION = `${field}${multiValues ? ' IN (' : '='}${values.map(value => '\''+value+'\'').join()}${multiValues ? ')' : ''}`;
+  const EXPRESSION = `${field}${multiValues ? 
+    ' IN (' 
+    : '='}${values.map(value => '\''+value+'\'').join()}${multiValues 
+    ? ')' 
+    : ''}`;
   const params = {
     ...COMMON_REQUEST_PARAMETERS,
     REQUEST: 'GetPrintAtlas',

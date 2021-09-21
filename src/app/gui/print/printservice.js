@@ -142,8 +142,8 @@ proto.print = function() {
           mime_type: 'application/pdf'
         }).then(()=>{
           resolve();
-        }).catch(()=> {
-          this.showError();
+        }).catch( error => {
+          this.showError(error);
           reject();
         }).finally(()=> {
           this.state.loading = false;
@@ -174,9 +174,7 @@ proto.print = function() {
           this.showError();
           reject(err);
         })
-        .finally(()=>{
-            GUI.disableSideBar(false);
-        });
+        .finally(()=> GUI.disableSideBar(false));
     }
   })
 
@@ -190,8 +188,8 @@ proto.stopLoading = function() {
   this.state.output.loading = false;
 };
 
-proto.showError = function() {
-  GUI.notify.error(t("info.server_error"));
+proto.showError = function(error) {
+  GUI.notify.error(error || t("info.server_error"));
   GUI.closeContent();
 };
 
