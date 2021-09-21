@@ -646,10 +646,10 @@ proto._setupControls = function() {
     const mapcontrols = this.config.mapcontrols;
     const feature_count = this.project.getQueryFeatureCount();
     const map = this.getMap();
-    mapcontrols.forEach(controlType => {
+    mapcontrols.forEach(mapcontrol => {
       let control;
-      // mapcontroc can be a String or object with options
-      controlType = toRawType(controlType) === 'String' ? controlType : controlType.name;
+      // mapcontrol can be a String or object with options
+      const controlType = toRawType(mapcontrol) === 'String' ? mapcontrol : mapcontrol.name;
       switch (controlType) {
         case 'reset':
           if (!isMobile.any) {
@@ -710,7 +710,7 @@ proto._setupControls = function() {
               options: {
                 onclick: async () => {
                   // Start download show Image
-                  ApplicationService.setDownload(true);
+                  const caller_download_id = ApplicationService.setDownload(true);
                   try {
                     const blobImage = await this.createMapImage();
                     if (controlType === 'screenshot') saveAs(blobImage, `map_${Date.now()}.png`);
@@ -741,7 +741,7 @@ proto._setupControls = function() {
                     })
                   }
                   // Stop download show Image
-                  ApplicationService.setDownload(false);
+                  ApplicationService.setDownload(false, caller_download_id);
                   return true;
                 }
               }
@@ -801,8 +801,11 @@ proto._setupControls = function() {
               }, condition);
               return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
             };
+            //const spatialMethod = 'within';
+            const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
               options: {
+                spatialMethod,
                 layers: getControlLayers(),
                 help: "sdk.mapcontrols.querybypolygon.help"
               }
@@ -856,7 +859,9 @@ proto._setupControls = function() {
                     });
                     data.length && map.getView().setCenter(coordinates);
                   }
-                } catch(err){}
+                } catch(err){
+                  console.log(err)
+                }
               });
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
@@ -882,8 +887,10 @@ proto._setupControls = function() {
               return layers;
             };
             let controlLayers = getControlLayers();
+            const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
               options: {
+                spatialMethod,
                 layers: controlLayers,
                 help: "sdk.mapcontrols.querybybbox.help"
               }
@@ -923,6 +930,9 @@ proto._setupControls = function() {
                       bbox,
                       feature_count,
                       layersFilterObject,
+                      filterConfig: {
+                        spatialMethod: control.getSpatialMethod(), // added spatial method to polygon filter
+                      },
                       condition,
                       multilayers: this.project.isQueryMultiLayers(controlType)
                     }
@@ -931,7 +941,9 @@ proto._setupControls = function() {
                     const center = ol.extent.getCenter(bbox);
                     this.getMap().getView().setCenter(center);
                   }
-                } catch(err){}
+                } catch(err){
+                  console.log(err)
+                }
               });
               const eventKey = control.on('bboxend', runQuery);
               control.setEventKey({

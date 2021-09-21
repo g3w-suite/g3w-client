@@ -524,26 +524,33 @@ const geoutils = {
    * @param multilayers
    * @returns {JQuery.Promise<any, any, any>}
    */
-  getQueryLayersPromisesByBBOX(layers, { bbox, feature_count=10, multilayers=false}){
+  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}){
     let queriesPromise;
+    const geometry = ol.geom.Polygon.fromExtent(bbox);
+    const map = GUI.getComponent('map').getService().getMap();
+    const mapProjection = map.getView().getProjection();
     if (multilayers) {
-      const map = GUI.getComponent('map').getService().getMap();
       queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
-        geometry: bbox,
-        bbox: true,
+        geometry,
         feature_count,
-        projection: map.getView().getProjection()
+        filterConfig,
+        multilayers,
+        projection:mapProjection
       })
     } else {
       const d = $.Deferred();
+      const mapCrs = mapProjection.getCode();
       queriesPromise = d.promise();
       const queryResponses = [];
       const queryErrors = [];
       let layersLenght = layers.length;
-      let filterBBox = bbox;
       layers.forEach(layer => {
-        const filter = new Filter();
-        filter.setBBOX(filterBBox);
+        const filter = new Filter(filterConfig);
+        const layerCrs = layer.getProjection().getCode();
+        /**
+         * convert
+         */
+        filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
         layer.query({
           filter,
           feature_count
@@ -558,6 +565,73 @@ const geoutils = {
       });
     }
     return queriesPromise
+  },
+
+  /**
+   *
+   * @param layers
+   * @param multilayers
+   * @param bbox
+   * @param geometry
+   * @param projection
+   * @param feature_count
+   * @returns {JQuery.Promise<any, any, any>}
+   */
+  getQueryLayersPromisesByGeometry(layers, {multilayers=false, geometry, filterConfig={}, projection, feature_count=10} ={}) {
+    const d = $.Deferred();
+    const queryResponses = [];
+    const queryErrors = [];
+    const mapCrs = projection.getCode();
+    const filter = new Filter(filterConfig);
+    if (multilayers) {
+      let filterGeometry = geometry;
+      if (!layers.length) d.resolve([]);
+      const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
+      const numberRequestd = Object.keys(multiLayers).length;
+      let layersLength = numberRequestd;
+      for (let key in multiLayers) {
+        const _multilayer = multiLayers[key];
+        const layers = _multilayer;
+        const multilayer = multiLayers[key][0];
+        const provider = multilayer.getProvider('filter');
+        const layerCrs = multilayer.getProjection().getCode();
+        if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
+        filter.setGeometry(filterGeometry);
+        provider.query({
+          filter,
+          layers,
+          feature_count
+        }).then(response => queryResponses.push(response))
+          .fail(error => queryErrors.push(error))
+          .always(() => {
+            layersLength -= 1;
+            if (layersLength === 0)
+              queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
+          })
+      }
+    } else {
+      if (layers.length === 0) d.resolve([]);
+      else {
+        let layersLenght = layers.length;
+        layers.forEach(layer => {
+          const layerCrs = layer.getProjection().getCode();
+          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
+          layer.query({
+            filter,
+            filterConfig,
+            feature_count
+          }).then(response => queryResponses.push(response))
+            .fail(error => queryErrors.push(error))
+            .always(() => {
+              layersLenght -= 1;
+              if (layersLenght === 0){
+                queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
+              }
+            })
+        });
+      }
+    }
+    return d.promise();
   },
 
   getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, multilayers=false, reproject=true}={}) {
@@ -632,76 +706,6 @@ const geoutils = {
     point1.transform(sourceCrs, destinationCrs);
     point2.transform(sourceCrs, destinationCrs);
     return [...point1.getCoordinates(), ...point2.getCoordinates()];
-  },
-
-  /**
-   *
-   * @param layers
-   * @param multilayers
-   * @param bbox
-   * @param geometry
-   * @param projection
-   * @param feature_count
-   * @returns {JQuery.Promise<any, any, any>}
-   */
-  getQueryLayersPromisesByGeometry(layers, {multilayers=false, bbox, geometry, filterConfig={}, projection, feature_count=10} ={}) {
-    const d = $.Deferred();
-    const queryResponses = [];
-    const queryErrors = [];
-    const mapCrs = projection.getCode();
-    const filter = new Filter(filterConfig);
-    if (multilayers) {
-      let filterGeometry = geometry;
-      if (!layers.length) d.resolve([]);
-      const multiLayers = _.groupBy(layers, layer => `${layer.getMultiLayerId()}_${layer.getProjection().getCode()}`);
-      const numberRequestd = Object.keys(multiLayers).length;
-      let layersLength = numberRequestd;
-      for (let key in multiLayers) {
-        const _multilayer = multiLayers[key];
-        const layers = _multilayer;
-        const multilayer = multiLayers[key][0];
-        const provider = multilayer.getProvider('filter');
-        // in case of boox geometry
-        if (bbox) filter.setBBOX(filterGeometry);
-        else {
-          const layerCrs = multilayer.getProjection().getCode();
-          if (mapCrs !== layerCrs) filterGeometry = filterGeometry.clone().transform(mapCrs, layerCrs);
-          filter.setGeometry(filterGeometry)
-        }
-        provider.query({
-          filter,
-          layers,
-          feature_count
-        }).then(response => queryResponses.push(response))
-          .fail(error => queryErrors.push(error))
-          .always(() => {
-            layersLength -= 1;
-            if (layersLength === 0)
-              queryErrors.length === numberRequestd ? d.reject(queryErrors) : d.resolve(queryResponses)
-          })
-      }
-    } else {
-      if (layers.length === 0) d.resolve([]);
-      else {
-        let layersLenght = layers.length;
-        layers.forEach(layer => {
-          const layerCrs = layer.getProjection().getCode();
-          filter.setGeometry((mapCrs !== layerCrs) ? geometry.clone().transform(mapCrs, layerCrs): geometry);
-          layer.query({
-            filter,
-            feature_count
-          }).then(response => queryResponses.push(response))
-            .fail(error => queryErrors.push(error))
-            .always(() => {
-              layersLenght -= 1;
-              if (layersLenght === 0){
-                queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
-              }
-            })
-        });
-      }
-    }
-    return d.promise();
   },
 
   parseQueryLayersPromiseResponses(responses) {

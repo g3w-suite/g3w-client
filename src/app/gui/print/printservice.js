@@ -125,10 +125,10 @@ proto.setPrintAreaAfterCloseContent = function() {
 };
 
 proto.print = function() {
-  const caller_download_id = ApplicationService.setDownload(true);
   return new Promise((resolve, reject) => {
+    GUI.disableSideBar(true);
     if (this.state.atlas) {
-      GUI.disableSideBar(true);
+      const caller_download_id = ApplicationService.setDownload(true);
       this.state.loading = true;
       this.printService.printAtlas({
         template: this.state.template,
@@ -145,14 +145,13 @@ proto.print = function() {
         }).catch(()=> {
           this.showError();
           reject();
-        }).finally(() =>{
+        }).finally(()=> {
           this.state.loading = false;
           ApplicationService.setDownload(false, caller_download_id);
           GUI.disableSideBar(false);
-        })
+        });
       })
     } else {
-      GUI.disableSideBar(true);
       this.state.output.url = null;
       this.state.output.layers = true;
       this._page = new PrintPage({
@@ -175,7 +174,9 @@ proto.print = function() {
           this.showError();
           reject(err);
         })
-        .finally(()=>ApplicationService.setDownload(false, caller_download_id))
+        .finally(()=>{
+            GUI.disableSideBar(false);
+        });
     }
   })
 

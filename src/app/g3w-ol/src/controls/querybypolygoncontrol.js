@@ -13,13 +13,13 @@ const QueryByPolygonControl = function(options={}) {
     onselectlayer: true,
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
+    spatialMethod: options.spatialMethod || 'intersects',
     onhover: true
   };
   options = merge(options,_options);
   const layers = options.layers || [];
   options.visible = this.checkVisibile(layers);
   options.geometryTypes = VALIDGEOMETRIES;
-  this.spatialMethod = 'intersects'; // <contains, intersect>
   InteractionControl.call(this, options);
 };
 
@@ -44,17 +44,6 @@ proto.checkVisibile = function(layers) {
   return visible;
 };
 
-/**
- * Method to set filter operation intersect or Contains
- */
-
-proto.setSpatialMethod = function(method='intersects'){
-  this.spatialMethod = method;
-};
-
-proto.getSpatialMethod = function(){
-  return this.spatialMethod;
-};
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);

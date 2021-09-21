@@ -93,6 +93,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
         });
         break;
       case 'geometry':
+        //speatial methos. <inteserct, within>
         const {spatialMethod = 'intersects'} = filterConfig;
         featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],

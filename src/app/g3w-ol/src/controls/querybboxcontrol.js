@@ -1,5 +1,4 @@
 const {merge} = require('../utils');
-const {createControlUserMessageTool} = require('./utils');
 const InteractionControl = require('./interactioncontrol');
 
 const QueryBBoxControl = function(options = {}){
@@ -11,7 +10,8 @@ const QueryBBoxControl = function(options = {}){
     label: options.label || "\ue902",
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
-    onhover: true
+    onhover: true,
+    spatialMethod: options.spatialMethod || 'intersects'
   };
   options = merge(options,_options);
   const layers = options.layers || [];

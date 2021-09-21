@@ -3,7 +3,7 @@ const GUI = require('gui/gui');
 
 const InteractionControl = function(options={}) {
   const {visible=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onselectlayer=false, onhover=false, help=null, interactionClassOptions={}} = options;
+    geometryTypes=[], onselectlayer=false, onhover=false, help=null, interactionClassOptions={}, spatialMethod} = options;
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
@@ -16,6 +16,8 @@ const InteractionControl = function(options={}) {
   this._help = help;
   this._helpButton = null;
   this._interactionClassOptions = interactionClassOptions;
+  //spatial method (intersect, within)
+  this.spatialMethod = spatialMethod;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // create an help message
@@ -156,6 +158,18 @@ proto._handleClick = function(evt) {
 
 proto.getIteraction = function() {
   return this._interaction;
+};
+
+/**
+ * Method to set filter operation intersect or Contains
+ */
+
+proto.setSpatialMethod = function(method='intersects'){
+  this.spatialMethod = method;
+};
+
+proto.getSpatialMethod = function(){
+  return this.spatialMethod;
 };
 
 module.exports = InteractionControl;
