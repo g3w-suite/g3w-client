@@ -181,6 +181,19 @@ proto.removeFeatureLayerFromResult = function(layer, feature){
 };
 
 /**
+ * Reset current action tools on layer when feature layer change
+ * @param layer
+ */
+proto.resetCurrentActionToolsLayer = function(layer){
+  layer.features.forEach((feature, index)=>{
+    if (this.state.currentactiontools[layer.id]) {
+      if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
+      else this.state.currentactiontools[layer.id][index] = null;
+    }
+  })
+};
+
+/**
  * Based on layer response check if features layer are to add or remove to current state.layers results
  * @param layer
  */
@@ -213,7 +226,11 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     // filter features to add
     features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
     // check if new feature ha to be added
-    if (features.length) findLayer.features = [...findLayer.features, ...features];
+    if (features.length) {
+      findLayer.features = [...findLayer.features, ...features];
+      //magange currentactiontools
+      this.resetCurrentActionToolsLayer(findLayer);
+    }
     //in case of removed features
     if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
       // used to do all vue reactive thing before update layers
@@ -253,8 +270,17 @@ proto.getBoxId = function(layer, feature, relation_index){
 proto.setActionsForLayers = function(layers, options={add: false}) {
   const {add} = options;
   if (!add) {
+    // create an action tools object contain eventually action tool to show (for example downloadformats)
+    // the name of key has to be the same of the name of action tool component
+    this.state.actiontools = {};
+    // current action tools
+    this.state.currentactiontools = {};
     this.unlistenerlayeractionevents = [];
+    //downloadformats
     layers.forEach(layer => {
+      const currentactiontoolslayer = {};
+      layer.features.forEach((feature, index)=> currentactiontoolslayer[index] = null);
+      this.state.currentactiontools[layer.id] = Vue.observable(currentactiontoolslayer);
       const is_external_layer_or_wms = layer.external || layer.source ? layer.source.type === 'wms' : false;
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
       //in case of geometry
@@ -324,9 +350,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           cbk: this.downloadFeatures.bind(this, format)
         });
       } else if (layerDownloadFormats.length > 1 ){
-        const downloadactions = [];
+        const actions = [];
         DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-          layer.download[format] && downloadactions.push({
+          layer.download[format] && actions.push({
             id: `download_${format}_feature`,
             download: true,
             format,
@@ -335,19 +361,45 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             cbk: this.downloadFeatures.bind(this, format)
           });
         });
+        const toggled = {};
+        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
+        // need to be observable
+        this.state.actiontools.downloadformats[layer.id] = Vue.observable({
+          // array contains object {show: true/false} with length as result features lenght
+          show: layer.features.map((feature, index)=> {
+            toggled[index] = false;
+            return Vue.observable({ show: false})
+          }),
+          actions
+        });
         //check if has download actions
         this.state.layersactions[layer.id].push({
           id: `downloads`,
           download: false,
-          formats: {
-            // array contains object {show: true/false} with length as result features lenght
-            show: layer.features.map( ()=> Vue.observable({ show: false})),
-            actions: downloadactions
-          },
           class: GUI.getFontClass('download'),
+          state: Vue.observable({
+            toggled
+          }),
           hint: `Downloads`,
+          init: ({layer, action}={})=>{
+            // create a vm
+            const vm = new Vue();
+            //watch feature changes due a add remove feature from result layer
+            vm.$watch(()=> layer.features, features=>{
+              this.state.actiontools.downloadformats[layer.id].show = [];
+              features.forEach((feature, index)=>{
+                this.state.actiontools.downloadformats[layer.id].show.push(Vue.observable({ show: false}));
+                //action toggled
+                if (action.state.toggled[index] === undefined) vm.$set(action.state.toggled, index, false);
+                else action.state.toggled[index] = false;
+              });
+            });
+          },
           cbk: (layer, feature, action, index) =>{
-            action.formats.show[index].show = !action.formats.show[index].show;
+            const downloadformats = this.state.actiontools.downloadformats[layer.id];
+            action.state.toggled[index] = !action.state.toggled[index];
+            downloadformats.show[index].show = !downloadformats.show[index].show;
+            this.state.currentactiontools[layer.id][index] =  action.state.toggled[index] ? 'downloadformats' : null;
           }
         });
       }
@@ -566,6 +618,7 @@ proto.clearState = function(options={}) {
   this.state.querytitle = "";
   this.state.loading = true;
   this.state.layersactions = {};
+  this.state.downloadformats = null;
   this.state.layersFeaturesBoxes = {};
 };
 

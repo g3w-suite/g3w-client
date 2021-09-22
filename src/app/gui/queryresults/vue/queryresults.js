@@ -1,6 +1,7 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
 import HeaderFeatureBody from './headerfeaturebody.vue';
+import DownloadFormats from './downloadformats.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
@@ -19,12 +20,14 @@ const vueComponentOptions = {
       state: this.$options.queryResultsService.state,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
       headerActionsCellWidth: headerActionsCellWidth,
+      currentActionTool: 'downloadformats'
     }
   },
   components: {
     Tabs,
     'g3w-link': Link,
-    'header-feature-body': HeaderFeatureBody
+    'header-feature-body': HeaderFeatureBody,
+    downloadformats: DownloadFormats
   },
   computed: {
     layersFeaturesBoxes() {
@@ -66,6 +69,12 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    getColSpan(layer){
+      return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
+    },
+    getDownloadActions(layer){
+      return this.state.layersactions[layer.id].find(action => action.formats);
+    },
     addLayerFeaturesToResults(layer){
       this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
     },

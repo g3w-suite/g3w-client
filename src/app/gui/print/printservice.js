@@ -126,6 +126,7 @@ proto.setPrintAreaAfterCloseContent = function() {
 
 proto.print = function() {
   return new Promise((resolve, reject) => {
+    //disable sidebar
     GUI.disableSideBar(true);
     if (this.state.atlas) {
       const caller_download_id = ApplicationService.setDownload(true);
@@ -174,7 +175,10 @@ proto.print = function() {
           this.showError();
           reject(err);
         })
-        .finally(()=> GUI.disableSideBar(false));
+        .finally(()=> {
+          // in case of no layers
+          !this.state.output.layers && GUI.disableSideBar(false)
+        });
     }
   })
 

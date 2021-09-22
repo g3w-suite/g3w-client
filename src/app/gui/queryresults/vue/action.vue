@@ -29,7 +29,7 @@
     },
     methods: {
       showAction(action){
-        action.init && action.init({feature: this.feature, index:this.featureIndex, action});
+        action.init && action.init({layer: this.layer, feature: this.feature, index:this.featureIndex, action});
         return typeof action.condition === 'function' ? action.condition({layer:this.layer, feature:this.feature}) : true;
       },
       async clickAction(action, layer, feature, featureIndex, event){

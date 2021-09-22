@@ -1,12 +1,14 @@
 <template>
-  <div style="padding: 2px; display:flex; justify-content: space-between;" class="skin-background-color" @click.prevent.stop="">
-    <select  v-select2="'download_format'" :search="false" class="form-control">
-      <option v-for="action in formats.actions" :key="action.id" v-t-download="action.download" :value="action.format">
-        <span style="font-weight: bold">{{action.format}}</span>
-      </option>
-    </select>
-    <button style="border-radius: 0;" class="btn skin-button" @click.stop=download v-disabled="loading"><span :class="g3wtemplate.getFontClass('download')"></span></button>
-  </div>
+  <td :colspan="colspan" v-if="show">
+    <div class="g3w-download-formats-content" @click.prevent.stop="">
+      <select  style="flex-grow: 1" v-select2="'download_format'" :search="false" class="form-control">
+        <option v-for="action in config.actions" :key="action.id" v-t-download="action.download" :value="action.format">
+          <span style="font-weight: bold">{{action.format}}</span>
+        </option>
+      </select>
+      <button style="border-radius: 0;" class="btn skin-button" @click.stop=download v-disabled="loading"><span :class="g3wtemplate.getFontClass('download')"></span></button>
+    </div>
+  </td>
 </template>
 
 <script>
@@ -14,13 +16,16 @@
   export default {
     name: "downloadformats",
     data(){
-      const download_format = this.formats.actions[0].format;
+      const download_format = this.config && this.config.actions[0].format;
       return {
         download_format,
         loading: false
       }
     },
     props: {
+      colspan:{
+        type: Number
+      },
       featureIndex: {
         type: Number,
       },
@@ -30,23 +35,25 @@
       layer: {
         type: Object
       },
-      formats: {
+      config: {
         type: Object,
-        default: {
-          show: false,
-          actions: []
-        }
+        default: null
       },
+    },
+    computed: {
+      show(){
+        return this.config && this.config.show[this.featureIndex] && this.config.show[this.featureIndex].show
+      }
     },
     methods: {
       async download(){
         try {
-          const action = this.formats.actions.find(action => action.format === this.download_format);
+          const action = this.config.actions.find(action => action.format === this.download_format);
           this.$watch(()=> ApplicationState.download, bool=> this.loading = bool);
           await action.cbk(this.layer, [this.feature]);
         }
         catch(err){}
-        this.formats.show[this.featureIndex].show = false;
+        this.config.show[this.featureIndex].show = false;
       }
     }
   }

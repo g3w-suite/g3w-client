@@ -3,6 +3,7 @@ const {inherit, base, imageToDataURL} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
+const TIMEOUT = 60000;
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
@@ -42,9 +43,19 @@ const InternalComponent = Vue.extend({
       if (url) {
         this.format = this.state.format;
         await this.$nextTick();
+        // add timeout
+        const timeOut = setTimeout(()=>{
+          this.setLoading(false);
+          GUI.showUserMessage({
+            type: 'alert',
+            message: 'timeout'
+          })
+        }, TIMEOUT);
+
         $(this.$refs.printoutput).load(url, (response, status) => {
           this.$options.service.stopLoading();
           status === 'error' && this.$options.service.showError();
+          clearTimeout(timeOut);
           this.setLoading(false);
         });
       }
