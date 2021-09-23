@@ -673,7 +673,9 @@ proto.clearState = function(options={}) {
     layeractions.forEach(action => action.clear && action.clear());
   });
   this.state.layersactions = {};
-  this.state.downloadformats = null;
+  this.state.actiontools = null;
+  // current action tools
+  this.state.currentactiontools = null;
   this.state.layersFeaturesBoxes = {};
 };
 
