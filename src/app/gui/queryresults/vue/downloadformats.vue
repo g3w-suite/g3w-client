@@ -1,5 +1,5 @@
 <template>
-  <td :colspan="colspan" v-if="show">
+  <td :colspan="colspan">
     <div class="g3w-download-formats-content" @click.prevent.stop="">
       <select  style="flex-grow: 1" v-select2="'download_format'" :search="false" class="form-control">
         <option v-for="action in config.actions" :key="action.id" v-t-download="action.download" :value="action.format">
@@ -16,7 +16,7 @@
   export default {
     name: "downloadformats",
     data(){
-      const download_format = this.config && this.config.actions[0].format;
+      const download_format = this.config.actions[0].format;
       return {
         download_format,
         loading: false
@@ -40,20 +40,14 @@
         default: null
       },
     },
-    computed: {
-      show(){
-        return this.config && this.config.show[this.featureIndex] && this.config.show[this.featureIndex].show
-      }
-    },
     methods: {
       async download(){
         try {
           const action = this.config.actions.find(action => action.format === this.download_format);
           this.$watch(()=> ApplicationState.download, bool=> this.loading = bool);
-          await action.cbk(this.layer, [this.feature]);
+          await action.cbk(this.layer, [this.feature], action, this.featureIndex);
         }
         catch(err){}
-        this.config.show[this.featureIndex].show = false;
       }
     }
   }

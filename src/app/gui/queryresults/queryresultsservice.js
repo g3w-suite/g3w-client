@@ -1,4 +1,5 @@
 import {G3W_FID} from 'constant';
+import DownloadFormats from './vue/downloadformats.vue';
 import QueryPolygonAttributesComponent from './vue/querypolygonaddattributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
@@ -227,19 +228,31 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
     // check if new feature ha to be added
     if (features.length) {
-      findLayer.features = [...findLayer.features, ...features];
-      //magange currentactiontools
-      this.resetCurrentActionToolsLayer(findLayer);
+      const newlayerfeatures = [...findLayer.features, ...features];
+      findLayer.features = newlayerfeatures;
     }
     //in case of removed features
     if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
       // used to do all vue reactive thing before update layers
       setTimeout(() => this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
-    // in case no more features on layer remove interaction pickoordinate to get result from map
+    // in case no more features on layer remove interaction pickcoordinate to get result from map
     this.checkIfLayerHasNoFeatures(findLayer);
   }
   // hightlight new feature
   this.state.layers.length === 1 && this.highlightFeaturesPermanently(this.state.layers[0]);
+  this.changeLayerResult(findLayer);
+};
+
+/**
+ * Method called when layer result features for example is changed
+ * @param layer
+ */
+proto.changeLayerResult = function(layer){
+  const layeractions = this.state.layersactions[layer.id];
+  // call if present change mthod to action
+  layeractions.forEach(action => action.change && action.change(layer));
+  //reset layer current actions tools
+  this.resetCurrentActionToolsLayer(layer);
 };
 
 /**
@@ -283,6 +296,23 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       this.state.currentactiontools[layer.id] = Vue.observable(currentactiontoolslayer);
       const is_external_layer_or_wms = layer.external || layer.source ? layer.source.type === 'wms' : false;
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+      /**
+       * An action is an object contains
+       * {
+       * id: Unique action Id => required True
+          download: if is action download or not => required False
+          class: calss fontawsome to show icon => required True,
+          state: need to be reactive. Used for example to toggled state of action icon => required False
+          hint: Tooltip text => required False
+          init: Method called when action is loaded => required False
+          clear: Method called before clear the service. Used for example to clear unwatch => require False
+          change: Method called when feature of layer is changed
+          cbk: Method called when action is cliccked => required True
+          }
+       *
+       * }
+       */
+
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -330,7 +360,10 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           });
         }
       }
-
+      /**
+       *
+       * Check if layer has atlas
+       */
       this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
         id: `printatlas`,
         download: true,
@@ -350,6 +383,12 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           cbk: this.downloadFeatures.bind(this, format)
         });
       } else if (layerDownloadFormats.length > 1 ){
+        // SET CONTANT TO AVOID TO CHANGE ALL THINGS
+        const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
+        const toggled = {};
+        layer.features.map((feature, index)=> {
+          toggled[index] = false; // SET INITIAL TOGGLED TO FALSE
+        });
         const actions = [];
         DOWNLOAD_FEATURE_FORMATS.forEach(format => {
           layer.download[format] && actions.push({
@@ -358,20 +397,19 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             format,
             class: GUI.getFontClass(format),
             hint: `sdk.tooltips.download_${format}`,
-            cbk: this.downloadFeatures.bind(this, format)
+            cbk: (layer, feature, action, index)=> {
+              //used to untoggle downloads action
+              this.downloadFeatures(format, layer, feature);
+              const downloadsaction = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+              downloadsaction.cbk(layer, feature, downloadsaction, index);
+            }
           });
         });
-        const toggled = {};
-        this.state.actiontools.downloadformats = this.state.actiontools.downloadformats || {};
-        // need to be observable
-        this.state.actiontools.downloadformats[layer.id] = Vue.observable({
-          // array contains object {show: true/false} with length as result features lenght
-          show: layer.features.map((feature, index)=> {
-            toggled[index] = false;
-            return Vue.observable({ show: false})
-          }),
-          actions
-        });
+        this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] = this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] || {};
+        // set config of actionstools
+        this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS][layer.id] = {
+          actions // ARE DOWNLOAD ACTIONS,
+        };
         //check if has download actions
         this.state.layersactions[layer.id].push({
           id: `downloads`,
@@ -381,29 +419,26 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             toggled
           }),
           hint: `Downloads`,
-          init: ({layer, action}={})=>{
-            // create a vm
-            const vm = new Vue();
-            //watch feature changes due a add remove feature from result layer
-            vm.$watch(()=> layer.features, features=>{
-              this.state.actiontools.downloadformats[layer.id].show = [];
-              features.forEach((feature, index)=>{
-                this.state.actiontools.downloadformats[layer.id].show.push(Vue.observable({ show: false}));
-                //action toggled
-                if (action.state.toggled[index] === undefined) vm.$set(action.state.toggled, index, false);
-                else action.state.toggled[index] = false;
-              });
+          change({features}){
+            features.forEach((feature, index)=>{
+              const vm = new Vue();
+              if (this.state.toggled[index] === undefined) vm.$set(this.state.toggled, index, false);
+              else this.state.toggled[index] = false;
             });
           },
-          cbk: (layer, feature, action, index) =>{
-            const downloadformats = this.state.actiontools.downloadformats[layer.id];
+          cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];
-            downloadformats.show[index].show = !downloadformats.show[index].show;
-            this.state.currentactiontools[layer.id][index] =  action.state.toggled[index] ? 'downloadformats' : null;
+            this.setCurrentActionToolsLayer({
+              layer,
+              index,
+              value: action.state.toggled[index] ? DownloadFormats : null
+            });
           }
         });
       }
-
+      /*
+      Check if si external layer or wms
+       */
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'removefeaturefromresult',
         download: false,
@@ -416,6 +451,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         cbk: this.removeFeatureLayerFromResult.bind(this)
       });
 
+      /**
+       * check if selection is active
+       */
       if (layer.selection.active !== undefined) {
         // selection action
         const toggled = {};
@@ -441,7 +479,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.listenClearSelection(layer, 'selection');
         //end selection action
       }
-
+      /*
+        If not wms of external layer show copy link to feature
+       */
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'link_zoom_to_fid',
         class: GUI.getFontClass('link'),
@@ -455,6 +495,16 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     });
     this.addActionsForLayers(this.state.layersactions);
   }
+};
+
+/**
+ * Set current layer action tool in feature
+ * @param layer current layer
+ * @param index feature index
+ * @param value component value or null
+ */
+proto.setCurrentActionToolsLayer = function({layer, index, value=null}={}){
+  this.state.currentactiontools[layer.id][index] = value;
 };
 
 /**
@@ -491,6 +541,7 @@ proto.clear = function() {
       async: false
     }
   };
+  this.clearState();
 };
 
 proto.getCurrentLayersIds = function(){
@@ -617,6 +668,10 @@ proto.clearState = function(options={}) {
   this.state.query = {};
   this.state.querytitle = "";
   this.state.loading = true;
+  // clear action if present
+  Object.values(this.state.layersactions).forEach(layeractions =>{
+    layeractions.forEach(action => action.clear && action.clear());
+  });
   this.state.layersactions = {};
   this.state.downloadformats = null;
   this.state.layersFeaturesBoxes = {};
@@ -949,7 +1004,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
   });
 };
 
-//function to add custom componet in query result
+//function to add custom component in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
 };

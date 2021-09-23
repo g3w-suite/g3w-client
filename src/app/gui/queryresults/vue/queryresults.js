@@ -1,7 +1,6 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
 import HeaderFeatureBody from './headerfeaturebody.vue';
-import DownloadFormats from './downloadformats.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
@@ -19,15 +18,13 @@ const vueComponentOptions = {
     return {
       state: this.$options.queryResultsService.state,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
-      headerActionsCellWidth: headerActionsCellWidth,
-      currentActionTool: 'downloadformats'
+      headerActionsCellWidth: headerActionsCellWidth
     }
   },
   components: {
     Tabs,
     'g3w-link': Link,
-    'header-feature-body': HeaderFeatureBody,
-    downloadformats: DownloadFormats
+    'header-feature-body': HeaderFeatureBody
   },
   computed: {
     layersFeaturesBoxes() {

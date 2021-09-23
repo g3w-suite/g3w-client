@@ -68,7 +68,9 @@
                         :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset">
                       </header-feature-body>
                       <tr class="g3w-feature-result-action-tools">
-                        <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[currentActionTool] && state.actiontools[currentActionTool][layer.id]"></component>
+                        <template v-if="state.currentactiontools[layer.id][index]">
+                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                        </template>
                       </tr>
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                         <td :colspan="getColSpan(layer)">
@@ -109,8 +111,9 @@
                     :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset">
                     </header-feature-body>
                     <tr class="g3w-feature-result-action-tools">
-                      <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[currentActionTool] && state.actiontools[currentActionTool][layer.id]"></component>
-                    </tr>
+                      <template v-if="state.currentactiontools[layer.id][index]">
+                        <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                      </template>                    </tr>
                     <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                       <td :colspan="getColSpan(layer)">
                         <table class="feature_attributes">
