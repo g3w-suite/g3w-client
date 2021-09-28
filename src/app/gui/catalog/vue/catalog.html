@@ -52,7 +52,7 @@
           </li>
         </ul>
       </div>
-      <layerslegend @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
+      <layerslegend v-if="legend.place ===  'tab'" @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
         v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id">
       </layerslegend>
     </div>

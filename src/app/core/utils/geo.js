@@ -725,7 +725,8 @@ const geoutils = {
   getMapLayersByFilter(filter, options={}) {
     filter = filter || {};
     const mapFilter = {
-      GEOLAYER: true
+      GEOLAYER: true,
+      ACTIVE: true // active is not disabled
     };
     Object.assign(filter, mapFilter);
     let layers = [];

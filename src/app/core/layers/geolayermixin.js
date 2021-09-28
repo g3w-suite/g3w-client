@@ -179,13 +179,36 @@ proto.isChecked = function() {
   return this.state.checked;
 };
 
-proto.setVisible = function(visible) {
-  this.state.visible = visible;
+/**
+ * Is a method that check for visiblitity dissabled (based on scalevisibility) and checked on toc
+ * @param bool
+ * @returns {*}
+ */
+proto.setVisible = function(bool) {
+  //check if is changed
+  const oldVisibile = this.state.visible;
+  this.state.visible = bool && this.isChecked(); // bool and is checked
+  const changed = oldVisibile !== this.state.visible;
+  //if changed call change
+  changed && this.change();
+  return this.state.visible;
 };
 
-//get syle form layer
+proto.isVisible = function() {
+  return this.state.visible;
+};
+
+proto.isDisabled = function() {
+  return this.state.disabled;
+};
+
+proto.isPrintable = function({scale}={}) {
+  return this.isChecked() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
+};
+
+//get style form layer
 proto.getStyles = function(){
-  return this.config.source.external  ? this.config.source.styles : this.config.styles;
+  return this.config.source.external ? this.config.source.styles : this.config.styles;
 };
 
 proto.getStyle = function(){
@@ -193,7 +216,7 @@ proto.getStyle = function(){
 };
 
 /**
- * Mehot to change current style  of layer
+ * Method to change current style  of layer
  * @param currentStyleName
  * @returns {boolean}
  */
@@ -207,15 +230,6 @@ proto.setCurrentStyle = function(currentStyleName){
   return changed;
 };
 
-proto.isDisabled = function() {
-  return this.state.disabled;
-};
-
-proto.isPrintable = function({scale}={}) {
-  const visible = !this.state.groupdisabled;
-  return this.isChecked() && visible && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
-};
-
 /**
  * Disable layer by check scalevisibility configuration value
  * @param resolution
@@ -226,7 +240,16 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     const mapScale = getScaleFromResolution(resolution, mapUnits);
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
     this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
-  } else this.state.disabled = this.state.groupdisabled;
+    // needed to check if call setVisible if change disable property
+    // looping trhougt parentfolter checked
+    let setVisible = true;
+    let parentGroup = this.state.parentGroup;
+    while(parentGroup){
+      setVisible = setVisible && parentGroup.checked;
+      parentGroup = parentGroup.parentGroup;
+    }
+    setVisible && this.setVisible(!this.state.disabled);
+  } else this.state.disabled = false;
 };
 
 proto.getMultiLayerId = function() {

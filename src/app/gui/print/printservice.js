@@ -1,6 +1,6 @@
 const { base, inherit, downloadFile} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');

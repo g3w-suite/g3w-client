@@ -21,10 +21,15 @@ function Routerservice() {
    * }
    */
   this.ouputplaces = {
-    gui(dataPromise, options={}){
-      GUI.outputDataPlace(dataPromise, options);
+    async gui(dataPromise, options={}){
+      GUI.setLoadingContent(true);
+      try {
+        GUI.outputDataPlace(dataPromise, options);
+        await dataPromise;
+      } catch(err){}
+      GUI.setLoadingContent(false);
     },
-    iframe(dataPromise, options={}){
+    async iframe(dataPromise, options={}){
       IFrameRouterService.outputDataPlace(dataPromise, options);
     }
   };

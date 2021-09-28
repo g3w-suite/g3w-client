@@ -37,7 +37,7 @@ const vueComponentOptions = {
       return this.hasResults || !!this.state.components.length;
     },
     hasResults() {
-      return this.state.layers.length > 0
+      return this.state.layers.length > 0;
     },
     info(){
       const info = {
@@ -80,7 +80,10 @@ const vueComponentOptions = {
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
     },
     printAtlas(layer){
-      this.$options.queryResultsService.printAtlas(layer)
+      this.$options.queryResultsService.printAtlas(layer);
+    },
+    showLayerDownloadFormats(layer){
+      this.$options.queryResultsService.showLayerDownloadFormats(layer)
     },
     saveLayerResult(layer, type="csv") {
       this.$options.queryResultsService.saveLayerResult({layer, type});
@@ -297,7 +300,7 @@ const vueComponentOptions = {
     }
   },
   watch: {
-    'state.layers'(layers) {
+    async 'state.layers'(layers, oldlayers) {
       layers.forEach(layer => {
         if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
         layer.features.forEach(feature => {
@@ -327,7 +330,8 @@ const vueComponentOptions = {
           this.showFeatureInfo(layer, boxid);
         });
       }
-      requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el))
+      requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el));
+      await this.$nextTick();
     },
     onelayerresult(bool) {
       bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
@@ -346,7 +350,7 @@ const vueComponentOptions = {
     this.layersFeaturesBoxes = null;
   },
   destroyed() {
-    setTimeout(()=>this.$options.queryResultsService.clear())
+    this.$options.queryResultsService.clear();
   }
 };
 

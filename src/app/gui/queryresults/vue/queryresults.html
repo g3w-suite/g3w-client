@@ -2,9 +2,8 @@
 <!--  <div v-if="info.message" class="query-info-results" style="display: flex; align-items:center; margin-bottom: 5px; color: #394247">-->
 <!--    <span @mouseover="info.action" v-if="info.icon" class="action-button skin-tooltip-right" :class="g3wtemplate.getFontClass('info')" data-placement="right" data-toggle="tooltip"     style="cursor: pointer; padding-right: 5px;font-size: 1.2em" v-t-tooltip.create="info.message"></span>-->
 <!--  </div>-->
-  <bar-loader :loading="state.loading"></bar-loader>
   <div class="queryresults-container">
-    <template v-if="!state.loading">
+    <template v-if="state.layers.length">
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
         <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
           <div class="box box-primary">
@@ -12,45 +11,61 @@
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
                 <span class="query-layer-feature-count">({{layer.features.length}})</span>
               </div>
-              <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.addfeaturesresults.active}"
-                data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
-                <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
-              </span>
-              <div class="box-features-action" v-if="layer.features.length > 1">
-                <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-bottom"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
+              <div class="box-features-action" @click.stop="">
+                <template v-if="layer.features.length > 1">
+                  <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-bottom"
+                        data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>
-                <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button skin-tooltip-bottom"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
+                  <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button skin-tooltip-bottom"
+                        data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                 </span>
-                <span v-if="layer.download.shapefile" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
-                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')"></span>
+                  <!--        DOWNLOAD        -->
+                  <template v-if="Object.values(layer.download).filter(download => download).length <= 1">
+                  <span v-if="layer.download.shapefile" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
+                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')"></span>
+                  </span>
+                    <span v-if="layer.download.gpx" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
+                    <span class="action-button-icon"  :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'gpx')"></span>
+                  </span>
+                    <span v-if="layer.download.gpkg" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpkg.hint'">
+                    <span class="action-button-icon"  :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'gpkg')"></span>
+                  </span>
+                    <span v-if="layer.download.csv" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
+                    <span  class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'csv')"></span>
+                  </span>
+                    <span v-if="layer.download.xls" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
+                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'xls')"></span>
+                  </span>
+                  </template>
+                  <template v-else>
+                   <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip="'Downloads'">
+                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="showLayerDownloadFormats(layer)"></span>
+                  </span>
+                  </template>
+                  <!--        DOWNLOAD        -->
+                </template>
+                <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.addfeaturesresults.active}"
+                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
+                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                 </span>
-                <span v-if="layer.download.gpx" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
-                  <span class="action-button-icon"  :class="g3wtemplate.getFontClass('gpx')" @click.stop="saveLayerResult(layer, 'gpx')"></span>
-                </span>
-                <span v-if="layer.download.gpkg" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpkg.hint'">
-                  <span class="action-button-icon"  :class="g3wtemplate.getFontClass('gpkg')" @click.stop="saveLayerResult(layer, 'gpkg')"></span>
-                </span>
-                <span v-if="layer.download.csv" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
-                  <span  class="action-button-icon" :class="g3wtemplate.getFontClass('csv')" @click.stop="saveLayerResult(layer, 'csv')"></span>
-                </span>
-                <span v-if="layer.download.xls" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
-                  <span class="action-button-icon" :class="g3wtemplate.getFontClass('xls')" @click.stop="saveLayerResult(layer, 'xls')"></span>
-                </span>
-                <span @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
-                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'">
+                <span v-if="layer.features.length > 1" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
+                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                 </span>
-              </div>
-              <span v-show="layer.selection.active" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.filter.active}"
-                    data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'layer_selection_filter.tools.filter'">
+                <span v-show="layer.selection.active" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.filter.active}"
+                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'layer_selection_filter.tools.filter'">
                 <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
               </span>
-              <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>
+                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>
+              </div>
             </div>
+            <template v-if="state.layeractiontool[layer.id].component">
+              <div class="g3w-layer-action-tools with-border" style="padding: 5px" :class="{'mobile': isMobile()}">
+                <component :is="state.layeractiontool[layer.id].component" :layer="layer" :config="state.layeractiontool[layer.id].config"></component>
+              </div>
+            </template>
             <div class="box-body" :class="{'mobile': isMobile()}">
               <template v-if="hasFormStructure(layer)">
                 <table class="table" :class="{'mobile': isMobile()}">
@@ -69,7 +84,9 @@
                       </header-feature-body>
                       <tr class="g3w-feature-result-action-tools">
                         <template v-if="state.currentactiontools[layer.id][index]">
-                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                          <td :colspan="getColSpan(layer)">
+                            <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                          </td>
                         </template>
                       </tr>
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
@@ -112,8 +129,11 @@
                     </header-feature-body>
                     <tr class="g3w-feature-result-action-tools">
                       <template v-if="state.currentactiontools[layer.id][index]">
-                        <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
-                      </template>                    </tr>
+                        <td :colspan="getColSpan(layer)">
+                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                        </td>
+                      </template>
+                    </tr>
                     <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                       <td :colspan="getColSpan(layer)">
                         <table class="feature_attributes">
@@ -139,7 +159,9 @@
           <component @showresults="showResults()" :is="component"></component>
         </li>
       </ul>
-      <h4 v-if="!hasResults" style="font-weight: bold;" v-t="'info.no_results'"></h4>
+    </template>
+    <template v-else>
+      <h4 v-if="state.changed" style="font-weight: bold;" v-t="'info.no_results'"></h4>
     </template>
   </div>
 </div>

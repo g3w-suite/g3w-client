@@ -66,7 +66,7 @@ const font = {
   xls:"far fa-file-excel",
   gpx: "fas fa-location-arrow",
   gpkg: "fas fa-box-open",
-  shapefile:"fas fa-download",
+  shapefile:"fas fa-file-archive",
   csv: "fas fa-file-csv",
   ppt: "far fa-file-powerpoint",
   circle: "fas fa-circle",

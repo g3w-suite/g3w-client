@@ -17,8 +17,7 @@ inherit(WMSTLayer, MapLayer);
 const proto = WMSTLayer.prototype;
 
 proto.getOLLayer = function(withLayers) {
-  if (!this._olLayer)
-    this._olLayer = this._makeOlLayer(withLayers);
+  if (!this._olLayer) this._olLayer = this._makeOlLayer(withLayers);
   return this._olLayer;
 };
 
@@ -39,27 +38,16 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  if (!this.allLayers.find((_layer) => { return layer === _layer})) {
+  if (!this.allLayers.find(_layer => layer === _layer)) {
     this.allLayers.push(layer);
   }
-  if (!this.layers.find((_layer) => { return layer === _layer})) {
+  if (!this.layers.find(_layer => layer === _layer)) {
     this.layers.push(layer);
   }
 };
 
 proto.removeLayer = function(layer) {
-  this.layers = this.layers.filter((_layer) => {
-    return layer !== _layer;
-  })
-};
-
-proto.toggleLayer = function(layer) {
-  this.layers.forEach((_layer) => {
-    if (_layer.id === layer.id){
-      _layer.visible = layer.visible;
-    }
-  });
-  this._updateLayers();
+  this.layers = this.layers.filter(_layer => layer !== _layer);
 };
 
 proto.update = function(mapState={}, extraParams={}) {
@@ -79,15 +67,11 @@ proto.getQueryUrl = function() {
 };
 
 proto.getQueryableLayers = function() {
-  return this.layers.filter((layer) => {
-    return layer.isQueryable();
-  });
+  return this.layers.filter(layer => layer.isQueryable());
 };
 
 proto._getVisibleLayers = function() {
-  return this.layers.filter((layer) => {
-    return layer.isVisible();
-  });
+  return this.layers.filter(layer => layer.isVisible());
 };
 
 proto._makeOlLayer = function() {
@@ -126,9 +110,10 @@ proto.checkLayersDisabled = function(resolution, mapUnits) {
 
 //update Layers
 proto._updateLayers = function(mapState={}, extraParams={}) {
+  const {force=false} = extraParams;
   //check disabled layers
   const {mapUnits} = mapState;
-  this.checkLayersDisabled(mapState.resolution, mapUnits);
+  !force && this.checkLayersDisabled(mapState.resolution, mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';

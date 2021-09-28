@@ -36,7 +36,11 @@
       async urlLoaded() {
         this.legend.loading = false;
       },
-      getLegendUrl (layer) {
+      handlerChangeLegend(options={}){
+        const { layerId } = options;
+        layerId === this.layer.id && this.getLegendSrc(this.layer);
+      },
+      getLegendUrl(layer) {
         let legendurl;
         const layerStore = CatalogLayersStoresRegistry.getLayersStores().find(layerStore => layerStore.getLayerById(layer.id));
         legendurl = layerStore && layerStore.getLayerById(layer.id).getLegendUrl(this.legendParams);
@@ -110,10 +114,7 @@
     created() {
       this.legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
       this.mapReady = false;
-      CatalogEventHub.$on('layer-change-style', (layerObj={})  => {
-        const { layerId } = layerObj;
-        layerId === this.layer.id && this.getLegendSrc(this.layer);
-      })
+      CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
     },
     async mounted() {
       await this.$nextTick();
@@ -122,6 +123,9 @@
         this.mapReady = true;
         this.getLegendSrc(this.layer);
       })
+    },
+    beforeDestroy() {
+      CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
     }
   }
 </script>

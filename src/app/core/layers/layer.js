@@ -751,7 +751,6 @@ proto.getFilter = function(){
 
 proto.setDisabled = function(bool) {
   this.state.disabled = bool;
-  this.isVisible();
 };
 
 proto.isDisabled = function() {
@@ -759,7 +758,6 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  this.state.visible = this.isGeoLayer() ? !this.state.groupdisabled && this.state.checked && !this.isDisabled() : this.state.visible;
   return this.state.visible;
 };
 

@@ -42,10 +42,6 @@ proto.getSource = function(){
   return this.getOLLayer().getSource();
 };
 
-proto.toggleLayer = function(){
-  this._updateLayers();
-};
-
 proto.update = function(mapState, extraParams) {
   this._updateLayer(mapState, extraParams);
 };

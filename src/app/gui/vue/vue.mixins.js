@@ -120,6 +120,7 @@ const mediaMixin = {
 const geoMixin = {
   methods: {
     showLayer() {
+      console.log('qui')
       this.visible = !this.visible;
       this.layer.setVisible(this.visible);
     }

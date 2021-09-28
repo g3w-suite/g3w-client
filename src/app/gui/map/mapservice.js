@@ -321,10 +321,6 @@ proto.setUpMapOlEvents = function(){
     const keyolmoveeend = this.viewer.map.on("moveend", evt => this.setupCustomMapParamsToLegendUrl());
     this._keyEvents.ol.push(keyolmoveeend);
   } else this.setupCustomMapParamsToLegendUrl(false);
-  // event listener when add or remove layer on map happend
-  // this.viewer.map.getLayers().on("propertychange", evt => {
-  //   console.log(evt.target.get(evt.key))
-  // });
 };
 
 //clear methods to remove all listeners events
@@ -1642,20 +1638,6 @@ proto._setUpEventsKeysToLayersStore = function(layerStore) {
   const layerStoreId = layerStore.getId();
   // check if already store a key of events
   this._layersStoresEventKeys[layerStoreId] = [];
-  //SETVISIBILITY EVENT
-  const layerVisibleKey = layerStore.onafter('setLayersVisible',  layersIds => {
-    // In case of changing not update map until is false
-    layersIds.forEach(layerId => {
-      const layer = layerStore.getLayerById(layerId);
-      const mapLayer = this.getMapLayerForLayer(layer);
-      mapLayer && this.updateMapLayer(mapLayer)
-    });
-  });
-
-  this._layersStoresEventKeys[layerStoreId].push({
-    setLayersVisible: layerVisibleKey
-  });
-
   //ADD LAYER
   const addLayerKey = layerStore.onafter('addLayer', layer => {
     if (layer.getType() === 'vector') {
@@ -1840,7 +1822,11 @@ proto.getOverviewMapLayers = function(project) {
 
 proto.updateMapLayer = function(mapLayer, options={}) {
   const { force=false } = options;
-  !force ? mapLayer.update(this.state, {}) : mapLayer.update(this.state, {"time": Date.now()})
+  !force ? mapLayer.update(this.state, {force}) : mapLayer.update(this.state,
+    {
+      force,
+      "time": Date.now()
+    })
 };
 
 // run update function on ech mapLayer

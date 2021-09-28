@@ -1,14 +1,15 @@
 <template>
-  <td :colspan="colspan">
-    <div class="g3w-download-formats-content" @click.prevent.stop="">
-      <select  style="flex-grow: 1" v-select2="'download_format'" :search="false" class="form-control">
-        <option v-for="action in config.actions" :key="action.id" v-t-download="action.download" :value="action.format">
-          <span style="font-weight: bold">{{action.format}}</span>
-        </option>
-      </select>
-      <button style="border-radius: 0;" class="btn skin-button" @click.stop=download v-disabled="loading"><span :class="g3wtemplate.getFontClass('download')"></span></button>
-    </div>
-  </td>
+  <div class="g3w-download-formats-content" style="width: 100%; display: flex" @click.prevent.stop="">
+    <select  style="flex-grow: 1" v-select2="'download_format'" :search="false" class="form-control">
+      <option v-for="action in config.actions" :key="action.id" v-t-download="action.download" :value="action.format">
+        <span style="font-weight: bold">{{action.format}}</span>
+      </option>
+    </select>
+    <button style="border-radius: 0px 3px 3px 0;" class="btn skin-button" @click.stop=download v-disabled="loading">
+      <span :class="g3wtemplate.getFontClass('download')">
+      </span>
+    </button>
+  </div>
 </template>
 
 <script>
@@ -23,9 +24,6 @@
       }
     },
     props: {
-      colspan:{
-        type: Number
-      },
       featureIndex: {
         type: Number,
       },
@@ -45,7 +43,7 @@
         try {
           const action = this.config.actions.find(action => action.format === this.download_format);
           this.$watch(()=> ApplicationState.download, bool=> this.loading = bool);
-          await action.cbk(this.layer, [this.feature], action, this.featureIndex);
+          await action.cbk(this.layer, this.feature ? this.feature : this.layer.features, action, this.featureIndex);
         }
         catch(err){}
       }

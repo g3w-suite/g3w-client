@@ -2,7 +2,6 @@ import {G3W_FID} from 'constant';
 const {base, inherit} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
-
 const {
   getQueryLayersPromisesByCoordinates,
   getQueryLayersPromisesByGeometry,

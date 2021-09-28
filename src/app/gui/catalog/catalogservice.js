@@ -85,10 +85,13 @@ proto.changeMapTheme = async function(map_theme){
   // set is changing project view
   ApplicationService.changeProjectView(true);
   const {currentProject} = this.state.prstate;
-  const layerstree = this.state.layerstrees[0].tree[0].nodes;
+  const rootNode = this.state.layerstrees[0];
+  rootNode.checked = true;
+  const layerstree = rootNode.tree[0].nodes;
   const changeMapThemeProjectObj = await currentProject.setLayersTreePropertiesFromMapTheme({
     map_theme,
-    layerstree
+    layerstree,
+    rootNode
   });
   ApplicationService.changeProjectView(false);
   return changeMapThemeProjectObj;

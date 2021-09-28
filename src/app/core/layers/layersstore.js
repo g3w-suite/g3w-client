@@ -24,16 +24,6 @@ function LayersStore(config={}) {
     setLayerSelection({layerId, selection}){
       const layer = this.getLayerById(layerId);
     },
-    setLayersVisible(layersIds, visible, checked=true) {
-      const layers = [];
-      layersIds.forEach(layerId => {
-        const layer = this.getLayerById(layerId);
-        layer.setVisible(visible);
-        checked && layer.setChecked(visible);
-        layers.push(layer);
-      });
-      return layers;
-    },
     setLayerSelected(layerId, selected) {
       this.getLayers().forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
     },
@@ -246,65 +236,6 @@ proto._getAllParentLayersId = function(layerstree, node) {
   return nodeIds;
 };
 
-/**
- * Method to check mutually of group  belong to layerId
- * @param layerId
- * @private
- */
-proto._mutuallyExclude = function(layerId) {
-  let parentLayersTree = this.state.layerstree;
-  let traverse = obj => {
-    Object.entries(obj).forEach(([key, layer]) => {
-      if (layer.nodes !== null && layer.nodes !== undefined) {
-        let found = layer.nodes.reduce((previous, node) => {
-          return node.id === layerId ||  previous ;
-        }, false);
-        // if found mean that a found a group that contain layer with layerId
-        if (found) {
-          let checked_node;
-          let nodeIds = [];
-          layer.nodes.forEach(node => {
-            if (node.id) {
-              if (node.id !== layerId && node.geolayer) nodeIds.push(node.id);
-              else checked_node = node;
-            } //else nodeIds = nodeIds.concat(this._getAllSiblingsChildrenLayersId(node));
-          });
-          //set parent grouplayerstree
-          parentLayersTree = layer;
-          if (parentLayersTree.mutually_exclusive) {
-            nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree));
-          }
-          this.setLayersVisible(nodeIds, false);
-        }
-        traverse(layer.nodes);
-      }
-    });
-  };
-  traverse(parentLayersTree)
-};
-
-/**
- * Toggle layer called from catalog event
- * @param layerId
- * @param visible
- * @param mutually_exclusive
- * @returns {*}
- */
-proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
-  const layer = this.getLayerById(layerId);
-  const checked = layer.isChecked();
-  visible = visible !== null ? !checked : checked;
-  mutually_exclusive &&  this._mutuallyExclude(layerId);
-  if (layer.isDisabled()) layer.setVisible(false);
-  else this.setLayersVisible([layerId], visible);
-  //layer.setChecked(!checked);
-  return layer;
-};
-
-proto.toggleLayers = function(layersIds, visible, checked=true) {
-  return this.setLayersVisible(layersIds, visible, checked)
-};
-
 proto.selectLayer = function(layerId){
   this.setLayerSelected(layerId, true);
 };
@@ -332,28 +263,32 @@ proto.getWmsUrl = function() {
 
 // set layersstree of layers inside the laysstore
 proto.setLayersTree = function(layerstree, name) {
-  const traverse = (obj, isChild=false, currentGroupDisabled=false) => {
-    Object.entries(obj).forEach(([key, layer]) => {
-      if (layer.id !== undefined) {
-        obj[key] = this.getLayerById(layer.id).getState();
-        obj[key].groupdisabled = currentGroupDisabled;
+  // this is a root group project that contain all layerstree of qgis project
+  const rootGroup = {
+    title: name || this.config.id,
+    root: true,
+    parentGroup: null,
+    expanded: true,
+    disabled: false,
+    checked: true,
+    nodes: layerstree
+  };
+  const traverse = (nodes, parentGroup) => {
+    nodes.forEach((node, index) => {
+      // case of layer substitute node with layere state
+      if (node.id !== undefined) nodes[index] = this.getLayerById(node.id).getState();
+      if (node.nodes) {
+        node.nodes.forEach(node => node.parentGroup = parentGroup);
+        traverse(node.nodes, node);
       }
-      if (layer.nodes) {
-        const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
-        traverse(layer.nodes, true, _currentGroupDisabled);
-      }
+      //SET PARENT GROUP
+      nodes[index].parentGroup = parentGroup;
     });
   };
   if (layerstree.length) {
-    traverse(layerstree);
-    this.state.layerstree.splice(0,0,{
-      title: name || this.config.id,
-      root: true,
-      expanded: true,
-      disabled: false,
-      checked: true,
-      nodes: layerstree
-    });
+    traverse(layerstree, rootGroup);
+    // at the end
+    this.state.layerstree.splice(0,0, rootGroup);
   }
 };
 
@@ -374,6 +309,7 @@ proto.createLayersTree = function(groupName, options={}) {
             if (tocLayersId.find(toclayerId => toclayerId === layer.id)) lightlayer.id = layer.id;
             else lightlayer = null;
           }
+          // case group
           if (layer.nodes !== null && layer.nodes !== undefined) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
@@ -399,6 +335,7 @@ proto.createLayersTree = function(groupName, options={}) {
       })
     });
   }
+  // setLayerstree
   this.setLayersTree(layerstree, groupName);
 };
 
