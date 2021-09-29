@@ -803,7 +803,10 @@ proto._setupControls = function() {
               options: {
                 spatialMethod,
                 layers: getControlLayers(),
-                help: "sdk.mapcontrols.querybypolygon.help"
+                help: {
+                  title: "sdk.mapcontrols.querybypolygon.help.title",
+                  message: "sdk.mapcontrols.querybypolygon.help.message",
+                }
               }
             });
             if (control) {
@@ -888,7 +891,10 @@ proto._setupControls = function() {
               options: {
                 spatialMethod,
                 layers: controlLayers,
-                help: "sdk.mapcontrols.querybybbox.help"
+                help: {
+                  title:"sdk.mapcontrols.querybybbox.help.title",
+                  message:"sdk.mapcontrols.querybybbox.help.message",
+                }
               }
             });
             if (control) {
@@ -908,9 +914,12 @@ proto._setupControls = function() {
                 if (evt.target.isToggled()) {
                   const layers = getMapLayersByFilter(layersFilterObject, condition);
                   if (layers.length === 0) {
-                    GUI.showUserMessage({
-                      type: "warning",
-                      message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
+                    GUI.closeUserMessage();
+                    setTimeout(()=>{
+                      GUI.showUserMessage({
+                        type: "warning",
+                        message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
+                      });
                     });
                     control.toggle();
                   }

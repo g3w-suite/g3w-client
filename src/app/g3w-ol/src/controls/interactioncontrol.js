@@ -1,9 +1,11 @@
+import {SPATIALMETHODS} from "../constants";
+const {t} = require('core/i18n/i18n.service');
 const Control = require('./control');
 const GUI = require('gui/gui');
 
 const InteractionControl = function(options={}) {
   const {visible=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onselectlayer=false, onhover=false, help=null, interactionClassOptions={}, spatialMethod} = options;
+    geometryTypes=[], onselectlayer=false, onhover=false, help=null, toggledTool={}, interactionClassOptions={}, spatialMethod} = options;
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
@@ -15,9 +17,37 @@ const InteractionControl = function(options={}) {
   this._onhover = onhover;
   this._help = help;
   this._helpButton = null;
-  this._interactionClassOptions = interactionClassOptions;
   //spatial method (intersect, within)
   this.spatialMethod = spatialMethod;
+  this.toggledTool;
+  switch(toggledTool.type){
+    case 'spatialMethod':
+      this.toggledTool = {
+        data() {
+          this.methods = SPATIALMETHODS;
+          return {
+            method: spatialMethod
+          }
+        },
+        template: `
+          <div style="width: 100%">
+            <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
+              <option v-for="method in methods">{{method}}</option>
+            </select>
+          </div>`,
+        watch: {
+          'method': method => this.setSpatialMethod(method)
+        },
+        created(){
+          GUI.setCloseUserMessageBeforeSetContent(false);
+        },
+        beforeDestroy(){
+          GUI.setCloseUserMessageBeforeSetContent(true);
+        }
+      };
+      break;
+  }
+  this._interactionClassOptions = interactionClassOptions;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // create an help message
@@ -53,13 +83,28 @@ proto.setVisible = function(bool) {
 
 //show help message
 proto._showModalHelp = function() {
-  GUI.showUserMessage({
-    type: 'info',
-    message: this._help,
-    position: 'left',
-    size: 'small',
-    autoclose: false
-  })
+  GUI.showModalDialog({
+    title: t(this._help.title),
+    message: t(this._help.message),
+  });
+
+};
+
+proto.showToggledTool = function(show=true){
+  let unwatch;
+  let vm;
+  if (show){
+    GUI.showUserMessage({
+      title: '',
+      type: 'tool',
+      size: 'small',
+      closable: false,
+      hooks: {
+        body: this.toggledTool
+      }
+    });
+
+  } else GUI.closeUserMessage();
 };
 
 proto._closeModalHelp = function() {
@@ -124,6 +169,7 @@ proto.toggle = function(toggle) {
     this._interaction && this._interaction.setActive(false);
     this.removeClassToControlBottom('g3w-ol-toggled');
   }
+  this.toggledTool && this.showToggledTool(this._toggled);
   this.dispatchEvent('toggled', toggle);
 };
 

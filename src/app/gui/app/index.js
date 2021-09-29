@@ -42,6 +42,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   // useful to build a difference layout/compoìnent based on mobile or not
   this._isMobile = isMobile.any;
   this._isIframe = appLayoutConfig.iframe;
+  //ussefult ot not close user message when set content is called
   this.sizes = {
     sidebar: {
       width:0
@@ -583,7 +584,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     //showusermessage
     GUI.showUserMessage = function(options={}) {
-      viewport.ViewportService.showUserMessage(options);
+      return viewport.ViewportService.showUserMessage(options);
     };
 
     GUI.closeUserMessage = function() {
@@ -755,8 +756,12 @@ const ApplicationTemplate = function({ApplicationService}) {
       return projectVueMenuComponent.$mount().$el;
     };
 
+    GUI.setCloseUserMessageBeforeSetContent = function(bool=true){
+      this._closeUserMessageBeforeSetContent = bool;
+    };
+
     GUI._setContent = (options={}) => {
-      GUI.closeUserMessage();
+      this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
       options.content = options.content || null;
       options.title = options.title || "";
       options.push = _.isBoolean(options.push) ? options.push : false;

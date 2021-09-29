@@ -237,20 +237,27 @@ const translations = {
             },
             tooltip: 'Interroga per poligono',
             no_geometry: 'Non contiene la geometria nella risposta',
-            help: `<h4>Guida - Interrogazione con Poligono</h4>
+            help: {
+              title: 'Guida - Interrogazione con Poligono',
+              message:`
                   <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Seleziona uno strato poligonale in legenda.</li>
-                    <li style="font-size:0.8em;">Assicurati che lo strato sia visibile in mappa.</li>
-                    <li style="font-size:0.8em;">Clicca su una geometria dello strato selezionato.</li>
+                    <li">Seleziona uno strato poligonale in legenda.</li>
+                    <li>Assicurati che lo strato sia visibile in mappa.</li>
+                    <li>Clicca su una geometria dello strato selezionato.</li>
                   </ul>`
+            }
           },
           querybybbox: {
             tooltip: 'Interroga per BBOX',
             nolayers_visible: "Nessun layer interrogabile è visibile. Assicurarsi che almeno un layer wfs sia visibile per eseguire l'interrogazione",
-            help: `<h4>Guida - Interrogazione BBox</h4>
-                   <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
-                   </ul>`
+            help: {
+              title:'Guida - Interrogazione BBox',
+              message:`
+                    <ul style="padding-left: 10px;">
+                      <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
+                   </ul>
+              `
+            },
           },
           addlayer: {
             messages: {
@@ -688,20 +695,26 @@ const translations = {
             },
             tooltip: 'Query By Polygon',
             no_geometry: 'No geometry on response',
-            help: `<h4>Guide - Query By Polygon</h4>
+            help: {
+              title:'Guide - Query By Polygon',
+              message: `
                   <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Select a polygon layer on TOC.</li>
-                    <li style="font-size:0.8em;">Be sure that layer is visible.</li>
-                    <li style="font-size:0.8em;">Click on a feature of selected layer.</li>
+                    <li>Select a polygon layer on TOC.</li>
+                    <li>Be sure that layer is visible.</li>
+                    <li>Click on a feature of selected layer.</li>
                   </ul>`
+            }
           },
           querybybbox: {
             tooltip: 'Query BBox layer',
             nolayers_visible: 'No querable layers are visible. Please set at least one visible wfs layer to run query',
-            help: `<h4>Guide - Query BBox layer</h4>
+            help: {
+              title: 'Guide - Query BBox layer',
+              message:`
                    <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Draw a square on map to query underlined layers on TOC</li>
+                    <li>Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
+            }
           },
           addlayer: {
             messages: {
@@ -1139,20 +1152,26 @@ const translations = {
             },
             tooltip: 'Kysely monikulmiolla',
             no_geometry: 'No geometry on response',
-            help: `<h4>Ohje - Kysely monikulmiolla</h4>
+            help: {
+              title: 'Ohje - Kysely monikulmiolla',
+              message: `
                   <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Valitse monikulmiotaso luettelosta.</li>
-                    <li style="font-size:0.8em;">Tarkista, että taso on näkyvillä.</li>
-                    <li style="font-size:0.8em;">Valitse ominaisuus valitulla tasolla.</li>
+                    <li>Valitse monikulmiotaso luettelosta.</li>
+                    <li>Tarkista, että taso on näkyvillä.</li>
+                    <li>Valitse ominaisuus valitulla tasolla.</li>
                   </ul>`
+            }
           },
           querybybbox: {
             tooltip: 'Tasoon kohdituva BBox-kysely',
             nolayers_visible: 'Ei kyseltäviä tasoja näkyvillä. Aseta vähintään yksi WFS-taso näkyväksi suorittaaksesi haun.',
-            help: `<h4>Ohje - Tasoon kohdistuva BBox-kysely</h4>
+            help: {
+              title: 'Ohje - Tasoon kohdistuva BBox-kysely',
+              message:`
                    <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
+                    <li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
                    </ul>`
+            }
           },
           addlayer: {
             messages: {
@@ -1590,20 +1609,26 @@ const translations = {
             },
             tooltip: 'Förfrågan med polygon',
             no_geometry: 'No geometry on response',
-            help: `<h4>Ohje - Förfrågan med polygon</h4>
+            help: {
+              title: 'Ohje - Förfrågan med polygon',
+              message:`
                   <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Välj polygonnivå i listan.</li>
-                    <li style="font-size:0.8em;">Kontrollera att nivån är synlig.</li>
-                    <li style="font-size:0.8em;">Välj egenskap på önskad nivå.</li>
+                    <li>Välj polygonnivå i listan.</li>
+                    <li>Kontrollera att nivån är synlig.</li>
+                    <li>Välj egenskap på önskad nivå.</li>
                   </ul>`
+            }
           },
           querybybbox: {
             tooltip: 'BBox-förfrågan som riktar sig till en nivå',
             nolayers_visible: 'Inga nivåer som förfrågningar kan riktas till. Gör minst en WFS-nivå synlig för att kunna utföra sökningen.',
-            help: `<h4>Ohje - BBox-förfrågan som riktar sig till nivån</h4>
+            help: {
+              title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
+              message:`
                    <ul style="padding-left: 10px;">
-                    <li style="font-size:0.8em;">Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
+                    <li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
                    </ul>`
+            }
           },
           addlayer: {
             messages: {

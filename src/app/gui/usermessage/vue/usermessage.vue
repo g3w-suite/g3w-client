@@ -1,5 +1,5 @@
 <template>
-  <div class="usermessage-content" :style="style" :class="{'mobile': addClassMobile()}">
+  <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
     <div class="usermessage-header-content">
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
@@ -49,6 +49,7 @@
   export default {
     name: "usermessage",
     props: {
+      id:{},
       type: {
         type: String,
         default: 'info' // info, warning, alert, tool
@@ -62,7 +63,7 @@
         default: 'top'
       },
       size: {
-        type: 'String', // values [samll, medium,fullpage]
+        type: 'String', // values [small, medium,fullpage]
         default: 'fullpage'
       },
       message: {

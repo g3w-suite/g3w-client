@@ -1,3 +1,4 @@
+import {SPATIALMETHODS} from '../constants';
 const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
@@ -5,6 +6,7 @@ const { getAllPolygonGeometryTypes } = require('core/geometry/geometry');
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {
+  const {spatialMethod=SPATIALMETHODS[0]} = options;
   const _options = {
     offline: false,
     name: "querybypolygon",
@@ -13,7 +15,10 @@ const QueryByPolygonControl = function(options={}) {
     onselectlayer: true,
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
-    spatialMethod: options.spatialMethod || 'intersects',
+    spatialMethod,
+    toggledTool:{
+      type: 'spatialMethod'
+    },
     onhover: true
   };
   options = merge(options,_options);
@@ -43,7 +48,6 @@ proto.checkVisibile = function(layers) {
   }
   return visible;
 };
-
 
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);

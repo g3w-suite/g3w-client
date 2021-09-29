@@ -1,7 +1,9 @@
+import {SPATIALMETHODS} from '../constants';
 const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 
 const QueryBBoxControl = function(options = {}){
+  const {spatialMethod=SPATIALMETHODS[0]} = options;
   this._startCoordinate = null;
   const _options = {
     offline: false,
@@ -11,7 +13,10 @@ const QueryBBoxControl = function(options = {}){
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
     onhover: true,
-    spatialMethod: options.spatialMethod || 'intersects'
+    toggledTool:{
+      type: 'spatialMethod'
+    },
+    spatialMethod
   };
   options = merge(options,_options);
   const layers = options.layers || [];
