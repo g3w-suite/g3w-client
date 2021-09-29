@@ -240,7 +240,7 @@ const translations = {
             help: {
               title: 'Guida - Interrogazione con Poligono',
               message:`
-                  <ul style="padding-left: 10px;">
+                  <ul>
                     <li">Seleziona uno strato poligonale in legenda.</li>
                     <li>Assicurati che lo strato sia visibile in mappa.</li>
                     <li>Clicca su una geometria dello strato selezionato.</li>
@@ -253,7 +253,7 @@ const translations = {
             help: {
               title:'Guida - Interrogazione BBox',
               message:`
-                    <ul style="padding-left: 10px;">
+                    <ul>
                       <li>Disegna un rettangolo per interrogare gli strati evidenziati in giallo</li>
                    </ul>
               `
@@ -698,7 +698,7 @@ const translations = {
             help: {
               title:'Guide - Query By Polygon',
               message: `
-                  <ul style="padding-left: 10px;">
+                  <ul>
                     <li>Select a polygon layer on TOC.</li>
                     <li>Be sure that layer is visible.</li>
                     <li>Click on a feature of selected layer.</li>
@@ -711,7 +711,7 @@ const translations = {
             help: {
               title: 'Guide - Query BBox layer',
               message:`
-                   <ul style="padding-left: 10px;">
+                   <ul>
                     <li>Draw a square on map to query underlined layers on TOC</li>
                    </ul>`
             }
@@ -1155,7 +1155,7 @@ const translations = {
             help: {
               title: 'Ohje - Kysely monikulmiolla',
               message: `
-                  <ul style="padding-left: 10px;">
+                  <ul>
                     <li>Valitse monikulmiotaso luettelosta.</li>
                     <li>Tarkista, että taso on näkyvillä.</li>
                     <li>Valitse ominaisuus valitulla tasolla.</li>
@@ -1168,7 +1168,7 @@ const translations = {
             help: {
               title: 'Ohje - Tasoon kohdistuva BBox-kysely',
               message:`
-                   <ul style="padding-left: 10px;">
+                   <ul>
                     <li>Piirrä suorakulmio kartalle suorittaaksesi kyselyn luettelossa alleviivatuille tasoille.</li>
                    </ul>`
             }
@@ -1612,7 +1612,7 @@ const translations = {
             help: {
               title: 'Ohje - Förfrågan med polygon',
               message:`
-                  <ul style="padding-left: 10px;">
+                  <ul >
                     <li>Välj polygonnivå i listan.</li>
                     <li>Kontrollera att nivån är synlig.</li>
                     <li>Välj egenskap på önskad nivå.</li>
@@ -1625,7 +1625,7 @@ const translations = {
             help: {
               title: 'Ohje - BBox-förfrågan som riktar sig till nivån',
               message:`
-                   <ul style="padding-left: 10px;">
+                   <ul>
                     <li>Rita upp en rektangel på kartan för att utföra förfrågan på de i listan understreckade nivåerna.</li>
                    </ul>`
             }

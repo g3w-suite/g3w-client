@@ -98,21 +98,21 @@ proto._makeOlLayer = function(withLayers) {
 
 //update Layers
 proto._updateLayers = function(mapState={}, extraParams={}) {
-  const {force=false} = extraParams;
+  let {force=false, ...params} = extraParams;
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
     const STYLES = visibleLayers.map(layer => layer.getStyle()).join(',');
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
-    let params = {
+     params = {
+      ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
       STYLES,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`
     };
-    if (extraParams) params = _.assign(params, extraParams);
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);
   } else this._olLayer.setVisible(false);

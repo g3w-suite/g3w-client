@@ -898,6 +898,10 @@ proto._setupControls = function() {
               }
             });
             if (control) {
+              // get all filtrable layers in toc no based on selection or visibility
+              const allLayersFiltrable = getMapLayersByFilter({
+                FILTERABLE: true
+              }, condition);
               this._changeMapMapControls.push({
                 control,
                 getVisible: () => {
@@ -910,19 +914,49 @@ proto._setupControls = function() {
                 FILTERABLE: true,
                 VISIBLE: true
               };
+              //method to clean up all things related to querybbox
+              const noLayerToQuery = ({vm, unwatchlayers=[]}={})=>{
+                GUI.closeUserMessage();
+                setTimeout(()=>{
+                  GUI.showUserMessage({
+                    type: "warning",
+                    message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
+                  });
+                });
+                control.toggle();
+                vm = null;
+                unwatchlayers.forEach(unwatch => unwatch());
+                unwatchlayers = null;
+              };
               control.on('toggled', evt => {
+                //array that listen al layer
+                let unwatchlayers = [];
+                let vm = new Vue();
+                // toggled
                 if (evt.target.isToggled()) {
                   const layers = getMapLayersByFilter(layersFilterObject, condition);
+                  // no layer are filtrable in current toc state
                   if (layers.length === 0) {
-                    GUI.closeUserMessage();
-                    setTimeout(()=>{
-                      GUI.showUserMessage({
-                        type: "warning",
-                        message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
-                      });
+                    noLayerToQuery({
+                      vm,
+                      unwatchlayers
                     });
-                    control.toggle();
-                  }
+                  } else {
+                    //loop throught all filtrable layers and listen all changes
+                    allLayersFiltrable.forEach(layer =>{
+                      const unwatchlayer = vm.$watch(()=> layer.state, ()=>{
+                          const layers = getMapLayersByFilter(layersFilterObject, condition);
+                          layers.length === 0 &&  noLayerToQuery({
+                            vm,
+                            unwatchlayers
+                          });
+                        },
+                        {
+                          deep: true
+                        });
+                        unwatchlayers.push(unwatchlayer);
+                      })
+                    }
                 }
               });
 
@@ -1830,7 +1864,7 @@ proto.getOverviewMapLayers = function(project) {
 };
 
 proto.updateMapLayer = function(mapLayer, options={}) {
-  const { force=false } = options;
+  const {force=false} = options;
   !force ? mapLayer.update(this.state, {force}) : mapLayer.update(this.state,
     {
       force,

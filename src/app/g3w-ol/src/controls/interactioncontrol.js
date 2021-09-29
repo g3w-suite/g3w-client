@@ -30,7 +30,7 @@ const InteractionControl = function(options={}) {
           }
         },
         template: `
-          <div style="width: 100%">
+          <div style="width: 100%; padding: 5px;">
             <select ref="select" style="width: 100%"  :search="false" v-select2="'method'">
               <option v-for="method in methods">{{method}}</option>
             </select>

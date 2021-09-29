@@ -76,16 +76,16 @@
         <div role="tabpanel" class="tab-pane" :id="'layer_spatial_'+state.id">
           <div class="container-fluid">
             <div v-if="findMetadataAttribute('crs')" class="row">
-              <div v-t="'sdk.metadata.groups.layers.fields.subfields.crs'" class="col-sm-3 metadata-label"></div>
-              <div class="col-sm-9 value">{{ state.crs.epsg }}</div>
+              <div v-t="'sdk.metadata.groups.layers.fields.subfields.crs'" class="col-sm-2 metadata-label"></div>
+              <div class="col-sm-10 value">{{ state.crs.epsg }}</div>
             </div>
             <div v-if="findMetadataAttribute('geometrytype')" class="row">
-              <div v-t="'sdk.metadata.groups.layers.fields.subfields.geometrytype'" class="col-sm-3 metadata-label"></div>
-              <div class="col-sm-9 value">{{ state.geometrytype }}</div>
+              <div v-t="'sdk.metadata.groups.layers.fields.subfields.geometrytype'" class="col-sm-2 metadata-label"></div>
+              <div class="col-sm-10 value">{{ state.geometrytype }}</div>
             </div>
             <div v-if="findMetadataAttribute('bbox')" class="row">
-              <div v-t="'sdk.metadata.groups.layers.fields.subfields.bbox'" class="col-sm-3 metadata-label"></div>
-              <div class="col-sm-9 value">
+              <div v-t="'sdk.metadata.groups.layers.fields.subfields.bbox'" class="col-sm-2 metadata-label"></div>
+              <div class="col-sm-10 value">
                 <p v-for="(value, key) in state.bbox">
                   <span style="font-weight: bold; margin-right: 5px;">{{ key }}</span>
                   <span>{{ value}}</span>
@@ -93,8 +93,8 @@
               </div>
             </div>
             <div v-if="findAttributeFormMetadataAttribute('crs')" class="row">
-              <div class="col-sm-3 metadata-label">CRS</div>
-              <div class="col-sm-9 value">
+              <div class="col-sm-2 metadata-label">CRS</div>
+              <div class="col-sm-10 value">
                 <div v-for="crs in state.metadata.crs">
                   <span>{{ crs }}</span>
                 </div>

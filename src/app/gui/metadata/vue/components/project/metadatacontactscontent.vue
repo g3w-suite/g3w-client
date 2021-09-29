@@ -1,14 +1,14 @@
 <template>
   <div class="wrap-content-tab">
-    <div class="col-sm-3 metadata-label" v-t="data.label"></div>
-    <div class="col-sm-9 value" style="margin-top:0">
+    <div class="col-sm-2 metadata-label" v-t="data.label"></div>
+    <div class="col-sm-10 value" style="margin-top:0">
       <div v-for="(value, key) in data.value">
         <div class="row">
-          <div class="col-sm-3 metadata-contact-label">
+          <div class="col-sm-2 metadata-contact-label">
             <i class="contact-icon" :class="iconsClass[key]" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key"></span>
           </div>
-          <div class="col-sm-9">
+          <div class="col-sm-10">
             <template v-if="key === 'personprimary'" >
               <div v-for="(subvalue, key) in value">
                 <span v-t="'sdk.metadata.groups.general.fields.subfields.contactinformation.' + key" class="metadata-contact-label"></span>
