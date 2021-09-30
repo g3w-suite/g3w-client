@@ -2,23 +2,19 @@
   <div style="width:100%">
     <h5 class="skin-background-color g3w-polygonattributes-types-title" v-t="'sdk.mapcontrols.querybypolygon.download.title'"></h5>
     <div class="g3w-polygonattributes-types-content">
-      <div class="g3w-polygonattributes-types-radio">
-        <template v-for="radio in config.choices">
-          <input :id="radio.id" :value="radio.type" style="width:100%" class="magic-radio" v-model="type" type="radio">
-          <label :for="radio.id" v-t="radio.label"></label>
-        </template>
-      </div>
-      <div class="g3w-polygonattributes-buttons">
-        <button class="btn skin-button" @click.stop=config.download(type)>
-          <span :class="g3wtemplate.getFontClass('download')"></span>
-        </button>
-      </div>
+      <select ref="g3w_select_feature_featurepolygon" style="width: 100%" v-select2="'type'" class="form-control" :search="false">
+        <option :ref="choice.type" v-for="choice in config.choices" :key="choice.type" :value="choice.type" v-t="choice.label"></option>
+      </select>
+      <button style="border-radius: 0 3px 3px 0;" class="btn skin-button" @click.stop=config.download(type)>
+        <span :class="g3wtemplate.getFontClass('download')"></span>
+      </button>
     </div>
   </div>
-
 </template>
 
 <script>
+  import ApplicationState from 'core/applicationstate'
+  const {t}= require('core/i18n/i18n.service');
   export default {
     name: "querypolygonaddattributes",
     props: {
@@ -34,6 +30,16 @@
       return {
         type: this.config.choices[0].type
       }
+    },
+    created() {
+      this.unwatch =  this.$watch(()=>ApplicationState.lng, ()=>{
+        this.config.choices.forEach(choice => $(this.$refs[choice.type]).text(t(choice.label)));
+        $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
+      })
+    },
+    beforeDestroy() {
+      this.unwatch && this.unwatch();
+      this.unwatch = null;
     }
   }
 </script>
@@ -64,9 +70,6 @@
     display: flex;
     justify-content: flex-end;
   }
-  .g3w-polygonattributes-buttons button {
-    margin: 2px;
-    border-radius: 3px;
-  }
+
 
 </style>

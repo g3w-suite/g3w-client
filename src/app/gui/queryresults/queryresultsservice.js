@@ -1,6 +1,6 @@
 import {G3W_FID} from 'constant';
-import DownloadFormats from './vue/downloadformats.vue';
-import QueryPolygonCsvAttributesComponent from './vue/querypolygoncsvattributes.vue';
+import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
+import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
@@ -1176,25 +1176,29 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
   };
 
   if (query.type === 'polygon'){
-    const {fid} = query;
+    const {fid, layer:polygonLayer} = query;
     const config = {
       choices: [
         {
           id: getUniqueDomId(),
           type: 'feature',
-          label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature.label',
+          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
         },
         {
           id: getUniqueDomId(),
           type: 'polygon',
-          label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature_polygon.label',
+          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
         },
       ],
       download: type =>{
-        // id type polygon add paramateres to api download
-        if (type === 'polygon') {
-          data.sbp_qgs_layer_id = layer.id;
+        if (type === 'polygon'){
+          // id type polygon add paramateres to api download
+          data.sbp_qgs_layer_id = polygonLayer.getId();
           data.sbp_fid = fid;
+        } else {
+          // force to remove
+          delete data.sbp_fid;
+          delete data.sbp_qgs_layer_id;
         }
         runDownload(true)
       }

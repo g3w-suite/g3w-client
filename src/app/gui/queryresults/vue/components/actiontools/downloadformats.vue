@@ -5,7 +5,7 @@
         <span style="font-weight: bold">{{action.format}}</span>
       </option>
     </select>
-    <button style="border-radius: 0px 3px 3px 0;" class="btn skin-button" @click.stop=download v-disabled="loading">
+    <button style="border-radius: 0 3px 3px 0;" class="btn skin-button" @click.stop=download v-disabled="loading">
       <span :class="g3wtemplate.getFontClass('download')">
       </span>
     </button>

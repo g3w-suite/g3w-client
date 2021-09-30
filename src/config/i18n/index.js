@@ -224,14 +224,12 @@ const translations = {
           querybypolygon: {
             download: {
               title: "Attributi associati alle features",
-              buttons:{
+              choiches:{
                feature: {
                  label: "Solo features",
-                 tooltip: ""
                },
                feature_polygon: {
                  label: "Feature+Poligono Interrogazione",
-                 tooltip: ""
                }
               }
             },
@@ -682,14 +680,12 @@ const translations = {
           querybypolygon: {
             download: {
               title: "Attributes features",
-              buttons:{
+              choiches:{
                 feature: {
                   label:"Features only",
-                  tooltip: ""
                 },
                 feature_polygon: {
                   label:"Feature+Query Polygon",
-                  tooltip: ""
                 }
               }
             },
@@ -1139,14 +1135,12 @@ const translations = {
           querybypolygon: {
             download: {
               title: "Attributes features",
-              buttons:{
+              choiches:{
                 feature: {
                   label:"Features only",
-                  tooltip: ""
                 },
                 feature_polygon: {
                   label:"Feature+Query Polygon",
-                  tooltip: ""
                 }
               }
             },
@@ -1596,14 +1590,12 @@ const translations = {
           querybypolygon: {
             download: {
               title: "Attributes features",
-              buttons:{
+              choiches:{
                 feature: {
                   label:"Features only",
-                  tooltip: ""
                 },
                 feature_polygon: {
                   label:"Feature+Query Polygon",
-                  tooltip: ""
                 }
               }
             },

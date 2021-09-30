@@ -957,6 +957,9 @@ proto._setupControls = function() {
                         unwatchlayers.push(unwatchlayer);
                       })
                     }
+                } else {
+                  vm = null;
+                  unwatchlayers = null;
                 }
               });
 
