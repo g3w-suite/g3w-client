@@ -898,6 +898,9 @@ proto._setupControls = function() {
               }
             });
             if (control) {
+              //array that listen al layer
+              let unwatchlayers = [];
+              let vm;
               // get all filtrable layers in toc no based on selection or visibility
               const allLayersFiltrable = getMapLayersByFilter({
                 FILTERABLE: true
@@ -914,6 +917,11 @@ proto._setupControls = function() {
                 FILTERABLE: true,
                 VISIBLE: true
               };
+              const cleanUpWatcher = () => {
+                unwatchlayers.forEach(unwatch => unwatch());
+                unwatchlayers.splice(0);
+                vm = null;
+              };
               //method to clean up all things related to querybbox
               const noLayerToQuery = ({vm, unwatchlayers=[]}={})=>{
                 GUI.closeUserMessage();
@@ -924,16 +932,12 @@ proto._setupControls = function() {
                   });
                 });
                 control.toggle();
-                vm = null;
-                unwatchlayers.forEach(unwatch => unwatch());
-                unwatchlayers = null;
+                cleanUpWatcher();
               };
               control.on('toggled', evt => {
-                //array that listen al layer
-                let unwatchlayers = [];
-                let vm = new Vue();
                 // toggled
                 if (evt.target.isToggled()) {
+                  vm = new Vue();
                   const layers = getMapLayersByFilter(layersFilterObject, condition);
                   // no layer are filtrable in current toc state
                   if (layers.length === 0) {
@@ -946,7 +950,7 @@ proto._setupControls = function() {
                     allLayersFiltrable.forEach(layer =>{
                       const unwatchlayer = vm.$watch(()=> layer.state, ()=>{
                           const layers = getMapLayersByFilter(layersFilterObject, condition);
-                          layers.length === 0 &&  noLayerToQuery({
+                          layers.length === 0 && noLayerToQuery({
                             vm,
                             unwatchlayers
                           });
@@ -957,12 +961,8 @@ proto._setupControls = function() {
                         unwatchlayers.push(unwatchlayer);
                       })
                     }
-                } else {
-                  vm = null;
-                  unwatchlayers = null;
-                }
+                } else cleanUpWatcher()
               });
-
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
                 const bbox = e.extent;

@@ -52,6 +52,8 @@ const InteractionControl = function(options={}) {
   Control.call(this, options);
   // create an help message
   this._help && this._createModalHelp();
+  // if we want to create a button (as info on hover)
+  //this._createToolOnHoverButton();
 };
 
 ol.inherits(InteractionControl, Control);
@@ -87,12 +89,9 @@ proto._showModalHelp = function() {
     title: t(this._help.title),
     message: t(this._help.message),
   });
-
 };
 
 proto.showToggledTool = function(show=true){
-  let unwatch;
-  let vm;
   if (show){
     GUI.showUserMessage({
       title: '',
@@ -103,7 +102,6 @@ proto.showToggledTool = function(show=true){
         body: this.toggledTool
       }
     });
-
   } else GUI.closeUserMessage();
 };
 
@@ -122,6 +120,19 @@ proto._createModalHelp = function() {
     });
     $(this.element).hover(() => this._helpButton.show());
     $(this.element).mouseleave(() => this._helpButton.hide());
+  }
+};
+
+proto._createToolOnHoverButton = function(){
+  if (this._onhover) {
+    this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
+    $(this.element).prepend(this._toolButton);
+    this._toolButton.on('click', event => {
+      event.stopPropagation();
+      this.showToggledTool(true);
+    });
+    $(this.element).hover(() => this._toggled && this._toolButton.show());
+    $(this.element).mouseleave(() => this._toolButton.hide());
   }
 };
 
@@ -161,13 +172,15 @@ proto.toggle = function(toggle) {
   toggle = toggle !== undefined ? toggle : !this._toggled;
   this._toggled = toggle;
   if (toggle) {
-    //this._help && this._showModalHelp();
     this._interaction && this._interaction.setActive(true);
     this.addClassToControlBottom('g3w-ol-toggled');
+    this._toolButton && this._toolButton.show();
   } else {
     this._help && this._helpButton.hide();
     this._interaction && this._interaction.setActive(false);
     this.removeClassToControlBottom('g3w-ol-toggled');
+    this._toolButton && this._toolButton.hide();
+    this.toggledTool && this.showToggledTool(false);
   }
   this.toggledTool && this.showToggledTool(this._toggled);
   this.dispatchEvent('toggled', toggle);
