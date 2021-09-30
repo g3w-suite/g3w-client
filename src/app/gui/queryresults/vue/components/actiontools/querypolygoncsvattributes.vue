@@ -58,18 +58,5 @@
     border-radius: 3px;
     border: 1px solid #f4f4f4;
   }
-  .g3w-polygonattributes-types-radio{
-    display: flex;
-    flex-direction: column;
-  }
-  .g3w-polygonattributes-types-radio label{
-    font-size: 1em !important;
-    font-weight: normal !important;
-  }
-  .g3w-polygonattributes-buttons{
-    display: flex;
-    justify-content: flex-end;
-  }
-
 
 </style>
