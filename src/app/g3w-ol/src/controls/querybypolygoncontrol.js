@@ -17,7 +17,8 @@ const QueryByPolygonControl = function(options={}) {
     interactionClass: PickCoordinatesInteraction,
     spatialMethod,
     toggledTool:{
-      type: 'spatialMethod'
+      type: 'spatialMethod',
+      how: 'toggled' // or hover
     },
     onhover: true
   };

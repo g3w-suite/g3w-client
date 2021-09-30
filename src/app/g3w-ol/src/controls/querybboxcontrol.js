@@ -14,7 +14,8 @@ const QueryBBoxControl = function(options = {}){
     interactionClass: ol.interaction.DragBox,
     onhover: true,
     toggledTool:{
-      type: 'spatialMethod'
+      type: 'spatialMethod',
+      how: 'toggled' // or hover
     },
     spatialMethod
   };
