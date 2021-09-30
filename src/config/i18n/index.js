@@ -223,13 +223,13 @@ const translations = {
           },
           querybypolygon: {
             download: {
-              title: "Attributi associati alle features",
+              title: "Download attributi",
               choiches:{
                feature: {
                  label: "Solo features",
                },
                feature_polygon: {
-                 label: "Feature+Poligono Interrogazione",
+                 label: "Features+Poligono Interrogazione",
                }
               }
             },
@@ -679,13 +679,13 @@ const translations = {
           },
           querybypolygon: {
             download: {
-              title: "Attributes features",
+              title: "Attributes download",
               choiches:{
                 feature: {
                   label:"Features only",
                 },
                 feature_polygon: {
-                  label:"Feature+Query Polygon",
+                  label:"Features+Query Polygon",
                 }
               }
             },
@@ -1134,13 +1134,13 @@ const translations = {
           },
           querybypolygon: {
             download: {
-              title: "Attributes features",
+              title: "Attributes download",
               choiches:{
                 feature: {
                   label:"Features only",
                 },
                 feature_polygon: {
-                  label:"Feature+Query Polygon",
+                  label:"Features+Query Polygon",
                 }
               }
             },
@@ -1589,13 +1589,13 @@ const translations = {
           },
           querybypolygon: {
             download: {
-              title: "Attributes features",
+              title: "Attributes download",
               choiches:{
                 feature: {
                   label:"Features only",
                 },
                 feature_polygon: {
-                  label:"Feature+Query Polygon",
+                  label:"Features+Query Polygon",
                 }
               }
             },
