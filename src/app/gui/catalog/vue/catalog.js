@@ -93,7 +93,8 @@ const vueComponentOptions = {
     //show or not group toolbar
     showTocTools(){
       const {map_themes=[]} = this.project.state;
-      return map_themes.length > 1
+      const show = map_themes.length > 1;
+      return show;
     },
     project() {
       return this.state.prstate.currentProject
@@ -453,19 +454,22 @@ const vueComponentOptions = {
     });
 
     /**
+     * Visible change layer
+     */
+    CatalogEventHub.$on('treenodevisible', layer => {
+      const mapservice = GUI.getComponent('map').getService();
+      mapservice.emit('cataloglayervisible', layer);
+    });
+
+    /**
      * Eevent handle of select layer
      */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
       const mapservice = GUI.getComponent('map').getService();
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      if (!layer.isSelected()) {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
-        // emit signal of select layer from catalog
-        mapservice.emit('cataloglayerselected', layer);
-      } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
-        mapservice.emit('cataloglayerunselected', layer);
-      }
+      CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
+      // emit signal of select layer from catalog
+      mapservice.emit('cataloglayerselected', layer);
     });
 
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
@@ -632,6 +636,7 @@ Vue.component('tristate-tree', {
           parentGroup = parentGroup.parentGroup;
         }
       } else projectLayer.setVisible(false);
+      CatalogEventHub.$emit('treenodevisible', projectLayer);
     },
     toggleFilterLayer(){
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);

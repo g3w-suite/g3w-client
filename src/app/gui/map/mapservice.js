@@ -234,19 +234,10 @@ function MapService(options={}) {
 
   this._onCatalogSelectLayer = function(layer) {
     if (layer) {
-      const geometryType = layer.getGeometryType();
-      const querable = layer.isQueryable();
       for (let i = 0; i < this._mapControls.length; i++) {
         const mapcontrol = this._mapControls[i];
-        if (mapcontrol.control._onSelectLayer) {
-          if (mapcontrol.control.getGeometryTypes().indexOf(geometryType) !== -1) {
-            mapcontrol.control.setEnable(querable? layer.isVisible(): querable);
-            // listen changes
-            querable && this.on('cataloglayertoggled', _toggledLayer => {
-              if (layer === _toggledLayer) mapcontrol.control.setEnable(layer.isVisible())
-            })
-          } else mapcontrol.control.setEnable(false)
-        }
+        //is a function
+        if (mapcontrol.control.onSelectLayer) mapcontrol.control.onSelectLayer(layer);
       }
     }
   };
@@ -256,21 +247,6 @@ function MapService(options={}) {
   this._keyEvents.eventemitter.push({
     event: 'cataloglayerselected',
     listener: this._onCatalogSelectLayer
-  });
-
-  this._onCatalogUnSelectLayer = function() {
-    for (let i = 0; i< this._mapControls.length; i++) {
-      const mapcontrol = this._mapControls[i];
-      mapcontrol.control._onSelectLayer && mapcontrol.control.setEnable(false);
-      this.removeAllListeners('cataloglayertoggled')
-    }
-  };
-
-  this.on('cataloglayerunselected', this._onCatalogUnSelectLayer);
-
-  this._keyEvents.eventemitter.push({
-    event: 'cataloglayerunselected',
-    listener: this._onCatalogUnSelectLayer
   });
 
   const extraParamsSet = (extraParams, update) => {
@@ -616,12 +592,10 @@ proto.showAddLayerModal = function() {
 };
 
 proto._checkMapControls = function(){
-  this._changeMapMapControls.forEach(({control, getVisible=()=>{return true}}) =>{
-    this._setMapControlVisible({
-      control,
-      visible: getVisible()
-    })
-  })
+  this._changeMapMapControls.forEach(({control, getLayers}) => {
+    const layers = getLayers();
+    control.change(layers);
+  });
 };
 
 proto._setupControls = function() {
@@ -697,12 +671,9 @@ proto._setupControls = function() {
           break;
         case 'screenshot':
         case 'geoscreenshot':
-          //check if wms externl is on map. CORS PROBLEM
-          const findWmsExternal = this.getMapLayers().find(({layers=[]}) => {
-            return !!layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false)
-          });
-          if (!isMobile.any && !findWmsExternal) {
+          if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
+              layers: this.getMapLayers(),
               options: {
                 onclick: async () => {
                   // Start download show Image
@@ -742,6 +713,11 @@ proto._setupControls = function() {
                 }
               }
             });
+            const change = {
+              control,
+              getLayers: ()=> this.getMapLayers()
+            };
+            this._changeMapMapControls.push(change);
           }
           break;
         case 'scale':
@@ -795,9 +771,8 @@ proto._setupControls = function() {
                 FILTERABLE: true,
                 SELECTEDORALL: true
               }, condition);
-              return [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])];
+              return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
             };
-            //const spatialMethod = 'within';
             const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
               options: {
@@ -810,14 +785,11 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              this._changeMapMapControls.push({
+              const change = {
                 control,
-                getVisible: () => {
-                  const controlLayers = getControlLayers();
-                  return control.checkVisibile(controlLayers);
-                }
-              });
-
+                getLayers: getControlLayers
+              };
+              this._changeMapMapControls.push(change);
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
                 const coordinates = e.coordinates;
@@ -885,6 +857,7 @@ proto._setupControls = function() {
               layers.forEach(layer => layer.setTocHighlightable(true));
               return layers;
             };
+
             let controlLayers = getControlLayers();
             const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
@@ -898,71 +871,17 @@ proto._setupControls = function() {
               }
             });
             if (control) {
-              //array that listen al layer
-              let unwatchlayers = [];
-              let vm;
-              // get all filtrable layers in toc no based on selection or visibility
-              const allLayersFiltrable = getMapLayersByFilter({
-                FILTERABLE: true
-              }, condition);
-              this._changeMapMapControls.push({
+              const change = {
                 control,
-                getVisible: () => {
-                  controlLayers = getControlLayers();
-                  return control.checkVisible(controlLayers);
-                }
-              });
+                getLayers: getControlLayers
+              };
+              this._changeMapMapControls.push(change);
+              // get all filtrable layers in toc no based on selection or visibility
               const layersFilterObject = {
                 SELECTEDORALL: true,
                 FILTERABLE: true,
                 VISIBLE: true
               };
-              const cleanUpWatcher = () => {
-                unwatchlayers.forEach(unwatch => unwatch());
-                unwatchlayers.splice(0);
-                vm = null;
-              };
-              //method to clean up all things related to querybbox
-              const noLayerToQuery = ({vm, unwatchlayers=[]}={})=>{
-                GUI.closeUserMessage();
-                setTimeout(()=>{
-                  GUI.showUserMessage({
-                    type: "warning",
-                    message: 'sdk.mapcontrols.querybybbox.nolayers_visible'
-                  });
-                });
-                control.toggle();
-                cleanUpWatcher();
-              };
-              control.on('toggled', evt => {
-                // toggled
-                if (evt.target.isToggled()) {
-                  vm = new Vue();
-                  const layers = getMapLayersByFilter(layersFilterObject, condition);
-                  // no layer are filtrable in current toc state
-                  if (layers.length === 0) {
-                    noLayerToQuery({
-                      vm,
-                      unwatchlayers
-                    });
-                  } else {
-                    //loop throught all filtrable layers and listen all changes
-                    allLayersFiltrable.forEach(layer =>{
-                      const unwatchlayer = vm.$watch(()=> layer.state, ()=>{
-                          const layers = getMapLayersByFilter(layersFilterObject, condition);
-                          layers.length === 0 && noLayerToQuery({
-                            vm,
-                            unwatchlayers
-                          });
-                        },
-                        {
-                          deep: true
-                        });
-                        unwatchlayers.push(unwatchlayer);
-                      })
-                    }
-                } else cleanUpWatcher()
-              });
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
                 const bbox = e.extent;
@@ -1358,8 +1277,14 @@ proto._updateMapControlsLayout = function({width, height}={}) {
   }
 };
 
+/**
+ *
+ * @param control
+ * @param visible
+ * @private
+ */
 proto._setMapControlVisible = function({control, visible=true}) {
-   control && (visible && $(control.element).show() || $(control.element).hide());
+   control && control.setVisible(visible);
 };
 
 proto._addControlToMapControls = function(control, visible=true) {

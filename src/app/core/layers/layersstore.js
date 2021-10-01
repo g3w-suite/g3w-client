@@ -25,7 +25,7 @@ function LayersStore(config={}) {
       const layer = this.getLayerById(layerId);
     },
     setLayerSelected(layerId, selected) {
-      this.getLayers().forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
+      this.getLayers().forEach(layer => layer.state.selected = (layerId === layer.getId()) ? selected : false);
     },
     addLayers(layers) {
       layers.forEach(layer => this.addLayer(layer))
@@ -236,18 +236,13 @@ proto._getAllParentLayersId = function(layerstree, node) {
   return nodeIds;
 };
 
-proto.selectLayer = function(layerId){
-  this.setLayerSelected(layerId, true);
-};
-
-proto.unselectLayer = function(layerId) {
-  this.setLayerSelected(layerId, false);
+proto.selectLayer = function(layerId, selected){
+  this.setLayerSelected(layerId, selected);
 };
 
 proto.getProjection = function() {
   return this.config.projection;
 };
-
 
 proto.getExtent = function() {
   return this.config.extent;

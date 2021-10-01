@@ -1,7 +1,7 @@
 const { layout } = require('./utils');
 const Control = function(options={}) {
-  const name = options.name || "";
-  this._enabled = (options.enabled === false) ? false : true;
+  const {name="", visible=true, enabled=false} = options;
+  this._enabled = enabled;
   this.offline = options.offline !== undefined ? options.offline : true;
   this.name = name.split(' ').join('-').toLowerCase();
   this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
@@ -55,6 +55,7 @@ const Control = function(options={}) {
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
   $(options.element).on('click',buttonClickHandler);
   ol.control.Control.call(this, options);
+  this.setVisible(visible);
   this._postRender();
 };
 
@@ -170,22 +171,31 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-proto.setEnable = function(bool, toggled) {
+proto.setEnable = function(enabled, toggled=false) {
   const controlButton = $(this.element).find('button').first();
-  if (bool) {
+  if (enabled) {
     controlButton.removeClass('g3w-ol-disabled');
-    toggled && controlButton.addClass('g3w-ol-toggled');
   } else {
     controlButton.addClass('g3w-ol-disabled');
-    controlButton.removeClass('g3w-ol-toggled');
     this._interaction && this._interaction.setActive(false);
   }
-  this._enabled = bool;
+  this.toggle && this.toggle(toggled);
+  this._enabled = enabled;
 };
 
 proto.getEnable = function() {
   return this._enabled;
 };
+
+proto.setVisible = function(visible=true){
+  this._visible = visible;
+  $(this.element)[visible ? 'show': 'hide']();
+};
+
+proto.isVisible = function(){
+  return this._visible;
+};
+
 
 proto._postRender = function() {};
 

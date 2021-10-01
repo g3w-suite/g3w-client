@@ -5,6 +5,22 @@ const InteractionControl = require('./interactioncontrol');
 const QueryBBoxControl = function(options = {}){
   const {spatialMethod=SPATIALMETHODS[0]} = options;
   this._startCoordinate = null;
+  this.layers = options.layers || [];
+  const visible = this.checkVisible(this.layers);
+  options.visible = visible;
+  options.enabled = visible && this.checkEnabled(this.layers);
+  const vm = new Vue();
+  this.layers.forEach(layer => {
+    const {state} = layer;
+    vm.$watch(() =>  state.visible, visible =>{
+      if (state.selected && !visible){
+        this.setEnable(false);
+      } else {
+        const enabled = this.checkEnabled(this.layers);
+        this.setEnable(enabled);
+      }
+    })
+  });
   const _options = {
     offline: false,
     name: "querybbox",
@@ -12,6 +28,18 @@ const QueryBBoxControl = function(options = {}){
     label: options.label || "\ue902",
     clickmap: true, // set ClickMap
     interactionClass: ol.interaction.DragBox,
+    onSelectlayer(selectLayer){
+      const layers = this.layers;
+      const selected = selectLayer.isSelected();
+      if (selected) {
+        const findLayer = layers.find(layer => layer === selectLayer);
+        const enabled = findLayer && findLayer.isVisible() ? true: false;
+        this.setEnable(enabled, false);
+      } else {
+        const enabled = this.checkEnabled(layers);
+        this.setEnable(enabled);
+      }
+    },
     onhover: true,
     toggledTool:{
       type: 'spatialMethod',
@@ -20,8 +48,7 @@ const QueryBBoxControl = function(options = {}){
     spatialMethod
   };
   options = merge(options,_options);
-  const layers = options.layers || [];
-  options.visible = this.checkVisible(layers);
+
   InteractionControl.call(this, options);
 };
 
@@ -29,8 +56,22 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
+proto.change = function(layers=[]){
+  this.layers = layers;
+  const visible = this.checkVisible(layers);
+  this.setVisible(visible);
+  const enabled = this.checkEnabled(layers);
+  this.setEnable(enabled);
+};
+
 proto.checkVisible = function(layers=[]){
   return layers.length > 0;
+};
+
+proto.checkEnabled = function(layers=[]){
+  return layers.length > 0 && layers.reduce((accumulator, layer) => {
+    return accumulator || layer.isVisible();
+  }, false);
 };
 
 proto.setMap = function(map) {

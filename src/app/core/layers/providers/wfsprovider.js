@@ -1,4 +1,4 @@
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit, toRawType } = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -29,6 +29,15 @@ proto.query = function(options={}, params = {}) {
         layer: reproject ? this._layer.getProjection(): null
       };
       const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);
+      featuresForLayers.forEach(featuresForLayer => {
+        const {features=[]} = featuresForLayer;
+        //sanitize in case of nil:true
+        features.forEach(feature => {
+          Object.entries(feature.getProperties()).forEach(([attribute, value])=>{
+            if (toRawType(value) === 'Object' && value['xsi:nil'])feature.set(attribute, 'NULL');
+          })
+        })
+      })
       d.resolve({
         data: featuresForLayers
       });

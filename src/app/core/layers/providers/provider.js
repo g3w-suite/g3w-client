@@ -85,9 +85,9 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
       break;
     case 'application/vnd.ogc.gml':
     default:
-      //IN CASE OF application/vnd.ogc.gml alway pass to qgisserver
+      //IN CASE OF application/vnd.ogc.gml always pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-      response =  this._handleXMLStringResponseBeforeConvertToJSON({
+      response = this._handleXMLStringResponseBeforeConvertToJSON({
         layers,
         response,
         wms
@@ -264,7 +264,7 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
             projections
           })
         } else {
-          featureMemberArrayAndPrefix.features.forEach((feature) => {
+          featureMemberArrayAndPrefix.features.forEach(feature => {
             //for Each element have to add and object contain layerName and information, and __prefix
             jsonresponse.FeatureCollection.featureMember.push({
               [layerName]: feature,
@@ -398,7 +398,7 @@ proto._transformFeatures = function(features, projections) {
       const mainProjection = projections.layer ? projections.layer : projections.map;
       const invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
       if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
-        features.forEach((feature) => {
+        features.forEach(feature => {
           const geometry = feature.getGeometry();
           feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
         })

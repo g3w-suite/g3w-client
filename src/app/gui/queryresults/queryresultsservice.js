@@ -379,22 +379,37 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       });
       // check number of download formats
       const layerDownloadFormats = Object.entries(layer.download).filter(([format, download]) => download);
+      const toggled = {};
+      layer.features.map((feature, index)=> {
+        toggled[index] = false; // SET INITIAL TOGGLED TO FALSE
+      });
+      const state = Vue.observable({
+        toggled
+      });
       if (layerDownloadFormats.length === 1) {
         const [format] = layerDownloadFormats[0];
+        const cbk = this.downloadFeatures.bind(this, format);
+        layer[format] = Vue.observable({
+          active: false
+        });
         this.state.layersactions[layer.id].push({
           id: `download_${format}_feature`,
           download: true,
+          state,
           class: GUI.getFontClass('download'),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: this.downloadFeatures.bind(this, format)
+          cbk: (layer, feature, action, index)=>{
+            action.state.toggled[index] = !action.state.toggled[index];
+            if (action.state.toggled[index]) cbk(layer, feature, action, index);
+            else this.setCurrentActionLayerFeatureTool({
+              index,
+              layer
+            })
+          }
         });
       } else if (layerDownloadFormats.length > 1 ){
         // SET COSTANT TO AVOID TO CHANGE ALL THINGS
         const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
-        const toggled = {};
-        layer.features.map((feature, index)=> {
-          toggled[index] = false; // SET INITIAL TOGGLED TO FALSE
-        });
         const actions = [];
         DOWNLOAD_FEATURE_FORMATS.forEach(format => {
           layer.download[format] && actions.push({
@@ -422,9 +437,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           id: `downloads`,
           download: true,
           class: GUI.getFontClass('download'),
-          state: Vue.observable({
-            toggled
-          }),
+          state,
           hint: `Downloads`,
           change({features}){
             features.forEach((feature, index)=>{
@@ -1167,15 +1180,31 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
     }).finally(()=>{
       ApplicationService.setDownload(false, download_caller_id);
       GUI.setLoadingContent(false);
-      if (features.length > 1) layer[DownloadFormats.name].active = false;
+      const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+      if (features.length > 1) {
+        if (downloadsactions === undefined) {
+          layer[type].active = false;
+          this.setLayerActionTool({
+            layer
+          })
+        }
+        else layer[DownloadFormats.name].active = false;
+      }
       else {
-        const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-        downloadsactions.state.toggled[index] = false;
+        if (downloadsactions === undefined) {
+          action.state.toggled[index] = false;
+          this.setCurrentActionLayerFeatureTool({
+            index,
+            layer
+          });
+        } else downloadsactions.state.toggled[index] = false;
       }
     })
   };
 
   if (query.type === 'polygon'){
+    //check if multidownload i present
+    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
     const {fid, layer:polygonLayer} = query;
     const config = {
       choices: [
@@ -1204,6 +1233,9 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       }
     };
     if (features.length === 1) {
+      if (downloadsactions === undefined) {
+        action.state.toggled[index] = true;
+      }
       this.state.actiontools[QueryPolygonCsvAttributesComponent.name] = this.state.actiontools[layerId] || {};
       this.state.actiontools[QueryPolygonCsvAttributesComponent.name][layerId] = config;
       this.setCurrentActionLayerFeatureTool({
@@ -1212,11 +1244,24 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
         component: QueryPolygonCsvAttributesComponent
       });
     } else {
-      this.setLayerActionTool({
-        layer,
-        component: QueryPolygonCsvAttributesComponent,
-        config
-      });
+      if (downloadsactions === undefined) {
+        layer[type].active = !layer[type].active;
+        if (layer[type].active) {
+          this.setLayerActionTool({
+            layer,
+            component: QueryPolygonCsvAttributesComponent,
+            config
+          });
+        } else this.setLayerActionTool({
+          layer
+        })
+      } else {
+        this.setLayerActionTool({
+          layer,
+          component: QueryPolygonCsvAttributesComponent,
+          config
+        });
+      }
     }
   } else runDownload();
 };

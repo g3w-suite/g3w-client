@@ -2,17 +2,35 @@ import {SPATIALMETHODS} from '../constants';
 const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-const { getAllPolygonGeometryTypes } = require('core/geometry/geometry');
+const {getAllPolygonGeometryTypes} = require('core/geometry/geometry');
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {
   const {spatialMethod=SPATIALMETHODS[0]} = options;
+  this.layers = options.layers || [];
+  const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
+  const vm = new Vue();
+  polygonLayers.forEach(layer => {
+    const {state} = layer;
+    vm.$watch(() =>  state.visible, visible => this.setEnable(visible));
+  });
+  options.visible = this.checkVisibile(this.layers);
   const _options = {
     offline: false,
     name: "querybypolygon",
     tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
-    onselectlayer: true,
+    // function to get selection layer
+    onSelectlayer(selectedLayer){
+      const selected = selectedLayer.isSelected();
+      const geometryType = selectedLayer.getGeometryType();
+      const querable = selectedLayer.isQueryable();
+      if (selected){
+        if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
+          this.setEnable(querable ? selectedLayer.isVisible(): querable);
+        } else this.setEnable(false, false);
+      } else this.setEnable(false, false);
+    },
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
     spatialMethod,
@@ -23,15 +41,22 @@ const QueryByPolygonControl = function(options={}) {
     onhover: true
   };
   options = merge(options,_options);
-  const layers = options.layers || [];
-  options.visible = this.checkVisibile(layers);
   options.geometryTypes = VALIDGEOMETRIES;
   InteractionControl.call(this, options);
+  //starting disabled
+  this.setEnable(false);
 };
 
 ol.inherits(QueryByPolygonControl, InteractionControl);
 
 const proto = QueryByPolygonControl.prototype;
+
+proto.change = function(layers=[]){
+  this.layers = layers;
+  const visible = this.checkVisibile(layers);
+  this.setVisible(visible);
+  this.setEnable(false);
+};
 
 proto.checkVisibile = function(layers) {
   let visible;

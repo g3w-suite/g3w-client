@@ -4,8 +4,8 @@ const Control = require('./control');
 const GUI = require('gui/gui');
 
 const InteractionControl = function(options={}) {
-  const {visible=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onselectlayer=false, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
+  const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
+    geometryTypes=[], onSelectlayer, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
@@ -13,7 +13,7 @@ const InteractionControl = function(options={}) {
   this._interaction = null;
   this._autountoggle = autountoggle;
   this._geometryTypes = geometryTypes; // array of types geometries
-  this._onSelectLayer = onselectlayer;
+  this.onSelectLayer = onSelectlayer;
   this._onhover = onhover;
   this._help = help;
   this._helpButton; // used to show help info button
@@ -24,10 +24,13 @@ const InteractionControl = function(options={}) {
   this._interactionClassOptions = interactionClassOptions;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
+  //this.setEnable(enabled);
   // create an help message
   this._help && this._createModalHelp();
   // create tool
   toggledTool && this.createControlTool(toggledTool);
+  ///se enabled
+  this.setEnable(enabled)
 };
 
 ol.inherits(InteractionControl, Control);
@@ -47,14 +50,6 @@ proto.enable = function(){
 
 proto.disable = function(){
   $(this.element).addClass('g3w-disabled');
-};
-
-proto.isVisible = function() {
-  return this._visible
-};
-
-proto.setVisible = function(bool) {
-  this._visible = bool;
 };
 
 proto.createControlTool = function(toggledTool={}){
@@ -96,7 +91,7 @@ proto.createControlTool = function(toggledTool={}){
       this.toggledTool = component;
       break;
     // if we want to create a button (as info on hover)
-  };
+  }
   switch (how) {
     case 'hover':
       this._createToolOnHoverButton();
@@ -211,10 +206,6 @@ proto.setGeometryTypes = function(types) {
   this._geometryTypes = types;
 };
 
-proto.onSelectLayer = function() {
-  return this._onSelectLayer;
-};
-
 proto.setMap = function(map) {
   Control.prototype.setMap.call(this, map);
   if (!this._interaction && this._interactionClass) {
@@ -246,6 +237,19 @@ proto.setSpatialMethod = function(method='intersects'){
 
 proto.getSpatialMethod = function(){
   return this.spatialMethod;
+};
+
+proto.setLayers = function(layers=[]){
+  this.layers = layers;
+};
+
+/**
+ * called when project change
+ * @param layers
+ */
+proto.change = function(layers=[]){
+  console.log('qui')
+  //to owerwite to each control
 };
 
 module.exports = InteractionControl;

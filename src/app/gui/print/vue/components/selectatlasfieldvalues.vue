@@ -53,10 +53,13 @@
     async mounted(){
       await this.$nextTick();
       let {field_name:field, qgs_layer_id:layerId} = this.atlas;
+      setTimeout(()=>{
+
+      });
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
-        dropdownParent: $('.g3w-search-form:visible'),
+        dropdownParent: $(this.$el),
         minimumInputLength: 1,
         ajax: {
           delay: 500,

@@ -15,7 +15,7 @@ proto.setMap = function(map) {
 
 proto.toggle = function(toggle) {
   InteractionControl.prototype.toggle.call(this, toggle);
-  if (!this.isToggled()) {
+  if (!this.isToggled() && this.getIteraction()) {
     //clean of the measure control if it was activated
     this.getIteraction().clear();
   }
