@@ -8,12 +8,9 @@ const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 const QueryByPolygonControl = function(options={}) {
   const {spatialMethod=SPATIALMETHODS[0]} = options;
   this.layers = options.layers || [];
-  const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
-  const vm = new Vue();
-  polygonLayers.forEach(layer => {
-    const {state} = layer;
-    vm.$watch(() =>  state.visible, visible => this.setEnable(visible));
-  });
+  this.vm = new Vue();
+  this.unwatches = [];
+  this.listenPolygonLayersChange();
   options.visible = this.checkVisibile(this.layers);
   const _options = {
     offline: false,
@@ -51,11 +48,22 @@ ol.inherits(QueryByPolygonControl, InteractionControl);
 
 const proto = QueryByPolygonControl.prototype;
 
+proto.listenPolygonLayersChange = function(){
+  this.unwatches.forEach(unwatch => unwatch());
+  this.unwatches.splice(0);
+  const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
+  polygonLayers.forEach(layer => {
+    const {state} = layer;
+    this.unwatches.push(this.vm.$watch(() =>  state.visible, visible => this.setEnable(visible)));
+  });
+};
+
 proto.change = function(layers=[]){
   this.layers = layers;
   const visible = this.checkVisibile(layers);
   this.setVisible(visible);
   this.setEnable(false);
+  this.listenPolygonLayersChange();
 };
 
 proto.checkVisibile = function(layers) {

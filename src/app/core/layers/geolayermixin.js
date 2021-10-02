@@ -171,6 +171,18 @@ proto._sanitizeSourceUrl = function(type='wms'){
   this.config.source.url = sanitizedUrl;
 };
 
+proto.isLayerCheckedAndAllParents = function(){
+  let checked = this.isChecked();
+  if (checked) {
+    let parentGroup = this.state.parentGroup;
+    while(checked && parentGroup){
+      checked = checked && parentGroup.checked;
+      parentGroup = parentGroup.parentGroup;
+    }
+  }
+  return checked;
+};
+
 proto.setChecked = function(bool) {
   this.state.checked = bool;
 };
@@ -203,7 +215,7 @@ proto.isDisabled = function() {
 };
 
 proto.isPrintable = function({scale}={}) {
-  return this.isChecked() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
+  return this.isLayerCheckedAndAllParents() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
 };
 
 //get style form layer

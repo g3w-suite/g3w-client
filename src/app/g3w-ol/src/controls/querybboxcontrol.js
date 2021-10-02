@@ -9,18 +9,9 @@ const QueryBBoxControl = function(options = {}){
   const visible = this.checkVisible(this.layers);
   options.visible = visible;
   options.enabled = visible && this.checkEnabled(this.layers);
-  const vm = new Vue();
-  this.layers.forEach(layer => {
-    const {state} = layer;
-    vm.$watch(() =>  state.visible, visible =>{
-      if (state.selected && !visible){
-        this.setEnable(false);
-      } else {
-        const enabled = this.checkEnabled(this.layers);
-        this.setEnable(enabled);
-      }
-    })
-  });
+  this.vm = new Vue();
+  this.unwatches = [];
+  this.listenLayersVisibleChange();
   const _options = {
     offline: false,
     name: "querybbox",
@@ -56,12 +47,29 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
+proto.listenLayersVisibleChange = function(){
+  this.unwatches.forEach(unwatch => unwatch());
+  this.unwatches.splice(0);
+  this.layers.forEach(layer => {
+    const {state} = layer;
+    this.unwatches.push(this.vm.$watch(() =>  state.visible, visible =>{
+      if (state.selected && !visible){
+        this.setEnable(false);
+      } else {
+        const enabled = this.checkEnabled(this.layers);
+        this.setEnable(enabled);
+      }
+    }))
+  });
+};
+
 proto.change = function(layers=[]){
   this.layers = layers;
   const visible = this.checkVisible(layers);
   this.setVisible(visible);
   const enabled = this.checkEnabled(layers);
   this.setEnable(enabled);
+  this.listenLayersVisibleChange(this.layers);
 };
 
 proto.checkVisible = function(layers=[]){
