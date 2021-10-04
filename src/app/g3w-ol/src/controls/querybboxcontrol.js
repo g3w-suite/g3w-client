@@ -1,4 +1,4 @@
-import {SPATIALMETHODS} from '../constants';
+import {SPATIALMETHODS, VM} from '../constants';
 const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 
@@ -9,7 +9,6 @@ const QueryBBoxControl = function(options = {}){
   const visible = this.checkVisible(this.layers);
   options.visible = visible;
   options.enabled = visible && this.checkEnabled(this.layers);
-  this.vm = new Vue();
   this.unwatches = [];
   this.listenLayersVisibleChange();
   const _options = {
@@ -52,7 +51,7 @@ proto.listenLayersVisibleChange = function(){
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
     const {state} = layer;
-    this.unwatches.push(this.vm.$watch(() =>  state.visible, visible =>{
+    this.unwatches.push(VM.$watch(() =>  state.visible, visible =>{
       if (state.selected && !visible){
         this.setEnable(false);
       } else {

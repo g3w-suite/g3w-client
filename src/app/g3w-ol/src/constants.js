@@ -1,1 +1,4 @@
+//SPATIAL METHODS USED TO FIND FEATURES
 export const SPATIALMETHODS = ['intersects', 'within'];
+// MAN VUE INSTANCE USED TO WATCH OBJECT CHANGES OR TO EMIT EVENTS
+export const VM = new Vue();

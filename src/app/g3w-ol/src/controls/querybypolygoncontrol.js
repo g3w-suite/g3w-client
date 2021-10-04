@@ -1,4 +1,4 @@
-import {SPATIALMETHODS} from '../constants';
+import {SPATIALMETHODS, VM} from '../constants';
 const {merge} = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
@@ -8,7 +8,6 @@ const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 const QueryByPolygonControl = function(options={}) {
   const {spatialMethod=SPATIALMETHODS[0]} = options;
   this.layers = options.layers || [];
-  this.vm = new Vue();
   this.unwatches = [];
   this.listenPolygonLayersChange();
   options.visible = this.checkVisibile(this.layers);
@@ -54,7 +53,10 @@ proto.listenPolygonLayersChange = function(){
   const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
   polygonLayers.forEach(layer => {
     const {state} = layer;
-    this.unwatches.push(this.vm.$watch(() =>  state.visible, visible => this.setEnable(visible)));
+    this.unwatches.push(VM.$watch(() =>  state.visible, visible => {
+      // need to be visible or selected
+      this.setEnable(visible && state.selected);
+    }));
   });
 };
 
