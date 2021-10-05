@@ -18,6 +18,9 @@ const SelectInput = Vue.extend({
   computed:{
     showNullOption(){
       return this.state.nullOption === undefined || this.state.nullOption === true;
+    },
+    disabled(){
+      return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
     }
   },
   watch: {
