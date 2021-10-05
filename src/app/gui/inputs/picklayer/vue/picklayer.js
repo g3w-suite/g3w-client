@@ -14,7 +14,6 @@ const PickLayerInput = Vue.extend({
     }
   },
   created() {
-    console.log(this.state.input)
     this.pickservice = new Service(this.state.input.options)
   },
   beforeDestroy() {
