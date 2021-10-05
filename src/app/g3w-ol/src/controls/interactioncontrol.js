@@ -30,7 +30,8 @@ const InteractionControl = function(options={}) {
   // create tool
   toggledTool && this.createControlTool(toggledTool);
   ///se enabled
-  this.setEnable(enabled)
+  this.setEnable(enabled);
+  toggled && this.toggle(toggled);
 };
 
 ol.inherits(InteractionControl, Control);
