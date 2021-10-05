@@ -248,7 +248,6 @@ proto.setLayers = function(layers=[]){
  * @param layers
  */
 proto.change = function(layers=[]){
-  console.log('qui')
   //to owerwite to each control
 };
 
