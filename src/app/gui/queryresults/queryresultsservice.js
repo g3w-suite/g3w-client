@@ -298,7 +298,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       const currentactiontoolslayer = {};
       layer.features.forEach((feature, index)=> currentactiontoolslayer[index] = null);
       this.state.currentactiontools[layer.id] = Vue.observable(currentactiontoolslayer);
-      const is_external_layer_or_wms = layer.external || layer.source ? layer.source.type === 'wms' : false;
+      const is_external_layer_or_wms = layer.external || (layer.source ? layer.source.type === 'wms' : false);
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
       /**
        * An action is an object contains
