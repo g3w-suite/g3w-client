@@ -97,7 +97,7 @@ const AppUI = Vue.extend({
       const flagsurl = `${this.staticurl}img/flags`;
       const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
             <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
-            <span>${state.text}</span> 
+            <span style="margin-left: 5px;">${state.text}</span> 
           </span>`
       );
       return $state;

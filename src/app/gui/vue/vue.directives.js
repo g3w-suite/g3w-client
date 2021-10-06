@@ -306,6 +306,7 @@ const GlobalDirective = {
       inserted(el, binding, vnode){
         const { templateResult, templateSelection, search=true} = vnode.data.attrs || {};
         vnode.context._select2 = $(el).select2({
+          width: '100%',
           dropdownCssClass: 'skin-color',
           templateResult,
           templateSelection,

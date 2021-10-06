@@ -1,4 +1,5 @@
 import ApplicationState from 'core/applicationstate';
+import {DOWNLOAD_FORMATS} from './../../constant';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -642,6 +643,15 @@ proto.getSourceType = function() {
 proto.isDownloadable = function(){
   return this.isShpDownlodable() || this.isXlsDownlodable() ||
     this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
+};
+
+proto.getDownloadableFormats = function(){
+  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
+};
+
+proto.getDownloadUrl = function(format){
+  const find = Object.values(DOWNLOAD_FORMATS).find(download_format => download_format.format === format);
+  return find && find.url;
 };
 
 proto.isShpDownlodable = function() {
