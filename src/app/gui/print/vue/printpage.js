@@ -1,9 +1,9 @@
+import {TIMEOUT} from "../../../constant";
 import { createCompiledTemplate } from 'gui/vue/utils'
 const {inherit, base, imageToDataURL} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
-const TIMEOUT = 60000;
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,

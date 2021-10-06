@@ -1,4 +1,5 @@
 import appConfig from 'config';
+import {TIMEOUT} from "../constant";
 import ApplicationState from './applicationstate';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
 const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
@@ -11,9 +12,6 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
-//timeout value
-const TIMEOUT = 60000; // 1 minute
-
 //Manage Application
 const ApplicationService = function() {
   let production = false;

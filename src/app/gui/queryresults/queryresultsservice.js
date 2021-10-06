@@ -504,6 +504,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
        */
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'link_zoom_to_fid',
+        download: false,
         class: GUI.getFontClass('link'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
@@ -1162,7 +1163,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
    * is a function that che be called in case of queryby polygon
    * @param active
    */
-  const runDownload = (active=false) => {
+  const runDownload = async (active=false) => {
     if (features.length > 1) {
       layer[DownloadFormats.name].active = active;
       this.setLayerActionTool({
@@ -1172,34 +1173,36 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
     const projectLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     const download_caller_id = ApplicationService.setDownload(true);
     GUI.setLoadingContent(true);
-    const promise = projectLayer.getDownloadFilefromDownloadDataType(type, {
-      data
-    }) || Promise.resolve();
-    promise.catch(err => {
-      GUI.notify.error(t("info.server_error"));
-    }).finally(()=>{
-      ApplicationService.setDownload(false, download_caller_id);
-      GUI.setLoadingContent(false);
-      const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-      if (features.length > 1) {
-        if (downloadsactions === undefined) {
-          layer[type].active = false;
-          this.setLayerActionTool({
-            layer
-          })
-        }
-        else layer[DownloadFormats.name].active = false;
+    let timeoutEvent;
+    try {
+      await projectLayer.getDownloadFilefromDownloadDataType(type, {
+        data
+      }) || Promise.resolve();
+    } catch(err){
+      GUI.notify.error(err || t("info.server_error"));
+    }
+    clearTimeout(timeoutEvent);
+    ApplicationService.setDownload(false, download_caller_id);
+    GUI.setLoadingContent(false);
+    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+    if (features.length > 1) {
+      if (downloadsactions === undefined) {
+        layer[type].active = false;
+        this.setLayerActionTool({
+          layer
+        })
       }
-      else {
-        if (downloadsactions === undefined) {
-          action.state.toggled[index] = false;
-          this.setCurrentActionLayerFeatureTool({
-            index,
-            layer
-          });
-        } else downloadsactions.state.toggled[index] = false;
-      }
-    })
+      else layer[DownloadFormats.name].active = false;
+    }
+    else {
+      if (downloadsactions === undefined) {
+        action.state.toggled[index] = false;
+        this.setCurrentActionLayerFeatureTool({
+          index,
+          layer
+        });
+      } else downloadsactions.state.toggled[index] = false;
+    }
   };
 
   if (query.type === 'polygon'){

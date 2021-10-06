@@ -1,3 +1,4 @@
+import {TIMEOUT} from "../../constant";
 import {EXPRESSION_OPERATORS} from '../layers/filter/operators'
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
@@ -429,15 +430,22 @@ const utils = {
       return string;
     },
     fileDownload({url, data, httpMethod="POST"} = {}) {
+      let timeoutId;
       return new Promise((resolve, reject) => {
-        $.fileDownload(url, {
+        const downloadPromise = $.fileDownload(url, {
           httpMethod,
-          data,
-        }).done(()=>{
-          resolve()
-        }).fail(()=>{
-          reject()
-        })
+          data
+        });
+        timeoutId = setTimeout(()=>{
+          reject('Timeout');
+          downloadPromise.abort();
+        }, TIMEOUT);
+        downloadPromise
+          .done(()=>resolve())
+          .fail(()=> reject())
+          .always(()=>{
+            clearTimeout(timeoutId)
+          });
       })
     }
   },
