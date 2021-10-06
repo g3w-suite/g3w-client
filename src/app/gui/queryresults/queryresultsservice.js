@@ -1173,7 +1173,6 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
     const projectLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     const download_caller_id = ApplicationService.setDownload(true);
     GUI.setLoadingContent(true);
-    let timeoutEvent;
     try {
       await projectLayer.getDownloadFilefromDownloadDataType(type, {
         data
@@ -1181,7 +1180,6 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
     } catch(err){
       GUI.notify.error(err || t("info.server_error"));
     }
-    clearTimeout(timeoutEvent);
     ApplicationService.setDownload(false, download_caller_id);
     GUI.setLoadingContent(false);
     const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
@@ -1195,13 +1193,12 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       else layer[DownloadFormats.name].active = false;
     }
     else {
-      if (downloadsactions === undefined) {
-        action.state.toggled[index] = false;
-        this.setCurrentActionLayerFeatureTool({
-          index,
-          layer
-        });
-      } else downloadsactions.state.toggled[index] = false;
+      if (downloadsactions === undefined) action.state.toggled[index] = false;
+      else downloadsactions.state.toggled[index] = false;
+      this.setCurrentActionLayerFeatureTool({
+        index,
+        layer
+      });
     }
   };
 
