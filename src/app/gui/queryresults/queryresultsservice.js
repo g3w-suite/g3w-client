@@ -410,9 +410,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       } else if (layerDownloadFormats.length > 1 ){
         // SET COSTANT TO AVOID TO CHANGE ALL THINGS
         const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
-        const actions = [];
+        const downloads = [];
         DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-          layer.download[format] && actions.push({
+          layer.download[format] && downloads.push({
             id: `download_${format}_feature`,
             download: true,
             format,
@@ -430,7 +430,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] = this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] || {};
         // set config of actionstools
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS][layer.id] = {
-          actions // ARE DOWNLOAD ACTIONS,
+          downloads // ARE DOWNLOAD ACTIONS,
         };
         //check if has download actions
         this.state.layersactions[layer.id].push({

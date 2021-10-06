@@ -31,7 +31,7 @@ module.exports = {
       downloadLayer: {
         state: null,
         config: {
-          actions:[]
+          downloads:[]
         }
       }
     }
@@ -134,7 +134,7 @@ module.exports = {
         handler: downloadformatsLength > 1 ? async ()=> {
           this.downloadButton.toggled = !this.downloadButton.toggled;
           this.downloadLayer.state = this.downloadLayer.state || layer.state;
-          this.downloadLayer.config.actions = this.downloadLayer.config.actions.length ? this.downloadLayer.config.actions : downloadformats.map(format =>(
+          this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
             {
               id: format,
               format,
