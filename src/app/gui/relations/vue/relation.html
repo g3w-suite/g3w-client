@@ -4,24 +4,23 @@
       <span v-t="'sdk.relations.back_to_relations'"><i :class="g3wtemplate.getFontClass('arrow-left')" style="margin-right: 5px;"></i></span>
     </span>
   </div>
-  <div class="header">
+  <div class="header" ref="relation-header">
     <div style="width: 100%; display: flex; justify-content: space-between;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}"  style="display: flex; justify-content: space-between; align-items: center;">
       <span class="relation-tile">
         <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
       </span>
       <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.1em; margin-bottom: 3px">
-          <span v-if="showDownloadButtons.shapefile" v-download class="action-button-icon action-button skin-tooltip-top" data-placement="top" data-toggle="tooltip"
-                :class="g3wtemplate.getFontClass('shapefile')" @click="saveRelation('shp')" v-t-tooltip.create="'sdk.tooltips.download_shapefile'"></span>
-        <span v-if="showDownloadButtons.gpx" v-download class="action-button-icon action-button skin-tooltip-top" data-placement="top" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('gpx')" v-download @click="saveRelation('gpx')" v-t-tooltip.create="'sdk.tooltips.download_gpx'"></span>
-        <span v-if="showDownloadButtons.csv" v-download class="action-button-icon action-button skin-tooltip-top" data-placement="top" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('csv')" @click="saveRelation('csv')" v-t-tooltip.create="'sdk.tooltips.download_csv'"></span>
-        <span v-if="showDownloadButtons.xls" v-download class="action-button-icon action-button skin-tooltip-top" data-placement="top" data-toggle="tooltip"
-              :class="g3wtemplate.getFontClass('excel')" @click="saveRelation('xls')" v-t-tooltip.create="'sdk.tooltips.download_xls'"></span>
+          <span v-if="downloadButton" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
+                :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip.create="downloadButton.tooltip"></span>
         <span v-if="showChartButton"  class="action-button-icon action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip"
               :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click="showChart" v-t-tooltip.create="'sdk.tooltips.show_chart'"></span>
       </div>
     </div>
+    <template v-if="headercomponent">
+      <div style="display: flex; margin-left: auto; margin-bottom: 5px; margin-right: 4px;">
+        <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"></component>
+      </div>
+    </template>
   </div>
   <div v-if="table.rows.length" style="display: flex; justify-content: space-between; margin-bottom: 5px" ref="relationwrapper">
     <div id="table_content" :style="{width: chart ? '70%' : '100%', marginRight: chart ? '8px' : '3px'}" style="position: relative" ref="tablecontent">

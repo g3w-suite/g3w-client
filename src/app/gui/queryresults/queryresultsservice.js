@@ -504,6 +504,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
        */
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'link_zoom_to_fid',
+        download: false,
         class: GUI.getFontClass('link'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
