@@ -22,22 +22,10 @@
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                 </span>
                   <!--        DOWNLOAD        -->
-                  <template v-if="Object.values(layer.download).filter(download => download).length <= 1">
-                  <span v-if="layer.download.shapefile" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.shapefile.active}" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_shapefile.hint'">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'shapefile')"></span>
-                  </span>
-                    <span v-if="layer.download.gpx" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.gpx.active}" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpx.hint'">
-                    <span class="action-button-icon"  :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'gpx')"></span>
-                  </span>
-                    <span v-if="layer.download.gpkg" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.gpkg.active}" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_gpkg.hint'">
-                    <span class="action-button-icon"  :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'gpkg')"></span>
-                  </span>
-                    <span v-if="layer.download.csv" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.csv.active}" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_csv.hint'">
-                    <span  class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'csv')"></span>
-                  </span>
-                    <span v-if="layer.download.xls" v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.xls.active}" v-t-tooltip="'sdk.mapcontrols.query.actions.download_features_xls.hint'">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, 'xls')"></span>
-                  </span>
+                  <template v-if="layer.downloads.length <= 1">
+                    <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
+                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, layer.downloads[0])"></span>
+                    </span>
                   </template>
                   <template v-else>
                    <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip="'Downloads'">

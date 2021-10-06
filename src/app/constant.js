@@ -13,9 +13,9 @@ export const DOWNLOAD_FORMATS = {
     format: 'shapefile',
     url: 'shp'
   },
-  download_xls: {
-    format: 'xls',
-    url: 'xls'
+  download_gpkg: {
+    format: 'gpkg',
+    url: 'gpkg'
   },
   download_gpx: {
     format: 'gpx',
@@ -25,10 +25,10 @@ export const DOWNLOAD_FORMATS = {
     format: 'csv',
     url: 'csv'
   },
-  download_gpkg: {
-    format: 'gpkg',
-    url: 'gpkg'
-  }
+  download_xls: {
+    format: 'xls',
+    url: 'xls'
+  },
 };
 
 export default {

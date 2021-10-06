@@ -139,7 +139,7 @@ module.exports = {
               id: format,
               format,
               cbk: () => {
-                this.saveRelation(format);
+                this.saveRelation(layer.getDownloadUrl(format));
                 this.headercomponent = null;
               },
               download: true

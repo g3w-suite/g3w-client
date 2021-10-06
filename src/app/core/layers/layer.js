@@ -646,7 +646,7 @@ proto.isDownloadable = function(){
 };
 
 proto.getDownloadableFormats = function(){
-  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format).sort();
+  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
 };
 
 proto.getDownloadUrl = function(format){
