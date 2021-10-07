@@ -62,6 +62,13 @@
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
+    <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
+      <span class="menu-icon" :class="g3wtemplate.getFontClass('info')"></span>
+      <span class="item-text" v-t="'Metadata'"></span>
+      <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: layerMenu.metadatainfoMenu.left +   'px' }">
+        <div class="layer-menu-metadata-info">{{layerMenu.layer.metadata.abstract}}</div>
+      </div>
+    </li>
     <li v-if="layerMenu.layer.geolayer && layerMenu.layer.styles" @mouseleave.self="showStylesMenu(false,$event)" @mouseover.self="showStylesMenu(true,$event)" class="menu-icon">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>

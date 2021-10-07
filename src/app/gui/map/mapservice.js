@@ -31,6 +31,7 @@ function MapService(options={}) {
   this.id = 'MapService';
   this.viewer = null;
   this.target = options.target || null;
+  this.layersCount = 0; // useful to set Zindex to layer order on map
   this.maps_container = options.maps_container || null;
   this._layersStoresEventKeys = {};
   this._keyEvents = {
@@ -68,7 +69,7 @@ function MapService(options={}) {
         return styles;
       }
     }),
-    selectionLayer:new ol.layer.Vector({
+    selectionLayer: new ol.layer.Vector({
       source: new ol.source.Vector(),
       style: feature => {
         let styles = [];
@@ -1583,6 +1584,29 @@ proto._setupViewer = function(width, height) {
   });
 
   this.viewer.map.addOverlay(this._marker);
+
+  /**
+   *
+   * Register map addLayer
+   *
+   */
+  this.viewer.map.getLayers().on('add', evt => {
+    const {element:layer} = evt;
+    const basemap =  layer.get('basemap');
+    const position = layer.get('position');
+    let zindex = basemap && 0;
+    if (position && position === 'bottom') zindex =  1;
+    this.setLayerZIndex({
+      layer,
+      zindex
+    })
+  });
+
+  this.viewer.map.getLayers().on('remove', evt => {
+    const {element:layer}= evt;
+    const layerZIndex = layer.getZIndex();
+    if (layerZIndex === this.layersCount) this.layersCount-=1;
+  })
 };
 
 proto.getMapUnits = function() {
@@ -1746,6 +1770,15 @@ proto.removeAllLayers = function(){
   this.viewer.removeLayers();
 };
 
+//set ad increase layerIndex
+proto.setLayerZIndex = function({layer, zindex=this.layersCount+=1}){
+  layer.setZIndex(zindex);
+};
+
+/**
+ * Add olLayer to mapLayer
+ * @param layer
+ */
 proto.addLayerToMap = function(layer) {
   const olLayer = layer.getOLLayer();
   olLayer && this.getMap().addLayer(olLayer);
@@ -2320,6 +2353,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     style,
     type,
     crs;
+  const {position='top'} = options;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
@@ -2366,6 +2400,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
         maxy: extent[3]
       };
       externalLayer.checked = true;
+      layer.set('position', position);
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);

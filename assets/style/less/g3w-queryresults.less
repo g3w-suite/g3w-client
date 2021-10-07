@@ -3,6 +3,16 @@
   .queryresults-container {
     height: 100%;
     overflow-y: auto;
+    position: relative;
+    .query-results-not-found{
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #ffffff;
+      border-radius: 3px;
+    }
     .sub-group .group > .row {
       margin-left: -2px;
       margin-right: -2px;

@@ -66,6 +66,12 @@ const vueComponentOptions = {
           style: null,
           default: null
         },
+        //metadataInfo
+        metadatainfoMenu: {
+          show: false,
+          top:0,
+          left: 0
+        }
       }
     }
   },
@@ -418,6 +424,16 @@ const vueComponentOptions = {
         await this.$nextTick();
       }
       this.layerMenu.stylesMenu.show = bool;
+    },
+    //showmetadatainfo
+    async showMetadataInfo(bool, evt){
+      if (bool) {
+        const elem = $(evt.target);
+        this.layerMenu.metadatainfoMenu.top = elem.offset().top;
+        this.layerMenu.metadatainfoMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        await this.$nextTick();
+      }
+      this.layerMenu.metadatainfoMenu.show = bool;
     },
     showColorMenu(bool, evt) {
       if (bool) {

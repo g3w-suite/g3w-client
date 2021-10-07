@@ -183,9 +183,10 @@ const AddLayerComponent = {
             color: this.layer.color,
             field: this.field
           }));
-          await this.service.addExternalLayer(this.vectorLayer,{
+          await this.service.addExternalLayer(this.vectorLayer, {
             crs: this.layer.crs,
-            type: this.layer.type
+            type: this.layer.type,
+            position: 'top'// <top or bottom>
           });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
