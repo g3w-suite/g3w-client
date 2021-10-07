@@ -15,8 +15,6 @@ const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
-// set formats for download single feature
-const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'gpkg', 'csv', 'xls'];
 
 function QueryResultsService() {
   this.printService = new PrintService();
@@ -378,7 +376,6 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         cbk: this.printAtlas.bind(this)
       });
       // check number of download formats
-      const layerDownloadFormats = Object.entries(layer.download).filter(([format, download]) => download);
       const toggled = {};
       layer.features.map((feature, index)=> {
         toggled[index] = false; // SET INITIAL TOGGLED TO FALSE
@@ -386,8 +383,8 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       const state = Vue.observable({
         toggled
       });
-      if (layerDownloadFormats.length === 1) {
-        const [format] = layerDownloadFormats[0];
+      if (layer.downloads.length === 1) {
+        const [format] = layer.downloads;
         const cbk = this.downloadFeatures.bind(this, format);
         layer[format] = Vue.observable({
           active: false
@@ -407,12 +404,12 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             })
           }
         });
-      } else if (layerDownloadFormats.length > 1 ){
+      } else if (layer.downloads.length > 1 ){
         // SET COSTANT TO AVOID TO CHANGE ALL THINGS
         const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
-        const actions = [];
-        DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-          layer.download[format] && actions.push({
+        const downloads = [];
+        layer.downloads.forEach(format => {
+          downloads.push({
             id: `download_${format}_feature`,
             download: true,
             format,
@@ -430,8 +427,10 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] = this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] || {};
         // set config of actionstools
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS][layer.id] = {
-          actions // ARE DOWNLOAD ACTIONS,
+          downloads // ARE DOWNLOAD ACTIONS,
         };
+        // used to
+        this.vm = new Vue();
         //check if has download actions
         this.state.layersactions[layer.id].push({
           id: `downloads`,
@@ -441,8 +440,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           hint: `Downloads`,
           change({features}){
             features.forEach((feature, index)=>{
-              const vm = new Vue();
-              if (this.state.toggled[index] === undefined) vm.$set(this.state.toggled, index, false);
+              if (this.state.toggled[index] === undefined) this.vm.$set(this.state.toggled, index, false);
               else this.state.toggled[index] = false;
             });
           },
@@ -570,6 +568,7 @@ proto.clear = function() {
       async: false
     }
   };
+  this.vm = null; //reset
   this.clearState();
 };
 
@@ -753,13 +752,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let extractRelations = false;
     let external = false;
     const layer = featuresForLayer.layer;
-    const download = {
-      shapefile: false,
-      gpx: false,
-      gpkg:false,
-      csv: false,
-      xls: false
-    };
+    let downloads = [];
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
@@ -770,11 +763,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         selection = layer.state.selection;
         extractRelations = true;
       }
-      download.shapefile = layer.isShpDownlodable();
-      download.gpx = layer.isGpxDownlodable();
-      download.gpkg = layer.isGpkgDownlodable();
-      download.csv = layer.isCsvDownlodable();
-      download.xls = layer.isXlsDownlodable();
+     downloads = layer.getDownloadableFormats();
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
@@ -840,7 +829,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       hasgeometry: false,
       atlas: this.getAtlasByLayerId(layerId),
       source,
-      download,
+      downloads,
       show: true,
       filter,
       addfeaturesresults: {

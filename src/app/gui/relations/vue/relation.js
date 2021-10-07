@@ -1,6 +1,7 @@
 import {G3W_FID} from 'constant';
 import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
+import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
@@ -24,7 +25,15 @@ module.exports = {
     return {
       feature: null,
       fields: null,
-      chart: false
+      chart: false,
+      headercomponent: null,
+      downloadButton: null,
+      downloadLayer: {
+        state: null,
+        config: {
+          downloads:[]
+        }
+      }
     }
   },
   computed: {
@@ -41,7 +50,7 @@ module.exports = {
       const tableHeight = $(".content").height();
       setTimeout(()=>{
         const datatatbleBody = $('.query-relation  div.dataTables_scrollBody');
-        const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $('.query_relation .header').height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
+        const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $(this.$refs['relation-header']).height() + $('#relationtable_filter').height() + $('.dataTables_scrollHead').height() + (this.isMobile() ? 20 : 0);
         datatatbleBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
         if (this.table.rowFormStructure) {
           const width = datatatbleBody.width() - 60;
@@ -51,7 +60,8 @@ module.exports = {
       relationDataTable && relationDataTable.columns.adjust();
     },
     saveRelation(type){
-      this.$emit('save-relation', type)
+      this.$emit('save-relation', type);
+      this.downloadButton.toggled = false;
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
@@ -104,6 +114,10 @@ module.exports = {
     async chart(){
       await this.$nextTick();
       this.resize();
+    },
+    async headercomponent(){
+      await this.$nextTick();
+      this.resize();
     }
   },
   beforeCreate() {
@@ -111,12 +125,30 @@ module.exports = {
   },
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-    this.showDownloadButtons = {
-      shapefile: layer.isShpDownlodable(),
-      gpx: layer.isGpxDownlodable(),
-      csv: layer.isCsvDownlodable(),
-      xls:layer.isXlsDownlodable(),
-    };
+    const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
+    const downloadformatsLength = downloadformats.length;
+    if (downloadformatsLength > 0){
+      this.downloadButton = {
+        toggled: false,
+        tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+        handler: downloadformatsLength > 1 ? async ()=> {
+          this.downloadButton.toggled = !this.downloadButton.toggled;
+          this.downloadLayer.state = this.downloadLayer.state || layer.state;
+          this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
+            {
+              id: format,
+              format,
+              cbk: () => {
+                this.saveRelation(layer.getDownloadUrl(format));
+                this.headercomponent = null;
+              },
+              download: true
+            })
+          );
+          this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
+        } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+      }
+    }
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     });

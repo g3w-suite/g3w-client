@@ -1,5 +1,6 @@
 const { inherit, base, downloadCSV} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const RelationsService = require('core/relations/relationsservice');
 
@@ -18,10 +19,19 @@ proto.getRelations = function(options={}) {
   return RelationsService.getRelations(options);
 };
 
-proto.saveRelations = function(type){
+proto.saveRelations = async function(type){
   this._options.type = type;
   const caller_download_id = ApplicationService.setDownload(true);
-  RelationsService.save(this._options).finally(()=> ApplicationService.setDownload(false, caller_download_id));
+  try {
+    await RelationsService.save(this._options)
+  } catch(err){
+    GUI.showUserMessage({
+      type: 'alert',
+      message: err || "info.server_error",
+      closable: true
+    })
+  }
+  ApplicationService.setDownload(false, caller_download_id);
 };
 
 proto.buildRelationTable = function(relations=[], id) {
