@@ -22,12 +22,12 @@
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                 </span>
                   <!--        DOWNLOAD        -->
-                  <template v-if="layer.downloads.length <= 1">
+                  <template v-if="layer.downloads.length === 1">
                     <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, layer.downloads[0])"></span>
                     </span>
                   </template>
-                  <template v-else>
+                  <template v-else-if="layer.downloads.length > 1">
                    <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip="'Downloads'">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="showLayerDownloadFormats(layer)"></span>
                   </span>
