@@ -68,7 +68,7 @@ function MapService(options={}) {
         return styles;
       }
     }),
-    selectionLayer:new ol.layer.Vector({
+    selectionLayer: new ol.layer.Vector({
       source: new ol.source.Vector(),
       style: feature => {
         let styles = [];
