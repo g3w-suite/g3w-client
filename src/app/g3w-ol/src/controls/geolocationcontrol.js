@@ -6,6 +6,7 @@ function GeolocationControl() {
     tipLabel: "sdk.mapcontrols.geolocation.tooltip",
     label: "\ue904"
   };
+  this.initiliazed = false;
   this._layer = new ol.layer.Vector({
     source: new ol.source.Vector(),
     style: new ol.style.Style({
@@ -44,26 +45,37 @@ proto._showMarker = function({map, coordinates, show=true}){
   } else map.removeLayer(this._layer);
 };
 
+proto.getMap = function(){
+  return InteractionControl.prototype.getMap.call(this);
+};
+
 proto.setMap = function(map) {
   InteractionControl.prototype.setMap.call(this, map);
+
   const geolocation = new ol.Geolocation({
     projection: map.getView().getProjection(),
-    tracking: true,
+    tracking: true, // set tracking
     trackingOptions: {
       enableHighAccuracy: true
     }
   });
 
-  geolocation.once('change:position', () => {
+  geolocation.on('change:position', () => {
     const coordinates = geolocation.getPosition();
     if (coordinates) {
-      $(this.element).removeClass('g3w-ol-disabled');
-      this.on('toggled', event => {
-        const coordinates = geolocation.getPosition();
-        const show = event.target.isToggled();
-        this._showMarker({map, coordinates, show});
-      });
-    } else this.hideControl();
+      if (!this.initiliazed) {
+        $(this.element).removeClass('g3w-ol-disabled');
+        this.initiliazed = true;
+      }
+      this._showMarker({
+        map,
+        coordinates,
+        show: this.isToggled()
+      })
+    } else {
+      this.initiliazed = true;
+      this.hideControl();
+    }
   });
 
   geolocation.once('error', evt => {
@@ -71,7 +83,15 @@ proto.setMap = function(map) {
     this._layer = null;
     evt.code !== 1 && this.dispatchEvent('error');
   });
-};
 
+  this.on('toggled', () => {
+    const coordinates = geolocation.getPosition();
+    this._showMarker({
+      map,
+      coordinates,
+      show: this.isToggled()
+    })
+  });
+};
 
 module.exports = GeolocationControl;
