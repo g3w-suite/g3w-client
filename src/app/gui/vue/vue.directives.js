@@ -31,7 +31,7 @@ const GlobalDirective = {
     const prePositioni18n = ({el, binding, i18nFnc=t}) => {
       const innerHTML = el.innerHTML;
       const position = binding.arg ? binding.arg : 'post';
-      const handlerElement = (innerHTML) => {
+      const handlerElement = innerHTML => {
         const value = binding.value !== null ?  i18nFnc(binding.value) : '';
         if (position === 'pre') el.innerHTML =  `${value} ${innerHTML}`;
         else if (position === 'post') el.innerHTML = `${innerHTML} ${value}`;

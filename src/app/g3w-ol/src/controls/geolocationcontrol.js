@@ -61,6 +61,7 @@ proto.setMap = function(map) {
       this.on('toggled', event => {
         const coordinates = geolocation.getPosition();
         const show = event.target.isToggled();
+        geolocation.setTracking(show);
         this._showMarker({map, coordinates, show});
       });
     } else this.hideControl();

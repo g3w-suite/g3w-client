@@ -151,7 +151,8 @@
     <template v-else>
       <div class="skin-color" class="query-results-not-found" v-if="state.changed">
         <h4 style="font-weight: bold;" v-t="'info.no_results'"></h4>
-        <div>{{state.query.type}}</div>
+        <div style="font-weight: bold">{{state.query.type}}</div>
+<!--        <div style="white-space: pre">{{state.query[state.query.type]}}</div>-->
       </div>
     </template>
   </div>

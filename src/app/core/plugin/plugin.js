@@ -207,33 +207,9 @@ proto.removeTools = function() {
  * Method to create sibebar item component
  */
 proto.createSideBarComponent = function(vueComponentObject, options={}){
-  const {
-    id,
-    title,
-    open=false,
-    collapsible= true,
-    mobile=true,
-    iconConfig={},
-    events={},
-    sidebarOptions={position:1}
-  } = options;
-
-  const PluginSiderBarComponent = ComponentsFactory.build(
-    {
-      vueComponentObject
-    },
-    {
-      id,
-      title,
-      open,
-      collapsible,
-      iconColor: iconConfig.color && iconConfig.color,
-      icon: iconConfig.icon && GUI.getFontClass(iconConfig.icon),
-      mobile,
-      events
-    });
-  GUI.addComponent(PluginSiderBarComponent, 'sidebar', sidebarOptions);
-  this.once('unload', () => GUI.removeComponent(id, 'sidebar', sidebarOptions));
+  const PluginSiderBarComponent = ComponentsFactory.buildSidebar({vueComponentObject}, options );
+  const id = PluginSiderBarComponent.getId();
+  this.once('unload', () => GUI.removeComponent(id, 'sidebar'));
 };
 
 // unload (case change map)
