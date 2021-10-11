@@ -86,7 +86,7 @@ function SidebarService() {
   // add each component to the sidebar
   // add also position insiede the sidebar
   this.addComponent = function(component, options={}) {
-    const {position, info} = options;
+    const {position, before=true, info} = options;
     if (isMobile.any && !component.mobile) {
       return false
     }
@@ -107,10 +107,17 @@ function SidebarService() {
     //append component to  g3w-sidebarcomponents (template sidebar.html)
     const DOMComponent = sidebarItem.$mount().$el;
     this.state.components.push(component);
-    const children = $('#g3w-sidebarcomponents').children(':visible');
+    const isPanelSidebarShow = $('.g3w-sidebarpanel').is(':visible');
+    const sidebarcomponetsdomid = `#g3w-sidebarcomponents${isPanelSidebarShow ? ':hidden': ''}`;
+    const children = $(sidebarcomponetsdomid).children().filter(function(){
+      return this.style.display !== 'none'
+    });
     const childrenLength = children.length;
-    if (position === null || position === undefined || position < 0 || position >= childrenLength) $('#g3w-sidebarcomponents').append(DOMComponent);
-    else children.each(function (index, element) {position === index && $(DOMComponent).insertBefore(element)});
+    if (position === null || position === undefined || position < 0 || position >= childrenLength) $(sidebarcomponetsdomid).append(DOMComponent);
+    else children.each((index, element) => {
+      const findElementIndexId = Number.isInteger(position) ? position === index : element.id === position;
+      findElementIndexId && $(DOMComponent)[`insert${before ? 'Before' : 'After'}`](element);
+    });
     //mount componet to g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
     // check if componentonent has iniService method
