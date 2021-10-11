@@ -2346,9 +2346,13 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalWMSLayer = function({url, layers, position='top'}={}){
-  console.log(url, layers, position)
-
+proto.addExternalWMSLayer = function({url, layers, projection, position='top'}={}){
+  const wmslayer = createWMSLayer({
+    url,
+    layers,
+    projection
+  });
+  this.addExternalLayer(wmslayer)
 };
 
 proto.addExternalLayer = async function(externalLayer, options={}) {
@@ -2386,6 +2390,13 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       visible: true,
       color
     };
+  } else if (externalLayer instanceof ol.layer.Image){
+    type = 'wms';
+    name = externalLayer.get('name') || externalLayer.get('id');
+    externalLayer.name = name;
+    externalLayer.title = name;
+    externalLayer.external = true;
+    externalLayer.visible = true;
   } else {
     name = externalLayer.name;
     type = externalLayer.type;
@@ -2394,31 +2405,37 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = layer => {
+  const loadExternalLayer = (layer, type) => {
+    let extent;
     if (layer) {
-      const features = layer.getSource().getFeatures();
-      if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
-      const extent = layer.getSource().getExtent();
-      externalLayer.bbox = {
-        minx: extent[0],
-        miny: extent[1],
-        maxx: extent[2],
-        maxy: extent[3]
-      };
+      if (type === 'vector') {
+        const features = layer.getSource().getFeatures();
+        if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
+        extent = layer.getSource().getExtent();
+        externalLayer.bbox = {
+          minx: extent[0],
+          miny: extent[1],
+          maxx: extent[2],
+          maxy: extent[3]
+        };
+      }
       externalLayer.checked = true;
       layer.set('position', position);
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
       catalogService.addExternalLayer(externalLayer);
-      map.getView().fit(extent);
+      extent && map.getView().fit(extent);
       return Promise.resolve(layer);
     } else return Promise.reject();
   };
   if (!layer) {
     switch (type) {
       case 'vector':
-        return loadExternalLayer(vectorLayer);
+        return loadExternalLayer(vectorLayer, type);
+        break;
+      case 'wms':
+        return loadExternalLayer(externalLayer, type);
         break;
       default:
         vectorLayer = await createVectorLayerFromFile({

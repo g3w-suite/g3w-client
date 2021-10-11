@@ -1,5 +1,6 @@
 const { toRawType, uniqueId } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
+const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
@@ -325,8 +326,14 @@ const geoutils = {
     return olLayer;
   },
 
-  createWMSLayer({url, layers=[]}={}){
-    return
+  createWMSLayer({url, name="WMSLAYER", projection, layers=[]}={}){
+    const wmslayer = new WMSLayer({
+      layers,
+      projection,
+      url
+    }).getOLLayer();
+    wmslayer.set('name', name);
+    return wmslayer
   },
 
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {

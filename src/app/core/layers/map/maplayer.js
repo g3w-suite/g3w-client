@@ -8,8 +8,8 @@ function MapLayer(config={}) {
   this.extent = config.extent;
   this.projection = config.projection;
   this.layer = null;
-  this.layers = []; // store all enabled layers
-  this.allLayers = []; // store all layers
+  this.layers = config.layers || []; // store all enabled layers
+  this.allLayers = config.layers || []; // store all layers
   base(this);
 }
 

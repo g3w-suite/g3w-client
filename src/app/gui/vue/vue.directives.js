@@ -327,8 +327,8 @@ const GlobalDirective = {
             });
         }
       },
-      unbind(ele, binding, vnode){
-        vnode.context._select2.select2('destroy');
+      unbind(el, binding, vnode){
+        $(el).select2('destroy');
       }
     })
   }

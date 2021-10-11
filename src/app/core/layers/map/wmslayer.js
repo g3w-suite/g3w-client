@@ -1,5 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const {base, inherit} = require('core/utils/utils');
+const Layer = require('core/layers/layer');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
@@ -76,11 +77,12 @@ proto._makeOlLayer = function(withLayers) {
     url: this.config.url,
     id: this.config.id,
     projection: this.config.projection,
-    iframe_internal: this.iframe_internal
+    iframe_internal: this.iframe_internal,
+    layers: this.layers
   };
   if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
-  if (representativeLayer) wmsConfig.url = representativeLayer.getWmsUrl();
+  if (representativeLayer && representativeLayer instanceof Layer) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
 
   olLayer.getSource().on('imageloadstart', () => {
