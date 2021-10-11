@@ -305,7 +305,8 @@ const GlobalDirective = {
     Vue.directive('select2', {
       inserted(el, binding, vnode){
         const { templateResult, templateSelection, multiple=false, search=true} = vnode.data.attrs || {};
-        vnode.context._select2 = $(el).select2({
+        const selectDOMElement = $(el);
+        selectDOMElement.select2({
           width: '100%',
           dropdownCssClass: 'skin-color',
           templateResult,
@@ -313,7 +314,7 @@ const GlobalDirective = {
           minimumResultsForSearch: !search ? -1 : undefined
         });
         if (binding.value){
-          vnode.context._select2.on('select2:select', evt =>{
+          selectDOMElement.on('select2:select', evt =>{
             const value = evt.params.data.id;
             if (multiple) {
               const alreadyinside = vnode.context[binding.value].filter(addedvalue => value === addedvalue);
@@ -321,7 +322,7 @@ const GlobalDirective = {
             } else vnode.context[binding.value] = value;
           });
           if (multiple)
-            vnode.context._select2.on('select2:unselect', evt =>{
+            selectDOMElement.on('select2:unselect', evt =>{
               const value = evt.params.data.id;
               vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
             });
