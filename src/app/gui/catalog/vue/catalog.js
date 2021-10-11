@@ -621,22 +621,29 @@ Vue.component('tristate-tree', {
      * @param layer
      */
     handleLayerChecked(layer){
-      let {checked, id, disabled, parentGroup} = layer;
-      const projectLayer = CatalogLayersStoresRegistry.getLayerById(id);
-      if (checked){
-        const visible = projectLayer.setVisible(!disabled);
-        visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
-          layerId: id
-        }));
-        if (parentGroup.mutually_exclusive) {
-          parentGroup.nodes.forEach(node => node.checked = node.id === layer.id);
-        }
-        while (parentGroup){
-          parentGroup.checked = true;
-          parentGroup = parentGroup.parentGroup;
-        }
-      } else projectLayer.setVisible(false);
-      CatalogEventHub.$emit('treenodevisible', projectLayer);
+      let {checked, id, name, disabled, external=false,parentGroup} = layer;
+      // in case of external layer
+      if (external){
+        const mapService = GUI.getComponent('map').getService();
+        const externalLayer = mapService.getLayerByName(name);
+        externalLayer.setVisible(checked);
+      } else {
+        const projectLayer = CatalogLayersStoresRegistry.getLayerById(id);
+        if (checked){
+          const visible = projectLayer.setVisible(!disabled);
+          visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
+            layerId: id
+          }));
+          if (parentGroup.mutually_exclusive) {
+            parentGroup.nodes.forEach(node => node.checked = node.id === layer.id);
+          }
+          while (parentGroup){
+            parentGroup.checked = true;
+            parentGroup = parentGroup.parentGroup;
+          }
+        } else projectLayer.setVisible(false);
+        CatalogEventHub.$emit('treenodevisible', projectLayer);
+      }
     },
     toggleFilterLayer(){
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
