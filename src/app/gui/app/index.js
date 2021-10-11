@@ -71,7 +71,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     const PrintComponent = require('gui/print/vue/print');
     const MetadataComponent = require('gui/metadata/vue/metadata');
     const ToolsComponent = require('gui/tools/vue/tools');
-    //nst WMSComponent = require('gui/wms/vue/wms');
+    const WMSComponent = require('gui/wms/vue/wms');
     const MapComponent = require('gui/map/vue/map');
     const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
     return {
@@ -130,13 +130,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('tools'),
               mobile: true
             }),
-            // new WMSComponent({
-            //   id: 'wms',
-            //   open: false,
-            //   collapsible: true,
-            //   icon: G3WTemplate.getFontClass('layers'),
-            //   mobile: true
-            // }),
+            new WMSComponent({
+              id: 'wms',
+              open: false,
+              collapsible: true,
+              icon: G3WTemplate.getFontClass('layers'),
+              mobile: true
+            }),
             new CatalogComponent({
               id: 'catalog',
               open: false,

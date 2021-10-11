@@ -40,12 +40,20 @@ function GUI() {
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
+
   this.getComponent = function(id) {
     return ComponentsRegistry.getComponent(id);
   };
+
   this.getComponents = function() {
     return ComponentsRegistry.getComponents();
   };
+
+  this.getService = function(idComponent){
+    const component = this.getComponent(idComponent);
+    return component && component.getService();
+  };
+
   this.goto = function(url) {
     RouterService.goto(url);
   };

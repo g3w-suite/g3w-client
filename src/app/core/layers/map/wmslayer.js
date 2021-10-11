@@ -4,6 +4,7 @@ const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
 function WMSLayer(options={}, extraParams={}, method='GET') {
+  console.log(options, extraParams)
   this.LAYERTYPE = {
     LAYER: 'layer',
     MULTILAYER: 'multilayer'

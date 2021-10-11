@@ -1,20 +1,7 @@
+import {EPSG} from '../../../constant';
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
 const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
-
-const EPSG = [
-  "EPSG:3003",
-  "EPSG:3004",
-  "EPSG:3045",
-  "EPSG:3857",
-  "EPSG:4326",
-  "EPSG:6708",
-  "EPSG:23032",
-  "EPSG:23033",
-  "EPSG:25833",
-  "EPSG:32632",
-  "EPSG:32633",
-];
 
 //Vue color componet
 const ChromeComponent = VueColor.Chrome;

@@ -325,6 +325,10 @@ const geoutils = {
     return olLayer;
   },
 
+  createWMSLayer({url, layers=[]}={}){
+    return
+  },
+
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
     let format;
     let layer;
@@ -718,6 +722,7 @@ const geoutils = {
     });
     return results;
   },
+
   getMapLayerById(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },

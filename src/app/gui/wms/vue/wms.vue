@@ -8,7 +8,8 @@
     </li>
     <li style="background: transparent !important;">
       <div style="max-height: 200px; overflow-y: auto; padding: 5px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;" @click.stop="" v-for="wmsurl in state.wmsurls">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;"
+          @click.stop="showWmsLayersPanel(wmsurl)" v-for="wmsurl in state.wmsurls">
             <span style="flex-grow: 1; margin-right: 15px;" class="new_line_too_long_text" :title="wmsurl">{{ wmsurl }}</span>
             <span class="skin-color" style="padding: 5px;" >
               <i style="font-weight: bold; font-size: 1.3em;" :class="g3wtemplate.getFontClass('plus-square')"></i>
@@ -36,6 +37,9 @@
     methods: {
       addNewWmsUrl(){
         this.$options.service.addNewWmsUrl(this.newwmsurl)
+      },
+      async showWmsLayersPanel(wmsurl){
+        await this.$options.service.showWmsLayersPanel(wmsurl);
       }
     }
   }

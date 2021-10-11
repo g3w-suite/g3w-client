@@ -3,6 +3,7 @@ const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = r
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
+  createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer} = require('core/utils/geo');
@@ -1490,7 +1491,7 @@ proto.getBaseLayers = function() {
 };
 
 proto.getMapLayerForLayer = function(layer) {
-  const multilayerId = 'layer_'+layer.getMultiLayerId();
+  const multilayerId = `layer_${layer.getMultiLayerId()}`;
   const mapLayers = this.getMapLayers();
   const mapLayer = mapLayers.find(mapLayer => mapLayer.getId() === multilayerId);
   return mapLayer;
@@ -2343,6 +2344,11 @@ proto.removeExternalLayer = function(name) {
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   catalogService.removeExternalLayer(name);
+};
+
+proto.addExternalWMSLayer = function({url, layers, position='top'}={}){
+  console.log(url, layers, position)
+
 };
 
 proto.addExternalLayer = async function(externalLayer, options={}) {

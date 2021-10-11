@@ -395,7 +395,17 @@ const translations = {
       exitnosave: "Esci senza salvare",
       annul: "Annulla",
       layer_is_added: "Layer già aggiunto",
-      sidebar: {},
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Aggiungi WMS Layer',
+            label: {
+              projections: 'Sistema di riferimento',
+              layers: 'Layers'
+            }
+          }
+        }
+      },
       info: {
         title: "Risultati",
         open_link: "Apri documento allegato",
@@ -850,7 +860,17 @@ const translations = {
       exitnosave: "Exit without save",
       annul: "Cancel",
       layer_is_added: "Layer already added",
-      sidebar: {},
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Add WMS Layer',
+            label: {
+              projections: 'Projection',
+              layers: 'Layers'
+            }
+          }
+        }
+      },
       info: {
         title: "Results",
         open_link: "Open attached document",
@@ -1305,7 +1325,17 @@ const translations = {
       exitnosave: "Poistu tallentamatta",
       annul: "Peruuta",
       layer_is_added: "Taso on jo lisätty.",
-      sidebar: {},
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Add WMS Layer',
+            label: {
+              projections: 'Projection',
+              layers: 'Layers'
+            }
+          }
+        }
+      },
       info: {
         title: "Tulokset",
         open_link: "Avaa liitetiedosto",
@@ -1761,7 +1791,17 @@ const translations = {
       exitnosave: "Lämna programmet utan att spara",
       annul: "Ångra",
       layer_is_added: "Nivån har redan lagts till.",
-      sidebar: {},
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Add WMS Layer',
+            label: {
+              projections: 'Projection',
+              layers: 'Layers'
+            }
+          }
+        }
+      },
       info: {
         title: "Resultat",
         open_link: "Öppna filbilaga",
