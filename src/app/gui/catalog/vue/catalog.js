@@ -638,16 +638,13 @@ Vue.component('tristate-tree', {
      */
     handleLayerChecked(layerObject){
       let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
-      console.log(id)
       // in case of external layer
       if (!projectLayer){
         const mapService = GUI.getComponent('map').getService();
         const layer = mapService.getLayerById(id);
-        console.log(layer, checked)
         layer.setVisible(checked);
       } else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
-        console.log(layer)
         if (checked){
           const visible = layer.setVisible(!disabled);
           visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
