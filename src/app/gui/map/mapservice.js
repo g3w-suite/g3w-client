@@ -2391,6 +2391,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       external: true,
       crs: options.crs,
       type: options.type,
+      _type: type,
       download: options.download || false,
       visible: true,
       color
@@ -2399,9 +2400,12 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     type = 'wms';
     name = externalLayer.get('name');
     externalLayer.id = externalLayer.get('id');
+    externalLayer.removable = true;
     externalLayer.projectLayer= false;
     externalLayer.name = name;
     externalLayer.title = name;
+    externalLayer._type = type;
+    externalLayer.opacity = 1;
     externalLayer.external = true;
     externalLayer.visible = true;
   } else {

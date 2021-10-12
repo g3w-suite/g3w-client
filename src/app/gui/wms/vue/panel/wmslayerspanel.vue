@@ -1,8 +1,22 @@
 <template>
   <div v-disabled="loading">
     <bar-loader :loading="loading"></bar-loader>
-    <label for="g3w-wms-projects" v-t="'sidebar.wms.panel.label.projections'"></label>
-    <select id="g3w-wms-projects" v-select2="'epsg'">
+    <label for="g3w-wms-layer-position" v-t="'sidebar.wms.panel.label.position'"></label>
+    <div id="g3w-wms-layer-position" style="display: flex; justify-content: space-between">
+      <div>
+        <input class="form-control magic-radio" type="radio" id="g3w-wms-layer-position-top" v-model="position" value="top" :checked="position === 'top'">
+        <label for="g3w-wms-layer-position-top">Top</label>
+      </div>
+      <div>
+        <input class="form-control magic-radio" type="radio" id="g3w-wms-layer-position-bottom" v-model="position" value="bottom" :checked="position === 'bottom'">
+        <label for="g3w-wms-layer-position-bottom">Bottom</label>
+      </div>
+    </div>
+
+    <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
+    <input class="form-control" id="g3w-wms-layer-name" v-model="name">
+    <label for="g3w-wms-projections" v-t="'sidebar.wms.panel.label.projections'"></label>
+    <select id="g3w-wms-projections" v-select2="'epsg'">
       <option v-for="projection in projections" :value="projection">{{projection}}</option>
     </select>
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
@@ -22,6 +36,8 @@
     data(){
       return {
         loading: true,
+        position: 'top',
+        name: null,
         layers: [],
         selectedlayers: [],
         epsg: EPSG[0],
@@ -32,7 +48,9 @@
       addWMSlayerToMap(){
         this.$options.service.addWMSlayerToMap({
           url: this.$options.wmsurl,
-          layers: this.selectedlayers
+          name: this.name,
+          layers: this.selectedlayers,
+          position: this.position
         })
       }
     },

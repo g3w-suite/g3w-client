@@ -90,7 +90,7 @@
       <span class="menu-icon" :class="g3wtemplate.getFontClass('list')"> </span>
       <span class="item-text" v-t="'catalog_items.contextmenu.open_attribute_table'"></span>
     </li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external && !layerMenu.layer.source" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
+    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
@@ -104,12 +104,19 @@
         </li>
       </ul>
     </li>
-    <li @click.prevent.stop="" v-if="layerMenu.layer.external && layerMenu.layer.removable" v-download>
+    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" v-download>
       <div @click.prevent.stop="downloadExternalShapefile(layerMenu.layer)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>
         <span class="menu-icon" :class="g3wtemplate.getFontClass('shapefile')"></span>
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
+    </li>
+    <li @click.prevent.stop="" style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" v-download>
+      <div style="display: flex; justify-content: space-between">
+        <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
+        <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>
+      </div>
+      <input @change="setWMSOpacity(layerMenu.layer)" class="skin-color" type="range" min="0" max="1" step="0.1" v-model="layerMenu.layer.opacity">
     </li>
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >

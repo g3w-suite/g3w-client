@@ -314,6 +314,12 @@ const vueComponentOptions = {
           this._hideMenu();
         })
     },
+    setWMSOpacity({id, opacity}){
+      const mapService = GUI.getComponent('map').getService();
+      const layer = mapService.getLayerById(id);
+      layer.setOpacity(opacity);
+      this._hideMenu();
+    },
     /**
      * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
      * @param layer

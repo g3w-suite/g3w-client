@@ -333,6 +333,7 @@ const translations = {
           current_map_theme_prefix: "TEMA",
           choose_map_theme: "SCEGLI TEMA",
           menu: {
+            setwmsopacity: "Cambia opacità",
             wms: {
               title:"",
               copy: "Clicca qui per copiare url",
@@ -400,6 +401,8 @@ const translations = {
           panel: {
             title:'Aggiungi WMS Layer',
             label: {
+              position: "Posizione su Mappa",
+              name: "Nome",
               projections: 'Sistema di riferimento',
               layers: 'Layers'
             }
@@ -798,6 +801,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            setwmsopacity: "Set Opacity",
             wms: {
               title:"",
               copy: "Click here to copy url",
@@ -865,6 +869,8 @@ const translations = {
           panel: {
             title:'Add WMS Layer',
             label: {
+              position: "Map Position",
+              name: "Name",
               projections: 'Projection',
               layers: 'Layers'
             }
@@ -1263,6 +1269,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            setwmsopacity: "Set Opacity",
             wms: {
               title:"",
               copy: "Paina tästä kopioidaksesi url:n.",
@@ -1330,6 +1337,8 @@ const translations = {
           panel: {
             title:'Add WMS Layer',
             label: {
+              position: "Map Position",
+              name: "Name",
               projections: 'Projection',
               layers: 'Layers'
             }
@@ -1729,6 +1738,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            setwmsopacity: "Set Opacity",
             wms: {
               title:"",
               copy: "Tryck här för att kopiera url.",
@@ -1796,6 +1806,8 @@ const translations = {
           panel: {
             title:'Add WMS Layer',
             label: {
+              position: "Map Position",
+              name: "Name",
               projections: 'Projection',
               layers: 'Layers'
             }

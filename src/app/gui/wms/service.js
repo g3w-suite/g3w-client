@@ -42,13 +42,14 @@ proto.getWMSLayers = async function(wmsurl){
   ]
 };
 
-proto.addWMSlayerToMap = function({url, projection, layers=[]}={}){
+proto.addWMSlayerToMap = function({url, name, projection, position, layers=[]}={}){
   const mapService = GUI.getService('map');
   mapService.addExternalWMSLayer({
     url,
+    name,
     layers,
     projection,
-    position: 'top'
+    position
   })
 };
 
