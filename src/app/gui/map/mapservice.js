@@ -480,11 +480,7 @@ proto.showMarker = function(coordinates, duration=1000) {
 
 // return layer by name
 proto.getLayerByName = function(name) {
-  const layer = this.getMap().getLayers().getArray().find(lyr => {
-    const layerName = lyr.get('name');
-    return layerName && layerName === name;
-  });
-  return layer;
+  return this.getMap().getLayers().getArray().find(lyr => lyr.get('name') === name);
 };
 
 // return layer by id
@@ -2346,13 +2342,16 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalWMSLayer = function({url, layers, projection, position='top'}={}){
+proto.addExternalWMSLayer = function({url, layers, name, projection, position='top'}={}){
   const wmslayer = createWMSLayer({
+    name,
     url,
     layers,
     projection
   });
-  this.addExternalLayer(wmslayer)
+  this.addExternalLayer(wmslayer,  {
+    position
+  })
 };
 
 proto.addExternalLayer = async function(externalLayer, options={}) {
@@ -2368,7 +2367,11 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
   if (externalLayer instanceof ol.layer.Vector) {
-    externalLayer.get('id') === undefined && externalLayer.set('id', uniqueId());
+    let id = externalLayer.get('id');
+    if (id === undefined) {
+      id = uniqueId();
+      externalLayer.set('id', id);
+    }
     vectorLayer = externalLayer;
     let color;
     try {
@@ -2380,7 +2383,9 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     name = vectorLayer.get('name') || vectorLayer.get('id');
     type = 'vector';
     externalLayer = {
+      id,
       name,
+      projectLayer: false,
       title: name,
       removable: true,
       external: true,
@@ -2392,7 +2397,9 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     };
   } else if (externalLayer instanceof ol.layer.Image){
     type = 'wms';
-    name = externalLayer.get('name') || externalLayer.get('id');
+    name = externalLayer.get('name');
+    externalLayer.id = externalLayer.get('id');
+    externalLayer.projectLayer= false;
     externalLayer.name = name;
     externalLayer.title = name;
     externalLayer.external = true;

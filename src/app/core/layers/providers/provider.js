@@ -1,8 +1,7 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID, GEOMETRY_FIELDS} from 'constant';
 const {base, inherit, toRawType} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields } =  require('core/utils/geo');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -375,7 +374,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return geometryFields.indexOf(featureAttributesName) === -1;
+    return GEOMETRY_FIELDS.indexOf(featureAttributesName) === -1;
   });
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);

@@ -8,6 +8,8 @@ export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'c
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
 
+export const GEOMETRY_FIELDS = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
+
 export const EPSG = [
   "EPSG:3003",
   "EPSG:3004",
@@ -49,6 +51,7 @@ export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
   DOWNLOAD_FORMATS,
+  GEOMETRY_FIELDS,
   TIMEOUT,
   EPSG
 }

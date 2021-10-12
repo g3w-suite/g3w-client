@@ -301,8 +301,9 @@ proto.createLayersTree = function(groupName, options={}) {
         obj.forEach(layer => {
           let lightlayer = {};
           if (layer.id !== null && layer.id !== undefined) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) lightlayer.id = layer.id;
-            else lightlayer = null;
+            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
+              lightlayer.id = layer.id;
+            } else lightlayer = null;
           }
           // case group
           if (layer.nodes !== null && layer.nodes !== undefined) {

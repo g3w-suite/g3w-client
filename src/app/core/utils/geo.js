@@ -1,13 +1,12 @@
+import {GEOMETRY_FIELDS} from "../../constant";
 const { toRawType, uniqueId } = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
-const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 
 const geoutils = {
-  geometryFields,
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
@@ -326,12 +325,15 @@ const geoutils = {
     return olLayer;
   },
 
-  createWMSLayer({url, name="WMSLAYER", projection, layers=[]}={}){
+  createWMSLayer({url, name, projection, layers=[]}={}){
+    const id = uniqueId();
+    name = name || id;
     const wmslayer = new WMSLayer({
       layers,
       projection,
       url
     }).getOLLayer();
+    wmslayer.set('id', id); // set unique id
     wmslayer.set('name', name);
     return wmslayer
   },
@@ -352,7 +354,7 @@ const geoutils = {
         vectorLayer = new ol.layer.Vector({
           source: vectorSource,
           name,
-          _fields: Object.keys(features[0].getProperties()).filter(property => geometryFields.indexOf(property) < 0),
+          _fields: Object.keys(features[0].getProperties()).filter(property => GEOMETRY_FIELDS.indexOf(property) < 0),
           id: uniqueId()
         });
         style && vectorLayer.setStyle(style);
@@ -524,7 +526,7 @@ const geoutils = {
 
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
-    return properties.filter(property => geometryFields.indexOf(property) === -1);
+    return properties.filter(property => GEOMETRY_FIELDS.indexOf(property) === -1);
   },
 
   /**

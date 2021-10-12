@@ -1,9 +1,8 @@
 import ApplicationState from 'core/applicationstate';
-import {DOWNLOAD_FORMATS} from './../../constant';
+import {DOWNLOAD_FORMATS, GEOMETRY_FIELDS} from './../../constant';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
@@ -71,6 +70,7 @@ function Layer(config={}, options={}) {
     styles: config.styles,
     defaultstyle,
     infoformat: this.getInfoFormat(),
+    projectLayer: true,
     geolayer: false,
     selection: {
       active: false
@@ -596,7 +596,7 @@ proto.getTableFields = function() {
 };
 
 proto.getTableHeaders = function(){
-  return this.getTableFields().filter(field => geometryFields.indexOf(field.name) === -1);
+  return this.getTableFields().filter(field => GEOMETRY_FIELDS.indexOf(field.name) === -1);
 };
 
 proto.getProject = function() {
