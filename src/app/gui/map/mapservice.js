@@ -1490,7 +1490,7 @@ proto.getBaseLayers = function() {
 };
 
 proto.getMapLayerForLayer = function(layer) {
-  const multilayerId = 'layer_'+layer.getMultiLayerId();
+  const multilayerId = `layer_${layer.getMultiLayerId()}`;
   const mapLayers = this.getMapLayers();
   const mapLayer = mapLayers.find(mapLayer => mapLayer.getId() === multilayerId);
   return mapLayer;
@@ -2358,7 +2358,11 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
   if (externalLayer instanceof ol.layer.Vector) {
-    externalLayer.get('id') === undefined && externalLayer.set('id', uniqueId());
+    let id = externalLayer.get('id');
+    if (id === undefined) {
+      id = uniqueId();
+      externalLayer.set('id', id);
+    }
     vectorLayer = externalLayer;
     let color;
     try {
@@ -2370,7 +2374,9 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     name = vectorLayer.get('name') || vectorLayer.get('id');
     type = 'vector';
     externalLayer = {
+      id,
       name,
+      projectLayer: false,
       title: name,
       removable: true,
       external: true,
