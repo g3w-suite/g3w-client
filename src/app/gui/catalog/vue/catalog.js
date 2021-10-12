@@ -620,17 +620,17 @@ Vue.component('tristate-tree', {
      * Handle changing checked property of layer
      * @param layer
      */
-    handleLayerChecked(layer){
-      let {checked, id, name, disabled, external=false,parentGroup} = layer;
+    handleLayerChecked(layerObject){
+      let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
       // in case of external layer
-      if (external){
+      if (!projectLayer){
         const mapService = GUI.getComponent('map').getService();
-        const externalLayer = mapService.getLayerByName(name);
-        externalLayer.setVisible(checked);
+        const layer = mapService.getLayerById(id);
+        layer.setVisible(checked);
       } else {
-        const projectLayer = CatalogLayersStoresRegistry.getLayerById(id);
+        const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked){
-          const visible = projectLayer.setVisible(!disabled);
+          const visible = layer.setVisible(!disabled);
           visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
             layerId: id
           }));
@@ -641,8 +641,8 @@ Vue.component('tristate-tree', {
             parentGroup.checked = true;
             parentGroup = parentGroup.parentGroup;
           }
-        } else projectLayer.setVisible(false);
-        CatalogEventHub.$emit('treenodevisible', projectLayer);
+        } else layer.setVisible(false);
+        CatalogEventHub.$emit('treenodevisible', layer);
       }
     },
     toggleFilterLayer(){

@@ -71,6 +71,7 @@ function Layer(config={}, options={}) {
     styles: config.styles,
     defaultstyle,
     infoformat: this.getInfoFormat(),
+    projectLayer: true,
     geolayer: false,
     selection: {
       active: false

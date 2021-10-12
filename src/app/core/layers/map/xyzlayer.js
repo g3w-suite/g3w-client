@@ -27,6 +27,7 @@ proto.getLayerConfigs = function(){
 
 proto.addLayer = function(layer){
   this.layer = layer;
+  this.layers.push(layer);
   this.allLayers.push(layer);
 };
 
