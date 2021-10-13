@@ -6,6 +6,7 @@ import BarLoader from './global-components/bar-loader';
 import Progressbar from './global-components/progressbar';
 import HelpDiv from './global-components/helpdiv.vue';
 import Resize from './global-components/resize.vue'
+import LayerPositions from './global-components/layerpositions.vue';
 
 const GlobalComponents = {
   install(Vue) {
@@ -17,6 +18,7 @@ const GlobalComponents = {
     Vue.component(Skeleton.name, Skeleton);
     Vue.component(HelpDiv.name, HelpDiv);
     Vue.component(Resize.name, Resize);
+    Vue.component(LayerPositions.name, LayerPositions);
   }
 };
 

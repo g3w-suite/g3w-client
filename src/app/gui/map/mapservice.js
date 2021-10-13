@@ -1,3 +1,4 @@
+import {MAP_SETTINGS} from '../../constant';
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -19,14 +20,6 @@ const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
-const SETTINGS = {
-  zoom : {
-    maxScale: 2000,
-  },
-  animation: {
-    duration: 2000
-  }
-};
 
 function MapService(options={}) {
   this.id = 'MapService';
@@ -1498,9 +1491,10 @@ proto.getProjectLayer = function(layerId) {
 };
 
 proto._setSettings = function(){
+  const {ZOOM} = MAP_SETTINGS;
   const maxScale = this.getScaleFromExtent(this.project.state.initextent);
   // settings maxScale
-  SETTINGS.zoom.maxScale = 2000 > maxScale ? maxScale : 2000;
+  ZOOM.maxScale = 2000 > maxScale ? maxScale : 2000;
 };
 
 proto._resetView = function() {
@@ -2004,12 +1998,13 @@ proto.compareExtentWithProjectMaxExtent = function(extent){
 
 proto.getResolutionForZoomToExtent = function(extent){
   let resolution;
+  const {ZOOM} = MAP_SETTINGS;
   const map = this.getMap();
   const projectExtent = this.project.state.extent;
   const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectExtent, extent);
   // max resolution of the map
-  const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
+  const maxResolution = getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
   // check if
   if (inside) {
     // calculate main resolutions
@@ -2102,8 +2097,9 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       styles.push(style);
       return styles;
     };
+    const {ANIMATION} = MAP_SETTINGS;
     const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-    const duration = options.duration || SETTINGS.animation.duration;
+    const duration = options.duration || ANIMATION.duration;
     let geometry;
     if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
     else {
@@ -2342,7 +2338,20 @@ proto.removeExternalLayer = function(name) {
   catalogService.removeExternalLayer(name);
 };
 
-proto.addExternalWMSLayer = function({url, layers, name, projection, position='top'}={}){
+proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
+  const layer = this.getLayerById(id);
+  switch(position){
+    case 'top':
+      layer.setZIndex(this.layersCount);
+      break;
+    case 'bottom':
+      layer.setZIndex(1);
+      break
+  }
+};
+
+
+proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
   const wmslayer = createWMSLayer({
     name,
     url,
@@ -2362,7 +2371,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     style,
     type,
     crs;
-  const {position='top'} = options;
+  const {position=MAP_SETTINGS.LAYER_POSITIONS.default} = options;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
@@ -2394,6 +2403,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       _type: type,
       download: options.download || false,
       visible: true,
+      position,
       color
     };
   } else if (externalLayer instanceof ol.layer.Image){
@@ -2406,6 +2416,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     externalLayer.title = name;
     externalLayer._type = type;
     externalLayer.opacity = 1;
+    externalLayer.position = position;
     externalLayer.external = true;
     externalLayer.visible = true;
   } else {

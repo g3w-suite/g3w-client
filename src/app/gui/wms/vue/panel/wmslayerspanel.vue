@@ -1,28 +1,20 @@
 <template>
   <div v-disabled="loading">
     <bar-loader :loading="loading"></bar-loader>
-    <label for="g3w-wms-layer-position" v-t="'sidebar.wms.panel.label.position'"></label>
-    <div id="g3w-wms-layer-position" style="display: flex; justify-content: space-between">
-      <div>
-        <input class="form-control magic-radio" type="radio" id="g3w-wms-layer-position-top" v-model="position" value="top" :checked="position === 'top'">
-        <label for="g3w-wms-layer-position-top">Top</label>
-      </div>
-      <div>
-        <input class="form-control magic-radio" type="radio" id="g3w-wms-layer-position-bottom" v-model="position" value="bottom" :checked="position === 'bottom'">
-        <label for="g3w-wms-layer-position-bottom">Bottom</label>
-      </div>
-    </div>
-
+    <layerspositions style="display: flex; justify-content: space-between" @layer-position-change="position=$event" :position="position"></layerspositions>
     <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
     <input class="form-control" id="g3w-wms-layer-name" v-model="name">
+
     <label for="g3w-wms-projections" v-t="'sidebar.wms.panel.label.projections'"></label>
     <select id="g3w-wms-projections" v-select2="'epsg'">
       <option v-for="projection in projections" :value="projection">{{projection}}</option>
     </select>
+
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
     <select id="g3w-wms-layers" multiple="multiple" v-select2="'selectedlayers'">
       <option v-for="layer in layers" :value="layer.id" :key="layer.id">{{layer.name}}</option>
     </select>
+
     <button @click.stop="addWMSlayerToMap" v-disabled="selectedlayers.length === 0" class="btn wms-add-layer-buttom sidebar-button skin-button">
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
@@ -36,12 +28,11 @@
     data(){
       return {
         loading: true,
-        position: 'top',
+        position: undefined,
         name: null,
         layers: [],
         selectedlayers: [],
         epsg: EPSG[0],
-        position: 'top'
       }
     },
     methods: {

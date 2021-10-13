@@ -24,6 +24,22 @@ export const EPSG = [
   "EPSG:32633",
 ];
 
+export const MAP_SETTINGS = {
+  ZOOM: {
+    maxScale: 2000,
+  },
+  ANIMATION: {
+    duration: 2000
+  },
+  LAYER_POSITIONS: {
+    default: 'top',
+    getPositions(){
+      return ['top', 'bottom']
+    }
+  }
+
+};
+
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',
@@ -53,5 +69,6 @@ export default {
   DOWNLOAD_FORMATS,
   GEOMETRY_FIELDS,
   TIMEOUT,
-  EPSG
+  EPSG,
+  MAP_SETTINGS
 }

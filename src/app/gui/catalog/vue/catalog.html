@@ -62,6 +62,12 @@
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
+    <li style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span class="item-text" v-t="'Position'" style="margin-right: 30px;"></span>
+        <layerspositions @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})" style="display: flex; flex-direction: column; justify-content: space-between" :position="layerMenu.layer.position"></layerspositions>
+      </div>
+    </li>
     <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
@@ -111,7 +117,7 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
-    <li @click.prevent.stop="" style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" v-download>
+    <li @click.prevent.stop="" style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>

@@ -1,3 +1,4 @@
+import {MAP_SETTINGS} from "../../../constant";
 import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
@@ -314,6 +315,15 @@ const vueComponentOptions = {
           this._hideMenu();
         })
     },
+    changeLayerMapPosition({position, layer}){
+      const mapService = GUI.getComponent('map').getService();
+      layer.position = position;
+      mapService.changeLayerMapPosition({
+        id: layer.id,
+        position
+      });
+      this._hideMenu();
+    },
     setWMSOpacity({id, opacity}){
       const mapService = GUI.getComponent('map').getService();
       const layer = mapService.getLayerById(id);
@@ -465,6 +475,7 @@ const vueComponentOptions = {
     }
   },
   created() {
+    this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
       const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
       layer.clearSelectionFids();
