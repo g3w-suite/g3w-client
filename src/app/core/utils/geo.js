@@ -718,6 +718,7 @@ const geoutils = {
     });
     return results;
   },
+
   getMapLayerById(layerId) {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
@@ -748,13 +749,16 @@ const geoutils = {
   },
 
   splitGeometryLine(splitGeometry, lineGeometry) {
+    const isZType = lineGeometry.getCoordinates()[0][2] !== undefined;
     let splitted = false;
     const splittedSegments = [];
     const jstsFromWkt = new jsts.io.WKTReader();
     const wktFromOl = new ol.format.WKT();
     const olFromJsts = new jsts.io.OL3Parser();
     const splitLine = jstsFromWkt.read(wktFromOl.writeGeometry(splitGeometry));
-    const targetLine = jstsFromWkt.read(wktFromOl.writeGeometry(lineGeometry));
+    let wktLineString = wktFromOl.writeGeometry(lineGeometry);
+    if (isZType) wktLineString = wktLineString.replace(' Z', '');
+    const targetLine = jstsFromWkt.read(wktLineString);
     const targetCoordinates = targetLine.getCoordinates();
     const targetCoordinatesLength = targetCoordinates.length;
     const geometryFactory = new jsts.geom.GeometryFactory();
@@ -764,27 +768,49 @@ const geoutils = {
     for (let i = 0; i < targetCoordinatesLength -1; i++) {
       startPoint = targetCoordinates[i];
       endPoint = targetCoordinates[i+1];
+      if (isZType){
+        startPoint.z = lineGeometry.getCoordinates()[i][2];
+        endPoint.z = lineGeometry.getCoordinates()[i+1][2];
+      }
       // create a segment of two vertex
       const segment = geometryFactory.createLineString([startPoint, endPoint]);
       const intersectCoordinates = segment.intersection(splitLine).getCoordinates();
       if (intersectCoordinates.length) {
         splitted = true;
         intersectCoordinates.forEach(splitPoint => {
+          if (isZType) splitPoint.z = startPoint.z;
           if (pointsNotSplitted.length) {
-            const newSegment= geometryFactory.createLineString(pointsNotSplitted.concat([startPoint, splitPoint]));
-            splittedSegments.push(olFromJsts.write(newSegment));
+            const lineNewSegment = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted.concat([startPoint, splitPoint])));
+            if (isZType){
+              const coordinates = lineNewSegment.getCoordinates();
+              lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
+            }
+            splittedSegments.push(lineNewSegment);
             pointsNotSplitted = [];
           } else {
-            const newSegment= geometryFactory.createLineString([startPoint, splitPoint]);
-            splittedSegments.push(olFromJsts.write(newSegment));
+            const lineNewSegment = olFromJsts.write(geometryFactory.createLineString([startPoint, splitPoint]));
+            if (isZType){
+              const coordinates = lineNewSegment.getCoordinates();
+              lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
+            }
+            splittedSegments.push(lineNewSegment);
           }
           startPoint = splitPoint;
         });
         pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
       } else pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
     }
-    const restOfLine =  geometryFactory.createLineString(pointsNotSplitted);
-    splittedSegments.push(olFromJsts.write(restOfLine));
+    const restOfLine = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted));
+    if (isZType){
+      const zCoordinates = [];
+      pointsNotSplitted.forEach((pointNotSplitted, index) => {
+        const coordinate =  restOfLine.getCoordinates()[index];
+        coordinate.push(pointNotSplitted.z);
+        zCoordinates.push(coordinate);
+      });
+      restOfLine.setCoordinates(zCoordinates);
+    }
+    splittedSegments.push(restOfLine);
     return splitted && splittedSegments || []
   },
 
@@ -813,7 +839,7 @@ const geoutils = {
     const parser = new jsts.io.OL3Parser();
     switch (splitType){
       case 'LineString':
-        // check if geoemtry is Polygon
+        // check if geometry is Polygon
         if (featureGeometryType.indexOf('Polygon') !== -1 ) {
           // check if is a MultiPolygon
           const isMulti = featureGeometryType.indexOf('Multi') !== -1;
@@ -832,16 +858,37 @@ const geoutils = {
             })
           } else {
             // case a Polygon
+            const isZType = polygonFeature.getCoordinates()[0][0][2] !== undefined;
             const polygonFeatureGeometry = parser.read(polygonFeature);
             const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
+            if (isZType){
+              polygonFeature.getCoordinates()[0].forEach((coordinate, index) =>{
+                featureGeometry.getCoordinates()[index].z = coordinate[2];
+              })
+            }
             const splitGeometry = parser.read(geometries.split);
+            if (isZType) splitGeometry.getCoordinates().forEach(coordinate => coordinate.z = 0);
             const union = featureGeometry.union(splitGeometry);
             const polygonizer = new jsts.operation.polygonize.Polygonizer();
             polygonizer.add(union);
             const polygons = polygonizer.getPolygons().toArray();
             polygons.length > 1 && polygons.forEach(polygon => {
               if (polygonFeatureGeometry.intersection(polygon).getGeometryType() === 'Polygon') {
+                const polygonCoordinates = polygon.getCoordinates();
+                if (isZType){
+                  polygonCoordinates.forEach((coordinate, index) => {
+                    coordinate.z = coordinate.z === undefined ? polygonCoordinates[index === 0 ? index+1 : index - 1].z : coordinate.z;
+                  })
+                }
                 const geometry = parser.write(polygon);
+                if (isZType) {
+                  const zCoordinates = [];
+                  geometry.getCoordinates()[0].forEach((coordinate, index) => {
+                    coordinate.push(polygonCoordinates[index].z);
+                    zCoordinates.push(coordinate)
+                  });
+                  geometry.setCoordinates([zCoordinates]);
+                }
                 splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
               }
             })
@@ -978,7 +1025,7 @@ const geoutils = {
       method, // *GET, POST, PUT, DELETE, etc.,
       body
     });
-    geoTIFF = await response.blob();
+    const geoTIFF = await response.blob();
     return geoTIFF;
   }
 };
