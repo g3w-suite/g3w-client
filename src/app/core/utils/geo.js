@@ -835,6 +835,7 @@ const geoutils = {
     const splitType = geometries.split.getType();
     // check geometry type of feature
     const featureGeometryType = geometries.feature.getType();
+    // array of splitted geometries
     const splittedFeatureGeometries = [];
     const parser = new jsts.io.OL3Parser();
     switch (splitType){
@@ -846,11 +847,11 @@ const geoutils = {
           // if multiPolygon
           const polygonFeature = isMulti ? geometries.feature.getPolygons() : geometries.feature;
           if (Array.isArray(polygonFeature)) {
-            polygonFeature.forEach(polygonGeometry =>{
+            polygonFeature.forEach(geometry =>{
               geoutils.splitFeature({
                 splitfeature,
                 feature: new ol.Feature({
-                  geometry: polygonGeometry
+                  geometry
                 })
               }).forEach(geometry => {
                 geometry && splittedFeatureGeometries.push(new ol.geom.MultiPolygon([geometry.getCoordinates()]))
@@ -860,27 +861,49 @@ const geoutils = {
             // case a Polygon
             const isZType = polygonFeature.getCoordinates()[0][0][2] !== undefined;
             const polygonFeatureGeometry = parser.read(polygonFeature);
-            const featureGeometry = parser.read(polygonFeature.getLinearRing(0));
+            const externalPolygonFeatureGeometry = parser.read(polygonFeature.getLinearRing(0));
+            // create a line splittinf feature in jsts
+            const splitGeometry = parser.read(geometries.split);
+            // add holes geometries
+            let holePolygons;
+            if (polygonFeature.getLinearRingCount() > 1) {
+              let holeFeaturesGeometry;
+              for (let index=1; index < polygonFeature.getLinearRingCount(); index++){
+                const holeRing = parser.read(polygonFeature.getLinearRing(index));
+                if (holeFeaturesGeometry === undefined) holeFeaturesGeometry = holeRing;
+                else holeFeaturesGeometry = holeFeaturesGeometry.union(holeRing);
+              }
+              holePolygons = new jsts.operation.polygonize.Polygonizer();
+              holePolygons.add(holeFeaturesGeometry);
+              let holyPolygonUnion;
+              holePolygons.getPolygons().toArray().forEach(polygon =>{
+                if (holyPolygonUnion === undefined) holyPolygonUnion = polygon;
+                else holyPolygonUnion = holyPolygonUnion.union(polygon);
+              });
+              holePolygons = holyPolygonUnion;
+            }
+
             if (isZType){
               polygonFeature.getCoordinates()[0].forEach((coordinate, index) =>{
-                featureGeometry.getCoordinates()[index].z = coordinate[2];
-              })
+                externalPolygonFeatureGeometry.getCoordinates()[index].z = coordinate[2];
+              });
+              splitGeometry.getCoordinates().forEach(coordinate => coordinate.z = 0);
             }
-            const splitGeometry = parser.read(geometries.split);
-            if (isZType) splitGeometry.getCoordinates().forEach(coordinate => coordinate.z = 0);
-            const union = featureGeometry.union(splitGeometry);
+
+            const union = externalPolygonFeatureGeometry.union(splitGeometry);
             const polygonizer = new jsts.operation.polygonize.Polygonizer();
             polygonizer.add(union);
             const polygons = polygonizer.getPolygons().toArray();
             polygons.length > 1 && polygons.forEach(polygon => {
-              if (polygonFeatureGeometry.intersection(polygon).getGeometryType() === 'Polygon') {
+              if (holePolygons) polygon = polygon.difference(holePolygons);
+              if (polygonFeatureGeometry.intersects(polygon.getInteriorPoint())) {
+                const geometry = parser.write(polygon);
                 const polygonCoordinates = polygon.getCoordinates();
                 if (isZType){
                   polygonCoordinates.forEach((coordinate, index) => {
-                    coordinate.z = coordinate.z === undefined ? polygonCoordinates[index === 0 ? index+1 : index - 1].z : coordinate.z;
+                    coordinate.z = coordinate.z === undefined ? polygonCoordinates[index === 0 ? index+1 : index-1].z : coordinate.z;
                   })
                 }
-                const geometry = parser.write(polygon);
                 if (isZType) {
                   const zCoordinates = [];
                   geometry.getCoordinates()[0].forEach((coordinate, index) => {
@@ -889,7 +912,16 @@ const geoutils = {
                   });
                   geometry.setCoordinates([zCoordinates]);
                 }
-                splittedFeatureGeometries.push(isMulti ? new ol.geom.MultiPolygon([geometry.getCoordinates()]) : geometry)
+                const geometryType = geometry.getType();
+                if (isMulti){
+                  splittedFeatureGeometries.push(new ol.geom.MultiPolygon(geometryType=== 'Polygon' ? [geometry.getCoordinates()] : geometry.getCoordinates()))
+                } else {
+                  if (geometryType === 'Polygon'){
+                    splittedFeatureGeometries.push(geometry);
+                  } else geometry.getCoordinates().forEach(coordinates => {
+                    splittedFeatureGeometries.push(new ol.geom.Polygon(coordinates))
+                  })
+                }
               }
             })
           }
