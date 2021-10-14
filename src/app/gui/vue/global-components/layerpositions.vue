@@ -14,7 +14,6 @@
     props:{
       position:{
         type: String,
-        required: true,
         default: MAP_SETTINGS.LAYER_POSITIONS.default
       }
     },
@@ -24,7 +23,7 @@
       }
     },
     methods: {
-      change(){console.log(this.position)
+      change(){
         this.$emit('layer-position-change', this.position)
       }
     },
