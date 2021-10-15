@@ -1,5 +1,5 @@
 import {GEOMETRY_FIELDS} from "../../constant";
-const { toRawType, uniqueId } = require('core/utils/utils');
+const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
@@ -329,13 +329,18 @@ const geoutils = {
     const id = uniqueId();
     name = name || id;
     const wmslayer = new WMSLayer({
+      id,
       layers,
       projection,
       url
-    }).getOLLayer();
-    wmslayer.set('id', id); // set unique id
-    wmslayer.set('name', name);
-    return wmslayer
+    });
+    const olLayer =  wmslayer.getOLLayer();
+    olLayer.set('id', id); // set unique id
+    olLayer.set('name', name);
+    return {
+      wmslayer,
+      olLayer
+    }
   },
 
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {

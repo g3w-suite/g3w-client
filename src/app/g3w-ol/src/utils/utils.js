@@ -1,3 +1,4 @@
+const Geometry = require('core/geometry/geometry');
 const OGC_PIXEL_WIDTH = 0.28;
 
 const INCHES_PER_UNIT = {
@@ -72,6 +73,72 @@ const utils = {
   },
   getMetersFromDegrees(degrees) {
     return degrees * ol.proj.Units.METERS_PER_UNIT.degrees;
+  },
+  needUseSphereMethods(projection){
+    return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
+  },
+  formatMeasure({geometry, projection}){
+    const geometryType = geometry.getType();
+    const useSphereMethods = utils.needUseSphereMethods(projection);
+    if (Geometry.isLineGeometryType(geometryType)) {
+      const length = useSphereMethods ? ol.sphere.getLength(geometry, {
+        projection: projection.getCode()
+      }) : Geometry.isMultiGeometry(geometryType) ?
+        geometry.getLineStrings().reduce((totalLength, lineGeometry)=>  totalLength+= lineGeometry.getLength(), 0)
+        : geometry.getLength();
+      const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+      return output;
+    } else if (Geometry.isPolygonGeometryType(geometryType)){
+      const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
+        projection: projection.getCode()
+      }): geometry.getArea());
+      const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+      return output;
+    }
+  },
+
+  //create and add measure tooltip
+  createMeasureTooltip({map, feature}){
+    const element = document.createElement('div');
+    element.className = 'mtooltip mtooltip-measure';
+    const tooltip = new ol.Overlay({
+      element,
+      offset: [0, -15],
+      positioning: 'bottom-center'
+    });
+    map.addOverlay(tooltip);
+
+    const unbyKey = feature.getGeometry().on('change', evt => {
+      let tooltipCoord;
+      const geometry = evt.target;
+      if (geometry instanceof ol.geom.Polygon) tooltipCoord = geometry.getInteriorPoint().getCoordinates();
+      else if(geometry instanceof ol.geom.MultiPolygon) tooltipCoord = geometry.getInteriorPoints().getCoordinates()[0];
+      else if (geometry instanceof ol.geom.LineString) tooltipCoord = geometry.getLastCoordinate();
+      else if (geometry instanceof ol.geom.MultiLineString) tooltipCoord = geometry.getLastCoordinate();
+      const output = utils.formatMeasure({
+        geometry,
+        projection: map.getView().getProjection()
+      });
+      element.innerHTML = output;
+      tooltip.setPosition(tooltipCoord);
+    });
+
+    return {
+      tooltip,
+      unbyKey
+    }
+  },
+
+  //remove mesure tootltip
+  removeMeasureTooltip({map, tooltip, unbyKey}){
+    map.removeOverlay(tooltip);
+    ol.Observable.unByKey(unbyKey);
+  },
+
+  setMeasureTooltipStatic(tooltip){
+    const element = tooltip.getElement();
+    element.className = 'mtooltip mtooltip-static';
+    tooltip.setOffset([0, -7]);
   }
 };
 

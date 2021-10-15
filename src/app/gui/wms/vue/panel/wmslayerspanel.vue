@@ -1,7 +1,7 @@
 <template>
   <div v-disabled="loading">
     <bar-loader :loading="loading"></bar-loader>
-    <layerspositions style="display: flex; justify-content: space-between" @layer-position-change="position=$event" :position="position"></layerspositions>
+    <layerspositions style="margin-top: 5px; display: flex; justify-content: space-between" @layer-position-change="position=$event" :position="position"></layerspositions>
     <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
     <input class="form-control" id="g3w-wms-layer-name" v-model="name">
 
@@ -11,7 +11,7 @@
     </select>
 
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
-    <select id="g3w-wms-layers" multiple="multiple" v-select2="'selectedlayers'">
+    <select id="g3w-wms-layers" multiple="multiple" clear="true" v-select2="'selectedlayers'">
       <option v-for="layer in layers" :value="layer.id" :key="layer.id">{{layer.name}}</option>
     </select>
 
@@ -36,14 +36,25 @@
       }
     },
     methods: {
-      addWMSlayerToMap(){
-        this.$options.service.addWMSlayerToMap({
-          url: this.$options.wmsurl,
-          name: this.name,
-          layers: this.selectedlayers,
-          position: this.position
-        })
-      }
+      async addWMSlayerToMap(){
+        this.loading = true;
+        try {
+          await this.$options.service.addWMSlayerToMap({
+            url: this.$options.wmsurl,
+            name: this.name,
+            layers: this.selectedlayers,
+            position: this.position
+          })
+        } catch(err){
+
+        }
+        this.loading = false;
+        this.clear();
+      },
+      clear(){
+        this.selectedlayers = [];
+        this.name = null;
+      },
     },
     async created() {
       this.projections = EPSG;
@@ -54,6 +65,9 @@
       }
       catch(err){}
       this.loading = false;
+    },
+    beforeDestroy() {
+      this.$data = null;
     }
   }
 </script>

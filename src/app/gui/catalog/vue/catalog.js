@@ -317,12 +317,13 @@ const vueComponentOptions = {
     },
     changeLayerMapPosition({position, layer}){
       const mapService = GUI.getComponent('map').getService();
+      const changed = layer.position !== position;
       layer.position = position;
       mapService.changeLayerMapPosition({
         id: layer.id,
         position
       });
-      this._hideMenu();
+      changed && this._hideMenu();
     },
     setWMSOpacity({id, opacity}){
       const mapService = GUI.getComponent('map').getService();

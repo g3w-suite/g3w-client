@@ -84,17 +84,9 @@ proto._makeOlLayer = function(withLayers) {
   const representativeLayer = this.layers[0];
   if (representativeLayer && representativeLayer instanceof Layer) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
-
-  olLayer.getSource().on('imageloadstart', () => {
-    this.emit("loadstart");
-  });
-  olLayer.getSource().on('imageloadend', () => {
-    this.emit("loadend");
-  });
-
-  olLayer.getSource().on('imageloaderror', ()=> {
-    this.emit("loaderror");
-  });
+  olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
+  olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
+  olLayer.getSource().on('imageloaderror', ()=> this.emit("loaderror"));
   return olLayer
 };
 

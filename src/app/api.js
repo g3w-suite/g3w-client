@@ -138,7 +138,11 @@ g3w.ol = {
   interactions : {
     PickFeatureInteraction : require('g3w-ol/src/interactions/pickfeatureinteraction'),
     PickCoordinatesInteraction: require('g3w-ol/src/interactions/pickcoordinatesinteraction'),
-    DeleteFeatureInteraction: require('g3w-ol/src/interactions/deletefeatureinteraction')
+    DeleteFeatureInteraction: require('g3w-ol/src/interactions/deletefeatureinteraction'),
+    measure: {
+      AreaInteraction: require('g3w-ol/src/interactions/areainteraction'),
+      LengthInteraction: require('g3w-ol/src/interactions/lengthinteraction')
+    }
   },
   controls: {},
   utils: require('g3w-ol/src/utils/utils')

@@ -83,16 +83,9 @@ proto._makeOlLayer = function() {
 
   const olLayer = new RasterLayers.WMSTLayer(wmsConfig, this.extraParams, this._method);
 
-  olLayer.getSource().on('tileloadstart', () => {
-    this.emit("loadstart");
-  });
-  olLayer.getSource().on('tileloadend', () => {
-    this.emit("loadend");
-  });
-
-  olLayer.getSource().on('tileloaderror', ()=> {
-    this.emit("loaderror");
-  });
+  olLayer.getSource().on('tileloadstart', () => this.emit("loadstart"));
+  olLayer.getSource().on('tileloadend', () => this.emit("loadend"));
+  olLayer.getSource().on('tileloaderror', ()=> this.emit("loaderror"));
   return olLayer
 };
 

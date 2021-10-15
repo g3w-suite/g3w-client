@@ -1,4 +1,5 @@
 import {MAP_SETTINGS} from '../../constant';
+import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -37,6 +38,7 @@ function MapService(options={}) {
   this._mapControls = [];
   this._changeMapMapControls = [];
   this._mapLayers = [];
+  this._externalMapLayers = [];
   this._externalLayers = [];
   // array where store interactions added from plugin or extenal from application
   this._externalInteractions = [];
@@ -1824,7 +1826,7 @@ proto.updateMapLayer = function(mapLayer, options={}) {
     })
 };
 
-// run update function on ech mapLayer
+// run update function on each mapLayer
 proto.updateMapLayers = function(options={}) {
   this.getMapLayers().forEach(mapLayer => this.updateMapLayer(mapLayer, options));
   const baseLayers = this.getBaseLayers();
@@ -1833,12 +1835,12 @@ proto.updateMapLayers = function(options={}) {
 };
 
 // register map Layer listeners of creation
-proto.registerMapLayerListeners = function(mapLayer) {
+proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   mapLayer.on('loadstart', this._incrementLoaders);
   mapLayer.on('loadend', this._decrementLoaders);
   mapLayer.on('loaderror', this._mapLayerLoadError);
   //listen change filter token
-  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
       layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
@@ -1847,12 +1849,13 @@ proto.registerMapLayerListeners = function(mapLayer) {
 };
 
 // unregister listeners of mapLayers creation
-proto.unregisterMapLayerListeners = function(mapLayer) {
+proto.unregisterMapLayerListeners = function(mapLayer, projectLayer=true) {
   mapLayer.off('loadstart', this._incrementLoaders );
   mapLayer.off('loadend', this._decrementLoaders );
   mapLayer.off('loaderror', this._mapLayerLoadError);
   // try to remove layer filter token
-  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+  // try to remove layer filter token
+  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.un('change');
       layer.removeEvent('filtertokenchange')
@@ -2329,14 +2332,6 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
-proto.removeExternalLayer = function(name) {
-  const layer = this.getLayerByName(name);
-  const catalogService = GUI.getComponent('catalog').getService();
-  const QueryResultService = GUI.getComponent('queryresults').getService();
-  QueryResultService.unregisterVectorLayer(layer);
-  this.viewer.map.removeLayer(layer);
-  catalogService.removeExternalLayer(name);
-};
 
 proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
   const layer = this.getLayerById(id);
@@ -2350,19 +2345,69 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
   }
 };
 
-
-proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
-  const wmslayer = createWMSLayer({
-    name,
-    url,
-    layers,
-    projection
+/**
+ * Remove externla layer
+ * @param name
+ */
+proto.removeExternalLayer = function(name) {
+  const layer = this.getLayerByName(name);
+  const catalogService = GUI.getComponent('catalog').getService();
+  const QueryResultService = GUI.getComponent('queryresults').getService();
+  QueryResultService.unregisterVectorLayer(layer);
+  this.viewer.map.removeLayer(layer);
+  catalogService.removeExternalLayer(name);
+  if (layer._type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
+    if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
+    return externalMapLayer.getId() !== layer.id
   });
-  this.addExternalLayer(wmslayer,  {
-    position
+};
+
+/**
+ * Add wms external layer to mapo
+ * @param url
+ * @param layers
+ * @param name
+ * @param projection
+ * @param position
+ * @returns {Promise<unknown>}
+ */
+proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
+  return new Promise((resolve, reject) =>{
+    const {wmslayer, olLayer} = createWMSLayer({
+      name,
+      url,
+      layers,
+      projection
+    });
+
+    wmslayer.once('loadend', ()=> {
+      resolve(wmslayer)
+    });
+
+    wmslayer.once('loaderror', err => {
+      reject(err);
+    });
+
+    this.addExternalLayer(olLayer,  {
+      position
+    });
+
+    this.addExternalMapLayer(wmslayer, false);
+
   })
 };
 
+proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
+  this._externalMapLayers.push(externalMapLayer);
+  this.registerMapLayerListeners(externalMapLayer, projectLayer);
+};
+
+/**
+ * Method to add external layer to map
+ * @param externalLayer
+ * @param options
+ * @returns {Promise<Promise<*> | Promise<never>>}
+ */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,

@@ -28,6 +28,7 @@ const AddLayerComponent = {
       options: EPSG,
       error: false,
       error_message: null,
+      position: null,
       loading: false,
       fields:[],
       field: null,
@@ -68,6 +69,9 @@ const AddLayerComponent = {
     'chrome-picker': ChromeComponent
   },
   methods: {
+    setLayerMapPosition(position){
+      this.position = position;
+    },
     setError(type){
       this.error_message = `sdk.errors.${type}`;
       this.error = true;
@@ -173,8 +177,9 @@ const AddLayerComponent = {
           await this.service.addExternalLayer(this.vectorLayer, {
             crs: this.layer.crs,
             type: this.layer.type,
-            position: 'top'// <top or bottom>
-          });
+            position: this.position
+
+        });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
         } catch(err){

@@ -1,5 +1,7 @@
 // MeasureInteracion
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
+const Geometry = require('core/geometry/geometry');
+const {createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, needUseSphereMethods} = require('../utils/utils');
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;
@@ -7,15 +9,17 @@ const MeasureIteraction = function(options={}) {
   this._measureTooltip;
   this._featureGeometryChangelistener;
   this._poinOnMapMoveListener;
+  this.testTooltip;
   this._helpMsg = options.help;
   this._projection = options.projection;
-  const useSphereMethods = this._projection.getCode() === 'EPSG:3857' || this._projection.getUnits() === 'degrees';
+  const drawColor = options.drawColor || 'rgba(0, 0, 0, 0.5)';
+  const useSphereMethods = needUseSphereMethods(this._projection);
   const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
       color: 'rgba(255, 255, 255, 0.2)'
     }),
     stroke: new ol.style.Stroke({
-      color: 'rgba(0, 0, 0, 0.5)',
+      color: drawColor,
       lineDash: [10, 10],
       width: 3
     }),
@@ -33,18 +37,16 @@ const MeasureIteraction = function(options={}) {
   this._formatMeasure = null;
   // handel keydown event - delete of last vertex
   this._keyDownEventHandler = null;
-  switch (geometryType) {
-    case 'LineString':
-     this._formatMeasure = function(feature) {
-       let geometry = feature;
-       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
-         projection: this._projection.getCode()
-       }) : geometry.getLength();
-       const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km`: `${(Math.round(length * 100) / 100).toFixed(2)} m`;
-       return output;
-      };
-      break;
-    case 'Polygon':
+  if (Geometry.isLineGeometryType(geometryType)) {
+    this._formatMeasure = function(feature) {
+      let geometry = feature;
+      const length = useSphereMethods ? ol.sphere.getLength(geometry, {
+        projection: this._projection.getCode()
+      }) : geometry.getLength();
+      const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+      return output;
+    };
+  } else if (Geometry.isPolygonGeometryType(geometryType)){
       this._formatMeasure = function(feature) {
         let geometry = feature;
         const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
@@ -53,7 +55,6 @@ const MeasureIteraction = function(options={}) {
         const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
         return output;
       };
-      break;
   }
   const source = new ol.source.Vector();
   this._helpTooltipElement;
@@ -61,7 +62,7 @@ const MeasureIteraction = function(options={}) {
   this._feature = null;
   this._layer = new ol.layer.Vector({
     source: source,
-    style(feature) {
+    style() {
       const styles = [
         // linestring
         new ol.style.Style({
@@ -77,6 +78,7 @@ const MeasureIteraction = function(options={}) {
       return styles;
     }
   });
+
   ol.interaction.Draw.call(this, {
     source: source,
     type: geometryType,
@@ -101,7 +103,11 @@ proto.clear = function() {
   this._layer.getSource().clear();
   this._clearMessagesAndListeners();
   if (this._map) {
-    this._map.removeOverlay(this._measureTooltip);
+    removeMeasureTooltip({
+      map: this._map,
+      ...this.measureTooltip
+    });
+    this.measureTooltip = null;
     this._map.removeLayer(this._layer);
   }
 };
@@ -134,35 +140,28 @@ proto._removeLastPoint = function(event) {
 proto._drawStart = function(evt) {
   this._map = this.getMap();
   this._map.removeLayer(this._layer);
-  this._createMeasureTooltip();
-  this._createHelpTooltip();
   this._feature = evt.feature;
   this._keyDownEventHandler = _.bind(this._removeLastPoint, this);
   $(document).on('keydown', this._keyDownEventHandler);
   // vado a ripulire tutte le features
   this._layer.getSource().clear();
-  this._poinOnMapMoveListener = this._map.on('pointermove', (evt) => {
+  this._poinOnMapMoveListener = this._map.on('pointermove', evt => {
     if (evt.dragging) return;
-    if (this._feature) helpMsg = t(this._helpMsg);
-    this._helpTooltipElement.innerHTML = helpMsg;
-    this._helpTooltip.setPosition(evt.coordinate);
-    this._helpTooltipElement.classList.remove('hidden');
+    if (this._feature && this._helpMsg) {
+      const helpMsg = t(this._helpMsg);
+      this._helpTooltipElement.innerHTML = helpMsg;
+      this._helpTooltip.setPosition(evt.coordinate);
+      this._helpTooltipElement.classList.remove('hidden');
+    }
   });
-  let tooltipCoord = evt.coordinate;
-  this._featureGeometryChangelistener = this._feature.getGeometry().on('change', (evt) => {
-    const geom = evt.target;
-    if (geom instanceof ol.geom.Polygon) tooltipCoord = geom.getInteriorPoint().getCoordinates();
-    else if (geom instanceof ol.geom.LineString) tooltipCoord = geom.getLastCoordinate();
-    const output = this._formatMeasure(geom);
-    this._measureTooltipElement.innerHTML = output;
-    this._measureTooltip.setPosition(tooltipCoord);
-  });
+  this._createHelpTooltip();
+  this._createMeasureTooltip();
 };
 
 //funzione drawEnd
 proto._drawEnd = function() {
-  this._measureTooltipElement.className = 'mtooltip mtooltip-static';
-  this._measureTooltip.setOffset([0, -7]);
+  const {tooltip}= this.measureTooltip;
+  setMeasureTooltipStatic(tooltip);
   this._clearMessagesAndListeners();
   this._map.addLayer(this._layer);
 };
@@ -187,16 +186,16 @@ proto._createHelpTooltip = function() {
  * Creates a new measure tooltip
  */
 proto._createMeasureTooltip = function() {
-  this._measureTooltipElement && this._measureTooltipElement.parentNode.removeChild(this._measureTooltipElement);
-  this._measureTooltip && this._map.removeOverlay(this._measureTooltip);
-  this._measureTooltipElement = document.createElement('div');
-  this._measureTooltipElement.className = 'mtooltip mtooltip-measure';
-  this._measureTooltip = new ol.Overlay({
-    element: this._measureTooltipElement,
-    offset: [0, -15],
-    positioning: 'bottom-center'
+  this.measureTooltip && removeMeasureTooltip({
+    ...this.measureTooltip,
+    map: this._map
   });
-  this._map.addOverlay(this._measureTooltip);
+
+  this.measureTooltip = createMeasureTooltip({
+    map: this._map,
+    feature: this._feature
+  })
+
 };
 // END MEASURE CONTROLS //
 

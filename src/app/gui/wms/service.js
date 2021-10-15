@@ -6,7 +6,9 @@ function Service(options={}){
   const {wmsurls=['http://www502.regione.toscana.it/ows_catasto/com.rt.wms.RTmap/ows?map=owscatasto']} = options;
   this.state = {
     wmsurls
-  }
+  };
+  //get sidebar panel
+  this.panel;
 }
 
 const proto = Service.prototype;
@@ -18,12 +20,12 @@ proto.addNewWmsUrl = function(wmsurl){
 };
 
 proto.showWmsLayersPanel = function(wmsurl){
-  const panel = new WMSLayersPanel({
+  this.panel = new WMSLayersPanel({
     wmsurl,
     service: this
   });
-  panel.show();
-  return panel;
+  this.panel.show();
+  return this.panel;
 };
 
 proto.getWMSLayers = async function(wmsurl){
@@ -42,19 +44,24 @@ proto.getWMSLayers = async function(wmsurl){
   ]
 };
 
-proto.addWMSlayerToMap = function({url, name, projection, position, layers=[]}={}){
+proto.addWMSlayerToMap = async function({url, name, projection, position, layers=[]}={}){
   const mapService = GUI.getService('map');
-  mapService.addExternalWMSLayer({
-    url,
-    name,
-    layers,
-    projection,
-    position
-  })
+  try {
+    await mapService.addExternalWMSLayer({
+      url,
+      name,
+      layers,
+      projection,
+      position
+    });
+  } catch(err){
+    console.log(err)
+  }
+  this.panel.close();
 };
 
 proto.clear = function(){
-
+  this.panel = null;
 };
 
 

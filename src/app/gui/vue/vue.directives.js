@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const {t, tPlugin} = require('core/i18n/i18n.service');
-const { uniqueId, toRawType } = require('core/utils/utils');
+const {uniqueId, toRawType} = require('core/utils/utils');
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
@@ -304,7 +304,7 @@ const GlobalDirective = {
 
     Vue.directive('select2', {
       inserted(el, binding, vnode){
-        const { templateResult, templateSelection, multiple=false, search=true} = vnode.data.attrs || {};
+        const { templateResult, templateSelection, multiple=false, clear=false, search=true} = vnode.data.attrs || {};
         const selectDOMElement = $(el);
         selectDOMElement.select2({
           width: '100%',
@@ -313,6 +313,7 @@ const GlobalDirective = {
           templateSelection,
           minimumResultsForSearch: !search ? -1 : undefined
         });
+
         if (binding.value){
           selectDOMElement.on('select2:select', evt =>{
             const value = evt.params.data.id;
@@ -326,10 +327,26 @@ const GlobalDirective = {
               const value = evt.params.data.id;
               vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
             });
+          if (clear){
+            const unique_v_select2_attr = createDirectiveObj({
+              el,
+              attr: 'g3w-v-select2-id'
+            });
+            setUnwatch(({
+              id: unique_v_select2_attr,
+              unwatch: vm.$watch(()=> vnode.context[binding.value], value =>{
+                (multiple && value.length === 0 || value === null) && $(el).val(null).trigger('change');
+              })
+            }))
+          }
         }
       },
       unbind(el, binding, vnode){
         $(el).select2('destroy');
+        vnode.data.attrs.clear && unbindWatch({
+          el,
+          attr: 'g3w-v-select2-id'
+        })
       }
     })
   }
