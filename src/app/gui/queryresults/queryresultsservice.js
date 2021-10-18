@@ -15,6 +15,8 @@ const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+//used to get and set vue reactivity to queryresultservice
+const VM = new Vue();
 
 function QueryResultsService() {
   this.printService = new PrintService();
@@ -430,7 +432,6 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           downloads // ARE DOWNLOAD ACTIONS,
         };
         // used to
-        this.vm = new Vue();
         //check if has download actions
         this.state.layersactions[layer.id].push({
           id: `downloads`,
@@ -438,9 +439,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           class: GUI.getFontClass('download'),
           state,
           hint: `Downloads`,
-          change({features}){
-            features.forEach((feature, index)=>{
-              if (this.state.toggled[index] === undefined) this.vm.$set(this.state.toggled, index, false);
+          change({features}) {
+            features.forEach((feature, index) =>{
+              if (this.state.toggled[index] === undefined) VM.$set(this.state.toggled, index, false);
               else this.state.toggled[index] = false;
             });
           },
@@ -568,7 +569,6 @@ proto.clear = function() {
       async: false
     }
   };
-  this.vm = null; //reset
   this.clearState();
 };
 
