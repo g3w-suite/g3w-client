@@ -1,0 +1,23 @@
+.skin-dark {
+  .main-sidebar,
+  .main-sidebar-mobile{
+    background-color: @dark;
+  }
+  #g3w-sidebar.sidebar {
+    ul.sidebar-menu {
+      .sidebar-button {
+        color: @dark;
+      }
+      li.sidebaritem {
+        a {
+          span.treeview-label {
+            color: #FFFFFF !important;
+            &:hover{
+              color: lighten(@dark, 30%) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

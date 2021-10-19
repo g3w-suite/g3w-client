@@ -73,12 +73,17 @@
               </a>
             </li>
             <header-item :state="state" @show-custom-modal-content="showCustomModalContent" v-for="state in custom_header_items_position[3]" :key="state.id"></header-item>
-            <li v-if="languages" class="g3w-languages">
+            <li v-if="languages" class="g3w-languages" style="margin-right: 10px">
               <select v-select2="'language'" class="form-control" :templateSelection="templateResultLanguages" :templateResult="templateResultLanguages" v-model="language" style="cursor:pointer; width: 130px;">
                 <option v-for="_language in languages" :key="_language[0]" :value="_language[0]" :selected="_language[0] === language && 'selected'">
                   {{_language[1]}}
                 </option>
               </select>
+            </li>
+            <li class="g3w-color-mode dropdown user user-menu">
+              <a href="#" @click="changeColorMode" class="dropdown-toggle">
+                <span :class="colormode === 'light' ? g3wtemplate.getFontClass('moon'): g3wtemplate.getFontClass('sun')"></span>
+              </a>
             </li>
             <li v-if="frontendurl" class="dropdown">
               <a :href="frontendurl">

@@ -2,8 +2,8 @@
   <ul class="sidebar-menu">
     <li id="g3w-catalog-toc-views" class="treeview sidebaritem skin-border-color" style="margin-bottom: 5px; border-bottom: 2px solid">
       <a href="#" ref="g3w-map-theme-ancor" style="display: flex; align-items: center; padding: 5px 5px 5px 2px;">
-        <i style="padding: 3px;" :class="g3wtemplate.getFontClass('caret-down')"></i>
-        <i style="padding: 0 0 0 4px;" :class="g3wtemplate.getFontClass('eye')"></i>
+        <i style="padding: 3px;"  class="skin-color" :class="g3wtemplate.getFontClass('caret-down')"></i>
+        <i style="padding: 0 0 0 4px;" class="skin-color" :class="g3wtemplate.getFontClass('eye')"></i>
         <span v-show="current_map_theme " class="treeview-label new_line_too_long_text" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">
           <span style="color: #cccccc !important;" v-t:pre="'sdk.catalog.current_map_theme_prefix'">:</span>
           <span class="skin-color" style="font-size: 1.1em;">{{ current_map_theme }}</span>
