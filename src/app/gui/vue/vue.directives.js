@@ -55,8 +55,21 @@ const GlobalDirective = {
     Vue.directive('t-tooltip', {
       bind(_el, binding) {
         // handle automatic creation of tooltip
-        if (binding.modifiers.create) {
+        const {create=false, bottom=false, top=false, left=false, right=false} = binding.modifiers;
+        if (create) {
+          _el.setAttribute('data-toggle', 'tooltip');
+          const setPosition = Object.entries({
+            bottom,
+            top,
+            left,
+            right
+          }).find(([position, value]) => value);
+          if (setPosition && setPosition[1]) {
+            _el.setAttribute('data-placement', `${setPosition[0]}`);
+            _el.classList.add(`skin-tooltip-${setPosition[0]}`)
+          }
           const domelement = $(_el);
+
           domelement.tooltip({
             trigger : ApplicationState.ismobile ? 'click': 'hover'
           });
@@ -65,7 +78,6 @@ const GlobalDirective = {
             setTimeout(()=>$(this).tooltip('hide'), 600);
           });
         }
-
         const unique_v_t_tooltip_attr = createDirectiveObj({
           el:_el,
           attr: 'g3w-v-t-tooltip-id'

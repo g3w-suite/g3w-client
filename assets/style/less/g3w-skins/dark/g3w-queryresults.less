@@ -7,6 +7,20 @@
   .queryresults-wrapper {
     .queryresults-container {
       .queryresults {
+        .box-header, .box-body{
+          background-color: lighten(@dark, 10%);
+          .box-title{
+            color: #eeeeee;
+          }
+        }
+        .box-body{
+          table{
+            background-color: #eeeeee !important;
+            tbody{
+              border: 0;
+            }
+          }
+        }
         .query_relation_field_message {
          color: @dark;
         }
@@ -62,7 +76,7 @@
       .featurebox-header-open {
         td {
           background-color:  lighten(@dark, 30%) !important;
-          border: 1px solid lighten(@dark, 30%) !important;
+          //border: 1px solid lighten(@dark, 10%) !important;
         }
       }
 
@@ -84,10 +98,15 @@
   }
 
   .query-relations-page {
-    td {
-      //color: @dark;
+    .query-relation{
+      .header{
+        .relation-tile{
+          span {
+            color: #eeeeee !important;
+          }
+        }
+      }
     }
   }
-
 }
 

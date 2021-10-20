@@ -1,5 +1,12 @@
 .skin-dark {
   .g3wform_header {
+    background-color: #eeeeee !important;
+    &.box-header.with-border {
+      border-bottom: 1px solid @dark !important;
+      i.action.button.skin-color {
+        color: @dark !important;
+      }
+    }
     .title {
       &.one {
         color: darken(@dark, 20%);
@@ -59,7 +66,9 @@
       color: @dark;
     }
   }
-
+  .g3w-form {
+    background-color: #eeeeee;
+  }
   .g3w-form, .g3wform_footer {
     .g3w-relationname {
       color: @dark;
@@ -70,6 +79,10 @@
     .link {
       color: @dark;
     }
+  }
+  .g3wform_footer{
+    background-color: @dark !important;
+    color: #eeeeee !important;
   }
   .bootstrap-datetimepicker-widget {
     a > span.glyphicon-remove {

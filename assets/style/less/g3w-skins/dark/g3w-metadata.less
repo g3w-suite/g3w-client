@@ -1,4 +1,20 @@
 .skin-dark {
+  #project-catalog {
+    #project-catalog-container {
+      .metadata-nav-bar {
+        li {
+          &.active {
+            a.metadata-item-tab {
+              border-bottom-color: lighten(@dark, 10%) !important;
+              border-bottom-width: 4px;
+              background-color: transparent !important;
+              color: #eeeeee !important;
+            }
+          }
+        }
+      }
+    }
+  }
   .metadata-body.tab-content{
     color: #eeeeee !important;
     background-color: @dark !important;
