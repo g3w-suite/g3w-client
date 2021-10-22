@@ -1,4 +1,23 @@
 .skin-dark {
+  .form-control:focus {
+    border-color: @dark !important;
+  }
+  .modal-title {
+    font-weight: bold;
+  }
+  .modal-content {
+    background-color: @dark !important;
+    .modal-header {
+      border-bottom:1px solid  #21292d !important;
+      .bootbox-close-button {
+        color: #ffffff !important;
+        opacity: 0.8 !important;
+      }
+      color: #ffffff !important;
+      font-weight: bold !important;
+    }
+  }
+
   .magic-checkbox:checked+label:before {
     border: 1px solid #eeeeee;
     background: @dark;
@@ -28,4 +47,56 @@
     background-color: lighten(@dark, 20%);
     color: #eeeeee;
   }
+  .dataTables_info {
+    color: #eeeeee;
+  }
+  .dataTables_paginate {
+    .paginate_button {
+      color: #eeeeee !important;
+    }
+  }
+  .dataTables_scroll {
+    border-color:  #21292d !important;
+  }
+  .dataTables_length {
+    color: #eeeeee !important;
+    select {
+      color: @dark !important;
+    }
+  }
+  .dataTables_scrollHeadInner {
+    table {
+      &.table-striped {
+        thead {
+          background-color: #707070;
+          tr th {
+            border-color: @dark;
+          }
+        }
+      }
+    }
+  }
+  table {
+    &.table-striped {
+      tbody {
+        tr.selected {
+          background-color: darken(@dark, 10%) !important;
+        }
+        tr td {
+          border-color: @dark;
+        }
+      }
+      tr {
+        color: #eeeeee;
+        &.odd {
+          background-color: #394247 !important;
+        }
+        &.even {
+          background-color: #707070 !important;
+        }
+      }
+    }
+  }
 }
+
+

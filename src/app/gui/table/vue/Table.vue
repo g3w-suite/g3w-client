@@ -98,7 +98,7 @@
             const feature = this.state.features[index];
             const hasGeometry = !!feature.geometry;
             $(rowElement).addClass('feature_attribute');
-            feature.selected && $(rowElement).addClass('selected');
+            feature.selected && $(rowElement).attr('selected','selected');
             $(rowElement).on('click', ()=> hasGeometry && this.zoomAndHighLightFeature(feature));
             $(rowElement).on('mouseover', () => hasGeometry && this.zoomAndHighLightFeature(feature, false));
             $(rowElement).children().each((index, element)=> {
@@ -114,8 +114,9 @@
                 SelectRowInstance.$on('selected', feature => this.$options.service.addRemoveSelectedFeature(feature));
                 this.$watch(
                   () => feature.selected,
-                  function (selected) {
-                    selected ? $(rowElement).addClass('selected'): $(rowElement).removeClass('selected');
+                  selected => {
+                    if (selected) rowElement.setAttribute('selected', 'selected');
+                    else rowElement.removeAttribute('selected');
                   }
                 );
                 contentDOM = SelectRowInstance.$mount().$el;

@@ -1,12 +1,12 @@
 <template>
-  <tbody id="table_body_attributes" >
+  <tbody id="table_body_attributes">
     <tr role="row" class="feature_attribute"
         style="cursor: pointer"
         v-for="(feature, index) in features" :key="feature.id"
         @mouseover="zoomAndHighLightFeature(feature, false)"
         @click="zoomAndHighLightFeature(feature, index)"
-        :selected="selectedRow === index"
-        :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
+        :selected="feature.selected"
+        :class="{'geometry': !!feature.geometry}">
       <td v-for="(header, hindex) in headers" :tab-index="1">
         <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"></select-row>
         <field v-else :state="{value: feature.attributes[header.name]}"></field>

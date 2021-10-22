@@ -2,6 +2,9 @@
   .g3w-viewport {
     .g3w-view {
       &.content {
+        &.split-h, &.split-v {
+          border-left: 1px solid #21292d;
+        }
         .table-header-tool {
           background-color: @dark;
         }
@@ -30,7 +33,7 @@
       background-color: @dark;
       #layer_attribute_table {
         tbody tr.feature_attribute[selected="selected"] td{
-          background: lighten(@dark, 30%) !important;
+          background: darken(@dark, 10%) !important;
         }
       }
     }
