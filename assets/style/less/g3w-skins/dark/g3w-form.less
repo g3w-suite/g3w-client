@@ -1,15 +1,15 @@
 .skin-dark {
   .g3wform_header {
-    background-color: #eeeeee !important;
+    background-color: #394247 !important;
     &.box-header.with-border {
       border-bottom: 1px solid @dark !important;
       i.action.button.skin-color {
-        color: @dark !important;
+        color: #eeeeee !important;
       }
     }
     .title {
       &.one {
-        color: darken(@dark, 20%);
+        color: #eeeeee;
       }
       color: lighten(@dark, 20%);
       &.tabs:hover {
@@ -22,6 +22,20 @@
     }
   }
   .g3wform_body {
+    ul.formquerytabs.nav-tabs {
+      border-color:@dark;
+      li > a {
+        &:hover {
+          background-color: @dark !important;
+          border-color: @dark !important;
+        }
+        color: #eeeeee !important;
+      }
+      li.active > a{
+        border-color: @dark ;
+      }
+
+    }
     form .box-primary {
       border-top-color: @dark
     }
@@ -67,7 +81,11 @@
     }
   }
   .g3w-form {
-    background-color: #eeeeee;
+    .tab-node.group .sub-group {
+      background-color: @dark;
+    }
+    background-color: #394247;
+    color: #eeeeee;
   }
   .g3w-form, .g3wform_footer {
     .g3w-relationname {
