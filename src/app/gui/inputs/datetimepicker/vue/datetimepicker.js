@@ -51,18 +51,18 @@ const DateTimePickerInput = Vue.extend({
           horizontal: 'right'
         },
         showClose: true,
-        locale: locale
+        locale
       });
     });
-    $(`#${this.iddatetimepicker}`).on("dp.change", (e) => {
+    $(`#${this.iddatetimepicker}`).on("dp.change", evt => {
       const newDate = $('#'+this.idinputdatetimepiker).val();
       this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
       this.widgetChanged();
     });
-    $(`#${this.iddatetimepicker}`).on("dp.show", (e) => {
+    $(`#${this.iddatetimepicker}`).on("dp.show", evt => {
       this.$emit('datetimepickershow');
     });
-    $(`#${this.iddatetimepicker}`).on("dp.hide", (e) => {
+    $(`#${this.iddatetimepicker}`).on("dp.hide", evt => {
       this.$emit('datetimepickershow');
     });
     ApplicationState.ismobile && setTimeout(()=>{

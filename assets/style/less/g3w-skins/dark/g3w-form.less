@@ -103,11 +103,18 @@
     color: #eeeeee !important;
   }
   .bootstrap-datetimepicker-widget {
+    &.dropdown-menu {
+      div {
+        background-color: @dark;
+        color: #eeeeee;
+      }
+    }
     a > span.glyphicon-remove {
       color: @dark;
     }
     .datepicker .active{
-      background-color: @dark;
+      background-color: #eeeeee;
+      color: @dark
     }
   }
 
