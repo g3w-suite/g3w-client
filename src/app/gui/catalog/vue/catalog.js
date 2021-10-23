@@ -651,7 +651,7 @@ Vue.component('tristate-tree', {
             layerId: id
           }));
           if (parentGroup.mutually_exclusive) {
-            parentGroup.nodes.forEach(node => node.checked = node.id === layer.id);
+            parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }
           while (parentGroup){
             parentGroup.checked = true;
