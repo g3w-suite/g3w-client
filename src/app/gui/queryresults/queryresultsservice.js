@@ -796,9 +796,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
             getRelationFieldsFromFormStructure(node);
           }
         }
-        const fields = layer.getFields().filter(field => {
-          return field.show
-        }); // get features show
+        const fields = layer.getFields().filter(field => field.show); // get features show
         formStructure = {
           structure,
           fields
@@ -906,21 +904,27 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
   }
 };
 
+/**
+ * parse attributre to show on rsult based on field
+ * @param layerAttributes
+ * @param feature
+ * @param sourceType
+ * @returns {{name: T, show: boolean, label: T}[]|*}
+ * @private
+ */
 proto._parseAttributes = function(layerAttributes, feature, sourceType) {
   const featureAttributes = feature.getProperties();
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
-    const attributes = layerAttributes.filter((attribute) => {
-      return featureAttributesNames.indexOf(attribute.name) > -1;
-    });
+    const attributes = layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1);
     return attributes;
   } else {
     return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && sourceType === 'wms' || sourceType === undefined
+        show: featureAttributesName !== G3W_FID && (sourceType === 'wms' || sourceType === undefined || sourceType === 'gdal')
       }
     })
   }

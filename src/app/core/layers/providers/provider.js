@@ -10,7 +10,7 @@ function Provider(options = {}) {
   this._isReady = false;
   this._name = 'provider';
   this._layer = options.layer;
-  this._hasFieldsStartWithNumber = false;
+  this._hasFieldsStartWithNotPermittedKey;
   base(this);
 }
 
@@ -61,7 +61,7 @@ proto.extractGML = function (response) {
   const boundary = '\r\n--';
   const parts = response.split(new RegExp(boundary));
   parts.forEach((part) => {
-    isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
+    const isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
     if (isGmlPart) {
       const gml = part.substr(part.indexOf("<?xml"));
       return gml;
@@ -74,9 +74,10 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   layers = layers ? layers : [this._layer];
   const layer = layers[0];
   const infoFormat = layer.getInfoFormat();
+  let _response;
   switch(infoFormat) {
     case 'application/json':
-      return this._parseGeoJsonResponse({
+      _response = this._parseGeoJsonResponse({
         layers,
         response,
         projections,
@@ -92,13 +93,15 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
         response,
         wms
       });
-      return this._getHandledResponsesFromResponse({
+      _response = this._getHandledResponsesFromResponse({
         response,
         layers,
         projections
         //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number
       });
   }
+  this._hasFieldsStartWithNotPermittedKey = null;
+  return _response;
 };
 
 //method to handle application/json response qgis
@@ -299,12 +302,14 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, "g");
     response = response.replace(reg, `qgs:layer${i}`);
   }
-  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g)];
-  this._hasFieldsStartWithNumber = !!arrayQGS.length;
+  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
   arrayQGS.forEach((find, idx) => {
     if (idx%2 === 0) {
+      if (!this._hasFieldsStartWithNotPermittedKey) this._hasFieldsStartWithNotPermittedKey = {};
+      const originalField = find[0].replace('qgs:', '');
+      this._hasFieldsStartWithNotPermittedKey[`${find[1]}${find[2]}`] = originalField;
       const regex = new RegExp(`${find[0]}`, "g");
-      response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}>`)
+      response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}`)
     }
   });
   //PATCH id strange
@@ -414,14 +419,14 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
   const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
   const parser = new ol.format.WMSGetFeatureInfo();
   const features = this._transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-  if (features.length && this._hasFieldsStartWithNumber) {
+  if (features.length && this._hasFieldsStartWithNotPermittedKey) {
     const properties = Object.keys(features[0].getProperties());
     const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
     features.forEach(feature => {
       numericFields.forEach(_field => {
         const value = feature.get(_field);
         const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-        feature.set(ori_field, value);
+        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], value);
         feature.unset(_field);
       })
     });
@@ -444,7 +449,7 @@ proto._reverseFeaturesCoordinates = function(features) {
 proto._parseLayermsGMLOutput = function(data) {
   const layers = this._layer.getQueryLayerOrigName();
   const parser = new ol.format.WMSGetFeatureInfo({
-    layers: layers
+    layers
   });
   return parser.readFeatures(data);
 };
