@@ -104,7 +104,8 @@ const font = {
   target: "fas fa-bullseye",
   pin: "fas fa-map-pin",
   square: "far fa-square",
-  move: "fas fa-arrows-alt"
+  move: "fas fa-arrows-alt",
+  refresh: "fas fa-sync-alt"
 };
 
 const Vueappplugin = {

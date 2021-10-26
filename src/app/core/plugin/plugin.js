@@ -213,6 +213,7 @@ proto.createSideBarComponent = function(vueComponentObject, options={}){
     open=false,
     collapsible= true,
     mobile=true,
+    isolate=false,
     iconConfig={},
     events={},
     sidebarOptions={position:1}
@@ -227,6 +228,7 @@ proto.createSideBarComponent = function(vueComponentObject, options={}){
       title,
       open,
       collapsible,
+      isolate,
       iconColor: iconConfig.color && iconConfig.color,
       icon: iconConfig.icon && GUI.getFontClass(iconConfig.icon),
       mobile,
@@ -234,6 +236,7 @@ proto.createSideBarComponent = function(vueComponentObject, options={}){
     });
   GUI.addComponent(PluginSiderBarComponent, 'sidebar', sidebarOptions);
   this.once('unload', () => GUI.removeComponent(id, 'sidebar', sidebarOptions));
+  return PluginSiderBarComponent;
 };
 
 // unload (case change map)
