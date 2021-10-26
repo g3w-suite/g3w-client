@@ -22,7 +22,7 @@ const MetadataComponent = function(options = {}) {
   this._service.on('reload', () => this.setOpen(false));
   this.setInternalComponent = function () {
     this.internalComponent = new InternalComponent({
-      service: service
+      service
     });
     this.internalComponent.state = service.state;
     return this.internalComponent;

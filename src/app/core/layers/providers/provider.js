@@ -304,7 +304,6 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
   const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
   arrayQGS.forEach((find, idx) => {
     if (idx%2 === 0) {
-      console.log(find)
       if (!this._hasFieldsStartWithNotPermittedKey) this._hasFieldsStartWithNotPermittedKey = {};
       const originalField = find[0].replace('qgs:', '');
       this._hasFieldsStartWithNotPermittedKey[`${find[1]}${find[2]}`] = originalField;

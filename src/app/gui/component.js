@@ -14,6 +14,8 @@ const Component = function(options={}) {
     open: options.open || false, // open,
     resizable: options.resizable || false,
     info: options.info || null,
+    loading: options.loading || false,
+    disabled: options.disabled || false,
     sizes: {
       width:0,
       height:0
@@ -28,6 +30,12 @@ const Component = function(options={}) {
     setVisible(bool) {
       this.state.visible = bool;
       this._setVisible(bool);
+    },
+    setLoading(bool=false){
+      this.state.loading = bool;
+    },
+    setDisabled(bool=false){
+      this.state.disabled = bool;
     },
     reload() {
       this._reload();

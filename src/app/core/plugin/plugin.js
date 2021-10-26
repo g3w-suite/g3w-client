@@ -209,7 +209,8 @@ proto.removeTools = function() {
 proto.createSideBarComponent = function(vueComponentObject, options={}){
   const PluginSiderBarComponent = ComponentsFactory.buildSidebar({vueComponentObject}, options );
   const id = PluginSiderBarComponent.getId();
-  this.once('unload', () => GUI.removeComponent(id, 'sidebar'));
+  this.once('unload', () => GUI.removeComponent(id, 'sidebar'))
+  return PluginSiderBarComponent;
 };
 
 // unload (case change map)

@@ -106,7 +106,8 @@ const font = {
   square: "far fa-square",
   move: "fas fa-arrows-alt",
   moon: "fas fa-moon",
-  sun: "fas fa-sun"
+  sun: "fas fa-sun",
+  refresh: "fas fa-sync-alt"
 };
 
 const Vueappplugin = {
