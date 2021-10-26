@@ -121,11 +121,21 @@
       }
     }
   }
-
   .bootstrap-datetimepicker-widget {
-    div.datetimepicker {
-
-      background-color: @dark;
+    background-color: @dark !important;
+    border-color: @dark !important;
+    table {
+      background-color: #394247 !important;
+      color: #eeeeee !important;
+      thead tr th:hover {
+        background-color: @dark !important;
+        color: #eeeeee !important;
+      }
+      tbody span:hover, tbody td.day:hover {
+        background-color: @dark !important;
+        color: #eeeeee !important;
+      }
     }
   }
+
 }

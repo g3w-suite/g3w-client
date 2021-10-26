@@ -1,8 +1,8 @@
 <baseinput :state="state">
   <div slot="body" >
-    <div class='input-group date' :id='iddatetimepicker' v-disabled="!editable">
+    <div class='input-group date' ref="iddatetimepicker" v-disabled="!editable">
       <input
-        :id="idinputdatetimepiker"
+        ref="idinputdatetimepiker"
         :readonly="!editable || isMobile() ? 'readonly' : null"
         type='text'
         :class="{'input-error-validation' : notvalid}"
