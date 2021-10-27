@@ -121,7 +121,7 @@ function PluginsRegistry() {
     return new Promise((resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
         const baseUrl = this.pluginsBaseUrl+name;
-        const scriptUrl = baseUrl + '/js/plugin.js?'+Date.now();
+        const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
         pluginConfig.baseUrl= this.pluginsBaseUrl;
         this._loadScript(scriptUrl, name)
           .ready(name, () => {
