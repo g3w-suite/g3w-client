@@ -172,7 +172,7 @@ function SidebarService() {
       if (component === sidebarComponent) {
         component.unmount();
         this.state.components.splice(index, 1);
-        if (position !== undefined) $('#g3w-sidebarcomponents').children(':visible')[position].remove();
+        if (position !== undefined && Number.isInteger(position)) $('#g3w-sidebarcomponents').children(':visible')[position].remove();
         else $('#g3w-sidebarcomponents').children(`#${component.id}`).remove();
         return false;
       }
