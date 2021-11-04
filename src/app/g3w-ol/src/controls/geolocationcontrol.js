@@ -34,7 +34,7 @@ const proto = GeolocationControl.prototype;
  * @private
  */
 proto._showMarker = function({map, coordinates, show=true}){
-  this._layer.getSource().clear();
+  this._layer && this._layer.getSource().clear();
   if (show)  {
     map.getView().setCenter(coordinates);
     const feature = new ol.Feature({

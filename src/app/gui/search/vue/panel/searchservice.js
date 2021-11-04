@@ -1,4 +1,4 @@
-import { ALLVALUE, RETURN_TYPES}  from '../../constants';
+import { ALLVALUE }  from '../../constants';
 const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');

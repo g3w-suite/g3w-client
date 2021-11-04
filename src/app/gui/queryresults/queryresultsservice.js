@@ -79,6 +79,7 @@ function QueryResultsService() {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
     mapcontrol: null, // add current toggled map control if toggled
+    type: null,
     toggleeventhandler: null
   };
   this.setters = {
@@ -89,9 +90,11 @@ function QueryResultsService() {
      */
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
-      !add && this.clearState();
-      this.state.query = queryResponse.query;
-      this.state.type = queryResponse.type;
+      if (!add) {
+        this.clearState();
+        this.state.query = queryResponse.query;
+        this.state.type = queryResponse.type;
+      }
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers, options);
     },
@@ -266,7 +269,9 @@ proto.checkIfLayerHasNoFeatures = function(layer){
     setTimeout(() => {
       this.state.layers = this.state.layers.filter(_layer => _layer.id !== layer.id);
       this.clearHighlightGeometry(layer);
-      this.removeAddFeaturesLayerResultInteraction(true);
+      this.removeAddFeaturesLayerResultInteraction({
+        toggle: true
+      });
     })
   }
 };
@@ -407,7 +412,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           }
         });
       } else if (layer.downloads.length > 1 ){
-        // SET COSTANT TO AVOID TO CHANGE ALL THINGS
+        // SET CONSTANT TO AVOID TO CHANGE ALL THINGS
         const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
         const downloads = [];
         layer.downloads.forEach(format => {
@@ -557,7 +562,9 @@ proto.clear = function() {
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
-  this.removeAddFeaturesLayerResultInteraction(true);
+  this.removeAddFeaturesLayerResultInteraction({
+    toggle: true
+  });
   this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
@@ -611,14 +618,17 @@ proto.isOneLayerResult = function(){
  *
  * @param toggle boolean If true toggle true the mapcontrol
  */
-proto.removeAddFeaturesLayerResultInteraction = function(toggle=false){
-  if (this._addFeaturesLayerResultInteraction.interaction)
-    this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
+proto.removeAddFeaturesLayerResultInteraction = function({toggle=false, mapcontrol=true}={}){
+  if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   this._addFeaturesLayerResultInteraction.interaction = null;
   this._addFeaturesLayerResultInteraction.id = null;
+
   // check if map control query map is register and if toggled
   toggle && this._addFeaturesLayerResultInteraction.mapcontrol && this._addFeaturesLayerResultInteraction.mapcontrol.toggle(true);
-  this._addFeaturesLayerResultInteraction.mapcontrol = null;
+  if (mapcontrol) {
+    this._addFeaturesLayerResultInteraction.mapcontrol = null;
+    this._addFeaturesLayerResultInteraction.type = null;
+  }
   this._addFeaturesLayerResultInteraction.toggleeventhandler && this.mapService.off('mapcontrol:toggled', this._addFeaturesLayerResultInteraction.toggleeventhandler);
   this._addFeaturesLayerResultInteraction.toggleeventhandler = null;
 };
@@ -636,13 +646,18 @@ proto.addLayerFeaturesToResultsAction = function(layer){
     const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
     if (layer) layer.addfeaturesresults.active = false;
     //remove previous add result interaction
-    this.removeAddFeaturesLayerResultInteraction();
+    this.removeAddFeaturesLayerResultInteraction({
+      mapcontrol: false
+    });
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
     const {external} = layer;
-    if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
+    if (!this._addFeaturesLayerResultInteraction.mapcontrol) {
+      this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
+      this._addFeaturesLayerResultInteraction.type = this._addFeaturesLayerResultInteraction.mapcontrol.name;
+    }
     this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, {
       close: false
@@ -655,6 +670,10 @@ proto.addLayerFeaturesToResultsAction = function(layer){
             inputs: {
               coordinates,
               layerIds: [layer.id],
+              filterObject: {
+                QUERYABLE: true,
+                VISIBLE: true
+              },
               multilayers: false,
             }, outputs: {
               add: true
@@ -674,13 +693,13 @@ proto.addLayerFeaturesToResultsAction = function(layer){
       }
     });
     const eventHandler = evt =>{
-      if (evt.target.isToggled() && evt.target.isClickMap()){
-        layer.addfeaturesresults.active = false;
-      }
+      if (evt.target.isToggled() && evt.target.isClickMap()) layer.addfeaturesresults.active = false;
     };
     this._addFeaturesLayerResultInteraction.toggleeventhandler = eventHandler;
     this.mapService.once('mapcontrol:toggled', eventHandler);
-  } else this.removeAddFeaturesLayerResultInteraction(true);
+  } else this.removeAddFeaturesLayerResultInteraction({
+    toggle: true
+  });
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
@@ -697,15 +716,14 @@ proto.clearState = function(options={}) {
   this.state.querytitle = "";
   this.state.changed = false;
   // clear action if present
-  Object.values(this.state.layersactions).forEach(layeractions =>{
-    layeractions.forEach(action => action.clear && action.clear());
-  });
+  Object.values(this.state.layersactions).forEach(layeractions =>layeractions.forEach(action => action.clear && action.clear()));
   this.state.layersactions = {};
   this.state.actiontools = {};
   this.state.layeractiontool = {};
   // current action tools
   this.state.currentactiontools = {};
   this.state.layersFeaturesBoxes = {};
+  this.removeAddFeaturesLayerResultInteraction();
 };
 
 proto.getState = function() {
@@ -1153,7 +1171,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
     fids : features.map(feature => feature.attributes[G3W_FID]).join(',')
   };
   /**
-   * is a function that che be called in case of queryby polygon
+   * is a function that che be called in case of querybypolygon
    * @param active
    */
   const runDownload = async (active=false) => {
@@ -1194,11 +1212,12 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       });
     }
   };
-
-  if (query.type === 'polygon'){
-    //check if multidownload i present
+  const isQueryByPolygonControl = this._addFeaturesLayerResultInteraction.type === 'querybypolygon';
+  if (query.type === 'polygon' || isQueryByPolygonControl){
+    //check if multidownload if present
     const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-    const {fid, layer:polygonLayer} = query;
+    let {fid, layer:polygonLayer} = query;
+    polygonLayer = polygonLayer || this._addFeaturesLayerResultInteraction.mapcontrol.selectedLayer;
     const config = {
       choices: [
         {
@@ -1213,7 +1232,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
         },
       ],
       download: type =>{
-        if (type === 'polygon'){
+        if (type === 'polygon' || isQueryByPolygonControl){
           // id type polygon add paramateres to api download
           data.sbp_qgs_layer_id = polygonLayer.getId();
           data.sbp_fid = fid;

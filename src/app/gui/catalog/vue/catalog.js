@@ -325,9 +325,10 @@ const vueComponentOptions = {
       });
       changed && this._hideMenu();
     },
-    setWMSOpacity({id, opacity}){
+    setWMSOpacity(opacity){
+      this.layerMenu.layer.opacity = opacity;
       const mapService = GUI.getComponent('map').getService();
-      const layer = mapService.getLayerById(id);
+      const layer = mapService.getLayerById(this.layerMenu.layer.id);
       layer.setOpacity(opacity);
       this._hideMenu();
     },

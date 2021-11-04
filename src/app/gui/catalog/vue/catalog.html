@@ -62,7 +62,7 @@
       <div>{{ layerMenu.layer.title}}</div>
       <div style="font-weight: normal; font-size: 0.8em">{{getGeometryType(layerMenu.layer.id, layerMenu.layer.external)}}</div>
     </li>
-    <li style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer">
+    <li v-if="!layerMenu.layer.projectLayer">
       <div style="display: flex; justify-content: space-between; align-items: center">
         <span class="item-text" v-t="'Position'" style="margin-right: 30px;"></span>
         <layerspositions @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})" style="display: flex; flex-direction: column; justify-content: space-between" :position="layerMenu.layer.position"></layerspositions>
@@ -71,7 +71,7 @@
     <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
-      <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: layerMenu.metadatainfoMenu.left +   'px' }">
+      <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: layerMenu.metadatainfoMenu.left +   'px' }">
         <div class="layer-menu-metadata-info">{{layerMenu.layer.metadata.abstract}}</div>
       </div>
     </li>
@@ -79,7 +79,7 @@
       <span class="menu-icon" :class="g3wtemplate.getFontClass('palette')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
       <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
-      <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0" :style="{ top: layerMenu.stylesMenu.top + 'px', left: layerMenu.stylesMenu.left +   'px' }">
+      <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; padding-left: 0" :style="{ top: layerMenu.stylesMenu.top + 'px', left: layerMenu.stylesMenu.left +   'px' }">
         <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
           <span v-if="style.current" style="font-size: 0.8em;" :class="g3wtemplate.getFontClass('circle')"></span>
           <span>{{style.name}}
@@ -117,12 +117,12 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
-    <li @click.prevent.stop="" style="background: #ffffff; color: #000000" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
+    <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type === 'wms'" >
       <div style="display: flex; justify-content: space-between">
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>
       </div>
-      <input @change="setWMSOpacity(layerMenu.layer)" class="skin-color" type="range" min="0" max="1" step="0.1" v-model="layerMenu.layer.opacity">
+      <range :value="layerMenu.layer.opacity" @change="setWMSOpacity"></range>
     </li>
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >

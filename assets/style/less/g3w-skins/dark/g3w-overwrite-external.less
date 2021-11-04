@@ -1,4 +1,81 @@
 .skin-dark {
+
+  /* START INPUT RANGE */
+
+  input[type="range"] {
+    background-image: linear-gradient(@dark, @dark);
+  }
+
+  /* Input Thumb */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: @dark;
+    cursor: ew-resize;
+    box-shadow: 0 0 2px 0 #555;
+    transition: background .3s ease-in-out;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: @dark;
+    cursor: ew-resize;
+    box-shadow: 0 0 2px 0 #555;
+    transition: background .3s ease-in-out;
+  }
+
+  input[type="range"]::-ms-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: @dark;
+    cursor: ew-resize;
+    box-shadow: 0 0 2px 0 #555;
+    transition: background .3s ease-in-out;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    background: #eeeeee;
+  }
+
+  input[type="range"]::-moz-range-thumb:hover {
+    background: #eeeeee;
+  }
+
+  input[type="range"]::-ms-thumb:hover {
+    background: #eeeeee;
+  }
+
+  /* Input Track */
+  input[type=range]::-webkit-slider-runnable-track  {
+    -webkit-appearance: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
+
+  input[type=range]::-moz-range-track {
+    -webkit-appearance: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
+
+  input[type="range"]::-ms-track {
+    -webkit-appearance: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
+
+  /* END INPUT RANGE */
+
   .form-control:focus {
     border-color: @dark !important;
   }
@@ -49,6 +126,9 @@
   .c3-title {
     fill: #eeeeee;
   }
+  .select2-container--default .select2-results__option{
+    color: @dark;
+  }
 
   .select2-container--default .select2-results__option--highlighted[aria-selected] {
     background-color: @dark !important;
@@ -58,6 +138,10 @@
   .select2-container--default .select2-results__option[aria-selected=true] {
     background-color: lighten(@dark, 20%);
     color: #eeeeee;
+  }
+
+  .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: @dark;
   }
 
   .dataTables_info {

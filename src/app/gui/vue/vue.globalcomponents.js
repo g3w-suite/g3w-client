@@ -7,6 +7,8 @@ import Progressbar from './global-components/progressbar';
 import HelpDiv from './global-components/helpdiv.vue';
 import Resize from './global-components/resize.vue'
 import LayerPositions from './global-components/layerpositions.vue';
+import DateTime from './global-components/datetime.vue';
+import Range from './global-components/range.vue';
 
 const GlobalComponents = {
   install(Vue) {
@@ -19,6 +21,8 @@ const GlobalComponents = {
     Vue.component(HelpDiv.name, HelpDiv);
     Vue.component(Resize.name, Resize);
     Vue.component(LayerPositions.name, LayerPositions);
+    Vue.component(DateTime.name, DateTime);
+    Vue.component(Range.name, Range);
   }
 };
 

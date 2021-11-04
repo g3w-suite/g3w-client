@@ -1,7 +1,7 @@
 import {MAP_SETTINGS} from '../../constant';
 import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
-const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = require('core/utils/utils');
+const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -1108,6 +1108,42 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
   }
 };
 
+/**
+ * Method to handele ztf url parameter
+ * @param zoom_to_feature
+ */
+proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
+  try {
+    const [layerNameorId, fieldsValuesSearch] = zoom_to_features.split(':');
+    if (layerNameorId && fieldsValuesSearch) {
+      const projectLayer = this.project.getLayers().find(layer => {
+        return layer.id === layerNameorId || layer.name === layerNameorId;
+      });
+      if (projectLayer) {
+        const layer = this.project.getLayerById(projectLayer.id);
+        const filter = createFilterFromString({
+          layer,
+          search_endpoint,
+          filter: fieldsValuesSearch
+        });
+        const {data} = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter,
+            search_endpoint
+          },
+          outputs: false
+        });
+        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features, {
+          highlight: true
+        })
+      }
+    }
+  } catch(err){
+    console.log(err)
+  }
+};
+
 proto.getMapExtent = function(){
   const map = this.getMap();
   return map.getView().calculateExtent(map.getSize());
@@ -1520,7 +1556,11 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
   const zoom_to_fid = searchParams.get('zoom_to_fid');
-  zoom_to_fid &&  this.zoomToFid(zoom_to_fid);
+  const zoom_to_features = searchParams.get('ztf'); // zoom to features
+  if (zoom_to_fid) this.zoomToFid(zoom_to_fid);
+  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({
+    zoom_to_features
+  });
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;

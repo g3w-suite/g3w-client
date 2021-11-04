@@ -29,13 +29,13 @@ const DateTimePickerInput = Vue.extend({
     await this.$nextTick();
     const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
     this.service.setValidatorOptions({
-      fielddatetimeformat: fielddatetimeformat
+      fielddatetimeformat
     });
     const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     const locale = this.service.getLocale();
     const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
     const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].fieldformat);
-    $(this.$refs.iddatetimepicker).datetimepicker({
+    const dataPickerOptions = {
       defaultDate: date,
       format: datetimedisplayformat,
       ignoreReadonly: true,
@@ -47,7 +47,9 @@ const DateTimePickerInput = Vue.extend({
       },
       showClose: true,
       locale
-    });
+    };
+    console.log(dataPickerOptions)
+    $(this.$refs.iddatetimepicker).datetimepicker(dataPickerOptions);
     $(this.$refs.iddatetimepicker).on("dp.change", evt => {
       const newDate = $(this.$refs.idinputdatetimepiker).val();
       this.state.value = !newDate.trim() ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
