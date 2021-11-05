@@ -92,10 +92,10 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], filterObject, multilayers=false, feature_count}={}){
-    const layersFilterObject = filterObject || {
+  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, feature_count}={}){
+    const layersFilterObject =  {
       QUERYABLE: true,
-      SELECTEDORALL: true,
+      SELECTEDORALL: layerIds.length === 0,
       VISIBLE: true
     };
     Array.isArray(layerIds) && layerIds.forEach(layerId => {

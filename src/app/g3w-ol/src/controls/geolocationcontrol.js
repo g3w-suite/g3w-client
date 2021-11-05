@@ -34,15 +34,18 @@ const proto = GeolocationControl.prototype;
  * @private
  */
 proto._showMarker = function({map, coordinates, show=true}){
-  this._layer && this._layer.getSource().clear();
-  if (show)  {
-    map.getView().setCenter(coordinates);
-    const feature = new ol.Feature({
-      geometry: new ol.geom.Point(coordinates)
-    });
-    this._layer.getSource().addFeature(feature);
-    map.addLayer(this._layer);
-  } else map.removeLayer(this._layer);
+  //in case of control is initialized
+  if (this._layer) {
+    this._layer.getSource().clear();
+    if (show)  {
+      map.getView().setCenter(coordinates);
+      const feature = new ol.Feature({
+        geometry: new ol.geom.Point(coordinates)
+      });
+      this._layer.getSource().addFeature(feature);
+      map.addLayer(this._layer);
+    } else map.removeLayer(this._layer);
+  }
 };
 
 proto.getMap = function(){
@@ -50,6 +53,7 @@ proto.getMap = function(){
 };
 
 proto.setMap = function(map) {
+  let toggledKeyEvent; // key toggled event handler
   InteractionControl.prototype.setMap.call(this, map);
 
   const geolocation = new ol.Geolocation({
@@ -82,9 +86,11 @@ proto.setMap = function(map) {
     this.hideControl();
     this._layer = null;
     evt.code !== 1 && this.dispatchEvent('error');
+    ol.Observable.unByKey(toggledKeyEvent);
+    toggledKeyEvent = null;
   });
 
-  this.on('toggled', () => {
+  toggledKeyEvent = this.on('toggled', () => {
     const coordinates = geolocation.getPosition();
     this._showMarker({
       map,

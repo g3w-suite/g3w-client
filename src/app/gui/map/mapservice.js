@@ -21,6 +21,14 @@ const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
+const SETTINGS = {
+  zoom : {
+    maxScale: 1000,
+  },
+  animation: {
+    duration: 2000
+  }
+};
 
 function MapService(options={}) {
   this.id = 'MapService';
@@ -873,6 +881,7 @@ proto._setupControls = function() {
               const layersFilterObject = {
                 SELECTEDORALL: true,
                 FILTERABLE: true,
+                GEOLAYER: true,
                 VISIBLE: true
               };
               const runQuery = throttle(async e => {
@@ -1532,7 +1541,7 @@ proto._setSettings = function(){
   const {ZOOM} = MAP_SETTINGS;
   const maxScale = this.getScaleFromExtent(this.project.state.initextent);
   // settings maxScale
-  ZOOM.maxScale = 2000 > maxScale ? maxScale : 2000;
+  ZOOM.maxScale =  ZOOM.maxScale > maxScale ? maxScale :  ZOOM.maxScale;
 };
 
 proto._resetView = function() {

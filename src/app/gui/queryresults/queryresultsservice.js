@@ -79,7 +79,6 @@ function QueryResultsService() {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
     mapcontrol: null, // add current toggled map control if toggled
-    type: null,
     toggleeventhandler: null
   };
   this.setters = {
@@ -90,6 +89,7 @@ function QueryResultsService() {
      */
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
+      // in case of new request results reset the query otherwise maintain the previos request
       if (!add) {
         this.clearState();
         this.state.query = queryResponse.query;
@@ -426,8 +426,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
               //used to untoggle downloads action
               this.downloadFeatures(format, layer, feature, action, index);
               const downloadsaction = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-              if (this.state.query.type !== 'polygon')
-                downloadsaction.cbk(layer, feature, downloadsaction, index);
+              if (this.state.query.type !== 'polygon') downloadsaction.cbk(layer, feature, downloadsaction, index);
             }
           });
         });
@@ -618,17 +617,13 @@ proto.isOneLayerResult = function(){
  *
  * @param toggle boolean If true toggle true the mapcontrol
  */
-proto.removeAddFeaturesLayerResultInteraction = function({toggle=false, mapcontrol=true}={}){
+proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}){
   if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   this._addFeaturesLayerResultInteraction.interaction = null;
   this._addFeaturesLayerResultInteraction.id = null;
-
   // check if map control query map is register and if toggled
   toggle && this._addFeaturesLayerResultInteraction.mapcontrol && this._addFeaturesLayerResultInteraction.mapcontrol.toggle(true);
-  if (mapcontrol) {
-    this._addFeaturesLayerResultInteraction.mapcontrol = null;
-    this._addFeaturesLayerResultInteraction.type = null;
-  }
+  this._addFeaturesLayerResultInteraction.mapcontrol = null;
   this._addFeaturesLayerResultInteraction.toggleeventhandler && this.mapService.off('mapcontrol:toggled', this._addFeaturesLayerResultInteraction.toggleeventhandler);
   this._addFeaturesLayerResultInteraction.toggleeventhandler = null;
 };
@@ -646,19 +641,14 @@ proto.addLayerFeaturesToResultsAction = function(layer){
     const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
     if (layer) layer.addfeaturesresults.active = false;
     //remove previous add result interaction
-    this.removeAddFeaturesLayerResultInteraction({
-      mapcontrol: false
-    });
+    if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
     const {external} = layer;
-    if (!this._addFeaturesLayerResultInteraction.mapcontrol) {
-      this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
-      this._addFeaturesLayerResultInteraction.type = this._addFeaturesLayerResultInteraction.mapcontrol.name;
-    }
-    this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
+    if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
+    this._addFeaturesLayerResultInteraction.interaction =  new PickCoordinatesInteraction();
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, {
       close: false
     });
@@ -670,10 +660,6 @@ proto.addLayerFeaturesToResultsAction = function(layer){
             inputs: {
               coordinates,
               layerIds: [layer.id],
-              filterObject: {
-                QUERYABLE: true,
-                VISIBLE: true
-              },
               multilayers: false,
             }, outputs: {
               add: true
@@ -1212,12 +1198,10 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       });
     }
   };
-  const isQueryByPolygonControl = this._addFeaturesLayerResultInteraction.type === 'querybypolygon';
-  if (query.type === 'polygon' || isQueryByPolygonControl){
+  if (query.type === 'polygon'){
     //check if multidownload if present
     const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
     let {fid, layer:polygonLayer} = query;
-    polygonLayer = polygonLayer || this._addFeaturesLayerResultInteraction.mapcontrol.selectedLayer;
     const config = {
       choices: [
         {
@@ -1232,7 +1216,8 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
         },
       ],
       download: type =>{
-        if (type === 'polygon' || isQueryByPolygonControl){
+        // choose between only feature attribute or also polygon attibute
+        if (type === 'polygon'){
           // id type polygon add paramateres to api download
           data.sbp_qgs_layer_id = polygonLayer.getId();
           data.sbp_fid = fid;

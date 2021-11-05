@@ -741,13 +741,12 @@ const geoutils = {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
 
-  getMapLayersByFilter(filter, options={}) {
-    filter = filter || {};
-    const mapFilter = {
+  getMapLayersByFilter(filter={}, options={}) {
+    filter = {
       GEOLAYER: true,
-      ACTIVE: true // active is not disabled
+      ACTIVE: true, // active is not disabled
+      ...filter
     };
-    Object.assign(filter, mapFilter);
     let layers = [];
     MapLayersStoreRegistry.getQuerableLayersStores().forEach(layerStore => {
       layers = layerStore.getLayers(filter, options);
