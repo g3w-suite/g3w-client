@@ -20,7 +20,7 @@ const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
 const SETTINGS = {
   zoom : {
-    maxScale: 2000,
+    maxScale: 1000,
   },
   animation: {
     duration: 2000
@@ -1536,7 +1536,7 @@ proto.getProjectLayer = function(layerId) {
 proto._setSettings = function(){
   const maxScale = this.getScaleFromExtent(this.project.state.initextent);
   // settings maxScale
-  SETTINGS.zoom.maxScale = 2000 > maxScale ? maxScale : 2000;
+  SETTINGS.zoom.maxScale = SETTINGS.zoom.maxScale > maxScale ? maxScale : SETTINGS.zoom.maxScale;
 };
 
 proto._resetView = function() {
