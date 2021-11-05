@@ -1,5 +1,5 @@
 const {t}= require('core/i18n/i18n.service');
-const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, XHR} = require('core/utils/utils');
+const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -479,11 +479,7 @@ proto.showMarker = function(coordinates, duration=1000) {
 
 // return layer by name
 proto.getLayerByName = function(name) {
-  const layer = this.getMap().getLayers().getArray().find(lyr => {
-    const layerName = lyr.get('name');
-    return layerName && layerName === name;
-  });
-  return layer;
+  return this.getMap().getLayers().getArray().find(lyr => lyr.get('name') === name);
 };
 
 // return layer by id
@@ -881,6 +877,7 @@ proto._setupControls = function() {
               const layersFilterObject = {
                 SELECTEDORALL: true,
                 FILTERABLE: true,
+                GEOLAYER: true,
                 VISIBLE: true
               };
               const runQuery = throttle(async e => {
@@ -1113,6 +1110,42 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
         });
       else if (bbox) this.zoomToExtent(feature.bbox);
     }
+  }
+};
+
+/**
+ * Method to handele ztf url parameter
+ * @param zoom_to_feature
+ */
+proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
+  try {
+    const [layerNameorId, fieldsValuesSearch] = zoom_to_features.split(':');
+    if (layerNameorId && fieldsValuesSearch) {
+      const projectLayer = this.project.getLayers().find(layer => {
+        return layer.id === layerNameorId || layer.name === layerNameorId;
+      });
+      if (projectLayer) {
+        const layer = this.project.getLayerById(projectLayer.id);
+        const filter = createFilterFromString({
+          layer,
+          search_endpoint,
+          filter: fieldsValuesSearch
+        });
+        const {data} = await DataRouterService.getData('search:features', {
+          inputs: {
+            layer,
+            filter,
+            search_endpoint
+          },
+          outputs: false
+        });
+        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features, {
+          highlight: true
+        })
+      }
+    }
+  } catch(err){
+    console.log(err)
   }
 };
 
@@ -1527,7 +1560,11 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const searchParams = new URLSearchParams(location.search);
   const map_extent = searchParams.get('map_extent');
   const zoom_to_fid = searchParams.get('zoom_to_fid');
-  zoom_to_fid &&  this.zoomToFid(zoom_to_fid);
+  const zoom_to_features = searchParams.get('ztf'); // zoom to features
+  if (zoom_to_fid) this.zoomToFid(zoom_to_fid);
+  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({
+    zoom_to_features
+  });
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;
@@ -1833,7 +1870,7 @@ proto.updateMapLayer = function(mapLayer, options={}) {
     })
 };
 
-// run update function on ech mapLayer
+// run update function on each mapLayer
 proto.updateMapLayers = function(options={}) {
   this.getMapLayers().forEach(mapLayer => this.updateMapLayer(mapLayer, options));
   const baseLayers = this.getBaseLayers();

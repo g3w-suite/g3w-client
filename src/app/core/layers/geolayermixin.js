@@ -261,6 +261,8 @@ proto.setDisabled = function(resolution, mapUnits='m') {
       parentGroup = parentGroup.parentGroup;
     }
     setVisible && this.setVisible(!this.state.disabled);
+    // change toc higlight property based on disabled otr not
+    this.isFilterable() && this.setTocHighlightable(!this.state.disabled);
   } else this.state.disabled = false;
 };
 
