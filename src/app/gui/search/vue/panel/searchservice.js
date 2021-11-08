@@ -1,4 +1,4 @@
-import { ALLVALUE, RETURN_TYPES}  from '../../constants';
+import { ALLVALUE }  from '../../constants';
 const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
@@ -182,13 +182,15 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
                 })
               }
             });
+            const layer = this.project.getLayerById(referencedLayer);
             const filter = createFilterFormInputs({
+              layer,
               search_endpoint,
               inputs
             });
             data = await DataRouterService.getData('search:features', {
               inputs:{
-                layer: this.project.getLayerById(referencedLayer),
+                layer,
                 search_endpoint,
                 filter,
                 formatter: 1, // set formatter to 1
