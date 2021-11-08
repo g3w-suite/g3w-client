@@ -26,7 +26,7 @@ export const EPSG = [
 
 export const MAP_SETTINGS = {
   ZOOM: {
-    maxScale: 2000,
+    maxScale: 1000,
   },
   ANIMATION: {
     duration: 2000
@@ -34,7 +34,10 @@ export const MAP_SETTINGS = {
   LAYER_POSITIONS: {
     default: 'top',
     getPositions(){
-      return ['top', 'bottom']
+      return [
+        'top',
+        'bottom'
+      ]
     }
   }
 
