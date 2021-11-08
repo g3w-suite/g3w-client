@@ -155,7 +155,12 @@ gulp.task('browserify', [], function() {
       });
     });
     bundler = watchify(bundler);
-  } else dependencies.forEach(dep => bundler.external(dep)); //add externalmodule node_modules on vendor
+  } else {
+    //ignore dev file index
+    bundler.ignore('./src/app/dev/index.js');
+    //add externalmodule node_modules on vendor
+    dependencies.forEach(dep => bundler.external(dep));
+  }
 
   // trasformation
   bundler.transform(vueify)
