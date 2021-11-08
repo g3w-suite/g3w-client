@@ -253,15 +253,15 @@ proto.setDisabled = function(resolution, mapUnits='m') {
     this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
     this.state.disabled = this.state.minscale === 0 ? !(mapScale >= this.state.maxscale) : this.state.disabled;
     // needed to check if call setVisible if change disable property
-    // looping trhougt parentfolter checked
+    // looping through parentfolter checked
     let setVisible = true;
     let parentGroup = this.state.parentGroup;
-    while(parentGroup){
+    while (parentGroup){
       setVisible = setVisible && parentGroup.checked;
       parentGroup = parentGroup.parentGroup;
     }
     setVisible && this.setVisible(!this.state.disabled);
-    // change toc higlight property based on disabled otr not
+    // change toc highlight property based on disabled otr not
     this.isFilterable() && this.setTocHighlightable(!this.state.disabled);
   } else this.state.disabled = false;
 };
