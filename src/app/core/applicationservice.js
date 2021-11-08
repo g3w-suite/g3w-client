@@ -340,7 +340,7 @@ const ApplicationService = function() {
       // case development need to ask to api
     } else {
       // LOAD DEVELOPMENT CONFIGURATION
-      if (!production) require('../dev/index');
+      require('../dev/index');
       let projectPath;
       let queryTuples;
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
