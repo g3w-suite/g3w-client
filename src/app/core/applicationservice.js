@@ -339,8 +339,8 @@ const ApplicationService = function() {
       return window.initConfig;
       // case development need to ask to api
     } else {
-      require('../dev/index');
       // LOAD DEVELOPMENT CONFIGURATION
+      require('../dev/index');
       let projectPath;
       let queryTuples;
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
