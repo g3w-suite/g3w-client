@@ -139,14 +139,13 @@ const vueComponentOptions = {
     extractAttributesFromFirstTabOfFormStructureLayers(layer){
       const attributes = new Set();
       const traverseStructure = item => {
-        if (item.nodes) {
-          item.nodes.forEach(node => traverseStructure(node));
-        } else {
+        if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+        else {
           const field = layer.formStructure.fields.find(field => field.name === item.field_name);
           field && attributes.add(field);
         }
       };
-      layer.formStructure.structure.length && traverseStructure(layer.formStructure.structure[0]);
+      layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
       return Array.from(attributes);
     },
     attributesSubset(layer) {
