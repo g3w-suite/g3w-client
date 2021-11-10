@@ -139,8 +139,8 @@ const vueComponentOptions = {
     extractAttributesFromFirstTabOfFormStructureLayers(layer){
       const attributes = new Set();
       const traverseStructure = item => {
-        if (item.nodes) {item.nodes.forEach(node => traverseStructure(node));
-        } else {
+        if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+        else {
           const field = layer.formStructure.fields.find(field => field.name === item.field_name);
           field && attributes.add(field);
         }
