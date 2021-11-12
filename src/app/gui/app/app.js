@@ -172,7 +172,7 @@ const AppUI = Vue.extend({
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
+    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits => this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
     // get the initial skin class
