@@ -172,7 +172,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
             const uniqueValues = new Set();
             features.forEach(feature => {
               const value = feature.getProperties()[referencingField];
-              if (!uniqueValues.has(value)) {
+              if (value !== undefined && !uniqueValues.has(value)) {
                 uniqueValues.add(value);
                 inputs.push({
                   attribute:referencedField,

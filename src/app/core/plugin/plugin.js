@@ -113,6 +113,11 @@ proto.getProject = function() {
 proto.registerPlugin = function(projectId) {
   const iscompatible = this.isCurrentProjectCompatible(projectId);
   iscompatible && PluginsRegistry.registerPlugin(this);
+  // if is incompatible
+  if (!iscompatible) {
+    PluginsRegistry.removeLoadingPlugin(this.name, false);
+    clearTimeout(this._timeout);
+  }
   return iscompatible;
 };
 

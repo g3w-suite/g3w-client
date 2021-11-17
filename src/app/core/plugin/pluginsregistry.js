@@ -126,7 +126,7 @@ function PluginsRegistry() {
         this._loadScript(scriptUrl, name)
           .ready(name, () => {
             this._loadedPluginUrls.push(scriptUrl);
-            resolve()
+            resolve();
           })
       } else resolve()
     })

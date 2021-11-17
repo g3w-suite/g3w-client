@@ -521,7 +521,8 @@ const geoutils = {
           color,
           width: 4
         }),
-        fill: fill && new ol.style.Fill({
+        //hardcoded for the moment to don't fill selected hightlight polygon featue
+        fill: false && new ol.style.Fill({
           color: ol.color.asString(fillColor)
         })
       });

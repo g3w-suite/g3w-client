@@ -770,7 +770,8 @@ proto._setupControls = function() {
               });
               const controlFiltrableLayers = getMapLayersByFilter({
                 FILTERABLE: true,
-                SELECTEDORALL: true
+                SELECTEDORALL: true,
+                ACTIVE: false
               }, condition);
               return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
             };
@@ -853,7 +854,8 @@ proto._setupControls = function() {
             const getControlLayers = ()=>{
               const layers = this.filterableLayersAvailable() ? getMapLayersByFilter({
                 SELECTEDORALL: true,
-                FILTERABLE: true
+                FILTERABLE: true,
+                ACTIVE: false
               }, condition) : [];
               layers.forEach(layer => layer.setTocHighlightable(true));
               return layers;
@@ -1223,10 +1225,14 @@ proto._setMapControlsInsideContainerLenght = function() {
   this._setMapControlsGrid(this.state.mapControl.length);
 };
 
+/**
+ * Get filterable layer. Get parameter to custom filter Object
+ */
 proto.filterableLayersAvailable = function() {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
-    SELECTEDORALL: true
+    SELECTEDORALL: true,
+    ACTIVE: false
   });
   return layers.some(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
