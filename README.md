@@ -38,6 +38,7 @@ After server side installation you can customize local server configuration thro
     ```bash
        ~/../g3w-client$ nano config.js
      ```
+Go to ***g3w-client/src/config/dev*** folder and create a new ***index.js*** from index.template.js setting dev configuration
 
 Go to ***g3w-client/src/config/keys*** folder and create a new ***index.js*** from index.template.js setting your GOOGLE and BING KEYS
 
