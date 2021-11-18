@@ -105,7 +105,10 @@ const font = {
   pin: "fas fa-map-pin",
   square: "far fa-square",
   move: "fas fa-arrows-alt",
-  refresh: "fas fa-sync-alt"
+  moon: "fas fa-moon",
+  sun: "fas fa-sun",
+  refresh: "fas fa-sync-alt",
+  pause:"fas fa-pause"
 };
 
 const Vueappplugin = {
@@ -117,6 +120,11 @@ const Vueappplugin = {
         return {
           font: this.font
         }
+      },
+      addFontClass({name, className}={}){
+        let added = this.font[name] === undefined;
+        if (added) this.font[name] = className;
+        return added;
       },
       getInfoString() {},
       getFontClass(type) {

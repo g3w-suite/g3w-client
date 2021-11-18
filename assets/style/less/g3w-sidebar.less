@@ -25,12 +25,16 @@
     width: 100%;
     z-index: 10;
   }
-
+  .sidebar-button-shadow {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+  }
   .sidebar-button {
-    box-shadow: 0 2px 5px rgba(0,0,0, 0.6);
+    .sidebar-button-shadow;
     border-radius: 3px;
     &.toggled {
       box-shadow: 0 2px 5px rgba(0,0,0, 0.2);
+      color: #ffffff !important;
     }
   }
 

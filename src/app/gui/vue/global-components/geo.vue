@@ -7,7 +7,7 @@
 </template>
 
 <script>
-  const geoMixin = require('gui/vue/vue.mixins').geoMixin;
+  const {geoMixin} = require('gui/vue/vue.mixins');
   export default {
     name: "g3w-geospatial",
     props: {
