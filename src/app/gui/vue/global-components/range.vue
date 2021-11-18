@@ -1,26 +1,28 @@
 <template>
-  <div>
-    <slot :id="id">
-      <input @change="change" :value="value" type="range" :min="min" :max="max" :step="step">
-    </slot>
-  </div>
+  <input :id="id" @change="change" :value="value" type="range" :min="min" :max="max" :step="step">
 </template>
 
 <script>
-  const {getUniqueDomId} = require('core/utils/utils');
   export default {
     name: "range",
     props:{
+      id: {
+        required: true,
+      },
       min: {
+        type: Number,
         default: 0
       },
       max:{
-        default: 1
+        type: Number,
+        default: 10
       },
       step:{
-        default: 0.1
+        type: Number,
+        default: 1
       },
       value: {
+        type: Number,
         default: 0
       }
     },
@@ -28,18 +30,33 @@
       changeBackGround(value){
         this.$el.style.backgroundSize = (value - this.min) * 100 / (this.max - this.min) + '% 100%';
       },
-      change(evt){
-        const value = evt.target.value;
+      setValue(value){
+        this.changedValue(value);
+      },
+      changedValue(value){
+        this.value = value;
         this.changeBackGround(value);
-        this.$emit('change', value);
+        this.$emit('change-range', {
+          id: this.id,
+          value
+        });
+      },
+      change(evt){
+        const value = 1*evt.target.value;
+        this.changedValue(value);
       }
     },
-    created(){
-      this.id = getUniqueDomId();
+    watch:{
+      value(value){
+        this.changedValue(value)
+      }
     },
-    mounted(){
+    created(){},
+    async mounted(){
+      await this.$nextTick();
       this.changeBackGround(this.value);
-    }
+    },
+    beforeDestroy() {}
   }
 </script>
 
