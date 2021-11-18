@@ -850,7 +850,7 @@ proto._setupControls = function() {
               const layers = this.filterableLayersAvailable({
                 ACTIVE: false
               }) ? getMapLayersByFilter({
-                SELECTEDORALL: false,
+                SELECTEDORALL: true,
                 FILTERABLE: true,
                 ACTIVE: false
               }, condition) : [];

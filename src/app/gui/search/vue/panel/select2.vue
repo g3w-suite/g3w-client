@@ -45,7 +45,7 @@
           } : null,
          ...autocompleteOptions
         });
-        this.select2.on('select2:select', (evt) => {
+        this.select2.on('select2:select', evt => {
           const id = $(evt.target).attr('id');
           const attribute = $(evt.target).attr('name');
           const value = evt.params.data.id;
@@ -56,9 +56,7 @@
             type: this.forminput.type
           });
         });
-        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', ()=>{
-          this.forminput.value = null;
-        })
+        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', () => this.forminput.value = null);
       }
     },
     watch : {

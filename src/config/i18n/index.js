@@ -1821,6 +1821,463 @@ const translations = {
         infoFiltered: "(filtered from _MAX_ total records)"
       }
     },
+  },
+  fr: {
+    translation: {
+      cookie_law: {
+        message: "Ce site utilise des cookies pour assurer une bonne convivialité pour l'utilisateur final.",
+        buttonText: "J’ai compris !"
+      },
+      default:"par défaut ",
+      sign_in: "Se connecter ",
+      layer_selection_filter: {
+        tools: {
+          filter: "Ajout/Suppression de filtre ",
+          nofilter: "Supprimer le filtre ",
+          invert: "Sélection inversée ",
+          clear: "Effacer la sélection ",
+          show_features_on_map: "Afficher les caractéristiques visibles sur la carte"
+        }
+      },
+      sdk: {
+        search: {
+          all: 'TOUTES',
+          no_results: "Aucune valeur trouvée",
+          searching: "Je cherche...",
+          error_loading: "Erreur de chargement des valeurs",
+          layer_not_searchable: "Le layer n’est pas recherchable",
+          layer_not_querable: "Le layer n'est pas interrogeable",
+          autocomplete: {
+            inputshort: {
+              pre: "Tapez au moins",
+              post: "caractères"
+            }
+          }
+        },
+        print: {
+          no_layers: 'Aucune layer visible',
+          scale: "Échelle",
+          format: "Format",
+          rotation: "Rotation",
+          download_image: "Télécharger l'image",
+          fids_instruction: "Valeurs acceptées : de 1 à la valeur maximale indiquée par [max]. Il est également possible d'indiquer une fourchette de valeurs, par exemple 4-6",
+          fids_example: "Par exemple 1,4-6 les ids 1,4,5,6 seront imprimés",
+          help: "Les layers montrés dans l'impression peuvent être ceux définis dans le projet et non ceux montrés sur la carte"
+        },
+        querybuilder: {
+          search: {
+            run: "Lancer la recherche",
+            info: "Information",
+            delete: "Supprimer",
+            edit: "Editer"
+          },
+          messages: {
+            changed: 'Enregistré correctement',
+            number_of_features: "Nombre de fonctionnalités"
+          },
+          panel: {
+            button: {
+              all: 'TOUTES',
+              save: 'SAUVEGARDER',
+              test: 'TESTER',
+              clear: 'NETTOYER',
+              run: 'EXECUTER',
+              manual: 'MANUEL'
+            },
+            layers: 'LAYERS',
+            fields: 'CHAMPS',
+            values: 'VALEURS',
+            operators: 'OPERATEURS',
+            expression: 'EXPRESSION'
+          },
+          error_run: "Une erreur s'est produite. Vérifiez si la requête est correcte",
+          error_test: "Erreur d'exécution de la requête",
+          delete: 'Voulez-vous confirmer la suppression ?',
+          additem: 'Entrer le nom de la requête'
+        },
+        errors: {
+          layers: {
+            load: "Certaines layers du projet ne sont pas disponibles actuellement et n'apparaissent donc pas dans la vue actuelle"
+          },
+          unsupported_format: 'Format non supporté',
+          add_external_layer: 'Erreur lors du chargement du layer'
+        },
+        metadata: {
+          title: "Métadonnées",
+          groups: {
+            general: {
+              title: 'GÉNÉRAL',
+              fields: {
+                title: 'TITRE',
+                name: 'NOM',
+                description: "DESCRIPTION",
+                abstract: "ABREGE",
+                keywords: 'LISTE DE MOTS-CLÉS',
+                fees: "DROITS D'INSCRIPTION",
+                accessconstraints: "CONTRAINTES D'ACCÈS",
+                contactinformation: "CONTACTS",
+                subfields: {
+                  contactinformation: {
+                    contactelectronicmailaddress: "E-mail",
+                    personprimary: 'Références',
+                    contactvoicetelephone: 'Téléphone',
+                    contactorganization: 'Organisation',
+                    ContactOrganization: 'Organisation',
+                    contactposition: 'Localisation',
+                    ContactPosition : 'Localisation',
+                    contactperson: 'Personne',
+                    ContactPerson: 'Personne',
+                  }
+                },
+                wms_url: "WMS"
+              }
+            },
+            spatial:{
+              title: 'INFO ESPACE',
+              fields : {
+                crs: 'EPSG',
+                extent: 'BBOX'
+              }
+            },
+            layers: {
+              title: 'STRATES',
+              groups : {
+                general: 'GENERALE',
+                spatial: 'INFO ESPACE'
+              },
+              fields: {
+                layers: 'STRATES',
+                subfields: {
+                  crs: 'EPSG',
+                  bbox: 'BBOX',
+                  title: "TITRE",
+                  name: 'NOM',
+                  geometrytype: 'GÉOMÉTRIE',
+                  source: 'SOURCE',
+                  attributes: 'ATTRIBUTES',
+                  abstract: 'ABRÉGÉ',
+                  attribution: 'ATTRIBUTION',
+                  keywords: "MOTS- CLÉS",
+                  metadataurl:'URL DE MÉTADONNÉES',
+                  dataurl: "URL DES DONNÉES"
+                }
+              }
+            }
+          }
+        },
+        tooltips: {
+          relations: {
+            form_to_row: "Afficher le format de la ligne",
+            row_to_form: "Format du formulaire d'affichage"
+          },
+          zoom_to_features_extent: "Zoom sur les fonctionnalités",
+          copy_map_extent_url: 'Copier le lien de visualisation de la carte',
+          download_shapefile: "Télécharger le fichier Shapefile",
+          download_gpx: "Télécharger GPX",
+          download_gpkg: "Télécharger GPKG",
+          download_csv: "Télécharger CSV",
+          download_xls: "Télécharger XLS",
+          show_chart: "Montrer graphique",
+          atlas: "Imprimer l'Atlas"
+        },
+        mapcontrols: {
+          query: {
+            tooltip: 'Interrogation layer',
+            actions: {
+              add_selection: {
+                hint: "Ajouter/supprimer une sélection"
+              },
+              zoom_to_features_extent:{
+                hint: "Zoom sur les fonctionnalités"
+              },
+              add_features_to_results: {
+                hint: "Ajouter des fonctionnalités aux résultats"
+              },
+              remove_feature_from_results: {
+                hint: "Supprimer la fonctionnalité des résultats"
+              },
+              zoom_to_feature: {
+                hint: "Zoom sur les fonctionnalités"
+              },
+              relations: {
+                hint: "Voir les relations"
+              },
+              relations_charts: {
+                hint: "Voir les graphiques de relations"
+              },
+              download_features_shapefile:{
+                hint: 'Télécharger les fonctionnalités vers Shapefile'
+              },
+              download_shapefile: {
+                hint: 'Télécharger le Shapefile'
+              },
+              download_features_gpx: {
+                hint: "Télécharger les fonctionnalités vers GPX"
+              },
+              download_features_gpkg: {
+                hint: "Télécharger les fonctionnalités vers GPKG"
+              },
+              download_gpx: {
+                hint: "Télécharger le GPX"
+              },
+              download_gpkg: {
+                hint: "Télécharger le GPKG"
+              },
+              download_features_csv: {
+                hint: "Télécharger les fonctionnalités vers CSV"
+              },
+              download_csv: {
+                hint: "Télécharger le CSV"
+              },
+              download_features_xls: {
+                hint: "Télécharger les fonctionnalités vers XLS"
+              },
+              download_xls: {
+                hint: "Télécharger le XLS"
+              },
+              atlas: {
+                hint: "Imprimer l'Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copier l'URL de la carte avec l'extension vers cette géométrie",
+                hint_change: "Copié"
+              }
+            }
+          },
+          querybypolygon: {
+            download: {
+              title: "Téléchargement des attributs",
+              choiches:{
+                feature: {
+                  label: "Fonctionnalités seulement",
+                },
+                feature_polygon: {
+                  label: "Fonctionnalités+Requête Polygon ",
+                }
+              }
+            },
+            tooltip: 'Requête par polygone',
+            no_geometry: 'La réponse ne contient pas de géométrie',
+            help: {
+              title: 'Aide - Requête par polygone',
+              message:`
+                  <ul>
+                    <li">Sélectionnez un layer de polygone dans la légende.</li>
+                    <li>Vérifiez que le layer est visible dans la carte.</li>
+                    <li>Cliquez sur une géométrie du layer sélectionné.</li>
+                  </ul>`
+            }
+          },
+          querybybbox: {
+            tooltip: 'Requête pour BBOX',
+            nolayers_visible: "Aucun layer requêtable n'est visible. Assurez-vous qu'au moins un layer wfs est visible pour exécuter la requête",
+            help: {
+              title:'Aide - Requête BBox',
+              message:`
+                    <ul>
+                      <li>Dessinez un rectangle pour interroger les couches surlignées en jaune</li>
+                   </ul>
+              `
+            },
+          },
+          addlayer: {
+            messages: {
+              csv: {
+                warning: "Le résultat de la carte est partiel en raison de la présence des enregistrements incorrects suivants :"
+              }
+            },
+            tooltip: 'Ajouter un layer'
+          },
+          geolocation: {
+            tooltip: 'Géolocalisation'
+          },
+          measures: {
+            length: {
+              tooltip: "Longueur",
+              help: "Cliquez sur la carte pour continuer à dessiner la ligne.<br>CANC si vous voulez supprimer le dernier vertex inséré",
+            },
+            area: {
+              tooltip: "Zone",
+              help: "Cliquez pour continuer à dessiner le polygone.<br>CANC si vous voulez supprimer le dernier vertex inséré"
+            }
+          },
+          scale: {
+            no_valid_scale: "Échelle invalide"
+          }
+        },
+        relations: {
+          relation_data: 'Données relationnelles',
+          no_relations_found: 'Aucune relation trouvée',
+          back_to_relations: 'Retour aux relations',
+          list_of_relations_feature: 'Liste des relations entre les caractéristiques',
+          error_missing_father_field: "Le champ concerné n'existe pas"
+        },
+        workflow: {
+          steps: {
+            title: 'Étapes',
+          },
+          next: 'Suivant'
+        },
+        form: {
+          loading: 'Chargement...',
+          inputs: {
+            messages: {
+              errors: {
+                picklayer: "Aucune fonction sélectionnée. Vérifier si le layer est en édition ou non visible à l'échelle actuelle"
+              }
+            },
+            tooltips: {
+              picklayer: "Obtenir la valeur de la carte",
+              lonlat: "Cliquez sur la carte pour obtenir les coordonnées"
+            },
+            input_validation_mutually_exclusive: "Champ mutuellement exclusif avec ",
+            input_validation_error: "Champ obligatoire ou type de valeur incorrect",
+            input_validation_min_field: "La valeur doit être supérieure ou égale au camp ",
+            input_validation_max_field: "La valeur doit être inférieure ou égale au champ ",
+            input_validation_exclude_values: "Le champ doit contenir une valeur différente",
+            integer: "entier",
+            bigint: "entier",
+            text: "textuel",
+            varchar: "textuel",
+            textarea: "textuel",
+            string: "chaîne",
+            date: "date",
+            float: "float",
+            table: "table"
+          },
+          footer: {
+            required_fields: "Champs obligatoires"
+          },
+          messages: {
+            qgis_input_widget_relation: "Gérer les relations via un formulaire dédié"
+          }
+        },
+        catalog: {
+          current_map_theme_prefix: "THEME",
+          choose_map_theme: "SÉLECTIONNEZ LE THÈME",
+          menu: {
+            wms: {
+              title:"",
+              copy: "Cliquez ici pour copier l'url",
+              copied: "Copié"
+            },
+            download: {
+              shp: 'Télécharger Shapefile',
+              gpx: 'Télécharger GPX',
+              gpkg: 'Télécharger GPKG',
+              csv: 'Télécharger CSV',
+              xls: 'Télécharger XLS'
+            }
+          }
+        },
+        wps: {
+          list_process: "Liste des processus",
+          tooltip: 'Cliquez sur la carte'
+        }
+      },
+      credits: {
+        g3wSuiteFramework: "Application construite avec le framework OS",
+        g3wSuiteDescription: "Publiez et gérez vos projets QGIS sur le Web",
+        productOf: "Framework développé par",
+      },
+      logout: "Quitter",
+      no_other_projects: "Il n'y a pas d'autres projets dans ce groupe de cartes",
+      yes: "Oui",
+      no: "No",
+      back:"Retour",
+      backto: "Retour à ",
+      changemap: "Changer de carte",
+      component: "Composant générique",
+      search: "Recherches",
+      no_results: "Aucun résultat trouvé",
+      print: "Imprimer",
+      create_print: "Créer une impression",
+      dosearch: "Recherche",
+      catalog: "Carte",
+      data: "Données",
+      baselayers: "Bases",
+      tools: "Outils",
+      tree: "Strates",
+      legend: "Légende",
+      nobaselayer: "Pas de carte de base",
+      street_search: "Adresse de recherche",
+      show: "Afficher",
+      hide: "Cacher",
+      copy_form_data: "Copier les données du formulaire",
+      paste_form_data: "Coller",
+      copy_form_data_from_feature: "Copier les données de la carte",
+      error_map_loading: "Erreur de chargement de la nouvelle carte",
+      check_internet_connection_or_server_admin: "Vérifiez la connexion internet ou contactez l'administrateur",
+      could_not_load_vector_layers: "Erreur de connexion au serveur : il n'a pas été possible de charger les vecteurs demandés",
+      server_saver_error: "Erreur de sauvegarde sur le serveur",
+      server_error: "Une erreur s'est produite dans la requête au serveur",
+      save: "Sauvegarder",
+      cancel: "Supprimer",
+      close: "Fermer",
+      add: "Ajouter",
+      exitnosave: "Quitter sans sauvegarder",
+      annul: "Annuler",
+      layer_is_added: "Layer déjà ajouté",
+      sidebar: {},
+      info: {
+        title: "Résultats",
+        open_link: "Ouvrir le document joint",
+        server_error: "Une erreur s'est produite dans la requête au serveur",
+        no_results: "Aucun résultat pour cette requête/recherche",
+        link_button: "Ouvrir"
+      },
+      mapcontrols: {
+        geolocations: {
+          title: "",
+          error: "Votre position ne peut être calculée."
+        },
+        nominatim: {
+          placeholder: "Adresse ...",
+          noresults: "Aucun résultat",
+          notresponseserver: "Le serveur ne répond pas"
+        },
+        add_layer_control: {
+          header: "Ajouter un layer",
+          select_projection: "Sélectionnez le système de projection de couches",
+          select_field_to_show: "Sélectionnez le champ à afficher sur la carte",
+          select_csv_separator: "Sélectionner le séparateur",
+          select_csv_x_field: "Sélectionnez le champ X",
+          select_csv_y_field: "Sélectionnez le champ Y",
+          select_color: "Sélectionnez la couleur du layer",
+          drag_layer: "Faire glisser le layer vers cette zone"
+        },
+        query: {
+          input_relation: "Cliquez pour voir les relations"
+        },
+        length: {
+          tooltip: "Longueur"
+        },
+        area: {
+          tooltip: "Zone"
+        },
+        screenshot: {
+          error: "Erreur de création de la capture d'écran"
+        }
+      },
+      catalog_items: {
+        helptext: "Cliquez avec le bouton droit de la souris sur les différents layers pour accéder à des fonctionnalités supplémentaires",
+        contextmenu: {
+          zoomtolayer: "Zoom sur le layer",
+          open_attribute_table: "Table d'attributs ouverte",
+          show_metadata: "Métadonnées",
+          styles: "Styles",
+          vector_color_menu:"Définir/changer la couleur"
+        }
+      },
+      dataTable: {
+        previous: "Précédent",
+        next: "Suivant",
+        lengthMenu: "Afficher _MENU_",
+        info: "Afficher _START_ à _END_ sur _TOTAL_ lignes",
+        nodatafilterd: "Aucun résultat trouvé",
+        infoFiltered: "(Filtré par _MAX_ rangs totaux)"
+      }
+    },
   }
 };
 

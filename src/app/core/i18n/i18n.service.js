@@ -11,6 +11,9 @@ const plugins18nConfig = {
   },
   se: {
     plugins: {}
+  },
+  fr: {
+    plugins: {}
   }
 };
 
