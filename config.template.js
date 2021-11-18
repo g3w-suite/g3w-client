@@ -21,7 +21,7 @@ const conf = {
   proxy: {
     host: HOST,
     url: `${PROTOCOL}://${HOST}:${PROXY_PORT}/`, // local G3W_ADMIN server and port (where G3W-ADIMN is running)
-    urls: ['/api','/ows','/qdjango2_media','/static', '/en/', '/it/', '/upload/', 'client/'] // urls to proxy referred to G3W-ADMIN
+    urls: ['/api','/ows','/qdjango2_media','/static', '/en/', '/it/', '/upload/'] // urls to proxy referred to G3W-ADMIN
   },
   test: {
     path: '/test/config/groups/'
