@@ -25,7 +25,7 @@ ProjectsRegistry.oncebefore('createProject', projectConfig => {
 // Handle project configuration to insert custom element on project
 ProjectsRegistry.onceafter('createProject', projectConfig => {
   const {createProject} = DEVCONFIG;
-  createProject && createProject.after && setCurrentProject.after(projectConfig);
+  createProject && createProject.after && createProject.after(projectConfig);
 });
 
 ProjectsRegistry.oncebefore('setCurrentProject', project => {
