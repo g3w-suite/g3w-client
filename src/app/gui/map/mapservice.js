@@ -764,10 +764,9 @@ proto._setupControls = function() {
                 QUERYABLE: true,
                 SELECTEDORALL: true
               });
-              const controlFiltrableLayers = getMapLayersByFilter({
+              const controlFiltrableLayers = this.filterableLayersAvailable({
                 FILTERABLE: true,
-                SELECTEDORALL: true,
-                ACTIVE: false
+                SELECTEDORALL: true
               }, condition);
               return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
             };
@@ -848,23 +847,17 @@ proto._setupControls = function() {
               }
             };
             const getControlLayers = ()=>{
-              const layers = this.filterableLayersAvailable({
-                ACTIVE: false
-              }) ? getMapLayersByFilter({
-                SELECTEDORALL: true,
-                FILTERABLE: true,
-                ACTIVE: false
-              }, condition) : [];
+              const layers = this.filterableLayersAvailable(condition) || [];
               layers.forEach(layer => layer.setTocHighlightable(true));
               return layers;
             };
-
-            let controlLayers = getControlLayers();
+            // check the start iniztial layer available to create and add querybobx control to map
+            const layers = getControlLayers();
             const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
               options: {
                 spatialMethod,
-                layers: controlLayers,
+                layers,
                 help: {
                   title:"sdk.mapcontrols.querybybbox.help.title",
                   message:"sdk.mapcontrols.querybybbox.help.message",
@@ -879,9 +872,8 @@ proto._setupControls = function() {
               this._changeMapMapControls.push(change);
               // get all filtrable layers in toc no based on selection or visibility
               const layersFilterObject = {
-                SELECTEDORALL: true,
+                SELECTEDORALL: true, // selected or all
                 FILTERABLE: true,
-                GEOLAYER: true,
                 VISIBLE: true
               };
               const runQuery = throttle(async e => {
@@ -1226,13 +1218,12 @@ proto._setMapControlsInsideContainerLenght = function() {
 /**
  * Get filtrable layer. Get parameter to custom filter Object
  */
-proto.filterableLayersAvailable = function(filterObject={}) {
+proto.filterableLayersAvailable = function(options={}) {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
     SELECTEDORALL: true,
-    ...filterObject
-  });
-  return layers.some(layer => layer.getProvider('filter') instanceof WFSProvider);
+  }, options);
+  return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {

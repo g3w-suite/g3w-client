@@ -15,7 +15,9 @@ function QueryService(){
    * @type {{filtrable: {ows: string}}}
    */
   this.condition = {
-    filtrable: {ows: 'WFS'}
+    filtrable: {
+      ows: 'WFS'
+    }
   };
 
   /**
@@ -41,7 +43,7 @@ function QueryService(){
       }
     });
     const layerFilterObject = {
-      ALLNOTSELECTED: true,
+      SELECTED: false,
       FILTERABLE: true,
       VISIBLE: true
     };

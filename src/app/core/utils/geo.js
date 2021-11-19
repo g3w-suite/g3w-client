@@ -723,10 +723,11 @@ const geoutils = {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
 
+  //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
+  //Default values geolayer
   getMapLayersByFilter(filter={}, options={}) {
     filter = {
       GEOLAYER: true,
-      ACTIVE: true, // active is not disabled
       ...filter
     };
     let layers = [];
