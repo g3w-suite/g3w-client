@@ -173,9 +173,8 @@ proto.hideControl = function() {
 
 proto.setEnable = function(enabled, toggled=false) {
   const controlButton = $(this.element).find('button').first();
-  if (enabled) {
-    controlButton.removeClass('g3w-ol-disabled');
-  } else {
+  if (enabled) controlButton.removeClass('g3w-ol-disabled');
+  else {
     controlButton.addClass('g3w-ol-disabled');
     this._interaction && this._interaction.setActive(false);
   }

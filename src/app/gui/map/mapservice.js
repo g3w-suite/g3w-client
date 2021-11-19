@@ -848,11 +848,11 @@ proto._setupControls = function() {
             };
             const getControlLayers = ()=>{
               const layers = this.filterableLayersAvailable({
-                ACTIVE: false
-              }) ? getMapLayersByFilter({
+                ACTIVE: undefined
+              }, condition) ? getMapLayersByFilter({
                 SELECTEDORALL: true,
                 FILTERABLE: true,
-                ACTIVE: false
+                ACTIVE: undefined
               }, condition) : [];
               layers.forEach(layer => layer.setTocHighlightable(true));
               return layers;
@@ -1225,12 +1225,12 @@ proto._setMapControlsInsideContainerLenght = function() {
 /**
  * Get filtrable layer. Get parameter to custom filter Object
  */
-proto.filterableLayersAvailable = function(filterObject={}) {
+proto.filterableLayersAvailable = function(filterObject={}, options) {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
     SELECTEDORALL: true,
     ...filterObject
-  });
+  }, options);
   return layers.some(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
 

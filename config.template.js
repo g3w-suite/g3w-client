@@ -11,17 +11,18 @@ const conf = {
   localServerPort: LOCAL_PORT, // port for local server. If not set local server run on port 3000
   g3w_admin_paths: {
     dev: {
-      g3w_admin_plugins_basepath: '../g3w-admin/g3w-admin', // local G3W-ADMIN main path code
-      g3w_admin_client_dest_static: '../g3w-admin/g3w-admin/client/static', // local G3W-ADMIN client static path
-      g3w_admin_client_dest_template: '../g3w-admin/g3w-admin/client/templates', // local G3W-ADMIN client template folder
+      g3w_admin_plugins_basepath: '<RELATIVE PATH OF G3W-ADMIN-INSTALLATION>/g3w-admin/g3w-admin/', // local G3W-ADMIN main path code
+      g3w_admin_client_dest_static: '<RELATIVE PATH OF G3W-ADMIN-INSTALLATION>/g3w-admin/g3w-admin/client/static', // local G3W-ADMIN client static path
+      g3w_admin_client_dest_template: '<RELATIVE PATH OF G3W-ADMIN-INSTALLATION>/g3w-admin/g3w-admin/client/templates', // local G3W-ADMIN client template folder
     }
   },
+  host: HOST,
   localServerPort: LOCAL_PORT, // port for local server. If not set local server run on port 3000
   // proxy configurazion for local server
   proxy: {
     host: HOST,
     url: `${PROTOCOL}://${HOST}:${PROXY_PORT}/`, // local G3W_ADMIN server and port (where G3W-ADIMN is running)
-    urls: ['/api','/ows','/qdjango2_media','/static', '/en/', '/it/', '/upload/', 'client/'] // urls to proxy referred to G3W-ADMIN
+    urls: ['/api','/ows','/qdjango2_media','/static', '/en/', '/it/', '/upload/'] // urls to proxy referred to G3W-ADMIN
   },
   test: {
     path: '/test/config/groups/'

@@ -10,6 +10,9 @@ function SearchService(){
     const {raw=false} = options;
     const dataSearch = {
       data: [],
+      query: {
+        type: 'search'
+      },
       type: params.search_endpoint
     };
     // check if layer is array
@@ -39,15 +42,17 @@ function SearchService(){
       promisesSearch.push(promise);
     }
     const responses = await Promise.allSettled(promisesSearch);
-
     responses.forEach(({status, value}={}) => {
-      if (raw) {
-        dataSearch.data.push(params.search_endpoint === 'api' ? {
-          data: value
-        }: value );
-      } else {
-        const {data=[]} = value;
-        params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+      // need to filter only fulfilled response
+      if (status === 'fulfilled'){
+        if (raw) {
+          dataSearch.data.push(params.search_endpoint === 'api' ? {
+            data: value
+          }: value );
+        } else {
+          const {data=[]} = value;
+          params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+        }
       }
     });
     return dataSearch;
