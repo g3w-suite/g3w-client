@@ -1151,7 +1151,7 @@ proto.showLayerDownloadFormats = function(layer) {
  */
 proto.downloadFeatures = async function(type, layer, features=[], action, index){
   const layerId = layer.id;
-  const {query} = this.state;
+  const {query={}} = this.state;
   features = features ? Array.isArray(features) ? features : [features]: features;
   const data = {
     fids : features.map(feature => feature.attributes[G3W_FID]).join(',')

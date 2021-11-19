@@ -10,6 +10,9 @@ function SearchService(){
     const {raw=false} = options;
     const dataSearch = {
       data: [],
+      query: {
+        type: 'search'
+      },
       type: params.search_endpoint
     };
     // check if layer is array
