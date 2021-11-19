@@ -16,6 +16,7 @@ const conf = {
       g3w_admin_client_dest_template: '<RELATIVE PATH OF G3W-ADMIN-INSTALLATION>/g3w-admin/g3w-admin/client/templates', // local G3W-ADMIN client template folder
     }
   },
+  host: HOST,
   localServerPort: LOCAL_PORT, // port for local server. If not set local server run on port 3000
   // proxy configurazion for local server
   proxy: {
