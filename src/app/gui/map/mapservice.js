@@ -766,7 +766,7 @@ proto._setupControls = function() {
               const controlFiltrableLayers = getMapLayersByFilter({
                 FILTERABLE: true,
                 SELECTEDORALL: true,
-                ACTIVE: false
+                ACTIVE: undefined
               }, condition);
               return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
             };
