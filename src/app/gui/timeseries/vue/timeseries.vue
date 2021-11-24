@@ -1,5 +1,5 @@
 <template>
-  <ul id="g3w_raster_timeseries_content" class="treeview-menu" style="position:relative; padding: 10px;color:#FFFFFF">
+  <ul v-if="layers.length" id="g3w_raster_timeseries_content" class="treeview-menu" style="position:relative; padding: 10px;color:#FFFFFF">
     <li>
       <form v-disabled="status === 1">
         <label style="display: block">Layer</label>

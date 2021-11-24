@@ -446,10 +446,13 @@ const vueComponentOptions = {
   },
   watch: {
     'state.prstate.currentProject': {
-      async handler(project){
+      async handler(project, oldproject){
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
         this.loading = activeTab === 'baselayers';
         await this.$nextTick();
+        // check if changed map (old project first time is undefined)
+        // if changed emit changeProject event so child component can do some things
+        oldproject && CatalogEventHub.$emit('changeProject');
         setTimeout(()=>{
           this.loading = false;
           this.activeTab = activeTab;
@@ -582,8 +585,15 @@ Vue.component('tristate-tree', {
     }
   },
   methods: {
+    //method to inizialize layer (disable, visible etc..)
     init(){
       if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+      if (this.isGroup && !this.root) {
+        this.layerstree.nodes.forEach(node => {
+          if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
+            if (node.id) node.uncheckable = true;
+        })
+      }
     },
     /**
      * Handel change checked property of group
@@ -700,18 +710,12 @@ Vue.component('tristate-tree', {
     }
   },
   created() {
+    // just firs time
     this.init();
-  },
-  updated(){
-    this.init();
+    // handel change Project events
+    CatalogEventHub.$on('changeProject', this.init)
   },
   async mounted() {
-    if (this.isGroup && !this.root) {
-      this.layerstree.nodes.forEach(node => {
-        if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
-          if (node.id) node.uncheckable = true;
-      })
-    }
     await this.$nextTick();
     $('span.scalevisibility').tooltip();
   }
