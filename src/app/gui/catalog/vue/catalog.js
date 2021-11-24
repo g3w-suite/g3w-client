@@ -3,6 +3,7 @@ import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 import ChangeMapThemesComponent from './components/changemapthemes.vue';
 const ApplicationService = require('core/applicationservice');
+const ProjectsRegistry = require('core/project/projectsregistry');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
 const {t} = require('core/i18n/i18n.service');
@@ -21,6 +22,20 @@ const OFFSETMENU = {
   top: 50,
   left: 15
 };
+/**
+ * NEEDED TO FIX ISUE ON DOUBLE CHANGING ON CHECKED 'layerstree.checked'()  WATCH
+ */
+ProjectsRegistry.onbefore('setCurrentProject', ()=>{
+  CatalogEventHub.$emit('before-setCurrentProject');
+});
+/**
+ * NEEDED TO FIX ISUE ON DOUBLE CHANGING ON CHECKED 'layerstree.checked'()  WATCH
+ */
+ProjectsRegistry.onafter('setCurrentProject', ()=>{
+  setTimeout(()=>{
+    CatalogEventHub.$emit('after-setCurrentProject');
+  })
+});
 
 const vueComponentOptions = {
   ...compiledTemplate,
@@ -565,7 +580,9 @@ Vue.component('tristate-tree', {
   watch:{
     'layerstree.disabled'(bool) {},
     'layerstree.checked'() {
-      this.isGroup ? this.handleGroupChecked(this.layerstree) : this.handleLayerChecked(this.layerstree)
+      if (this.loadedproject){
+        this.isGroup ? this.handleGroupChecked(this.layerstree) : this.handleLayerChecked(this.layerstree)
+      }
     }
   },
   methods: {
@@ -697,7 +714,23 @@ Vue.component('tristate-tree', {
     // just firs time
     this.init();
     // handel change Project events
-    CatalogEventHub.$on('changeProject', this.init)
+    CatalogEventHub.$on('changeProject', ()=> {
+      this.init()
+    });
+
+    /**
+     * NEEDED TO FIX ISUE ON DOUBLE CHANGING ON CHECKED 'layerstree.checked'()  WATCH
+     */
+    CatalogEventHub.$on('before-setCurrentProject', ()=> {
+      this.loadedproject = false;
+    });
+
+    /**
+     * NEEDED TO FIX ISUE ON DOUBLE CHANGING ON CHECKED 'layerstree.checked'()  WATCH
+     */
+    CatalogEventHub.$on('after-setCurrentProject', ()=> {
+      this.loadedproject = true;
+    })
   },
   async mounted() {
     await this.$nextTick();
