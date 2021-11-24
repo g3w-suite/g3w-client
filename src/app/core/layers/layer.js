@@ -819,6 +819,13 @@ proto.isFilterable = function(conditions=null) {
   return isFiltrable;
 };
 
+/**
+ * Check if layer is setup as time series
+ */
+proto.isTimeseries = function(){
+  return this.config.timeseries !== undefined;
+};
+
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };

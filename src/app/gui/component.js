@@ -7,15 +7,25 @@ const Component = function(options={}) {
   // internal VUE component
   this.internalComponent = null;
   this._components = [];
-  this.id = options.id || Math.random() * 1000;
-  this.title = options.title || '';
+  const {
+    id=Math.random() * 1000,
+    title='',
+    visible=true,
+    open=false,
+    resizable=false,
+    info=null,
+    loading=false,
+    disabled=false
+  } = options;
+  this.id = id ;
+  this.title = title;
   this.state = {
-    visible: options.visible || true, // visibile
-    open: options.open || false, // open,
-    resizable: options.resizable || false,
-    info: options.info || null,
-    loading: options.loading || false,
-    disabled: options.disabled || false,
+    visible, // visibile
+    open, // open,
+    resizable,
+    info,
+    loading,
+    disabled,
     sizes: {
       width:0,
       height:0
@@ -150,8 +160,7 @@ proto.getInternalComponent = function() {
 };
 
 proto.setInternalComponent = function(internalComponent, options={}) {
-  if (!internalComponent && this.internalComponentClass)
-    this.internalComponent = new this.internalComponentClass;
+  if (!internalComponent && this.internalComponentClass) this.internalComponent = new this.internalComponentClass;
   else this.internalComponent = internalComponent;
   const {events=[]} = options;
   events.forEach(event => {

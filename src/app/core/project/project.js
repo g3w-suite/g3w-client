@@ -213,8 +213,13 @@ proto.getBaseLayers = function() {
   return this.state.baselayers;
 };
 
-proto.getConfigLayers = function() {
-  return this.state.layers;
+/**
+ * Get configuration layers array from server config
+ * @param filter property layer config to filter
+ * @returns {*}
+ */
+proto.getConfigLayers = function({key}={}) {
+  return key ? this.state.layers.filter(layer => layer[key] !== undefined) : this.state.layers;
 };
 
 /**

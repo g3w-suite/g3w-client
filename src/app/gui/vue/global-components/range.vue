@@ -1,5 +1,8 @@
 <template>
-  <input :id="id" @change="change" :value="value" type="range" :min="min" :max="max" :step="step">
+  <div style="display: flex; flex-direction: column">
+    <label :for="id" style="display: block" v-t="label"></label>
+    <input :id="id" ref="range-input" @change="change" v-model="value" type="range" :min="min" :max="max" :step="step">
+  </div>
 </template>
 
 <script>
@@ -8,6 +11,10 @@
     props:{
       id: {
         required: true,
+      },
+      label: {
+        type:"String",
+        default: ''
       },
       min: {
         type: Number,
@@ -21,14 +28,16 @@
         type: Number,
         default: 1
       },
-      value: {
-        type: Number,
-        default: 0
+      labelValue: {}
+    },
+    data(){
+      return {
+        value: 0
       }
     },
     methods:{
       changeBackGround(value){
-        this.$el.style.backgroundSize = (value - this.min) * 100 / (this.max - this.min) + '% 100%';
+        this.$refs['range-input'].style.backgroundSize = (value - this.min) * 100 / (this.max - this.min) + '% 100%';
       },
       setValue(value){
         this.changedValue(value);

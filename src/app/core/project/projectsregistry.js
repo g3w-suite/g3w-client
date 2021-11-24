@@ -1,4 +1,4 @@
-const {base, inherit }= require('core/utils/utils');
+const {base, inherit}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');

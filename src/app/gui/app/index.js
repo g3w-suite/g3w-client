@@ -73,6 +73,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     const ToolsComponent = require('gui/tools/vue/tools');
     const MapComponent = require('gui/map/vue/map');
     const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
+    const TimeSeriesComponent = require('gui/timeseries/vue/timeseries');
     return {
       title: appTitle,
       placeholders: {
@@ -127,6 +128,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: true,
               icon: G3WTemplate.getFontClass('tools'),
+              mobile: true
+            }),
+            new TimeSeriesComponent({
+              id: 'timeseries',
+              open: false,
+              collapsible: true,
+              icon: G3WTemplate.getFontClass('time'),
               mobile: true
             }),
             new CatalogComponent({

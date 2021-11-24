@@ -1,15 +1,20 @@
 <template>
-  <div class='input-group date' ref="iddatetimepicker">
-    <input ref="idinputdatetimepiker" type='text' class="form-control" />
+  <div ref="datimecontainer">
+    <label :for="id" style="display: block" v-t="label"></label>
+    <div class="form-group">
+      <div class='input-group date' ref="iddatetimepicker">
+        <input :id="id" ref="idinputdatetimepiker" type='text' @change="changeInput" class="form-control" />
         <span class="input-group-addon caret">
-        <span class="datetimeinput" :class="[type === 'time'? g3wtemplate.getFontClass('time') :  g3wtemplate.getFontClass('calendar')]">
+          <span class="datetimeinput" :class="[type === 'time'? g3wtemplate.getFontClass('time') :  g3wtemplate.getFontClass('calendar')]"></span>
         </span>
-      </span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
   import ApplicationState from '../../../core/applicationstate';
+  const {getUniqueDomId} = require('core/utils/utils');
   export default {
     name: "datetime",
     props: {
@@ -26,47 +31,58 @@
       },
       maxDate: {
         default: false
+      },
+      value: {},
+      label: {
+        default:'Date'
       }
     },
     data(){
       return {
-        datetimevalue: null
+        datetimevalue: this.value
       }
     },
     methods: {
+      changeInput(evt){
+        console.log(evt.target.value)
+      },
       change(value) {
         const date = moment(value).format(this.format);
-        $(this.$refs.iddatetimepicker).val(date);
         this.$emit('change', date)
       }
     },
-
     async mounted() {
       await this.$nextTick();
-      $(this.$refs.iddatetimepicker).datetimepicker({
+      const datetimeinputelement = $(this.$refs.iddatetimepicker);
+      datetimeinputelement.datetimepicker({
         minDate: this.minDate,
         maxDate: this.maxDate,
+        defaultDate: this.datetimevalue,
+        useCurrent: false,
         allowInputToggle: true,
-        defaultDate: null,
-        ignoreReadonly: true,
         showClose: true,
         format: this.format,
-        toolbarPlacement: "top",
-        widgetPositioning:{
-          horizontal: "right",
-          vertical: "auto",
+        locale: ApplicationState.lng,
+        toolbarPlacement: 'top',
+        widgetPositioning: {
+          horizontal: 'right'
         },
-        locale: ApplicationState.lng
       });
-      $(this.$refs.iddatetimepicker).on("dp.change", () => {
-        const date = $(this.$refs.idinputdatetimepiker).val();
-        this.change(date)
+      datetimeinputelement.on("dp.change", ({date}) => {
+        this.change(date);
       });
-      $(this.$refs.iddatetimepicker).on("dp.hide", evt => {
+      datetimeinputelement.on("dp.hide", evt => {
         //$(this.$refs.iddatetimepicker).data("DateTimePicker").show();
       });
-
-      ApplicationState.ismobile && setTimeout(()=>$(this.$refs.idinputdatetimepiker).blur());
+      ApplicationState.ismobile && setTimeout(()=>datetimeinputelement.blur());
+    },
+    watch: {
+      value(datetime){
+        this.datetimevalue = datetime;
+      }
+    },
+    created(){
+      this.id = getUniqueDomId();
     }
   }
 </script>

@@ -335,5 +335,4 @@ proto.getLayersTree = function() {
   return this.state.layerstree;
 };
 
-
 module.exports = LayersStore;

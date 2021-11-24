@@ -39,30 +39,29 @@ const DateTimePickerInput = Vue.extend({
     const locale = this.service.getLocale();
     const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
     const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].fieldformat);
-    $(() => {
-      $(`#${this.iddatetimepicker}`).datetimepicker({
-        defaultDate: date,
-        format: datetimedisplayformat,
-        ignoreReadonly: true,
-        allowInputToggle: true,
-        toolbarPlacement: 'top',
-        widgetPositioning: {
-          vertical: 'auto',
-          horizontal: 'right'
-        },
-        showClose: true,
-        locale: locale
-      });
+    $(`#${this.iddatetimepicker}`).datetimepicker({
+      defaultDate: date,
+      format: datetimedisplayformat,
+      ignoreReadonly: true,
+      allowInputToggle: true,
+      toolbarPlacement: 'top',
+      widgetPositioning: {
+        vertical: 'auto',
+        horizontal: 'right'
+      },
+      showClose: true,
+      locale
     });
-    $(`#${this.iddatetimepicker}`).on("dp.change", (e) => {
+
+    $(`#${this.iddatetimepicker}`).on("dp.change", evt => {
       const newDate = $('#'+this.idinputdatetimepiker).val();
       this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
       this.widgetChanged();
     });
-    $(`#${this.iddatetimepicker}`).on("dp.show", (e) => {
+    $(`#${this.iddatetimepicker}`).on("dp.show", evt => {
       this.$emit('datetimepickershow');
     });
-    $(`#${this.iddatetimepicker}`).on("dp.hide", (e) => {
+    $(`#${this.iddatetimepicker}`).on("dp.hide", evt => {
       this.$emit('datetimepickershow');
     });
     ApplicationState.ismobile && setTimeout(()=>{

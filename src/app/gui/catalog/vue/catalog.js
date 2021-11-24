@@ -582,6 +582,9 @@ Vue.component('tristate-tree', {
     }
   },
   methods: {
+    init(){
+      if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+    },
     /**
      * Handel change checked property of group
      * @param group
@@ -697,7 +700,10 @@ Vue.component('tristate-tree', {
     }
   },
   created() {
-    if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+    this.init();
+  },
+  updated(){
+    this.init();
   },
   async mounted() {
     if (this.isGroup && !this.root) {

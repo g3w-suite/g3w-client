@@ -28,6 +28,32 @@ const SETTINGS = {
 };
 
 function MapService(options={}) {
+  this.state = {
+    mapUnits: 'm',
+    bbox: [],
+    hidemaps:[],
+    resolution: null,
+    center: null,
+    loading: false,
+    hidden: true,
+    scale: 0,
+    mapcontrolsalignement: 'rv',
+    mapcontrolDOM: null,
+    mapcontrolready: false,
+    mapcontrolSizes: {
+      height: 47,
+      width: 47,
+      minWidth: 47,
+      minHeight: 47
+    },
+    mapControl: {
+      grid: [],
+      length: 0,
+      currentIndex: 0,
+      update: true,
+      disabled: false
+    },
+  };
   this.id = 'MapService';
   this.viewer = null;
   this.target = options.target || null;
@@ -85,33 +111,6 @@ function MapService(options={}) {
     })
   };
   this.layersExtraParams = {};
-  this.state = {
-    mapUnits: 'm',
-    bbox: [],
-    hidemaps:[],
-    resolution: null,
-    center: null,
-    loading: false,
-    hidden: true,
-    scale: 0,
-    mapcontrolsalignement: 'rv',
-    mapcontrolDOM: null,
-    mapcontrolready: false,
-    mapcontrolSizes: {
-      height: 47,
-      width: 47,
-      minWidth: 47,
-      minHeight: 47
-    },
-    mapControl: {
-      grid: [],
-      length: 0,
-      currentIndex: 0,
-      update: true,
-      disabled: false
-    },
-  };
-
   this._greyListenerKey = null;
   this._drawShadow = {
     type: 'coordinate',
@@ -1513,6 +1512,12 @@ proto.addMapLayer = function(mapLayer) {
   this.addLayerToMap(mapLayer)
 };
 
+proto.getMapLayerByLayerId = function(layerId){
+  return this.getMapLayers().find(mapLayer => {
+    return mapLayer.getLayerConfigs().find(layer => layer.getId() === layerId);
+  })
+};
+
 proto.getMapLayers = function() {
   return this._mapLayers;
 };
@@ -1726,13 +1731,18 @@ proto._setupBaseLayers = function(){
 
 //SETUP MAPLAYERS
 proto._setupMapLayers = function() {
+  // get all geolayers exclude baselayers and eventually vector layers
   const layers = getMapLayersByFilter({
     BASELAYER: false,
     VECTORLAYER: false
   });
   this._setMapProjectionToLayers(layers);
-  //group layer by mutilayer
-  const multiLayers = _.groupBy(layers, layer => layer.getMultiLayerId());
+  //group layer by mutilayer (multilayer property of layer on project configuration)
+  // nee to split time series to group to speed up eventualli time seriesries loading of single layer
+  const multiLayers = _.groupBy(layers, layer => {
+    const multiLayerId = layer.getMultiLayerId();
+    return layer.isTimeseries() ? uniqueId() : multiLayerId;
+  });
   let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = `layer_${id}`;
@@ -1860,13 +1870,21 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
+/**
+ * method to update MapLayer
+ * @param mapLayer
+ * @param options
+ */
 proto.updateMapLayer = function(mapLayer, options={}) {
   const {force=false} = options;
-  !force ? mapLayer.update(this.state, {force}) : mapLayer.update(this.state,
-    {
+  !force ? mapLayer.update(this.state, {
+    ...options,
+    force}) :
+    mapLayer.update(this.state, {
       force,
       "time": Date.now()
-    })
+    });
+  return mapLayer;
 };
 
 // run update function on each mapLayer
