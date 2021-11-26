@@ -1739,10 +1739,17 @@ proto._setupMapLayers = function() {
   this._setMapProjectionToLayers(layers);
   //group layer by mutilayer (multilayer property of layer on project configuration)
   // nee to split time series to group to speed up eventualli time seriesries loading of single layer
+  let qtimeseries_multilayerid_split_values = {};
   const multiLayers = _.groupBy(layers, layer => {
-    const multiLayerId = layer.getMultiLayerId();
-    return layer.isTimeseries() ? uniqueId() : multiLayerId;
+    let multiLayerId = layer.getMultiLayerId();
+    if (layer.isQtimeseries()){
+      qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
+      multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
+    } else multiLayerId = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ?
+      multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
+    return multiLayerId;
   });
+  qtimeseries_multilayerid_split_values = null; // delete to garbage collector
   let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = `layer_${id}`;

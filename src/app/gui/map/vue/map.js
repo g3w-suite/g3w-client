@@ -32,7 +32,7 @@ const vueComponentOptions = {
   methods: {
     showHideControls () {
       const mapControls = this.$options.service.getMapControls();
-      mapControls.forEach((control) => {
+      mapControls.forEach(control => {
         if (control.type !== "scaleline")
           control.control.showHide();
       })
@@ -46,9 +46,7 @@ const vueComponentOptions = {
   },
   async mounted() {
     const mapService = this.$options.service;
-    mapService.once('ready', ()=>{
-      this.ready = true;
-    });
+    mapService.once('ready', ()=>this.ready = true);
     this.crs = mapService.getCrs();
     await this.$nextTick();
     mapService.setMapControlsContainer($(this.$refs['g3w-map-controls']));

@@ -28,12 +28,13 @@
         type: Number,
         default: 1
       },
-      labelValue: {}
+      labelValue: {},
+      value: {
+        default: 0
+      }
     },
     data(){
-      return {
-        value: 0
-      }
+      return {}
     },
     methods:{
       changeBackGround(value){

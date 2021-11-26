@@ -32,6 +32,9 @@
       maxDate: {
         default: false
       },
+      enabledDates: {
+        default: false
+      },
       value: {},
       label: {
         default:'Date'
@@ -43,6 +46,21 @@
       }
     },
     methods: {
+      play(){
+
+      },
+      pause(){
+
+      },
+      stop(){
+
+      },
+      back(step=1){
+
+      },
+      forward(step=1){
+
+      },
       changeInput(evt){
         console.log(evt.target.value)
       },
@@ -53,13 +71,14 @@
     },
     async mounted() {
       await this.$nextTick();
-      const datetimeinputelement = $(this.$refs.iddatetimepicker);
-      datetimeinputelement.datetimepicker({
+      this.datetimeinputelement = $(this.$refs.iddatetimepicker);
+      this.datetimeinputelement.datetimepicker({
         minDate: this.minDate,
         maxDate: this.maxDate,
         defaultDate: this.datetimevalue,
         useCurrent: false,
         allowInputToggle: true,
+        enabledDates: this.enabledDates,
         showClose: true,
         format: this.format,
         locale: ApplicationState.lng,
@@ -68,10 +87,10 @@
           horizontal: 'right'
         },
       });
-      datetimeinputelement.on("dp.change", ({date}) => {
+      this.datetimeinputelement.on("dp.change", ({date}) => {
         this.change(date);
       });
-      datetimeinputelement.on("dp.hide", evt => {
+      this.datetimeinputelement.on("dp.hide", evt => {
         //$(this.$refs.iddatetimepicker).data("DateTimePicker").show();
       });
       ApplicationState.ismobile && setTimeout(()=>datetimeinputelement.blur());
@@ -79,6 +98,16 @@
     watch: {
       value(datetime){
         this.datetimevalue = datetime;
+        this.datetimeinputelement.data("DateTimePicker").date(datetime)
+      },
+      async minDate(datetime){
+        this.datetimeinputelement.data("DateTimePicker").minDate(datetime);
+      },
+      async maxDate(datetime){
+        this.datetimeinputelement.data("DateTimePicker").maxDate(datetime);
+      },
+      enabledDates(dates){
+        this.datetimeinputelement.data("DateTimePicker").enabledDates(dates);
       }
     },
     created(){

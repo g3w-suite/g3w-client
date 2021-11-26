@@ -822,8 +822,8 @@ proto.isFilterable = function(conditions=null) {
 /**
  * Check if layer is setup as time series
  */
-proto.isTimeseries = function(){
-  return this.config.timeseries !== undefined;
+proto.isQtimeseries = function(){
+  return this.config.qtimeseries;
 };
 
 proto.isEditable = function() {

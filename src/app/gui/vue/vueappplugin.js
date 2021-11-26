@@ -108,7 +108,12 @@ const font = {
   moon: "fas fa-moon",
   sun: "fas fa-sun",
   refresh: "fas fa-sync-alt",
-  pause:"fas fa-pause"
+  pause:"fas fa-pause",
+  'step-backward': "fas fa-step-backward",
+  'fast-backward': "fas fa-fast-backward",
+  'step-forward': "fas fa-step-forward",
+  'fast-forward': "fas fa-fast-forward"
+
 };
 
 const Vueappplugin = {

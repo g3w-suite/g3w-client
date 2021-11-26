@@ -34,6 +34,13 @@ proto.isIframe = function() {
   return ApplicationService.isIframe();
 };
 
+/**
+ * Get Current Project
+ */
+proto.getCurrentProject = function(){
+  return ApplicationService.getCurrentProject();
+};
+
 proto.getGid = function(){
   const {gid} = this.config;
   return gid && gid.split(':')[1];

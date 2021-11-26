@@ -130,7 +130,6 @@ function PluginsRegistry() {
           })
       } else resolve()
     })
-
   };
 
   this.getPluginConfig = function(pluginName) {

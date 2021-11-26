@@ -17,22 +17,6 @@ const translations = {
         }
       },
       sdk: {
-        timeseries: {
-          title: "Serie Temporali",
-          steps: 'Passi',
-          step: 'Passo',
-          startdate:"Data Inizio",
-          enddate: "Data Fine",
-          stepsunit: {
-            label: "Unità di passo",
-            days: 'Giorni',
-            weeks: 'Settimane',
-            months: 'Mesi',
-            years: 'Anni',
-            hours: 'Ore',
-            minutes: 'Minuti'
-          }
-        },
         search: {
           all: 'TUTTE',
           no_results: "Nessun valore trovato",
@@ -490,22 +474,6 @@ const translations = {
         }
       },
       sdk: {
-        timeseries: {
-          title: "Time Series",
-          steps: 'Steps',
-          step: 'Step',
-          startdate:"Start Date",
-          enddate: "End Date",
-          stepsunit: {
-            label: "Step Unit",
-            days: 'Days',
-            weeks: 'Weeks',
-            months: 'Months',
-            years: 'Years',
-            hours: 'Hours',
-            minutes: 'Minutes'
-          }
-        },
         search: {
           all: 'ALL',
           no_results: "No results",
@@ -961,22 +929,6 @@ const translations = {
         }
       },
       sdk: {
-        timeseries: {
-          title: "Time Series",
-          steps: 'Steps',
-          step: 'Step',
-          startdate:"Start Date",
-          enddate: "End Date",
-          stepsunit: {
-            label: "Step Unit",
-            days: 'Days',
-            weeks: 'Weeks',
-            months: 'Months',
-            years: 'Years',
-            hours: 'Hours',
-            minutes: 'Minutes'
-          }
-        },
         search: {
           all: 'KAIKKI',
           no_results: "Ei tuloksia",
@@ -1432,22 +1384,6 @@ const translations = {
         }
       },
       sdk: {
-        timeseries: {
-          title: "Time Series",
-          steps: 'Steps',
-          step: 'Step',
-          startdate:"Start Date",
-          enddate: "End Date",
-          stepsunit: {
-            label: "Step Unit",
-            days: 'Days',
-            weeks: 'Weeks',
-            months: 'Months',
-            years: 'Years',
-            hours: 'Hours',
-            minutes: 'Minutes'
-          }
-        },
         search: {
           all: 'ALLA',
           no_results: "Inga resultat",
@@ -1904,22 +1840,6 @@ const translations = {
         }
       },
       sdk: {
-        timeseries: {
-          title: "Time Series",
-          steps: 'Steps',
-          step: 'Step',
-          startdate:"Start Date",
-          enddate: "End Date",
-          stepsunit: {
-            label: "Step Unit",
-            days: 'Days',
-            weeks: 'Weeks',
-            months: 'Months',
-            years: 'Years',
-            hours: 'Hours',
-            minutes: 'Minutes'
-          }
-        },
         search: {
           all: 'TOUTES',
           no_results: "Aucune valeur trouvée",
