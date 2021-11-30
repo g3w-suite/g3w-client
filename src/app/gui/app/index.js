@@ -102,7 +102,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button`,
+                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
                 tooltip: 'Query Builder',
                 fnc:() => {
                   GUI.closeContent();

@@ -53,6 +53,10 @@ function MapService(options={}) {
       update: true,
       disabled: false
     },
+    map_info:{
+      info: null,
+      style: null
+    }
   };
   this.id = 'MapService';
   this.viewer = null;
@@ -1882,15 +1886,14 @@ proto.getOverviewMapLayers = function(project) {
  * @param mapLayer
  * @param options
  */
-proto.updateMapLayer = function(mapLayer, options={}) {
-  const {force=false} = options;
-  !force ? mapLayer.update(this.state, {
-    ...options,
-    force}) :
-    mapLayer.update(this.state, {
-      force,
-      "time": Date.now()
-    });
+proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
+  // if force add time parametter to force request of map layer from server
+  if (options.force) options.time = Date.now();
+  if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
+    mapLayer.showSpinnerWhenLoading = showSpinner;
+    this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
+  }
+  mapLayer.update(this.state, options);
   return mapLayer;
 };
 
@@ -1902,11 +1905,25 @@ proto.updateMapLayers = function(options={}) {
   Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
 };
 
-// register map Layer listeners of creation
-proto.registerMapLayerListeners = function(mapLayer) {
+/**
+ * register map layer loadingEvents
+ * @param mapLayer
+ */
+proto.registerMapLayerLoadingEvents = function(mapLayer){
   mapLayer.on('loadstart', this._incrementLoaders);
   mapLayer.on('loadend', this._decrementLoaders);
   mapLayer.on('loaderror', this._mapLayerLoadError);
+};
+
+proto.unregisterMapLayerLoadingEvents= function(mapLayer){
+  mapLayer.off('loadstart', this._incrementLoaders );
+  mapLayer.off('loadend', this._decrementLoaders );
+  mapLayer.off('loaderror', this._mapLayerLoadError);
+};
+
+// register map Layer listeners of creation
+proto.registerMapLayerListeners = function(mapLayer) {
+  this.registerMapLayerLoadingEvents(mapLayer);
   //listen change filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
@@ -1918,9 +1935,7 @@ proto.registerMapLayerListeners = function(mapLayer) {
 
 // unregister listeners of mapLayers creation
 proto.unregisterMapLayerListeners = function(mapLayer) {
-  mapLayer.off('loadstart', this._incrementLoaders );
-  mapLayer.off('loadend', this._decrementLoaders );
-  mapLayer.off('loaderror', this._mapLayerLoadError);
+  this.unregisterMapLayerLoadingEvents(mapLayer);
   // try to remove layer filter token
   if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
@@ -1975,6 +1990,15 @@ proto._watchInteraction = function(interaction) {
       this.emit('mapcontrol:active', e.target);
     }
   })
+};
+
+/**
+ * Show map Info
+ * @param info
+ */
+proto.showMapInfo = function({info, style} = {}) {
+  this.state.map_info.info = info;
+  this.state.map_info.style = style;
 };
 
 proto.zoomTo = function(coordinate, zoom=6) {
@@ -2212,7 +2236,11 @@ proto.clearHighlightGeometry = function() {
   this.resetDefaultLayerStyle('highlightLayer');
 };
 
-proto.refreshMap = function(options) {
+/**
+ * Force to referesh map
+ * @param options
+ */
+proto.refreshMap = function(options={force: true}) {
   this.updateMapLayers(options);
 };
 

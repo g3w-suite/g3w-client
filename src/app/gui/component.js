@@ -15,7 +15,8 @@ const Component = function(options={}) {
     resizable=false,
     info=null,
     loading=false,
-    disabled=false
+    disabled=false,
+    closewhenshowviewportcontent=true,
   } = options;
   this.id = id ;
   this.title = title;
@@ -26,6 +27,7 @@ const Component = function(options={}) {
     info,
     loading,
     disabled,
+    closewhenshowviewportcontent,
     sizes: {
       width:0,
       height:0
@@ -92,6 +94,10 @@ proto.setId = function(id) {
 
 proto.getOpen = function() {
   return this.state.open;
+};
+
+proto.closeWhenViewportContentIsOpen = function(){
+  return this.getOpen() && this.state.closewhenshowviewportcontent;
 };
 
 proto.getVisible = function() {

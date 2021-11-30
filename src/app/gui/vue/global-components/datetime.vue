@@ -61,9 +61,7 @@
       forward(step=1){
 
       },
-      changeInput(evt){
-        console.log(evt.target.value)
-      },
+      changeInput(evt){},
       change(value) {
         const date = moment(value).format(this.format);
         this.$emit('change', date)

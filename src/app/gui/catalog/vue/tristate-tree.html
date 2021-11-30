@@ -54,19 +54,18 @@
   </div>
   <layerlegend v-if="this.legendlayerposition === 'toc'" :layer="layerstree"></layerlegend>
   <ul v-if="isGroup" class="tree-content-items root" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
-    <template v-for="_layerstree in layerstree.nodes" :key="layerstree.id">
+    <template v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
       <tristate-tree
-              :root="false"
-              :legendConfig="legend"
-              :legendplace="legendplace"
-              :highlightlayers="highlightlayers"
-              :parentFolder="isGroup"
-              :layerstree="_layerstree"
-              :storeid="storeid"
-              :parent="layerstree"
-              :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
+        :root="false"
+        :legendConfig="legend"
+        :legendplace="legendplace"
+        :highlightlayers="highlightlayers"
+        :parentFolder="isGroup"
+        :layerstree="_layerstree"
+        :storeid="storeid"
+        :parent="layerstree"
+        :parent_mutually_exclusive="!!layerstree.mutually_exclusive">
       </tristate-tree>
     </template>
-
   </ul>
 </li>

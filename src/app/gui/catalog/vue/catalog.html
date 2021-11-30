@@ -13,13 +13,15 @@
       </li>
     </ul>
     <div class="tab-content catalog-tab-content">
+
+
       <bar-loader :loading="loading"></bar-loader>
       <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'layers' && 'hasLayers' }" id="layers">
         <helpdiv message="catalog_items.helptext"></helpdiv>
         <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
           <changemapthemes :key="project.state.gid" :map_themes="project.state.map_themes" @change-map-theme="changeMapTheme"></changemapthemes>
         </div>
-        <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees">
+        <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
             :layerstree="layerstree"

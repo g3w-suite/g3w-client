@@ -6,6 +6,7 @@
 </template>
 
 <script>
+  const {debounce} = require('core/utils/utils');
   export default {
     name: "range",
     props:{
@@ -43,14 +44,6 @@
       setValue(value){
         this.changedValue(value);
       },
-      changedValue(value){
-        this.value = value;
-        this.changeBackGround(value);
-        this.$emit('change-range', {
-          id: this.id,
-          value
-        });
-      },
       change(evt){
         const value = 1*evt.target.value;
         this.changedValue(value);
@@ -58,10 +51,18 @@
     },
     watch:{
       value(value){
-        this.changedValue(value)
+        this.changeBackGround(value);
       }
     },
-    created(){},
+    created(){
+      this.changedValue =  debounce(value => {
+        this.value = value;
+        this.$emit('change-range', {
+          id: this.id,
+          value
+        });
+      })
+    },
     async mounted(){
       await this.$nextTick();
       this.changeBackGround(this.value);

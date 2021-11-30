@@ -10,6 +10,7 @@ function MapLayer(config={}) {
   this.layer = null;
   this.layers = []; // store all enabled layers
   this.allLayers = []; // store all layers
+  this.showSpinnerWhenLoading = true;
   base(this);
 }
 

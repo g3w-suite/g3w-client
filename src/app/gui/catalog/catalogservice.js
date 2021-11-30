@@ -18,20 +18,21 @@ function CatalogService() {
 
   layersStores.forEach(layersStore => this.addLayersStoreToLayersTrees(layersStore));
 
-  CatalogLayersStoresRegistry.onafter('addLayersStore', layersStore => this.addLayersStoreToLayersTrees(layersStore));
+  CatalogLayersStoresRegistry.onafter('addLayersStore', layersStore => {
+    this.addLayersStoreToLayersTrees(layersStore)
+  });
 
   CatalogLayersStoresRegistry.onafter('removeLayersStore', layersStore => {
-    this.state.layerstrees.forEach((layersTree, idx) => {
+    this.state.layerstrees.find((layersTree, idx) => {
       if (layersTree.storeid === layersStore.getId()) {
         this.state.layerstrees.splice(idx, 1);
-        return false;
+        return true;
       }
     });
   });
   CatalogLayersStoresRegistry.onafter('removeLayersStores', () => {
     this.state.layerstrees.forEach((layersTree, idx) => {
       this.state.layerstrees.splice(idx, 1);
-      return false;
     });
   });
 }
@@ -66,10 +67,10 @@ proto.addLayersGroup = function(layersGroup) {
 };
 
 proto.removeExternalLayer = function(name) {
-  this.state.externallayers.forEach((layer, index) => {
+  this.state.externallayers.find((layer, index) => {
     if (layer.name === name) {
       this.state.externallayers.splice(index, 1);
-      return false
+      return true
     }
   });
 };

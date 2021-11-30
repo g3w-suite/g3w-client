@@ -1,7 +1,7 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
-const AddLayerComponent = require('./addlayer');
+const AddLayerComponent = require('./components/addlayer');
 const MapService = require('../mapservice');
 const templateCompiled = createCompiledTemplate(require('./map.html'));
 
@@ -15,7 +15,8 @@ const vueComponentOptions = {
       target,
       maps_container: this.$options.maps_container,
       service,
-      hidemaps: service.state.hidemaps
+      hidemaps: service.state.hidemaps,
+      map_info: service.state.map_info
     }
   },
   components: {
@@ -32,10 +33,7 @@ const vueComponentOptions = {
   methods: {
     showHideControls () {
       const mapControls = this.$options.service.getMapControls();
-      mapControls.forEach(control => {
-        if (control.type !== "scaleline")
-          control.control.showHide();
-      })
+      mapControls.forEach(control => control.type !== "scaleline" && control.control.showHide());
     },
     getPermalinkUrl() {
       return this.ready ? this.$options.service.getMapExtentUrl(): null;
