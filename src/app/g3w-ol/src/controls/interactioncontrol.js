@@ -24,7 +24,6 @@ const InteractionControl = function(options={}) {
   this._interactionClassOptions = interactionClassOptions;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
-  //this.setEnable(enabled);
   // create an help message
   this._help && this._createModalHelp();
   // create tool

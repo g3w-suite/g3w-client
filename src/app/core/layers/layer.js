@@ -588,6 +588,15 @@ proto.getFields = function() {
   return this.config.fields
 };
 
+/**
+ * Get field by name
+ * @param fieldName
+ * @returns {*}
+ */
+proto.getFieldByName = function(fieldName){
+  return this.getFields().find(field => field.name === fieldName)
+};
+
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
@@ -635,10 +644,6 @@ proto.getState = function() {
 
 proto.getSource = function() {
   return this.state.source;
-};
-
-proto.getSourceType = function() {
-  return this.state.source ? this.state.source.type : null;
 };
 
 proto.isDownloadable = function(){
@@ -865,9 +870,11 @@ proto.getQueryLayerOrigName = function() {
 };
 
 proto.getInfoFormat = function(ogcService) {
-  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
-  //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
-
+  /**
+   * In case of qtime series (NETCDF)
+   */
+  if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') return 'application/json';
+  else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
 };
 
 proto.getInfoUrl = function() {

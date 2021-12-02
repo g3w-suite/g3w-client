@@ -1,6 +1,6 @@
 const {getUniqueDomId} = require('core/utils/utils');
 const GUI = require('gui/gui');
-const templateCompiled = Vue.compile( require('./lineXY.html'));
+const templateCompiled = Vue.compile(require('./lineXY.html'));
 const C3XYLine = {
   ...templateCompiled,
   props: {

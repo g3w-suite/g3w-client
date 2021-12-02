@@ -39,7 +39,7 @@
     },
     methods:{
       changeBackGround(value){
-        this.$refs['range-input'].style.backgroundSize = (value - this.min) * 100 / (this.max - this.min) + '% 100%';
+        this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`;
       },
       setValue(value){
         this.changedValue(value);

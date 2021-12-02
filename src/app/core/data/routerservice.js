@@ -54,7 +54,7 @@ function Routerservice() {
   this.getData = async function(contextAndMethod, options={}){
     const {context, method} = splitContextAndMethod(contextAndMethod);
     const service = this.getService(context);
-    const { inputs={}, outputs={}} = options;
+    const {inputs={}, outputs={}} = options;
     //return a promise and not the data
     const dataPromise = service[method](inputs);
     outputs && this.currentoutputplaces.forEach(place =>{
