@@ -73,7 +73,9 @@ proto.setPosition = function(position) {
   if (!this._sv) this._sv = new google.maps.StreetViewService();
   this._sv.getPanorama({location: position}, function (data) {
     self._panorama = new google.maps.StreetViewPanorama(
-      document.getElementById('streetview')
+      document.getElementById('streetview'), {
+        imageDateControl: true
+      }
     );
     self._panorama.addListener('position_changed', function() {
       if (self.isToggled()) {
