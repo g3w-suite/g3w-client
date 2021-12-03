@@ -144,6 +144,8 @@ const C3XYLine = {
       const data = this.chart.data()[0] ? this.chart.data()[0].values : [];
       data.forEach((item) => {this.data.push(item)});
       this._setAllowedSpace();
+      // emt event and pass chart
+      this.$emit('chart-ready', this.chart);
     })
   },
   beforeDestroy() {
