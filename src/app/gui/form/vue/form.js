@@ -15,7 +15,13 @@ const vueComponentObject = {
   data() {
     return {
       state: {},
-      switchcomponent: false
+      switchcomponent: false,
+      body: {
+        components: {
+          before: null,
+          after: null
+        }
+      }
     }
   },
   components: {
@@ -100,6 +106,17 @@ function FormComponent(options = {}) {
   this.init(options);
   this.getService().addComponents(components);
   this.getService().setComponent(components[0].component);
+  /**
+   * Used to add component to form body
+   * @param component
+   */
+  this.addBodyFormComponent = function({component, where='after'}={}){
+    this.getInternalComponent().body.components[where] = component;
+  };
+
+  this.addBodyFormComponents = function({components=[], where="after"}={}){
+
+  };
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);

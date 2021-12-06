@@ -6,7 +6,8 @@
     @resize-form="resizeForm"
     @clickheader="switchComponent">
   </g3wformheader>
-  <div class="g3wform_body" >
+  <div class="g3wform_body">
+    <component :is="body.components.before"></component>
     <keep-alive>
       <component
         @hook:activated="reloadLayout"
@@ -16,6 +17,7 @@
         :is="state.component">
       </component>
     </keep-alive>
+    <component :is="body.components.after"></component>
   </div>
   <g3w-form-footer :state="state"></g3w-form-footer>
 </div>
