@@ -62,7 +62,8 @@ function MapService(options={}) {
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
           geometryType,
-          color: this.defaultsLayers._style.highlightLayer.color
+          color: this.defaultsLayers._style.highlightLayer.color,
+          fill: false
         });
         styles.push(style);
         return styles;
@@ -2112,7 +2113,8 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       const geometryType = feature.getGeometry().getType();
       const style = createSelectedStyle({
         geometryType,
-        color
+        color,
+        fill: false
       });
       styles.push(style);
       return styles;
