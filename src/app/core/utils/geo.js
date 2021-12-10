@@ -1,4 +1,4 @@
-const { toRawType, uniqueId } = require('core/utils/utils');
+const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
@@ -945,6 +945,36 @@ const geoutils = {
         break;
     }
     return splittedFeatureGeometries;
+  },
+  /**
+   * Return Point feature vertex from geometry
+   * @param geometry
+   */
+  getPointFeaturesfromGeometryVertex(geometry){
+    const pointFeatures = [];
+    switch(geometry.getType()){
+      case Geometry.GeometryTypes.MULTIPOLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            coordinates.pop();
+            coordinates.forEach(coordinates =>{
+              const feature = new ol.Feature(new ol.geom.Point(coordinates));
+              pointFeatures.push(feature);
+            })
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.POLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.pop();
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+    }
+    return pointFeatures;
   },
 
   singleGeometriesToMultiGeometry(geometries=[]) {

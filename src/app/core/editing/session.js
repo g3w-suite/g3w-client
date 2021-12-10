@@ -135,7 +135,7 @@ proto.pushAdd = function(layerId, feature) {
   this._editor.removeNotEditablePropriertiesFromFeature(feature);
   const newFeature = feature.clone();
   this.push({
-    layerId: layerId,
+    layerId,
     feature: newFeature.add()
   });
   return newFeature;
@@ -144,7 +144,7 @@ proto.pushAdd = function(layerId, feature) {
 // delete temporary feature
 proto.pushDelete = function(layerId, feature) {
   this.push({
-    layerId: layerId,
+    layerId,
     feature: feature.delete()
   });
   return feature;
@@ -165,11 +165,11 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     }
   }
   this.push({
-      layerId: layerId,
+      layerId,
       feature: newFeature.update()
     },
     {
-      layerId: layerId,
+      layerId,
       feature: oldFeature.update()
     })
 };
@@ -200,7 +200,7 @@ proto.push = function(New, Old) {
     }
    */
   // check is set old (edit)
-  const feature = Old? [Old, New]: New;
+  const feature = Old ? [Old, New] : New;
   this._temporarychanges.push(feature);
 };
 
@@ -224,8 +224,7 @@ proto._filterChanges = function() {
   };
   this._temporarychanges.forEach((temporarychange) => {
     const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId === id)
-      changes.own.push(change);
+    if (change.layerId === id) changes.own.push(change);
     else {
       if (!changes.dependencies[change.layerId])
         changes.dependencies[change.layerId] = [];
@@ -237,14 +236,14 @@ proto._filterChanges = function() {
 };
 
 proto.rollback = function(changes) {
-  if (changes) {
-    return this._editor.rollback(changes);
-  } else {
+  if (changes) return this._editor.rollback(changes);
+  else {
     const d = $.Deferred();
     const changes = this._filterChanges();
     this._editor.rollback(changes.own).then(()=>{
       const {dependencies} = changes;
       for (const id in dependencies) {
+        console.log(id)
         SessionsRegistry.getSession(id).rollback(dependencies[id]);
       }
       d.resolve(dependencies);

@@ -53,13 +53,11 @@ proto._canDoGetFeaturesRequest = function(options={}) {
   let doRequest = true;
   if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
     const {bbox} = options.filter || {};
-    if(bbox) {
-      if(!this._filter.bbox)
-        this._filter.bbox = bbox;
-      else if(!ol.extent.containsExtent(this._filter.bbox, bbox)) {
+    if (bbox) {
+      if (!this._filter.bbox) this._filter.bbox = bbox;
+      else if (!ol.extent.containsExtent(this._filter.bbox, bbox)) {
         this._filter.bbox = ol.extent.extend(this._filter.bbox, bbox);
-      } else
-        doRequest = false;
+      } else doRequest = false;
     }
   }
   return doRequest
@@ -69,6 +67,9 @@ proto.getEditingSource = function() {
   return this._featuresstore;
 };
 
+/**
+ * get Source
+ */
 proto.getSource = function() {
   this._layer.getSource();
 };

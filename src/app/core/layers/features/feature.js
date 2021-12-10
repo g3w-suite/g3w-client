@@ -5,7 +5,7 @@ const Feature = function(options={}) {
   this._uid = uniqueId();
   this._newPrefix = '_new_';
   this._geometry = false;
-  const feature = options.feature;
+  const {feature} = options;
   if (feature) {
     this.setProperties(feature.getProperties());
     this.setId(feature.getId());
