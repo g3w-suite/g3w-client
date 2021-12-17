@@ -302,7 +302,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, "g");
     response = response.replace(reg, `qgs:layer${i}`);
   }
-  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
+  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
   arrayQGS.forEach((find, idx) => {
     if (idx%2 === 0) {
       if (!this._hasFieldsStartWithNotPermittedKey) this._hasFieldsStartWithNotPermittedKey = {};
@@ -426,7 +426,7 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
       numericFields.forEach(_field => {
         const value = feature.get(_field);
         const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], value);
+        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value)? value[0] : value);
         feature.unset(_field);
       })
     });
