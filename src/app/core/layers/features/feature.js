@@ -1,5 +1,5 @@
 const {uniqueId} = require('core/utils/utils');
-const { geometryFields } =  require('core/utils/geo');
+const {geometryFields} =  require('core/utils/geo');
 const Feature = function(options={}) {
   ol.Feature.call(this);
   this._uid = uniqueId();
@@ -29,10 +29,19 @@ const proto = Feature.prototype;
 //change constructor
 proto.constructor = 'Feature';
 
+/**
+ * Return unique id
+ * @returns {*}
+ */
 proto.getUid = function(){
   return this._uid
 };
 
+/**
+ * set new uid
+ * @param uid
+ * @private
+ */
 proto._setUid = function(uid){
   this._uid = uid;
 };
@@ -49,11 +58,15 @@ proto.cloneNew = function(){
   return clone;
 };
 
+/**
+ * clone existing feature
+ * @returns {Feature}
+ */
 proto.clone = function() {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
   this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
-  const clone =  new Feature({
+  const clone = new Feature({
     feature
   });
   const uid = this.getUid();

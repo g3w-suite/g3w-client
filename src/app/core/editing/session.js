@@ -243,7 +243,6 @@ proto.rollback = function(changes) {
     this._editor.rollback(changes.own).then(()=>{
       const {dependencies} = changes;
       for (const id in dependencies) {
-        console.log(id)
         SessionsRegistry.getSession(id).rollback(dependencies[id]);
       }
       d.resolve(dependencies);
@@ -377,9 +376,8 @@ proto.commit = function({ids=null, items, relations=true}={}) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
   } else {
-    if (items) {
-      commitItems = items;
-    } else {
+    if (items) commitItems = items;
+    else {
       commitItems = this._history.commit();
       commitItems = this._serializeCommit(commitItems);
     }

@@ -977,6 +977,32 @@ const geoutils = {
     return pointFeatures;
   },
 
+  /**
+   * Return number of vertex of a feature
+   * @param geometries
+   * @returns {*}
+   */
+  getVertexLength(geometry){
+    let vertexLength = 0;
+    switch(geometry.getType()){
+      case Geometry.GeometryTypes.MULTIPOLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            coordinates.pop();
+            coordinates.forEach(() => vertexLength+=1);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.POLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.pop();
+          coordinates.forEach(() => vertexLength+=1);
+        });
+        break;
+    }
+    return vertexLength;
+  },
+
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))

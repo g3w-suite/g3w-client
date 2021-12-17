@@ -17,9 +17,7 @@ proto.getLength = function() {
 
 //overwrite
 proto.setFeatures = function(features=[]) {
-  features.forEach((feature) => {
-    this._features.push(feature);
-  })
+  features.forEach(feature => this._features.push(feature));
 };
 // overwrite
 proto.readFeatures = function() {
@@ -31,15 +29,11 @@ proto.getFeaturesCollection = function() {
 };
 
 proto.getFeatureById = function(featureId) {
-  return this._features.getArray().find((feature) => {
-    return feature.getId() == featureId;
-  });
+  return this._features.getArray().find(feature => feature.getId() == featureId);
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.getArray().find((feature) => {
-    return feature.getUid() === uid;
-  });
+  return this._features.getArray().find(feature => feature.getUid() === uid);
 };
 
 proto._addFeature = function(feature) {
@@ -55,7 +49,7 @@ proto._updateFeature = function(feature) {
   const featuresArray = this._features.getArray();
   for (let i = 0; featuresArray.length; i++) {
     const _feature = featuresArray[i];
-    if(_feature.getUid() === feature.getUid()) {
+    if (_feature.getUid() === feature.getUid()) {
       index = i;
       break;
     }

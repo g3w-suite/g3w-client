@@ -1,5 +1,5 @@
 <div class="g3w-viewport">
-  <transition name="fade" :duration="{ enter: 800, leave: 500 }">
+  <transition name="fade" :duration="{ enter: 500, leave: 500 }">
     <user-message
             v-if="usermessage.show"
             @close-usermessage="closeUserMessage"
@@ -8,6 +8,7 @@
             :message="usermessage.message"
             :draggable="usermessage.draggable"
             :closable="usermessage.closable"
+            :duration="usermessage.duration"
             :position="usermessage.position"
             :autoclose="usermessage.autoclose"
             :textMessage="usermessage.textMessage"

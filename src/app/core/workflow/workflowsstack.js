@@ -47,6 +47,13 @@ const WorkFlowsStack = function() {
 
   this.insertAt = function(index, workflow) {
     this._workflows[index] = workflow;
+  };
+
+  this.clear = function(){
+    while (this._workflows.length) {
+      const workflow = this.pop();
+      workflow.stop();
+    }
   }
 
 };
