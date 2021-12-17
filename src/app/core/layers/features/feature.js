@@ -77,7 +77,7 @@ proto.clone = function() {
 };
 
 proto.setTemporaryId = function() {
-  const newValue = this._newPrefix + Date.now();
+  const newValue = `${this._newPrefix}${uniqueId()}`;
   this.setId(newValue);
   this.setNew();
 };

@@ -428,7 +428,6 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
         const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
         feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value)? value[0] : value);
         feature.unset(_field);
-        console.log(feature.getProperties())
       })
     });
     this._hasFieldsStartWithNumber = false;

@@ -24,12 +24,17 @@ const proto = Step.prototype;
 // method to start task
 proto.run = function(inputs, context, queques) {
   //emit run
-  this.emit('run', {inputs, context});
+  this.emit('run', {
+    inputs,
+    context
+  });
   const d = $.Deferred();
   if (this._task) {
     try {
       // change state to running
       this.state.running = true;
+      this._task.setInputs(inputs);
+      this._task.setContext(context);
       this._task.run(inputs, context, queques)
         .then(outputs => {
           this.stop();
@@ -54,10 +59,12 @@ proto.run = function(inputs, context, queques) {
 proto.stop = function() {
   // stop task
   this._task.stop();
+  //emit run
   // running to false
   this.state.running = false;
-  //emit run
   this.emit('stop');
+  this._task.setInputs(null);
+  this._task.setContext(null);
 };
 
 // revert task

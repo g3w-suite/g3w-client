@@ -454,7 +454,14 @@ const utils = {
   },
   createSingleFieldParameter({field, value, operator='eq', logicop=null}){
     logicop = logicop && `|${logicop}`;
-    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+    if (Array.isArray(value)){
+      let filter = '';
+      const valueLenght = value.length;
+      value.forEach((value, index) =>{
+        filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+      });
+      return filter
+    } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;

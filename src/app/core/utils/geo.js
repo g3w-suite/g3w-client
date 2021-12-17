@@ -1003,6 +1003,27 @@ const geoutils = {
     return vertexLength;
   },
 
+  /**
+   * Method that compare two geometry type and return true id are same geometry type or have in common tha same base geometry type:
+   * es. Point <--> Point => true
+   *  MultiPoint <--> Point => true
+   *  Point <--> Polygon => false
+   *
+   */
+  isSameBaseGeometryType(geometryType1, geometryType2){
+    geometryType1 = geometryType1.replace('Multi','');
+    geometryType2 = geometryType2.replace('Multi','');
+    return geometryType1 === geometryType2;
+  },
+
+  isSingleGeometry(geometry){
+    return !Geometry.isMultiGeometry(geometry.getType());
+  },
+
+  isMultiGeometry(geometry) {
+    return !Geometry.isMultiGeometry(geometry.getType());
+  },
+
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
