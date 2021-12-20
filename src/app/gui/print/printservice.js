@@ -68,14 +68,17 @@ proto.setInitState = function(){
   this.state.formats = formats;
   this.state.output.format = formats[0].value;
   this.state.maps = this.state.print[0].maps;
+  // label section
+  this.state.labels = this.state.print[0].labels;
 };
 
 proto.changeTemplate = function() {
   if (!this.state.template) return;
   const isPreviousAtlas = this.state.atlas;
-  const {atlas, maps} = this.state.print.find(print => print.name === this.state.template);
+  const {atlas, maps, labels} = this.state.print.find(print => print.name === this.state.template);
   this.state.maps = maps;
   this.state.atlas = atlas;
+  this.state.labels = labels;
   this.state.atlasValues = [];
   this.state.atlas ? this._clearPrint() : isPreviousAtlas ? this.showPrintArea(true) : this._setPrintArea();
 };
@@ -114,8 +117,10 @@ proto._getOptionsPrint = function() {
     template: this.state.template,
     maps,
     scale: this.state.scala,
-    format: this.state.output.format
+    format: this.state.output.format,
+    labels: this.state.labels
   };
+
   return options;
 };
 
