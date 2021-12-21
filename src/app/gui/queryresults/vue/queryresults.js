@@ -141,8 +141,15 @@ const vueComponentOptions = {
       const traverseStructure = item => {
         if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
         else {
-          const field = layer.formStructure.fields.find(field => field.name === item.field_name);
-          field && attributes.add(field);
+          let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          if (field) {
+            if (this.state.type === 'ows'){
+              // clone it to avoid to replace original
+              field = {...field}
+              field.name = field.name.replace(/ /g, '_');
+            }
+            attributes.add(field);
+          }
         }
       };
       layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
