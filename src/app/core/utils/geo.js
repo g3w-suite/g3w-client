@@ -1097,6 +1097,29 @@ const geoutils = {
     return dissolvedFeature;
   },
 
+  /**
+   * Method to find Self Intersection
+   * @param geoJsonPolygon
+   * @returns {[]}
+   */
+  findSelfIntersects(geometry) {
+    const selfIntersectPoint = [];
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsPolygon = olFromJsts.read(geometry);
+    // if the geometry is already a simple linear ring, do not
+    // try to find self intersection points.
+    const validator = new jsts.operation.IsSimpleOp(jstsPolygon);
+    if (validator.isSimpleLinearGeometry(jstsPolygon)) return selfIntersectPoint;
+    const graph = new jsts.geomgraph.GeometryGraph(0, jstsPolygon);
+    const cat = new jsts.operation.valid.ConsistentAreaTester(graph);
+    const r = cat.isNodeConsistentArea();
+    if (!r) {
+      const pt = cat.getInvalidPoint();
+      selfIntersectPoint.push([pt.x, pt.y]);
+    }
+    return selfIntersectPoint;
+  },
+
   normalizeEpsg(epsg) {
     if (typeof epsg === 'number') return `EPSG:${epsg}`;
     epsg = epsg.replace(/[^\d\.\-]/g, "");
