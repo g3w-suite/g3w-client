@@ -22,8 +22,8 @@ const FooterFormComponent = Vue.extend({
     _enterEventHandler(evt) {
       if (evt.which === 13) {
         evt.preventDefault();
-        if (this.isValid() && this.active)
-          $(this.$el).find('button').click();
+        const domEL = $(this.$el);
+        if (domEL.is(':visible') && this.isValid() && this.active) domEL.find('button').click();
       }
     }
   },
