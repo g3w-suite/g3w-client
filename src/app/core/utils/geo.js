@@ -1139,7 +1139,57 @@ const geoutils = {
     return crs;
   },
   /**
-   * Method to get geoiff file create by server
+   * Method to convert Degree Minutes Seconto to Degree
+   * @param dms
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDMSToDEG({dms, type="Array"}) {
+    const dms_Array = type === 'Array' ? dms : dms.split(/[^\d\w\.]+/);
+    const degrees = 1*dms_Array[0];
+    const minutes = 1*dms_Array[1];
+    const seconds = 1*dms_Array[2];
+    const direction = dms_Array[3];
+    let deg = (Number(degrees) + Number(minutes)/60 + Number(seconds)/3600).toFixed(6);
+    if (direction == "S" || direction == "W") deg = deg * -1;
+    return 1*deg;
+  },
+  /**
+   * Method to convert Degree to DMS
+   * @param deg
+   * @param lat
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDEGToDMS({deg, lat, output='Array'} = {}) {
+    const absolute = Math.abs(deg);
+    const degrees = Math.floor(absolute);
+    const minutesNotTruncated = (absolute - degrees) * 60;
+    const minutes = Math.floor(minutesNotTruncated);
+    const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
+    const direction =  lat ?
+      deg >= 0 ? "N" : "S"
+      : deg >= 0 ? "E" : "W";
+    switch (output) {
+      case 'Array':
+        return [degrees, minutes, seconds, direction];
+        break;
+      case 'Object':
+        return {
+          degrees,
+          minutes,
+          seconds,
+          direction
+        };
+        break;
+      case 'Text':
+      default:
+        return  degrees + "°" + minutes + "'" + seconds + "\"" + direction
+    }
+
+  },
+  /**
+   * Method to get geotiff file create by server
    *
    * @param options {
    *   url: server url end point
