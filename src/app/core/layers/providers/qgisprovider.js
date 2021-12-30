@@ -1,5 +1,5 @@
 import ApplicationState from 'core/applicationstate';
-const { base, inherit, XHR} = require('core/utils/utils');
+const {base, inherit, XHR} = require('core/utils/utils');
 const t = require('core/i18n/i18n.service').t;
 const DataProvider = require('core/layers/providers/provider');
 const RelationsService = require('core/relations/relationsservice');
@@ -14,13 +14,9 @@ function QGISProvider(options = {}) {
     map: null,
     layer: null
   };
-  this._unlockUrl = this._layer.getUrl('unlock');
   // url referred to query
   this._queryUrl = this._layer.getUrl('query');
   this._dataUrl = this._layer.getUrl('data');
-  // editing url api
-  this._editingUrl = this._layer.getUrl('editing');
-  this._commitUrl = this._layer.getUrl('commit');
   // url to get configuration
   this._configUrl = this._layer.getUrl('config');
   // widget url
@@ -164,8 +160,9 @@ proto.getWidgetData = function(options={}) {
 
 // unlock feature
 proto.unlock = function() {
+  const unlockUrl =  this._layer.getUrl('unlock');
   const d = $.Deferred();
-  $.post(this._unlockUrl)
+  $.post(unlockUrl)
     .then(response => d.resolve(response))
     .fail(err => d.reject(err));
   return d.promise()
@@ -175,10 +172,10 @@ proto.unlock = function() {
 proto.commit = function(commitItems) {
   const d = $.Deferred();
   //check if editing or not;
-  const url = this._commitUrl;
+  const url = this._layer.getUrl('commit');
   const jsonCommits = JSON.stringify(commitItems);
   $.post({
-    url: url,
+    url,
     data: jsonCommits,
     contentType: "application/json"
   })
@@ -203,7 +200,7 @@ proto.getFeatures = function(options={}, params={}) {
   //editing mode
   if (options.editing) {
     let promise;
-    url = this._editingUrl;
+    url = this._layer.getUrl('editing');
     if (!url) {
       d.reject('Url not valid');
       return;

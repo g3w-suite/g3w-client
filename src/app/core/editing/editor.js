@@ -98,8 +98,8 @@ proto.removeNotEditablePropriertiesFromFeature = function(feature){
 };
 
 //clone features method
-proto._cloneFeatures = function(features) {
-  return features.map((feature) => feature.clone());
+proto._cloneFeatures = function(features=[]) {
+  return features.map(feature => feature.clone());
 };
 
 proto._addFeaturesFromServer = function(features=[]){

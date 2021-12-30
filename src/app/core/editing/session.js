@@ -131,8 +131,11 @@ proto.updateTemporaryChanges = function(feature) {
 };
 
 // method to add temporary feature
-proto.pushAdd = function(layerId, feature) {
-  this._editor.removeNotEditablePropriertiesFromFeature(feature);
+proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
+  /**
+   * Please take care of this to understand
+   */
+  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
   const newFeature = feature.clone();
   this.push({
     layerId,
