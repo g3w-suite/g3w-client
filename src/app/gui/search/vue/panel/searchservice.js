@@ -202,7 +202,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
             });
           }
         } else DataRouterService.showEmptyOutputs();
-      } else{
+      } else {
         switch (this.return) {
           case 'search':
             GUI.closeContent();
