@@ -3,7 +3,7 @@ import {DOWNLOAD_FORMATS} from './../../constant';
 const t = require('core/i18n/i18n.service').t;
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields } =  require('core/utils/geo');
+const {geometryFields} =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
@@ -437,10 +437,11 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
+proto.getDataTable = function({page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox, custom_params={}} = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
+    ...custom_params,
     field,
     page,
     page_size,
@@ -839,9 +840,19 @@ proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
+
 // get url by type ( data, shp, csv, xls,  editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
+};
+
+/**
+ * Method to set url
+ * @param type
+ * @param url
+ */
+proto.setUrl = function({type, url}={}){
+  this.config.urls[type] = url;
 };
 
 // return urls

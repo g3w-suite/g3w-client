@@ -16,11 +16,6 @@ function QGISProvider(options = {}) {
   };
   // url referred to query
   this._queryUrl = this._layer.getUrl('query');
-  this._dataUrl = this._layer.getUrl('data');
-  // url to get configuration
-  this._configUrl = this._layer.getUrl('config');
-  // widget url
-  this._widgetUrls = this._layer.getUrl('widget');
   //filtertokenurl
   this._filtertokenUrl = this._layer.getUrl('filtertoken');
   // layer name
@@ -58,6 +53,7 @@ proto.getFilterToken = async function(params={}){
 };
 
 proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
+  const dataUrl = this._layer.getUrl('data');
   const params = {
     field,
     suggest,
@@ -67,7 +63,7 @@ proto.getFilterData = async function({field, raw=false, suggest={}, unique, form
   };
   try {
     let response = await XHR.get({
-      url: `${queryUrl ?  queryUrl : this._dataUrl}`,
+      url: `${queryUrl ?  queryUrl : dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";
@@ -139,7 +135,7 @@ proto.query = function(options={}) {
 // get layer config
 proto.getConfig = function() {
   const d = $.Deferred();
-  const url = this._configUrl;
+  const url = this._layer.getUrl('config');
   if (!url) {
     d.reject('not valid url');
     return;
@@ -152,7 +148,8 @@ proto.getConfig = function() {
 
 proto.getWidgetData = function(options={}) {
   const {type, fields} = options;
-  const url = this._widgetUrls[type];
+  const widgetUrls = this._layer.getUrl('widget');
+  const url = widgetUrls[type];
   return $.get(url, {
     fields
   });
@@ -279,11 +276,11 @@ proto.getFeatures = function(options={}, params={}) {
       })
       .catch(err => d.reject({ message: t("info.server_error")}));
   } else {
-    url = this._dataUrl;
+    url = this._layer.getUrl('data');
     const urlParams = $.param(params);
-    url+=  urlParams ? '?' + urlParams : '';
+    url+= urlParams ? '?' + urlParams : '';
     $.get({
-      url: url,
+      url,
       contentType
     })
       .then(response => {
