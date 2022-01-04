@@ -674,7 +674,7 @@ const geoutils = {
             }
           })
       }
-    } else { // single layers
+    } else { // single layers request
       let layersLength = layers.length;
       let rejectedResponses = 0;
       layers.forEach(layer => {
@@ -1103,21 +1103,23 @@ const geoutils = {
    * @returns {[]}
    */
   findSelfIntersects(geometry) {
+    // temporary return true or false (commented the array result for point intersect)
     const selfIntersectPoint = [];
     const olFromJsts = new jsts.io.OL3Parser();
     const jstsPolygon = olFromJsts.read(geometry);
     // if the geometry is already a simple linear ring, do not
     // try to find self intersection points.
     const validator = new jsts.operation.IsSimpleOp(jstsPolygon);
-    if (validator.isSimpleLinearGeometry(jstsPolygon)) return selfIntersectPoint;
+    //if (validator.isSimpleLinearGeometry(jstsPolygon)) return selfIntersectPoint;
+    if (validator.isSimpleLinearGeometry(jstsPolygon)) return false;
     const graph = new jsts.geomgraph.GeometryGraph(0, jstsPolygon);
     const cat = new jsts.operation.valid.ConsistentAreaTester(graph);
     const r = cat.isNodeConsistentArea();
     if (!r) {
-      const pt = cat.getInvalidPoint();
-      selfIntersectPoint.push([pt.x, pt.y]);
+      return true;
+      //const pt = cat.getInvalidPoint();
+      //selfIntersectPoint.push([pt.x, pt.y]);
     }
-    return selfIntersectPoint;
   },
 
   normalizeEpsg(epsg) {

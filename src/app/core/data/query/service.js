@@ -135,7 +135,7 @@ function QueryService(){
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = async function(response, query={}){
+  this.handleResponse = function(response, query={}){
     const layersResults = response;
     const results = {
       query,
@@ -143,7 +143,7 @@ function QueryService(){
       data: [],
       result: true // set result to true
     };
-    layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
+    layersResults.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
     return results;
   };
 

@@ -570,7 +570,7 @@ proto.search = function(options={}, params={}) {
 //Info from layer (only for querable layers)
 proto.query = function(options={}) {
   const d = $.Deferred();
-  const { filter } = options;
+  const {filter} = options;
   const provider = this.getProvider(filter ? 'filter' : 'query');
   if (provider)
     provider.query(options)

@@ -1,4 +1,4 @@
-const { base, inherit, toRawType } = require('core/utils/utils');
+const {base, inherit, toRawType, getTimeoutPromise} = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -22,12 +22,18 @@ proto.query = function(options={}, params = {}) {
   params.MAXFEATURES = feature_count;
   const d = $.Deferred();
   const layers = options.layers;
+  const projections = {
+    map: this._layer.getMapProjection(),
+    layer: reproject ? this._layer.getProjection(): null
+  };
+  const timeoutKey = getTimeoutPromise({
+    resolve: d.resolve,
+    data: {
+      data: this.handleQueryResponseFromServer(null, projections, layers, wms=false)
+    }
+  });
   this._doRequest(filter, params, layers, reproject)
     .then(response => {
-      const projections = {
-        map: this._layer.getMapProjection(),
-        layer: reproject ? this._layer.getProjection(): null
-      };
       const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);
       featuresForLayers.forEach(featuresForLayer => {
         const {features=[]} = featuresForLayer;
@@ -37,12 +43,15 @@ proto.query = function(options={}, params = {}) {
             if (toRawType(value) === 'Object' && value['xsi:nil'])feature.set(attribute, 'NULL');
           })
         })
-      })
+      });
       d.resolve({
         data: featuresForLayers
       });
     })
-    .fail(e => d.reject(e));
+    .fail(e => d.reject(e))
+    .always(()=> {
+      clearTimeout(timeoutKey)
+    });
   return d.promise();
 };
 

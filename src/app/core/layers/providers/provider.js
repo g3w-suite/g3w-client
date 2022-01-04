@@ -289,7 +289,8 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
   return handledResponses;
 };
 
-proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, wms}) {
+proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, wms}={}) {
+  if (!response) return; // return undefined if non response
   if (!(typeof response === 'string'|| response instanceof String))
     response = new XMLSerializer().serializeToString(response);
   for (let i=0; i < layers.length; i++) {

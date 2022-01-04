@@ -356,16 +356,27 @@ const utils = {
       }
     }
   },
-  getTimeoutPromise({timeout=600}){
-    const promise = new Promise(resolve =>setTimeout(resolve, timeout));
-    return promise;
+  /**
+   * Method to set timeout
+   * @param timeout
+   * @param resolve
+   * @param data
+   * @returns {number}
+   */
+  getTimeoutPromise({timeout=TIMEOUT, resolve, data}){
+    const timeoutKey = setTimeout(()=>{
+      resolve(data)
+    }, timeout);
+    return timeoutKey;
   },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
-            .then(response => resolve(response))
+            .then(response => {
+              resolve(response)
+            })
             .fail(error => reject(error))
         : reject('No url')
       })

@@ -5,9 +5,12 @@ const Feature = function(options={}) {
   this._uid = uniqueId();
   this._newPrefix = '_new_';
   this._geometry = false;
-  const {feature} = options;
+  const {feature, properties} = options;
   if (feature) {
-    this.setProperties(feature.getProperties());
+    // check if has to set only some properties or all feature properties
+    if (properties && Array.isArray(properties))
+      properties.forEach(property => this.set(property, feature.get(property)));
+    else this.setProperties(feature.getProperties());
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();

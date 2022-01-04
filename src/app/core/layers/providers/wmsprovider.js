@@ -1,5 +1,5 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit, appendParams, XHR} = require('core/utils/utils');
+const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
@@ -69,22 +69,37 @@ proto.query = function(options={}) {
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, resolution, size});
-  this[METHOD]({url, layers, params })
+  const query = {
+    coordinates,
+      resolution
+  };
+
+  /**
+   * set timeout of a query
+   * @type {number}
+   */
+  const timeoutKey = getTimeoutPromise({
+    resolve: d.resolve,
+    data: {
+      data: this.handleQueryResponseFromServer(null, this._projections, layers),
+      query
+    }
+   });
+
+  this[METHOD]({url, layers, params})
     .then(response => {
       const data = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve({
         data,
-        query: {
-          coordinates,
-          resolution
-        }
+        query
       });
     })
-    .catch(err => d.reject(err));
+    .catch(err => d.reject(err))
+    .finally(()=> clearTimeout(timeoutKey));
   return d.promise();
 };
 
-proto.GET = function({url, params}) {
+proto.GET = function({url, params}={}) {
   let sourceParam = url.split('SOURCE');
   if (sourceParam.length) {
     url = sourceParam[0];
@@ -98,7 +113,7 @@ proto.GET = function({url, params}) {
   })
 };
 
-proto.POST = function({url, params}) {
+proto.POST = function({url, params}={}) {
   return XHR.post({
     url,
     data: params

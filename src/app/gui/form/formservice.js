@@ -93,7 +93,7 @@ proto.setLoading = function(bool=false) {
 
 proto.setValidComponent = function({id, valid}){
   this.state.componentstovalidate[id] = valid;
- this.isValid();
+  this.isValid();
 };
 
 proto.getValidComponent = function(id) {
