@@ -153,5 +153,6 @@ module.exports = {
   core: g3w.core,
   gui: g3w.gui,
   ol: g3w.ol,
-  test: g3w.test
+  test: g3w.test,
+  constant: g3w.constant
 };

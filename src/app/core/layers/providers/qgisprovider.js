@@ -231,6 +231,11 @@ proto.getFeatures = function(options={}, params={}) {
           data: jsonFilter,
           contentType
         })
+      } else if (filter.fids){
+        promise = XHR.get({
+          url,
+          params: filter
+        })
       } else if (filter.nofeatures){
         const jsonFilter = JSON.stringify({
           field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
