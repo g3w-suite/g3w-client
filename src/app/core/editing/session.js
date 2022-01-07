@@ -78,13 +78,11 @@ proto._getFeatures = function(options={}) {
   if (!this._allfeatures) {
     this._allfeatures = !options.filter;
     this._editor.getFeatures(options)
-      .then((promise) => {
-        promise.then((features) => {
+      .then(promise => {
+        promise.then(features => {
           this.state.getfeatures = true;
           d.resolve(features);
-        }).fail((err) => {
-          d.reject(err);
-          });
+        }).fail(err => d.reject(err));
       });
   } else d.resolve([]);
 
@@ -436,6 +434,7 @@ proto.clear = function() {
   this.state.getfeatures = false;
   this.clearHistory();
   this._editor.clear();
+  PIPPO = this;
 };
 
 //return l'history

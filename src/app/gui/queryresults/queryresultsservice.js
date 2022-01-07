@@ -505,7 +505,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       /*
         If not wms of external layer show copy link to feature
        */
-      !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
+      !is_external_layer_or_wms && layer.hasgeometry && this.state.layersactions[layer.id].push({
         id: 'link_zoom_to_fid',
         download: false,
         class: GUI.getFontClass('link'),
