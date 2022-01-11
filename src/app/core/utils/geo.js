@@ -1163,15 +1163,15 @@ const geoutils = {
    * @returns {string}
    * @constructor
    */
-  ConvertDEGToDMS({deg, lat, output='Array'} = {}) {
+  ConvertDEGToDMS({deg, lat, lon, output='Array'} = {}) {
     const absolute = Math.abs(deg);
     const degrees = Math.floor(absolute);
     const minutesNotTruncated = (absolute - degrees) * 60;
     const minutes = Math.floor(minutesNotTruncated);
     const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
-    const direction =  lat ?
-      deg >= 0 ? "N" : "S"
-      : deg >= 0 ? "E" : "W";
+    let direction;
+    if (lat) direction =  deg >= 0 ? "N" : "S";
+    if (lon) direction = deg >= 0 ? "E" : "W";
     switch (output) {
       case 'Array':
         return [degrees, minutes, seconds, direction];

@@ -713,9 +713,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       return true;
     };
     // add component to stack (append)
-    // Differeces between pushContent and setContent are :
+    // Differences between pushContent and setContent are :
     //  - push every componet is added, set is refreshed
-    //  - pushContent has a new parameter (backonclose) when is cliccked x
+    //  - pushContent has a new parameter (backonclose) when is clicked x
     //  - the contentComponet is close all stack is closed
     GUI.pushContent = (options = {}) => {
       const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
@@ -724,11 +724,10 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.setContent(options);
     };
     // add content to stack
-    GUI.pushContextualContent = (options) => {
-      options = options || {};
-      options.perc = !this._isMobile ? options.perc || 50  : 100;
-      options.push = true;
-      GUI.setContent(options);
+    GUI.pushContextualContent = (options={}) => {
+      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
+      options.perc = !this._isMobile ? options.perc || perc_default : 100;
+      GUI.pushContent(options);
     };
     // remove last content from stack
     GUI.popContent = function() {

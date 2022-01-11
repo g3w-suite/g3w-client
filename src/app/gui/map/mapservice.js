@@ -1207,10 +1207,10 @@ proto._setMapControlsGrid = function(length) {
 
 proto._setMapControlsInsideContainerLenght = function() {
   this.state.mapControl.length = 1;
-  // count the mapcontrol insied g3w-map-control container
+  // count the mapcontrol inside g3w-map-control container
   this._mapControls.forEach(control => {
     const map = this.getMap();
-    this.state.mapControl.length+=control.mapcontrol ? 1: 0;
+    this.state.mapControl.length+=control.mapcontrol ? control.id === 'zoom' ? 2 : 1: 0;
     control.control.changelayout ? control.control.changelayout(map) : null;
   });
   // add 1 id odd number
