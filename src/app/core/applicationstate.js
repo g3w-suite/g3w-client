@@ -10,6 +10,7 @@ const STATE = Vue.observable({
   lng: 'en', // language default
   changeProjectview: false,
   plugins: [],
+  user: null,
   map: {
     epsg: ''
   },

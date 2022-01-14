@@ -420,13 +420,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
     /* Metodos to define */
-    GUI.getResourcesUrl = _.bind(function() {
-      return ApplicationService.getConfig().resourcesurl;
-    }, this);
+    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
     //LIST
-    GUI.showList = _.bind(floatbar.FloatbarService.showPanel, floatbar.FloatbarService);
-    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel, floatbar.FloatbarService);
-    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel, floatbar.FloatbarService);
+    GUI.showList = floatbar.FloatbarService.showPanel.bind(floatbar.FloatbarService);
+    GUI.closeList = floatbar.FloatbarService.closePanel.bind(floatbar.FloatbarService);
+    GUI.hideList = floatbar.FloatbarService.hidePanel.bind(floatbar.FloatbarService);
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -439,17 +437,29 @@ const ApplicationTemplate = function({ApplicationService}) {
      */
     GUI.outputDataPlace = async function(dataPromise, options={}){
       // show options (function) set if show data or not
-      const {title='', show, before, after, add=false} = options;
-      const queryResultsService = !add ? this.showContentFactory('query')(title): GUI.getComponent('queryresults').getService();
+      const defaultOutputConfig = {condition:true, add:false, loading:true};
+      const {title='', show=defaultOutputConfig, before, after} = options;
+      // convert show in an object
+      const outputConfig = (toRawType(show) !== 'Object') ?
+        {
+          condition: show, // can be Function or Boolean otherwise is set true
+          add: false,
+          loading: true
+        } : {
+          ...defaultOutputConfig,
+          ...show
+        };
+      const {condition, add, loading} = outputConfig;
       //check if waiting output data
       // in case we stop and sobsitute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
+      let queryResultsService = add ? GUI.getComponent('queryresults').getService() : loading && this.showContentFactory('query')(title);
       this.waitingoutputdataplace = (() => {
         let stop = false;
         (async () =>{
           try {
             const data = await dataPromise;
-            //if set before coll method and wait
+            //if set before call method and wait
             before && await before(data);
             // in case of usermessage show user message
             data.usermessage && GUI.showUserMessage({
@@ -458,9 +468,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               autoclose: data.usermessage.autoclose
             });
             if (!stop) {
-              if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data, {
-                add
-              });
+              // check condition
+              const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
+              if (showResult) {
+                (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
+                  add
+                });
+              }
               else GUI.closeContent();
               // call after is set with data
               after && after(data);
@@ -483,7 +497,6 @@ const ApplicationTemplate = function({ApplicationService}) {
           }
         }
       })();
-      return queryResultsService;
     };
 
     GUI.showContentFactory = function(type) {

@@ -56,9 +56,15 @@ const GlobalDirective = {
       bind(_el, binding) {
         // handle automatic creation of tooltip
         if (binding.modifiers.create) {
+          if (binding.arg){
+            _el.setAttribute('data-placement', binding.arg);
+            _el.classList.add(`skin-tooltip-${binding.arg}`);
+            _el.classList.add('skin-color');
+          }
           const domelement = $(_el);
           domelement.tooltip({
-            trigger : ApplicationState.ismobile ? 'click': 'hover'
+            trigger : ApplicationState.ismobile ? 'click': 'hover',
+            html: true
           });
           // in case of mobile hide tooltip after click
           ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){

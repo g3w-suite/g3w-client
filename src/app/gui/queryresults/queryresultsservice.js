@@ -662,7 +662,9 @@ proto.addLayerFeaturesToResultsAction = function(layer){
               layerIds: [layer.id],
               multilayers: false,
             }, outputs: {
-              add: true
+              show: {
+                add: true
+              }
             }
          });
       else {

@@ -44,6 +44,11 @@ const ApplicationService = function() {
     }
   };
   base(this);
+  // on obtain init config (also for change project)
+  this.on('initconfig', ()=>{
+    // can put the configuration project here
+    this.setApplicationUser(initConfig.user);
+  });
   // init application
   this.init = async function() {
     try {
@@ -336,6 +341,7 @@ const ApplicationService = function() {
       production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
+      this.emit('initconfig');
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -426,6 +432,14 @@ const ApplicationService = function() {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
+  //Application User
+  this.setApplicationUser = function(user){
+    ApplicationState.user = user;
+  };
+
+  this.getApplicationUser = function(){
+    return ApplicationState.user;
+  };
 
   //  bootstrap (when called init)
   this.bootstrap = function() {
