@@ -2,7 +2,7 @@
   <slot name="label">
     <label :for="state.name" class="col-sm-4 control-label">{{ state.label }}
       <span v-if="state.validate && state.validate.required">*</span>
-      <i v-if="state.tooltip" :class="g3wtemplate.font['info']" v-t-tooltip:top.create="state.tooltip" style="margin-left: 3px; cursor: pointer"></i>
+      <i v-if="state.help" :class="g3wtemplate.font['info']" v-t-tooltip:top.create="state.help" style="margin-left: 3px; cursor: pointer"></i>
       <slot name="label-action"></slot>
     </label>
   </slot>

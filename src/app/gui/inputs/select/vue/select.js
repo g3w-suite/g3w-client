@@ -48,6 +48,13 @@ const SelectInput = Vue.extend({
           autoclose: true
         })
       }
+    },
+    setAndListerSelect2Change(){
+      this.state.value && this.select2.val(this.state.value).trigger('change');
+      this.select2.on('select2:select', event => {
+        const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
+        this.changeSelect(value);
+      });
     }
   },
   created() {
@@ -108,11 +115,11 @@ const SelectInput = Vue.extend({
           minimumResultsForSearch: this.isMobile() ? -1 : null
         });
     ///register events
-    this.state.value && this.select2.val(this.state.value).trigger('change');
-    this.select2.on('select2:select', event => {
-      const value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
-      this.changeSelect(value);
-    });
+    if (this.state.input.options.layer_id){
+      if (this.state.input.options.loading.state === 'loading')
+        this.$watch('state.input.options.loading.state', () => this.setAndListerSelect2Change());
+      else this.setAndListerSelect2Change();
+    } else this.setAndListerSelect2Change();
   },
   beforeDestroy() {
     if (this.pickLayerInputService){
