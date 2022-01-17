@@ -434,7 +434,6 @@ proto.clear = function() {
   this.state.getfeatures = false;
   this.clearHistory();
   this._editor.clear();
-  PIPPO = this;
 };
 
 //return l'history

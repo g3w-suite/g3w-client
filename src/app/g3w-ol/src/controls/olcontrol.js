@@ -23,7 +23,7 @@ const OLControl = function(options={}) {
   });
 };
 
-// sotto classe della classe control di OL3
+// subclass of OpenLayer Control
 ol.inherits(OLControl, ol.control.Control);
 
 module.exports = OLControl;
@@ -31,6 +31,14 @@ module.exports = OLControl;
 const proto = OLControl.prototype;
 
 proto.offline = true;
+
+/**
+ * Return Ol Control
+ * @returns {*}
+ */
+proto.getOlControl = function(){
+  return this._control;
+};
 
 proto.getPosition = function(positionCode) {
   positionCode = positionCode || this.positionCode;
