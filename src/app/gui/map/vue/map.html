@@ -19,6 +19,11 @@
     <div id="map_footer_right" style="display: flex;">
       <div id="scale-control"></div>
       <div id="mouse-position-control"></div>
+      <div v-if="showmapunits" id="scale-line-units">
+        <select style="padding: 5px 2px; font-weight: bold; border:0; cursor: pointer" class="skin-color" v-model="mapunit">
+          <option style="font-weight: bold" v-for="unit in service.state.mapunits" :value="unit" v-t="`sdk.mapcontrols.scaleline.units.${unit}`" :selected="mapunit === unit"></option>
+        </select>
+      </div>
       <div id="permalink" data-toggle="tooltip" data-placement="top" class="skin-tooltip-top" v-t-tooltip="'sdk.tooltips.copy_map_extent_url'"
            style="background-color: #eeeeee">
         <span class="skin-color" :class="g3wtemplate.getFontClass('link')" @click="createCopyMapExtentUrl"></span>

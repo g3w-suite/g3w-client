@@ -1,7 +1,7 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');

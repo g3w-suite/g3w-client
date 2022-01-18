@@ -1,5 +1,5 @@
-// MeasureInteracion
-const t = require('core/i18n/i18n.service').t;
+import ApplicationState from '../../../core/applicationstate';
+const {t} = require('core/i18n/i18n.service');
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;
@@ -33,24 +33,43 @@ const MeasureIteraction = function(options={}) {
   this._formatMeasure = null;
   // handel keydown event - delete of last vertex
   this._keyDownEventHandler = null;
+
   switch (geometryType) {
     case 'LineString':
-     this._formatMeasure = function(feature) {
-       let geometry = feature;
-       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
-         projection: this._projection.getCode()
-       }) : geometry.getLength();
-       const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km`: `${(Math.round(length * 100) / 100).toFixed(2)} m`;
-       return output;
+      this._formatMeasure = function(feature) {
+        const unit = this.getCurrentMapUnit();
+        let geometry = feature;
+        const length = useSphereMethods ? ol.sphere.getLength(geometry, {
+          projection: this._projection.getCode()
+        }) : geometry.getLength();
+        let output;
+        switch(unit) {
+          case 'nautical':
+            output = `${this.transformMeterLength(length, unit)} nm`;
+            break;
+          case 'metric':
+          default:
+            output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+        }
+        return output;
       };
       break;
     case 'Polygon':
       this._formatMeasure = function(feature) {
+        const unit = this.getCurrentMapUnit();
         let geometry = feature;
-        const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
+        const area = Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
           projection: this._projection.getCode()
-        }): geometry.getArea());
-        const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+        }) : geometry.getArea());
+        let output;
+        switch (unit) {
+          case 'nautical':
+            output = `${this.transformMeterArea(area, unit)}  nmi²`;
+            break;
+          case 'metric':
+          default:
+            output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100).toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+        }
         return output;
       };
       break;
@@ -93,8 +112,36 @@ ol.inherits(MeasureIteraction, ol.interaction.Draw);
 
 const proto = MeasureIteraction.prototype;
 
+proto.getCurrentMapUnit = function(){
+  return ApplicationState.map.unit;
+};
+
 proto.setDrawMessage = function(message) {
   this._helpMsg = message;
+};
+
+/**
+ * Method to transform length meter in a specific unti (ex.nautilcal mile)
+ * @param length
+ * @param tounit
+ * @returns {null}
+ */
+proto.transformMeterLength = function(length, tounit){
+  switch (tounit) {
+    case 'nautical':
+      length = length * 0.0005399568;
+      break;
+  }
+  return length
+};
+
+proto.transformMeterArea = function(area, tounit){
+  switch (tounit) {
+    case 'nautical':
+      area = area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567;
+      break;
+  }
+  return area;
 };
 
 proto.clear = function() {

@@ -280,6 +280,12 @@ const translations = {
           },
           scale: {
             no_valid_scale: "Scala non valida"
+          },
+          scaleline: {
+            units: {
+              metric: 'Metri',
+              nautical: 'Miglio Nautico'
+            }
           }
         },
         relations: {
@@ -735,6 +741,12 @@ const translations = {
           },
           scale: {
             no_valid_scale: "Invalid Scale"
+          },
+          scaleline: {
+            units: {
+              metric: 'Meters',
+              nautical: 'Nautical Mile'
+            }
           }
         },
         relations: {
@@ -1190,6 +1202,12 @@ const translations = {
           },
           scale: {
             no_valid_scale: "Väärä mittakaava"
+          },
+          scaleline: {
+            units: {
+              metric: 'Meters',
+              nautical: 'Nautical Mile'
+            }
           }
         },
         relations: {
@@ -1645,6 +1663,12 @@ const translations = {
           },
           scale: {
             no_valid_scale: "Fel skala"
+          },
+          scaleline: {
+            units: {
+              metric: 'Meters',
+              nautical: 'Nautical Mile'
+            }
           }
         },
         relations: {
@@ -2103,6 +2127,12 @@ const translations = {
           },
           scale: {
             no_valid_scale: "Échelle invalide"
+          },
+          scaleline: {
+            units: {
+              metric: 'Meters',
+              nautical: 'Nautical Mile'
+            }
           }
         },
         relations: {

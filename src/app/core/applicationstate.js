@@ -12,7 +12,8 @@ const STATE = Vue.observable({
   plugins: [],
   user: null,
   map: {
-    epsg: ''
+    epsg: '',
+    unit: 'metric'
   },
   gui: {
     app: {

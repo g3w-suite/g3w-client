@@ -56,7 +56,8 @@ function MapService(options={}) {
     map_info:{
       info: null,
       style: null
-    }
+    },
+    mapunits: ['metric']
   };
   this.id = 'MapService';
   this.viewer = null;
@@ -586,6 +587,18 @@ proto.createMapControl = function(type, {id, add=true, toggled=false, visible, o
   visible = visible === undefined ? (control.isVisible ? control.isVisible() : true) : visible;
   control && this.addControl(id, type, control, add, visible);
   return control;
+};
+
+
+proto.addScaleLineUnits = function(units=[]){
+  units.forEach(unit => this.state.mapunits.push(unit));
+};
+
+proto.changeScaleLineUnit = function(unit){
+  const scalelinecontrol = this.getMapControlByType({
+    type: 'scaleline'
+  });
+  scalelinecontrol && scalelinecontrol.getOlControl().setUnits(unit);
 };
 
 proto.showAddLayerModal = function() {

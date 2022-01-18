@@ -117,7 +117,7 @@ function QueryResultsService() {
     addComponent(component) {
       this._addComponent(component)
     },
-    addActionsForLayers(actions) {},
+    addActionsForLayers(actions, layers) {},
     postRender(element) {},
     closeComponent() {},
     openCloseFeatureResult({open, layer, feature, container}={}){}
@@ -517,7 +517,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         cbk: this.copyZoomToFidUrl.bind(this)
       });
     });
-    this.addActionsForLayers(this.state.layersactions);
+    this.addActionsForLayers(this.state.layersactions, this.state.layers);
   }
 };
 

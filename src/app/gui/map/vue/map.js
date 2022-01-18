@@ -1,3 +1,4 @@
+import ApplicationState from '../../../core/applicationstate';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
@@ -15,14 +16,18 @@ const vueComponentOptions = {
       target,
       maps_container: this.$options.maps_container,
       service,
+      mapunit: ApplicationState.map.unit,
       hidemaps: service.state.hidemaps,
-      map_info: service.state.map_info
+      map_info: service.state.map_info,
     }
   },
   components: {
     'addlayer': AddLayerComponent
   },
   computed: {
+    showmapunits(){
+      return this.service.state.mapunits.length > 1;
+    },
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
@@ -40,6 +45,12 @@ const vueComponentOptions = {
     },
     createCopyMapExtentUrl(){
       const mapService = this.$options.service.createCopyMapExtentUrl();
+    }
+  },
+  watch: {
+    'mapunit'(unit){
+      ApplicationState.map.unit = unit;
+      this.$options.service.changeScaleLineUnit(unit);
     }
   },
   async mounted() {
