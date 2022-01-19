@@ -447,7 +447,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           download: true,
           class: GUI.getFontClass('download'),
           state,
-          togglable: true,
+          toggleable: true,
           hint: `Downloads`,
           change({features}) {
             features.forEach((feature, index) =>{
@@ -536,7 +536,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
  */
 proto.setCurrentActionLayerFeatureTool = function({layer, action, index, component=null}={}){
   if (component){
-    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].togglable)
+    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable)
       this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
     this.state.currentactionfeaturelayer[layer.id][index] = action;
   } else this.state.currentactionfeaturelayer[layer.id][index] = null;
