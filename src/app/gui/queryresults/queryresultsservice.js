@@ -50,7 +50,8 @@ function QueryResultsService() {
     type: 'ows', // or api in case of search
     layersactions: {},
     actiontools:{}, // addd action tools (for features)
-    currentactiontools:{}, // current action tools
+    currentactiontools:{}, // current action tools contain component of a specific action (for example download)
+    currentactionfeaturelayer:{}, // contain current action that expose component vue (it useful to comprare id other action is toggled and expose component)
     layeractiontool: {},
     layersFeaturesBoxes:{}
   };
@@ -187,16 +188,15 @@ proto.removeFeatureLayerFromResult = function(layer, feature){
 };
 
 /**
- * Reset current action tools on layer when feature layer change
- * @param layer
+ * Method wrapper for download
  */
-proto.resetCurrentActionToolsLayer = function(layer){
-  layer.features.forEach((feature, index)=>{
-    if (this.state.currentactiontools[layer.id]) {
-      if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
-      else this.state.currentactiontools[layer.id][index] = null;
-    }
-  })
+
+proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
+  const download_caller_id = ApplicationService.setDownload(true);
+  GUI.setLoadingContent(true);
+  await downloadFnc(options);
+  ApplicationService.setDownload(false, download_caller_id);
+  GUI.setLoadingContent(false);
 };
 
 /**
@@ -301,10 +301,14 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         component: null,
         config: null
       });
-
       const currentactiontoolslayer = {};
-      layer.features.forEach((feature, index)=> currentactiontoolslayer[index] = null);
+      const currentationfeaturelayer = {};
+      layer.features.forEach((feature, index)=> {
+        currentactiontoolslayer[index] = null;
+        currentationfeaturelayer[index] = null;
+      });
       this.state.currentactiontools[layer.id] = Vue.observable(currentactiontoolslayer);
+      this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
       const is_external_layer_or_wms = layer.external || (layer.source ? layer.source.type === 'wms' : false);
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
       /**
@@ -407,6 +411,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             if (action.state.toggled[index]) cbk(layer, feature, action, index);
             else this.setCurrentActionLayerFeatureTool({
               index,
+              action,
               layer
             })
           }
@@ -442,6 +447,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           download: true,
           class: GUI.getFontClass('download'),
           state,
+          togglable: true,
           hint: `Downloads`,
           change({features}) {
             features.forEach((feature, index) =>{
@@ -454,6 +460,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             this.setCurrentActionLayerFeatureTool({
               layer,
               index,
+              action,
               component: action.state.toggled[index] ? DownloadFormats : null
             });
           }
@@ -527,8 +534,33 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
  * @param index feature index
  * @param value component value or null
  */
-proto.setCurrentActionLayerFeatureTool = function({layer, index, component=null}={}){
+proto.setCurrentActionLayerFeatureTool = function({layer, action, index, component=null}={}){
+  if (component){
+    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].togglable)
+      this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
+    this.state.currentactionfeaturelayer[layer.id][index] = action;
+  } else this.state.currentactionfeaturelayer[layer.id][index] = null;
   this.state.currentactiontools[layer.id][index] = component;
+};
+
+
+proto.addCurrentActionToolsLayer = function({id, layer, config={}}){
+  this.state.actiontools[id] = {};
+  this.state.actiontools[id][layer.id] = config;
+};
+
+/**
+ * Reset current action tools on layer when feature layer change
+ * @param layer
+ */
+proto.resetCurrentActionToolsLayer = function(layer){
+  layer.features.forEach((feature, index)=>{
+    if (this.state.currentactiontools[layer.id]) {
+      if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
+      else this.state.currentactiontools[layer.id][index] = null;
+      this.state.currentactionfeaturelayer[layer.id][index] = null;
+    }
+  })
 };
 
 /**
@@ -1196,6 +1228,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       else downloadsactions.state.toggled[index] = false;
       this.setCurrentActionLayerFeatureTool({
         index,
+        action,
         layer
       });
     }
