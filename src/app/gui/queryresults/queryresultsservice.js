@@ -360,16 +360,15 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             relations,
             chartRelationIds
           });
-          const toggled = {};
-          layer.features.map((feature, index) => toggled[index] = false);
+          const state = this.createActionState({
+            layer
+          });
           chartRelationIds.length && this.state.layersactions[layer.id].push({
             id: 'show-plots-relations',
             download: false,
             opened: true,
             class: GUI.getFontClass('chart'),
-            state: Vue.observable({
-              toggled
-            }),
+            state,
             hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
             cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
           });
@@ -386,13 +385,8 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         hint: `sdk.tooltips.atlas`,
         cbk: this.printAtlas.bind(this)
       });
-      // check number of download formats
-      const toggled = {};
-      layer.features.map((feature, index)=> {
-        toggled[index] = false; // SET INITIAL TOGGLED TO FALSE
-      });
-      const state = Vue.observable({
-        toggled
+      const state = this.createActionState({
+        layer
       });
       if (layer.downloads.length === 1) {
         const [format] = layer.downloads;
@@ -486,16 +480,16 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
        */
       if (layer.selection.active !== undefined) {
         // selection action
-        const toggled = {};
-        layer.features.map((feature, index) => toggled[index] = false);
+        const state = this.createActionState({
+          layer
+        });
+
         this.state.layersactions[layer.id].push({
           id: 'selection',
           download: false,
           class: GUI.getFontClass('success'),
           hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-          state: Vue.observable({
-            toggled
-          }),
+          state,
           init: ({feature, index, action}={})=>{
             layer.selection.active !== void 0 && this.checkFeatureSelection({
               layerId: layer.id,
@@ -526,6 +520,31 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
     });
     this.addActionsForLayers(this.state.layersactions, this.state.layers);
   }
+};
+
+proto.createActionState = function({layer, dynamicProperties=['toggled']}){
+  // check number of download formats
+  const propertiesObject = dynamicProperties.reduce((accumulator, property) =>{
+    accumulator[property] = {};
+    return accumulator;
+  }, {});
+  layer.features.map((feature, index)=> {
+    Object.keys(propertiesObject).forEach(property =>{
+      propertiesObject[property][index] = null;
+    })
+  });
+  const state = Vue.observable(propertiesObject);
+  return state;
+};
+
+/**
+ * Method to get action referred to layer getting the acion id
+ * @param layer layer linked to action
+ * @param id action id
+ * @returns {*}
+ */
+proto.getActionLayerById = function({layer, id}={}){
+  return this.state.layersactions[layer.id].find(action => action.id === id);
 };
 
 /**
