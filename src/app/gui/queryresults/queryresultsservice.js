@@ -291,7 +291,6 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
   const {add} = options;
   if (!add) {
     this.unlistenerlayeractionevents = [];
-    //downloadformats
     layers.forEach(layer => {
       /**
        * set eventually layer action tool and need to be reactive
@@ -533,8 +532,7 @@ proto.createActionState = function({layer, dynamicProperties=['toggled']}){
       propertiesObject[property][index] = null;
     })
   });
-  const state = Vue.observable(propertiesObject);
-  return state;
+  return Vue.observable(propertiesObject);
 };
 
 /**

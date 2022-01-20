@@ -89,7 +89,7 @@ function MapService(options={}) {
     },
     highlightLayer:new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style:(feature) => {
+      style: (feature) => {
         let styles = [];
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
@@ -168,9 +168,7 @@ function MapService(options={}) {
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
-        this._setupBaseLayers();
-        this._setupMapLayers();
-        this._setupVectorLayers();
+        this._setupAllLayers();
         this._checkMapControls();
         this.setUpMapOlEvents();
         this.setupCustomMapParamsToLegendUrl();
@@ -1726,7 +1724,7 @@ proto._setupAllLayers = function() {
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
-  this._setUpDefaultLayers()
+  this._setUpDefaultLayers();
 };
 
 //SETUP BASELAYERS
@@ -2078,6 +2076,7 @@ proto.highlightFeatures = function(features, options={}){
 };
 
 proto.zoomToFeatures = function(features, options={highlight: false}) {
+  console.log(features)
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
