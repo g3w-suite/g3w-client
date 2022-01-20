@@ -163,9 +163,7 @@ function MapService(options={}) {
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
-        this._setupBaseLayers();
-        this._setupMapLayers();
-        this._setupVectorLayers();
+        this._setupAllLayers();
         this._checkMapControls();
         this.setUpMapOlEvents();
         this.setupCustomMapParamsToLegendUrl();
