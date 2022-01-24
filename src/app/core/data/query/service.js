@@ -94,7 +94,7 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, feature_count}={}){
+  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance, feature_count}={}){
     const layersFilterObject =  {
       QUERYABLE: true,
       SELECTEDORALL: layerIds.length === 0,
@@ -108,6 +108,7 @@ function QueryService(){
     const request = getQueryLayersPromisesByCoordinates(layers, {
       multilayers,
       feature_count,
+      query_point_tolerance,
       coordinates
     });
     return this.handleRequest(request, {

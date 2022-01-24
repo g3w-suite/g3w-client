@@ -627,6 +627,7 @@ proto._setupControls = function() {
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
     const feature_count = this.project.getQueryFeatureCount();
+    const query_point_tolerance = this.project.getQueryPointTolerance();
     const map = this.getMap();
     mapcontrols.forEach(mapcontrol => {
       let control;
@@ -755,6 +756,7 @@ proto._setupControls = function() {
                 inputs: {
                   coordinates,
                   feature_count,
+                  query_point_tolerance,
                   multilayers: this.project.isQueryMultiLayers(controlType),
                 }
               });
@@ -894,6 +896,7 @@ proto._setupControls = function() {
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
                 const bbox = e.extent;
+                console.log(bbox)
                 try {
                   const {data=[]} = await DataRouterService.getData('query:bbox', {
                     inputs: {
@@ -2076,7 +2079,6 @@ proto.highlightFeatures = function(features, options={}){
 };
 
 proto.zoomToFeatures = function(features, options={highlight: false}) {
-  console.log(features)
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;

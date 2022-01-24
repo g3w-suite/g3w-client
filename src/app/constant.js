@@ -8,6 +8,15 @@ export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'c
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
 
+/**
+ * Used to point tolerance when click to map
+ * @type {{unit: string, value: number}}
+ */
+export const QUERY_POINT_TOLERANCE = {
+  unit: 'pixel',
+  value: 10
+};
+
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',

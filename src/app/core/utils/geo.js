@@ -529,6 +529,7 @@ const geoutils = {
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     const map = GUI.getComponent('map').getService().getMap();
     const mapProjection = map.getView().getProjection();
+
     if (multilayers) {
       queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
         geometry,
@@ -634,7 +635,7 @@ const geoutils = {
     return d.promise();
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, multilayers=false, reproject=true}={}) {
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     if (!layers.length) return d.resolve(layers);
     const map = GUI.getComponent('map').getService().getMap();
@@ -660,6 +661,7 @@ const geoutils = {
         provider.query({
           feature_count,
           coordinates,
+          query_point_tolerance,
           mapProjection,
           reproject,
           resolution,
@@ -681,6 +683,7 @@ const geoutils = {
         layer.query({
           feature_count,
           coordinates,
+          query_point_tolerance,
           mapProjection,
           size,
           resolution,

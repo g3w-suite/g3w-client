@@ -60,6 +60,14 @@ function GUI() {
   this.isReady = function(){
     return new Promise(resolve =>this.isready ? resolve() : this.once('ready', resolve));
   };
+  /**
+   * Passing a component application ui id return service that belong to component
+   * @param componentId
+   * @returns {*}
+   */
+  this.getService = function(componentId){
+    return this.getComponent(componentId).getService();
+  };
   /* spinner */
   this.showSpinner = function(options={}){};
   this.hideSpinner = function(id){};

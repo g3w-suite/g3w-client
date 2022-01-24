@@ -1,3 +1,4 @@
+import {QUERY_POINT_TOLERANCE} from "../../constant";
 const {base, inherit, XHR} = require('core/utils//utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
@@ -25,12 +26,14 @@ function Project(config={}, options={}) {
     wms_use_layer_ids: <TRUE OR FALSE>
     search_endpoint : 'ows', 'api'
     legend_position: 'tab', 'toc'
+    query_point_tolerance
     wps: [] // array of wps service
   }
   */
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
+  config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   this.state = config;
   /**
    * View
@@ -97,6 +100,10 @@ proto.isWmsUseLayerIds = function() {
 
 proto.getContextBaseLegend = function(){
   return this.state.context_base_legend;
+};
+
+proto.getQueryPointTolerance = function(){
+  return this.state.query_point_tolerance;
 };
 
 // check if multi
