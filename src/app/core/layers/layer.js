@@ -953,6 +953,53 @@ proto.canShowTable = function() {
   } else return false
 };
 
+proto.changeFieldType = function({name, type, reset=false}={}){
+  const field = this.getFields().find(field => field.name === name);
+  if (field){
+    if (reset){
+      field.type = field._type;
+      delete field._type;
+      return field.type;
+    } else {
+      field._type = field.type;
+      field.type = type;
+      return field._type;
+    }
+  }
+};
+
+proto.changeFieldTypeFromFormStructure = function({name, type, reset=false}={}){
+  const traverseStructure = item => {
+    if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+    else {
+      let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+      if (field) {
+        if (this.state.type === 'ows'){
+          // clone it to avoid to replace original
+          field = {...field};
+          field.name = field.name.replace(/ /g, '_');
+        }
+        attributes.add(field);
+      }
+    }
+  };
+  layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+  return Array.from(attributes);
+};
+
+proto.changeConfigFieldType = function({name, type, reset=false}){
+  if (this.hasFormStructure()){
+
+  } else return this.changeFieldType({name, type, reset});
+};
+
+proto.resetConfigField = function({name}){
+  this.changeConfigFieldType({
+    name,
+    reset: true
+  })
+};
+
 //function called in case of change project to remove all sored information
 proto.clear = function(){};
 

@@ -121,6 +121,9 @@ function QueryResultsService() {
     addActionsForLayers(actions, layers) {},
     postRender(element) {},
     closeComponent() {},
+    changeLayerResult(layer){
+      this._changeLayerResult(layer);
+    },
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
@@ -252,7 +255,7 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
  * Method called when layer result features for example is changed
  * @param layer
  */
-proto.changeLayerResult = function(layer){
+proto._changeLayerResult = function(layer){
   const layeractions = this.state.layersactions[layer.id];
   // call if present change mthod to action
   layeractions.forEach(action => action.change && action.change(layer));
@@ -708,6 +711,7 @@ proto.addLayerFeaturesToResultsAction = function(layer){
           {
             inputs: {
               coordinates,
+              query_point_tolerance: this._project.getQueryPointTolerance(),
               layerIds: [layer.id],
               multilayers: false,
             }, outputs: {
@@ -828,7 +832,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
         return sanitizeAttribute
       }) : layer.getAttributes();
-
 
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();

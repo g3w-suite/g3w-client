@@ -1,14 +1,16 @@
 import Tabs from '../../tabs/tabs.vue';
 import Link from '../../fields/link.vue';
+import VueField from '../../fields/vuefield.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
-const {fieldsMixin } = require('gui/vue/vue.mixins');
+const {fieldsMixin} = require('gui/vue/vue.mixins');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
+const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
 const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
 
 const vueComponentOptions = {
@@ -24,6 +26,7 @@ const vueComponentOptions = {
   components: {
     Tabs,
     'g3w-link': Link,
+    'g3w-vue': VueField,
     'header-feature-body': HeaderFeatureBody
   },
   computed: {
@@ -145,7 +148,7 @@ const vueComponentOptions = {
           if (field) {
             if (this.state.type === 'ows'){
               // clone it to avoid to replace original
-              field = {...field}
+              field = {...field};
               field.name = field.name.replace(/ /g, '_');
             }
             attributes.add(field);
@@ -157,7 +160,7 @@ const vueComponentOptions = {
     },
     attributesSubset(layer) {
       const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
-      const _attributes = attributes.filter(attribute => attribute.show && attribute.type != 'image');
+      const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
@@ -287,7 +290,7 @@ const vueComponentOptions = {
     openLink(link_url) {
       window.open(link_url, '_blank');
     },
-    fieldIs(TYPE,layer,attributeName,attributeValue) {
+    fieldIs(TYPE,layer, attributeName, attributeValue) {
       const fieldType = this.getFieldType(attributeValue);
       return fieldType === TYPE;
     },
@@ -298,7 +301,7 @@ const vueComponentOptions = {
         _field.query = true;
         _field.value = feature.attributes[field.name];
         _field.input = {
-          type: `${this.getFieldType(_field.value)}_field`
+          type: `${this.getFieldType(_field.value)}`
         };
         fields.push(_field);
       }

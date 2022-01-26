@@ -18,8 +18,8 @@ const Plugin = function() {
   this._hook = null;
   this._ready = false;
   this._services = {
-    'search': GUI.getComponent('search').getService(),
-    'tools': GUI.getComponent('tools').getService()
+    'search': GUI.getService('search'),
+    'tools': GUI.getService('tools')
   };
   // timeout to remove loading plugin after timeout
   this._timeout = setTimeout(()=>{
@@ -152,6 +152,11 @@ proto.getDependencyPlugin = function(pluginName) {
   })
 };
 
+/**
+ * Method to start loading process of a specific hook service (for example tool loading interface on sidebar)
+ * @param hook
+ * @param loading
+ */
 proto.setHookLoading = function({hook="tools", loading=false} = {}) {
   const service = this._services[hook];
   service.setLoading(loading);

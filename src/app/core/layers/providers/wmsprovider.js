@@ -1,4 +1,5 @@
 import ApplicationState from 'core/applicationstate';
+import {QUERY_POINT_TOLERANCE} from '../../../constant';
 const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
@@ -22,7 +23,7 @@ inherit(WMSDataProvider, DataProvider);
 
 const proto = WMSDataProvider.prototype;
 
-proto._getRequestParameters = function({layers, feature_count, coordinates, query_point_tolerance, resolution, size}) {
+proto._getRequestParameters = function({layers, feature_count, coordinates, query_point_tolerance=QUERY_POINT_TOLERANCE, resolution, size}) {
   const layerNames = layers ? layers.map(layer => layer.getWMSInfoLayerName()).join(',') : this._layer.getWMSInfoLayerName();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);

@@ -85,10 +85,11 @@
                               <tr>
                                 <td class="attr-label">{{ item.item.label }}</td>
                                 <td class="attr-value" :attribute="item.item.name">
-                                  <span v-if="is('simple',layer,item.item.name,feature.attributes[item.item.name])" v-html="feature.attributes[item.item.name]"></span>
-                                  <g3w-image v-else-if="is('photo',layer,item.item.name,feature.attributes[item.item.name])"  :value="feature.attributes[item.item.name]"></g3w-image>
-                                  <g3w-image v-else-if="checkField('image', item.item.label, layer.attributes)"  :value="item.item.value"></g3w-image>
-                                  <g3w-link v-else-if="is('link',layer, item.item.name,feature.attributes[item.item.name])" :state="{value: feature.attributes[item.item.name]}"></g3w-link>
+                                  <span v-if="is('simple_field',layer,item.item.name,feature.attributes[item.item.name])" v-html="feature.attributes[item.item.name]"></span>
+                                  <g3w-image v-else-if="is('photo_field',layer,item.item.name,feature.attributes[item.item.name])"  :value="feature.attributes[item.item.name]"></g3w-image>
+                                  <g3w-image v-else-if="checkField('image_field', item.item.label, layer.attributes)"  :value="item.item.value"></g3w-image>
+                                  <g3w-link v-else-if="is('link_field',layer, item.item.name,feature.attributes[item.item.name])" :state="{value: feature.attributes[item.item.name]}"></g3w-link>
+                                  <g3w-vue v-else-if="is('vue_field',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name].value}"></g3w-vue>
                                 </td>
                               </tr>
                               </tbody>
@@ -128,10 +129,11 @@
                             <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
-                                <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
-                                <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
-                                <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
-                                <g3w-link v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
+                                <span v-if="is('simple_field',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
+                                <g3w-image v-else-if="is('photo_field',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
+                                <g3w-image v-else-if="checkField('image_field', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
+                                <g3w-link v-else-if="is('link_field',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
+                                <g3w-vue v-else-if="is('vue_field',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-vue>
                               </td>
                             </tr>
                           </table>

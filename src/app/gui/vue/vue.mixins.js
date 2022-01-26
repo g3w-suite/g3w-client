@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
+import {FieldsService} from 'gui/fields/fieldsservice';
 const GUI = require('gui/gui');
-const {throttle, debounce} = require('core/utils/utils');
+const {throttle, debounce, toRawType} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -24,32 +25,8 @@ const autocompleteMixin = {
 
 const fieldsMixin = {
   methods: {
-    getFieldType(value) {
-      value = value && typeof  value === 'object' && value.constructor === Object && !value.coordinates? value.value : value;
-      let Fields = {};
-      Fields.SIMPLE = 'simple';
-      Fields.GEO = 'geo';
-      Fields.LINK = 'link';
-      Fields.PHOTO = 'photo';
-      Fields.PHOTOLINK = "photolink";
-      Fields.IMAGE = 'image';
-      Fields.POINTLINK = 'pointlink';
-      Fields.ROUTE = 'route';
-      const URLPattern = /^(https?:\/\/[^\s]+)/g;
-      const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-      if (_.isNil(value)) {
-        return Fields.SIMPLE;
-      } else if (value && typeof value == 'object' && value.coordinates) {
-        return Fields.GEO;
-      } else if(value && Array.isArray(value)) {
-        if (value.length && value[0].photo) return Fields.PHOTO;
-        else return Fields.SIMPLE
-      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
-        return Fields.PHOTO;
-      } else if (value.toString().match(URLPattern)) {
-        return Fields.LINK;
-      }
-      return Fields.SIMPLE;
+    getFieldType(field) {
+     return FieldsService.getType(field);
     },
     sanitizeFieldValue(value) {
       if (Array.isArray(value) && !value.length) return '';

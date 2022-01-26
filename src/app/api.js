@@ -2,6 +2,7 @@ import G3W_CONSTANT from './constant';
 // api file interface for external plugin
 import ApplicationState from 'core/applicationstate';
 import G3WInput from 'gui/inputs/g3w-input.vue';
+import {FieldsService} from 'gui/fields/fieldsservice.js';
 
 const g3w = g3w || {};
 //set G3W-CLIENT application constant
@@ -101,6 +102,7 @@ g3w.gui = {
   Panel: require('gui/panel'),
   ControlFactory: require('gui/map/control/factory'),
   ComponentsFactory: require('gui/componentsfactory'),
+  FieldsService,
   vue: {
     Component: require('gui/vue/component'),
     Panel: require('gui/panel'),

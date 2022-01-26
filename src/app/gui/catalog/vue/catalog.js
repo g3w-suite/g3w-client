@@ -612,17 +612,18 @@ Vue.component('tristate-tree', {
         });
       };
       if (checked){
+        const visible = parentGroup ? parentGroup.checked : true;
         if (parentGroup && parentGroup.mutually_exclusive){
           parentGroup.nodes.forEach(node => {
             node.checked = node.groupId === group.groupId;
             node.checked && setAllLayersVisible({
               nodes: node.nodes,
-              visible: true
+              visible
             })
           })
         } else setAllLayersVisible({
           nodes,
-          visible: parentGroup ? parentGroup.checked : true
+          visible
         });
         while (parentGroup){
           parentGroup.checked = parentGroup.root || parentGroup.checked;
