@@ -52,7 +52,7 @@ proto.listenLayersVisibleChange = function(){
   this.layers.forEach(layer => {
     const {state} = layer;
     this.unwatches.push(VM.$watch(() =>  state.visible, visible =>{
-      if (state.selected && !visible)this.setEnable(false);
+      if (state.selected && !visible) this.setEnable(false);
       else {
         const enabled = this.checkEnabled(this.layers);
         enabled !== this.getEnable() && this.setEnable(enabled,  enabled && this.isToggled());

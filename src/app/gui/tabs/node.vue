@@ -29,7 +29,7 @@
               </node>
             </div>
             <template v-else>
-              <div :style="{cursor: showRelationByField && pointer}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
+              <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div v-if="showRelationByField" class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
@@ -149,6 +149,7 @@
               }
             }),
             perc: 100,
+            title: relation.name,
             closable: false
           })
         }
@@ -181,7 +182,7 @@
         else if (field.query) return field.input.type;
         else return 'g3w-input';
       }
-    }
+    },
   }
 </script>
 

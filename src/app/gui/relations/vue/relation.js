@@ -9,7 +9,6 @@ const GUI = require('gui/gui');
 const {throttle} = require('core/utils/utils');
 const RelationPageEventBus = require('./relationeventbus');
 const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
-let relationDataTable;
 let SIDEBARWIDTH;
 
 module.exports = {
@@ -57,7 +56,7 @@ module.exports = {
           $('.row-wrap-tabs .tabs-wrapper').width(width);
         }
       });
-      relationDataTable && relationDataTable.columns.adjust();
+      this.relationDataTable && this.relationDataTable.columns.adjust();
     },
     saveRelation(type){
       this.$emit('save-relation', type);
@@ -91,7 +90,7 @@ module.exports = {
       return feature;
     },
     reloadLayout() {
-      relationDataTable && relationDataTable.columns.adjust();
+      this.relationDataTable && this.relationDataTable.columns.adjust();
     },
     back() {
       this.$parent.setRelationsList();
@@ -161,14 +160,14 @@ module.exports = {
         fid: this.feature.attributes[G3W_FID],
       };
       this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
-    })
+    });
   },
   async mounted() {
     SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
     this.relation.title = this.relation.name;
     await this.$nextTick();
     if (!this.one) {
-      relationDataTable = $('#relationtable').DataTable( {
+      this.relationDataTable = $(this.$refs.relationtable).DataTable( {
         "pageLength": 10,
         "bLengthChange": false,
         "scrollResize": true,
@@ -184,8 +183,8 @@ module.exports = {
     }
   },
   beforeDestroy(){
-    relationDataTable.destroy();
-    relationDataTable = null;
+    this.relationDataTable.destroy();
+    this.relationDataTable = null;
     this.chartContainer && this.$emit('hide-chart', this.chartContainer);
     this.chartContainer = null;
     this.tableHeaderHeight = null;

@@ -124,6 +124,7 @@ function QueryResultsService() {
     changeLayerResult(layer){
       this._changeLayerResult(layer);
     },
+    activeMapInteraction(){},
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
@@ -628,6 +629,7 @@ proto.clear = function() {
     }
   };
   this.clearState();
+  this.closeComponent();
 };
 
 proto.getCurrentLayersIds = function(){
@@ -698,6 +700,7 @@ proto.addLayerFeaturesToResultsAction = function(layer){
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
+    this.activeMapInteraction(); // usefult o send an event
     const {external} = layer;
     if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
     this._addFeaturesLayerResultInteraction.interaction =  new PickCoordinatesInteraction();
@@ -741,6 +744,11 @@ proto.addLayerFeaturesToResultsAction = function(layer){
   } else this.removeAddFeaturesLayerResultInteraction({
     toggle: true
   });
+};
+
+proto.deactiveQueryInteractions = function(){
+  this.state.layers.forEach(layer => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false});
+  this.removeAddFeaturesLayerResultInteraction();
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {

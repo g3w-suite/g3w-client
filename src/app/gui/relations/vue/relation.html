@@ -24,7 +24,7 @@
           <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"></component>
         </div>
       </template>
-      <table id="relationtable" class="table table-striped row-border" width="100%" >
+      <table ref="relationtable" class="relationtable table table-striped row-border" width="100%" >
         <thead>
         <tr>
           <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>
@@ -41,7 +41,7 @@
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="feature" :showRelationByField="false" :fields="fields" :tabs="table.formStructure"></tabs>
+                <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
               </td>
             </template>
             <template v-else>

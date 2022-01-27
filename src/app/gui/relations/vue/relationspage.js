@@ -90,7 +90,9 @@ const InternalComponent = Vue.extend({
 });
 
 const RelationsPage = function(options={}) {
-  base(this);
+  base(this, {
+    title: options.title || 'Relations'
+  });
   const service = options.service || new Service();
   const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[]} = options;
   const currentview = options.currentview || 'relations';

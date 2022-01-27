@@ -745,6 +745,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     // remove last content from stack
     GUI.popContent = function() {
       viewport.ViewportService.popContent();
+
     };
     //return number of component of stack
     GUI.getContentLength = function() {

@@ -70,6 +70,7 @@ const ApplicationService = function() {
    */
   this.setupI18n = function() {
     const lngConfig = this._config._i18n;
+    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
     //setup internalization for translation
     i18ninit(lngConfig);
