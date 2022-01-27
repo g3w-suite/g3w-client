@@ -1532,6 +1532,7 @@ proto.showQueryRelations = function(layer, feature, action) {
     }),
     perc: 100,
     backonclose: true,
+    title: 'Relations',
     closable: false
   });
 };

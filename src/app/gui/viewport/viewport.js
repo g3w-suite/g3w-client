@@ -631,14 +631,13 @@ const ViewportComponent = Vue.extend({
     },
     backOrBackTo(){
       const contentsData = this.state.content.contentsdata;
-      //return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
-      return (contentsData.length > 1 && this.state.content.showgoback) ? 'backto' : false;
+      return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
 
     },
     previousTitle() {
       const contentsData = this.state.content.contentsdata;
-      //return (contentsData.length > 1 && this.state.content.showgoback) ? contentsData[contentsData.length - 2].options.title : null
-      return (contentsData.length > 1 && this.state.content.showgoback) ? true : null
+      const title = (contentsData.length > 1 && this.state.content.showgoback) ? contentsData[contentsData.length - 2].options.title : null;
+      return title;
     },
     contentSmallerThenPreferred() {
       return this.state.secondaryPerc < this.state.content.preferredPerc;

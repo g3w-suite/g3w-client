@@ -14,7 +14,7 @@ const FieldType = {
   VUE: 'vue'
 };
 
-export const FieldsService = {
+module.exports  = {
   /**
    * Get Type field from field value
    * field : Object contain the value of the field

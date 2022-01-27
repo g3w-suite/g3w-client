@@ -1,7 +1,6 @@
 import ApplicationState from 'core/applicationstate';
-import {FieldsService} from 'gui/fields/fieldsservice';
 const GUI = require('gui/gui');
-const {throttle, debounce, toRawType} = require('core/utils/utils');
+const {throttle, debounce} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -26,7 +25,8 @@ const autocompleteMixin = {
 const fieldsMixin = {
   methods: {
     getFieldType(field) {
-     return FieldsService.getType(field);
+      const FieldsService = require('gui/fields/fieldsservice');
+      return FieldsService.getType(field);
     },
     sanitizeFieldValue(value) {
       if (Array.isArray(value) && !value.length) return '';

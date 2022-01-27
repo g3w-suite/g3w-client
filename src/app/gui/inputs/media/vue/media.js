@@ -1,7 +1,6 @@
 const InputMixins = require('gui/inputs/input');
 const {getUniqueDomId} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
-const Service = require('../service');
+const {t} = require('core/i18n/i18n.service');
 const MediaField = require('gui/fields/fields').media_field;
 const GUI = require('gui/gui');
 
