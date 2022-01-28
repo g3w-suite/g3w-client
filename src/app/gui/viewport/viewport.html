@@ -46,8 +46,8 @@
         </div>
         <div @click="gotoPreviousContent()" :class="backOrBackTo" v-else>
           <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
-          <span v-t="'back'"></span>
-<!--          <span v-t="previousTitle"></span>-->
+          <span v-t="'backto'"></span>
+          <span v-if="!updatePreviousTitle" v-t="previousTitle"></span>
         </div>
       </div>
       <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;"  :class="{'mobile': isMobile()}" class="g3w-span-button fa-stack fa-lg pull-right">

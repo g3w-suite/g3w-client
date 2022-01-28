@@ -9,12 +9,13 @@
 
 <script>
   import Field from './field.vue';
+  const {toRawType} = require('core/utils/utils');
   export default {
     name: "image",
     props: ['state'],
     data() {
       return {
-        galleryId: 'gallery_' + Date.now(),
+        galleryId: `gallery_${Date.now()}`,
         active: null,
         value: this.state.value.mime_type !== undefined ? this.state.value.value : this.state.value
       }
@@ -29,26 +30,15 @@
     },
     methods: {
       getSrc(value) {
-        if (typeof value === 'object') {
-          return value.photo;
-        }
-        return value
+        return toRawType(value) === 'Object' ? value.photo: value;
       },
       showGallery(index) {
         this.active = index;
-        if (typeof this.value === 'object') {
-          this.value.active = true;
-        }
-        $('#'+this.galleryId).modal('show');
+        if (toRawType(this.value) === 'Object') this.value.active = true;
+        $(`#${this.galleryId}`).modal('show');
       },
       getGalleryImages() {
-        const images = [];
-        this.values.forEach((image) => {
-          images.push({
-            src: this.getSrc(image)
-          })
-        });
-        return images
+        return this.values.map(image => ({src: this.getSrc(image)}));
       }
     }
   }

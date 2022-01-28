@@ -295,6 +295,24 @@ const ViewportService = function() {
     return d.promise();
   };
 
+  /**
+   * Return current compoent data
+   * @returns {*}
+   */
+  this.getCurrentContent = function() {
+    return this.contentLength() ? this.state.content.contentsdata[this.contentLength() -1] : null;
+  };
+
+  this.getCurrentContentTitle = function(){
+    const currentContent = this.getCurrentContent();
+    return currentContent && currentContent.options.title
+  };
+
+  this.changeCurrentContentTitle = function(title=''){
+    const currentContent = this.getCurrentContent();
+    if (currentContent) currentContent.options.title = title;
+  };
+
   this.isContentOpen = function() {
     return !!this.state.content.contentsdata.length;
   };
@@ -582,6 +600,7 @@ const ViewportComponent = Vue.extend({
   data() {
     return {
       state: viewportService.state,
+      updatePreviousTitle: false,
       media: {
         matches: true
       }
@@ -637,6 +656,8 @@ const ViewportComponent = Vue.extend({
     previousTitle() {
       const contentsData = this.state.content.contentsdata;
       const title = (contentsData.length > 1 && this.state.content.showgoback) ? contentsData[contentsData.length - 2].options.title : null;
+      this.updatePreviousTitle = true;
+      this.$nextTick(()=> this.updatePreviousTitle = false);
       return title;
     },
     contentSmallerThenPreferred() {

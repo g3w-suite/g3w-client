@@ -6,7 +6,6 @@
 </template>
 
 <script>
-
   const FieldType = {
     SIMPLE:'simple',
     GEO:'geo',

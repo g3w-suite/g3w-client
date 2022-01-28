@@ -1,4 +1,4 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
 import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
 const ApplicationService = require('core/applicationservice');
@@ -1171,7 +1171,7 @@ proto.printAtlas = function(layer, feature){
       buttons: {
         success: {
           label: "OK",
-          className: "btn-success",
+          className: "skin-button",
           callback: ()=> {
             const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
             if (index !== null || index !== undefined) {
@@ -1532,7 +1532,7 @@ proto.showQueryRelations = function(layer, feature, action) {
     }),
     perc: 100,
     backonclose: true,
-    title: 'Relations',
+    title: LIST_OF_RELATIONS_TITLE,
     closable: false
   });
 };

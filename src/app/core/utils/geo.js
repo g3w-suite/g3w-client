@@ -1,3 +1,4 @@
+import {QUERY_POINT_TOLERANCE} from 'constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
@@ -635,7 +636,7 @@ const geoutils = {
     return d.promise();
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance, multilayers=false, reproject=true}={}) {
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance=QUERY_POINT_TOLERANCE, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     if (!layers.length) return d.resolve(layers);
     const map = GUI.getComponent('map').getService().getMap();

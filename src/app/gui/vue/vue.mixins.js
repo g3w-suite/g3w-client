@@ -24,13 +24,28 @@ const autocompleteMixin = {
 
 const fieldsMixin = {
   methods: {
+    getFieldService(){
+      if (this._fieldsService === undefined)
+        this._fieldsService = require('gui/fields/fieldsservice');
+      return this._fieldsService;
+    },
     getFieldType(field) {
-      const FieldsService = require('gui/fields/fieldsservice');
-      return FieldsService.getType(field);
+      return this.getFieldService().getType(field);
+    },
+    isSimple(value){
+      return this.getFieldService().isSimple(value);
+    },
+    isLink(value){
+      return this.getFieldService().isLink(value);
+    },
+    isImage(value){
+      return this.getFieldService().isImage(value);
+    },
+    isPhoto(value){
+      return this.getFieldService().isPhoto(value);
     },
     sanitizeFieldValue(value) {
-      if (Array.isArray(value) && !value.length) return '';
-      else return value
+      return (Array.isArray(value) && !value.length) ? '' : value;
     }
   }
 };

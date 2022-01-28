@@ -1,4 +1,5 @@
 const Fields = require('./fields');
+const {toRawType} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const URLPattern = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
@@ -21,8 +22,8 @@ module.exports  = {
    * @param field
    * @returns {string}
    */
-  getType(field){
-    const value = field && typeof field === 'object' && !field.coordinates && !field.vue ? field.value : field;
+  getType(fieldValue){
+    const value = fieldValue && toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
     if (!value) type = FieldType.SIMPLE;
     else if (value && typeof value == 'object') {
       if (value.coordinates) type = FieldType.GEO;
@@ -36,6 +37,22 @@ module.exports  = {
       type = FieldType.LINK;
     } else type = FieldType.SIMPLE;
     return `${type}_field`;
+  },
+  isSimple(value){
+    return this.getType(value) === `${FieldType.SIMPLE}_field`;
+  },
+  isLink(value){
+    return this.getType(value) === `${FieldType.LINK}_field`;
+  },
+  isImage(value){
+    return this.getType(value) === `${FieldType.IMAGE}_field`;
+  },
+  isPhoto(value){
+    return this.getType(value) === `${FieldType.PHOTO}_field`;
+  },
+  isVue(value){
+    return this.getType(value) === `${FieldType.VUE}_field`;
+
   },
   /**
    * Method to add a new field type to Fields

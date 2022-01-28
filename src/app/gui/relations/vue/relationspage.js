@@ -1,4 +1,4 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
@@ -50,6 +50,8 @@ const InternalComponent = Vue.extend({
     },
     showRelation(relation) {
       GUI.setLoadingContent(true);
+      if (GUI.getCurrentContentTitle() === LIST_OF_RELATIONS_TITLE)
+        GUI.changeCurrentContentTitle(relation.name);
       this.loading = true;
       this.relation = relation;
       const relationLayerId = relation.referencingLayer;

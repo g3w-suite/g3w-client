@@ -1,4 +1,4 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID, QUERY_POINT_TOLERANCE} from 'constant';
 const {base, inherit} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
@@ -94,7 +94,7 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance, feature_count}={}){
+  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
     const layersFilterObject =  {
       QUERYABLE: true,
       SELECTEDORALL: layerIds.length === 0,

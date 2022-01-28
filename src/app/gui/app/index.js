@@ -752,6 +752,25 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.contentLength();
     };
 
+    GUI.getCurrentContentTitle = function(){
+      return viewport.ViewportService.getCurrentContentTitle();
+    };
+
+    /**
+     * change current content title
+     * @param title
+     */
+    GUI.changeCurrentContentTitle = function(title){
+      viewport.ViewportService.changeCurrentContentTitle(title);
+    };
+
+    /**
+     * Method to get current content
+     */
+    GUI.getCurrentContent = function(){
+      return viewport.ViewportService.getCurrentContent();
+    };
+
     //get content percentage
     GUI.getContentPercentage = function(){
       return viewport.ViewportService.getContentPercentage();

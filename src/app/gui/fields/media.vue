@@ -5,7 +5,7 @@
         <i class="fa-2x" :class="g3wtemplate.font[type]"></i>
       </div>
     </a>
-    <div class="filename">{{ filename }}</div>
+    <div class="filename">{{filename}}</div>
     <slot></slot>
   </div>
 </template>

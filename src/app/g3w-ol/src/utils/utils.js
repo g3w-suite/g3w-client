@@ -1,3 +1,4 @@
+import ApplicationState from "../../../core/applicationstate";
 const Geometry = require('core/geometry/geometry');
 const OGC_PIXEL_WIDTH = 0.28;
 
@@ -80,19 +81,36 @@ const utils = {
   formatMeasure({geometry, projection}){
     const geometryType = geometry.getType();
     const useSphereMethods = utils.needUseSphereMethods(projection);
+    const unit = this.getCurrentMapUnit();
     if (Geometry.isLineGeometryType(geometryType)) {
       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
         projection: projection.getCode()
       }) : Geometry.isMultiGeometry(geometryType) ?
         geometry.getLineStrings().reduce((totalLength, lineGeometry)=>  totalLength+= lineGeometry.getLength(), 0)
         : geometry.getLength();
-      const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+      let output;
+      switch(unit) {
+        case 'nautical':
+          output = `${this.transformMeterLength(length, unit)} nm`;
+          break;
+        case 'metric':
+        default:
+          output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+      }
       return output;
     } else if (Geometry.isPolygonGeometryType(geometryType)){
       const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
         projection: projection.getCode()
       }): geometry.getArea());
-      const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+      let output;
+      switch (unit) {
+        case 'nautical':
+          output = `${this.transformMeterArea(area, unit)}  nmi²`;
+          break;
+        case 'metric':
+        default:
+          output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100).toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+      }        return output;
       return output;
     }
   },
@@ -128,8 +146,34 @@ const utils = {
       unbyKey
     }
   },
+  getCurrentMapUnit(){
+    return ApplicationState.map.unit;
+  },
 
-  //remove mesure tootltip
+  /**
+   * Method to transform length meter in a specific unti (ex.nautilcal mile)
+   * @param length
+   * @param tounit
+   * @returns {null}
+   */
+ transformMeterLength(length, tounit){
+    switch (tounit) {
+      case 'nautical':
+        length = length * 0.0005399568;
+        break;
+    }
+    return length
+  },
+  transformMeterArea(area, tounit){
+    switch (tounit) {
+      case 'nautical':
+        area = area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567;
+        break;
+    }
+    return area;
+  },
+
+//remove mesure tootltip
   removeMeasureTooltip({map, tooltip, unbyKey}){
     map.removeOverlay(tooltip);
     ol.Observable.unByKey(unbyKey);
