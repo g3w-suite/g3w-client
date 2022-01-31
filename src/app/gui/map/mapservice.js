@@ -2013,7 +2013,12 @@ proto._watchInteraction = function(interaction) {
  */
 proto.showMapInfo = function({info, style} = {}) {
   this.state.map_info.info = info;
-  this.state.map_info.style = style;
+  this.state.map_info.style = style || this.state.map_info.style;
+};
+
+proto.hideMapInfo = function(){
+  this.state.map_info.info = null;
+  this.state.map_info.style = null;
 };
 
 proto.zoomTo = function(coordinate, zoom=6) {
