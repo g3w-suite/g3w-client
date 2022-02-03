@@ -326,6 +326,19 @@ const geoutils = {
     return olLayer;
   },
 
+  createVectorLayerFromGeometry(geometry){
+    const feature = new ol.Feature(geometry);
+    return geoutils.createVectorLayerFromFeatures(feature);
+  },
+
+  createVectorLayerFromFeatures(feature){
+    return new ol.layer.Vector({
+      source: new ol.source.Vector({
+        features: Array.isArray(feature) ? feature : [feature]
+      })
+    })
+  },
+
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
     let format;
     let layer;

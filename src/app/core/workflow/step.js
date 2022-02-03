@@ -3,9 +3,11 @@ const G3WObject = require('core/g3wobject');
 
 function Step(options={}) {
   base(this);
-  this._inputs = options.inputs || null;
-  this._task = options.task || null;
-  this._outputs = options.outputs || null;
+  const {inputs=null, context=null, task= null, outputs=null} = options;
+  this._inputs = inputs;
+  this._context = context;
+  this._task = task;
+  this._outputs = outputs;
   //dynamic state of step
   this.state = {
     id: options.id || null,
@@ -58,7 +60,7 @@ proto.run = function(inputs, context, queques) {
 // stop step
 proto.stop = function() {
   // stop task
-  this._task.stop();
+  this._task.stop(this._inputs, this._context);
   //emit run
   // running to false
   this.state.running = false;
