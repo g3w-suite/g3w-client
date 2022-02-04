@@ -26,7 +26,7 @@
 
 <script>
   import Node from "./node.vue";
-  const getUniqueDomId = require ('core/utils/utils').getUniqueDomId;
+  const {getUniqueDomId} = require ('core/utils/utils');
   export default {
     name: "tabs",
     props: {

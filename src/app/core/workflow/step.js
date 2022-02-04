@@ -3,7 +3,7 @@ const G3WObject = require('core/g3wobject');
 
 function Step(options={}) {
   base(this);
-  const {inputs=null, context=null, task= null, outputs=null} = options;
+  const {inputs=null, context=null, task= null, outputs=null, escKeyPressEventHandler} = options;
   this._inputs = inputs;
   this._context = context;
   this._task = task;
@@ -17,11 +17,39 @@ function Step(options={}) {
     error: null, // error
     message: options.message || null // message
   };
+  escKeyPressEventHandler && this.registerEscKeyEvent(escKeyPressEventHandler)
 }
 
 inherit(Step, G3WObject);
 
 const proto = Step.prototype;
+
+//bind interrupt event on keys escape pressed
+
+proto.escKeyUpHandler = function(evt) {
+   const {task, callback} = evt.data;
+  if (evt.key === 'Escape') callback({
+    task
+  });
+};
+
+proto.unbindEscKeyUp = function() {
+  $(document).unbind('keyup', this.escKeyUpHandler);
+};
+
+proto.bindEscKeyUp = function(callback=()=>{}) {
+  $(document).on('keyup', {
+    callback,
+    task: this.getTask()
+  }, this.escKeyUpHandler);
+};
+
+proto.registerEscKeyEvent = function(callback){
+  this.on('run', ()=> this.bindEscKeyUp(callback));
+  this.on('stop', ()=> this.unbindEscKeyUp());
+};
+
+// End of handle key esc pressed
 
 // method to start task
 proto.run = function(inputs, context, queques) {

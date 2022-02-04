@@ -76,7 +76,8 @@ const utils = {
     return degrees * ol.proj.Units.METERS_PER_UNIT.degrees;
   },
   needUseSphereMethods(projection){
-    return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
+    //return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
+    return projection.getUnits() === 'degrees';
   },
   formatMeasure({geometry, projection}){
     const geometryType = geometry.getType();

@@ -74,7 +74,7 @@ module.exports = {
         field.value = row[index];
         field.query = true;
         field.input = {
-          type: `${this.getFieldType(field.value)}_field`
+          type: `${this.getFieldType(field.value)}`
         };
         return field;
       });
