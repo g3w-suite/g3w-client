@@ -154,6 +154,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         title: this.state.title
       }
     });
+    console.log(data)
     if (show){
       // in case of autozoom_query
       if (this.project.state.autozoom_query && data && data.data.length === 1){

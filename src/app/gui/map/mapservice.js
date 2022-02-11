@@ -896,7 +896,6 @@ proto._setupControls = function() {
               const runQuery = throttle(async e => {
                 GUI.closeOpenSideBarComponent();
                 const bbox = e.extent;
-                console.log(bbox)
                 try {
                   const {data=[]} = await DataRouterService.getData('query:bbox', {
                     inputs: {
@@ -1115,15 +1114,22 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
   const [layerId, fid] = zoom_to_fid.split(separator);
   if (layerId !== undefined && fid !== undefined){
     const layer = this.project.getLayerById(layerId);
-    const feature = layer && await layer.getFeatureByFid(fid);
-    if (feature) {
-      const {geometry, bbox} = feature;
-      if (geometry)
-        this.zoomToFeatures([feature], {
-          highlight: true
-        });
-      else if (bbox) this.zoomToExtent(feature.bbox);
-    }
+    const {data=[]}= await DataRouterService.getData('search:fid', {
+      inputs: {
+        layer,
+        fid
+      },
+      outputs: {
+        show: {
+          loading: false,
+          condition({data=[]}={}){
+            return data[0] && data[0].features.length > 0;
+          }
+        }
+      }
+    });
+    const feature = data[0] && data[0].features[0];
+    feature && this.zoomToFeatures([feature]);
   }
 };
 
@@ -1151,11 +1157,13 @@ proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', se
             filter,
             search_endpoint
           },
-          outputs: false
+          outputs: {
+            show: {
+              loading: false
+            }
+          }
         });
-        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features, {
-          highlight: true
-        })
+        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features)
       }
     }
   } catch(err){

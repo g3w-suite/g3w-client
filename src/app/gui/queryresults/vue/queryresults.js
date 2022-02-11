@@ -67,6 +67,15 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    /**
+     *
+     * @param layerId
+     * @param type feature or layer
+     * @returns {*}
+     */
+    getLayerCustomComponents(layerId, type){
+      return this.state.layerscustomcomponents[layerId] ? this.state.layerscustomcomponents[layerId][type] : [];
+    },
     getQueryFields(layer, feature) {
       const fields = [];
       for (const field of layer.formStructure.fields) {

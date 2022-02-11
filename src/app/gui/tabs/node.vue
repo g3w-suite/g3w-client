@@ -1,8 +1,8 @@
 <template>
   <div class="tab-node group">
     <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="row" :class="{'mobile': isMobile()}">
-      <div v-for="column in columnNumber" :class="columnClass" >
+    <div v-for="row in rows" class="row" :class="{'mobile': isMobile()}" style="margin:0;">
+      <div v-for="column in columnNumber" :class="columnClass" style="padding:5px;">
         <template v-if="getNode(row, column)">
           <component v-if="getNodeType(getNode(row, column)) === 'field'"
             :state="getField(getNode(row, column))"
@@ -188,17 +188,20 @@
 
 <style scoped>
   .group {
-    padding: 5px;
-    margin-bottom: 10px;
+    //padding: 5px;
+    margin-bottom: 5px;
   }
   .sub-group {
     border-radius: 5px;
+    padding: 5px;
   }
   .title {
     font-weight: bold;
     width: 100%;
     color: #ffffff;
-    padding: 5px;
+    padding: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     border-radius: 2px;
   }
   .group-title.mobile {

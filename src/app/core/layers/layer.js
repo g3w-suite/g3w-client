@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 import {DOWNLOAD_FORMATS} from './../../constant';
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {geometryFields} =  require('core/utils/geo');
@@ -122,6 +122,8 @@ function Layer(config={}, options={}) {
       })
     };
   }
+  // editor form structure
+  //this.config.editor_form_structure  && this.config.editor_form_structure.forEach(structure => structure.visible = true);
   base(this);
 }
 
@@ -618,14 +620,44 @@ proto.getConfig = function() {
   return this.config;
 };
 
+/**
+ * get form structur to show on form editing
+ * @param fields
+ * @returns {[]}
+ */
+proto.getLayerEditingFormStructure = function(fields){
+  const isInputOrTab = item =>  {
+    const isInput = item.field_name !== undefined;
+    return  {
+      type: isInput && 'input' || 'tab',
+      item: isInput && [fields.find(field => field.name ===item.field_name)] || [item]
+    }
+  };
+  let prevtabitems = [];
+  const formstructure = [];
+  this.config.editor_form_structure.forEach(item => {
+    const _item = isInputOrTab(item);
+    if (_item.type === 'input') {
+      formstructure.push(_item);
+      prevtabitems = [];
+    } else {
+      if (!prevtabitems.length) {
+        formstructure.push(_item);
+        prevtabitems = _item.item;
+      } else prevtabitems.push(_item.item[0]);
+    }
+  });
+  return formstructure;
+};
+
 proto.getEditorFormStructure = function({all=false}={}) {
-  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
+  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter(structure => {
     return !structure.field_name;
   }) : this.config.editor_form_structure;
 };
 
 proto.getFieldsOutOfFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => {
     return structure.field_name;
   }) : []
 };

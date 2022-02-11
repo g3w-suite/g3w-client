@@ -436,7 +436,8 @@ const ApplicationTemplate = function({ApplicationService}) {
      * @param options
      */
     GUI.outputDataPlace = async function(dataPromise, options={}){
-      // show options (function) set if show data or not
+      // show parameter it used to set condition to show result or not
+      // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
       const defaultOutputConfig = {condition:true, add:false, loading:true};
       const {title='', show=defaultOutputConfig, before, after} = options;
       // convert show in an object
@@ -451,7 +452,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         };
       const {condition, add, loading} = outputConfig;
       //check if waiting output data
-      // in case we stop and sobsitute with new request data
+      // in case we stop and substiute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
       let queryResultsService = add ? GUI.getComponent('queryresults').getService() : loading && this.showContentFactory('query')(title);
       this.waitingoutputdataplace = (() => {
@@ -714,8 +715,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     //  (100%) content
     GUI.showContent = (options={}) => {
       GUI.setLoadingContent(false);
-      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
-      options.perc = !this._isMobile ? options.perc || perc_default : 100;
+      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
       GUI.setContent(options);
       return true;
     };
@@ -731,15 +731,13 @@ const ApplicationTemplate = function({ApplicationService}) {
     //  - pushContent has a new parameter (backonclose) when is clicked x
     //  - the contentComponet is close all stack is closed
     GUI.pushContent = (options = {}) => {
-      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
-      options.perc = !this._isMobile ? options.perc || perc_default : 100;
+      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
       options.push = true;
       GUI.setContent(options);
     };
     // add content to stack
     GUI.pushContextualContent = (options={}) => {
-      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
-      options.perc = !this._isMobile ? options.perc || perc_default : 100;
+      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
       GUI.pushContent(options);
     };
     // remove last content from stack
@@ -771,6 +769,10 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.getCurrentContent();
     };
 
+    GUI.getNot100ContentPercentage = function(){
+      return appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
+    };
+
     //get content percentage
     GUI.getContentPercentage = function(){
       return viewport.ViewportService.getContentPercentage();
@@ -795,7 +797,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI._setContent = (options={}) => {
-      const perc = appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
+      const perc = GUI.getNot100ContentPercentage();
       this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
       options.content = options.content || null;
       options.title = options.title || "";

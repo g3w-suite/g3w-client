@@ -53,7 +53,8 @@ function QueryResultsService() {
     currentactiontools:{}, // current action tools contain component of a specific action (for example download)
     currentactionfeaturelayer:{}, // contain current action that expose component vue (it useful to comprare id other action is toggled and expose component)
     layeractiontool: {},
-    layersFeaturesBoxes:{}
+    layersFeaturesBoxes:{},
+    layerscustomcomponents:{} // used to show a custom component for a layer
   };
   this.init = function() {
     this.clearState();
@@ -99,6 +100,12 @@ function QueryResultsService() {
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers, options);
     },
+
+    /**
+     * method to add layer and feature for response
+     * @param layers
+     * @param options
+     */
     setLayersData(layers, options={add:false}) {
       const {add} = options;
       if (!add){
@@ -167,6 +174,30 @@ function QueryResultsService() {
 inherit(QueryResultsService, G3WObject);
 
 const proto = QueryResultsService.prototype;
+
+/**
+ * Method to register for plugli or other compoent of application to add custom component on result for each layer feature or layer
+ * @param id unique id identification
+ * @param layerId Layer id of layer
+ * @param component custom component
+ * @param type feature or layer
+ */
+proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type}={}){
+  if (this.state.layerscustomcomponents[layerId] === undefined)
+    this.state.layerscustomcomponents[layerId] = {
+      layer: [],
+      feature: []
+    };
+  this.state.layerscustomcomponents[layerId][type].push({
+    id,
+    component
+  });
+  return id;
+};
+
+proto.unRegisterCustomComponent = function({id, layerId, type}){
+  this.state.layerscustomcomponents[layerId][type] = this.state.layerscustomcomponents[layerId][type].filter(({id:componentId}) => componentId !== id);
+};
 
 /**
  * Method to add a feature to current layer result
@@ -932,13 +963,12 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         if (attribute.type === 'image') layerObj.hasImageField = true;
       });
       featuresForLayer.features.forEach(feature => {
-        const fid = feature.getId() ? feature.getId() : id;
-        const geometry = feature.getGeometry();
+        const {id:fid, geometry, properties:attributes} = this.getFeaturePropertiesAndGeometry(feature);
         if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
           id: fid,
-          attributes: feature.getProperties(),
-          geometry: feature.getGeometry(),
+          attributes,
+          geometry,
           show: true
         };
         layerObj.features.push(featureObj);
@@ -971,6 +1001,28 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
 };
 
 /**
+ * Method to get properties geometry and id from different type of fetaure
+ * @param feature
+ * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
+ */
+proto.getFeaturePropertiesAndGeometry = function(feature){
+  if (feature instanceof ol.Feature){
+    return {
+      properties:feature.getProperties(),
+      geometry: feature.getGeometry(),
+      id: feature.getId()
+    }
+  } else {
+    const {properties, geometry, id} = feature;
+    return {
+      properties,
+      geometry,
+      id
+    }
+  }
+};
+
+/**
  * parse attributre to show on rsult based on field
  * @param layerAttributes
  * @param feature
@@ -979,7 +1031,7 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
  * @private
  */
 proto._parseAttributes = function(layerAttributes, feature, sourceType) {
-  const featureAttributes = feature.getProperties();
+  const {properties:featureAttributes} = this.getFeaturePropertiesAndGeometry(feature);
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
@@ -1523,6 +1575,7 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
+  console.log(feature)
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,

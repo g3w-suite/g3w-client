@@ -10,5 +10,5 @@
     </span>
     <span v-t:pre="header.title">{{ header.name }}</span>
   </span>
-  <i v-if="!isMobile()" :class="g3wtemplate.getFontClass('resize-h')" style="font-weight: bold; font-size: 1.4em; padding: 5px;" class="action button skin-color" @click="resizeForm"></i>
+  <h-resize @h_size_change="resizeForm"></h-resize>
 </div>

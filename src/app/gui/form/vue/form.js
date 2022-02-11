@@ -1,5 +1,4 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-import ApplicationState from 'core/applicationstate';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
@@ -36,11 +35,8 @@ const vueComponentObject = {
         disabled
       });
     },
-    resizeForm(){
-      const perc = GUI.getContentPercentage();
-      const currentFormPercentage = perc == 100 ? 50 : 100;
-      GUI.setContentPercentage(currentFormPercentage);
-      this.$options.service.setCurrentFormPercentage(currentFormPercentage)
+    resizeForm(perc){
+      this.$options.service.setCurrentFormPercentage(perc)
     },
     switchComponent(index) {
       this.switchcomponent = true;

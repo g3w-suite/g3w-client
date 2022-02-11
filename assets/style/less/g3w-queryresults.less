@@ -114,6 +114,7 @@
           display: block;
         }
         .box-header {
+          padding: 0;
           display: flex;
           flex-wrap: nowrap;
           align-items: baseline;
@@ -168,7 +169,8 @@
         border: 1px solid #f3f3f3;
         .featurebox-header > td.g3w-feature-actions {
           overflow: hidden;
-          padding: 2px;
+          padding: 0;
+          vertical-align: middle;
           //text-align: center;
           //text-overflow: ellipsis;
           //white-space: nowrap;
@@ -217,7 +219,6 @@
           text-align: right;
         }
       }
-
     }
     tr.featurebox-header-open + .featurebox-body  {
       > td > div, td > table {
@@ -229,7 +230,6 @@
       > td > table {
         border-collapse: separate;
       }
-
       > td > table td, td > table th {
         padding: 3px;
       }
@@ -272,11 +272,9 @@
       }
       .attr-value {}
     }
-
    .box-primary {
       border-top-width: 3px;
     }
-
     .box.box-solid.box-default.relationsbox {
       font-size: 0.9em;
       >.box-header {
@@ -290,20 +288,35 @@
   }
 }
 
-
 .query-relations-page {
   height: 100%;
   font-size: 14px;
   .query-relations, .query-relation {
     height: 100%;
   }
-  td {
-    span {
-      font-size:1.5em;
+  .query-relations{
+    .header{
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+    .table {
+      background: transparent;
+      tr {
+        background: #ffffff;
+      }
+    }
+  }
+  .relations-table {
+    td {
+      span {
+        font-size:1.3em;
+        font-weight: bold;
+      }
     }
   }
   .relationtable {
     td {
+      padding: 2px 5px !important;
       span {
         font-size:1em;
       }

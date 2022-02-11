@@ -66,12 +66,9 @@ function FormService() {
       footer
     };
     this.setFormFields(fields);
-    this.setFormStructure(options.formStructure);
     if (this.layer && options.formStructure) {
-      const fieldsoutofformstructure = this.layer.getFieldsOutOfFormStructure().map(field => field.field_name);
-      this.state.fieldsoutofformstructure = {
-        fields: fields.filter(field => fieldsoutofformstructure.indexOf(field.name) > -1)
-      }
+      const formstructure = this.layer.getLayerEditingFormStructure(fields);
+      this.setFormStructure(formstructure);
     }
   };
   this.eventBus.$on('set-loading-form', (bool=false) => {

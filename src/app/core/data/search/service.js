@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const {createOlFeatureFromApiResponseFeature} = require('core/utils/geo');
 const BaseService = require('core/data/service');
 
 function SearchService(){
@@ -56,7 +57,32 @@ function SearchService(){
       }
     });
     return dataSearch;
-  }
+  };
+
+  /**
+   * Method to return feature from api
+   * @param layer
+   * @param fid
+   * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
+   */
+  this.fid = async function({layer, fid}={}){
+    const response = {
+      data: [
+        {
+          layer,
+          features:[],
+        }
+      ],
+      query: {
+        type: 'search'
+      }
+    };
+    try {
+      const feature = layer && await layer.getFeatureByFid(fid);
+      feature && response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature));
+    } catch(err){}
+    return response;
+  };
 }
 
 inherit(SearchService, BaseService);

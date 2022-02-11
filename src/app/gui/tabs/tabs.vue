@@ -2,7 +2,7 @@
   <div class="tabs-wrapper">
     <ul class="formquerytabs nav nav-tabs">
       <li v-for="(tab, index) in tabs" :class="{active: index === 0}">
-        <a data-toggle="tab" :href="'#'+ ids[index]" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1.0em': '1.2em'}">
+        <a data-toggle="tab"  class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1.0em': '1.2em'}">
           {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span></a>
       </li>
     </ul>
@@ -58,6 +58,11 @@
       }
     },
     computed: {
+      visible_tabs(){
+        return this.tabs.filter(tab => {
+          return tab.visible === undefined ? true : tab.visible
+        })
+      },
       required_fields(){
         return this.contenttype === 'editing' && this.fields.filter(field => field.validate.required).map(field => field.name);
       }
@@ -80,12 +85,33 @@
     },
     created() {
       for (const tab of this.tabs) {
+        // console.log(tab)
+        // if (tab.name === "Posizione") {
+        //   tab.visibily_rules = {
+        //     field_name: 'num_ef',
+        //     value: 'pippo'
+        //   };
+        // } else tab.visible = true;
+        //
+        // if (tab.visibily_rules){
+        //   if (this.contenttype === 'editing'){
+        //     const field = this.fields.find(field => field.name === 'num_ef');
+        //     tab.visible = field.value === 'pippo';
+        //     const unbindKey = this.$watch(()=> field.value, value=>{
+        //       console.log(value)
+        //       tab.visible = value === 'pippo';
+        //     })
+        //   } else {
+        //     tab.visible = this.fields.find(field => field.name === 'num_ef').value === 'pippo'
+        //   }
+        // }
         if (this.contenttype === 'editing' && tab.required === undefined) {
           tab.required = this.setEditingRequireTab(tab);
         }
         this.ids.push(`tab_${getUniqueDomId()}`);
       }
-    }
+    },
+    beforeDestroy() {}
   }
 </script>
 
@@ -104,9 +130,16 @@
     flex: 1;
   }
   .tab-content {
-    margin-top: 10px;
+    //margin-top: 10px;
   }
   .nav-tabs > li > a.mobile {
     padding: 5px 10px;
+  }
+  .tab_a {
+    padding:5px;
+    border:1px solid #eeeeee;
+    border-bottom: 0;
+    margin-bottom: 3px;
+    border-radius: 0;
   }
 </style>

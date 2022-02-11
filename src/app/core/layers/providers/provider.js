@@ -2,7 +2,7 @@ import {G3W_FID} from 'constant';
 const {base, inherit, toRawType} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields } =  require('core/utils/geo');
+const {geometryFields, sanitizeFidFeature} =  require('core/utils/geo');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -117,16 +117,10 @@ proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=tr
   const data = response;
   const features = data && this._parseLayerGeoJSON(data, projections) || [];
   features.filter(feature => {
-    let index;
     const featureId = feature.getId();
-    let g3w_fid = featureId;
+    const g3w_fid = sanitizeFidFeature(featureId);
     // in case of wms getfeature without filter return string conatin layerName or layerid
-    if (toRawType(featureId) === 'String' && Number.isNaN(1*featureId)) {
-      const fid = feature.getId().split(`.`); // get id of the feature
-      const currentLayerId = fid[0];
-      g3w_fid = fid.length === 2 ? fid[1] : fid[0];
-      index =  layersId.indexOf(currentLayerId);
-    } else index = 0; // force to 0 only one layer (search)
+    const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
     if (index !== -1) {
       const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
       const properties = feature.getProperties();

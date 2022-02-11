@@ -1,4 +1,4 @@
-const { inherit, base, downloadCSV} = require('core/utils/utils');
+const {inherit, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');

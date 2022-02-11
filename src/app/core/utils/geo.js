@@ -1,4 +1,4 @@
-import {QUERY_POINT_TOLERANCE} from 'constant';
+import {QUERY_POINT_TOLERANCE, G3W_FID} from 'constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
@@ -1158,6 +1158,45 @@ const geoutils = {
     return crs;
   },
   /**
+   * Method to convert Degree Minutes  to Degree
+   * @param dm
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDMToDEG({dms, type="Array"}) {
+    const dms_Array = type === 'Array' ? dms : dms.split(/[^\d\w\.]+/);
+    const degrees = 1*dms_Array[0];
+    const minutes = 1*dms_Array[1];
+    let deg = (Number(degrees) + Number(minutes)/60).toFixed(6);
+    return 1*deg;
+  },
+  /**
+   * Method to convert Degree to DM
+   * @param deg
+   * @param lat
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDEGToDM({deg, output='Array'} = {}) {
+    const absolute = Math.abs(deg);
+    const degrees = Math.floor(absolute);
+    const minutes = (absolute - degrees) * 60;
+    switch (output) {
+      case 'Array':
+        return [degrees, minutes];
+        break;
+      case 'Object':
+        return {
+          degrees,
+          minutes,
+        };
+        break;
+      case 'Text':
+      default:
+        return  degrees + "°" + minutes + "'"
+    }
+  },
+  /**
    * Method to convert Degree Minutes Seconto to Degree
    * @param dms
    * @returns {string}
@@ -1228,6 +1267,26 @@ const geoutils = {
     });
     const geoTIFF = await response.blob();
     return geoTIFF;
+  },
+  /**
+   * Method to convert feature forma api
+   * @param feature
+   * @returns {*|Feature|Feature}
+   */
+  createOlFeatureFromApiResponseFeature(feature){
+    const {properties={}, geometry, id} = feature;
+    properties[G3W_FID] = id;
+    const Feature = new ol.Feature(new ol.geom[geometry.type](geometry.coordinates));
+    Feature.setProperties(properties);
+    return Feature;
+  },
+
+  sanitizeFidFeature(fid){
+    if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
+      fid = fid.split('.');
+      fid = fid.length === 2 ? fid[1] : fid[0];
+    }
+    return fid;
   }
 };
 
