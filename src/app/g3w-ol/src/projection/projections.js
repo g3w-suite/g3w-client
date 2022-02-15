@@ -57,6 +57,13 @@ const Projections = {
     });
 
     this.get({
+      epsg:"EPSG:32634",
+      proj4:"+proj=utm +zone=34 +datum=WGS84 +units=m +no_defs",
+      axisinverted: false,
+      geographic: false
+    });
+
+    this.get({
       epsg:"EPSG:25833",
       proj4:"+proj=utm +zone=33 +ellps=GRS80 +units=m +no_defs",
       axisinverted: false,

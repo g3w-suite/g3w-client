@@ -8,6 +8,9 @@ const BaseInputMixin = {
     }
   },
   methods: {
+    showHideHelp(){
+      this.state.help.visible = !this.state.help.visible
+    },
     // called when input value change
     change() {
       this.service.setEmpty();

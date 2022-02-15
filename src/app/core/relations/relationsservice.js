@@ -21,7 +21,7 @@ proto.createUrl = function(options={}){
   else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
   const value = sanitizeFidFeature(fid);
-  return `${dataUrl}?relationonetomany=${relationId}|${value}`;
+  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=1`;
 };
 
 proto.getRelations = function(options={}) {
