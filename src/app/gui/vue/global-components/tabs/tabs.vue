@@ -1,9 +1,9 @@
 <template>
   <div class="tabs-wrapper">
     <ul class="formquerytabs nav nav-tabs">
-      <template  v-for="(tab, index) in tabs">
+      <template v-for="(tab, index) in tabs">
         <li :class="{active: index === 0}">
-          <a data-toggle="tab"  class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1.0em': '1.2em'}">
+          <a data-toggle="tab"  class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile(), 'group-title': group}" :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}">
             {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span></a>
         </li>
       </template>
@@ -12,16 +12,15 @@
     <div class="tab-content">
       <template v-for="(tab, index) in tabs">
         <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}">
-          <node
-                  :showRelationByField="showRelationByField"
-                  :feature="feature"
-                  :layerid="layerid"
-                  :contenttype="contenttype"
-                  :addToValidate="addToValidate"
-                  :changeInput="changeInput"
-                  :fields="fields"
-                  :showTitle="false"
-                  :node="tab">
+          <node :showRelationByField="showRelationByField"
+                :feature="feature"
+                :layerid="layerid"
+                :contenttype="contenttype"
+                :addToValidate="addToValidate"
+                :changeInput="changeInput"
+                :fields="fields"
+                :showTitle="false"
+                :node="tab">
           </node>
         </div>
       </template>
@@ -30,11 +29,16 @@
 </template>
 
 <script>
-  import Node from "./node.vue";
+  import TabService from 'core/conditional/tabservice';
+  import Node from './node.vue';
   const {getUniqueDomId} = require ('core/utils/utils');
   export default {
     name: "tabs",
     props: {
+      group: {
+        type: Boolean,
+        default: false
+      },
       contenttype: {
         default: 'query'//or editing
       },
@@ -56,6 +60,9 @@
         type: Boolean,
         default: true
       }
+    },
+    components :{
+      Node
     },
     data() {
       return {
@@ -83,29 +90,15 @@
     components: {
       Node
     },
-    created() {
-      console.log(this.tabs)
+    async created() {
       for (const tab of this.tabs) {
-        // console.log(tab)
-        // if (tab.name === "Posizione") {
-        //   tab.visibily_rules = {
-        //     field_name: 'num_ef',
-        //     value: 'pippo'
-        //   };
-        // } else tab.visible = true;
-        //
-        // if (tab.visibily_rules){
-        //   if (this.contenttype === 'editing'){
-        //     const field = this.fields.find(field => field.name === 'num_ef');
-        //     tab.visible = field.value === 'pippo';
-        //     const unbindKey = this.$watch(()=> field.value, value=>{
-        //       console.log(value)
-        //       tab.visible = value === 'pippo';
-        //     })
-        //   } else {
-        //     tab.visible = this.fields.find(field => field.name === 'num_ef').value === 'pippo'
-        //   }
-        // }
+        if (tab.visibility_expression) {
+          TabService.getVisibility({
+            qgs_layer_id: this.layerid,
+            expression: tab.visibility_expression.expression,
+            feature: this.feature
+          })
+        }
         if (this.contenttype === 'editing' && tab.required === undefined) {
           tab.required = this.setEditingRequireTab(tab);
         }

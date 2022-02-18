@@ -41,11 +41,11 @@ proto.buildRelationTable = function(relations=[], id) {
   let rows = [];
   let fields;
   if (relations.length) {
-    const properties = Object.keys(relations[0].properties);
-    columns = headers.filter(header => properties.indexOf(header.name) !==-1);
+    const attributes = Object.keys(relations[0].attributes);
+    columns = headers.filter(header => attributes.indexOf(header.name) !==-1);
     rows = relations.map(relation => {
       return columns.map(column => {
-        return relation.properties[column.name]
+        return relation.attributes[column.name]
       })
     });
     fields = columns;
@@ -54,6 +54,7 @@ proto.buildRelationTable = function(relations=[], id) {
   return {
     columns,
     rows,
+    features: relations,
     fields,
     formStructure : layer.getEditorFormStructure(),
     rowFormStructure: null,

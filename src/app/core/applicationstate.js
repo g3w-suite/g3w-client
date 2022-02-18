@@ -21,6 +21,10 @@ const STATE = Vue.observable({
     },
     sidebar: {
       disabled: false // true if sidebar is disabled (not responsive)
+    },
+    layout: {
+      __current: 'app',
+      app: {}
     }
   },
   keys: {

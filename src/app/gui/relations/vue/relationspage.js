@@ -1,10 +1,10 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const Service = require('../relationsservice');
-const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
+const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
 const RelationPageEventBus = require('./relationeventbus');
 const compiledTemplate = createCompiledTemplate(require('./relationspage.html'));
 
@@ -61,7 +61,9 @@ const InternalComponent = Vue.extend({
         relation,
         fid
       }).then(response => {
-        const relations = getFeaturesFromResponseVectorApi(response);
+        const relations = getFeaturesFromResponseVectorApi(response, {
+          type: 'result'
+        });
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
@@ -78,7 +80,7 @@ const InternalComponent = Vue.extend({
       this.loading = false;
     }
   },
-  beforeMount () {
+  beforeMount() {
     if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
   },
   async mounted() {

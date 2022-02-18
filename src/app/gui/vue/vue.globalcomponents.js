@@ -8,7 +8,8 @@ import HelpDiv from './global-components/helpdiv.vue';
 import Resize from './global-components/resize.vue'
 import DateTime from './global-components/datetime.vue';
 import Range from './global-components/range.vue';
-import HResize from './global-components/h-resize.vue';
+import ResizeIcon from './global-components/resize-icon.vue';
+import Tabs from './global-components/tabs/tabs.vue';
 
 const GlobalComponents = {
   install(Vue) {
@@ -22,7 +23,8 @@ const GlobalComponents = {
     Vue.component(Resize.name, Resize);
     Vue.component(DateTime.name, DateTime);
     Vue.component(Range.name, Range);
-    Vue.component(HResize.name, HResize)
+    Vue.component(ResizeIcon.name, ResizeIcon);
+    Vue.component(Tabs.name, Tabs);
   }
 };
 

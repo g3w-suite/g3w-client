@@ -1,5 +1,4 @@
 import {G3W_FID} from 'constant';
-import Tabs from "gui/tabs/tabs.vue";
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
 import { createCompiledTemplate } from 'gui/vue/utils';
@@ -17,8 +16,7 @@ module.exports = {
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
-    Field,
-    Tabs
+    Field
   },
   data(){
     return {
@@ -48,12 +46,12 @@ module.exports = {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       setTimeout(()=>{
-        const datatableBody = $('.query-relation  div.dataTables_scrollBody').last();
+        const datatableBody = $('.query-relation div.dataTables_scrollBody').last();
         const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $(this.$refs['relation-header']).height() + $('.dataTables_filter').last().height() + $('.dataTables_scrollHead').last().height() + (this.isMobile() ? 20 : 0);
         datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
         if (this.table.rowFormStructure) {
           const width = datatableBody.width() - 60;
-          $('.row-wrap-tabs .tabs-wrapper').width(width);
+          $('.row-wrap-tabs > .tabs-wrapper').width(width);
         }
       });
       this.relationDataTable && this.relationDataTable.columns.adjust();
@@ -68,6 +66,7 @@ module.exports = {
       this.resize();
       await this.$nextTick();
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
+      this.resize();
     },
     getRowFields(row){
       const fields = this.table.fields.map((field, index)=> {
@@ -79,15 +78,6 @@ module.exports = {
         return field;
       });
       return fields;
-    },
-    getTabFeature(row){
-      const feature = {
-        attributes: {}
-      };
-      this.table.fields.forEach((field, index) => {
-        feature.attributes[field.name] = row[index];
-      });
-      return feature;
     },
     reloadLayout() {
       this.relationDataTable && this.relationDataTable.columns.adjust();

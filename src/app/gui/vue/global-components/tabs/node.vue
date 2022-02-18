@@ -14,23 +14,7 @@
           </component>
           <template v-else>
             <template v-if="getNodeType(getNode(row, column)) === 'group'">
-              <div class="sub-group">
-<!--                <node :showRelationByField="showRelationByField"-->
-<!--                      :feature="feature"-->
-<!--                      :layerid="layerid"-->
-<!--                      :contenttype="contenttype"-->
-<!--                      @changeinput="changeInput"-->
-<!--                      @addinput="addToValidate"-->
-<!--                      :fields="fields"-->
-<!--                      :showTitle="true"-->
-<!--                      :changeInput="changeInput"-->
-<!--                      :addToValidate="addToValidate"-->
-<!--                      :node="getNode(row, column)">-->
-<!--                </node>-->
-                <tabs
-                  :tabs="[getNode(row, column)]"
-                  v-bind="$props"></tabs>
-              </div>
+              <tabs class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             </template>
             <template v-else>
               <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
@@ -58,7 +42,7 @@
 </template>
 
 <script>
-  import G3wInput from '../inputs/g3w-input.vue';
+  import G3wInput from 'gui/inputs/g3w-input.vue';
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
   const GUI = require('gui/gui');
@@ -91,7 +75,7 @@
     },
     computed: {
       filterNodes() {
-        const filterNodes = this.node.nodes && this.node.nodes.filter((node) => {
+        const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
           if (this.getNodeType(node) === 'group') {
             return true
           } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
@@ -192,7 +176,6 @@
 
 <style scoped>
   .group {
-    //padding: 5px;
     margin-bottom: 5px;
   }
   .sub-group {

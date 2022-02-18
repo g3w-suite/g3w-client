@@ -54,6 +54,7 @@ const ApplicationService = function() {
     try {
       const config = await this.createApplicationConfig();
       this.setConfig(config);
+      this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
       const browserLng = navigator && navigator.language || 'en';
@@ -64,6 +65,7 @@ const ApplicationService = function() {
       })
     }
   };
+
 
   /**
    * setup Internalization
@@ -615,6 +617,50 @@ const ApplicationService = function() {
       .catch(error => d.reject(error));
     return d.promise();
   };
+
+  /**
+   * Layout section
+   */
+
+  this.setLayout = function(who='app', config={}){
+    /**
+     * Set default height percentage of height when show vertical content (for example show table attribute)
+     * @type {{}}
+     */
+    if (config.rightpanel) {
+      config.rightpanel.width = config.rightpanel.width || 50;
+      config.rightpanel.height = config.rightpanel.height || 50;
+      config.rightpanel.width_default = config.rightpanel.width; // used eventually to reset starting values
+      config.rightpanel.height_default = config.rightpanel.height;
+      config.rightpanel.width_100 = false;
+      config.rightpanel.height_100 = false;
+    } else config.rightpanel = {width: 50, height: 50, width_default: 50, height_default: 50, width_100: false, height_100: false};
+    ApplicationState.gui.layout[who] = config;
+  };
+
+  this.removeLayout = function(who){
+    who && delete ApplicationState.gui.layout[who];
+  };
+
+  this.setCurrentLayout = function(who='app'){
+    ApplicationState.gui.layout.__current = who;
+  };
+
+  this.getCurrentLayout = function(){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+  };
+
+  this.getCurrentLayoutName = function(){
+    return ApplicationState.gui.layout.__current;
+  };
+
+  this.cloneLayout = function(which='app'){
+    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
+  };
+
+  /**
+   * Layout section
+   */
 
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();

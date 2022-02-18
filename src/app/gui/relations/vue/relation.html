@@ -30,7 +30,7 @@
           </tr>
         </thead>
         <tbody>
-          <template v-for="row in table.rows">
+          <template v-for="(row, index) in table.rows">
           <tr :class="{'selected': table.rowFormStructure === row}">
             <td @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
               <span style="max-width: 15px; width: 15px;" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
@@ -39,7 +39,7 @@
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">
-                <tabs :layerid="table.layerId" :feature="feature" :fields="fields" :tabs="table.formStructure"></tabs>
+                <tabs :layerid="table.layerId" :feature="table.features[index]" :fields="fields" :tabs="table.formStructure"></tabs>
               </td>
             </template>
             <template v-else>
@@ -55,5 +55,5 @@
     <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"></g3w-resize>
     <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0'}" style="padding-bottom: 5px; margin-bottom: 5px; margin-left: 8px;" ref="chartcontent"></div>
   </div>
-  <div v-else style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
+  <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
 </div>

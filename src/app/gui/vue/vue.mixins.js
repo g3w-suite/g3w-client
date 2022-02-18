@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
-const {throttle, debounce} = require('core/utils/utils');
+const {throttle, debounce, XHR} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -219,12 +219,11 @@ const select2Mixin = {
   }
 };
 
-
 module.exports = {
   geoMixin,
   fieldsMixin,
   mediaMixin,
   resizeMixin,
   autocompleteMixin,
-  select2Mixin
+  select2Mixin,
 };

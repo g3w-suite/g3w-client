@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const ComponentsFactory = require('gui/componentsfactory');
@@ -24,12 +25,32 @@ const Plugin = function() {
   // timeout to remove loading plugin after timeout
   this._timeout = setTimeout(()=>{
     PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+    this.removeLayout();
   }, TIMEOUT)
 };
 
 inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
+/**
+ * Handle layout plugin
+ */
+
+proto.setLayout = function(config=ApplicationService.cloneLayout('app')){
+  ApplicationService.setLayout(this.name, config);
+};
+
+proto.setCurrentLayout = function(){
+  ApplicationService.setCurrentLayout(this.name);
+};
+
+proto.removeLayout = function(){
+  ApplicationService.removeLayout(this.name)
+};
+
+/***
+ * End layout plugin
+ */
 
 proto.setDependencies = function(dependencies) {
   this.dependencies = dependencies;
@@ -52,6 +73,7 @@ proto.setApi = function(api={}) {
 
 proto.setReady = function(bool) {
   this._ready = bool;
+  bool && this.setLayout();
   this.emit('set-ready', bool, this.name);
   setTimeout(()=>{
     clearTimeout(this._timeout);
@@ -90,8 +112,7 @@ proto.setName = function(name) {
 };
 
 //get cplugin configuration
-proto.getConfig = function(name) {
-  name = name || this.name;
+proto.getConfig = function(name=this.name) {
   return PluginsRegistry.getPluginConfig(name);
 };
 
@@ -122,8 +143,6 @@ proto.registerPlugin = function(projectId) {
 };
 
 proto.setupGui = function() {};
-
-//proto.getDependencyPluginsObject
 
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {

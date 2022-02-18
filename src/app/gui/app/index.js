@@ -330,7 +330,6 @@ const ApplicationTemplate = function({ApplicationService}) {
         ComponentsRegistry.registerComponent(component);
         ApplicationService.registerService(component.id, component.getService())
       }
-
     })
   };
 
@@ -513,7 +512,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       return showPanelContent;
     };
 
-    GUI.showForm = function(options) {
+
+    GUI.showForm = function(options={}) {
+      const {perc, split='h', push, showgoback} = options;
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
       const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
@@ -521,11 +522,11 @@ const ApplicationTemplate = function({ApplicationService}) {
       const formService = formComponent.getService();
       // parameters : [content, title, push, perc, split, closable]
       GUI.setContent({
-        perc: options.perc || null,
+        perc,
         content: formComponent,
-        split: options.split || 'h',
-        push: !!options.push, //only one( if other delete previous component)
-        showgoback: !!options.showgoback,
+        split,
+        push: !!push, //only one( if other delete previous component)
+        showgoback: !!showgoback,
         closable: false
       });
       // return service
@@ -572,13 +573,11 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // show results info/search
     GUI.showQueryResults = function(title, results) {
-      const perc = appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
       results && queryResultService.setQueryResponse(results);
       GUI.showContextualContent({
-        perc,
         content: queryResultsComponent,
         title: "info.title",
         post_title: title
@@ -696,8 +695,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       viewport.ViewportService.showMap();
     };
 
-    GUI.showContextualMap = function(perc, split) {
-      perc = perc || 30;
+    GUI.showContextualMap = function(perc=30, split) {
       viewport.ViewportService.showContextualMap({
         perc,
         split
@@ -715,13 +713,13 @@ const ApplicationTemplate = function({ApplicationService}) {
     //  (100%) content
     GUI.showContent = (options={}) => {
       GUI.setLoadingContent(false);
-      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       GUI.setContent(options);
       return true;
     };
 
     GUI.showContextualContent = (options = {}) => {
-      options.perc = !this._isMobile ? options.perc || 50  : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       GUI.setContent(options);
       return true;
     };
@@ -731,19 +729,18 @@ const ApplicationTemplate = function({ApplicationService}) {
     //  - pushContent has a new parameter (backonclose) when is clicked x
     //  - the contentComponet is close all stack is closed
     GUI.pushContent = (options = {}) => {
-      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       options.push = true;
       GUI.setContent(options);
     };
     // add content to stack
     GUI.pushContextualContent = (options={}) => {
-      options.perc = !this._isMobile ? options.perc || GUI.getNot100ContentPercentage() : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       GUI.pushContent(options);
     };
     // remove last content from stack
     GUI.popContent = function() {
       viewport.ViewportService.popContent();
-
     };
     //return number of component of stack
     GUI.getContentLength = function() {
@@ -769,17 +766,12 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.getCurrentContent();
     };
 
-    GUI.getNot100ContentPercentage = function(){
-      return appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
+    GUI.toggleFullViewContent = function(){
+      viewport.ViewportService.toggleFullViewContent();
     };
 
-    //get content percentage
-    GUI.getContentPercentage = function(){
-      return viewport.ViewportService.getContentPercentage();
-    };
-
-    GUI.setContentPercentage = function(perc=50){
-      viewport.ViewportService.setContentPercentage(perc);
+    GUI.resetToDefaultContentPercentage = function(){
+      viewport.ViewportService.resetToDefaultContentPercentage();
     };
 
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
@@ -797,12 +789,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI._setContent = (options={}) => {
-      const perc = GUI.getNot100ContentPercentage();
       this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
       options.content = options.content || null;
       options.title = options.title || "";
       options.push = _.isBoolean(options.push) ? options.push : false;
-      options.perc = !this._isMobile ? options.perc || perc : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       options.split = options.split || 'h';
       options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
       options.showtitle = _.isBoolean(options.showtitle) ? options.showtitle : true;

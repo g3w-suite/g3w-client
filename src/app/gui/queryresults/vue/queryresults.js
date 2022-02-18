@@ -1,4 +1,3 @@
-import Tabs from '../../tabs/tabs.vue';
 const {fieldsMixin} = require('gui/vue/vue.mixins');
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
@@ -23,7 +22,6 @@ const vueComponentOptions = {
   },
   mixins: [fieldsMixin],
   components: {
-    Tabs,
     TableAttributeFieldValue,
     'header-feature-body': HeaderFeatureBody
   },

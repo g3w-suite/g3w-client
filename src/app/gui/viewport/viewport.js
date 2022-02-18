@@ -1,3 +1,4 @@
+import ApplicationState from '../../core/applicationstate';
 import {viewport as viewportConstraints} from 'gui/constraints';
 import userMessage from 'gui/usermessage/vue/usermessage.vue';
 import onlineNotify from 'gui/notifications/online/vue/online.vue';
@@ -14,7 +15,8 @@ const ViewportService = function() {
   this.state = {
     primaryView: 'map', // primary view (default)
     // percentage of secondary view
-    secondaryPerc: 0,
+    secondaryPerc: 0, // setted to 0 at beginning (not visible)
+    // used to store if content vertical or horizontal is  changed by resised
     resized: {
       start: false,
       'h': false,
@@ -37,12 +39,13 @@ const ViewportService = function() {
         width: 0,
         height: 0
       },
+      // store the resize vertical or horizontal
       resize: {
         'h': {
           perc: 0
         },
         'v': {
-          perc:0
+          perc: 0
         }
       },
       aside: true,
@@ -82,19 +85,18 @@ const ViewportService = function() {
   // minimun height and width of secondary view
   this._secondaryViewMinWidth = viewportConstraints.resize.content.min;
   this._secondaryViewMinHeight =  viewportConstraints.resize.content.min;
-  // attributo che serve per
   this._immediateComponentsLayout = true;
-  /* PLUBILC INTARFACE */
   this.init = function(options={}) {
+    const {primaryview='map', split='h', components} = options;
     // check if it set primary view (map is default)
-    this.state.primaryView = options.primaryview ? options.primaryview : 'map';
+    this.state.primaryView = primaryview;
     // check splitting property
-    this.state.split = options.split ? options.split : 'h';
+    this.state.split = split;
     // add component (map and content)
-    const { components } = options;
     this._addComponents(components);
   };
 
+  // Method to set true or false of content
   this.setResized = function (type, bool=false) {
     this.state.resized[type] = bool;
   };
@@ -178,7 +180,7 @@ const ViewportService = function() {
     this._showView('map');
   };
 
-  this.showContextualMap = function(options) {
+  this.showContextualMap = function(options={}) {
     if (!this._contextualMapComponent) this._contextualMapComponent = this._defaultMapComponent;
     if (this._contextualMapComponent != this._defaultMapComponent) this._toggleMapComponentVisibility(this._defaultMapComponent,false);
     if (!this._contextualMapComponent.ismount()) {
@@ -241,7 +243,9 @@ const ViewportService = function() {
     const evenContentName = options.perc === 100 ? 'show-content-full' : 'show-content';
     // set all content parameters
     this._prepareContentView(options);
+    // immediate layout false (to understand better)
     this._immediateComponentsLayout = false;
+    // call show view (in this case content (other is map)
     this._showView('content', options);
     this._components.content.setContent(options)
       .then(() => {
@@ -252,22 +256,31 @@ const ViewportService = function() {
 
   // hide content
   this.hideContent = function(bool, perc) {
-    const prevContentPerc = this.state.secondaryPerc;
-    this.state.secondaryPerc = !!bool ? 0: perc;
+    const prevContentPerc = this.getContentPercentageFromCurrentLayout(this.state.split);
+    this.setContentPercentageFromCurrentLayout(this.state.split, 0);
     this.state.secondaryVisible = !bool;
     this._layout('hide-content');
     // return previous percentage
     return prevContentPerc;
   };
 
-  //get content percentage
-  this.getContentPercentage = function(){
-    return this.state.secondaryPerc;
+  this.resetToDefaultContentPercentage = function(){
+    const currentRightPanel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+    currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_default`];
+    currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = false;
+    this._layoutComponents();
   };
 
-  this.setContentPercentage = function(perc){
-    this.state.secondaryPerc = perc;
+  this.toggleFullViewContent = function(){
+    ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`];
     this._layoutComponents();
+  };
+
+  this.isFullViewContent = function(){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`]
   };
 
   this.contentLength = function() {
@@ -359,10 +372,10 @@ const ViewportService = function() {
     }
   };
 
-  this.showSecondaryView = function(split, perc) {
+  this.showSecondaryView = function(split=this.state.split, perc=this.state.perc) {
     this.state.secondaryVisible = true;
-    this.state.split = split ? split : this.state.split;
-    this.state.secondaryPerc = perc ? perc : this.state.perc;
+    this.state.split = split;
+    this.state.secondaryPerc = perc;
     this._layout();
   };
 
@@ -405,28 +418,36 @@ const ViewportService = function() {
     }
   };
 
+  /**
+   * Set the state of content (right or bottom content other than map)
+   * @param options
+   * @private
+   */
   this._prepareContentView = function(options={}) {
-    this.state.content.preferredPerc = options.perc || this.getDefaultViewPerc('content');
-    this.state.content.title = options.title;
-    this.state.content.split =  options.split ? options.split : null;
-    this.state.content.closable =  _.isNil(options.closable) ? true : options.closable;
-    this.state.content.backonclose = _.isNil(options.backonclose) ? true : options.backonclose;
+    const {perc=this.getDefaultViewPerc('content'), title, split=null,
+      closable=true, backonclose=true, style={}, showgoback=true} = options;
+    this.state.content.preferredPerc = perc; // this is the starting point setted percentage of passing prom server config
+    this.state.content.title = title;
+    this.state.content.split =  split;
+    this.state.content.closable = closable;
+    this.state.content.backonclose = backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
-    this.state.content.style = options.style || {};
-    this.state.content.showgoback = _.isNil(options.showgoback) ? true : options.showgoback;
+    this.state.content.style = style;
+    this.state.content.showgoback = showgoback;
   };
 
   // manage all layout logic
   // viewName: map or content
   //options.  percentage , splitting title etc ..
   this._showView = function(viewName, options={}) {
-    const perc = options.perc || this.getDefaultViewPerc(viewName);
-    const split = options.split || 'h';
+    const {perc=this.getDefaultViewPerc(viewName), split='h'} = options;
     let aside;
     if (this.isPrimaryView(viewName)) aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
     else aside = true;
     this.state[viewName].aside = aside;
+    //calculate the content
     const secondaryPerc = this.isPrimaryView(viewName) ? 100 - perc : perc;
+    //show Secondary View content only if more then 0
     if (secondaryPerc > 0) this.showSecondaryView(split, secondaryPerc);
     else return this.closeSecondaryView();
   };
@@ -435,11 +456,11 @@ const ViewportService = function() {
     const contentEl = $('.content');
     let reducedWidth = 0;
     let reducedHeight = 0;
-    if (contentEl && this.state.secondaryVisible && this.state.secondaryPerc === 100) {
+    if (contentEl && this.state.secondaryVisible && this.isFullViewContent()) {
       const sideBarToggleEl = $('.sidebar-aside-toggle');
       if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
         const toggleWidth = sideBarToggleEl.outerWidth();
-        contentEl.css('padding-left',toggleWidth + 5);
+        contentEl.css('padding-left', toggleWidth + 5);
         reducedWidth = (toggleWidth - 5);
       }
     } else contentEl.css('padding-left', 15);
@@ -451,28 +472,22 @@ const ViewportService = function() {
 
   //main layout function
   this._layout = function(event=null) {
-    //const splitClassToAdd = (this.state.split === 'h') ? 'split-h' : 'split-v';
-    //const splitClassToRemove =  (this.state.split === 'h') ? 'split-v' : 'split-h';
-    //const viewportViewElement = $(".g3w-viewport .g3w-view");
-    //viewportViewElement.addClass(splitClassToAdd).removeClass(splitClassToRemove);
     const reducesdSizes = this._getReducedSizes();
-    this._setViewSizes(reducesdSizes.reducedWidth,reducesdSizes.reducedHeight);
+    this._setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
     if (this._immediateComponentsLayout) this._layoutComponents(event);
   };
 
   this._setViewSizes = function() {
     const primaryView = this.state.primaryView;
     const secondaryView = this._otherView(primaryView);
-    const viewportWidth = this._viewportWidth(); // remove  for zoom in zoom out issue
-    //all viewport height
-    const viewportHeight = this._viewportHeight();
+    const {width:viewportWidth, height:viewportHeight}= this.getViewportSize();
     // assign all width and height of the view to primary view (map)
     let primaryWidth;
     let primaryHeight;
     let secondaryWidth;
     let secondaryHeight;
     // percentage of secondary view (content)
-    const scale = (this.state.secondaryPerc < 100 && this.state.resized[this.state.split] ? this.state.content.resize[this.state.split].perc : this.state.secondaryPerc) / 100;
+    const scale = (!this.isFullViewContent() ? this.getContentPercentageFromCurrentLayout(this.state.split) : 100) / 100;
     if (this.state.split === 'h') {
       secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale), this._secondaryViewMinWidth) : 0;
       secondaryHeight = viewportHeight;
@@ -481,13 +496,20 @@ const ViewportService = function() {
     } else {
       secondaryWidth = viewportWidth;
       secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight * scale),this._secondaryViewMinHeight) : 0;
-      primaryWidth = viewportWidth;
+      primaryWidth = this.state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
       primaryHeight = viewportHeight - secondaryHeight;
     }
     this.state[primaryView].sizes.width = primaryWidth;
     this.state[primaryView].sizes.height = primaryHeight;
     this.state[secondaryView].sizes.width = secondaryWidth;
     this.state[secondaryView].sizes.height = secondaryHeight;
+  };
+
+  this.getViewportSize = function(){
+    return {
+      width: this._viewportWidth(),
+      height: this._viewportHeight()
+    }
   };
 
   this._viewportHeight = function() {
@@ -503,10 +525,29 @@ const ViewportService = function() {
     return $('#app')[0].getBoundingClientRect().width - sideBarSpace;
   };
 
+  /**
+   * Method that se resize. Is called by moveFnc that is called from resize (vertical or horiziontal) component
+   * @param type
+   * @param sizes
+   * @param perc
+   */
   this.resizeViewComponents = function(type, sizes={}, perc){
     this.setResized(type, true);
-    this.state.content.resize[type].perc = perc;
+    this.setContentPercentageFromCurrentLayout(type, perc);
     this._layout('resize');
+  };
+
+  /**
+   * Get current information layout
+   * @param type
+   * @param perc
+   */
+  this.setContentPercentageFromCurrentLayout = function(type=this.state.split, perc){
+    ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[type==='h'? 'width': 'height'] = perc;
+  };
+
+  this.getContentPercentageFromCurrentLayout = function(type= this.state.split){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[type==='h'? 'width': 'height'];
   };
 
   // load components of  viewport
@@ -523,22 +564,27 @@ const ViewportService = function() {
         const height = this.state[name].sizes.height - reducedHeight;
         component.layout(width, height);
       });
-      if (event) setTimeout(()=> {
+      event && setTimeout(()=> {
         this.emit(event);
         GUI.emit(event);
-      }, 0)
+      })
     });
   };
 
+  /**
+   * function called at start of application (just one time)
+   * @private
+   */
   this._firstLayout = function() {
     let drawing = false;
     let resizeFired = false;
-
     function triggerResize() {
       resizeFired = true;
       drawResize();
     }
-
+    /**
+     * function called from resize of browser windows (also open dev tool)
+     */
     const drawResize = () => {
       if (resizeFired === true) {
         resizeFired = false;
@@ -553,15 +599,11 @@ const ViewportService = function() {
     GUI.on('ready',() => {
       SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
       this._layout();
-      GUI.on('guiresized',() => {
-        triggerResize();
-      });
+      GUI.on('guiresized',() => triggerResize());
       // resize della window
       $(window).resize(() => {
         // set resizedFired to true and execute drawResize if it's not already running
-        if (drawing === false) {
-          triggerResize();
-        }
+        drawing === false && triggerResize();
       });
       // resize on main siedemar open close sidebar
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function (event) {
@@ -608,7 +650,8 @@ const ViewportComponent = Vue.extend({
   },
   computed: {
     showresize(){
-      return this.state.resized.start && this.state.secondaryPerc < 100 && this.state.secondaryPerc > 0
+      const currentPerc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[this.state.split === 'h' ? 'width' : 'height'];
+      return this.state.resized.start &&  currentPerc< 100 && currentPerc > 0
     },
     hooks() {
       return this.usermessage.hooks;

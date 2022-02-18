@@ -31,6 +31,8 @@ const font = {
   'arrow-left': "fas fa-chevron-left",
   'arrow-right': "fas fa-chevron-right",
   'resize-h': "fas fa-arrows-alt-h",
+  'resize-v': "fas fa-arrows-alt-v",
+  'resize-default': "fas fa-compress",
   'caret-up': "fas fa-caret-up",
   'caret-down': "fas fa-caret-down",
   'caret-left': "fas fa-caret-left",

@@ -41,8 +41,9 @@ function Project(config={}, options={}) {
    */
   //information about api project
   this.urls = {
-    map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`
-  };
+    map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`,
+    expression_eval: `/api/expression_eval/${this.getId()}/`
+};
   /*
    *
    * End View
@@ -387,6 +388,10 @@ proto.getMapThemeFromThemeName = async function(map_theme){
     }
   }
   return mapThemeConfig;
+};
+
+proto.getUrl = function(type){
+  return this.urls[type];
 };
 
 

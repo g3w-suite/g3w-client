@@ -58,7 +58,7 @@ function GUI() {
   };
   //ready GUI
   this.isReady = function(){
-    return new Promise(resolve =>this.isready ? resolve() : this.once('ready', resolve));
+    return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
   };
   /**
    * Passing a component application ui id return service that belong to component

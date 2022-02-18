@@ -757,12 +757,37 @@ const geoutils = {
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
-
-  getFeaturesFromResponseVectorApi(response={}) {
+  /**
+   *
+   *
+   * @param response
+   * @param type vector/results
+   * @returns {*|*[]|null}
+   */
+  getFeaturesFromResponseVectorApi(response={}, {type='vector'}={}) {
     if (response.result) {
       const features = response.vector.data.features || [];
-      return features;
+      switch (type) {
+        case 'result':
+          return geoutils.covertVectorFeaturesToResultFeatures(features);
+          break;
+        case 'vector':
+        default:
+          return features
+      }
     } else return null;
+  },
+
+  covertVectorFeaturesToResultFeatures(features=[]){
+    return features.map(feature => {
+      const {id, properties:attributes, geometry} = feature;
+      attributes[G3W_FID]= id;
+      return {
+        geometry,
+        attributes,
+        id
+      }
+    })
   },
 
   splitGeometryLine(splitGeometry, lineGeometry) {
@@ -989,6 +1014,33 @@ const geoutils = {
             pointFeatures.push(feature);
           })
         });
+        break;
+      case Geometry.GeometryTypes.MULTILINESTRING:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.LINESTRING:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.MULTIPOINT:
+        geometry.getCoordinates().forEach(coordinates =>{
+          const feature = new ol.Feature(new ol.geom.Point(coordinates));
+          pointFeatures.push(feature);
+        });
+        break;
+      case Geometry.GeometryTypes.POINT:
+        const coordinates =  geometry.getCoordinates();
+        const feature = new ol.geom.Point(coordinates);
+        pointFeatures.push(feature);
         break;
     }
     return pointFeatures;
