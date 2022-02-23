@@ -1,4 +1,4 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
@@ -43,7 +43,7 @@ const vueComponentObject = {
       this.$options.service.setComponentByIndex(index);
     },
     changeInput(input) {
-      return this.$options.service.isValid(input);
+      return this.$options.service.changeInput(input);
     },
     addToValidate(input) {
       this.$options.service.addToValidate(input);

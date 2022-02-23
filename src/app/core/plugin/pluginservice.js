@@ -14,11 +14,9 @@ function PluginService(options={}) {
   this._appEvents = [];
   this.currentLayout = ApplicationService.getCurrentLayoutName();
   this.vm = new Vue();
-  this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current, currentLayoutName =>{
-    this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout;
-  });
-
-  this.init = function(config) {
+  this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
+      currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
+  this.init = function(config) { //set dafault init method (overwrite by each plugin
     this.config = config;
   }
 }

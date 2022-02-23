@@ -572,6 +572,7 @@ const ApplicationService = function() {
     // change url using history
     (production && aliasUrl) && history.replaceState(null, null, aliasUrl) || history.replaceState(null, null, mapUrl);
     //remove tools
+    //window.location = mapUrl;
     this.obtainInitConfig({
       host
     }).then(initConfig => {

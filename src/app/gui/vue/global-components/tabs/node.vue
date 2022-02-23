@@ -1,10 +1,10 @@
 <template>
   <div class="tab-node group">
     <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="row" :class="{'mobile': isMobile()}" style="margin:0;">
-      <div v-for="column in columnNumber" :class="columnClass" style="padding:5px;">
+    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(${columnNumber}, 1fr)`}">
+      <template v-for="column in columnNumber"  style="padding:2px">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 3px 3px 0 3px"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -13,9 +13,7 @@
             :is="getComponent(getField(getNode(row, column)))">
           </component>
           <template v-else>
-            <template v-if="getNodeType(getNode(row, column)) === 'group'">
-              <tabs class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
-            </template>
+            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
               <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div v-if="showRelationByField" class="query_relation_field" >
@@ -29,14 +27,14 @@
                 </span>
               </div>
               <template v-else>
-                <div class="form_editing_relation_input" v-t="'sdk.form.messages.qgis_input_widget_relation'">
-                  <span class="info_helptext_button">i</span>
+                <div class="form_editing_relation_input skin-background-color lighten" v-t="'sdk.form.messages.qgis_input_widget_relation'">
+                  <span class="info_helptext_button skin-background-color lighten">i</span>
                 </div>
               </template>
             </template>
           </template>
         </template>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -46,20 +44,6 @@
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
   const GUI = require('gui/gui');
-  const COLUMNCLASSES = {
-    1: 'col-md-12',
-    2: 'col-md-6',
-    3: 'col-md-4',
-    4: 'col-md-3',
-    5: 'col-md-2',
-    6: 'col-md-2',
-    7: 'col-md-1',
-    8: 'col-md-1',
-    9: 'col-md-1',
-    10: 'col-md-1',
-    11: 'col-md-1',
-    12: 'col-md-1',
-  };
   export default {
     name: "node",
     props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField'],
@@ -102,9 +86,6 @@
           rowCount = Math.floor(this.nodesLength / this.columnNumber) + rest;
         }
         return rowCount;
-      },
-      columnClass() {
-        return `${COLUMNCLASSES[this.columnNumber]} ${this.isMobile() ? 'mobile' : ''}` ;
       },
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) ?  parseInt(this.node.columncount): 1;
@@ -175,13 +156,7 @@
 </script>
 
 <style scoped>
-  .group {
-    margin-bottom: 5px;
-  }
-  .sub-group {
-    border-radius: 5px;
-    padding: 5px;
-  }
+
   .title {
     font-weight: bold;
     width: 100%;
@@ -191,14 +166,12 @@
     margin-bottom: 5px;
     border-radius: 2px;
   }
-  .group-title.mobile {
-    margin-top: 5px;
+  .node-row {
     margin-bottom: 5px;
+    column-gap: 2px;
+    margin-top: 3px;
+    display: grid;
   }
-  .row {
-    margin-bottom: 5px;
-  }
-
   .row.mobile{
     margin-bottom: 0 !important;
   }

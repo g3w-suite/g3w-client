@@ -1,7 +1,8 @@
 const queryService = require('core/data/query/service');
 const searchService = require('core/data/search/service');
+const expressionService = require('core/data/expression/service');
 const IFrameRouterService = require('core/iframe/routerservice');
-const { splitContextAndMethod } = require('core/utils/utils');
+const {splitContextAndMethod} = require('core/utils/utils');
 const GUI = require('gui/gui');
 
 function Routerservice() {
@@ -41,7 +42,8 @@ function Routerservice() {
   this.init = async function(){
     this.services = {
       query: queryService,
-      search: searchService
+      search: searchService,
+      expression: expressionService
     };
   };
 

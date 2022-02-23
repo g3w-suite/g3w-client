@@ -206,6 +206,9 @@ const resizeMixin = {
 const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
+    setValue(){
+      this.state.value && this.select2.val(this.state.value).trigger('change');
+    },
     resize() {
       this.select2 && !ApplicationState.ismobile && this.select2.select2('close');
     }

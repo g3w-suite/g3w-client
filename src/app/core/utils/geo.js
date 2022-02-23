@@ -531,6 +531,31 @@ const geoutils = {
   },
 
   /**
+   * Method to convert feature to form Data for expression/expression_eval request
+   * @param feature
+   * @param type
+   */
+  getFormDataExpressionRequestFromFeature(feature){
+    delete feature.attributes.geometry;
+    const _feature = new ol.Feature(feature.geometry);
+    const properties = {};
+    geoutils.getAlphanumericPropertiesFromFeature(feature.attributes).forEach(property =>{
+      if (property !== G3W_FID) properties[property] = feature.attributes[property]
+    });
+    _feature.setProperties(properties);
+    return geoutils.convertFeatureToGEOJSON(_feature);
+  },
+
+  /**
+   * Convert Feature  to GEOJSON Format
+   * @param feature
+   */
+  convertFeatureToGEOJSON(feature){
+    const GeoJSONFormat = new ol.format.GeoJSON();
+    return GeoJSONFormat.writeFeatureObject(feature);
+  },
+
+  /**
    *
    * @param layers
    * @param bbox

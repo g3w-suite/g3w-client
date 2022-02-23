@@ -10,6 +10,7 @@ import DateTime from './global-components/datetime.vue';
 import Range from './global-components/range.vue';
 import ResizeIcon from './global-components/resize-icon.vue';
 import Tabs from './global-components/tabs/tabs.vue';
+import Divider from './global-components/divider.vue';
 
 const GlobalComponents = {
   install(Vue) {
@@ -25,6 +26,7 @@ const GlobalComponents = {
     Vue.component(Range.name, Range);
     Vue.component(ResizeIcon.name, ResizeIcon);
     Vue.component(Tabs.name, Tabs);
+    Vue.component(Divider.name, Divider);
   }
 };
 

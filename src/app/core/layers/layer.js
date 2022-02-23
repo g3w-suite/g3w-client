@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import {DOWNLOAD_FORMATS} from './../../constant';
 const {t} = require('core/i18n/i18n.service');
-const {inherit, base, XHR } = require('core/utils/utils');
+const {inherit, base, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {geometryFields} =  require('core/utils/geo');
 const Relations = require('core/relations/relations');

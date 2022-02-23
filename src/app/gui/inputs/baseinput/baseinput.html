@@ -13,7 +13,7 @@
       <p v-if="notvalid" class="error-input-message" style="margin: 0" v-html="state.validate.message"></p>
       <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
     </slot>
-    <div class="g3w_input_help" v-if="state.help && this.state.help.visible" v-html="state.help.message">
+    <div class="g3w_input_help skin-background-color lighten" v-if="state.help && this.state.help.visible" v-html="state.help.message">
     </div>
   </div>
 </div>

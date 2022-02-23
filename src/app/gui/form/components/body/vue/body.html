@@ -5,6 +5,8 @@
         <template v-if="hasFormStructure">
           <template v-for="item in this.state.formstructure">
             <tabs v-if="item.type === 'tab'"
+              :layerid="state.layerid"
+              :feature="state.feature"
               :contenttype="'editing'"
               :addToValidate="addToValidate"
               :changeInput="changeInput"

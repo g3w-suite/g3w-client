@@ -10,6 +10,7 @@ const MeasureIteraction = function(options={}) {
   this.testTooltip;
   this._helpMsg = options.help;
   this._projection = options.projection;
+  this.feature = options.feature
   const drawColor = options.drawColor || 'rgba(0, 0, 0, 0.5)';
   const useSphereMethods = needUseSphereMethods(this._projection);
   const measureStyle = new ol.style.Style({
@@ -56,7 +57,7 @@ const MeasureIteraction = function(options={}) {
   });
 
   ol.interaction.Draw.call(this, {
-    source: source,
+    source,
     type: geometryType,
     style: measureStyle
   });
@@ -117,6 +118,7 @@ proto._drawStart = function(evt) {
   this._map = this.getMap();
   this._map.removeLayer(this._layer);
   this._feature = evt.feature;
+  this.feature && this._feature.setGeometry(this.feature.getGeometry());
   this._keyDownEventHandler = _.bind(this._removeLastPoint, this);
   $(document).on('keydown', this._keyDownEventHandler);
   // vado a ripulire tutte le features
