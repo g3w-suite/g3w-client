@@ -93,25 +93,34 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       // to be sure set values options to empty array if undefined
       forminput.loading = !forminput.type === 'autocompletefield';
-      if (forminput.options.values === undefined) forminput.options.values = [];
-      else if (dependance){ // in case of dependence load rigth now
-        if (!this.waitDependanceChange) this.getValuesFromField(forminput).then(values => { // return array of values
+      const promise = new Promise((resolve, reject) =>{
+        if (forminput.options.values === undefined) forminput.options.values = [];
+        else if (dependance){ // in case of dependence load rigth now
+          if (!this.waitDependanceChange) this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
-            values.splice(0,0,forminput.options.values[0]);
             forminput.options.values = values;
           })
-          .catch(()=> forminput.options.values = [])// in case of error
-          .finally(()=> forminput.loading = false)
-        else forminput.loading = false;
-      } else {
-        this.getValuesFromField(forminput).then(values => { // return array of values
+            .catch(()=> forminput.options.values = [])// in case of error
+            .finally(()=> {
+              resolve();
+              forminput.loading = false
+            });
+          else {
+            resolve();
+            forminput.loading = false;
+          }
+        } else {
+          this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
-            values.splice(0,0,forminput.options.values[0]);
             forminput.options.values = values;
           })
-          .catch(()=> forminput.options.values = [])// in case of error
-          .finally(()=> forminput.loading = false)
-      }
+            .catch(()=> forminput.options.values = [])// in case of error
+            .finally(()=> {
+              resolve();
+              forminput.loading = false
+            })
+        }
+      });
       if (dependance) {
         //set dependance of input
         this.inputdependance[forminput.attribute] = dependance;
@@ -126,11 +135,13 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
           slave: forminput
         });
       }
-      if (forminput.type !== 'autocompletefield') {
-        if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
-        else forminput.options.values.push({value:ALLVALUE});
-        forminput.value = ALLVALUE;
-      }
+      promise.then(()=>{
+        if (forminput.type !== 'autocompletefield') {
+          if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
+          else forminput.options.values.push({value:ALLVALUE});
+          forminput.value = ALLVALUE;
+        }
+      });
     }
     // ad form inputs to list of search input
     this.state.forminputs.push(forminput);
@@ -184,9 +195,47 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
  * @returns {Promise<*[]>}
  */
 proto.getValuesFromField = function(field){
-  return this.getUniqueValuesFromField({
-    unique: field.attribute
-  })
+  if (field.options.layer_id) {
+    return this.getValueRelationValues(field)
+  } else if (field.options.values.length) {
+    return this.getValueMapValues(field)
+  } else return this.getUniqueValuesFromField({
+      unique: field.attribute
+    })
+};
+
+proto.getValueRelationValues = async function(field){
+  const {layer_id, key, value} =  field.options;
+  const layer = CatalogLayersStorRegistry.getLayerById(layer_id);
+  try {
+    const {data=[]} = await DataRouterService.getData('search:features', {
+      inputs:{
+        layer,
+        search_endpoint: this.getSearchEndPoint()
+      },
+      outputs: false
+    });
+    const features = data && data[0] && data[0].features || [];
+    const values = [];
+    features.forEach(feature =>{
+      values.push({
+        key: feature.get(key),
+        value: feature.get(value)
+      })
+    });
+    return values;
+  } catch(err) {
+    return [];
+  }
+};
+
+/**
+ * Return values map
+ * @param field
+ * @returns {Promise<*>}
+ */
+proto.getValueMapValues = async function(field){
+  return field.options.values.filter(value => value !== ALLVALUE);
 };
 
 /**
@@ -550,7 +599,6 @@ proto.setInputDependencies = function({master, slave}={}) {
   this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
   this.inputdependencies[master].push(slave);
 };
-
 
 //set key value for select
 proto.valuesToKeysValues = function(values){

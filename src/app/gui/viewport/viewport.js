@@ -265,7 +265,7 @@ const ViewportService = function() {
   };
 
   this.resetToDefaultContentPercentage = function(){
-    const currentRightPanel = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
+    const currentRightPanel = this.getCurrentContentLayout();
     currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_default`];
     currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
@@ -334,6 +334,7 @@ const ViewportService = function() {
   this.closeContent = function() {
     const d = $.Deferred();
     if (this.isContentOpen()) {
+      //.setFullViewContent(false);
       this._components.content.removeContent();
       // close secondary view( return a promise)
       this.closeSecondaryView('close-content')
@@ -413,9 +414,7 @@ const ViewportService = function() {
   };
 
   this._setPrimaryView = function(viewTag) {
-    if (this.state.primaryView !== viewTag) {
-      this.state.primaryView = viewTag;
-    }
+    if (this.state.primaryView !== viewTag) this.state.primaryView = viewTag;
   };
 
   /**
@@ -424,9 +423,8 @@ const ViewportService = function() {
    * @private
    */
   this._prepareContentView = function(options={}) {
-    const {perc=this.getDefaultViewPerc('content'), title, split=null,
+    const {title, split=null,
       closable=true, backonclose=true, style={}, showgoback=true} = options;
-    this.state.content.preferredPerc = perc; // this is the starting point setted percentage of passing prom server config
     this.state.content.title = title;
     this.state.content.split =  split;
     this.state.content.closable = closable;
@@ -456,14 +454,17 @@ const ViewportService = function() {
     const contentEl = $('.content');
     let reducedWidth = 0;
     let reducedHeight = 0;
+    const sideBarToggleEl = $('.sidebar-aside-toggle');
     if (contentEl && this.state.secondaryVisible && this.isFullViewContent()) {
-      const sideBarToggleEl = $('.sidebar-aside-toggle');
       if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
         const toggleWidth = sideBarToggleEl.outerWidth();
         contentEl.css('padding-left', toggleWidth + 5);
         reducedWidth = (toggleWidth - 5);
       }
-    } else contentEl.css('padding-left', 15);
+    } else {
+      const toggleWidth = sideBarToggleEl.outerWidth();
+      contentEl.css('padding-left', this.state.secondaryPerc === 100 ? toggleWidth + 5 : 15);
+    }
     return {
       reducedWidth,
       reducedHeight
@@ -487,7 +488,7 @@ const ViewportService = function() {
     let secondaryWidth;
     let secondaryHeight;
     // percentage of secondary view (content)
-    const scale = (!this.isFullViewContent() ? this.getContentPercentageFromCurrentLayout(this.state.split) : 100) / 100;
+    const scale = (this.state.secondaryPerc !== 100 && !this.isFullViewContent() ? this.getContentPercentageFromCurrentLayout(this.state.split) : 100) / 100;
     if (this.state.split === 'h') {
       secondaryWidth = this.state.secondaryVisible ? Math.max((viewportWidth * scale), this._secondaryViewMinWidth) : 0;
       secondaryHeight = viewportHeight;
@@ -543,11 +544,15 @@ const ViewportService = function() {
    * @param perc
    */
   this.setContentPercentageFromCurrentLayout = function(type=this.state.split, perc){
-    ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[type==='h'? 'width': 'height'] = perc;
+    this.getCurrentContentLayout()[type==='h'? 'width': 'height'] = perc;
   };
 
   this.getContentPercentageFromCurrentLayout = function(type= this.state.split){
-    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[type==='h'? 'width': 'height'];
+    return this.getCurrentContentLayout()[type==='h'? 'width': 'height'];
+  };
+
+  this.getCurrentContentLayout = function(){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
   };
 
   // load components of  viewport
@@ -650,8 +655,8 @@ const ViewportComponent = Vue.extend({
   },
   computed: {
     showresize(){
-      const currentPerc = ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel[this.state.split === 'h' ? 'width' : 'height'];
-      return this.state.resized.start &&  currentPerc< 100 && currentPerc > 0
+      const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
+      return this.state.resized.start && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
     },
     hooks() {
       return this.usermessage.hooks;
@@ -703,9 +708,6 @@ const ViewportComponent = Vue.extend({
       this.$nextTick(()=> this.updatePreviousTitle = false);
       return title;
     },
-    contentSmallerThenPreferred() {
-      return this.state.secondaryPerc < this.state.content.preferredPerc;
-    }
   },
   methods: {
     closeContent() {

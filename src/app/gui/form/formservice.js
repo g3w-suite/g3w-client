@@ -91,16 +91,18 @@ proto.handleFieldsWithExpression = function(fields=[]){
     if (options.filter_expression){
       const {referencing_fields=[]} = options.filter_expression;
       referencing_fields.forEach(referencing_field =>{
-        if (this.expression_fields_dependencies[referencing_field] === undefined)
-          this.expression_fields_dependencies[referencing_field] = [];
-        this.expression_fields_dependencies[referencing_field].push(field.name);
+        if (referencing_field) {
+          if (this.expression_fields_dependencies[referencing_field] === undefined)
+            this.expression_fields_dependencies[referencing_field] = [];
+          this.expression_fields_dependencies[referencing_field].push(field.name);
+        }
       })
     }
   });
   // start to evaluate field
   Object.keys(this.expression_fields_dependencies).forEach(name =>{
     const field = this.state.fields.find(field => field.name === name);
-    this.evaluateExpression(field);
+    field && this.evaluateExpression(field);
   })
 };
 

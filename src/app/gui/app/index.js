@@ -837,7 +837,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         GUI.setContent({
           content: new ProjectsMenuComponent(),
           title: '',
-          perc:100
+          perc: 100
         });
       }
     }

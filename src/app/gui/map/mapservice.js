@@ -1176,6 +1176,13 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
+proto.addMapExtentUrlParameterToUrl = function(url){
+  url = new URL(url);
+  const map_extent = this.getMapExtent().toString();
+  url.searchParams.set('map_extent', map_extent);
+  return url.toString()
+};
+
 proto.getMapExtentUrl = function(){
   const url = new URL(location.href);
   const map_extent = this.getMapExtent().toString();

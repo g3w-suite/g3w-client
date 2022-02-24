@@ -55,7 +55,7 @@
           <span v-t="contentTitle.post_title"></span>
         </span>
       </div>
-      <resize-icon :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"></resize-icon>
+      <resize-icon v-if="showresize" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"></resize-icon>
       <span v-if="state.content.closable && state.content.aside" @click="closeContent" :class="{'mobile': isMobile()}" class="action-button" style="display: flex; justify-content: center ">
         <i class="skin-color-dark" :class="g3wtemplate.getFontClass('close')"></i>
       </span>
