@@ -1933,27 +1933,13 @@ proto.updateMapLayers = function(options={}) {
   Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
 };
 
-/**
- * register map layer loadingEvents
- * @param mapLayer
- */
-proto.registerMapLayerLoadingEvents = function(mapLayer){
+// register map Layer listeners of creation
+proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   mapLayer.on('loadstart', this._incrementLoaders);
   mapLayer.on('loadend', this._decrementLoaders);
   mapLayer.on('loaderror', this._mapLayerLoadError);
-};
-
-proto.unregisterMapLayerLoadingEvents= function(mapLayer){
-  mapLayer.off('loadstart', this._incrementLoaders );
-  mapLayer.off('loadend', this._decrementLoaders );
-  mapLayer.off('loaderror', this._mapLayerLoadError);
-};
-
-// register map Layer listeners of creation
-proto.registerMapLayerListeners = function(mapLayer) {
-  this.registerMapLayerLoadingEvents(mapLayer);
   //listen change filter token
-  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
       layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
@@ -1962,10 +1948,13 @@ proto.registerMapLayerListeners = function(mapLayer) {
 };
 
 // unregister listeners of mapLayers creation
-proto.unregisterMapLayerListeners = function(mapLayer) {
-  this.unregisterMapLayerLoadingEvents(mapLayer);
+proto.unregisterMapLayerListeners = function(mapLayer, projectLayer=true) {
+  mapLayer.off('loadstart', this._incrementLoaders );
+  mapLayer.off('loadend', this._decrementLoaders );
+  mapLayer.off('loaderror', this._mapLayerLoadError);
   // try to remove layer filter token
-  if (mapLayer.layers && Array.isArray(mapLayer.layers))
+  // try to remove layer filter token
+  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.un('change');
       layer.removeEvent('filtertokenchange')

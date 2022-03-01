@@ -40,12 +40,8 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  if (!this.allLayers.find(_layer => layer === _layer)) {
-    this.allLayers.push(layer);
-  }
-  if (!this.layers.find(_layer =>  layer === _layer)) {
-    this.layers.push(layer);
-  }
+  if (!this.allLayers.find(_layer => layer === _layer)) this.allLayers.push(layer);
+  if (!this.layers.find(_layer =>  layer === _layer)) this.layers.push(layer);
 };
 
 proto.removeLayer = function(layer) {

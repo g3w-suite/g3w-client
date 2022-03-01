@@ -57,6 +57,7 @@
     created(){
       this.changedValue =  debounce(value => {
         this.value = value;
+        console.log(value)
         this.$emit('change-range', {
           id: this.id,
           value
