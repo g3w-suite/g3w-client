@@ -337,7 +337,6 @@ const geoutils = {
       url
     });
     const olLayer =  wmslayer.getOLLayer();
-    console.log(olLayer)
     olLayer.set('id', id); // set unique id
     olLayer.set('name', name);
     return {

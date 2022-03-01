@@ -3,6 +3,7 @@ import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 import ChangeMapThemesComponent from './components/changemapthemes.vue';
+import OpacityRange from './components/opacityrange.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
@@ -93,7 +94,8 @@ const vueComponentOptions = {
   },
   components: {
     'chrome-picker': ChromeComponent,
-    'changemapthemes': ChangeMapThemesComponent
+    'changemapthemes': ChangeMapThemesComponent,
+    OpacityRange
 
   },
   computed: {

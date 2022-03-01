@@ -6,6 +6,7 @@ import BarLoader from './global-components/bar-loader';
 import Progressbar from './global-components/progressbar';
 import HelpDiv from './global-components/helpdiv.vue';
 import Resize from './global-components/resize.vue'
+import LayerPositions from './global-components/layerpositions.vue';
 import DateTime from './global-components/datetime.vue';
 import Range from './global-components/range.vue';
 import ResizeIcon from './global-components/resize-icon.vue';
@@ -22,6 +23,7 @@ const GlobalComponents = {
     Vue.component(Skeleton.name, Skeleton);
     Vue.component(HelpDiv.name, HelpDiv);
     Vue.component(Resize.name, Resize);
+    Vue.component(LayerPositions.name, LayerPositions);
     Vue.component(DateTime.name, DateTime);
     Vue.component(Range.name, Range);
     Vue.component(ResizeIcon.name, ResizeIcon);
