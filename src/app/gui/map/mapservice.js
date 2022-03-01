@@ -1,8 +1,11 @@
+import {MAP_SETTINGS} from '../../constant';
+import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
+  createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer} = require('core/utils/geo');
@@ -74,6 +77,7 @@ function MapService(options={}) {
   this._mapControls = [];
   this._changeMapMapControls = [];
   this._mapLayers = [];
+  this._externalMapLayers = [];
   this._externalLayers = [];
   // array where store interactions added from plugin or extenal from application
   this._externalInteractions = [];
@@ -89,7 +93,7 @@ function MapService(options={}) {
     },
     highlightLayer:new ol.layer.Vector({
       source: new ol.source.Vector(),
-      style: (feature) => {
+      style:(feature) => {
         let styles = [];
         const geometryType = feature.getGeometry().getType();
         const style = createSelectedStyle({
@@ -1176,13 +1180,6 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
-proto.addMapExtentUrlParameterToUrl = function(url){
-  url = new URL(url);
-  const map_extent = this.getMapExtent().toString();
-  url.searchParams.set('map_extent', map_extent);
-  return url.toString()
-};
-
 proto.getMapExtentUrl = function(){
   const url = new URL(location.href);
   const map_extent = this.getMapExtent().toString();
@@ -1572,9 +1569,10 @@ proto.getProjectLayer = function(layerId) {
 };
 
 proto._setSettings = function(){
+  const {ZOOM} = MAP_SETTINGS;
   const maxScale = this.getScaleFromExtent(this.project.state.initextent);
   // settings maxScale
-  SETTINGS.zoom.maxScale = SETTINGS.zoom.maxScale > maxScale ? maxScale : SETTINGS.zoom.maxScale;
+  ZOOM.maxScale =  ZOOM.maxScale > maxScale ? maxScale :  ZOOM.maxScale;
 };
 
 proto._resetView = function() {
@@ -2127,12 +2125,13 @@ proto.compareExtentWithProjectMaxExtent = function(extent){
 
 proto.getResolutionForZoomToExtent = function(extent){
   let resolution;
+  const {ZOOM} = MAP_SETTINGS;
   const map = this.getMap();
   const projectExtent = this.project.state.extent;
   const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectExtent, extent);
   // max resolution of the map
-  const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
+  const maxResolution = getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
   // check if
   if (inside) {
     // calculate main resolutions
@@ -2226,8 +2225,9 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       styles.push(style);
       return styles;
     };
+    const {ANIMATION} = MAP_SETTINGS;
     const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-    const duration = options.duration || SETTINGS.animation.duration;
+    const duration = options.duration || ANIMATION.duration;
     let geometry;
     if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
     else {
@@ -2461,6 +2461,23 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
+
+proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
+  const layer = this.getLayerById(id);
+  switch(position){
+    case 'top':
+      layer.setZIndex(this.layersCount);
+      break;
+    case 'bottom':
+      layer.setZIndex(1);
+      break
+  }
+};
+
+/**
+ * Remove externla layer
+ * @param name
+ */
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
   const catalogService = GUI.getComponent('catalog').getService();
@@ -2468,8 +2485,58 @@ proto.removeExternalLayer = function(name) {
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   catalogService.removeExternalLayer(name);
+  if (layer._type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
+    if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
+    return externalMapLayer.getId() !== layer.id
+  });
 };
 
+/**
+ * Add wms external layer to mapo
+ * @param url
+ * @param layers
+ * @param name
+ * @param projection
+ * @param position
+ * @returns {Promise<unknown>}
+ */
+proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
+  return new Promise((resolve, reject) =>{
+    const {wmslayer, olLayer} = createWMSLayer({
+      name,
+      url,
+      layers,
+      projection
+    });
+
+    wmslayer.once('loadend', ()=> {
+      resolve(wmslayer)
+    });
+
+    wmslayer.once('loaderror', err => {
+      reject(err);
+    });
+
+    this.addExternalLayer(olLayer,  {
+      position
+    });
+
+    this.addExternalMapLayer(wmslayer, false);
+
+  })
+};
+
+proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
+  this._externalMapLayers.push(externalMapLayer);
+  this.registerMapLayerListeners(externalMapLayer, projectLayer);
+};
+
+/**
+ * Method to add external layer to map
+ * @param externalLayer
+ * @param options
+ * @returns {Promise<Promise<*> | Promise<never>>}
+ */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
@@ -2478,7 +2545,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     style,
     type,
     crs;
-  const {position='top'} = options;
+  const {position=MAP_SETTINGS.LAYER_POSITIONS.default} = options;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
@@ -2507,10 +2574,25 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       external: true,
       crs: options.crs,
       type: options.type,
+      _type: type,
       download: options.download || false,
       visible: true,
+      position,
       color
     };
+  } else if (externalLayer instanceof ol.layer.Image){
+    type = 'wms';
+    name = externalLayer.get('name');
+    externalLayer.id = externalLayer.get('id');
+    externalLayer.removable = true;
+    externalLayer.projectLayer= false;
+    externalLayer.name = name;
+    externalLayer.title = name;
+    externalLayer._type = type;
+    externalLayer.opacity = 1;
+    externalLayer.position = position;
+    externalLayer.external = true;
+    externalLayer.visible = true;
   } else {
     name = externalLayer.name;
     type = externalLayer.type;
@@ -2519,31 +2601,37 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = layer => {
+  const loadExternalLayer = (layer, type) => {
+    let extent;
     if (layer) {
-      const features = layer.getSource().getFeatures();
-      if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
-      const extent = layer.getSource().getExtent();
-      externalLayer.bbox = {
-        minx: extent[0],
-        miny: extent[1],
-        maxx: extent[2],
-        maxy: extent[3]
-      };
+      if (type === 'vector') {
+        const features = layer.getSource().getFeatures();
+        if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
+        extent = layer.getSource().getExtent();
+        externalLayer.bbox = {
+          minx: extent[0],
+          miny: extent[1],
+          maxx: extent[2],
+          maxy: extent[3]
+        };
+      }
       externalLayer.checked = true;
       layer.set('position', position);
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
       catalogService.addExternalLayer(externalLayer);
-      map.getView().fit(extent);
+      extent && map.getView().fit(extent);
       return Promise.resolve(layer);
     } else return Promise.reject();
   };
   if (!layer) {
     switch (type) {
       case 'vector':
-        return loadExternalLayer(vectorLayer);
+        return loadExternalLayer(vectorLayer, type);
+        break;
+      case 'wms':
+        return loadExternalLayer(externalLayer, type);
         break;
       default:
         vectorLayer = await createVectorLayerFromFile({

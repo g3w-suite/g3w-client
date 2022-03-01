@@ -1,6 +1,7 @@
 import {QUERY_POINT_TOLERANCE, G3W_FID} from 'constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
+const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
@@ -324,6 +325,24 @@ const geoutils = {
     }
     olLayer.setStyle(style);
     return olLayer;
+  },
+
+  createWMSLayer({url, name, projection, layers=[]}={}){
+    const id = uniqueId();
+    name = name || id;
+    const wmslayer = new WMSLayer({
+      id,
+      layers,
+      projection,
+      url
+    });
+    const olLayer =  wmslayer.getOLLayer();
+    olLayer.set('id', id); // set unique id
+    olLayer.set('name', name);
+    return {
+      wmslayer,
+      olLayer
+    }
   },
 
   createVectorLayerFromGeometry(geometry){

@@ -1,4 +1,4 @@
-import {EPSG} from '../../../constant';
+import {EPSG} from '../../../../constant';
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
 const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
