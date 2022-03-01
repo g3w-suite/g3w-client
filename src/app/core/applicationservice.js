@@ -255,6 +255,11 @@ const ApplicationService = function() {
     return RouterService;
   };
 
+  //application proxy url
+  this.getProxyUrl = function(){
+    return `${this._initConfig.proxyurl}`;
+  };
+
   // clipboard service
   this.getClipboardService = function() {
     return ClipboardService;
@@ -281,6 +286,7 @@ const ApplicationService = function() {
       config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
       config.server.urls.mediaurl = initConfig.mediaurl;
       config.server.urls.vectorurl = initConfig.vectorurl;
+      config.server.urls.proxyurl = initConfig.proxyurl || 'proxyurl';
       config.main_map_title = initConfig.main_map_title;
       config.group = initConfig.group;
       config.user = initConfig.user;

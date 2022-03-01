@@ -1,7 +1,7 @@
 <template>
   <div class="tab-node group">
     <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(${columnNumber}, 1fr)`}">
+    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(auto-fit, minmax(50px, 1fr))`}">
       <template v-for="column in columnNumber"  style="padding:2px">
         <template v-if="getNode(row, column)">
           <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 3px 3px 0 3px"
@@ -122,7 +122,6 @@
             closable: false
           })
         }
-
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
@@ -156,7 +155,10 @@
 </script>
 
 <style scoped>
-
+  .tab-node{
+    min-width: 0;
+    overflow: hidden;
+  }
   .title {
     font-weight: bold;
     width: 100%;

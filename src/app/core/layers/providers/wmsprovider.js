@@ -16,14 +16,13 @@ function WMSDataProvider(options = {}) {
     map: null,
     layer: null
   };
-  this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
 inherit(WMSDataProvider, DataProvider);
 
 const proto = WMSDataProvider.prototype;
 
-proto._getRequestParameters = function({layers, feature_count, coordinates, query_point_tolerance=QUERY_POINT_TOLERANCE, resolution, size}) {
+proto._getRequestParameters = function({layers, feature_count, coordinates, infoFormat, query_point_tolerance=QUERY_POINT_TOLERANCE, resolution, size}) {
   const layerNames = layers ? layers.map(layer => layer.getWMSInfoLayerName()).join(',') : this._layer.getWMSInfoLayerName();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
@@ -51,10 +50,10 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, quer
     VERSION: '1.3.0',
     REQUEST: 'GetFeatureInfo',
     CRS: this._projections.map.getCode(),
-    //LAYERS: layerNames,
+    LAYERS: layerNames,
     QUERY_LAYERS: layerNames,
     filtertoken: ApplicationState.tokens.filtertoken,
-    INFO_FORMAT: this._infoFormat,
+    INFO_FORMAT: infoFormat,
     FEATURE_COUNT: feature_count,
     WITH_GEOMETRY: true,
     DPI,
@@ -62,7 +61,7 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, quer
     WIDTH: size[0],
     HEIGHT: size[1],
   };
-  if (!('STYLES' in params)) params['STYLES'] = undefined;
+  if (!('STYLES' in params)) params['STYLES'] = '';
   const bbox = this._projections.map.getAxisOrientation().substr(0, 2) === 'ne' ? [extent[1], extent[0], extent[3], extent[2]] : extent;
   params['BBOX'] = bbox.join(',');
   return params;
@@ -70,13 +69,14 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, quer
 
 proto.query = function(options={}) {
   const d = $.Deferred();
+  const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
   const {layers, feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
   const layer = layers ? layers[0] : this._layer;
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
-  const params = this._getRequestParameters({layers, feature_count, coordinates, query_point_tolerance, resolution, size});
+  const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
   const query = {
     coordinates,
     resolution
@@ -89,12 +89,26 @@ proto.query = function(options={}) {
   const timeoutKey = getTimeoutPromise({
     resolve: d.resolve,
     data: {
-      data: this.handleQueryResponseFromServer(null, this._projections, layers),
+      data: this.handleQueryResponseFromServer('', this._projections, layers),
       query
     }
    });
-
-  this[METHOD]({url, layers, params})
+  if (layer.useProxy()) {
+    layer.getDataFromProxy({
+        url,
+        params,
+        method: METHOD,
+        headers: {
+          'Content-Type': infoFormat
+        }
+      }).then(response =>{
+        const data = this.handleQueryResponseFromServer(response, this._projections, layers);
+        d.resolve({
+          data,
+          query
+        })
+    })
+  } else this[METHOD]({url, layers, params})
     .then(response => {
       const data = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve({

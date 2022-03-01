@@ -33,7 +33,6 @@ function SearchService(config={}) {
   };
   this.config = config;
   const {type, options={}} = this.config;
-  this.waitDependanceChange = false; // set if dependance inpiut need to wait
   const layerid = options.querylayerid || options.layerid || null;
   const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
@@ -89,14 +88,14 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       loading: false,
     };
     //check if has a dependance
-    const {options:{ dependance } } = forminput;
+    const {options:{ dependance, dependance_strict } } = forminput;
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       // to be sure set values options to empty array if undefined
       forminput.loading = !forminput.type === 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
         if (forminput.options.values === undefined) forminput.options.values = [];
         else if (dependance){ // in case of dependence load rigth now
-          if (!this.waitDependanceChange) this.getValuesFromField(forminput).then(values => { // return array of values
+          if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
             forminput.options.values = values;
           })
@@ -106,8 +105,8 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
               forminput.loading = false
             });
           else {
-            resolve();
             forminput.loading = false;
+            resolve();
           }
         } else {
           this.getValuesFromField(forminput).then(values => { // return array of values
@@ -126,7 +125,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
         this.inputdependance[forminput.attribute] = dependance;
         this.state.loading[dependance] = false;
         // set disabled false for back compatibility
-        forminput.options.disabled = this.waitDependanceChange;
+        forminput.options.disabled = dependance_strict;
         /**
          * Set dependance between input
          */
@@ -506,6 +505,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
     const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
+    console.log(value)
     if (value && value !== ALLVALUE) {
       let isCached;
       let rootValues;
@@ -585,7 +585,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
         }
       }
     } else {
-      this.waitDependanceChange && notAutocompleteSubscribers.forEach(subscribe => subscribe.options.disabled = true);
+      notAutocompleteSubscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
       resolve();
     }
   })

@@ -399,7 +399,7 @@ proto.addFeature = function(feature) {
 };
 
 proto.checkSelectAll = function(features=this.state.features){
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
 };
 
 proto.addFeatures = function(features=[]) {

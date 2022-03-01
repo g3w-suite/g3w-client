@@ -1,5 +1,6 @@
-const {fieldsMixin} = require('gui/vue/vue.mixins');
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
+import InfoFormats from './components/actiontools/infoformats.vue';
+const {fieldsMixin} = require('gui/vue/vue.mixins');
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
@@ -23,6 +24,7 @@ const vueComponentOptions = {
   mixins: [fieldsMixin],
   components: {
     TableAttributeFieldValue,
+    'infoformats': InfoFormats,
     'header-feature-body': HeaderFeatureBody
   },
   computed: {

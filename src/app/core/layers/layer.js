@@ -71,6 +71,7 @@ function Layer(config={}, options={}) {
     styles: config.styles,
     defaultstyle,
     infoformat: this.getInfoFormat(),
+    infoformats: this.config.infoformats || [],
     projectLayer: true,
     geolayer: false,
     selection: {
@@ -122,14 +123,58 @@ function Layer(config={}, options={}) {
       })
     };
   }
-  // editor form structure
-  //this.config.editor_form_structure  && this.config.editor_form_structure.forEach(structure => structure.visible = true);
+  // used to store last proxy params (useful for repeat request info formats for wms external layer)
+  this.lastProxyData = null;
   base(this);
 }
 
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+/**
+ * Proxyparams
+ */
+
+proto.getLastProxyData = function(){
+  return this.lastProxyData;
+};
+
+proto.setLastProxyData= function(data={}){
+  this.lastProxyData = data;
+};
+
+proto.clearLastProxyData = function(){
+  this.lastProxyData = null;
+};
+
+proto.getDataFromProxy = async function(proxyParams={}){
+  const DataRouterService = require('core/data/routerservice');
+  try {
+    const {response, data} = await DataRouterService.getData('proxy:data', {
+      inputs: proxyParams,
+      outputs: false
+    });
+    this.setLastProxyData(JSON.parse(data));
+    return response;
+  } catch(err){
+    return;
+  }
+};
+
+proto.changeProxyDataAndReload = function(changes={}) {
+  Object.keys(changes).forEach(changeParam =>{
+    Object.keys(changes[changeParam]).forEach(param =>{
+      const value = changes[changeParam][param];
+      this.lastProxyData[changeParam][param] = value;
+    })
+  });
+  return this.getDataFromProxy(this.lastProxyData);
+};
+
+/**
+ * end proxy params
+ */
 
 proto.getSearchParams = function(){
   return this.config.searchParams;
@@ -920,12 +965,16 @@ proto.getInfoFormat = function(ogcService) {
   else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
 };
 
+proto.getInfoFormats = function(){
+  return this.state.infoformats;
+};
+
 proto.getInfoUrl = function() {
   return this.config.infourl;
 };
 
 proto.setInfoFormat = function(infoFormat) {
-  this.state.infoformat = infoFormat;
+  this.config.infoformat = infoFormat;
 };
 
 proto.getAttributes = function() {

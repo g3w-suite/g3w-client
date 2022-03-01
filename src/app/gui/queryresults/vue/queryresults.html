@@ -1,17 +1,16 @@
 <div id="search-results" class="queryresults-wrapper">
-<!--  <div v-if="info.message" class="query-info-results" style="display: flex; align-items:center; margin-bottom: 5px; color: #394247">-->
-<!--    <span @mouseover="info.action" v-if="info.icon" class="action-button skin-tooltip-right" :class="g3wtemplate.getFontClass('info')" data-placement="right" data-toggle="tooltip"     style="cursor: pointer; padding-right: 5px;font-size: 1.2em" v-t-tooltip.create="info.message"></span>-->
-<!--  </div>-->
   <div class="queryresults-container">
     <template v-if="state.layers.length">
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
-        <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
+        <li v-show="(layerHasFeatures(layer) || layer.rawdata) && layer.show" v-for="layer in state.layers">
+          <bar-loader :loading="layer.loading"></bar-loader>
           <div class="box box-primary">
             <div class="box-header with-border"  :class="{'mobile': isMobile()}" data-widget="collapse">
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
-                <span class="query-layer-feature-count">({{layer.features.length}})</span>
+                <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
               </div>
               <div class="box-features-action" @click.stop="">
+                <infoformats :layer="layer"></infoformats>
                 <template v-if="layer.features.length > 1">
                   <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-bottom"
                         data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
@@ -38,7 +37,7 @@
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                 </span>
-                <span v-if="layer.features.length > 1" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
+                <span v-if="layer.features.length > 1 && layer.source.type !== 'wms'" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                 </span>
@@ -57,7 +56,10 @@
               </div>
             </template>
             <div class="box-body" :class="{'mobile': isMobile()}">
-              <template v-if="hasFormStructure(layer)">
+              <template v-if="layer.rawdata">
+                <div class="queryresults-text-html" :class="{text: layer.infoformat === 'text/plain'}" v-html="layer.rawdata"></div>
+              </template>
+              <template v-else-if="hasFormStructure(layer)">
                 <table class="table" :class="{'mobile': isMobile()}">
                   <thead>
                     <tr>
@@ -166,7 +168,9 @@
 </div>
 <script>
   import Tableattributefieldvalue from "./components/tableattributefieldvalue";
+  import Select2 from "../../search/vue/panel/select2";
+  import Infoformats from "./components/actiontools/infoformats";
   export default {
-    components: {Tableattributefieldvalue}
+    components: {Infoformats, Select2, Tableattributefieldvalue}
   }
 </script>

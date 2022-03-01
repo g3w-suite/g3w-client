@@ -5,6 +5,9 @@ const BaseInputMixin = {
     },
     editable() {
       return this.state.editable;
+    },
+    showhelpicon(){
+      return this.state.help && this.state.help.message.trim();
     }
   },
   methods: {

@@ -1,8 +1,9 @@
 import {G3W_FID} from 'constant';
-const {base, inherit, toRawType} = require('core/utils/utils');
+const {base, inherit} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {geometryFields, sanitizeFidFeature} =  require('core/utils/geo');
+const parser = require('core/parsers/vector/parser');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -52,21 +53,19 @@ proto.getName = function() {
   return this._name;
 };
 
-// to extract gml from multiple (Tuscany region)
-proto.extractGML = function (response) {
-  if (response.substr(0,2) !== '--')
-    return response;
-  const gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
-  const gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");
-  const boundary = '\r\n--';
-  const parts = response.split(new RegExp(boundary));
-  parts.forEach((part) => {
-    const isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
-    if (isGmlPart) {
-      const gml = part.substr(part.indexOf("<?xml"));
-      return gml;
-    }
+
+/**
+ * Handle case plain text or html from request
+ */
+proto.handleTextHtmlResponse = function({layers, response}={}){
+  const handleResponse = [];
+  layers.forEach(layer =>{
+    handleResponse.push({
+      layer,
+      rawdata: response
+    })
   });
+  return handleResponse;
 };
 
 // Method to transform xml from server to present to queryreult component
@@ -76,7 +75,7 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   const infoFormat = layer.getInfoFormat();
   let _response;
   switch(infoFormat) {
-    case 'application/json':
+    case "application/json":
       _response = this._parseGeoJsonResponse({
         layers,
         response,
@@ -84,7 +83,27 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
         wms
       });
       break;
-    case 'application/vnd.ogc.gml':
+    case "text/plain":
+    case 'text/html':
+      _response = this.handleTextHtmlResponse({
+        layers,
+        response
+      });
+      break;
+    case "text/gml":
+      const parserGML = parser.get({
+        type: 'gml'
+      });
+      const features = parserGML({
+        data:response,
+        layer: layers[0]
+      });
+      _response = layers.map(layer =>({
+        layer,
+        features
+      }));
+      break;
+    case "application/vnd.ogc.gml":
     default:
       //IN CASE OF application/vnd.ogc.gml always pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {

@@ -43,7 +43,7 @@ function Project(config={}, options={}) {
   this.urls = {
     map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`,
     expression_eval: `/api/expression_eval/${this.getId()}/`,
-    vector_data: `${this.getVectorUrl()}data/${this.getType()}/${this.getId()}/`
+    vector_data: `${this.getVectorUrl()}data/${this.getType()}/${this.getId()}/`,
 };
   /*
    *

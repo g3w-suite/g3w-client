@@ -7,7 +7,7 @@
     <td class="attribute" v-for="attribute in attributesSubset(layer)">
       <span>{{feature.attributes[attribute.name]}}</span>
     </td>
-    <td class="collapsed" v-if="!hasLayerOneFeature(layer)">
+    <td class="collapsed" v-if="!hasLayerOneFeature(layer)" :class="{noAttributes: attributesSubset(layer).length === 0}">
       <span class="fa link morelink skin-color" :class="[boxLayerFeature.collapsed ? g3wtemplate.font['plus'] : g3wtemplate.font['minus']]"></span>
     </td>
   </tr>
@@ -53,5 +53,8 @@
 </script>
 
 <style scoped>
-
+  .noAttributes {
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>

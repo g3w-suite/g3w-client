@@ -10,7 +10,7 @@ const MeasureIteraction = function(options={}) {
   this.testTooltip;
   this._helpMsg = options.help;
   this._projection = options.projection;
-  this.feature = options.feature
+  this.feature = options.feature;
   const drawColor = options.drawColor || 'rgba(0, 0, 0, 0.5)';
   const useSphereMethods = needUseSphereMethods(this._projection);
   const measureStyle = new ol.style.Style({
@@ -119,9 +119,8 @@ proto._drawStart = function(evt) {
   this._map.removeLayer(this._layer);
   this._feature = evt.feature;
   this.feature && this._feature.setGeometry(this.feature.getGeometry());
-  this._keyDownEventHandler = _.bind(this._removeLastPoint, this);
+  this._keyDownEventHandler = this._removeLastPoint.bind(this);
   $(document).on('keydown', this._keyDownEventHandler);
-  // vado a ripulire tutte le features
   this._layer.getSource().clear();
   this._poinOnMapMoveListener = this._map.on('pointermove', evt => {
     if (evt.dragging) return;
@@ -133,10 +132,10 @@ proto._drawStart = function(evt) {
     }
   });
   this._createHelpTooltip();
+  console.log('qi')
   this._createMeasureTooltip();
 };
 
-//funzione drawEnd
 proto._drawEnd = function() {
   const {tooltip}= this.measureTooltip;
   setMeasureTooltipStatic(tooltip);
@@ -168,11 +167,10 @@ proto._createMeasureTooltip = function() {
     ...this.measureTooltip,
     map: this._map
   });
-
   this.measureTooltip = createMeasureTooltip({
-    map: this._map,
-    feature: this._feature
-  })
+      map: this._map,
+      feature: this._feature
+    })
 
 };
 // END MEASURE CONTROLS //

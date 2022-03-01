@@ -18,6 +18,19 @@
     props: ['forminput','autocompleteRequest'],
     mixins: [select2Mixin],
     methods: {
+      emitChangeEvent(evt){
+        const id = $(evt.target).attr('id');
+        const attribute = $(evt.target).attr('name');
+        const data = evt.params.data;
+        const value =  data ?  data.id : ALLVALUE;
+        console.log(value)
+        this.$emit('select-change', {
+          id,
+          attribute,
+          value,
+          type: this.forminput.type
+        });
+      },
       _initSelect2Element() {
         const { type, attribute, options } = this.forminput;
         // get numgigaut and validate it
@@ -46,21 +59,16 @@
          ...autocompleteOptions
         });
         this.select2.on('select2:select', evt => {
-          const id = $(evt.target).attr('id');
-          const attribute = $(evt.target).attr('name');
-          const value = evt.params.data.id;
-          this.$emit('select-change', {
-            id,
-            attribute,
-            value,
-            type: this.forminput.type
-          });
+          this.emitChangeEvent(evt);
         });
-        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', () => this.forminput.value = null);
+        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', evt => {
+          this.emitChangeEvent(evt);
+        });
       }
     },
     watch : {
-      'forminput.value'(value) {
+      async 'forminput.value'(value) {
+        await this.$nextTick();
         if (value === ALLVALUE) {
           this.select2.val(value);
           this.select2.trigger('change');

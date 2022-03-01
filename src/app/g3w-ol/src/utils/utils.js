@@ -1,6 +1,5 @@
 import ApplicationState from "../../../core/applicationstate";
 const Geometry = require('core/geometry/geometry');
-const OGC_PIXEL_WIDTH = 0.28;
 
 const INCHES_PER_UNIT = {
   m: 39.37, //
@@ -79,45 +78,69 @@ const utils = {
     //return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
     return projection.getUnits() === 'degrees';
   },
-  formatMeasure({geometry, projection}){
+  getLengthMessageText({unit, projection, geometry}={}){
     const geometryType = geometry.getType();
-    const useSphereMethods = utils.needUseSphereMethods(projection);
+    const useSphereMethods = this.needUseSphereMethods(projection);
+    const length = useSphereMethods ? ol.sphere.getLength(geometry, {
+      projection: projection.getCode()
+    }) : Geometry.isMultiGeometry(geometryType) ?
+      geometry.getLineStrings().reduce((totalLength, lineGeometry)=>  totalLength+= lineGeometry.getLength(), 0)
+      : geometry.getLength();
+    let message;
+    switch(unit) {
+      case 'nautical':
+        message = `${this.transformMeterLength(length, unit)} nm`;
+        break;
+      case 'metric':
+      default:
+        message = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
+    }
+    return message;
+  },
+  getAreaMessageText({unit, geometry, projection, segments=[]}){
+    const useSphereMethods = this.needUseSphereMethods(projection);
+    const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
+      projection: projection.getCode()
+    }): geometry.getArea());
+    let message;
+    let segments_info_meausure = '';
+    const segmentLength = segments.length;
+    if (segmentLength > 2) {
+      segments_info_meausure+=`${this.getLengthMessageText({
+        unit, 
+        projection,
+        geometry: new ol.geom.LineString([segments[segmentLength-3], segments[segmentLength-2]])
+      })} <br>`;
+    }
+    switch (unit) {
+      case 'nautical':
+        message = `${this.transformMeterArea(area, unit)}  nmi²`;
+        break;
+      case 'metric':
+      default:
+        message = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100).toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
+    }
+    if (segments_info_meausure)
+      message =`Area: ${message} <br><div style="width: 100%; padding: 3px; border-bottom: 2px solid #ffffff"></div> ${segments_info_meausure}`;
+    return message;
+  },
+  formatMeasure({geometry, projection}={}, options={}){
+    const geometryType = geometry.getType();
     const unit = this.getCurrentMapUnit();
     if (Geometry.isLineGeometryType(geometryType)) {
-      const length = useSphereMethods ? ol.sphere.getLength(geometry, {
-        projection: projection.getCode()
-      }) : Geometry.isMultiGeometry(geometryType) ?
-        geometry.getLineStrings().reduce((totalLength, lineGeometry)=>  totalLength+= lineGeometry.getLength(), 0)
-        : geometry.getLength();
-      let output;
-      switch(unit) {
-        case 'nautical':
-          output = `${this.transformMeterLength(length, unit)} nm`;
-          break;
-        case 'metric':
-        default:
-          output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km` : `${(Math.round(length * 100) / 100).toFixed(2)} m`;
-      }
-      return output;
+      return this.getLengthMessageText({
+        unit,
+        projection,
+        geometry
+      });
     } else if (Geometry.isPolygonGeometryType(geometryType)){
-      const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
-        projection: projection.getCode()
-      }): geometry.getArea());
-      let output;
-      switch (unit) {
-        case 'nautical':
-          output = `${this.transformMeterArea(area, unit)}  nmi²`;
-          break;
-        case 'metric':
-        default:
-          output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100).toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;
-      }        return output;
-      return output;
+      const segments = geometry.getLinearRing().getCoordinates();
+      return this.getAreaMessageText({unit, geometry, projection, segments});
     }
   },
 
   //create and add measure tooltip
-  createMeasureTooltip({map, feature}){
+  createMeasureTooltip({map, feature}={}, options={}){
     const element = document.createElement('div');
     element.className = 'mtooltip mtooltip-measure';
     const tooltip = new ol.Overlay({
@@ -126,7 +149,6 @@ const utils = {
       positioning: 'bottom-center'
     });
     map.addOverlay(tooltip);
-
     const unbyKey = feature.getGeometry().on('change', evt => {
       let tooltipCoord;
       const geometry = evt.target;
@@ -135,9 +157,11 @@ const utils = {
       else if (geometry instanceof ol.geom.LineString) tooltipCoord = geometry.getLastCoordinate();
       else if (geometry instanceof ol.geom.MultiLineString) tooltipCoord = geometry.getLastCoordinate();
       const output = utils.formatMeasure({
-        geometry,
-        projection: map.getView().getProjection()
-      });
+          geometry,
+          projection: map.getView().getProjection()
+        },
+          options
+        );
       element.innerHTML = output;
       tooltip.setPosition(tooltipCoord);
     });

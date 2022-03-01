@@ -97,7 +97,8 @@ function QueryResultsService() {
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
       }
-      const layers = this._digestFeaturesForLayers(queryResponse.data);
+      const {data} = queryResponse;
+      const layers = this._digestFeaturesForLayers(data);
       this.setLayersData(layers, options);
     },
 
@@ -851,11 +852,15 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let external = false;
     const layer = featuresForLayer.layer;
     let downloads = [];
+    let infoformats = [];
+    let infoformat;
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
       source = layer.getSource();
-      // set selection filtere and relation if not wms
+      infoformats = layer.getInfoFormats(); // add infoformats property
+      infoformat = layer.getInfoFormat();
+      // set selection filter and relation if not wms
       if (layer.getSourceType() !== 'wms'){
         filter = layer.state.filter;
         selection = layer.state.selection;
@@ -915,10 +920,11 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerId = layer;
       external = true;
     }
-
     const layerObj = {
       title: layerTitle,
       id: layerId,
+      infoformat,
+      infoformats,
       attributes: [],
       features: [],
       hasgeometry: false,
@@ -939,10 +945,14 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       hasImageField: false,
       relationsattributes: layerRelationsAttributes,
       formStructure,
-      error: ''
+      error: '',
+      rawdata: null, // rawdata response
+      loading: false
     };
-
-    if (featuresForLayer.features && featuresForLayer.features.length) {
+    if (featuresForLayer.rawdata){
+      layerObj.rawdata = featuresForLayer.rawdata;
+      layers.push(layerObj)
+    } else if (featuresForLayer.features && featuresForLayer.features.length) {
       const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
         try {
           return attribute.name[0] === '_' || Number.isInteger(1*attribute.name[0])
