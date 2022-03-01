@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const ProjectsRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
 const OTHERPLUGINS = ['law'];
 
@@ -14,6 +15,10 @@ function PluginsRegistry() {
       if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
     }
   };
+  ProjectsRegistry.onafter('setCurrentProject', project =>{
+    this.gidProject = project.getGid();
+  });
+
   base(this);
 
   // initialize plugin
@@ -21,7 +26,8 @@ function PluginsRegistry() {
     return new Promise(async (resolve, reject) =>{
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
-      this.pluginsConfigs = options.pluginsConfigs;
+      this.setPluginsConfig(options.pluginsConfigs);
+      // filter
       Object.keys(this.pluginsConfigs).forEach(pluginName => this._configurationPlugins.push(pluginName));
       this.addLoadingPlugins();
       // plugins that aren't in configuration server but in project
@@ -108,8 +114,18 @@ function PluginsRegistry() {
     })
   };
 
-  this.setPluginsConfig = function(config) {
-    this.pluginsConfigs = config;
+  /**
+   * setup plugin config only filtered by gid configuration
+   * @param config
+   */
+  this.setPluginsConfig = function(config={}) {
+    const enabledPluginConfig = {}
+    Object.entries(config)
+      .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
+      .forEach(([pluginName, pluginConfig]) =>{
+        enabledPluginConfig[pluginName] = pluginConfig;
+      });
+    this.pluginsConfigs = enabledPluginConfig;
   };
 
   this._loadScript = function(url, name) {
@@ -130,7 +146,6 @@ function PluginsRegistry() {
           })
       } else resolve()
     })
-
   };
 
   this.getPluginConfig = function(pluginName) {

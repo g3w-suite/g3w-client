@@ -1,7 +1,8 @@
+import ApplicationState from '../../../core/applicationstate';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
 const Component = require('gui/vue/component');
-const AddLayerComponent = require('./addlayer');
+const AddLayerComponent = require('./components/addlayer');
 const MapService = require('../mapservice');
 const templateCompiled = createCompiledTemplate(require('./map.html'));
 
@@ -15,13 +16,18 @@ const vueComponentOptions = {
       target,
       maps_container: this.$options.maps_container,
       service,
-      hidemaps: service.state.hidemaps
+      mapunit: ApplicationState.map.unit,
+      hidemaps: service.state.hidemaps,
+      map_info: service.state.map_info,
     }
   },
   components: {
     'addlayer': AddLayerComponent
   },
   computed: {
+    showmapunits(){
+      return this.service.state.mapunits.length > 1;
+    },
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
@@ -32,10 +38,7 @@ const vueComponentOptions = {
   methods: {
     showHideControls () {
       const mapControls = this.$options.service.getMapControls();
-      mapControls.forEach((control) => {
-        if (control.type !== "scaleline")
-          control.control.showHide();
-      })
+      mapControls.forEach(control => control.type !== "scaleline" && control.control.showHide());
     },
     getPermalinkUrl() {
       return this.ready ? this.$options.service.getMapExtentUrl(): null;
@@ -44,11 +47,15 @@ const vueComponentOptions = {
       const mapService = this.$options.service.createCopyMapExtentUrl();
     }
   },
+  watch: {
+    'mapunit'(unit){
+      ApplicationState.map.unit = unit;
+      this.$options.service.changeScaleLineUnit(unit);
+    }
+  },
   async mounted() {
     const mapService = this.$options.service;
-    mapService.once('ready', ()=>{
-      this.ready = true;
-    });
+    mapService.once('ready', ()=>this.ready = true);
     this.crs = mapService.getCrs();
     await this.$nextTick();
     mapService.setMapControlsContainer($(this.$refs['g3w-map-controls']));

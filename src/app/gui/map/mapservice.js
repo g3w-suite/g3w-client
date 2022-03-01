@@ -1,11 +1,8 @@
-import {MAP_SETTINGS} from '../../constant';
-import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
-  createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer} = require('core/utils/geo');
@@ -31,64 +28,6 @@ const SETTINGS = {
 };
 
 function MapService(options={}) {
-  this.id = 'MapService';
-  this.viewer = null;
-  this.target = options.target || null;
-  this.layersCount = 0; // useful to set Zindex to layer order on map
-  this.maps_container = options.maps_container || null;
-  this._layersStoresEventKeys = {};
-  this._keyEvents = {
-    ol: [],
-    g3wobject: [],
-    eventemitter: []
-  };
-  this.project = null;
-  this._mapControls = [];
-  this._changeMapMapControls = [];
-  this._mapLayers = [];
-  this._externalMapLayers = [];
-  this._externalLayers = [];
-  // array where store interactions added from plugin or extenal from application
-  this._externalInteractions = [];
-  this.mapBaseLayers = {};
-  this.defaultsLayers = {
-    _style: {
-      highlightLayer: {
-        color: undefined
-      },
-      selectionLayer: {
-        color: 'red'
-      }
-    },
-    highlightLayer:new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      style:(feature) => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color: this.defaultsLayers._style.highlightLayer.color
-        });
-        styles.push(style);
-        return styles;
-      }
-    }),
-    selectionLayer: new ol.layer.Vector({
-      source: new ol.source.Vector(),
-      style: feature => {
-        let styles = [];
-        const geometryType = feature.getGeometry().getType();
-        const style = createSelectedStyle({
-          geometryType,
-          color:this.defaultsLayers._style.selectionLayer.color,
-          fill: false
-        });
-        styles.push(style);
-        return styles;
-      }
-    })
-  };
-  this.layersExtraParams = {};
   this.state = {
     mapUnits: 'm',
     bbox: [],
@@ -114,8 +53,70 @@ function MapService(options={}) {
       update: true,
       disabled: false
     },
+    map_info:{
+      info: null,
+      style: null
+    },
+    mapunits: ['metric']
   };
-
+  this.id = 'MapService';
+  this.viewer = null;
+  this.target = options.target || null;
+  this.layersCount = 0; // useful to set Zindex to layer order on map
+  this.maps_container = options.maps_container || null;
+  this._layersStoresEventKeys = {};
+  this._keyEvents = {
+    ol: [],
+    g3wobject: [],
+    eventemitter: []
+  };
+  this.project = null;
+  this._mapControls = [];
+  this._changeMapMapControls = [];
+  this._mapLayers = [];
+  this._externalLayers = [];
+  // array where store interactions added from plugin or extenal from application
+  this._externalInteractions = [];
+  this.mapBaseLayers = {};
+  this.defaultsLayers = {
+    _style: {
+      highlightLayer: {
+        color: undefined
+      },
+      selectionLayer: {
+        color: 'red'
+      }
+    },
+    highlightLayer:new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: (feature) => {
+        let styles = [];
+        const geometryType = feature.getGeometry().getType();
+        const style = createSelectedStyle({
+          geometryType,
+          color: this.defaultsLayers._style.highlightLayer.color,
+          fill: false
+        });
+        styles.push(style);
+        return styles;
+      }
+    }),
+    selectionLayer: new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: feature => {
+        let styles = [];
+        const geometryType = feature.getGeometry().getType();
+        const style = createSelectedStyle({
+          geometryType,
+          color:this.defaultsLayers._style.selectionLayer.color,
+          fill: false
+        });
+        styles.push(style);
+        return styles;
+      }
+    })
+  };
+  this.layersExtraParams = {};
   this._greyListenerKey = null;
   this._drawShadow = {
     type: 'coordinate',
@@ -167,9 +168,7 @@ function MapService(options={}) {
       this.project = project;
       const changeProjectCallBack = () => {
         this._resetView();
-        this._setupBaseLayers();
-        this._setupMapLayers();
-        this._setupVectorLayers();
+        this._setupAllLayers();
         this._checkMapControls();
         this.setUpMapOlEvents();
         this.setupCustomMapParamsToLegendUrl();
@@ -588,6 +587,18 @@ proto.createMapControl = function(type, {id, add=true, toggled=false, visible, o
   return control;
 };
 
+
+proto.addScaleLineUnits = function(units=[]){
+  units.forEach(unit => this.state.mapunits.push(unit));
+};
+
+proto.changeScaleLineUnit = function(unit){
+  const scalelinecontrol = this.getMapControlByType({
+    type: 'scaleline'
+  });
+  scalelinecontrol && scalelinecontrol.getOlControl().setUnits(unit);
+};
+
 proto.showAddLayerModal = function() {
   this.emit('addexternallayer');
 };
@@ -616,6 +627,7 @@ proto._setupControls = function() {
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
     const feature_count = this.project.getQueryFeatureCount();
+    const query_point_tolerance = this.project.getQueryPointTolerance();
     const map = this.getMap();
     mapcontrols.forEach(mapcontrol => {
       let control;
@@ -744,6 +756,7 @@ proto._setupControls = function() {
                 inputs: {
                   coordinates,
                   feature_count,
+                  query_point_tolerance,
                   multilayers: this.project.isQueryMultiLayers(controlType),
                 }
               });
@@ -768,10 +781,9 @@ proto._setupControls = function() {
                 QUERYABLE: true,
                 SELECTEDORALL: true
               });
-              const controlFiltrableLayers = getMapLayersByFilter({
+              const controlFiltrableLayers = this.filterableLayersAvailable({
                 FILTERABLE: true,
-                SELECTEDORALL: true,
-                ACTIVE: false
+                SELECTEDORALL: true
               }, condition);
               return controlFiltrableLayers.length ? [... new Set([...controlFiltrableLayers, ...controlQuerableLayers])] : [];
             };
@@ -852,21 +864,17 @@ proto._setupControls = function() {
               }
             };
             const getControlLayers = ()=>{
-              const layers = this.filterableLayersAvailable() ? getMapLayersByFilter({
-                SELECTEDORALL: true,
-                FILTERABLE: true,
-                ACTIVE: false
-              }, condition) : [];
+              const layers = this.filterableLayersAvailable(condition) || [];
               layers.forEach(layer => layer.setTocHighlightable(true));
               return layers;
             };
-
-            let controlLayers = getControlLayers();
+            // check the start iniztial layer available to create and add querybobx control to map
+            const layers = getControlLayers();
             const spatialMethod = 'intersects';
             control = this.createMapControl(controlType, {
               options: {
                 spatialMethod,
-                layers: controlLayers,
+                layers,
                 help: {
                   title:"sdk.mapcontrols.querybybbox.help.title",
                   message:"sdk.mapcontrols.querybybbox.help.message",
@@ -881,9 +889,8 @@ proto._setupControls = function() {
               this._changeMapMapControls.push(change);
               // get all filtrable layers in toc no based on selection or visibility
               const layersFilterObject = {
-                SELECTEDORALL: true,
+                SELECTEDORALL: true, // selected or all
                 FILTERABLE: true,
-                GEOLAYER: true,
                 VISIBLE: true
               };
               const runQuery = throttle(async e => {
@@ -1107,15 +1114,22 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
   const [layerId, fid] = zoom_to_fid.split(separator);
   if (layerId !== undefined && fid !== undefined){
     const layer = this.project.getLayerById(layerId);
-    const feature = layer && await layer.getFeatureByFid(fid);
-    if (feature) {
-      const {geometry, bbox} = feature;
-      if (geometry)
-        this.zoomToFeatures([feature], {
-          highlight: true
-        });
-      else if (bbox) this.zoomToExtent(feature.bbox);
-    }
+    const {data=[]}= await DataRouterService.getData('search:fid', {
+      inputs: {
+        layer,
+        fid
+      },
+      outputs: {
+        show: {
+          loading: false,
+          condition({data=[]}={}){
+            return data[0] && data[0].features.length > 0;
+          }
+        }
+      }
+    });
+    const feature = data[0] && data[0].features[0];
+    feature && this.zoomToFeatures([feature]);
   }
 };
 
@@ -1143,11 +1157,13 @@ proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', se
             filter,
             search_endpoint
           },
-          outputs: false
+          outputs: {
+            show: {
+              loading: false
+            }
+          }
         });
-        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features, {
-          highlight: true
-        })
+        data && data[0] && data[0].features && this.zoomToFeatures(data[0].features)
       }
     }
   } catch(err){
@@ -1158,6 +1174,13 @@ proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', se
 proto.getMapExtent = function(){
   const map = this.getMap();
   return map.getView().calculateExtent(map.getSize());
+};
+
+proto.addMapExtentUrlParameterToUrl = function(url){
+  url = new URL(url);
+  const map_extent = this.getMapExtent().toString();
+  url.searchParams.set('map_extent', map_extent);
+  return url.toString()
 };
 
 proto.getMapExtentUrl = function(){
@@ -1213,10 +1236,10 @@ proto._setMapControlsGrid = function(length) {
 
 proto._setMapControlsInsideContainerLenght = function() {
   this.state.mapControl.length = 1;
-  // count the mapcontrol insied g3w-map-control container
+  // count the mapcontrol inside g3w-map-control container
   this._mapControls.forEach(control => {
     const map = this.getMap();
-    this.state.mapControl.length+=control.mapcontrol ? 1: 0;
+    this.state.mapControl.length+=control.mapcontrol ? control.id === 'zoom' ? 2 : 1: 0;
     control.control.changelayout ? control.control.changelayout(map) : null;
   });
   // add 1 id odd number
@@ -1226,15 +1249,14 @@ proto._setMapControlsInsideContainerLenght = function() {
 };
 
 /**
- * Get filterable layer. Get parameter to custom filter Object
+ * Get filtrable layer. Get parameter to custom filter Object
  */
-proto.filterableLayersAvailable = function() {
+proto.filterableLayersAvailable = function(options={}) {
   const layers = getMapLayersByFilter({
     FILTERABLE: true,
     SELECTEDORALL: true,
-    ACTIVE: false
-  });
-  return layers.some(layer => layer.getProvider('filter') instanceof WFSProvider);
+  }, options);
+  return layers.filter(layer => layer.getProvider('filter') instanceof WFSProvider);
 };
 
 proto.setMapControlsAlignement = function(alignement='rv') {
@@ -1524,6 +1546,12 @@ proto.addMapLayer = function(mapLayer) {
   this.addLayerToMap(mapLayer)
 };
 
+proto.getMapLayerByLayerId = function(layerId){
+  return this.getMapLayers().find(mapLayer => {
+    return mapLayer.getLayerConfigs().find(layer => layer.getId() === layerId);
+  })
+};
+
 proto.getMapLayers = function() {
   return this._mapLayers;
 };
@@ -1544,10 +1572,9 @@ proto.getProjectLayer = function(layerId) {
 };
 
 proto._setSettings = function(){
-  const {ZOOM} = MAP_SETTINGS;
   const maxScale = this.getScaleFromExtent(this.project.state.initextent);
   // settings maxScale
-  ZOOM.maxScale =  ZOOM.maxScale > maxScale ? maxScale :  ZOOM.maxScale;
+  SETTINGS.zoom.maxScale = SETTINGS.zoom.maxScale > maxScale ? maxScale : SETTINGS.zoom.maxScale;
 };
 
 proto._resetView = function() {
@@ -1715,7 +1742,7 @@ proto._setupAllLayers = function() {
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
-  this._setUpDefaultLayers()
+  this._setUpDefaultLayers();
 };
 
 //SETUP BASELAYERS
@@ -1738,13 +1765,25 @@ proto._setupBaseLayers = function(){
 
 //SETUP MAPLAYERS
 proto._setupMapLayers = function() {
+  // get all geolayers exclude baselayers and eventually vector layers
   const layers = getMapLayersByFilter({
     BASELAYER: false,
     VECTORLAYER: false
   });
   this._setMapProjectionToLayers(layers);
-  //group layer by mutilayer
-  const multiLayers = _.groupBy(layers, layer => layer.getMultiLayerId());
+  //group layer by mutilayer (multilayer property of layer on project configuration)
+  // nee to split time series to group to speed up eventualli time seriesries loading of single layer
+  let qtimeseries_multilayerid_split_values = {};
+  const multiLayers = _.groupBy(layers, layer => {
+    let multiLayerId = layer.getMultiLayerId();
+    if (layer.isQtimeseries()){
+      qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
+      multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
+    } else multiLayerId = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ?
+      multiLayerId : `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId] + 1}`;
+    return multiLayerId;
+  });
+  qtimeseries_multilayerid_split_values = null; // delete to garbage collector
   let mapLayers = [];
   Object.entries(multiLayers).forEach(([id, layers]) => {
     const multilayerId = `layer_${id}`;
@@ -1872,13 +1911,20 @@ proto.getOverviewMapLayers = function(project) {
   return overviewMapLayers.reverse();
 };
 
-proto.updateMapLayer = function(mapLayer, options={}) {
-  const {force=false} = options;
-  !force ? mapLayer.update(this.state, {force}) : mapLayer.update(this.state,
-    {
-      force,
-      "time": Date.now()
-    })
+/**
+ * method to update MapLayer
+ * @param mapLayer
+ * @param options
+ */
+proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
+  // if force add time parametter to force request of map layer from server
+  if (options.force) options.time = Date.now();
+  if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
+    mapLayer.showSpinnerWhenLoading = showSpinner;
+    this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
+  }
+  mapLayer.update(this.state, options);
+  return mapLayer;
 };
 
 // run update function on each mapLayer
@@ -1889,13 +1935,27 @@ proto.updateMapLayers = function(options={}) {
   Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
 };
 
-// register map Layer listeners of creation
-proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
+/**
+ * register map layer loadingEvents
+ * @param mapLayer
+ */
+proto.registerMapLayerLoadingEvents = function(mapLayer){
   mapLayer.on('loadstart', this._incrementLoaders);
   mapLayer.on('loadend', this._decrementLoaders);
   mapLayer.on('loaderror', this._mapLayerLoadError);
+};
+
+proto.unregisterMapLayerLoadingEvents= function(mapLayer){
+  mapLayer.off('loadstart', this._incrementLoaders );
+  mapLayer.off('loadend', this._decrementLoaders );
+  mapLayer.off('loaderror', this._mapLayerLoadError);
+};
+
+// register map Layer listeners of creation
+proto.registerMapLayerListeners = function(mapLayer) {
+  this.registerMapLayerLoadingEvents(mapLayer);
   //listen change filter token
-  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
+  if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
       layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
@@ -1904,13 +1964,10 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
 };
 
 // unregister listeners of mapLayers creation
-proto.unregisterMapLayerListeners = function(mapLayer, projectLayer=true) {
-  mapLayer.off('loadstart', this._incrementLoaders );
-  mapLayer.off('loadend', this._decrementLoaders );
-  mapLayer.off('loaderror', this._mapLayerLoadError);
+proto.unregisterMapLayerListeners = function(mapLayer) {
+  this.unregisterMapLayerLoadingEvents(mapLayer);
   // try to remove layer filter token
-  // try to remove layer filter token
-  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
+  if (mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
       layer.un('change');
       layer.removeEvent('filtertokenchange')
@@ -1963,6 +2020,20 @@ proto._watchInteraction = function(interaction) {
       this.emit('mapcontrol:active', e.target);
     }
   })
+};
+
+/**
+ * Show map Info
+ * @param info
+ */
+proto.showMapInfo = function({info, style} = {}) {
+  this.state.map_info.info = info;
+  this.state.map_info.style = style || this.state.map_info.style;
+};
+
+proto.hideMapInfo = function(){
+  this.state.map_info.info = null;
+  this.state.map_info.style = null;
 };
 
 proto.zoomTo = function(coordinate, zoom=6) {
@@ -2056,13 +2127,12 @@ proto.compareExtentWithProjectMaxExtent = function(extent){
 
 proto.getResolutionForZoomToExtent = function(extent){
   let resolution;
-  const {ZOOM} = MAP_SETTINGS;
   const map = this.getMap();
   const projectExtent = this.project.state.extent;
   const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
   const inside = ol.extent.containsExtent(projectExtent, extent);
   // max resolution of the map
-  const maxResolution = getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
+  const maxResolution = getResolutionFromScale(SETTINGS.zoom.maxScale, this.getMapUnits()); // map resolution of the map
   // check if
   if (inside) {
     // calculate main resolutions
@@ -2150,14 +2220,14 @@ proto.highlightGeometry = function(geometryObj, options = {}) {
       const geometryType = feature.getGeometry().getType();
       const style = createSelectedStyle({
         geometryType,
-        color
+        color,
+        fill: false
       });
       styles.push(style);
       return styles;
     };
-    const {ANIMATION} = MAP_SETTINGS;
     const highlight = (typeof options.highlight == 'boolean') ? options.highlight : true;
-    const duration = options.duration || ANIMATION.duration;
+    const duration = options.duration || SETTINGS.animation.duration;
     let geometry;
     if (geometryObj instanceof ol.geom.Geometry) geometry = geometryObj;
     else {
@@ -2202,7 +2272,11 @@ proto.clearHighlightGeometry = function() {
   this.resetDefaultLayerStyle('highlightLayer');
 };
 
-proto.refreshMap = function(options) {
+/**
+ * Force to referesh map
+ * @param options
+ */
+proto.refreshMap = function(options={force: true}) {
   this.updateMapLayers(options);
 };
 
@@ -2387,23 +2461,6 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
-
-proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
-  const layer = this.getLayerById(id);
-  switch(position){
-    case 'top':
-      layer.setZIndex(this.layersCount);
-      break;
-    case 'bottom':
-      layer.setZIndex(1);
-      break
-  }
-};
-
-/**
- * Remove externla layer
- * @param name
- */
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
   const catalogService = GUI.getComponent('catalog').getService();
@@ -2411,58 +2468,8 @@ proto.removeExternalLayer = function(name) {
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   catalogService.removeExternalLayer(name);
-  if (layer._type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
-    if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
-    return externalMapLayer.getId() !== layer.id
-  });
 };
 
-/**
- * Add wms external layer to mapo
- * @param url
- * @param layers
- * @param name
- * @param projection
- * @param position
- * @returns {Promise<unknown>}
- */
-proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
-  return new Promise((resolve, reject) =>{
-    const {wmslayer, olLayer} = createWMSLayer({
-      name,
-      url,
-      layers,
-      projection
-    });
-
-    wmslayer.once('loadend', ()=> {
-      resolve(wmslayer)
-    });
-
-    wmslayer.once('loaderror', err => {
-      reject(err);
-    });
-
-    this.addExternalLayer(olLayer,  {
-      position
-    });
-
-    this.addExternalMapLayer(wmslayer, false);
-
-  })
-};
-
-proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
-  this._externalMapLayers.push(externalMapLayer);
-  this.registerMapLayerListeners(externalMapLayer, projectLayer);
-};
-
-/**
- * Method to add external layer to map
- * @param externalLayer
- * @param options
- * @returns {Promise<Promise<*> | Promise<never>>}
- */
 proto.addExternalLayer = async function(externalLayer, options={}) {
   let vectorLayer,
     name,
@@ -2471,7 +2478,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     style,
     type,
     crs;
-  const {position=MAP_SETTINGS.LAYER_POSITIONS.default} = options;
+  const {position='top'} = options;
   const map = this.viewer.map;
   const catalogService = GUI.getComponent('catalog').getService();
   const QueryResultService = GUI.getComponent('queryresults').getService();
@@ -2500,25 +2507,10 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       external: true,
       crs: options.crs,
       type: options.type,
-      _type: type,
       download: options.download || false,
       visible: true,
-      position,
       color
     };
-  } else if (externalLayer instanceof ol.layer.Image){
-    type = 'wms';
-    name = externalLayer.get('name');
-    externalLayer.id = externalLayer.get('id');
-    externalLayer.removable = true;
-    externalLayer.projectLayer= false;
-    externalLayer.name = name;
-    externalLayer.title = name;
-    externalLayer._type = type;
-    externalLayer.opacity = 1;
-    externalLayer.position = position;
-    externalLayer.external = true;
-    externalLayer.visible = true;
   } else {
     name = externalLayer.name;
     type = externalLayer.type;
@@ -2527,37 +2519,31 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     color = externalLayer.color;
   }
   const layer = this.getLayerByName(name);
-  const loadExternalLayer = (layer, type) => {
-    let extent;
+  const loadExternalLayer = layer => {
     if (layer) {
-      if (type === 'vector') {
-        const features = layer.getSource().getFeatures();
-        if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
-        extent = layer.getSource().getExtent();
-        externalLayer.bbox = {
-          minx: extent[0],
-          miny: extent[1],
-          maxx: extent[2],
-          maxy: extent[3]
-        };
-      }
+      const features = layer.getSource().getFeatures();
+      if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
+      const extent = layer.getSource().getExtent();
+      externalLayer.bbox = {
+        minx: extent[0],
+        miny: extent[1],
+        maxx: extent[2],
+        maxy: extent[3]
+      };
       externalLayer.checked = true;
       layer.set('position', position);
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
       catalogService.addExternalLayer(externalLayer);
-      extent && map.getView().fit(extent);
+      map.getView().fit(extent);
       return Promise.resolve(layer);
     } else return Promise.reject();
   };
   if (!layer) {
     switch (type) {
       case 'vector':
-        return loadExternalLayer(vectorLayer, type);
-        break;
-      case 'wms':
-        return loadExternalLayer(externalLayer, type);
+        return loadExternalLayer(vectorLayer);
         break;
       default:
         vectorLayer = await createVectorLayerFromFile({

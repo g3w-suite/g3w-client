@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
-const {throttle, debounce} = require('core/utils/utils');
+const {throttle, debounce, XHR} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -24,36 +24,28 @@ const autocompleteMixin = {
 
 const fieldsMixin = {
   methods: {
-    getFieldType(value) {
-      value = value && typeof  value === 'object' && value.constructor === Object && !value.coordinates? value.value : value;
-      let Fields = {};
-      Fields.SIMPLE = 'simple';
-      Fields.GEO = 'geo';
-      Fields.LINK = 'link';
-      Fields.PHOTO = 'photo';
-      Fields.PHOTOLINK = "photolink";
-      Fields.IMAGE = 'image';
-      Fields.POINTLINK = 'pointlink';
-      Fields.ROUTE = 'route';
-      const URLPattern = /^(https?:\/\/[^\s]+)/g;
-      const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-      if (_.isNil(value)) {
-        return Fields.SIMPLE;
-      } else if (value && typeof value == 'object' && value.coordinates) {
-        return Fields.GEO;
-      } else if(value && Array.isArray(value)) {
-        if (value.length && value[0].photo) return Fields.PHOTO;
-        else return Fields.SIMPLE
-      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
-        return Fields.PHOTO;
-      } else if (value.toString().match(URLPattern)) {
-        return Fields.LINK;
-      }
-      return Fields.SIMPLE;
+    getFieldService(){
+      if (this._fieldsService === undefined)
+        this._fieldsService = require('gui/fields/fieldsservice');
+      return this._fieldsService;
+    },
+    getFieldType(field) {
+      return this.getFieldService().getType(field);
+    },
+    isSimple(value){
+      return this.getFieldService().isSimple(value);
+    },
+    isLink(value){
+      return this.getFieldService().isLink(value);
+    },
+    isImage(value){
+      return this.getFieldService().isImage(value);
+    },
+    isPhoto(value){
+      return this.getFieldService().isPhoto(value);
     },
     sanitizeFieldValue(value) {
-      if (Array.isArray(value) && !value.length) return '';
-      else return value
+      return (Array.isArray(value) && !value.length) ? '' : value;
     }
   }
 };
@@ -214,6 +206,9 @@ const resizeMixin = {
 const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
+    setValue(){
+      this.state.value && this.select2.val(this.state.value).trigger('change');
+    },
     resize() {
       this.select2 && !ApplicationState.ismobile && this.select2.select2('close');
     }
@@ -227,12 +222,11 @@ const select2Mixin = {
   }
 };
 
-
 module.exports = {
   geoMixin,
   fieldsMixin,
   mediaMixin,
   resizeMixin,
   autocompleteMixin,
-  select2Mixin
+  select2Mixin,
 };

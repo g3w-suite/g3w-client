@@ -5,9 +5,15 @@ const BaseInputMixin = {
     },
     editable() {
       return this.state.editable;
+    },
+    showhelpicon(){
+      return this.state.help && this.state.help.message.trim();
     }
   },
   methods: {
+    showHideHelp(){
+      this.state.help.visible = !this.state.help.visible
+    },
     // called when input value change
     change() {
       this.service.setEmpty();

@@ -10,8 +10,10 @@ const STATE = Vue.observable({
   lng: 'en', // language default
   changeProjectview: false,
   plugins: [],
+  user: null,
   map: {
-    epsg: ''
+    epsg: '',
+    unit: 'metric'
   },
   gui: {
     app: {
@@ -19,6 +21,10 @@ const STATE = Vue.observable({
     },
     sidebar: {
       disabled: false // true if sidebar is disabled (not responsive)
+    },
+    layout: {
+      __current: 'app', // store the current layout owner (app at beginning)
+      app: {}
     }
   },
   keys: {
@@ -31,5 +37,11 @@ const STATE = Vue.observable({
     filtertoken: undefined
   }
 });
+
+/**
+ * Object that store method to query STATE OF application
+ * @type {{getCurrentLayout()}}
+ */
+export const STATE_METHODS = {};
 
 export default STATE;

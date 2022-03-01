@@ -85,7 +85,6 @@ proto.getLayersDict = function(filter = {}, options={}) {
   if (!filter) return this._layers;
   const {
     PRINTABLE,
-    ACTIVE,
     QUERYABLE,
     FILTERABLE,
     EDITABLE,
@@ -93,7 +92,6 @@ proto.getLayersDict = function(filter = {}, options={}) {
     SELECTED,
     CACHED,
     SELECTEDORALL,
-    ALLNOTSELECTED,
     SERVERTYPE,
     BASELAYER,
     GEOLAYER,
@@ -109,7 +107,6 @@ proto.getLayersDict = function(filter = {}, options={}) {
     && _.isUndefined(FILTERABLE)
     && _.isUndefined(EDITABLE)
     && _.isUndefined(VISIBLE)
-    && _.isUndefined(ACTIVE)
     && _.isUndefined(SERVERTYPE)
     && _.isUndefined(CACHED)
     && _.isUndefined(SELECTEDORALL)
@@ -129,19 +126,17 @@ proto.getLayersDict = function(filter = {}, options={}) {
     layers.push(this._layers[key]);
   }
 
-  // return only selected if some one are selected
-  if (SELECTEDORALL) {
-    let _layers = layers;
-    layers = layers.filter(layer => layer.isSelected());
-    layers = layers.length ? layers : _layers;
-  }
-
   if (IDS) {
     const ids = Array.isArray(IDS) ? IDS : [IDS];
     layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
   }
 
-  if (typeof ACTIVE === 'boolean') layers = layers.filter(layer => ACTIVE === !layer.isDisabled());
+  // return only selected if some one are selected
+  if (SELECTEDORALL) {
+    let _layers = layers;
+    layers = layers.filter(layer => layer.isSelected());
+    layers = layers.length ? layers : _layers;
+  } else  if (typeof SELECTED === 'boolean') layers = layers.filter(layer => SELECTED === layer.isSelected());
 
   if (typeof QUERYABLE === 'boolean') layers = layers.filter(layer => QUERYABLE === layer.isQueryable());
 
@@ -152,8 +147,6 @@ proto.getLayersDict = function(filter = {}, options={}) {
   if (typeof VISIBLE === 'boolean') layers = layers.filter(layer => VISIBLE === layer.isVisible());
 
   if (typeof CACHED === 'boolean') layers = layers.filter(layer => CACHED === layer.isCached());
-
-  if (typeof SELECTED === 'boolean') layers = layers.filter(layer => SELECTED === layer.isSelected());
 
   if (typeof BASELAYER === 'boolean') layers = layers.filter(layer => BASELAYER === layer.isBaseLayer());
 
@@ -166,10 +159,9 @@ proto.getLayersDict = function(filter = {}, options={}) {
   if (typeof DISABLED === 'boolean') layers = layers.filter(layer => DISABLED === layer.isDisabled());
 
   if (typeof SERVERTYPE === 'string' && SERVERTYPE !=='') layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
+
   if (PRINTABLE) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: PRINTABLE.scale}));
 
-  // return only not selected
-  if (ALLNOTSELECTED) layers = layers.filter(layer => !layer.isSelected());
   return layers;
 };
 
@@ -342,6 +334,5 @@ proto.removeLayersTree = function() {
 proto.getLayersTree = function() {
   return this.state.layerstree;
 };
-
 
 module.exports = LayersStore;

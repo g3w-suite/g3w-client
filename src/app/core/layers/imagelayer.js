@@ -116,8 +116,14 @@ proto.getWFSLayerName = function(){
   return this.getQueryLayerName().replace(/[/\s]/g, '_')
 };
 
+proto.useProxy = function(){
+  return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()
+};
+
 proto.getWMSInfoLayerName = function() {
-  return this._getBaseLayerName();
+  if ( this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()) {
+    return this.getSource().layers;
+  } else return this._getBaseLayerName();
 };
 
 proto.getPrintLayerName = function() {
@@ -147,10 +153,15 @@ proto.getWmsUrl = function({type='map'}={}) {
     this.config.wmsUrl;
 };
 
+/**
+ * Get query url based on type, external or same projection of map
+ * @returns {string}
+ */
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
   if (this.getServerType() === Layer.ServerTypes.QGIS && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
-    url =`${url}SOURCE=${this.config.source.type}`;
+    if (this.getInfoFormats()) url = this.getSource().url;
+    else url =`${url}SOURCE=${this.config.source.type}`;
   }
   return url;
 };

@@ -1,19 +1,19 @@
-import Tabs from '../../tabs/tabs.vue';
-import Link from '../../fields/link.vue';
+import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
+import InfoFormats from './components/actiontools/infoformats.vue';
+const {fieldsMixin} = require('gui/vue/vue.mixins');
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
-const {fieldsMixin } = require('gui/vue/vue.mixins');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
+const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
 const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
 
 const vueComponentOptions = {
   ...compiledTemplate,
-  mixins: [fieldsMixin],
   data() {
     return {
       state: this.$options.queryResultsService.state,
@@ -21,9 +21,10 @@ const vueComponentOptions = {
       headerActionsCellWidth: headerActionsCellWidth
     }
   },
+  mixins: [fieldsMixin],
   components: {
-    Tabs,
-    'g3w-link': Link,
+    TableAttributeFieldValue,
+    'infoformats': InfoFormats,
     'header-feature-body': HeaderFeatureBody
   },
   computed: {
@@ -66,6 +67,28 @@ const vueComponentOptions = {
     }
   },
   methods: {
+    /**
+     *
+     * @param layerId
+     * @param type feature or layer
+     * @returns {*}
+     */
+    getLayerCustomComponents(layerId, type){
+      return this.state.layerscustomcomponents[layerId] ? this.state.layerscustomcomponents[layerId][type] : [];
+    },
+    getQueryFields(layer, feature) {
+      const fields = [];
+      for (const field of layer.formStructure.fields) {
+        const _field = {...field};
+        _field.query = true;
+        _field.value = feature.attributes[field.name];
+        _field.input = {
+          type: `${this.getFieldType(_field.value)}`
+        };
+        fields.push(_field);
+      }
+      return fields;
+    },
     getColSpan(layer){
       return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
     },
@@ -106,21 +129,6 @@ const vueComponentOptions = {
     hasFieldOutOfFormStructure(layer) {
       return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
     },
-    isArray (value) {
-      return Array.isArray(value);
-    },
-    isSimple(layer,attributeName,attributeValue) {
-      return !this.isArray(attributeValue) && this.fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
-    },
-    isLink(layer,attributeName,attributeValue) {
-      return this.fieldIs(Fields.LINK,layer,attributeName,attributeValue);
-    },
-    is(type,layer,attributeName,attributeValue) {
-      return this.fieldIs(type,layer,attributeName,attributeValue);
-    },
-    checkField(type, fieldname, attributes) {
-      return attributes.find(attribute => (attribute.name === fieldname) && (attribute.type === type)) ? true : false;
-    },
     layerHasFeatures(layer) {
       return layer.features && layer.features.length > 0 ? true: false;
     },
@@ -141,8 +149,15 @@ const vueComponentOptions = {
       const traverseStructure = item => {
         if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
         else {
-          const field = layer.formStructure.fields.find(field => field.name === item.field_name);
-          field && attributes.add(field);
+          let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          if (field) {
+            if (this.state.type === 'ows'){
+              // clone it to avoid to replace original
+              field = {...field};
+              field.name = field.name.replace(/ /g, '_');
+            }
+            attributes.add(field);
+          }
         }
       };
       layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
@@ -150,7 +165,7 @@ const vueComponentOptions = {
     },
     attributesSubset(layer) {
       const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
-      const _attributes = attributes.filter(attribute => attribute.show && attribute.type != 'image');
+      const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
@@ -279,23 +294,6 @@ const vueComponentOptions = {
     },
     openLink(link_url) {
       window.open(link_url, '_blank');
-    },
-    fieldIs(TYPE,layer,attributeName,attributeValue) {
-      const fieldType = this.getFieldType(attributeValue);
-      return fieldType === TYPE;
-    },
-    getQueryFields(layer, feature) {
-      const fields = [];
-      for (const field of layer.formStructure.fields) {
-        const _field = {...field};
-        _field.query = true;
-        _field.value = feature.attributes[field.name];
-        _field.input = {
-          type: `${this.getFieldType(_field.value)}_field`
-        };
-        fields.push(_field);
-      }
-      return fields;
     }
   },
   watch: {

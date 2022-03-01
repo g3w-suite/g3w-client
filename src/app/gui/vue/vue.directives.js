@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const {t, tPlugin} = require('core/i18n/i18n.service');
-const {uniqueId, toRawType} = require('core/utils/utils');
+const { uniqueId, toRawType } = require('core/utils/utils');
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
@@ -55,29 +55,23 @@ const GlobalDirective = {
     Vue.directive('t-tooltip', {
       bind(_el, binding) {
         // handle automatic creation of tooltip
-        const {create=false, bottom=false, top=false, left=false, right=false} = binding.modifiers;
-        if (create) {
-          _el.setAttribute('data-toggle', 'tooltip');
-          const setPosition = Object.entries({
-            bottom,
-            top,
-            left,
-            right
-          }).find(([position, value]) => value);
-          if (setPosition && setPosition[1]) {
-            _el.setAttribute('data-placement', `${setPosition[0]}`);
-            _el.classList.add(`skin-tooltip-${setPosition[0]}`)
+        if (binding.modifiers.create) {
+          if (binding.arg){
+            _el.setAttribute('data-placement', binding.arg);
+            _el.classList.add(`skin-tooltip-${binding.arg}`);
+            _el.classList.add('skin-color');
           }
           const domelement = $(_el);
-
           domelement.tooltip({
-            trigger : ApplicationState.ismobile ? 'click': 'hover'
+            trigger : ApplicationState.ismobile ? 'click': 'hover',
+            html: true
           });
           // in case of mobile hide tooltip after click
           ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
             setTimeout(()=>$(this).tooltip('hide'), 600);
           });
         }
+
         const unique_v_t_tooltip_attr = createDirectiveObj({
           el:_el,
           attr: 'g3w-v-t-tooltip-id'
@@ -316,7 +310,7 @@ const GlobalDirective = {
 
     Vue.directive('select2', {
       inserted(el, binding, vnode){
-        const { templateResult, templateSelection, multiple=false, clear=false, search=true} = vnode.data.attrs || {};
+        const { templateResult, templateSelection, multiple=false, search=true, select2_value} = vnode.data.attrs || {};
         const selectDOMElement = $(el);
         selectDOMElement.select2({
           width: '100%',
@@ -325,7 +319,6 @@ const GlobalDirective = {
           templateSelection,
           minimumResultsForSearch: !search ? -1 : undefined
         });
-
         if (binding.value){
           selectDOMElement.on('select2:select', evt =>{
             const value = evt.params.data.id;
@@ -339,26 +332,11 @@ const GlobalDirective = {
               const value = evt.params.data.id;
               vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
             });
-          if (clear){
-            const unique_v_select2_attr = createDirectiveObj({
-              el,
-              attr: 'g3w-v-select2-id'
-            });
-            setUnwatch(({
-              id: unique_v_select2_attr,
-              unwatch: vm.$watch(()=> vnode.context[binding.value], value =>{
-                (multiple && value.length === 0 || value === null) && $(el).val(null).trigger('change');
-              })
-            }))
-          }
+          if (select2_value)selectDOMElement.val(select2_value).trigger('change');
         }
       },
       unbind(el, binding, vnode){
         $(el).select2('destroy');
-        vnode.data.attrs.clear && unbindWatch({
-          el,
-          attr: 'g3w-v-select2-id'
-        })
       }
     })
   }

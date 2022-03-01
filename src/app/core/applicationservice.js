@@ -44,11 +44,17 @@ const ApplicationService = function() {
     }
   };
   base(this);
+  // on obtain init config (also for change project)
+  this.on('initconfig', ()=>{
+    // can put the configuration project here
+    this.setApplicationUser(initConfig.user);
+  });
   // init application
   this.init = async function() {
     try {
       const config = await this.createApplicationConfig();
       this.setConfig(config);
+      this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
       const browserLng = navigator && navigator.language || 'en';
@@ -60,11 +66,13 @@ const ApplicationService = function() {
     }
   };
 
+
   /**
    * setup Internalization
    */
   this.setupI18n = function() {
     const lngConfig = this._config._i18n;
+    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
     //setup internalization for translation
     i18ninit(lngConfig);
@@ -247,6 +255,11 @@ const ApplicationService = function() {
     return RouterService;
   };
 
+  //application proxy url
+  this.getProxyUrl = function(){
+    return `${this._initConfig.proxyurl}`;
+  };
+
   // clipboard service
   this.getClipboardService = function() {
     return ClipboardService;
@@ -273,6 +286,7 @@ const ApplicationService = function() {
       config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
       config.server.urls.mediaurl = initConfig.mediaurl;
       config.server.urls.vectorurl = initConfig.vectorurl;
+      config.server.urls.proxyurl = initConfig.proxyurl || 'proxyurl';
       config.main_map_title = initConfig.main_map_title;
       config.group = initConfig.group;
       config.user = initConfig.user;
@@ -336,6 +350,7 @@ const ApplicationService = function() {
       production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
+      this.emit('initconfig');
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -426,6 +441,14 @@ const ApplicationService = function() {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
+  //Application User
+  this.setApplicationUser = function(user){
+    ApplicationState.user = user;
+  };
+
+  this.getApplicationUser = function(){
+    return ApplicationState.user;
+  };
 
   //  bootstrap (when called init)
   this.bootstrap = function() {
@@ -555,6 +578,7 @@ const ApplicationService = function() {
     // change url using history
     (production && aliasUrl) && history.replaceState(null, null, aliasUrl) || history.replaceState(null, null, mapUrl);
     //remove tools
+    //window.location = mapUrl;
     this.obtainInitConfig({
       host
     }).then(initConfig => {
@@ -600,6 +624,50 @@ const ApplicationService = function() {
       .catch(error => d.reject(error));
     return d.promise();
   };
+
+  /**
+   * Layout section
+   */
+
+  this.setLayout = function(who='app', config={}){
+    /**
+     * Set default height percentage of height when show vertical content (for example show table attribute)
+     * @type {{}}
+     */
+    if (config.rightpanel) {
+      config.rightpanel.width = config.rightpanel.width || 50;
+      config.rightpanel.height = config.rightpanel.height || 50;
+      config.rightpanel.width_default = config.rightpanel.width; // used eventually to reset starting values
+      config.rightpanel.height_default = config.rightpanel.height;
+      config.rightpanel.width_100 = false;
+      config.rightpanel.height_100 = false;
+    } else config.rightpanel = {width: 50, height: 50, width_default: 50, height_default: 50, width_100: false, height_100: false};
+    ApplicationState.gui.layout[who] = config;
+  };
+
+  this.removeLayout = function(who){
+    who && delete ApplicationState.gui.layout[who];
+  };
+
+  this.setCurrentLayout = function(who='app'){
+    ApplicationState.gui.layout.__current = who;
+  };
+
+  this.getCurrentLayout = function(){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+  };
+
+  this.getCurrentLayoutName = function(){
+    return ApplicationState.gui.layout.__current;
+  };
+
+  this.cloneLayout = function(which='app'){
+    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
+  };
+
+  /**
+   * Layout section
+   */
 
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();

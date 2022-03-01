@@ -1,6 +1,8 @@
 import G3W_CONSTANT from './constant';
 // api file interface for external plugin
 import ApplicationState from 'core/applicationstate';
+import G3WInput from 'gui/inputs/g3w-input.vue';
+
 const g3w = g3w || {};
 //set G3W-CLIENT application constant
 g3w.constant = G3W_CONSTANT;
@@ -99,6 +101,7 @@ g3w.gui = {
   Panel: require('gui/panel'),
   ControlFactory: require('gui/map/control/factory'),
   ComponentsFactory: require('gui/componentsfactory'),
+  FieldsService: require('gui/fields/fieldsservice'),
   vue: {
     Component: require('gui/vue/component'),
     Panel: require('gui/panel'),
@@ -118,6 +121,7 @@ g3w.gui = {
       Footer: require('gui/form/components/footer/vue/footer')
     },
     Inputs: {
+      G3WInput,
       InputsComponents: require('gui/inputs/inputs')
     },
     Charts: {
@@ -154,5 +158,6 @@ module.exports = {
   core: g3w.core,
   gui: g3w.gui,
   ol: g3w.ol,
-  test: g3w.test
+  test: g3w.test,
+  constant: g3w.constant
 };

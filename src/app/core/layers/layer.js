@@ -1,8 +1,9 @@
 import ApplicationState from 'core/applicationstate';
-import {DOWNLOAD_FORMATS, GEOMETRY_FIELDS} from './../../constant';
-const t = require('core/i18n/i18n.service').t;
-const {inherit, base, XHR } = require('core/utils/utils');
+import {DOWNLOAD_FORMATS} from './../../constant';
+const {t} = require('core/i18n/i18n.service');
+const {inherit, base, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
+const {geometryFields} =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
@@ -70,6 +71,7 @@ function Layer(config={}, options={}) {
     styles: config.styles,
     defaultstyle,
     infoformat: this.getInfoFormat(),
+    infoformats: this.config.infoformats || [],
     projectLayer: true,
     geolayer: false,
     selection: {
@@ -121,12 +123,58 @@ function Layer(config={}, options={}) {
       })
     };
   }
+  // used to store last proxy params (useful for repeat request info formats for wms external layer)
+  this.lastProxyData = null;
   base(this);
 }
 
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+/**
+ * Proxyparams
+ */
+
+proto.getLastProxyData = function(){
+  return this.lastProxyData;
+};
+
+proto.setLastProxyData= function(data={}){
+  this.lastProxyData = data;
+};
+
+proto.clearLastProxyData = function(){
+  this.lastProxyData = null;
+};
+
+proto.getDataFromProxy = async function(proxyParams={}){
+  const DataRouterService = require('core/data/routerservice');
+  try {
+    const {response, data} = await DataRouterService.getData('proxy:data', {
+      inputs: proxyParams,
+      outputs: false
+    });
+    this.setLastProxyData(JSON.parse(data));
+    return response;
+  } catch(err){
+    return;
+  }
+};
+
+proto.changeProxyDataAndReload = function(changes={}) {
+  Object.keys(changes).forEach(changeParam =>{
+    Object.keys(changes[changeParam]).forEach(param =>{
+      const value = changes[changeParam][param];
+      this.lastProxyData[changeParam][param] = value;
+    })
+  });
+  return this.getDataFromProxy(this.lastProxyData);
+};
+
+/**
+ * end proxy params
+ */
 
 proto.getSearchParams = function(){
   return this.config.searchParams;
@@ -436,10 +484,11 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
+proto.getDataTable = function({page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox, custom_params={}} = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
+    ...custom_params,
     field,
     page,
     page_size,
@@ -568,7 +617,7 @@ proto.search = function(options={}, params={}) {
 //Info from layer (only for querable layers)
 proto.query = function(options={}) {
   const d = $.Deferred();
-  const { filter } = options;
+  const {filter} = options;
   const provider = this.getProvider(filter ? 'filter' : 'query');
   if (provider)
     provider.query(options)
@@ -587,6 +636,15 @@ proto.getFields = function() {
   return this.config.fields
 };
 
+/**
+ * Get field by name
+ * @param fieldName
+ * @returns {*}
+ */
+proto.getFieldByName = function(fieldName){
+  return this.getFields().find(field => field.name === fieldName)
+};
+
 proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
@@ -596,7 +654,7 @@ proto.getTableFields = function() {
 };
 
 proto.getTableHeaders = function(){
-  return this.getTableFields().filter(field => GEOMETRY_FIELDS.indexOf(field.name) === -1);
+  return this.getTableFields().filter(field => geometryFields.indexOf(field.name) === -1);
 };
 
 proto.getProject = function() {
@@ -607,14 +665,44 @@ proto.getConfig = function() {
   return this.config;
 };
 
+/**
+ * get form structur to show on form editing
+ * @param fields
+ * @returns {[]}
+ */
+proto.getLayerEditingFormStructure = function(fields){
+  const isInputOrTab = item =>  {
+    const isInput = item.field_name !== undefined;
+    return  {
+      type: isInput && 'input' || 'tab',
+      item: isInput && [fields.find(field => field.name ===item.field_name)] || [item]
+    }
+  };
+  let prevtabitems = [];
+  const formstructure = [];
+  this.config.editor_form_structure.forEach(item => {
+    const _item = isInputOrTab(item);
+    if (_item.type === 'input') {
+      formstructure.push(_item);
+      prevtabitems = [];
+    } else {
+      if (!prevtabitems.length) {
+        formstructure.push(_item);
+        prevtabitems = _item.item;
+      } else prevtabitems.push(_item.item[0]);
+    }
+  });
+  return formstructure;
+};
+
 proto.getEditorFormStructure = function({all=false}={}) {
-  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
+  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter(structure => {
     return !structure.field_name;
   }) : this.config.editor_form_structure;
 };
 
 proto.getFieldsOutOfFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => {
     return structure.field_name;
   }) : []
 };
@@ -634,10 +722,6 @@ proto.getState = function() {
 
 proto.getSource = function() {
   return this.state.source;
-};
-
-proto.getSourceType = function() {
-  return this.state.source ? this.state.source.type : null;
 };
 
 proto.isDownloadable = function(){
@@ -818,6 +902,13 @@ proto.isFilterable = function(conditions=null) {
   return isFiltrable;
 };
 
+/**
+ * Check if layer is setup as time series
+ */
+proto.isQtimeseries = function(){
+  return this.config.qtimeseries;
+};
+
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
@@ -826,9 +917,19 @@ proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
 
+
 // get url by type ( data, shp, csv, xls,  editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
+};
+
+/**
+ * Method to set url
+ * @param type
+ * @param url
+ */
+proto.setUrl = function({type, url}={}){
+  this.config.urls[type] = url;
 };
 
 // return urls
@@ -857,9 +958,15 @@ proto.getQueryLayerOrigName = function() {
 };
 
 proto.getInfoFormat = function(ogcService) {
-  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
-  //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
+  /**
+   * In case of qtime series (NETCDF)
+   */
+  if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') return 'application/json';
+  else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
+};
 
+proto.getInfoFormats = function(){
+  return this.state.infoformats;
 };
 
 proto.getInfoUrl = function() {
@@ -867,7 +974,7 @@ proto.getInfoUrl = function() {
 };
 
 proto.setInfoFormat = function(infoFormat) {
-  this.state.infoformat = infoFormat;
+  this.config.infoformat = infoFormat;
 };
 
 proto.getAttributes = function() {
@@ -925,6 +1032,53 @@ proto.canShowTable = function() {
       return true;
     return false;
   } else return false
+};
+
+proto.changeFieldType = function({name, type, reset=false}={}){
+  const field = this.getFields().find(field => field.name === name);
+  if (field){
+    if (reset){
+      field.type = field._type;
+      delete field._type;
+      return field.type;
+    } else {
+      field._type = field.type;
+      field.type = type;
+      return field._type;
+    }
+  }
+};
+
+proto.changeFieldTypeFromFormStructure = function({name, type, reset=false}={}){
+  const traverseStructure = item => {
+    if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+    else {
+      let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+      if (field) {
+        if (this.state.type === 'ows'){
+          // clone it to avoid to replace original
+          field = {...field};
+          field.name = field.name.replace(/ /g, '_');
+        }
+        attributes.add(field);
+      }
+    }
+  };
+  layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+  return Array.from(attributes);
+};
+
+proto.changeConfigFieldType = function({name, type, reset=false}){
+  if (this.hasFormStructure()){
+
+  } else return this.changeFieldType({name, type, reset});
+};
+
+proto.resetConfigField = function({name}){
+  this.changeConfigFieldType({
+    name,
+    reset: true
+  })
 };
 
 //function called in case of change project to remove all sored information

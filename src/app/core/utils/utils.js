@@ -258,6 +258,9 @@ const utils = {
       }, delay);
     };
   },
+  getRandomColor(){
+    return `#${((1<<24)*Math.random() | 0).toString(16)}`;
+  },
   copyUrl(url){
     const tempinput = document.createElement('input');
     document.body.appendChild(tempinput);
@@ -353,16 +356,27 @@ const utils = {
       }
     }
   },
-  getTimeoutPromise({timeout=600}){
-    const promise = new Promise(resolve =>setTimeout(resolve, timeout));
-    return promise;
+  /**
+   * Method to set timeout
+   * @param timeout
+   * @param resolve
+   * @param data
+   * @returns {number}
+   */
+  getTimeoutPromise({timeout=TIMEOUT, resolve, data}){
+    const timeoutKey = setTimeout(()=>{
+      resolve(data)
+    }, timeout);
+    return timeoutKey;
   },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
-            .then(response => resolve(response))
+            .then(response => {
+              resolve(response)
+            })
             .fail(error => reject(error))
         : reject('No url')
       })
@@ -451,7 +465,14 @@ const utils = {
   },
   createSingleFieldParameter({field, value, operator='eq', logicop=null}){
     logicop = logicop && `|${logicop}`;
-    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+    if (Array.isArray(value)){
+      let filter = '';
+      const valueLenght = value.length;
+      value.forEach((value, index) =>{
+        filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+      });
+      return filter
+    } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;

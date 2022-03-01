@@ -31,6 +31,8 @@ const font = {
   'arrow-left': "fas fa-chevron-left",
   'arrow-right': "fas fa-chevron-right",
   'resize-h': "fas fa-arrows-alt-h",
+  'resize-v': "fas fa-arrows-alt-v",
+  'resize-default': "fas fa-compress",
   'caret-up': "fas fa-caret-up",
   'caret-down': "fas fa-caret-down",
   'caret-left': "fas fa-caret-left",
@@ -108,7 +110,12 @@ const font = {
   moon: "fas fa-moon",
   sun: "fas fa-sun",
   refresh: "fas fa-sync-alt",
-  pause:"fas fa-pause"
+  pause:"fas fa-pause",
+  'step-backward': "fas fa-step-backward",
+  'fast-backward': "fas fa-fast-backward",
+  'step-forward': "fas fa-step-forward",
+  'fast-forward': "fas fa-fast-forward"
+
 };
 
 const Vueappplugin = {

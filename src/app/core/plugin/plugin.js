@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const ComponentsFactory = require('gui/componentsfactory');
@@ -18,18 +19,38 @@ const Plugin = function() {
   this._hook = null;
   this._ready = false;
   this._services = {
-    'search': GUI.getComponent('search').getService(),
-    'tools': GUI.getComponent('tools').getService()
+    'search': GUI.getService('search'),
+    'tools': GUI.getService('tools')
   };
   // timeout to remove loading plugin after timeout
   this._timeout = setTimeout(()=>{
     PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
+    this.removeLayout();
   }, TIMEOUT)
 };
 
 inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
+/**
+ * Handle layout plugin
+ */
+
+proto.setLayout = function(config=ApplicationService.cloneLayout('app')){
+  ApplicationService.setLayout(this.name, config);
+};
+
+proto.setCurrentLayout = function(){
+  ApplicationService.setCurrentLayout(this.name);
+};
+
+proto.removeLayout = function(){
+  ApplicationService.removeLayout(this.name)
+};
+
+/***
+ * End layout plugin
+ */
 
 proto.setDependencies = function(dependencies) {
   this.dependencies = dependencies;
@@ -52,6 +73,7 @@ proto.setApi = function(api={}) {
 
 proto.setReady = function(bool) {
   this._ready = bool;
+  bool && this.setLayout();
   this.emit('set-ready', bool, this.name);
   setTimeout(()=>{
     clearTimeout(this._timeout);
@@ -90,8 +112,7 @@ proto.setName = function(name) {
 };
 
 //get cplugin configuration
-proto.getConfig = function(name) {
-  name = name || this.name;
+proto.getConfig = function(name=this.name) {
   return PluginsRegistry.getPluginConfig(name);
 };
 
@@ -123,8 +144,6 @@ proto.registerPlugin = function(projectId) {
 
 proto.setupGui = function() {};
 
-//proto.getDependencyPluginsObject
-
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {
   this.dependencies = pluginsName || this.dependencies;
@@ -152,6 +171,11 @@ proto.getDependencyPlugin = function(pluginName) {
   })
 };
 
+/**
+ * Method to start loading process of a specific hook service (for example tool loading interface on sidebar)
+ * @param hook
+ * @param loading
+ */
 proto.setHookLoading = function({hook="tools", loading=false} = {}) {
   const service = this._services[hook];
   service.setLoading(loading);
@@ -212,10 +236,38 @@ proto.removeTools = function() {
  * Method to create sibebar item component
  */
 proto.createSideBarComponent = function(vueComponentObject, options={}){
-  const PluginSiderBarComponent = ComponentsFactory.buildSidebar({vueComponentObject}, options );
-  const id = PluginSiderBarComponent.getId();
-  this.once('unload', () => GUI.removeComponent(id, 'sidebar'));
-  return PluginSiderBarComponent;
+  const {
+    id,
+    title,
+    open=false,
+    collapsible= true,
+    mobile=true,
+    isolate=false,
+    closewhenshowviewportcontent=true,
+    iconConfig={},
+    events={},
+    sidebarOptions={position:1}
+  } = options;
+
+  const PluginSiderbarComponent = ComponentsFactory.build(
+    {
+      vueComponentObject
+    },
+    {
+      id,
+      title,
+      open,
+      collapsible,
+      isolate,
+      iconColor: iconConfig.color && iconConfig.color,
+      icon: iconConfig.icon && GUI.getFontClass(iconConfig.icon),
+      mobile,
+      closewhenshowviewportcontent,
+      events
+    });
+  GUI.addComponent(PluginSiderbarComponent, 'sidebar', sidebarOptions);
+  this.once('unload', () => GUI.removeComponent(id, 'sidebar', sidebarOptions));
+  return PluginSiderbarComponent;
 };
 
 // unload (case change map)
@@ -228,6 +280,17 @@ proto.unload  = function() {
 // load plugin
 proto.load = function() {
   //console.log('LOAD  need to be overwrite by plugin');
+};
+
+proto.addFontClass = function({name, className}){
+  Vue.prototype.g3wtemplate.addFontClass({
+    name,
+    className
+  });
+};
+
+proto.addFontClasses = function(fonClasses=[]){
+  fonClasses.forEach(fontClass=> this.addFontClass(fontClass));
 };
 
 module.exports = Plugin;

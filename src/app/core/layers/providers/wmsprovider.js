@@ -1,11 +1,11 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit, appendParams, XHR} = require('core/utils/utils');
+import {QUERY_POINT_TOLERANCE} from '../../../constant';
+const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
 //overwrite method to read feature
 // da un geojson
-const PIXEL_TOLERANCE = 10;
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = geoutils.getDPI();
 
@@ -16,37 +16,48 @@ function WMSDataProvider(options = {}) {
     map: null,
     layer: null
   };
-  this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
 }
 
 inherit(WMSDataProvider, DataProvider);
 
 const proto = WMSDataProvider.prototype;
 
-proto._getRequestParameters = function({layers, feature_count, coordinates, resolution, size}) {
+proto._getRequestParameters = function({layers, feature_count, coordinates, infoFormat, query_point_tolerance=QUERY_POINT_TOLERANCE, resolution, size}) {
   const layerNames = layers ? layers.map(layer => layer.getWMSInfoLayerName()).join(',') : this._layer.getWMSInfoLayerName();
   const extent = geoutils.getExtentForViewAndSize(coordinates, resolution, 0, size);
   const x = Math.floor((coordinates[0] - extent[0]) / resolution);
   const y = Math.floor((extent[3] - coordinates[1]) / resolution);
+  let PARAMS_TOLERANCE = {};
+  const {unit, value} = query_point_tolerance;
+  if (unit === 'map') {
+    const bufferGeometry = ol.geom.Polygon.fromCircle(new ol.geom.Circle(coordinates, value));
+    const wkGeometry = new ol.format.WKT();
+    PARAMS_TOLERANCE = {
+      FILTER_GEOM: wkGeometry.writeGeometry(bufferGeometry)
+    };
+  } else {
+    PARAMS_TOLERANCE = {
+      FI_POINT_TOLERANCE: value,
+      FI_LINE_TOLERANCE: value,
+      FI_POLYGON_TOLERANCE: value,
+      G3W_TOLERANCE: value * resolution,
+      I: x,
+      J: y,
+    }
+  }
   const params = {
     SERVICE: 'WMS',
     VERSION: '1.3.0',
     REQUEST: 'GetFeatureInfo',
     CRS: this._projections.map.getCode(),
-    //LAYERS: layerNames,
+    LAYERS: layerNames,
     QUERY_LAYERS: layerNames,
     filtertoken: ApplicationState.tokens.filtertoken,
-    INFO_FORMAT: this._infoFormat,
+    INFO_FORMAT: infoFormat,
     FEATURE_COUNT: feature_count,
-    // TOLLERANCE PARAMETERS FOR QGIS
-    FI_POINT_TOLERANCE: PIXEL_TOLERANCE,
-    FI_LINE_TOLERANCE: PIXEL_TOLERANCE,
-    FI_POLYGON_TOLERANCE: PIXEL_TOLERANCE,
-    G3W_TOLERANCE: PIXEL_TOLERANCE * resolution,
     WITH_GEOMETRY: true,
-    I: x,
-    J: y,
     DPI,
+    ...PARAMS_TOLERANCE,
     WIDTH: size[0],
     HEIGHT: size[1],
   };
@@ -58,33 +69,59 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, reso
 
 proto.query = function(options={}) {
   const d = $.Deferred();
-  const size = options.size || GETFEATUREINFO_IMAGE_SIZE;
-  const feature_count = options.feature_count || 10;
+  const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const coordinates = options.coordinates || [];
-  const resolution = options.resolution || null;
-  const layers = options.layers;
+  const {layers, feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
   const layer = layers ? layers[0] : this._layer;
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
-  const params = this._getRequestParameters({layers, feature_count, coordinates, resolution, size});
-  this[METHOD]({url, layers, params })
+  const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
+  const query = {
+    coordinates,
+    resolution
+  };
+
+  /**
+   * set timeout of a query
+   * @type {number}
+   */
+  const timeoutKey = getTimeoutPromise({
+    resolve: d.resolve,
+    data: {
+      data: this.handleQueryResponseFromServer('', this._projections, layers),
+      query
+    }
+   });
+  if (layer.useProxy()) {
+    layer.getDataFromProxy({
+        url,
+        params,
+        method: METHOD,
+        headers: {
+          'Content-Type': infoFormat
+        }
+      }).then(response =>{
+        const data = this.handleQueryResponseFromServer(response, this._projections, layers);
+        d.resolve({
+          data,
+          query
+        })
+    })
+  } else this[METHOD]({url, layers, params})
     .then(response => {
       const data = this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve({
         data,
-        query: {
-          coordinates,
-          resolution
-        }
+        query
       });
     })
-    .catch(err => d.reject(err));
+    .catch(err => d.reject(err))
+    .finally(()=> clearTimeout(timeoutKey));
   return d.promise();
 };
 
-proto.GET = function({url, params}) {
+proto.GET = function({url, params}={}) {
   let sourceParam = url.split('SOURCE');
   if (sourceParam.length) {
     url = sourceParam[0];
@@ -98,7 +135,7 @@ proto.GET = function({url, params}) {
   })
 };
 
-proto.POST = function({url, params}) {
+proto.POST = function({url, params}={}) {
   return XHR.post({
     url,
     data: params

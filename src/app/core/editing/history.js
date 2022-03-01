@@ -285,7 +285,7 @@ proto.getCurrentStateIndex = function() {
   return currentStateIndex;
 };
 
-// funzione che mi dice se ci sono cose da committare
+// method that response true if we can commit
 proto.canCommit = function() {
   const checkCommitItems = this.commit();
   let canCommit = false;
@@ -297,31 +297,29 @@ proto.canCommit = function() {
   return this.state.commit;
 };
 
-//funzione che mi dice se posso fare l'undo sulla history
+//cauUdo method
 proto.canUndo = function() {
   const steps = (this._states.length - 1) - this.getCurrentStateIndex();
   this.state.undo = !_.isNull(this._current) && (this._maxSteps > steps);
   return this.state.undo;
 };
 
-// funzione che mi dice se posso fare il redo sulla history
+// Caon Redo function
 proto.canRedo = function() {
   this.state.redo = this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
   return this.state.redo;
 };
 
 proto._getStatesToCommit = function() {
-  return this._states.filter((state) => {
-    return state.id <= this._current;
-  })
+  return this._states.filter(state => state.id <= this._current);
 };
 
 //get all changes to send to server (mandare al server)
 proto.commit = function() {
   const commitItems = {};
   const statesToCommit = this._getStatesToCommit();
-  statesToCommit.forEach((state) => {
-    state.items.forEach((item) => {
+  statesToCommit.forEach(state => {
+    state.items.forEach(item => {
       let add = true;
       if (Array.isArray(item)) item = item[1];
       commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem, index) => {

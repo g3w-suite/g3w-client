@@ -103,7 +103,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               icon: G3WTemplate.getFontClass('search'),
               actions: [{
                 id:"querybuilder",
-                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button`,
+                class: `${G3WTemplate.getFontClass('calculator')} sidebar-button sidebar-button-icon`,
                 tooltip: 'Query Builder',
                 fnc:() => {
                   GUI.closeContent();
@@ -338,7 +338,6 @@ const ApplicationTemplate = function({ApplicationService}) {
         ComponentsRegistry.registerComponent(component);
         ApplicationService.registerService(component.id, component.getService())
       }
-
     })
   };
 
@@ -428,13 +427,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
     /* Metodos to define */
-    GUI.getResourcesUrl = _.bind(function() {
-      return ApplicationService.getConfig().resourcesurl;
-    }, this);
+    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
     //LIST
-    GUI.showList = _.bind(floatbar.FloatbarService.showPanel, floatbar.FloatbarService);
-    GUI.closeList = _.bind(floatbar.FloatbarService.closePanel, floatbar.FloatbarService);
-    GUI.hideList = _.bind(floatbar.FloatbarService.hidePanel, floatbar.FloatbarService);
+    GUI.showList = floatbar.FloatbarService.showPanel.bind(floatbar.FloatbarService);
+    GUI.closeList = floatbar.FloatbarService.closePanel.bind(floatbar.FloatbarService);
+    GUI.hideList = floatbar.FloatbarService.hidePanel.bind(floatbar.FloatbarService);
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -446,18 +443,31 @@ const ApplicationTemplate = function({ApplicationService}) {
      * @param options
      */
     GUI.outputDataPlace = async function(dataPromise, options={}){
-      // show options (function) set if show data or not
-      const {title='', show, before, after, add=false} = options;
-      const queryResultsService = !add ? this.showContentFactory('query')(title): GUI.getComponent('queryresults').getService();
+      // show parameter it used to set condition to show result or not
+      // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
+      const defaultOutputConfig = {condition:true, add:false, loading:true};
+      const {title='', show=defaultOutputConfig, before, after} = options;
+      // convert show in an object
+      const outputConfig = (toRawType(show) !== 'Object') ?
+        {
+          condition: show, // can be Function or Boolean otherwise is set true
+          add: false,
+          loading: true
+        } : {
+          ...defaultOutputConfig,
+          ...show
+        };
+      const {condition, add, loading} = outputConfig;
       //check if waiting output data
-      // in case we stop and sobsitute with new request data
+      // in case we stop and substiute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
+      let queryResultsService = add ? GUI.getComponent('queryresults').getService() : loading && this.showContentFactory('query')(title);
       this.waitingoutputdataplace = (() => {
         let stop = false;
         (async () =>{
           try {
             const data = await dataPromise;
-            //if set before coll method and wait
+            //if set before call method and wait
             before && await before(data);
             // in case of usermessage show user message
             data.usermessage && GUI.showUserMessage({
@@ -466,9 +476,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               autoclose: data.usermessage.autoclose
             });
             if (!stop) {
-              if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data, {
-                add
-              });
+              // check condition
+              const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
+              if (showResult) {
+                (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
+                  add
+                });
+              }
               else GUI.closeContent();
               // call after is set with data
               after && after(data);
@@ -491,7 +505,6 @@ const ApplicationTemplate = function({ApplicationService}) {
           }
         }
       })();
-      return queryResultsService;
     };
 
     GUI.showContentFactory = function(type) {
@@ -507,7 +520,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       return showPanelContent;
     };
 
-    GUI.showForm = function(options) {
+
+    GUI.showForm = function(options={}) {
+      const {perc, split='h', push, showgoback} = options;
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
       const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
@@ -515,11 +530,11 @@ const ApplicationTemplate = function({ApplicationService}) {
       const formService = formComponent.getService();
       // parameters : [content, title, push, perc, split, closable]
       GUI.setContent({
-        perc: options.perc || null,
+        perc,
         content: formComponent,
-        split: options.split || 'h',
-        push: !!options.push, //only one( if other delete previous component)
-        showgoback: !!options.showgoback,
+        split,
+        push: !!push, //only one( if other delete previous component)
+        showgoback: !!showgoback,
         closable: false
       });
       // return service
@@ -566,13 +581,11 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // show results info/search
     GUI.showQueryResults = function(title, results) {
-      const perc = appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
       const queryResultsComponent = GUI.getComponent('queryresults');
       const queryResultService = queryResultsComponent.getService();
       queryResultService.reset();
       results && queryResultService.setQueryResponse(results);
       GUI.showContextualContent({
-        perc,
         content: queryResultsComponent,
         title: "info.title",
         post_title: title
@@ -690,8 +703,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       viewport.ViewportService.showMap();
     };
 
-    GUI.showContextualMap = function(perc, split) {
-      perc = perc || 30;
+    GUI.showContextualMap = function(perc=30, split) {
       viewport.ViewportService.showContextualMap({
         perc,
         split
@@ -708,33 +720,31 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     //  (100%) content
     GUI.showContent = (options={}) => {
-      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
+      GUI.setLoadingContent(false);
+      options.perc = this._isMobile ? 100 : options.perc;
       GUI.setContent(options);
       return true;
     };
 
     GUI.showContextualContent = (options = {}) => {
-      options.perc = !this._isMobile ? options.perc || 50  : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       GUI.setContent(options);
       return true;
     };
     // add component to stack (append)
-    // Differeces between pushContent and setContent are :
+    // Differences between pushContent and setContent are :
     //  - push every componet is added, set is refreshed
-    //  - pushContent has a new parameter (backonclose) when is cliccked x
+    //  - pushContent has a new parameter (backonclose) when is clicked x
     //  - the contentComponet is close all stack is closed
     GUI.pushContent = (options = {}) => {
-      const perc_default = appLayoutConfig.rightpanel ?  parseInt(appLayoutConfig.rightpanel.width) : 50;
-      options.perc = !this._isMobile ? options.perc || perc_default : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       options.push = true;
       GUI.setContent(options);
     };
     // add content to stack
-    GUI.pushContextualContent = (options) => {
-      options = options || {};
-      options.perc = !this._isMobile ? options.perc || 50  : 100;
-      options.push = true;
-      GUI.setContent(options);
+    GUI.pushContextualContent = (options={}) => {
+      options.perc = this._isMobile ? 100 : options.perc;
+      GUI.pushContent(options);
     };
     // remove last content from stack
     GUI.popContent = function() {
@@ -745,13 +755,31 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.contentLength();
     };
 
-    //get content percentage
-    GUI.getContentPercentage = function(){
-      return viewport.ViewportService.getContentPercentage();
+    GUI.getCurrentContentTitle = function(){
+      return viewport.ViewportService.getCurrentContentTitle();
     };
 
-    GUI.setContentPercentage = function(perc=50){
-      viewport.ViewportService.setContentPercentage(perc);
+    /**
+     * change current content title
+     * @param title
+     */
+    GUI.changeCurrentContentTitle = function(title){
+      viewport.ViewportService.changeCurrentContentTitle(title);
+    };
+
+    /**
+     * Method to get current content
+     */
+    GUI.getCurrentContent = function(){
+      return viewport.ViewportService.getCurrentContent();
+    };
+
+    GUI.toggleFullViewContent = function(){
+      viewport.ViewportService.toggleFullViewContent();
+    };
+
+    GUI.resetToDefaultContentPercentage = function(){
+      viewport.ViewportService.resetToDefaultContentPercentage();
     };
 
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
@@ -769,12 +797,11 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI._setContent = (options={}) => {
-      const perc = appLayoutConfig.rightpanel ? parseInt(appLayoutConfig.rightpanel.width) : 50;
       this._closeUserMessageBeforeSetContent && GUI.closeUserMessage();
       options.content = options.content || null;
       options.title = options.title || "";
       options.push = _.isBoolean(options.push) ? options.push : false;
-      options.perc = !this._isMobile ? options.perc || perc : 100;
+      options.perc = this._isMobile ? 100 : options.perc;
       options.split = options.split || 'h';
       options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
       options.showtitle = _.isBoolean(options.showtitle) ? options.showtitle : true;
@@ -818,7 +845,7 @@ const ApplicationTemplate = function({ApplicationService}) {
         GUI.setContent({
           content: new ProjectsMenuComponent(),
           title: '',
-          perc:100
+          perc: 100
         });
       }
     }

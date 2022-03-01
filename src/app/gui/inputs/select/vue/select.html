@@ -8,8 +8,8 @@
   </span>
   <div slot="body" v-disabled="disabled">
     <select ref="select" style="width:100%;"  class="form-control">
-      <option v-if="showNullOption"></option>
-      <option :value="getValue(value.value)" v-for="value in state.input.options.values">{{ value.key }}</option>
+      <option v-if="showNullOption" :value="select2NullValue"></option>
+      <option :value="getValue(value.value)" v-for="value in state.input.options.values" :key="getValue(value.value)">{{ value.key }}</option>
     </select>
   </div>
   <p v-if="loadingState === 'error'" class="error-input-message" slot="message" v-t="'server_error'"></p>

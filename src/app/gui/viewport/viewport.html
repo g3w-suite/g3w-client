@@ -1,5 +1,5 @@
 <div class="g3w-viewport">
-  <transition name="fade" :duration="{ enter: 800, leave: 500 }">
+  <transition name="fade" :duration="{ enter: 500, leave: 500 }">
     <user-message
             v-if="usermessage.show"
             @close-usermessage="closeUserMessage"
@@ -8,6 +8,7 @@
             :message="usermessage.message"
             :draggable="usermessage.draggable"
             :closable="usermessage.closable"
+            :duration="usermessage.duration"
             :position="usermessage.position"
             :autoclose="usermessage.autoclose"
             :textMessage="usermessage.textMessage"
@@ -37,7 +38,7 @@
     </div>
   </div>
   <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content">
-    <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
+    <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block" style="display: flex; justify-content: space-between">
       <div v-if="previousTitle" class="g3w_contents_back">
         <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
           <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
@@ -46,18 +47,18 @@
         <div @click="gotoPreviousContent()" :class="backOrBackTo" v-else>
           <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
           <span v-t="'backto'"></span>
-          <span v-t="previousTitle"></span>
+          <span v-if="!updatePreviousTitle" v-t="previousTitle"></span>
         </div>
       </div>
-      <span v-if="state.content.closable && state.content.aside" @click="closeContent" style="margin-left: 10px;"  :class="{'mobile': isMobile()}" class="g3w-span-button fa-stack fa-lg pull-right">
-        <i :class="g3wtemplate.getFontClass('circle')"  class="fa-stack-2x panel-button"></i>
-        <i :class="g3wtemplate.getFontClass('close')" class="fa-stack-1x panel-icon"></i>
-      </span>
       <div class="panel-title" :style="[state.content.style.title]" v-if="!previousTitle && showtitle && contentTitle" :class="{'mobile': isMobile()}">
         <span id="contenttitle" v-t:pre="contentTitle.title">
           <span v-t="contentTitle.post_title"></span>
         </span>
       </div>
+      <resize-icon v-if="showresize" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"></resize-icon>
+      <span v-if="state.content.closable && state.content.aside" @click="closeContent" :class="{'mobile': isMobile()}" class="action-button" style="display: flex; justify-content: center ">
+        <i class="skin-color-dark" :class="g3wtemplate.getFontClass('close')"></i>
+      </span>
     </div>
     <div v-show="state.content.loading" class="bar-loader"></div>
   </div>

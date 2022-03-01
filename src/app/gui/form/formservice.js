@@ -1,3 +1,4 @@
+import inputService from 'core/expression/inputservice';
 const {inherit, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
@@ -13,8 +14,9 @@ function FormService() {
       this.state.formstructure = formStructure;
     },
     // setter change fields
-    setFormFields(fields) {
+    setFormFields(fields=[]) {
       this.state.fields = fields;
+      this.handleFieldsWithExpression(fields);
     },
     setupFields() {
       this._setupFields();
@@ -39,17 +41,18 @@ function FormService() {
   this.init = function(options={}) {
     this._setInitForm(options);
   };
-  // init form options paased for example by editor
+  // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    this.layer = options.layer;
-    const fields = options.fields;
-    this.title = options.title || 'Form';
-    this.formId = options.formId;
-    this.name = options.name;
-    this.buttons = options.buttons || [];
-    this.context_inputs = options.context_inputs;
-    const footer = options.footer || {};
+    const {fields, feature, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
+    this.layer = layer;
+    this.feature = feature;
+    this.title = title;
+    this.formId = formId;
+    this.name = name;
+    this.buttons = buttons;
+    this.context_inputs = context_inputs;
     this.state = {
+      layerid: layer.getId(),
       loading:false,
       components: [],
       disabledcomponents: [],
@@ -62,16 +65,15 @@ function FormService() {
       valid: true, // global form validation state. True at beginning
       // when input change will be update
       tovalidate: {},
+      feature,
       componentstovalidate: {},
       footer
     };
+    this.expression_fields_dependencies = {};
     this.setFormFields(fields);
-    this.setFormStructure(options.formStructure);
     if (this.layer && options.formStructure) {
-      const fieldsoutofformstructure = this.layer.getFieldsOutOfFormStructure().map(field => field.field_name);
-      this.state.fieldsoutofformstructure = {
-        fields: fields.filter(field => fieldsoutofformstructure.indexOf(field.name) > -1)
-      }
+      const formstructure = this.layer.getLayerEditingFormStructure(fields);
+      this.setFormStructure(formstructure);
     }
   };
   this.eventBus.$on('set-loading-form', (bool=false) => {
@@ -83,6 +85,27 @@ inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
 
+proto.handleFieldsWithExpression = function(fields=[]){
+  fields.forEach(field => {
+    const {options={}} = field.input;
+    if (options.filter_expression){
+      const {referencing_fields=[]} = options.filter_expression;
+      referencing_fields.forEach(referencing_field =>{
+        if (referencing_field) {
+          if (this.expression_fields_dependencies[referencing_field] === undefined)
+            this.expression_fields_dependencies[referencing_field] = [];
+          this.expression_fields_dependencies[referencing_field].push(field.name);
+        }
+      })
+    }
+  });
+  // start to evaluate field
+  Object.keys(this.expression_fields_dependencies).forEach(name =>{
+    const field = this.state.fields.find(field => field.name === name);
+    field && this.evaluateExpression(field);
+  })
+};
+
 proto.setCurrentFormPercentage = function(perc){
   this.layer.setFormPercentage(perc)
 };
@@ -93,11 +116,33 @@ proto.setLoading = function(bool=false) {
 
 proto.setValidComponent = function({id, valid}){
   this.state.componentstovalidate[id] = valid;
- this.isValid();
+  this.isValid();
 };
 
 proto.getValidComponent = function(id) {
   return this.state.componentstovalidate[id];
+};
+
+proto.changeInput = function(input){
+  this.evaluateExpression(input);
+  this.isValid(input);
+};
+
+proto.evaluateExpression = function(input){
+  const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
+  if (expression_fields_dependencies) {
+    const feature = this.feature.clone();
+    feature.set(input.name, input.value);
+    expression_fields_dependencies.forEach(expression_dependency_field =>{
+      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleFormInput({
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature //featute to tranform in form_data
+      })
+    })
+  }
 };
 
 // Every input send to form it valid value that will change the genaral state of form

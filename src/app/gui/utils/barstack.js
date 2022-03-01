@@ -81,7 +81,7 @@ proto._mount = function(content, options) {
   }
   // Vue
   else if (content.mount && typeof content.mount == 'function') {
-    this._checkDuplicateVueContent(content); // if already exist it removed before
+    this._checkDuplicateVueContent(content); // if already exist it removed before based on id
     return this._setVueContent(content,options)
   }
   // DOM

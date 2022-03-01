@@ -1,5 +1,4 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-import ApplicationState from 'core/applicationstate';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
@@ -15,7 +14,13 @@ const vueComponentObject = {
   data() {
     return {
       state: {},
-      switchcomponent: false
+      switchcomponent: false,
+      body: {
+        components: {
+          before: null,
+          after: null
+        }
+      }
     }
   },
   components: {
@@ -30,18 +35,15 @@ const vueComponentObject = {
         disabled
       });
     },
-    resizeForm(){
-      const perc = GUI.getContentPercentage();
-      const currentFormPercentage = perc == 100 ? 50 : 100;
-      GUI.setContentPercentage(currentFormPercentage);
-      this.$options.service.setCurrentFormPercentage(currentFormPercentage)
+    resizeForm(perc){
+      this.$options.service.setCurrentFormPercentage(perc)
     },
     switchComponent(index) {
       this.switchcomponent = true;
       this.$options.service.setComponentByIndex(index);
     },
     changeInput(input) {
-      return this.$options.service.isValid(input);
+      return this.$options.service.changeInput(input);
     },
     addToValidate(input) {
       this.$options.service.addToValidate(input);
@@ -100,6 +102,17 @@ function FormComponent(options = {}) {
   this.init(options);
   this.getService().addComponents(components);
   this.getService().setComponent(components[0].component);
+  /**
+   * Used to add component to form body
+   * @param component
+   */
+  this.addBodyFormComponent = function({component, where='after'}={}){
+    this.getInternalComponent().body.components[where] = component;
+  };
+
+  this.addBodyFormComponents = function({components=[], where="after"}={}){
+
+  };
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);

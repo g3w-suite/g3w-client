@@ -1,12 +1,13 @@
-import {GEOMETRY_FIELDS} from "../../constant";
+import {QUERY_POINT_TOLERANCE, G3W_FID} from 'constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
-const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
+const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 
 const geoutils = {
+  geometryFields,
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
@@ -325,22 +326,17 @@ const geoutils = {
     return olLayer;
   },
 
-  createWMSLayer({url, name, projection, layers=[]}={}){
-    const id = uniqueId();
-    name = name || id;
-    const wmslayer = new WMSLayer({
-      id,
-      layers,
-      projection,
-      url
-    });
-    const olLayer =  wmslayer.getOLLayer();
-    olLayer.set('id', id); // set unique id
-    olLayer.set('name', name);
-    return {
-      wmslayer,
-      olLayer
-    }
+  createVectorLayerFromGeometry(geometry){
+    const feature = new ol.Feature(geometry);
+    return geoutils.createVectorLayerFromFeatures(feature);
+  },
+
+  createVectorLayerFromFeatures(feature){
+    return new ol.layer.Vector({
+      source: new ol.source.Vector({
+        features: Array.isArray(feature) ? feature : [feature]
+      })
+    })
   },
 
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
@@ -359,7 +355,7 @@ const geoutils = {
         vectorLayer = new ol.layer.Vector({
           source: vectorSource,
           name,
-          _fields: Object.keys(features[0].getProperties()).filter(property => GEOMETRY_FIELDS.indexOf(property) < 0),
+          _fields: Object.keys(features[0].getProperties()).filter(property => geometryFields.indexOf(property) < 0),
           id: uniqueId()
         });
         style && vectorLayer.setStyle(style);
@@ -521,8 +517,7 @@ const geoutils = {
           color,
           width: 4
         }),
-        //hardcoded for the moment to don't fill selected hightlight polygon featue
-        fill: false && new ol.style.Fill({
+        fill: fill && new ol.style.Fill({
           color: ol.color.asString(fillColor)
         })
       });
@@ -532,7 +527,32 @@ const geoutils = {
 
   getAlphanumericPropertiesFromFeature(properties=[]) {
     properties = Array.isArray(properties) ? properties : Object.keys(properties);
-    return properties.filter(property => GEOMETRY_FIELDS.indexOf(property) === -1);
+    return properties.filter(property => geometryFields.indexOf(property) === -1);
+  },
+
+  /**
+   * Method to convert feature to form Data for expression/expression_eval request
+   * @param feature
+   * @param type
+   */
+  getFormDataExpressionRequestFromFeature(feature){
+    delete feature.attributes.geometry;
+    const _feature = new ol.Feature(feature.geometry);
+    const properties = {};
+    geoutils.getAlphanumericPropertiesFromFeature(feature.attributes).forEach(property =>{
+      if (property !== G3W_FID) properties[property] = feature.attributes[property]
+    });
+    _feature.setProperties(properties);
+    return geoutils.convertFeatureToGEOJSON(_feature);
+  },
+
+  /**
+   * Convert Feature  to GEOJSON Format
+   * @param feature
+   */
+  convertFeatureToGEOJSON(feature){
+    const GeoJSONFormat = new ol.format.GeoJSON();
+    return GeoJSONFormat.writeFeatureObject(feature);
   },
 
   /**
@@ -548,6 +568,7 @@ const geoutils = {
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     const map = GUI.getComponent('map').getService().getMap();
     const mapProjection = map.getView().getProjection();
+
     if (multilayers) {
       queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
         geometry,
@@ -653,7 +674,7 @@ const geoutils = {
     return d.promise();
   },
 
-  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, multilayers=false, reproject=true}={}) {
+  getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance=QUERY_POINT_TOLERANCE, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     if (!layers.length) return d.resolve(layers);
     const map = GUI.getComponent('map').getService().getMap();
@@ -679,6 +700,7 @@ const geoutils = {
         provider.query({
           feature_count,
           coordinates,
+          query_point_tolerance,
           mapProjection,
           reproject,
           resolution,
@@ -693,13 +715,14 @@ const geoutils = {
             }
           })
       }
-    } else { // single layers
+    } else { // single layers request
       let layersLength = layers.length;
       let rejectedResponses = 0;
       layers.forEach(layer => {
         layer.query({
           feature_count,
           coordinates,
+          query_point_tolerance,
           mapProjection,
           size,
           resolution,
@@ -742,10 +765,11 @@ const geoutils = {
     return MapLayersStoreRegistry.getLayerById(layerId);
   },
 
+  //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
+  //Default values geolayer
   getMapLayersByFilter(filter={}, options={}) {
     filter = {
       GEOLAYER: true,
-      ACTIVE: true, // active is not disabled
       ...filter
     };
     let layers = [];
@@ -758,12 +782,37 @@ const geoutils = {
   areCoordinatesEqual(coordinates1=[], coordinates2=[]) {
     return (coordinates1[0]===coordinates2[0] && coordinates1[1]===coordinates2[1]);
   },
-
-  getFeaturesFromResponseVectorApi(response={}) {
+  /**
+   *
+   *
+   * @param response
+   * @param type vector/results
+   * @returns {*|*[]|null}
+   */
+  getFeaturesFromResponseVectorApi(response={}, {type='vector'}={}) {
     if (response.result) {
       const features = response.vector.data.features || [];
-      return features;
+      switch (type) {
+        case 'result':
+          return geoutils.covertVectorFeaturesToResultFeatures(features);
+          break;
+        case 'vector':
+        default:
+          return features
+      }
     } else return null;
+  },
+
+  covertVectorFeaturesToResultFeatures(features=[]){
+    return features.map(feature => {
+      const {id, properties:attributes, geometry} = feature;
+      attributes[G3W_FID]= id;
+      return {
+        geometry,
+        attributes,
+        id
+      }
+    })
   },
 
   splitGeometryLine(splitGeometry, lineGeometry) {
@@ -964,6 +1013,110 @@ const geoutils = {
     }
     return splittedFeatureGeometries;
   },
+  /**
+   * Return Point feature vertex from geometry
+   * @param geometry
+   */
+  getPointFeaturesfromGeometryVertex(geometry){
+    const pointFeatures = [];
+    switch(geometry.getType()){
+      case Geometry.GeometryTypes.MULTIPOLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            coordinates.pop();
+            coordinates.forEach(coordinates =>{
+              const feature = new ol.Feature(new ol.geom.Point(coordinates));
+              pointFeatures.push(feature);
+            })
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.POLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.pop();
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.MULTILINESTRING:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.LINESTRING:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            pointFeatures.push(feature);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.MULTIPOINT:
+        geometry.getCoordinates().forEach(coordinates =>{
+          const feature = new ol.Feature(new ol.geom.Point(coordinates));
+          pointFeatures.push(feature);
+        });
+        break;
+      case Geometry.GeometryTypes.POINT:
+        const coordinates =  geometry.getCoordinates();
+        const feature = new ol.geom.Point(coordinates);
+        pointFeatures.push(feature);
+        break;
+    }
+    return pointFeatures;
+  },
+
+  /**
+   * Return number of vertex of a feature
+   * @param geometries
+   * @returns {*}
+   */
+  getVertexLength(geometry){
+    let vertexLength = 0;
+    switch(geometry.getType()){
+      case Geometry.GeometryTypes.MULTIPOLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.forEach(coordinates =>{
+            coordinates.pop();
+            coordinates.forEach(() => vertexLength+=1);
+          })
+        });
+        break;
+      case Geometry.GeometryTypes.POLYGON:
+        geometry.getCoordinates().forEach(coordinates =>{
+          coordinates.pop();
+          coordinates.forEach(() => vertexLength+=1);
+        });
+        break;
+    }
+    return vertexLength;
+  },
+
+  /**
+   * Method that compare two geometry type and return true id are same geometry type or have in common tha same base geometry type:
+   * es. Point <--> Point => true
+   *  MultiPoint <--> Point => true
+   *  Point <--> Polygon => false
+   *
+   */
+  isSameBaseGeometryType(geometryType1, geometryType2){
+    geometryType1 = geometryType1.replace('Multi','');
+    geometryType2 = geometryType2.replace('Multi','');
+    return geometryType1 === geometryType2;
+  },
+
+  isSingleGeometry(geometry){
+    return !Geometry.isMultiGeometry(geometry.getType());
+  },
+
+  isMultiGeometry(geometry) {
+    return !Geometry.isMultiGeometry(geometry.getType());
+  },
 
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
@@ -1038,6 +1191,31 @@ const geoutils = {
     return dissolvedFeature;
   },
 
+  /**
+   * Method to find Self Intersection
+   * @param geoJsonPolygon
+   * @returns {[]}
+   */
+  findSelfIntersects(geometry) {
+    // temporary return true or false (commented the array result for point intersect)
+    const selfIntersectPoint = [];
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsPolygon = olFromJsts.read(geometry);
+    // if the geometry is already a simple linear ring, do not
+    // try to find self intersection points.
+    const validator = new jsts.operation.IsSimpleOp(jstsPolygon);
+    //if (validator.isSimpleLinearGeometry(jstsPolygon)) return selfIntersectPoint;
+    if (validator.isSimpleLinearGeometry(jstsPolygon)) return false;
+    const graph = new jsts.geomgraph.GeometryGraph(0, jstsPolygon);
+    const cat = new jsts.operation.valid.ConsistentAreaTester(graph);
+    const r = cat.isNodeConsistentArea();
+    if (!r) {
+      return true;
+      //const pt = cat.getInvalidPoint();
+      //selfIntersectPoint.push([pt.x, pt.y]);
+    }
+  },
+
   normalizeEpsg(epsg) {
     if (typeof epsg === 'number') return `EPSG:${epsg}`;
     epsg = epsg.replace(/[^\d\.\-]/g, "");
@@ -1057,7 +1235,96 @@ const geoutils = {
     return crs;
   },
   /**
-   * Method to get geoiff file create by server
+   * Method to convert Degree Minutes  to Degree
+   * @param dm
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDMToDEG({dms, type="Array"}) {
+    const dms_Array = type === 'Array' ? dms : dms.split(/[^\d\w\.]+/);
+    const degrees = 1*dms_Array[0];
+    const minutes = 1*dms_Array[1];
+    let deg = (Number(degrees) + Number(minutes)/60).toFixed(6);
+    return 1*deg;
+  },
+  /**
+   * Method to convert Degree to DM
+   * @param deg
+   * @param lat
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDEGToDM({deg, output='Array'} = {}) {
+    const absolute = Math.abs(deg);
+    const degrees = Math.floor(absolute);
+    const minutes = (absolute - degrees) * 60;
+    switch (output) {
+      case 'Array':
+        return [degrees, minutes];
+        break;
+      case 'Object':
+        return {
+          degrees,
+          minutes,
+        };
+        break;
+      case 'Text':
+      default:
+        return  degrees + "°" + minutes + "'"
+    }
+  },
+  /**
+   * Method to convert Degree Minutes Seconto to Degree
+   * @param dms
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDMSToDEG({dms, type="Array"}) {
+    const dms_Array = type === 'Array' ? dms : dms.split(/[^\d\w\.]+/);
+    const degrees = 1*dms_Array[0];
+    const minutes = 1*dms_Array[1];
+    const seconds = 1*dms_Array[2];
+    const direction = dms_Array[3];
+    let deg = (Number(degrees) + Number(minutes)/60 + Number(seconds)/3600).toFixed(6);
+    if (direction == "S" || direction == "W") deg = deg * -1;
+    return 1*deg;
+  },
+  /**
+   * Method to convert Degree to DMS
+   * @param deg
+   * @param lat
+   * @returns {string}
+   * @constructor
+   */
+  ConvertDEGToDMS({deg, lat, lon, output='Array'} = {}) {
+    const absolute = Math.abs(deg);
+    const degrees = Math.floor(absolute);
+    const minutesNotTruncated = (absolute - degrees) * 60;
+    const minutes = Math.floor(minutesNotTruncated);
+    const seconds = ((minutesNotTruncated - minutes) * 60).toFixed(2);
+    let direction;
+    if (lat) direction =  deg >= 0 ? "N" : "S";
+    if (lon) direction = deg >= 0 ? "E" : "W";
+    switch (output) {
+      case 'Array':
+        return [degrees, minutes, seconds, direction];
+        break;
+      case 'Object':
+        return {
+          degrees,
+          minutes,
+          seconds,
+          direction
+        };
+        break;
+      case 'Text':
+      default:
+        return  degrees + "°" + minutes + "'" + seconds + "\"" + direction
+    }
+
+  },
+  /**
+   * Method to get geotiff file create by server
    *
    * @param options {
    *   url: server url end point
@@ -1077,6 +1344,26 @@ const geoutils = {
     });
     const geoTIFF = await response.blob();
     return geoTIFF;
+  },
+  /**
+   * Method to convert feature forma api
+   * @param feature
+   * @returns {*|Feature|Feature}
+   */
+  createOlFeatureFromApiResponseFeature(feature){
+    const {properties={}, geometry, id} = feature;
+    properties[G3W_FID] = id;
+    const Feature = new ol.Feature(new ol.geom[geometry.type](geometry.coordinates));
+    Feature.setProperties(properties);
+    return Feature;
+  },
+
+  sanitizeFidFeature(fid){
+    if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
+      fid = fid.split('.');
+      fid = fid.length === 2 ? fid[1] : fid[0];
+    }
+    return fid;
   }
 };
 

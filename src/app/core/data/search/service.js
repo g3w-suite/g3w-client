@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const {createOlFeatureFromApiResponseFeature} = require('core/utils/geo');
 const BaseService = require('core/data/service');
 
 function SearchService(){
@@ -10,11 +11,10 @@ function SearchService(){
     const {raw=false} = options;
     const dataSearch = {
       data: [],
-      type: params.search_endpoint,
       query: {
-        type: 'search',
-        search: params.filter.toString()
-      }
+        type: 'search'
+      },
+      type: params.search_endpoint
     };
     // check if layer is array
     const layers = Array.isArray(layer) ? layer : [layer];
@@ -43,19 +43,46 @@ function SearchService(){
       promisesSearch.push(promise);
     }
     const responses = await Promise.allSettled(promisesSearch);
-
     responses.forEach(({status, value}={}) => {
-      if (raw) {
-        dataSearch.data.push(params.search_endpoint === 'api' ? {
-          data: value
-        }: value );
-      } else {
-        const {data=[]} = value;
-        params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+      // need to filter only fulfilled response
+      if (status === 'fulfilled'){
+        if (raw) {
+          dataSearch.data.push(params.search_endpoint === 'api' ? {
+            data: value
+          }: value );
+        } else {
+          const {data=[]} = value;
+          params.search_endpoint === 'api' ? data.length && dataSearch.data.push(data[0]) : dataSearch.data = data;
+        }
       }
     });
     return dataSearch;
-  }
+  };
+
+  /**
+   * Method to return feature from api
+   * @param layer
+   * @param fid
+   * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
+   */
+  this.fid = async function({layer, fid}={}){
+    const response = {
+      data: [
+        {
+          layer,
+          features:[],
+        }
+      ],
+      query: {
+        type: 'search'
+      }
+    };
+    try {
+      const feature = layer && await layer.getFeatureByFid(fid);
+      feature && response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature));
+    } catch(err){}
+    return response;
+  };
 }
 
 inherit(SearchService, BaseService);

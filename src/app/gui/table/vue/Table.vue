@@ -72,8 +72,9 @@
       _setLayout() {
         this.$options.service._setLayout();
       },
-      zoomAndHighLightFeature(feature, zoom=true) {
-        feature.geometry && this.$options.service.zoomAndHighLightFeature(feature, zoom);
+      async zoomAndHighLightFeature(feature, zoom=true) {
+        if (feature.geometry) this.$options.service.zoomAndHighLightFeature(feature, zoom);
+        else await this.$options.service.zoomAndHighLightGeometryRelationFeatures(feature, zoom);
       },
       addRemoveSelectedFeature(feature){
         this.$options.service.addRemoveSelectedFeature(feature);

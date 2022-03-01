@@ -1,17 +1,16 @@
 <div id="search-results" class="queryresults-wrapper">
-<!--  <div v-if="info.message" class="query-info-results" style="display: flex; align-items:center; margin-bottom: 5px; color: #394247">-->
-<!--    <span @mouseover="info.action" v-if="info.icon" class="action-button skin-tooltip-right" :class="g3wtemplate.getFontClass('info')" data-placement="right" data-toggle="tooltip"     style="cursor: pointer; padding-right: 5px;font-size: 1.2em" v-t-tooltip.create="info.message"></span>-->
-<!--  </div>-->
   <div class="queryresults-container">
     <template v-if="state.layers.length">
       <ul v-if="hasLayers" class="queryresults" id="queryresults" style="position: relative">
-        <li v-if="layerHasFeatures(layer) && layer.show" v-for="layer in state.layers">
+        <li v-show="(layerHasFeatures(layer) || layer.rawdata) && layer.show" v-for="layer in state.layers">
+          <bar-loader :loading="layer.loading"></bar-loader>
           <div class="box box-primary">
             <div class="box-header with-border"  :class="{'mobile': isMobile()}" data-widget="collapse">
               <div class="box-title query-layer-title" :style="{fontSize: isMobile() && '1em !important'}">{{ layer.title }}
-                <span class="query-layer-feature-count">({{layer.features.length}})</span>
+                <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
               </div>
               <div class="box-features-action" @click.stop="">
+                <infoformats :layer="layer"></infoformats>
                 <template v-if="layer.features.length > 1">
                   <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-bottom"
                         data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
@@ -38,7 +37,7 @@
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                 </span>
-                <span v-if="layer.features.length > 1" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
+                <span v-if="layer.features.length > 1 && layer.source.type !== 'wms'" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                 </span>
@@ -46,8 +45,10 @@
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'layer_selection_filter.tools.filter'">
                 <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
               </span>
-                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>
               </div>
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i>
+              </button>
             </div>
             <template v-if="state.layeractiontool[layer.id].component">
               <div class="g3w-layer-action-tools with-border" style="padding: 5px" :class="{'mobile': isMobile()}">
@@ -55,7 +56,10 @@
               </div>
             </template>
             <div class="box-body" :class="{'mobile': isMobile()}">
-              <template v-if="hasFormStructure(layer)">
+              <template v-if="layer.rawdata">
+                <div class="queryresults-text-html" :class="{text: layer.infoformat === 'text/plain'}" v-html="layer.rawdata"></div>
+              </template>
+              <template v-else-if="hasFormStructure(layer)">
                 <table class="table" :class="{'mobile': isMobile()}">
                   <thead>
                     <tr>
@@ -85,16 +89,18 @@
                               <tr>
                                 <td class="attr-label">{{ item.item.label }}</td>
                                 <td class="attr-value" :attribute="item.item.name">
-                                  <span v-if="is('simple',layer,item.item.name,feature.attributes[item.item.name])" v-html="feature.attributes[item.item.name]"></span>
-                                  <g3w-image v-else-if="is('photo',layer,item.item.name,feature.attributes[item.item.name])"  :value="feature.attributes[item.item.name]"></g3w-image>
-                                  <g3w-image v-else-if="checkField('image', item.item.label, layer.attributes)"  :value="item.item.value"></g3w-image>
-                                  <g3w-link v-else-if="is('link',layer, item.item.name,feature.attributes[item.item.name])" :state="{value: feature.attributes[item.item.name]}"></g3w-link>
+                                  <table-attribute-field-value :attribute="item.item" :layer="layer" :feature="feature"></table-attribute-field-value>
                                 </td>
                               </tr>
                               </tbody>
                             </table>
                             <tabs v-else-if="item.type === 'tab'" :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="item.item"></tabs>
                           </template>
+                        </td>
+                      </tr>
+                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature')">
+                        <td :colspan="getColSpan(layer)">
+                          <component :is="component" :layer="layer" :feature="feature"></component>
                         </td>
                       </tr>
                     </template>
@@ -128,18 +134,23 @@
                             <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
-                                <span v-if="is('simple',layer,attribute.name,feature.attributes[attribute.name])" v-html="feature.attributes[attribute.name]"></span>
-                                <g3w-image v-else-if="is('photo',layer,attribute.name,feature.attributes[attribute.name])"  :value="feature.attributes[attribute.name]"></g3w-image>
-                                <g3w-image v-else-if="checkField('image', attribute.label, layer.attributes)"  :value="attribute.value"></g3w-image>
-                                <g3w-link v-else-if="is('link',layer,attribute.name,feature.attributes[attribute.name])" :state="{value: feature.attributes[attribute.name]}"></g3w-link>
+                                <table-attribute-field-value :attribute="attribute" :layer="layer" :feature="feature"></table-attribute-field-value>
                               </td>
                             </tr>
                           </table>
                       </td>
                     </tr>
-                </template>
+                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature')">
+                      <td colspan="getColSpan(layer)">
+                        <component class="box-body" :is="component" :layer="layer" :feature="feature"></component>
+                      </td>
+                    </tr>
+                  </template>
                 </tbody>
               </table>
+            </div>
+            <div class="box-body"  :class="{'mobile': isMobile()}" v-for="({component}) in getLayerCustomComponents(layer.id, 'layer')">
+              <component :is="component" :layer="layer"></component>
             </div>
           </div>
         </li>
@@ -149,10 +160,17 @@
       </ul>
     </template>
     <template v-else>
-      <div class="skin-color" class="query-results-not-found" v-if="state.changed">
-        <h4 style="font-weight: bold; text-align: center" v-t="'info.no_results'"></h4>
-<!--        <div>{{state.query.type}}</div>-->
+      <div class="query-results-not-found" v-if="state.changed">
+        <h4 class="skin-color" style="font-weight: bold; text-align: center" v-t="'info.no_results'"></h4>
       </div>
     </template>
   </div>
 </div>
+<script>
+  import Tableattributefieldvalue from "./components/tableattributefieldvalue";
+  import Select2 from "../../search/vue/panel/select2";
+  import Infoformats from "./components/actiontools/infoformats";
+  export default {
+    components: {Infoformats, Select2, Tableattributefieldvalue}
+  }
+</script>

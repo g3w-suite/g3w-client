@@ -19,7 +19,7 @@
         <div v-if="showTocTools" id="g3w-catalog-toc-layers-toolbar" style="margin: 2px;">
           <changemapthemes :key="project.state.gid" :map_themes="project.state.map_themes" @change-map-theme="changeMapTheme"></changemapthemes>
         </div>
-        <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees">
+        <ul class="tree-root root project-root" v-for="_layerstree in state.layerstrees" :key="_layerstree.storeid">
           <tristate-tree
             :highlightlayers="state.highlightlayers"
             :layerstree="layerstree"

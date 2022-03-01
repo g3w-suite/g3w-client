@@ -117,7 +117,6 @@ proto.setupCustomMapParamsToLegendUrl = function(params={}){
   else this.layers.forEach(layer => {
     layer.setMapParamstoLegendUrl(params)
   });
-
 };
 
 module.exports = WMSLayer;

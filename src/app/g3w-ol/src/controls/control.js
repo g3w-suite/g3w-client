@@ -139,16 +139,18 @@ proto.layout = function(map) {
 // change layout of controls // overwrite to customize beahviour
 proto.changelayout = function(map) {};
 
-proto.showHide = function() {
-  $(this.element).toggle();
-};
-
 //called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
 proto.setMap = function(map) {
   if (map) {
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
   }
+};
+/**
+ *
+ */
+proto.showControl = function(){
+  $(this.element).show();
 };
 
 //hide control and move all controls that sit on his right position
@@ -173,9 +175,8 @@ proto.hideControl = function() {
 
 proto.setEnable = function(enabled, toggled=false) {
   const controlButton = $(this.element).find('button').first();
-  if (enabled) {
-    controlButton.removeClass('g3w-ol-disabled');
-  } else {
+  if (enabled) controlButton.removeClass('g3w-ol-disabled');
+  else {
     controlButton.addClass('g3w-ol-disabled');
     this._interaction && this._interaction.setActive(false);
   }

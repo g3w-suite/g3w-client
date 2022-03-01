@@ -1,7 +1,9 @@
-import {G3W_FID, GEOMETRY_FIELDS} from 'constant';
-const {base, inherit, toRawType} = require('core/utils/utils');
+import {G3W_FID} from 'constant';
+const {base, inherit} = require('core/utils/utils');
 const geoutils = require('g3w-ol/src/utils/utils');
 const G3WObject = require('core/g3wobject');
+const {geometryFields, sanitizeFidFeature} =  require('core/utils/geo');
+const parser = require('core/parsers/vector/parser');
 const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -51,21 +53,19 @@ proto.getName = function() {
   return this._name;
 };
 
-// to extract gml from multiple (Tuscany region)
-proto.extractGML = function (response) {
-  if (response.substr(0,2) !== '--')
-    return response;
-  const gmlTag1 = new RegExp("<([^ ]*)FeatureCollection");
-  const gmlTag2 = new RegExp("<([^ ]*)msGMLOutput");
-  const boundary = '\r\n--';
-  const parts = response.split(new RegExp(boundary));
-  parts.forEach((part) => {
-    const isGmlPart = part.search(gmlTag1) > -1 ? true : part.search(gmlTag2) > -1 ? true : false;
-    if (isGmlPart) {
-      const gml = part.substr(part.indexOf("<?xml"));
-      return gml;
-    }
+
+/**
+ * Handle case plain text or html from request
+ */
+proto.handleTextHtmlResponse = function({layers, response}={}){
+  const handleResponse = [];
+  layers.forEach(layer =>{
+    handleResponse.push({
+      layer,
+      rawdata: response
+    })
   });
+  return handleResponse;
 };
 
 // Method to transform xml from server to present to queryreult component
@@ -75,7 +75,7 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
   const infoFormat = layer.getInfoFormat();
   let _response;
   switch(infoFormat) {
-    case 'application/json':
+    case "application/json":
       _response = this._parseGeoJsonResponse({
         layers,
         response,
@@ -83,7 +83,27 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
         wms
       });
       break;
-    case 'application/vnd.ogc.gml':
+    case "text/plain":
+    case 'text/html':
+      _response = this.handleTextHtmlResponse({
+        layers,
+        response
+      });
+      break;
+    case "text/gml":
+      const parserGML = parser.get({
+        type: 'gml'
+      });
+      const features = parserGML({
+        data:response,
+        layer: layers[0]
+      });
+      _response = layers.map(layer =>({
+        layer,
+        features
+      }));
+      break;
+    case "application/vnd.ogc.gml":
     default:
       //IN CASE OF application/vnd.ogc.gml always pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
@@ -116,16 +136,10 @@ proto._parseGeoJsonResponse = function({layers=[], response, projections, wms=tr
   const data = response;
   const features = data && this._parseLayerGeoJSON(data, projections) || [];
   features.filter(feature => {
-    let index;
     const featureId = feature.getId();
-    let g3w_fid = featureId;
+    const g3w_fid = sanitizeFidFeature(featureId);
     // in case of wms getfeature without filter return string conatin layerName or layerid
-    if (toRawType(featureId) === 'String' && Number.isNaN(1*featureId)) {
-      const fid = feature.getId().split(`.`); // get id of the feature
-      const currentLayerId = fid[0];
-      g3w_fid = fid.length === 2 ? fid[1] : fid[0];
-      index =  layersId.indexOf(currentLayerId);
-    } else index = 0; // force to 0 only one layer (search)
+    const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
     if (index !== -1) {
       const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
       const properties = feature.getProperties();
@@ -288,7 +302,8 @@ proto._getHandledResponsesFromResponse = function({response, layers, projections
   return handledResponses;
 };
 
-proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, wms}) {
+proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, wms}={}) {
+  if (!response) return; // return undefined if non response
   if (!(typeof response === 'string'|| response instanceof String))
     response = new XMLSerializer().serializeToString(response);
   for (let i=0; i < layers.length; i++) {
@@ -301,7 +316,7 @@ proto._handleXMLStringResponseBeforeConvertToJSON = function({response, layers, 
     const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, "g");
     response = response.replace(reg, `qgs:layer${i}`);
   }
-  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)>/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
+  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
   arrayQGS.forEach((find, idx) => {
     if (idx%2 === 0) {
       if (!this._hasFieldsStartWithNotPermittedKey) this._hasFieldsStartWithNotPermittedKey = {};
@@ -379,7 +394,7 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
   let featureAttributesNames = _.keys(featureAttributes);
   featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return GEOMETRY_FIELDS.indexOf(featureAttributesName) === -1;
+    return geometryFields.indexOf(featureAttributesName) === -1;
   });
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);
@@ -425,10 +440,11 @@ proto._parseLayerFeatureCollection = function({jsonresponse, layer, projections}
       numericFields.forEach(_field => {
         const value = feature.get(_field);
         const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], value);
+        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value)? value[0] : value);
         feature.unset(_field);
       })
     });
+    this._hasFieldsStartWithNumber = false;
   }
   return [{
     layer,

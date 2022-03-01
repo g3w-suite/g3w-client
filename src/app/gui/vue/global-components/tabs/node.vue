@@ -1,10 +1,10 @@
 <template>
   <div class="tab-node group">
     <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="row" :class="{'mobile': isMobile()}">
-      <div v-for="column in columnNumber" :class="columnClass" >
+    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(auto-fit, minmax(50px, 1fr))`}">
+      <template v-for="column in columnNumber"  style="padding:2px">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 3px 3px 0 3px"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -13,23 +13,9 @@
             :is="getComponent(getField(getNode(row, column)))">
           </component>
           <template v-else>
-            <div v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group">
-              <node
-                :showRelationByField="showRelationByField"
-                :feature="feature"
-                :layerid="layerid"
-                :contenttype="contenttype"
-                @changeinput="changeInput"
-                @addinput="addToValidate"
-                :fields="fields"
-                :showTitle="true"
-                :changeInput="changeInput"
-                :addToValidate="addToValidate"
-                :node="getNode(row, column)">
-              </node>
-            </div>
+            <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
-              <div :style="{cursor: showRelationByField && pointer}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
+              <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
                 <div v-if="showRelationByField" class="query_relation_field" >
                   <i :class="g3wtemplate.font['relation']"></i>
                 </div>
@@ -41,37 +27,23 @@
                 </span>
               </div>
               <template v-else>
-                <div class="form_editing_relation_input" v-t="'sdk.form.messages.qgis_input_widget_relation'">
-                  <span class="info_helptext_button">i</span>
+                <div class="form_editing_relation_input skin-background-color lighten" v-t="'sdk.form.messages.qgis_input_widget_relation'">
+                  <span class="info_helptext_button skin-background-color lighten">i</span>
                 </div>
               </template>
             </template>
           </template>
         </template>
-      </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
-  import G3wInput from '../inputs/g3w-input.vue';
+  import G3wInput from 'gui/inputs/g3w-input.vue';
   const Fields = require('gui/fields/fields');
   const ProjectRegistry = require('core/project/projectsregistry');
   const GUI = require('gui/gui');
-  const COLUMNCLASSES = {
-    1: 'col-md-12',
-    2: 'col-md-6',
-    3: 'col-md-4',
-    4: 'col-md-3',
-    5: 'col-md-2',
-    6: 'col-md-2',
-    7: 'col-md-1',
-    8: 'col-md-1',
-    9: 'col-md-1',
-    10: 'col-md-1',
-    11: 'col-md-1',
-    12: 'col-md-1',
-  };
   export default {
     name: "node",
     props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField'],
@@ -87,7 +59,7 @@
     },
     computed: {
       filterNodes() {
-        const filterNodes = this.node.nodes && this.node.nodes.filter((node) => {
+        const filterNodes = this.node.nodes && this.node.nodes.filter(node => {
           if (this.getNodeType(node) === 'group') {
             return true
           } else if (!node.nodes && node.name && this.getNodeType(node) != 'group') {
@@ -114,9 +86,6 @@
           rowCount = Math.floor(this.nodesLength / this.columnNumber) + rest;
         }
         return rowCount;
-      },
-      columnClass() {
-        return `${COLUMNCLASSES[this.columnNumber]} ${this.isMobile() ? 'mobile' : ''}` ;
       },
       columnNumber() {
         const columnCount = parseInt(this.node.columncount) ?  parseInt(this.node.columncount): 1;
@@ -149,10 +118,10 @@
               }
             }),
             perc: 100,
+            title: relation.name,
             closable: false
           })
         }
-
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
@@ -181,33 +150,30 @@
         else if (field.query) return field.input.type;
         else return 'g3w-input';
       }
-    }
+    },
   }
 </script>
 
 <style scoped>
-  .group {
-    padding: 5px;
-    margin-bottom: 10px;
-  }
-  .sub-group {
-    border-radius: 5px;
+  .tab-node{
+    min-width: 0;
+    overflow: hidden;
   }
   .title {
     font-weight: bold;
     width: 100%;
     color: #ffffff;
-    padding: 5px;
-    border-radius: 2px;
-  }
-  .group-title.mobile {
+    padding: 3px;
     margin-top: 5px;
     margin-bottom: 5px;
+    border-radius: 2px;
   }
-  .row {
+  .node-row {
     margin-bottom: 5px;
+    column-gap: 2px;
+    margin-top: 3px;
+    display: grid;
   }
-
   .row.mobile{
     margin-bottom: 0 !important;
   }

@@ -8,7 +8,10 @@
   .skin-background-color {
     background-color: @red !important;
     &.lighten {
-      background-color: lighten(@red, 30%);
+      background-color: lighten(@red, 30%) !important;
+    }
+    &.extralighten {
+      background-color: lighten(@red, 39%) !important;
     }
   }
   .skin-button {

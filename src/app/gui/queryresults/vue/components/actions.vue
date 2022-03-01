@@ -1,7 +1,6 @@
 <template>
   <td v-if="actions.length" class="g3w-feature-actions">
-    <action v-for="action in actions" :key="action.id" v-bind="$props":action="action">
-    </action>
+    <action v-for="action in actions" :key="action.id" v-bind="$props" :action="action"></action>
   </td>
 </template>
 

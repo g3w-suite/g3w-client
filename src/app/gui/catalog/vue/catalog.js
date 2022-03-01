@@ -464,7 +464,7 @@ const vueComponentOptions = {
   },
   watch: {
     'state.prstate.currentProject': {
-      async handler(project){
+      async handler(project, oldproject){
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
         this.loading = activeTab === 'baselayers';
         await this.$nextTick();
@@ -596,11 +596,21 @@ Vue.component('tristate-tree', {
   },
   watch:{
     'layerstree.disabled'(bool) {},
-    'layerstree.checked'() {
+    'layerstree.checked'(n, o) {
       this.isGroup ? this.handleGroupChecked(this.layerstree) : this.handleLayerChecked(this.layerstree)
     }
   },
   methods: {
+    //method to inizialize layer (disable, visible etc..)
+    init(){
+      if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+      if (this.isGroup && !this.root) {
+        this.layerstree.nodes.forEach(node => {
+          if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
+            if (node.id) node.uncheckable = true;
+        })
+      }
+    },
     /**
      * Handel change checked property of group
      * @param group
@@ -621,17 +631,18 @@ Vue.component('tristate-tree', {
         });
       };
       if (checked){
+        const visible = parentGroup ? parentGroup.checked : true;
         if (parentGroup && parentGroup.mutually_exclusive){
           parentGroup.nodes.forEach(node => {
             node.checked = node.groupId === group.groupId;
             node.checked && setAllLayersVisible({
               nodes: node.nodes,
-              visible: true
+              visible
             })
           })
         } else setAllLayersVisible({
           nodes,
-          visible: parentGroup ? parentGroup.checked : true
+          visible
         });
         while (parentGroup){
           parentGroup.checked = parentGroup.root || parentGroup.checked;
@@ -716,15 +727,10 @@ Vue.component('tristate-tree', {
     }
   },
   created() {
-    if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+    // just firs time
+    this.init();
   },
   async mounted() {
-    if (this.isGroup && !this.root) {
-      this.layerstree.nodes.forEach(node => {
-        if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
-          if (node.id) node.uncheckable = true;
-      })
-    }
     await this.$nextTick();
     $('span.scalevisibility').tooltip();
   }

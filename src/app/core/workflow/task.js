@@ -12,6 +12,25 @@ inherit(Task, G3WObject);
 
 const proto = Task.prototype;
 
+/**
+ * Set and get task usefult properties used to run
+ */
+
+proto.setInputs = function(inputs){
+  this.inputs = inputs;
+};
+
+proto.getInputs = function(){
+  return this.inputs;
+};
+
+proto.setContext = function(context){
+  return this.context = context;
+};
+
+proto.getContext = function(){
+  return this.context;
+};
 
 proto.revert = function() {
   console.log('Revert to implemente ');

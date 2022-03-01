@@ -8,39 +8,13 @@ export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'c
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
 
-export const GEOMETRY_FIELDS = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
-
-export const EPSG = [
-  "EPSG:3003",
-  "EPSG:3004",
-  "EPSG:3045",
-  "EPSG:3857",
-  "EPSG:4326",
-  "EPSG:6708",
-  "EPSG:23032",
-  "EPSG:23033",
-  "EPSG:25833",
-  "EPSG:32632",
-  "EPSG:32633",
-];
-
-export const MAP_SETTINGS = {
-  ZOOM: {
-    maxScale: 1000,
-  },
-  ANIMATION: {
-    duration: 2000
-  },
-  LAYER_POSITIONS: {
-    default: 'top',
-    getPositions(){
-      return [
-        'top',
-        'bottom'
-      ]
-    }
-  }
-
+/**
+ * Used to point tolerance when click to map
+ * @type {{unit: string, value: number}}
+ */
+export const QUERY_POINT_TOLERANCE = {
+  unit: 'pixel',
+  value: 10
 };
 
 export const DOWNLOAD_FORMATS = {
@@ -66,12 +40,13 @@ export const DOWNLOAD_FORMATS = {
   },
 };
 
+export const LIST_OF_RELATIONS_TITLE = '__G3W_LIST_OF_RELATIONS_TITLE__';
+
 export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
+  QUERY_POINT_TOLERANCE,
   DOWNLOAD_FORMATS,
-  GEOMETRY_FIELDS,
-  TIMEOUT,
-  EPSG,
-  MAP_SETTINGS
+  LIST_OF_RELATIONS_TITLE,
+  TIMEOUT
 }

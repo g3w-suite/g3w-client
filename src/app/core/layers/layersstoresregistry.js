@@ -74,7 +74,6 @@ proto._removeLayersStore = function(layerStore) {
     const storeId = layerStore.getId();
     this.storesArray = this.storesArray.filter((_storeId) => _storeId != storeId);
     delete this.stores[storeId];
-
   }
 };
 
