@@ -80,11 +80,6 @@
                 </option>
               </select>
             </li>
-            <li class="g3w-color-mode dropdown user user-menu">
-              <a href="#" @click="changeColorMode" class="dropdown-toggle" v-t-tooltip.create.bottom="'toggle_color_scheme'">
-                <span :style="{color: colormode === 'light' ? '#000000' : 'gold' }" :class="colormode === 'light' ? g3wtemplate.getFontClass('moon'): g3wtemplate.getFontClass('sun')"></span>
-              </a>
-            </li>
             <li v-if="frontendurl" class="dropdown">
               <a :href="frontendurl">
                 <span><i :class="g3wtemplate.getFontClass('home')"></i> Home</span>

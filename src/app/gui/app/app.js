@@ -17,7 +17,6 @@ const AppUI = Vue.extend({
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
       language: null,
-      colormode: null,
       cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
@@ -93,16 +92,6 @@ const AppUI = Vue.extend({
     },
   },
   methods: {
-    changeColorMode(){
-      if (this.colormode === 'dark') {
-        document.body.classList.remove('skin-dark');
-        document.body.classList.add(this.initBodySkinClass);
-      } else {
-        document.body.classList.remove(this.initBodySkinClass);
-        document.body.classList.add('skin-dark');
-      }
-      this.colormode = this.colormode === 'dark' ? 'light' : 'dark';
-    },
     templateResultLanguages(state) {
       if (!state.id) return state.text;
       const flagsurl = `${this.staticurl}img/flags`;
@@ -172,14 +161,9 @@ const AppUI = Vue.extend({
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits => this.customcredits = credits !== 'None' && credits);
+    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
-    // get the initial skin class
-    document.body.classList.forEach(className => {
-      if (className.indexOf('skin-') !== -1) this.initBodySkinClass = className;
-    });
-    this.colormode = this.initBodySkinClass === 'skin-dark' ? 'dark': 'light';
     this.logoWidth = 0;
     await this.$nextTick();
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
