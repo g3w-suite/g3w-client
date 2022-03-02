@@ -66,7 +66,8 @@ function GUI() {
    * @returns {*}
    */
   this.getService = function(componentId){
-    return this.getComponent(componentId).getService();
+    const component = this.getComponent(componentId);
+    return component && component.getService();
   };
   /* spinner */
   this.showSpinner = function(options={}){};
