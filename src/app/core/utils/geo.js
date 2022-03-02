@@ -1,14 +1,13 @@
-import {QUERY_POINT_TOLERANCE, G3W_FID} from 'constant';
+import {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_FIELDS} from '../../constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
-const geometryFields = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 
 const geoutils = {
-  geometryFields,
+  geometryFields: GEOMETRY_FIELDS,
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {

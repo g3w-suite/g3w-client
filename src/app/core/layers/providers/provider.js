@@ -392,10 +392,8 @@ proto.digestFeaturesForLayers = function(featuresForLayers) {
 };
 
 proto._parseAttributes = function(layerAttributes, featureAttributes) {
-  let featureAttributesNames = _.keys(featureAttributes);
-  featureAttributesNames = _.filter(featureAttributesNames,function(featureAttributesName) {
-    return geometryFields.indexOf(featureAttributesName) === -1;
-  });
+  let featureAttributesNames = Object.keys(featureAttributes);
+  featureAttributesNames = featureAttributesNames.filter(featureAttributesName => geometryFields.indexOf(featureAttributesName) === -1);
   if (layerAttributes && layerAttributes.length) {
     let featureAttributesNames = _.keys(featureAttributes);
     return _.filter(layerAttributes,function(attribute){
