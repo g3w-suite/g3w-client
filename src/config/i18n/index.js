@@ -16,6 +16,9 @@ const translations = {
           show_features_on_map: "Mostra features visibili su mappa"
         }
       },
+      warning: {
+        not_supported_format: "Formato non supportato"
+      },
       sdk: {
         search: {
           all: 'TUTTE',
@@ -481,6 +484,9 @@ const translations = {
           show_features_on_map: "Show features visible on map"
         }
       },
+      warning: {
+        not_supported_format: "Not supported format"
+      },
       sdk: {
         search: {
           all: 'ALL',
@@ -943,6 +949,9 @@ const translations = {
           clear: "Peruuttaa Valinta",
           show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {
@@ -1407,6 +1416,9 @@ const translations = {
           show_features_on_map: "Visa funktioner som är synliga på kartan"
         }
       },
+      warning: {
+        not_supported_format: "Not supported format"
+      },
       sdk: {
         search: {
           all: 'ALLA',
@@ -1870,6 +1882,9 @@ const translations = {
           clear: "Effacer la sélection ",
           show_features_on_map: "Afficher les caractéristiques visibles sur la carte"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {

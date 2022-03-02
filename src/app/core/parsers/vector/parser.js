@@ -1,9 +1,12 @@
+const {toRawType} = require('core/utils/utils');
+
 const VectorParser = function() {
   // return the right parser for the request
   this.get = function(options={}) {
     const type = options.type;
     let parser;
     switch (type) {
+      case 'geojson':
       case 'json':
         parser = this._parseLayerGeoJSON;
         break;
@@ -39,9 +42,9 @@ const VectorParser = function() {
   };
 
   this._parseLayerGeoJSON = function(data, options) {
+    data = toRawType(data) === 'String' ? JSON.parse(data): data;
     const {crs, mapCrs} = options;
     const geojson = new ol.format.GeoJSON({
-      //defaultDataProjection: crs, //ol vs4.5
       dataProjection: crs,
       featureProjection: mapCrs || crs,
       geometryName: "geometry"

@@ -6,10 +6,9 @@ function ProxyService(){
   /**
    *
    * @param data: Object conitans data to pass to proxy
-   * @param options: contain for now mode to retur data (raw = retur data as proxy return, result: parse and retur features
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.wms = async function({url, method='GET', params={}, headers={}}={}, options={mode:'raw'}){
+  this.wms = async function({url, method='GET', params={}, headers={}}={}){
     const ApplicationService = require('core/applicationservice');
     let proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
