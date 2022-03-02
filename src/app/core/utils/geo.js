@@ -1,10 +1,11 @@
-import CONSTANT from 'constant';
+import CONSTANT from '../../constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
+const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
 
 const geoutils = {
   geometryFields,
