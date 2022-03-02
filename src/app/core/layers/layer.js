@@ -124,7 +124,9 @@ function Layer(config={}, options={}) {
     };
   }
   // used to store last proxy params (useful for repeat request info formats for wms external layer)
-  this.lastProxyData = null;
+  this.proxyData = {
+    wms: null // at the moment only wms data from server
+  };
   base(this);
 }
 
@@ -136,40 +138,40 @@ const proto = Layer.prototype;
  * Proxyparams
  */
 
-proto.getLastProxyData = function(){
-  return this.lastProxyData;
+proto.getProxyData = function(type){
+  return type ? this.proxyData[type] : this.proxyData;
 };
 
-proto.setLastProxyData= function(data={}){
-  this.lastProxyData = data;
+proto.setProxyData= function(type, data={}){
+  this.proxyData[type] = data;
 };
 
-proto.clearLastProxyData = function(){
-  this.lastProxyData = null;
+proto.clearProxyData = function(type){
+  this.proxyData[type] = null;
 };
 
-proto.getDataFromProxy = async function(proxyParams={}){
+proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
   const DataRouterService = require('core/data/routerservice');
   try {
-    const {response, data} = await DataRouterService.getData('proxy:data', {
+    const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,
       outputs: false
     });
-    this.setLastProxyData(JSON.parse(data));
+    this.setProxyData(type, JSON.parse(data));
     return response;
   } catch(err){
     return;
   }
 };
 
-proto.changeProxyDataAndReload = function(changes={}) {
+proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
   Object.keys(changes).forEach(changeParam =>{
     Object.keys(changes[changeParam]).forEach(param =>{
       const value = changes[changeParam][param];
-      this.lastProxyData[changeParam][param] = value;
+      this.proxyData[type][changeParam][param] = value;
     })
   });
-  return this.getDataFromProxy(this.lastProxyData);
+  return this.getDataProxyFromServer(type, this.proxyData[type]);
 };
 
 /**

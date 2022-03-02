@@ -94,7 +94,7 @@ proto.query = function(options={}) {
     }
    });
   if (layer.useProxy()) {
-    layer.getDataFromProxy({
+    layer.getDataProxyFromServer('wms', {
         url,
         params,
         method: METHOD,

@@ -32,7 +32,7 @@
               const queryService = GUI.getService('queryresults');
               this.layer.loading = true;
               try {
-                const data = await this.projectLayer.changeProxyDataAndReload({
+                const data = await this.projectLayer.changeProxyDataAndReloadFromServer('wms', {
                     headers: {
                         'Content-Type': contenttype
                       },
@@ -95,7 +95,7 @@
             this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
         },
         beforeDestroy(){
-            this.projectLayer.clearLastProxyData();
+            this.projectLayer.clearProxyData('wms');
             this.projectLayer = null;
         }
     };

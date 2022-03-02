@@ -53,6 +53,22 @@ proto.getName = function() {
   return this._name;
 };
 
+/**
+ * Handle GML response
+ */
+proto.handleGMLResponse = function({layers, response}){
+  const parserGML = parser.get({
+    type: 'gml'
+  });
+  const features = parserGML({
+    data:response,
+    layer: layers[0]
+  });
+   return layers.map(layer =>({
+    layer,
+    features
+  }));
+};
 
 /**
  * Handle case plain text or html from request
@@ -91,29 +107,21 @@ proto.handleQueryResponseFromServer = function(response, projections, layers, wm
       });
       break;
     case "text/gml":
-      const parserGML = parser.get({
-        type: 'gml'
-      });
-      const features = parserGML({
-        data:response,
-        layer: layers[0]
-      });
-      _response = layers.map(layer =>({
-        layer,
-        features
-      }));
+      _response = this.handleGMLResponse({
+        layers,
+        response
+      })
       break;
     case "application/vnd.ogc.gml":
     default:
       //IN CASE OF application/vnd.ogc.gml always pass to qgisserver
       //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-      response = this._handleXMLStringResponseBeforeConvertToJSON({
-        layers,
-        response,
-        wms
-      });
       _response = this._getHandledResponsesFromResponse({
-        response,
+        response: this._handleXMLStringResponseBeforeConvertToJSON({
+          layers,
+          response,
+          wms
+        }),
         layers,
         projections
         //id: false //used in case of layer id .. but for now is set to false in case of layerid starting with number

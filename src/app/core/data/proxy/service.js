@@ -9,7 +9,7 @@ function ProxyService(){
    * @param options: contain for now mode to retur data (raw = retur data as proxy return, result: parse and retur features
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.data = async function({url, method='GET', params={}, headers={}}={}, options={mode:'raw'}){
+  this.wms = async function({url, method='GET', params={}, headers={}}={}, options={mode:'raw'}){
     const ApplicationService = require('core/applicationservice');
     let proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
@@ -37,6 +37,14 @@ function ProxyService(){
       return;
     }
   };
+
+  /**
+   * Generic proxy data function
+   * @param params
+   */
+  this.data = function(params={}){
+    console.log(params)
+  }
 }
 
 inherit(ProxyService, BaseService);
