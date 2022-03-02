@@ -71,7 +71,7 @@
     <li v-if="layerMenu.layer.metadata && layerMenu.layer.metadata.abstract" @mouseleave.self="showMetadataInfo(false)"  @mouseover.self="showMetadataInfo(true,  $event)">
       <span class="menu-icon" :class="g3wtemplate.getFontClass('info')"></span>
       <span class="item-text" v-t="'Metadata'"></span>
-      <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: layerMenu.metadatainfoMenu.left +   'px' }">
+      <div v-show="layerMenu.metadatainfoMenu.show" style="position:fixed; background-color: #FFFFFF; color:#000000; padding-left: 0; border-radius: 0 3px 3px 0;" :style="{ top: layerMenu.metadatainfoMenu.top + 'px', left: layerMenu.metadatainfoMenu.left +   'px' }">
         <div class="layer-menu-metadata-info">{{layerMenu.layer.metadata.abstract}}</div>
       </div>
     </li>
@@ -173,9 +173,3 @@
     </li>
   </ul>
 </div>
-<script>
-  import Opacityrange from "./components/opacityrange";
-  export default {
-    components: {Opacityrange}
-  }
-</script>

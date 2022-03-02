@@ -19,10 +19,12 @@ const MetadataComponent = function(options = {}) {
   this.title = "sdk.metadata.title";
   const service = options.service || new MetadataService(options);
   this.setService(service);
-  this._service.on('reload', () => this.setOpen(false));
+  this._service.on('reload', () => {
+    this.setOpen(false);
+  });
   this.setInternalComponent = function () {
     this.internalComponent = new InternalComponent({
-      service
+      service: service
     });
     this.internalComponent.state = service.state;
     return this.internalComponent;
@@ -30,7 +32,9 @@ const MetadataComponent = function(options = {}) {
   this._setOpen = function(bool) {
     this._service.showMetadata(bool);
   };
-  GUI.on('closecontent', ()=>this.state.open = false)
+  GUI.on('closecontent', ()=>{
+    this.state.open = false;
+  })
 };
 
 inherit(MetadataComponent, Component);

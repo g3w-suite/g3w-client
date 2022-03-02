@@ -1180,6 +1180,13 @@ proto.getMapExtent = function(){
   return map.getView().calculateExtent(map.getSize());
 };
 
+proto.addMapExtentUrlParameterToUrl = function(url){
+  url = new URL(url);
+  const map_extent = this.getMapExtent().toString();
+  url.searchParams.set('map_extent', map_extent);
+  return url.toString()
+};
+
 proto.getMapExtentUrl = function(){
   const url = new URL(location.href);
   const map_extent = this.getMapExtent().toString();
@@ -1948,11 +1955,8 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
 };
 
 // unregister listeners of mapLayers creation
-proto.unregisterMapLayerListeners = function(mapLayer, projectLayer=true) {
-  mapLayer.off('loadstart', this._incrementLoaders );
-  mapLayer.off('loadend', this._decrementLoaders );
-  mapLayer.off('loaderror', this._mapLayerLoadError);
-  // try to remove layer filter token
+proto.unregisterMapLayerListeners = function(mapLayer) {
+  this.unregisterMapLayerLoadingEvents(mapLayer);
   // try to remove layer filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {

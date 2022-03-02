@@ -57,7 +57,7 @@
             <div v-if="findAttributeFormMetadataAttribute('attributes')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.attributes'" class="col-md-2 col-sm-12 metadata-label"></div>
               <div class="col-md-10 col-sm-12 value" style="overflow: auto;">
-                <table class="spatial-layer table table-striped" style="background-color: #eeeeee !important">
+                <table class="table table-striped" style="background-color: #eeeeee !important">
                   <thead>
                   <tr>
                     <th v-for="(value, header) in state.metadata.attributes[0]">{{ header }}</th>
@@ -130,7 +130,8 @@
       showHideInfo() {
         this.show = !this.show;
       },
-    }
+    },
+    mounted() {}
   }
 </script>
 
@@ -170,7 +171,7 @@
   .tab-nav > li > a::after { background: #21527d none repeat scroll 0% 0%; color: #fff; }
   .tab-content {
     margin: 10px;
-    //background-color: #fafafa;
+    background-color: #eeeeee;
     overflow: auto;
   }
   .spatial-tab{

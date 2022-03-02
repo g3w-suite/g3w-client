@@ -11,7 +11,6 @@ const QueryByPolygonControl = function(options={}) {
   this.unwatches = [];
   this.listenPolygonLayersChange();
   options.visible = this.checkVisibile(this.layers);
-  this.selectedLayer = null;
   const _options = {
     offline: false,
     name: "querybypolygon",
@@ -22,14 +21,11 @@ const QueryByPolygonControl = function(options={}) {
       const selected = selectedLayer.isSelected();
       const geometryType = selectedLayer.getGeometryType();
       const querable = selectedLayer.isQueryable();
-      let enabled = false;
       if (selected){
         if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
-          enabled = querable ? selectedLayer.isVisible(): querable;
-          this.setEnable(enabled);
+          this.setEnable(querable ? selectedLayer.isVisible(): querable);
         } else this.setEnable(false, false);
       } else this.setEnable(false, false);
-      this.selectedLayer = selected && enabled ? selectedLayer : null;
     },
     clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,

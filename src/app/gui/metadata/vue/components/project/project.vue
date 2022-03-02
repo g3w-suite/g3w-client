@@ -6,7 +6,7 @@
         <li class="active">
           <a data-toggle="tab" href="#general"  class="metadata-item-tab general">
             <i class="action-button nohover" :class="g3wtemplate.getFontClass('info')" aria-hidden="true"></i>
-            <span v-t="'sdk.metadata.groups.general.title'" style="font-weight: bold"></span>
+            <span v-t="'sdk.metadata.groups.general.title'"  style="font-weight: bold"></span>
           </a>
         </li>
         <li>
@@ -165,5 +165,7 @@
   .left-vertical-tabs {
     padding-left: 0 !important;
   }
+
+
 
 </style>

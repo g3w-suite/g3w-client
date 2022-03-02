@@ -40,11 +40,9 @@ function GUI() {
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
-
   this.getComponent = function(id) {
     return ComponentsRegistry.getComponent(id);
   };
-
   this.getComponents = function() {
     return ComponentsRegistry.getComponents();
   };

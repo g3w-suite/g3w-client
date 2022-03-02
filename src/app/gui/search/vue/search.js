@@ -1,6 +1,6 @@
 import G3WTool from 'gui/tools/vue/tool.vue'
 import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
+import { createCompiledTemplate } from 'gui/vue/utils';
 const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const Service = require('gui/search/service');

@@ -7,6 +7,7 @@ export const G3W_FID = 'g3w_fid'; //fid name field referred of fid feature
 export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'change_attr_feature', 'delete_feature'];
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
+
 /**
  * Used to point tolerance when click to map
  * @type {{unit: string, value: number}}
@@ -81,6 +82,7 @@ export default {
   DEFAULT_EDITING_CAPABILITIES,
   QUERY_POINT_TOLERANCE,
   DOWNLOAD_FORMATS,
+  GEOMETRY_FIELDS,
   LIST_OF_RELATIONS_TITLE,
   MAP_SETTINGS,
   TIMEOUT
