@@ -32,6 +32,10 @@
       labelValue: {},
       value: {
         default: 0
+      },
+      sync:{
+        type: Boolean,
+        default: false
       }
     },
     data(){
@@ -47,21 +51,24 @@
       change(evt){
         const value = 1*evt.target.value;
         this.changedValue(value);
+      },
+      emitChangeValue(value){
+        this.value = value;
+        this.$emit('change-range', {
+          id: this.id,
+          value
+        });
       }
     },
     watch:{
       value(value){
         this.changeBackGround(value);
+        this.sync && this.emitChangeValue(value);
       }
     },
     created(){
-      this.changedValue =  debounce(value => {
-        this.value = value;
-        console.log(value)
-        this.$emit('change-range', {
-          id: this.id,
-          value
-        });
+      this.changedValue =  this.sync ? ()=> this.$emit('changed') : debounce(value => {
+        this.emitChangeValue(value)
       })
     },
     async mounted(){

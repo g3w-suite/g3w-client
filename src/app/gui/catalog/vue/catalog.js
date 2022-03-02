@@ -3,7 +3,6 @@ import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 import ChangeMapThemesComponent from './components/changemapthemes.vue';
-import OpacityRange from './components/opacityrange.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
@@ -94,8 +93,7 @@ const vueComponentOptions = {
   },
   components: {
     'chrome-picker': ChromeComponent,
-    'changemapthemes': ChangeMapThemesComponent,
-    OpacityRange
+    'changemapthemes': ChangeMapThemesComponent
 
   },
   computed: {
@@ -327,12 +325,12 @@ const vueComponentOptions = {
       });
       changed && this._hideMenu();
     },
-    setWMSOpacity(opacity){
+    setWMSOpacity({id, value:opacity}){
       this.layerMenu.layer.opacity = opacity;
       const mapService = GUI.getComponent('map').getService();
       const layer = mapService.getLayerById(this.layerMenu.layer.id);
       layer.setOpacity(opacity);
-      this._hideMenu();
+      //this._hideMenu();
     },
     /**
      * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection

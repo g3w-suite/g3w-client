@@ -64,7 +64,7 @@
     </li>
     <li v-if="!layerMenu.layer.projectLayer">
       <div style="display: flex; justify-content: space-between; align-items: center">
-        <span class="item-text" v-t="'Position'" style="margin-right: 30px;"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.layerposition'" style="margin-right: 30px;"></span>
         <layerspositions @layer-position-change="changeLayerMapPosition({position:$event, layer: layerMenu.layer})" style="display: flex; flex-direction: column; justify-content: space-between" :position="layerMenu.layer.position"></layerspositions>
       </div>
     </li>
@@ -122,7 +122,7 @@
         <span class="item-text" v-t="'sdk.catalog.menu.setwmsopacity'"></span>
         <span style="font-weight: bold; margin-left: 5px;">{{layerMenu.layer.opacity}}</span>
       </div>
-      <opacity-range :value="layerMenu.layer.opacity" @change="setWMSOpacity"></opacity-range>
+      <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"></range>
     </li>
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >

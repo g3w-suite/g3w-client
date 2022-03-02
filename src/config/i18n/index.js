@@ -339,6 +339,7 @@ const translations = {
           current_map_theme_prefix: "TEMA",
           choose_map_theme: "SCEGLI TEMA",
           menu: {
+            layerposition: 'Posizione Layer',
             setwmsopacity: "Cambia opacità",
             wms: {
               title:"",
@@ -816,6 +817,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            layerposition: 'Layer Position',
             setwmsopacity: "Set Opacity",
             wms: {
               title:"",
@@ -1293,6 +1295,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            layerposition: 'Layer Position',
             setwmsopacity: "Set Opacity",
             wms: {
               title:"",
@@ -1771,6 +1774,7 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "CHOOSE THEME",
           menu: {
+            layerposition: 'Layer Position',
             setwmsopacity: "Set Opacity",
             wms: {
               title:"",
@@ -2250,6 +2254,8 @@ const translations = {
           current_map_theme_prefix: "THEME",
           choose_map_theme: "SÉLECTIONNEZ LE THÈME",
           menu: {
+            layerposition: 'Layer Position',
+            setwmsopacity: "Set Opacity",
             wms: {
               title:"",
               copy: "Cliquez ici pour copier l'url",
