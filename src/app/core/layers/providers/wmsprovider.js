@@ -72,8 +72,9 @@ proto.query = function(options={}) {
   const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const {layers, feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
-  const layer = layers ? layers[0] : this._layer;
+  const {layers=[], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
+  if (layers.length === 0) layers.push(this._layer);
+  const layer = layers[0];
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
@@ -86,13 +87,13 @@ proto.query = function(options={}) {
    * set timeout of a query
    * @type {number}
    */
-  const timeoutKey = getTimeoutPromise({
-    resolve: d.resolve,
-    data: {
-      data: this.handleQueryResponseFromServer('', this._projections, layers),
-      query
-    }
-   });
+  // const timeoutKey = getTimeoutPromise({
+  //   resolve: d.resolve,
+  //   data: {
+  //     data: this.handleQueryResponseFromServer('', this._projections, layers),
+  //     query
+  //   }
+  //  });
   if (layer.useProxy()) {
     layer.getDataProxyFromServer('wms', {
         url,
@@ -117,7 +118,7 @@ proto.query = function(options={}) {
       });
     })
     .catch(err => d.reject(err))
-    .finally(()=> clearTimeout(timeoutKey));
+    //.finally(()=> clearTimeout(timeoutKey));
   return d.promise();
 };
 

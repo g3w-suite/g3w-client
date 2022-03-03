@@ -6,7 +6,7 @@
 
 <script>
     const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-    const parser = require('core/parsers/vector/parser');
+    const responseParser = require('core/parsers/response/parser');
     const {getAlphanumericPropertiesFromFeature, query} = require('core/utils/geo');
     const GUI = require('gui/gui');
     export default {
@@ -42,7 +42,7 @@
                   });
                   this.layer.infoformat = contenttype;
                   this.projectLayer.setInfoFormat(this.layer.infoformat);
-                  const [data] = query.handleResponse({
+                  const [data] = responseParser.get(contenttype)({
                       layers: [this.projectLayer],
                       response
                   });

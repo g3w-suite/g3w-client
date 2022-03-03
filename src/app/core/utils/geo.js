@@ -1,9 +1,8 @@
 import CONSTANT from '../../constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
 const Geometry = require('core/geometry/geometry');
 const Filter = require('core/layers/filter/filter');
-const parser = require('core/parsers/vector/parser');
+const responseParser = require('core/parsers/response/parser');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
@@ -72,7 +71,6 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
-
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
@@ -1368,409 +1366,35 @@ const geoutils = {
     }
     return fid;
   },
+  parseAttributes(layerAttributes, featureAttributes) {
+    let featureAttributesNames = Object.keys(featureAttributes).filter(featureAttributesName => geometryFields.indexOf(featureAttributesName) === -1);
+    if (layerAttributes && layerAttributes.length) {
+      let featureAttributesNames = Object.keys(featureAttributes);
+      return layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1)
+    } else {
+      return featureAttributesNames.map(featureAttributesName => ({
+          name: featureAttributesName,
+          label: featureAttributesName
+        })
+      )
+    }
+  },
   /**
    * Handle case query response
    */
-  query: {
-    /**
-     * General method to handle response from server
-     * @param response
-     * @param projections
-     * @param layers
-     * @param wms
-     * @returns {[]}
-     */
-    handleResponse({response, projections, layers, wms=true}={}) {
-      layers = layers ? layers : [this._layer];
-      const layer = layers[0];
-      const infoFormat = layer.getInfoFormat();
-      let _response;
-      switch(infoFormat) {
-        case "application/geojson":
-          _response = this.parsers[infoFormat]({
-            layers,
-            projections,
-            response
-          });
-          break;
-        case "application/json":
-          _response = this.parsers[infoFormat]({
-            layers,
-            response,
-            projections,
-            wms
-          });
-          break;
-        case "text/plain":
-        case 'text/html':
-          _response = this.parsers[infoFormat]({
-            layers,
-            response
-          });
-          break;
-        case "text/gml":
-          _response = this.parses[infoFormat]({
-            layers,
-            response
-          });
-          break;
-        case "application/vnd.ogc.gml":
-          //IN CASE OF application/vnd.ogc.gml always pass to qgisserver
-          //if (layer.getType() === "table" || !layer.isExternalWMS() || !layer.isLayerProjectionASMapProjection()) {
-          _response = this.parsers[infoFormat];
-          break;
-        case "application/vnd.esri.wms_raw_xml":
-        case "application/vnd.esri.wms_featureinfo_xml":
-        case "application/vnd.ogc.wms_xml":
-        case "text/xml":
-        default:
-          _response = layers.map(layer=>({
-            layer,
-            rawdata: t('warning.not_supported_format')
-          }))
-      }
-      return _response;
-    },
-    parsers: {
-      'application/json'({layers=[], response, projections, wms=true}={}) {
-        const layersFeatures = [];
-        const layersId = layers.map(layer => {
-          layersFeatures.push({
-            layer,
-            features: []
-          });
-          return wms ? layer.getWMSLayerName() : layer.getWFSLayerName();
-        });
-        const data = response;
-        const parseData = () => {
-          const defaultDataProjection = projections.layer || projections.map;
-          const geojson = new ol.format.GeoJSON({
-            defaultDataProjection,
-            geometryName: "geometry"
-          });
-          return geojson.readFeatures(data);
-        };
-        const features = data && parseData();
-        features.filter(feature => {
-          const featureId = feature.getId();
-          const g3w_fid = sanitizeFidFeature(featureId);
-          // in case of wms getfeature without filter return string conatin layerName or layerid
-          const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
-          if (index !== -1) {
-            const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
-            const properties = feature.getProperties();
-            feature.set(G3W_FID, g3w_fid);
-            fields.forEach(field=>{
-              if (properties[field.name] === undefined) {
-                properties[field.label] !== undefined && feature.set(field.name, properties[field.label])
-              }
-            });
-            layersFeatures[index].features.push(feature);
-          }
-        });
-        return layersFeatures;
-      },
-      'application/geojson'({layers, projections, response}={}){
-          const handleResponse = [];
-          const parserGEOJson = parser.get({
-            type: 'geojson'
-          });
-          if (response) {
-            layers.forEach(layer =>{
-              handleResponse.push({
-                layer,
-                features: parserGEOJson(response, {})
-              })
-            })
-          }
-          return handleResponse;
-        },
-      'text/html'({layers, response}={}){
-          const handleResponse = [];
-          layers.forEach(layer =>{
-            handleResponse.push({
-              layer,
-              rawdata: response
-            })
-          });
-          return handleResponse;
-        },
-      'text/plain'({layers, response}={}){
-        const handleResponse = [];
-        layers.forEach(layer =>{
-          handleResponse.push({
-            layer,
-            rawdata: response
-          })
-        });
-        return handleResponse;
-      },
-      'text/gml'({layers, response}){
-          const parserGML = parser.get({
-            type: 'gml'
-          });
-          const features = parserGML({
-            data:response,
-            layer: layers[0]
-          });
-          return layers.map(layer =>({
-            layer,
-            features
-          }));
-        },
-      'application/vnd.ogc.gml'({response, projections, layers, wms=true}={}){
-        return geoutils.query.utils.getHandledResponsesFromResponse({
-          response: geoutils.query.utils.handleXMLStringResponseBeforeConvertToJSON({
-            layers,
-            response,
-            wms
-          }),
-          layers,
-          projections
-        });
-      },
-      not_supported_format(layers=[]){
-        return layers.map(layer=>({
-          layer,
-          rawdata: t('warning.not_supported_format')
-        }))
-      }
-    },
-    utils: {
-      getHandledResponsesFromResponse({response, layers, projections, id=false}) {
-        let multilayers = false;
-        const x2js = new X2JS();
-        const jsonresponse =  x2js.xml_str2json(response);
-        // in case of parser return null
-        if (!jsonresponse) return [{
-          layer: layers[0],
-          features: []
-        }];
-        const FeatureCollection = jsonresponse.FeatureCollection;
-        const handledResponses = [];
-        if (FeatureCollection.featureMember) {
-          const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
-          for (let i = 0; i < layers.length; i++) {
-            const layer = layers[i];
-            const layerName = id ? layer.getId() : `layer${i}`;
-            const featureMemberArrayAndPrefix = {
-              features: null,
-              __prefix: null
-            };
-            jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter(feature => {
-              const featureMember = feature[layerName];
-              if (featureMember) {
-                featureMember.g3w_fid = {
-                  __prefix: feature.__prefix,
-                  __text: featureMember._fid && featureMember._fid.split('.')[1]
-                };
-                if (Array.isArray(featureMember)){
-                  featureMemberArrayAndPrefix.features = featureMember;
-                  featureMemberArrayAndPrefix.__prefix = feature.__prefix;
-                  return false;
-                }
-                return true;
-              }
-            });
-            if (featureMemberArrayAndPrefix.features) {
-              const prefix = featureMemberArrayAndPrefix.__prefix;
-              // check if features have the same fields. If not group the features with the same fields
-              const groupFeatures = this._groupFeaturesByFields(featureMemberArrayAndPrefix.features);
-              //check if features have different fields (multilayers)
-              if (Object.keys(groupFeatures).length > 1) {
-                // is a multilayers. Each feature has different fields
-                multilayers = true;
-                this._handleWMSMultiLayersResponseFromQGISSERVER({
-                  groupFeatures,
-                  prefix,
-                  handledResponses,
-                  jsonresponse,
-                  layer,
-                  projections
-                })
-              } else {
-                featureMemberArrayAndPrefix.features.forEach(feature => {
-                  //for Each element have to add and object contain layerName and information, and __prefix
-                  jsonresponse.FeatureCollection.featureMember.push({
-                    [layerName]: feature,
-                    __prefix: prefix
-                  })
-                });
-              }
-            }
-            if (!multilayers) {
-              const handledResponse = this._parseLayerFeatureCollection({
-                jsonresponse,
-                layer,
-                projections
-              });
-              handledResponse && handledResponses.unshift(handledResponse[0]);
-            }
-          }
-        }
-        return handledResponses;
-      },
-      transformFeatures(features, projections) {
-  if (features.length) {
-    if(!!features[0].getGeometry()) {
-      const mainProjection = projections.layer ? projections.layer : projections.map;
-      const invertedAxis = mainProjection.getAxisOrientation().substr(0,2) === 'ne';
-      if (projections.layer && (projections.layer.getCode() !== projections.map.getCode())) {
-        features.forEach(feature => {
-          const geometry = feature.getGeometry();
-          feature.setGeometry(geometry.transform(projections.layer.getCode(), projections.map.getCode()))
-        })
-      }
-      if (invertedAxis) features = this._reverseFeaturesCoordinates(features)
-    }
-  }
-  return features;
-},
-      parseLayerFeatureCollection({jsonresponse, layer, projections}) {
-  const x2js = new X2JS();
-  const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
-  const parser = new ol.format.WMSGetFeatureInfo();
-  const features = this._transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-  if (features.length && this._hasFieldsStartWithNotPermittedKey) {
-    const properties = Object.keys(features[0].getProperties());
-    const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
-    features.forEach(feature => {
-      numericFields.forEach(_field => {
-        const value = feature.get(_field);
-        const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-        feature.set(this._hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value)? value[0] : value);
-        feature.unset(_field);
-      })
+  handleQueryResponse({response, projections, layers, wms=true}={}) {
+    layers = layers ? layers : [this._layer];
+    const layer = layers[0];
+    const infoFormat = layer.getInfoFormat();
+    response = responseParser.get(infoFormat)({
+      response,
+      projections,
+      layers,
+      wms
     });
-    this._hasFieldsStartWithNumber = false;
+    return response;
   }
-  return [{
-    layer,
-    features
-  }]
-},
-      reverseFeaturesCoordinates(features) {
-  features.forEach(feature => {
-    const geometry = feature.getGeometry();
-    feature.setGeometry(geoutils.reverseGeometry(geometry))
-  });
-  return features
-},
-      handleXMLStringResponseBeforeConvertToJSON({response, layers, wms}={}) {
-  if (!response) return; // return undefined if non response
-  if (!(typeof response === 'string'|| response instanceof String))
-    response = new XMLSerializer().serializeToString(response);
-  for (let i=0; i < layers.length; i++) {
-    const layer = layers[i];
-    let originalName = (wms && layer.isWmsUseLayerIds()) ? layer.getId(): layer.getName();
-    let sanitizeLayerName = wms ? originalName.replace(/[/\s]/g, '') : originalName.replace(/[/\s]/g, '_');
-    sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
-    sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
-    sanitizeLayerName = sanitizeLayerName.replace(/(\(+)/, '');
-    const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, "g");
-    response = response.replace(reg, `qgs:layer${i}`);
-  }
-  const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
-  arrayQGS.forEach((find, idx) => {
-    if (idx%2 === 0) {
-      if (!this._hasFieldsStartWithNotPermittedKey) this._hasFieldsStartWithNotPermittedKey = {};
-      const originalField = find[0].replace('qgs:', '');
-      this._hasFieldsStartWithNotPermittedKey[`${find[1]}${find[2]}`] = originalField;
-      const regex = new RegExp(`${find[0]}`, "g");
-      response = response.replace(regex, `qgs:${WORD_NUMERIC_FIELD_ESCAPE}${find[1]}${find[2]}`)
-    }
-  });
-  //PATCH id strange
-  const strangeChar = new RegExp(`${String.fromCharCode(0)}`, "g");
-  response = response.replace(strangeChar, '0');
-  ///
-  return response;
-},
-      handleWMSMultilayers({layer, response, projections} = {}) {
-  const x2js = new X2JS();
-  const arrayQGS = [...response.matchAll(/<qgs:(\w+) fid=/g)];
-  const alreadySubstitute = [];
-  arrayQGS.forEach(element => {
-    const fid = element[1];
-    if (alreadySubstitute.indexOf(fid) === -1) {
-      alreadySubstitute.push(fid);
-      const startfid = +fid[0];
-      if (Number.isInteger(startfid))
-        response = response.replace(new RegExp(`${fid}`, "g"), `${WORD_NUMERIC_XML_TAG_ESCAPE}${fid}`);
-    }
-  });
-  const jsonresponse =  x2js.xml_str2json(response);
-  // in case of parser return null
-  if (!jsonresponse) return [{
-    layer,
-    features: []
-  }];
-  const FeatureCollection = jsonresponse.FeatureCollection;
-  const handledResponses = [];
-  if (FeatureCollection.featureMember) {
-    const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
-    let layersNames = new Set();
-    originalFeatureMember.forEach((featureMember) => {
-      layersNames.add(Object.keys(featureMember)[0]);
-    });
-    for (const layerName of layersNames) {
-      jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
-        return feature[layerName]
-      });
-      const handledResponse = this._parseLayerFeatureCollection({
-        jsonresponse,
-        layer,
-        projections
-      });
-      if (handledResponse) {
-        const response = handledResponse[0];
-        response.layer = layerName.replace(WORD_NUMERIC_XML_TAG_ESCAPE,'');
-        handledResponses.unshift(response);
-      }
-    }
-  }
-  return handledResponses;
-},
-      groupFeaturesByFields(features) {
-  return _.groupBy(features, feature => Object.keys(feature));
-},
-      handleWMSMultiLayersResponseFromQGISSERVER({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
-  // is a multilayers. Each feature has different fields. If group has more that one feature spit it and create single features
-  Object.keys(groupFeatures).forEach((key, index) => {
-    const features = groupFeatures[key];
-    features.forEach((feature, sub_index) => {
-      jsonresponse.FeatureCollection.featureMember = {
-        [`layer${index}_${sub_index}`]: feature,
-        __prefix: prefix
-      };
-      const handledResponse = this._parseLayerFeatureCollection({
-        jsonresponse,
-        layer,
-        projections
-      });
-      if (handledResponse) {
-        const response = handledResponse[0];
-        response.layer = layer;
-        handledResponses.unshift(response);
-      }
-    });
-  });
-},
-      parseAttributes(layerAttributes, featureAttributes) {
-        let featureAttributesNames = Object.keys(featureAttributes).filter(featureAttributesName=>  geometryFields.indexOf(featureAttributesName) === -1);
-        if (layerAttributes && layerAttributes.length) {
-          let featureAttributesNames = Object.keys(featureAttributes);
-          return layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1)
-        } else {
-          return featureAttributesNames.map(featureAttributesName => ({
-              name: featureAttributesName,
-              label: featureAttributesName
-            })
-          )
-        }
-      }
-    }
-  }
+
 };
 
 module.exports = geoutils;
