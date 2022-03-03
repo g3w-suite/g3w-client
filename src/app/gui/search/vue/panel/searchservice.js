@@ -86,6 +86,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       logicop: index === filterLenght ? null : input.logicop,
       id: input.id || getUniqueDomId(),
       loading: false,
+      widget: null
     };
     //check if has a dependance
     const {options:{ dependance, dependance_strict } } = forminput;
@@ -134,6 +135,15 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
           master: dependance,
           slave: forminput
         });
+        /**
+         * Set widget type for fill dependency
+         */
+        if (forminput.options.values.length) {
+          forminput.widget = 'valuemap';
+          forminput.options._values = [...forminput.options.values];
+        } else if (forminput.options.layer_id){
+          forminput.widget = 'valuerelation';
+        }
       }
       promise.then(()=>{
         if (forminput.type !== 'autocompletefield') {
@@ -202,14 +212,15 @@ proto.getValuesFromField = function(field){
     })
 };
 
-proto.getValueRelationValues = async function(field){
+proto.getValueRelationValues = async function(field, filter){
   const {layer_id, key, value} =  field.options;
   const layer = CatalogLayersStorRegistry.getLayerById(layer_id);
   try {
     const {data=[]} = await DataRouterService.getData('search:features', {
       inputs:{
         layer,
-        search_endpoint: this.getSearchEndPoint()
+        search_endpoint: this.getSearchEndPoint(),
+        ordering: key
       },
       outputs: false
     });
@@ -249,7 +260,8 @@ proto.getUniqueValuesFromField = async function({field, value, unique}){
     data = await this.searchLayers[0].getFilterData({
       field,
       suggest: value !== undefined ? `${field}|${value}` : undefined,
-      unique
+      unique,
+      ordering: field.attribute
     })
   } catch(err){}
   return data;
@@ -554,15 +566,36 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             data = uniqueParams ? this.valuesToKeysValues(data) : data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
-              if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
+              const { attribute, widget } = subscribe;
+              if (uniqueParams) {
+                if (widget === 'valuemap') {
+                  const values = [...subscribe.options._values].filter(({value}) => data.map(({value}) => value).indexOf(value) !== -1);
+                  values.forEach(value => subscribe.options.values.push(value));
+                } else if (widget === 'valuerelation'){
+                  this.getValueRelationValues(subscribe)
+                } else data.forEach(value => subscribe.options.values.push(value));
+              }
               else {
-                const { attribute } = subscribe;
                 const uniqueValues = new Set();
-                data.forEach(feature => {
-                  const value = feature.get(attribute);
-                  value && uniqueValues.add(value);
-                });
-                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+                // case value map
+                if (widget === 'valuemap') {
+                  let values = [...subscribe.options._values];
+                  data.forEach(feature => {
+                    const value = feature.get(attribute);
+                    value && uniqueValues.add(value);
+                  });
+                  data = [...uniqueValues];
+                  values = values.filter(({key}) => data.indexOf(key) !== -1);
+                  values.forEach(value => subscribe.options.values.push(value));
+                } else if (widget === 'valuerelation') {
+
+                } else {
+                  data.forEach(feature => {
+                    const value = feature.get(attribute);
+                    value && uniqueValues.add(value);
+                  });
+                  this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+                }
               }
               if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
