@@ -194,11 +194,9 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
  * @returns {Promise<*[]>}
  */
 proto.getValuesFromField = function(field){
-  if (field.options.layer_id) {
-    return this.getValueRelationValues(field)
-  } else if (field.options.values.length) {
-    return this.getValueMapValues(field)
-  } else return this.getUniqueValuesFromField({
+  if (field.options.layer_id) return this.getValueRelationValues(field)
+  else if (field.options.values.length) return this.getValueMapValues(field)
+  else return this.getUniqueValuesFromField({
       unique: field.attribute
     })
 };

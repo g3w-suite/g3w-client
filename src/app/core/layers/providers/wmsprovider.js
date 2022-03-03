@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import {QUERY_POINT_TOLERANCE} from '../../../constant';
 const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
+const {utils:queryResponseUtils} = require('core/parsers/response/parser');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
@@ -87,13 +88,13 @@ proto.query = function(options={}) {
    * set timeout of a query
    * @type {number}
    */
-  // const timeoutKey = getTimeoutPromise({
-  //   resolve: d.resolve,
-  //   data: {
-  //     data: this.handleQueryResponseFromServer('', this._projections, layers),
-  //     query
-  //   }
-  //  });
+  const timeoutKey = getTimeoutPromise({
+    resolve: d.resolve,
+    data: {
+      data: queryResponseUtils.getTimeoutData(layers),
+      query
+    }
+   });
   if (layer.useProxy()) {
     layer.getDataProxyFromServer('wms', {
         url,
@@ -118,7 +119,7 @@ proto.query = function(options={}) {
       });
     })
     .catch(err => d.reject(err))
-    //.finally(()=> clearTimeout(timeoutKey));
+    .finally(()=> clearTimeout(timeoutKey));
   return d.promise();
 };
 

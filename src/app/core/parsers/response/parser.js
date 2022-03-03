@@ -3,7 +3,6 @@ const {t} = require('core/i18n/i18n.service');
 const vectorParser = require('../vector/parser');
 const geoutils = require('g3w-ol/src/utils/utils');
 const {sanitizeFidFeature} = require('core/utils/geo');
-const WORD_NUMERIC_XML_TAG_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_';
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 //internal utilities
 const utils = {
@@ -112,7 +111,6 @@ const utils = {
           feature.unset(_field);
         })
       });
-      this.hasFieldsStartWithNumber = false;
     }
     return [{
       layer,
@@ -156,52 +154,8 @@ const utils = {
     ///
     return response;
   },
-  handleWMSMultilayers({layer, response, projections} = {}) {
-    const x2js = new X2JS();
-    const arrayQGS = [...response.matchAll(/<qgs:(\w+) fid=/g)];
-    const alreadySubstitute = [];
-    arrayQGS.forEach(element => {
-      const fid = element[1];
-      if (alreadySubstitute.indexOf(fid) === -1) {
-        alreadySubstitute.push(fid);
-        const startfid = +fid[0];
-        if (Number.isInteger(startfid))
-          response = response.replace(new RegExp(`${fid}`, "g"), `${WORD_NUMERIC_XML_TAG_ESCAPE}${fid}`);
-      }
-    });
-    const jsonresponse =  x2js.xml_str2json(response);
-    // in case of parser return null
-    if (!jsonresponse) return [{
-      layer,
-      features: []
-    }];
-    const FeatureCollection = jsonresponse.FeatureCollection;
-    const handledResponses = [];
-    if (FeatureCollection.featureMember) {
-      const originalFeatureMember = Array.isArray(FeatureCollection.featureMember) ? FeatureCollection.featureMember : [FeatureCollection.featureMember];
-      let layersNames = new Set();
-      originalFeatureMember.forEach((featureMember) => {
-        layersNames.add(Object.keys(featureMember)[0]);
-      });
-      for (const layerName of layersNames) {
-        jsonresponse.FeatureCollection.featureMember = originalFeatureMember.filter((feature) => {
-          return feature[layerName]
-        });
-        const handledResponse = this.parseLayerFeatureCollection({
-          jsonresponse,
-          layer,
-          projections
-        });
-        if (handledResponse) {
-          const response = handledResponse[0];
-          response.layer = layerName.replace(WORD_NUMERIC_XML_TAG_ESCAPE,'');
-          handledResponses.unshift(response);
-        }
-      }
-    }
-    return handledResponses;
-  },
   groupFeaturesByFields(features) {
+    console.log(features)
     return _.groupBy(features, feature => Object.keys(feature));
   },
   handleWMSMultiLayersResponseFromQGISSERVER({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
@@ -337,6 +291,14 @@ const contenttypes = {
 const ResponseParser = {
   get(type){
     return contenttypes[type] || contenttypes.not_supported_format;
+  },
+  utils: {
+    getTimeoutData(layers=[]){
+      return layers.map(layer=>({
+        layer,
+        rawdata: 'timeout'
+      }))
+    }
   }
 };
 
