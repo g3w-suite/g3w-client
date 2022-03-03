@@ -2,7 +2,6 @@ import {G3W_FID} from 'constant';
 const {t} = require('core/i18n/i18n.service');
 const vectorParser = require('../vector/parser');
 const geoutils = require('g3w-ol/src/utils/utils');
-const {sanitizeFidFeature} = require('core/utils/geo');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 //internal utilities
 const utils = {
@@ -155,7 +154,6 @@ const utils = {
     return response;
   },
   groupFeaturesByFields(features) {
-    console.log(features)
     return _.groupBy(features, feature => Object.keys(feature));
   },
   handleWMSMultiLayersResponseFromQGISSERVER({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
@@ -184,6 +182,7 @@ const utils = {
 
 const contenttypes = {
   'application/json'({layers=[], response, projections, wms=true}={}) {
+    const {sanitizeFidFeature} = require('core/utils/geo');
     const layersFeatures = [];
     const layersId = layers.map(layer => {
       layersFeatures.push({
@@ -205,7 +204,7 @@ const contenttypes = {
     features.filter(feature => {
       const featureId = feature.getId();
       const g3w_fid = sanitizeFidFeature(featureId);
-      // in case of wms getfeature without filter return string conatin layerName or layerid
+      // in case of wms getfeature without filter return string contain layerName or layerid
       const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
       if (index !== -1) {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);

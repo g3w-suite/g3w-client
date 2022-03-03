@@ -1,7 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 import {QUERY_POINT_TOLERANCE} from '../../../constant';
 const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
-const {utils:queryResponseUtils} = require('core/parsers/response/parser');
 const geoutils = require('g3w-ol/src/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
@@ -73,8 +72,7 @@ proto.query = function(options={}) {
   const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const {layers=[], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
-  if (layers.length === 0) layers.push(this._layer);
+  const {layers=[this._layer], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
   const layer = layers[0];
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
@@ -83,18 +81,12 @@ proto.query = function(options={}) {
     coordinates,
     resolution
   };
-
-  /**
-   * set timeout of a query
-   * @type {number}
-   */
-  const timeoutKey = getTimeoutPromise({
+  const timeoutKey = this.getQueryResponseTimeoutKey({
+    layers,
     resolve: d.resolve,
-    data: {
-      data: queryResponseUtils.getTimeoutData(layers),
-      query
-    }
-   });
+    query
+  });
+
   if (layer.useProxy()) {
     layer.getDataProxyFromServer('wms', {
         url,

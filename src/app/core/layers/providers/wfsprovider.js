@@ -1,4 +1,4 @@
-const {base, inherit, toRawType, getTimeoutPromise} = require('core/utils/utils');
+const {base, inherit, toRawType} = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -21,17 +21,19 @@ proto.query = function(options={}, params = {}) {
   const {reproject=false, feature_count=10, filter} = options;
   params.MAXFEATURES = feature_count;
   const d = $.Deferred();
-  const layers = options.layers;
+  const {layers=[this._layer]} = options;
+
   const projections = {
     map: this._layer.getMapProjection(),
     layer: reproject ? this._layer.getProjection(): null
   };
-  const timeoutKey = getTimeoutPromise({
+
+  const timeoutKey = this.getQueryResponseTimeoutKey({
+    layers,
     resolve: d.resolve,
-    data: {
-      data: this.handleQueryResponseFromServer(null, projections, layers, wms=false)
-    }
+    query:{}
   });
+
   this._doRequest(filter, params, layers, reproject)
     .then(response => {
       const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);

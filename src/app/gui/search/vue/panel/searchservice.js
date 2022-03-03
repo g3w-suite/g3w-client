@@ -109,6 +109,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
             resolve();
           }
         } else {
+          // no dependance
           this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
             forminput.options.values = values;
@@ -194,8 +195,8 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
  * @returns {Promise<*[]>}
  */
 proto.getValuesFromField = function(field){
-  if (field.options.layer_id) return this.getValueRelationValues(field)
-  else if (field.options.values.length) return this.getValueMapValues(field)
+  if (field.options.layer_id) return this.getValueRelationValues(field);
+  else if (field.options.values.length) return this.getValueMapValues(field);
   else return this.getUniqueValuesFromField({
       unique: field.attribute
     })
@@ -503,7 +504,6 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
     const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
-    console.log(value)
     if (value && value !== ALLVALUE) {
       let isCached;
       let rootValues;
@@ -551,8 +551,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             field: fieldParams,
             unique: uniqueParams
           }).then(data => {
-            data = uniqueParams ? data : data.data[0].features || [];
-            data = this.valuesToKeysValues(data);
+            data = uniqueParams ? this.valuesToKeysValues(data) : data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
               if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
@@ -563,7 +562,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
                 });
-                [...uniqueValues].sort().forEach(value => subscribe.options.values.push(value));
+                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
               }
               if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
