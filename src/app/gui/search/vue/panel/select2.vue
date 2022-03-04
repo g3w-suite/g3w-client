@@ -1,5 +1,5 @@
 <template>
-  <select :name="forminput.attribute" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
+  <select :name="forminput.attribute" class="form-control" :id="forminput.id" v-disabled="forminput.options.disabled || forminput.loading">
     <option :value="keyvalue.value" v-for="keyvalue in forminput.options.values" :key="keyvalue.value">
       <span v-if="keyvalue.value === allvalue " v-t="'sdk.search.all'"></span>
       <span v-else>{{ keyvalue.key }}</span>

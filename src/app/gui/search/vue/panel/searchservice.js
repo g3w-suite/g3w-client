@@ -92,7 +92,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
     const {options:{ dependance, dependance_strict } } = forminput;
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
       // to be sure set values options to empty array if undefined
-      forminput.loading = !forminput.type === 'autocompletefield';
+      forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
         if (forminput.options.values === undefined) forminput.options.values = [];
         else if (dependance){ // in case of dependence load rigth now
@@ -102,8 +102,8 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
           })
             .catch(()=> forminput.options.values = [])// in case of error
             .finally(()=> {
+              forminput.loading = false;
               resolve();
-              forminput.loading = false
             });
           else {
             forminput.loading = false;
@@ -208,6 +208,7 @@ proto.getValuesFromField = function(field){
   if (field.options.layer_id) return this.getValueRelationValues(field);
   else if (field.options.values.length) return this.getValueMapValues(field);
   else return this.getUniqueValuesFromField({
+      field,
       unique: field.attribute
     })
 };
@@ -220,6 +221,7 @@ proto.getValueRelationValues = async function(field, filter){
       inputs:{
         layer,
         search_endpoint: this.getSearchEndPoint(),
+        filter,
         ordering: key
       },
       outputs: false
@@ -257,8 +259,7 @@ proto.getValueMapValues = async function(field){
 proto.getUniqueValuesFromField = async function({field, value, unique}){
   let data = [];
   try {
-    data = await this.searchLayers[0].getFilterData({
-      field,
+    data = await this.searchLayer.getFilterData({
       suggest: value !== undefined ? `${field}|${value}` : undefined,
       unique,
       ordering: field.attribute
@@ -558,44 +559,51 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             field,
             value
           });
-          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : undefined;
+          //need to set undefined beacuse if we has a subscribe input with valuerelations widget i need to wxtract the value of the field to get
+          // filter data from relation layer
           this.searchLayer.getFilterData({
-            field: fieldParams,
-            unique: uniqueParams
-          }).then(data => {
-            data = uniqueParams ? this.valuesToKeysValues(data) : data.data[0].features || [];
+            field: fieldParams
+          }).then(async data => {
+            const parentData = data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
               const { attribute, widget } = subscribe;
-              if (uniqueParams) {
-                if (widget === 'valuemap') {
-                  const values = [...subscribe.options._values].filter(({value}) => data.map(({value}) => value).indexOf(value) !== -1);
-                  values.forEach(value => subscribe.options.values.push(value));
-                } else if (widget === 'valuerelation'){
-                  this.getValueRelationValues(subscribe)
-                } else data.forEach(value => subscribe.options.values.push(value));
+              const uniqueValues = new Set();
+              // case value map
+              if (widget === 'valuemap') {
+                let values = [...subscribe.options._values];
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                const data = [...uniqueValues];
+                values = values.filter(({key}) => data.indexOf(key) !== -1);
+                values.forEach(value => subscribe.options.values.push(value));
               }
-              else {
-                const uniqueValues = new Set();
-                // case value map
-                if (widget === 'valuemap') {
-                  let values = [...subscribe.options._values];
-                  data.forEach(feature => {
+              else if (widget === 'valuerelation') {
+                parentData.forEach(feature =>{
                     const value = feature.get(attribute);
                     value && uniqueValues.add(value);
                   });
-                  data = [...uniqueValues];
-                  values = values.filter(({key}) => data.indexOf(key) !== -1);
-                  values.forEach(value => subscribe.options.values.push(value));
-                } else if (widget === 'valuerelation') {
-
-                } else {
-                  data.forEach(feature => {
-                    const value = feature.get(attribute);
-                    value && uniqueValues.add(value);
-                  });
-                  this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
+                  if (uniqueValues.size > 0) {
+                    const filter = createSingleFieldParameter({
+                      field: subscribe.options.key,
+                      value: [...uniqueValues]
+                    });
+                    try {
+                      const values = await this.getValueRelationValues(subscribe, filter);
+                      values.forEach(value =>  subscribe.options.values.push(value));
+                    } catch(err){
+                      console.log(err)
+                    }
+                  }
                 }
+              else {
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
               }
               if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
