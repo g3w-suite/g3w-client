@@ -186,6 +186,7 @@ const vueComponentOptions = {
       this.layerMenu.loading.gpx = false;
       this.layerMenu.loading.gpkg = false;
       this.layerMenu.loading.xls = false;
+      this.layerMenu.loading.geotiff = false;
     },
     zoomToLayer() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
@@ -232,6 +233,10 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isCsvDownlodable(): false;
     },
+    canDownloadGeoTIFF(layerId){
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isGeoTIFFDownlodable(): false;
+    },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
@@ -253,6 +258,22 @@ const vueComponentOptions = {
       $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
       document.body.removeChild(tempInput);
       ancorEement = null;
+    },
+    downloadGeoTIFF(layerId, map_extent=false){
+      const caller_download_id = ApplicationService.setDownload(true);
+      this.layerMenu.loading.geotiff = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getGeoTIFF({
+        data: {
+          map_extent: map_extent ? GUI.getService('map').getMapExtent().toString() : undefined
+        }
+      })
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.geotiff = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
+        })
     },
     downloadShp(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);

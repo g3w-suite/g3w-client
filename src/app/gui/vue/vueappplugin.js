@@ -70,6 +70,7 @@ const font = {
   gpkg: "fas fa-box-open",
   shapefile:"fas fa-file-archive",
   csv: "fas fa-file-csv",
+  geotiff: "fas fa-th",
   ppt: "far fa-file-powerpoint",
   circle: "fas fa-circle",
   calculator: "fas fa-calculator",

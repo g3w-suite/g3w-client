@@ -286,7 +286,8 @@ const ApplicationService = function() {
       config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
       config.server.urls.mediaurl = initConfig.mediaurl;
       config.server.urls.vectorurl = initConfig.vectorurl;
-      config.server.urls.proxyurl = initConfig.proxyurl || 'proxyurl';
+      config.server.urls.proxyurl = initConfig.proxyurl;
+      config.server.urls.rasterurl = initConfig.rasterurl;
       config.main_map_title = initConfig.main_map_title;
       config.group = initConfig.group;
       config.user = initConfig.user;
@@ -310,6 +311,7 @@ const ApplicationService = function() {
         mediaurl: config.server.urls.mediaurl,
         resourcesurl: config.server.urls.clienturl,
         vectorurl:config.server.urls.vectorurl,
+        rasterurl:config.server.urls.rasterurl,
         projects: config.group.projects,
         initproject: config.group.initproject,
         overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,

@@ -34,6 +34,7 @@ function Layer(config={}, options={}) {
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = project.getVectorUrl();
+    const rasterUrl = project.getRasterUrl();
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
@@ -41,6 +42,7 @@ function Layer(config={}, options={}) {
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff = `${rasterUrl}/geotiff/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
@@ -429,8 +431,24 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
     case 'gpkg':
       promise = this.getGpkg({data, options});
       break;
+    case 'geotiff':
+      promise: this.getGeoTIFF({
+        data,
+        options
+      })
+      break;
   }
   return promise;
+};
+
+proto.getGeoTIFF = function({data}={}){
+  console.log(data)
+  const url = this.getUrl('geotiff');
+  return XHR.fileDownload({
+    url,
+    data,
+    httpMethod: "GET"
+  })
 };
 
 proto.getXls = function({data}={}){
@@ -742,8 +760,12 @@ proto.getDownloadUrl = function(format){
   return find && find.url;
 };
 
+proto.isGeoTIFFDownlodable = function() {
+  return !this.isBaseLayer() && this.config.download && this.config.source.type === 'gdal';
+};
+
 proto.isShpDownlodable = function() {
-  return !this.isBaseLayer() && this.config.download;
+  return !this.isBaseLayer() && this.config.download && this.config.source.type !== 'gdal';
 };
 
 proto.isXlsDownlodable = function(){

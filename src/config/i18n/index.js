@@ -352,7 +352,8 @@ const translations = {
               gpx: 'Scarica GPX',
               gpkg: 'Scarica GPKG',
               csv: 'Scarica CSV',
-              xls: 'Scarica XLS'
+              xls: 'Scarica XLS',
+              geotiff: "Scarica GEOTIFF"
             }
           }
         },
@@ -818,7 +819,8 @@ const translations = {
               gpx: 'Download GPX',
               gpkg: 'Download GPKG',
               csv: 'Download CSV',
-              xls: 'Download XLS'
+              xls: 'Download XLS',
+              geotiff: "Download GEOTIFF"
             }
           }
         },
@@ -1284,7 +1286,8 @@ const translations = {
               gpx: 'Lataa GPX-tiedosto',
               gpkg: 'Lataa GPKG-tiedosto',
               csv: 'Lataa CSV-tiedosto',
-              xls: 'Lataa XLS-tiedosto'
+              xls: 'Lataa XLS-tiedosto',
+              geotiff: 'Lataa GEOTIFF-tiedosto'
             }
           }
         },
@@ -1751,7 +1754,8 @@ const translations = {
               gpx: 'Ladda GPX-fil',
               gpkg: 'Ladda GPKG-fil',
               csv: 'Ladda CSV-fil',
-              xls: 'Ladda XLS-fil'
+              xls: 'Ladda XLS-fil',
+              geotiff: 'Ladda GEOTIFF-fil'
             }
           }
         },
@@ -2219,7 +2223,8 @@ const translations = {
               gpx: 'Télécharger GPX',
               gpkg: 'Télécharger GPKG',
               csv: 'Télécharger CSV',
-              xls: 'Télécharger XLS'
+              xls: 'Télécharger XLS',
+              geotiff: 'Télécharger GEOTIFF'
             }
           }
         },

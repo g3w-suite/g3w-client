@@ -111,6 +111,21 @@
         <span class="item-text" v-t="'sdk.catalog.menu.download.shp'"></span>
       </div>
     </li>
+    <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
+      <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
+        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('geotiff')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
+      </div>
+    </li>
+    <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
+      <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" >
+        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('geotiff')"></span>
+        <span style="position: absolute; left: 20px; font-size: 1.1em;" class="menu-icon" :class="g3wtemplate.getFontClass('square')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
+      </div>
+    </li>
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>

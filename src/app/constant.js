@@ -41,6 +41,10 @@ export const DOWNLOAD_FORMATS = {
     format: 'xls',
     url: 'xls'
   },
+  download_raster: {
+    format: 'geotiff',
+    url: 'geotiff'
+  }
 };
 
 export const LIST_OF_RELATIONS_TITLE = '__G3W_LIST_OF_RELATIONS_TITLE__';

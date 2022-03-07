@@ -1,3 +1,4 @@
+import {G3W_FID} from 'constant';
 const {inherit, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
@@ -39,11 +40,13 @@ proto.buildRelationTable = function(relations=[], id) {
   const headers = layer.getTableHeaders();
   let columns = null;
   let rows = [];
+  let rows_fid = [];
   let fields;
   if (relations.length) {
     const attributes = Object.keys(relations[0].attributes);
     columns = headers.filter(header => attributes.indexOf(header.name) !==-1);
     rows = relations.map(relation => {
+      rows_fid.push(relation.attributes[G3W_FID]);
       return columns.map(column => {
         return relation.attributes[column.name]
       })
@@ -54,6 +57,7 @@ proto.buildRelationTable = function(relations=[], id) {
   return {
     columns,
     rows,
+    rows_fid,
     features: relations,
     fields,
     formStructure : layer.getEditorFormStructure(),

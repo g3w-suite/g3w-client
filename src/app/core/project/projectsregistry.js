@@ -144,6 +144,7 @@ proto.setProjects = function(projects) {
     project.maxscale = this.config.maxscale;
     project.crs = this.config.crs;
     project.vectorurl = this.config.vectorurl;
+    project.rasterurl = this.config.rasterurl;
     project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
     this._groupProjects.push(project);
   });
