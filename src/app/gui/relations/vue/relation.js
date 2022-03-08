@@ -121,7 +121,7 @@ module.exports = {
   },
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-    this.isEditable =  layer.isEditable();
+    this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
     const downloadformatsLength = downloadformats.length;
     if (downloadformatsLength > 0){

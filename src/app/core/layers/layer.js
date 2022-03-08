@@ -42,7 +42,7 @@ function Layer(config={}, options={}) {
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
-    this.config.urls.geotiff = `${rasterUrl}/geotiff/${suffixUrl}`;
+    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
@@ -72,6 +72,7 @@ function Layer(config={}, options={}) {
     source: config.source,
     styles: config.styles,
     defaultstyle,
+    inediting: false, // state of if is in editing (setted by editing plugin )
     infoformat: this.getInfoFormat(),
     infoformats: this.config.infoformats || [],
     projectLayer: true,
@@ -174,6 +175,18 @@ proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
     })
   });
   return this.getDataProxyFromServer(type, this.proxyData[type]);
+};
+
+/**
+ * editing method used by plugin
+ */
+
+proto.isInEditing = function(){
+  return this.state.inediting;
+};
+
+proto.setInEditing = function(bool=false){
+  this.state.inediting = bool;
 };
 
 /**

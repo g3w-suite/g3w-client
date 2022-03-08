@@ -264,9 +264,9 @@ const vueComponentOptions = {
       this.layerMenu.loading.geotiff = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       layer.getGeoTIFF({
-        data: {
-          map_extent: map_extent ? GUI.getService('map').getMapExtent().toString() : undefined
-        }
+        data:  map_extent ? {
+          map_extent: GUI.getService('map').getMapExtent().toString()
+        } : undefined
       })
         .catch(err => GUI.notify.error(t("info.server_error")))
         .finally(() => {

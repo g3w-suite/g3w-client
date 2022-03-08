@@ -115,8 +115,8 @@ const font = {
   'step-backward': "fas fa-step-backward",
   'fast-backward': "fas fa-fast-backward",
   'step-forward': "fas fa-step-forward",
-  'fast-forward': "fas fa-fast-forward"
-
+  'fast-forward': "fas fa-fast-forward",
+  crop: "fas fa-crop-alt"
 };
 
 const Vueappplugin = {

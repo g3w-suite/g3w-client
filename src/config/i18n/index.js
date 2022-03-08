@@ -353,7 +353,8 @@ const translations = {
               gpkg: 'Scarica GPKG',
               csv: 'Scarica CSV',
               xls: 'Scarica XLS',
-              geotiff: "Scarica GEOTIFF"
+              geotiff: "Scarica GEOTIFF",
+              geotiff_map_extent: "Scarica GEOTIFF(estensione vista corrente)"
             }
           }
         },
@@ -820,7 +821,8 @@ const translations = {
               gpkg: 'Download GPKG',
               csv: 'Download CSV',
               xls: 'Download XLS',
-              geotiff: "Download GEOTIFF"
+              geotiff: "Download GEOTIFF",
+              geotiff_map_extent: "Download GEOTIFF(current view extent)"
             }
           }
         },
@@ -1287,7 +1289,8 @@ const translations = {
               gpkg: 'Lataa GPKG-tiedosto',
               csv: 'Lataa CSV-tiedosto',
               xls: 'Lataa XLS-tiedosto',
-              geotiff: 'Lataa GEOTIFF-tiedosto'
+              geotiff: 'Lataa GEOTIFF-tiedosto',
+              geotiff_map_extent: "Lataa GEOTIFF-tiedosto(current view extent)"
             }
           }
         },
@@ -1755,7 +1758,8 @@ const translations = {
               gpkg: 'Ladda GPKG-fil',
               csv: 'Ladda CSV-fil',
               xls: 'Ladda XLS-fil',
-              geotiff: 'Ladda GEOTIFF-fil'
+              geotiff: 'Ladda GEOTIFF-fil',
+              geotiff_map_extent: "Ladda GEOTIFF-fil(current view extent)"
             }
           }
         },
@@ -2224,7 +2228,8 @@ const translations = {
               gpkg: 'Télécharger GPKG',
               csv: 'Télécharger CSV',
               xls: 'Télécharger XLS',
-              geotiff: 'Télécharger GEOTIFF'
+              geotiff: 'Télécharger GEOTIFF',
+              geotiff_map_extent: "Télécharger GEOTIFF(current view extent)"
             }
           }
         },
