@@ -72,8 +72,8 @@ proto.query = function(options={}) {
   const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
   const layerProjection = this._layer.getProjection();
   this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const {layers, feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
-  const layer = layers ? layers[0] : this._layer;
+  const {layers=[this._layer], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
+  const layer = layers[0];
   let url = layer.getQueryUrl();
   const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
   const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
@@ -81,20 +81,14 @@ proto.query = function(options={}) {
     coordinates,
     resolution
   };
-
-  /**
-   * set timeout of a query
-   * @type {number}
-   */
-  const timeoutKey = getTimeoutPromise({
+  const timeoutKey = this.getQueryResponseTimeoutKey({
+    layers,
     resolve: d.resolve,
-    data: {
-      data: this.handleQueryResponseFromServer('', this._projections, layers),
-      query
-    }
-   });
+    query
+  });
+
   if (layer.useProxy()) {
-    layer.getDataFromProxy({
+    layer.getDataProxyFromServer('wms', {
         url,
         params,
         method: METHOD,

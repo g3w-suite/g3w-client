@@ -1,9 +1,9 @@
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
 import InfoFormats from './components/actiontools/infoformats.vue';
-const {fieldsMixin} = require('gui/vue/vue.mixins');
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
+const {fieldsMixin} = require('gui/vue/vue.mixins');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const maxSubsetLength = 3;

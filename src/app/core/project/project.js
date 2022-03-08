@@ -267,6 +267,10 @@ proto.getVectorUrl = function() {
   return this.state.vectorurl;
 };
 
+proto.getRasterUrl = function(){
+  return this.state.rasterurl;
+};
+
 proto.getId = function() {
   return this.state.id;
 };

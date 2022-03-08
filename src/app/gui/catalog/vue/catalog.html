@@ -124,6 +124,21 @@
       </div>
       <range :value="layerMenu.layer.opacity" :min="0" :max="1" :step="0.1" :sync="true" @changed="_hideMenu" @change-range="setWMSOpacity"></range>
     </li>
+    <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
+      <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id)" >
+        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <span class="menu-icon" :class="g3wtemplate.getFontClass('geotiff')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff'"></span>
+      </div>
+    </li>
+    <li v-if="canDownloadGeoTIFF(layerMenu.layer.id)" v-download>
+      <div @click.prevent.stop="downloadGeoTIFF(layerMenu.layer.id, true)" style="position: relative">
+        <bar-loader :loading="layerMenu.loading.geotiff"></bar-loader>
+        <span class="menu-icon" style="color:#777" :class="g3wtemplate.getFontClass('geotiff')"></span>
+        <span style="position: absolute; left: -7px; bottom: 8px; font-size: 1.2em" class="menu-icon" :class="g3wtemplate.getFontClass('crop')"></span>
+        <span class="item-text" v-t="'sdk.catalog.menu.download.geotiff_map_extent'"></span>
+      </div>
+    </li>
     <li v-if="canDownloadShp(layerMenu.layer.id)" v-download>
       <div @click.prevent.stop="downloadShp(layerMenu.layer.id)" >
         <bar-loader :loading="layerMenu.loading.shp"></bar-loader>

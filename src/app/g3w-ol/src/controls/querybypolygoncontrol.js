@@ -76,11 +76,13 @@ proto.checkVisibile = function(layers) {
     // geometries to check
     // get all layers that haven't the geometries above filterable
     const filterableLayers = layers.filter(layer => layer.isFilterable());
-    // gell all layer that have the valid geometries
+    // get all layer that have the valid geometries
     const querableLayers = layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
     const filterableLength = filterableLayers.length;
     const querableLength = querableLayers.length;
-    visible = querableLength > 0 && filterableLength > 0;
+    if (querableLength === 1 && filterableLength === 1){
+      visible = filterableLayers[0] !== querableLayers[0];
+    } else visible = querableLength > 0 && filterableLength > 0;
   }
   return visible;
 };

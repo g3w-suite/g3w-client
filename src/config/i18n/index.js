@@ -16,6 +16,9 @@ const translations = {
           show_features_on_map: "Mostra features visibili su mappa"
         }
       },
+      warning: {
+        not_supported_format: "Formato non supportato"
+      },
       sdk: {
         search: {
           all: 'TUTTE',
@@ -351,7 +354,9 @@ const translations = {
               gpx: 'Scarica GPX',
               gpkg: 'Scarica GPKG',
               csv: 'Scarica CSV',
-              xls: 'Scarica XLS'
+              xls: 'Scarica XLS',
+              geotiff: "Scarica GEOTIFF",
+              geotiff_map_extent: "Scarica GEOTIFF(estensione vista corrente)"
             }
           }
         },
@@ -495,6 +500,9 @@ const translations = {
           clear: "Clear Selection",
           show_features_on_map: "Show features visible on map"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {
@@ -829,7 +837,9 @@ const translations = {
               gpx: 'Download GPX',
               gpkg: 'Download GPKG',
               csv: 'Download CSV',
-              xls: 'Download XLS'
+              xls: 'Download XLS',
+              geotiff: "Download GEOTIFF",
+              geotiff_map_extent: "Download GEOTIFF(current view extent)"
             }
           }
         },
@@ -973,6 +983,9 @@ const translations = {
           clear: "Peruuttaa Valinta",
           show_features_on_map: "Näytä kartalla näkyvät ominaisuudet"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {
@@ -1307,7 +1320,9 @@ const translations = {
               gpx: 'Lataa GPX-tiedosto',
               gpkg: 'Lataa GPKG-tiedosto',
               csv: 'Lataa CSV-tiedosto',
-              xls: 'Lataa XLS-tiedosto'
+              xls: 'Lataa XLS-tiedosto',
+              geotiff: 'Lataa GEOTIFF-tiedosto',
+              geotiff_map_extent: "Lataa GEOTIFF-tiedosto(current view extent)"
             }
           }
         },
@@ -1451,6 +1466,9 @@ const translations = {
           clear: "Annullera Urval",
           show_features_on_map: "Visa funktioner som är synliga på kartan"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {
@@ -1786,7 +1804,9 @@ const translations = {
               gpx: 'Ladda GPX-fil',
               gpkg: 'Ladda GPKG-fil',
               csv: 'Ladda CSV-fil',
-              xls: 'Ladda XLS-fil'
+              xls: 'Ladda XLS-fil',
+              geotiff: 'Ladda GEOTIFF-fil',
+              geotiff_map_extent: "Ladda GEOTIFF-fil(current view extent)"
             }
           }
         },
@@ -1930,6 +1950,9 @@ const translations = {
           clear: "Effacer la sélection ",
           show_features_on_map: "Afficher les caractéristiques visibles sur la carte"
         }
+      },
+      warning: {
+        not_supported_format: "Not supported format"
       },
       sdk: {
         search: {
@@ -2266,7 +2289,9 @@ const translations = {
               gpx: 'Télécharger GPX',
               gpkg: 'Télécharger GPKG',
               csv: 'Télécharger CSV',
-              xls: 'Télécharger XLS'
+              xls: 'Télécharger XLS',
+              geotiff: 'Télécharger GEOTIFF',
+              geotiff_map_extent: "Télécharger GEOTIFF(current view extent)"
             }
           }
         },

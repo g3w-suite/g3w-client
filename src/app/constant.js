@@ -5,6 +5,9 @@
 export const G3W_FID = 'g3w_fid'; //fid name field referred of fid feature
 //default editing capabilities
 export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'change_attr_feature', 'delete_feature'];
+
+//Geometry fields used to exlude or get geometry information from server request
+export const GEOMETRY_FIELDS = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
 
@@ -73,6 +76,10 @@ export const DOWNLOAD_FORMATS = {
     format: 'xls',
     url: 'xls'
   },
+  download_raster: {
+    format: 'geotiff',
+    url: 'geotiff'
+  }
 };
 
 export const LIST_OF_RELATIONS_TITLE = '__G3W_LIST_OF_RELATIONS_TITLE__';
@@ -81,6 +88,7 @@ export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
   QUERY_POINT_TOLERANCE,
+  GEOMETRY_FIELDS,
   DOWNLOAD_FORMATS,
   GEOMETRY_FIELDS,
   LIST_OF_RELATIONS_TITLE,

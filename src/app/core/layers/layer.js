@@ -3,7 +3,7 @@ import {DOWNLOAD_FORMATS} from './../../constant';
 const {t} = require('core/i18n/i18n.service');
 const {inherit, base, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const {geometryFields} =  require('core/utils/geo');
+const {geometryFields, parseAttributes} =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
@@ -34,6 +34,7 @@ function Layer(config={}, options={}) {
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = project.getVectorUrl();
+    const rasterUrl = project.getRasterUrl();
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
@@ -41,6 +42,7 @@ function Layer(config={}, options={}) {
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
@@ -70,6 +72,7 @@ function Layer(config={}, options={}) {
     source: config.source,
     styles: config.styles,
     defaultstyle,
+    inediting: false, // state of if is in editing (setted by editing plugin )
     infoformat: this.getInfoFormat(),
     infoformats: this.config.infoformats || [],
     projectLayer: true,
@@ -124,7 +127,9 @@ function Layer(config={}, options={}) {
     };
   }
   // used to store last proxy params (useful for repeat request info formats for wms external layer)
-  this.lastProxyData = null;
+  this.proxyData = {
+    wms: null // at the moment only wms data from server
+  };
   base(this);
 }
 
@@ -136,40 +141,52 @@ const proto = Layer.prototype;
  * Proxyparams
  */
 
-proto.getLastProxyData = function(){
-  return this.lastProxyData;
+proto.getProxyData = function(type){
+  return type ? this.proxyData[type] : this.proxyData;
 };
 
-proto.setLastProxyData= function(data={}){
-  this.lastProxyData = data;
+proto.setProxyData= function(type, data={}){
+  this.proxyData[type] = data;
 };
 
-proto.clearLastProxyData = function(){
-  this.lastProxyData = null;
+proto.clearProxyData = function(type){
+  this.proxyData[type] = null;
 };
 
-proto.getDataFromProxy = async function(proxyParams={}){
+proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
   const DataRouterService = require('core/data/routerservice');
   try {
-    const {response, data} = await DataRouterService.getData('proxy:data', {
+    const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,
       outputs: false
     });
-    this.setLastProxyData(JSON.parse(data));
+    this.setProxyData(type, JSON.parse(data));
     return response;
   } catch(err){
     return;
   }
 };
 
-proto.changeProxyDataAndReload = function(changes={}) {
+proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
   Object.keys(changes).forEach(changeParam =>{
     Object.keys(changes[changeParam]).forEach(param =>{
       const value = changes[changeParam][param];
-      this.lastProxyData[changeParam][param] = value;
+      this.proxyData[type][changeParam][param] = value;
     })
   });
-  return this.getDataFromProxy(this.lastProxyData);
+  return this.getDataProxyFromServer(type, this.proxyData[type]);
+};
+
+/**
+ * editing method used by plugin
+ */
+
+proto.isInEditing = function(){
+  return this.state.inediting;
+};
+
+proto.setInEditing = function(bool=false){
+  this.state.inediting = bool;
 };
 
 /**
@@ -427,8 +444,24 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
     case 'gpkg':
       promise = this.getGpkg({data, options});
       break;
+    case 'geotiff':
+      promise: this.getGeoTIFF({
+        data,
+        options
+      })
+      break;
   }
   return promise;
+};
+
+proto.getGeoTIFF = function({data}={}){
+  console.log(data)
+  const url = this.getUrl('geotiff');
+  return XHR.fileDownload({
+    url,
+    data,
+    httpMethod: "GET"
+  })
 };
 
 proto.getXls = function({data}={}){
@@ -510,7 +543,7 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
         const title = this.getTitle();
         const features = data.features && data.features || [];
         let headers = features.length ? features[0].properties : [];
-        headers = provider._parseAttributes(this.getAttributes(), headers);
+        headers = parseAttributes(this.getAttributes(), headers);
         const dataTableObject = {
           headers,
           features,
@@ -558,12 +591,13 @@ proto.searchFeatures = function(options={}, params={}){
           }).fail(error => reject(error));
         break;
       case 'api':
-        const {raw=false, filter:field, suggest={}, unique, queryUrl} = options;
+        const {raw=false, filter:field, suggest={}, unique, queryUrl, ordering} = options;
         try {
           const response = await this.getFilterData({
             queryUrl,
             raw,
             field,
+            ordering,
             suggest,
             unique
           });
@@ -582,12 +616,13 @@ proto.searchFeatures = function(options={}, params={}){
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
     queryUrl,
     field,
     raw,
+    ordering,
     suggest,
     formatter,
     unique
@@ -738,8 +773,12 @@ proto.getDownloadUrl = function(format){
   return find && find.url;
 };
 
+proto.isGeoTIFFDownlodable = function() {
+  return !this.isBaseLayer() && this.config.download && this.config.source.type === 'gdal';
+};
+
 proto.isShpDownlodable = function() {
-  return !this.isBaseLayer() && this.config.download;
+  return !this.isBaseLayer() && this.config.download && this.config.source.type !== 'gdal';
 };
 
 proto.isXlsDownlodable = function(){

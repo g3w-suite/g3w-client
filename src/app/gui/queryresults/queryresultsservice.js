@@ -133,6 +133,8 @@ function QueryResultsService() {
       this._changeLayerResult(layer);
     },
     activeMapInteraction(){},
+    // setter hook to relation table
+    editFeature({layerId, featureId}={}){},
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);

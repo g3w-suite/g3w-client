@@ -25,17 +25,19 @@
       <table ref="relationtable" class="relationtable table table-striped row-border" width="100%" >
         <thead>
           <tr style="height: 0! important">
-            <th v-if="table.formStructure" style="max-width: 30px !important; padding: 0 !important;"></th>
+            <th v-if="table.formStructure || isEditable" :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`}" style="padding: 0 !important;"></th>
             <th v-for="column in table.columns">{{ column }}</th>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(row, index) in table.rows">
+          <template v-for="(row, index) in table.rows" :key="table.rows_fid[index]">
           <tr :class="{'selected': table.rowFormStructure === row}">
-            <td @click="showFormStructureRow($event, row)" style="cursor: pointer" v-if="table.formStructure">
-              <span style="max-width: 15px; width: 15px;" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+            <td v-if="table.formStructure || isEditable">
+              <span v-if="table.formStructure" @click="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                     class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                     data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
+              <span v-if="isEditable" @click="editFeature(table.rows_fid[index])" class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="'Edit'"
+                    data-placement="right" :class="g3wtemplate.getFontClass('pencil')"></span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">

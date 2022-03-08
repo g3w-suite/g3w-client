@@ -3,6 +3,7 @@ const {toRawType, uniqueId} = require('core/utils/utils');
 const Geometry = require('core/geometry/geometry');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
+const responseParser = require('core/parsers/response/parser');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
@@ -71,7 +72,6 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
-
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
@@ -1384,7 +1384,36 @@ const geoutils = {
       fid = fid.length === 2 ? fid[1] : fid[0];
     }
     return fid;
+  },
+  parseAttributes(layerAttributes, featureAttributes) {
+    let featureAttributesNames = Object.keys(featureAttributes).filter(featureAttributesName => geometryFields.indexOf(featureAttributesName) === -1);
+    if (layerAttributes && layerAttributes.length) {
+      let featureAttributesNames = Object.keys(featureAttributes);
+      return layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1)
+    } else {
+      return featureAttributesNames.map(featureAttributesName => ({
+          name: featureAttributesName,
+          label: featureAttributesName
+        })
+      )
+    }
+  },
+  /**
+   * Handle case query response
+   */
+  handleQueryResponse({response, projections, layers, wms=true}={}) {
+    layers = layers ? layers : [this._layer];
+    const layer = layers[0];
+    const infoFormat = layer.getInfoFormat();
+    response = responseParser.get(infoFormat)({
+      response,
+      projections,
+      layers,
+      wms
+    });
+    return response;
   }
+
 };
 
 module.exports = geoutils;

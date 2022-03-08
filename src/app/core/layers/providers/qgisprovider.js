@@ -1,7 +1,8 @@
 import ApplicationState from 'core/applicationstate';
 const {base, inherit, XHR} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const DataProvider = require('core/layers/providers/provider');
+const responseParser = require('core/parsers/response/parser');
 const RelationsService = require('core/relations/relationsservice');
 const Feature = require('core/layers/features/feature');
 const Parsers = require('core/parsers/parsers');
@@ -52,11 +53,12 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
   const dataUrl = this._layer.getUrl('data');
   const params = {
     field,
     suggest,
+    ordering,
     formatter,
     unique,
     filtertoken: ApplicationState.tokens.filtertoken
@@ -69,7 +71,7 @@ proto.getFilterData = async function({field, raw=false, suggest={}, unique, form
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
     const data = raw ? response : response.result ?  unique ? response.data :  {
-      data: this._parseGeoJsonResponse({
+      data: responseParser.get('application/json')({
         layers: [this._layer],
         response:response.vector.data,
         projections: this._projections

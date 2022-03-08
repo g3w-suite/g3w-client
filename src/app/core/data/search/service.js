@@ -5,7 +5,7 @@ const BaseService = require('core/data/service');
 function SearchService(){
   base(this);
   // method to searchfeature features
-  this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count}){
+  this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}){
     const promisesSearch =[];
     const {layer, ...params} = options;
     const {raw=false} = options;

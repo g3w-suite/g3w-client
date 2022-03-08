@@ -68,6 +68,13 @@ module.exports = {
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
+    editFeature(featureId){
+      const queryResultsService = GUI.getService('queryresults');
+      queryResultsService.editFeature({
+        layerId: this.table.layerId,
+        featureId
+      });
+    },
     getRowFields(row){
       const fields = this.table.fields.map((field, index)=> {
         field.value = row[index];
@@ -114,6 +121,7 @@ module.exports = {
   },
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
+    this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
     const downloadformatsLength = downloadformats.length;
     if (downloadformatsLength > 0){
