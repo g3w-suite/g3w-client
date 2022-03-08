@@ -119,7 +119,7 @@ function PluginsRegistry() {
    * @param config
    */
   this.setPluginsConfig = function(config={}) {
-    const enabledPluginConfig = {}
+    const enabledPluginConfig = {};
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
       .forEach(([pluginName, pluginConfig]) =>{

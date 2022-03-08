@@ -1,6 +1,5 @@
 import ApplicationState from 'core/applicationstate';
 const {base, inherit} = require('core/utils/utils');
-const Layer = require('core/layers/layer');
 const MapLayer = require('./maplayer');
 const RasterLayers = require('g3w-ol/src/layers/rasters');
 
@@ -78,7 +77,7 @@ proto._makeOlLayer = function(withLayers) {
   };
   if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
-  if (representativeLayer && representativeLayer instanceof Layer) wmsConfig.url = representativeLayer.getWmsUrl();
+  if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
   olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
   olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
@@ -110,9 +109,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
 
 proto.setupCustomMapParamsToLegendUrl = function(params={}){
   if (this.layer) this.layer.setMapParamstoLegendUrl(params);
-  else this.layers.forEach(layer => {
-    layer.setMapParamstoLegendUrl(params)
-  });
+  else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
 };
 
 module.exports = WMSLayer;

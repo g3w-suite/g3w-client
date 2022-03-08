@@ -5,6 +5,9 @@
       <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab === 'layers' && 'hasLayers' }">
         <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
       </li>
+      <li v-if="state.externallayers.length" role="presentation"  :class="{ active: activeTab === 'externalwms' }">
+        <a href="#externalwms" aria-controls="externalwms" role="tab" data-toggle="tab" data-i18n="externalwms" v-t="'externalwms'"></a>
+      </li>
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: activeTab === 'baselayers' }" >
         <a href="#baselayers" aria-controls="baselayers" role="tab" data-toggle="tab" data-i18n="baselayers" v-t="'baselayers'"></a>
       </li>
@@ -39,6 +42,12 @@
         </ul>
         <ul v-for="layersgroup in state.layersgroups">
           <layers-group :layersgroup="layersgroup"></layers-group>
+        </ul>
+      </div>
+      <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'externalwms' && state.externallayers.length }" id="externalwms">
+        <ul class="g3w-external_wms_layers-group" v-if="state.externallayers.length">
+          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+          </tristate-tree>
         </ul>
       </div>
       <div class="tab-pane baselayers" v-if="hasBaseLayers" role="tabpanel"  :class="{ active: activeTab === 'baselayers' || !hasLayers }" id="baselayers">
