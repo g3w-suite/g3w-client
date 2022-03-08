@@ -1,4 +1,5 @@
 import WMSLayersPanel from './vue/panel/wmslayerspanel';
+const ApplicationService = require('core/applicationservice');
 const GUI = require('gui/gui');
 const {XHR} = require('core/utils/utils');
 
@@ -17,6 +18,10 @@ proto.addNewWmsUrl = function(wmsurl){
   const findwmsurl = this.state.wmsurls.find(url => url == wmsurl);
   !findwmsurl &&this.state.wmsurls.unshift(wmsurl);
   return findwmsurl;
+};
+
+proto.deleteWmsUrl = function(wmsurl){
+  this.state.wmsurls = this.state.wmsurls.filter(url => url !== wmsurl);
 };
 
 proto.showWmsLayersPanel = function(wmsurl){

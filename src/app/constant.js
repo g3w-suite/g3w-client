@@ -20,8 +20,6 @@ export const QUERY_POINT_TOLERANCE = {
   value: 10
 };
 
-export const GEOMETRY_FIELDS = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
-
 export const EPSG = [
   "EPSG:3003",
   "EPSG:3004",
@@ -88,7 +86,6 @@ export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
   QUERY_POINT_TOLERANCE,
-  GEOMETRY_FIELDS,
   DOWNLOAD_FORMATS,
   GEOMETRY_FIELDS,
   LIST_OF_RELATIONS_TITLE,
