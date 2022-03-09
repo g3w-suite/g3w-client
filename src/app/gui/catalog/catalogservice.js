@@ -8,7 +8,10 @@ function CatalogService() {
   this.state = {
     prstate: ProjectsRegistry.state,
     highlightlayers: false,
-    externallayers:[],
+    external: {
+      wms: [], // added by wms cside bar component
+      vector: [] // added to map controls for the moment
+    },
     layerstrees: [],
     layersgroups: []
   };
@@ -41,11 +44,6 @@ inherit(CatalogService, G3WObject);
 
 const proto = CatalogService.prototype;
 
-proto.addExternalLayer = function(layer) {
-  layer.removable = true;
-  this.state.externallayers.push(layer);
-};
-
 proto.createLayersGroup = function({title = 'Layers Group', layers =[]} = {}) {
   const nodes = [];
   layers.forEach(layer => nodes.push(layer));
@@ -66,10 +64,15 @@ proto.addLayersGroup = function(layersGroup) {
   this.state.layersgroups.push(layersGroup);
 };
 
-proto.removeExternalLayer = function(name) {
-  this.state.externallayers.find((layer, index) => {
+proto.addExternalLayer = function({layer, type='vector'}={}) {
+  layer.removable = true;
+  this.state.external[type].push(layer);
+};
+
+proto.removeExternalLayer = function({name, type='vector'}={}) {
+  this.state.external[type].find((layer, index) => {
     if (layer.name === name) {
-      this.state.externallayers.splice(index, 1);
+      this.state.external[type].splice(index, 1);
       return true
     }
   });

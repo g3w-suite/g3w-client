@@ -118,7 +118,7 @@ const vueComponentOptions = {
     hasLayers() {
       let layerstresslength = 0;
       this.state.layerstrees.forEach(layerstree => layerstresslength+=layerstree.tree.length);
-      return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
+      return this.state.external.vector.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
     }
   },
   methods: {
@@ -203,11 +203,12 @@ const vueComponentOptions = {
       }
       return canZoom;
     },
-    getGeometryType(layerId){
+    getGeometryType(layerId, external=false){
       let geometryType;
-      const layer = this.state.externallayers.find(layer => layer.id === layerId);
-      if (layer) geometryType = layer.geometryType;
-      else {
+      if (external){
+        const layer = this.state.external.vector.find(layer => layer.id === layerId);
+        if (layer) geometryType = layer.geometryType;
+      } else {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         geometryType = originalLayer.config.geometrytype;
       }
@@ -484,6 +485,12 @@ const vueComponentOptions = {
     }
   },
   watch: {
+    // listen external wms change. If remove all layer nee to set active the project or default tab
+    'state.external.wms'(newlayers, oldlayers){
+      if (oldlayers && newlayers.length === 0){
+        this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+      }
+    },
     'state.prstate.currentProject': {
       async handler(project, oldproject){
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
@@ -737,9 +744,9 @@ Vue.component('tristate-tree', {
         downloadFile(download.file);
       } else if (download.url) {}
     },
-    removeExternalLayer(name) {
+    removeExternalLayer(name, type) {
       const mapService = GUI.getComponent('map').getService();
-      mapService.removeExternalLayer(name);
+      mapService.removeExternalLayer(name, wms);
     },
     showLayerMenu(layerstree, evt) {
       if (!this.isGroup && (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)) {

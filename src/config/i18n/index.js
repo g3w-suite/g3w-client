@@ -411,7 +411,8 @@ const translations = {
       add: "Aggiungi",
       exitnosave: "Esci senza salvare",
       annul: "Annulla",
-      layer_is_added: "Layer già aggiunto",
+      layer_is_added: "Layer con stesso nome già aggiunto",
+      wms_layer_id_already_added: "WMS Layer già aggiunto",
       sidebar: {
         wms: {
           panel: {
@@ -895,7 +896,8 @@ const translations = {
       add: "Add",
       exitnosave: "Exit without save",
       annul: "Cancel",
-      layer_is_added: "Layer already added",
+      layer_is_added: "Layer with same name already added",
+      wms_layer_id_already_added: "WMS Layer already added",
       sidebar: {
         wms: {
           panel: {
@@ -1379,7 +1381,8 @@ const translations = {
       add: "Lisää",
       exitnosave: "Poistu tallentamatta",
       annul: "Peruuta",
-      layer_is_added: "Taso on jo lisätty.",
+      layer_is_added: "Samanniminen taso on jo lisätty.",
+      wms_layer_id_already_added: "WMS Taso on jo lisätty.",
       sidebar: {
         wms: {
           panel: {
@@ -1864,7 +1867,8 @@ const translations = {
       add: "Lägg till",
       exitnosave: "Lämna programmet utan att spara",
       annul: "Ångra",
-      layer_is_added: "Nivån har redan lagts till.",
+      layer_is_added: "Lagret med samma namn har redan lagts till.",
+      wms_layer_id_already_added: "WMS Nivån har redan lagts till.",
       sidebar: {
         wms: {
           panel: {
@@ -2349,7 +2353,8 @@ const translations = {
       add: "Ajouter",
       exitnosave: "Quitter sans sauvegarder",
       annul: "Annuler",
-      layer_is_added: "Layer déjà ajouté",
+      layer_is_added: "Layer avec le même nom déjà ajouté",
+      wms_layer_id_already_added: "WMS Layer déjà ajouté",
       sidebar: {},
       info: {
         title: "Résultats",

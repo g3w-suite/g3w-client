@@ -690,8 +690,8 @@ proto._setupControls = function() {
         case 'geoscreenshot':
           if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
-              layers: this.getMapLayers(),
               options: {
+                layers: MapLayersStoreRegistry.getLayers(),
                 onclick: async () => {
                   // Start download show Image
                   const caller_download_id = ApplicationService.setDownload(true);
@@ -1942,9 +1942,7 @@ proto.updateMapLayers = function(options={}) {
 
 // register map Layer listeners of creation
 proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
-  mapLayer.on('loadstart', this._incrementLoaders);
-  mapLayer.on('loadend', this._decrementLoaders);
-  mapLayer.on('loaderror', this._mapLayerLoadError);
+  this.registerMapLayerLoadingEvents(mapLayer);
   //listen change filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
     mapLayer.layers.forEach(layer => {
@@ -1954,8 +1952,27 @@ proto.registerMapLayerListeners = function(mapLayer, projectLayer=true) {
   ///
 };
 
+/** Methos to register and unregister map loadmap
+ *
+ * */
+proto.registerMapLayerLoadingEvents = function(mapLayer) {
+  mapLayer.on('loadstart', this._incrementLoaders);
+  mapLayer.on('loadend', this._decrementLoaders);
+  mapLayer.on('loaderror', this._mapLayerLoadError);
+};
+
+proto.unregisterMapLayerLoadingEvents = function(mapLayer) {
+  mapLayer.off('loadstart', this._incrementLoaders );
+  mapLayer.off('loadend', this._decrementLoaders );
+  mapLayer.off('loaderror', this._mapLayerLoadError);
+};
+
+/**
+ * End
+ */
+
 // unregister listeners of mapLayers creation
-proto.unregisterMapLayerListeners = function(mapLayer) {
+proto.unregisterMapLayerListeners = function(mapLayer, projectLayer=false) {
   this.unregisterMapLayerLoadingEvents(mapLayer);
   // try to remove layer filter token
   if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
@@ -2089,6 +2106,17 @@ proto.highlightFeatures = function(features, options={}){
   this.highlightGeometry(geometry, options);
 };
 
+/**
+ * Zoom methods
+ */
+
+proto.zoomToGeometry = function(geometry, options={highlight: false}){
+  const extent = geometry && geometry.getExtent();
+  const {highlight} = options;
+  if (highlight && extent) options.highLightGeometry = geometry;
+  extent && this.zoomToExtent(extent, options);
+};
+
 proto.zoomToFeatures = function(features, options={highlight: false}) {
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
@@ -2109,6 +2137,10 @@ proto.zoomToExtent = function(extent, options={}) {
 proto.zoomToProjectInitExtent = function(){
   this.zoomToExtent(this.project.state.initextent);
 };
+
+/**
+ * End zoom methods
+ */
 
 proto.compareExtentWithProjectMaxExtent = function(extent){
   const projectExtent = this.project.state.extent;
@@ -2465,6 +2497,7 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
       layer.setZIndex(1);
       break
   }
+  this.emit('change-layer-position-map', {id, position});
 };
 
 /**
@@ -2477,11 +2510,16 @@ proto.removeExternalLayer = function(name) {
   const QueryResultService = GUI.getComponent('queryresults').getService();
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
-  catalogService.removeExternalLayer(name);
-  if (layer._type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
+  const type = layer._type || 'vector';
+  catalogService.removeExternalLayer({
+    name,
+    type
+  });
+  if (type == 'wms') this._externalMapLayers = this._externalMapLayers.filter(externalMapLayer => {
     if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
     return externalMapLayer.getId() !== layer.id
   });
+  this.emit('remove-external-layer', name);
 };
 
 /**
@@ -2493,7 +2531,8 @@ proto.removeExternalLayer = function(name) {
  * @param position
  * @returns {Promise<unknown>}
  */
-proto.addExternalWMSLayer = function({url, layers, name, projection, position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
+proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
+  const projection = ol.proj.get(epsg);
   return new Promise((resolve, reject) =>{
     const {wmslayer, olLayer} = createWMSLayer({
       name,
@@ -2513,9 +2552,7 @@ proto.addExternalWMSLayer = function({url, layers, name, projection, position=MA
     this.addExternalLayer(olLayer,  {
       position
     });
-
     this.addExternalMapLayer(wmslayer, false);
-
   })
 };
 
@@ -2540,8 +2577,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     crs;
   const {position=MAP_SETTINGS.LAYER_POSITIONS.default} = options;
   const map = this.viewer.map;
-  const catalogService = GUI.getComponent('catalog').getService();
-  const QueryResultService = GUI.getComponent('queryresults').getService();
+  const catalogService = GUI.getService('catalog');
+  const QueryResultService = GUI.getService('queryresults');
   if (externalLayer instanceof ol.layer.Vector) {
     let id = externalLayer.get('id');
     if (id === undefined) {
@@ -2613,7 +2650,10 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
-      catalogService.addExternalLayer(externalLayer);
+      catalogService.addExternalLayer({
+        layer: externalLayer,
+        type
+      });
       extent && map.getView().fit(extent);
       return Promise.resolve(layer);
     } else return Promise.reject();
@@ -2633,7 +2673,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
         return loadExternalLayer(vectorLayer);
     }
     loadExternalLayer(vectorLayer);
-  } else GUI.notify.warning("layer_is_added", true);
+  } else GUI.notify.warning("layer_is_added", false);
 };
 
 proto.setExternalLayerStyle = function(color, field) {

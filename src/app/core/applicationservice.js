@@ -260,6 +260,13 @@ const ApplicationService = function() {
     return `${this._initConfig.proxyurl}`;
   };
 
+  /**
+   * Get Interface OWS Url
+   */
+  this.getInterfaceOwsUrl = function(){
+    return `${this._initConfig.interfaceowsurl}`;
+  };
+
   // clipboard service
   this.getClipboardService = function() {
     return ClipboardService;
@@ -288,6 +295,7 @@ const ApplicationService = function() {
       config.server.urls.vectorurl = initConfig.vectorurl;
       config.server.urls.proxyurl = initConfig.proxyurl;
       config.server.urls.rasterurl = initConfig.rasterurl;
+      config.server.urls.interfaceowsurl = initConfig.interfaceowsurl;
       config.main_map_title = initConfig.main_map_title;
       config.group = initConfig.group;
       config.user = initConfig.user;
@@ -312,6 +320,7 @@ const ApplicationService = function() {
         resourcesurl: config.server.urls.clienturl,
         vectorurl:config.server.urls.vectorurl,
         rasterurl:config.server.urls.rasterurl,
+        interfaceowsurl: config.server.urls.interfaceowsurl,
         projects: config.group.projects,
         initproject: config.group.initproject,
         overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,

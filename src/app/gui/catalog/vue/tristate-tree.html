@@ -19,7 +19,7 @@
   </span>
   <template v-else>
     <span style="color: red" v-if="layerstree.external && layerstree.removable"
-      :class="g3wtemplate.getFontClass('trash')" @click="removeExternalLayer(layerstree.name)">
+      :class="g3wtemplate.getFontClass('trash')" @click="removeExternalLayer(layerstree.name, layerstree._type)">
     </span>
     <span style="color: #ffffff; margin-left: 5px;" v-if="layerstree.external && layerstree.download"
           :class="g3wtemplate.getFontClass('download')"

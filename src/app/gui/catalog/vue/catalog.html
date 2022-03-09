@@ -5,7 +5,7 @@
       <li v-if="hasLayers" role="presentation"  :class="{ active: activeTab === 'layers' && 'hasLayers' }">
         <a href="#layers" aria-controls="layers" role="tab" data-toggle="tab" data-i18n="tree" v-t="'data'"></a>
       </li>
-      <li v-if="state.externallayers.length" role="presentation"  :class="{ active: activeTab === 'externalwms' }">
+      <li v-if="state.external.wms.length" role="presentation"  :class="{ active: activeTab === 'externalwms' }">
         <a href="#externalwms" aria-controls="externalwms" role="tab" data-toggle="tab" data-i18n="externalwms" v-t="'externalwms'"></a>
       </li>
       <li v-if="hasBaseLayers" role="presentation" :class="{ active: activeTab === 'baselayers' }" >
@@ -36,17 +36,17 @@
             :key="layerstree.id">
           </tristate-tree>
         </ul>
-        <ul class="g3w-external_layers-group" v-if="state.externallayers.length">
-          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+        <ul class="g3w-external_layers-group" v-if="state.external.vector.length">
+          <tristate-tree :externallayers="state.external.vector" :layerstree="layerstree" class="item" v-for="layerstree in state.external.vector" :key="layerstree.id">
           </tristate-tree>
         </ul>
         <ul v-for="layersgroup in state.layersgroups">
           <layers-group :layersgroup="layersgroup"></layers-group>
         </ul>
       </div>
-      <div role="tabpanel" class="tab-pane" :class="{ active: activeTab === 'externalwms' && state.externallayers.length }" id="externalwms">
-        <ul class="g3w-external_wms_layers-group" v-if="state.externallayers.length">
-          <tristate-tree :externallayers="state.externallayers" :layerstree="layerstree" class="item" v-for="layerstree in state.externallayers" :key="layerstree.id">
+      <div role="tabpanel" class="tab-pane" v-if="state.external.wms.length" :class="{ active: activeTab === 'externalwms' }" id="externalwms">
+        <ul class="g3w-external_wms_layers-group">
+          <tristate-tree :externallayers="state.external.wms" :layerstree="layerstree" class="item" v-for="layerstree in state.external.wms" :key="layerstree.id">
           </tristate-tree>
         </ul>
       </div>
@@ -61,7 +61,7 @@
           </li>
         </ul>
       </div>
-      <layerslegend v-if="legend.place ===  'tab'" @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
+      <layerslegend v-if="legend.place === 'tab'" @showlegend="showLegend" :legend="legend" :active="activeTab === 'legend'"
         v-for="_layerstree in state.layerstrees" :layerstree="_layerstree" :key="_layerstree.id">
       </layerslegend>
     </div>

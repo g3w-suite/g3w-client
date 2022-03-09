@@ -41,9 +41,7 @@ function ProxyService(){
    * Generic proxy data function
    * @param params
    */
-  this.data = function(params={}){
-    console.log(params)
-  }
+  this.data = function(params={}){}
 }
 
 inherit(ProxyService, BaseService);

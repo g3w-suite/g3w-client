@@ -329,7 +329,7 @@ const geoutils = {
   },
 
   createWMSLayer({url, name, projection, layers=[]}={}){
-    const id = uniqueId();
+    const id = name || uniqueId();
     name = name || id;
     const wmslayer = new WMSLayer({
       id,

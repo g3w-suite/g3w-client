@@ -6,9 +6,18 @@
         <i :class="g3wtemplate.getFontClass('plus-square')"></i>
       </button>
     </li>
+    <li v-if="state.added.url">
+      <div class="g3w-wmsurl-already-added" v-t="'Presente'"></div>
+    </li>
     <li style="background: transparent !important;">
       <div style="max-height: 200px; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;" v-for="wmsurl in state.wmsurls">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;" v-for="wmsurl in state.adminwmsurls" :key="wmsurl">
+          <span style="flex-grow: 1; margin-right: 15px;" class="new_line_too_long_text" :title="wmsurl">{{ wmsurl }}</span>
+          <span class="skin-color" style="padding: 5px;" @click.stop="showWmsLayersPanel(wmsurl)">
+            <i style="font-weight: bold; font-size: 1.3em;" :class="g3wtemplate.getFontClass('plus-square')"></i>
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;" v-for="wmsurl in state.localwmsurls" :key="wmsurl">
           <span style="flex-grow: 1; margin-right: 15px;" class="new_line_too_long_text" :title="wmsurl">{{ wmsurl }}</span>
           <span class="skin-color" style="padding: 5px;" @click.stop="showWmsLayersPanel(wmsurl)">
             <i style="font-weight: bold; font-size: 1.3em;" :class="g3wtemplate.getFontClass('plus-square')"></i>
@@ -23,6 +32,7 @@
 </template>
 
 <script>
+  const {isURL} = require('core/utils/utils');
   export default {
     name: "sidebaritem",
     data(){
@@ -32,7 +42,7 @@
     },
     computed: {
       newwmsurlvalid() {
-        return this.newwmsurl !== null && this.newwmsurl.trim();
+        return this.newwmsurl !== null && this.newwmsurl.trim() && isURL(this.newwmsurl);
       }
     },
     methods: {
@@ -50,5 +60,7 @@
 </script>
 
 <style scoped>
-
+  .g3w-wmsurl-already-added {
+    background-color: orange;
+  }
 </style>
