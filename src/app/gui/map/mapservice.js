@@ -668,8 +668,8 @@ proto._setupControls = function() {
         case 'geoscreenshot':
           if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
-              layers: this.getMapLayers(),
               options: {
+                layers: MapLayersStoreRegistry.getLayers(),
                 onclick: async () => {
                   // Start download show Image
                   const caller_download_id = ApplicationService.setDownload(true);
