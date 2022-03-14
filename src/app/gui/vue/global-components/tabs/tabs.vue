@@ -1,5 +1,5 @@
 <template>
-  <div class="tabs-wrapper" v-show="show">
+  <div class="tabs-wrapper" v-if="show">
     <ul class="formquerytabs nav nav-tabs">
       <template v-for="(tab, index) in tabs">
         <li :class="{active: index === 0}" v-if="tab.visible === undefined || tab.visible">

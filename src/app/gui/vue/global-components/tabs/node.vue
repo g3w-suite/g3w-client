@@ -1,8 +1,8 @@
 <template>
   <div class="tab-node group">
     <h5 class="title group-title" :class="{'mobile': isMobile()}" :style="{fontSize: isMobile() ? '1em' : '1.1em'}" v-if="showGroupTile">{{ node.name }}</h5>
-    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}" :style="{gridTemplateColumns: `repeat(${columnNumber}, minmax(50px, 1fr))`}">
-      <template v-for="column in columnNumber"  style="padding:2px">
+    <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}">
+      <template v-for="column in columnNumber" style="padding:2px">
         <template v-if="getNode(row, column)">
           <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 3px 3px 0 3px"
             :state="getField(getNode(row, column))"
@@ -83,7 +83,7 @@
         return rowCount;
       },
       columnNumber() {
-        const columnCount = parseInt(this.node.columncount) ?  parseInt(this.node.columncount): 1;
+        const columnCount = parseInt(this.node.columncount) ? parseInt(this.node.columncount): 1;
         return columnCount > this.nodesLength ? this.nodesLength:  columnCount;
       },
       showGroupTile() {
@@ -151,10 +151,10 @@
     column-gap: 2px;
     margin-top: 3px;
     display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
   }
   .row.mobile{
     margin-bottom: 0 !important;
   }
-
-
 </style>
