@@ -32,18 +32,18 @@ const vueComponentObject = {
     handleRelation(relationId){
       this.$options.service.handleRelation(relationId);
     },
-     disableComponent({index=-1, disabled=false}) {
+     disableComponent({id, disabled=false}) {
        this.$options.service.disableComponent({
-         index,
+         id,
          disabled
        });
      },
     resizeForm(perc){
       this.$options.service.setCurrentFormPercentage(perc)
     },
-    switchComponent(index) {
+    switchComponent(id) {
       this.switchcomponent = true;
-      this.$options.service.setComponentByIndex(index);
+      this.$options.service.setCurrentComponentById(id);
     },
     changeInput(input) {
       return this.$options.service.changeInput(input);
@@ -89,13 +89,19 @@ const vueComponentObject = {
 };
 
 function FormComponent(options = {}) {
-  options.id = options.id || 'form';
+  const {id='form', name, title} = options;
   base(this, options);
-  options.service = options.service ?  new options.service : new Service;
+  options.service = options.service ? new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
-  //set statdar element of the form
+  //set element of the form
   const components = options.components || [
-    {id: options.id, title: options.title, name:options.name, component: BodyFormComponent}
+    {
+      id,
+      title,
+      name,
+      root: true,
+      component: BodyFormComponent
+    }
   ];
   options.perc = options.layer.getFormPercentage() !== null ? options.layer.getFormPercentage() : options.perc;
   // initialize component
@@ -110,9 +116,7 @@ function FormComponent(options = {}) {
     this.getInternalComponent().body.components[where] = component;
   };
 
-  this.addBodyFormComponents = function({components=[], where="after"}={}){
-
-  };
+  this.addBodyFormComponents = function({components=[], where="after"}={}){};
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);

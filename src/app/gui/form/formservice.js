@@ -58,7 +58,7 @@ function FormService() {
       disabledcomponents: [],
       component: null,
       headers: [],
-      currentheaderindex: 0,
+      currentheaderid: null,
       fields: null,
       buttons: this.buttons,
       disabled: false,
@@ -213,28 +213,41 @@ proto.addComponent = function(component) {
       valid
     });
   }
-  header && this.state.headers.push({title, name, icon});
-  this.state.components.push(component.component);
+  // we can set a component cthat can be part of headeres (tabs or not)
+  if (header) {
+    this.state.headers.push({title, name, id, icon});
+    this.state.currentheaderid = this.state.currentheaderid || id;
+  }
+
+  this.state.components.push(component);
 };
 
-proto.replaceComponent = function({index, component}={}) {
+proto.replaceComponent = function({id, component}={}) {
+  const index = this.state.components.findIndex(component => component.id === id);
   this.state.components.splice(index, 1, component);
 };
 
-proto.disableComponent = function({index, disabled}) {
-  if (disabled) this.state.disabledcomponents.push(index);
-  else this.state.disabledcomponents = this.state.disabledcomponents.filter(disabledIndex => disabledIndex !== index);
+proto.disableComponent = function({id, disabled}) {
+  if (disabled) this.state.disabledcomponents.push(id);
+  else this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => disabledId !== id);
 };
 
-proto.setComponentByIndex = function(index) {
-  if (this.state.disabledcomponents.indexOf(index) === -1) {
-    this.setIndexHeader(index);
-    this.state.component = this.state.components[index];
+proto.setCurrentComponentById = function(id){
+  if (this.state.disabledcomponents.indexOf(id) === -1) {
+    this.setIdHeader(id);
+    this.state.component = this.state.components.find(component => component.id === id).component;
   }
 };
 
-proto.getComponentByIndex = function(index) {
-  return this.state.components[index];
+/**
+ * setRootComponent (is form )
+ */
+proto.setRootComponent = function(){
+  this.state.component = this.state.components.find(component => component.root).component;
+};
+
+proto.getComponentById = function(id) {
+  return this.state.components.find(component => component.id === id);
 };
 
 proto.setComponent = function(component) {
@@ -269,8 +282,8 @@ proto.getEventBus = function() {
   return this.eventBus;
 };
 
-proto.setIndexHeader = function(index) {
-  this.state.currentheaderindex = index;
+proto.setIdHeader = function(id) {
+  this.state.currentheaderid = id;
 };
 
 proto.getContext = function() {
@@ -286,10 +299,10 @@ proto.getInputs = function() {
 };
 
 /**
- * handleRealtion
+ * handleRelation
  */
 
-proto.handleRelation = function({realtionId, feature}){
+proto.handleRelation = function({relationId, feature}){
   //OVERWRITE BY  PLUGIN EDITING PLUGIN
 };
 

@@ -7,15 +7,14 @@ const HeaderFormComponent = Vue.extend({
       type: Array,
       default:[]
     },
-    currentindex: {
-      type: Number,
-      default:0
+    currentid: {
+      type: 'String'
     }
   },
   methods: {
-    click(index) {
-      if (this.currentindex !== index)
-        this.$emit('clickheader', index);
+    click(id) {
+      if (this.currentid !== id)
+        this.$emit('clickheader', id);
     },
     resizeForm(perc){
       this.$emit('resize-form', perc);

@@ -15,8 +15,8 @@
           <template v-else>
             <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
-              <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined">
-                  <div v-if="showRelationByField" class="query_relation_field" @click="handleRelation({relationId: getNode(row, column).name, feature})">
+              <div v-if="showRelationByField" @click="handleRelation({relationId: getNode(row, column).name, feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined">
+                  <div  class="query_relation_field">
                     <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
                   </div>
                   <span>

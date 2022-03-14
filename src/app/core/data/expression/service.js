@@ -18,14 +18,15 @@ function ExpressionService(){
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  this.expression = async function({qgs_layer_id, layer_id, form_data, expression}){
+  this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
       params: {
         qgs_layer_id,
         form_data,
-        expression
+        expression,
+        formatter
       }
     });
     const data = this.handleResponse(response);
@@ -43,14 +44,15 @@ function ExpressionService(){
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = async function({qgs_layer_id, form_data, expression}={}){
+   this.expression_eval = async function({qgs_layer_id, form_data, expression, formatter=1}={}){
     const url = this.project.getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
       params: {
         qgs_layer_id,
         form_data,
-        expression
+        expression,
+        formatter
       }
     });
     return data;

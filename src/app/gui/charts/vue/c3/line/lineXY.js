@@ -34,9 +34,7 @@ const C3XYLine = {
       this.components.push(component);
     },
     addComponents(components=[]){
-      components.forEach((component)=>{
-        this.addComponent(component);
-      })
+      components.forEach(component => this.addComponent(component))
     },
     setConfig(config={}){
       this.config = config;

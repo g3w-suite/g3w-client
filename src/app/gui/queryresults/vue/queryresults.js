@@ -295,9 +295,10 @@ const vueComponentOptions = {
     openLink(link_url) {
       window.open(link_url, '_blank');
     },
-    handleRelation({relationId, feature}){
+    handleRelation({relationId, feature, layerId}){
       this.$options.queryResultsService.showRelation({
         relationId,
+        layerId,
         feature
       });
     }

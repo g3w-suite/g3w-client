@@ -12,6 +12,7 @@ export default {
         layer_id, // layer id owner of the data
         qgs_layer_id, //
         form_data,
+        formatter:0,
         expression: filter_expression.expression
       },
       outputs: false
