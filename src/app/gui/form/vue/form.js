@@ -29,12 +29,15 @@ const vueComponentObject = {
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
-    disableComponent({index=-1, disabled=false}) {
-      this.$options.service.disableComponent({
-        index,
-        disabled
-      });
+    handleRelation(relationId){
+      this.$options.service.handleRelation(relationId);
     },
+     disableComponent({index=-1, disabled=false}) {
+       this.$options.service.disableComponent({
+         index,
+         disabled
+       });
+     },
     resizeForm(perc){
       this.$options.service.setCurrentFormPercentage(perc)
     },
@@ -51,20 +54,17 @@ const vueComponentObject = {
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
-      if(!height)
-        return;
-      const footerHeight = $('.g3wform_footer').height() ? $('.g3wform_footer').height() + 50 : 50;
-      $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  footerHeight));
+      if(!height) return;
+      const footerDOM = $(this.$refs.g3w_form_footer.$el);
+      const bodyFromDOM = $(this.$refs.g3wform_body);
+      const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
+      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
+      bodyFromDOM.height(bodyHeight);
     },
   },
-  updated() {
-    this.$nextTick(()=> {
-      if (this.switchcomponent) {
-        setTimeout(()=>{
-          this.switchcomponent = false;
-        }, 0)
-      }
-    })
+  async updated() {
+    await this.$nextTick();
+    this.switchcomponent && setTimeout(()=> this.switchcomponent = false, 0)
   },
   created() {
     this.$options.service.getEventBus().$on('set-main-component', () => {

@@ -273,9 +273,10 @@ proto.autocompleteRequest = async function({field, value}={}){
   try {
     data = await this.searchLayer.getFilterData({
       field: this.createFieldsDependenciesAutocompleteParameter({
-        field
+        field,
+        value
       }),
-      suggest: `${field}|${value}`,
+      //suggest: `${field}|${value}`,
       unique: field
     })
   } catch(error) {}

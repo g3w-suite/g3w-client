@@ -3,10 +3,11 @@
     <div class="box-primary">
       <div class="box-body">
         <template v-if="hasFormStructure">
-          <template v-for="item in this.state.formstructure">
+          <template v-for="item in state.formstructure">
             <tabs v-if="item.type === 'tab'"
               :layerid="state.layerid"
               :feature="state.feature"
+              :handleRelation="handleRelation"
               :contenttype="'editing'"
               :addToValidate="addToValidate"
               :changeInput="changeInput"

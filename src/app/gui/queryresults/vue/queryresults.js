@@ -294,6 +294,12 @@ const vueComponentOptions = {
     },
     openLink(link_url) {
       window.open(link_url, '_blank');
+    },
+    handleRelation({relationId, feature}){
+      this.$options.queryResultsService.showRelation({
+        relationId,
+        feature
+      });
     }
   },
   watch: {

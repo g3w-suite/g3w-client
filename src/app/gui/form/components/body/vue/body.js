@@ -4,7 +4,7 @@ const compiledTemplate = createCompiledTemplate(require('./body.html'));
 
 const BodyFormComponent = Vue.extend({
   ...compiledTemplate,
-  props: ['state'],
+  props: ['state', 'handleRelation'],
   data() {
     return {
       show: true

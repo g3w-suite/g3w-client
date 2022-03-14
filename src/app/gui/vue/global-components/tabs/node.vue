@@ -15,22 +15,17 @@
           <template v-else>
             <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
-              <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined" v-if="context === 'query'" @click="showRelation(getNode(row, column).name)">
-                <div v-if="showRelationByField" class="query_relation_field" >
-                  <i :class="g3wtemplate.font['relation']"></i>
-                </div>
-                <span>
-                  <span class="query_relation_field_message">
-                    <span></span>
-                    <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+              <div :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined">
+                  <div v-if="showRelationByField" class="query_relation_field" @click="handleRelation({relationId: getNode(row, column).name, feature})">
+                    <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
+                  </div>
+                  <span>
+                    <span class="query_relation_field_message">
+                      <span></span>
+                      <span style="text-transform: uppercase"> {{ getRelationName(getNode(row, column).name)}}</span>
+                    </span>
                   </span>
-                </span>
               </div>
-              <template v-else>
-                <div class="form_editing_relation_input skin-background-color lighten" v-t="'sdk.form.messages.qgis_input_widget_relation'">
-                  <span class="info_helptext_button skin-background-color lighten">i</span>
-                </div>
-              </template>
             </template>
           </template>
         </template>
@@ -46,7 +41,7 @@
   const GUI = require('gui/gui');
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
     components: {
       G3wInput,
       ...Fields
@@ -103,24 +98,7 @@
       showRelation(relationId) {
         // based on attribute  show relation panel
         if (this.showRelationByField){
-          const chartRelationIds = [];
-          const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
-          const RelationPage = require('gui/relations/vue/relationspage');
-          GUI.getComponent('queryresults').getService().findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
-          GUI.pushContent({
-            content: new RelationPage({
-              currentview: 'relations',
-              relations: [relation],
-              chartRelationIds,
-              feature: this.feature,
-              layer: {
-                id: this.layerid
-              }
-            }),
-            perc: 100,
-            title: relation.name,
-            closable: false
-          })
+
         }
       },
       getNodes(row) {
@@ -150,7 +128,7 @@
         else if (field.query) return field.input.type;
         else return 'g3w-input';
       }
-    },
+    }
   }
 </script>
 

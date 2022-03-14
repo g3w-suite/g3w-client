@@ -15,6 +15,7 @@ const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+
 //used to get and set vue reactivity to queryresultservice
 const VM = new Vue();
 
@@ -23,6 +24,7 @@ function QueryResultsService() {
   this._currentLayerIds = [];
 
   ProjectsRegistry.onafter('setCurrentProject', project => {
+    this._project = project;
     this._setRelations(project);
     this._setAtlasActions(project);
     this.state.download_data = false;
@@ -1584,6 +1586,30 @@ proto.highlightGeometry = function(layer, feature) {
 proto.clearHighlightGeometry = function(layer) {
   this.mapService.clearHighlightGeometry();
   this.isOneLayerResult() && this.highlightFeaturesPermanently(layer);
+};
+
+/**
+ * method to ahdle show Relation on result
+ * @param relationId
+ */
+proto.showRelation = function({relationId, feature}){
+  const chartRelationIds = [];
+  const relation = this._project.getRelationById(relationId);
+  this.findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
+  GUI.pushContent({
+    content: new RelationsPage({
+      currentview: 'relations',
+      relations: [relation],
+      chartRelationIds,
+      feature,
+      layer: {
+        id: this.layerid
+      }
+    }),
+    perc: 100,
+    title: relation.name,
+    closable: false
+  })
 };
 
 proto.showQueryRelations = function(layer, feature, action) {

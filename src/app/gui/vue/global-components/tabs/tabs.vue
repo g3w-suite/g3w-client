@@ -12,6 +12,7 @@
       <template v-for="(tab, index) in tabs">
         <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
           <node :showRelationByField="showRelationByField"
+                :handleRelation="handleRelation"
                 :feature="feature"
                 :layerid="layerid"
                 :contenttype="contenttype"
@@ -58,6 +59,10 @@
       showRelationByField: {
         type: Boolean,
         default: true
+      },
+      handleRelation: {
+        type: Function,
+        default: relationId=>{console.log(relationId)}
       }
     },
     components :{

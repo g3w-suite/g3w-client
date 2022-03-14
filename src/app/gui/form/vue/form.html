@@ -1,15 +1,16 @@
 <div class="g3wform_content" style="position: relative">
   <bar-loader :loading="state.loading"></bar-loader>
-  <g3wformheader
+  <g3wformheader ref="g3wformheader"
     :currentindex="state.currentheaderindex"
     :headers="state.headers"
     @resize-form="resizeForm"
     @clickheader="switchComponent">
   </g3wformheader>
-  <div class="g3wform_body">
+  <div class="g3wform_body" ref="g3wform_body">
     <component :is="body.components.before"></component>
     <keep-alive>
       <component
+        :handleRelation="handleRelation"
         @hook:activated="reloadLayout"
         @addtovalidate="addToValidate"
         @changeinput="changeInput"
@@ -19,5 +20,5 @@
     </keep-alive>
     <component :is="body.components.after"></component>
   </div>
-  <g3w-form-footer :state="state"></g3w-form-footer>
+  <g3w-form-footer ref="g3w_form_footer" :state="state"></g3w-form-footer>
 </div>

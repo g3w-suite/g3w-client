@@ -94,7 +94,7 @@
                               </tr>
                               </tbody>
                             </table>
-                            <tabs v-else-if="item.type === 'tab'" :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="item.item"></tabs>
+                            <tabs v-else-if="item.type === 'tab'" :handleRelation="handleRelation" :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="item.item"></tabs>
                           </template>
                         </td>
                       </tr>

@@ -332,7 +332,7 @@ const GlobalDirective = {
               const value = evt.params.data.id;
               vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
             });
-          if (select2_value)selectDOMElement.val(select2_value).trigger('change');
+          if (select2_value) selectDOMElement.val(select2_value).trigger('change');
         }
       },
       unbind(el, binding, vnode){
