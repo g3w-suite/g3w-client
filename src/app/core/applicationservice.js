@@ -372,7 +372,7 @@ const ApplicationService = function() {
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
       if (locationsearch) {
         queryTuples = locationsearch.split('&');
-        queryTuples.forEach((queryTuple) => {
+        queryTuples.forEach(queryTuple => {
           //check if exist project in url
           if( queryTuple.indexOf("project") > -1) {
             projectPath = queryTuple.split("=")[1];

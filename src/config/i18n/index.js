@@ -412,7 +412,6 @@ const translations = {
       exitnosave: "Esci senza salvare",
       annul: "Annulla",
       layer_is_added: "Layer con stesso nome già aggiunto",
-      wms_layer_id_already_added: "WMS Layer già aggiunto",
       sidebar: {
         wms: {
           panel: {
@@ -423,7 +422,11 @@ const translations = {
               projections: 'Sistema di riferimento',
               layers: 'Layers'
             }
-          }
+          },
+          add_wms_layer: "Aggiungi WMS layer",
+          delete_wms_url: "Elimina WMS url",
+          layer_id_already_added: "WMS Layer già aggiunto",
+          url_already_added: "WMS URL già aggiunto"
         }
       },
       info: {
@@ -897,7 +900,6 @@ const translations = {
       exitnosave: "Exit without save",
       annul: "Cancel",
       layer_is_added: "Layer with same name already added",
-      wms_layer_id_already_added: "WMS Layer already added",
       sidebar: {
         wms: {
           panel: {
@@ -908,7 +910,11 @@ const translations = {
               projections: 'Projection',
               layers: 'Layers'
             }
-          }
+          },
+          add_wms_layer: "Add WMS layer",
+          delete_wms_url: "Delete WMS url",
+          layer_id_already_added: "WMS Layer already added",
+          url_already_added: "WMS URL already added"
         }
       },
       info: {
@@ -1382,7 +1388,6 @@ const translations = {
       exitnosave: "Poistu tallentamatta",
       annul: "Peruuta",
       layer_is_added: "Samanniminen taso on jo lisätty.",
-      wms_layer_id_already_added: "WMS Taso on jo lisätty.",
       sidebar: {
         wms: {
           panel: {
@@ -1393,7 +1398,11 @@ const translations = {
               projections: 'Projection',
               layers: 'Layers'
             }
-          }
+          },
+          add_wms_layer: "Aggiungi WMS layer",
+          delete_wms_url: "Delete WMS url",
+          layer_id_already_added: "WMS Taso on jo lisätty.",
+          url_already_added: "WMS URL  on jo lisätty."
         }
       },
       info: {
@@ -1868,7 +1877,6 @@ const translations = {
       exitnosave: "Lämna programmet utan att spara",
       annul: "Ångra",
       layer_is_added: "Lagret med samma namn har redan lagts till.",
-      wms_layer_id_already_added: "WMS Nivån har redan lagts till.",
       sidebar: {
         wms: {
           panel: {
@@ -1879,7 +1887,11 @@ const translations = {
               projections: 'Projection',
               layers: 'Layers'
             }
-          }
+          },
+          add_wms_layer: "Aggiungi WMS layer",
+          delete_wms_url: "Delete WMS url",
+          layer_id_already_added: "WMS Nivån har redan lagts till.",
+          url_already_added: "WMS URL har redan lagts till."
         }
       },
       info: {
@@ -2355,7 +2367,24 @@ const translations = {
       annul: "Annuler",
       layer_is_added: "Layer avec le même nom déjà ajouté",
       wms_layer_id_already_added: "WMS Layer déjà ajouté",
-      sidebar: {},
+      wms_url_already_added: "WMS URL déjà ajouté",
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Add WMS Layer',
+            label: {
+              position: "Map Position",
+              name: "Name",
+              projections: 'Projection',
+              layers: 'Layers'
+            }
+          },
+          add_wms_layer: "Add WMS layer",
+          delete_wms_url: "Delete WMS url",
+          layer_id_already_added: "WMS Nivån har redan lagts till.",
+          url_already_added: "WMS URL har redan lagts till."
+        }
+      },
       info: {
         title: "Résultats",
         open_link: "Ouvrir le document joint",

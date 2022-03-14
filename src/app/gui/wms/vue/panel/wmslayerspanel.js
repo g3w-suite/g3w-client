@@ -5,14 +5,14 @@ const Panel = require('gui/panel');
 const WMSLayersPanelComponent = Vue.extend(WMSLayersPanel);
 
 function WmsLayersPanel(options = {}) {
-  const {service, wmsurl} = options;
+  const {service, config} = options;
   this.setService(service);
   this.id = uniqueId();
   this.title = 'sidebar.wms.panel.title';
-  const panel = options.component || WMSLayersPanelComponent;
+  const panel = WMSLayersPanelComponent;
   const internalPanel = new panel({
     service,
-    wmsurl
+    config
   });
   this.setInternalPanel(internalPanel);
   this.unmount = function() {

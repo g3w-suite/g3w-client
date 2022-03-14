@@ -1,6 +1,6 @@
 <template>
   <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
-    <div class="usermessage-header-content">
+    <div v-if="showheader" class="usermessage-header-content">
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
@@ -44,7 +44,12 @@
     tool: {
       backgroundColor: '#FFFFFF',
       color: "#222d32"
-    }
+    },
+    loading: {
+      backgroundColor: '#FFFFFF',
+      color: "#222d32",
+      fontWeight: "bold"
+    },
   };
   export default {
     name: "usermessage",
@@ -89,6 +94,11 @@
       closable: {
         type: Boolean,
         default: true
+      }
+    },
+    computed:{
+      showheader(){
+        return this.type !== 'loading';
       }
     },
     methods: {

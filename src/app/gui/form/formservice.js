@@ -204,7 +204,7 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id, title, name, icon, valid} = component;
+  const {id, title, name, icon, valid, header=true} = component;
   if (valid !== undefined) {
     this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
@@ -213,7 +213,7 @@ proto.addComponent = function(component) {
       valid
     });
   }
-  this.state.headers.push({title, name, icon});
+  header && this.state.headers.push({title, name, icon});
   this.state.components.push(component.component);
 };
 
@@ -283,6 +283,14 @@ proto.getSession = function() {
 
 proto.getInputs = function() {
   return this.context_inputs.inputs;
+};
+
+/**
+ * handleRealtion
+ */
+
+proto.handleRelation = function({realtionId, feature}){
+  //OVERWRITE BY  PLUGIN EDITING PLUGIN
 };
 
 //method to clear all the open thinghs opened by service

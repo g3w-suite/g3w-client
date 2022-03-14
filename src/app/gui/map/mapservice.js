@@ -2486,6 +2486,11 @@ proto.removeExternalLayers = function(){
   this._externalLayers = [];
 };
 
+proto.changeLayerOpacity = function({id, opacity=1}={}){
+  const layer = this.getLayerById(id);
+  layer && layer.setOpacity(opacity);
+  this.emit('change-layer-opacity', {id, opacity});
+};
 
 proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
   const layer = this.getLayerById(id);
@@ -2531,7 +2536,7 @@ proto.removeExternalLayer = function(name) {
  * @param position
  * @returns {Promise<unknown>}
  */
-proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default}={}){
+proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity}={}){
   const projection = ol.proj.get(epsg);
   return new Promise((resolve, reject) =>{
     const {wmslayer, olLayer} = createWMSLayer({
@@ -2550,7 +2555,8 @@ proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), po
     });
 
     this.addExternalLayer(olLayer,  {
-      position
+      position,
+      opacity
     });
     this.addExternalMapLayer(wmslayer, false);
   })
@@ -2575,7 +2581,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     style,
     type,
     crs;
-  const {position=MAP_SETTINGS.LAYER_POSITIONS.default} = options;
+  const {position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity=1} = options;
   const map = this.viewer.map;
   const catalogService = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
@@ -2608,6 +2614,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       download: options.download || false,
       visible: true,
       position,
+      opacity,
       color
     };
   } else if (externalLayer instanceof ol.layer.Image){
@@ -2619,7 +2626,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     externalLayer.name = name;
     externalLayer.title = name;
     externalLayer._type = type;
-    externalLayer.opacity = 1;
+    externalLayer.opacity = opacity;
     externalLayer.position = position;
     externalLayer.external = true;
     externalLayer.visible = true;
@@ -2647,6 +2654,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       }
       externalLayer.checked = true;
       layer.set('position', position);
+      layer.setOpacity(opacity);
       map.addLayer(layer);
       this._externalLayers.push(layer);
       QueryResultService.registerVectorLayer(layer);
