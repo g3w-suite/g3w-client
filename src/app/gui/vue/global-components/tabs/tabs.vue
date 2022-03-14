@@ -159,9 +159,9 @@
   .tab_a {
     padding:5px;
     margin-right: 0 !important;
-    border:1px solid #eeeeee;
+    //border: 1px solid #eeeeee;
     border-bottom: 0;
     margin-bottom: 3px;
-    border-radius: 0;
+    border-radius: 3px 3px 0 0;
   }
 </style>
