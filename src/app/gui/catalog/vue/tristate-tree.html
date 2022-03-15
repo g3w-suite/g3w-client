@@ -38,7 +38,7 @@
   </template>
   <div v-show="!layerstree.hidden || isGroup"
     class="tree-node-title"
-    :class="{disabled: layerstree.disabled || (layerstree.id && !layerstree.visible) , bold: isGroup}">
+    :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
       <span
         :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}"
         class="skin-tooltip-top new_line_too_long_text"

@@ -563,6 +563,7 @@ const geoutils = {
       if (property !== G3W_FID) properties[property] = feature.attributes[property]
     });
     _feature.setProperties(properties);
+    _feature.setId(feature.attributes[G3W_FID]);
     return geoutils.convertFeatureToGEOJSON(_feature);
   },
 

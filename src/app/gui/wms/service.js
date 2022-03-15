@@ -43,9 +43,14 @@ proto.loadClientWmsUrls = async function(){
     mapService.on('change-layer-position-map', ({id:name, position}={}) => this.changeLayerData(name, {
       key: 'position',
       value: position
-    })); mapService.on('change-layer-opacity', ({id:name, opacity}={}) => this.changeLayerData(name, {
+    }));
+    mapService.on('change-layer-opacity', ({id:name, opacity}={}) => this.changeLayerData(name, {
       key: 'opacity',
       value: opacity
+    }));
+    mapService.on('change-layer-visibility', ({id:name, visible}={}) => this.changeLayerData(name, {
+      key: 'visible',
+      value: visible
     }));
 
     // load eventually data
@@ -119,7 +124,6 @@ proto.addNewWmsUrl = async function(wmsurl){
       status.error = true;
     }
   }
-  console.log(status)
   return status;
 };
 
@@ -234,7 +238,7 @@ proto.getWMSLayers = async function(url){
   return response;
 };
 
-proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, layers=[]}={}){
+proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
   const mapService = GUI.getService('map');
   mapService.addExternalWMSLayer({
     url,
@@ -242,6 +246,7 @@ proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, la
     layers,
     epsg,
     position,
+    visible,
     opacity
   });
 };
@@ -255,33 +260,20 @@ proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, la
  * @param layers
  * @returns {Promise<void>}
  */
-proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[]}={}){
+proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}){
   const data = this.getLocalWMSData();
-  if (data.wms[url] === undefined) {
-    data.wms[url] = [{
-      name,
-      layers,
-      epsg,
-      position,
-      opacity: 1
-    }];
-  } else {
-    data.wms[url].push({
-      name,
-      layers,
-      epsg,
-      position,
-      opacity: 1
-    });
-  }
-  this.updateLocalWMSData(data);
-  await this.loadWMSLayerToMap({
-    url,
+  const wmsLayerConfig = {
     name,
+    layers,
     epsg,
     position,
-    layers
-  });
+    visible,
+    opacity
+  };
+  if (data.wms[url] === undefined) data.wms[url] = [wmsLayerConfig];
+  else data.wms[url].push(wmsLayerConfig);
+  this.updateLocalWMSData(data);
+  await this.loadWMSLayerToMap(wmsLayerConfig);
   this.panel.close();
 };
 

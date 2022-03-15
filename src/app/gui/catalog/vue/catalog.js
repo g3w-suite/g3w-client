@@ -620,7 +620,7 @@ Vue.component('tristate-tree', {
       return this.highlightlayers && !this.isGroup && CatalogLayersStoresRegistry.getLayerById(id).getTocHighlightable() && this.layerstree.visible;
     },
     isInGrey() {
-      return (!this.isGroup && !this.isTable && (!this.layerstree.visible || this.layerstree.disabled));
+      return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
     }
   },
   watch:{
@@ -699,9 +699,11 @@ Vue.component('tristate-tree', {
       let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
       // in case of external layer
       if (!projectLayer){
-        const mapService = GUI.getComponent('map').getService();
-        const layer = mapService.getLayerById(id);
-        layer.setVisible(checked);
+        const mapService = GUI.getService('map');
+        mapService.changeLayerVisibility({
+          id,
+          visible: checked
+        });
       } else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
         if (checked){
