@@ -41,7 +41,6 @@ function ImageLayer(config={}, options={}) {
   this.setters = {
     change(){},
   };
-
   base(this, config, options);
   this.config.baselayer = config.baselayer || false;
   this.type = Layer.LayerTypes.IMAGE;

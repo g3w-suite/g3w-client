@@ -1,6 +1,7 @@
 <template>
-  <div class="help_div_container" v-t="message">
+  <div class="help_div_container">
     <span class="help_icon">i</span>
+    <div v-t="message" class="g3w-help-message-content"></div>
   </div>
 </template>
 
@@ -47,6 +48,11 @@
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
     border: 1px solid #ffffff;
     border-radius: 50%;
+  }
+  .g3w-help-message-content{
+    max-height: 200px;
+    padding: 5px;
+    overflow-y: auto;
   }
 
 </style>

@@ -30,7 +30,7 @@ RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
+RasterLayers.WMSLayer = function(layerObj, extraParams={}, method='GET'){
   const options = {
     layerObj,
     extraParams,

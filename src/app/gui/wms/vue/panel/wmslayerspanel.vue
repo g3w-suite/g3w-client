@@ -49,6 +49,7 @@
           name: this.name && this.name.trim() || undefined,
           layers: this.selectedlayers,
           epsg: this.epsg,
+          info_formats: this.info_formats,
           position: this.position
         };
         ///pre
@@ -95,7 +96,7 @@
       }
     },
     async created() {
-      const {layers, title, abstract, wmsurl:url} = this.$options.config;
+      const {layers, title, abstract, wmsurl:url, info_formats} = this.$options.config;
       this.layerProjections = {};
       this.url = url;
       layers.forEach(layer => {
@@ -114,6 +115,7 @@
       this.title = title;
       // abstract of wms
       this.abstract = abstract;
+      this.info_formats = info_formats;
     },
     beforeDestroy() {
       this.$data = null;

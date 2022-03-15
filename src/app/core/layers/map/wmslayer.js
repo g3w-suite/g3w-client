@@ -68,11 +68,12 @@ proto._getVisibleLayers = function() {
 };
 
 proto._makeOlLayer = function(withLayers) {
+  const {url, id, projection, iframe_internal} = this.config;
   const wmsConfig = {
-    url: this.config.url,
-    id: this.config.id,
-    projection: this.config.projection,
-    iframe_internal: this.iframe_internal,
+    url,
+    id,
+    projection,
+    iframe_internal,
     layers: this.layers
   };
   if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());

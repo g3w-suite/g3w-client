@@ -2506,14 +2506,14 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
 };
 
 /**
- * Remove externla layer
+ * Remove external layer
  * @param name
  */
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
-  const catalogService = GUI.getComponent('catalog').getService();
-  const QueryResultService = GUI.getComponent('queryresults').getService();
-  QueryResultService.unregisterVectorLayer(layer);
+  const catalogService = GUI.getService('catalog');
+  const QueryResultService = GUI.getService('queryresults');
+  QueryResultService.unregisterAddedExternalLayer(layer);
   this.viewer.map.removeLayer(layer);
   const type = layer._type || 'vector';
   catalogService.removeExternalLayer({
@@ -2536,7 +2536,7 @@ proto.removeExternalLayer = function(name) {
  * @param position
  * @returns {Promise<unknown>}
  */
-proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity}={}){
+proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity, info_format, info_formats}={}){
   const projection = ol.proj.get(epsg);
   return new Promise((resolve, reject) =>{
     const {wmslayer, olLayer} = createWMSLayer({
@@ -2545,15 +2545,18 @@ proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), po
       layers,
       projection
     });
+    olLayer.set('getFeatureInfoRequestData', {
+      url,
+      params: {
+        QUERY_LAYERS: layers.toString(),
+        LAYERS: layers.toString(),
+        CRS: epsg,
+        INFO_FORMAT: info_format
+      }
 
-    wmslayer.once('loadend', ()=> {
-      resolve(wmslayer)
     });
-
-    wmslayer.once('loaderror', err => {
-      reject(err);
-    });
-
+    wmslayer.once('loadend', ()=> resolve(wmslayer));
+    wmslayer.once('loaderror', err => reject(err));
     this.addExternalLayer(olLayer,  {
       position,
       opacity
@@ -2617,7 +2620,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       opacity,
       color
     };
-  } else if (externalLayer instanceof ol.layer.Image){
+  }
+  else if (externalLayer instanceof ol.layer.Image){
     type = 'wms';
     name = externalLayer.get('name');
     externalLayer.id = externalLayer.get('id');
@@ -2630,7 +2634,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     externalLayer.position = position;
     externalLayer.external = true;
     externalLayer.visible = true;
-  } else {
+  }
+  else {
     name = externalLayer.name;
     type = externalLayer.type;
     crs = externalLayer.crs;
@@ -2657,7 +2662,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       layer.setOpacity(opacity);
       map.addLayer(layer);
       this._externalLayers.push(layer);
-      QueryResultService.registerVectorLayer(layer);
+      QueryResultService.registerAddedExternalLayer(layer);
       catalogService.addExternalLayer({
         layer: externalLayer,
         type

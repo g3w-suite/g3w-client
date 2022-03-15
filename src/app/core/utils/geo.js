@@ -1229,11 +1229,7 @@ const geoutils = {
     const graph = new jsts.geomgraph.GeometryGraph(0, jstsPolygon);
     const cat = new jsts.operation.valid.ConsistentAreaTester(graph);
     const r = cat.isNodeConsistentArea();
-    if (!r) {
-      return true;
-      //const pt = cat.getInvalidPoint();
-      //selfIntersectPoint.push([pt.x, pt.y]);
-    }
+    if (!r) return true;
   },
 
   normalizeEpsg(epsg) {

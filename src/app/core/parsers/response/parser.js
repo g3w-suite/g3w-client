@@ -291,6 +291,9 @@ const ResponseParser = {
   get(type){
     return contenttypes[type] || contenttypes.not_supported_format;
   },
+  isInfoFormatSupported(type){
+    return ResponseParser.get(type) !== contenttypes.not_supported_format;
+  },
   utils: {
     getTimeoutData(layers=[]){
       return layers.map(layer=>({

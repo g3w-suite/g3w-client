@@ -78,7 +78,7 @@ function QueryResultsService() {
     source: new ol.source.Vector()
   });
 
-  this._vectorLayers = [];
+  this._addedExternalLayers = [];
   this._addFeaturesLayerResultInteraction = {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
@@ -155,7 +155,7 @@ function QueryResultsService() {
 
   this._setRelations(project);
   this._setAtlasActions(project);
-  this._addVectorLayersDataToQueryResponse();
+  this._addAddedExternLayersDataToQueryResponse();
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
@@ -760,8 +760,8 @@ proto.addLayerFeaturesToResultsAction = function(layer){
             }
          });
       else {
-        const vectorLayer = this._vectorLayers.find(vectorLayer => layer.id === vectorLayer.get('id'));
-        const responseObject = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer,{
+        const externalLayer = this._addedExternalLayers.find(externalLayer => layer.id === externalLayer.get('id'));
+        const responseObject = await this.getAddedExternalLayerFeaturesFromQueryRequest(externalLayer,{
           coordinates
         });
         this.setQueryResponse({
@@ -1086,78 +1086,110 @@ proto.triggerLayerAction = async function(action,layer,feature, index, container
   }
 };
 
-proto.registerVectorLayer = function(vectorLayer) {
-  this._vectorLayers.indexOf(vectorLayer) === -1 && this._vectorLayers.push(vectorLayer);
+proto.registerAddedExternalLayer = function(externalLayer) {
+  this._addedExternalLayers.indexOf(externalLayer) === -1 && this._addedExternalLayers.push(externalLayer);
 };
 
-proto.unregisterVectorLayer = function(vectorLayer) {
-  this._vectorLayers = this._vectorLayers.filter(layer => {
-    this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== vectorLayer.get('id'));
-    return layer !== vectorLayer;
+proto.unregisterAddedExternalLayer = function(externalLayer) {
+  this._addedExternalLayers = this._addedExternalLayers.filter(layer => {
+    this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== externalLayer.get('id'));
+    return layer !== externalLayer;
   });
 };
 
-proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
+proto.getAddedExternalLayerFeaturesFromQueryRequest = async function(externalLayer, query={}){
   let isVisible = false;
+  const externalLayerType = externalLayer._type;
   const {coordinates, bbox, geometry} = query; // extract information about query type
   let features = [];
-  switch (vectorLayer.constructor) {
+  switch (externalLayer.constructor) {
     case VectorLayer:
-      isVisible = vectorLayer.isVisible();
+      isVisible = externalLayer.isVisible();
       break;
     case ol.layer.Vector:
-      isVisible = vectorLayer.getVisible();
+    case ol.layer.Image:
+      isVisible = externalLayer.getVisible();
       break;
   }
   if (!isVisible) return true;
   // case query coordinates
   if (coordinates && Array.isArray(coordinates)) {
-    const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
-    this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-      features.push(feature);
-    },  {
-      layerFilter(layer) {
-        return layer === vectorLayer;
-      }
-    });
-    //case bbox
-  } else if (bbox && Array.isArray(bbox)) {
-    const geometry = ol.geom.Polygon.fromExtent(bbox);
-    switch (vectorLayer.constructor) {
-      case VectorLayer:
-        features = vectorLayer.getIntersectedFeatures(geometry);
-        break;
-      case ol.layer.Vector:
-        vectorLayer.getSource().getFeatures().forEach(feature => {
-          geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
-        });
-        break;
+    /**
+     * In case of vector layer added by map cntrol add externa layer
+     */
+    if (externalLayerType === 'vector') {
+      const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+      this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
+        features.push(feature);
+      },  {
+        layerFilter(layer) {
+          return layer === externalLayer;
+        }
+      });
+      /**
+       * In case of added external wms layer
+       */
+    } else if (externalLayerType === 'wms'){
+      const {url, params} = externalLayer.get('getFeatureInfoRequestData');
+      const response = await DataRouterService.getData('proxy:wms', {
+        inputs: {
+          url,
+          params: {
+            SERVICE:"WMS",
+            VERSION:"1.3.0",
+            REQUEST:"GetFeatureInfo",
+            WITH_GEOMETRY: true,
+            I: 310,
+            J: 449,
+            WIDTH: 621,
+            HEIGHT: 898,
+            BBOX: `1679615.4962142864,4849494.105298914,1683668.99099372,4855355.680680446`,
+            ...params
+          }
+        },
+        outputs: false
+      });
+      console.log(response)
     }
-    //case geometry
-  } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
-    switch (vectorLayer.constructor) {
-      case VectorLayer:
-        features = vectorLayer.getIntersectedFeatures(geometry);
-        break;
-      case ol.layer.Vector:
-        vectorLayer.getSource().getFeatures().forEach(feature => {
-          geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
-        });
-        break;
+    //case bbox
+  } else if (externalLayerType === 'vector') {
+    if (bbox && Array.isArray(bbox)) {
+      const geometry = ol.geom.Polygon.fromExtent(bbox);
+      switch (externalLayer.constructor) {
+        case VectorLayer:
+          features = externalLayer.getIntersectedFeatures(geometry);
+          break;
+        case ol.layer.Vector:
+          externalLayer.getSource().getFeatures().forEach(feature => {
+            geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+          });
+          break;
+      }
+    } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
+      switch (externalLayer.constructor) {
+        case VectorLayer:
+          features = externalLayer.getIntersectedFeatures(geometry);
+          break;
+        case ol.layer.Vector:
+          externalLayer.getSource().getFeatures().forEach(feature => {
+            geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+          });
+          break;
+      }
     }
   }
   return {
     features,
-    layer: vectorLayer
+    layer: externalLayer
   };
 };
 
-proto._addVectorLayersDataToQueryResponse = function() {
+proto._addAddedExternLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, options={}) => {
     const {query={}} = queryResponse;
     const {add=false}= options;
-    !add && this._vectorLayers.forEach(vectorLayer => {
-      const responseObj = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, query);
+    !add && this._addedExternalLayers.forEach(externalLayer => {
+      const responseObj = this.getAddedExternalLayerFeaturesFromQueryRequest(externalLayer, query);
       if(!queryResponse.data) queryResponse.data = [];
       queryResponse.data.push(responseObj);
     })
