@@ -44,6 +44,9 @@ const fieldsMixin = {
     isPhoto(value){
       return this.getFieldService().isPhoto(value);
     },
+    isVue(value){
+      return this.getFieldService().isVue(value);
+    },
     sanitizeFieldValue(value) {
       return (Array.isArray(value) && !value.length) ? '' : value;
     }

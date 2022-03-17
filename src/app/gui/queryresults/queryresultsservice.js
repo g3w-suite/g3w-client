@@ -1594,7 +1594,7 @@ proto.clearHighlightGeometry = function(layer) {
  * layerId : current layer fathre id
  * feature: current feature father id
  */
-proto.showRelation = function({relationId, layerId, feature}){
+proto.showRelation = function({relationId, layerId, feature}={}){
   const chartRelationIds = [];
   const relation = this._project.getRelationById(relationId);
   this.findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
@@ -1608,7 +1608,7 @@ proto.showRelation = function({relationId, layerId, feature}){
         id: layerId
       }
     }),
-    perc: 100,
+    //perc: 100,
     title: relation.name,
     closable: false
   })

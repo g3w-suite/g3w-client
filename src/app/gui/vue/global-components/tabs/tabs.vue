@@ -31,6 +31,7 @@
 <script>
   import TabService from 'core/expression/tabservice';
   import Node from './node.vue';
+  const GUI = require('gui/gui');
   const {getUniqueDomId} = require ('core/utils/utils');
   export default {
     name: "tabs",
@@ -62,7 +63,7 @@
       },
       handleRelation: {
         type: Function,
-        default: relationId=>{console.log(relationId)}
+        default: ({relationId, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relationId, layerId, feature})
       }
     },
     components :{

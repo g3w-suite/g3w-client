@@ -656,7 +656,10 @@ const ViewportComponent = Vue.extend({
   computed: {
     showresize(){
       const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
-      return this.state.resized.start && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
+      return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
+    },
+    showresizeicon(){
+      return this.state.secondaryPerc !== 100;
     },
     hooks() {
       return this.usermessage.hooks;

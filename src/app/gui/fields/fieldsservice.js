@@ -52,7 +52,6 @@ module.exports  = {
   },
   isVue(value){
     return this.getType(value) === `${FieldType.VUE}_field`;
-
   },
   /**
    * Method to add a new field type to Fields
@@ -69,8 +68,22 @@ module.exports  = {
   remove(type){
     delete Fields[type];
   },
+  /**
+   * chenge type of field (example to set vue type)
+   * @param layerId
+   * @param field
+   */
   changeConfigFieldType({layerId, field={}}){
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.changeConfigFieldType(field);
+  },
+  /**
+   * Reset origin type
+   * @param layerId
+   * @param field
+   */
+  resetConfigFieldType({layerId, field={}}){
+    const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+    layer.resetConfigField(field);
   }
 };
