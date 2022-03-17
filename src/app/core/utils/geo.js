@@ -1374,8 +1374,9 @@ const geoutils = {
   createOlFeatureFromApiResponseFeature(feature){
     const {properties={}, geometry, id} = feature;
     properties[G3W_FID] = id;
-    const Feature = new ol.Feature(new ol.geom[geometry.type](geometry.coordinates));
+    const Feature = new ol.Feature(geometry && new ol.geom[geometry.type](geometry.coordinates));
     Feature.setProperties(properties);
+    Feature.setId(id);
     return Feature;
   },
 

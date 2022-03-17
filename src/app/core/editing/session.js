@@ -400,8 +400,8 @@ proto.commit = function({ids=null, items, relations=true}={}) {
           }
           this._history.clear();
           this.saveChangesOnServer(commitItems);
-        }
-        d.resolve(commitItems, response)
+          d.resolve(commitItems, response)
+        } else d.reject();
       })
       .fail(err => d.reject(err));
   }

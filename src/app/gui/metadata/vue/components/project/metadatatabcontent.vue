@@ -10,6 +10,9 @@
     <div v-else-if="!isArrayorObject(data.value)" class="col-sm-10 value" style="margin-top:0">
       <span v-html="data.value"></span>
     </div>
+    <div v-else-if="fieldName == 'abstract'" class="col-sm-10 value" style="margin-top:0">
+      <span v-html="data.value"></span>
+    </div>
     <div v-else class="col-sm-10 value" style="margin-top:0">
       <div v-for="(value, key) in data.value">
         <span>{{ value }}</span>

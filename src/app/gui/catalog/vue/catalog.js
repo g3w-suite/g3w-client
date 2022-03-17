@@ -480,7 +480,7 @@ const vueComponentOptions = {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.colorMenu.top = elem.offset().top;
-        this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
+        this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) / 2) - OFFSETMENU.left;
       }
       this.layerMenu.colorMenu.show = bool;
     }

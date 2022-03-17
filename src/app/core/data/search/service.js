@@ -65,7 +65,7 @@ function SearchService(){
    * @param fid
    * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
    */
-  this.fid = async function({layer, fid}={}){
+  this.fids = async function({layer, formatter=0, fids=[]}={}){
     const response = {
       data: [
         {
@@ -78,11 +78,42 @@ function SearchService(){
       }
     };
     try {
-      const feature = layer && await layer.getFeatureByFid(fid);
-      feature && response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature));
+      const features = layer && await layer.getFeatureByFids({fids, formatter});
+      features && features.forEach(feature => response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature)));
     } catch(err){}
     return response;
   };
+
+  /**
+   * Search service function to load many layers with each one with its fids
+   * @param layers: Array of layers that we want serach fids features
+   * @param fids: Array of array of fids
+   * @param formatter: how we want visualize
+   * @returns {Promise<void>}
+   */
+  this.layersfids = async function({layers=[], fids=[], formatter=0}={}){
+    const promises = [];
+    const response = {
+      data: [],
+      query: {
+        type: 'search'
+      }
+    };
+    layers.forEach((layer, index) =>{
+      promises.push(this.fids({
+        layer,
+        fids: fids[index],
+        formatter
+      }))
+    });
+    try {
+      const layersresponses = await Promise.all(promises);
+      layersresponses.forEach(layerresponse =>response.data.push(layerresponse.data))
+    } catch(err){
+      console.log(err)
+    }
+    return response;
+  }
 }
 
 inherit(SearchService, BaseService);

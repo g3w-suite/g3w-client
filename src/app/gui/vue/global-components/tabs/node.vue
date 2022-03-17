@@ -4,7 +4,7 @@
     <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}">
       <template v-for="column in columnNumber" style="padding:2px">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 3px 3px 0 3px"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 5px"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -15,7 +15,8 @@
           <template v-else>
             <tabs v-if="getNodeType(getNode(row, column)) === 'group'" class="sub-group" style="width: 100% !important" :group="true" :tabs="[getNode(row, column)]" v-bind="$props"></tabs>
             <template v-else>
-              <div v-if="showRelationByField" @click="handleRelation({relationId: getNode(row, column).name, feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}" v-disabled="getRelationName(getNode(row, column).name) === undefined">
+              <div v-if="showRelationByField" v-disabled="isRelationDisabled(getNode(row, column)) || loadingRelation(getNode(row, column)).loading" @click="handleRelation({relationId: getNode(row, column).name, feature:feature, layerId: layerid})" :style="{cursor: showRelationByField && 'pointer'}">
+                 <bar-loader :loading="loadingRelation(getNode(row, column)).loading"></bar-loader>
                   <div  class="query_relation_field">
                     <i :class="g3wtemplate.font[`${context === 'query' ? 'relation' : 'pencil'}`]"></i>
                   </div>
@@ -91,15 +92,24 @@
       }
     },
     methods: {
+      loadingRelation(relation){
+        const layer = ProjectRegistry.getCurrentProject().getLayerById(this.layerid);
+        const relation_project = layer.getRelationById(relation.name);
+        return relation_project.state;
+      },
+      isRelationDisabled(relation){
+        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation.name));
+      },
       getRelationName(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-      showRelation(relationId) {
-        // based on attribute  show relation panel
-        if (this.showRelationByField){
-
-        }
+      isRelationChildLayerNotEditable(relationId){
+        const currentProject = ProjectRegistry.getCurrentProject();
+        const relation = currentProject.getRelationById(relationId);
+        const relationLayerId = relation.referencingLayer;
+        const relationLayer = currentProject.getLayerById(relationLayerId);
+        return !relationLayer.isEditable();
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;

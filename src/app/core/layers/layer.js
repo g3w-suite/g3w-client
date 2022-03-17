@@ -558,22 +558,23 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
 };
 
 /**
- * Search layer feature by fid
- * @param fid
+ * Search layer feature by fids
+ * @param fids formatter
  */
-proto.getFeatureByFid = async function(fid){
+proto.getFeatureByFids = async function({fids=[], formatter=0}={}){
   const url = this.getUrl('data');
-  let feature;
+  let features;
   try {
     const response = await XHR.get({
       url,
       params: {
-        fid
+        fids:fids.toString(),
+        formatter
       }
     });
-    feature = response && response.result && response.vector && response.vector.data && response.vector.data.features[0];
+    features = response && response.result && response.vector && response.vector.data && response.vector.data.features;
   } catch(err){}
-  return feature
+  return features
 };
 
 //search Features methods

@@ -14,9 +14,9 @@ function Relation(config={}) {
     child: config.referencingLayer,
     fatherField: config.fieldRef.referencedField,
     childField: config.fieldRef.referencingField,
-    type: config.type
+    type: config.type,
+    loading: false
   };
-
   base(this);
 }
 
@@ -78,5 +78,21 @@ proto.getFatherField = function() {
 proto.getChildField = function() {
   return this.state.childField;
 };
+
+/**
+ * For editing purpose
+ */
+
+proto.setLoading = function(bool=false){
+  this.state.loading = bool;
+};
+
+proto.isLoading = function(){
+  return this.state.loading;
+};
+
+/**
+ * End editing loading purpose
+ */
 
 module.exports = Relation;

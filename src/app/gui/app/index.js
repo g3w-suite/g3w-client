@@ -461,7 +461,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       //check if waiting output data
       // in case we stop and substiute with new request data
       this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
-      let queryResultsService = add ? GUI.getComponent('queryresults').getService() : loading && this.showContentFactory('query')(title);
+      let queryResultsService = add ? GUI.getService('queryresults'): loading && this.showContentFactory('query')(title);
       this.waitingoutputdataplace = (() => {
         let stop = false;
         (async () =>{

@@ -246,6 +246,14 @@ proto.setRootComponent = function(){
   this.state.component = this.state.components.find(component => component.root).component;
 };
 
+proto.getRootComponent = function(){
+  return this.state.components.find(component => component.root).component;
+};
+
+proto.isRootComponent = function(component){
+  return this.getRootComponent() == component;
+};
+
 proto.getComponentById = function(id) {
   return this.state.components.find(component => component.id === id);
 };

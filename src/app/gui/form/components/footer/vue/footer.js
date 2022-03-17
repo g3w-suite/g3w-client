@@ -2,11 +2,23 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./footer.html'));
 const FooterFormComponent = Vue.extend({
   ...compiledTemplate,
-  props: ['state'],
+  props: {
+    state: {
+      type: Object
+    },
+    backToRoot: {
+      type: Function,
+      default: ()=>{}
+    },
+    isRootComponent:{
+      type: Function
+    }
+  },
   data() {
     return {
       id:"footer",
-      active: true
+      active: true,
+      show: true
     }
   },
   methods: {
@@ -27,16 +39,20 @@ const FooterFormComponent = Vue.extend({
       }
     }
   },
+  watch: {
+    'state.component'(component){
+      this.show = this.isRootComponent(component)
+    }
+  },
   activated(){
     this.active = true;
   },
   deactivated() {
     this.active = false;
   },
-  mounted() {
-    this.$nextTick(() => {
-      document.addEventListener('keydown', this._enterEventHandler)
-    })
+  async mounted() {
+    await this.$nextTick();
+    document.addEventListener('keydown', this._enterEventHandler);
   },
   beforeDestroy() {
     document.removeEventListener('keydown', this._enterEventHandler)

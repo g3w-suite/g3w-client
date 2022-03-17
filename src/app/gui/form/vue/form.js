@@ -29,6 +29,12 @@ const vueComponentObject = {
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
+    isRootComponent(component){
+      return this.$options.service.isRootComponent(component);
+    },
+    backToRoot(){
+      this.$options.service.setRootComponent();
+    },
     handleRelation(relationId){
       this.$options.service.handleRelation(relationId);
     },

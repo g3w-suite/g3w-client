@@ -51,7 +51,8 @@
         </div>
       </div>
       <div class="panel-title" :style="[state.content.style.title]" v-if="!previousTitle && showtitle && contentTitle" :class="{'mobile': isMobile()}">
-        <span id="contenttitle" v-t:pre="contentTitle.title">
+        <span id="contenttitle">
+          <span v-t="contentTitle.title"></span>
           <span v-t="contentTitle.post_title"></span>
         </span>
       </div>

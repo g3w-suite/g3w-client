@@ -34,7 +34,7 @@
             </div>
             <div v-if="findAttributeFormMetadataAttribute('abstract')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.abstract'" class="col-md-2 col-sm-12 metadata-label"></div>
-              <div class="col-md-10 col-sm-12 value">{{ state.metadata.abstract }}</div>
+              <div class="col-md-10 col-sm-12 value" v-html=" state.metadata.abstract"></div>
             </div>
             <div v-if="findAttributeFormMetadataAttribute('keywords')" class="row">
               <div v-t="'sdk.metadata.groups.layers.fields.subfields.keywords'" class="col-md-2 col-sm-12 metadata-label"></div>

@@ -1,4 +1,4 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const GUI = require('gui/gui');
