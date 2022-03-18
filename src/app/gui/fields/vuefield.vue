@@ -1,7 +1,7 @@
 <template>
   <field :state="state">
     <div slot="field">
-      <component :is="state.value.value"></component>
+      <component :value="state.value" :is="state.vueoptions.component"></component>
     </div>
   </field>
 </template>
@@ -10,7 +10,17 @@
   import Field from './field.vue';
   export default {
     name: "vuefield",
-    props: ['state'],
+    props: {
+      state: {
+        type: Object,
+        default: {
+          value: null,
+          vueoptions: {
+            component: {}
+          }
+        }
+      }
+    },
     components: {
       Field
     }

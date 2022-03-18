@@ -89,7 +89,7 @@
                               <tr>
                                 <td class="attr-label">{{ item.item.label }}</td>
                                 <td class="attr-value" :attribute="item.item.name">
-                                  <table-attribute-field-value :attribute="item.item" :layer="layer" :feature="feature"></table-attribute-field-value>
+                                  <table-attribute-field-value :field="getLayerField({layer, feature, fieldName: item.item.name})" ></table-attribute-field-value>
                                 </td>
                               </tr>
                               </tbody>
@@ -134,7 +134,7 @@
                             <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
-                                <table-attribute-field-value :attribute="attribute" :layer="layer" :feature="feature"></table-attribute-field-value>
+                                <table-attribute-field-value :field="getLayerField({layer, feature, fieldName: attribute.name})"></table-attribute-field-value>
                               </td>
                             </tr>
                           </table>

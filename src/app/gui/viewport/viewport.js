@@ -53,7 +53,7 @@ const ViewportService = function() {
       stack: [], // array elements of  stack contents
       closable: true, // (x) is closable
       backonclose: false, // back on prevoius content
-      contentsdata:[] // content data array
+      contentsdata:[], // content data array
     },
     usermessage: {
       id: null, // unique identify
@@ -424,13 +424,14 @@ const ViewportService = function() {
    */
   this._prepareContentView = function(options={}) {
     const {title, split=null,
-      closable=true, backonclose=true, style={}, showgoback=true} = options;
+      closable=true, backonclose=true, style={}, showgoback=true, headertools=[]} = options;
     this.state.content.title = title;
     this.state.content.split =  split;
     this.state.content.closable = closable;
     this.state.content.backonclose = backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
     this.state.content.style = style;
+    this.state.content.headertools = headertools;
     this.state.content.showgoback = showgoback;
   };
 

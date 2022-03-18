@@ -1118,10 +1118,10 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
   const [layerId, fid] = zoom_to_fid.split(separator);
   if (layerId !== undefined && fid !== undefined){
     const layer = this.project.getLayerById(layerId);
-    const {data=[]}= await DataRouterService.getData('search:fid', {
+    const {data=[]}= await DataRouterService.getData('search:fids', {
       inputs: {
         layer,
-        fid
+        fids:[fid]
       },
       outputs: {
         show: {

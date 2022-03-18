@@ -22,36 +22,40 @@ module.exports  = {
    * @param field
    * @returns {string}
    */
-  getType(fieldValue){
-    const value = fieldValue && toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
-    if (!value) type = FieldType.SIMPLE;
-    else if (value && typeof value == 'object') {
-      if (value.coordinates) type = FieldType.GEO;
-      else if (value.vue) type = FieldType.VUE;
-    } else if(value && Array.isArray(value)) {
-      if (value.length && value[0].photo) type = FieldType.PHOTO;
-      else type = FieldType.SIMPLE
-    } else if (value.toString().toLowerCase().match(PhotoPattern)) {
-      type = FieldType.PHOTO;
-    } else if (value.toString().match(URLPattern)) {
-      type = FieldType.LINK;
-    } else type = FieldType.SIMPLE;
+  getType(field){
+    let type = field.type;
+    if (type !== 'vue'){
+      const fieldValue = field.value;
+      const value = fieldValue && toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+      if (!value) type = FieldType.SIMPLE;
+      else if (value && typeof value == 'object') {
+        if (value.coordinates) type = FieldType.GEO;
+        else if (value.vue) type = FieldType.VUE;
+      } else if(value && Array.isArray(value)) {
+        if (value.length && value[0].photo) type = FieldType.PHOTO;
+        else type = FieldType.SIMPLE
+      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
+        type = FieldType.PHOTO;
+      } else if (value.toString().match(URLPattern)) {
+        type = FieldType.LINK;
+      } else type = FieldType.SIMPLE;
+    }
     return `${type}_field`;
   },
-  isSimple(value){
-    return this.getType(value) === `${FieldType.SIMPLE}_field`;
+  isSimple(field){
+    return this.getType(field) === `${FieldType.SIMPLE}_field`;
   },
-  isLink(value){
-    return this.getType(value) === `${FieldType.LINK}_field`;
+  isLink(field){
+    return this.getType(field) === `${FieldType.LINK}_field`;
   },
-  isImage(value){
-    return this.getType(value) === `${FieldType.IMAGE}_field`;
+  isImage(field){
+    return this.getType(field) === `${FieldType.IMAGE}_field`;
   },
-  isPhoto(value){
-    return this.getType(value) === `${FieldType.PHOTO}_field`;
+  isPhoto(field){
+    return this.getType(field) === `${FieldType.PHOTO}_field`;
   },
-  isVue(value){
-    return this.getType(value) === `${FieldType.VUE}_field`;
+  isVue(field){
+    return this.getType(field) === `${FieldType.VUE}_field`;
   },
   /**
    * Method to add a new field type to Fields

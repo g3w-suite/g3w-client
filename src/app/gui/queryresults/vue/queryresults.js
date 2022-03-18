@@ -76,6 +76,15 @@ const vueComponentOptions = {
     getLayerCustomComponents(layerId, type){
       return this.state.layerscustomcomponents[layerId] ? this.state.layerscustomcomponents[layerId][type] : [];
     },
+    getLayerField({layer, feature, fieldName}) {
+      const layerField = layer.attributes.find(attribute => attribute.name === fieldName);
+      const field = {
+        ...layerField,
+        label: null, // needed to hide label in query result dom table value content
+        value: feature.attributes[fieldName]
+      };
+      return field;
+    },
     getQueryFields(layer, feature) {
       const fields = [];
       for (const field of layer.formStructure.fields) {
@@ -83,7 +92,7 @@ const vueComponentOptions = {
         _field.query = true;
         _field.value = feature.attributes[field.name];
         _field.input = {
-          type: `${this.getFieldType(_field.value)}`
+          type: `${this.getFieldType(_field)}`
         };
         fields.push(_field);
       }

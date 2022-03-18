@@ -32,20 +32,20 @@ const fieldsMixin = {
     getFieldType(field) {
       return this.getFieldService().getType(field);
     },
-    isSimple(value){
-      return this.getFieldService().isSimple(value);
+    isSimple(field){
+      return this.getFieldService().isSimple(field);
     },
-    isLink(value){
-      return this.getFieldService().isLink(value);
+    isLink(field){
+      return this.getFieldService().isLink(field);
     },
-    isImage(value){
-      return this.getFieldService().isImage(value);
+    isImage(field){
+      return this.getFieldService().isImage(field);
     },
-    isPhoto(value){
-      return this.getFieldService().isPhoto(value);
+    isPhoto(field){
+      return this.getFieldService().isPhoto(field);
     },
-    isVue(value){
-      return this.getFieldService().isVue(value);
+    isVue(field){
+      return this.getFieldService().isVue(field);
     },
     sanitizeFieldValue(value) {
       return (Array.isArray(value) && !value.length) ? '' : value;

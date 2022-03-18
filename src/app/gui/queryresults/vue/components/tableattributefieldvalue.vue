@@ -1,9 +1,9 @@
 <template>
-    <span v-if="isSimple(value)" v-html="value"></span>
-    <g3w-image v-else-if="isPhoto(value)" :value="value"></g3w-image>
-    <g3w-image v-else-if="isImage(value)" :value="attribute.value"></g3w-image>
-    <g3w-link v-else-if="isLink(value)" :state="{value: value}"></g3w-link>
-    <g3w-vue v-else-if="isVue(value)" :state="{value: value}"></g3w-vue>
+    <g3w-vue v-if="isVue(field)" :state="field"></g3w-vue>
+    <span v-else-if="isSimple(field)" v-html="field.value"></span>
+    <g3w-image v-else-if="isPhoto(field)" :value="field.value"></g3w-image>
+    <g3w-image v-else-if="isImage(field)" :value="field.value"></g3w-image>
+    <g3w-link v-else-if="isLink(field)" :state="{value: field.value}"></g3w-link>
 </template>
 
 <script>
@@ -13,14 +13,8 @@
   export default {
     name: "tableattributefieldvalue",
     props: {
-      layer: {
+      field: {
         type: Object
-      },
-      feature: {
-        type: Object
-      },
-      attribute: {
-        type: String
       }
     },
     mixins: [fieldsMixin],
@@ -28,11 +22,6 @@
       'g3w-link': Link,
       'g3w-vue': VueField,
     },
-    computed: {
-      value(){
-        return this.feature.attributes[this.attribute.name];
-      }
-    }
   }
 </script>
 
