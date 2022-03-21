@@ -75,8 +75,7 @@
       },
       rows() {
         let rowCount = 1;
-        if (this.nodesLength === 0)
-          rowCount = 0;
+        if (this.nodesLength === 0) rowCount = 0;
         else if (this.columnNumber  <= this.nodesLength) {
           const rest = this.nodesLength  % this.columnNumber;
           rowCount = Math.floor(this.nodesLength / this.columnNumber) + rest;

@@ -238,9 +238,9 @@ proto.getWMSLayers = async function(url){
   return response;
 };
 
-proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
+proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
   const mapService = GUI.getService('map');
-  mapService.addExternalWMSLayer({
+  return mapService.addExternalWMSLayer({
     url,
     name,
     layers,
@@ -263,6 +263,7 @@ proto.loadWMSLayerToMap = async function({url, name, epsg, position, opacity, vi
 proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}){
   const data = this.getLocalWMSData();
   const wmsLayerConfig = {
+    url,
     name,
     layers,
     epsg,
@@ -273,7 +274,19 @@ proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, positio
   if (data.wms[url] === undefined) data.wms[url] = [wmsLayerConfig];
   else data.wms[url].push(wmsLayerConfig);
   this.updateLocalWMSData(data);
-  await this.loadWMSLayerToMap(wmsLayerConfig);
+  try {
+    await this.loadWMSLayerToMap(wmsLayerConfig);
+  } catch(err){
+    const mapService = GUI.getService('map');
+    mapService.removeExternalLayer(name);
+    this.deleteWms(name);
+    setTimeout(()=>{
+      GUI.showUserMessage({
+        type: 'warning',
+        message: 'sidebar.wms.layer_add_error'
+      })
+    })
+  }
   this.panel.close();
 };
 

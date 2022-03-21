@@ -46,8 +46,8 @@ const DateTimePickerInput = Vue.extend({
       allowInputToggle: true,
       toolbarPlacement: 'top',
       widgetPositioning: {
-        vertical: 'auto',
-        horizontal: 'right'
+        vertical: 'top',
+        horizontal: 'left'
       },
       showClose: true,
       locale

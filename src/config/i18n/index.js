@@ -426,7 +426,8 @@ const translations = {
           add_wms_layer: "Aggiungi WMS layer",
           delete_wms_url: "Elimina WMS url",
           layer_id_already_added: "WMS Layer già aggiunto",
-          url_already_added: "WMS URL già aggiunto"
+          url_already_added: "WMS URL già aggiunto",
+          layer_add_error: "WMS Layer non aggiunto. Verificare i parametri o l'url"
         }
       },
       info: {
@@ -914,7 +915,8 @@ const translations = {
           add_wms_layer: "Add WMS layer",
           delete_wms_url: "Delete WMS url",
           layer_id_already_added: "WMS Layer already added",
-          url_already_added: "WMS URL already added"
+          url_already_added: "WMS URL already added",
+          layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
         }
       },
       info: {
@@ -1402,7 +1404,8 @@ const translations = {
           add_wms_layer: "Aggiungi WMS layer",
           delete_wms_url: "Delete WMS url",
           layer_id_already_added: "WMS Taso on jo lisätty.",
-          url_already_added: "WMS URL  on jo lisätty."
+          url_already_added: "WMS URL  on jo lisätty.",
+          layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
         }
       },
       info: {
@@ -1891,7 +1894,8 @@ const translations = {
           add_wms_layer: "Aggiungi WMS layer",
           delete_wms_url: "Delete WMS url",
           layer_id_already_added: "WMS Nivån har redan lagts till.",
-          url_already_added: "WMS URL har redan lagts till."
+          url_already_added: "WMS URL har redan lagts till.",
+          layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
         }
       },
       info: {
@@ -2382,7 +2386,8 @@ const translations = {
           add_wms_layer: "Add WMS layer",
           delete_wms_url: "Delete WMS url",
           layer_id_already_added: "WMS Nivån har redan lagts till.",
-          url_already_added: "WMS URL har redan lagts till."
+          url_already_added: "WMS URL har redan lagts till.",
+          layer_add_error: "WMS Layer not added. Please check all wms parameter or url"
         }
       },
       info: {

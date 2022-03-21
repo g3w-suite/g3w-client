@@ -1,30 +1,45 @@
 <template>
   <div class="tabs-wrapper" v-if="show">
-    <ul class="formquerytabs nav nav-tabs">
-      <template v-for="(tab, index) in tabs">
-        <li :class="{active: index === 0}" v-if="tab.visible === undefined || tab.visible">
-          <a data-toggle="tab" class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile(), 'group-title': group}" :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}">
-            {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span></a>
-        </li>
-      </template>
-    </ul>
-    <div class="tab-content" :class="{editing: contenttype === 'editing'}">
-      <template v-for="(tab, index) in tabs">
-        <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
-          <node :showRelationByField="showRelationByField"
-                :handleRelation="handleRelation"
-                :feature="feature"
-                :layerid="layerid"
-                :contenttype="contenttype"
-                :addToValidate="addToValidate"
-                :changeInput="changeInput"
-                :fields="fields"
-                :showTitle="false"
-                :node="tab">
-          </node>
+    <template v-for="root_tab in root_tabs">
+      <template v-if="Array.isArray(root_tab)">
+        <ul class="formquerytabs nav nav-tabs">
+          <template v-for="(tab, index) in root_tab">
+            <li :class="{active: index === 0}" v-if="tab.visible === undefined || tab.visible">
+              <a data-toggle="tab" class="tab_a" :href="`#${ids[index]}`" :class="{'mobile': isMobile(), 'group-title': group}" :style="{fontSize: isMobile() ? '1.0em': `${group ? '1.1': '1.2'}em`}">
+                {{tab.name}} <span style="padding-left: 3px; font-size: 1.1em;" v-if="contenttype === 'editing' && tab.required">*</span></a>
+            </li>
+          </template>
+        </ul>
+        <div class="tab-content" :class="{editing: contenttype === 'editing'}">
+          <template v-for="(tab, index) in root_tab">
+            <div :id="ids[index]" class="tab-pane fade" :class="{'in active': index === 0}" v-if="tab.visible === undefined || tab.visible">
+              <node :showRelationByField="showRelationByField"
+                    :handleRelation="handleRelation"
+                    :feature="feature"
+                    :layerid="layerid"
+                    :contenttype="contenttype"
+                    :addToValidate="addToValidate"
+                    :changeInput="changeInput"
+                    :fields="fields"
+                    :showTitle="false"
+                    :node="tab">
+              </node>
+            </div>
+          </template>
         </div>
       </template>
-    </div>
+      <node v-else :showRelationByField="showRelationByField"
+            :handleRelation="handleRelation"
+            :feature="feature"
+            :layerid="layerid"
+            :contenttype="contenttype"
+            :addToValidate="addToValidate"
+            :changeInput="changeInput"
+            :fields="fields"
+            :showTitle="false"
+            :node="root_tab">
+      </node>
+    </template>
   </div>
 </template>
 
@@ -129,6 +144,21 @@
         }
         this.ids.push(`tab_${getUniqueDomId()}`);
       }
+      this.root_tabs = [];
+      if (!this.group){
+        const nodes = [];
+        this.tabs.forEach(tab_node =>{
+          if (tab_node.nodes) nodes.push(tab_node);
+          else {
+            if (nodes.length){
+              this.root_tabs.push([...nodes]);
+              nodes.splice(0);
+            } this.root_tabs.push({nodes:[tab_node]});
+          }
+        });
+        if (nodes.length) this.root_tabs.push(nodes)
+      } else this.root_tabs = [this.tabs];
+
     },
     beforeDestroy() {
       this.unwatch.forEach(unwatch => unwatch());
