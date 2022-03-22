@@ -706,29 +706,8 @@ proto.getConfig = function() {
  * @param fields
  * @returns {[]}
  */
-proto.getLayerEditingFormStructure = function(fields){
-  const isInputOrTab = item =>  {
-    const isInput = item.field_name !== undefined;
-    return  {
-      type: isInput && 'input' || 'tab',
-      item: isInput && [fields.find(field => field.name ===item.field_name)] || [item]
-    }
-  };
-  let prevtabitems = [];
-  const formstructure = [];
-  this.config.editor_form_structure.forEach(item => {
-    const _item = isInputOrTab(item);
-    if (_item.type === 'input') {
-      formstructure.push(_item);
-      prevtabitems = [];
-    } else {
-      if (!prevtabitems.length) {
-        formstructure.push(_item);
-        prevtabitems = _item.item;
-      } else prevtabitems.push(_item.item[0]);
-    }
-  });
-  return formstructure;
+proto.getLayerEditingFormStructure = function(){
+  return this.config.editor_form_structure;
 };
 
 proto.getEditorFormStructure = function({all=false}={}) {

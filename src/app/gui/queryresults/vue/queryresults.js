@@ -135,9 +135,6 @@ const vueComponentOptions = {
     hasFormStructure(layer) {
       return !!layer.formStructure;
     },
-    hasFieldOutOfFormStructure(layer) {
-      return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
-    },
     layerHasFeatures(layer) {
       return layer.features && layer.features.length > 0 ? true: false;
     },
@@ -216,22 +213,8 @@ const vueComponentOptions = {
     relationsAttributesSubsetLength(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
-    getItemsFromStructure(layer) {
-      let prevtabitems = [];
-      const newstructure = [];
-      layer.formStructure.structure.forEach(item => {
-        const _item = this.isAttributeOrTab(layer, item);
-        if (_item.type === 'field') {
-          newstructure.push(_item);
-          prevtabitems = [];
-        } else {
-          if (!prevtabitems.length) {
-            newstructure.push(_item);
-            prevtabitems = _item.item;
-          } else prevtabitems.push(_item.item[0]);
-        }
-      });
-      return newstructure;
+    getLayerFormStructure(layer) {
+      return layer.formStructure.structure;
     },
     isAttributeOrTab(layer, item) {
       const isField = item.field_name !== undefined;

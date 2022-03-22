@@ -3,25 +3,16 @@
     <div class="box-primary">
       <div class="box-body">
         <template v-if="hasFormStructure">
-          <template v-for="item in state.formstructure">
-            <tabs v-if="item.type === 'tab'"
-              :layerid="state.layerid"
-              :feature="state.feature"
-              :handleRelation="handleRelation"
-              :contenttype="'editing'"
-              :addToValidate="addToValidate"
-              :changeInput="changeInput"
-              :tabs="item.item"
-              :fields="state.fields">
-            </tabs>
-            <g3w-form-inputs v-else
-              :state="{fields: item.item}"
-              :addToValidate="addToValidate"
-              :changeInput="changeInput"
-              @changeinput="changeInput"
-              @addinput="addToValidate">
-            </g3w-form-inputs>
-          </template>
+          <tabs
+            :layerid="state.layerid"
+            :feature="state.feature"
+            :handleRelation="handleRelation"
+            :contenttype="'editing'"
+            :addToValidate="addToValidate"
+            :changeInput="changeInput"
+            :tabs="state.formstructure"
+            :fields="state.fields">
+          </tabs>
         </template>
         <template v-else>
           <g3w-form-inputs

@@ -83,19 +83,7 @@
                       </tr>
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                         <td :colspan="getColSpan(layer)">
-                          <template v-for="item in getItemsFromStructure(layer)">
-                            <table v-if="item.type === 'field'" class="fieldsoutofstructure">
-                              <tbody>
-                              <tr>
-                                <td class="attr-label">{{ item.item.label }}</td>
-                                <td class="attr-value" :attribute="item.item.name">
-                                  <table-attribute-field-value :field="getLayerField({layer, feature, fieldName: item.item.name})" ></table-attribute-field-value>
-                                </td>
-                              </tr>
-                              </tbody>
-                            </table>
-                            <tabs v-else-if="item.type === 'tab'" :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="item.item"></tabs>
-                          </template>
+                          <tabs :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="getLayerFormStructure(layer)"></tabs>
                         </td>
                       </tr>
                       <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature')">

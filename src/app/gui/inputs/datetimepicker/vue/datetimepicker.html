@@ -1,6 +1,7 @@
 <baseinput :state="state">
-  <div slot="body" >
-    <div class='input-group date' :id='iddatetimepicker' v-disabled="!editable">
+  <div slot="body"ref="datetimepicker_body">
+    <div ref="datimewidget_container" :style="{top: `${widget_container.top}px`, left: `${widget_container.left}px`}" style="position: fixed; z-index:1; "></div>
+    <div class='input-group date'  :id='iddatetimepicker' v-disabled="!editable">
       <input
         :id="idinputdatetimepiker"
         :readonly="!editable || isMobile() ? 'readonly' : null"

@@ -10,6 +10,10 @@ const DateTimePickerInput = Vue.extend({
   data() {
     const uniqueValue = getUniqueDomId();
     return {
+      widget_container: {
+        top: 0,
+        left: 0
+      },
       iddatetimepicker: 'datetimepicker_'+ uniqueValue,
       idinputdatetimepiker: 'inputdatetimepicker_'+ uniqueValue,
       changed: false
@@ -45,6 +49,7 @@ const DateTimePickerInput = Vue.extend({
       ignoreReadonly: true,
       allowInputToggle: true,
       toolbarPlacement: 'top',
+      widgetParent: $(this.$refs.datimewidget_container),
       widgetPositioning: {
         vertical: 'top',
         horizontal: 'left'
@@ -58,10 +63,15 @@ const DateTimePickerInput = Vue.extend({
       this.state.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, datetimedisplayformat).format(datetimefieldformat);
       this.widgetChanged();
     });
-    $(`#${this.iddatetimepicker}`).on("dp.show", evt => {
+    $(`#${this.iddatetimepicker}`).on("dp.show", async evt => {
+      await this.$nextTick();
+      const {top, left, width} = this.$refs.datetimepicker_body.getBoundingClientRect();
+      this.widget_container.top = top;
+      this.widget_container.left = left - width;
       this.$emit('datetimepickershow');
     });
     $(`#${this.iddatetimepicker}`).on("dp.hide", evt => {
+      $(`#${this.iddatetimepicker}`).data("DateTimePicker").show()
       this.$emit('datetimepickershow');
     });
     ApplicationState.ismobile && setTimeout(()=>{
