@@ -236,6 +236,7 @@ proto.setCurrentComponentById = function(id){
   if (this.state.disabledcomponents.indexOf(id) === -1) {
     this.setIdHeader(id);
     this.state.component = this.state.components.find(component => component.id === id).component;
+    return this.state.component;
   }
 };
 

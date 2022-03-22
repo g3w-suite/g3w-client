@@ -1594,22 +1594,23 @@ proto.clearHighlightGeometry = function(layer) {
  * layerId : current layer fathre id
  * feature: current feature father id
  */
-proto.showRelation = function({relationId, layerId, feature}={}){
+proto.showRelation = function({relation, layerId, feature}={}){
+  const {name: relationId, cardinality} = relation;
   const chartRelationIds = [];
-  const relation = this._project.getRelationById(relationId);
-  this.findPlotId(relation.referencingLayer) && chartRelationIds.push(relation.referencingLayer);
+  const projectRelation = this._project.getRelationById(relationId);
+  this.findPlotId(projectRelation.referencingLayer) && chartRelationIds.push(projectRelation.referencingLayer);
   GUI.pushContent({
     content: new RelationsPage({
       currentview: 'relations',
-      relations: [relation],
+      relations: [projectRelation],
       chartRelationIds,
+      cardinality,
       feature,
       layer: {
         id: layerId
       }
     }),
-    //perc: 100,
-    title: relation.name,
+    title: projectRelation.name,
     closable: false
   })
 };

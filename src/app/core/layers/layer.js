@@ -706,7 +706,7 @@ proto.getConfig = function() {
  * @param fields
  * @returns {[]}
  */
-proto.getLayerEditingFormStructure = function(){
+proto.getLayerEditingFormStructure = function(fields){
   return this.config.editor_form_structure;
 };
 

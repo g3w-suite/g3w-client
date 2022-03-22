@@ -19,6 +19,7 @@ const InternalComponent = Vue.extend({
       table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
       relation: this.$options.relation || null,
       relations: this.$options.relations,
+      cardinality: this.$options.cardinality,
       showChartButton: false,
       feature: this.$options.feature,
       currentview: this.$options.currentview,
@@ -96,7 +97,7 @@ const InternalComponent = Vue.extend({
 const RelationsPage = function(options={}) {
   base(this, options);
   const service = options.service || new Service();
-  const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[]} = options;
+  const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[], cardinality} = options;
   const currentview = options.currentview || 'relations';
   this.setService(service);
   const internalComponent = new InternalComponent({
@@ -104,6 +105,7 @@ const RelationsPage = function(options={}) {
     service,
     relations,
     relation,
+    cardinality,
     chartRelationIds,
     feature,
     currentview,

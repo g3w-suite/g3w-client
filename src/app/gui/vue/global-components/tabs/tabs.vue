@@ -78,7 +78,7 @@
       },
       handleRelation: {
         type: Function,
-        default: ({relationId, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relationId, layerId, feature})
+        default: ({relation, layerId, feature}={}) => GUI.getService('queryresults').showRelation({relation, layerId, feature})
       }
     },
     components :{

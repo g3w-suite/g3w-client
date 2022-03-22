@@ -12,7 +12,7 @@ let SIDEBARWIDTH;
 
 module.exports = {
   ...compiledTemplate,
-  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton'],
+  props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
@@ -120,6 +120,7 @@ module.exports = {
     this.delayType = 'debounce';
   },
   created() {
+    console.log(this.cardinality)
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
     this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];

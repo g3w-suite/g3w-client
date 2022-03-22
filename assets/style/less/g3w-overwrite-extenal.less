@@ -106,5 +106,7 @@ table.dataTable {
 .bootstrap-datetimepicker-widget.dropdown-menu {
   color: #000000;
   white-space: normal !important;
-  max-height: 50px !important;
+  &:after, &:before {
+    content: none !important;
+  }
 }
