@@ -885,9 +885,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerTitle = layer.getTitle();
       layerId = layer.getId();
       if (layer.hasFormStructure()) {
-        const structure = layer.getEditorFormStructure({
-          all:true
-        });
+        const structure = layer.getLayerEditingFormStructure();
         if (this._relations && this._relations.length) {
           const getRelationFieldsFromFormStructure = node => {
             if (!node.nodes) {
@@ -1595,16 +1593,17 @@ proto.clearHighlightGeometry = function(layer) {
  * feature: current feature father id
  */
 proto.showRelation = function({relation, layerId, feature}={}){
-  const {name: relationId, cardinality} = relation;
+  const {name: relationId, nmRelationId} = relation;
   const chartRelationIds = [];
   const projectRelation = this._project.getRelationById(relationId);
+  const nmRelation = this._project.getRelationById(nmRelationId);
   this.findPlotId(projectRelation.referencingLayer) && chartRelationIds.push(projectRelation.referencingLayer);
   GUI.pushContent({
     content: new RelationsPage({
       currentview: 'relations',
       relations: [projectRelation],
       chartRelationIds,
-      cardinality,
+      nmRelation,
       feature,
       layer: {
         id: layerId

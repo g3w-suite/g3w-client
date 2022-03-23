@@ -158,7 +158,6 @@
         });
         if (nodes.length) this.root_tabs.push(nodes)
       } else this.root_tabs = [this.tabs];
-
     },
     beforeDestroy() {
       this.unwatch.forEach(unwatch => unwatch());

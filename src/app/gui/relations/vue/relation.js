@@ -80,7 +80,7 @@ module.exports = {
         field.value = row[index];
         field.query = true;
         field.input = {
-          type: `${this.getFieldType(field.value)}`
+          type: `${this.getFieldType(field)}`
         };
         return field;
       });
@@ -120,7 +120,6 @@ module.exports = {
     this.delayType = 'debounce';
   },
   created() {
-    console.log(this.cardinality)
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
     this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];

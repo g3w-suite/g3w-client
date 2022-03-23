@@ -710,10 +710,11 @@ proto.getLayerEditingFormStructure = function(fields){
   return this.config.editor_form_structure;
 };
 
-proto.getEditorFormStructure = function({all=false}={}) {
-  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter(structure => {
-    return !structure.field_name;
-  }) : this.config.editor_form_structure;
+/*
+Duplicate beacause we had to check if it used by some plugins to avoid to break back compatibility
+ */
+proto.getEditorFormStructure = function() {
+  return this.getLayerEditingFormStructure();
 };
 
 proto.getFieldsOutOfFormStructure = function() {

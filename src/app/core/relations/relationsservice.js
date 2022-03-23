@@ -1,6 +1,7 @@
-const {inherit, XHR, base} = require('core/utils/utils');
-const {sanitizeFidFeature} = require('core/utils/geo');
+const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
+const {sanitizeFidFeature, getFeaturesFromResponseVectorApi, covertVectorFeaturesToResultFeatures, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function RelationsService(options={}) {
   base(this);
@@ -29,6 +30,58 @@ proto.getRelations = function(options={}) {
   return XHR.get({
     url
   })
+};
+
+proto.getRelationsNM = async function({nmRelation, features}){
+  const DataRouterService = require('core/data/routerservice');
+  const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
+  const values = features.map(feature => feature.attributes[referencingField]);
+  const responseFids = await DataRouterService.getData('search:features', {
+    inputs: {
+      layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
+      filter: `${createSingleFieldParameter({
+        field: referencedField,
+        value: values,
+        logicop: 'OR'
+      })}`,
+      formatter: 1, // set formatter to
+      search_endpoint: 'api'
+    },
+    outputs: null
+  });
+  //const NMRELATIONS = [];
+  //const fids = responseFids.data && responseFids.data[0].features.map(feature => feature.getId());
+  // console.log(fids)
+  // const promisesRelationsNM = [];
+  // fids.forEach(fid =>{
+  //   promisesRelationsNM.push(this.getRelations({
+  //     fid,
+  //     layer: {
+  //       id: referencedLayer
+  //     },
+  //     relation: nmRelation
+  //   }))
+  // });
+  //
+  // const responsesRelationsNM = await Promise.allSettled(promisesRelationsNM);
+  // responsesRelationsNM.forEach(response =>{
+  //   if (response.status === 'fulfilled') {
+  //     const features = getFeaturesFromResponseVectorApi(response.value);
+  //     NMRELATIONS.push(features)
+  //   } else NMRELATIONS.push([])
+  // });
+  //return NMRELATIONS;
+  return responseFids.data && responseFids.data[0].features.map(feature => {
+    const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) =>{
+      accumulator[property] = feature.get(property);
+      return accumulator;
+    }, {});
+    return {
+      id: feature.getId(),
+      attributes,
+      geometry: feature.getGeometry()
+    }
+  });
 };
 
 proto.save = function(options={}){

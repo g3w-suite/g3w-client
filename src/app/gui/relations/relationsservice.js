@@ -20,6 +20,13 @@ proto.getRelations = function(options={}) {
   return RelationsService.getRelations(options);
 };
 
+proto.getRelationsNM = async function({nmRelation, features}){
+  return await RelationsService.getRelationsNM({
+    nmRelation,
+    features
+  })
+};
+
 proto.saveRelations = async function(type){
   this._options.type = type;
   const caller_download_id = ApplicationService.setDownload(true);
@@ -60,7 +67,7 @@ proto.buildRelationTable = function(relations=[], id) {
     rows_fid,
     features: relations,
     fields,
-    formStructure : layer.getEditorFormStructure(),
+    formStructure : layer.getLayerEditingFormStructure(),
     rowFormStructure: null,
     layerId: layer.getId()
   }

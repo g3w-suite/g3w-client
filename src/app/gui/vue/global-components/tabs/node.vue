@@ -97,7 +97,7 @@
         return relation_project.state;
       },
       isRelationDisabled(relation){
-        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation.name));
+        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
       getRelationName(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
