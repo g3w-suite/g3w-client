@@ -134,15 +134,13 @@ const proto = TableLayer.prototype;
 proto.syncSelectionFilterFeatures = function(commitItems){
   try {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-    if (layer.isSelectionActive()){
-      layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
-        const {id, geometry} = updateItem;
-        layer.hasSelectionFid(id) && layer.updateOlSelectionFeature({id,geometry});
-      });
-      commitItems.delete.forEach(id =>{
-        layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
-      })
-    }
+    layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
+      const {id, geometry} = updateItem;
+      layer.getOlSelectionFeature(id) && layer.updateOlSelectionFeature({id,geometry});
+    });
+    commitItems.delete.forEach(id =>{
+      layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
+    })
   } catch(err){}
 };
 

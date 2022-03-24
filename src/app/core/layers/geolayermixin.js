@@ -65,7 +65,7 @@ proto.getOlSelectionFeature = function(id){
 };
 
 proto.updateOlSelectionFeature = function({id, geometry}={}){
-  const featureObject = this.olSelectionFeatures[id];
+  const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
     geometry = new ol.geom[geometry.type](geometry.coordinates);
     const feature = featureObject.feature;
@@ -100,7 +100,8 @@ proto.getOlSelectionFeatures = function(){
 };
 
 proto.addOlSelectionFeature = function({id, geometry}={}){
-  this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
+  if (this.olSelectionFeatures[id]) this.olSelectionFeatures[id].feature.setGeometry(geometry);
+  else this.olSelectionFeatures[id] = {
     feature: createFeatureFromGeometry({id, geometry}),
     added: false
   };
