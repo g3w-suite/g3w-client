@@ -106,22 +106,13 @@
       },
       isRelationChildLayerNotEditable(relation){
         const {nmRelationId, name} = relation;
-        if (nmRelationId) return true;
-        else {
-          const currentProject = ProjectRegistry.getCurrentProject();
-          const projectRelation = currentProject.getRelationById(name);
-          const relationLayerId = projectRelation.referencingLayer;
-          const relationLayer = currentProject.getLayerById(relationLayerId);
-          // check if is editable. In case of nmRelation layer need to be table to be editable
-          return !relationLayer.isEditable();
-        }
-        // const relationId = nmRelationId || name;
-        // const currentProject = ProjectRegistry.getCurrentProject();
-        // const projectRelation = currentProject.getRelationById(relationId);
-        // const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
-        // const relationLayer = currentProject.getLayerById(relationLayerId);
-        // // check if is editable. In case of nmRelation layer need to be table to be editable
-        // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
+        const relationId = nmRelationId || name;
+        const currentProject = ProjectRegistry.getCurrentProject();
+        const projectRelation = currentProject.getRelationById(relationId);
+        const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
+        const relationLayer = currentProject.getLayerById(relationLayerId);
+        // check if is editable. In case of nmRelation layer need to be table to be editable
+        return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() && !currentProject.getLayerById(referencingLayer).iEditable() : false);
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;
