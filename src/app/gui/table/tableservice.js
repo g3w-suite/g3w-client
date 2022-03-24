@@ -375,17 +375,17 @@ proto.addFeature = function(feature) {
     attributes: feature.attributes ? feature.attributes : feature.properties
   };
   if (this.geolayer && feature.geometry) {
-    const olSelectionFeature = this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
+    this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
       id: tableFeature.id,
       geometry: this._returnGeometry(feature)
     });
-    tableFeature.geometry = olSelectionFeature.feature.getGeometry();
+    tableFeature.geometry = feature.geometry;
   }
   this.state.features.push(tableFeature);
 };
 
 proto.checkSelectAll = function(features=this.state.features){
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
 };
 
 proto.addFeatures = function(features=[]) {

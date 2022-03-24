@@ -134,15 +134,13 @@ const proto = TableLayer.prototype;
 proto.syncSelectionFilterFeatures = function(commitItems){
   try {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
-    if (layer.isSelectionActive()){
-      layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
-        const {id, geometry} = updateItem;
-        layer.hasSelectionFid(id) && layer.updateOlSelectionFeature({id,geometry});
-      });
-      commitItems.delete.forEach(id =>{
-        layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
-      })
-    }
+    layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
+      const {id, geometry} = updateItem;
+      layer.getOlSelectionFeature(id) && layer.updateOlSelectionFeature({id,geometry});
+    });
+    commitItems.delete.forEach(id =>{
+      layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
+    })
   } catch(err){}
 };
 
@@ -455,10 +453,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
   else feature = obj && this.getFeatureById(obj);
   if (feature) {
     const attributes = feature.getProperties();
-    fields = fields.filter(field =>  exclude.indexOf(field.name) === -1);
+    fields = fields.filter(field => exclude.indexOf(field.name) === -1);
     fields.forEach(field => {
       field.value = attributes[field.name];
-      if (field.type !== 'child' && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
+      if (field.type !== 'child' && field.input && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
         const options = _configField.input.options;
         field.input.options.loading = options.loading;
