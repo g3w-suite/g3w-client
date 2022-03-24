@@ -100,8 +100,7 @@ proto.getOlSelectionFeatures = function(){
 };
 
 proto.addOlSelectionFeature = function({id, geometry}={}){
-  if (this.olSelectionFeatures[id]) this.olSelectionFeatures[id].feature.setGeometry(geometry);
-  else this.olSelectionFeatures[id] = {
+  this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
     feature: createFeatureFromGeometry({id, geometry}),
     added: false
   };
