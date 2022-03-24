@@ -1085,6 +1085,14 @@ proto.resetConfigField = function({name}){
 //function called in case of change project to remove all sored information
 proto.clear = function(){};
 
+proto.isVector = function() {
+  return this.getType() === Layer.LayerTypes.VECTOR;
+};
+
+proto.isTable = function(){
+  return this.getType() === Layer.LayerTypes.TABLE;
+};
+
 /// LAYER PROPERTIES
 // Layer Types
 Layer.LayerTypes = {

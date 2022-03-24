@@ -21,7 +21,8 @@ const Feature = function(options={}) {
   }
   this.state = {
     new: false,
-    state: null
+    state: null,
+    visible: true
   };
 };
 
@@ -89,20 +90,16 @@ proto.setNew = function() {
   this.state.new = true;
 };
 
-
-// setta la feature a state 2 delete
 proto.delete = function() {
   this.state.state = 'delete';
   return this;
 };
 
-//setta lo stato a feature aggiornata
 proto.update = function() {
   this.state.state = 'update';
   return this;
 };
 
-// setta lo stato a nuovo 0
 proto.add = function() {
   this.state.state = 'add';
   return this;
@@ -154,6 +151,18 @@ proto.getAlphanumericProperties = function() {
 proto.clearState = function() {
   this.state.state = null;
   this.state.new = false;
+};
+
+/**
+ * need to filter features visiblity on table
+ * @returns {boolean}
+ */
+proto.isVisible = function(){
+  return this.state.visible;
+};
+
+proto.setVisible = function(bool=true){
+  this.state.visible = bool;
 };
 
 

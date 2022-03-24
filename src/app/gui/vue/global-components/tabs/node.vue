@@ -97,18 +97,31 @@
         return relation_project.state;
       },
       isRelationDisabled(relation){
-        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
+        return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
+        //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
       getRelationName(relationId) {
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-      isRelationChildLayerNotEditable(relationId){
-        const currentProject = ProjectRegistry.getCurrentProject();
-        const relation = currentProject.getRelationById(relationId);
-        const relationLayerId = relation.referencingLayer;
-        const relationLayer = currentProject.getLayerById(relationLayerId);
-        return !relationLayer.isEditable();
+      isRelationChildLayerNotEditable(relation){
+        const {nmRelationId, name} = relation;
+        if (nmRelationId) return true;
+        else {
+          const currentProject = ProjectRegistry.getCurrentProject();
+          const projectRelation = currentProject.getRelationById(name);
+          const relationLayerId = projectRelation.referencingLayer;
+          const relationLayer = currentProject.getLayerById(relationLayerId);
+          // check if is editable. In case of nmRelation layer need to be table to be editable
+          return !relationLayer.isEditable();
+        }
+        // const relationId = nmRelationId || name;
+        // const currentProject = ProjectRegistry.getCurrentProject();
+        // const projectRelation = currentProject.getRelationById(relationId);
+        // const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
+        // const relationLayer = currentProject.getLayerById(relationLayerId);
+        // // check if is editable. In case of nmRelation layer need to be table to be editable
+        // return !relationLayer.isEditable() || (nmRelationId ? relationLayer.isVector() : false);
       },
       getNodes(row) {
         const startIndex = (row - 1) * this.columnNumber;

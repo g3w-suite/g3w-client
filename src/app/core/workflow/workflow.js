@@ -149,9 +149,10 @@ proto.start = function(options={}) {
   this._promise = d;
   this._inputs = options.inputs;
   this._context = options.context || {};
-  //check if are workflow running
+  const isChild = this._context.isChild || false;
+  //check if are workflow running and if need to stop child
   if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
-    WorkflowsStack.getCurrent().addChild(this);
+    !isChild && WorkflowsStack.getCurrent().addChild(this)
   }
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;

@@ -71,7 +71,6 @@ const DateTimePickerInput = Vue.extend({
       this.$emit('datetimepickershow');
     });
     $(`#${this.iddatetimepicker}`).on("dp.hide", evt => {
-      $(`#${this.iddatetimepicker}`).data("DateTimePicker").show()
       this.$emit('datetimepickershow');
     });
     ApplicationState.ismobile && setTimeout(()=>{
