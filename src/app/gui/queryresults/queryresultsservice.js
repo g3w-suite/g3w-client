@@ -556,6 +556,22 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         },
         cbk: this.copyZoomToFidUrl.bind(this)
       });
+      layer.editable && this.state.layersactions[layer.id].push({
+        id: 'editing',
+        class: GUI.getFontClass('pencil'),
+        hint: 'Editing',
+        cbk: (layer, feature) => {
+          const layerId = layer.id;
+          const featureId = feature.attributes[G3W_FID];
+          feature.geometry && this.mapService.zoomToGeometry(feature.geometry);
+          setTimeout(()=>{
+            this.editFeature({
+              layerId,
+              featureId
+            });
+          }, 300)
+        }
+      });
     });
     this.addActionsForLayers(this.state.layersactions, this.state.layers);
   }
@@ -854,6 +870,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let source;
     let extractRelations = false;
     let external = false;
+    let editable = false;
     const layer = featuresForLayer.layer;
     let downloads = [];
     let infoformats = [];
@@ -861,6 +878,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
+      editable = layer.isEditable();
       source = layer.getSource();
       infoformats = layer.getInfoFormats(); // add infoformats property
       infoformat = layer.getInfoFormat();
@@ -942,6 +960,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         active: false
       },
       external,
+      editable,
       selection,
       expandable: true,
       hasImageField: false,
