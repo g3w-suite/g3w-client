@@ -68,10 +68,10 @@ const InternalComponent = Vue.extend({
         });
         if (this.nmRelation) {
           relationLayerId = this.nmRelation.referencedLayer;
-          relations = await this.$options.service.getRelationsNM({
+          relations =  relations.length ? await this.$options.service.getRelationsNM({
             nmRelation: this.nmRelation,
             features: relations
-          });
+          }) : [];
         }
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);

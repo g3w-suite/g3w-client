@@ -49,28 +49,6 @@ proto.getRelationsNM = async function({nmRelation, features}){
     },
     outputs: null
   });
-  //const NMRELATIONS = [];
-  //const fids = responseFids.data && responseFids.data[0].features.map(feature => feature.getId());
-  // console.log(fids)
-  // const promisesRelationsNM = [];
-  // fids.forEach(fid =>{
-  //   promisesRelationsNM.push(this.getRelations({
-  //     fid,
-  //     layer: {
-  //       id: referencedLayer
-  //     },
-  //     relation: nmRelation
-  //   }))
-  // });
-  //
-  // const responsesRelationsNM = await Promise.allSettled(promisesRelationsNM);
-  // responsesRelationsNM.forEach(response =>{
-  //   if (response.status === 'fulfilled') {
-  //     const features = getFeaturesFromResponseVectorApi(response.value);
-  //     NMRELATIONS.push(features)
-  //   } else NMRELATIONS.push([])
-  // });
-  //return NMRELATIONS;
   return responseFids.data && responseFids.data[0].features.map(feature => {
     const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) =>{
       accumulator[property] = feature.get(property);
