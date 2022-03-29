@@ -310,7 +310,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start/length) + 1;
       const in_bbox = this.state.tools.geolayer.in_bbox;
-      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|like|${column.search.value}|and`).join(',') : undefined;
+      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|ilike|${column.search.value}|and`).join(',') : undefined;
       this.paginationParams = {
         field: field || undefined,
         page: this.currentPage,
