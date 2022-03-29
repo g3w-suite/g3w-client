@@ -32,11 +32,18 @@ proto.getRelations = function(options={}) {
   })
 };
 
-proto.getRelationsNM = async function({nmRelation, features=[]}){
+/**
+ * Get relations NM
+ * @param nmRelation
+ * @param features
+ * @returns {Promise<[]>}
+ */
+proto.getRelationsNM = async function({nmRelation, features=[]}={}){
   const DataRouterService = require('core/data/routerservice');
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
-  const values = features.map(feature => feature.attributes[referencingField]);
+  let relationsNM = []; // start with empty relations result
   if (features.length) {
+    const values = features.map(feature => feature.attributes[referencingField]);
     const responseFids = await DataRouterService.getData('search:features', {
       inputs: {
         layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
@@ -49,19 +56,22 @@ proto.getRelationsNM = async function({nmRelation, features=[]}){
         search_endpoint: 'api'
       },
       outputs: null
-    }) ;
-    return responseFids.data & responseFids.data[0].features.map(feature => {
-      const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) =>{
-        accumulator[property] = feature.get(property);
-        return accumulator;
-      }, {});
-      return {
-        id: feature.getId(),
-        attributes,
-        geometry: feature.getGeometry()
-      }
     });
-  } else return [];
+    if (responseFids.data && responseFids.data[0] && Array.isArray(responseFids.data[0].features)) {
+      relationsNM = responseFids.data[0].features.map(feature => {
+        const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) => {
+          accumulator[property] = feature.get(property);
+          return accumulator;
+        }, {});
+        return {
+          id: feature.getId(),
+          attributes,
+          geometry: feature.getGeometry()
+        }
+      })
+    }
+  }
+  return relationsNM;
 };
 
 proto.save = function(options={}){
