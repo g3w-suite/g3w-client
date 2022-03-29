@@ -6,7 +6,7 @@ const InputMixin = require('gui/inputs/input');
 const selectMixin = require('./selectmixin');
 const {select2Mixin} = require('gui/vue/vue.mixins');
 const GUI = require('gui/gui');
-const G3W_SELECT2_NULL_VALUE = '___G3W_SELECT2_NULL__VALUE___'; // neede to set nul value instead of empty string
+const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
 const SelectInput = Vue.extend({
   mixins: [InputMixin, selectMixin, select2Mixin],
@@ -29,11 +29,15 @@ const SelectInput = Vue.extend({
   },
   watch: {
     async 'state.input.options.values'(values) {
-       if (!this.autocomplete && !this.state.value && values.length) {
-         this.changeSelect(this.state.value);
-       }
-       await this.$nextTick();
-       this.setValue();
+      let changed = false;
+      if (!this.autocomplete) {
+        const value = this.showNullOption || values.length === 0 ? G3W_SELECT2_NULL_VALUE : values[0].value;
+        changed = value != this.state.value;
+        this.state.value = value;
+        this.setValue();
+      }
+      await this.$nextTick();
+      changed && this.change();
     }
   },
   methods: {
