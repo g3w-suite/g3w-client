@@ -984,7 +984,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         alias: attribute.name.replace(/_/, ''),
         name: attribute.name
       })) : [];
-      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
+      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
       layerObj.attributes.forEach(attribute => {
         if (formStructure) {
@@ -1016,7 +1016,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   return layers;
 };
 
-proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName, feature) {
+proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName, feature) {
   const featureAttributes = feature.getProperties();
   const featureAttributesNames = Object.keys(featureAttributes);
   if (layerSpecialAttributesName.length) {

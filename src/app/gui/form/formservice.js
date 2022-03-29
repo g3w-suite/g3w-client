@@ -85,6 +85,10 @@ inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
 
+/**
+ * Method to handle expression on
+ * @param fields
+ */
 proto.handleFieldsWithExpression = function(fields=[]){
   fields.forEach(field => {
     const {options={}} = field.input;

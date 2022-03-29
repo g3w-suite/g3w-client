@@ -32,34 +32,36 @@ proto.getRelations = function(options={}) {
   })
 };
 
-proto.getRelationsNM = async function({nmRelation, features}){
+proto.getRelationsNM = async function({nmRelation, features=[]}){
   const DataRouterService = require('core/data/routerservice');
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
   const values = features.map(feature => feature.attributes[referencingField]);
-  const responseFids = await DataRouterService.getData('search:features', {
-    inputs: {
-      layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
-      filter: `${createSingleFieldParameter({
-        field: referencedField,
-        value: values,
-        logicop: 'OR'
-      })}`,
-      formatter: 1, // set formatter to
-      search_endpoint: 'api'
-    },
-    outputs: null
-  });
-  return responseFids.data && responseFids.data[0].features.map(feature => {
-    const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) =>{
-      accumulator[property] = feature.get(property);
-      return accumulator;
-    }, {});
-    return {
-      id: feature.getId(),
-      attributes,
-      geometry: feature.getGeometry()
-    }
-  });
+  if (features.length) {
+    const responseFids = await DataRouterService.getData('search:features', {
+      inputs: {
+        layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
+        filter: `${createSingleFieldParameter({
+          field: referencedField,
+          value: values,
+          logicop: 'OR'
+        })}`,
+        formatter: 1, // set formatter to
+        search_endpoint: 'api'
+      },
+      outputs: null
+    }) ;
+    return responseFids.data & responseFids.data[0].features.map(feature => {
+      const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) =>{
+        accumulator[property] = feature.get(property);
+        return accumulator;
+      }, {});
+      return {
+        id: feature.getId(),
+        attributes,
+        geometry: feature.getGeometry()
+      }
+    });
+  } else return [];
 };
 
 proto.save = function(options={}){
