@@ -20,7 +20,7 @@ export default {
     //based on input type
     switch (field.input.type){
       case 'select_autocomplete':
-        field.input.options.values.splice(0);
+        field.input.options.values = [];
         for (let i = 0; i < features.length; i++) {
           field.input.options.values.push({
             key: features[i].properties[key],
