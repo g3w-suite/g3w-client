@@ -12,7 +12,8 @@ const SelectInput = Vue.extend({
   mixins: [InputMixin, selectMixin, select2Mixin],
   data() {
     return {
-      showPickLayer: false
+      showPickLayer: false,
+      picked: false
     }
   },
   template: require('./select.html'),
@@ -31,9 +32,15 @@ const SelectInput = Vue.extend({
     async 'state.input.options.values'(values) {
       let changed = false;
       if (!this.autocomplete) {
-        const value = this.showNullOption || values.length === 0 ? G3W_SELECT2_NULL_VALUE : values[0].value;
+        let value;
+        if (values.length === 0) value = G3W_SELECT2_NULL_VALUE;
+        else {
+          const findvalue = values.find(keyvalue => keyvalue.value == this.state.value);
+          if (!findvalue) value = G3W_SELECT2_NULL_VALUE;
+          else value = findvalue.value;
+        }
         changed = value != this.state.value;
-        this.state.value = value;
+        this.state.value = value ;
         this.setValue();
       }
       await this.$nextTick();
@@ -43,21 +50,29 @@ const SelectInput = Vue.extend({
   methods: {
     async pickLayerValue(){
       try {
-        const values = await this.pickLayerInputService.pick();
-        const {value:field}= this.state.input.options;
-        const value = values[field];
-        this.select2.val(value).trigger('change');
-        this.changeSelect(value);
-        GUI.showUserMessage({
-          type: 'success',
-          autoclose: true
-        })
+        if (this.picked){
+          this.pickLayerInputService.unpick();
+          this.picked = false;
+        } else {
+          this.picked = true;
+          const values = await this.pickLayerInputService.pick();
+          const {value:field}= this.state.input.options;
+          const value = values[field];
+          this.select2.val(value).trigger('change');
+          this.changeSelect(value);
+          GUI.showUserMessage({
+            type: 'success',
+            autoclose: true
+          });
+          this.picked = false;
+        }
       } catch(err){
         GUI.showUserMessage({
           type: "warning",
           message: 'sdk.form.inputs.messages.errors.picklayer',
           autoclose: true
-        })
+        });
+        this.picked = false;
       }
     },
     setAndListenSelect2Change(){

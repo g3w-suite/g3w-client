@@ -74,7 +74,7 @@ function ExpressionService(){
         data: JSON.stringify(params)
       });
     } catch(err){
-      console.log(err)
+      //console.log(err)
     }
     return data;
   };
