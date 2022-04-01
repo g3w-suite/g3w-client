@@ -55,7 +55,7 @@ const vueComponentOptions = {
         colorMenu: {
           show: false,
           top:0,
-          left: 0,
+          left:0,
           color: null
         },
         //styleMenu
@@ -63,7 +63,7 @@ const vueComponentOptions = {
         stylesMenu: {
           show: false,
           top:0,
-          left: 0,
+          left:0,
           style: null,
           default: null
         },
@@ -71,7 +71,7 @@ const vueComponentOptions = {
         metadatainfoMenu: {
           show: false,
           top:0,
-          left: 0
+          left:0
         }
       }
     }
