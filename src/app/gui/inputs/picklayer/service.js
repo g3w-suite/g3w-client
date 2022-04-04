@@ -9,8 +9,7 @@ function PickLayerService(options={}) {
   this.ispicked = false;
   this.fields = options.fields || [options.value];
   this.layerId = options.layer_id;
-  this.contentPerc;
-  this.mapService = GUI.getComponent('map').getService();
+  this.mapService = GUI.getService('map');
   this.interaction = this.pick_type === 'map' ?  new PickFeatureInteraction({
     layers: [this.mapService.getLayerById(this.layerId)]
   }) : new PickCoordinatesInteraction();
@@ -51,7 +50,6 @@ proto.pick = function() {
       this.ispicked = false;
       this.unpick();
     };
-    this.contentPerc = GUI.getContentPercentage() === 100 && GUI.hideContent(true);
     GUI.setModal(false);
     this.mapService.addInteraction(this.interaction);
     this.interaction.once('picked', event => {
@@ -81,7 +79,6 @@ proto.pick = function() {
 proto.unpick = function() {
   this.mapService.removeInteraction(this.interaction);
   GUI.setModal(true);
-  this.contentPerc && GUI.hideContent(false, this.contentPerc);
   this.unbindEscKeyUp();
   this.ispicked = false;
 };

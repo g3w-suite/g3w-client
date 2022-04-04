@@ -1,5 +1,5 @@
 <li
-  class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent.stop="select"
+  class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select"
   :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
   <span v-if="isGroup"
     style="padding-right: 2px;"
