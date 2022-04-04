@@ -59,7 +59,7 @@ function PluginsRegistry() {
     const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => {
       return this._setup(name, pluginConfig);
     });
-    return Promise.all(pluginLoadPromises)
+    return Promise.allSettled(pluginLoadPromises)
   };
 
   this.setDependencyPluginConfig = function(){
@@ -128,8 +128,14 @@ function PluginsRegistry() {
     this.pluginsConfigs = enabledPluginConfig;
   };
 
-  this._loadScript = function(url, name) {
-    return $script(url, name);
+  /**
+   * Method to load external script
+   * @param url
+   * @returns {*}
+   * @private
+   */
+  this._loadScript = function(url) {
+    return $.getScript(url);
   };
 
   //load plugin script
@@ -140,7 +146,7 @@ function PluginsRegistry() {
         const depedencypluginlibrariespromises = [];
         for (const script of jsscripts) {
           depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
-            $.getScript(script)
+            this._loadScript(script)
               .done(() => resolve())
               .fail(() => reject())
           }));
@@ -150,14 +156,18 @@ function PluginsRegistry() {
           const baseUrl = `${this.pluginsBaseUrl}${name}`;
           const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
           pluginConfig.baseUrl= this.pluginsBaseUrl;
-          this._loadScript(scriptUrl, name)
-            .ready(name, () => {
+          this._loadScript(scriptUrl)
+            .done(() => {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
+            .fail(()=>{
+              this.removeLoadingPlugin(name, false);
+              reject();
+            })
         } catch(err){
           this.removeLoadingPlugin(name, false);
-          resolve();
+          reject();
         }
       } else resolve()
     })
