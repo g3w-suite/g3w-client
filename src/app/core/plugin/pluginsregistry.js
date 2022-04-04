@@ -134,16 +134,31 @@ function PluginsRegistry() {
 
   //load plugin script
   this._setup = function(name, pluginConfig) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
-        const baseUrl = this.pluginsBaseUrl+name;
-        const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
-        pluginConfig.baseUrl= this.pluginsBaseUrl;
-        this._loadScript(scriptUrl, name)
-          .ready(name, () => {
-            this._loadedPluginUrls.push(scriptUrl);
-            resolve();
-          })
+        const {jsscripts=[]} = pluginConfig;
+        const depedencypluginlibrariespromises = [];
+        for (const script of jsscripts) {
+          depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
+            $.getScript(script)
+              .done(() => resolve())
+              .fail(() => reject())
+          }));
+        }
+        try {
+          await Promise.all(depedencypluginlibrariespromises);
+          const baseUrl = `${this.pluginsBaseUrl}${name}`;
+          const scriptUrl = `${baseUrl}/js/plugin.js?${Date.now()}`;
+          pluginConfig.baseUrl= this.pluginsBaseUrl;
+          this._loadScript(scriptUrl, name)
+            .ready(name, () => {
+              this._loadedPluginUrls.push(scriptUrl);
+              resolve();
+            })
+        } catch(err){
+          this.removeLoadingPlugin(name, false);
+          resolve();
+        }
       } else resolve()
     })
   };
