@@ -455,7 +455,6 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
 };
 
 proto.getGeoTIFF = function({data}={}){
-  console.log(data)
   const url = this.getUrl('geotiff');
   return XHR.fileDownload({
     url,
@@ -465,6 +464,7 @@ proto.getGeoTIFF = function({data}={}){
 };
 
 proto.getXls = function({data}={}){
+  data.formatter = 1; //download alias values
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
@@ -501,6 +501,7 @@ proto.getGpkg = function({data}={}){
 };
 
 proto.getCsv = function({data}={}){
+  data.formatter = 1; //download alias values
   const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,
@@ -936,7 +937,6 @@ proto.isEditable = function() {
 proto.isBaseLayer = function() {
   return this.config.baselayer;
 };
-
 
 // get url by type ( data, shp, csv, xls,  editing..etc..)
 proto.getUrl = function(type) {
