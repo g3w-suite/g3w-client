@@ -1518,7 +1518,10 @@ proto.disableClickMapControls = function(bool=true){
   this._mapControls.forEach(controlObj => {
     const {control} = controlObj;
     const clickmap = control.isClickMap ? control.isClickMap() : false;
-    clickmap && control[bool ? 'disable' : 'enable']();
+    if (clickmap) {
+      control.isToggled() && control.toggle();
+      control[bool ? 'disable' : 'enable']();
+    }
   })
 };
 
