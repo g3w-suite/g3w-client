@@ -30,6 +30,7 @@ const SelectInput = Vue.extend({
   },
   watch: {
     async 'state.input.options.values'(values) {
+      await this.$nextTick();
       let changed = false;
       if (!this.autocomplete) {
         let value;
@@ -40,10 +41,9 @@ const SelectInput = Vue.extend({
           else value = findvalue.value;
         }
         changed = value != this.state.value;
-        this.state.value = value ;
+        this.state.value = value;
         this.setValue();
       }
-      await this.$nextTick();
       changed && this.change();
     }
   },

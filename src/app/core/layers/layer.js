@@ -464,7 +464,6 @@ proto.getGeoTIFF = function({data}={}){
 };
 
 proto.getXls = function({data}={}){
-  data.formatter = 1; //download alias values
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
@@ -501,7 +500,6 @@ proto.getGpkg = function({data}={}){
 };
 
 proto.getCsv = function({data}={}){
-  data.formatter = 1; //download alias values
   const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,
