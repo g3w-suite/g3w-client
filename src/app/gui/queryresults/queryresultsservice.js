@@ -883,7 +883,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       infoformats = layer.getInfoFormats(); // add infoformats property
       infoformat = layer.getInfoFormat();
       // set selection filter and relation if not wms
-      if (layer.getSourceType() !== 'wms'){
+      if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1){
         filter = layer.state.filter;
         selection = layer.state.selection;
         extractRelations = true;

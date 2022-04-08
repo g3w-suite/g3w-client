@@ -7,16 +7,20 @@ export default {
     const options = field.input.options;
     let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
     loading.state = 'loading';
-    const features = await DataRouterService.getData('expression:expression', {
-      inputs: {
-        layer_id, // layer id owner of the data
-        qgs_layer_id, //
-        form_data,
-        formatter:0,
-        expression: filter_expression.expression
-      },
-      outputs: false
-    });
+    let features = [];
+    try {
+      features = await DataRouterService.getData('expression:expression', {
+        inputs: {
+          layer_id, // layer id owner of the data
+          qgs_layer_id, //
+          form_data,
+          formatter:0,
+          expression: filter_expression.expression
+        },
+        outputs: false
+      });
+    } catch(err){}
+
     //based on input type
     switch (field.input.type){
       case 'select_autocomplete':
