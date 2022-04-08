@@ -17,8 +17,8 @@ const vueComponentObject = {
       switchcomponent: false,
       body: {
         components: {
-          before: null,
-          after: null
+          before: [],
+          after: []
         }
       }
     }
@@ -119,10 +119,15 @@ function FormComponent(options = {}) {
    * @param component
    */
   this.addBodyFormComponent = function({component, where='after'}={}){
-    this.getInternalComponent().body.components[where] = component;
+    this.getInternalComponent().body.components[where].push(component);
   };
 
-  this.addBodyFormComponents = function({components=[], where="after"}={}){};
+  this.addBodyFormComponents = function({components=[], where="after"}={}){
+    components.forEach(component =>  this.addBodyFormComponent({
+      component,
+      where
+    }))
+  };
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);

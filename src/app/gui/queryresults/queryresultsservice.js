@@ -181,7 +181,7 @@ inherit(QueryResultsService, G3WObject);
 const proto = QueryResultsService.prototype;
 
 /**
- * Method to register for plugli or other compoent of application to add custom component on result for each layer feature or layer
+ * Method to register for plugin or other component of application to add custom component on result for each layer feature or layer
  * @param id unique id identification
  * @param layerId Layer id of layer
  * @param component custom component
