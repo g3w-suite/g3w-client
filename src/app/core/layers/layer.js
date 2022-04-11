@@ -1131,7 +1131,9 @@ Layer.SourceTypes = {
   OGR: 'ogr',
   GDAL: 'gdal',
   WMS: 'wms',
+  WMST: "wmst",
   WFS: 'wfs',
+  WCS: "wcs",
   VECTORTILE: "vector-tile",
   ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"

@@ -58,6 +58,18 @@ const ProvidersForServerTypes = {
       search: Providers.qgis,
       filtertoken: Providers.qgis
     },
+    'wmst': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: null,
+      search: null
+    },
+    'wcs': {
+      query: Providers.wms,
+      filter: Providers.wfs,
+      data: null,
+      search: null
+    },
     'wms': {
       query: Providers.wms,
       filter: Providers.wfs,

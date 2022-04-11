@@ -141,6 +141,13 @@ proto.getFullWmsUrl = function() {
   return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
+//used to Catalog layer menu
+proto.getCatalogWmsUrl = function(){
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
+  return this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
+};
+
 // values: map, legend
 proto.getWmsUrl = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;

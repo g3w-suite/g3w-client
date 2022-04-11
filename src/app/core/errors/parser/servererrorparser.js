@@ -1,4 +1,4 @@
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 
 const serverErrorParser = function(options={}) {
   this._error = options.error;

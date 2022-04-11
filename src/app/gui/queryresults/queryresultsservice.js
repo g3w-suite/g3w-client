@@ -883,7 +883,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       infoformats = layer.getInfoFormats(); // add infoformats property
       infoformat = layer.getInfoFormat();
       // set selection filter and relation if not wms
-      if (layer.getSourceType() !== 'wms'){
+      if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1){
         filter = layer.state.filter;
         selection = layer.state.selection;
         extractRelations = true;
@@ -892,7 +892,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
-      // sanitize qattributes layer only if is ows
+      // sanitize attributes layer only if is ows
       layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
@@ -1069,11 +1069,13 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
     const attributes = layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1);
     return attributes;
   } else {
+    const {GDAL, WMS, WCS, WMST} = Layer.SourceTypes;
+    const showSourcesTypes = [GDAL, WMS, WCS, WMST];
     return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && (sourceType === 'wms' || sourceType === undefined || sourceType === 'gdal')
+        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
       }
     })
   }

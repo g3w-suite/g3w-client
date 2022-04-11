@@ -35,6 +35,7 @@ const ViewportService = function() {
     //content
     content: {
       loading: false,
+      disabled: false,
       sizes: {
         width: 0,
         height: 0
@@ -349,7 +350,11 @@ const ViewportService = function() {
     }
     return d.promise()
   };
-  
+
+  this.disableContent = function(disabled){
+    this.state.content.disabled = disabled;
+  };
+
   this.removeContent = function() {
     // check if backonclose proprerty is  true o false
     // to remove all content stack or just last component
