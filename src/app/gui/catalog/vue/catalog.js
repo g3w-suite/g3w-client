@@ -245,7 +245,7 @@ const vueComponentOptions = {
     },
     getWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return originalLayer.getFullWmsUrl();
+      return originalLayer.getCatalogWmsUrl();
     },
     copyWmsUrl(evt, layerId) {
       const url = this.getWmsUrl(layerId);

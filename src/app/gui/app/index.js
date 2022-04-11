@@ -552,10 +552,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.disableContent = function(disable) {
-      GUI.disableElement({
-        element: "#g3w-view-content #contents",
-        disable
-      })
+      viewport.ViewportService.disableContent(disable);
     };
 
     GUI.disablePanel = function(disable=false) {

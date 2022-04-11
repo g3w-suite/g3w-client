@@ -892,7 +892,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
-      // sanitize qattributes layer only if is ows
+      // sanitize attributes layer only if is ows
       layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
@@ -1069,11 +1069,13 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
     const attributes = layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1);
     return attributes;
   } else {
+    const {GDAL, WMS, WCS, WMST} = Layer.SourceTypes;
+    const showSourcesTypes = [GDAL, WMS, WCS, WMST];
     return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && (sourceType === 'wms' || sourceType === undefined || sourceType === 'gdal')
+        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
       }
     })
   }

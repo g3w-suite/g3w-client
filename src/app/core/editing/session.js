@@ -383,9 +383,6 @@ proto.commit = function({ids=null, items, relations=true}={}) {
       commitItems = this._serializeCommit(commitItems);
     }
     if (!relations) commitItems.relations = {};
-    // this.set3DGeometryType({
-    //   commitItems
-    // });
     this._editor.commit(commitItems)
       .then(response => {
         if (response && response.result) {
@@ -401,7 +398,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
           this._history.clear();
           this.saveChangesOnServer(commitItems);
           d.resolve(commitItems, response)
-        } else d.reject();
+        } else d.reject(response);
       })
       .fail(err => d.reject(err));
   }

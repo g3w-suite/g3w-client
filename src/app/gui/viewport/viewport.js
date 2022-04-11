@@ -35,6 +35,7 @@ const ViewportService = function() {
     //content
     content: {
       loading: false,
+      disabled: false,
       sizes: {
         width: 0,
         height: 0
@@ -348,6 +349,10 @@ const ViewportService = function() {
       d.resolve(mapComponent);
     }
     return d.promise()
+  };
+
+  this.disableContent = function(disabled){
+    this.state.content.disabled = disabled;
   };
   
   this.removeContent = function() {
