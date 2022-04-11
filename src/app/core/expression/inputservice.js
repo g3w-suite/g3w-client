@@ -20,7 +20,6 @@ export default {
         outputs: false
       });
     } catch(err){}
-
     //based on input type
     switch (field.input.type){
       case 'select_autocomplete':

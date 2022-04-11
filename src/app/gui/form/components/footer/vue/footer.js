@@ -26,10 +26,11 @@ const FooterFormComponent = Vue.extend({
       cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
     },
     btnEnabled(button) {
-      return button.type !== 'save' || (button.type === 'save' && this.isValid());
+      const {enabled=true, type} = button;
+      return button.enabled && (type !== 'save' ||  (type === 'save' && this.isValid()));
     },
     isValid() {
-      return this.state.valid
+      return this.state.valid;
     },
     _enterEventHandler(evt) {
       if (evt.which === 13) {
