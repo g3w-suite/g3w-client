@@ -27,7 +27,7 @@ const FooterFormComponent = Vue.extend({
     },
     btnEnabled(button) {
       const {enabled=true, type} = button;
-      return button.enabled && (type !== 'save' ||  (type === 'save' && this.isValid()));
+      return enabled && (type !== 'save' ||  (type === 'save' && this.isValid()));
     },
     isValid() {
       return this.state.valid;
