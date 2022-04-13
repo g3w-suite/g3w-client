@@ -74,20 +74,31 @@ RasterLayers.TiledArgisMapServer = function(options={}){
 };
 
 RasterLayers._WMSLayer = function(options={}) {
-  const layerObj = options.layerObj;
-  const iframe_internal = layerObj.iframe_internal || false;
-  const method = options.method || 'GET';
-  const extraParams = options.extraParams;
-  const tiled = layerObj.tiled || false;
+  const {layerObj} = options;
+  const {
+    iframe_internal=false,
+    method="GET",
+    extraParams, tiled=false,
+    layers='',
+    version='1.3.0',
+    sld_version='1.1.0',
+    id,
+    name,
+    opacity=1.0,
+    visible,
+    extent,
+    maxResolution,
+  } = layerObj;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
-    LAYERS: layerObj.layers || '',
-    VERSION: '1.3.0',
+    LAYERS: layers,
+    VERSION: version,
     TRANSPARENT: true,
-    SLD_VERSION: '1.1.0',
+    SLD_VERSION: sld_version,
     DPI
   };
-  params = Object.assign({},params,extraParams);
+
+  params = Object.assign({},params, extraParams);
   const sourceOptions = {
     url: layerObj.url,
     params,
@@ -103,12 +114,12 @@ RasterLayers._WMSLayer = function(options={}) {
     });
 
   const imageOptions = {
-    id: layerObj.id,
-    name: layerObj.name,
-    opacity: layerObj.opacity || 1.0,
-    visible:layerObj.visible,
-    extent: layerObj.extent,
-    maxResolution: layerObj.maxResolution
+    id,
+    name,
+    opacity,
+    visible,
+    extent,
+    maxResolution
   };
 
   let imageClass;

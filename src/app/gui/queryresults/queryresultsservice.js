@@ -234,7 +234,15 @@ proto.removeFeatureLayerFromResult = function(layer, feature){
 proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
   const download_caller_id = ApplicationService.setDownload(true);
   GUI.setLoadingContent(true);
-  await downloadFnc(options);
+  try {
+    await downloadFnc(options);
+  } catch(err){
+    GUI.showUserMessage({
+      type: 'alert',
+      message: err || 'server_error',
+      textMessage: err ? true : false
+    })
+  }
   ApplicationService.setDownload(false, download_caller_id);
   GUI.setLoadingContent(false);
 };
