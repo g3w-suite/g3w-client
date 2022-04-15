@@ -122,7 +122,7 @@
                             <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
-                                <table-attribute-field-value :field="getLayerField({layer, feature, fieldName: attribute.name})"></table-attribute-field-value>
+                                <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"></table-attribute-field-value>
                               </td>
                             </tr>
                           </table>
@@ -154,11 +154,3 @@
     </template>
   </div>
 </div>
-<script>
-  import Tableattributefieldvalue from "./components/tableattributefieldvalue";
-  import Select2 from "../../search/vue/panel/select2";
-  import Infoformats from "./components/actiontools/infoformats";
-  export default {
-    components: {Infoformats, Select2, Tableattributefieldvalue}
-  }
-</script>

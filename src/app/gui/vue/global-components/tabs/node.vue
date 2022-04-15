@@ -10,6 +10,7 @@
             @addinput="addToValidate"
             :changeInput="changeInput"
             :addToValidate="addToValidate"
+            :feature="feature"
             :is="getComponent(getField(getNode(row, column)))">
           </component>
           <template v-else>
