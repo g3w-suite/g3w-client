@@ -30,8 +30,7 @@ const TableService = function(options = {}) {
     }
   });
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
-  this.mapService = GUI.getComponent('map').getService();
-  //this.getAll = this.selectedfeaturesfid.size > 0;
+  this.mapService = GUI.getService('map');
   this.getAll = false;
   this.paginationfilter = false;
   this.mapBBoxEventHandlerKey = {
@@ -107,7 +106,12 @@ proto.setDataForDataTable = function() {
     const attributes = feature.attributes ? feature.attributes : feature.properties;
     const values = [null];
     this.state.headers.forEach(header => {
-      header && values.push(attributes[header.name]);
+      if (header) {
+        const value = attributes[header.name];
+        header.value = value;
+        //header.label = undefined; // removed label
+        values.push(value);
+      }
     });
     data.push(values)
   });

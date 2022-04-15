@@ -347,7 +347,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   this._showModalOverlay = function(bool=false, message) {
-    const mapService = GUI.getComponent('map').getService();
+    const mapService = GUI.getService('map');
     if (bool) mapService.startDrawGreyCover(message);
     else mapService.stopDrawGreyCover();
   };

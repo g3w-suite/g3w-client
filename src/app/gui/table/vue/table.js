@@ -10,8 +10,7 @@ const InternalComponent = Vue.extend(Table);
 const TableComponent = function(options = {}) {
   base(this);
   this.id = "openattributetable";
-  const layer = options.layer;
-  const formatter = options.formatter;
+  const {layer, formatter} = options;
   const service = options.service || new TableService({
     layer,
     formatter

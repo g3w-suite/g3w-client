@@ -1,7 +1,7 @@
 <template>
   <field :state="state">
     <div slot="field">
-      <component :value="state.value" :is="state.vueoptions.component"></component>
+      <component :feature="feature" :value="state.value" :is="state.vueoptions.component"></component>
     </div>
   </field>
 </template>
@@ -11,6 +11,9 @@
   export default {
     name: "vuefield",
     props: {
+      feature: {
+        type: Object
+      },
       state: {
         type: Object,
         default: {
