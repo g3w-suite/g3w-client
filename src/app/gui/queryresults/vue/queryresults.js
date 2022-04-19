@@ -73,8 +73,11 @@ const vueComponentOptions = {
      * @param type feature or layer
      * @returns {*}
      */
-    getLayerCustomComponents(layerId, type){
-      return this.state.layerscustomcomponents[layerId] ? this.state.layerscustomcomponents[layerId][type] : [];
+    getLayerCustomComponents(layerId, type='feature', position='after'){
+      return this.state.layerscustomcomponents[layerId] &&
+        this.state.layerscustomcomponents[layerId][type] &&
+        this.state.layerscustomcomponents[layerId][type][position] ||
+        [];
     },
     getLayerField({layer, feature, fieldName}) {
       const layerField = layer.attributes.find(attribute => attribute.name === fieldName);

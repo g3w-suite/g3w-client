@@ -55,6 +55,9 @@
                 <component :is="state.layeractiontool[layer.id].component" :layer="layer" :config="state.layeractiontool[layer.id].config"></component>
               </div>
             </template>
+            <!--     Add Custom layer components      -->
+            <component v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')" :is="component" :layer="layer"></component>
+            <!--   End custom layer component         -->
             <div class="box-body" :class="{'mobile': isMobile()}">
               <template v-if="layer.rawdata">
                 <div class="queryresults-text-html" :class="{text: layer.infoformat === 'text/plain'}" v-html="layer.rawdata"></div>
@@ -81,12 +84,17 @@
                           </td>
                         </template>
                       </tr>
+                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                        <td :colspan="getColSpan(layer)">
+                          <component :is="component" :layer="layer" :feature="feature"></component>
+                        </td>
+                      </tr>
                       <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                         <td :colspan="getColSpan(layer)">
                           <tabs :fields="getQueryFields(layer, feature)" :layerid="layer.id" :feature="feature" :tabs="getLayerFormStructure(layer)"></tabs>
                         </td>
                       </tr>
-                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature')">
+                      <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                         <td :colspan="getColSpan(layer)">
                           <component :is="component" :layer="layer" :feature="feature"></component>
                         </td>
@@ -116,6 +124,11 @@
                         </td>
                       </template>
                     </tr>
+                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
+                      <td colspan="getColSpan(layer)">
+                        <component class="box-body" :is="component" :layer="layer" :feature="feature"></component>
+                      </td>
+                    </tr>
                     <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
                       <td :colspan="getColSpan(layer)">
                         <table class="feature_attributes">
@@ -128,7 +141,7 @@
                           </table>
                       </td>
                     </tr>
-                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature')">
+                    <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                       <td colspan="getColSpan(layer)">
                         <component class="box-body" :is="component" :layer="layer" :feature="feature"></component>
                       </td>
@@ -137,7 +150,7 @@
                 </tbody>
               </table>
             </div>
-            <div class="box-body"  :class="{'mobile': isMobile()}" v-for="({component}) in getLayerCustomComponents(layer.id, 'layer')">
+            <div class="box-body"  :class="{'mobile': isMobile()}" v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')">
               <component :is="component" :layer="layer"></component>
             </div>
           </div>
