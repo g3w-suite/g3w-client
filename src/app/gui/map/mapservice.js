@@ -1607,10 +1607,27 @@ proto._calculateViewOptions = function({project, width, height}={}) {
   const map_extent = searchParams.get('map_extent');
   const zoom_to_fid = searchParams.get('zoom_to_fid');
   const zoom_to_features = searchParams.get('ztf'); // zoom to features
+  const lat_lon = searchParams.get('lat') && searchParams.get('lon') && {
+    lat: 1*searchParams.get('lat'),
+    lon:1*searchParams.get('lon')
+  };
+  const x_y = searchParams.get('x') && searchParams.get('y') && {
+    x: 1*searchParams.get('x'),
+    y: 1*searchParams.get('y')
+  };
   if (zoom_to_fid) this.zoomToFid(zoom_to_fid);
-  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({
-    zoom_to_features
-  });
+  else if (zoom_to_features) this.handleZoomToFeaturesUrlParameter({zoom_to_features});
+  else if (lat_lon && !Number.isNaN(lat_lon.lat) && !Number.isNaN(lat_lon.lon)) {
+    setTimeout(()=>{
+      const geometry = new ol.geom.Point(ol.proj.transform([lat_lon.lon, lat_lon.lat], 'EPSG:4326', this.getEpsg()));
+      if (geometry.getExtent())
+      this.zoomToGeometry(geometry)
+    })
+  } else if (x_y && !Number.isNaN(x_y.x) && !Number.isNaN(x_y.y))
+    setTimeout(()=> {
+      const geometry = new ol.geom.Point([x_y.x, x_y.y]);
+      this.zoomToGeometry(geometry);
+    });
   const initextent = map_extent ? map_extent.split(',').map(coordinate => 1*coordinate) : project.state.initextent;
   const projection = this.getProjection();
   const extent = project.state.extent;

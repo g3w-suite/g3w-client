@@ -187,21 +187,36 @@ const proto = QueryResultsService.prototype;
  * @param component custom component
  * @param type feature or layer
  */
-proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type}={}){
+proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type='feature', position='after'}={}){
   if (this.state.layerscustomcomponents[layerId] === undefined)
     this.state.layerscustomcomponents[layerId] = {
-      layer: [],
-      feature: []
+      layer: {
+        before: [],
+        after: []
+      },
+      feature: {
+        before: [],
+        after: []
+      }
     };
-  this.state.layerscustomcomponents[layerId][type].push({
+  this.state.layerscustomcomponents[layerId][type][position].push({
     id,
     component
   });
   return id;
 };
 
-proto.unRegisterCustomComponent = function({id, layerId, type}){
-  this.state.layerscustomcomponents[layerId][type] = this.state.layerscustomcomponents[layerId][type].filter(({id:componentId}) => componentId !== id);
+/**
+ * To check position
+ * @param id
+ * @param layerId
+ * @param type
+ */
+proto.unRegisterCustomComponent = function({id, layerId, type, position}){
+  if (position) this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
+  else Object.keys(this.state.layerscustomcomponents[layerId][type]).forEach(position =>{
+    this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
+  })
 };
 
 /**
