@@ -610,9 +610,9 @@ const ApplicationService = function() {
               .then(() => {
                 // remove all tools
                 ProjectsRegistry.onceafter('setCurrentProject', ()=>{
-                  GUI.getComponent('tools').getService().reload();
+                  GUI.getService('tools').reload();
                   // reload metadati
-                  GUI.getComponent('metadata').getService().reload();
+                  GUI.getService('metadata').reload();
                   // reload plugins
                   PluginsRegistry.reloadPlugins(initConfig, project)
                     .then(()=>{})
