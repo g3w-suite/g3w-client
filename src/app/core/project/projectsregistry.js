@@ -116,16 +116,6 @@ proto.setupState = function() {
   this.setProjects(this.config.projects);
 };
 
-proto.getProjectAliasUrl = function(gid) {
-  const project = this.config.projects.find(project => project.gid === gid);
-  return project.aliasUrl;
-};
-
-proto.setProjectAliasUrl = function({gid, url, host}) {
-  const project = this.config.projects.find(project => project.gid === gid);
-  if (project) project.aliasUrl = project && `${host? host : ''}${url}`;
-};
-
 proto.getProjectType = function() {
   return this.projectType;
 };
@@ -138,7 +128,6 @@ proto.setProjects = function(projects) {
   this.clearProjects();
   projects.forEach(project => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-    project.aliasUrl = project.url || null;
     project.baselayers = this.config.baselayers;
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
@@ -220,20 +209,24 @@ proto.getProjectConfigByGid = function(gid) {
   return this._groupProjects.find(project => project.gid === gid);
 };
 
+proto.setProjectAliasUrl = function({gid, url, host}) {
+  const project = this.config.projects.find(project => project.gid === gid);
+  if (project) project.url = project && `${host? host : ''}${url}`;
+};
+/**
+ *
+ * @param gid
+ * @param mode production or development
+ * @returns {string}
+ */
 proto.getProjectUrl = function(gid) {
+  // get base url
+  const {urls:{ baseurl}} = this.config;
+  // get project configuration in initConfig group projects
   const projectConfig = this.getProjectConfigByGid(gid);
-  const projecId = projectConfig.gid.split(':')[1];
-  const type = projectConfig.type;
-  const currentUrl = window.location.href;
-  const paths = currentUrl.split('/');
-  if (!paths[ paths.length-1 ]) {
-    paths[ paths.length-2 ] = projecId;
-    paths[ paths.length-3 ] = type;
-  } else {
-    paths[ paths.length-1 ] = projecId;
-    paths[ paths.length-2 ] = type;
-  }
-  return paths.join('/');
+  const {url} = projectConfig;
+  const {origin} = location;
+  return `${origin}${baseurl}${url}`;
 };
 
 // method to call server to get project configuration

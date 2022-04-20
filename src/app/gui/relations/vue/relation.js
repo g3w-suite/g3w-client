@@ -1,7 +1,7 @@
 import {G3W_FID} from 'constant';
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const compiledTemplate = createCompiledTemplate(require('./relation.html'));
 const GUI = require('gui/gui');
@@ -167,7 +167,7 @@ module.exports = {
     if (!this.one) {
       this.relationDataTable = $(this.$refs.relationtable).DataTable( {
         "pageLength": 10,
-        "bLengthChange": false,
+        "bLengthChange": true,
         "scrollResize": true,
         "scrollCollapse": true,
         "scrollX": true,
