@@ -285,7 +285,6 @@ const ApplicationService = function() {
       initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
         initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
-      console.log(initConfig)
       // write urls of static files and media url (base url and vector url)
       this.baseurl = initConfig.baseurl;
       config.server.urls.baseurl = initConfig.baseurl;
