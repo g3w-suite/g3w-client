@@ -285,6 +285,7 @@ const ApplicationService = function() {
       initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
         initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
+      console.log(initConfig)
       // write urls of static files and media url (base url and vector url)
       this.baseurl = initConfig.baseurl;
       config.server.urls.baseurl = initConfig.baseurl;
@@ -582,57 +583,12 @@ const ApplicationService = function() {
    */
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
-    const reload = this._gid === gid;
     this._gid = gid;
-    const aliasUrl = ProjectsRegistry.getProjectAliasUrl(gid);
-    const mapUrl = ProjectsRegistry.getProjectUrl(gid);
-    // change url using history
-    (production && aliasUrl) && history.replaceState(null, null, aliasUrl) || history.replaceState(null, null, mapUrl);
-    //remove tools
-    //window.location = mapUrl;
-    this.obtainInitConfig({
-      host
-    }).then(initConfig => {
-      // run Timeout
-      const timeout = setTimeout(() =>{
-        reject('Timeout')
-      }, TIMEOUT);
-        ProjectsRegistry.setProjects(initConfig.group.projects);
-        ProjectsRegistry.getProject(gid, {
-          reload // force to reload configuration
-        })
-          .then(project => {
-            //clearTimeout
-            clearTimeout(timeout);
-            ///
-            GUI.closeUserMessage();
-            GUI.closeContent()
-              .then(() => {
-                // remove all tools
-                ProjectsRegistry.onceafter('setCurrentProject', ()=>{
-                  GUI.getService('tools').reload();
-                  // reload metadati
-                  GUI.getService('metadata').reload();
-                  // reload plugins
-                  PluginsRegistry.reloadPlugins(initConfig, project)
-                    .then(()=>{})
-                    .catch(()=>{})
-                    .finally(()=> {
-                      // reload components
-                      GUI.reloadComponents();
-                      d.resolve(project);
-                    })
-                });
-                // change current project project
-                ProjectsRegistry.setCurrentProject(project);
-                this.setEPSGApplication(project);
-                ApplicationState.download = false;
-              })
-              .fail(err => console.log)
-          })
-          .fail(() => d.reject());
-      })
-      .catch(error => d.reject(error));
+    const projectUrl = ProjectsRegistry.getProjectUrl(gid);
+    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
+    history.replaceState(null, null, url);
+    location.replace(url);
+    d.resolve();
     return d.promise();
   };
 
