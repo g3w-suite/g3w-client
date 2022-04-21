@@ -462,6 +462,26 @@ const geoutils = {
         });
         style && layer.setStyle(style);
         break;
+      case 'kmz':
+        const promiseKmz = new Promise(async (resolve, reject) => {
+          const zip = new JSZip();
+          const buffer = await data.arrayBuffer(data);
+          zip.load(buffer);
+          const kmlFile = zip.file(/.kml$/i)[0];
+          if (kmlFile) {
+            data = kmlFile.asText();
+            format = new ol.format.KML({
+              extractStyles: false
+            });
+            resolve(createVectorLayer(format, data, "EPSG:4326"));
+          } else reject();
+        });
+        try {
+          return await promiseKmz;
+        } catch(err) {
+          return Promise.reject();
+        }
+        break;
       case 'zip':
         const promise = new Promise(async (resolve, reject) =>{
           const buffer = await data.arrayBuffer(data);

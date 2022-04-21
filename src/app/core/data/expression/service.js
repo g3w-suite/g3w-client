@@ -73,9 +73,7 @@ function ExpressionService(){
         contentType,
         data: JSON.stringify(params)
       });
-    } catch(err){
-      //console.log(err)
-    }
+    } catch(err){}
     return data;
   };
 

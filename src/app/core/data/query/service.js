@@ -58,6 +58,7 @@ function QueryService(){
       });
       return this.handleRequest(request, {
         fid,
+        geometry,
         layer: polygonLayer,
         type: 'polygon'
       });
