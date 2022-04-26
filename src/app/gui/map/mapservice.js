@@ -986,7 +986,7 @@ proto._setupControls = function() {
               .then(project => {
                 const overViewMapLayers = this.getOverviewMapLayers(project);
                 const viewOptions = this._calculateViewOptions({
-                  width: 200, // at monent hardcoded
+                  width: 200, // at moment hardcoded
                   height: 150,
                   project
                 });

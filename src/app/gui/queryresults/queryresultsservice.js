@@ -61,18 +61,21 @@ function QueryResultsService() {
   this.init = function() {
     this.clearState();
   };
-
   // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
+  const color = 'blue';
   const stroke = new ol.style.Stroke({
-    color: 'black',
+    color,
     width: 3
+  });
+  const fill = new ol.style.Fill({
+    color
   });
   this.resultsQueryLayer = new ol.layer.Vector({
     style: new ol.style.Style({
       stroke,
       image: new ol.style.Circle({
-        stroke,
-        radius: 5
+        fill,
+        radius: 6
       }),
     }),
     source: new ol.source.Vector()
@@ -1558,6 +1561,13 @@ proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
   this.removeQueryResultLayerFromMap();
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
+  try {
+    const center = ol.extent.getCenter(feature.getGeometry().getExtent());
+    this.mapService.getMap().getView().setCenter(center);
+    console.log(center)
+  } catch(err){
+
+  }
   timeout && setTimeout(()=>{
     this.removeQueryResultLayerFromMap();
   }, timeout)

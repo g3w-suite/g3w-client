@@ -29,7 +29,7 @@
     border-radius: 3px;
     margin: 5px 2px 5px 2px;
     white-space: pre-line;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #384246 !important;
   }
   .help_icon{
     text-align: center;

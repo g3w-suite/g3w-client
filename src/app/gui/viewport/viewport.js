@@ -239,6 +239,7 @@ const ViewportService = function() {
    */
 
   this.showContent = function(options={}) {
+    options.perc = options.perc !== undefined ? options.perc : this.getContentPercentageFromCurrentLayout();
     // check if push is set
     options.push = options.push || false;
     const evenContentName = options.perc === 100 ? 'show-content-full' : 'show-content';

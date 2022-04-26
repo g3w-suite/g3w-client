@@ -55,7 +55,7 @@ function Project(config={}, options={}) {
   // set the project projection to object crs
   this.state.crs = crsToCrsObject(this.state.crs);
   this._projection = Projections.get(this.state.crs);
-  // build a layerstore of the project
+  // build a layersstore of the project
   this._layersStore = this._buildLayersStore();
   ///
   this.setters = {
@@ -205,7 +205,8 @@ proto._buildLayersStore = function() {
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
-    layerstree: this.state.layerstree
+    layerstree: this.state.layerstree,
+    expanded: this.state.toc_layers_init_status === 'not_collapsed' // config to show layerstrees toc expanded or not
   });
   return layersStore;
 };

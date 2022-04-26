@@ -249,13 +249,13 @@ proto.getWmsUrl = function() {
 };
 
 // set layersstree of layers inside the laysstore
-proto.setLayersTree = function(layerstree, name) {
+proto.setLayersTree = function(layerstree, name, expanded=true) {
   // this is a root group project that contain all layerstree of qgis project
   const rootGroup = {
     title: name || this.config.id,
     root: true,
     parentGroup: null,
-    expanded: true,
+    expanded,
     disabled: false,
     checked: true,
     nodes: layerstree
@@ -283,6 +283,7 @@ proto.setLayersTree = function(layerstree, name) {
 // layer groupNem is a ProjectName
 proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
+  const expanded = options.expanded;
   const _layerstree = options.layerstree || null;
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
@@ -324,7 +325,7 @@ proto.createLayersTree = function(groupName, options={}) {
     });
   }
   // setLayerstree
-  this.setLayersTree(layerstree, groupName);
+  this.setLayersTree(layerstree, groupName, expanded);
 };
 
 proto.removeLayersTree = function() {

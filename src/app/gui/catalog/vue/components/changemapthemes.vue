@@ -12,7 +12,7 @@
           <span v-t="'sdk.catalog.choose_map_theme'"></span>
         </span>
       </a>
-      <ul id="g3w-catalog-views" class="treeview-menu" >
+      <ul id="g3w-catalog-views" class="treeview-menu" :class="{'menu-open': !collapsed}" :style="{display: collapsed ? 'none' : 'block'}">
         <li style="padding: 5px 5px 5px 17px">
           <div v-for="(map_theme, index) in map_themes" :key="map_theme.theme">
             <input type="radio" name="radio" :id="`g3w-map_theme-${index}`" :value="map_theme.theme" v-model="current_map_theme" class="magic-radio" :checked="map_theme.default">
@@ -27,11 +27,14 @@
 </template>
 
 <script>
+  const ProjectsRegistry = require('core/project/projectsregistry');
   export default {
     name: "changemapthemes",
     data(){
+      const collapsed = ProjectsRegistry.getCurrentProject().state.toc_themes_init_status === 'collapsed';
       return {
-        current_map_theme: null
+        current_map_theme: null,
+        collapsed
       }
     },
     props: {

@@ -8,11 +8,12 @@ function SearchService(){
   this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}){
     const promisesSearch =[];
     const {layer, ...params} = options;
-    const {raw=false} = options;
+    const {raw=false, filter} = options;
     const dataSearch = {
       data: [],
       query: {
-        type: 'search'
+        type: 'search',
+        search: filter
       },
       type: params.search_endpoint
     };

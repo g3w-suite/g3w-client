@@ -3,7 +3,6 @@
     <bar-loader :loading="loading"></bar-loader>
     <h3 class="skin-color g3w-wms-panel-title">{{title}}</h3>
     <helpdiv v-if="abstract" :message="abstract"></helpdiv>
-    <layerspositions style="margin-top: 5px; display: flex; justify-content: space-between" @layer-position-change="position=$event" :position="position"></layerspositions>
     <label for="g3w-wms-layers" v-t="'sidebar.wms.panel.label.layers'"></label>
     <select id="g3w-wms-layers" multiple="multiple" clear="true" v-select2="'selectedlayers'">
       <option v-for="layer in layers" :value="layer.name" :key="layer.name">{{layer.title}}</option>
@@ -14,8 +13,8 @@
     </select>
     <label for="g3w-wms-layer-name" v-t="'sidebar.wms.panel.label.name'"></label>
     <input class="form-control" id="g3w-wms-layer-name" v-model="name">
-    <div v-if="added" class="g3w-wms-external-panel-layer-added-message" v-t="'sidebar.wms.layer_id_already_added'">
-    </div>
+    <div v-if="added" class="g3w-wms-external-panel-layer-added-message" v-t="'sidebar.wms.layer_id_already_added'"></div>
+    <layerspositions @layer-position-change="position=$event" :position="position"></layerspositions>
     <button @click.stop="addWMSlayer" v-disabled="selectedlayers.length === 0" class="btn wms-add-layer-buttom sidebar-button skin-button">
       <i style="font-weight: bold;" :class="g3wtemplate.getFontClass('plus-square')" ></i>
     </button>
