@@ -1,4 +1,4 @@
-import {QUERY_POINT_TOLERANCE} from "../../constant";
+import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
 const {base, inherit, XHR} = require('core/utils//utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
@@ -33,8 +33,8 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
-  config.toc_layers_init_status = config.toc_layers_init_status || 'not_collapsed';
-  config.toc_themes_init_status = config.toc_themes_init_status || 'collapsed';
+  config.toc_layers_init_status = config.toc_layers_init_status || TOC_LAYERS_INIT_STATUS;
+  config.toc_themes_init_status = config.toc_themes_init_status || TOC_THEMES_INIT_STATUS;
   config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   this.state = config;
   /**
