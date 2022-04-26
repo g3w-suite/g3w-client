@@ -16,37 +16,37 @@
               <div class="box-features-action" @click.stop="">
                 <infoformats :layer="layer"></infoformats>
                 <template v-if="layer.features.length > 1">
-                  <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button skin-tooltip-bottom"
-                        data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
+                  <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"
+                        v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
                 </span>
-                  <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button skin-tooltip-bottom"
-                        data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.atlas.hint'">
+                  <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button"
+                        v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.atlas.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
                 </span>
                   <!--        DOWNLOAD        -->
                   <template v-if="layer.downloads.length === 1">
-                    <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
+                    <span v-download class="action-button" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
                       <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="saveLayerResult(layer, layer.downloads[0])"></span>
                     </span>
                   </template>
                   <template v-else-if="layer.downloads.length > 1">
-                   <span v-download class="action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip="'Downloads'">
+                   <span v-download class="action-button" :class="{'toggled': layer.downloadformats.active}" v-t-tooltip:left.create="'Downloads'">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('download')" @click.stop="showLayerDownloadFormats(layer)"></span>
                   </span>
                   </template>
                   <!--        DOWNLOAD        -->
                 </template>
-                <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.addfeaturesresults.active}"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
+                <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button" :class="{'toggled': layer.addfeaturesresults.active}"
+                      v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                 </span>
-                <span v-if="layer.features.length > 1 && layer.source.type !== 'wms'" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-bottom"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
+                <span v-if="layer.features.length > 1 && layer.source.type !== 'wms'" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
+                       v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                 </span>
-                <span v-show="layer.selection.active" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-bottom" :class="{'toggled': layer.filter.active}"
-                      data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'layer_selection_filter.tools.filter'">
+                <span v-show="layer.selection.active" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
+                       v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
                 <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
               </span>
               </div>

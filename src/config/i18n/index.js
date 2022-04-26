@@ -19,6 +19,11 @@ const translations = {
       warning: {
         not_supported_format: "Formato non supportato"
       },
+      layer_position: {
+        top: 'SOPRA',
+        bottom: 'IN FONDO',
+        message: "Posizione rispetto ai layers della TOC"
+      },
       sdk: {
         search: {
           all: 'TUTTE',
@@ -510,6 +515,11 @@ const translations = {
       warning: {
         not_supported_format: "Not supported format"
       },
+      layer_position: {
+        top: 'TOP',
+        bottom: 'BOTTOM',
+        message: "Position relative to layers on TOC"
+      },
       sdk: {
         search: {
           all: 'ALL',
@@ -998,6 +1008,11 @@ const translations = {
       },
       warning: {
         not_supported_format: "Not supported format"
+      },
+      layer_position: {
+        top: 'TOP',
+        bottom: 'BOTTOM',
+        message: "Position relative to layers on TOC"
       },
       sdk: {
         search: {
@@ -1488,6 +1503,11 @@ const translations = {
       warning: {
         not_supported_format: "Not supported format"
       },
+      layer_position: {
+        top: 'TOP',
+        bottom: 'BOTTOM',
+        message: "Position relative to layers on TOC"
+      },
       sdk: {
         search: {
           all: 'ALLA',
@@ -1977,6 +1997,11 @@ const translations = {
       },
       warning: {
         not_supported_format: "Not supported format"
+      },
+      layer_position: {
+        top: 'TOP',
+        bottom: 'BOTTOM',
+        message: "Position relative to layers on TOC"
       },
       sdk: {
         search: {
