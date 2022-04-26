@@ -33,6 +33,8 @@ function Project(config={}, options={}) {
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
+  config.toc_layers_init_status = config.toc_layers_init_status || 'not_collapsed';
+  config.toc_themes_init_status = config.toc_themes_init_status || 'collapsed';
   config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   this.state = config;
   /**
