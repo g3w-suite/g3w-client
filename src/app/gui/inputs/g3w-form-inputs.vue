@@ -20,11 +20,20 @@
   import G3wInput from './g3w-input.vue'
   export default {
     name: "g3w-form-inputs",
-    props: [
-      'state',
-      'addToValidate',
-      'changeInput'
-    ],
+    props: {
+      state: {
+        type: Object,
+        default: {
+          fields: []
+        }
+      },
+      addToValidate: {
+        type: Function
+      },
+      changeInput: {
+        type: Function
+      }
+    },
     components: {
       G3wInput
     }
