@@ -1,4 +1,4 @@
-const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
+const {getAppLanguage} = require('core/i18n/i18n.service');
 const selectMixin = {
   methods: {
     getLanguage() {
