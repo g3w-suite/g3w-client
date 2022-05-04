@@ -337,7 +337,7 @@ const translations = {
             table: "table"
           },
           footer: {
-            required_fields: "Campi richiesti"
+            required_fields: "Campi obbligatori"
           },
           messages: {
             qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
