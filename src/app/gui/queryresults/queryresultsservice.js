@@ -1412,6 +1412,7 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
       this.setCurrentActionLayerFeatureTool({
         layer,
         index,
+        action,
         component: QueryPolygonCsvAttributesComponent
       });
     } else {
