@@ -99,7 +99,7 @@ function TableLayer(config={}, options={}) {
           };
           this._setOtherConfigParameters(vector);
           vector.style && this.setColor(vector.style.color);
-          // creare an instace of editor
+          // creare an instance of editor
           this._editor = new Editor({
             layer: this
           });

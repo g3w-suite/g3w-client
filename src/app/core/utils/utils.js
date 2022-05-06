@@ -293,8 +293,12 @@ const utils = {
       } else if (url) {
        fetch(url)
          .then(async response => {
-           if (response.status === 200) return response.blob();
-           else if (response.status === 400 || response.status === 500){
+           if (response.status === 200) {
+             mime_type = mime_type || response.headers.get('content-type');
+             filename = filename || response.headers.get('content-disposition').split('filename=').length ?
+               response.headers.get('content-disposition').split('filename=')[1] : 'g3w_download_file';
+             return response.blob();
+           } else if (response.status === 400 || response.status === 500){
              const {message} = await response.json();
              return Promise.reject(message)
            }

@@ -1,5 +1,5 @@
 <template>
-  <div v-show="layer.visible && legend.show" class="layer-legend">
+  <div v-show="show" class="layer-legend">
     <bar-loader :loading="legend.loading"></bar-loader>
     <figure>
       <img v-show="!legend.error" :src="legend.url" @error="setError()" @load="urlLoaded()">
@@ -26,6 +26,9 @@
     computed:{
       legend(){
         return this.layer.legend;
+      },
+      show(){
+        return this.layer.visible && this.legend.show;
       }
     },
     methods: {
@@ -118,11 +121,12 @@
     },
     async mounted() {
       await this.$nextTick();
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       mapService.on('change-map-legend-params', () => {
         this.mapReady = true;
         this.getLegendSrc(this.layer);
-      })
+      });
+      this.show && this.getLegendSrc(this.layer);
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);

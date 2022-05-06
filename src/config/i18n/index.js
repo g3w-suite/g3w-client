@@ -337,7 +337,7 @@ const translations = {
             table: "table"
           },
           footer: {
-            required_fields: "Campi richiesti"
+            required_fields: "Campi obbligatori"
           },
           messages: {
             qgis_input_widget_relation: "Gestisci le relazioni tramite form dedicato"
@@ -592,7 +592,7 @@ const translations = {
                 title: 'TITLE',
                 name: 'NAME',
                 description: "DESCRIPTION",
-                abstract: "ABASTRACT",
+                abstract: "ABSTRACT",
                 keywords: 'KEYWORDS',
                 fees: "FEES",
                 accessconstraints: "ACCESS CONSTRAINT",
@@ -695,7 +695,7 @@ const translations = {
                 hint: "Download feature GPX"
               },
               download_features_gpkg: {
-                hint: "Download feature GPKG"
+                hint: "Download features GPKG"
               },
               download_gpx: {
                 hint: "Download feature GPX"
@@ -2472,6 +2472,994 @@ const translations = {
         info: "Afficher _START_ à _END_ sur _TOTAL_ lignes",
         nodatafilterd: "Aucun résultat trouvé",
         infoFiltered: "(Filtré par _MAX_ rangs totaux)"
+      }
+    },
+  },
+  de: {
+    translation: {
+      cookie_law: {
+        message: "Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung auf unserer Website zu bieten.",
+        buttonText: "Verstanden!"
+      },
+      default:"default",
+      sign_in: "Anmelden",
+      layer_selection_filter: {
+        tools: {
+          filter: "Filter hinzufügen/entfernen",
+          nofilter: "Filter entfernen",
+          invert: "Auswahl umkehren",
+          clear: "Auswahl löschen",
+          show_features_on_map: "Auf der Karte sichtbare Features anzeigen"
+        }
+      },
+      warning: {
+        not_supported_format: "Nicht unterstütztes Format"
+      },
+      layer_position: {
+        top: 'OBEN',
+        bottom: 'UNTEN',
+        message: "Position relativ zu den Layern im TOC"
+      },
+      sdk: {
+        search: {
+          all: 'ALLE',
+          no_results: "Keine Ergebnisse",
+          searching: "Suchen ...",
+          error_loading: "Fehler beim Datenladen",
+          layer_not_searchable: "Layer ist nicht durchsuchbar",
+          layer_not_querable: "Layer ist nicht abfragbar",
+          autocomplete: {
+            inputshort: {
+              pre: "Bitte",
+              post: "oder mehrere Zeichen eingeben"
+            }
+          }
+        },
+        print: {
+          no_layers: 'Kein Layer zu drucken',
+          scale: "Skala",
+          format: "Format",
+          rotation: "Drehung",
+          download_image: "Bild herunterladen",
+          fids_instruction: "Akzeptierte Werte: von 1 bis [max]. Es ist möglich, ein Intervall einzugeben, z. B. 4-6",
+          fids_example: "Bsp. 1,4-6 druckt id 1,4,5,6",
+          help: "Die im Druck angezeigten Layer können die im Projekt definierten sein und nicht die auf der Karte angezeigten"
+        },
+        querybuilder: {
+          search: {
+            run: "Ausführen",
+            info: "Information",
+            delete: "Löschen",
+            edit: "Bearbeiten"
+          },
+          messages: {
+            changed: 'Gespeichert',
+            number_of_features: "Anzahl der Features"
+          },
+          panel: {
+            button: {
+              all: 'ALLE',
+              save: 'SPEICHERN',
+              test: 'TEST',
+              clear: 'LÖSCHEN',
+              run: 'AUSFÜHREN',
+              manual: 'MANUELL'
+            },
+            layers: 'LAYERS',
+            fields: 'FELDER',
+            values: 'WERTE',
+            operators: 'OPERATOREN',
+            expression: 'AUSDRUCK'
+          },
+          error_run: 'Es ist ein Fehler aufgetreten. Bitte überprüfen Sie die Abfrage',
+          error_test: "Während der Ausführung der Abfrage ist ein Fehler aufgetreten",
+          delete: 'Soll es gelöscht werden?',
+          additem: 'Geben Sie den Namen der neuen Suche ein'
+        },
+        errors: {
+          layers: {
+            load: "Einige Layer sind nicht verfügbar"
+          },
+          unsupported_format: 'Nicht unterstütztes Format',
+          add_external_layer: 'Fehler im Ladevorgang des Layers'
+        },
+        metadata: {
+          title: 'Metadaten',
+          groups: {
+            general: {
+              title: 'ALLGEMEIN',
+              fields: {
+                title: 'TITEL',
+                name: 'NAME',
+                description: "BESCHREIBUNG",
+                abstract: "ABASTRACT",
+                keywords: 'SCHLÜSSELWÖRTER',
+                fees: "GEBÜHREN",
+                accessconstraints: "ZUGRIFFSBESCHRÄNKUNG",
+                contactinformation: "KONTAKTE",
+                subfields: {
+                  contactinformation: {
+                    contactelectronicmailaddress: "Email",
+                    personprimary: 'Referenzen',
+                    contactvoicetelephone: 'Telefon',
+                    contactorganization: 'Firma',
+                    ContactOrganization: 'Firma',
+                    contactposition: 'Position',
+                    ContactPosition: 'Position',
+                    contactperson: 'Person',
+                    ContactPerson: 'Person'
+                  }
+                },
+                wms_url: "WMS"
+              }
+            },
+            spatial:{
+              title: 'SPATIAL',
+              fields : {
+                crs: 'EPSG',
+                extent: 'BBOX'
+              }
+            },
+            layers: {
+              title: 'LAYERS',
+              fields: {
+                layers: 'LAYERS',
+                subfields: {
+                  crs: 'EPSG',
+                  bbox: 'BBOX',
+                  title: "TITEL",
+                  name: 'NAME',
+                  geometrytype: 'GEOMETRIE',
+                  source: 'QUELLE',
+                  attributes: 'ATTRIBUTE',
+                  abstract: 'ABSTRACT',
+                  attribution: 'ATRIBUTION',
+                  keywords: "SCHLÜSSELWÖRTER",
+                  metadataurl:'METADATEN URL',
+                  dataurl: "DATEN URL"
+                }
+              },
+              groups : {
+                general: 'ALLGEMEIN',
+                spatial: 'SPATIAL'
+              }
+            }
+          }
+        },
+        tooltips: {
+          relations: {
+            form_to_row: "Zeilenansicht",
+            row_to_form: "Formularansicht"
+          },
+          copy_map_extent_url: 'Link zur Kartenansicht kopieren',
+          download_shapefile: "Shapefile herunterladen",
+          download_gpx: "DGPX herunterladen",
+          download_gpkg: "GPKG herunterladen",
+          download_csv: "CSV herunterladen",
+          download_xls: "XLS herunterladen",
+          show_chart: "Diagramm anzeigen",
+          atlas: "Atlas drucken"
+        },
+        mapcontrols: {
+          query: {
+            tooltip: 'Query layer',
+            actions: {
+              add_selection: {
+                hint: "Auswahl hinzufügen/entfernen"
+              },
+              zoom_to_features_extent:{
+                hint: "Zoom auf Feature-Ausdehnung"
+              },
+              add_features_to_results: {
+                hint: "Hinzufügen/Entfernen von Features zu den Ergebnissen"
+              },
+              remove_feature_from_results: {
+                hint: "Feature aus den Ergebnissen entfernen"
+              },
+              zoom_to_feature: {
+                hint: "Zum Feature zoomen"
+              },
+              relations: {
+                hint: "Relationen anzeigen"
+              },
+              relations_charts: {
+                hint: "Relationship-Diagramm anzeigen"
+              },
+              download_features_shapefile:{
+                hint: 'Features Shapefile herunterladen'
+              },
+              download_shapefile: {
+                hint: 'Feature Shapefile herunterladen'
+              },
+              download_features_gpx: {
+                hint: "Feature GPX herunterladen"
+              },
+              download_features_gpkg: {
+                hint: "Feature GPKG herunterladen"
+              },
+              download_gpx: {
+                hint: "Feature GPX herunterladen"
+              },
+              download_gpkg: {
+                hint: "Feature GPKG herunterladen"
+              },
+              download_features_csv: {
+                hint: "Features CSV herunterladen"
+              },
+              download_csv: {
+                hint: "Feature CSV herunterladen"
+              },
+              download_features_xls: {
+                hint: "Features XLS herunterladen"
+              },
+              download_xls: {
+                hint: "Feature XLS herunterladen"
+              },
+              atlas: {
+                hint: "Atlas drucken"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Kopieren der Karten-URL mit dieser Geometrie-Feature-Erweiterung",
+                hint_change: "Kopiert"
+              }
+            }
+          },
+          querybypolygon: {
+            download: {
+              title: "Attribute herunterladen",
+              choiches:{
+                feature: {
+                  label:"Nur Features",
+                },
+                feature_polygon: {
+                  label:"Features+Query Polygon",
+                }
+              }
+            },
+            tooltip: 'Query nach Polygon',
+            no_geometry: 'Keine Geometrie in der Antwort',
+            help: {
+              title:'Hilfe - Abfrage nach Polygon',
+              message: `
+                  <ul>
+                    <li>Wählen Sie einen Polygon Layer auf TOC.</li>
+                    <li>Stellen Sie sicher, dass der Layer sichtbar ist.</li>
+                    <li>Klicken Sie auf ein Feature des ausgewählten Layers.</li>
+                  </ul>`
+            }
+          },
+          querybybbox: {
+            tooltip: 'BBox Layer abfragen',
+            nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',
+            help: {
+              title: 'Hilfe - Abfrage des BBox Layers',
+              message:`
+                   <ul>
+                    <li>Ein Quadrat auf der Karte ziehen, um unterstrichene Layer im TOC abzufragen</li>
+                   </ul>`
+            }
+          },
+          addlayer: {
+            messages: {
+              csv: {
+                warning: "Das Ergebnis in der Karte ist unvollständig, da die unten stehende Liste fehlerhafter Einträge enthält:"
+              }
+            },
+            tooltip: 'Layer hinzufügen'
+          },
+          geolocation: {
+            tooltip: 'Geolokalisierung'
+          },
+          measures: {
+            length: {
+              tooltip: "Länge",
+              help: "Klicken Sie auf die Karte, um die Linie zu zeichnen. Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen möchten.",
+            },
+            area: {
+              tooltip: "Fläche",
+              help: "Drücken Sie <br>CANC, wenn Sie den letzten Eckpunkt löschen wollen."
+            }
+          },
+          scale: {
+            no_valid_scale: "Ungültige Skala"
+          },
+          scaleline: {
+            units: {
+              metric: 'Meter',
+              nautical: 'Nautische Meile'
+            }
+          }
+        },
+        relations: {
+          relation_data: 'Daten zur Relation',
+          no_relations_found: 'Keine Relationen gefunden',
+          back_to_relations: 'Zurück zu den Relationen',
+          list_of_relations_feature: 'Liste der Relationen des Features',
+          error_missing_father_field: "Ein Feld fehlt"
+        },
+        workflow: {
+          steps: {
+            title: 'Schritte',
+          },
+          next: 'Weiter'
+        },
+        form: {
+          loading: 'Laden ...',
+          inputs: {
+            messages: {
+              errors: {
+                picklayer: "Kein Feature ausgewählt. Prüfen, ob der Layer in Bearbeitung oder im aktuellen Maßstab sichtbar ist"
+              }
+            },
+            tooltips:{
+              picklayer: "Wert aus dem Layer abrufen",
+              lonlat: "Zum Abrufen der Koordinaten auf die Karte klicken"
+            },
+            input_validation_mutually_exclusive: "Feld schließt sich gegenseitig aus mit ",
+            input_validation_error: "Obligatorisches Feld oder falscher Datentyp",
+            input_validation_min_field: "Der Wert muss größer/gleich sein als der Feldwert  ",
+            input_validation_max_field: "Der Wert muss kleiner/gleich sein als der Feldwert ",
+            input_validation_exclude_values: "Wert muss einmalig sein",
+            integer: "integer",
+            bigint: "integer",
+            text: "text",
+            varchar: "text",
+            textarea: "text",
+            string: "string",
+            date: "date",
+            float: "float",
+            table: "table"
+          },
+          footer: {
+            "required_fields": "Erforderliche Felder"
+          },
+          messages: {
+            qgis_input_widget_relation: "Spezifisches Relations-Formular verwenden, um mit Relationen zu arbeiten"
+          }
+        },
+        catalog: {
+          current_map_theme_prefix: "THEMA",
+          choose_map_theme: "THEMA AUSWÄHLEN",
+          menu: {
+            layerposition: 'Position des Layers',
+            setwmsopacity: "Opazität einstellen",
+            wms: {
+              title:"",
+              copy: "Klicken Sie hier, um die Url zu kopieren",
+              copied: "Kopiert"
+            },
+            download: {
+              shp: 'Shapefile herunterladen',
+              gpx: 'GPX herunterladen',
+              gpkg: 'GPKG herunterladen',
+              csv: 'CSV herunterladen',
+              xls: 'XLS herunterladen',
+              geotiff: "GEOTIFF herunterladen",
+              geotiff_map_extent: "GEOTIFF herunterladen (aktueller Ansichtsumfang)"
+            }
+          }
+        },
+        wps: {
+          list_process: "Liste der Prozesse",
+          tooltip: 'Karte anklicken'
+        }
+      },
+      credits: {
+        g3wSuiteFramework: "Applikation basiert auf OS-Framework",
+        g3wSuiteDescription: "Veröffentlichen und verwalten Sie Ihre QGIS-Projekte im Internet",
+        productOf: "Framework entwickelt von",
+      },
+      toggle_color_scheme: "Farbschema umschalten",
+      logout: "Logout",
+      no_other_projects: "Kein weiteres Projekt für diese Gruppe",
+      yes: "Ja",
+      no: "No",
+      back: "Zurück",
+      backto: "Zurück zu ",
+      changemap: "Karte ändern",
+      component: "Allgemeine Komponente",
+      search: "Suche",
+      no_results: "Keine Ergebnisse gefunden",
+      print: "Drucken",
+      create_print: "Drucken erstellen",
+      dosearch: "Suche",
+      catalog: "Karte",
+      data: "Daten",
+      externalwms: "WMS",
+      baselayers: "Base",
+      tools: "Tools",
+      tree: "Layers",
+      legend: "Legende",
+      nobaselayer: "Keine Basemap",
+      street_search: "Adresse finden",
+      show: "Anzeigen",
+      hide: "Ausblenden",
+      copy_form_data: "Daten kopieren",
+      paste_form_data: "Einfügen",
+      copy_form_data_from_feature: "Daten von der Karte kopieren",
+      error_map_loading: "Fehler beim Laden der Karte",
+      check_internet_connection_or_server_admin: "Internetverbindung prüfen oder Admin kontaktieren",
+      could_not_load_vector_layers: "Verbindungsfehler: Layers können geladen werden",
+      server_saver_error: "Fehler beim Speichern auf dem Server",
+      server_error: "Server-Verbindungsfehler",
+      save: "Speichern",
+      cancel: "Abbrechen",
+      close: "Schließen",
+      enlange_reduce:"Vergrößern/Verkleinern",
+      reset_default:"Standardgröße",
+      add: "Hinzufügen",
+      exitnosave: "Beenden ohne Speichern",
+      annul: "Abbrechen",
+      layer_is_added: "Layer mit gleichem Namen bereits hinzugefügt",
+      sidebar: {
+        wms: {
+          panel: {
+            title:'WMS Layer hinzufügen',
+            label: {
+              position: "Kartenposition",
+              name: "Name",
+              projections: 'Projektion',
+              layers: 'Layers'
+            }
+          },
+          add_wms_layer: "WMS Layer hinzufügen",
+          delete_wms_url: "WMS Url löschen",
+          layer_id_already_added: "WMS Layer bereits hinzugefügt",
+          url_already_added: "WMS URL bereits hinzugefügt",
+          layer_add_error: "WMS Layer nicht hinzugefügt. Bitte überprüfen Sie alle WMS-Parameter oder Url"
+        }
+      },
+      info: {
+        title: "Ergebnisse",
+        open_link: "Beigefügtes Dokument öffnen",
+        server_error: "Auf dem Server ist ein Fehler aufgetreten",
+        no_results: "Keine Ergebnisse für diese Anfrage/Suche gefunden",
+        link_button: "Öffnen"
+      },
+      mapcontrols: {
+        geolocations: {
+          error: "Position kann nicht bestimmt werden"
+        },
+        nominatim: {
+          placeholder: "Addresse ...",
+          noresults: "Keine Ergebnisse",
+          notresponseserver: "Keine Antwort vom Server"
+        },
+        add_layer_control: {
+          header: "Layer hinzufügen",
+          select_projection: "Layer Projektion auswählen",
+          select_field_to_show: "Feld auswählen, das auf der Karte angezeigt werden soll",
+          select_csv_separator: "Begrenzer auswählen",
+          select_csv_x_field: "X-Feld auswählen",
+          select_csv_y_field: "Y-Feld auswählen",
+          select_color: "Layer Farbe auswählen",
+          drag_layer: "Layer hierher ziehen und ablegen"
+        },
+        query: {
+          input_relation: "Klicken, um Relationen anzuzeigen"
+        },
+        length: {
+          tooltip: "Länge"
+        },
+        area: {
+          tooltip: "Area"
+        },
+        screenshot: {
+          error: "Screenshot Fehlererstellung"
+        }
+      },
+      catalog_items: {
+        helptext: "Klicken Sie mit der rechten Maustaste auf einen einzelnen Layer, um auf zusätzliche Funktionen zuzugreifen",
+        contextmenu: {
+          zoomtolayer: "Zoom auf Layer",
+          open_attribute_table: "Attributtabelle öffnen",
+          show_metadata: "Metadaten",
+          styles: 'Stile',
+          vector_color_menu:"Farbe einstellen/ändern"
+        }
+      },
+      dataTable: {
+        previous: "Vorherige",
+        next: "Weiter",
+        lengthMenu: "_MENÜ_ anzeigen",
+        info: "Anzeige von _START_ bis _END_ der _TOTAL_ Einträge",
+        no_data: "Keine Daten",
+        nodatafilterd: "Keine passenden Datensätze gefunden",
+        infoFiltered: "(gefiltert aus _MAX_ Gesamtsätzen)"
+      }
+    },
+  },
+  ro: {
+    translation: {
+      cookie_law: {
+        message: "Acest website foloseste cookie-uri pentru a furniza vizitatorilor o experiență mult mai bună de navigare",
+        buttonText: "Am înțeles!"
+      },
+      default:"Implicit",
+      sign_in: "Logare",
+      layer_selection_filter: {
+        tools: {
+          filter: "Adăugare/Eliminare Filtrare",
+          nofilter: "Eliminare Filtrare",
+          invert: "Inversare Selecție",
+          clear: "Elimină Selecția",
+          show_features_on_map: "Arată entitățile vizibile în cadrul hărții"
+        }
+      },
+      warning: {
+        not_supported_format: "Formatul nu este acceptat"
+      },
+      layer_position: {
+        top: 'SUS',
+        bottom: 'JOS',
+        message: "Poziție relativă la straturile din TOC"
+      },
+      sdk: {
+        search: {
+          all: 'Toate',
+          no_results: "Fără rezultat",
+          searching: "Căutare ...",
+          error_loading: "Încărcarea a eșuat",
+          layer_not_searchable: "Nu se poate căuta pe strat",
+          layer_not_querable: "Stratul nu se poate interoga",
+          autocomplete: {
+            inputshort: {
+              pre: "Te rog introdu",
+              post: "sau mai multe caractere"
+            }
+          }
+        },
+        print: {
+          no_layers: 'Nu avem straturi de print',
+          scale: "Scară",
+          format: "Format",
+          rotation: "Rotație",
+          download_image: "Descarcă Imaginea",
+          fids_instruction: "Valori acceptate: de la 1 la valoarea [max]. Este posibilă inserarea de interval, de ex. 4-6",
+          fids_example: "Ex. 1,4-6 vor fi tipărite id 1,4,5,6",
+          help: "Straturile prezentate în print pot fi acelea definite în proiect și nu acelea prezentate în cadrul hărții"
+        },
+        querybuilder: {
+          search: {
+            run: "Execută",
+            info: "Info",
+            delete: "Elimină",
+            edit: "Modifică"
+          },
+          messages: {
+            changed: 'Salvat',
+            number_of_features: "Număr de entități"
+          },
+          panel: {
+            button: {
+              all: 'TOATE',
+              save: 'SALVEAZĂ',
+              test: 'TEST',
+              clear: 'ȘTERGE',
+              run: 'RUN',
+              manual: 'MANUAL'
+            },
+            layers: 'STRATURI',
+            fields: 'CÂMPURI',
+            values: 'VALORI',
+            operators: 'OPERATORI',
+            expression: 'EXPRESII'
+          },
+          error_run: 'A survenit o eroare. De verificat interogarea',
+          error_test: "A survenit o eroare în timp ce se executa interogarea",
+          delete: 'Vrei să o ștergi?',
+          additem: 'Introdu numele noii căutări'
+        },
+        errors: {
+          layers: {
+            load: "Câteva straturi nu sunt disponibile"
+          },
+          unsupported_format: 'Formatul nu este acceptat',
+          add_external_layer: 'Eroare încărcare strat'
+        },
+        metadata: {
+          title: 'Metadate',
+          groups: {
+            general: {
+              title: 'GENERALITĂȚI',
+              fields: {
+                title: 'TITLU',
+                name: 'NUME',
+                description: "DESCRIERE",
+                abstract: "ABSTRACT",
+                keywords: 'CUVINTE CHEIE',
+                fees: "TAXE",
+                accessconstraints: "CONSTRÂNGERI DE ACCES",
+                contactinformation: "CONTACTE",
+                subfields: {
+                  contactinformation: {
+                    contactelectronicmailaddress: "Email",
+                    personprimary: 'Referințe',
+                    contactvoicetelephone: 'Telefon',
+                    contactorganization: 'Organizație',
+                    ContactOrganization: 'Organizație',
+                    contactposition: 'Poziție',
+                    ContactPosition: 'Poziție',
+                    contactperson: 'Persoana',
+                    ContactPerson: 'Persoana'
+                  }
+                },
+                wms_url: "WMS"
+              }
+            },
+            spatial:{
+              title: 'SPAȚIAL',
+              fields : {
+                crs: 'EPSG',
+                extent: 'BBOX'
+              }
+            },
+            layers: {
+              title: 'STRATURI',
+              fields: {
+                layers: 'STRATURI',
+                subfields: {
+                  crs: 'EPSG',
+                  bbox: 'BBOX',
+                  title: "TITLU",
+                  name: 'NUME',
+                  geometrytype: 'GEOMETRIE',
+                  source: 'SURSA',
+                  attributes: 'ATRIBUTE',
+                  abstract: 'ABSTRACT',
+                  attribution: 'ATRIBUIRE',
+                  keywords: "CUVINTE CHEIE",
+                  metadataurl:'URL METADATE',
+                  dataurl: "URL DATE"
+                }
+              },
+              groups : {
+                general: 'GENERALITĂȚI',
+                spatial: 'SPAȚIAL'
+              }
+            }
+          }
+        },
+        tooltips: {
+          relations: {
+            form_to_row: "Vizualizare pe rânduri",
+            row_to_form: "Vizualizare formular"
+          },
+          copy_map_extent_url: 'Copiază linkul de vizualizare hartă',
+          download_shapefile: "Descarcă Shapefile",
+          download_gpx: "Descarcă GPX",
+          download_gpkg: "Descarcă GPKG",
+          download_csv: "Descarcă CSV",
+          download_xls: "Descarcă XLS",
+          show_chart: "Arată Diagrama",
+          atlas: "Tipărire Atlas"
+        },
+        mapcontrols: {
+          query: {
+            tooltip: 'Interogare strat',
+            actions: {
+              add_selection: {
+                hint: "Adaugă/Elimină Selecția"
+              },
+              zoom_to_features_extent:{
+                hint: "Zoom la încadrarea entităților"
+              },
+              add_features_to_results: {
+                hint: "Adaugă/Elimină entități rezultat"
+              },
+              remove_feature_from_results: {
+                hint: "Elimină entitate din rezultat"
+              },
+              zoom_to_feature: {
+                hint: "Zoom la entitate"
+              },
+              relations: {
+                hint: "Arată Relațiile"
+              },
+              relations_charts: {
+                hint: "Arată diagrama de relații"
+              },
+              download_features_shapefile:{
+                hint: 'Descarcă entități în Shapefile'
+              },
+              download_shapefile: {
+                hint: 'Descarcă entitate în Shapefile'
+              },
+              download_features_gpx: {
+                hint: "Descarcă entități în GPX"
+              },
+              download_features_gpkg: {
+                hint: "Descarcă entități în GPKG"
+              },
+              download_gpx: {
+                hint: "Descarcă entitate în GPX"
+              },
+              download_gpkg: {
+                hint: "Descarcă entitate în GPKG"
+              },
+              download_features_csv: {
+                hint: "Descarcă entități în CSV"
+              },
+              download_csv: {
+                hint: "Descarcă entitate în CSV"
+              },
+              download_features_xls: {
+                hint: "Descarcă entități în XLS"
+              },
+              download_xls: {
+                hint: "Descarcă entitate în XLS"
+              },
+              atlas: {
+                hint: "Tipărire Atlas"
+              },
+              copy_zoom_to_fid_url: {
+                hint: "Copiază URL hartă cu întinderea geometriei entității",
+                hint_change: "Copiat"
+              }
+            }
+          },
+          querybypolygon: {
+            download: {
+              title: "Descărcare atribute",
+              choiches:{
+                feature: {
+                  label:"Doar entități",
+                },
+                feature_polygon: {
+                  label:"Entități+Poligon Interogare",
+                }
+              }
+            },
+            tooltip: 'Interogare După Poligon',
+            no_geometry: 'Nu avem geometrii în răspuns',
+            help: {
+              title:'Ghid - Interogare După Poligon',
+              message: `
+                  <ul>
+                    <li>Selectează un strat poligon din TOC.</li>
+                    <li>Asigură-te că stratul este vizibil.</li>
+                    <li>Click pe o entitate a stratului selectat.</li>
+                  </ul>`
+            }
+          },
+          querybybbox: {
+            tooltip: 'Interogare BBox strat',
+            nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',
+            help: {
+              title: 'Ghid - Interogare BBox strat',
+              message:`
+                   <ul>
+                    <li>Desenează un pătrat pe hartă pentru a interoga straturile din TOC de sub </li>
+                   </ul>`
+            }
+          },
+          addlayer: {
+            messages: {
+              csv: {
+                warning: "Rezultateul pe hartă este parțial datorită prezenței următoarei liste de rezultate incorecte:"
+              }
+            },
+            tooltip: 'Adaugă Strat'
+          },
+          geolocation: {
+            tooltip: 'Geolocalizare'
+          },
+          measures: {
+            length: {
+              tooltip: "Lungime",
+              help: "Click pe hartă pentru a desena linia. Apasă <br>CANC dacă dorești să ștergi ultimul vertex",
+            },
+            area: {
+              tooltip: "Aria",
+              help: "Click pentru desen poligon. Apasă <br>CANC dacă dorești să ștergi ultimul vertex"
+            }
+          },
+          scale: {
+            no_valid_scale: "Scară Invalidă"
+          },
+          scaleline: {
+            units: {
+              metric: 'Metri',
+              nautical: 'Mile Nautice'
+            }
+          }
+        },
+        relations: {
+          relation_data: 'Date Relații',
+          no_relations_found: 'Nu am găsit nicio relație',
+          back_to_relations: 'Înapoi la relații',
+          list_of_relations_feature: 'Lista de relații a entității',
+          error_missing_father_field: "Câmpul de legătură lipsește"
+        },
+        workflow: {
+          steps: {
+            title: 'Pași',
+          },
+          next: 'Următorul'
+        },
+        form: {
+          loading: 'Se încarcă ...',
+          inputs: {
+            messages: {
+              errors: {
+                picklayer: "Nu avem entitate selectată. Verifică dacă stratul este în editare sau vizibil la scara curentă if layer is on editing or visible at current scale"
+              }
+            },
+            tooltips:{
+              picklayer: "Ia valoare din strat",
+              lonlat: "Click pe hartă pentru a prelua coordonate"
+            },
+            input_validation_mutually_exclusive: "Câmp ce se exclude mutual cu ",
+            input_validation_error: "Câmp mandatoriu sau tip de date greșit",
+            input_validation_min_field: "Valoarea trebuie să fie mai mare/egală cu valoare câmpului ",
+            input_validation_max_field: "Valoarea trebuie să fie mai mică/egală cu valoare câmpului ",
+            input_validation_exclude_values: "Valoarea trebuie să fie unică",
+            integer: "integer - nr. întreg",
+            bigint: "integer - nr. întreg",
+            text: "text",
+            varchar: "text",
+            textarea: "text",
+            string: "string - text",
+            date: "data",
+            float: "float - nr. cu zecimale",
+            table: "tabelă"
+          },
+          footer: {
+            "required_fields": "Câmpuri necesare"
+          },
+          messages: {
+            qgis_input_widget_relation: "Folosește formular specific de relații pentru a lucra cu relația"
+          }
+        },
+        catalog: {
+          current_map_theme_prefix: "TEMA",
+          choose_map_theme: "ALEGE TEMA",
+          menu: {
+            layerposition: 'Poziție Strat',
+            setwmsopacity: "Alege Opacitatea",
+            wms: {
+              title:"Titlu",
+              copy: "Click pentru copiere URL",
+              copied: "Copiat"
+            },
+            download: {
+              shp: 'Descarcă Shapefile',
+              gpx: 'Descarcă GPX',
+              gpkg: 'Descarcă GPKG',
+              csv: 'Descarcă CSV',
+              xls: 'Descarcă XLS',
+              geotiff: "Descarcă GEOTIFF",
+              geotiff_map_extent: "Descarcă GEOTIFF(ce se vede în cadrul hărții)"
+            }
+          }
+        },
+        wps: {
+          list_process: "Lista de procese",
+          tooltip: 'Click pe hartă'
+        }
+      },
+      credits: {
+        g3wSuiteFramework: "Aplicație bazată pe frameworkul",
+        g3wSuiteDescription: "Publică și administrează proiectele de QGIS pe WEB",
+        productOf: "Framework dezvoltat de",
+      },
+      toggle_color_scheme: "Comutare schemă de culori",
+      logout: "Deconectare",
+      no_other_projects: "No more project for this group",
+      yes: "Da",
+      no: "Nu",
+      back: "Înapoi",
+      backto: "Înapoi la ",
+      changemap: "Schimbare Hartă",
+      component: "Componentă Generică",
+      search: "Căutare",
+      no_results: "Niciun rezultat găsit",
+      print: "Tipărire",
+      create_print: "Adaugă Tipărire",
+      dosearch: "Caută",
+      catalog: "Hartă",
+      data: "Data",
+      externalwms: "WMS",
+      baselayers: "Straturi Bază",
+      tools: "Instrumente",
+      tree: "Straturi",
+      legend: "Legendă",
+      nobaselayer: "Fără strat de bază",
+      street_search: "Caută Adresă",
+      show: "Arată",
+      hide: "Ascunde",
+      copy_form_data: "Copiază data",
+      paste_form_data: "Lipește",
+      copy_form_data_from_feature: "Copiază data din hartă",
+      error_map_loading: "Sunt erori la încărcarea hărții",
+      check_internet_connection_or_server_admin: "Verificați conexiune de internet sau contactați administratorul de sistem",
+      could_not_load_vector_layers: "Eroare de conexiune: Straturile nu pot fi încărcate",
+      server_saver_error: "Eroare la salvarea pe server",
+      server_error: "Eroare de conexiune la server",
+      save: "Salvează",
+      cancel: "Anulează",
+      close: "Închide",
+      enlange_reduce:"Mărește/Micșorează",
+      reset_default:"Mărimea implicită",
+      add: "Adaugă",
+      exitnosave: "Ieșire fără salvare",
+      annul: "Anulează",
+      layer_is_added: "Există un strat cu același nume deja adăugat",
+      sidebar: {
+        wms: {
+          panel: {
+            title:'Adaugă strat WMS',
+            label: {
+              position: "Poziție Hartă",
+              name: "Nume",
+              projections: 'Proiecție',
+              layers: 'Straturi'
+            }
+          },
+          add_wms_layer: "Adaugă strat WMS",
+          delete_wms_url: "Șterge URL WMS",
+          layer_id_already_added: "Strat WMS deja adăugat",
+          url_already_added: "URL WMS deja adăugat",
+          layer_add_error: "Stratul WMS nu s-a adăugat. Verificați URL-ul sau parametrii WMS"
+        }
+      },
+      info: {
+        title: "Rezultate",
+        open_link: "Deschide document atașat",
+        server_error: "Serverul a întâmpinat o eroare",
+        no_results: "Niciun rezultat",
+        link_button: "Deschide"
+      },
+      mapcontrols: {
+        geolocations: {
+          error: "Nu te-am putut localiza"
+        },
+        nominatim: {
+          placeholder: "Adresa ...",
+          noresults: "Niciun rezultat",
+          notresponseserver: "Niciun răspuns de la server"
+        },
+        add_layer_control: {
+          header: "Adăugare Strat",
+          select_projection: "Selectează proiecția strat",
+          select_field_to_show: "Selectează câmpul de arătat pe hartă",
+          select_csv_separator: "Selectează delimitatorul",
+          select_csv_x_field: "Selectează câmpul X - Est",
+          select_csv_y_field: "Selectează câmpul Y - Nord",
+          select_color: "Selectează culoare strat",
+          drag_layer: "Trageți stratul aici (Drag&Drop)"
+        },
+        query: {
+          input_relation: "Click pentru a arăta relațiile"
+        },
+        length: {
+          tooltip: "Lungime"
+        },
+        area: {
+          tooltip: "Arie"
+        },
+        screenshot: {
+          error: "Eroare captură ecran"
+        }
+      },
+      catalog_items: {
+        helptext: "Click dreapta pe strat pentru a accesa opțiuni",
+        contextmenu: {
+          zoomtolayer: "Zoom pe Strat",
+          open_attribute_table: "Deschide Tabela Atribute",
+          show_metadata: "Metadate",
+          styles: 'Stiluri',
+          vector_color_menu:"Setează/Schimbă Culoare"
+        }
+      },
+      dataTable: {
+        previous: "Anteriorul",
+        next: "Următorul",
+        lengthMenu: "Arată _MENU_",
+        info: "Arată _START_ până la _END_ din _TOTAL_ de intrări",
+        no_data: "Fără date",
+        nodatafilterd: "Niciun rezultat",
+        infoFiltered: "(filtrat din _MAX_ de rezultate totale)"
       }
     },
   }

@@ -327,9 +327,9 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const getDataPromise = this.state.pagination ?
         this.layer.getDataTable(this.paginationParams) :
         this.layer.getDataTable({
-        ordering,
-        in_bbox,
-        formatter: this.formatter
+          ordering,
+          in_bbox,
+          formatter: this.formatter
       });
       getDataPromise
         .then(data => {
@@ -346,7 +346,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
             recordsTotal: data.count
           });
         })
-        .fail((err) => {
+        .fail(err => {
           GUI.notify.error(t("info.server_error"));
           reject(err);
         }).always(()=>{
