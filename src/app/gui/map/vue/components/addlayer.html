@@ -25,7 +25,7 @@
           <div>
             <i :class="g3wtemplate.getFontClass('cloud-upload')" class="fa-5x" aria-hidden="true"></i>
           </div>
-          <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip(shapefile)]</p>
+          <p style="font-weight: bold">[.gml, .geojson, .kml, .kmz ,.gpx, .csv, .zip .7z(shapefile)]</p>
         </form>
         <div v-if="csv_extension" style="padding: 15px; border: 1px solid grey; border-radius: 3px">
           <bar-loader :loading="csv.loading"></bar-loader>
@@ -34,14 +34,12 @@
             <select class="form-control" id="g3w-select-separator" v-model="csv.separator">
               <option v-for="separator in csv.separators" :key="separator" :value="separator">{{ separator }}</option>
             </select>
-
           <div class="select_field" :class="{'g3w-disabled': !csv.headers || csv.headers.length === 0}">
             <label v-t="'mapcontrols.add_layer_control.select_csv_x_field'" for="g3w-select-x-field"></label>
             <select class="form-control" id="g3w-select-x-field" v-model="csv.x">
               <option v-for="header in csv.headers" :key="header" :value="header">{{ header }}</option>
             </select>
           </div>
-
           <div class="select_field" :class="{'g3w-disabled': !csv.headers || csv.headers.length === 0}">
             <label v-t="'mapcontrols.add_layer_control.select_csv_y_field'" for="g3w-select-y-field"></label>
             <select class="form-control" id="g3w-select-y-field" v-model="csv.y">
@@ -49,8 +47,7 @@
             </select>
           </div>
         </div>
-      </div>
-
+        </div>
         <div class="select_field" :class="{'g3w-disabled': !fields || fields.length === 0}">
           <label v-t="'mapcontrols.add_layer_control.select_field_to_show'" for="g3w-select-field-layer"></label>
           <select class="form-control" id="g3w-select-field-layer" v-model="field">
@@ -59,7 +56,7 @@
           </select>
         </div>
         <div style="font-weight: bold; font-size: 1.2em; background-color: orange; padding: 10px; text-align: center" v-if="error" v-t="error_message"></div>
-      <div class="modal-footer">
+        <div class="modal-footer">
         <button v-t="'add'" type="button" class="btn btn-success pull-left" @click="addLayer" :disabled="!add"></button>
         <button v-t="'close'" type="button" class="btn btn-default" data-dismiss="modal"></button>
       </div>

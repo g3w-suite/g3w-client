@@ -1,6 +1,6 @@
 import {EPSG} from '../../../../constant';
 const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
-const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
+const SUPPORTED_FORMAT = ['zip', '7z','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 
 //Vue color componet
@@ -135,7 +135,9 @@ const AddLayerComponent = {
           reader.readAsText(evt.target.files[0]);
         } else {
           const promiseData = new Promise((resolve, reject) =>{
-            if (this.layer.type === 'zip' || this.layer.type === 'kmz' ) { // in case of shapefile (zip file)
+            if (this.layer.type === 'zip'
+              || this.layer.type === 'kmz'
+              || this.layer.type === '7z' ) { // in case of shapefile (zip file)
               const data = evt.target.files[0];
               input_file.val(null);
               resolve(data);
