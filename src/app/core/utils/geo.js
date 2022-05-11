@@ -482,7 +482,6 @@ const geoutils = {
           return Promise.reject();
         }
         break;
-      case '7z':
       case 'zip':
         const promise = new Promise(async (resolve, reject) =>{
           const buffer = await data.arrayBuffer(data);

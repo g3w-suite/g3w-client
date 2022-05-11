@@ -16,7 +16,8 @@ const vueComponentOptions = {
       target,
       mouse: {
         switch_icon: false,
-        epsg_4326: false
+        epsg_4326: false,
+        tooltip: null
       },
       maps_container: this.$options.maps_container,
       service,
@@ -65,6 +66,7 @@ const vueComponentOptions = {
     mapService.once('ready', ()=> {
       this.ready = true;
       this.mouse.switch_icon = this.$options.service.getEpsg() !== 'EPSG:4326';
+      this.mouse.tooltip = `ESPG ${this.$options.service.getCrs().split(':')[1]} <--> WGS84`;
     });
     this.crs = mapService.getCrs();
     await this.$nextTick();
