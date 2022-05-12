@@ -472,8 +472,6 @@ proto.getFieldsWithValues = function(obj, options={}) {
       field.validate.mutually_valid = true;
       field.validate.empty = !field.validate.required;
       field.validate.message = null;
-      // used in case of undefined and to pass to form
-      field.value = field.value === undefined && !field.pk ? null : field.value;
       // end editing purpose
     });
   }

@@ -111,7 +111,9 @@
       <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
         <li style="padding:0;">
           <chrome-picker
+            ref="color_picker"
             @click.prevent.stop=""
+            @hook:beforeDestroy="onbeforeDestroyChangeColor"
             v-model="layerMenu.colorMenu.color"
             @change-color="onChangeColor"
             style="width: 100%">

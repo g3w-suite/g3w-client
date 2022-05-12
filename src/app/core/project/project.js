@@ -325,33 +325,47 @@ proto.getLayersStore = function() {
 /// Map Themes
 
 /**
- * Method to set properties ( checked and visible) from view to layerstre
- * @param viewlayerstree
- * @param layerstree
+ * Method to set properties ( checked and visible) from view to layerstree
+ * @param map_theme map theme name
+ * @param layerstree // current layerstree of TOC
  */
 proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}){
+  /**
+   * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
+   * plus layerstree of map_theme get from api map theme
+   */
   const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
+  // extract layerstree
   const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  // create a chages need to apply map_theme changes to map and TOC
   const changes = {
     layers: {} // key is the layer id and object has style, visibility change (Boolean)
   };
   const promises = [];
-  const traverse = (mapThemeLayersTree, layerstree) =>{
+  /**
+   * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
+   * @param mapThemeLayersTree // new mapLayerTree
+   * @param layerstree // current layerstree
+   */
+  const groups = [];
+  const traverse = (mapThemeLayersTree, layerstree, parent) =>{
     mapThemeLayersTree.forEach((node, index) => {
-      if (node.nodes) {
-        // case of group
-        layerstree[index].checked = node.checked;
+      if (node.nodes) { // case of group
+        traverse(node.nodes, layerstree[index].nodes, node);
         layerstree[index].expanded = node.expanded;
-        traverse(node.nodes, layerstree[index].nodes);
+        groups.push({
+          group: layerstree[index],
+          node
+        })
       } else {
-        node.style = mapThemeConfig.styles[node.id];
         // case of layer
+        node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
+        layerstree[index].checked = node.visible;
         if (layerstree[index].checked !== node.visible) {
           changes.layers[node.id] = {
             visibility: true,
             style: false
           };
-          layerstree[index].checked = node.visible;
         }
         // if has a style settled
         if (node.style) {
@@ -365,7 +379,7 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
               resolve();
             };
             if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
-            else// case of starting project creation
+            else // case of starting project creation
               node => setTimeout(() => {
                 setCurrentStyleAndResolvePromise(node);
               })(node);
@@ -377,6 +391,11 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
   };
   traverse(mapThemeLayersTree, layerstree);
   await Promise.allSettled(promises);
+  // all groups checked after layer checked so is set checked but not visible
+  groups.forEach(({group, node:{checked, expanded}}) => {
+    group.checked = checked;
+    group.expanded = expanded;
+  });
   return changes // eventually information about changes (for example style etc..)
 };
 
@@ -384,15 +403,22 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
  * get map Theme_configuration
  */
 proto.getMapThemeFromThemeName = async function(map_theme){
+  // get map theme configuration from map_themes project config
   const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
+  // check if mapThemeConfig exist
   if (mapThemeConfig){
+    // check if has layerstree (property get from server with a specific api
     const {layerstree} = mapThemeConfig;
     if (layerstree === undefined) {
       const url = `${this.urls.map_themes}${map_theme}/`;
-      const response = await XHR.get({
-        url
-      });
-      mapThemeConfig.layerstree = response.data;
+      try {
+        const response = await XHR.get({
+          url
+        });
+        const {result, data} = response;
+        // data is a layerstree rapresentation fro that specific map_theme
+        if (result) mapThemeConfig.layerstree =  data;
+      } catch(err){}
     }
   }
   return mapThemeConfig;

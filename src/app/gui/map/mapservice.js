@@ -1,6 +1,5 @@
 import {MAP_SETTINGS} from '../../constant';
 import wms from "../wms/vue/wms";
-import {coordinates} from "../../__dev__/webworkers/query";
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
