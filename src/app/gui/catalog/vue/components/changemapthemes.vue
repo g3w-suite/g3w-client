@@ -32,8 +32,9 @@
     name: "changemapthemes",
     data(){
       const collapsed = ProjectsRegistry.getCurrentProject().state.toc_themes_init_status === 'collapsed';
+      const current_map_theme = this.map_themes.find(map_theme => map_theme.default);
       return {
-        current_map_theme: null,
+        current_map_theme: current_map_theme ? current_map_theme.theme : null,
         collapsed
       }
     },
@@ -47,13 +48,11 @@
       'current_map_theme': {
         immediate: false,
         handler(map_theme){
-          //emeit event and close menu
           this.$emit('change-map-theme', map_theme);
           $(this.$refs['g3w-map-theme-ancor']).click();
         }
       }
-    },
-    created() {}
+    }
   }
 </script>
 
