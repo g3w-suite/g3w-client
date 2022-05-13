@@ -93,7 +93,7 @@
             this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
         },
         beforeDestroy(){
-            this.projectLayer.clearProxyData('wms');
+            this.projectLayer && this.projectLayer.clearProxyData('wms');
             this.projectLayer = null;
         }
     };

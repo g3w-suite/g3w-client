@@ -74,11 +74,10 @@ RasterLayers.TiledArgisMapServer = function(options={}){
 };
 
 RasterLayers._WMSLayer = function(options={}) {
-  const {layerObj} = options;
+  const {layerObj, method='GET', extraParams} = options;
   const {
     iframe_internal=false,
-    method="GET",
-    extraParams, tiled=false,
+    tiled=false,
     layers='',
     version='1.3.0',
     sld_version='1.1.0',
@@ -98,7 +97,7 @@ RasterLayers._WMSLayer = function(options={}) {
     DPI
   };
 
-  params = Object.assign({},params, extraParams);
+  params = Object.assign({}, params, extraParams);
   const sourceOptions = {
     url: layerObj.url,
     params,

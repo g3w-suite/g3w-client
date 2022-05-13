@@ -237,7 +237,9 @@ function MapService(options={}) {
       this.setUpMapOlEvents();
       this.emit('viewerset');
     },
-    controlClick(mapcontrol, info={}) {}
+    controlClick(mapcontrol, info={}) {},
+    loadExternalLayer(layer){}, // used in general to alert exteexternal layer is  load
+    unloadExternalLayer(layer){}
   };
 
   this._onCatalogSelectLayer = function(layer) {
@@ -258,9 +260,7 @@ function MapService(options={}) {
   });
 
   const extraParamsSet = (extraParams, update) => {
-    update && this.getMapLayers().forEach(mapLayer => {
-      mapLayer.update(this.state, extraParams);
-    })
+    update && this.getMapLayers().forEach(mapLayer => mapLayer.update(this.state, extraParams));
   };
 
   this.on('extraParamsSet', extraParamsSet);
@@ -684,6 +684,23 @@ proto._setupControls = function() {
                 projection: this.getCrs()
               }
             });
+            if (this.getEpsg() !== 'EPSG:4326') {
+              const mapEspg = this.getEpsg();
+              const coordinateLabels = ['Lng', 'Lat'];
+              const crs = this.getCrs();
+              control = this.createMapControl(controlType, {
+                add: false,
+                options: {
+                  target: 'mouse-position-control-epsg-4326',
+                  coordinateFormat(coordinate) {
+                    coordinate = ol.proj.transform(coordinate, mapEspg, 'EPSG:4326');
+                    return ol.coordinate.format(coordinate, `\u00A0${coordinateLabels[0]}: {x}, ${coordinateLabels[1]}: {y}\u00A0\u00A0 [${crs}]\u00A0`, 4);
+                  },
+                  undefinedHTML: false,
+                  projection: this.getCrs()
+                }
+              })
+            }
           }
           break;
         case 'screenshot':
@@ -2537,8 +2554,8 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
  */
 proto.removeExternalLayer = function(name) {
   const layer = this.getLayerByName(name);
-  const catalogService = GUI.getComponent('catalog').getService();
-  const QueryResultService = GUI.getComponent('queryresults').getService();
+  const catalogService = GUI.getService('catalog');
+  const QueryResultService = GUI.getService('queryresults');
   QueryResultService.unregisterVectorLayer(layer);
   this.viewer.map.removeLayer(layer);
   const type = layer._type || 'vector';
@@ -2550,6 +2567,8 @@ proto.removeExternalLayer = function(name) {
     if (externalMapLayer.getId() === layer.id) this.unregisterMapLayerListeners(externalMapLayer, layer.projectLayer);
     return externalMapLayer.getId() !== layer.id
   });
+  this._externalLayers = this._externalLayers.filter(externalLayer => externalLayer.get('id') !== layer.get('id'));
+  this.unloadExternalLayer(layer);
   this.emit('remove-external-layer', name);
 };
 
@@ -2580,13 +2599,29 @@ proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), po
       reject(err);
     });
 
+    /**
+     * add to map
+     */
     this.addExternalLayer(olLayer,  {
       position,
       opacity,
       visible
     });
+
+    /**
+     * cal register and other thing to alert that new map layer is added
+     */
     this.addExternalMapLayer(wmslayer, false);
   })
+};
+
+/**
+ *
+ * Return extanla layers added to map
+ * @returns {[]|*[]|T[]}
+ */
+proto.getExternalLayers = function(){
+  return this._externalLayers;
 };
 
 proto.addExternalMapLayer = function(externalMapLayer, projectLayer=false){
@@ -2609,7 +2644,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     type,
     crs;
   const {position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity=1, visible=true} = options;
-  const map = this.viewer.map;
+  const {map} = this.viewer;
   const catalogService = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
   if (externalLayer instanceof ol.layer.Vector) {
@@ -2691,6 +2726,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
         type
       });
       extent && map.getView().fit(extent);
+      this.loadExternalLayer(layer);
       return Promise.resolve(layer);
     } else return Promise.reject();
   };

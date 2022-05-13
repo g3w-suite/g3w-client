@@ -14,6 +14,11 @@ const vueComponentOptions = {
     return {
       ready: false,
       target,
+      mouse: {
+        switch_icon: false,
+        epsg_4326: false,
+        tooltip: null
+      },
       maps_container: this.$options.maps_container,
       service,
       mapunit: ApplicationState.map.unit,
@@ -45,6 +50,9 @@ const vueComponentOptions = {
     },
     createCopyMapExtentUrl(){
       const mapService = this.$options.service.createCopyMapExtentUrl();
+    },
+    switchMapsCoordinateTo4326(){
+      this.mouse.epsg_4326 = !this.mouse.epsg_4326;
     }
   },
   watch: {
@@ -55,7 +63,11 @@ const vueComponentOptions = {
   },
   async mounted() {
     const mapService = this.$options.service;
-    mapService.once('ready', ()=>this.ready = true);
+    mapService.once('ready', ()=> {
+      this.ready = true;
+      this.mouse.switch_icon = this.$options.service.getEpsg() !== 'EPSG:4326';
+      this.mouse.tooltip = `ESPG ${this.$options.service.getCrs().split(':')[1]} <--> WGS84`;
+    });
     this.crs = mapService.getCrs();
     await this.$nextTick();
     mapService.setMapControlsContainer($(this.$refs['g3w-map-controls']));

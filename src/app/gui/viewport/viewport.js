@@ -257,9 +257,8 @@ const ViewportService = function() {
   };
 
   // hide content
-  this.hideContent = function(bool, perc) {
+  this.hideContent = function(bool) {
     const prevContentPerc = this.getContentPercentageFromCurrentLayout(this.state.split);
-    this.setContentPercentageFromCurrentLayout(this.state.split, 0);
     this.state.secondaryVisible = !bool;
     this._layout('hide-content');
     // return previous percentage

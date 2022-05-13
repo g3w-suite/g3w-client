@@ -1181,6 +1181,21 @@ const geoutils = {
     }
     return geometries;
   },
+  /**
+   * Convert geometry to geometryType (from Single to Multi or viceversa)
+   * @param geometry //from geometry
+   * @param toGeometryType
+   * @returns {*}
+   */
+  convertSingleMultiGeometry(geometry, toGeometryType){
+      if (toGeometryType){
+        const isFromGeometryMulti = geoutils.isMultiGeometry(geometry);
+        const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
+        if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
+        else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
+      }
+      return geometry;
+  },
 
   dissolve({features=[], index=0, clone=false}={}) {
     const parser = new jsts.io.OL3Parser();

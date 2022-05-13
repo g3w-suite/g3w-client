@@ -191,7 +191,7 @@ const vueComponentOptions = {
     },
     zoomToLayer() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
       this._hideMenu();
     },
@@ -338,7 +338,7 @@ const vueComponentOptions = {
         })
     },
     changeLayerMapPosition({position, layer}){
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       const changed = layer.position !== position;
       layer.position = position;
       mapService.changeLayerMapPosition({
@@ -349,7 +349,7 @@ const vueComponentOptions = {
     },
     setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}){
       this.layerMenu.layer.opacity = opacity;
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       mapService.changeLayerOpacity({
         id,
         opacity
@@ -363,7 +363,7 @@ const vueComponentOptions = {
     async downloadExternalShapefile(layer){
       const EPSG4326 = 'EPSG:4326';
       this.layerMenu.loading.shp = true;
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       const vectorLayer = mapService.getLayerByName(layer.name);
       const GeoJSONFormat = new ol.format.GeoJSON();
       let features = vectorLayer.getSource().getFeatures();
@@ -428,8 +428,11 @@ const vueComponentOptions = {
       this.showColorMenu(false);
       this.layerMenu.stylesMenu.show = false;
     },
+    onbeforeDestroyChangeColor(){
+     this.$refs.color_picker.$off();
+    },
     onChangeColor(val) {
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       this.layerMenu.layer.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       const style = layer.getStyle();
@@ -521,7 +524,7 @@ const vueComponentOptions = {
      * Visible change layer
      */
     CatalogEventHub.$on('treenodevisible', layer => {
-      const mapservice = GUI.getComponent('map').getService();
+      const mapservice = GUI.getService('map');
       mapservice.emit('cataloglayervisible', layer);
     });
 
@@ -529,7 +532,7 @@ const vueComponentOptions = {
      * Eevent handle of select layer
      */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
-      const mapservice = GUI.getComponent('map').getService();
+      const mapservice = GUI.getService('map');
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
       // emit signal of select layer from catalog
@@ -748,7 +751,7 @@ Vue.component('tristate-tree', {
       } else if (download.url) {}
     },
     removeExternalLayer(name, type) {
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       mapService.removeExternalLayer(name, wms);
     },
     showLayerMenu(layerstree, evt) {
@@ -953,7 +956,7 @@ Vue.component('layerslegend-items',{
   },
   async mounted() {
     await this.$nextTick();
-    const mapService = GUI.getComponent('map').getService();
+    const mapService = GUI.getService('map');
     mapService.on('change-map-legend-params', ()=>{
       this.mapReady = true;
       this.getLegendSrc(this.layers);
