@@ -658,7 +658,7 @@ Vue.component('tristate-tree', {
             }
           } else setAllLayersVisible({
             nodes: node.nodes,
-            visible
+            visible: visible && node.checked
           })
         });
       };
@@ -709,7 +709,7 @@ Vue.component('tristate-tree', {
         });
       } else {
         const layer = CatalogLayersStoresRegistry.getLayerById(id);
-        if (checked){
+        if (checked) {
           const visible = layer.setVisible(!disabled);
           visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
             layerId: id

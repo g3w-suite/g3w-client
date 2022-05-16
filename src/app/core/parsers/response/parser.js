@@ -106,7 +106,7 @@ const utils = {
         numericFields.forEach(_field => {
           const value = feature.get(_field);
           const ori_field = _field.replace(WORD_NUMERIC_FIELD_ESCAPE, '');
-          feature.set(this.hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value)? value[0] : value);
+          feature.set(this.hasFieldsStartWithNotPermittedKey[ori_field], Array.isArray(value) ? value[0] : value);
           feature.unset(_field);
         })
       });

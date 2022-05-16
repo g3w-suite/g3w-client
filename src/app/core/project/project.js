@@ -348,25 +348,24 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
    * @param layerstree // current layerstree
    */
   const groups = [];
-  const traverse = (mapThemeLayersTree, layerstree, parent) =>{
+  const traverse = (mapThemeLayersTree, layerstree, checked) =>{
     mapThemeLayersTree.forEach((node, index) => {
       if (node.nodes) { // case of group
-        traverse(node.nodes, layerstree[index].nodes, node);
-        layerstree[index].expanded = node.expanded;
         groups.push({
-          group: layerstree[index],
-          node
-        })
+          node,
+          group: layerstree[index]
+        });
+        traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
       } else {
         // case of layer
         node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
-        layerstree[index].checked = node.visible;
         if (layerstree[index].checked !== node.visible) {
           changes.layers[node.id] = {
             visibility: true,
             style: false
           };
         }
+        layerstree[index].checked = node.visible;
         // if has a style settled
         if (node.style) {
           const promise = new Promise((resolve, reject) =>{
@@ -410,18 +409,29 @@ proto.getMapThemeFromThemeName = async function(map_theme){
     // check if has layerstree (property get from server with a specific api
     const {layerstree} = mapThemeConfig;
     if (layerstree === undefined) {
-      const url = `${this.urls.map_themes}${map_theme}/`;
-      try {
-        const response = await XHR.get({
-          url
-        });
-        const {result, data} = response;
-        // data is a layerstree rapresentation fro that specific map_theme
-        if (result) mapThemeConfig.layerstree =  data;
-      } catch(err){}
+      const layerstree = await this.getMapThemeConfiguration(map_theme);
+      mapThemeConfig.layerstree =  layerstree;
     }
   }
   return mapThemeConfig;
+};
+
+/**
+ * get map_style from server
+ * @param map_theme
+ * @returns {Promise<*>}
+ */
+proto.getMapThemeConfiguration = async function(map_theme){
+  let config;
+  const url = `${this.urls.map_themes}${map_theme}/`;
+  try {
+    const response = await XHR.get({
+      url
+    });
+    const {result, data} = response;
+    if (result) config = data;
+  } catch(err){}
+  return config;
 };
 
 proto.getUrl = function(type){
