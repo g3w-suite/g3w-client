@@ -1042,13 +1042,21 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   return layers;
 };
 
+/**
+ * Method to set special attributes
+ * @param layerSpecialAttributesName
+ * @param feature
+ * @private
+ */
 proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName, feature) {
+  // get feature properties get from server request
   const featureAttributes = feature.getProperties();
+  // get attributes special keys
   const featureAttributesNames = Object.keys(featureAttributes);
   if (layerSpecialAttributesName.length) {
     layerSpecialAttributesName.forEach(attributeObj =>{
       featureAttributesNames.find(featureAttribute => {
-        if (featureAttribute.match(attributeObj.alias)) {
+        if (featureAttribute === attributeObj.alias) {
           feature.set(attributeObj.name, feature.get(featureAttribute));
           return true
         }
