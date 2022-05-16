@@ -291,7 +291,7 @@ const vueComponentOptions = {
     }
   },
   watch: {
-    async 'state.layers'(layers, oldlayers) {
+    async 'state.layers'(layers) {
       layers.forEach(layer => {
         if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
         layer.features.forEach(feature => {
