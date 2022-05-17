@@ -771,7 +771,6 @@ Vue.component('tristate-tree', {
 });
 
 const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
-
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
@@ -782,9 +781,9 @@ Vue.component('layerslegend',{
       visiblelayers(){
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
-        let traverse = (obj) => {
+        let traverse = obj => {
           for (const layer of obj) {
-            if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) _visiblelayers.push(layer);
+            if (!_.isNil(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) _visiblelayers.push(layer);
             if (!_.isNil(layer.nodes)) traverse(layer.nodes);
           }
         };
