@@ -15,7 +15,11 @@
     <addlayer :service="service"></addlayer>
   </div>
   <div id="map_footer" class="skin-border-color">
-    <div id="map_footer_left"></div>
+    <div id="map_footer_left" style="display: flex;" >
+      <a href="https://g3wsuite.it/" style="margin-left: 5px; align-self: center;" target="_blank">
+        <img height="20" src="/static/client/images/g3wsuite_logo.png" alt="">
+      </a>
+    </div>
     <div id="map_footer_right" style="display: flex;">
       <div id="scale-control"></div>
       <div v-if="mouse.switch_icon" id="switch-mouse-coordinate" v-t-tooltip:top.create="mouse.tooltip" @click.stop.prevent="switchMapsCoordinateTo4326">
