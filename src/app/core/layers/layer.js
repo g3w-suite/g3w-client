@@ -459,7 +459,7 @@ proto.getGeoTIFF = function({data}={}){
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -468,7 +468,7 @@ proto.getXls = function({data}={}){
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -477,7 +477,7 @@ proto.getShp = function({data}={}) {
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -486,7 +486,7 @@ proto.getGpx = function({data}={}){
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -495,7 +495,7 @@ proto.getGpkg = function({data}={}){
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -504,7 +504,7 @@ proto.getCsv = function({data}={}){
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 

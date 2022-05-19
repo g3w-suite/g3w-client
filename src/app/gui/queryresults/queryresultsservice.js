@@ -406,7 +406,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       }
       // in case of relations
       if (this._relations) {
-        const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
+        const relations = this._relations[layer.id] && this._relations[layer.id].filter(relation =>{
           return relation.type === 'MANY';
         });
         if (relations && relations.length) {
