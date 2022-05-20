@@ -9,7 +9,7 @@
         :class="[index %2 == 1 ? 'odd' : 'pair', {geometry: !!feature.geometry}, {'selected': feature.selected}]">
       <td v-for="(header, hindex) in headers" :tab-index="1">
         <select-row @selected="addRemoveSelectedFeature" :feature="feature" v-if="hindex===0"></select-row>
-        <field v-else :feature="feature" :state="getField(header)"></field>
+        <field v-else :feature="feature" :state="getField(feature, header)"></field>
       </td>
     </tr>
   </tbody>
@@ -52,9 +52,9 @@
       SelectRow
     },
     methods: {
-      getField(header){
+      getField(feature, header){
         return {
-          ...header,
+          value: feature.attributes[header.name],
           label: undefined // temporary to avoid label
         }
       }

@@ -151,13 +151,14 @@ proto.getCatalogWmsUrl = function(){
 // values: map, legend
 proto.getWmsUrl = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  return (legendMapBoolean &&
-      this.config.source &&
-      (type === 'legend' || this.config.source.external) &&
-      this.config.source.type === 'wms' &&
-      this.config.source.url) ?
+  const wmsUrl = (legendMapBoolean &&
+    this.config.source &&
+    (type === 'legend' || this.config.source.external) &&
+    (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
+    this.config.source.url) ?
     this.config.source.url :
     this.config.wmsUrl;
+  return wmsUrl
 };
 
 /**
