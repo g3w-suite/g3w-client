@@ -1959,8 +1959,8 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add time parametter to force request of map layer from server
-  if (options.force) options.time = Date.now();
+  // if force add g3w_time parametter to force request of map layer from server
+  if (options.force) options.g3w_time = Date.now();
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
     this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);

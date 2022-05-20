@@ -21,7 +21,7 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
   };
 };
 
-RasterLayers.TiledWMSLayer = function(layerObj,extraParams){
+RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
   const options = {
     layerObj: layerObj,
     extraParams: extraParams || {},
@@ -74,10 +74,9 @@ RasterLayers.TiledArgisMapServer = function(options={}){
 };
 
 RasterLayers._WMSLayer = function(options={}) {
-  const {layerObj, method='GET', extraParams} = options;
+  const {layerObj, method='GET', extraParams, tiled=false} = options;
   const {
     iframe_internal=false,
-    tiled=false,
     layers='',
     version='1.3.0',
     sld_version='1.1.0',
