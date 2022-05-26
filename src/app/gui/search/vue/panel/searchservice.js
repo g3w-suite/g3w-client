@@ -37,10 +37,10 @@ function SearchService(config={}) {
   const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
   this.inputdependance = {};
-  this.inputdependencies = [];
+  this.inputdependencies = {};
   this.cachedependencies = {};
   this.project = ProjectsRegistry.getCurrentProject();
-  this.mapService = GUI.getComponent('map').getService();
+  this.mapService = GUI.getService('map');
   this.searchLayer = null;
   this.filter = null;
   this.inputs = [];
@@ -158,7 +158,6 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
   }
 };
 
-
 /**
  * Get return type
  */
@@ -187,9 +186,11 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
     });
     fields.push(fieldParam);
   }
+
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
-    const operator = this.getFilterInputFromField(field).op;
+    // need to set to lower case for api purpose
+    const operator = this.getFilterInputFromField(field).op.toLowerCase();
     fields.unshift(`${field}|${operator}|${encodeURI(value)}`);
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
@@ -272,10 +273,6 @@ proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
   try {
     data = await this.searchLayer.getFilterData({
-      // field: this.createFieldsDependenciesAutocompleteParameter({
-      //   field,
-      //   value
-      // }),
       suggest: `${field}|${value}`,
       unique: field
     })
@@ -381,9 +378,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         }
       }
     }
-  } catch(err){
-    console.log(err)
-  }
+  } catch(err){}
   this.state.searching = false;
   return data;
 };
@@ -452,6 +447,7 @@ proto.createQueryFilterFromConfig = function({filter}) {
     });
     return booleanObject;
   }
+
   for (const operator in filter) {
     const inputs = filter[operator];
     queryFilter = createBooleanObject(operator, inputs);
@@ -650,7 +646,6 @@ proto.valuesToKeysValues = function(values){
   }
   return values;
 };
-
 
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
   const info = this.getInfoFromLayer(ogcService);
