@@ -479,7 +479,7 @@ const translations = {
         helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         contextmenu: {
           zoomtolayer: "Zoom to Layer",
-          open_attribute_table: "Apri la tabella degli attibuti",
+          open_attribute_table: "Apri tabella attributi",
           show_metadata: "Metadati",
           styles: "Stili",
           vector_color_menu:"Setta/Cambia Colore"
