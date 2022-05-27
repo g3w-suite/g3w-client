@@ -1,11 +1,15 @@
 const Validators = require('core/validators/inputs/validators');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 
 function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
   // type of input
-  this.state.validate.required && this.setValue(this.state.value);
+  //this.state.validate.required && this.setValue(this.state.value);
+  /*
+  * set starting value of input based on value or default value on options
+   */
+  this.setValue(this.state.value);
   this.setEmpty(this.state.value);
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
