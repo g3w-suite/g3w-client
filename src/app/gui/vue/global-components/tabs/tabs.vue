@@ -19,6 +19,7 @@
                     :layerid="layerid"
                     :contenttype="contenttype"
                     :addToValidate="addToValidate"
+                    :removeToValidate="removeToValidate"
                     :changeInput="changeInput"
                     :fields="fields"
                     :showTitle="false"
@@ -34,6 +35,7 @@
             :layerid="layerid"
             :contenttype="contenttype"
             :addToValidate="addToValidate"
+            :removeToValidate="removeToValidate"
             :changeInput="changeInput"
             :fields="fields"
             :showTitle="false"
@@ -71,6 +73,7 @@
         required: true
       },
       addToValidate: Function,
+      removeToValidate: Function,
       changeInput: Function,
       showRelationByField: {
         type: Boolean,
@@ -94,9 +97,7 @@
         return this.contenttype === 'editing' && this.fields.filter(field => field.validate.required).map(field => field.name);
       },
       show(){
-        return this.tabs.reduce((accumulator, tab) =>{
-          return accumulator || (tab.visible === undefined || !!tab.visible)
-        }, false)
+        return this.tabs.reduce((accumulator, tab) => accumulator || (tab.visible === undefined || !!tab.visible), false);
       }
     },
     methods: {

@@ -8,8 +8,10 @@
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
+            @removeinput="removeToValidate"
             :changeInput="changeInput"
             :addToValidate="addToValidate"
+            :removeToValidate="removeToValidate"
             :feature="feature"
             :is="getComponent(getField(getNode(row, column)))">
           </component>
@@ -43,7 +45,7 @@
   const GUI = require('gui/gui');
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'removeToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
     components: {
       G3wInput,
       ...Fields

@@ -67,7 +67,8 @@ function FormService() {
       tovalidate: {},
       feature,
       componentstovalidate: {},
-      footer
+      footer,
+      ready: false
     };
     this.expression_fields_dependencies = {};
     this.setFormFields(fields);
@@ -76,14 +77,16 @@ function FormService() {
       this.setFormStructure(formstructure);
     }
   };
-  this.eventBus.$on('set-loading-form', (bool=false) => {
-    this.state.loading = bool;
-  })
+  this.eventBus.$on('set-loading-form', (bool=false) => this.state.loading = bool);
 }
 
 inherit(FormService, G3WObject);
 
 const proto = FormService.prototype;
+
+proto.setReady = function(bool=false){
+  this.state.ready = bool;
+};
 
 /**
  * Method to handle expression on
@@ -273,6 +276,13 @@ proto.addedComponentTo = function(formcomponent = 'body') {
 
 proto.addToValidate = function(input) {
   this.state.tovalidate[input.name] = input;
+  // check if is mounted on form gui otherwise leave form component to run is Valid whe form is mounted on dom
+  this.state.ready && this.isValid(input);
+};
+
+proto.removeToValidate = function(input){
+  delete this.state.tovalidate[input.name];
+  this.isValid();
 };
 
 proto.getState = function () {
