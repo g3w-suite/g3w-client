@@ -57,6 +57,9 @@ const vueComponentObject = {
     addToValidate(input) {
       this.$options.service.addToValidate(input);
     },
+    removeToValidate(input) {
+      this.$options.service.removeToValidate(input);
+    },
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
@@ -88,6 +91,7 @@ const vueComponentObject = {
   mounted() {
     // check if is valid form (it used by footer component)
     this.$options.service.isValid();
+    this.$options.service.setReady(true);
   },
   beforeDestroy() {
     this.$options.service.clearAll();
