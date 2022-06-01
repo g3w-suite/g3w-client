@@ -694,7 +694,7 @@ const ViewportComponent = Vue.extend({
         content: {
           width: `${this.state.content.sizes.width}px`,
           height: `${this.state.content.sizes.height}px`,
-          minHeight: this.state.split === 'v'?  `${viewportConstraints.resize.content.min}px` : null
+          minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null
         }
       }
     },
