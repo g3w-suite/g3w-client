@@ -22,7 +22,7 @@
     </div>
     <div id="map_footer_right" style="display: flex;">
       <div id="scale-control"></div>
-      <div v-if="mouse.switch_icon" id="switch-mouse-coordinate" v-t-tooltip:top.create="mouse.tooltip" @click.stop.prevent="switchMapsCoordinateTo4326">
+      <div v-if="mouse.switch_icon && !isMobile()" id="switch-mouse-coordinate" v-t-tooltip:top.create="mouse.tooltip" @click.stop.prevent="switchMapsCoordinateTo4326">
         <span class="skin-color hide-cursor-caret-color" :class="g3wtemplate.getFontClass('mouse')"></span>
       </div>
       <div v-show="!mouse.epsg_4326" id="mouse-position-control"></div>
