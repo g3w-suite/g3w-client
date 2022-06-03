@@ -10,7 +10,8 @@
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default --max-old-space-size=2048",
     "test": "gulp test",
-    "cy:open": "cypress open"
+    "cy:open": "cypress open",
+    "version": "npm admin && git add -A dist"
   },
   "repository": {
     "type": "git",
