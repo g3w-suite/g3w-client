@@ -69,8 +69,8 @@ The main gulp commands to use in develop enviroment are:
       npm run admin
    ```
 
-# Internalization
-It is possible to add internalization translation adding/modified  g3w-client/src/config/i18n/index.js
+# Internationalization
+It is possible to add internationalization translation adding/modified  g3w-client/src/config/i18n/index.js
 
 #Run web client
 After add a group and at least one qgis project in admin you can run web client application following the below rules:
