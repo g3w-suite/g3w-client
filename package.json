@@ -11,7 +11,9 @@
     "default": "gulp default --max-old-space-size=2048",
     "test": "gulp test",
     "cy:open": "cypress open",
-    "version": "npm admin && git add -A dist"
+    "preversion": "npm run test",
+    "version": "npm run admin && git add -A dist",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
