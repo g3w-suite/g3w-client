@@ -1,5 +1,5 @@
 const PROTOCOL = 'http';
-const HOST = '192.168.1.2';
+const HOST = '127.0.0.1';
 const PROXY_PORT = '8001';
 const LOCAL_PORT = '3000';
 
