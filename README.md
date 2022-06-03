@@ -14,10 +14,6 @@ sudo apt-get install -y nodejs-legacy npm
 Note: You have to install Node version => v10.x.x
 
 
-## Clone sdk and template repository
-
-To use G3W-CLIENT
-
 ## Install G3W-CLIENT development dependencies
 
 The following instruction will install all node modules mandatory to use development enviromental
