@@ -8,7 +8,7 @@ export const tools = {
   tools:  []
 };
 
-// get message from internalization
+// get message from internationalization
 export const _i18n = {
   resources: require('./i18n/index.js')
 };
