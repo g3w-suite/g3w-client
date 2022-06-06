@@ -9,11 +9,18 @@
     "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default --max-old-space-size=2048",
+    "dev": "npm run docker:up && npm run default",
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
     "version": "npm run admin && git add -A dist",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "docker": "docker compose --env-file ./docker/.env --file ./docker/docker-compose.yml --project-name g3w-client --project-directory ./docker",
+    "docker:pull": "npm run docker pull",
+    "docker:up": "npm run docker up -- -d",
+    "docker:down": "npm run docker down",
+    "docker:config": "npm run docker config",
+    "docker:logs": "npm run docker logs"
   },
   "repository": {
     "type": "git",
@@ -111,5 +118,9 @@
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
+  },
+  "engines" : { 
+    "node" : ">=16.13.0",
+    "npm" : ">=8.1.0"
   }
 }
