@@ -11,7 +11,7 @@ The following instructions are for a Ubuntu 18.04 LTS.
 sudo apt-get install -y nodejs-legacy npm
 ```
 
-Note: You have to install Node version => v16.3.x
+Note: You have to install Node version => v16.13.2
 
 
 ## Install G3W-CLIENT development dependencies
