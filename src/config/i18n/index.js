@@ -3355,7 +3355,7 @@ const translations = {
       search: "Căutare",
       no_results: "Niciun rezultat găsit",
       print: "Tipărire",
-      create_print: "Adaugă Tipărire",
+      create_print: "Tipărește",
       dosearch: "Caută",
       catalog: "Hartă",
       data: "Data",
