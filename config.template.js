@@ -2,6 +2,7 @@ const PROTOCOL = 'http';
 const HOST = '127.0.0.1';
 const PROXY_PORT = '8001';
 const LOCAL_PORT = '3000';
+const G3W_ADMIN_MEDIA_PUBLIC_FOLDER = '/media'; // change g3w-admin media public folder (default is /media)
 
 const conf = {
   assetsFolder: './assets', //template folder of template repository
@@ -22,7 +23,7 @@ const conf = {
   proxy: {
     host: HOST,
     url: `${PROTOCOL}://${HOST}:${PROXY_PORT}/`, // local G3W_ADMIN server and port (where G3W-ADIMN is running)
-    urls: ['/api','/ows','/qdjango2_media','/static', '/en/', '/it/', '/upload/'] // urls to proxy referred to G3W-ADMIN
+    urls: [G3W_ADMIN_MEDIA_PUBLIC_FOLDER , '/api','/ows', '/static', '/en/', '/it/', '/upload/'] // urls to proxy referred to G3W-ADMIN
   },
   test: {
     path: '/test/config/groups/'
