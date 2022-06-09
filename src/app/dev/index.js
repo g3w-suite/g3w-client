@@ -1,42 +1,44 @@
 import DEVCONFIG from '../../config/dev'
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
+// const GUI = require('gui/gui');
+
+const {
+  createProject = {},
+  setCurrentProject = {},
+  plugins = {}
+} = DEVCONFIG;
+
 // Handle ApplicationService on ready event
-ApplicationService.once('ready', function(){});
-//andle obtaininitConfig
-ApplicationService.once('initconfig', ()=> {
-  const {plugins = {}} = DEVCONFIG;
+// ApplicationService.once('ready', function(){});
+
+// Handle obtaininitConfig
+ApplicationService.once('initconfig', () => {
   Object.keys(plugins).forEach(plugin =>{
     window.initConfig.group.plugins[plugin] = window.initConfig.group.plugins[plugin] ? {
         ...window.initConfig.group.plugins[plugin],
         ...plugins[plugin]
       } : plugins[plugin]
    })
-
 });
 
 // Handle project configuration to insert custom element on project
-ProjectsRegistry.onbefore('createProject', projectConfig => {
-  const {createProject} = DEVCONFIG;
-  createProject && createProject.before && createProject.before(projectConfig);
-});
+if (createProject.before) {
+  ProjectsRegistry.onbefore('createProject', projectConfig => createProject.before(projectConfig));
+}
 
 // Handle project configuration to insert custom element on project
-ProjectsRegistry.onafter('createProject', projectConfig => {
-  const {createProject} = DEVCONFIG;
-  createProject && createProject.after && createProject.after(projectConfig);
-});
+if (createProject.after) {
+  ProjectsRegistry.onafter('createProject', projectConfig => createProject.after(projectConfig));
+}
 
-ProjectsRegistry.onbefore('setCurrentProject', project => {
-  const {setCurrentProject} = DEVCONFIG;
-  setCurrentProject && setCurrentProject.before && setCurrentProject.before(project);
-});
+if (setCurrentProject.before) {
+  ProjectsRegistry.onbefore('setCurrentProject', project => setCurrentProject.before(project));
+}
 
-ProjectsRegistry.onafter('setCurrentProject', project => {
-  const {setCurrentProject} = DEVCONFIG;
-  setCurrentProject && setCurrentProject.after && setCurrentProject.after(project);
-});
+if (setCurrentProject.after) {
+  ProjectsRegistry.onafter('setCurrentProject', project => setCurrentProject.after(project));
+}
 
 //Ready GUI
-GUI.once('ready', function(){});
+// GUI.once('ready', function(){});

@@ -1,58 +1,46 @@
-const conf = require('./config');
-const path = require('path');
-const fs = require('fs');
-const del = require('del');
-//Gulp
-const gulp   = require('gulp');
-///
-const argv = require('yargs').argv;
-const runSequence = require('run-sequence');
-const rename = require('gulp-rename');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
-const flatten = require('gulp-flatten');
-// userref it used to parse build block of the template
-const useref = require('gulp-useref');
-///////////////////////////////////////////////////////
-const replace = require('gulp-replace');
-const gulpif = require('gulp-if');
-const uglify = require('gulp-uglify');
-const watch = require('gulp-watch');
-const cleanCSS = require('gulp-clean-css');
-const gutil = require("gulp-util");
-const less = require('gulp-less');
-const LessGlob = require('less-plugin-glob');
-const browserify = require('browserify');
-const babelify = require('babelify');
-const imgurify = require('imgurify');
-const vueify = require('vueify');
-const watchify = require('watchify');
-const stringify = require('stringify');
-const browserSync = require('browser-sync');
-const httpProxy = require('http-proxy');
-const htmlreplace = require('gulp-html-replace');
-const concat = require('gulp-concat');
-const prompt = require('gulp-prompt');
-//add md5
-const md5 = require('md5');
-//test
-const Server = require('karma').Server;
-///
-const assetsFolder = conf.assetsFolder;
-const pluginsFolder = conf.pluginsFolder;
-const distFolder = conf.distFolder;
-const clientFolder = conf.clientFolder;
-const client = argv.client || '';
-const client_version = (client !== '') ? 'client-'+client : 'client';
-// it used to change build minified js and css to avoid server cache
-// every time we deploy a new client version
-// const versionHash = Date.now();
-let production = false;
-// let g3w_admin = false;
-let build_all = true;
-let g3w_admin_version = 'dev';
+const packageJSON = require('./package.json');
+const g3w         = require('./config');
 
-//used to check if change are done on these file without upload new file with no changes
+// Gulp
+const gulp        = require('gulp');
+const cleanCSS    = require('gulp-clean-css');
+const concat      = require('gulp-concat');
+const flatten     = require('gulp-flatten');
+const htmlreplace = require('gulp-html-replace');
+const gulpif      = require('gulp-if');
+const less        = require('gulp-less');
+const prompt      = require('gulp-prompt');
+const rename      = require('gulp-rename');
+const replace     = require('gulp-replace');
+const uglify      = require('gulp-uglify');
+const gutil       = require('gulp-util');
+const useref      = require('gulp-useref'); // used to parse build block of the template
+
+const buffer      = require('vinyl-buffer');
+const source      = require('vinyl-source-stream');
+
+const del         = require('del');
+const fs          = require('fs');
+const md5         = require('md5');
+const path        = require('path');
+
+///////////////////////////////////////////////////////
+const babelify    = require('babelify');
+const browserSync = require('browser-sync');
+const browserify  = require('browserify');
+const httpProxy   = require('http-proxy');
+const karma       = require('karma');
+const imgurify    = require('imgurify');
+const LessGlob    = require('less-plugin-glob');
+const stringify   = require('stringify');
+const vueify      = require('vueify');
+const watchify    = require('watchify');
+
+// TODO: make use of "process.env" instead of setting local variables
+let production = false;
+let build_all = true;
+
+// used to check if changes are done on these files without upload new file with no changes
 const buildChanges = {
   vendor: {
     js: {
@@ -72,32 +60,8 @@ const buildChanges = {
   }
 };
 
-/**
- * Start to think in vendor
- * @type {{name: string, version: string, description: string, main: string, scripts: {preinstall: string, admin: string, "admin:client": string, plugins: string, default: string, test: string, "cy:open": string}, repository: {type: string, url: string}, author: string, license: string, homepage: string, dependencies: {"shp-write": string, vue: string}, resolutions: {"graceful-fs": string}, devDependencies: {"babel-core": string, "babel-plugin-syntax-async-generators": string, "babel-plugin-syntax-jsx": string, "babel-plugin-transform-array-find": string, "babel-plugin-transform-async-to-generator": string, "babel-plugin-transform-es2015-classes": string, "babel-plugin-transform-object-rest-spread": string, "babel-plugin-transform-remove-strict-mode": string, "babel-plugin-transform-runtime": string, "babel-plugin-transform-vue-jsx": string, "babel-polyfill": string, "babel-preset-env": string, babelify: string, "browser-sync": string, browserify: string, chai: string, "chai-http": string, "current-git-branch": string, cypress: string, del: string, "generator-browserify": string, "generator-karma": string, gulp: string, "gulp-clean-css": string, "gulp-concat": string, "gulp-csso": string, "gulp-filenames": string, "gulp-filter": string, "gulp-flatten": string, "gulp-git": string, "gulp-html-extend": string, "gulp-html-replace": string, "gulp-if": string, "gulp-jshint": string, "gulp-less": string, "gulp-merge": string, "gulp-minify-css": string, "gulp-preprocess": string, "gulp-prompt": string, "gulp-refresh": string, "gulp-rename": string, "gulp-replace": string, "gulp-sourcemaps": string, "gulp-streamify": string, "gulp-uglify": string, "gulp-useref": string, "gulp-watch": string, "http-proxy": string, imgurify: string, inquirer: string, jshint: string, "jshint-stylish": string, karma: string, "karma-browserify": string, "karma-chai": string, "karma-chrome-launcher": string, "karma-cli": string, "karma-mocha": string, "karma-requirejs": string, "karma-sinon": string, less: string, "less-plugin-glob": string, md5: string, mocha: string, "node-lessify": string, preprocess: string, requirejs: string, "run-sequence": string, sinon: string, "stream-array": string, "stream-concat": string, stringify: string, "uglify-js": string, "vinyl-buffer": string, "vinyl-paths": string, "vinyl-source-stream": string, vueify: string, watchify: string, yargs: string}}}
- */
-const packageJSON = require('./package.json');
-const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {}).filter(dep => dep !== 'vue');
-
-// BrowserSync stuff
-const proxy = httpProxy.createProxyServer({ target: conf.proxy.url });
-proxy.on('error',function(e) { gutil.log(e); });
-
-// function interpolateVersion(path, separator) {
-//   const prepost = path.split(separator);
-//   if (prepost.length !== 2) {
-//     return path;
-//   }
-//   return prepost[0] +"."+ buildChanges[prepost[0]][prepost[1]].hash + separator + prepost[1];
-// }
-
-// run sequence function. It expect some arguments
-function prepareRunSequence() {
-  const _arguments = arguments;
-  return function() {
-    runSequence.apply(null,_arguments);
-  }
-}
+// Retrieve project dependencies ("g3w-client")
+const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
 
 // production const to set enviromental variable
 function setNODE_ENV() {
@@ -106,10 +70,15 @@ function setNODE_ENV() {
 
 setNODE_ENV();
 
+gulp.task('clean',           () => del(['dist/**/*'], { force:true }));
+gulp.task('clean_vendor_js', () => del([`${g3w.clientFolder}/js/vendor.node_modules.min.js`], {force:true}));
+gulp.task('cleanup',         () => del([`${g3w.clientFolder}/js/app.js`, `${g3w.clientFolder}/css/app.css`], { force:true }));
+
 /**
- * Hash version
+ * Build minified hashed versions of js and css files in order to avoid server cache
  */
 gulp.task('sethasvalues', async function(done) {
+  const static = `${g3w.admin_static_folder}/client`;
   const files = {
     js: ['app'],
     css: ['app']
@@ -120,8 +89,8 @@ gulp.task('sethasvalues', async function(done) {
   } else {
     // set_current_hash_version
     ['js', 'css'].forEach(folder => {
-      fs.readdirSync(`${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static}/${client_version}/${folder}`).filter(file => {
-        //exclude datatable
+      fs.readdirSync(`${static}/${folder}`).filter(file => {
+        // exclude datatable
         if (file.indexOf('DataTables-') === -1 && file.indexOf('vendor') !== -1) {
           const hash = file.split('.')[1];
           buildChanges.vendor[folder].hash = hash;
@@ -129,57 +98,50 @@ gulp.task('sethasvalues', async function(done) {
       })
     });
   }
-  for (let type of ['js', 'css']){
-    for (let name of  files[type]){
-      const originalname = `${clientFolder}/${type}/${name}.min.${type}`;
+  // generate md5 hash
+  for (let type of ['js', 'css']) {
+    for (let name of files[type]) {
+      const originalname = `${g3w.clientFolder}/${type}/${name}.min.${type}`;
       const fileBuffer = await fs.promises.readFile(originalname);
       buildChanges[name][type].hash = md5(fileBuffer);
-      fs.renameSync(originalname, `${clientFolder}/${type}/${name}.${buildChanges[name][type].hash}.min.${type}`)
+      fs.renameSync(originalname, `${g3w.clientFolder}/${type}/${name}.${buildChanges[name][type].hash}.min.${type}`)
     }
   }
   done();
 });
 
-/* Start vendor task */
-
-gulp.task('vendor_node_modules_js', function() {
+gulp.task('browserify_vendor_js', function() {
   return browserify()
     .require(dependencies)
     .bundle()
     .pipe(source('vendor.node_modules.min.js'))
     .pipe(buffer())
     .pipe(uglify())
-    .pipe(gulp.dest(`${clientFolder}/js`));
+    .pipe(gulp.dest(`${g3w.clientFolder}/js`));
 });
 
-gulp.task('concatenate_node_modules_vendor_min', ['vendor_node_modules_js'], function() {
-  return gulp.src(`${clientFolder}/js/vendor.*.js`)
+gulp.task('concatenate_vendor_js', gulp.series('browserify_vendor_js', function() {
+  return gulp.src(`${g3w.clientFolder}/js/vendor.*.js`)
     .pipe(concat('vendor.min.js'))
-    .pipe(gulp.dest(`${clientFolder}/js/`));
-});
-
-gulp.task('clean_vendor_node_modules_min', function() {
-  return del([`${clientFolder}/js/vendor.node_modules.min.js`], {force:true});
-});
-
-/* End vendor task */
+    .pipe(gulp.dest(`${g3w.clientFolder}/js/`));
+}));
 
 /**
  * Trasform modularized code in a browser compatible way
  */
-gulp.task('browserify', [], function() {
+gulp.task('browserify', function(done) {
   let rebundle;
   let bundler = browserify('./src/app/main.js', {
-    basedir: "./",
-    paths: ["./src/","./src/app/", "./src/plugins/"],
+    basedir: './',
+    paths: ['./src/', './src/app/', './src/plugins/'],
     debug: !production,
     cache: {},
     packageCache: {}
   });
   if (production) {
-    //ignore dev file index
+    // ignore dev file index
     bundler.ignore('./src/app/dev/index.js');
-    //add externalmodule node_modules on vendor
+    // add externalmodule node_modules on vendor
     dependencies.forEach(dep => bundler.external(dep));
   } else {
     bundler.on('prebundle', bundle => {
@@ -192,38 +154,36 @@ gulp.task('browserify', [], function() {
   }
 
   // trasformation
-  bundler.transform(vueify)
-    .transform(babelify, {
-      babelrc: true
-    }).transform(stringify, {
-    appliesTo: { includeExtensions: ['.html', '.xml'] }
-  }).transform(imgurify);
+  bundler
+    .transform(vueify)
+    .transform(babelify, { babelrc: true })
+    .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] }})
+    .transform(imgurify);
 
   const bundle = function() {
     return bundler.bundle()
-      .on('error', function(err){
+      .on('error', function(err) {
         console.log(err);
         this.emit('end');
-        del([clientFolder+'/js/app.js',clientFolder+'/style/app.css']).then(function(){
+        del([
+          g3w.clientFolder + '/js/app.js',
+          g3w.clientFolder + '/style/app.css'
+        ]).then(function() {
           process.exit();
         });
       })
       .pipe(source('build.js'))
       .pipe(buffer())
-      .pipe(gulpif(production, replace("{G3W_VERSION}", conf.version)))
-      .pipe(gulpif(production, uglify({
-        compress: {
-          drop_console: true
-        }
-      }).on('error', gutil.log)))
+      .pipe(gulpif(production, replace('{G3W_VERSION}', g3w.version)))
+      .pipe(gulpif(production, uglify({ compress: { drop_console: true }}).on('error', gutil.log)))
       .pipe(rename('app.js'))
-      .pipe(gulp.dest(clientFolder+'/js/'))
+      .pipe(gulp.dest(g3w.clientFolder + '/js/'))
   };
 
   if (production) {
     rebundle = () => bundle();
   } else {
-    rebundle = () => bundle().pipe(browserSync.reload({stream: true}));
+    rebundle = () => bundle().pipe(browserSync.reload({ stream: true }));
     bundler.on('update', rebundle);    
   }
   return rebundle();
@@ -233,121 +193,153 @@ gulp.task('browserify', [], function() {
  * Copy all plugins to g3w-admin's plugin folder
  */
 gulp.task('plugins', function() {
-  return gulp.src(path.join(pluginsFolder, '/*/plugin.js'))
-    .pipe(rename(function(path) {
-      path.dirname = distFolder+'/'+path.dirname+'/js/';
-    }))
+  return gulp.src(path.join(g3w.pluginsFolder, '/*/plugin.js'))
+    .pipe(rename((path) => { path.dirname = g3w.distFolder + '/' + path.dirname + '/js/'; }))
     .pipe(gulp.dest('.'));
+});
+
+gulp.task('fonts', function () {
+  return gulp.src([
+      path.join(g3w.assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'),
+      '!./src/libs/**/node_modules/**/',
+      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`
+    ])
+    .pipe(flatten())
+    .pipe(gulp.dest(g3w.clientFolder + '/fonts/'))
+});
+
+gulp.task('images', function () {
+  return gulp.src([
+      path.join(g3w.assetsFolder, 'images/**/*.{png,jpg,gif,svg}'),
+      '!./src/**/node_modules/**/',
+      `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`
+    ])
+    .pipe(flatten())
+    .pipe(gulp.dest(g3w.clientFolder + '/images/'))
 });
 
 /**
  * Compile less file in css
  */
-gulp.task('less',['fonts'], function () {
-  const appLessFolder = path.join(assetsFolder, 'style', 'less');
-  const pluginsLessFolder = path.join(pluginsFolder, '*', 'style', 'less');
-  return gulp.src([path.join(appLessFolder, 'app.less'), path.join(pluginsLessFolder, 'plugin.less')])
+gulp.task('less', gulp.series('fonts', function() {
+  const appLessFolder = path.join(g3w.assetsFolder, 'style', 'less');
+  const pluginsLessFolder = path.join(g3w.pluginsFolder, '*', 'style', 'less');
+  return gulp.src([
+      path.join(appLessFolder, 'app.less'),
+      path.join(pluginsLessFolder, 'plugin.less')
+    ])
     .pipe(concat('app.less'))
     .pipe(less({
       paths: [appLessFolder, pluginsLessFolder], // add paths where to search in @import
       plugins: [LessGlob] //plugin to manage globs import es: @import path/***
     }))
-    .pipe(gulp.dest(clientFolder+'/css/'))
-});
-
-/**
- * Compile less file in css
- */
-// gulp.task('custom-less', function () {
-//   const customLessFolder = path.join(assetsFolder, 'style', 'less', 'g3w-skins-custom', process.env.CUSTOM_LESS_FOLDER);
-//   return gulp.src(path.join(customLessFolder, 'main.less'))
-//     .pipe(concat('custom.less'))
-//     .pipe(less({
-//       plugins: [LessGlob] //plugin to manage globs import es: @import path/***
-//     }))
-//     .pipe(gulp.dest(`${customLessFolder}/css/`))
-// });
-
-gulp.task('fonts', function () {
-  return gulp.src([path.join(assetsFolder, 'fonts/**/*.{eot,ttf,woff,woff2}'), '!./src/libs/**/node_modules/**/',`${pluginsFolder}/**/*.{eot,ttf,woff,woff2}`])
-    .pipe(flatten())
-    .pipe(gulp.dest(clientFolder+'/fonts/'))
-});
-
-gulp.task('images', function () {
-  return gulp.src([path.join(assetsFolder,'images/**/*.{png,jpg,gif,svg}'),'!./src/**/node_modules/**/','./src/plugins/**/*.{png,jpg,gif,svg}'])
-    .pipe(flatten())
-    .pipe(gulp.dest(clientFolder+'/images/'))
-});
+    .pipe(gulp.dest(g3w.clientFolder + '/css/'))
+}));
 
 gulp.task('datatable-images', function () {
   if (build_all) {
-    return gulp.src(path.join(assetsFolder, 'vendors/datatables/DataTables-1.10.16/images/*'))
+    return gulp.src(
+        path.join(g3w.assetsFolder, 'vendors/datatables/DataTables-1.10.16/images/*')
+      )
       .pipe(flatten())
-      .pipe(gulp.dest(clientFolder+'/css/DataTables-1.10.16/images/'));
+      .pipe(gulp.dest(g3w.clientFolder + '/css/DataTables-1.10.16/images/'));
   }
 });
 
-gulp.task('assets',['fonts', 'images', 'less','datatable-images']);
+gulp.task('assets', gulp.series('fonts', 'images', 'less', 'datatable-images'));
+
+/**
+ * Create external assets (css and javascript libraries) referenced within main html
+ */
+ gulp.task('build_external_assets',  function() {
+  if (build_all) {
+    const replaceRelativeAssetsFolder =  path.relative(path.resolve('./src'), path.resolve(g3w.assetsFolder))  + '/' ;
+    const replaceRelativePluginFolder = function() {
+      const pluginName = path.dirname(this.file.relative);
+      return path.relative(path.resolve('./src'), path.resolve(path.join(g3w.pluginsFolder, pluginName)))  + '/' ;
+    };
+    return gulp.src('./src/index.html.template')
+      // replace css and js sources
+      .pipe(htmlreplace({
+        'app_vendor_css':
+            gulp.src(path.join(g3w.assetsFolder, 'vendors', 'index.css.html'))
+              .pipe(replace('./', replaceRelativeAssetsFolder)),
+        'app_vendor_js':
+            gulp.src(path.join(g3w.assetsFolder, 'vendors', 'index.js.html'))
+              .pipe(replace('./', replaceRelativeAssetsFolder)),
+        'plugins_css':
+            gulp.src(path.join(g3w.pluginsFolder, '*', 'index.css.html'))
+              .pipe(replace('./', replaceRelativePluginFolder)),
+        'plugins_js':
+            gulp.src(path.join(g3w.pluginsFolder, '*', 'index.js.html'))
+              .pipe(replace('./', replaceRelativePluginFolder))
+      }))
+      .pipe(rename('index.html'))
+      .pipe(gulp.dest('./src'));
+  } else {
+    return gulp.src('./src/index.html.template')
+      .pipe(rename('index.html'))
+      .pipe(gulp.dest('./src'));
+  }
+
+});
 
 /**
  * Create a index.html in src/ and add all external libraries and css to it
  */
-gulp.task('html', ['add_external_resources_to_main_html', 'assets'] , function() {
+gulp.task('html', gulp.series('build_external_assets', 'assets' , function() {
   return gulp.src('./src/index.html')
     .pipe(useref())
-    .pipe(gulpif(['css/app.min.css'], cleanCSS({
-      keepSpecialComments: 0
-    }), replace(/\w+fonts/g, 'fonts')))
-    .pipe(gulp.dest(clientFolder));
-});
+    .pipe(gulpif(['css/app.min.css'], cleanCSS({ keepSpecialComments: 0 }), replace(/\w+fonts/g, 'fonts')))
+    .pipe(gulp.dest(g3w.clientFolder));
+}));
 
 /**
  * Build django g3w-admin template with the refercenced of all css and js minified and added versionHash
  */
 gulp.task('html:compiletemplate', function() {
   return gulp.src('./src/index.html.admin.template')
-    .pipe(replace("{VENDOR_CSS}","vendor."+buildChanges.vendor.css.hash+".min.css"))
-    .pipe(replace("{APP_CSS}","app."+buildChanges.app.css.hash+".min.css"))
-    .pipe(replace("{VENDOR_JS}","vendor."+buildChanges.vendor.js.hash+".min.js"))
-    .pipe(replace("{APP_JS}","app."+buildChanges.app.js.hash+".min.js"))
-    .pipe(rename({
-      basename: "index",
-      extname: ".html"
-    }))
-    .pipe(gulp.dest(clientFolder));
+    .pipe(replace('{VENDOR_CSS}', 'vendor.' + buildChanges.vendor.css.hash + '.min.css'))
+    .pipe(replace('{APP_CSS}',       'app.' + buildChanges.app.css.hash    + '.min.css'))
+    .pipe(replace('{VENDOR_JS}',  'vendor.' + buildChanges.vendor.js.hash  + '.min.js'))
+    .pipe(replace('{APP_JS}',        'app.' + buildChanges.app.js.hash     + '.min.js'))
+    .pipe(rename({ basename: 'index', extname: '.html' }))
+    .pipe(gulp.dest(g3w.clientFolder));
 });
 
 gulp.task('browser-sync', function() {
-  const port = conf.localServerPort ?? 3000;
-  const proxyMiddleware = (urls) => function(req, res, next) {
-      let doproxy = false;
-      let rootUrl;
-      if (req.url.indexOf('plugin.js') > -1) rootUrl = req.url;
-      else rootUrl = req.url.split('?')[0];
-      for (let i in urls) {
-        if (rootUrl.indexOf(urls[i]) > -1) {
-          doproxy = true;
-          break;
-        }
-      }
-      doproxy ? proxy.web(req,res) : next();
-  };
+  const port = g3w.port ?? 3000;
+  const proxy = httpProxy.createProxyServer({ target: g3w.proxy.url });
+  proxy.on('error', function(e) { gutil.log(e); });
   browserSync.init({
     server: {
-      baseDir: ["src","."],
-      middleware: [proxyMiddleware(conf.proxy.urls)]
+      baseDir: ['src', '.'],
+      middleware: [
+        function(req, res, next) {
+          let doproxy = false;
+          let rootUrl;
+          if (req.url.indexOf('plugin.js') > -1) rootUrl = req.url;
+          else rootUrl = req.url.split('?')[0];
+          for (let i in g3w.proxy.routes) {
+            if (rootUrl.indexOf(g3w.proxy.routes[i]) > -1) {
+              doproxy = true;
+              break;
+            }
+          }
+          doproxy ? proxy.web(req, res) : next();
+        }
+      ]
     },
     port,
     open: false,
-    startPath: "/",
+    startPath: '/',
     socket: {
-      domain: `${conf.host}:${port}`
+      domain: `${g3w.host}:${port}`
     }
   });
 });
 
-gulp.task('browser:reload', function(){
+gulp.task('browser:reload', function() {
   if (browserSync) {
     browserSync.reload()
   }
@@ -355,37 +347,17 @@ gulp.task('browser:reload', function(){
 
 /**
  * Live reload application on code changes
- * 
- * TODO: "gulp.watch" vs "watch"? What's the difference?
  */
-gulp.task('watch',function() {
-  watch(['./assets/style/**/*.less', pluginsFolder + '/**/*.less'], prepareRunSequence('less','browser:reload'));
-  watch(['./assets/style/skins/*.less'],                            prepareRunSequence('less:skins','browser:reload'));
-  watch('./src/**/*.{png,jpg}',                                     prepareRunSequence('images','browser:reload'));
-  watch(`${pluginsFolder}/**/plugin.js`,                            prepareRunSequence('plugins','browser:reload'));
-  watch(`${pluginsFolder}/**/style/less/plugin.less`,               prepareRunSequence('less','browser:reload'));
-  watch([path.join(pluginsFolder,'*', 'index.*.html')],             prepareRunSequence('add_external_resources_to_main_html','browser:reload'));
-  watch(path.join('assets', 'vendors', 'index.*.html'),             prepareRunSequence('add_external_resources_to_main_html','browser:reload'));
-  gulp.watch(['./src/index.html','./src/**/*.html'], function() { browserSync.reload(); });
-});
-
-gulp.task('production', function(){
-  production = true;
-  setNODE_ENV();
-});
-
-gulp.task('production-bundle',['production','browserify']);
-
-gulp.task('clean', function() {
-  return del(['dist/**/*'], {force:true});
-});
-
-gulp.task('cleanup', function() {
-  return del([`${conf.clientFolder}/js/app.js`,`${conf.clientFolder}/css/app.css`],{force:true})
-});
-
-gulp.task('serve', function(done) {
-  runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync', done);
+gulp.task('watch', function(done) {
+  gulp.watch(['./assets/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], gulp.series('less', 'browser:reload'));
+  gulp.watch(['./assets/style/skins/*.less'],                                gulp.series('browser:reload'));
+  gulp.watch('./src/**/*.{png,jpg}',                                         gulp.series('images', 'browser:reload'));
+  gulp.watch(g3w.pluginsFolder + '/**/plugin.js',                            gulp.series('plugins', 'browser:reload'));
+  gulp.watch(g3w.pluginsFolder + '/**/style/less/plugin.less',               gulp.series('less', 'browser:reload'));
+  gulp.watch([path.join(g3w.pluginsFolder, '*', 'index.*.html')],            gulp.series('build_external_assets', 'browser:reload'));
+  gulp.watch(path.join('assets', 'vendors', 'index.*.html'),                 gulp.series('build_external_assets', 'browser:reload'));
+  gulp.watch(['./src/index.html', './src/**/*.html'],                        gulp.series('browser:reload'));
+  done();
 });
 
 /**
@@ -400,29 +372,25 @@ gulp.task('serve', function(done) {
  * 6. Remove app.js and app.css from g3w-admin client folder
  */
 gulp.task('dist', function(done) {
-  if (build_all) runSequence('clean','production','browserify','html', 'concatenate_node_modules_vendor_min', 'clean_vendor_node_modules_min', 'sethasvalues','html:compiletemplate','cleanup', done);
-  else runSequence('clean','production','browserify','html', 'sethasvalues','html:compiletemplate','cleanup', done);
+  production = true;
+  setNODE_ENV();
+
+  if (build_all) gulp.series('clean', 'browserify', 'html', 'concatenate_vendor_js', 'clean_vendor_js', 'sethasvalues', 'html:compiletemplate', 'cleanup', done);
+  else gulp.series('clean', 'browserify', 'html', 'sethasvalues', 'html:compiletemplate', 'cleanup', done);
 });
 
-gulp.task('g3w-admin-plugins',function() {
-  gulp.src(`${distFolder}/**/js/plugin.js`)
-    .pipe(rename(function(path){
-      const dirname = path.dirname;
-      const pluginname = dirname.replace('/js','');
-      path.dirname = `${conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath}/${pluginname}/static/${pluginname}/js/`;
+gulp.task('g3w-admin-plugins', function() {
+  gulp.src(`${g3w.distFolder}/**/js/plugin.js`)
+    .pipe(rename(function(path) {
+      const pluginname = path.dirname.replace('/js', '');
+      path.dirname = `${g3w.admin_plugins_folder}/${pluginname}/static/${pluginname}/js/`;
     }))
-    .pipe(gulp.dest("."));
-});
-
-gulp.task('copy-and-select-plugins', function(done) {
-  runSequence('plugins', 'select-plugins', done)
+    .pipe(gulp.dest('.'));
 });
 
 gulp.task('select-plugins', function() {
-  const plugins = fs.readdirSync(distFolder).filter(file => {
-    //exclude from list client and all template plugin
-    return (file !== 'client' && file.indexOf('template_') === -1) && fs.statSync(distFolder+'/'+file).isDirectory();
-  });
+  // exclude from list client and all template plugin
+  const plugins = fs.readdirSync(g3w.distFolder).filter(file => file !== 'client' && file.indexOf('template_') === -1 && fs.statSync(g3w.distFolder + '/' + file).isDirectory());
   return gulp.src('./package.json')
     .pipe(prompt.prompt({
         type: 'checkbox',
@@ -435,26 +403,25 @@ gulp.task('select-plugins', function() {
     )
 });
 
-gulp.task('g3w-admin-plugins-select', ['copy-and-select-plugins'], function(done) {
+gulp.task('g3w-admin-plugins-select', gulp.series('plugins', 'select-plugins', function(done) {
   const pluginNames = process.env.G3W_PLUGINS.split(',');
   if (pluginNames.length === 1 && pluginNames[0] === '') {
     console.log('No plugin selected');
     done();
   } else  {
-    const sources = pluginNames.map(pluginName => `${distFolder}/${pluginName}*/js/plugin.js`);
+    const sources = pluginNames.map(pluginName => `${g3w.distFolder}/${pluginName}*/js/plugin.js`);
     return gulp.src(sources)
-      .pipe(rename(function(path){
-        const dirname = path.dirname;
-        const pluginname = dirname.replace('/js','');
-        path.dirname = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_plugins_basepath+'/'+pluginname+'/static/'+pluginname+'/js/';
+      .pipe(rename(function(path) {
+        const pluginname = path.dirname.replace('/js', '');
+        path.dirname = g3w.admin_plugins_folder + '/' + pluginname + '/static/' + pluginname + '/js/';
       }))
-      .pipe(gulp.dest("."));
+      .pipe(gulp.dest('.'));
   }
-});
+}));
 
 gulp.task('g3w-admin-client:clear', function() {
-  const static = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_static + '/' + client_version;
-  const template = conf.g3w_admin_paths[g3w_admin_version].g3w_admin_client_dest_template + '/' + client_version;
+  const static = g3w.admin_static_folder + '/client';
+  const template = g3w.admin_templates_folder + '/client';
   return del(
     build_all
       ? [ static + '/js/*',     static + '/css/*',     template + '/index.html']
@@ -462,95 +429,49 @@ gulp.task('g3w-admin-client:clear', function() {
     { force: true })
 });
 
-gulp.task('g3w-admin-client:static',function(){
+gulp.task('g3w-admin-client:static', function() {
   gulp.src([
-    `${clientFolder}/**/*.*`,
-    `!${clientFolder}/index.html`,
-    `!${clientFolder}/js/app.js`,
-    `!${clientFolder}/css/app.css`
+    `${g3w.clientFolder}/**/*.*`,
+    `!${g3w.clientFolder}/index.html`,
+    `!${g3w.clientFolder}/js/app.js`,
+    `!${g3w.clientFolder}/css/app.css`
     ])
-    .pipe(gulp.dest(`${conf.g3w_admin_paths['dev'].g3w_admin_client_dest_static}/${client_version}/`));
-
+    .pipe(gulp.dest(`${g3w.admin_static_folder}/client/`));
 });
 
-gulp.task('g3w-admin-client:template',function(){
-  gulp.src(clientFolder+'/index.html')
-    .pipe(gulp.dest(conf.g3w_admin_paths['dev'].g3w_admin_client_dest_template+'/'+client_version+'/'));
+gulp.task('g3w-admin-client:template', function() {
+  gulp.src(g3w.clientFolder + '/index.html')
+    .pipe(gulp.dest(g3w.admin_templates_folder + '/client/'));
 });
-
-gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
-
-gulp.task('g3w-admin-client',['g3w-admin-client:clear','g3w-admin-client:static','g3w-admin-client:template']);
-
-// task used to create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
-gulp.task('g3w-admin',function(done){
-  // g3w_admin = true;
-  runSequence('dist','g3w-admin-client', 'g3w-admin-plugins-select', done)
-});
-
-gulp.task('set_build_all_to_false', function() {
-  build_all = false;
-});
-
-gulp.task('g3w-admin:client_only',['set_build_all_to_false', 'g3w-admin']);
 
 /**
- * Create external assets (css and javascript libraries)
+ * Create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
  */
-gulp.task('add_external_resources_to_main_html',  function() {
-  const srcFolder = './src';
-  if (build_all) {
-    const indexCss = 'index.css.html';
-    const indexJs = 'index.js.html';
-    const replaceRelativeAssetsFolderFolder =  path.relative(path.resolve(srcFolder), path.resolve(assetsFolder))  + '/' ;
-    return gulp.src(srcFolder + '/index.html.template')
-      // replace css and js sources
-      .pipe(htmlreplace({
-        'app_vendor_css': gulp.src(path.join(assetsFolder, 'vendors', indexCss)).pipe(replace('./',replaceRelativeAssetsFolderFolder)),
-        'app_vendor_js': gulp.src(path.join(assetsFolder, 'vendors', indexJs)).pipe(replace('./', replaceRelativeAssetsFolderFolder)),
-        'plugins_css': gulp.src(path.join(pluginsFolder, '*',indexCss))
-          .pipe(replace('./', function() {
-            const pluginName = path.dirname(this.file.relative);
-            return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
-          })),
-        'plugins_js': gulp.src(path.join(pluginsFolder, '*',indexJs))
-          .pipe(replace('./', function() {
-            const pluginName = path.dirname(this.file.relative);
-            return path.relative(path.resolve(srcFolder), path.resolve(path.join(pluginsFolder, pluginName)))  + '/' ;
-          }))
-      }))
-      .pipe(rename('index.html'))
-      .pipe(gulp.dest(srcFolder));
-  } else {
-    return gulp.src(srcFolder + '/index.html.template')
-      .pipe(rename('index.html'))
-      .pipe(gulp.dest(srcFolder));
-  }
+gulp.task('g3w-admin', gulp.series('dist', 'g3w-admin-client:clear', 'g3w-admin-client:static', 'g3w-admin-client:template', 'g3w-admin-plugins-select'));
 
+gulp.task('g3w-admin:client_only', function(done) {
+  build_all = false;
+  gulp.series('g3w-admin', done)();
 });
 
 /**
  * Run test once and exit
  */
-gulp.task('test', async (done) =>  {
-  const testPath = `${__dirname}${conf.test.path}`;
-  const testGroupFolders = fs.readdirSync(testPath).filter(file => {
-    return file !== 'group_template' && fs.statSync(testPath+'/'+file).isDirectory();
-  });
-  for (let i=0; i< testGroupFolders.length; i++) {
-    const configFile = `${testPath}${testGroupFolders[i]}/karma.config.js`;
-    const promise = new Promise((resolve)=>{
-      new Server({
-        configFile,
+gulp.task('test', async (done) => {
+  const testPath = `${__dirname}${g3w.test.path}`;
+  const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+  for (let i = 0; i < testGroupFolders.length; i++) {
+    await new Promise((resolve) => {
+      new karma.Server({
+        configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
         singleRun: true
-      }, ()=>{resolve()}).start();
+      },() => { resolve() }).start();
     });
-    await promise;
   }
-  done
+  done();
 });
 
 /**
  * Deafult development task (BrowserSync server)
  */
-gulp.task('default',['add_external_resources_to_main_html','serve']);
+gulp.task('dev', gulp.series('build_external_assets', 'clean', 'browserify', 'assets', 'watch', 'plugins', 'browser-sync'));
