@@ -1,11 +1,12 @@
-const PickLayerInputService = require('gui/inputs/picklayer/service');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const Layer = require('core/layers/layer');
-const InputMixin = require('gui/inputs/input');
-const selectMixin = require('./selectmixin');
-const {select2Mixin} = require('gui/vue/vue.mixins');
-const GUI = require('gui/gui');
+import PickLayerInputService  from 'gui/inputs/picklayer/service';
+import MapLayersStoreRegistry  from 'core/map/maplayersstoresregistry';
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import Layer  from 'core/layers/layer';
+import InputMixin  from 'gui/inputs/input';
+import selectMixin  from './selectmixin';
+import {select2Mixin}  from 'gui/vue/vue.mixins';
+import GUI  from 'gui/gui';
+import template from  './select.html';
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
 const SelectInput = Vue.extend({
@@ -16,7 +17,7 @@ const SelectInput = Vue.extend({
       picked: false
     }
   },
-  template: require('./select.html'),
+  template,
   computed:{
     showNullOption(){
       return this.state.nullOption === undefined || this.state.nullOption === true;
@@ -155,4 +156,4 @@ const SelectInput = Vue.extend({
   }
 });
 
-module.exports = SelectInput;
+export default  SelectInput;

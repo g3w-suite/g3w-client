@@ -1,13 +1,15 @@
-const { base, inherit } = require('core/utils/utils');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
-const BaseService = require('../baseservice');
+import PluginsRegistry  from 'core/plugin/pluginsregistry';
+import BaseService  from '../baseservice';
 
-function BasePluginService(){
-  base(this);
-  // common attributes between plugin service
-  this.pluginName;
-  this.dependencyApi ={};
-  this.init = async function({layers={}}={}){
+class BasePluginService extends BaseService{
+  constructor() {
+    super();
+    // common attributes between plugin service
+    this.pluginName;
+    this.dependencyApi ={};
+  };
+
+  async init({layers={}}={}){
     this.layers = layers;
     // check if the plugin in in configuration
     if (PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
@@ -27,25 +29,21 @@ function BasePluginService(){
     }
   };
 
-  this.clear = function(){
+  clear(){
     //TO OVERWRITE
   };
+
+  setDependencyApi(api={}){
+    this.dependencyApi = api;
+  };
+
+  getDependecyApi(){
+    return this.dependencyApi;
+  };
+
 }
 
-inherit(BasePluginService, BaseService);
-
-const proto = BasePluginService.prototype;
-
-proto.setDependencyApi = function(api={}){
-  this.dependencyApi = api;
-};
-
-proto.getDependecyApi = function(){
-  return this.dependencyApi;
-};
-
-
-module.exports =  BasePluginService;
+export default  BasePluginService;
 
 
 

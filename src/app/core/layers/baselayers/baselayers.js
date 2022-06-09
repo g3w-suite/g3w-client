@@ -1,10 +1,16 @@
+import OSM  from './osmlayer';
+import Bing from './binglayer';
+import TMS from './tmslayer';
+import ARCGISMAPSERVER from './arcgislayer';
+import WMTS from './wmtslayer';
+import WMS from './wmslayer';
 const BaseLayers = {
-  'OSM': require('./osmlayer'),
-  'Bing': require('./binglayer'),
-  'TMS': require('./tmslayer'),
-  'ARCGISMAPSERVER': require('./arcgislayer'),
-  'WMTS': require('./wmtslayer'),
-  'WMS': require('./wmslayer')
+  OSM,
+  Bing,
+  TMS,
+  ARCGISMAPSERVER,
+  WMTS,
+  WMS
 };
 
-module.exports = BaseLayers;
+export default  BaseLayers;

@@ -1,47 +1,44 @@
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
 
-function MapLayer(config={}) {
-  this.config = config;
-  this.id = config.id;
-  this.iframe_internal = config.iframe_internal || false;
-  this.extent = config.extent;
-  this.projection = config.projection;
-  this.layer = null;
-  this.layers = config.layers || []; // store all enabled layers
-  this.allLayers = []; // store all layers
-  this.showSpinnerWhenLoading = true;
-  base(this);
-}
+class MapLayer extends G3WObject{
+  constructor(config={}) {
+    super();
+    this.config = config;
+    this.id = config.id;
+    this.iframe_internal = config.iframe_internal || false;
+    this.extent = config.extent;
+    this.projection = config.projection;
+    this.layer = null;
+    this.layers = config.layers || []; // store all enabled layers
+    this.allLayers = []; // store all layers
+    this.showSpinnerWhenLoading = true;
+  }
 
-inherit(MapLayer, G3WObject);
+  getId(){
+    return this.id;
+  };
 
-const proto = MapLayer.prototype;
+  getOLLayer() {
+    console.log('every sub classes has to be override')
+  };
 
-proto.getId = function(){
-  return this.id;
-};
+  update(mapState={}, extraParams={}) {
+    this._updateLayers(mapState, extraParams);
+  };
 
-proto.getOLLayer = function() {
-  console.log('every sub classes has to be override')
-};
-
-proto.update = function(mapState={}, extraParams={}) {
-  this._updateLayers(mapState, extraParams);
-};
-
-proto.checkLayerDisabled = function(layer, resolution, mapUnits) {
-  layer.setDisabled(resolution, mapUnits);
-  return layer.isDisabled();
-};
+  checkLayerDisabled(layer, resolution, mapUnits) {
+    layer.setDisabled(resolution, mapUnits);
+    return layer.isDisabled();
+  };
 
 // check which layers has to be disabled
-proto.checkLayersDisabled = function(resolution, mapUnits) {
-  this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
-};
+  checkLayersDisabled(resolution, mapUnits) {
+    this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
+  };
 
-proto.setupCustomMapParamsToLegendUrl = function(params={}){
-  //to owerwrite for each map layer subclass
-};
+  setupCustomMapParamsToLegendUrl(params={}){
+    //to owerwrite for each map layer subclass
+  };
+}
 
-module.exports = MapLayer;
+export default  MapLayer;

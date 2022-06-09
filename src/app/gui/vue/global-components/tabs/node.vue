@@ -8,10 +8,8 @@
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
-            @removeinput="removeToValidate"
             :changeInput="changeInput"
             :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
             :feature="feature"
             :is="getComponent(getField(getNode(row, column)))">
           </component>
@@ -40,12 +38,12 @@
 
 <script>
   import G3wInput from 'gui/inputs/g3w-input.vue';
-  const Fields = require('gui/fields/fields');
-  const ProjectRegistry = require('core/project/projectsregistry');
-  const GUI = require('gui/gui');
+  import Fields  from 'gui/fields/fields';
+  import ProjectRegistry  from 'core/project/projectsregistry';
+  import GUI  from 'gui/gui';
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'removeToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
     components: {
       G3wInput,
       ...Fields

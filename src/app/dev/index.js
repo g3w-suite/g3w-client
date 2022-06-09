@@ -1,7 +1,7 @@
-import DEVCONFIG from '../../config/dev'
-const ProjectsRegistry = require('core/project/projectsregistry');
-const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
+import DEVCONFIG from '../config/dev'
+import ProjectsRegistry  from 'core/project/projectsregistry';
+import ApplicationService  from 'core/applicationservice';
+import GUI  from 'gui/gui';
 // Handle ApplicationService on ready event
 ApplicationService.once('ready', function(){});
 //andle obtaininitConfig
@@ -40,3 +40,5 @@ ProjectsRegistry.onafter('setCurrentProject', project => {
 
 //Ready GUI
 GUI.once('ready', function(){});
+
+export default {}

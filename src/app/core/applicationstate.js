@@ -1,5 +1,6 @@
+import {ref} from 'vue';
 // state of application reactive
-const STATE = Vue.observable({
+const STATE = ref({
   ready: false, // true whe application is ready
   iframe: false, // true if is loaded inside an iframe
   online: false, // true if is connected

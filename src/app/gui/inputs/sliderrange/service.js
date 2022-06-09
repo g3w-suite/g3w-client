@@ -1,6 +1,6 @@
-const {base, inherit} = require('core/utils/utils');
-const Service = require('gui/inputs/service');
-const ValidatorClass = require('core/validators/inputs/range');
+
+import Service  from 'gui/inputs/service';
+import ValidatorClass  from 'core/validators/inputs/range';
 
 function SliderRangeService(options={}) {
   const {state} = options;
@@ -17,13 +17,11 @@ function SliderRangeService(options={}) {
   }
 }
 
-inherit(SliderRangeService, Service);
 
-const proto = SliderRangeService.prototype;
 
-proto.changeInfoMessage = function(){
+changeInfoMessage = function(){
   this.state.info =  `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
 };
 
 
-module.exports = SliderRangeService;
+export default  SliderRangeService;

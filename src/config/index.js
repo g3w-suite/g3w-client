@@ -1,4 +1,5 @@
 import keys from 'config/keys';
+import i18nresources from './i18n';
 const apptitle = "G3W Client";
 const supportedLng = ['en', 'it'];
 
@@ -10,7 +11,7 @@ export const tools = {
 
 // get message from internationalization
 export const _i18n = {
-  resources: require('./i18n/index.js')
+  resources: i18nresources
 };
 
 export const client = {
@@ -28,14 +29,6 @@ export const server = {
   }
 };
 
-export const utils = {
-  merge(type) {
-    if (type) {
-      console.log(CONFIG)
-    }
-  }
-};
-
 export const secrets = {
   keys
 };
@@ -48,7 +41,6 @@ export default {
   plugins,
   supportedLng,
   tools,
-  _i18n,
-  utils
+  _i18n
 };
 

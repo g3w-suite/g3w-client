@@ -1,98 +1,95 @@
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
 
-function Relation(config={}) {
-  const uniqueSuffix = Date.now();
-  const id = config.id || `id_${uniqueSuffix}`;
-  const name = config.name || `name_${uniqueSuffix}`;
-  const origname = config.origname || `origname_${uniqueSuffix}`;
-  this.state = {
-    id,
-    name,
-    origname,
-    father: config.referencedLayer,
-    child: config.referencingLayer,
-    fatherField: config.fieldRef.referencedField,
-    childField: config.fieldRef.referencingField,
-    type: config.type,
-    loading: false
+class Relation extends G3WObject {
+  constructor(config={}) {
+    super(config);
+    const uniqueSuffix = Date.now();
+    const id = config.id || `id_${uniqueSuffix}`;
+    const name = config.name || `name_${uniqueSuffix}`;
+    const origname = config.origname || `origname_${uniqueSuffix}`;
+    this.state = {
+      id,
+      name,
+      origname,
+      father: config.referencedLayer,
+      child: config.referencingLayer,
+      fatherField: config.fieldRef.referencedField,
+      childField: config.fieldRef.referencingField,
+      type: config.type,
+      loading: false
+    };
+  }
+
+  getId() {
+    return this.state.id;
   };
-  base(this);
+
+  setId(id) {
+    this.state.id = id;
+  };
+
+  getName() {
+    return this.state.name;
+  };
+
+  setName(name) {
+    this.state.name = name;
+  };
+
+  getTitle() {
+    return this.state.title;
+  };
+
+  setTitle(title) {
+    return this.state.title = title;
+  };
+
+  getChild() {
+    return this.state.child;
+  };
+
+  getFather() {
+    return this.state.father;
+  };
+
+  getState() {
+    return this.state;
+  };
+
+  getType() {
+    return this.state.type;
+  };
+
+  getFields() {
+    return {
+      father: this.state.fatherField,
+      child: this.state.childField
+    };
+  };
+
+  getFatherField() {
+    return this.state.fatherField;
+  };
+
+  getChildField() {
+    return this.state.childField;
+  };
+
+  /**
+   * For editing purpose
+   */
+
+  setLoading(bool=false){
+    this.state.loading = bool;
+  };
+
+  isLoading(){
+    return this.state.loading;
+  };
+
+  /**
+   * End editing loading purpose
+   */
 }
 
-inherit(Relation, G3WObject);
-
-const proto = Relation.prototype;
-
-proto.getId = function() {
-  return this.state.id;
-};
-
-proto.setId = function(id) {
-  this.state.id = id;
-};
-
-proto.getName = function() {
-  return this.state.name;
-};
-
-proto.setName = function(name) {
-  this.state.name = name;
-};
-
-proto.getTitle = function() {
-  return this.state.title;
-};
-
-proto.setTitle = function(title) {
-  return this.state.title = title;
-};
-
-proto.getChild = function() {
-  return this.state.child;
-};
-
-proto.getFather = function() {
-  return this.state.father;
-};
-
-proto.getState = function() {
-  return this.state;
-};
-
-proto.getType = function() {
-  return this.state.type;
-};
-
-proto.getFields = function() {
-  return {
-    father: this.state.fatherField,
-    child: this.state.childField
-  };
-};
-
-proto.getFatherField = function() {
-  return this.state.fatherField;
-};
-
-proto.getChildField = function() {
-  return this.state.childField;
-};
-
-/**
- * For editing purpose
- */
-
-proto.setLoading = function(bool=false){
-  this.state.loading = bool;
-};
-
-proto.isLoading = function(){
-  return this.state.loading;
-};
-
-/**
- * End editing loading purpose
- */
-
-module.exports = Relation;
+export default Relation;

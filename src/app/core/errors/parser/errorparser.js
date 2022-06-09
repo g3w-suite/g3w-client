@@ -1,9 +1,8 @@
-const {inherit, base} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const ErrorParser = function() {
-  base(this);
+import G3WObject from 'core/g3wobject';
+class ErrorParser extends G3WObject{
+  constructor() {
+    super();
+  };
 };
 
-inherit(ErrorParser, G3WObject);
-
-module.export = ErrorParser;
+export default ErrorParser;

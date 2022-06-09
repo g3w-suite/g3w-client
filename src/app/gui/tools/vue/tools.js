@@ -1,10 +1,8 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
 import G3wTool from './tool.vue';
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
-const ToolsService = require('gui/tools/service');
-const compiledTemplate = createCompiledTemplate(require('./tools.html'));
+import GUI  from 'gui/gui';
+import Component  from 'gui/vue/component';
+import ToolsService  from 'gui/tools/service';
+import template from './tools.html';
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
   data() {
@@ -24,26 +22,28 @@ const InternalComponent = Vue.extend({
   }
 });
 
-function ToolsComponent(options={}) {
-  base(this, options);
-  this._service = new ToolsService(options);
-  this.title = "tools";
+class ToolsComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this._service = new ToolsService(options);
+    this.title = "tools";
 
-  const internalComponent = new InternalComponent({
-    toolsService: this._service
-  });
+    const internalComponent = new InternalComponent({
+      toolsService: this._service
+    });
 
-  internalComponent.state = this._service.state;
-  this.setInternalComponent(internalComponent, {
-    events: [{name: 'visible'}]
-  });
+    internalComponent.state = this._service.state;
+    this.setInternalComponent(internalComponent, {
+      events: [{name: 'visible'}]
+    });
+  }
 
-  this._setOpen = function(bool=false) {
+  _setOpen(bool=false) {
     this.internalComponent.state.open = bool;
     bool && GUI.closeContent();
   }
 }
 
-inherit(ToolsComponent, Component);
 
-module.exports = ToolsComponent;
+
+export default  ToolsComponent;

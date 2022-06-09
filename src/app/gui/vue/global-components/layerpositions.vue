@@ -14,7 +14,7 @@
 
 <script>
   import {MAP_SETTINGS} from "../../../constant";
-  const {getUniqueDomId} = require('core/utils/utils');
+  import utils from 'core/utils/utils';
   export default {
     name: "layerspositions",
     props:{
@@ -35,9 +35,9 @@
     },
     created(){
       this.ids = {
-        layerpositions: getUniqueDomId(),
+        layerpositions: utils.getUniqueDomId(),
       };
-      this.layerpositions.forEach(layerposition => this.ids[layerposition] = getUniqueDomId());
+      this.layerpositions.forEach(layerposition => this.ids[layerposition] = utils.getUniqueDomId());
       this.change();
     }
   }

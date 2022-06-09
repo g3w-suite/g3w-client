@@ -1,10 +1,9 @@
-const {inherit, base} = require('core/utils/utils');
-const Service = require('gui/inputs/service');
+import Service  from 'gui/inputs/service';
 
-function MediaService(options={}) {
-  base(this, options);
+class MediaService extends Service {
+  constructor(options={}) {
+    super(options);
+  }
 }
 
-inherit(MediaService, Service);
-
-module.exports = MediaService;
+export default  MediaService;

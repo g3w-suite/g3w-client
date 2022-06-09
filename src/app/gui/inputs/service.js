@@ -1,15 +1,11 @@
-const Validators = require('core/validators/inputs/validators');
-const {t} = require('core/i18n/i18n.service');
+import Validators  from 'core/validators/inputs/validators';
+import {t}  from 'core/i18n/i18n.service';
 
 function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
   // type of input
-  //this.state.validate.required && this.setValue(this.state.value);
-  /*
-  * set starting value of input based on value or default value on options
-   */
-  this.setValue(this.state.value);
+  this.state.validate.required && this.setValue(this.state.value);
   this.setEmpty(this.state.value);
   const type = this.state.type;
   const validatorOptions = (options.validatorOptions || this.state.input.options) || {};
@@ -20,15 +16,15 @@ function Service(options = {}) {
 
 const proto = Service.prototype;
 
-proto.getState = function() {
+getState = function() {
   return this.state;
 };
 
-proto.getValue = function() {
+getValue = function() {
   return this.state.value;
 };
 
-proto.setValue = function(value) {
+setValue = function(value) {
   if (value === null || value === undefined) {
     if (Array.isArray(this.state.input.options)) {
       if (this.state.input.options[0].default)
@@ -44,33 +40,33 @@ proto.setValue = function(value) {
   }
 };
 
-proto.addValueToValues = function(value) {
+addValueToValues = function(value) {
   this.state.input.options.values.unshift(value)
 };
 
-proto._getValidatorType = function() {
+_getValidatorType = function() {
   return this.state.type;
 };
 
-proto.setState = function(state={}) {
+setState = function(state={}) {
   this.state = _.isObject(state) ? state : {};
 };
 
 // return validator
-proto.getValidator = function() {
+getValidator = function() {
   return this._validator;
 };
 
-proto.setValidator = function(validator) {
+setValidator = function(validator) {
   this._validator = validator;
 };
 
-proto.setEmpty = function(){
+setEmpty = function(){
   this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
 };
 
 // general method to check the value of the state is valid or not
-proto.validate = function() {
+validate = function() {
   if (this.state.validate.empty) {
     this.state.validate.empty = true;
     this.state.value = null;
@@ -95,7 +91,7 @@ proto.validate = function() {
   return this.state.validate.valid;
 };
 
-proto.setErrorMessage = function(input) {
+setErrorMessage = function(input) {
   let message;
   if (input.validate.mutually && !input.validate.mutually_valid)
     this.state.validate.message =  `${t("sdk.form.inputs.input_validation_mutually_exclusive")} ( ${input.validate.mutually.join(',')} )`;
@@ -118,4 +114,4 @@ proto.setErrorMessage = function(input) {
   } else this.state.validate.message = this.state.info;
 };
 
-module.exports = Service;
+export default  Service;

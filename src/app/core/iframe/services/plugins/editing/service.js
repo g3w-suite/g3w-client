@@ -1,82 +1,83 @@
-const BasePluginService = require('../service');
-const {base, inherit} = g3wsdk.core.utils;
-const GUI = require('gui/gui');
+import BaseService  from '../service';
+import GUI  from 'gui/gui';
 
-function EditingService() {
-  base(this);
-  this.pluginName = 'editing';
-  this.subscribevents = [];
-  this.isRunning = false;
-  this.responseObject = {
-    cb: null, // resolve or reject promise method
-    qgs_layer_id : null,
-    error: null
-  };
-  this.config =  {
-    tools: {
-      add: {
-        disabled:[
-          {
-            id: 'deletefeature'
-          },
-          {
-            id: 'copyfeatures'
-          },
-          {
-            id: 'editmultiattributes'
-          },
-          {
-            id: 'deletePart'
-          },
-          {
-            id: 'splitfeature'
-          },
-          {
-            id: 'mergefeatures'
-          }
-        ]
-      },
-      update: {
-        disabled: [
-          {
-            id: 'addfeature'
-          },
-          {
-            id: 'copyfeatures'
-          },
-          {
-            id: 'deletefeature'
-          },
-          {
-            id: 'editmultiattributes'
-          },
-          {
-            id: 'deletePart'
-          },
-          {
-            id: 'splitfeature'
-          },
-          {
-            id: 'mergefeatures'
-          }
-        ]
-      },
-      delete: {
-        enabled: [
-          {
-            id:'deletefeature',
-            options: {
-              active:true
+class EditingService extends BaseService{
+  constructor() {
+    super();
+    this.pluginName = 'editing';
+    this.subscribevents = [];
+    this.isRunning = false;
+    this.responseObject = {
+      cb: null, // resolve or reject promise method
+      qgs_layer_id : null,
+      error: null
+    };
+    this.config =  {
+      tools: {
+        add: {
+          disabled:[
+            {
+              id: 'deletefeature'
+            },
+            {
+              id: 'copyfeatures'
+            },
+            {
+              id: 'editmultiattributes'
+            },
+            {
+              id: 'deletePart'
+            },
+            {
+              id: 'splitfeature'
+            },
+            {
+              id: 'mergefeatures'
             }
-          }
-        ]
+          ]
+        },
+        update: {
+          disabled: [
+            {
+              id: 'addfeature'
+            },
+            {
+              id: 'copyfeatures'
+            },
+            {
+              id: 'deletefeature'
+            },
+            {
+              id: 'editmultiattributes'
+            },
+            {
+              id: 'deletePart'
+            },
+            {
+              id: 'splitfeature'
+            },
+            {
+              id: 'mergefeatures'
+            }
+          ]
+        },
+        delete: {
+          enabled: [
+            {
+              id:'deletefeature',
+              options: {
+                active:true
+              }
+            }
+          ]
+        }
       }
-    }
+    };
   };
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
-  this.startAction = async function({toolboxes, resolve, reject}){
+  async startAction({toolboxes, resolve, reject}){
     this.responseObject.cb = reject;
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
@@ -104,13 +105,13 @@ function EditingService() {
   };
 
   //run after each action
-  this.stopAction = async function(options={}){
+  async stopAction(options={}){
     const {qgs_layer_id} = options;
     qgs_layer_id && await this.stopEditing(qgs_layer_id);
   };
 
   //// subscribers handlers
-  this.subscribersHandlers = {
+  subscribersHandlers = {
     canUndo:({activeTool, disableToolboxes=[]}) => bool => {
       //set currenttoolbocx id in editing to null
      if (bool === false) {
@@ -157,7 +158,7 @@ function EditingService() {
   };
 
   // method to add subscribe refenrence
-  this.addSubscribeEvents = function(event, options={}){
+  addSubscribeEvents(event, options={}){
     const handler = this.subscribersHandlers[event](options);
     this.dependencyApi.subscribe(event, handler);
     this.subscribevents.push({
@@ -170,7 +171,7 @@ function EditingService() {
   /**
    * Reset subscriber editing plugin events
    */
-  this.resetSubscribeEvents = function(){
+  resetSubscribeEvents(){
     this.subscribevents.forEach(({event, handler}) =>{
       this.dependencyApi.unsubscribe(event, handler);
     })
@@ -181,7 +182,7 @@ function EditingService() {
    * @param options
    * @returns {Promise<void>}
    */
-  this.add =  function(config={}){
+  add(config={}){
     return new Promise(async (resolve, reject) => {
       if (this.isRunning){
         reject();
@@ -225,7 +226,7 @@ function EditingService() {
    * @param config
    * @returns {Promise<unknown>}
    */
-  this.update = async function(config={}){
+  async update(config={}){
     return new Promise(async (resolve, reject)=>{
       if (this.isRunning){
         reject();
@@ -270,7 +271,7 @@ function EditingService() {
     })
   };
 
-  this.delete = function(){};
+  delete(){};
 
   /**
    * Start editing called when we want to start editing
@@ -278,7 +279,7 @@ function EditingService() {
    * @param options
    * @returns {Promise<unknown|void>}
    */
-  this.startEditing = async function(qgs_layer_id=[], options={}) {
+  async startEditing(qgs_layer_id=[], options={}) {
     const {action= 'add', feature} = options;
     const filter = {};
     options.filter = filter;
@@ -302,7 +303,7 @@ function EditingService() {
    * @param qgs_layer_id
    * @returns {Promise<unknown>}
    */
-  this.stopEditing = async function(qgs_layer_id) {
+  async stopEditing(qgs_layer_id) {
     const stopEditingPromises = [];
     qgs_layer_id.forEach(layerid =>{
       stopEditingPromises.push(this.dependencyApi.stopEditing(layerid))
@@ -311,7 +312,7 @@ function EditingService() {
     this.clear();
   };
 
-  this.stop = function(){
+  stop(){
     return new Promise((resolve, reject)=>{
       this.dependencyApi.hidePanel();
       GUI.hideSidebar();
@@ -323,7 +324,7 @@ function EditingService() {
    * Method called wen we want to reset default editing plugin behaviour
    *
    * */
-  this.clear = function(){
+  clear(){
     this.dependencyApi.resetDefault();
     this.isRunning = false;
     this.responseObject = {
@@ -336,9 +337,7 @@ function EditingService() {
   }
 }
 
-inherit(EditingService, BasePluginService);
-
-module.exports = new EditingService;
+export default  new EditingService;
 
 
 

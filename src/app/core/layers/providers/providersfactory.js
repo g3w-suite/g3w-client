@@ -1,10 +1,17 @@
+import geojson from './geojsonprovider';
+import kml from './kmlprovider';
+import xml from './xmlprovider';
+import qgis from './qgisprovider';
+import wms from './wmsprovider';
+import wfs from './wfsprovider';
+
 const Providers = {
-  geojson: require('./geojsonprovider'),
-  kml: require('./kmlprovider'),
-  xml: require('./xmlprovider'),
-  qgis: require('./qgisprovider'),
-  wms: require('./wmsprovider'),
-  wfs: require('./wfsprovider')
+  geojson,
+  kml,
+  xml,
+  qgis,
+  wms,
+  wfs
 };
 
 const ProvidersForServerTypes = {
@@ -134,4 +141,4 @@ function ProviderFactory() {
   }
 }
 
-module.exports = new ProviderFactory();
+export default  new ProviderFactory();

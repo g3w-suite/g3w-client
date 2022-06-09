@@ -1,8 +1,9 @@
-const Input = require('gui/inputs/input');
+import Input from 'gui/inputs/input';
+import template from './textarea.html';
 
-const TextAreaInput = Vue.extend({
+const TextAreaInput = {
   mixins: [Input],
-  template: require('./textarea.html')
-});
+  template
+};
 
-module.exports = TextAreaInput;
+export default TextAreaInput;

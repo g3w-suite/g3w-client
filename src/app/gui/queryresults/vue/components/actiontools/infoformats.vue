@@ -5,10 +5,10 @@
 </template>
 
 <script>
-    const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-    const responseParser = require('core/parsers/response/parser');
-    const {getAlphanumericPropertiesFromFeature, query} = require('core/utils/geo');
-    const GUI = require('gui/gui');
+    import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+    import responseParser  from 'core/parsers/response/parser';
+    import geoutils  from 'core/utils/geo';
+    import GUI  from 'gui/gui';
     export default {
         name: 'Infoformats',
         props: {
@@ -55,7 +55,7 @@
                               this.layer.hasgeometry = !!geometry;
                               // need to setActionsForLayers to visualize eventually actions
                               queryService.setActionsForLayers([this.layer]);
-                              getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
+                              geoutils.getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
                                   this.layer.attributes.push({
                                       name,
                                       label:name,

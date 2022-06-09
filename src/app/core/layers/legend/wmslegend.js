@@ -58,4 +58,4 @@ function WMSLegend({layer, params}) {
   ].join('');
 }
 
-module.exports = WMSLegend;
+export default  WMSLegend;

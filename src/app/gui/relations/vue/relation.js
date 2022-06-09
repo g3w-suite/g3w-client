@@ -1,17 +1,16 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID} from '/constant';
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const compiledTemplate = createCompiledTemplate(require('./relation.html'));
-const GUI = require('gui/gui');
-const {throttle} = require('core/utils/utils');
-const RelationPageEventBus = require('./relationeventbus');
-const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import template from './relation.html';
+import GUI  from 'gui/gui';
+import utils from 'core/utils/utils';
+import RelationPageEventBus  from './relationeventbus';
+import {fieldsMixin, resizeMixin}  from 'gui/vue/vue.mixins';
 let SIDEBARWIDTH;
 
-module.exports = {
-  ...compiledTemplate,
+export default  {
+  template,
   props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
@@ -149,7 +148,7 @@ module.exports = {
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     });
-    this.showChart = throttle(async ()=> {
+    this.showChart = utils.throttle(async ()=> {
       this.chart = !this.chart;
       await this.$nextTick();
       this.chartContainer = this.chartContainer ||  $('#chart_content');

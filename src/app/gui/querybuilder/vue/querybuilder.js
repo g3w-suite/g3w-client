@@ -1,11 +1,11 @@
 import Service from "../service";
 import {OPERATORS} from 'core/layers/filter/operators';
-const templateCompiled = Vue.compile(require('./querybuilder.html'));
-const ProjectsRegistry = require('core/project/projectsregistry');
+import template from './querybuilder.html';
+import ProjectsRegistry  from 'core/project/projectsregistry';
 const operators = Object.values(OPERATORS);
 
 const QueryBuilder = Vue.extend({
-  ...templateCompiled,
+  template,
   data() {
     const options = this.$options.options;
     const edit = options !== undefined;
@@ -170,4 +170,4 @@ const QueryBuilder = Vue.extend({
   }
 });
 
-module.exports = QueryBuilder;
+export default  QueryBuilder;

@@ -9,10 +9,8 @@
 
 <script>
   import { ALLVALUE }  from '../../constants';
-  const autocompleteOptions = require('gui/external/select2/options/autocomplete');
-  const { t } = require('core/i18n/i18n.service');
-  const { debounce } = require('core/utils/utils');
-  const {select2Mixin} = require('gui/vue/vue.mixins');
+  import autocompleteOptions  from 'gui/external/select2/options/autocomplete';
+  import  {select2Mixin}  from 'gui/vue/vue.mixins';
   export default {
     name: "select2",
     props: ['forminput','autocompleteRequest'],

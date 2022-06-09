@@ -1,14 +1,21 @@
+import validator from './validator';
+import float from './float';
+import integer from './integer';
+import checkbox from './checkbox';
+import datetimepicker from './datetimepicker';
+import radio from './radio';
+import range from './range';
+
 const Validators = {
   validators: {
-    float: require('./float'),
-    integer: require('./integer'),
-    checkbox: require('./checkbox'),
-    datetimepicker: require('./datetimepicker'),
-    text: require('./validator'),
-    string: require('./validator'),
-    radio: require('./radio'),
-    default: require('./validator'),
-    range: require('./range')
+    range,
+    radio,
+    datetimepicker,
+    checkbox,
+    integer,
+    float,
+    string: validator,
+    default: validator
   },
 
   get(type, options={}) {
@@ -18,4 +25,4 @@ const Validators = {
 
 };
 
-module.exports = Validators;
+export default  Validators;

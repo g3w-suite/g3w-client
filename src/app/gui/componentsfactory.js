@@ -1,5 +1,5 @@
-const GUI = require ('gui/gui');
-const Component = require('./vue/component');
+import GUI from 'gui/gui';
+import Component  from './vue/component';
 const ComponentsFactory = {
   // build a componet
   build({vueComponentObject, service, propsData}, options={}) {
@@ -42,4 +42,4 @@ const ComponentsFactory = {
   }
 };
 
-module.exports = ComponentsFactory;
+export default  ComponentsFactory;

@@ -1,4 +1,4 @@
-const {t, tPlugin} = require('core/i18n/i18n.service');
+import {t, tPlugin}  from 'core/i18n/i18n.service';
 const G3WApplicationFilter = {
  install(Vue) {
    Vue.filter('t', value => t(value));
@@ -6,5 +6,5 @@ const G3WApplicationFilter = {
   }
 };
 
-module.exports = G3WApplicationFilter;
+export default  G3WApplicationFilter;
 

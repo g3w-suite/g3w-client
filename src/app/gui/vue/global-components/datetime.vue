@@ -13,8 +13,8 @@
 </template>
 
 <script>
-  import ApplicationState from '../../../core/applicationstate';
-  const {getUniqueDomId} = require('core/utils/utils');
+  import ApplicationState from '../../..core/applicationstate';
+  import utils  from 'core/utils/utils';
   export default {
     name: "datetime",
     props: {
@@ -109,7 +109,7 @@
       }
     },
     created(){
-      this.id = getUniqueDomId();
+      this.id = utils.getUniqueDomId();
     }
   }
 </script>

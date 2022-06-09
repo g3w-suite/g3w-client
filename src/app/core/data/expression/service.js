@@ -1,10 +1,11 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
+import BaseService from 'core/data/service';
+import utils from 'core/utils/utils';
+import geoutils from 'core/utils/geo';
 
-function ExpressionService(){
-  base(this);
+class ExpressionService extends BaseService {
+  constructor() {
+    super();
+  }
   /**
    *
    * @param qgis_layer_id
@@ -18,7 +19,7 @@ function ExpressionService(){
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
+  async expression({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
@@ -44,7 +45,7 @@ function ExpressionService(){
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = async function({qgs_layer_id, form_data, expression, formatter=1}={}){
+   async expression_eval({qgs_layer_id, form_data, expression, formatter=1}={}){
     const url = this.project.getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
@@ -65,7 +66,8 @@ function ExpressionService(){
    * @contentType
    * @returns {Promise<*>}
    */
-  this.handleRequest = async function({url, params={}, contentType='application/json'}={}){
+  async handleRequest({url, params={}, contentType='application/json'}={}){
+    const {XHR} = utils;
     let data;
     try {
       data = await XHR.post({
@@ -81,12 +83,11 @@ function ExpressionService(){
    * Common method to handle response
    * @param response
    */
-  this.handleResponse = function(response={}){
-    return getFeaturesFromResponseVectorApi(response);
+  handleResponse(response={}){
+    return geoutils.getFeaturesFromResponseVectorApi(response);
 
   };
 }
 
-inherit(ExpressionService, BaseService);
 
-module.exports = new ExpressionService;
+export default  new ExpressionService;

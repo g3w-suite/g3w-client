@@ -1,14 +1,30 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit, toRawType} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const G3WObject = require('core/g3wobject');
-const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
-const ComponentsRegistry = require('gui/componentsregistry');
-const GUI = require('gui/gui');
-const VueAppPlugin = require('gui/vue/vueappplugin');
-const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
-const GlobalDirective = require('gui/vue/vue.directives');
+import utils  from 'core/utils/utils';
+import {t}  from 'core/i18n/i18n.service';
+import G3WObject from 'core/g3wobject';
+import ProjectsMenuComponent  from 'gui/projectsmenu/projectsmenu';
+import ComponentsRegistry  from 'gui/componentsregistry';
+import GUI  from 'gui/gui';
+import VueAppPlugin  from 'gui/vue/vueappplugin';
+import G3wApplicationFilterPlugin  from 'gui/vue/vue.filter';
+import GlobalComponents  from 'gui/vue/vue.globalcomponents';
+import GlobalDirective  from 'gui/vue/vue.directives';
+import FormComponent  from 'gui/form/vue/form';
+/**
+ *
+ */
+import ContentsComponent  from 'gui/viewport/contentsviewer';
+import CatalogComponent  from 'gui/catalog/vue/catalog';
+import SearchComponent  from 'gui/search/vue/search';
+import QueryBuilderUIFactory  from 'gui/querybuilder/querybuilderuifactory';
+import PrintComponent  from 'gui/print/vue/print';
+import MetadataComponent  from 'gui/metadata/vue/metadata';
+import ToolsComponent  from 'gui/tools/vue/tools';
+import WMSComponent  from 'gui/wms/vue/wms';
+import MapComponent  from 'gui/map/vue/map';
+import QueryResultsComponent  from 'gui/queryresults/vue/queryresults';
+
+import template500 from 'gui/templates/500.html';
 
 // install global components
 Vue.use(GlobalComponents);
@@ -27,53 +43,48 @@ Vue.mixin({
 });
 
 // get all items needed by application
-const App = require('gui/app/app');
-const sidebar = require('gui/sidebar/sidebar');
-const floatbar = require('gui/floatbar/floatbar');
-const viewport = require('gui/viewport/viewport');
-const navbaritems = require('gui/navbar/navbaritems');
-const layout = require('./layout');
+import App  from 'gui/app/app';
+import sidebar  from 'gui/sidebar/sidebar';
+import floatbar  from 'gui/floatbar/floatbar';
+import viewport  from 'gui/viewport/viewport';
+import navbaritems  from 'gui/navbar/navbaritems';
+import layout  from './layout';
 
 // loading spinner at beginning
 layout.loading(true);
 
-const ApplicationTemplate = function({ApplicationService}) {
-  const appLayoutConfig = ApplicationService.getConfig().layout || {};
-  // useful to build a difference layout/compoìnent based on mobile or not
-  this._isMobile = isMobile.any;
-  this._isIframe = appLayoutConfig.iframe;
-  //ussefult ot not close user message when set content is called
-  this.sizes = {
-    sidebar: {
-      width:0
-    }
-  };
-  /*
-    usefull to show onaly last waiting request output
-    at moment will be an object
-    {
-      stop: method to sot to show result
-    }
-   */
-  this.waitingoutputdataplace = null;
-  this.init = function() {
+class ApplicationTemplate extends G3WObject {
+  constructor({ApplicationService}) {
+    super();
+    const appLayoutConfig = ApplicationService.getConfig().layout || {};
+    // useful to build a difference layout/compoìnent based on mobile or not
+    this._isMobile = isMobile.any;
+    this._isIframe = appLayoutConfig.iframe;
+    //ussefult ot not close user message when set content is called
+    this.sizes = {
+      sidebar: {
+        width:0
+      }
+    };
+    /*
+      usefull to show onaly last waiting request output
+      at moment will be an object
+      {
+        stop: method to sot to show result
+      }
+     */
+    this.waitingoutputdataplace = null;
+
+  }
+
+  init() {
     // create Vue App
     this._createApp();
   };
   // create application config
-  this._createTemplateConfig = function() {
+  _createTemplateConfig() {
     const G3WTemplate = Vue.prototype.g3wtemplate;
     const appTitle = ApplicationService.getConfig().apptitle || 'G3W Suite';
-    const ContentsComponent = require('gui/viewport/contentsviewer');
-    const CatalogComponent = require('gui/catalog/vue/catalog');
-    const SearchComponent = require('gui/search/vue/search');
-    const QueryBuilderUIFactory = require('gui/querybuilder/querybuilderuifactory');
-    const PrintComponent = require('gui/print/vue/print');
-    const MetadataComponent = require('gui/metadata/vue/metadata');
-    const ToolsComponent = require('gui/tools/vue/tools');
-    const WMSComponent = require('gui/wms/vue/wms');
-    const MapComponent = require('gui/map/vue/map');
-    const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
     return {
       title: appTitle,
       placeholders: {
@@ -174,9 +185,8 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
     }
   };
-
   //Vue app
-  this._createApp = function() {
+  _createApp() {
     this._setDataTableLanguage();
     const self = this;
     if (isMobile.any || this._isIframe) $('body').addClass('sidebar-collapse');
@@ -214,7 +224,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     })
   };
 
-  this._setupLayout = function(){
+  _setupLayout(){
     if (!isMobile.any) {
       // setup map controls
       $("<style type='text/css'> .ol-control-tl {" +
@@ -233,7 +243,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   // dataTable Translations and custom extentions
-  this._setDataTableLanguage = function(dataTable=null) {
+  _setDataTableLanguage(dataTable=null) {
     const lngOptions = {
       "language": {
         "sSearch": '',
@@ -256,7 +266,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   // route setting att beginning (is an example)
-  this._addRoutes = function() {
+  _addRoutes() {
     const RouterService = ApplicationService.getRouterService();
     const mapService = GUI.getComponent('map').getService();
     RouterService.addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
@@ -273,7 +283,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   //register all services
-  this._setUpServices = function() {
+  _setUpServices() {
     Object.keys(ApplicationTemplate.Services).forEach(element => {
       const service = ApplicationTemplate.Services[element];
       ApplicationService.registerService(element, service);
@@ -284,7 +294,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.emit('resize'));
   };
   // build template function
-  this._buildTemplate = function() {
+  _buildTemplate() {
     floatbar.FloatbarService.init(layout);
     const placeholdersConfig = this.templateConfig.placeholders;
     Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
@@ -295,11 +305,11 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   //add component not related to placeholder
-  this._addOtherComponents = function() {
+  _addOtherComponents() {
     if (this.templateConfig.othercomponents) this._addComponents(this.templateConfig.othercomponents);
   };
   // viewport setting
-  this._setViewport = function(viewportOptions) {
+  _setViewport(viewportOptions) {
     // viewport components
     // es.: map e content
     /*
@@ -321,13 +331,13 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
 
   // add component to template
-  this._addComponent = function(component, placeholder, options={}) {
+  _addComponent(component, placeholder, options={}) {
     this._addComponents([component], placeholder, options);
     return true;
   };
 
   // registry component
-  this._addComponents = function(components, placeholder, options) {
+  _addComponents(components, placeholder, options) {
     let register = true;
     if (placeholder && ApplicationTemplate.PLACEHOLDERS.indexOf(placeholder) > -1) {
       const placeholderService = ApplicationTemplate.Services[placeholder];
@@ -341,33 +351,33 @@ const ApplicationTemplate = function({ApplicationService}) {
     })
   };
 
-  this._removeComponent = function(componentId, placeholder, options) {
+  _removeComponent(componentId, placeholder, options) {
     const component = ComponentsRegistry.unregisterComponent(componentId);
     placeholder && ApplicationTemplate.Services[placeholder] && ApplicationTemplate.Services[placeholder].removeComponent(component, options);
   };
 
-  this._showModalOverlay = function(bool=false, message) {
+  _showModalOverlay(bool=false, message) {
     const mapService = GUI.getService('map');
     if (bool) mapService.startDrawGreyCover(message);
     else mapService.stopDrawGreyCover();
   };
 
-  this._isSidebarVisible = function() {
+  _isSidebarVisible() {
     return !$('body').hasClass('sidebar-collapse');
   };
 
-  this._showSidebar = function() {
+  _showSidebar() {
     $('body').addClass('sidebar-open');
     $('body').removeClass('sidebar-collapse')
   };
 
-  this._hideSidebar = function() {
+  _hideSidebar() {
     $('body').removeClass('sidebar-open');
     $('body').addClass('sidebar-collapse')
   };
 
   // setup Fonts Css dependencies methods
-  this._setUpTemplateDependencies = function(VueApp) {
+  _setUpTemplateDependencies(VueApp) {
     GUI.isMobile = function() {
       return isMobile.any;
     };
@@ -383,40 +393,9 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
   };
 
-  /**
-   * Convert error to user message showed
-   * @param error
-   * @returns {string}
-   */
-  GUI.errorToMessage = function(error){
-    let message = 'server_error';
-    switch (toRawType(error)) {
-      case 'Error':
-        message = `CLIENT - ${error.message}`;
-        break;
-      case 'Object':
-        if (error.responseJSON) {
-          error = error.responseJSON;
-          if (error.result === false){
-            const {code='', data='', message:msg=''} = error.error;
-            message = `${code.toUpperCase()} ${data} ${msg}`;
-          }
-        } else if (error.responseText){
-          message = error.responseText;
-        }
-        break;
-      case 'Array':
-        message = error.map(error => GUI.errorToMessage(error)).join(' ');
-        break;
-      case 'String':
-      default:
-        message = error;
-    }
-    return message;
-  };
 
   // setup Interaces
-  this._setupInterface = function() {
+  _setupInterface() {
     /* PLUBLIC INTERFACE */
     /* Common methods */
     GUI.layout = layout;
@@ -435,6 +414,37 @@ const ApplicationTemplate = function({ApplicationService}) {
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
+    /**
+     * Convert error to user message showed
+     * @param error
+     * @returns {string}
+     */
+    GUI.errorToMessage = function(error){
+      let message = 'server_error';
+      switch (utils.toRawType(error)) {
+        case 'Error':
+          message = `CLIENT - ${error.message}`;
+          break;
+        case 'Object':
+          if (error.responseJSON) {
+            error = error.responseJSON;
+            if (error.result === false){
+              const {code='', data='', message:msg=''} = error.error;
+              message = `${code.toUpperCase()} ${data} ${msg}`;
+            }
+          } else if (error.responseText){
+            message = error.responseText;
+          }
+          break;
+        case 'Array':
+          message = error.map(error => GUI.errorToMessage(error)).join(' ');
+          break;
+        case 'String':
+        default:
+          message = error;
+      }
+      return message;
+    };
 
     //Function called from DataRouterservice for gui output
     /**
@@ -448,7 +458,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       const defaultOutputConfig = {condition:true, add:false, loading:true};
       const {title='', show=defaultOutputConfig, before, after} = options;
       // convert show in an object
-      const outputConfig = (toRawType(show) !== 'Object') ?
+      const outputConfig = (utils.toRawType(show) !== 'Object') ?
         {
           condition: show, // can be Function or Boolean otherwise is set true
           add: false,
@@ -477,7 +487,7 @@ const ApplicationTemplate = function({ApplicationService}) {
             });
             if (!stop) {
               // check condition
-              const showResult = (toRawType(condition) === 'Function') ? condition(data) : (toRawType(condition) === 'Boolean') ? condition : true;
+              const showResult = (utils.toRawType(condition) === 'Function') ? condition(data) : (utils.toRawType(condition) === 'Boolean') ? condition : true;
               if (showResult) {
                 (queryResultsService ? queryResultsService: this.showContentFactory('query')(title)).setQueryResponse(data, {
                   add
@@ -523,7 +533,6 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     GUI.showForm = function(options={}) {
       const {perc, split='h', push, showgoback} = options;
-      const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
       const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
       //get service
@@ -847,10 +856,9 @@ const ApplicationTemplate = function({ApplicationService}) {
       }
     }
   };
-  base(this);
 };
 
-inherit(ApplicationTemplate, G3WObject);
+
 
 // Placeholder knowed by application
 ApplicationTemplate.PLACEHOLDERS = [
@@ -882,7 +890,7 @@ ApplicationTemplate.fail = function({language='en', error }) {
       f5: "Press Ctrl+F5"
     }
   };
-  const compiledTemplate = Vue.compile(require('gui/templates/500.html'));
+  const compiledTemplate = Vue.compile(template500);
   const app = new Vue({
     el: '#app',
     ...compiledTemplate,
@@ -892,5 +900,5 @@ ApplicationTemplate.fail = function({language='en', error }) {
   });
 };
 
-module.exports =  ApplicationTemplate;
+export default   ApplicationTemplate;
 

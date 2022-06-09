@@ -23,7 +23,7 @@
 </template>
 
 <script>
-  const GUI = require('gui/gui');
+  import GUI  from 'gui/gui';
   const COLORS = {
     success: {
       backgroundColor: '#62ac62',

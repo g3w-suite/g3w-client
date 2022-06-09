@@ -1,7 +1,8 @@
+import ApplicationService from 'core/applicationservice';
 // main object content for i18n
 const plugins18nConfig = {};
 
-function init(config) {
+export function init(config) {
   config.appLanguages.forEach(lng =>{
     plugins18nConfig[lng] = {
       plugins: {}
@@ -31,30 +32,29 @@ function init(config) {
   })
 
 }
-const getAppLanguage = function() {
-  const ApplicationService = require('core/applicationservice');
+export const getAppLanguage = function() {
   const config = ApplicationService.getConfig();
   return config.user.i18n || "en";
 };
 
 
 // function to translate
-const t = function(text) {
+export const t = function(text) {
   return i18next.t(text);
 };
 
 // function to translate plugins
-const tPlugin = function(text) {
+export const tPlugin = function(text) {
   return i18next.t(`plugins.${text}`);
 };
 
-const tPrefix = function(filter) {
+export const tPrefix = function(filter) {
   return function(text) {
     return i18next.t(`${filter}.${text}`);
   }
 };
 
-const addI18nPlugin = function({name, config}) {
+export const addI18nPlugin = function({name, config}) {
   for (const language in config) {
     const pluginLng = plugins18nConfig[language];
     if (pluginLng) pluginLng.plugins[name] = config[language];
@@ -62,7 +62,7 @@ const addI18nPlugin = function({name, config}) {
   addI18n(plugins18nConfig);
 };
 
-const addI18n = function(i18nObject) {
+export const addI18n = function(i18nObject) {
   for (const lng in i18nObject) {
     const lngObj = i18nObject[lng];
     for (const key in lngObj)  {
@@ -71,11 +71,11 @@ const addI18n = function(i18nObject) {
   }
 };
 
-const changeLanguage = function(lng){
+export const changeLanguage = function(lng){
   i18next.changeLanguage(lng);
 };
 
-module.exports = {
+export default  {
   init,
   t,
   tPlugin,

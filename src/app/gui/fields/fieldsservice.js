@@ -1,6 +1,6 @@
-const Fields = require('./fields');
-const {toRawType} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import Fields  from './fields';
+import utils from 'core/utils/utils';
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
 const URLPattern = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
 const FieldType = {
@@ -26,7 +26,7 @@ module.exports  = {
     let type = field.type;
     if (type !== 'vue'){
       const fieldValue = field.value;
-      const value = fieldValue && toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
+      const value = fieldValue && utils.toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) type = FieldType.SIMPLE;
       else if (value && typeof value == 'object') {
         if (value.coordinates) type = FieldType.GEO;

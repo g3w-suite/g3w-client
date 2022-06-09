@@ -1,9 +1,14 @@
 import ApplicationState from 'core/applicationstate';
-const GUI = require('gui/gui');
-const {throttle, debounce, XHR} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import GUI  from 'gui/gui';
+import utils from 'core/utils/utils';
+import fieldService from 'gui/fields/fieldsservice';
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import {Style, Fill, Circle, Stroke} from "ol/style";
+import {Vector as VectorLayer} from "ol/layer";
+import {Vector as VectorSource} from "ol/source";
+import {GeoJSON} from "ol/format";
 
-const autocompleteMixin = {
+export const autocompleteMixin = {
   methods: {
     async autocompleteRequest({layerId, field, value}={}){
       let data = [];
@@ -22,11 +27,11 @@ const autocompleteMixin = {
   }
 };
 
-const fieldsMixin = {
+export const fieldsMixin = {
   methods: {
     getFieldService(){
       if (this._fieldsService === undefined)
-        this._fieldsService = require('gui/fields/fieldsservice');
+        this._fieldsService = fieldService;
       return this._fieldsService;
     },
     getFieldType(field) {
@@ -53,7 +58,7 @@ const fieldsMixin = {
   }
 };
 
-const mediaMixin = {
+export const mediaMixin = {
   computed: {
     filename() {
       return this.value ? this.value.split('/').pop() : this.value;
@@ -112,7 +117,7 @@ const mediaMixin = {
   }
 };
 
-const geoMixin = {
+export const geoMixin = {
   methods: {
     showLayer() {
       this.visible = !this.visible;
@@ -127,25 +132,25 @@ const geoMixin = {
     switch (data.type) {
       case 'Point':
       case 'MultiPoint':
-        style = [new ol.style.Style({
-          image: new ol.style.Circle({
+        style = [new Style({
+          image: new Circle({
             radius: 6,
-            fill: new ol.style.Fill({
+            fill: new Fill({
               color: [255,255,255,1.0]
             }),
-            stroke: new ol.style.Stroke({
+            stroke: Stroke({
               color: [0,0,0,1.0],
               width: 2
             })
           })
         }),
-          new ol.style.Style({
-            image: new ol.style.Circle({
+          new Style({
+            image: new Circle({
               radius: 2,
-              fill: new ol.style.Fill({
+              fill: new Fill({
                 color: [255,255,255,1.0]
               }),
-              stroke: new ol.style.Stroke({
+              stroke: Stroke({
                 color: [0,0,0,1.0],
                 width: 2
               })
@@ -156,20 +161,20 @@ const geoMixin = {
       case 'MultiLineString':
       case 'Polygon':
       case 'MultiPolygon':
-        style = new ol.style.Style({
-          fill: new ol.style.Fill({
+        style = new Style({
+          fill: new Fill({
             color: 'rgba(255, 255, 255, 0.3)'
           }),
-          stroke: new ol.style.Stroke({
+          stroke: Stroke({
             color: [0,0,0,1.0],
             width: 2
           })
         });
         break;
     }
-    this.layer = new ol.layer.Vector({
-      source: new ol.source.Vector({
-        features: new ol.format.GeoJSON().readFeatures(data, {
+    this.layer = new VectorLayer({
+      source: new VectorSource({
+        features: new GeoJSON().readFeatures(data, {
           featureProjection: mapProjection
         })
       }),
@@ -184,12 +189,12 @@ const geoMixin = {
   }
 };
 
-const DELAY_TYPE = {
-  throttle,
-  debounce
+export const DELAY_TYPE = {
+  throttle: utils.throttle,
+  debounce: utils.debounce
 };
 
-const resizeMixin = {
+export const resizeMixin = {
   created(){
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
     this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
@@ -206,7 +211,7 @@ const resizeMixin = {
   }
 };
 
-const select2Mixin = {
+export const  select2Mixin = {
   mixins: [resizeMixin],
   methods: {
     setValue(){
@@ -226,7 +231,7 @@ const select2Mixin = {
 };
 
 // FormInputsMixins
-const formInputsMixins = {
+export const  formInputsMixins = {
   data(){
     return {
       valid: false
@@ -295,7 +300,7 @@ const formInputsMixins = {
   }
 };
 
-module.exports = {
+export default  {
   geoMixin,
   fieldsMixin,
   mediaMixin,

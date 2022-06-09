@@ -1,13 +1,12 @@
-const t = require('core/i18n/i18n.service').t;
-const {base, inherit, merge} = require('core/utils/utils');
-const Component = require('gui/vue/component');
-const GUI = require('gui/gui');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const compiledTemplate = Vue.compile(require('./menu.html'));
+import {t}  from 'core/i18n/i18n.service';
+import Component  from 'gui/vue/component';
+import GUI  from 'gui/gui';
+import ProjectsRegistry  from 'core/project/projectsregistry';
+import template from './menu.html';
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
 const InternalComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   data() {
     return {
       state: null,
@@ -56,24 +55,25 @@ const InternalComponent = Vue.extend({
   }
 });
 
-function MenuComponent(options={}){
-  base(this,options);
-  this.title = options.title || "menu";
-  this.state.visible = true;
-  this.state.menuitems = options.menuitems;
-  const host = options.host;
-  merge(this, options);
-  this.internalComponent = new InternalComponent({
-    service: this,
-    host
-  });
-  this.internalComponent.state = this.state;
+class MenuComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this.title = options.title || "menu";
+    this.state.visible = true;
+    this.state.menuitems = options.menuitems;
+    const host = options.host;
+    this.internalComponent = new InternalComponent({
+      service: this,
+      host
+    });
+    this.internalComponent.state = this.state;
+  }
+
+  trigger(item) {};
 }
-inherit(MenuComponent, Component);
 
-const proto = MenuComponent.prototype;
 
-proto.trigger = function(item) {};
 
-module.exports = MenuComponent;
+
+export default  MenuComponent;
 

@@ -1,10 +1,9 @@
-const {inherit, base} = require('core/utils/utils');
-const Service = require('gui/inputs/service');
+import Service  from 'gui/inputs/service';
 
-function RadioService(options={}) {
-  base(this, options);
+class RadioService extends Service {
+  constructor(options={}) {
+    super(options);
+  }
 }
 
-inherit(RadioService, Service);
-
-module.exports = RadioService;
+export default  RadioService;

@@ -1,5 +1,6 @@
 import {EPSG} from '../../../../constant';
-const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
+import geoutils  from 'core/utils/geo';
+import template  from './addlayer.html';
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 
@@ -17,7 +18,7 @@ ChromeComponent.mounted = async function() {
 };
 
 const AddLayerComponent = {
-  template: require('./addlayer.html'),
+  template,
   props: ['service'],
   data() {
     //add map crs if not present
@@ -160,7 +161,7 @@ const AddLayerComponent = {
     },
     async createVectorLayer(){
       try {
-        this.vectorLayer = await createVectorLayerFromFile(this.layer);
+        this.vectorLayer = await geoutils.createVectorLayerFromFile(this.layer);
         await this.$nextTick();
       } catch(err){this.setError('add_external_layer');}
     },
@@ -170,8 +171,8 @@ const AddLayerComponent = {
         //Recreate always the vector layer because we can set the right epsg after first load the file
         // if we change the epsg of the layer after loaded
         try {
-          this.vectorLayer = await createVectorLayerFromFile(this.layer);
-          this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
+          this.vectorLayer = await geoutils.createVectorLayerFromFile(this.layer);
+          this.vectorLayer.setStyle(geoutils.createStyleFunctionToVectorLayer({
             color: this.layer.color,
             field: this.field
           }));
@@ -245,4 +246,4 @@ const AddLayerComponent = {
   }
 };
 
-module.exports = AddLayerComponent;
+export default  AddLayerComponent;

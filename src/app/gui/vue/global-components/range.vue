@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  const {debounce} = require('core/utils/utils');
+  import utils from 'core/utils/utils';
   export default {
     name: "range",
     props:{
@@ -67,7 +67,7 @@
       }
     },
     created(){
-      this.changedValue =  this.sync ? ()=> this.$emit('changed') : debounce(value => {
+      this.changedValue =  this.sync ? ()=> this.$emit('changed') : utils.debounce(value => {
         this.emitChangeValue(value)
       })
     },

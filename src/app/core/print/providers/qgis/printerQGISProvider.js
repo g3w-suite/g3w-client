@@ -1,7 +1,7 @@
 import ApplicationState from '../../../applicationstate';
-const {base, inherit, convertObjectToUrlParams} = require('core/utils/utils');
-const PrintProvider = require('../printerprovider');
-const ProjectsRegistry = require('core/project/projectsregistry');
+import utils from 'core/utils/utils';
+import PrintProvider  from '../printerprovider';
+import ProjectsRegistry  from 'core/project/projectsregistry';
 const OUTPUT_FORMATS =   {
   pdf: 'application/pdf',
   jpg: 'image/jpeg'
@@ -12,136 +12,135 @@ const COMMON_REQUEST_PARAMETERS = {
   VERSION: '1.3.0',
 };
 
-function PrinterQGISProvider() {
-  this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
-  ProjectsRegistry.onbefore('setCurrentProject', project=> this._currentLayerStore = project.getLayersStore());
-  base(this);
-}
+class PrinterQGISProvider extends PrintProvider{
+  constructor() {
+    super();
+    this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
+    ProjectsRegistry.onbefore('setCurrentProject', project=> this._currentLayerStore = project.getLayersStore());
+  };
 
-inherit(PrinterQGISProvider, PrintProvider);
-
-const proto = PrinterQGISProvider.prototype;
-
-proto.POST = function({url, params, mime_type}) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', url, true);
-    xhr.responseType = 'blob';
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        try {
-          window.URL = window.URL || window.webkitURL;
-          const url = window.URL.createObjectURL(xhr.response);
-          resolve({
-            url,
-            layers: true,
-            mime_type
-          });
-        } catch (e) {
-          reject(e)
+  POST({url, params, mime_type}) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.responseType = 'blob';
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            window.URL = window.URL || window.webkitURL;
+            const url = window.URL.createObjectURL(xhr.response);
+            resolve({
+              url,
+              layers: true,
+              mime_type
+            });
+          } catch (e) {
+            reject(e)
+          }
+        } else if(xhr.status === 500) {
+          reject()
         }
-      } else if(xhr.status === 500) {
+      };
+      xhr.onerror = function () {
         reject()
-      }
-    };
-    xhr.onerror = function () {
-      reject()
-    };
-    xhr.send(convertObjectToUrlParams(params))
-  })
-};
+      };
+      xhr.send(utils.convertObjectToUrlParams(params))
+    })
+  };
 
-proto.GET = function({url, params, mime_type}) {
-  return new Promise((resolve, reject) => {
-    url = `${url}?${convertObjectToUrlParams(params)}`;
-    resolve({
-      url,
-      layers: true,
-      mime_type
+  GET({url, params, mime_type}) {
+    return new Promise((resolve, reject) => {
+      url = `${url}?${utils.convertObjectToUrlParams(params)}`;
+      resolve({
+        url,
+        layers: true,
+        mime_type
+      });
+    })
+  };
+
+  _getAtlasParamsFromOptions(options={}){
+    const {field, values, template, download=false} = options;
+    const multiValues = values.length > 1;
+    const EXPRESSION = `${field}${multiValues ?
+      ' IN ('
+      : '='}${values.map(value => '\''+value+'\'').join()}${multiValues
+      ? ')'
+      : ''}`;
+    const params = {
+      ...COMMON_REQUEST_PARAMETERS,
+      REQUEST: 'GetPrintAtlas',
+      EXP_FILTER: EXPRESSION,
+      TEMPLATE: template,
+      filtertoken: ApplicationState.tokens.filtertoken
+    };
+    if (download) params.DOWNLOAD = 1;
+    return params;
+  };
+
+  _getParamsFromOptions(layers=[], options={}) {
+    const { rotation, dpi, format, crs, template, maps=[], labels=[]} = options;
+    layers = layers.map(layer => layer.getPrintLayerName());
+    const params = {
+      ...COMMON_REQUEST_PARAMETERS,
+      REQUEST: 'GetPrint',
+      TEMPLATE: template,
+      DPI: dpi,
+      FORMAT: format,
+      CRS: crs,
+      LAYERS: layers.join(),
+      filtertoken: ApplicationState.tokens.filtertoken
+    };
+
+    maps.forEach(({name, scale, extent}) => {
+      params[name + ':SCALE'] = scale;
+      params[name + ':EXTENT'] = extent;
+      params[name + ':ROTATION'] = rotation;
     });
-  })
-};
 
-proto._getAtlasParamsFromOptions = function(options={}){
-  const {field, values, template, download=false} = options;
-  const multiValues = values.length > 1;
-  const EXPRESSION = `${field}${multiValues ? 
-    ' IN (' 
-    : '='}${values.map(value => '\''+value+'\'').join()}${multiValues 
-    ? ')' 
-    : ''}`;
-  const params = {
-    ...COMMON_REQUEST_PARAMETERS,
-    REQUEST: 'GetPrintAtlas',
-    EXP_FILTER: EXPRESSION,
-    TEMPLATE: template,
-    filtertoken: ApplicationState.tokens.filtertoken
-  };
-  if (download) params.DOWNLOAD = 1;
-  return params;
-};
-
-proto._getParamsFromOptions = function(layers=[], options={}) {
-  const { rotation, dpi, format, crs, template, maps=[], labels=[]} = options;
-  layers = layers.map(layer => layer.getPrintLayerName());
-  const params = {
-    ...COMMON_REQUEST_PARAMETERS,
-    REQUEST: 'GetPrint',
-    TEMPLATE: template,
-    DPI: dpi,
-    FORMAT: format,
-    CRS: crs,
-    LAYERS: layers.join(),
-    filtertoken: ApplicationState.tokens.filtertoken
+    labels.forEach(label => params[label.id] = label.text);
+    return params;
   };
 
-  maps.forEach(({name, scale, extent}) => {
-    params[name + ':SCALE'] = scale;
-    params[name + ':EXTENT'] = extent;
-    params[name + ':ROTATION'] = rotation;
-  });
+  getUrl(){
+    return this._currentLayerStore.getWmsUrl();
+  };
 
-  labels.forEach(label => params[label.id] = label.text);
-  return params;
-};
-
-proto.getUrl = function(){
-  return this._currentLayerStore.getWmsUrl();
-};
-
-proto.printAtlas = function(options={}, method='GET'){
-  const url = this.getUrl();
-  const params = this._getAtlasParamsFromOptions(options);
-  return this[method]({
-    url,
-    params,
-    mime_type: OUTPUT_FORMATS.pdf
-  })
-};
-
-proto.print = function(options={}, method="GET") {
-  const url = this.getUrl();
-  // reverse of layer because the order is important
-  const layers = this._currentLayerStore.getLayers({
-    PRINTABLE: {
-      scale: options.scale
-    },
-    SERVERTYPE: 'QGIS'
-  }).reverse();
-  if (layers.length) {
-    options.crs = this._currentLayerStore.getProjection().getCode();
-    const params = this._getParamsFromOptions(layers, options);
-    const mime_type = OUTPUT_FORMATS[params.FORMAT];
+  printAtlas(options={}, method='GET'){
+    const url = this.getUrl();
+    const params = this._getAtlasParamsFromOptions(options);
     return this[method]({
       url,
       params,
-      mime_type
+      mime_type: OUTPUT_FORMATS.pdf
     })
-  } else return Promise.resolve({layers: false})
-};
+  };
 
-module.exports = PrinterQGISProvider;
+  print(options={}, method="GET") {
+    const url = this.getUrl();
+    // reverse of layer because the order is important
+    const layers = this._currentLayerStore.getLayers({
+      PRINTABLE: {
+        scale: options.scale
+      },
+      SERVERTYPE: 'QGIS'
+    }).reverse();
+    if (layers.length) {
+      options.crs = this._currentLayerStore.getProjection().getCode();
+      const params = this._getParamsFromOptions(layers, options);
+      const mime_type = OUTPUT_FORMATS[params.FORMAT];
+      return this[method]({
+        url,
+        params,
+        mime_type
+      })
+    } else return Promise.resolve({layers: false})
+  };
+
+}
+
+export default  PrinterQGISProvider;
 
 /*
  http://localhost/fcgi-bin/qgis_mapserver/qgis_mapserv.fcgi?MAP=/home/marco/geodaten/projekte/composertest.qgs&SERVICE=WMS&VERSION=1.3.0

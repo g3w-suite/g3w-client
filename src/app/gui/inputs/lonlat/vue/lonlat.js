@@ -1,13 +1,14 @@
-const { getUniqueDomId } = require('core/utils/utils');
-const Input = require('gui/inputs/input');
+import utils from 'core/utils/utils';
+import Input  from 'gui/inputs/input';
+import template from './lonlat.html';
 
 const LatLontInput = Vue.extend({
   mixins: [Input],
-  template: require('./lonlat.html'),
+  template,
   data(){
     return {
-      lonId: getUniqueDomId(),
-      latId: getUniqueDomId(),
+      lonId: utils.getUniqueDomId(),
+      latId: utils.getUniqueDomId(),
       coordinatebutton: {
         active: false
       }
@@ -48,4 +49,4 @@ const LatLontInput = Vue.extend({
   }
 });
 
-module.exports = LatLontInput;
+export default  LatLontInput;

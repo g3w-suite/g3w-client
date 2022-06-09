@@ -23,6 +23,10 @@
   "license": "GPL-3.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
+    "@billjs/event-emitter": "^1.0.3",
+    "is-mobile": "^3.1.1",
+    "lodash": "^4.17.21",
+    "ol": "^6.14.1",
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
     "vue": "^2.6.12",
@@ -33,6 +37,7 @@
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
+    "babel-eslint": "^10.1.0",
     "babel-plugin-syntax-async-generators": "^6.13.0",
     "babel-plugin-syntax-jsx": "^6.18.0",
     "babel-plugin-transform-array-find": "^1.0.0",
@@ -44,6 +49,8 @@
     "babel-plugin-transform-vue-jsx": "^3.7.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-1": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
     "babelify": "^7.3.0",
     "browser-sync": "^2.13.0",
     "browserify": "^13.3.0",
@@ -52,6 +59,7 @@
     "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
     "del": "^2.2.2",
+    "eslint": "^8.17.0",
     "generator-browserify": "^0.4.1",
     "generator-karma": "^2.0.0",
     "gulp": "^3.9.1",
@@ -111,9 +119,5 @@
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
-  },
-  "engines" : { 
-    "node" : ">=16.13.2",
-    "npm": ">=8.1.2"
   }
 }

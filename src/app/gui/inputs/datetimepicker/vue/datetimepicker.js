@@ -1,14 +1,15 @@
 import ApplicationState from 'core/applicationstate';
-const Input = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const WidgetMixins = require('gui/inputs/widgetmixins');
-const {resizeMixin} = require('gui/vue/vue.mixins');
+import Input  from 'gui/inputs/input';
+import utils  from 'core/utils/utils';
+import WidgetMixins  from 'gui/inputs/widgetmixins';
+import {resizeMixin}  from 'gui/vue/vue.mixins';
+import template from './datetimepicker.html';
 
 const DateTimePickerInput = Vue.extend({
   mixins: [Input, WidgetMixins, resizeMixin],
-  template: require('./datetimepicker.html'),
+  template,
   data() {
-    const uniqueValue = getUniqueDomId();
+    const uniqueValue = utils.getUniqueDomId();
     return {
       widget_container: {
         top: 0,
@@ -79,4 +80,4 @@ const DateTimePickerInput = Vue.extend({
   }
 });
 
-module.exports = DateTimePickerInput;
+export default  DateTimePickerInput;

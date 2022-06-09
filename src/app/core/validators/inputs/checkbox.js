@@ -1,14 +1,16 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+import Validator  from './validator';
 
-function CheckBoxValidator(options) {
-  base(this, options);
-  this.validate = function(value) {
+class CheckBoxValidator extends Validator{
+  constructor(options={}) {
+    super(options);
+  }
+
+  validate(value) {
     const values = this.options.values || [];
     return values.indexOf(value) !== -1;
   }
 }
 
-inherit(CheckBoxValidator, Validator);
+export default CheckBoxValidator;
 
-module.exports =  CheckBoxValidator;
+

@@ -1,7 +1,8 @@
+import {Overlay} from "ol";
 /* POP UP SECTION*/
 
 _gis3wlib._interaction.prototype.addPopup = function(element){
-  this.popup = new ol.Overlay({
+  this.popup = new Overlay({
     element: element,
     autoPan: true,
     autoPanAnimation: {

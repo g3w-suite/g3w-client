@@ -756,4 +756,4 @@ $.LayoutManager.loading = function(start) {
 };
 
 
-module.exports = $.LayoutManager;
+export default  $.LayoutManager;

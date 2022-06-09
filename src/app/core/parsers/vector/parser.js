@@ -1,4 +1,5 @@
-const {toRawType} = require('core/utils/utils');
+import utils from 'core/utils/utils';
+import {GeoJSON, WMSGetFeatureInfo} from "ol/format";
 
 const VectorParser = function() {
   // return the right parser for the request
@@ -36,7 +37,7 @@ const VectorParser = function() {
         });
       }
       const layers = layer.getQueryLayerOrigName();
-      const parser = new ol.format.WMSGetFeatureInfo({
+      const parser = new WMSGetFeatureInfo({
         layers
       });
       return parser.readFeatures(gml);
@@ -47,9 +48,9 @@ const VectorParser = function() {
 
   this._parseLayerGeoJSON = function(data, options) {
     try {
-      data = toRawType(data) === 'String' ? JSON.parse(data): data;
+      data = utils.toRawType(data) === 'String' ? JSON.parse(data): data;
       const {crs, mapCrs} = options;
-      const geojson = new ol.format.GeoJSON({
+      const geojson = new GeoJSON({
         dataProjection: crs,
         featureProjection: mapCrs || crs,
         geometryName: "geometry"
@@ -58,8 +59,7 @@ const VectorParser = function() {
     } catch(err){
       return [];
     }
-
   };
 };
 
-module.exports = new VectorParser();
+export default  new VectorParser();

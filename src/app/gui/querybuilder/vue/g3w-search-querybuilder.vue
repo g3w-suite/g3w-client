@@ -36,7 +36,7 @@
 
 <script>
   import Service from '../service';
-  const QueryBuilderUIFactory = require('../querybuilderuifactory');
+  import QueryBuilderUIFactory  from '../querybuilderuifactory';
   export default {
     name: "g3w-querybuilder-search",
     props: {

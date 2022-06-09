@@ -1,6 +1,7 @@
-const {getUniqueDomId} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const templateCompiled = Vue.compile(require('./lineXY.html'));
+import utils  from 'core/utils/utils';
+import GUI  from 'gui/gui';
+import lineXYTemplate from './lineXY.html'
+const templateCompiled = Vue.compile(lineXYTemplate);
 const C3XYLine = {
   ...templateCompiled,
   props: {
@@ -11,7 +12,7 @@ const C3XYLine = {
   },
   data() {
     return {
-      id: `graphline${getUniqueDomId()}`,
+      id: `graphline${utils.getUniqueDomId()}`,
       selectitems: [],
       data: [],
       components: [],
@@ -154,4 +155,4 @@ const C3XYLine = {
   }
 };
 
-module.exports = C3XYLine;
+export default  C3XYLine;

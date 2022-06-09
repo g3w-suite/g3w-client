@@ -1,14 +1,24 @@
-import CONSTANT from '../../constant';
-const {toRawType, uniqueId} = require('core/utils/utils');
-const Geometry = require('core/geometry/geometry');
-const WMSLayer = require('core/layers/map/wmslayer');
-const Filter = require('core/layers/filter/filter');
-const responseParser = require('core/parsers/response/parser');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const GUI = require('gui/gui');
-const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
+import CONSTANT from 'constant';
+import utils from 'core/utils/utils';
+import Filter from 'core/layers/filter/filter';
+import Geometry from 'core/geometry/geometry';
+import GUI from 'gui/gui';
+import WMSLayer  from 'core/layers/map/wmslayer';
+import responseParser  from 'core/parsers/response/parser';
+import MapLayersStoreRegistry  from 'core/map/maplayersstoresregistry';
+import {Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon} from 'ol/geom';
+import geom from 'ol/geom';
+import {Style, Circle, Stroke, Fill, Icon, Text} from 'ol/style';
+import {Feature} from "ol";
+import {Vector as VectorLayer} from "ol/layer";
+import {Vector as VectorSource} from "ol/source";
+import {Collection} from "ol";
+import {GPX, GeoJSON, WMSGetFeatureInfo, KML, WKT} from "ol/format";
+import {asArray, asString} from 'ol/color';
 
+
+export const geometryFields = CONSTANT.GEOMETRY_FIELDS;
+const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
 const geoutils = {
   geometryFields,
   coordinatesToGeometry(geometryType, coordinates) {
@@ -19,14 +29,14 @@ const geoutils = {
       case Geometry.GeometryTypes.POLYGONM:
       case Geometry.GeometryTypes.POLYGONZM:
       case Geometry.GeometryTypes.POLYGON25D:
-        geometryClass = ol.geom.Polygon;
+        geometryClass = Polygon;
         break;
       case Geometry.GeometryTypes.MULTIPOLYGON:
       case Geometry.GeometryTypes.MULTIPOLYGONZ:
       case Geometry.GeometryTypes.MULTIPOLYGONM:
       case Geometry.GeometryTypes.MULTIPOLYGONZM:
       case Geometry.GeometryTypes.MULTIPOLYGON25D:
-        geometryClass = ol.geom.MultiPolygon;
+        geometryClass = MultiPolygon;
         break;
       case Geometry.GeometryTypes.LINESTRING:
       case Geometry.GeometryTypes.LINESTRINGZ:
@@ -38,7 +48,7 @@ const geoutils = {
       case Geometry.GeometryTypes.LINEM:
       case Geometry.GeometryTypes.LINEZM:
       case Geometry.GeometryTypes.LINE25D:
-        geometryClass = ol.geom.LineString;
+        geometryClass = LineString;
         break;
       case Geometry.GeometryTypes.MULTILINE:
       case Geometry.GeometryTypes.MULTILINEZ:
@@ -50,24 +60,24 @@ const geoutils = {
       case Geometry.GeometryTypes.MULTILINESTRINGM:
       case Geometry.GeometryTypes.MULTILINESTRINGZM:
       case Geometry.GeometryTypes.MULTILINESTRING25D:
-        geometryClass = ol.geom.MultiLineString;
+        geometryClass = MultiLineString;
         break;
       case Geometry.GeometryTypes.POINT:
       case Geometry.GeometryTypes.POINTZ:
       case Geometry.GeometryTypes.POINTM:
       case Geometry.GeometryTypes.POINTZM:
       case Geometry.GeometryTypes.POINT25D:
-        geometryClass = ol.geom.Point;
+        geometryClass = Point;
         break;
       case Geometry.GeometryTypes.MULTIPOINT:
       case Geometry.GeometryTypes.MULTIPOINTZ:
       case Geometry.GeometryTypes.MULTIPOINTM:
       case Geometry.GeometryTypes.MULTIPOINTZM:
       case Geometry.GeometryTypes.MULTIPOINT25D:
-        geometryClass = ol.geom.MultiPoint;
+        geometryClass = MultiPoint;
         break;
       default:
-        geometryClass = ol.geom.Point;
+        geometryClass = Point;
     }
     const geometry = new geometryClass(coordinates);
     return geometry
@@ -123,56 +133,56 @@ const geoutils = {
         break;
     }
     const defaultStyle = {
-      'Point': new ol.style.Style({
-        image: new ol.style.Circle({
-          fill: new ol.style.Fill({
+      'Point': new Style({
+        image: new Circle({
+          fill: new Fill({
             color
           }),
           radius: 5,
-          stroke: new ol.style.Stroke({
+          stroke: new Stroke({
             color,
             width: 1
           })
         })
       }),
-      'LineString': new ol.style.Style({
-        stroke: new ol.style.Stroke({
+      'LineString': new Style({
+        stroke: new Stroke({
           color,
           width: 3
         })
       }),
-      'Polygon': new ol.style.Style({
-        fill: new ol.style.Fill({
+      'Polygon': new Style({
+        fill: new Fill({
           color: 'rgba(255,255,255,0.5)'
         }),
-        stroke: new ol.style.Stroke({
+        stroke: new Stroke({
           color,
           width: 3
         })
       }),
-      'MultiPoint': new ol.style.Style({
-        image: new ol.style.Circle({
-          fill: new ol.style.Fill({
+      'MultiPoint': new Style({
+        image: new Circle({
+          fill: new Fill({
             color
           }),
           radius: 5,
-          stroke: new ol.style.Stroke({
+          stroke: new Stroke({
             color,
             width: 1
           })
         })
       }),
-      'MultiLineString': new ol.style.Style({
-        stroke: new ol.style.Stroke({
+      'MultiLineString': new Style({
+        stroke: new Stroke({
           color,
           width: 3
         })
       }),
-      'MultiPolygon': new ol.style.Style({
-        fill: new ol.style.Fill({
+      'MultiPolygon': new Style({
+        fill: new Fill({
           color: 'rgba(255,255,255,0.5)'
         }),
-        stroke: new ol.style.Stroke({
+        stroke: new Stroke({
           color,
           width: 3
         })
@@ -189,26 +199,26 @@ const geoutils = {
         switch (type) {
           case 'point':
             if (config.icon) {
-              styles.image = new ol.style.Icon({
+              styles.image = new Icon({
                 src: config.icon.url,
                 imageSize: config.icon.width
               })
             }
             break;
           case 'line':
-            styles.stroke = new ol.style.Stroke({
+            styles.stroke = new Stroke({
               color: config.color,
               width: config.width
             });
             break;
           case 'polygon':
-            styles.fill = new ol.style.Fill({
+            styles.fill = new Fill({
               color: config.color
             });
             break
         }
       });
-      style = new ol.style.Style(styles);
+      style = new Style(styles);
     }
     return style
   },
@@ -216,8 +226,8 @@ const geoutils = {
   createFeatureFromCoordinates(coordinates){
     let feature;
     if (Array.isArray(coordinates) && coordinates.length === 2) {
-      const geometry = new ol.geom.Point(coordinates);
-      feature = new ol.Feature(geometry);
+      const geometry = new Point(coordinates);
+      feature = new Feature(geometry);
     }
     return feature;
   },
@@ -225,15 +235,15 @@ const geoutils = {
   createFeatureFromBBOX(bbox){
     let feature;
     if (Array.isArray(bbox) && bbox.length === 4) {
-      const geometry = ol.geom.Polygon.fromExtent(bbox);
-      feature = new ol.Feature(geometry)
+      const geometry = Polygon.fromExtent(bbox);
+      feature = new Feature(geometry)
     }
     return feature;
   },
 
   createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
-      const feature = new ol.Feature(geometry);
+      const feature = new Feature(geometry);
       id && feature.setId(id);
       return feature;
     }
@@ -246,10 +256,10 @@ const geoutils = {
     const color = options.color;
     let style = options.style;
     // create ol layer to add to map
-    const olSource = options.source || new ol.source.Vector({
-      features: features || new ol.Collection()
+    const olSource = options.source || new VectorSource({
+      features: features || new Collection()
     });
-    const olLayer = new ol.layer.Vector({
+    const olLayer = new VectorLayer({
       id: id,
       source: olSource
     });
@@ -265,10 +275,10 @@ const geoutils = {
         case Geometry.GeometryTypes.MULTIPOINTM:
         case Geometry.GeometryTypes.MULTIPOINTZM:
         case Geometry.GeometryTypes.MULTIPOINT25D:
-          style = new ol.style.Style({
-            image: new ol.style.Circle({
+          style = new Style({
+            image: new Circle({
               radius: 5,
-              fill: new ol.style.Fill({
+              fill: new Fill({
                 color
               })
             })
@@ -294,8 +304,8 @@ const geoutils = {
         case Geometry.GeometryTypes.MULTILINEM:
         case Geometry.GeometryTypes.MULTILINEZM:
         case Geometry.GeometryTypes.MULTILINE25D:
-          style = new ol.style.Style({
-            stroke: new ol.style.Stroke({
+          style = new Style({
+            stroke: new Stroke({
               width: 3,
               color
             })
@@ -311,12 +321,12 @@ const geoutils = {
         case Geometry.GeometryTypes.MULTIPOLYGONM:
         case Geometry.GeometryTypes.MULTIPOLYGONZM:
         case Geometry.GeometryTypes.MULTIPOLYGON25D:
-          style =  new ol.style.Style({
-            stroke: new ol.style.Stroke({
+          style =  new Style({
+            stroke: new Stroke({
               color:  "#000000",
               width: 1
             }),
-            fill: new ol.style.Fill({
+            fill: new Fill({
               color
             })
           });
@@ -329,6 +339,7 @@ const geoutils = {
   },
 
   createWMSLayer({url, name, projection, layers=[]}={}){
+    const {uniqueId} = utils;
     const id = name || uniqueId();
     name = name || id;
     const wmslayer = new WMSLayer({
@@ -347,13 +358,13 @@ const geoutils = {
   },
 
   createVectorLayerFromGeometry(geometry){
-    const feature = new ol.Feature(geometry);
+    const feature = new Feature(geometry);
     return geoutils.createVectorLayerFromFeatures(feature);
   },
 
   createVectorLayerFromFeatures(feature){
-    return new ol.layer.Vector({
-      source: new ol.source.Vector({
+    return new VectorLayer({
+      source: new VectorSource({
         features: Array.isArray(feature) ? feature : [feature]
       })
     })
@@ -362,6 +373,7 @@ const geoutils = {
   async createVectorLayerFromFile({name, type, crs, mapCrs, data, style} ={}) {
     let format;
     let layer;
+    const {uniqueId} = utils;
     const createVectorLayer = (format, data, epsg=crs) => {
       let vectorLayer;
       const features = format.readFeatures(data, {
@@ -369,10 +381,10 @@ const geoutils = {
         featureProjection: mapCrs || epsg
       });
       if (features.length) {
-        const vectorSource = new ol.source.Vector({
+        const vectorSource = new VectorSource({
           features
         });
-        vectorLayer = new ol.layer.Vector({
+        vectorLayer = new VectorLayer({
           source: vectorSource,
           name,
           _fields: Object.keys(features[0].getProperties()).filter(property => geometryFields.indexOf(property) < 0),
@@ -384,19 +396,19 @@ const geoutils = {
     };
     switch (type) {
       case 'gpx':
-        format = new ol.format.GPX();
+        format = new GPX();
         layer = createVectorLayer(format, data);
         break;
       case 'gml':
-        format = new ol.format.WMSGetFeatureInfo();
+        format = new WMSGetFeatureInfo();
         layer = createVectorLayer(format, data);
         break;
       case 'geojson':
-        format = new ol.format.GeoJSON();
+        format = new GeoJSON();
         layer = createVectorLayer(format, data);
         break;
       case 'kml':
-        format = new ol.format.KML({
+        format = new KML({
           extractStyles: false
         });
         layer = createVectorLayer(format, data,  "EPSG:4326");
@@ -418,9 +430,9 @@ const geoutils = {
             });
             // check if all coordinates is right
             if (coordinates.find(value => Number.isNaN(value)) === undefined){
-              const geometry = new ol.geom.Point(coordinates);
+              const geometry = new Point(coordinates);
               if (crs !== mapCrs) geometry.transform(crs, mapCrs);
-              const feature = new ol.Feature(geometry);
+              const feature = new Feature(geometry);
               feature.setId(index); // need to add a id incremental
               feature.setProperties(properties);
               features.push(feature);
@@ -451,10 +463,11 @@ const geoutils = {
           });
         }
 
-        const source = new ol.source.Vector({
+        const source = new VectorSource({
           features
         });
-        layer = new ol.layer.Vector({
+        const {uniqueId} = utils;
+        layer = new VectorLayer({
           source,
           name,
           _fields: headers,
@@ -470,7 +483,7 @@ const geoutils = {
           const kmlFile = zip.file(/.kml$/i)[0];
           if (kmlFile) {
             data = kmlFile.asText();
-            format = new ol.format.KML({
+            format = new KML({
               extractStyles: false
             });
             resolve(createVectorLayer(format, data, "EPSG:4326"));
@@ -487,7 +500,7 @@ const geoutils = {
           const buffer = await data.arrayBuffer(data);
           shp(buffer).then(geojson => {
             const data = JSON.stringify(geojson);
-            format = new ol.format.GeoJSON({});
+            format = new GeoJSON({});
             resolve(createVectorLayer(format, data, "EPSG:4326"));
           }).catch(err => reject(err))
         });
@@ -507,15 +520,15 @@ const geoutils = {
       color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
       const geometryType = feature.getGeometry().getType();
       const style = geoutils.getDefaultLayerStyle(geometryType, {color});
-      field && style.setText(new ol.style.Text({
+      field && style.setText(new Text({
         text: `${feature.get(field)}`,
         font: 'bold',
         scale: 2,
         offsetY: 15,
-        fill: new ol.style.Fill({
+        fill: new Fill({
           color
         }),
-        stroke: new ol.style.Stroke(({
+        stroke: new Stroke(({
           color: '#FFFFFF',
           width: 2
         }))
@@ -529,36 +542,36 @@ const geoutils = {
   createSelectedStyle({geometryType, color='rgb(255,255,0)', fill=true}={}) {
     let style = null;
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
-      style = new ol.style.Style({
-        stroke: new ol.style.Stroke({
+      style = new Style({
+        stroke: new Stroke({
           color,
           width: 4
         })
       });
     } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
-      style = new ol.style.Style({
-        image: new ol.style.Circle({
+      style = new Style({
+        image: new Circle({
           radius: 6,
-          stroke: !fill && new ol.style.Stroke({
+          stroke: !fill && new Stroke({
             color,
             width: 4
           }),
-          fill: fill && new ol.style.Fill({
+          fill: fill && new Fill({
             color
           })
         }),
         zIndex: Infinity
       });
     } else if (geometryType === 'MultiPolygon' || geometryType === 'Polygon') {
-      const fillColor = ol.color.asArray(color);
+      const fillColor = asArray(color);
       fillColor.splice(3,1,0.5);
-      style = new ol.style.Style({
-        stroke: new ol.style.Stroke({
+      style = new Style({
+        stroke: new Stroke({
           color,
           width: 4
         }),
-        fill: fill && new ol.style.Fill({
-          color: ol.color.asString(fillColor)
+        fill: fill && new Fill({
+          color: asString(fillColor)
         })
       });
     }
@@ -577,7 +590,7 @@ const geoutils = {
    */
   getFormDataExpressionRequestFromFeature(feature){
     delete feature.attributes.geometry;
-    const _feature = new ol.Feature(feature.geometry);
+    const _feature = new Feature(feature.geometry);
     const properties = {};
     geoutils.getAlphanumericPropertiesFromFeature(feature.attributes).forEach(property =>{
       if (property !== G3W_FID) properties[property] = feature.attributes[property]
@@ -592,7 +605,7 @@ const geoutils = {
    * @param feature
    */
   convertFeatureToGEOJSON(feature){
-    const GeoJSONFormat = new ol.format.GeoJSON();
+    const GeoJSONFormat = new GeoJSON();
     return GeoJSONFormat.writeFeatureObject(feature);
   },
 
@@ -606,8 +619,8 @@ const geoutils = {
    */
   getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}){
     let queriesPromise;
-    const geometry = ol.geom.Polygon.fromExtent(bbox);
-    const map = GUI.getComponent('map').getService().getMap();
+    const geometry = Polygon.fromExtent(bbox);
+    const map = GUI.getService('map').getMap();
     const mapProjection = map.getView().getProjection();
 
     if (multilayers) {
@@ -718,7 +731,7 @@ const geoutils = {
   getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance=QUERY_POINT_TOLERANCE, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     if (!layers.length) return d.resolve(layers);
-    const map = GUI.getComponent('map').getService().getMap();
+    const map = GUI.getService('map');
     const size = map.getSize();
     const queryResponses = [];
     const queryErrors = [];
@@ -784,8 +797,8 @@ const geoutils = {
   },
 
   transformBBOX({bbox, sourceCrs, destinationCrs}={}){
-    const point1 = new ol.geom.Point([bbox[0], bbox[1]]);
-    const point2 = new ol.geom.Point([bbox[2], bbox[3]]);
+    const point1 = new Point([bbox[0], bbox[1]]);
+    const point2 = new Point([bbox[2], bbox[3]]);
     point1.transform(sourceCrs, destinationCrs);
     point2.transform(sourceCrs, destinationCrs);
     return [...point1.getCoordinates(), ...point2.getCoordinates()];
@@ -861,7 +874,7 @@ const geoutils = {
     let splitted = false;
     const splittedSegments = [];
     const jstsFromWkt = new jsts.io.WKTReader();
-    const wktFromOl = new ol.format.WKT();
+    const wktFromOl = new WKT();
     const olFromJsts = new jsts.io.OL3Parser();
     const splitLine = jstsFromWkt.read(wktFromOl.writeGeometry(splitGeometry));
     let wktLineString = wktFromOl.writeGeometry(lineGeometry);
@@ -958,11 +971,11 @@ const geoutils = {
             polygonFeature.forEach(geometry =>{
               geoutils.splitFeature({
                 splitfeature,
-                feature: new ol.Feature({
+                feature: new Feature({
                   geometry
                 })
               }).forEach(geometry => {
-                geometry && splittedFeatureGeometries.push(new ol.geom.MultiPolygon([geometry.getCoordinates()]))
+                geometry && splittedFeatureGeometries.push(new MultiPolygon([geometry.getCoordinates()]))
               })
             })
           } else {
@@ -1022,12 +1035,12 @@ const geoutils = {
                 }
                 const geometryType = geometry.getType();
                 if (isMulti){
-                  splittedFeatureGeometries.push(new ol.geom.MultiPolygon(geometryType=== 'Polygon' ? [geometry.getCoordinates()] : geometry.getCoordinates()))
+                  splittedFeatureGeometries.push(new MultiPolygon(geometryType=== 'Polygon' ? [geometry.getCoordinates()] : geometry.getCoordinates()))
                 } else {
                   if (geometryType === 'Polygon'){
                     splittedFeatureGeometries.push(geometry);
                   } else geometry.getCoordinates().forEach(coordinates => {
-                    splittedFeatureGeometries.push(new ol.geom.Polygon(coordinates))
+                    splittedFeatureGeometries.push(new Polygon(coordinates))
                   })
                 }
               }
@@ -1041,11 +1054,11 @@ const geoutils = {
             lineFeatureGeometry.forEach(lineGeometry =>{
               geoutils.splitFeature({
                 splitfeature,
-                feature: new ol.Feature({
+                feature: new Feature({
                   geometry: lineGeometry
                 })
               }).forEach(geometry => {
-                geometry && splittedFeatureGeometries.push(new ol.geom.MultiLineString([geometry.getCoordinates()]))
+                geometry && splittedFeatureGeometries.push(new MultiLineString([geometry.getCoordinates()]))
               })
             })
           } else return geoutils.splitGeometryLine(geometries.split, geometries.feature);
@@ -1066,7 +1079,7 @@ const geoutils = {
           coordinates.forEach(coordinates =>{
             coordinates.pop();
             coordinates.forEach(coordinates =>{
-              const feature = new ol.Feature(new ol.geom.Point(coordinates));
+              const feature = new Feature(new Point(coordinates));
               pointFeatures.push(feature);
             })
           })
@@ -1076,7 +1089,7 @@ const geoutils = {
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.pop();
           coordinates.forEach(coordinates =>{
-            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            const feature = new Feature(new Point(coordinates));
             pointFeatures.push(feature);
           })
         });
@@ -1084,7 +1097,7 @@ const geoutils = {
       case Geometry.GeometryTypes.MULTILINESTRING:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
-            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            const feature = new Feature(new Point(coordinates));
             pointFeatures.push(feature);
           })
         });
@@ -1092,20 +1105,20 @@ const geoutils = {
       case Geometry.GeometryTypes.LINESTRING:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
-            const feature = new ol.Feature(new ol.geom.Point(coordinates));
+            const feature = new Feature(new Point(coordinates));
             pointFeatures.push(feature);
           })
         });
         break;
       case Geometry.GeometryTypes.MULTIPOINT:
         geometry.getCoordinates().forEach(coordinates =>{
-          const feature = new ol.Feature(new ol.geom.Point(coordinates));
+          const feature = new Feature(new Point(coordinates));
           pointFeatures.push(feature);
         });
         break;
       case Geometry.GeometryTypes.POINT:
         const coordinates =  geometry.getCoordinates();
-        const feature = new ol.geom.Point(coordinates);
+        const feature = new Point(coordinates);
         pointFeatures.push(feature);
         break;
     }
@@ -1161,7 +1174,7 @@ const geoutils = {
 
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
-    return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
+    return geometryType && new geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
   },
 
   multiGeometryToSingleGeometries(geometry){
@@ -1279,6 +1292,7 @@ const geoutils = {
   },
 
   crsToCrsObject(crs){
+    const {toRawType} = utils;
     if (crs === null || crs === undefined) return crs;
     if  (toRawType(crs) === 'Object' && crs.epsg) crs.epsg = geoutils.normalizeEpsg(crs.epsg);
     else
@@ -1409,13 +1423,14 @@ const geoutils = {
   createOlFeatureFromApiResponseFeature(feature){
     const {properties={}, geometry, id} = feature;
     properties[G3W_FID] = id;
-    const Feature = new ol.Feature(geometry && new ol.geom[geometry.type](geometry.coordinates));
+    const Feature = new Feature(geometry && new geom[geometry.type](geometry.coordinates));
     Feature.setProperties(properties);
     Feature.setId(id);
     return Feature;
   },
 
   sanitizeFidFeature(fid){
+    const {toRawType} = utils;
     if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
       fid = fid.split('.');
       fid = fid.length === 2 ? fid[1] : fid[0];
@@ -1450,7 +1465,7 @@ const geoutils = {
     });
     return response;
   }
-
 };
 
-module.exports = geoutils;
+export default geoutils;
+

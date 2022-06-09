@@ -1,33 +1,31 @@
-const Control = require('./control');
-function AddLayersControl() {
-  const options = {
-    name: "addlayer",
-    tipLabel: "sdk.mapcontrols.addlayer.tooltip",
-    label: "\ue907"
+import Control  from './control';
+class AddLayersControl extends Control {
+  constructor(options={}) {
+    options = {
+      name: "addlayer",
+      tipLabel: "sdk.mapcontrols.addlayer.tooltip",
+      label: "\ue907"
+    };
+    super(options);
+    this._layerstore = null;
+  }
+
+  setMap(map) {
+    Control.prototype.setMap.call(this,map);
+    $(this.element).on('click', () => this.dispatchEvent('addlayer'));
   };
-  Control.call(this, options);
-  this._layerstore = null;
+
+  layout(map) {
+    Control.prototype.layout.call(this, map);
+  };
+
+  getLayersSore() {
+    return this._layerstore;
+  };
+
+  setLayersStore(layersStore) {
+    this._layerstore = layersStore;
+  };
 }
 
-ol.inherits(AddLayersControl, Control);
-
-const proto = AddLayersControl.prototype;
-
-proto.setMap = function(map) {
-  Control.prototype.setMap.call(this,map);
-  $(this.element).on('click', () => this.dispatchEvent('addlayer'));
-};
-
-proto.layout = function(map) {
-  Control.prototype.layout.call(this, map);
-};
-
-proto.getLayersSore = function() {
-  return this._layerstore;
-};
-
-proto.setLayersStore = function(layersStore) {
-  this._layerstore = layersStore;
-};
-
-module.exports = AddLayersControl;
+export default  AddLayersControl;

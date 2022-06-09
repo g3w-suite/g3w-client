@@ -1,19 +1,23 @@
+import {Attribution, Zoom, defaults as defaultControls} from "ol/control";
+import {Map, View} from 'ol';
+import {default as defaultInteraction, DragRotate} from 'ol/interaction';
+
 /* MAP FUNCTIONS */
 _gis3wlib._map.prototype.setMap = function(mapOpts) {
-  const attribution = new ol.control.Attribution({
+  const attribution = new Attribution({
     collapsible: false
   });
-  const controls = ol.control.defaults({
+  const controls = defaultControls({
     attribution: false
-  }).extend([attribution, new ol.control.Zoom()]);
-  const map  = new ol.Map({
+  }).extend([attribution, new Zoom()]);
+  const map  = new Map({
     controls: controls,
-    interactions: ol.interaction.defaults().extend([
-      new ol.interaction.DragRotate()
+    interactions: defaultInteraction().extend([
+      new DragRotate()
     ]),
     ol3Logo: false,
     target: mapOpts.id || 'map',
-    view: new ol.View(mapOpts.view)
+    view: new View(mapOpts.view)
   });
   this.map = map;
 };

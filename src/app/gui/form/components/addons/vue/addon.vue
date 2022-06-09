@@ -1,4 +1,4 @@
-<template functional>
+<template>
   <span class="circle-icon skin-background-color lighten" @click.stop="fnc" :id="id" :title="title || id">
     <i :class="fontClass"></i>
   </span>

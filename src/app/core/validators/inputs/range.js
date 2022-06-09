@@ -1,15 +1,19 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+import Validator  from './validator';
 
-function RangeValidator(options={}) {
-  base(this, options);
-  const {min, max} = options;
-  this.validate = function(value) {
+class RangeValidator extends Validator {
+  constructor(options = {}) {
+    super(options);
+    const {min, max} = options;
+    this.min = min;
+    this.max = max;
+  }
+
+  validate(value) {
     value = 1*value;
-    return value >= min && value <= max;
+    return value >= this.min && value <= this.max;
   }
 }
 
-inherit(RangeValidator, Validator);
+export default RangeValidator;
 
-module.exports =  RangeValidator;
+

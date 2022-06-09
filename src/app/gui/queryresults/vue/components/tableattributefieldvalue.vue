@@ -9,7 +9,7 @@
 <script>
   import Link from '../../../fields/link.vue';
   import VueField from '../../../fields/vuefield.vue';
-  const {fieldsMixin} = require('gui/vue/vue.mixins');
+  import  {fieldsMixin}  from 'gui/vue/vue.mixins';
   export default {
     name: "tableattributefieldvalue",
     props: {

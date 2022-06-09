@@ -26,7 +26,7 @@
 </template>
 
 <script>
-  const ProjectsRegistry = require('core/project/projectsregistry');
+  import ProjectsRegistry  from 'core/project/projectsregistry';
   export default {
     name: "g3w-images-gallery",
     props: {

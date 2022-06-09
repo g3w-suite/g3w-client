@@ -98,7 +98,7 @@ const formats = [
   }
 ];
 
-module.exports = {
+export default  {
   scale,
   dpis,
   formats

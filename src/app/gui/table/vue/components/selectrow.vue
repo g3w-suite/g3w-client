@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  const {getUniqueDomId} = require('core/utils/utils');
+  import utils from 'core/utils/utils';
   export default {
     name: "select-row",
     props: {
@@ -18,7 +18,7 @@
     },
     data(){
       return {
-        id: getUniqueDomId()
+        id: utils.getUniqueDomId()
       }
     },
     methods: {
@@ -32,6 +32,4 @@
   }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

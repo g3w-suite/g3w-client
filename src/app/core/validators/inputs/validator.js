@@ -1,8 +1,11 @@
-function InputValidator(options={}) {
-  this.options = options;
-  this.validate = function() {
+class InputValidator {
+  constructor(options={}) {
+    this.options = options;
+  }
+
+  validate() {
     return true; // always true. Generic validator
   }
 }
 
-module.exports = InputValidator;
+export default  InputValidator;

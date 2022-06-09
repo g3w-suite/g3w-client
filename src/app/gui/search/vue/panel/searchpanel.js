@@ -1,12 +1,12 @@
 import Select2 from './select2.vue'
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const {base, inherit, uniqueId} = require('core/utils/utils');
-const Panel = require('gui/panel');
-const Service = require('./searchservice');
-const compiledTemplate = Vue.compile(require('./searchpanel.html'));
+import utils from 'core/utils/utils';
+import Panel  from 'gui/panel';
+import Service  from './searchservice';
+import template from './searchpanel.html';
 
-const SearchPanelComponent = Vue.extend({
-  ...compiledTemplate,
+const SearchPanelComponent = {
+  template,
   components:{
     Select2
   },
@@ -64,24 +64,26 @@ const SearchPanelComponent = Vue.extend({
      this.$options.service.run();
     }
   }
-});
+};
 
-function SearchPanel(options = {}) {
-  const service = options.service || new Service(options);
-  this.setService(service);
-  this.id = uniqueId();
-  const SearchPanel = options.component || SearchPanelComponent;
-  const internalPanel = new SearchPanel({
-    service
-  });
-  this.setInternalPanel(internalPanel);
-  this.unmount = function() {
-    return base(this, 'unmount').then(() => {
+class SearchPanel extends Panel {
+  constructor(options={}) {
+    super(options);
+    const service = options.service || new Service(options);
+    this.setService(service);
+    this.id = utils.uniqueId();
+    const SearchPanel = options.component || SearchPanelComponent;
+    const internalPanel = new SearchPanel({
+      service
+    });
+    this.setInternalPanel(internalPanel);
+  }
+
+  unmount() {
+    return super.unmount().then(() => {
       service.clear()
     })
   }
 }
 
-inherit(SearchPanel, Panel);
-
-module.exports = SearchPanel;
+export default  SearchPanel;

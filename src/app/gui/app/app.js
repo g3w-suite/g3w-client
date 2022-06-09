@@ -1,15 +1,15 @@
 import CookieLaw from "vue-cookie-law";
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const { uniqueId } = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const HeaderItem = require('gui/header/headeritem');
-const GUI = require('gui/gui');
-const layout = require('./layout');
-const compiledTemplate = Vue.compile(require('./app.html'));
-const { resizeMixin } = require('gui/vue/vue.mixins');
+import ApplicationService from 'core/applicationservice';
+import ProjectsRegistry  from 'core/project/projectsregistry';
+import utils from 'core/utils/utils';
+import {t}  from 'core/i18n/i18n.service';
+import HeaderItem  from 'gui/header/headeritem';
+import GUI  from 'gui/gui';
+import layout  from './layout';
+import template from  './app.html';
+import { resizeMixin }  from 'gui/vue/vue.mixins';
 const AppUI = Vue.extend({
-  ...compiledTemplate,
+  template,
   mixins: [resizeMixin],
   data() {
     return {
@@ -148,7 +148,7 @@ const AppUI = Vue.extend({
     };
     this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
       if (customitem !== null) {
-        const id = customitem.id = uniqueId();
+        const id = customitem.id = utils.uniqueId();
         customitem.type === 'modal' && this.custom_modals.push({
           id,
           content: customitem.content
@@ -201,4 +201,4 @@ const AppUI = Vue.extend({
   },
 });
 
-module.exports = AppUI;
+export default  AppUI;

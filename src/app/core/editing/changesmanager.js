@@ -1,6 +1,7 @@
-//lass that is usefult to apply changes to features (undo/redo) singleton
-function ChangesManager() {
-  this.execute = function(object, items, reverse) {
+//Class that is usefult to apply changes to features (undo/redo) singleton
+class ChangesManager {
+  constructor() {}
+  execute(object, items, reverse) {
     let fnc;
     let feature;
     items.forEach((item) => {
@@ -14,22 +15,21 @@ function ChangesManager() {
       object[fnc](feature);
     })
   }
+  // class attribute
+  static Actions = {
+    'add': {
+      fnc: 'addFeature',
+      opposite: 'delete'
+    },
+    'delete': {
+      fnc: 'removeFeature',
+      opposite: 'add'
+    },
+    'update': {
+      fnc: 'updateFeature',
+      opposite: 'update'
+    }
+  };
 }
 
-// know actions
-ChangesManager.Actions = {
-  'add': {
-    fnc: 'addFeature',
-    opposite: 'delete'
-  },
-  'delete': {
-    fnc: 'removeFeature',
-    opposite: 'add'
-  },
-  'update': {
-    fnc: 'updateFeature',
-    opposite: 'update'
-  }
-};
-
-module.exports = new ChangesManager();
+export default  new ChangesManager();

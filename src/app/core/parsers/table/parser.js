@@ -1,4 +1,4 @@
-const Feature = require('core/layers/features/feature');
+import Feature  from 'core/layers/features/feature';
 const TableParser = function() {
   this.get = function(options={}) {
     const type = options.type;
@@ -25,5 +25,5 @@ const TableParser = function() {
   }
 };
 
-module.exports = new TableParser();
+export default  new TableParser();
 

@@ -1,9 +1,14 @@
-const {barstack:Stack} = require('gui/utils/utils');
-const GUI = require('gui/gui');
+import {barstack as Stack}  from 'gui/utils/utils';
+import templaterFloatBar from './floatbar.html';
 
-function FloatbarService(){
-  this.stack = new Stack();
-  this.init = function(layout){
+import GUI  from 'gui/gui';
+
+class FloatbarService {
+  constructor() {
+    this.stack = new Stack();
+  }
+
+  init(layout){
     this.layout = layout;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);
     this._zindex = this.sidebarEl.css("z-index");
@@ -12,21 +17,21 @@ function FloatbarService(){
     this._isopen = false;
   };
 
-  this.isOpen = function() {
+  isOpen() {
     return this._isopen;
   };
 
-  this.open = function() {
+  open() {
     this.layout.floatBar.open(this.sidebarEl,true);
     this._isopen = true;
   };
 
-  this.close = function() {
+  close() {
     this.layout.floatBar.close(this.sidebarEl,true);
     this._isopen = false;
   };
 
-  this.showPanel = function(panel, options){
+  showPanel(panel, options){
     options = options || {};
     const append = options.append || false;
     const modal = options.modal || false;
@@ -35,7 +40,7 @@ function FloatbarService(){
     if (!this._isopen) this.open();
   };
 
-  this.closePanel = function(panel){
+  closePanel(panel){
     if (panel) this.stack.remove(panel);
     else this.stack.pop();
     if (!this.stack.getLength()) {
@@ -52,16 +57,15 @@ function FloatbarService(){
     }
   };
 
-  this.hidePanel = function(){
+  hidePanel(){
     this.close();
   };
 }
 
 const floatbarService = new FloatbarService();
-const compiledFloatBarTemplate = Vue.compile(require('./floatbar.html'));
 
 const FloatbarComponent = Vue.extend({
-    ...compiledFloatBarTemplate,
+  templaterFloatBar,
     data() {
     	return {
         stack: floatbarService.stack.state,
@@ -99,7 +103,7 @@ const FloatbarComponent = Vue.extend({
     }
 });
 
-module.exports = {
+export default  {
   FloatbarService: floatbarService,
   FloatbarComponent: FloatbarComponent
 };

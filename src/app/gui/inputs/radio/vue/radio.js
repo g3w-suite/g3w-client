@@ -1,12 +1,14 @@
-const Input = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
+import Input  from 'gui/inputs/input';
+import utils  from 'core/utils/utils';
+import template from './radio.html';
 
 const RadioInput = Vue.extend({
   mixins: [Input],
+  template,
   data() {
     return {
-      ids: [getUniqueDomId(),getUniqueDomId()],
-      name: `name_${getUniqueDomId()}`,
+      ids: [utils.getUniqueDomId(), utils.getUniqueDomId()],
+      name: `name_${utils.getUniqueDomId()}`,
       radio_value: this.state.value
     }
   },
@@ -15,8 +17,8 @@ const RadioInput = Vue.extend({
       this.state.value = this.radio_value;
       this.change()
     }
-  },
-  template: require('./radio.html')
+  }
+
 });
 
-module.exports = RadioInput;
+export default  RadioInput;

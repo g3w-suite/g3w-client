@@ -1,9 +1,9 @@
 import {createCompiledTemplate} from 'gui/vue/utils';
 import G3wFormInputs from '../../../../inputs/g3w-form-inputs.vue';
-const compiledTemplate = createCompiledTemplate(require('./body.html'));
+import template from './body.html';
 
 const BodyFormComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   props: ['state', 'handleRelation'],
   data() {
     return {
@@ -17,9 +17,6 @@ const BodyFormComponent = Vue.extend({
     addToValidate(input) {
       this.$emit('addtovalidate', input);
     },
-    removeToValidate(input){
-      this.$emit('removetovalidate', input);
-    },
     changeInput(input) {
       this.$emit('changeinput', input);
     }
@@ -31,4 +28,4 @@ const BodyFormComponent = Vue.extend({
   }
 });
 
-module.exports = BodyFormComponent;
+export default  BodyFormComponent;

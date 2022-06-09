@@ -4,6 +4,7 @@ import Image from './image.vue'
 import Geo from './geo.vue';
 import Media from './media.vue';
 import VueField from './vuefield.vue';
+
 const Fields = {
   simple_field: Text,
   text_field: Text,
@@ -15,4 +16,4 @@ const Fields = {
   vue_field: VueField
 };
 
-module.exports = Fields;
+export default  Fields;

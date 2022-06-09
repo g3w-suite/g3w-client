@@ -1,28 +1,31 @@
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
+import templateLeft from './navbarleftitems.html';
+import templateRight from './navbarrightitems.html';
+
 
 // service sidebar
-function navbaritemsService() {
-  this.state = {
-    items: {
-      left:[],
-      right:[]
-    }
-  };
-  this.addItem = function(item, position='right') {
+class navbaritemsService extends G3WObject{
+  constructor() {
+    super();
+    this.state = {
+      items: {
+        left:[],
+        right:[]
+      }
+    };
+  }
+
+  addItem(item, position='right') {
     this.state.items[position].push(item);
   };
 
-  base(this)
 }
 
-inherit(navbaritemsService, G3WObject);
-
 const navbaritemsservice = new navbaritemsService();
-const compiledTemplateLeft = Vue.compile(require('./navbarleftitems.html'));
+
 
 const NavbarLeftItemsComponent = Vue.extend({
-  ...compiledTemplateLeft,
+  templateLeft,
   data() {
     return {
       items: navbaritemsservice.state.items.left
@@ -30,10 +33,9 @@ const NavbarLeftItemsComponent = Vue.extend({
   }
 });
 
-const compiledTemplateRight = Vue.compile(require('./navbarrightitems.html'));
 
 const NavbarRightItemsComponent = Vue.extend({
-  ...compiledTemplateRight,
+  templateRight,
   data() {
     return {
       items: navbaritemsservice.state.items.right
@@ -41,8 +43,7 @@ const NavbarRightItemsComponent = Vue.extend({
   }
 });
 
-
-module.exports = {
+export default  {
   NavbarItemsService: navbaritemsservice,
   components: {
     left: NavbarLeftItemsComponent,

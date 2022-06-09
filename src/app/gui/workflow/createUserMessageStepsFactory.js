@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
-const GUI = require('gui/gui');
-module.exports = function({steps={}}={}) {
+import GUI  from 'gui/gui';
+export default  function({steps={}}={}) {
   return {
     data() {
       return {

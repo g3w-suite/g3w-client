@@ -1,5 +1,5 @@
-const editingService = require('./editing/service');
+import editingService from './editing/service';
 
-module.exports = {
+export default  {
   editing: editingService
 };

@@ -3,11 +3,9 @@
     <div v-if="state.type !== 'child'">
       <component
         @changeinput="changeInput"
-        :changeInput="changeInput"
         @addinput="addToValidate"
         :addToValidate="addToValidate"
-        @removeinput="removeToValidate"
-        :removeToValidate="removeToValidate"
+        :changeInput="changeInput"
         :state="state"
         :is="type">
       </component>
@@ -19,18 +17,16 @@
       <g3w-input v-for="field in state.fields" :key="field.name"
         :state="field"
         @changeinput="changeInput"
-        :changeInput="changeInput"
         @addinput="addToValidate"
         :addToValidate="addToValidate"
-        @removeinput="removeToValidate"
-        :removeToValidate="removeToValidate">
+        :changeInput="changeInput">
       </g3w-input>
     </div>
   </div>
 </template>
 
 <script>
-  const Inputs = require('./inputs');
+  import Inputs  from './inputs';
   export default {
     name: "g3w-input",
     props: {
@@ -38,10 +34,6 @@
         required: true
       },
       addToValidate:{
-        type: Function,
-        required: true
-      },
-      removeToValidate:{
         type: Function,
         required: true
       },
@@ -67,6 +59,4 @@
   }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

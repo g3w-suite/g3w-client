@@ -1,4 +1,6 @@
-const BaseInputMixin = {
+import template  from './baseinput.html';
+
+export const BaseInputMixin = {
   computed: {
     notvalid() {
       return this.state.validate.valid === false;
@@ -31,13 +33,13 @@ const BaseInputMixin = {
   }
 };
 
-const BaseInput = {
+export const BaseInput = {
   props: ['state'],
-  template: require('./baseinput.html'),
+  template,
   ...BaseInputMixin
 };
 
-module.exports = {
+export default  {
   BaseInput,
   BaseInputMixin
 };

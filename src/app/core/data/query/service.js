@@ -1,24 +1,21 @@
 import {G3W_FID, QUERY_POINT_TOLERANCE} from 'constant';
-const {base, inherit} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const BaseService = require('core/data/service');
-const {
-  getQueryLayersPromisesByCoordinates,
-  getQueryLayersPromisesByGeometry,
-  getQueryLayersPromisesByBBOX,
-  getMapLayersByFilter} = require('core/utils/geo');
+import geoutils from 'core/utils/geo';
+import BaseService from 'core/data/service';
+import {t} from 'core/i18n/i18n.service';
 
-function QueryService(){
-  base(this);
-  /**
-   *
-   * @type {{filtrable: {ows: string}}}
-   */
-  this.condition = {
-    filtrable: {
-      ows: 'WFS'
-    }
-  };
+class QueryService extends BaseService {
+  constructor() {
+    super();
+    /**
+     *
+     * @type {{filtrable: {ows: string}}}
+     */
+    this.condition = {
+      filtrable: {
+        ows: 'WFS'
+      }
+    };
+  }
 
   /**
    *
@@ -29,7 +26,7 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  polygon({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
     const fid = feature.get(G3W_FID);
     const geometry = feature.getGeometry();
@@ -47,8 +44,8 @@ function QueryService(){
       FILTERABLE: true,
       VISIBLE: true
     };
-    const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
-    const request = getQueryLayersPromisesByGeometry(layers,
+    const layers = geoutils.getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
+    const request = geoutils.getQueryLayersPromisesByGeometry(layers,
       {
         geometry,
         multilayers,
@@ -73,9 +70,9 @@ function QueryService(){
    * @param layersFilterObject
    * @returns {Promise<unknown>}
    */
-  this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
-    const layers = getMapLayersByFilter(layersFilterObject, condition);
-    const request = getQueryLayersPromisesByBBOX(layers, {
+  bbox({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+    const layers = geoutils.getMapLayersByFilter(layersFilterObject, condition);
+    const request = geoutils.getQueryLayersPromisesByBBOX(layers, {
       bbox,
       feature_count,
       filterConfig,
@@ -95,7 +92,7 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
+  async coordinates({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
     const layersFilterObject =  {
       QUERYABLE: true,
       SELECTEDORALL: layerIds.length === 0,
@@ -105,8 +102,8 @@ function QueryService(){
       if (!layersFilterObject.IDS) layersFilterObject.IDS = [];
       layersFilterObject.IDS.push(layerId);
     });
-    const layers = getMapLayersByFilter(layersFilterObject);
-    const request = getQueryLayersPromisesByCoordinates(layers, {
+    const layers = geoutils.getMapLayersByFilter(layersFilterObject);
+    const request = geoutils.getQueryLayersPromisesByCoordinates(layers, {
       multilayers,
       feature_count,
       query_point_tolerance,
@@ -123,7 +120,7 @@ function QueryService(){
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  this.handleRequest = function(request, query={}){
+  handleRequest(request, query={}){
     return new Promise((resolve, reject) =>{
       request.then(response => {
         const results = this.handleResponse(response, query);
@@ -137,7 +134,7 @@ function QueryService(){
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = function(response, query={}){
+  handleResponse(response, query={}){
     const layersResults = response;
     const results = {
       query,
@@ -152,7 +149,7 @@ function QueryService(){
   /**
    * Exxception response has user message attribute
    */
-  this.returnExceptionResponse = async function({usermessage}){
+  async returnExceptionResponse({usermessage}){
     return {
       data: [],
       usermessage,
@@ -162,6 +159,4 @@ function QueryService(){
   }
 }
 
-inherit(QueryService, BaseService);
-
-module.exports = new QueryService();
+export default  new QueryService();

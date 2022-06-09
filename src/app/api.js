@@ -1,162 +1,252 @@
 import G3W_CONSTANT from './constant';
 // api file interface for external plugin
+/**
+ * Core modules
+ */
+import ApplicationService from 'core/applicationservice';
 import ApplicationState from 'core/applicationstate';
+import Router from 'core/router';
+import i18n from 'core/i18n/i18n.service';
+import TaskService from 'core/task/service';
+import DataRouterService from 'core/data/routerservice';
+import IFrameRouterService from 'core/iframe/routerservice';
+import Server from 'core/errors/parser/servererrorparser';
+import Session from 'core/editing/session';
+import SessionsRegistry from 'core/editing/sessionsregistry';
+import Editor from 'core/editing/editor';
+import ChangesManager from 'core/editing/changesmanager';
+import Geom from 'core/geometry/geom';
+import Geometry from 'core/geometry/geometry';
+import ProjectsRegistry from 'core/project/projectsregistry';
+import Project from 'core/project/project';
+import MapLayersStoreRegistry from 'core/map/maplayersstoresregistry';
+import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry'
+import LayersStoreRegistry from 'core/layers/layersstoresregistry';
+import LayersStore from 'core/layers/layersstore';
+import Layer from 'core/layers/layer';
+import LayerFactory from 'core/layers/layerfactory';
+import TableLayer from 'core/layers/tablelayer';
+import VectorLayer from 'core/layers/vectorlayer';
+import ImageLayer from 'core/layers/imagelayer';
+import WmsLayer from 'core/layers/map/wmslayer';
+import XYZLayer from 'core/layers/map/xyzlayer';
+import MapLayer from 'core/layers/map/maplayer';
+import Feature from 'core/layers/features/feature';
+import FeaturesStore from 'core/layers/features/featuresstore';
+import OlFeaturesStore from 'core/layers/features/olfeaturesstore';
+import Filter from 'core/layers/filter/filter';
+import Expression from 'core/layers/filter/expression';
+import RelationsService from 'core/relations/relationsservice';
+
+import Plugin from 'core/plugin/plugin';
+import PluginsRegistry from 'core/plugin/pluginsregistry';
+import PluginService from 'core/plugin/pluginservice';
+import Task from 'core/workflow/task';
+import Step from 'core/workflow/step';
+import Flow from 'core/workflow/flow';
+import Workflow from 'core/workflow/workflow';
+import WorkflowsStack from 'core/workflow/workflowsstack';
+import ApiService from 'core/apiservice'
+import G3WObject from "core/g3wobject";
+import utils from 'core/utils/utils';
+import geoutils from 'core/utils/geo'
+
+/**
+ * gui modules
+ */
+import GUI from 'gui/gui';
+import Panel from 'gui/panel';
+import ControlFactory from 'gui/map/control/factory';
+import ComponentsFactory from 'gui/componentsfactory';
+import FieldsService from 'gui/fields/fieldsservice';
+import Component from 'gui/vue/component';
+import MetadataComponent from 'gui/metadata/vue/metadata';
+import SearchComponent from 'gui/search/vue/search';
+import SearchPanel from 'gui/search/vue/panel/searchpanel';
+import PrintComponent from 'gui/print/vue/print';
+import CatalogComponent from 'gui/catalog/vue/catalog';
+import MapComponent from 'gui/map/vue/map';
+import ToolsComponent from 'gui/tools/vue/tools';
+import QueryResultsComponent  from 'gui/queryresults/vue/queryresults';
+// main Form Component
+import FormComponent from 'gui/form/vue/form';
+import FormBody from 'gui/form/components/body/vue/body';
+import FormFooter from 'gui/form/components/footer/vue/footer';
 import G3WInput from 'gui/inputs/g3w-input.vue';
 import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
+import InputsComponents from 'gui/inputs/inputs';
+import ChartsFactory from 'gui/charts/chartsfactory';
+import lineXY from 'gui/charts/vue/c3/line/lineXY';
+import Fields  from 'gui/fields/fields';
+import Mixins from 'gui/vue/vue.mixins';
+import SearchPanelService from 'gui/search/vue/panel/searchservice';
+
+
+/**
+ * g3w openlayers custom modules
+ * @type {{}}
+ */
+
+import PickCoordinatesInteraction from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction from 'g3w-ol/src/interactions/pickfeatureinteraction';
+import DeleteFeatureInteraction from 'g3w-ol/src/interactions/deletefeatureinteraction'
+import AreaInteraction from 'g3w-ol/src/interactions/areainteraction';
+import LengthInteraction from 'g3w-ol/src/interactions/lengthinteraction';
+import g3wolutils from 'g3w-ol/src/utils/utils';
 
 const g3w = g3w || {};
 //set G3W-CLIENT application constant
 g3w.constant = G3W_CONSTANT;
 //set core api method and objects
 g3w.core = {
-  G3WObject: require('core/g3wobject'),
-  utils: require('core/utils/utils'),
-  geoutils: require('core/utils/geo'),
-  ApplicationService: require('core/applicationservice'),
+  G3WObject,
+  utils,
+  geoutils,
+  ApplicationService,
   ApplicationState,
-  ApiService: require('core/apiservice'),
-  Router: require('core/router'),
-  i18n: require('core/i18n/i18n.service'),
+  ApiService,
+  Router,
+  i18n,
   task:{
-    TaskService: require('core/task/service')
+    TaskService,
   },
   data: {
-    DataRouterService: require('core/data/routerservice')
+    DataRouterService,
   },
   iframe: {
-    IFrameRouterService: require('core/iframe/routerservice')
+    IFrameRouterService,
   },
   errors: {
     parsers: {
-      Server: require('core/errors/parser/servererrorparser')
+      Server
     }
   },
   editing: {
-    Session: require('core/editing/session'),
-    SessionsRegistry: require('core/editing/sessionsregistry'),
-    Editor: require('core/editing/editor'),
-    ChangesManager: require('core/editing/changesmanager')
+    Session,
+    SessionsRegistry,
+    Editor,
+    ChangesManager
   },
   geometry: {
-    Geom: require('core/geometry/geom'),
-    Geometry: require('core/geometry/geometry')
+    Geom,
+    Geometry
   },
   project: {
-    ProjectsRegistry: require('core/project/projectsregistry'),
-    Project: require('core/project/project')
+    ProjectsRegistry,
+    Project,
   },
   map: {
-    MapLayersStoreRegistry: require('core/map/maplayersstoresregistry')
+    MapLayersStoreRegistry
   },
   catalog: {
-    CatalogLayersStoresRegistry: require('core/catalog/cataloglayersstoresregistry')
+    CatalogLayersStoresRegistry
   },
   layer: {
-    LayersStoreRegistry: require('core/layers/layersstoresregistry'), //nel caso un plugin volesse instanziare un layersstoreregistry proprio
-    LayersStore: require('core/layers/layersstore'),
-    Layer: require('core/layers/layer'),
-    LayerFactory: require('core/layers/layerfactory'),
-    TableLayer: require('core/layers/tablelayer'),
-    VectorLayer: require('core/layers/vectorlayer'),
-    ImageLayer: require('core/layers/imagelayer'),
-    WmsLayer: require('core/layers/map/wmslayer'),
-    XYZLayer: require('core/layers/map/xyzlayer'),
-    MapLayer: require('core/layers/map/maplayer'),
+    LayersStoreRegistry,
+    LayersStore,
+    Layer,
+    LayerFactory,
+    TableLayer,
+    VectorLayer,
+    ImageLayer,
+    WmsLayer,
+    XYZLayer,
+    MapLayer,
     geometry: {
-      Geometry: require('core/geometry/geometry'),
-      geom: require('core/geometry/geom')
+      Geometry,
+      Geom
     },
     features: {
-      Feature: require('core/layers/features/feature'),
-      FeaturesStore: require('core/layers/features/featuresstore'),
-      OlFeaturesStore: require('core/layers/features/olfeaturesstore')
+      Feature,
+      FeaturesStore,
+      OlFeaturesStore
     },
     filter: {
-      Filter: require('core/layers/filter/filter'),
-      Expression: require('core/layers/filter/expression')
+      Filter,
+      Expression
     }
   },
   relations: {
-    RelationsService: require('core/relations/relationsservice')
+    RelationsService
   },
   interaction: {
-    PickCoordinatesInteraction: require('g3w-ol/src/interactions/pickcoordinatesinteraction'),
-    PickFeatureInteraction: require('g3w-ol/src/interactions/pickfeatureinteraction')
+    PickCoordinatesInteraction,
+    PickFeatureInteraction
   },
   plugin: {
-    Plugin: require('core/plugin/plugin'),
-    PluginsRegistry: require('core/plugin/pluginsregistry'),
-    PluginService: require('core/plugin/pluginservice')
+    Plugin,
+    PluginsRegistry,
+    PluginService
   },
   workflow: {
-    Task: require('core/workflow/task'),
-    Step: require('core/workflow/step'),
-    Flow: require('core/workflow/flow'),
-    Workflow: require('core/workflow/workflow'),
-    WorkflowsStack: require('core/workflow/workflowsstack')
+    Task,
+    Step,
+    Flow,
+    Workflow,
+    WorkflowsStack
   }
 };
 
 g3w.gui = {
-  GUI: require('gui/gui'),
-  Panel: require('gui/panel'),
-  ControlFactory: require('gui/map/control/factory'),
-  ComponentsFactory: require('gui/componentsfactory'),
-  FieldsService: require('gui/fields/fieldsservice'),
+  GUI,
+  Panel,
+  ControlFactory,
+  ComponentsFactory,
+  FieldsService,
   vue: {
-    Component: require('gui/vue/component'),
-    Panel: require('gui/panel'),
-    MetadataComponent: require('gui/metadata/vue/metadata'),
-    SearchComponent: require('gui/search/vue/search'),
-    SearchPanel: require('gui/search/vue/panel/searchpanel'),
-    PrintComponent: require('gui/print/vue/print'),
-    CatalogComponent: require('gui/catalog/vue/catalog'),
-    MapComponent: require('gui/map/vue/map'),
-    ToolsComponent: require('gui/tools/vue/tools'),
-    QueryResultsComponent : require('gui/queryresults/vue/queryresults'),
+    Component,
+    Panel,
+    MetadataComponent,
+    SearchComponent,
+    SearchPanel,
+    PrintComponent,
+    CatalogComponent,
+    MapComponent,
+    ToolsComponent,
+    QueryResultsComponent,
     // main Form Component
-    FormComponent: require('gui/form/vue/form'),
+    FormComponent,
     // Form Components
     FormComponents: {
-      Body: require('gui/form/components/body/vue/body'),
-      Footer: require('gui/form/components/footer/vue/footer')
+      FormBody,
+      FormFooter
     },
     Inputs: {
       G3wFormInputs,
       G3WInput,
-      InputsComponents: require('gui/inputs/inputs')
+      InputsComponents
     },
     Charts: {
-      ChartsFactory: require('gui/charts/chartsfactory'),
+      ChartsFactory,
       c3: {
-        lineXY: require('gui/charts/vue/c3/line/lineXY')
+        lineXY
       }
     },
-    Fields : require('gui/fields/fields'),
-    Mixins: require('gui/vue/vue.mixins'),
+    Fields,
+    Mixins,
     services: {
-      SearchPanel: require('gui/search/vue/panel/searchservice')
+      SearchPanel: SearchPanelService
     }
   }
 };
 
 g3w.ol = {
   interactions : {
-    PickFeatureInteraction : require('g3w-ol/src/interactions/pickfeatureinteraction'),
-    PickCoordinatesInteraction: require('g3w-ol/src/interactions/pickcoordinatesinteraction'),
-    DeleteFeatureInteraction: require('g3w-ol/src/interactions/deletefeatureinteraction'),
+    PickFeatureInteraction,
+    PickCoordinatesInteraction,
+    DeleteFeatureInteraction,
     measure: {
-      AreaInteraction: require('g3w-ol/src/interactions/areainteraction'),
-      LengthInteraction: require('g3w-ol/src/interactions/lengthinteraction')
+      AreaInteraction,
+      LengthInteraction
     }
   },
   controls: {},
-  utils: require('g3w-ol/src/utils/utils')
+  utils: g3wolutils
 };
 
 g3w.test = {};
 
-module.exports = {
+export default {
   core: g3w.core,
   gui: g3w.gui,
   ol: g3w.ol,

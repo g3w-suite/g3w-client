@@ -1,24 +1,22 @@
-const BaseLayers = require('../layers/bases');
-const Projections = require('../projection/projections');
+import BaseLayers  from '../layers/bases';
+import Projections  from '../projection/projections';
+import {defaults as defaultsControl} from 'ol/control';
+import {defaults as defaultsInteaction, DragRotate} from 'ol/interaction';
+import {View, Map} from 'ol';
 
-const MapHelpers = {
-  createViewer(opts={}){
-    return new _Viewer(opts);
-  }
-};
 
 const _Viewer = function(opts={}) {
-  const controls = ol.control.defaults({
+  const controls = defaultsControl({
     attribution: false,
     zoom: false
   });
 
-  const interactions = ol.interaction.defaults()
+  const interactions = defaultsInteaction()
     .extend([
-      new ol.interaction.DragRotate()
+      new DragRotate()
     ]);
   interactions.removeAt(1);// remove douclickzoom
-  const view = opts.view instanceof ol.View ? opts.view : new ol.View(opts.view);
+  const view = opts.view instanceof View ? opts.view : new View(opts.view);
   const options = {
     controls,
     interactions,
@@ -30,7 +28,7 @@ const _Viewer = function(opts={}) {
     options.target = opts.id;
   }
   Projections.setApplicationProjections();
-  const map  = new ol.Map(options);
+  const map  = new Map(options);
   this.map = map;
 };
 
@@ -63,8 +61,7 @@ _Viewer.prototype.zoomTo = function(coordinate, zoom) {
   view.setZoom(zoom);
 };
 
-_Viewer.prototype.goTo = function(coordinates, options) {
-  options = options || {};
+_Viewer.prototype.goTo = function(coordinates, options={}) {
   const animate = options.animate || true;
   const zoom = options.zoom || false;
   const view = this.map.getView();
@@ -96,8 +93,7 @@ _Viewer.prototype.goTo = function(coordinates, options) {
   }
 };
 
-_Viewer.prototype.goToRes = function(coordinates, options){
-  options = options || {};
+_Viewer.prototype.goToRes = function(coordinates, options={}){
   const animate = options.animate || true;
   const view = this.map.getView();
   const resolution = options.resolution || view.getResolution();
@@ -137,7 +133,7 @@ _Viewer.prototype.fit = function(geometry, options={}){
   }
 
   if (options.animate) {
-    delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
+    delete options.animate; //
   }
   options.constrainResolution = options.constrainResolution === undefined && true ||  options.constrainResolution;
   options.size = this.map.getSize();
@@ -222,4 +218,11 @@ _Viewer.prototype.changeBaseLayer = function(layerName){
   layers.insertAt(0, baseLayer);
 };
 
-module.exports = MapHelpers;
+const MapHelpers = {
+  createViewer(opts={}){
+    return new _Viewer(opts);
+  }
+};
+
+
+export default  MapHelpers;

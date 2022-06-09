@@ -1,5 +1,5 @@
-const QueryBuilder = require('./vue/querybuilder');
-const QueryBuilderPanel = require('./vue/panel/querybuilderpanel');
+import QueryBuilder  from './vue/querybuilder';
+import QueryBuilderPanel  from './vue/panel/querybuilderpanel';
 
 const QuerybuilderUIfactory = {
   type: null,
@@ -27,5 +27,5 @@ const QuerybuilderUIfactory = {
   }
 };
 
-module.exports = QuerybuilderUIfactory;
+export default  QuerybuilderUIfactory;
 

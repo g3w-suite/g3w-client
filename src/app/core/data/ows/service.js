@@ -1,15 +1,17 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-function OWSService(){
-  base(this);
+import BaseService from 'core/data/service';
+import ApplicationService from 'core/applicationservice';
+import utils from 'core/utils/utils';
+class OWSService extends BaseService {
+  constructor() {
+    super();
+  }
   /**
    *
    * @param params
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.wmsCapabilities = async function({url} ={}){
-    const ApplicationService = require('core/applicationservice');
+  async wmsCapabilities({url} ={}){
+    const {XHR} = utils;
     const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
     try {
       const params = {
@@ -29,6 +31,5 @@ function OWSService(){
   };
 }
 
-inherit(OWSService, BaseService);
 
-module.exports = new OWSService;
+export default  new OWSService;

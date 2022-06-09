@@ -17,7 +17,7 @@
 
 <script>
   import SelectRow from './selectrow.vue'
-  const Field = require('gui/fields/g3w-field.vue');
+  import Field  from 'gui/fields/g3w-field.vue';
   export default {
     name: "table-body",
     props: {

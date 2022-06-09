@@ -1,18 +1,19 @@
-const { XHR } = require('core/utils/utils');
-
 /**
  * Singletone service to run async task
  * @constructor
  */
-function TaskService(){
-  /**
-   * Array contain all task id that are running. Each item is an object contain:
-   * {
-   *   taskId: //taskId,
-   *   intervalId: interval to clear clearInterval()
-   * }
-   **/
-  const tasks = [];
+class TaskService {
+  constructor() {
+    /**
+     * Array contain all task id that are running. Each item is an object contain:
+     * {
+     *   taskId: //taskId,
+     *   intervalId: interval to clear clearInterval()
+     * }
+     **/
+    this.tasks = [];
+  }
+
   /**
    *
    * @param options: {
@@ -27,7 +28,7 @@ function TaskService(){
    *
    * return a Promise that return a task id
    */
-  this.runTask = async function(options={}){
+  async runTask(options={}){
     let {method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener=()=>{}} = options;
     try {
       const response =  method === 'GET' ? await XHR.get({
@@ -68,7 +69,7 @@ function TaskService(){
         }, interval);
 
         // add current task to list of task
-        tasks.push({
+        this.tasks.push({
           task_id,
           intervalId,
         });
@@ -91,23 +92,23 @@ function TaskService(){
    *   taskId: taskId that is running
    * }
    */
-  this.stopTask = function(options={}){
+  stopTask = function(options={}){
     const { task_id } = options;
-    const task = tasks.find(task => task.task_id === task_id);
+    const task = this.tasks.find(task => task.task_id === task_id);
     if (task)clearInterval(task.intervalId);
   };
 
   /**
    * clare all task
    */
-  this.clear = function(){
-    tasks.forEach(({ taskId }) =>{
+  clear = function(){
+    this.tasks.forEach(({ taskId }) =>{
       this.stopTask({
         taskId
       })
     });
     //reset to empty tasks
-    tasks.splice(0);
+    this.tasks = [];
   }
 }
 
@@ -139,4 +140,4 @@ function TaskService(){
 
  **/
 
-module.exports = new TaskService;
+export default  new TaskService;

@@ -1,73 +1,71 @@
-const {inherit, resolve:resolvedValue}= require('core/utils/utils');
-const GUI = require('gui/gui');
-const G3WObject = require('core/g3wobject');
+import utils from 'core/utils/utils';
+import GUI  from 'gui/gui';
+import G3WObject from 'core/g3wobject';
 
-const Panel = function(options={}) {
-  this.id = options.id || null;
-  this.title = options.title || '';
-  this.internalPanel = options.panel || null;
-  this.service = options.service;
+class Panel extends G3WObject{
+  constructor(poptions) {
+    super();
+    this.id = options.id || null;
+    this.title = options.title || '';
+    this.internalPanel = options.panel || null;
+    this.service = options.service;
+  }
+
+  getId(){
+    return this.id;
+  };
+
+  getTitle(){
+    return this.title;
+  };
+
+  getService(){
+    return this.service;
+  };
+
+  setService(service) {
+    this.service = service;
+  };
+
+  getInternalPanel() {
+    return this.internalPanel;
+  };
+
+  setInternalPanel(internalPanel) {
+    this.internalPanel = internalPanel;
+  };
+
+  show() {
+    GUI.showPanel(this);
+  };
+
+  close(){
+    GUI.closePanel();
+  };
+
+  mount(parent) {
+    const panel = this.internalPanel;
+    const iCinstance = panel.$mount();
+    $(parent).append(iCinstance.$el);
+    iCinstance.$nextTick(() => {
+      $(parent).localize();
+      panel.onShow && panel.onShow();
+    });
+    return utils.resolve(true);
+  };
+
+  unmount() {
+    const panel = this.internalPanel;
+    const d = $.Deferred();
+    panel.$destroy(true);
+    $(panel.$el).remove();
+    panel.onClose && panel.onClose();
+    this.internalComponent = null;
+    d.resolve();
+    return d.promise();
+  };
+
+  onResize(parentWidth,parentHeight){};
 };
 
-inherit(Panel, G3WObject);
-
-const proto = Panel.prototype;
-
-proto.getId = function(){
-  return this.id;
-};
-
-proto.getTitle = function(){
-  return this.title;
-};
-
-proto.getService = function(){
-  return this.service;
-};
-
-proto.setService = function(service) {
-  this.service = service;
-};
-
-proto.getInternalPanel = function() {
-  return this.internalPanel;
-};
-
-proto.setInternalPanel = function(internalPanel) {
-  this.internalPanel = internalPanel;
-};
-
-proto.show = function() {
-  GUI.showPanel(this);
-};
-
-proto.close = function(){
-  GUI.closePanel();
-};
-
-proto.mount = function(parent) {
-  const panel = this.internalPanel;
-  const iCinstance = panel.$mount();
-  $(parent).append(iCinstance.$el);
-  iCinstance.$nextTick(() => {
-    $(parent).localize();
-    panel.onShow && panel.onShow();
-  });
-  return resolvedValue(true);
-};
-
-proto.unmount = function() {
-  const panel = this.internalPanel;
-  const d = $.Deferred();
-  panel.$destroy(true);
-  $(panel.$el).remove();
-  panel.onClose && panel.onClose();
-  this.internalComponent = null;
-  d.resolve();
-  return d.promise();
-};
-
-proto.onResize = function(parentWidth,parentHeight){};
-
-
-module.exports = Panel;
+export default  Panel;

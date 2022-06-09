@@ -1,15 +1,17 @@
-const Projection = require('./projection');
+import Projection  from './projection';
+import proj4 from 'ol/proj/proj4'
+import proj from 'ol/proj';
 const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {
   get(crs={},  extent) {
-    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  ol.proj.get(crs.epsg) : null;
+    const cachedProjection = ADDEDPROJECTIONS.indexOf(crs.epsg) !== -1 ?  proj.get(crs.epsg) : null;
     if (cachedProjection) return cachedProjection;
     const projection = new Projection({
       crs,
       extent
     });
-    ol.proj.addProjection(projection);
+    proj.addProjection(projection);
     ADDEDPROJECTIONS.push(crs.epsg);
     return projection;
   },
@@ -84,9 +86,9 @@ const Projections = {
       geographic: false
    });
     //REGISTER AT THE END THE CUSTOM PROJECTIONS
-    ol.proj.proj4.register(proj4)
+    proj4.register(proj4)
   }
 };
 
 
-module.exports = Projections;
+export default  Projections;

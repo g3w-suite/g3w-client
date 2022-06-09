@@ -38,7 +38,7 @@
 </template>
 
 <script>
-  const {isURL} = require('core/utils/utils');
+  import utils  from 'core/utils/utils';
   export default {
     name: "sidebaritem",
     data(){
@@ -53,7 +53,7 @@
     },
     computed: {
       newwmsurlvalid() {
-        return this.newwmsurl !== null && this.newwmsurl.trim() && isURL(this.newwmsurl);
+        return this.newwmsurl !== null && this.newwmsurl.trim() && utils.isURL(this.newwmsurl);
       }
     },
     methods: {

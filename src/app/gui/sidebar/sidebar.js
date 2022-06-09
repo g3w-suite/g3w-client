@@ -1,15 +1,15 @@
 import ApplicationState from 'core/applicationstate';
-const {t} = require('core/i18n/i18n.service');
-const {base, inherit} = require('core/utils/utils');
-const {barstack:Stack} = require('gui/utils/utils');
-const G3WObject = require('core/g3wobject');
-const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
+import {t}  from 'core/i18n/i18n.service';
+import {barstack as Stack}  from 'gui/utils/utils';
+import G3WObject from 'core/g3wobject';
+import templateSidebar from './sidebar.html';
+import templateSidebarItem from './sidebar-item.html';
 const SIDEBAREVENTBUS = new Vue();
 
 //sidebar item is a <li> dom element of the sidebar . Where is possible set
 //title, icon type etc ..  is possible to customize component
 const SidebarItem = Vue.extend({
-  ...compiledSideBarItemTemplate,
+  template: templateSidebarItem,
   data() {
     return {
         info: this.$options.info || {
@@ -56,36 +56,41 @@ const SidebarItem = Vue.extend({
   }
 });
 
-function SidebarService() {
-  //set sidebar stack
-  this.stack = new Stack();
-  // set setter for close sidebarpanel to catch event
-  // of closing panel of the sidebar
-  this.setters = {
-    closeSidebarPanel() {},
-    openCloseItem(bool) {}
+class SidebarService extends G3WObject{
+  constructor() {
+    // set setter for close sidebarpanel to catch event
+    // of closing panel of the sidebar
+    super({
+      setters: {
+        closeSidebarPanel() {},
+        openCloseItem(bool) {}
+      }
+    });
+    //set sidebar stack
+    this.stack = new Stack();
+    //service state
+    this.state = {
+      components: [],
+      gui: {
+        title: ''
+      },
+      disabled: false
+    };
   };
-  //service state
-  this.state = {
-    components: [],
-    gui: {
-      title: ''
-    },
-    disabled: false
-  };
+
   //inizialize method
-  this.init = function(layout) {
+  init (layout) {
     this.layout = layout;
   };
   // add component to sidebar
-  this.addComponents = function(components, options={}) {
+  addComponents(components, options={}) {
     //for each component of the sidebar it is call addComponent method
     components.forEach(component => this.addComponent(component, options));
     return true;
   };
   // add each component to the sidebar
   // add also position insiede the sidebar
-  this.addComponent = function(component, options={}) {
+  addComponent(component, options={}) {
     const {position, before=true, info} = options;
     if (isMobile.any && !component.mobile) {
       return false
@@ -127,7 +132,7 @@ function SidebarService() {
     return true;
   };
 
-  this.setComponentClickHandler = function(component){
+  setComponentClickHandler(component){
     component.click = ({open=false}={}) => {
       open = open || false;
       $(component.getInternalComponent().$el).siblings('a').click();
@@ -136,28 +141,28 @@ function SidebarService() {
   };
 
   // get component by id
-  this.getComponent = function(id) {
+  getComponent(id) {
     return this.state.components.find(component => component.getId() === id)
   };
 
   // get all components
-  this.getComponents = function() {
+  getComponents() {
     return this.state.components;
   };
 
   /**
    * close for the moment only conlapsbale
    */
-  this.closeOpenComponents = function(collapsible=true){
+  closeOpenComponents(collapsible=true){
     this.getComponents().forEach(component => component.closeWhenViewportContentIsOpen() && component.collapsible && component.click({open: false}))
   };
 
-  this.reloadComponent = function(id) {
+  reloadComponent(id) {
     const component = this.getComponent(id);
     component && component.reload();
   };
 
-  this.reloadComponents = function() {
+  reloadComponents () {
     // force close of the panel
     this.closePanel();
     this.state.components.forEach(component => {
@@ -166,7 +171,7 @@ function SidebarService() {
     })
   };
   //remove component
-  this.removeComponent = function(component, options={}) {
+  removeComponent(component, options={}) {
     const {position} = options;
     this.state.components.forEach((sidebarComponent, index) => {
       if (component === sidebarComponent) {
@@ -179,7 +184,7 @@ function SidebarService() {
     })
   };
   // show panel on stack
-  this.showPanel = function(panel, options={}) {
+  showPanel(panel, options={}) {
     return new Promise((resolve, reject) => {
       this.state.gui.title = panel.title;
       const parent =  "#g3w-sidebarpanel-placeholder";
@@ -192,7 +197,7 @@ function SidebarService() {
   };
 
   // close panel
-  this.closePanel = function() {
+  closePanel() {
     this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.pop().then(content => {
@@ -201,21 +206,18 @@ function SidebarService() {
     });
   };
 
-  this.closeAllPanels = function(){
+  closeAllPanels(){
     this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.clear();
   };
-
-  base(this);
 }
 
-inherit(SidebarService, G3WObject);
+
 
 const sidebarService = new SidebarService;
-const compiledSideBarTemplate = Vue.compile(require('./sidebar.html'));
 const SidebarComponent = Vue.extend({
-    ...compiledSideBarTemplate,
+    template: templateSidebar,
     data() {
     	return {
         components: sidebarService.state.components,
@@ -261,7 +263,7 @@ const SidebarComponent = Vue.extend({
     }
 });
 
-module.exports = {
+export default  {
   SidebarService: sidebarService,
   SidebarComponent
 };

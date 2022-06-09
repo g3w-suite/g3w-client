@@ -1,20 +1,16 @@
-const utils = require('../utils');
-const LenghtIteraction = require('../interactions/lengthinteraction');
-const MeasureControl = require('./measurecontrol');
+import LenghtIteraction  from '../interactions/lengthinteraction';
+import MeasureControl  from './measurecontrol';
 
-const LengthControl = function(options={}) {
-  const _options = {
-    tipLabel: "sdk.mapcontrols.measures.length.tooltip",
-    label: "\ue908",
-    clickmap: true, // set ClickMap
-    interactionClass: LenghtIteraction
-  };
+class LengthControl extends MeasureControl {
+  constructor(options={}) {
+    super({
+      ...options,
+      tipLabel: "sdk.mapcontrols.measures.length.tooltip",
+      label: "\ue908",
+      clickmap: true, // set ClickMap
+      interactionClass: LenghtIteraction
+    });
+  }
+}
 
-  options = utils.merge(options,_options);
-  MeasureControl.call(this, options);
-};
-
-ol.inherits(LengthControl, MeasureControl);
-
-
-module.exports = LengthControl;
+export default  LengthControl;

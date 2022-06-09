@@ -1,23 +1,25 @@
-const {base, inherit } = require('core/utils/utils');
-const BaseService = require('../baseservice');
-const DataRouterService = require('core/data/routerservice');
+import BaseService  from '../baseservice';
+import DataRouterService  from 'core/data/routerservice';
 
-function AppService(){
-  base(this);
-  this.mapControls = {
-    screenshot: {
-      control: null
-    },
-    changeMap: {
-      control: null
-    }
+class AppService extends BaseService{
+  constructor() {
+    super();
+    this.mapControls = {
+      screenshot: {
+        control: null
+      },
+      changeMap: {
+        control: null
+      }
+    };
   };
+
 
   /**
    * Init service
    * @returns {Promise<unknown>}
    */
-  this.init = function(){
+  init(){
     return new Promise((resolve, reject) =>{
       this.mapService.once('ready', ()=>{
         this._map = this.mapService.getMap();
@@ -35,12 +37,12 @@ function AppService(){
    *
    * @returns {Promise<void>}
    */
-  this.results = async function({capture=true}){
+  async results({capture=true}){
     capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
     return [];
   };
 
-  this.screenshot = async function({capture=true}){
+  async screenshot({capture=true}){
     const action = 'app:screenshot';
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
       try {
@@ -70,7 +72,7 @@ function AppService(){
    * @param params
    * @returns {Promise<void>}
    */
-  this.getcenter = async function(params={}){
+  async getcenter(params={}){
     return this.mapService.getCenter();
   };
 
@@ -79,7 +81,7 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtocoordinates = async function(params={}){
+  async zoomtocoordinates(params={}){
     const {coordinates=[], highlight=false} = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       this.mapService.zoomTo(coordinates);
@@ -92,7 +94,7 @@ function AppService(){
    * @param params
    * @returns {Promise<void>}
    */
-  this.getextent = async function(params={}){
+  async getextent(params={}){
     return this.mapService.getMapExtent();
   };
 
@@ -101,7 +103,7 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtoextent = async function(params={}){
+  async zoomtoextent(params={}){
     const {extent=[]} = params;
     if (extent && Array.isArray(extent) && extent.length === 4){
       this.mapService.goToBBox(extent);
@@ -109,9 +111,8 @@ function AppService(){
     } else return Promise.reject(extent);
   };
 
-
   //method to zoom to features
-  this.zoomtofeature = async function(params={}){
+  async zoomtofeature(params={}){
     return new Promise(async (resolve, reject) => {
       let {qgs_layer_id, feature, highlight=false} = params;
       qgs_layer_id = this.getQgsLayerId({
@@ -130,6 +131,4 @@ function AppService(){
   };
 }
 
-inherit(AppService, BaseService);
-
-module.exports = new AppService;
+export default  new AppService;

@@ -1,13 +1,15 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+import Validator  from './validator';
 
-function DateTimePickerValidator(options) {
-  base(this, options);
-  this.validate = function(value, options) {
+class DateTimePickerValidator extends Validator{
+  constructor(options={}) {
+    super(options);
+  }
+
+  validate(value, options) {
     const fielddatetimeformat = options.fielddatetimeformat;
     return moment(value, fielddatetimeformat, true).isValid();
   }
 }
-inherit(DateTimePickerValidator, Validator);
 
-module.exports =  DateTimePickerValidator;
+export default DateTimePickerValidator
+

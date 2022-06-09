@@ -4,11 +4,12 @@
 import "regenerator-runtime";
 //used to import necessary features to polyfill
 //import "core-js-latest/features/promise";
-const ApplicationService = require('core/applicationservice');
+import ApplicationService from 'core/applicationservice';
 // Application instance. It manages the application template
-const Application = require('gui/app/index');
+import Application from 'gui/app/index';
 // set the global enviromental variable g3wsdk. It used by plugins to load sdk class and instances
-window.g3wsdk = require('api');
+import g3wsdk from './api'
+window.g3wsdk = g3wsdk;
 
 // application starting point
 const bootstrap = function() {

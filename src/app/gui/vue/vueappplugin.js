@@ -151,4 +151,4 @@ const Vueappplugin = {
 };
 
 
-module.exports = Vueappplugin;
+export default  Vueappplugin;

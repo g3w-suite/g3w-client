@@ -9,8 +9,8 @@
 </template>
 
 <script>
-  const autocompleteOptions = require('gui/external/select2/options/autocomplete');
-  const {autocompleteMixin, select2Mixin} = require('gui/vue/vue.mixins');
+  import autocompleteOptions  from 'gui/external/select2/options/autocomplete';
+  import {autocompleteMixin, select2Mixin}  from 'gui/vue/vue.mixins';
   export default {
     name: "selectAtlasFieldValues",
     mixins: [autocompleteMixin, select2Mixin],

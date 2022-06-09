@@ -1,21 +1,34 @@
+import service from './service';
+import integerservice from './integer/service';
+import floatservice from './float/service';
+import radioservice from './radio/service';
+import checkservice from './checkbox/service';
+import rangeservice from './range/service';
+import datetimepickerservice from './datetimepicker/service';
+import uniqueservice from './unique/service';
+import mediaservice from './media/service';
+import selectservice from './select/service'
+import sliderservice from './sliderrange/service';
+import lonlatservice from './lonlat/service';
+
 const InputsServices = {
-  'text': require('./service'),
-  'textarea': require('./service'),
-  'integer': require('./integer/service'),
-  'string':require('./service'),
-  'float': require('./float/service'),
-  'radio': require('./radio/service'),
-  'check': require('./checkbox/service'),
-  'range': require('./range/service'),
-  'datetimepicker': require('./datetimepicker/service'),
-  'unique': require('./unique/service'),
-  'select': require('./select/service'),
-  'media': require('./media/service'),
-  'select_autocomplete': require('./select/service'),
-  'picklayer': require('./service'),
-  'color': require('./service'),
-  'slider': require('./sliderrange/service'),
-  'lonlat': require('./lonlat/service')
+  'text': service,
+  'textarea':service,
+  'integer': integerservice,
+  'string': service,
+  'float': floatservice,
+  'radio': radioservice,
+  'check': checkservice,
+  'range': rangeservice,
+  'datetimepicker': datetimepickerservice,
+  'unique': uniqueservice,
+  'select': selectservice,
+  'media': mediaservice,
+  'select_autocomplete': selectservice,
+  'picklayer': service,
+  'color': service,
+  'slider': sliderservice,
+  'lonlat': lonlatservice
 };
 
-module.exports = InputsServices;
+export default  InputsServices;

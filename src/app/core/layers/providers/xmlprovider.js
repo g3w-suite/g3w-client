@@ -1,18 +1,14 @@
-const {inherit, base} = require('core/utils/utils');
-const DataProvider = require('core/layers/providers/provider');
+import Provider from 'core/layers/providers/provider';
 
-function XMLDataProvider(options={}) {
-  base(this);
-  this._name = 'xml';
+class XMLDataProvider extends Provider {
+  constructor(options={}) {
+    super(options);
+    this._name = 'xml';
+  }
+  getData() {
+    const d = $.Deferred();
+    return d.promise();
+  };
 }
 
-inherit(XMLDataProvider, DataProvider);
-
-const proto = XMLDataProvider.prototype;
-
-proto.getData = function() {
-  const d = $.Deferred();
-  return d.promise();
-};
-
-module.exports = XMLDataProvider;
+export default XMLDataProvider;

@@ -19,7 +19,6 @@
                     :layerid="layerid"
                     :contenttype="contenttype"
                     :addToValidate="addToValidate"
-                    :removeToValidate="removeToValidate"
                     :changeInput="changeInput"
                     :fields="fields"
                     :showTitle="false"
@@ -35,7 +34,6 @@
             :layerid="layerid"
             :contenttype="contenttype"
             :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
             :changeInput="changeInput"
             :fields="fields"
             :showTitle="false"
@@ -48,8 +46,8 @@
 <script>
   import TabService from 'core/expression/tabservice';
   import Node from './node.vue';
-  const GUI = require('gui/gui');
-  const {getUniqueDomId} = require ('core/utils/utils');
+  import GUI  from 'gui/gui';
+  import utils from 'core/utils/utils';
   export default {
     name: "tabs",
     props: {
@@ -73,7 +71,6 @@
         required: true
       },
       addToValidate: Function,
-      removeToValidate: Function,
       changeInput: Function,
       showRelationByField: {
         type: Boolean,
@@ -97,7 +94,9 @@
         return this.contenttype === 'editing' && this.fields.filter(field => field.validate.required).map(field => field.name);
       },
       show(){
-        return this.tabs.reduce((accumulator, tab) => accumulator || (tab.visible === undefined || !!tab.visible), false);
+        return this.tabs.reduce((accumulator, tab) =>{
+          return accumulator || (tab.visible === undefined || !!tab.visible)
+        }, false)
       }
     },
     methods: {
@@ -143,7 +142,7 @@
             })
           }
         }
-        this.ids.push(`tab_${getUniqueDomId()}`);
+        this.ids.push(`tab_${utils.getUniqueDomId()}`);
       }
       this.root_tabs = [];
       if (!this.group){

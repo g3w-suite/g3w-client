@@ -1,14 +1,14 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-const Input = require('gui/inputs/input');
-const selectMixin = require('gui/inputs/select/vue/selectmixin');
-const {getUniqueDomId} = require('core/utils/utils');
-const compiledTemplate = createCompiledTemplate(require('./unique.html'));
+import Input  from 'gui/inputs/input';
+import selectMixin  from 'gui/inputs/select/vue/selectmixin';
+import utils  from 'core/utils/utils';
+import template from './unique.html';
 
 const UniqueInput = Vue.extend({
   mixins: [Input, selectMixin],
-  ...compiledTemplate,
+  template,
   data() {
-    const id = `unique_${getUniqueDomId()}`;
+    const id = `unique_${utils.getUniqueDomId()}`;
     return {id}
   },
   watch: {
@@ -36,4 +36,4 @@ const UniqueInput = Vue.extend({
   }
 });
 
-module.exports = UniqueInput;
+export default  UniqueInput;

@@ -1,9 +1,13 @@
+import {Style, Stroke} from "ol/style";
+import {always} from "ol/events/condition";
+import { DragBox} from "ol/interaction";
+
 _gis3wlib._interaction.prototype.zoomToBox = function(){
   const map = this.map;
-  const zoomToBox = new ol.interaction.DragBox({
-    condition: ol.events.condition.always,
-    style: new ol.style.Style({
-      stroke: new ol.style.Stroke({
+  const zoomToBox = new DragBox({
+    condition: always,
+    style: new Style({
+      stroke: new Stroke({
         color: '#f0ad4e',
         width: 5
       })
@@ -22,10 +26,10 @@ _gis3wlib._interaction.prototype.zoomToBox = function(){
 _gis3wlib._interaction.prototype.drawBBox = function(callback) {
   //get callback parameter and call it with bbox as argument
   const map = this.map;
-  const selectBBox = new ol.interaction.DragBox({
-    condition: ol.events.condition.always,
-    style: new ol.style.Style({
-      stroke: new ol.style.Stroke({
+  const selectBBox = new DragBox({
+    condition: always,
+    style: new Style({
+      stroke: new Stroke({
         color: '#f0ad4e',
         width: 5
       })

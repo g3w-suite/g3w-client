@@ -1,16 +1,16 @@
 import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
-const Service = require('../formservice');
-const compiledTemplate = createCompiledTemplate(require('./form.html'));
-const HeaderFormComponent = require('../components/header/vue/header');
-const BodyFormComponent = require('../components/body/vue/body');
-const G3wFormFooter = require('gui/form/components/footer/vue/footer');
+
+import GUI  from 'gui/gui';
+import Component  from 'gui/vue/component';
+import Service  from '../formservice';
+import template from './form.html';
+import HeaderFormComponent  from '../components/header/vue/header';
+import BodyFormComponent  from '../components/body/vue/body';
+import G3wFormFooter  from 'gui/form/components/footer/vue/footer';
 
 //vue component
 const vueComponentObject = {
- ...compiledTemplate,
+  template,
   data() {
     return {
       state: {},
@@ -57,9 +57,6 @@ const vueComponentObject = {
     addToValidate(input) {
       this.$options.service.addToValidate(input);
     },
-    removeToValidate(input) {
-      this.$options.service.removeToValidate(input);
-    },
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
@@ -91,7 +88,6 @@ const vueComponentObject = {
   mounted() {
     // check if is valid form (it used by footer component)
     this.$options.service.isValid();
-    this.$options.service.setReady(true);
   },
   beforeDestroy() {
     this.$options.service.clearAll();
@@ -175,7 +171,5 @@ function FormComponent(options = {}) {
   };
 }
 
-inherit(FormComponent, Component);
-
-module.exports = FormComponent;
+export default  FormComponent;
 

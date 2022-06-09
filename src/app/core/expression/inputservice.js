@@ -1,9 +1,9 @@
-const DataRouterService = require('core/data/routerservice');
-const {convertFeatureToGEOJSON} = require('core/utils/geo');
+import DataRouterService from 'core/data/routerservice';
+import geoutils from 'core/utils/geo';
 
 export default {
   async handleFormInput({field, feature,qgs_layer_id}={}){
-    const form_data = convertFeatureToGEOJSON(feature);
+    const form_data = geoutils.convertFeatureToGEOJSON(feature);
     const options = field.input.options;
     let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
     loading.state = 'loading';

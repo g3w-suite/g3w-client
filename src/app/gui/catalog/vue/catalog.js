@@ -3,20 +3,26 @@ import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
 import ChangeMapThemesComponent from './components/changemapthemes.vue';
-const ApplicationService = require('core/applicationservice');
-const {inherit, base, downloadFile} = require('core/utils/utils');
-const shpwrite = require('shp-write');
-const {t} = require('core/i18n/i18n.service');
-const Component = require('gui/vue/component');
-const TableComponent = require('gui/table/vue/table');
-const ComponentsRegistry = require('gui/componentsregistry');
-const GUI = require('gui/gui');
-const ControlsRegistry = require('gui/map/control/registry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import ApplicationService  from 'core/applicationservice';
+import utils  from 'core/utils/utils';
+import shpwrite  from 'shp-write';
+import {t}  from 'core/i18n/i18n.service';
+import Component  from 'gui/vue/component';
+import TableComponent  from 'gui/table/vue/table';
+import ComponentsRegistry  from 'gui/componentsregistry';
+import GUI  from 'gui/gui';
+import ControlsRegistry  from 'gui/map/control/registry';
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import catalogTemplate  from './catalog.html';
+import layersGroupTemplate from './layersgroup.html';
+import Service  from '../catalogservice';
+import {GeoJSON} from "ol/format";
+import legendTemplate from './legend.html';
+import treestateTemplate from './tristate-tree.html';
+import legendItemsTemplate from './legend_items.html';
 const ChromeComponent = VueColor.Chrome;
-const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
-const Service = require('../catalogservice');
+
 //OFFSETMENU
 const OFFSETMENU = {
   top: 50,
@@ -24,7 +30,7 @@ const OFFSETMENU = {
 };
 
 const vueComponentOptions = {
-  ...compiledTemplate,
+  template: catalogTemplate,
   data() {
     const legend = this.$options.legend;
     legend.place = ApplicationService.getCurrentProject().getLegendPosition() || 'tab';
@@ -365,7 +371,7 @@ const vueComponentOptions = {
       this.layerMenu.loading.shp = true;
       const mapService = GUI.getService('map');
       const vectorLayer = mapService.getLayerByName(layer.name);
-      const GeoJSONFormat = new ol.format.GeoJSON();
+      const GeoJSONFormat = new GeoJSON();
       let features = vectorLayer.getSource().getFeatures();
       if (layer.crs !== EPSG4326){
         features = features.map(feature => {
@@ -570,7 +576,7 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 Vue.component('g3w-catalog', vueComponentOptions);
 
 Vue.component('layers-group', {
-  template: require('./layersgroup.html'),
+  template: layersGroupTemplate,
   props: {
     layersgroup: {
       type: Object
@@ -578,7 +584,7 @@ Vue.component('layers-group', {
   }
 });
 
-const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-tree.html'));
+const compiledTristateTreeTemplate = createCompiledTemplate(treestateTemplate);
 /* CHILDREN COMPONENTS */
 // tree component
 Vue.component('tristate-tree', {
@@ -747,7 +753,7 @@ Vue.component('tristate-tree', {
     },
     downloadExternalLayer(download) {
       if (download.file) {
-        downloadFile(download.file);
+        utils.downloadFile(download.file);
       } else if (download.url) {}
     },
     removeExternalLayer(name, type) {
@@ -770,7 +776,7 @@ Vue.component('tristate-tree', {
   }
 });
 
-const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
+const compiletLegendTemplate = createCompiledTemplate(legendTemplate);
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
@@ -807,7 +813,7 @@ Vue.component('layerslegend',{
     }
 });
 
-const compiledLegendItemsTemplate = createCompiledTemplate(require('./legend_items.html'));
+const compiledLegendItemsTemplate = createCompiledTemplate(legendItemsTemplate);
 
 Vue.component('layerslegend-items',{
   ...compiledLegendItemsTemplate,
@@ -962,35 +968,35 @@ Vue.component('layerslegend-items',{
   },
 });
 
-function CatalogComponent(options={}) {
-  options.resizable = true;
-  base(this, options);
-  const {legend}  = options.config;
-  this.title = "catalog";
-  this.mapComponentId = options.mapcomponentid;
-  const service = options.service || new Service;
-  this.setService(service);
-  this.setInternalComponent(new InternalComponent({
-    service,
-    legend
-  }));
-  this.internalComponent.state = this.getService().state;
-  let listenToMapVisibility = map => {
-    const mapService = map.getService();
-    this.state.visible = !mapService.state.hidden;
-    mapService.onafter('setHidden', hidden => {
+class CatalogComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    const {legend}  = options.config;
+    this.title = "catalog";
+    this.mapComponentId = options.mapcomponentid;
+    const service = options.service || new Service;
+    this.setService(service);
+    this.setInternalComponent(new InternalComponent({
+      service,
+      legend
+    }));
+    this.internalComponent.state = this.getService().state;
+    let listenToMapVisibility = map => {
+      const mapService = map.getService();
       this.state.visible = !mapService.state.hidden;
-      this.state.expanded = true;
-    })
-  };
-  if (this.mapComponentId) {
-    const map = GUI.getComponent(this.mapComponentId);
-    !map && ComponentsRegistry.on('componentregistered', component =>
-      (component.getId() === this.mapComponentId) && listenToMapVisibility(component))
-    || listenToMapVisibility(map);
+      mapService.onafter('setHidden', hidden => {
+        this.state.visible = !mapService.state.hidden;
+        this.state.expanded = true;
+      })
+    };
+    if (this.mapComponentId) {
+      const map = GUI.getComponent(this.mapComponentId);
+      !map && ComponentsRegistry.on('componentregistered', component =>
+        (component.getId() === this.mapComponentId) && listenToMapVisibility(component))
+      || listenToMapVisibility(map);
+    }
   }
 }
 
-inherit(CatalogComponent, Component);
+export default CatalogComponent;
 
-module.exports = CatalogComponent;

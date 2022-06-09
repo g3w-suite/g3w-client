@@ -1,24 +1,22 @@
-const utils = require('../utils');
-const InteractionControl = require('./interactioncontrol');
+import InteractionControl  from './interactioncontrol';
 
-const ResetControl = function(options){
-  this._toggled = true;
-  this._startCoordinate = null;
-  const _options = {
+class ResetControl extends InteractionControl {
+  constructor(options={}) {
+    options = {
+      ...options,
       name: "reset",
       tipLabel: "Pan",
       label: "\ue901"
     };
-  options = utils.merge(options,_options);
-  InteractionControl.call(this,options);
-};
+    super(options);
+    this._toggled = true;
+    this._startCoordinate = null;
+  }
+  _postRender(){
+    this.toggle(true);
+  };
+}
 
-ol.inherits(ResetControl, InteractionControl);
+export default ResetControl;
 
-module.exports = ResetControl;
 
-const proto = ResetControl.prototype;
-
-proto._postRender = function(){
-  this.toggle(true);
-};

@@ -1,10 +1,10 @@
 export const viewport = {
   resize: {
     map: {
-      min: 200
+      min: 350
     },
     content: {
-      min: 200
+      min: 350
     }
   }
 };

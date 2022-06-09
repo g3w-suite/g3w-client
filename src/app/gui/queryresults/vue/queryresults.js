@@ -2,18 +2,18 @@ import TableAttributeFieldValue from './components/tableattributefieldvalue.vue'
 import InfoFormats from './components/actiontools/infoformats.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit, throttle} = require('core/utils/utils');
-const {fieldsMixin} = require('gui/vue/vue.mixins');
-const Component = require('gui/vue/component');
-const QueryResultsService = require('gui/queryresults/queryresultsservice');
+import utils from 'core/utils/utils';
+import {fieldsMixin}  from 'gui/vue/vue.mixins';
+import Component  from 'gui/vue/component';
+import QueryResultsService  from 'gui/queryresults/queryresultsservice';
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
 const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
-const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
+import template from './queryresults.html';
 
 const vueComponentOptions = {
-  ...compiledTemplate,
+  template,
   data() {
     return {
       state: this.$options.queryResultsService.state,
@@ -330,7 +330,7 @@ const vueComponentOptions = {
   },
   created(){
     //PUT HERE THROTTLED FUNCTION
-    this.zoomToLayerFeaturesExtent = throttle(layer => {
+    this.zoomToLayerFeaturesExtent = utils.throttle(layer => {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
         highlight: true
       });
@@ -375,6 +375,6 @@ function QueryResultsComponent(options={}) {
   }
 }
 
-inherit(QueryResultsComponent, Component);
 
-module.exports = QueryResultsComponent;
+
+export default  QueryResultsComponent;

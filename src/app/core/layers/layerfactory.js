@@ -1,19 +1,21 @@
-const Layer = require('./layer');
-const TableLayer = require('./tablelayer');
-const VectorLayer = require('./vectorlayer');
-const ImageLayer = require('./imagelayer');
-const BaseLayers = require('./baselayers/baselayers');
-const GeojsonLayer = require('./geojson');
+import Layer  from './layer';
+import TableLayer  from './tablelayer';
+import VectorLayer  from './vectorlayer';
+import ImageLayer  from './imagelayer';
+import BaseLayers  from './baselayers/baselayers';
+import GeojsonLayer  from './geojson';
 
 // Class to build layer based on configuration
-function LayerFactory() {
-  this.build = function(config, options) {
+class LayerFactory {
+  constructor(){
+  }
+  build(config, options) {
     // return the layer instance
     const layerClass = this.get(config);
     return layerClass ? new layerClass(config, options) : null
   };
 
-  this.get = function(config={}) {
+  get(config={}) {
     let LayerClass;
     const serverType = config.servertype;
     switch (serverType) {
@@ -79,4 +81,4 @@ function LayerFactory() {
   }
 }
 
-module.exports = new LayerFactory();
+export default  new LayerFactory();

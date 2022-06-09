@@ -1,26 +1,20 @@
-const {inherit, base} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
 
-function PrinterProvider() {
-  base(this);
+class PrinterProvider extends G3WObject{
+  constructor() {
+    super();
+  };
+
+  print() {
+    console.log('overwrite');
+  };
+
+  getPrintUrl() {
+    console.log('overwrite');
+  };
+
 }
 
-inherit(PrinterProvider, G3WObject);
 
-const proto = PrinterProvider.prototype;
-
-proto.print = function() {
-  console.log('overwrite');
-};
-
-proto.getPrintUrl = function() {
-  console.log('overwrite');
-};
-
-proto.print = function() {
-  console.log('overwrite');
-};
-
-
-module.exports =  PrinterProvider;
+export default   PrinterProvider;
 

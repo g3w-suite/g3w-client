@@ -1,15 +1,17 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-function ProxyService(){
-  base(this);
-  /**
+import BaseService from 'core/data/service';
+import ApplicationService  from 'core/applicationservice';
+import utils  from 'core/utils/utils';
+class ProxyService extends BaseService {
+    constructor() {
+      super();
+    }
+    /**
    *
    * @param data: Object conitans data to pass to proxy
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.wms = async function({url, method='GET', params={}, headers={}}={}){
-    const ApplicationService = require('core/applicationservice');
+  async wms({url, method='GET', params={}, headers={}}={}){
+    const {XHR} = utils;
     let proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
       url = new URL(url);
@@ -41,9 +43,7 @@ function ProxyService(){
    * Generic proxy data function
    * @param params
    */
-  this.data = function(params={}){}
+  data(params={}){}
 }
 
-inherit(ProxyService, BaseService);
-
-module.exports = new ProxyService;
+export default  new ProxyService;

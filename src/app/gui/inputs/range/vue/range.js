@@ -1,8 +1,9 @@
-const Input = require('gui/inputs/input');
+import Input  from 'gui/inputs/input';
+import template from './range.html'
 
 const RangeInput = Vue.extend({
   mixins: [Input],
-  template: require('./range.html'),
+  template,
   data() {
     const options = this.state.input.options.values[0];
     const min = 1*options.min;
@@ -23,4 +24,4 @@ const RangeInput = Vue.extend({
   }
 });
 
-module.exports = RangeInput;
+export default  RangeInput;

@@ -1,18 +1,17 @@
-const utils = require('../utils');
-const AreaIteraction = require('../interactions/areainteraction');
-const MeasureControl = require('./measurecontrol');
+import AreaIteraction  from '../interactions/areainteraction';
+import MeasureControl  from './measurecontrol';
 
-const AreaControl = function(options={}) {
-  const _options = {
-    tipLabel: "sdk.mapcontrols.measures.area.tooltip",
-    label: "\ue909",
-    clickmap: true, // set ClickMap
-    interactionClass: AreaIteraction
-  };
-  options = utils.merge(options, _options);
-  MeasureControl.call(this, options);
+class AreaControl extends MeasureControl {
+  constructor(options={}) {
+    options = {
+      ...options,
+      tipLabel: "sdk.mapcontrols.measures.area.tooltip",
+      label: "\ue909",
+      clickmap: true, // set ClickMap
+      interactionClass: AreaIteraction
+    };
+    super(options);
+  }
 };
 
-ol.inherits(AreaControl, MeasureControl);
-
-module.exports = AreaControl;
+export default  AreaControl;

@@ -1,13 +1,13 @@
 import ApplicationState from 'core/applicationstate';
-const {t, tPlugin} = require('core/i18n/i18n.service');
-const { uniqueId, toRawType } = require('core/utils/utils');
+import {t, tPlugin} from 'core/i18n/i18n.service';
+import utils from 'core/utils/utils';
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
     const directives = {};
     const createDirectiveObj = ({el, attr}) =>{
       //create unique id
-      const unique_attr_id = uniqueId();
+      const unique_attr_id = utils.uniqueId();
       // set new attribute
       el.setAttribute(attr, unique_attr_id);
       directives[unique_attr_id] = {};
@@ -284,7 +284,7 @@ const GlobalDirective = {
     Vue.directive("download", {
       bind(el, binding) {
         const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
-        const listen = toRawType(binding.value) === 'Boolean' ? binding.value : true;
+        const listen = utils.toRawType(binding.value) === 'Boolean' ? binding.value : true;
         const downloadHandler = bool => {
           el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool: bool)
         };
@@ -342,5 +342,5 @@ const GlobalDirective = {
   }
 };
 
-module.exports = GlobalDirective;
+export default  GlobalDirective;
 

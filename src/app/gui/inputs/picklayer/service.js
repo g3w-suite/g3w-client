@@ -1,91 +1,93 @@
-const PickFeatureInteraction = require('g3w-ol/src/interactions/pickfeatureinteraction');
-const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
-const MapCatalogLayersRegistry = require('core/map/maplayersstoresregistry');
-const {getQueryLayersPromisesByCoordinates} = require('core/utils/geo');
-const GUI = require('gui/gui');
+import PickFeatureInteraction  from '/g3w-ol/src/interactions/pickfeatureinteraction';
+import PickCoordinatesInteraction  from '/g3w-ol/src/interactions/pickcoordinatesinteraction';
+import MapCatalogLayersRegistry  from 'core/map/maplayersstoresregistry';
+import geoutils from 'core/utils/geo';
+import GUI  from 'gui/gui';
 
-function PickLayerService(options={}) {
-  this.pick_type = options.pick_type || 'wms';
-  this.ispicked = false;
-  this.fields = options.fields || [options.value];
-  this.layerId = options.layer_id;
-  this.mapService = GUI.getService('map');
-  this.interaction = this.pick_type === 'map' ?  new PickFeatureInteraction({
-    layers: [this.mapService.getLayerById(this.layerId)]
-  }) : new PickCoordinatesInteraction();
-}
+class PickLayerService {
+  constructor(options={}) {
+    this.pick_type = options.pick_type || 'wms';
+    this.ispicked = false;
+    this.fields = options.fields || [options.value];
+    this.layerId = options.layer_id;
+    this.mapService = GUI.getService('map');
+    this.interaction = this.pick_type === 'map' ?  new PickFeatureInteraction({
+      layers: [this.mapService.getLayerById(this.layerId)]
+    }) : new PickCoordinatesInteraction();
+  }
 
-const proto = PickLayerService.prototype;
+  isPicked(){
+    return this.ispicked;
+  };
 
-proto.isPicked = function(){
-  return this.ispicked;
-};
+  //bind interrupt event
+  escKeyUpHandler({keyCode, data:{owner}}) {
+    keyCode === 27 && owner.unpick();
+  };
 
-//bind interrupt event
-proto.escKeyUpHandler = function({keyCode, data:{owner}}) {
-  keyCode === 27 && owner.unpick();
-};
+  unbindEscKeyUp() {
+    $(document).unbind('keyup', this.escKeyUpHandler);
+  };
 
-proto.unbindEscKeyUp = function() {
-  $(document).unbind('keyup', this.escKeyUpHandler);
-};
+  bindEscKeyUp() {
+    $(document).on('keyup', {owner: this}, this.escKeyUpHandler);
+  };
 
-proto.bindEscKeyUp = function() {
-  $(document).on('keyup', {owner: this}, this.escKeyUpHandler);
-};
-
-proto.pick = function() {
-  return new Promise((resolve, reject) => {
-    this.bindEscKeyUp();
-    const values = {};
-    this.ispicked = true;
-    const afterPick = feature => {
-      if (feature) {
-        const attributes = feature.getProperties();
-        this.fields.forEach(field =>{
-          values[field] = attributes[field];
-        });
-        resolve(values);
-      } else reject();
-      this.ispicked = false;
-      this.unpick();
-    };
-    GUI.setModal(false);
-    this.mapService.addInteraction(this.interaction);
-    this.interaction.once('picked', event => {
-      if (this.pick_type === 'map') {
-        const feature = event.feature;
-        afterPick(feature);
-      } else if (this.pick_type === 'wms'){
-        const layer = MapCatalogLayersRegistry.getLayerById(this.layerId);
-        if (layer) {
-          getQueryLayersPromisesByCoordinates(
-            [layer],
-            {
-              map: this.mapService.getMap(),
-              feature_count: 1,
-              coordinates: event.coordinate
-            }).then(response => {
+  pick() {
+    return new Promise((resolve, reject) => {
+      this.bindEscKeyUp();
+      const values = {};
+      this.ispicked = true;
+      const afterPick = feature => {
+        if (feature) {
+          const attributes = feature.getProperties();
+          this.fields.forEach(field =>{
+            values[field] = attributes[field];
+          });
+          resolve(values);
+        } else reject();
+        this.ispicked = false;
+        this.unpick();
+      };
+      GUI.setModal(false);
+      this.mapService.addInteraction(this.interaction);
+      this.interaction.once('picked', event => {
+        if (this.pick_type === 'map') {
+          const feature = event.feature;
+          afterPick(feature);
+        } else if (this.pick_type === 'wms'){
+          const layer = MapCatalogLayersRegistry.getLayerById(this.layerId);
+          if (layer) {
+            geoutils.getQueryLayersPromisesByCoordinates(
+              [layer],
+              {
+                map: this.mapService.getMap(),
+                feature_count: 1,
+                coordinates: event.coordinate
+              }).then(response => {
               const {data=[]} = response[0];
               const feature = data.length && data[0].features[0] || null;
               afterPick(feature);
-          })
+            })
+          }
         }
-      }
+      })
     })
-  })
-};
+  };
 
-proto.unpick = function() {
-  this.mapService.removeInteraction(this.interaction);
-  GUI.setModal(true);
-  this.unbindEscKeyUp();
-  this.ispicked = false;
-};
+  unpick() {
+    this.mapService.removeInteraction(this.interaction);
+    GUI.setModal(true);
+    this.unbindEscKeyUp();
+    this.ispicked = false;
+  };
 
-proto.clear = function() {
-  this.isPicked() && this.unpick();
-  this.mapService = this.interaction = this.field = null;
-};
+  clear() {
+    this.isPicked() && this.unpick();
+    this.mapService = this.interaction = this.field = null;
+  };
+}
 
-module.exports = PickLayerService;
+
+
+export default  PickLayerService;
