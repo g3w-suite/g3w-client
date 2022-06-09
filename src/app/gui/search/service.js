@@ -17,7 +17,7 @@ class Service extends G3WObject{
       querybuildersearches: QueryBuilderService.getCurrentProjectItems()
     };
   };
-  removeItem = function({type, index}={}){
+  removeItem({type, index}={}){
     switch(type) {
       case 'querybuilder':
         this.state.querybuildersearches.splice(index, 1);

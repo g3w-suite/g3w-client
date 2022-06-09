@@ -1,9 +1,10 @@
 import utils from 'core/utils/utils';
 import {GeoJSON, WMSGetFeatureInfo} from "ol/format";
 
-const VectorParser = function() {
+class VectorParser {
+  constructor(props) {}
   // return the right parser for the request
-  this.get = function(options={}) {
+  get(options={}) {
     const type = options.type;
     let parser;
     switch (type) {
@@ -19,7 +20,7 @@ const VectorParser = function() {
     }
     return parser;
   };
-  this._parseLayermsGMLOutput = function({data, layer}) {
+  _parseLayermsGMLOutput({data, layer}) {
     try {
       let gml;
       // to extract gml from multiple (Tuscany region)
@@ -46,7 +47,7 @@ const VectorParser = function() {
     }
   };
 
-  this._parseLayerGeoJSON = function(data, options) {
+  _parseLayerGeoJSON(data, options) {
     try {
       data = utils.toRawType(data) === 'String' ? JSON.parse(data): data;
       const {crs, mapCrs} = options;
@@ -60,6 +61,6 @@ const VectorParser = function() {
       return [];
     }
   };
-};
+}
 
 export default  new VectorParser();

@@ -65,7 +65,7 @@ class BaseLayer extends ImageLayer {
     this.getOLLayer().setVisible(bool)
   };
 
-  getMapLayer = function() {
+  getMapLayer() {
     return this._mapLayer;
   };
 }

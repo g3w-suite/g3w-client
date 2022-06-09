@@ -126,8 +126,10 @@ const ProvidersForServerTypes = {
   }
 };
 
-function ProviderFactory() {
-  this.build = function(providerType, serverType, sourceType,options) {
+class ProviderFactory {
+  constructor(props) {}
+
+  build(providerType, serverType, sourceType,options) {
     // return instace of seletced provider
     const providerClass = this.get(providerType,serverType,sourceType);
     if (providerClass) {
@@ -136,7 +138,7 @@ function ProviderFactory() {
     return null;
   };
 
-  this.get = function(providerType, serverType, sourceType) {
+  get(providerType, serverType, sourceType) {
     return ProvidersForServerTypes[serverType][sourceType][providerType];
   }
 }

@@ -68,16 +68,17 @@ class Component extends G3WObject {
     this.setService(service);
     this._service.init ? this._service.init(options): null;
     template && this.setInternalComponentTemplate(template);
-    this.setInternalComponent = function() {
-      const InternalComponent = Vue.extend(this.vueComponent);
-      this.internalComponent = new InternalComponent({
-        service: this._service,
-        template,
-        propsData
-      });
-      this.internalComponent.state = this.getService().state;
-    };
     this.setInternalComponent();
+  };
+
+  setInternalComponent() {
+    const InternalComponent = Vue.extend(this.vueComponent);
+    this.internalComponent = new InternalComponent({
+      service: this._service,
+      template,
+      propsData
+    });
+    this.internalComponent.state = this.getService().state;
   };
 
   getId() {

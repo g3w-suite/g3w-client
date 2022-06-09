@@ -1,4 +1,3 @@
-const {base,inherit, Base64} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /*
@@ -30,160 +29,159 @@ const G3WObject = require('core/g3wobject');
 crossroads.ignoreState = true;
 crossroads.greedy = true;
 
-const RouterService = function(){
+class RouterService extends G3WObject {
+  constructor() {
+    super({
+      setters: {
+        setRouteQuery(routeQuery){
+          this._routeQuery = routeQuery;
+          crossroads.parse(routeQuery);
+        }
+      }
+    });
+    this._initialLocationQuery;
+    this._routeQuery = '';
+  }
 
-  this._initialLocationQuery;
-  this._routeQuery = '';
-  this.setters = {
-    setRouteQuery(routeQuery){
-      this._routeQuery = routeQuery;
-      crossroads.parse(routeQuery);
+  init() {
+    //Return the querystring part of a URL
+    const query = window.location.search;
+    this._setRouteQueryFromLocationQuery(query);
+  };
+
+  addRoute(pattern,handler,priority) {
+    return crossroads.addRoute(pattern,handler,priority);
+  };
+
+  removeRoute(route) {
+    return crossroads.removeRoute(route);
+  };
+
+  removeAllRoutes() {
+    return crossroads.removeAllRoutes();
+  };
+
+  parse(request,defaultArgs) {
+    return crossroads.parse(request,defaultArgs);
+  };
+
+  goto(routeQuery){
+    if (!this._initialQuery) {
+      this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
+    }
+    if (routeQuery) {
+      this.setRouteQuery(routeQuery);
     }
   };
 
-  base(this);
-};
-inherit(RouterService, G3WObject);
+  makePermalink(routeQuery) {
+    if (!this._initialQuery) {
+      this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
+    }
+    const encodedRouteQuery = this._encodeRouteQuery(routeQuery);
+    //encodedRouteQuery = Base64.encode(encodedRouteQuery);
+    return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
+  };
 
-const proto = RouterService.prototype;
+  makeQueryString(queryParams){};
 
-proto.init = function() {
-  //Return the querystring part of a URL
-  const query = window.location.search;
-  this._setRouteQueryFromLocationQuery(query);
-};
+  slicePath(path){
+    return path.split('?')[0].split('/');
+  };
 
-proto.addRoute = function(pattern,handler,priority) {
-  return crossroads.addRoute(pattern,handler,priority);
-};
+  sliceFirst(path){
+    const pathAndQuery = path.split('?');
+    const queryString = pathAndQuery[1];
+    const pathArr = pathAndQuery[0].split('/');
+    const firstPath = pathArr[0];
+    path = pathArr.slice(1).join('/');
+    path = [path,queryString].join('?');
+    return [firstPath,path];
+  };
 
-proto.removeRoute = function(route) {
-  return crossroads.removeRoute(route);
-};
+  getQueryParams(query) {
+    query = query.replace('?','');
+    const queryParams = {};
+    let queryPairs = [];
+    if (query != "" && query.indexOf("&") == -1) {
+      queryPairs = [query];
+    }
+    else {
+      queryPairs = query.split('&');
+    }
+    try {
+      _.forEach(queryPairs,function(queryPair){
+        var pair = queryPair.split('=');
+        var key = pair[0];
+        var value = pair[1];
+        queryParams[key] = value;
+      });
+    }
+    catch (e) {}
+    return queryParams;
+  };
 
-proto.removeAllRoutes = function() {
-  return crossroads.removeAllRoutes();
-};
+  getQueryString(path){
+    return path.split('?')[1];
+  };
 
-proto.parse = function(request,defaultArgs) {
-  return crossroads.parse(request,defaultArgs);
-};
+  _getQueryPortion(query,queryKey){
+    var queryPortion;
+    try {
+      var queryPairs = query.split('&');
+      var queryParams = {};
+      _.forEach(queryPairs,function(queryPair){
+        var pair = queryPair.split('=');
+        var key = pair[0];
+        if (key == queryKey) {
+          queryPortion = queryPair;
+        }
+      });
+    }
+    catch (e) {}
+    return queryPortion;
+  };
 
-proto.goto = function(routeQuery){
-  if (!this._initialQuery) {
-    this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
-  }
-  if (routeQuery) {
-    this.setRouteQuery(routeQuery);
-  }
-};
+  _encodeRouteQuery(routeQuery) {
+    routeQuery = routeQuery.replace('?','@');
+    routeQuery = routeQuery.replace('&','|');
+    routeQuery = routeQuery.replace('=','!');
+    return routeQuery;
+  };
 
-proto.makePermalink = function(routeQuery) {
-  if (!this._initialQuery) {
-    this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
-  }
-  const encodedRouteQuery = this._encodeRouteQuery(routeQuery);
-  //encodedRouteQuery = Base64.encode(encodedRouteQuery);
-  return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
-};
+  _decodeRouteQuery(routeQuery) {
+    routeQuery = routeQuery.replace('@','?');
+    routeQuery = routeQuery.replace('|','&');
+    routeQuery = routeQuery.replace('!','=');
+    return routeQuery;
+  };
 
-proto.makeQueryString = function(queryParams){};
+  _setRouteQueryFromLocationQuery(locationQuery) {
+    var encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
+    //encodedRouteQuery = Base64.decode(encodedRouteQuery);
+    if (encodedRouteQuery) {
+      var routeQuery = this._decodeRouteQuery(encodedRouteQuery);
+      this.setRouteQuery(routeQuery);
+    }
+  };
 
-proto.slicePath = function(path){
-  return path.split('?')[0].split('/');
-};
+  _getRouteQueryFromLocationQuery(locationQuery) {
+    return this.getQueryParams(locationQuery)['q'];
+  };
 
-proto.sliceFirst = function(path){
-  const pathAndQuery = path.split('?');
-  const queryString = pathAndQuery[1];
-  const pathArr = pathAndQuery[0].split('/');
-  const firstPath = pathArr[0];
-  path = pathArr.slice(1).join('/');
-  path = [path,queryString].join('?');
-  return [firstPath,path];
-};
+  _stripInitialQuery(locationQuery) {
+    var previousQuery = this._getQueryPortion(locationQuery,'q');
+    if (previousQuery) {
+      var previousQueryLength = previousQuery.length;
+      var previousQueryPosition = locationQuery.indexOf(previousQuery);
+      var queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
+      var querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
+      querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
+      locationQuery = queryPrefix + querySuffix;
+    }
+    return locationQuery;
+  };
+}
 
-proto.getQueryParams = function(query) {
-  query = query.replace('?','');
-  const queryParams = {};
-  let queryPairs = [];
-  if (query != "" && query.indexOf("&") == -1) {
-    queryPairs = [query];
-  }
-  else {
-    queryPairs = query.split('&');
-  }
-  try {
-    _.forEach(queryPairs,function(queryPair){
-      var pair = queryPair.split('=');
-      var key = pair[0];
-      var value = pair[1];
-      queryParams[key] = value;
-    });
-  }
-  catch (e) {}
-  return queryParams;
-};
 
-proto.getQueryString = function(path){
-  return path.split('?')[1];
-};
-
-proto._getQueryPortion = function(query,queryKey){
-  var queryPortion;
-  try {
-    var queryPairs = query.split('&');
-    var queryParams = {};
-    _.forEach(queryPairs,function(queryPair){
-      var pair = queryPair.split('=');
-      var key = pair[0];
-      if (key == queryKey) {
-        queryPortion = queryPair;
-      }
-    });
-  }
-  catch (e) {}
-  return queryPortion;
-};
-
-proto._encodeRouteQuery = function(routeQuery) {
-  routeQuery = routeQuery.replace('?','@');
-  routeQuery = routeQuery.replace('&','|');
-  routeQuery = routeQuery.replace('=','!');
-  return routeQuery;
-};
-
-proto._decodeRouteQuery = function(routeQuery) {
-  routeQuery = routeQuery.replace('@','?');
-  routeQuery = routeQuery.replace('|','&');
-  routeQuery = routeQuery.replace('!','=');
-  return routeQuery;
-};
-
-proto._setRouteQueryFromLocationQuery = function(locationQuery) {
-  var encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
-  //encodedRouteQuery = Base64.decode(encodedRouteQuery);
-  if (encodedRouteQuery) {
-    var routeQuery = this._decodeRouteQuery(encodedRouteQuery);
-    this.setRouteQuery(routeQuery);
-  }
-};
-
-proto._getRouteQueryFromLocationQuery = function(locationQuery) {
-  return this.getQueryParams(locationQuery)['q'];
-};
-
-proto._stripInitialQuery = function(locationQuery) {
-  var previousQuery = this._getQueryPortion(locationQuery,'q');
-  if (previousQuery) {
-    var previousQueryLength = previousQuery.length;
-    var previousQueryPosition = locationQuery.indexOf(previousQuery);
-    queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
-    querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
-    querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
-    locationQuery = queryPrefix + querySuffix;
-  }
-  return locationQuery;
-};
-
-module.exports = new RouterService;
+export default new RouterService;

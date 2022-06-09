@@ -3,7 +3,7 @@ class Queque {
     this.tasks = [];
   }
 
-  addTask = function(task){
+  addTask(task){
     this.tasks.push(task);
   };
 
