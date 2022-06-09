@@ -8,7 +8,7 @@ class Component extends BaseComponent {
     this._firstLayout = true;
   }
 
-  mount = function(parent, append) {
+  mount(parent, append) {
     const d = $.Deferred();
     if (!this.internalComponent) this.setInternalComponent();
     if (append) {
@@ -23,9 +23,9 @@ class Component extends BaseComponent {
     // emit mount event
     this.emit('mount');
     return d.promise();
-  };
+  }
 
-  unmount = function() {
+  unmount() {
     if (!this.internalComponent) return resolve();
     if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
     this.state.open = false;
@@ -38,7 +38,7 @@ class Component extends BaseComponent {
     // emit unmount event
     this.emit('unmount');
     return utils.resolve();
-  };
+  }
 
   ismount() {
     return this.internalComponent && this.internalComponent.$el;

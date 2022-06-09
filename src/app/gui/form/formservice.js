@@ -274,7 +274,7 @@ class FormService extends G3WObject {
     this.state.tovalidate[input.name] = input;
   };
 
-  getState = function () {
+  getState() {
     return this.state;
   };
 

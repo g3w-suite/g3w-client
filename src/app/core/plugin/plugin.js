@@ -69,7 +69,7 @@ class Plugin extends G3WObject{
     this._api = api;
   };
 
-  setReady = function(bool) {
+  setReady(bool) {
     this._ready = bool;
     bool && this.setLayout();
     this.emit('set-ready', bool, this.name);
@@ -79,7 +79,7 @@ class Plugin extends G3WObject{
     }, )
   };
 
-  isReady = function() {
+  isReady() {
     return new Promise((resolve, reject) => {
       if (this._ready) resolve(this._ready);
       else
@@ -91,45 +91,45 @@ class Plugin extends G3WObject{
   };
 
 //return plugin service
-  getService = function() {
+  getService() {
     return this.service
   };
 
 //set plugin service
-  setService = function(service) {
+  setService(service) {
     this.service = service;
     service.setPlugin(this);
   };
 
-  getName = function() {
+  getName() {
     return this.name;
   };
 
-  setName = function(name) {
+  setName(name) {
     this.name = name;
   };
 
 //get cplugin configuration
-  getConfig = function(name=this.name) {
+  getConfig(name=this.name) {
     return PluginsRegistry.getPluginConfig(name);
   };
 
-  setConfig = function(config={}) {
+  setConfig(config={}) {
     this.config = config;
   };
 
 //check if plugin is compatible with current project
-  isCurrentProjectCompatible = function(projectId) {
+  isCurrentProjectCompatible(projectId) {
     const project = ProjectsRegistry.getCurrentProject();
     return projectId === project.getGid();
   };
 
-  getProject = function() {
+  getProject() {
     return ProjectsRegistry.getCurrentProject();
   };
 
 //register the plugin if compatible
-  registerPlugin = function(projectId) {
+  registerPlugin(projectId) {
     const iscompatible = this.isCurrentProjectCompatible(projectId);
     iscompatible && PluginsRegistry.registerPlugin(this);
     // if is incompatible
@@ -140,17 +140,17 @@ class Plugin extends G3WObject{
     return iscompatible;
   };
 
-  setupGui = function() {};
+  setupGui() {};
 
 // method to get dependencies plugin
-  getDependencyPlugins = function(pluginsName) {
+  getDependencyPlugins(pluginsName) {
     this.dependencies = pluginsName || this.dependencies;
     const pluginPromises = this.dependencies.map(pluginName => this.getDependencyPlugin(pluginName));
     return Promise.all(pluginPromises)
   };
 
 // create to not replace above plugin method used by non changed old  plugin
-  getDependencyPluginsObject = async function(pluginsName){
+  async getDependencyPluginsObject(pluginsName){
     const pluginsApiObject = {};
     const promises = await this.getDependencyPlugins(pluginsName);
     this.dependencies.forEach((pluginName, index) => pluginsApiObject[pluginName] = promises[index]);
@@ -158,7 +158,7 @@ class Plugin extends G3WObject{
   };
 
 // method to get plugin dependency
-  getDependencyPlugin = function(pluginName) {
+  getDependencyPlugin(pluginName) {
     if (!PluginsRegistry.isTherePlugin(pluginName)) return Promise.reject({error:'no plugin'});
     return new Promise((resolve, reject) => {
       const plugin = PluginsRegistry.getPlugin(pluginName);
@@ -174,27 +174,27 @@ class Plugin extends G3WObject{
    * @param hook
    * @param loading
    */
-  setHookLoading = function({hook="tools", loading=false} = {}) {
+  setHookLoading({hook="tools", loading=false} = {}) {
     const service = this._services[hook];
     service.setLoading(loading);
   };
 
-  getHookService = function(hook="tools") {
+  getHookService(hook="tools") {
     return this._services[hook];
   };
 
-  addToolGroup = function({hook="tools", position:order, title:group} = {}) {
+  addToolGroup({hook="tools", position:order, title:group} = {}) {
     const service = this.getHookService(hook);
     service.addToolGroup(order, group);
   };
 
-  removeToolGroup = function({hook, group}={}){
+  removeToolGroup({hook, group}={}){
     const {title} = group;
     const service = this.getHookService(hook);
     service.removeToolGroup(title);
   };
 
-  addTools = function({hook="tools", action, html, offline=true, icon, name, type, options={}, loading=false, disabled=false, state={type:null, message:null}} = {}, groupTools) {
+  addTools({hook="tools", action, html, offline=true, icon, name, type, options={}, loading=false, disabled=false, state={type:null, message:null}} = {}, groupTools) {
     if (!action && !type) {
       this.removeToolGroup({hook, group:groupTools});
       return [];
@@ -220,12 +220,12 @@ class Plugin extends G3WObject{
     return tools;
   };
 
-  setToolState = function({id, state={type:null, message: null}}={}){
+  setToolState({id, state={type:null, message: null}}={}){
     const service = this._services[this._hook];
     service.setToolState({id, state});
   };
 
-  removeTools = function() {
+  removeTools() {
     const service = this._services[this._hook];
     service.removeTools();
   };
@@ -233,7 +233,7 @@ class Plugin extends G3WObject{
   /**
    * Method to create sibebar item component
    */
-  createSideBarComponent = function(vueComponentObject, options={}){
+  createSideBarComponent(vueComponentObject, options={}){
     const {
       id,
       title,
@@ -269,25 +269,25 @@ class Plugin extends G3WObject{
   };
 
 // unload (case change map)
-  unload  = function() {
+  unload() {
     this.service && this.service.clearAllEvents();
     this.emit('unload');
     //console.log('UNLOAD can be overwrite by plugin';
   };
 
 // load plugin
-  load = function() {
+  load() {
     //console.log('LOAD  need to be overwrite by plugin';
   };
 
-  addFontClass = function({name, className}){
+  addFontClass({name, className}){
     Vue.prototype.g3wtemplate.addFontClass({
       name,
       className
     });
   };
 
-  addFontClasses = function(fonClasses=[]){
+  addFontClasses(fonClasses=[]){
     fonClasses.forEach(fontClass=> this.addFontClass(fontClass));
   };
 };

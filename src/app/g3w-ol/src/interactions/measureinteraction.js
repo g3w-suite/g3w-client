@@ -74,7 +74,7 @@ class MeasureIteraction extends Draw {
     this.on('drawstart', this._drawStart);
     this.on('drawend', this._drawEnd);
   }
-  setDrawMessage = function(message) {
+  setDrawMessage(message) {
     this._helpMsg = message;
   };
 
