@@ -32,13 +32,9 @@
     "vue-cookie-law": "^1.13.3"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-remove-strict-mode": "0.0.2",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-stage-1": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "babelify": "^7.3.0",
+    "@babel/core": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "babelify": "^10.0.0",
     "browser-sync": "^2.27.10",
     "browserify": "^17.0.0",
     "core-js-latest": "npm:core-js@^3.22.8",
@@ -76,5 +72,12 @@
   "engines": {
     "node": ">=16.13.2",
     "npm": ">=8.1.2"
-  }
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    "plugins": []
+  },
+  "browserslist": "> 0.25%, not dead"
 }
