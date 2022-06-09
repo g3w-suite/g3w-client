@@ -144,4 +144,4 @@ class IframePluginService {
   }
 }
 
-export default new IframePluginService;
+export default new IframePluginService();

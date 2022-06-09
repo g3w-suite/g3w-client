@@ -3465,4 +3465,4 @@ const translations = {
   }
 };
 
-module.exports = translations;
+export default translations;

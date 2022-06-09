@@ -1,4 +1,4 @@
-const G3WObject = require('core/g3wobject');
+import G3WObject from './g3wobject';
 
 /*
  * RouterService based on  History.js (https://github.com/browserstate/history.js) e Crossroads (https://github.com/millermedeiros/crossroads.js)
@@ -184,4 +184,4 @@ class RouterService extends G3WObject {
 }
 
 
-export default new RouterService;
+export default new RouterService();

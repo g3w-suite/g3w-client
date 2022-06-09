@@ -1,6 +1,6 @@
 import utils from 'core/utils/utils';
 import _ from 'lodash';
-const {EventEmitter} = require('@billjs/event-emitter');
+import {EventEmitter} from '@billjs/event-emitter';
 
 /**
  * Base object to handle a setter and its listeners.

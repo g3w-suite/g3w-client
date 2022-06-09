@@ -198,7 +198,7 @@ class PluginsRegistry extends G3WObject{
   }
 }
 
-export default new PluginsRegistry
+export default new PluginsRegistry();
 
 
 

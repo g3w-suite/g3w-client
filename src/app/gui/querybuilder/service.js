@@ -209,4 +209,4 @@ class QueryBuilderService {
   add() {}
 }
 
-export default new QueryBuilderService;
+export default new QueryBuilderService();

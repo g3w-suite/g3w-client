@@ -15,4 +15,4 @@ class ClipboardService {
   };
 
 }
-module.exports = new ClipboardService;
+export default new ClipboardService();

@@ -15,7 +15,7 @@ const FieldType = {
   VUE: 'vue'
 };
 
-module.exports  = {
+export default {
   /**
    * Get Type field from field value
    * field : Object contain the value of the field

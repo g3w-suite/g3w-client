@@ -1,5 +1,5 @@
-const utils = require('./utils');
-const maphelpers = require('./map/maphelpers');
+import utils from './utils';
+import maphelpers from './map/maphelpers';
 
 (function (name, root, factory) {
   if (typeof define === 'function' && define.amd) define(factory);

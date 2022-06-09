@@ -631,4 +631,4 @@ class ApplicationService extends G3WObject {
 };
 
 
-export default new ApplicationService;
+export default new ApplicationService();
