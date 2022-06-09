@@ -7,7 +7,7 @@ import {createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, nee
 import {Observable, Overlay} from "ol";
 import {LineString, Polygon} from "ol/geom";
 
-class MeasureIteraction extends Draw{
+class MeasureIteraction extends Draw {
   constructor(options={}) {
     const geometryType = options.geometryType || 'LineString';
     const measureStyle = new Style({
@@ -78,7 +78,7 @@ class MeasureIteraction extends Draw{
     this._helpMsg = message;
   };
 
-  clear = function() {
+  clear() {
     this._layer.getSource().clear();
     this._clearMessagesAndListeners();
     if (this._map) {
@@ -91,7 +91,7 @@ class MeasureIteraction extends Draw{
     }
   };
 
-  _clearMessagesAndListeners = function() {
+  _clearMessagesAndListeners() {
     this._feature = null;
     // unset tooltip so that a new one can be created
     if (this._map) {
@@ -104,7 +104,7 @@ class MeasureIteraction extends Draw{
     }
   };
 
-  _removeLastPoint = function(event) {
+  _removeLastPoint(event) {
     const geom = this._feature.getGeometry();
     if (event.keyCode === 46) {
       if( geom instanceof Polygon && geom.getCoordinates()[0].length > 2) {
@@ -116,7 +116,7 @@ class MeasureIteraction extends Draw{
   };
 
 //drawStart function
-  _drawStart = function(evt) {
+  _drawStart(evt) {
     this._map = this.getMap();
     this._map.removeLayer(this._layer);
     this._feature = evt.feature;

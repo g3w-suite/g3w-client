@@ -163,7 +163,7 @@ class SearchService extends G3WObject {
    * Get return type
    */
 
-  getReturnType = function(){
+  getReturnType(){
     return this.return;
   };
 
@@ -171,13 +171,13 @@ class SearchService extends G3WObject {
    * Set return type
    */
 
-  setReturnType = function(returnType='data'){
+  setReturnType(returnType='data'){
     this.return = returnType;
     //set show only in case return === 'data'
     this.show = this.return === 'data';
   };
 
-  createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
+  createFieldsDependenciesAutocompleteParameter({fields=[], field, value}={}) {
     const dependendency = this.getCurrentFieldDependance(field);
     if (value !== undefined) {
       const fieldParam = utils.createSingleFieldParameter({
@@ -204,7 +204,7 @@ class SearchService extends G3WObject {
    * @param field (form input)
    * @returns {Promise<*[]>}
    */
-  getValuesFromField = function(field){
+  getValuesFromField(field){
     if (field.options.layer_id) return this.getValueRelationValues(field);
     else if (field.options.values.length) return this.getValueMapValues(field);
     else return this.getUniqueValuesFromField({
@@ -387,7 +387,7 @@ class SearchService extends G3WObject {
     return data;
   };
 
-  filterValidFormInputs = function(){
+  filterValidFormInputs(){
     return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
   };
 
@@ -395,14 +395,14 @@ class SearchService extends G3WObject {
    *
    * @returns {string|*|string}
    */
-  getSearchEndPoint = function(){
+  getSearchEndPoint(){
     return this.search_endpoint || this.searchLayer.getSearchEndPoint()
   };
 
   /*
   * type wms, vector (for vector api)
   * */
-  createFilter = function(search_endpoint=this.getSearchEndPoint()){
+  createFilter(search_endpoint=this.getSearchEndPoint()){
     const inputs = this.filterValidFormInputs();
     return utils.createFilterFormInputs({
       layer: this.searchLayers,
@@ -411,7 +411,7 @@ class SearchService extends G3WObject {
     })
   };
 
-  _run = function() {
+  _run() {
     this.doSearch();
   };
 
@@ -420,12 +420,12 @@ class SearchService extends G3WObject {
    * @param id
    * @param value
    */
-  changeInput = function({id, value} = {}) {
+  changeInput({id, value} = {}) {
     const input = this.state.forminputs.find(input => id == input.id);
     input.value = value;
   };
 
-  createQueryFilterFromConfig = function({filter}) {
+  createQueryFilterFromConfig({filter}) {
     let queryFilter;
     function createOperatorObject(inputObj) {
       for (const operator in inputObj) {
@@ -458,16 +458,16 @@ class SearchService extends G3WObject {
     return queryFilter;
   };
 
-  getFilterInputFromField = function(field){
+  getFilterInputFromField(field){
     return this.filter.find(input =>  input.attribute === field);
   };
 
-  _getExpressionOperatorFromInput = function(field) {
+  _getExpressionOperatorFromInput(field) {
     const dependanceCascadeField = this.getFilterInputFromField(field);
     return dependanceCascadeField ? dependanceCascadeField.op : null;
   };
 
-  _getCascadeDependanciesFilter = function(field, dependencies=[]) {
+  _getCascadeDependanciesFilter(field, dependencies=[]) {
     const dependanceCascadeField = this.getFilterInputFromField(field);
     const dependance = dependanceCascadeField.input.options.dependance;
     if (dependance) {
@@ -477,7 +477,7 @@ class SearchService extends G3WObject {
     return dependencies
   };
 
-  getCurrentFieldDependance = function(field) {
+  getCurrentFieldDependance(field) {
     const dependance = this.inputdependance[field];
     return dependance && this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE && {
       [dependance]: this.cachedependencies[dependance]._currentValue
@@ -485,13 +485,13 @@ class SearchService extends G3WObject {
   };
 
 // check the current value of dependance
-  getDependanceCurrentValue = function(field) {
+  getDependanceCurrentValue(field) {
     const dependance = this.inputdependance[field];
     return dependance ? this.cachedependencies[dependance]._currentValue : this.state.forminputs.find(forminput => forminput.attribute === field).value;
   };
 
 // fill all dependencies inputs based on value
-  fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}) {
+  fillDependencyInputs({field, subscribers=[], value=ALLVALUE}={}) {
     const isRoot = this.inputdependance[field] === undefined;
     //check id inpute father is valid to search on subscribers
     const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
@@ -629,17 +629,17 @@ class SearchService extends G3WObject {
     })
   };
 
-  getDependencies = function(field){
+  getDependencies(field){
     return this.inputdependencies[field] || [];
   };
 
-  setInputDependencies = function({master, slave}={}) {
+  setInputDependencies({master, slave}={}) {
     this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
     this.inputdependencies[master].push(slave);
   };
 
 //set key value for select
-  valuesToKeysValues = function(values){
+  valuesToKeysValues(values){
     if (values.length) {
       const type = utils.toRawType(values[0]);
       values = type !== 'Object' ? values.map(value =>({
@@ -651,7 +651,7 @@ class SearchService extends G3WObject {
   };
 
 
-  createQueryFilterObject = function({ogcService='wms', filter={}}={}) {
+  createQueryFilterObject({ogcService='wms', filter={}}={}) {
     const info = this.getInfoFromLayer(ogcService);
     Object.assign(info, {
       ogcService,
@@ -660,7 +660,7 @@ class SearchService extends G3WObject {
     return info;
   };
 
-  getInfoFromLayer = function(ogcService) {
+  getInfoFromLayer(ogcService) {
     const queryUrl = ogcService === 'wfs' ? this.searchLayer.getProject().getWmsUrl() : this.searchLayer.getQueryUrl();
     return {
       url: queryUrl,
@@ -671,15 +671,15 @@ class SearchService extends G3WObject {
     };
   };
 
-  setSearchLayer = function(layer) {
+  setSearchLayer(layer) {
     this.searchLayer = layer;
   };
 
-  getSearchLayer = function() {
+  getSearchLayer() {
     return this.searchLayer
   };
 
-  clear = function() {
+  clear() {
     this.state = null;
   };
 

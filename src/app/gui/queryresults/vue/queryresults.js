@@ -1,7 +1,6 @@
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
 import InfoFormats from './components/actiontools/infoformats.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
 import utils from 'core/utils/utils';
 import {fieldsMixin}  from 'gui/vue/vue.mixins';
 import Component  from 'gui/vue/component';
@@ -347,34 +346,35 @@ const vueComponentOptions = {
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultsComponent(options={}) {
-  base(this, options);
-  this.id = "queryresults";
-  this.title = "Query Results";
-  this._service = new QueryResultsService();
-  this.setInternalComponent = function() {
+class QueryResultsComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this.id = "queryresults";
+    this.title = "Query Results";
+    this._service = new QueryResultsService();
+    this._service.onafter('setLayersData', async () => {
+      !this.internalComponent && this.setInternalComponent();
+      await this.internalComponent.$nextTick();
+    });
+  }
+
+
+  setInternalComponent() {
     this.internalComponent = new InternalComponent({
       queryResultsService: this._service
     });
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
 
-  this.getElement = function() {
+  getElement() {
     if (this.internalComponent) return this.internalComponent.$el;
   };
 
-  this._service.onafter('setLayersData', async () => {
-    !this.internalComponent && this.setInternalComponent();
-    await this.internalComponent.$nextTick();
-  });
-
-  this.layout = function(width,height) {};
-  this.unmount = function() {
+  layout(width,height) {};
+  unmount() {
     this.getService().closeComponent();
-    return base(this, 'unmount')
+    return super.unmount();
   }
 }
-
-
 
 export default  QueryResultsComponent;

@@ -92,7 +92,7 @@ class TaskService {
    *   taskId: taskId that is running
    * }
    */
-  stopTask = function(options={}){
+  stopTask(options={}){
     const { task_id } = options;
     const task = this.tasks.find(task => task.task_id === task_id);
     if (task)clearInterval(task.intervalId);
@@ -101,7 +101,7 @@ class TaskService {
   /**
    * clare all task
    */
-  clear = function(){
+  clear(){
     this.tasks.forEach(({ taskId }) =>{
       this.stopTask({
         taskId
