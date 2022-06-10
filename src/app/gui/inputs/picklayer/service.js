@@ -1,5 +1,5 @@
-import PickFeatureInteraction  from '/g3w-ol/src/interactions/pickfeatureinteraction';
-import PickCoordinatesInteraction  from '/g3w-ol/src/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction  from 'g3w-ol/src/interactions/pickfeatureinteraction';
+import PickCoordinatesInteraction  from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
 import MapCatalogLayersRegistry  from 'core/map/maplayersstoresregistry';
 import geoutils from 'core/utils/geo';
 import GUI  from 'gui/gui';

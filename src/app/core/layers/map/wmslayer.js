@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 import MapLayer from './maplayer';
-import RasterLayers from '/g3w-ol/src/layers/rasters';
+import RasterLayers from 'g3w-ol/src/layers/rasters';
 
 class WMSLayer extends MapLayer{
   constructor(options={}, extraParams={}, method='GET') {

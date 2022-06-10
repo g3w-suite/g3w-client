@@ -1,4 +1,4 @@
-import DEVCONFIG from '../config/dev'
+import DEVCONFIG from 'config/dev'
 import ProjectsRegistry  from 'core/project/projectsregistry';
 import ApplicationService  from 'core/applicationservice';
 // import GUI  from 'gui/gui';

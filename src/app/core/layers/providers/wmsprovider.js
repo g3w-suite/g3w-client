@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import {QUERY_POINT_TOLERANCE} from '../../../constant';
 import utils from 'core/utils/utils';
-import geoutils  from '/g3w-ol/src/utils/utils';
+import geoutils  from 'g3w-ol/src/utils/utils';
 import Provider  from 'core/layers/providers/provider';
 import {Polygon, Circle} from "ol/geom";
 import {WKT} from "ol/format";

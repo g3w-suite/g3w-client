@@ -1,5 +1,5 @@
 import MapLayer from './maplayer';
-import RasterLayers from '/g3w-ol/src/layers/rasters';
+import RasterLayers from 'g3w-ol/src/layers/rasters';
 
 class XYZLayer extends MapLayer{
   constructor(options={}, method="GET") {

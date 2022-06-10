@@ -1,4 +1,4 @@
-import {G3W_FID} from '/constant';
+import {G3W_FID} from 'constant';
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
 import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';

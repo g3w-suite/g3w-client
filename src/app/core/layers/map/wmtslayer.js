@@ -1,5 +1,5 @@
 import MapLayer  from './maplayer';
-import RasterLayers  from '/g3w-ol/src/layers/rasters';
+import RasterLayers  from 'g3w-ol/src/layers/rasters';
 
 class WMSTLayer extends MapLayer {
   constructor(options={}, extraParams={}, method='GET') {

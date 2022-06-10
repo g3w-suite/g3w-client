@@ -1,4 +1,4 @@
-import {MAP_SETTINGS} from '/constant';
+import {MAP_SETTINGS} from 'constant';
 import wms from "../wms/vue/wms";
 import {t} from 'core/i18n/i18n.service';
 import WMSLayer from 'core/layers/map/wmslayer';
@@ -11,8 +11,8 @@ import ApplicationService  from 'core/applicationservice';
 import ProjectsRegistry  from 'core/project/projectsregistry';
 import MapLayersStoreRegistry  from 'core/map/maplayersstoresregistry';
 import WFSProvider  from 'core/layers/providers/wfsprovider';
-import MapHelper  from '/g3w-ol/src/map/maphelper';
-import g3wolutils from '/g3w-ol/src/utils/utils';
+import MapHelper  from 'g3w-ol/src/map/maphelpers';
+import g3wolutils from 'g3w-ol/src/utils/utils';
 import ControlsFactory  from 'gui/map/control/factory';
 import StreetViewService  from 'gui/streetview/streetviewservice';
 import ControlsRegistry  from 'gui/map/control/registry';

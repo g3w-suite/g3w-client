@@ -1,5 +1,5 @@
-import Projections from '/g3w-ol/src/projection/projections';
-import g3w_ol_utils from '/g3w-ol/src/utils/utils';
+import Projections from 'g3w-ol/src/projection/projections';
+import g3w_ol_utils from 'g3w-ol/src/utils/utils';
 import utils from 'core/utils/utils';
 import geoutils from 'core/utils/geo';
 import GUI  from 'gui/gui';

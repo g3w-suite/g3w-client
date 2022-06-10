@@ -1,5 +1,5 @@
 import WMSLAYER  from './wmslayer';
-import RasterLayers from '/g3w-ol/src/layers/rasters';
+import RasterLayers from 'g3w-ol/src/layers/rasters';
 
 class ARCGISMAPSERVERLayer extends WMSLAYER{
   constructor(options={}, extraParams={}) {

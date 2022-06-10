@@ -1,4 +1,4 @@
-import ApplicationState from '../../..core/applicationstate';
+import ApplicationState from 'core/applicationstate';
 import Component  from 'gui/vue/component';
 import AddLayerComponent  from './components/addlayer';
 import MapService  from '../mapservice';

@@ -6,7 +6,7 @@ import GUI  from 'gui/gui';
 import G3WObject from 'core/g3wobject';
 import ProjectsRegistry  from 'core/project/projectsregistry';
 import PrintService  from 'core/print/printservice';
-import {getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees}  from '/g3w-ol/src/utils/utils';
+import {getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees}  from 'g3w-ol/src/utils/utils';
 import {DEVICE_PIXEL_RATIO} from "ol/has";
 import {unByKey} from "ol/Observable";
 import PrintPage  from './vue/printpage';

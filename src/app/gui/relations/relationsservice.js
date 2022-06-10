@@ -1,4 +1,4 @@
-import {G3W_FID} from '/constant';
+import {G3W_FID} from 'constant';
 import G3WObject from 'core/g3wobject';
 import GUI  from 'gui/gui';
 import ApplicationService  from 'core/applicationservice';

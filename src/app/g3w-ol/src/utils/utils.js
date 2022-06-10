@@ -1,4 +1,4 @@
-import ApplicationState from "../../..core/applicationstate";
+import ApplicationState from "core/applicationstate";
 import Geometry  from 'core/geometry/geometry';
 import {Vector as VectorLayer} from "ol/layer";
 import {Vector as VectorSource} from "ol/source";

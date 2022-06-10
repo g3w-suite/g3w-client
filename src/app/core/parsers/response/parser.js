@@ -1,7 +1,7 @@
 import {G3W_FID} from 'constant';
 import {t}  from 'core/i18n/i18n.service';
 import vectorParser  from '../vector/parser';
-import olgeoutils  from '/g3w-ol/src/utils/utils';
+import olgeoutils  from 'g3w-ol/src/utils/utils';
 import geoutils  from 'core/utils/geo';
 import {WMSGetFeatureInfo, GeoJSON} from "ol/format";
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
