@@ -70,9 +70,9 @@ function setNODE_ENV() {
 
 setNODE_ENV();
 
-gulp.task('clean',           () => del(['dist/**/*'], { force:true }));
-gulp.task('clean_vendor_js', () => del([`${g3w.clientFolder}/js/vendor.node_modules.min.js`], {force:true}));
-gulp.task('cleanup',         () => del([`${g3w.clientFolder}/js/app.js`, `${g3w.clientFolder}/css/app.css`], { force:true }));
+gulp.task('clean',        () => del(['dist/**/*'], { force: true }));
+gulp.task('clean:vendor', () => del([`${g3w.clientFolder}/js/vendor.node_modules.min.js`], {force: true}));
+gulp.task('clean:client', () => del([`${g3w.clientFolder}/js/app.js`, `${g3w.clientFolder}/css/app.css`], { force: true }));
 
 /**
  * Build minified hashed versions of js and css files in order to avoid server cache
@@ -375,8 +375,8 @@ gulp.task('dist', function(done) {
   production = true;
   setNODE_ENV();
 
-  if (build_all) gulp.series('clean', 'browserify', 'html', 'concatenate_vendor_js', 'clean_vendor_js', 'sethasvalues', 'html:compiletemplate', 'cleanup', done);
-  else gulp.series('clean', 'browserify', 'html', 'sethasvalues', 'html:compiletemplate', 'cleanup', done);
+  if (build_all) gulp.series('clean', 'browserify', 'html', 'concatenate_vendor_js', 'clean:vendor', 'sethasvalues', 'html:compiletemplate', 'cleanup', done);
+  else gulp.series('clean', 'browserify', 'html', 'sethasvalues', 'html:compiletemplate', 'clean:client', done);
 });
 
 gulp.task('g3w-admin-plugins', function() {
