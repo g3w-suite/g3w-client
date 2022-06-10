@@ -20,7 +20,7 @@ class Session extends G3WObject {
         stop() {
           this._stop();
         },
-        saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
+        saveChangesOnServer(commitItems) {} // hook to get informed that are saved on server
       }
     });
 
@@ -54,7 +54,7 @@ class Session extends G3WObject {
     SessionsRegistry.register(this);
   };
 
-  unregister(){
+  unregister() {
     SessionsRegistry.unregister(this.getId());
   };
 
@@ -348,15 +348,15 @@ class Session extends G3WObject {
    * @param layerId
    * @param commitItems
    */
-  set3DGeometryType({layerId=this.getId(), commitItems}={}){
+  set3DGeometryType({layerId=this.getId(), commitItems}={}) {
     const {relations} = commitItems;
     const editingLayer = MapLayersStoreRegistry.getLayerById(layerId).getEditingLayer();
     // check id there is a editing layer and if is a vector layer
-    if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
+    if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR) {
       // get Geometry type layer
       const geometryType = editingLayer.getGeometryType();
       // if is a 3D layer i set on geoJON before send it to server
-      if (is3DGeometry(geometryType)){
+      if (is3DGeometry(geometryType)) {
         ['add', 'update'].forEach(action =>{
           commitItems[action].forEach(feature => feature.geometry.type = geometryType)
         })

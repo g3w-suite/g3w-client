@@ -79,11 +79,11 @@ class Relation extends G3WObject {
    * For editing purpose
    */
 
-  setLoading(bool=false){
+  setLoading(bool=false) {
     this.state.loading = bool;
   };
 
-  isLoading(){
+  isLoading() {
     return this.state.loading;
   };
 

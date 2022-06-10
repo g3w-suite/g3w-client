@@ -6,12 +6,12 @@ class OnClickControl extends Control {
     this._onclick = options.onclick;
   }
 
-  overwriteOnClickEvent(clickHandler){
+  overwriteOnClickEvent(clickHandler) {
     this._originalonlick = this._originalonlick || this._onclick;
     this._onclick = clickHandler;
   };
 
-  resetOriginalOnClickEvent(){
+  resetOriginalOnClickEvent() {
     this._onclick = this._originalonlick || this._onclick;
     this._originalonlick = null;
   };

@@ -11,19 +11,19 @@ class Task extends G3WObject {
    * Set and get task usefult properties used to run
    */
 
-  setInputs(inputs){
+  setInputs(inputs) {
     this.inputs = inputs;
   };
 
-  getInputs(){
+  getInputs() {
     return this.inputs;
   };
 
-  setContext(context){
+  setContext(context) {
     return this.context = context;
   };
 
-  getContext(){
+  getContext() {
     return this.context;
   };
 

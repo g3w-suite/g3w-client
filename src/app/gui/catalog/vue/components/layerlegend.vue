@@ -20,14 +20,14 @@
         type: Object
       }
     },
-    data(){
+    data() {
       return {}
     },
     computed:{
-      legend(){
+      legend() {
         return this.layer.legend;
       },
-      show(){
+      show() {
         return this.layer.visible && this.legend.show;
       }
     },
@@ -39,7 +39,7 @@
       async urlLoaded() {
         this.legend.loading = false;
       },
-      handlerChangeLegend(options={}){
+      handlerChangeLegend(options={}) {
         const { layerId } = options;
         layerId === this.layer.id && this.getLegendSrc(this.layer);
       },

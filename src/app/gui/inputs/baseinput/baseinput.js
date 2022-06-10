@@ -8,16 +8,16 @@ export const BaseInputMixin = {
     editable() {
       return this.state.editable;
     },
-    showhelpicon(){
+    showhelpicon() {
       return this.state.help && this.state.help.message.trim();
     }
   },
   methods: {
-    showHideHelp(){
+    showHideHelp() {
       this.state.help.visible = !this.state.help.visible
     },
     // used to text input to listen mobile changes
-    mobileChange(event){
+    mobileChange(event) {
       this.state.value = event.target.value;
       this.change();
     },

@@ -29,7 +29,7 @@ class WMSLayer extends MapLayer{
     return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
   };
 
-  getLayerConfigs(){
+  getLayerConfigs() {
     return this.layers;
   };
 
@@ -44,7 +44,7 @@ class WMSLayer extends MapLayer{
     })
   };
 
-  isVisible(){
+  isVisible() {
     return this._getVisibleLayers().length > 0;
   };
 
@@ -102,7 +102,7 @@ class WMSLayer extends MapLayer{
     } else this._olLayer.setVisible(false);
   };
 
-  setupCustomMapParamsToLegendUrl(params={}){
+  setupCustomMapParamsToLegendUrl(params={}) {
     if (this.layer) this.layer.setMapParamstoLegendUrl(params);
     else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
   };

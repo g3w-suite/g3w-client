@@ -22,9 +22,9 @@ export default {
    * @param field
    * @returns {string}
    */
-  getType(field){
+  getType(field) {
     let type = field.type;
-    if (type !== 'vue'){
+    if (type !== 'vue') {
       const fieldValue = field.value;
       const value = fieldValue && utils.toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) type = FieldType.SIMPLE;
@@ -42,19 +42,19 @@ export default {
     }
     return `${type}_field`;
   },
-  isSimple(field){
+  isSimple(field) {
     return this.getType(field) === `${FieldType.SIMPLE}_field`;
   },
-  isLink(field){
+  isLink(field) {
     return this.getType(field) === `${FieldType.LINK}_field`;
   },
-  isImage(field){
+  isImage(field) {
     return this.getType(field) === `${FieldType.IMAGE}_field`;
   },
-  isPhoto(field){
+  isPhoto(field) {
     return this.getType(field) === `${FieldType.PHOTO}_field`;
   },
-  isVue(field){
+  isVue(field) {
     return this.getType(field) === `${FieldType.VUE}_field`;
   },
   /**
@@ -62,14 +62,14 @@ export default {
    * @param type
    * @param field
    */
-  add({type, field}){
+  add({type, field}) {
     Fields[type] = field;
   },
   /**
    * Remove field from Fields list
    * @param type
    */
-  remove(type){
+  remove(type) {
     delete Fields[type];
   },
   /**
@@ -77,7 +77,7 @@ export default {
    * @param layerId
    * @param field
    */
-  changeConfigFieldType({layerId, field={}}){
+  changeConfigFieldType({layerId, field={}}) {
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.changeConfigFieldType(field);
   },
@@ -86,7 +86,7 @@ export default {
    * @param layerId
    * @param field
    */
-  resetConfigFieldType({layerId, field={}}){
+  resetConfigFieldType({layerId, field={}}) {
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.resetConfigField(field);
   }

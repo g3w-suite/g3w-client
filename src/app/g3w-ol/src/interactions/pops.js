@@ -1,7 +1,7 @@
 import {Overlay} from "ol";
 /* POP UP SECTION*/
 
-_gis3wlib._interaction.prototype.addPopup = function(element){
+_gis3wlib._interaction.prototype.addPopup = function(element) {
   this.popup = new Overlay({
     element: element,
     autoPan: true,
@@ -13,8 +13,8 @@ _gis3wlib._interaction.prototype.addPopup = function(element){
 
 };
 
-_gis3wlib._interaction.prototype.closePopup = function(){
-  if (this.popup){
+_gis3wlib._interaction.prototype.closePopup = function() {
+  if (this.popup) {
     this.popup.setPosition(undefined);
     this.popup.getElement().blur();
   }

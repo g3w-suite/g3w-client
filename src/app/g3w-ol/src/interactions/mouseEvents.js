@@ -1,18 +1,18 @@
-//gis3wlib._interaction.prototype.addIdentify = function(callback){
+//gis3wlib._interaction.prototype.addIdentify = function(callback) {
 //        this.identifyCtx.callback = callback;
 //        var self = this;
-//        this.map.on('singleclick',function(evt){
-//            if (self.identifyCtx.layers.length > 0){
+//        this.map.on('singleclick',function(evt) {
+//            if (self.identifyCtx.layers.length > 0) {
 //                self.identify(evt);
 //            }
 //        })
 //};
 //
-//gis3wlib._interaction.prototype.setIdentifyLayers = function(layers){
+//gis3wlib._interaction.prototype.setIdentifyLayers = function(layers) {
 //        this.identifyCtx.layers = layers;
 //};
 //
-//gis3wlib._interaction.prototype.identify = function(evt){
+//gis3wlib._interaction.prototype.identify = function(evt) {
 //        var self = this;
 //        this.closePopup();
 //        var layer = this.identifyCtx.layers[0];
@@ -28,15 +28,15 @@
 //            );
 //            var urlParams = url.substring(url.indexOf('?'),url.length);
 //
-//            $.get("/cgi-bin/qgis_mapserv.fcgi"+urlParams).done(function(data){
+//            $.get("/cgi-bin/qgis_mapserv.fcgi"+urlParams).done(function(data) {
 //                var gmlf = new ol.format.GML2();
 //                var feats = gmlf.readFeatures(data);
-//                if(feats.length>0){
+//                if(feats.length>0) {
 //                    var feat = feats[0];
 //                    var resultContent = feat.getProperties();
 //                    var geometry_ = feat.getGeometry();
 //                    var geometry;
-//                    if(geometry_ instanceof ol.geom.Point){
+//                    if(geometry_ instanceof ol.geom.Point) {
 //                        geometry = geometry_;
 //                    }
 //                    else{

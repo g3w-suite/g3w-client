@@ -90,17 +90,17 @@
       }
     },
     computed: {
-      required_fields(){
+      required_fields() {
         return this.contenttype === 'editing' && this.fields.filter(field => field.validate.required).map(field => field.name);
       },
-      show(){
+      show() {
         return this.tabs.reduce((accumulator, tab) =>{
           return accumulator || (tab.visible === undefined || !!tab.visible)
         }, false)
       }
     },
     methods: {
-      async setVisibility(tab){
+      async setVisibility(tab) {
         const visible = await TabService.getVisibility({
           qgs_layer_id: this.layerid,
           expression: tab.visibility_expression.expression,
@@ -110,7 +110,7 @@
         tab.visible =  visible;
       },
       // method to set required tab for editing
-      setEditingRequireTab(obj){
+      setEditingRequireTab(obj) {
         let required = false;
         if (obj.nodes === undefined) required = this.required_fields.indexOf(obj.field_name) !== -1;
         else required = !!obj.nodes.find(node => this.setEditingRequireTab(node));
@@ -132,7 +132,7 @@
         }
         if (this.contenttype === 'editing') {
           if (tab.required === undefined) tab.required = this.setEditingRequireTab(tab);
-          if (tab.visibility_expression){
+          if (tab.visibility_expression) {
             tab.visibility_expression.referenced_columns.forEach(column =>{
               const field = this.fields.find(field => field.name === column);
               this.unwatch.push(this.$watch(()=> field.value, async value=>{
@@ -145,12 +145,12 @@
         this.ids.push(`tab_${utils.getUniqueDomId()}`);
       }
       this.root_tabs = [];
-      if (!this.group){
+      if (!this.group) {
         const nodes = [];
         this.tabs.forEach(tab_node =>{
           if (tab_node.nodes) nodes.push(tab_node);
           else {
-            if (nodes.length){
+            if (nodes.length) {
               this.root_tabs.push([...nodes]);
               nodes.splice(0);
             } this.root_tabs.push({nodes:[tab_node]});

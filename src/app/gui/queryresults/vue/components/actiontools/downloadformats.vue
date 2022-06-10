@@ -15,7 +15,7 @@
 <script>
   export default {
     name: "downloadformats",
-    data(){
+    data() {
       const download_format = this.config.downloads[0].format;
       return {
         download_format
@@ -37,12 +37,12 @@
       },
     },
     methods: {
-      async download(){
+      async download() {
         try {
           const download = this.config.downloads.find(action => action.format === this.download_format);
           await download.cbk(this.layer, this.feature ? this.feature : this.layer.features, download, this.featureIndex);
         }
-        catch(err){}
+        catch(err) {}
       }
     }
   }

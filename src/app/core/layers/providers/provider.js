@@ -57,7 +57,7 @@ class Provider extends G3WObject {
     })
   };
 
-  getQueryResponseTimeoutKey({layers=[this._layer], resolve, query}=[]){
+  getQueryResponseTimeoutKey({layers=[this._layer], resolve, query}=[]) {
     /**
      * set timeout of a query
      * @type {number}

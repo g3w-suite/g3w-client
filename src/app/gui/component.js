@@ -15,10 +15,10 @@ class Component extends G3WObject {
           this.state.visible = bool;
           this._setVisible(bool);
         },
-        setLoading(bool=false){
+        setLoading(bool=false) {
           this.state.loading = bool;
         },
-        setDisabled(bool=false){
+        setDisabled(bool=false) {
           this.state.disabled = bool;
         },
         reload() {
@@ -93,7 +93,7 @@ class Component extends G3WObject {
     return this.state.open;
   };
 
-  closeWhenViewportContentIsOpen(){
+  closeWhenViewportContentIsOpen() {
     return this.getOpen() && this.state.closewhenshowviewportcontent;
   };
 
@@ -117,7 +117,7 @@ class Component extends G3WObject {
     this._service = service;
   };
 
-  handleEventsComponent(){
+  handleEventsComponent() {
     const {open, visible} = this.events;
     if (open) {
       const {when="after", cb=()=>{}, guiEvents=[]} = open;
@@ -251,7 +251,7 @@ class Component extends G3WObject {
 
   destroy() {};
 
-  click(){};
+  click() {};
 
   // hook function to show componet
   show() {};

@@ -10,7 +10,7 @@ class BaseIframeService extends G3WObject{
     this.ready = false;
   };
 
-  init(){
+  init() {
     //overwrite each service
   }
 
@@ -36,7 +36,7 @@ class BaseIframeService extends G3WObject{
    * @returns Array oa qgs_layer_id strings
    * @private
    */
-  getQgsLayerId({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}){
+  getQgsLayerId({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}) {
     return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : noValue;
   };
 
@@ -44,7 +44,7 @@ class BaseIframeService extends G3WObject{
    * Method to getFeature from DataProvider
    * @private
    */
-  async searchFeature({layer, feature}){
+  async searchFeature({layer, feature}) {
     const search_endpoint = this.project.getSearchEndPoint();
     const {field, value} = feature;
     const { data=[] } = await DataRouterService.getData('search:features', {
@@ -71,7 +71,7 @@ class BaseIframeService extends G3WObject{
    * @param highlight
    * @returns {Promise<{qgs_layer_id: null, features: [], found: boolean}>}
    */
-  async findFeaturesWithGeometry({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
+  async findFeaturesWithGeometry({qgs_layer_id=[], feature, zoom=false, highlight=false}={}) {
     const response = {
       found: false,
       features: [],
@@ -98,7 +98,7 @@ class BaseIframeService extends G3WObject{
           }
           else i++;
         } else i++;
-      } catch(err){i++}
+      } catch(err) {i++}
     }
     // in case of no response zoom too initial extent
     !response.found && this.mapService.zoomToProjectInitExtent();
@@ -110,11 +110,11 @@ class BaseIframeService extends G3WObject{
    * Set layer function
    * @param layers
    */
-  setLayers(layers=[]){
+  setLayers(layers=[]) {
     layers = layers;
   };
 
-  getLayers(){
+  getLayers() {
     return layers;
   };
 
@@ -122,11 +122,11 @@ class BaseIframeService extends G3WObject{
    * Method to set ready the service
    * @param bool
    */
-  setReady(bool=false){
+  setReady(bool=false) {
     this.ready = bool;
   };
 
-  getReady(){
+  getReady() {
     return this.ready;
   };
 
@@ -134,12 +134,12 @@ class BaseIframeService extends G3WObject{
    * Method overwrite single service: Usefult to sto eventually running action
    * * @returns {Promise<void>}
    */
-  async stop(){};
+  async stop() {};
 
   /**
    * Overwrite each single service
    */
-  clear(){
+  clear() {
     //overwrite single service
   };
 

@@ -527,7 +527,7 @@ function NominatimControl(options={}) {
   const containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
   const nominatimVueContainer = Vue.extend({
     functional: true,
-    render(h){
+    render(h) {
       return h('div', {class: {[containerClass]: true}}, [
         h('div', {
           class: {
@@ -768,7 +768,7 @@ function NominatimControl(options={}) {
             res_ && this$1.listenMapClick();
             resolve(res_ ? res_ : []);
           })
-          .fail(function(error){
+          .fail(function(error) {
             utils.removeClass(this$1.els.reset, klasses$1.spin);
             const li = utils.createElement(
               'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
@@ -798,7 +798,7 @@ function NominatimControl(options={}) {
       const noresults = this.options.noresults;
       const elementVue = Vue.extend({
         functional: true,
-        render(h){
+        render(h) {
           return h('li', {
             class: {
               'nominatim-noresult': true

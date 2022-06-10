@@ -49,7 +49,7 @@ class MapService extends G3WObject {
   constructor(options={}) {
     super({
       setters: {
-        setupControls(){
+        setupControls() {
           return this._setupControls()
         },
         addHideMap({ratio, layers=[], mainview=false, switchable=false} = {}) {
@@ -86,8 +86,8 @@ class MapService extends G3WObject {
           this.emit('viewerset');
         },
         controlClick(mapcontrol, info={}) {},
-        loadExternalLayer(layer){}, // used in general to alert exteexternal layer is  load
-        unloadExternalLayer(layer){}
+        loadExternalLayer(layer) {}, // used in general to alert exteexternal layer is  load
+        unloadExternalLayer(layer) {}
       },
       debounces: {
         setupCustomMapParamsToLegendUrl: {
@@ -215,7 +215,7 @@ class MapService extends G3WObject {
 
     this._decrementLoaders = () => {
       this._howManyAreLoading -= 1;
-      if (this._howManyAreLoading === 0){
+      if (this._howManyAreLoading === 0) {
         this.emit('loadend');
         GUI.hideSpinner('maploadspinner');
       }
@@ -305,7 +305,7 @@ class MapService extends G3WObject {
 
   }
 
-  setUpMapOlEvents(){
+  setUpMapOlEvents() {
     const dynamicLegend = this.project.getContextBaseLegend();
     // set change resolution
     this._keyEvents.ol.forEach(keyEvent => unByKey(keyEvent));
@@ -347,7 +347,7 @@ class MapService extends G3WObject {
     })
   };
 
-  showMapSpinner(){
+  showMapSpinner() {
     GUI.showSpinner({
       container: $('#map-spinner'),
       id: 'maploadspinner',
@@ -355,7 +355,7 @@ class MapService extends G3WObject {
     });
   };
 
-  hideMapSpinner(){
+  hideMapSpinner() {
     GUI.hideSpinner('maploadspinner')
   };
 
@@ -395,7 +395,7 @@ class MapService extends G3WObject {
   removeHideMap(id) {
     let index;
     for (let i = 0; i < this.state.hidemaps.length; i++) {
-      if (id === this.state.hidemaps[i].id){
+      if (id === this.state.hidemaps[i].id) {
         index = i;
         break;
       }
@@ -430,7 +430,7 @@ class MapService extends G3WObject {
     sameLayers = sameLayers || false;
   };
 
-  setLayersExtraParams(params,update){
+  setLayersExtraParams(params,update) {
     this.layersExtraParams = _.assign(this.layersExtraParams, params);
     this.emit('extraParamsSet',params,update);
   };
@@ -454,7 +454,7 @@ class MapService extends G3WObject {
     return this.project.getProjection();
   };
 
-  isMapHidden(){
+  isMapHidden() {
     return this.state.hidden;
   };
 
@@ -466,11 +466,11 @@ class MapService extends G3WObject {
     return this.getProjection().getCode();
   };
 
-  getViewerElement(){
+  getViewerElement() {
     return this.viewer.map.getTargetElement();
   };
 
-  getViewport(){
+  getViewport() {
     return this.viewer.map.getViewport();
   };
 
@@ -605,11 +605,11 @@ class MapService extends G3WObject {
   };
 
 
-  addScaleLineUnits(units=[]){
+  addScaleLineUnits(units=[]) {
     units.forEach(unit => this.state.mapunits.push(unit));
   };
 
-  changeScaleLineUnit(unit){
+  changeScaleLineUnit(unit) {
     const scalelinecontrol = this.getMapControlByType({
       type: 'scaleline'
     });
@@ -620,7 +620,7 @@ class MapService extends G3WObject {
     this.emit('addexternallayer');
   };
 
-  _checkMapControls(){
+  _checkMapControls() {
     this._changeMapMapControls.forEach(({control, getLayers}) => {
       const layers = getLayers();
       control.change(layers);
@@ -849,7 +849,7 @@ class MapService extends G3WObject {
                         coordinates
                       },
                       outputs: {
-                        show({data=[], query}){
+                        show({data=[], query}) {
                           const show = data.length === 0;
                           // set coordinates to null to avoid that externalvector added to query result
                           // response to coordinates
@@ -871,14 +871,14 @@ class MapService extends G3WObject {
                           multilayers: this.project.isQueryMultiLayers(controlType)
                         },
                         outputs: {
-                          show({error=false}){
+                          show({error=false}) {
                             return !error;
                           }
                         }
                       });
                       data.length && map.getView().setCenter(coordinates);
                     }
-                  } catch(err){
+                  } catch(err) {
                     console.log(err)
                   }
                 });
@@ -947,7 +947,7 @@ class MapService extends G3WObject {
                       const center = getCenter(bbox);
                       this.getMap().getView().setCenter(center);
                     }
-                  } catch(err){
+                  } catch(err) {
                     console.log(err)
                   }
                 });
@@ -1022,7 +1022,7 @@ class MapService extends G3WObject {
                     });
                     const view = new View(viewOptions);
                     const mainView = this.getMap().getView();
-                    view.on('change:center', function(){
+                    view.on('change:center', function() {
                       const currentCenter = this.getCenter();
                       const center = mainView.constrainCenter(currentCenter);
                       center[0] !== currentCenter[0] || center[1] !== currentCenter[1] && view.setCenter(center);
@@ -1123,7 +1123,7 @@ class MapService extends G3WObject {
   /**
    *  Set ZIndex layer from fa stack
    */
-  setZIndexLayer({layer, zindex=map.getLayers().getLength()}={}){
+  setZIndexLayer({layer, zindex=map.getLayers().getLength()}={}) {
     layer && layer.setZIndex(zindex);
   };
 
@@ -1131,11 +1131,11 @@ class MapService extends G3WObject {
    *
    * Get map stack layer position
    */
-  getLayerZindex(layer){
+  getLayerZindex(layer) {
     return layer && layer.getZIndex();
   };
 
-  getCenter(){
+  getCenter() {
     const map = this.getMap();
     return map.getView().getCenter();
   };
@@ -1144,9 +1144,9 @@ class MapService extends G3WObject {
    *
    *method to zoom to feature
    */
-  zoomToFid = async function(zoom_to_fid='', separator='|'){
+  zoomToFid = async function(zoom_to_fid='', separator='|') {
     const [layerId, fid] = zoom_to_fid.split(separator);
-    if (layerId !== undefined && fid !== undefined){
+    if (layerId !== undefined && fid !== undefined) {
       const layer = this.project.getLayerById(layerId);
       const {data=[]}= await DataRouterService.getData('search:fids', {
         inputs: {
@@ -1156,7 +1156,7 @@ class MapService extends G3WObject {
         outputs: {
           show: {
             loading: false,
-            condition({data=[]}={}){
+            condition({data=[]}={}) {
               return data[0] && data[0].features.length > 0;
             }
           }
@@ -1200,31 +1200,31 @@ class MapService extends G3WObject {
           data && data[0] && data[0].features && this.zoomToFeatures(data[0].features)
         }
       }
-    } catch(err){
+    } catch(err) {
       console.log(err)
     }
   };
 
-  getMapExtent(){
+  getMapExtent() {
     const map = this.getMap();
     return map.getView().calculateExtent(map.getSize());
   };
 
-  addMapExtentUrlParameterToUrl(url){
+  addMapExtentUrlParameterToUrl(url) {
     url = new URL(url);
     const map_extent = this.getMapExtent().toString();
     url.searchParams.set('map_extent', map_extent);
     return url.toString()
   };
 
-  getMapExtentUrl(){
+  getMapExtentUrl() {
     const url = new URL(location.href);
     const map_extent = this.getMapExtent().toString();
     url.searchParams.set('map_extent', map_extent);
     return url.toString()
   };
 
-  createCopyMapExtentUrl(){
+  createCopyMapExtentUrl() {
     const url = this.getMapExtentUrl();
     utils.copyUrl(url);
   };
@@ -1432,7 +1432,7 @@ class MapService extends G3WObject {
       trigger : GUI.isMobile() ? 'click': 'hover'
     });
     // in case of mobile hide tooltip after click
-    GUI.isMobile() && buttonControl.on('shown.bs.tooltip', function(){
+    GUI.isMobile() && buttonControl.on('shown.bs.tooltip', function() {
       setTimeout(()=>$(this).tooltip('hide'), 600);
     });
     if (addToMapControls) this._addControlToMapControls(control, visible);
@@ -1544,7 +1544,7 @@ class MapService extends G3WObject {
    *
    * Method to disable
    */
-  disableClickMapControls(bool=true){
+  disableClickMapControls(bool=true) {
     this._mapControls.forEach(controlObj => {
       const {control} = controlObj;
       const clickmap = control.isClickMap ? control.isClickMap() : false;
@@ -1559,7 +1559,7 @@ class MapService extends G3WObject {
     mapLayers.reverse().forEach(mapLayer => this.addMapLayer(mapLayer));
   };
 
-  _setupCustomMapParamsToLegendUrl(bool=true){
+  _setupCustomMapParamsToLegendUrl(bool=true) {
     if (bool) {
       const map = this.getMap();
       const size = map && map.getSize().filter(value => value > 0) || null;
@@ -1583,7 +1583,7 @@ class MapService extends G3WObject {
     this.addLayerToMap(mapLayer)
   };
 
-  getMapLayerByLayerId(layerId){
+  getMapLayerByLayerId(layerId) {
     return this.getMapLayers().find(mapLayer => {
       return mapLayer.getLayerConfigs().find(layer => layer.getId() === layerId);
     })
@@ -1608,7 +1608,7 @@ class MapService extends G3WObject {
     return MapLayersStoreRegistry.getLayerById(layerId);
   };
 
-  _setSettings(){
+  _setSettings() {
     const {ZOOM} = MAP_SETTINGS;
     const maxScale = this.getScaleFromExtent(this.project.state.initextent);
     // settings maxScale
@@ -1801,7 +1801,7 @@ class MapService extends G3WObject {
   };
 
   //SETUP BASELAYERS
-  _setupBaseLayers(){
+  _setupBaseLayers() {
     const baseLayers = geoutils.getMapLayersByFilter({
       BASELAYER: true
     });
@@ -1831,7 +1831,7 @@ class MapService extends G3WObject {
     let qtimeseries_multilayerid_split_values = {};
     const multiLayers = _.groupBy(layers, layer => {
       let multiLayerId = layer.getMultiLayerId();
-      if (layer.isQtimeseries()){
+      if (layer.isQtimeseries()) {
         qtimeseries_multilayerid_split_values[multiLayerId] = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ? 0 : qtimeseries_multilayerid_split_values[multiLayerId] + 1;
         multiLayerId = `${multiLayerId}_${qtimeseries_multilayerid_split_values[multiLayerId]}`;
       } else multiLayerId = qtimeseries_multilayerid_split_values[multiLayerId] === undefined ?
@@ -1878,24 +1878,24 @@ class MapService extends G3WObject {
     })
   };
 
-  _setUpDefaultLayers(){
+  _setUpDefaultLayers() {
     // follow the order that i want
     this.getMap().addLayer(this.defaultsLayers.highlightLayer);
     this.getMap().addLayer(this.defaultsLayers.selectionLayer);
   };
 
-  removeDefaultLayers(){
+  removeDefaultLayers() {
     this.defaultsLayers.highlightLayer.getSource().clear();
     this.defaultsLayers.selectionLayer.getSource().clear();
     this.getMap().removeLayer(this.defaultsLayers.highlightLayer);
     this.getMap().removeLayer(this.defaultsLayers.selectionLayer);
   };
 
-  setDefaultLayerStyle(type, style={}){
+  setDefaultLayerStyle(type, style={}) {
     if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = style;
   };
 
-  resetDefaultLayerStyle(type, style={}){
+  resetDefaultLayerStyle(type, style={}) {
     if (type && this.defaultsLayers[type]) this.defaultsLayers._style[type] = {
       color: type === 'highlightLayer' ? undefined : 'red'
     };
@@ -1908,12 +1908,12 @@ class MapService extends G3WObject {
     this.removeDefaultLayers();
   };
 
-  removeAllLayers(){
+  removeAllLayers() {
     this.viewer.removeLayers();
   };
 
   //set ad increase layerIndex
-  setLayerZIndex({layer, zindex=this.layersCount+=1}){
+  setLayerZIndex({layer, zindex=this.layersCount+=1}) {
     layer.setZIndex(zindex);
   };
 
@@ -2035,7 +2035,7 @@ setTarget(elId) {
   this.target = elId;
 };
 
-getCurrentToggledMapControl(){
+getCurrentToggledMapControl() {
   const mapControl = this._mapControls.find(({control}) => control && control.isToggled && control.isToggled());
   return mapControl && mapControl.control;
 };
@@ -2088,7 +2088,7 @@ showMapInfo({info, style} = {}) {
   this.state.map_info.style = style || this.state.map_info.style;
 };
 
-hideMapInfo(){
+hideMapInfo() {
   this.state.map_info.info = null;
   this.state.map_info.style = null;
 };
@@ -2104,13 +2104,13 @@ goTo(coordinates,zoom) {
   this.viewer.goTo(coordinates, options);
 };
 
-goToRes(coordinates, resolution){
+goToRes(coordinates, resolution) {
   this.viewer.goToRes(coordinates, {
     resolution
   });
 };
 
-getGeometryAndExtentFromFeatures(features=[]){
+getGeometryAndExtentFromFeatures(features=[]) {
   let extent;
   let geometryType;
   let geometry;
@@ -2141,14 +2141,14 @@ getGeometryAndExtentFromFeatures(features=[]){
     const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
     geometry = new geom[olClassGeomType](geometryCoordinates);
     if (extent === undefined) extent = geometry.getExtent();
-  } catch(err){}
+  } catch(err) {}
   return {
     extent,
     geometry
   }
 };
 
-highlightFeatures(features, options={}){
+highlightFeatures(features, options={}) {
   const {geometry} = this.getGeometryAndExtentFromFeatures(features);
   //force zoom false
   options.zoom = false;
@@ -2159,7 +2159,7 @@ highlightFeatures(features, options={}){
  * Zoom methods
  */
 
-zoomToGeometry(geometry, options={highlight: false}){
+zoomToGeometry(geometry, options={highlight: false}) {
   const extent = geometry && geometry.getExtent();
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
@@ -2183,7 +2183,7 @@ zoomToExtent(extent, options={}) {
   });
 };
 
-zoomToProjectInitExtent(){
+zoomToProjectInitExtent() {
   this.zoomToExtent(this.project.state.initextent);
 };
 
@@ -2191,13 +2191,13 @@ zoomToProjectInitExtent(){
  * End zoom methods
  */
 
-compareExtentWithProjectMaxExtent(extent){
+compareExtentWithProjectMaxExtent(extent) {
   const projectExtent = this.project.state.extent;
   const inside = containsExtent(projectExtent, extent);
   return inside ? extent : projectExtent;
 };
 
-getResolutionForZoomToExtent(extent){
+getResolutionForZoomToExtent(extent) {
   let resolution;
   const {ZOOM} = MAP_SETTINGS;
   const map = this.getMap();
@@ -2224,12 +2224,12 @@ getResolutionForZoomToExtent(extent){
     this.viewer.fit(this.compareExtentWithProjectMaxExtent(bbox));
   };
 
-  goToWGS84(coordinates,zoom){
+  goToWGS84(coordinates,zoom) {
     coordinates = transform(coordinates,'EPSG:4326',this.project.state.crs.epsg);
     this.goTo(coordinates,zoom);
   };
 
-  extentToWGS84(extent){
+  extentToWGS84(extent) {
     return transformExtent(extent,this.project.state.crs.epsg,'EPSG:4326');
   };
 
@@ -2246,7 +2246,7 @@ getResolutionForZoomToExtent(extent){
   *                             clear: remove selectionLayer
   *                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
   * */
-  setSelectionFeatures(action='add', options={}){
+  setSelectionFeatures(action='add', options={}) {
     const {feature, color} = options;
     color && this.setDefaultLayerStyle('selectionLayer', {color});
     const source = this.defaultsLayers.selectionLayer.getSource();
@@ -2268,7 +2268,7 @@ getResolutionForZoomToExtent(extent){
     }
   };
 
-  clearSelectionFeatures(){
+  clearSelectionFeatures() {
     this.defaultsLayers.selectionLayer.getSource().clear();
   };
 
@@ -2287,7 +2287,7 @@ getResolutionForZoomToExtent(extent){
       let hide = options.hide;
       if (hide) hide = typeof hide === 'function' ? hide: null;
       const customStyle = options.style;
-      const defaultStyle = function(feature){
+      const defaultStyle = function(feature) {
         let styles = [];
         const geometryType = feature.getGeometry().getType();
         const style = geoutils.createSelectedStyle({
@@ -2374,7 +2374,7 @@ getResolutionForZoomToExtent(extent){
   };
 
   //remove BaseLayers
-  _removeBaseLayers(){
+  _removeBaseLayers() {
     Object.keys(this.mapBaseLayers).forEach(baseLayerId=>{
       this.viewer.map.removeLayer(this.mapBaseLayers[baseLayerId].getOLLayer())
     })
@@ -2526,7 +2526,7 @@ getResolutionForZoomToExtent(extent){
     map.render();
   };
 
-  removeExternalLayers(){
+  removeExternalLayers() {
     this._externalLayers.forEach(layer =>{
       const name = layer.get('name');
       this.removeExternalLayer(name);
@@ -2534,21 +2534,21 @@ getResolutionForZoomToExtent(extent){
     this._externalLayers = [];
   };
 
-  changeLayerVisibility({id, visible}){
+  changeLayerVisibility({id, visible}) {
     const layer = this.getLayerById(id);
     layer && layer.setVisible(visible);
     this.emit('change-layer-visibility', {id, visible});
   };
 
-  changeLayerOpacity({id, opacity=1}={}){
+  changeLayerOpacity({id, opacity=1}={}) {
     const layer = this.getLayerById(id);
     layer && layer.setOpacity(opacity);
     this.emit('change-layer-opacity', {id, opacity});
   };
 
-  changeLayerMapPosition({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}){
+  changeLayerMapPosition({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}) {
     const layer = this.getLayerById(id);
-    switch(position){
+    switch(position) {
       case 'top':
         layer.setZIndex(this.layersCount);
         break;
@@ -2592,7 +2592,7 @@ getResolutionForZoomToExtent(extent){
    * @param position
    * @returns {Promise<unknown>}
    */
-  addExternalWMSLayer({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity, visible=true}={}){
+  addExternalWMSLayer({url, layers, name, epsg=this.getEpsg(), position=MAP_SETTINGS.LAYER_POSITIONS.default, opacity, visible=true}={}) {
     const projection = get(epsg);
     return new Promise((resolve, reject) =>{
       const {wmslayer, olLayer} = geoutils.createWMSLayer({
@@ -2631,11 +2631,11 @@ getResolutionForZoomToExtent(extent){
    * Return extanla layers added to map
    * @returns {[]|*[]|T[]}
    */
-  getExternalLayers(){
+  getExternalLayers() {
     return this._externalLayers;
   };
 
-  addExternalMapLayer(externalMapLayer, projectLayer=false){
+  addExternalMapLayer(externalMapLayer, projectLayer=false) {
     this._externalMapLayers.push(externalMapLayer);
     this.registerMapLayerListeners(externalMapLayer, projectLayer);
   };
@@ -2691,7 +2691,7 @@ getResolutionForZoomToExtent(extent){
         opacity,
         color
       };
-    } else if (externalLayer instanceof ImageLayer){
+    } else if (externalLayer instanceof ImageLayer) {
       type = 'wms';
       name = externalLayer.get('name');
       externalLayer.id = externalLayer.get('id');

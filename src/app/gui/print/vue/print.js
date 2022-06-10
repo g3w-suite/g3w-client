@@ -27,10 +27,10 @@ const vueComponentOptions = {
     }
   },
   methods: {
-    setDisabledPrintButton(bool=false){
+    setDisabledPrintButton(bool=false) {
       this.button.disabled = bool;
     },
-    setAtlasValues(values=[]){
+    setAtlasValues(values=[]) {
       this.state.atlasValues = values;
     },
     onChangeTemplate() {
@@ -71,7 +71,7 @@ class PrintComponent extends Component {
     this._service.init();
   }
 
-  setInternalComponent(){
+  setInternalComponent() {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       service

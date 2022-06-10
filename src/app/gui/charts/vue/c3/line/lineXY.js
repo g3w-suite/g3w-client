@@ -34,10 +34,10 @@ const C3XYLine = {
     addComponent(component) {
       this.components.push(component);
     },
-    addComponents(components=[]){
+    addComponents(components=[]) {
       components.forEach(component => this.addComponent(component))
     },
-    setConfig(config={}){
+    setConfig(config={}) {
       this.config = config;
     },
     setDataOffset(offset, render=false) {
@@ -65,7 +65,7 @@ const C3XYLine = {
     unselectItems(ids=[]) {
       this.chart.unselect(['y'], ids);
     },
-    unselectAll(){
+    unselectAll() {
       this.chart.unselect();
     },
     selectAll() {
@@ -131,7 +131,7 @@ const C3XYLine = {
         const _temp = [...self.selectitems, evt];
         self.selectitems = _temp;
       };
-      this.config.data.onunselected = function(evt){
+      this.config.data.onunselected = function(evt) {
         self.selectitems = self.selectitems.filter((selectitem) => {
           return selectitem.index !== evt.index
         });

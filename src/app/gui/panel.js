@@ -11,15 +11,15 @@ class Panel extends G3WObject{
     this.service = options.service;
   }
 
-  getId(){
+  getId() {
     return this.id;
   };
 
-  getTitle(){
+  getTitle() {
     return this.title;
   };
 
-  getService(){
+  getService() {
     return this.service;
   };
 
@@ -39,7 +39,7 @@ class Panel extends G3WObject{
     GUI.showPanel(this);
   };
 
-  close(){
+  close() {
     GUI.closePanel();
   };
 
@@ -65,7 +65,7 @@ class Panel extends G3WObject{
     return d.promise();
   };
 
-  onResize(parentWidth,parentHeight){};
+  onResize(parentWidth,parentHeight) {};
 };
 
 export default  Panel;

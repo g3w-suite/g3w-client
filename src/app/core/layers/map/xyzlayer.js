@@ -7,21 +7,21 @@ class XYZLayer extends MapLayer{
     this._method = method;
   }
 
-  getOLLayer(){
+  getOLLayer() {
     let olLayer = this._olLayer;
     if (!olLayer) olLayer = this._olLayer = this._makeOlLayer();
     return olLayer;
   };
 
-  getSource(){
+  getSource() {
     return this.getOLLayer().getSource();
   };
 
-  getLayerConfigs(){
+  getLayerConfigs() {
     return this.layer;
   };
 
-  addLayer(layer){
+  addLayer(layer) {
     this.layer = layer;
     this.layers.push(layer);
     this.allLayers.push(layer);
@@ -31,11 +31,11 @@ class XYZLayer extends MapLayer{
     this._updateLayer(mapState, extraParams);
   };
 
-  isVisible(){
+  isVisible() {
     return layer.state.visible;
   };
 
-  _makeOlLayer(){
+  _makeOlLayer() {
     const projection = this.projection ? this.projection : this.layer.getProjection();
     const layerOptions = {
       url: `${this.layer.getCacheUrl()}/{z}/{x}/{y}.png`,

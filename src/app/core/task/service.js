@@ -28,7 +28,7 @@ class TaskService {
    *
    * return a Promise that return a task id
    */
-  async runTask(options={}){
+  async runTask(options={}) {
     let {method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener=()=>{}} = options;
     try {
       const response =  method === 'GET' ? await XHR.get({
@@ -40,17 +40,17 @@ class TaskService {
         contentType: params.contentType || "application/json"
       });
       const {result, task_id} = response;
-      if (result){
+      if (result) {
         const intervalId = setInterval(async ()=>{
           // check if timeout is defined
           timeout = timeout - interval;
-          if (timeout > 0){
+          if (timeout > 0) {
             let response;
             try {
               response = await XHR.get({
                 url: `${taskUrl}${task_id}`
               });
-            } catch(error){
+            } catch(error) {
               response = error;
             }
             listener({
@@ -92,7 +92,7 @@ class TaskService {
    *   taskId: taskId that is running
    * }
    */
-  stopTask(options={}){
+  stopTask(options={}) {
     const { task_id } = options;
     const task = this.tasks.find(task => task.task_id === task_id);
     if (task)clearInterval(task.intervalId);
@@ -101,7 +101,7 @@ class TaskService {
   /**
    * clare all task
    */
-  clear(){
+  clear() {
     this.tasks.forEach(({ taskId }) =>{
       this.stopTask({
         taskId

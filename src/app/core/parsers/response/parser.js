@@ -35,7 +35,7 @@ const utils = {
               __prefix: feature.__prefix,
               __text: featureMember._fid && featureMember._fid.split('.')[1]
             };
-            if (Array.isArray(featureMember)){
+            if (Array.isArray(featureMember)) {
               featureMemberArrayAndPrefix.features = featureMember;
               featureMemberArrayAndPrefix.__prefix = feature.__prefix;
               return false;
@@ -159,7 +159,7 @@ const utils = {
   groupFeaturesByFields(features) {
     return _.groupBy(features, feature => Object.keys(feature));
   },
-  handleWMSMultiLayersResponseFromQGISSERVER({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}){
+  handleWMSMultiLayersResponseFromQGISSERVER({groupFeatures, prefix, handledResponses, jsonresponse, layer, projections} = {}) {
     // is a multilayers. Each feature has different fields. If group has more that one feature spit it and create single features
     Object.keys(groupFeatures).forEach((key, index) => {
       const features = groupFeatures[key];
@@ -222,7 +222,7 @@ const contenttypes = {
     });
     return layersFeatures;
   },
-  'application/geojson'({layers, projections, response}={}){
+  'application/geojson'({layers, projections, response}={}) {
     const handleResponse = [];
     const parserGEOJson = vectorParser.get({
       type: 'geojson'
@@ -237,7 +237,7 @@ const contenttypes = {
     }
     return handleResponse;
   },
-  'text/html'({layers, response}={}){
+  'text/html'({layers, response}={}) {
     const handleResponse = [];
     layers.forEach(layer =>{
       handleResponse.push({
@@ -247,7 +247,7 @@ const contenttypes = {
     });
     return handleResponse;
   },
-  'text/plain'({layers, response}={}){
+  'text/plain'({layers, response}={}) {
     const handleResponse = [];
     layers.forEach(layer =>{
       handleResponse.push({
@@ -257,7 +257,7 @@ const contenttypes = {
     });
     return handleResponse;
   },
-  'text/gml'({layers, response}){
+  'text/gml'({layers, response}) {
     const parserGML = vectorParser.get({
       type: 'gml'
     });
@@ -270,7 +270,7 @@ const contenttypes = {
       features
     }));
   },
-  'application/vnd.ogc.gml'({response, projections, layers, wms=true}={}){
+  'application/vnd.ogc.gml'({response, projections, layers, wms=true}={}) {
     return utils.getHandledResponsesFromResponse({
       response: utils.handleXMLStringResponseBeforeConvertToJSON({
         layers,
@@ -281,7 +281,7 @@ const contenttypes = {
       projections
     });
   },
-  not_supported_format({layers=[]}={}){
+  not_supported_format({layers=[]}={}) {
     return layers.map(layer=>({
       layer,
       rawdata: t('warning.not_supported_format')
@@ -290,11 +290,11 @@ const contenttypes = {
 };
 
 const ResponseParser = {
-  get(type){
+  get(type) {
     return contenttypes[type] || contenttypes.not_supported_format;
   },
   utils: {
-    getTimeoutData(layers=[]){
+    getTimeoutData(layers=[]) {
       return layers.map(layer=>({
         layer,
         rawdata: 'timeout'

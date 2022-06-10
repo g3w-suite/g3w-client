@@ -15,7 +15,7 @@ class SearchService extends G3WObject {
       debounces: {
         run: {
           fnc: (...args) => {
-            if (GUI.isMobile()){
+            if (GUI.isMobile()) {
               const [width, heigth] = this.mapService.getMap().getSize();
               if  (width === 0 || heigth === 0) {
                 GUI.hideSidebar();
@@ -95,7 +95,7 @@ class SearchService extends G3WObject {
         forminput.loading = forminput.type !== 'autocompletefield';
         const promise = new Promise((resolve, reject) =>{
           if (forminput.options.values === undefined) forminput.options.values = [];
-          else if (dependance){ // in case of dependence load rigth now
+          else if (dependance) { // in case of dependence load rigth now
             if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
               values = this.valuesToKeysValues(values); // set values for select
               forminput.options.values = values;
@@ -141,7 +141,7 @@ class SearchService extends G3WObject {
           if (forminput.options.values.length) {
             forminput.widget = 'valuemap';
             forminput.options._values = [...forminput.options.values];
-          } else if (forminput.options.layer_id){
+          } else if (forminput.options.layer_id) {
             forminput.widget = 'valuerelation';
           }
         }
@@ -163,7 +163,7 @@ class SearchService extends G3WObject {
    * Get return type
    */
 
-  getReturnType(){
+  getReturnType() {
     return this.return;
   };
 
@@ -171,7 +171,7 @@ class SearchService extends G3WObject {
    * Set return type
    */
 
-  setReturnType(returnType='data'){
+  setReturnType(returnType='data') {
     this.return = returnType;
     //set show only in case return === 'data'
     this.show = this.return === 'data';
@@ -204,7 +204,7 @@ class SearchService extends G3WObject {
    * @param field (form input)
    * @returns {Promise<*[]>}
    */
-  getValuesFromField(field){
+  getValuesFromField(field) {
     if (field.options.layer_id) return this.getValueRelationValues(field);
     else if (field.options.values.length) return this.getValueMapValues(field);
     else return this.getUniqueValuesFromField({
@@ -213,7 +213,7 @@ class SearchService extends G3WObject {
       })
   };
 
-  getValueRelationValues = async function(field, filter){
+  getValueRelationValues = async function(field, filter) {
     const {layer_id, key, value} =  field.options;
     const layer = CatalogLayersStorRegistry.getLayerById(layer_id);
     try {
@@ -245,7 +245,7 @@ class SearchService extends G3WObject {
    * @param field
    * @returns {Promise<*>}
    */
-  getValueMapValues = async function(field){
+  getValueMapValues = async function(field) {
     return field.options.values.filter(value => value !== ALLVALUE);
   };
 
@@ -256,7 +256,7 @@ class SearchService extends G3WObject {
    * @param unique
    * @returns {Promise<[]>}
    */
-  getUniqueValuesFromField = async function({field, value, unique}){
+  getUniqueValuesFromField = async function({field, value, unique}) {
     let data = [];
     try {
       data = await this.searchLayer.getFilterData({
@@ -264,11 +264,11 @@ class SearchService extends G3WObject {
         unique,
         ordering: field.attribute
       })
-    } catch(err){}
+    } catch(err) {}
     return data;
   };
 
-  autocompleteRequest = async function({field, value}={}){
+  autocompleteRequest = async function({field, value}={}) {
     let data = [];
     try {
       data = await this.searchLayer.getFilterData({
@@ -315,20 +315,20 @@ class SearchService extends G3WObject {
           title: this.state.title
         }
       });
-      if (show){
+      if (show) {
         // in case of autozoom_query
-        if (this.project.state.autozoom_query && data && data.data.length === 1){
+        if (this.project.state.autozoom_query && data && data.data.length === 1) {
           this.mapService.zoomToFeatures(data.data[0].features)
         }
       } else {
-        if (this.type === 'search_1n'){
+        if (this.type === 'search_1n') {
           const relationId = this.config.options.search_1n_relationid;
           const {features=[]} = data.data[0] || {};
           // check if has features on result
-          if (features.length){
+          if (features.length) {
             const relation = this.project.getRelationById(relationId);
             const inputs = [];
-            if (relation){
+            if (relation) {
               const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
               const uniqueValues = new Set();
               features.forEach(feature => {
@@ -369,7 +369,7 @@ class SearchService extends G3WObject {
               GUI.closeContent();
               // in case of api get first response on array
               data = data.data[0].data;
-              if (utils.isEmptyObject(data)){
+              if (utils.isEmptyObject(data)) {
                 const dataPromise = Promise.resolve({});
                 DataRouterService.showCustomOutputDataPromise(dataPromise);
               } else {
@@ -380,14 +380,14 @@ class SearchService extends G3WObject {
           }
         }
       }
-    } catch(err){
+    } catch(err) {
       console.log(err)
     }
     this.state.searching = false;
     return data;
   };
 
-  filterValidFormInputs(){
+  filterValidFormInputs() {
     return this.state.forminputs.filter(input => NONVALIDVALUES.indexOf(input.value) === -1 && input.value.toString().trim() !== '');
   };
 
@@ -395,14 +395,14 @@ class SearchService extends G3WObject {
    *
    * @returns {string|*|string}
    */
-  getSearchEndPoint(){
+  getSearchEndPoint() {
     return this.search_endpoint || this.searchLayer.getSearchEndPoint()
   };
 
   /*
   * type wms, vector (for vector api)
   * */
-  createFilter(search_endpoint=this.getSearchEndPoint()){
+  createFilter(search_endpoint=this.getSearchEndPoint()) {
     const inputs = this.filterValidFormInputs();
     return utils.createFilterFormInputs({
       layer: this.searchLayers,
@@ -458,7 +458,7 @@ class SearchService extends G3WObject {
     return queryFilter;
   };
 
-  getFilterInputFromField(field){
+  getFilterInputFromField(field) {
     return this.filter.find(input =>  input.attribute === field);
   };
 
@@ -593,7 +593,7 @@ class SearchService extends G3WObject {
                     try {
                       const values = await this.getValueRelationValues(subscribe, filter);
                       values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err){
+                    } catch(err) {
                       console.log(err)
                     }
                   }
@@ -629,7 +629,7 @@ class SearchService extends G3WObject {
     })
   };
 
-  getDependencies(field){
+  getDependencies(field) {
     return this.inputdependencies[field] || [];
   };
 
@@ -639,7 +639,7 @@ class SearchService extends G3WObject {
   };
 
 //set key value for select
-  valuesToKeysValues(values){
+  valuesToKeysValues(values) {
     if (values.length) {
       const type = utils.toRawType(values[0]);
       values = type !== 'Object' ? values.map(value =>({

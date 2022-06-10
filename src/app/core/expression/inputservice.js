@@ -2,7 +2,7 @@ import DataRouterService from 'core/data/routerservice';
 import geoutils from 'core/utils/geo';
 
 export default {
-  async handleFormInput({field, feature,qgs_layer_id}={}){
+  async handleFormInput({field, feature,qgs_layer_id}={}) {
     const form_data = geoutils.convertFeatureToGEOJSON(feature);
     const options = field.input.options;
     let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
@@ -19,9 +19,9 @@ export default {
         },
         outputs: false
       });
-    } catch(err){}
+    } catch(err) {}
     //based on input type
-    switch (field.input.type){
+    switch (field.input.type) {
       case 'select_autocomplete':
         field.input.options.values = [];
         for (let i = 0; i < features.length; i++) {

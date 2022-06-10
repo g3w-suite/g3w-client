@@ -7,7 +7,7 @@ class SearchService extends BaseService {
   }
 
   // method to searchfeature features
-  async features(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}){
+  async features(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}) {
     const promisesSearch =[];
     const {layer, ...params} = options;
     const {raw=false, filter} = options;
@@ -48,7 +48,7 @@ class SearchService extends BaseService {
     const responses = await Promise.allSettled(promisesSearch);
     responses.forEach(({status, value}={}) => {
       // need to filter only fulfilled response
-      if (status === 'fulfilled'){
+      if (status === 'fulfilled') {
         if (raw) {
           dataSearch.data.push(params.search_endpoint === 'api' ? {
             data: value
@@ -68,7 +68,7 @@ class SearchService extends BaseService {
    * @param fid
    * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
    */
-  async fids({layer, formatter=0, fids=[]}={}){
+  async fids({layer, formatter=0, fids=[]}={}) {
     const response = {
       data: [
         {
@@ -83,7 +83,7 @@ class SearchService extends BaseService {
     try {
       const features = layer && await layer.getFeatureByFids({fids, formatter});
       features && features.forEach(feature => response.data[0].features.push(geoutils.createOlFeatureFromApiResponseFeature(feature)));
-    } catch(err){}
+    } catch(err) {}
     return response;
   };
 
@@ -94,7 +94,7 @@ class SearchService extends BaseService {
    * @param formatter: how we want visualize
    * @returns {Promise<void>}
    */
-  async layersfids({layers=[], fids=[], formatter=0}={}){
+  async layersfids({layers=[], fids=[], formatter=0}={}) {
     const promises = [];
     const response = {
       data: [],
@@ -112,7 +112,7 @@ class SearchService extends BaseService {
     try {
       const layersresponses = await Promise.all(promises);
       layersresponses.forEach(layerresponse =>response.data.push(layerresponse.data))
-    } catch(err){}
+    } catch(err) {}
     return response;
   }
 }

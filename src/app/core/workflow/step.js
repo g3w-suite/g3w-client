@@ -41,7 +41,7 @@ class Step extends G3WObject{
     }, this.escKeyUpHandler);
   };
 
-  registerEscKeyEvent(callback){
+  registerEscKeyEvent(callback) {
     this.on('run', ()=> this.bindEscKeyUp(callback));
     this.on('stop', ()=> this.unbindEscKeyUp());
   };

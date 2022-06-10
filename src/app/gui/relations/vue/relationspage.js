@@ -38,17 +38,17 @@ const InternalComponent = Vue.extend({
     relation
   },
   methods: {
-    saveRelations(type){
+    saveRelations(type) {
       this.$options.service.saveRelations(type)
     },
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },
-    showChart(container, relationData){
+    showChart(container, relationData) {
       const relationLayerId = this.relation.referencingLayer;
       GUI.getService('queryresults').showChart([relationLayerId], container, relationData)
     },
-    hideChart(container){
+    hideChart(container) {
       GUI.getService('queryresults').hideChart(container)
     },
     async showRelation(relation) {
@@ -79,7 +79,7 @@ const InternalComponent = Vue.extend({
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
         this.previousview = 'relations'
-      } catch(err){
+      } catch(err) {
         // manage error here
       }
       GUI.setLoadingContent(false);

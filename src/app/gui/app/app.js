@@ -25,7 +25,7 @@ const AppUI = Vue.extend({
     CookieLaw
   },
   computed: {
-    app(){
+    app() {
       return this.appState.gui.app;
     },
     languages() {
@@ -43,13 +43,13 @@ const AppUI = Vue.extend({
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+    staticurl() {
       return this.urls.staticurl;
     },
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+    clienturl() {
       return this.urls.clienturl;
     },
     g3w_suite_logo() {
@@ -76,7 +76,7 @@ const AppUI = Vue.extend({
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
+    login_url() {
       return this.appconfig.user.login_url
     },
     numberOfProjectsInGroup() {
@@ -102,7 +102,7 @@ const AppUI = Vue.extend({
       );
       return $state;
     },
-    async resize(){
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
@@ -110,11 +110,11 @@ const AppUI = Vue.extend({
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
+    showCustomModalContent(id) {
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+    closePanel() {
       sidebarService.closePanel();
     },
     getLogoLink() {
@@ -191,7 +191,7 @@ const AppUI = Vue.extend({
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
+    function setModalHeight() {
       $('#g3w-modal-overlay').css('height',$(window).height());
     }
     $(window).resize(() => {

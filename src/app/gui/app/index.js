@@ -224,7 +224,7 @@ class ApplicationTemplate extends G3WObject {
     })
   };
 
-  _setupLayout(){
+  _setupLayout() {
     if (!isMobile.any) {
       // setup map controls
       $("<style type='text/css'> .ol-control-tl {" +
@@ -419,7 +419,7 @@ class ApplicationTemplate extends G3WObject {
      * @param error
      * @returns {string}
      */
-    GUI.errorToMessage = function(error){
+    GUI.errorToMessage = function(error) {
       let message = 'server_error';
       switch (utils.toRawType(error)) {
         case 'Error':
@@ -428,11 +428,11 @@ class ApplicationTemplate extends G3WObject {
         case 'Object':
           if (error.responseJSON) {
             error = error.responseJSON;
-            if (error.result === false){
+            if (error.result === false) {
               const {code='', data='', message:msg=''} = error.error;
               message = `${code.toUpperCase()} ${data} ${msg}`;
             }
-          } else if (error.responseText){
+          } else if (error.responseText) {
             message = error.responseText;
           }
           break;
@@ -452,7 +452,7 @@ class ApplicationTemplate extends G3WObject {
      * @param data
      * @param options
      */
-    GUI.outputDataPlace = async function(dataPromise, options={}){
+    GUI.outputDataPlace = async function(dataPromise, options={}) {
       // show parameter it used to set condition to show result or not
       // loading parameter is used to show result content when we are wait the response. Default true otherwise we shoe result content at the end
       const defaultOutputConfig = {condition:true, add:false, loading:true};
@@ -581,7 +581,7 @@ class ApplicationTemplate extends G3WObject {
       return viewport.ViewportService.closeContent();
     };
 
-    GUI.closeOpenSideBarComponent = function(){
+    GUI.closeOpenSideBarComponent = function() {
       ApplicationTemplate.Services.sidebar.closeOpenComponents();
     };
 
@@ -605,7 +605,7 @@ class ApplicationTemplate extends G3WObject {
     GUI.showPanel = sidebar.SidebarService.showPanel.bind(sidebar.SidebarService);
     GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
     ///
-    GUI.disableApplication = function(bool=false){
+    GUI.disableApplication = function(bool=false) {
       ApplicationService.disableApplication(bool);
     };
 
@@ -619,28 +619,28 @@ class ApplicationTemplate extends G3WObject {
     };
     /* ------------------ */
     GUI.notify = {
-      warning(message, autoclose=false){
+      warning(message, autoclose=false) {
         GUI.showUserMessage({
           type: 'warning',
           message,
           autoclose
         })
       },
-      error(message, autoclose=false){
+      error(message, autoclose=false) {
         GUI.showUserMessage({
           type: 'alert',
           message,
           autoclose
         })
       },
-      info(message, autoclose=false){
+      info(message, autoclose=false) {
         GUI.showUserMessage(({
           type: 'info',
           message,
           autoclose
         }))
       },
-      success(message){
+      success(message) {
         GUI.showUserMessage({
           type: 'success',
           message,
@@ -655,7 +655,7 @@ class ApplicationTemplate extends G3WObject {
       return GUI.dialog.dialog(options);
     };
     /* spinner */
-    GUI.showSpinner = function(options={}){
+    GUI.showSpinner = function(options={}) {
       const container = options.container || 'body';
       const id = options.id || 'loadspinner';
       const where = options.where || 'prepend'; // append | prepend
@@ -667,7 +667,7 @@ class ApplicationTemplate extends G3WObject {
       }
     };
     //hide spinner
-    GUI.hideSpinner = function(id='loadspinner'){
+    GUI.hideSpinner = function(id='loadspinner') {
       $("#"+id).remove();
     };
     /* end spinner*/
@@ -687,7 +687,7 @@ class ApplicationTemplate extends G3WObject {
     GUI.isSidebarVisible = this._isSidebarVisible.bind(this);
 
     // RELOAD COMPONENTS
-    GUI.reloadComponents = function(){
+    GUI.reloadComponents = function() {
       ApplicationTemplate.Services.sidebar.reloadComponents();
     };
     // MODAL
@@ -761,7 +761,7 @@ class ApplicationTemplate extends G3WObject {
       return viewport.ViewportService.contentLength();
     };
 
-    GUI.getCurrentContentTitle = function(){
+    GUI.getCurrentContentTitle = function() {
       return viewport.ViewportService.getCurrentContentTitle();
     };
 
@@ -769,22 +769,22 @@ class ApplicationTemplate extends G3WObject {
      * change current content title
      * @param title
      */
-    GUI.changeCurrentContentTitle = function(title){
+    GUI.changeCurrentContentTitle = function(title) {
       viewport.ViewportService.changeCurrentContentTitle(title);
     };
 
     /**
      * Method to get current content
      */
-    GUI.getCurrentContent = function(){
+    GUI.getCurrentContent = function() {
       return viewport.ViewportService.getCurrentContent();
     };
 
-    GUI.toggleFullViewContent = function(){
+    GUI.toggleFullViewContent = function() {
       viewport.ViewportService.toggleFullViewContent();
     };
 
-    GUI.resetToDefaultContentPercentage = function(){
+    GUI.resetToDefaultContentPercentage = function() {
       viewport.ViewportService.resetToDefaultContentPercentage();
     };
 
@@ -798,7 +798,7 @@ class ApplicationTemplate extends G3WObject {
       return projectVueMenuComponent.$mount().$el;
     };
 
-    GUI.setCloseUserMessageBeforeSetContent = function(bool=true){
+    GUI.setCloseUserMessageBeforeSetContent = function(bool=true) {
       this._closeUserMessageBeforeSetContent = bool;
     };
 

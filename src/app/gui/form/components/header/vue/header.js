@@ -15,7 +15,7 @@ const HeaderFormComponent = Vue.extend({
       if (this.currentid !== id)
         this.$emit('clickheader', id);
     },
-    resizeForm(perc){
+    resizeForm(perc) {
       this.$emit('resize-form', perc);
     }
   }

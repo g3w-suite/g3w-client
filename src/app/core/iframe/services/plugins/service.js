@@ -9,7 +9,7 @@ class BasePluginService extends BaseService{
     this.dependencyApi ={};
   };
 
-  async init({layers={}}={}){
+  async init({layers={}}={}) {
     this.layers = layers;
     // check if the plugin in in configuration
     if (PluginsRegistry.isPluginInConfiguration(this.pluginName)) {
@@ -29,15 +29,15 @@ class BasePluginService extends BaseService{
     }
   };
 
-  clear(){
+  clear() {
     //TO OVERWRITE
   };
 
-  setDependencyApi(api={}){
+  setDependencyApi(api={}) {
     this.dependencyApi = api;
   };
 
-  getDependecyApi(){
+  getDependecyApi() {
     return this.dependencyApi;
   };
 

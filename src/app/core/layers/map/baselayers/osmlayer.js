@@ -2,7 +2,7 @@ import BaseLayer  from 'core/layers/baselayers/baselayer';
 import BasesLayers  from 'g3w-ol/src/layers/bases';
 
 class OSMLayer extends BaseLayer{
-  constructor(options={}){
+  constructor(options={}) {
     super(options);
   }
 

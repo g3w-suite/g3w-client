@@ -41,20 +41,20 @@ class PluginsRegistry extends G3WObject{
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error);
       }
     })
   };
 
-  addLoadingPlugins(){
+  addLoadingPlugins() {
 
     Object.keys(this.pluginsConfigs).forEach(plugin => {
       ApplicationService.loadingPlugin(plugin);
     });
   };
 
-  removeLoadingPlugin(plugin, ready){
+  removeLoadingPlugin(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
@@ -65,8 +65,8 @@ class PluginsRegistry extends G3WObject{
     return Promise.allSettled(pluginLoadPromises)
   };
 
-  setDependencyPluginConfig(){
-    for (const pluginName in this.pluginsConfigs){
+  setDependencyPluginConfig() {
+    for (const pluginName in this.pluginsConfigs) {
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
       dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName =>{
         this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
@@ -111,7 +111,7 @@ class PluginsRegistry extends G3WObject{
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error)
       }
     })
@@ -168,7 +168,7 @@ class PluginsRegistry extends G3WObject{
               this.removeLoadingPlugin(name, false);
               reject();
             })
-        } catch(err){
+        } catch(err) {
           this.removeLoadingPlugin(name, false);
           reject();
         }
@@ -189,11 +189,11 @@ class PluginsRegistry extends G3WObject{
   };
 
   // method to check if a plugin is in confiuration and will be added to apllication
-  isPluginInConfiguration(pluginName){
+  isPluginInConfiguration(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
-  isTherePlugin(pluginName){
+  isTherePlugin(pluginName) {
     return this.pluginsConfigs[pluginName];
   }
 }

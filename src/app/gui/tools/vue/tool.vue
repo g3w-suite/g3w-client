@@ -54,7 +54,7 @@
       fireAction(tool) {
         this.tool.action(tool);
       },
-      showToolStateMessage(){
+      showToolStateMessage() {
         GUI.showModalDialog({
           title: this.tool.state.type.toUpperCase(),
           message: this.tool.state.message

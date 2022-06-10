@@ -33,16 +33,16 @@ class ApplicationService extends G3WObject {
     this._groupId = null;
     this._gid = null;
     this.setters = {
-      changeProject({gid, host}={}){
+      changeProject({gid, host}={}) {
         return this._changeProject({gid, host})
       },
       online() {
         this.setOnline();
       },
-      offline(){
+      offline() {
         this.setOffline();
       },
-      setFilterToken(filtertoken){
+      setFilterToken(filtertoken) {
         this._setFilterToken(filtertoken)
       }
     };
@@ -74,7 +74,7 @@ class ApplicationService extends G3WObject {
   /**
    * setup Internalization
    */
-  setupI18n(){
+  setupI18n() {
     const lngConfig = this._config._i18n;
     lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
@@ -100,8 +100,8 @@ class ApplicationService extends G3WObject {
    * @param download_caller_id
    * @returns {null}
    */
-  setDownload(bool=false, download_caller_id){
-    if (download_caller_id){
+  setDownload(bool=false, download_caller_id) {
+    if (download_caller_id) {
       if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
         ApplicationState.download = false;
         this.download_caller_id = null;
@@ -113,11 +113,11 @@ class ApplicationService extends G3WObject {
     return this.download_caller_id;
   };
 
-  getDownload(){
+  getDownload() {
     return ApplicationState.download;
   };
 
-  loadingPlugin(plugin){
+  loadingPlugin(plugin) {
     ApplicationState.plugins.push(plugin);
   };
 
@@ -129,15 +129,15 @@ class ApplicationService extends G3WObject {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
 
-  _setFilterToken(filtertoken){
+  _setFilterToken(filtertoken) {
     ApplicationState.tokens.filtertoken = filtertoken;
   };
 
-  getFilterToken(){
+  getFilterToken() {
     return ApplicationState.tokens.filtertoken;
   };
 
-  changeLanguage(lng){
+  changeLanguage(lng) {
     changeLanguage(lng);
     ApplicationState.lng = lng;
     const pathname = window.location.pathname;
@@ -158,7 +158,7 @@ class ApplicationService extends G3WObject {
     })
   };
 
-  getBaseLayerId(){
+  getBaseLayerId() {
     return ApplicationState.baseLayerId;
   };
 
@@ -166,7 +166,7 @@ class ApplicationService extends G3WObject {
     ApplicationState.baseLayerId = baseLayerId;
   };
 
-  registerLeavePage({bool=false, message=''}={}){
+  registerLeavePage({bool=false, message=''}={}) {
     const _return = !bool ? undefined : bool;
     window.onbeforeunload = function(event) {
       return _return;
@@ -178,11 +178,11 @@ class ApplicationService extends G3WObject {
     window.removeEventListener('offline');
   };
 
-  getState(){
+  getState() {
     return ApplicationState;
   };
 
-  disableApplication(bool=false){
+  disableApplication(bool=false) {
     ApplicationState.gui.app.disabled = bool;
   };
 
@@ -198,22 +198,22 @@ class ApplicationService extends G3WObject {
     ApplicationState.online = true;
   };
 
-  setOffline(){
+  setOffline() {
     ApplicationState.online = false;
   };
 
-  isOnline(){
+  isOnline() {
     return ApplicationState.online;
   };
 
-  async setOfflineItem(id, data={}){
+  async setOfflineItem(id, data={}) {
     this.setLocalItem({
       id,
       data
     })
   };
 
-  setLocalItem({id, data}={}){
+  setLocalItem({id, data}={}) {
     try {
       const item = JSON.stringify(data);
       window.localStorage.setItem(id, item);
@@ -222,11 +222,11 @@ class ApplicationService extends G3WObject {
     }
   };
 
-  removeLocalItem(id){
+  removeLocalItem(id) {
     window.localStorage.removeItem(id);
   };
 
-  getLocalItem(id){
+  getLocalItem(id) {
     const item = window.localStorage.getItem(id);
     if (item) return JSON.parse(item);
     else return undefined;
@@ -236,7 +236,7 @@ class ApplicationService extends G3WObject {
     return this.getLocalItem(id);
   };
 
-  removeOfflineItem(id){
+  removeOfflineItem(id) {
     this.removeLocalItem(id);
   };
 
@@ -250,19 +250,19 @@ class ApplicationService extends G3WObject {
     return this._config;
   };
 
-  setConfig(config={}){
+  setConfig(config={}) {
     this._config = config;
   };
 
   //application proxy url
-  getProxyUrl(){
+  getProxyUrl() {
     return `${this._initConfig.proxyurl}`;
   };
 
   /**
    * Get Interface OWS Url
    */
-  getInterfaceOwsUrl(){
+  getInterfaceOwsUrl() {
     return `${this._initConfig.interfaceowsurl}`;
   };
 
@@ -439,16 +439,16 @@ class ApplicationService extends G3WObject {
   };
 
   //set EPSG of Application is usefule for example to wms request for table layer
-  setEPSGApplication(project){
+  setEPSGApplication(project) {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
   //Application User
-  setApplicationUser(user){
+  setApplicationUser(user) {
     ApplicationState.user = user;
   };
 
-  getApplicationUser(){
+  getApplicationUser() {
     return ApplicationState.user;
   };
 
@@ -493,7 +493,7 @@ class ApplicationService extends G3WObject {
   };
 
   //iframeservice
-  startIFrameService({project}={}){
+  startIFrameService({project}={}) {
     iframeService.init({project});
   };
 
@@ -501,7 +501,7 @@ class ApplicationService extends G3WObject {
     window.addEventListener(evt, cb);
   };
 
-  unregisterWindowEvent({evt, cb}={}){
+  unregisterWindowEvent({evt, cb}={}) {
     window.removeEventListener(evt, cb)
   };
 
@@ -513,7 +513,7 @@ class ApplicationService extends G3WObject {
     delete this._applicationServices[element];
   };
 
-  getApplicationService(type){
+  getApplicationService(type) {
     return this._applicationServices[type];
   };
 
@@ -531,7 +531,7 @@ class ApplicationService extends G3WObject {
     this._initConfig = null;
   };
 
-  setInitVendorKeys(config={}){
+  setInitVendorKeys(config={}) {
     const vendorkeys = config.group.vendorkeys || {};
     config.group.baselayers.forEach(baselayer =>{
       if (baselayer.apikey) {
@@ -542,22 +542,22 @@ class ApplicationService extends G3WObject {
     this.setVendorKeys(vendorkeys);
   };
 
-  setVendorKeys(keys={}){
+  setVendorKeys(keys={}) {
     Object.keys(keys).forEach(key =>{
       ApplicationState.keys.vendorkeys[key] = keys[key];
     })
   };
 
   // change View
-  changeProjectView(change){
+  changeProjectView(change) {
     ApplicationState.changeProjectview = change;
   };
 
-  isProjectViewChanging(){
+  isProjectViewChanging() {
     return ApplicationState.changeProjectview;
   };
 
-  reloadCurrentProject(){
+  reloadCurrentProject() {
     return this.changeProject({
       gid: ProjectsRegistry.getCurrentProject().getGid()
     })
@@ -585,7 +585,7 @@ class ApplicationService extends G3WObject {
    * Layout section
    */
 
-  setLayout(who='app', config={}){
+  setLayout(who='app', config={}) {
     /**
      * Set default height percentage of height when show vertical content (for example show table attribute)
      * @type {{}}
@@ -601,23 +601,23 @@ class ApplicationService extends G3WObject {
     ApplicationState.gui.layout[who] = config;
   };
 
-  removeLayout(who){
+  removeLayout(who) {
     who && delete ApplicationState.gui.layout[who];
   };
 
-  setCurrentLayout(who='app'){
+  setCurrentLayout(who='app') {
     ApplicationState.gui.layout.__current = who;
   };
 
-  getCurrentLayout(){
+  getCurrentLayout() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
   };
 
-  getCurrentLayoutName(){
+  getCurrentLayoutName() {
     return ApplicationState.gui.layout.__current;
   };
 
-  cloneLayout(which='app'){
+  cloneLayout(which='app') {
     return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
   };
 
@@ -625,7 +625,7 @@ class ApplicationService extends G3WObject {
    * Layout section
    */
 
-  clear(){
+  clear() {
     this.unregisterOnlineOfflineEvent();
   }
 };

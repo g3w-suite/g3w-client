@@ -10,7 +10,7 @@ class RelationsService extends G3WObject {
     super();
   };
 
-  createUrl(options={}){
+  createUrl(options={}) {
     const currentProject = ProjectsRegistry.getCurrentProject();
     // type : <editing, data, xls>
     const {layer={}, relation={}, fid, type='data'} = options;
@@ -36,7 +36,7 @@ class RelationsService extends G3WObject {
    * @param features
    * @returns {Promise<[]>}
    */
-  async getRelationsNM({nmRelation, features=[]}={}){
+  async getRelationsNM({nmRelation, features=[]}={}) {
     const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
     let relationsNM = []; // start with empty relations result
     if (features.length) {
@@ -71,7 +71,7 @@ class RelationsService extends G3WObject {
     return relationsNM;
   };
 
-  save(options={}){
+  save(options={}) {
     const url = this.createUrl(options);
     return utils.XHR.fileDownload({
       url,

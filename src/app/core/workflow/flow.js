@@ -84,7 +84,7 @@ class Flow extends G3WObject {
     return d.promise();
   };
 
-  clearQueques(){
+  clearQueques() {
     this.queques.micro.clear();
     this.queques.end.clear();
   };

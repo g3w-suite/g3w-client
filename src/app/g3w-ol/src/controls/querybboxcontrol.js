@@ -14,7 +14,7 @@ class QueryBBoxControl extends InteractionControl {
       label: options.label || "\ue902",
       clickmap: true, // set ClickMap
       interactionClass: DragBox,
-      onSelectlayer(selectLayer){
+      onSelectlayer(selectLayer) {
         const layers = this.layers;
         const selected = selectLayer.isSelected();
         if (selected) {
@@ -44,7 +44,7 @@ class QueryBBoxControl extends InteractionControl {
 
   }
 
-  listenLayersVisibleChange(){
+  listenLayersVisibleChange() {
     this.unwatches.forEach(unwatch => unwatch());
     this.unwatches.splice(0);
     this.layers.forEach(layer => {
@@ -59,7 +59,7 @@ class QueryBBoxControl extends InteractionControl {
     });
   };
 
-  change(layers=[]){
+  change(layers=[]) {
     this.layers = layers;
     const visible = this.checkVisible(layers);
     this.setVisible(visible);
@@ -68,11 +68,11 @@ class QueryBBoxControl extends InteractionControl {
     this.listenLayersVisibleChange(this.layers);
   };
 
-  checkVisible(layers=[]){
+  checkVisible(layers=[]) {
     return layers.length > 0;
   };
 
-  checkEnabled(layers=[]){
+  checkEnabled(layers=[]) {
     return layers.length > 0 && layers.reduce((accumulator, layer) => {
       return accumulator || layer.isVisible();
     }, false);

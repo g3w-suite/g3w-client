@@ -70,14 +70,14 @@ const AddLayerComponent = {
     'chrome-picker': ChromeComponent
   },
   methods: {
-    setLayerMapPosition(position){
+    setLayerMapPosition(position) {
       this.position = position;
     },
-    setError(type){
+    setError(type) {
       this.error_message = `sdk.errors.${type}`;
       this.error = true;
     },
-    clearError(){
+    clearError() {
       this.error = false;
       this.error_message = null;
     },
@@ -155,18 +155,18 @@ const AddLayerComponent = {
             this.fields.splice(0); //reset eventually the fields
             await this.createVectorLayer();
             this.fields = this.vectorLayer.get('_fields');
-          } catch(err){}
+          } catch(err) {}
         }
       } else this.setError('unsupported_format');
     },
-    async createVectorLayer(){
+    async createVectorLayer() {
       try {
         this.vectorLayer = await geoutils.createVectorLayerFromFile(this.layer);
         await this.$nextTick();
-      } catch(err){this.setError('add_external_layer');}
+      } catch(err) {this.setError('add_external_layer');}
     },
     async addLayer() {
-      if (this.vectorLayer || this.csv.valid){
+      if (this.vectorLayer || this.csv.valid) {
         this.loading = true;
         //Recreate always the vector layer because we can set the right epsg after first load the file
         // if we change the epsg of the layer after loaded
@@ -184,7 +184,7 @@ const AddLayerComponent = {
         });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
-        } catch(err){
+        } catch(err) {
           this.setError('add_external_layer');
         }
         this.loading = false
@@ -215,18 +215,18 @@ const AddLayerComponent = {
     }
   },
   computed:{
-    csv_extension(){
+    csv_extension() {
       return this.layer.type === 'csv';
     },
-    add(){
+    add() {
       return this.vectorLayer || this.csv.valid;
     }
   },
   watch:{
-    'csv.x'(value){
+    'csv.x'(value) {
       if (value) this.layer.data.x = value
     },
-    'csv.y'(value){
+    'csv.y'(value) {
       if (value) this.layer.data.y = value
     }
   },
@@ -234,7 +234,7 @@ const AddLayerComponent = {
     this.layer.crs = this.service.getCrs();
     this.service.on('addexternallayer', () => this.modal.modal('show'));
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
     this.modal =  $('#modal-addlayer').modal('hide');
     this.modal.on('hidden.bs.modal',  () => this.clearLayer());

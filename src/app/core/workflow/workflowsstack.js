@@ -52,7 +52,7 @@ class WorkFlowsStack {
     this._workflows[index] = workflow;
   };
 
-  clear(){
+  clear() {
     while (this._workflows.length) {
       const workflow = this.pop();
       workflow.stop();

@@ -16,19 +16,19 @@ class RelationsComponentService extends G3WObject {
     return RelationsService.getRelations(options);
   };
 
-  async getRelationsNM({nmRelation, features}){
+  async getRelationsNM({nmRelation, features}) {
     return await RelationsService.getRelationsNM({
       nmRelation,
       features
     })
   };
 
-  async saveRelations(type){
+  async saveRelations(type) {
     this._options.type = type;
     const caller_download_id = ApplicationService.setDownload(true);
     try {
       await RelationsService.save(this._options)
-    } catch(err){
+    } catch(err) {
       GUI.showUserMessage({
         type: 'alert',
         message: err || "info.server_error",

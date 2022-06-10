@@ -28,7 +28,7 @@ class IframePluginService {
     }));
     //initialize all service
     const serviceNames = Object.keys(this.services);
-    for (let i=0; i < serviceNames.length; i++){
+    for (let i=0; i < serviceNames.length; i++) {
       const service = this.services[serviceNames[i]];
       // set common layer attribute service just one time
       service.getLayers() === undefined && service.setLayers(layers);
@@ -59,7 +59,7 @@ class IframePluginService {
    * @param options
    * @returns {Promise<void>}
    */
-  async outputDataPlace(dataPromise, options={}){
+  async outputDataPlace(dataPromise, options={}) {
     const {action='app:results'} = options;
     let {result, data=[]} = await dataPromise;
     const parser = new GeoJSON();
@@ -70,7 +70,7 @@ class IframePluginService {
           features: parser.writeFeatures(features)
         }
       }));
-    } catch(err){
+    } catch(err) {
       result: false;
       outputData: err;
     }
@@ -89,7 +89,7 @@ class IframePluginService {
     if (window.parent) window.parent.postMessage(message, "*")
   };
 
-  async stopPendingActions(){
+  async stopPendingActions() {
     const promises = [];
     Object.keys(this.pendingactions).forEach(id => {
       const {context} = this.pendingactions[id];
@@ -115,7 +115,7 @@ class IframePluginService {
           data = await this.services[context][method](params);
           result = true;
         }
-      } catch(err){
+      } catch(err) {
         result = false;
         data = err;
       }

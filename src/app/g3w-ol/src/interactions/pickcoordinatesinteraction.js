@@ -60,7 +60,7 @@ class PickCoordinatesInteraction extends Pointer {
     super.setActive(active);
   };
 
-  setMap(map){
+  setMap(map) {
     if (!map) {
       const elem = this.getMap().getTargetElement();
       elem.style.cursor = '';

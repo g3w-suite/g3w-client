@@ -26,7 +26,7 @@ class Control extends OLControl {
       const label = options.label || '';
       const mapControlButtonVue =  Vue.extend({
         functional: true,
-        render(h){
+        render(h) {
           return h('div', {
               class: {
                 [className]: !!className,
@@ -64,7 +64,7 @@ class Control extends OLControl {
   }
 
   //return if clickmap
-  isClickMap(){
+  isClickMap() {
     return this.clickmap;
   };
 
@@ -72,14 +72,14 @@ class Control extends OLControl {
     return this._toggled;
   };
 
-  setEventKey({eventType, eventKey}){
+  setEventKey({eventType, eventKey}) {
     this.eventKeys[eventType] = {
       eventKey,
       originalHandler: eventKey.linstener
     };
   };
 
-  resetOriginalHandlerEvent(eventType){
+  resetOriginalHandlerEvent(eventType) {
     const eventKey = this.eventKeys[eventType].eventKey;
     eventKey && unByKey(eventKey);
     this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
@@ -148,7 +148,7 @@ class Control extends OLControl {
   /**
    *
    */
-  showControl(){
+  showControl() {
     $(this.element).show();
   };
 
@@ -187,12 +187,12 @@ class Control extends OLControl {
     return this._enabled;
   };
 
-  setVisible(visible=true){
+  setVisible(visible=true) {
     this._visible = visible;
     $(this.element)[visible ? 'show': 'hide']();
   };
 
-  isVisible(){
+  isVisible() {
     return this._visible;
   };
 

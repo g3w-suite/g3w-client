@@ -114,7 +114,7 @@ class SidebarService extends G3WObject{
     this.state.components.push(component);
     const isPanelSidebarShow = $('.g3w-sidebarpanel').is(':visible');
     const sidebarcomponetsdomid = `#g3w-sidebarcomponents${isPanelSidebarShow ? ':hidden': ''}`;
-    const children = $(sidebarcomponetsdomid).children().filter(function(){
+    const children = $(sidebarcomponetsdomid).children().filter(function() {
       return this.style.display !== 'none'
     });
     const childrenLength = children.length;
@@ -132,7 +132,7 @@ class SidebarService extends G3WObject{
     return true;
   };
 
-  setComponentClickHandler(component){
+  setComponentClickHandler(component) {
     component.click = ({open=false}={}) => {
       open = open || false;
       $(component.getInternalComponent().$el).siblings('a').click();
@@ -153,7 +153,7 @@ class SidebarService extends G3WObject{
   /**
    * close for the moment only conlapsbale
    */
-  closeOpenComponents(collapsible=true){
+  closeOpenComponents(collapsible=true) {
     this.getComponents().forEach(component => component.closeWhenViewportContentIsOpen() && component.collapsible && component.click({open: false}))
   };
 
@@ -206,7 +206,7 @@ class SidebarService extends G3WObject{
     });
   };
 
-  closeAllPanels(){
+  closeAllPanels() {
     this.state.gui.title = null;
     this.closeSidebarPanel();
     this.stack.clear();
@@ -229,21 +229,21 @@ const SidebarComponent = Vue.extend({
       }
     },
     computed: {
-      disabled(){
+      disabled() {
         return ApplicationState.gui.sidebar.disabled;
       },
-      panelsinstack(){
+      panelsinstack() {
         return this.panels.length > 0;
       },
-      showmainpanel(){
+      showmainpanel() {
         return this.components.length>0 && !this.panelsinstack;
       },
-      componentname(){
+      componentname() {
         return this.components.length ? this.components.slice(-1)[0].getTitle(): "";
       },
-      panelname(){
+      panelname() {
         let name = "";
-        if (this.panels.length){
+        if (this.panels.length) {
           name = this.panels.slice(-1)[0].content.getTitle();
         }
         return name;
@@ -253,7 +253,7 @@ const SidebarComponent = Vue.extend({
       closePanel() {
         sidebarService.closePanel();
       },
-      closeAllPanels(){
+      closeAllPanels() {
         sidebarService.closeAllPanels();
       }
     },

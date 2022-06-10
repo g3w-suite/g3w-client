@@ -10,7 +10,7 @@ const {
 } = DEVCONFIG;
 
 // Handle ApplicationService on ready event
-// ApplicationService.once('ready', function(){});
+// ApplicationService.once('ready', function() {});
 
 // Handle obtaininitConfig
 ApplicationService.once('initconfig', () => {
@@ -41,6 +41,6 @@ if (setCurrentProject.after) {
 }
 
 //Ready GUI
-// GUI.once('ready', function(){});
+// GUI.once('ready', function() {});
 
 export default {}

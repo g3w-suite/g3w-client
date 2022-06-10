@@ -26,11 +26,11 @@ class QueryBuilderService {
     return items ? items[projectId] || [] : [];
   };
 
-  _getLayerById(layerId){
+  _getLayerById(layerId) {
     return CatalogLayersStorRegistry.getLayerById(layerId);
   };
 
-  getValues = async function({layerId, field}={}){
+  getValues = async function({layerId, field}={}) {
     this._cacheValues[layerId] = this._cacheValues[layerId] || {};
     let valuesField = this._cacheValues[layerId][field];
     if (valuesField  === undefined) {
@@ -52,7 +52,7 @@ class QueryBuilderService {
     } else return valuesField;
   };
 
-  run({layerId, filter:stringFilter, showResult=true}={}){
+  run({layerId, filter:stringFilter, showResult=true}={}) {
     return new Promise(async (resolve, reject) => {
       const layer = this._getLayerById(layerId);
       const search_endpoint = layer.getSearchEndPoint();
@@ -72,7 +72,7 @@ class QueryBuilderService {
           outputs: showResult
         });
         resolve(data);
-      } catch(error){
+      } catch(error) {
         GUI.showUserMessage({
           type: 'alert',
           message: 'sdk.querybuilder.error_run',
@@ -83,7 +83,7 @@ class QueryBuilderService {
     })
   };
 
-  test = async function({layerId, filter}={}){
+  test = async function({layerId, filter}={}) {
     try {
       const data = await this.run({
         layerId,
@@ -91,13 +91,13 @@ class QueryBuilderService {
         showResult: false
       });
       return data.length && data[0].features.length;
-    } catch(err){
+    } catch(err) {
       err = t('sdk.querybuilder.error_test');
       return Promise.reject(err);
     }
   };
 
-  delete({id}={}){
+  delete({id}={}) {
     return new Promise((resolve, reject) => {
       GUI.dialog.confirm(t('sdk.querybuilder.delete'), (result)=>{
         if (result) {
@@ -165,7 +165,7 @@ class QueryBuilderService {
     }
   };
 
-  save({id, name, layerId, filter, projectId} = {}){
+  save({id, name, layerId, filter, projectId} = {}) {
     const layerName = this._getLayerById(layerId).getName();
     const querybuildersearch = {
       layerId,

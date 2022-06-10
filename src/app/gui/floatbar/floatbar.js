@@ -8,7 +8,7 @@ class FloatbarService {
     this.stack = new Stack();
   }
 
-  init(layout){
+  init(layout) {
     this.layout = layout;
     this.sidebarEl = $(this.layout.options.controlSidebarOptions.selector);
     this._zindex = this.sidebarEl.css("z-index");
@@ -31,7 +31,7 @@ class FloatbarService {
     this._isopen = false;
   };
 
-  showPanel(panel, options){
+  showPanel(panel, options) {
     options = options || {};
     const append = options.append || false;
     const modal = options.modal || false;
@@ -40,11 +40,11 @@ class FloatbarService {
     if (!this._isopen) this.open();
   };
 
-  closePanel(panel){
+  closePanel(panel) {
     if (panel) this.stack.remove(panel);
     else this.stack.pop();
     if (!this.stack.getLength()) {
-      if (this._modal){
+      if (this._modal) {
         GUI.setModal(false);
         this.close();
         $('.control-sidebar-bg').toggleClass('control-sidebar-bg-shadow');
@@ -57,7 +57,7 @@ class FloatbarService {
     }
   };
 
-  hidePanel(){
+  hidePanel() {
     this.close();
   };
 }
@@ -73,12 +73,12 @@ const FloatbarComponent = Vue.extend({
     },
     computed: {
       // active panels on stack
-      panelsinstack(){
+      panelsinstack() {
         return this.stack.contentsdata.length>0;
       },
-      panelname(){
+      panelname() {
         let name;
-        if (this.stack.contentsdata.length){
+        if (this.stack.contentsdata.length) {
           name = this.stack.contentsdata.slice(-1)[0].content.getTitle();
         }
         return name;
@@ -97,7 +97,7 @@ const FloatbarComponent = Vue.extend({
       }
     },
     methods: {
-      closePanel(){
+      closePanel() {
         floatbarService.closePanel();
       }
     }

@@ -14,7 +14,7 @@ class MapLayer extends G3WObject{
     this.showSpinnerWhenLoading = true;
   }
 
-  getId(){
+  getId() {
     return this.id;
   };
 
@@ -36,7 +36,7 @@ class MapLayer extends G3WObject{
     this.allLayers.forEach(layer => this.checkLayerDisabled(layer, resolution, mapUnits));
   };
 
-  setupCustomMapParamsToLegendUrl(params={}){
+  setupCustomMapParamsToLegendUrl(params={}) {
     //to owerwrite for each map layer subclass
   };
 }

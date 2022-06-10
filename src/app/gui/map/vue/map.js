@@ -28,13 +28,13 @@ const vueComponentOptions = {
     'addlayer': AddLayerComponent
   },
   computed: {
-    showmapunits(){
+    showmapunits() {
       return this.service.state.mapunits.length > 1;
     },
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
-    disableMapControls(){
+    disableMapControls() {
       return this.service.state.mapControl.disabled;
     }
   },
@@ -46,15 +46,15 @@ const vueComponentOptions = {
     getPermalinkUrl() {
       return this.ready ? this.$options.service.getMapExtentUrl(): null;
     },
-    createCopyMapExtentUrl(){
+    createCopyMapExtentUrl() {
       const mapService = this.$options.service.createCopyMapExtentUrl();
     },
-    switchMapsCoordinateTo4326(){
+    switchMapsCoordinateTo4326() {
       this.mouse.epsg_4326 = !this.mouse.epsg_4326;
     }
   },
   watch: {
-    'mapunit'(unit){
+    'mapunit'(unit) {
       ApplicationState.map.unit = unit;
       this.$options.service.changeScaleLineUnit(unit);
     }

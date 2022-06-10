@@ -9,7 +9,7 @@ const BaseLayers = {};
 
 BaseLayers.OSM = {};
 
-BaseLayers.OSM.get = function({title, id, url}={}){
+BaseLayers.OSM.get = function({title, id, url}={}) {
   return new TileLayer({
     source: new OSM({
       url
@@ -49,7 +49,7 @@ BaseLayers.TMS =  {
 };
 
 BaseLayers.WMS = {
-  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
+  get({url, projection, attributions, layers, singleTile=false, opacity=1}) {
     return RasterLayers.WMSLayer({
       url,
       projection,

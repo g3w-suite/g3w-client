@@ -41,7 +41,7 @@
   import utils  from 'core/utils/utils';
   export default {
     name: "sidebaritem",
-    data(){
+    data() {
       return {
         newwmsurl: null,
         loading: false,
@@ -57,7 +57,7 @@
       }
     },
     methods: {
-      async addNewWmsUrl(){
+      async addNewWmsUrl() {
         this.loading = true;
         const {error, added} = await this.$options.service.addNewWmsUrl(this.newwmsurl);
         this.status.error = error;
@@ -67,14 +67,14 @@
       deleteWmsUrl(wmsurl) {
         this.$options.service.deleteWmsUrl(wmsurl)
       },
-      async showWmsLayersPanel(wmsurl){
+      async showWmsLayersPanel(wmsurl) {
         try {
           this.loading = true;
           const {error, added} = await this.$options.service.loadWMSDataAndShowWmsLayersPanel(wmsurl);
           this.status.error = error;
           this.status.added = added;
           this.loading = false;
-        } catch(err){
+        } catch(err) {
           console.log(err)
         }
       }

@@ -32,7 +32,7 @@ class Feature extends OlFeature{
    * Return unique id
    * @returns {*}
    */
-  getUid(){
+  getUid() {
     return this._uid
   };
 
@@ -41,15 +41,15 @@ class Feature extends OlFeature{
    * @param uid
    * @private
    */
-  _setUid(uid){
+  _setUid(uid) {
     this._uid = uid;
   };
 
-  isGeometry(){
+  isGeometry() {
     return this._geometry;
   };
 
-  cloneNew(){
+  cloneNew() {
     const clone = this.clone();
     const uid = uniqueId();
     clone._setUid(uid);
@@ -152,11 +152,11 @@ class Feature extends OlFeature{
    * need to filter features visiblity on table
    * @returns {boolean}
    */
-  isVisible(){
+  isVisible() {
     return this.state.visible;
   };
 
-  setVisible(bool=true){
+  setVisible(bool=true) {
     this.state.visible = bool;
   };
 };

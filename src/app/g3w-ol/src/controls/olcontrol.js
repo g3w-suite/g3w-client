@@ -31,7 +31,7 @@ class OLControl extends Control {
    * Return Ol Control
    * @returns {*}
    */
-  getOlControl(){
+  getOlControl() {
     return this._control;
   };
 

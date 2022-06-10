@@ -53,7 +53,7 @@ class GUI extends G3WObject {
     return ComponentsRegistry.getComponents();
   };
 
-  getService(idComponent){
+  getService(idComponent) {
     const component = getComponent(idComponent);
     return component && component.getService();
   };
@@ -69,7 +69,7 @@ class GUI extends G3WObject {
     this.emit('guiresized');
   };
   //ready GUI
-  isReady(){
+  isReady() {
     return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
   };
   /**
@@ -77,13 +77,13 @@ class GUI extends G3WObject {
    * @param componentId
    * @returns {*}
    */
-  getService(componentId){
+  getService(componentId) {
     const component = this.getComponent(componentId);
     return component && component.getService();
   };
   /* spinner */
-  showSpinner(options={}){};
-  hideSpinner(id){};
+  showSpinner(options={}) {};
+  hideSpinner(id) {};
 }
 
 export default new GUI();

@@ -13,12 +13,12 @@ class SliderRangeService extends Service {
     this.setValidator(validator);
   }
 
-  validate(){
+  validate() {
     this.state.value = 1*this.state.value;
     this.state.validate.valid = this.state.value >= this.state.input.options.min || this.state.value <= this.state.input.options.max;
   }
 
-  changeInfoMessage(){
+  changeInfoMessage() {
     this.state.info = `[MIN: ${this.state.input.options.min} - MAX: ${this.state.input.options.max}]`;
   };
 }

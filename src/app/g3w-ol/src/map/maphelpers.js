@@ -32,7 +32,7 @@ const _Viewer = function(opts={}) {
   this.map = map;
 };
 
-_Viewer.prototype.destroy = function(){
+_Viewer.prototype.destroy = function() {
   if (this.map) {
     this.map.dispose();
     this.map = null
@@ -43,15 +43,15 @@ _Viewer.prototype.getView = function() {
   return this.map.getView();
 };
 
-_Viewer.prototype.updateMap = function(mapObject){};
+_Viewer.prototype.updateMap = function(mapObject) {};
 
-_Viewer.prototype.updateView = function(){};
+_Viewer.prototype.updateView = function() {};
 
-_Viewer.prototype.getMap = function(){
+_Viewer.prototype.getMap = function() {
   return this.map;
 };
 
-_Viewer.prototype.setTarget = function(id){
+_Viewer.prototype.setTarget = function(id) {
   this.map.setTarget(id);
 };
 
@@ -93,7 +93,7 @@ _Viewer.prototype.goTo = function(coordinates, options={}) {
   }
 };
 
-_Viewer.prototype.goToRes = function(coordinates, options={}){
+_Viewer.prototype.goToRes = function(coordinates, options={}) {
   const animate = options.animate || true;
   const view = this.map.getView();
   const resolution = options.resolution || view.getResolution();
@@ -115,7 +115,7 @@ _Viewer.prototype.goToRes = function(coordinates, options={}){
   }
 };
 
-_Viewer.prototype.fit = function(geometry, options={}){
+_Viewer.prototype.fit = function(geometry, options={}) {
   const view = this.map.getView();
   const animate = options.animate || true;
   let panAnimation;
@@ -140,22 +140,22 @@ _Viewer.prototype.fit = function(geometry, options={}){
   view.fit(geometry, options);
 };
 
-_Viewer.prototype.getZoom = function(){
+_Viewer.prototype.getZoom = function() {
   const view = this.map.getView();
   return view.getZoom();
 };
 
-_Viewer.prototype.getResolution = function(){
+_Viewer.prototype.getResolution = function() {
   const view = this.map.getView();
   return view.getResolution();
 };
 
-_Viewer.prototype.getCenter = function(){
+_Viewer.prototype.getCenter = function() {
   const view = this.map.getView();
   return view.getCenter();
 };
 
-_Viewer.prototype.getBBOX = function(){
+_Viewer.prototype.getBBOX = function() {
   return this.map.getView().calculateExtent(this.map.getSize());
 };
 
@@ -170,19 +170,19 @@ _Viewer.prototype.getLayerByName = function(layerName) {
   return null;
 };
 
-_Viewer.prototype.removeLayerByName = function(layerName){
+_Viewer.prototype.removeLayerByName = function(layerName) {
   let layer = this.getLayerByName(layerName);
-  if (layer){
+  if (layer) {
     this.map.removeLayer(layer);
     layer = undefined;
   }
 };
 
-_Viewer.prototype.getActiveLayers = function(){
+_Viewer.prototype.getActiveLayers = function() {
   const activelayers = [];
   this.map.getLayers().forEach((layer) => {
     const props = layer.getProperties();
-    if (props.basemap !== true && props.visible){
+    if (props.basemap !== true && props.visible) {
        activelayers.push(layer);
     }
   });
@@ -194,11 +194,11 @@ _Viewer.prototype.removeLayers = function() {
   this.map.getLayers().clear();
 };
 
-_Viewer.prototype.getLayersNoBase = function(){
+_Viewer.prototype.getLayersNoBase = function() {
   const layers = [];
   this.map.getLayers().forEach((layer) => {
     const props = layer.getProperties();
-    if (props.basemap != true){
+    if (props.basemap != true) {
       layers.push(layer);
     }
   });
@@ -206,20 +206,20 @@ _Viewer.prototype.getLayersNoBase = function(){
   return layers;
 };
 
-_Viewer.prototype.addBaseLayer = function(type){
+_Viewer.prototype.addBaseLayer = function(type) {
   let layer;
   type ? layer = BaseLayers[type]:  layer = BaseLayers.BING.Aerial;
   this.map.addLayer(layer);
 };
 
-_Viewer.prototype.changeBaseLayer = function(layerName){
+_Viewer.prototype.changeBaseLayer = function(layerName) {
   const baseLayer = this.getLayerByName(layername);
   const layers = this.map.getLayers();
   layers.insertAt(0, baseLayer);
 };
 
 const MapHelpers = {
-  createViewer(opts={}){
+  createViewer(opts={}) {
     return new _Viewer(opts);
   }
 };

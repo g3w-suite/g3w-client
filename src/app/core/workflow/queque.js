@@ -3,26 +3,26 @@ class Queque {
     this.tasks = [];
   }
 
-  addTask(task){
+  addTask(task) {
     this.tasks.push(task);
   };
 
-  run(reverse=false){
+  run(reverse=false) {
     while (this.tasks.length) {
       const task  = reverse ? this.tasks.pop() : this.tasks.shift();
       task();
     }
   };
 
-  flush(){
+  flush() {
     return this.tasks.splice(0);
   };
 
-  getLength(){
+  getLength() {
     return this.tasks.length;
   };
 
-  clear(){
+  clear() {
     this.run();
     this.tasks = [];
   };

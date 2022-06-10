@@ -19,13 +19,13 @@ const SelectInput = Vue.extend({
   },
   template,
   computed:{
-    showNullOption(){
+    showNullOption() {
       return this.state.nullOption === undefined || this.state.nullOption === true;
     },
-    select2NullValue(){
+    select2NullValue() {
       return this.showNullOption && G3W_SELECT2_NULL_VALUE;
     },
-    disabled(){
+    disabled() {
       return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
     }
   },
@@ -49,9 +49,9 @@ const SelectInput = Vue.extend({
     }
   },
   methods: {
-    async pickLayerValue(){
+    async pickLayerValue() {
       try {
-        if (this.picked){
+        if (this.picked) {
           this.pickLayerInputService.unpick();
           this.picked = false;
         } else {
@@ -67,7 +67,7 @@ const SelectInput = Vue.extend({
           });
           this.picked = false;
         }
-      } catch(err){
+      } catch(err) {
         GUI.showUserMessage({
           type: "warning",
           message: 'sdk.form.inputs.messages.errors.picklayer',
@@ -76,7 +76,7 @@ const SelectInput = Vue.extend({
         this.picked = false;
       }
     },
-    setAndListenSelect2Change(){
+    setAndListenSelect2Change() {
       this.select2.on('select2:select', event => {
         let value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
         value = this.showNullOption ? value === G3W_SELECT2_NULL_VALUE ? null : value.toString() : value.toString();
@@ -147,7 +147,7 @@ const SelectInput = Vue.extend({
     this.setValue();
   },
   beforeDestroy() {
-    if (this.pickLayerInputService){
+    if (this.pickLayerInputService) {
       this.pickLayerInputService.clear();
       this.pickLayerInputService = null;
     }

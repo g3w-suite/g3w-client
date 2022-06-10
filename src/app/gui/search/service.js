@@ -17,7 +17,7 @@ class Service extends G3WObject{
       querybuildersearches: QueryBuilderService.getCurrentProjectItems()
     };
   };
-  removeItem({type, index}={}){
+  removeItem({type, index}={}) {
     switch(type) {
       case 'querybuilder':
         this.state.querybuildersearches.splice(index, 1);
@@ -39,7 +39,7 @@ class Service extends G3WObject{
     this.state.panels = {};
   };
 
-  stop(){
+  stop() {
     const d = $.Deferred();
     d.resolve();
     return d.promise();
@@ -55,7 +55,7 @@ class Service extends G3WObject{
     }
   };
 
-  addQueryBuilderSearch(querybuildersearch){
+  addQueryBuilderSearch(querybuildersearch) {
     this.state.querybuildersearches.push(querybuildersearch);
   };
 

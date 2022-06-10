@@ -51,14 +51,14 @@
       }
     },
     methods: {
-      async remove(){
+      async remove() {
         try {
           await Service.delete(this.querybuildersearch);
           this.$emit('delete');
-        } catch(err){}
+        } catch(err) {}
 
       },
-      edit(){
+      edit() {
         QueryBuilderUIFactory.show({
           options: {
             id: this.querybuildersearch.id,

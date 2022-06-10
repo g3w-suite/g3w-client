@@ -10,7 +10,7 @@ import G3WObject from './g3wobject';
  *
  * Chiunque voglia rispondere ad una RouteQuery deve aggiungere una route con RouterService.addRoute(pattern, callback). Es.:
  *
- * var route = RouterService.addRoute('map/{?query}',function(query){
+ * var route = RouterService.addRoute('map/{?query}',function(query) {
  *  console.log(query.point);
  *  console.log(query.zoom);
  * });
@@ -30,7 +30,7 @@ class RouterService extends G3WObject {
   constructor() {
     super({
       setters: {
-        setRouteQuery(routeQuery){
+        setRouteQuery(routeQuery) {
           this._routeQuery = routeQuery;
           crossroads.parse(routeQuery);
         }
@@ -41,7 +41,7 @@ class RouterService extends G3WObject {
     History.Adapter.bind(window,'statechange',() =>{
       const state = History.getState();
       const locationQuery = state.hash;
-      if(state.data && state.data.routequery){
+      if(state.data && state.data.routequery) {
         this.setRouteQuery(state.data.routequery);
       }
       else {
@@ -50,7 +50,7 @@ class RouterService extends G3WObject {
     });
   }
 
-  init(){
+  init() {
     const query = window.location.search;
     this._setRouteQueryFromLocationQuery(query);
   };
@@ -71,7 +71,7 @@ class RouterService extends G3WObject {
     return crossroads.parse(request,defaultArgs);
   };
 
-  goto(routeQuery){
+  goto(routeQuery) {
     //var pathb64 = Base64.encode(path);
     //History.pushState({path:path},null,'?p='+pathb64);
     if (!this._initialQuery) {
@@ -84,13 +84,13 @@ class RouterService extends G3WObject {
     }
   };
 
-  makeQueryString(queryParams){};
+  makeQueryString(queryParams) {};
 
-  slicePath(path){
+  slicePath(path) {
     return path.split('?')[0].split('/');
   };
 
-  sliceFirst(path){
+  sliceFirst(path) {
     const pathAndQuery = path.split('?');
     const queryString = pathAndQuery[1];
     const pathArr = pathAndQuery[0].split('/')
@@ -100,7 +100,7 @@ class RouterService extends G3WObject {
     return [firstPath,path];
   };
 
-  getQueryParams(query){
+  getQueryParams(query) {
     query = query.replace('?','');
     const queryParams = {};
     let queryPairs = [];
@@ -122,11 +122,11 @@ class RouterService extends G3WObject {
     return queryParams;
   };
 
-  getQueryString(path){
+  getQueryString(path) {
     return path.split('?')[1];
   };
 
-  _getQueryPortion(query,queryKey){
+  _getQueryPortion(query,queryKey) {
     let queryPortion;
     try {
       const queryPairs = query.split('&');

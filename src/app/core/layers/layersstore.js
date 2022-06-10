@@ -6,7 +6,7 @@ class LayersStore extends G3WObject{
   constructor(config={}) {
     super({
       setters:{
-        setLayerSelection({layerId, selection}){
+        setLayerSelection({layerId, selection}) {
           const layer = this.getLayerById(layerId);
         },
         setLayerSelected(layerId, selected) {
@@ -183,11 +183,11 @@ class LayersStore extends G3WObject{
     });
   };
 
-  getLayerAttributes(layerId){
+  getLayerAttributes(layerId) {
     return this.getLayerById(layerId).getAttributes();
   };
 
-  getLayerAttributeLabel(layerId,name){
+  getLayerAttributeLabel(layerId,name) {
     return this.getLayerById(layerId).getAttributeLabel(name);
   };
 
@@ -225,7 +225,7 @@ class LayersStore extends G3WObject{
     return nodeIds;
   };
 
-  selectLayer(layerId, selected){
+  selectLayer(layerId, selected) {
     this.setLayerSelected(layerId, selected);
   };
 

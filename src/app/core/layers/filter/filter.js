@@ -17,15 +17,15 @@ export default class Filter {
    * Config methods
    */
 
-  getConfig(){
+  getConfig() {
     return this.config;
   };
 
-  setConfig(config = {}){
+  setConfig(config = {}) {
     this.config = config;
   };
 
-  mergeConfig(config={}){
+  mergeConfig(config={}) {
     this.config = {...this.config, ...config};
   };
 

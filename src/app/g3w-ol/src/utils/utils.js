@@ -79,10 +79,10 @@ export function getDPI() {
 export function getMetersFromDegrees(degrees) {
   return degrees * Units.METERS_PER_UNIT.degrees;
 };
-export function needUseSphereMethods(projection){
+export function needUseSphereMethods(projection) {
   return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
 };
-export function getLengthMessageText({unit, projection, geometry}={}){
+export function getLengthMessageText({unit, projection, geometry}={}) {
   const geometryType = geometry.getType();
   const useSphereMethods = this.needUseSphereMethods(projection);
   const length = useSphereMethods ? sphere.getLength(geometry, {
@@ -101,7 +101,7 @@ export function getLengthMessageText({unit, projection, geometry}={}){
   }
   return message;
 };
-export function getAreaMessageText({unit, geometry, projection, segments=[]}){
+export function getAreaMessageText({unit, geometry, projection, segments=[]}) {
   const useSphereMethods = this.needUseSphereMethods(projection);
   const area =  Math.round(useSphereMethods ? sphere.getArea(geometry, {
     projection: projection.getCode()
@@ -128,7 +128,7 @@ export function getAreaMessageText({unit, geometry, projection, segments=[]}){
     message =`Area: ${message} <br><div style="width: 100%; padding: 3px; border-bottom: 2px solid #ffffff"></div> ${segments_info_meausure}`;
   return message;
 };
-export function formatMeasure({geometry, projection}={}, options={}){
+export function formatMeasure({geometry, projection}={}, options={}) {
   const geometryType = geometry.getType();
   const unit = this.getCurrentMapUnit();
   if (Geometry.isLineGeometryType(geometryType)) {
@@ -137,12 +137,12 @@ export function formatMeasure({geometry, projection}={}, options={}){
       projection,
       geometry
     });
-  } else if (Geometry.isPolygonGeometryType(geometryType)){
+  } else if (Geometry.isPolygonGeometryType(geometryType)) {
     const segments = geometry.getLinearRing().getCoordinates();
     return this.getAreaMessageText({unit, geometry, projection, segments});
   }
 };
-export function createMeasureTooltip({map, feature}={}, options={}){
+export function createMeasureTooltip({map, feature}={}, options={}) {
   const element = document.createElement('div');
   element.className = 'mtooltip mtooltip-measure';
   const tooltip = new Overlay({
@@ -173,7 +173,7 @@ export function createMeasureTooltip({map, feature}={}, options={}){
     unbyKey
   }
 };
-export function getCurrentMapUnit(){
+export function getCurrentMapUnit() {
   return ApplicationState.map.unit;
 };
 /**
@@ -182,7 +182,7 @@ export function getCurrentMapUnit(){
  * @param tounit
  * @returns {null}
  */
-export function transformMeterLength(length, tounit){
+export function transformMeterLength(length, tounit) {
   switch (tounit) {
     case 'nautical':
       length = length * 0.0005399568;
@@ -191,7 +191,7 @@ export function transformMeterLength(length, tounit){
   return length
 };
 
-export function transformMeterArea(area, tounit){
+export function transformMeterArea(area, tounit) {
   switch (tounit) {
     case 'nautical':
       area = area * 0.000000291553349598122862913947445759414840765222583489217190918463024037990567;
@@ -200,12 +200,12 @@ export function transformMeterArea(area, tounit){
   return area;
 };
 
-export function removeMeasureTooltip({map, tooltip, unbyKey}){
+export function removeMeasureTooltip({map, tooltip, unbyKey}) {
   map.removeOverlay(tooltip);
   unByKey(unbyKey);
 };
 
-export function setMeasureTooltipStatic(tooltip){
+export function setMeasureTooltipStatic(tooltip) {
   const element = tooltip.getElement();
   element.className = 'mtooltip mtooltip-static';
   tooltip.setOffset([0, -7]);

@@ -129,7 +129,7 @@ class TableLayer extends Layer {
   }
 
   //sync selection
-  syncSelectionFilterFeatures(commitItems){
+  syncSelectionFilterFeatures(commitItems) {
     try {
       const layer = CatalogLayersStoresRegistry.getLayerById(this.getId());
       layer.isGeoLayer() && commitItems.update.forEach(updateItem =>{
@@ -139,14 +139,14 @@ class TableLayer extends Layer {
       commitItems.delete.forEach(id =>{
         layer.hasSelectionFid(id) && layer.excludeSelectionFid(id);
       })
-    } catch(err){}
+    } catch(err) {}
   };
 
-  setFormPercentage(perc){
+  setFormPercentage(perc) {
     this.config.editing.form.perc = perc;
   };
 
-  getFormPercentage(){
+  getFormPercentage() {
     return this.config.editing.form.perc;
   };
 
@@ -204,7 +204,7 @@ class TableLayer extends Layer {
   };
 
 //check if is editingLayer useful to get editingstyle
-  isEditingLayer(){
+  isEditingLayer() {
     return !!this.config.editing
   };
 
@@ -220,7 +220,7 @@ class TableLayer extends Layer {
     return this.config.editing.constraints;
   };
 
-  getEditingCapabilities(){
+  getEditingCapabilities() {
     return this.config.editing.capabilities;
   };
 
@@ -255,7 +255,7 @@ class TableLayer extends Layer {
     return fields;
   };
 
-  isPkField(field){
+  isPkField(field) {
     const find_field = this.getEditingFields().find(_field => _field.name === field);
     return find_field && find_field.pk;
   };
@@ -269,7 +269,7 @@ class TableLayer extends Layer {
     return this.config.editing.fields.filter(field => !field.editable).map(field => field.name);
   };
 
-  getEditingMediaFields(options=null){
+  getEditingMediaFields(options=null) {
     return this.config.editing.fields.filter(field => field.input.type === 'media').map(field => field.name);
   };
 
@@ -367,7 +367,7 @@ class TableLayer extends Layer {
     return this._editor;
   };
 
-  isStarted(){
+  isStarted() {
     return this.getEditor().isStarted()
   };
 
@@ -392,7 +392,7 @@ class TableLayer extends Layer {
   };
 
 // get editing style
-  getEditingStyle(){
+  getEditingStyle() {
     return this.config.editing.style;
   };
 

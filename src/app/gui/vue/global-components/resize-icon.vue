@@ -15,13 +15,13 @@
               default: 'h'
           }
         },
-        computed(){},
+        computed() {},
         methods:{
-            toggleFull(){
+            toggleFull() {
                 GUI.toggleFullViewContent();
                 GUI.emit('resize');
             },
-            resetToDefault(){
+            resetToDefault() {
                 GUI.resetToDefaultContentPercentage();
                 GUI.emit('resize');
             }

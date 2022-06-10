@@ -2,7 +2,7 @@ import {Style, Stroke} from "ol/style";
 import {always} from "ol/events/condition";
 import { DragBox} from "ol/interaction";
 
-_gis3wlib._interaction.prototype.zoomToBox = function(){
+_gis3wlib._interaction.prototype.zoomToBox = function() {
   const map = this.map;
   const zoomToBox = new DragBox({
     condition: always,

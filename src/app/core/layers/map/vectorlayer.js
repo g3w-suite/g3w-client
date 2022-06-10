@@ -33,7 +33,7 @@ class VectorLayer extends G3WObject{
     return this._provider;
   };
 
-  resetSource(features=[]){
+  resetSource(features=[]) {
     const source = new VectorSource({
       features
     });
@@ -136,7 +136,7 @@ class VectorLayer extends G3WObject{
     this._olLayer.setStyle(style);
   };
 
-  getFeatureById(fid){
+  getFeatureById(fid) {
     return fid ? this._olLayer.getSource().getFeatureById(fid) : null;
   };
 
@@ -148,11 +148,11 @@ class VectorLayer extends G3WObject{
     this._olLayer.setVisible(bool);
   };
 
-  clear(){
+  clear() {
     this.getSource().clear();
   };
 
-  addToMap(map){
+  addToMap(map) {
     map.addLayer(this._olLayer);
   };
 }

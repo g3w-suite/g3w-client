@@ -40,11 +40,11 @@ const FooterFormComponent = Vue.extend({
     }
   },
   watch: {
-    'state.component'(component){
+    'state.component'(component) {
       this.show = this.isRootComponent(component)
     }
   },
-  activated(){
+  activated() {
     this.active = true;
   },
   deactivated() {

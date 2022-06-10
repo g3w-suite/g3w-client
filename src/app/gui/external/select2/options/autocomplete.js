@@ -19,13 +19,13 @@ export default  {
     return null;
   },
   language: {
-    noResults(){
+    noResults() {
       return t("sdk.search.no_results");
     },
-    errorLoading(){
+    errorLoading() {
       return t("sdk.search.error_loading")
     },
-    searching(){
+    searching() {
       return t("sdk.search.searching")
     },
     inputTooShort(args) {

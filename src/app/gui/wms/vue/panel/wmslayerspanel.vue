@@ -25,7 +25,7 @@
   import Projections  from 'g3w-ol/src/projection/projections';
   export default {
     name: "wmpspanel",
-    data(){
+    data() {
       return {
         laoding: false,
         position: undefined,
@@ -42,7 +42,7 @@
       }
     },
     methods: {
-      async addWMSlayer(){
+      async addWMSlayer() {
         const config = {
           url: this.url,
           name: this.name && this.name.trim() || undefined,
@@ -52,27 +52,27 @@
         };
         ///pre
         this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
-        if (!this.added){
+        if (!this.added) {
           this.loading = true;
           try {
             await this.$options.service.addWMSlayer(config);
-          } catch(err){}
+          } catch(err) {}
           this.loading = false;
           this.clear();
         }
       },
-      clear(){
+      clear() {
         this.selectedlayers = [];
         this.name = null;
       },
       //filter layer based on current epsg
-      filterLayerByCurrentEpsg(){
+      filterLayerByCurrentEpsg() {
         this.layers = this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1);
       }
     },
     watch: {
       // when chanhe selected layers
-      selectedlayers(layers){
+      selectedlayers(layers) {
         if (layers.length) {
           const firstLayer = layers[0];
           if (layers.length === 1) {
@@ -88,7 +88,7 @@
           }));
         }
       },
-      async epsg(){
+      async epsg() {
         await this.$nextTick();
         this.filterLayerByCurrentEpsg();
       }

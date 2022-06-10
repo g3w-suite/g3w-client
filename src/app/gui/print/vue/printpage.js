@@ -20,12 +20,12 @@ const InternalComponent = Vue.extend({
     }
   },
   methods: {
-    setLoading(bool=false){
+    setLoading(bool=false) {
       GUI.disableSideBar(bool);
       this.state.loading = bool;
       this.disableddownloadbutton = bool;
     },
-    downloadImage(){
+    downloadImage() {
       this.setLoading(true);
       if (this.format === 'jpg' || this.format === 'png' ) {
         this.downloadImageName = `download.${this.state.format}`;

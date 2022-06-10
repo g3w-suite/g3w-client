@@ -71,7 +71,7 @@ export const addI18n = function(i18nObject) {
   }
 };
 
-export const changeLanguage = function(lng){
+export const changeLanguage = function(lng) {
   i18next.changeLanguage(lng);
 };
 

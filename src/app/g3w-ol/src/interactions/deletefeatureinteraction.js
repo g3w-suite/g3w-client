@@ -32,7 +32,7 @@ class DeleteInteraction extends Pointer {
 }
 
 function handleEvent_(mapBrowserEvent) {
-  if (mapBrowserEvent.type == 'keydown'){
+  if (mapBrowserEvent.type == 'keydown') {
     if(this.features_.getArray().length && mapBrowserEvent.originalEvent.keyCode == 46) {
       // an event can be string or an object with attribute type
       this.dispatchEvent(

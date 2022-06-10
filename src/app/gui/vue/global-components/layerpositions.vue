@@ -23,17 +23,17 @@
         default: MAP_SETTINGS.LAYER_POSITIONS.default
       }
     },
-    data(){
+    data() {
       return {
         layerpositions: MAP_SETTINGS.LAYER_POSITIONS.getPositions()
       }
     },
     methods: {
-      change(){
+      change() {
         this.$emit('layer-position-change', this.position)
       }
     },
-    created(){
+    created() {
       this.ids = {
         layerpositions: utils.getUniqueDomId(),
       };

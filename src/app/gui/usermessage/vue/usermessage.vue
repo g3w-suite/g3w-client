@@ -97,15 +97,15 @@
       }
     },
     computed:{
-      showheader(){
+      showheader() {
         return this.type !== 'loading';
       }
     },
     methods: {
-      addClassMobile(){
+      addClassMobile() {
         return this.isMobile() && !GUI.isSidebarVisible();
       },
-      closeUserMessage(){
+      closeUserMessage() {
         this.$emit('close-usermessage')
       },
       hideShow() {}
@@ -157,7 +157,7 @@
       ...position,
       }
     },
-    async mounted(){
+    async mounted() {
       if (this.autoclose) {
         await this.$nextTick();
         const timeout = setTimeout(() =>{

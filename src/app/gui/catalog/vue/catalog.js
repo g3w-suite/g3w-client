@@ -104,7 +104,7 @@ const vueComponentOptions = {
   },
   computed: {
     //show or not group toolbar
-    showTocTools(){
+    showTocTools() {
       const {map_themes=[]} = this.project.state;
       const show = map_themes.length > 1;
       return show;
@@ -118,7 +118,7 @@ const vueComponentOptions = {
     baselayers() {
       return this.project.state.baselayers;
     },
-    hasBaseLayers(){
+    hasBaseLayers() {
       return this.project.state.baselayers.length > 0;
     },
     hasLayers() {
@@ -129,12 +129,12 @@ const vueComponentOptions = {
   },
   methods: {
     //change view method
-    async changeMapTheme(map_theme){
+    async changeMapTheme(map_theme) {
       GUI.closeContent();
       const changes = await this.$options.service.changeMapTheme(map_theme);
       const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
         if (changes.layers[layerId].style) {
-          if (!changes.layers[layerId].visible){
+          if (!changes.layers[layerId].visible) {
             const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
             layer.change();
           }
@@ -149,7 +149,7 @@ const vueComponentOptions = {
           })
         });
     },
-    delegationClickEventTab(evt){
+    delegationClickEventTab(evt) {
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
     },
     showLegend(bool) {
@@ -209,9 +209,9 @@ const vueComponentOptions = {
       }
       return canZoom;
     },
-    getGeometryType(layerId, external=false){
+    getGeometryType(layerId, external=false) {
       let geometryType;
-      if (external){
+      if (external) {
         const layer = this.state.external.vector.find(layer => layer.id === layerId);
         if (layer) geometryType = layer.geometryType;
       } else {
@@ -237,11 +237,11 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isGpkgDownlodable(): false;
     },
-    canDownloadCsv(layerId){
+    canDownloadCsv(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isCsvDownlodable(): false;
     },
-    canDownloadGeoTIFF(layerId){
+    canDownloadGeoTIFF(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isGeoTIFFDownlodable(): false;
     },
@@ -267,7 +267,7 @@ const vueComponentOptions = {
       document.body.removeChild(tempInput);
       ancorEement = null;
     },
-    downloadGeoTIFF(layerId, map_extent=false){
+    downloadGeoTIFF(layerId, map_extent=false) {
       const caller_download_id = ApplicationService.setDownload(true);
       this.layerMenu.loading.geotiff = true;
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -343,7 +343,7 @@ const vueComponentOptions = {
           this._hideMenu();
         })
     },
-    changeLayerMapPosition({position, layer}){
+    changeLayerMapPosition({position, layer}) {
       const mapService = GUI.getService('map');
       const changed = layer.position !== position;
       layer.position = position;
@@ -353,7 +353,7 @@ const vueComponentOptions = {
       });
       changed && this._hideMenu();
     },
-    setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}){
+    setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}) {
       this.layerMenu.layer.opacity = opacity;
       const mapService = GUI.getService('map');
       mapService.changeLayerOpacity({
@@ -366,14 +366,14 @@ const vueComponentOptions = {
      * @param layer
      * @returns {Promise<void>}
      */
-    async downloadExternalShapefile(layer){
+    async downloadExternalShapefile(layer) {
       const EPSG4326 = 'EPSG:4326';
       this.layerMenu.loading.shp = true;
       const mapService = GUI.getService('map');
       const vectorLayer = mapService.getLayerByName(layer.name);
       const GeoJSONFormat = new GeoJSON();
       let features = vectorLayer.getSource().getFeatures();
-      if (layer.crs !== EPSG4326){
+      if (layer.crs !== EPSG4326) {
         features = features.map(feature => {
           const clonefeature = feature.clone();
           clonefeature.getGeometry().transform(layer.crs, EPSG4326);
@@ -434,7 +434,7 @@ const vueComponentOptions = {
       this.showColorMenu(false);
       this.layerMenu.stylesMenu.show = false;
     },
-    onbeforeDestroyChangeColor(){
+    onbeforeDestroyChangeColor() {
      this.$refs.color_picker.$off();
     },
     onChangeColor(val) {
@@ -445,7 +445,7 @@ const vueComponentOptions = {
       style._g3w_options.color = val;
       layer.setStyle(style);
     },
-    setCurrentLayerStyle(index){
+    setCurrentLayerStyle(index) {
       let changed = false;
       this.layerMenu.layer.styles.forEach((style, idx) =>{
         if (idx === index) {
@@ -476,7 +476,7 @@ const vueComponentOptions = {
       this.layerMenu.stylesMenu.show = bool;
     },
     //showmetadatainfo
-    async showMetadataInfo(bool, evt){
+    async showMetadataInfo(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.metadatainfoMenu.top = elem.offset().top;
@@ -496,13 +496,13 @@ const vueComponentOptions = {
   },
   watch: {
     // listen external wms change. If remove all layer nee to set active the project or default tab
-    'state.external.wms'(newlayers, oldlayers){
-      if (oldlayers && newlayers.length === 0){
+    'state.external.wms'(newlayers, oldlayers) {
+      if (oldlayers && newlayers.length === 0) {
         this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
       }
     },
     'state.prstate.currentProject': {
-      async handler(project, oldproject){
+      async handler(project, oldproject) {
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
         this.loading = activeTab === 'baselayers';
         await this.$nextTick();
@@ -566,7 +566,7 @@ const vueComponentOptions = {
       }
     });
   },
-  beforeMount(){
+  beforeMount() {
     this.currentBaseLayer = this.project.state.initbaselayer;
   }
 };
@@ -606,13 +606,13 @@ Vue.component('tristate-tree', {
     isGroup() {
       return !!this.layerstree.nodes
     },
-    legendlayerposition(){
+    legendlayerposition() {
       return !this.layerstree.exclude_from_legend && this.legendplace === 'toc' && this.layerstree.visible && this.layerstree.legend ? 'toc' : 'tab';
     },
-    showscalevisibilityclass(){
+    showscalevisibilityclass() {
       return !this.isGroup && this.layerstree.scalebasedvisibility
     },
-    showScaleVisibilityToolip(){
+    showScaleVisibilityToolip() {
       return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
     },
     isTable() {
@@ -640,7 +640,7 @@ Vue.component('tristate-tree', {
   },
   methods: {
     //method to inizialize layer (disable, visible etc..)
-    init(){
+    init() {
       if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
       if (this.isGroup && !this.root) {
         this.layerstree.nodes.forEach(node => {
@@ -653,11 +653,11 @@ Vue.component('tristate-tree', {
      * Handel change checked property of group
      * @param group
      */
-    handleGroupChecked(group){
+    handleGroupChecked(group) {
       let {checked, parentGroup, nodes} = group;
       const setAllLayersVisible = ({nodes, visible}) => {
         nodes.forEach(node => {
-          if (node.id !== undefined){
+          if (node.id !== undefined) {
             if (node.parentGroup.checked && node.checked) {
               const projectLayer = CatalogLayersStoresRegistry.getLayerById(node.id);
               projectLayer.setVisible(visible);
@@ -668,9 +668,9 @@ Vue.component('tristate-tree', {
           })
         });
       };
-      if (checked){
+      if (checked) {
         const visible = parentGroup ? parentGroup.checked : true;
-        if (parentGroup && parentGroup.mutually_exclusive){
+        if (parentGroup && parentGroup.mutually_exclusive) {
           parentGroup.nodes.forEach(node => {
             node.checked = node.groupId === group.groupId;
             node.checked && setAllLayersVisible({
@@ -682,7 +682,7 @@ Vue.component('tristate-tree', {
           nodes,
           visible
         });
-        while (parentGroup){
+        while (parentGroup) {
           parentGroup.checked = parentGroup.root || parentGroup.checked;
           parentGroup = parentGroup.parentGroup
         }
@@ -704,10 +704,10 @@ Vue.component('tristate-tree', {
      * Handle changing checked property of layer
      * @param layer
      */
-    handleLayerChecked(layerObject){
+    handleLayerChecked(layerObject) {
       let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
       // in case of external layer
-      if (!projectLayer){
+      if (!projectLayer) {
         const mapService = GUI.getService('map');
         mapService.changeLayerVisibility({
           id,
@@ -723,7 +723,7 @@ Vue.component('tristate-tree', {
           if (parentGroup.mutually_exclusive) {
             parentGroup.nodes.forEach(node => node.checked = node.id === id);
           }
-          while (parentGroup){
+          while (parentGroup) {
             parentGroup.checked = true;
             parentGroup = parentGroup.parentGroup;
           }
@@ -731,10 +731,10 @@ Vue.component('tristate-tree', {
         CatalogEventHub.$emit('treenodevisible', layer);
       }
     },
-    toggleFilterLayer(){
+    toggleFilterLayer() {
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
-    clearSelection(){
+    clearSelection() {
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
     toggle() {
@@ -784,7 +784,7 @@ Vue.component('layerslegend',{
       return {}
     },
     computed: {
-      visiblelayers(){
+      visiblelayers() {
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
         let traverse = obj => {
@@ -799,7 +799,7 @@ Vue.component('layerslegend',{
     },
     watch: {
       'layerstree': {
-        handler(val, old){},
+        handler(val, old) {},
         deep: true
       },
       'visiblelayers'(visibleLayers) {
@@ -835,7 +835,7 @@ Vue.component('layerslegend-items',{
   },
   watch: {
     layers: {
-      handler(layers){
+      handler(layers) {
         // used to preved duplicate legend
         setTimeout(()=>{
           this.mapReady && this.getLegendSrc(layers)
@@ -851,11 +851,11 @@ Vue.component('layerslegend-items',{
     }
   },
   methods: {
-    setError(legendurl){
+    setError(legendurl) {
       legendurl.error = true;
       legendurl.loading = false;
     },
-    urlLoaded(legendurl){
+    urlLoaded(legendurl) {
       legendurl.loading = false;
     },
     getLegendUrl(layer, params={}) {
@@ -945,13 +945,13 @@ Vue.component('layerslegend-items',{
       }
     }
   },
-  created(){
+  created() {
     this.mapReady = false;
     this.waitinglegendsurls = []; // urls that are waiting to be loaded
     CatalogEventHub.$on('layer-change-style', (options={}) => {
       const {layerId} = options;
       let changeLayersLegend =[];
-      if (layerId){
+      if (layerId) {
         const layer = this.layers.find(layer => layerId == layer.id);
         layer && changeLayersLegend.push(layer);
       } else changeLayersLegend = this.layers;

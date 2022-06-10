@@ -23,13 +23,13 @@
         default: false
       }
     },
-    data(){
+    data() {
       return {
         value:''
       }
     },
     methods: {
-      validateValue(value){
+      validateValue(value) {
         value = value && 1*value;
         return Number.isInteger(value) && value >=0 && value < this.atlas.feature_count || null;
       }
@@ -46,7 +46,7 @@
             for (let i=1; i<rangeLenght; i++) {
               const start = range[i-1];
               const end = range[i];
-              for (let _i=start; _i < end; _i++ ){
+              for (let _i=start; _i < end; _i++ ) {
                 values.add(_i+'');
               }
             }
@@ -72,7 +72,7 @@
           this.$emit('disable-print-button', value.trim() === '');
         }
       },
-      reset(bool){
+      reset(bool) {
         if (bool) {
           this.value = '';
           this.$emit('set-values', []);

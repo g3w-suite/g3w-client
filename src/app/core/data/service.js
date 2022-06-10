@@ -10,11 +10,11 @@ class BaseService {
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  handleRequest(request){
+  handleRequest(request) {
     //  OVERWRITE TO SERVICE
   };
 
-  handleResponse = async function(response){
+  handleResponse = async function(response) {
     //  OVERWRITE TO SERVICE
   };
 }

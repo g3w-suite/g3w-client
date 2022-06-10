@@ -7,7 +7,7 @@ import GeojsonLayer  from './geojson';
 
 // Class to build layer based on configuration
 class LayerFactory {
-  constructor(){
+  constructor() {
   }
   build(config, options) {
     // return the layer instance

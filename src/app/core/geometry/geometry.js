@@ -45,11 +45,11 @@ export const GeometryTypes = {
   GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
   GEOMETRYCOLLECTION25D: "GeometryCollection25D"
 };
-export function addZValueToOLFeatureGeometry({feature, geometryType}={}){
+export function addZValueToOLFeatureGeometry({feature, geometryType}={}) {
   const geometry = feature.getGeometry();
   geometryType = geometryType || geometry.getType();
   const originalFeatureCoordinates = geometry.getCoordinates();
-  switch (geometryType){
+  switch (geometryType) {
     //POINT //[x,y]
     case this.GeometryTypes.POINTZ:
     case this.GeometryTypes.POINTM:
@@ -118,7 +118,7 @@ export function addZValueToOLFeatureGeometry({feature, geometryType}={}){
   }
   return feature;
 };
-export function getOLGeometry(geometryType){
+export function getOLGeometry(geometryType) {
   switch (geometryType) {
     case this.GeometryTypes.LINESTRINGZ:
     case this.GeometryTypes.LINESTRINGM:
@@ -169,7 +169,7 @@ export function getOLGeometry(geometryType){
   }
   return geometryType;
 };
-export function isMultiGeometry(geometryType){
+export function isMultiGeometry(geometryType) {
   return [
     this.GeometryTypes.MULTIPOINT,
     this.GeometryTypes.MULTIPOINTZ,
@@ -193,7 +193,7 @@ export function isMultiGeometry(geometryType){
     this.GeometryTypes.MULTIPOLYGON25D
   ].indexOf(geometryType) !== -1;
 };
-export function getAllPointGeometryTypes(){
+export function getAllPointGeometryTypes() {
   return [
     Geometry.GeometryTypes.POINT,
     Geometry.GeometryTypes.POINTZ,
@@ -207,10 +207,10 @@ export function getAllPointGeometryTypes(){
     Geometry.GeometryTypes.MULTIPOINT25D
   ]
 };
-export function isPointGeometryType(geometryType){
+export function isPointGeometryType(geometryType) {
   return Geometry.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
 };
-export function getAllLineGeometryTypes(){
+export function getAllLineGeometryTypes() {
   return [
     Geometry.GeometryTypes.LINESTRING,
     Geometry.GeometryTypes.LINESTRINGZ,
@@ -233,10 +233,10 @@ export function getAllLineGeometryTypes(){
     Geometry.GeometryTypes.MULTILINEZM,
     Geometry.GeometryTypes.MULTILINE25D]
 };
-export function isLineGeometryType(geometryType){
+export function isLineGeometryType(geometryType) {
   return Geometry.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
 };
-export function getAllPolygonGeometryTypes(){
+export function getAllPolygonGeometryTypes() {
   return [
     Geometry.GeometryTypes.POLYGON,
     Geometry.GeometryTypes.POLYGONZ,
@@ -250,10 +250,10 @@ export function getAllPolygonGeometryTypes(){
     Geometry.GeometryTypes.MULTIPOLYGON25D
   ]
 };
-export function isPolygonGeometryType(geometryType){
+export function isPolygonGeometryType(geometryType) {
   return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
 };
-export function is3DGeometry(geometryType){
+export function is3DGeometry(geometryType) {
   return [
     Geometry.GeometryTypes.POINTZ,
     Geometry.GeometryTypes.POINTM,

@@ -30,7 +30,7 @@ class QGISProvider extends Provider {
     * action: create, update, delete
   * */
 
-  async deleteFilterToken(){
+  async deleteFilterToken() {
     await XHR.get({
       url: this._filtertokenUrl,
       params:{
@@ -39,19 +39,19 @@ class QGISProvider extends Provider {
     })
   };
 
-  async getFilterToken(params={}){
+  async getFilterToken(params={}) {
     try {
       const {data={} } = await XHR.get({
         url: this._filtertokenUrl,
         params
       });
       return data.filtertoken;
-    } catch(err){
+    } catch(err) {
       return Promise.reject(err);
     }
   };
 
-  async getFilterData({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
+  async getFilterData({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}) {
     const dataUrl = this._layer.getUrl('data');
     const params = {
       field,
@@ -76,7 +76,7 @@ class QGISProvider extends Provider {
         })
       }: Promise.reject();
       return data;
-    } catch(error){
+    } catch(error) {
       return Promise.reject(error);
     }
   };
@@ -231,12 +231,12 @@ class QGISProvider extends Provider {
             data: jsonFilter,
             contentType
           })
-        } else if (filter.fids){
+        } else if (filter.fids) {
           promise = XHR.get({
             url,
             params: filter
           })
-        } else if (filter.nofeatures){
+        } else if (filter.nofeatures) {
           const jsonFilter = JSON.stringify({
             field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
           });

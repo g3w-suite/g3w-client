@@ -81,7 +81,7 @@ class CatalogService extends G3WObject {
     });
   };
 
-  async changeMapTheme(map_theme){
+  async changeMapTheme(map_theme) {
     // set is changing project view
     ApplicationService.changeProjectView(true);
     const {currentProject} = this.state.prstate;

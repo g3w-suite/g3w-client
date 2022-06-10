@@ -17,18 +17,18 @@
                 required: true
             }
         },
-        data(){
+        data() {
           return {
               infoformat: this.layer.infoformat
           }
         },
         computed: {
-            infoformats(){
+            infoformats() {
                 return this.layer.infoformats || [];
             }
         },
         methods: {
-          async reloadLayerDataWithChangedContentType(contenttype){
+          async reloadLayerDataWithChangedContentType(contenttype) {
               const queryService = GUI.getService('queryresults');
               this.layer.loading = true;
               try {
@@ -46,7 +46,7 @@
                       layers: [this.projectLayer],
                       response
                   });
-                  if (data.features){
+                  if (data.features) {
                       this.layer.rawdata = null;
                       data.features.forEach(feature => {
                           const {id:fid, geometry, properties:attributes} = queryService.getFeaturePropertiesAndGeometry(feature);
@@ -85,14 +85,14 @@
           }
         },
         watch: {
-          'infoformat'(value){
+          'infoformat'(value) {
               this.reloadLayerDataWithChangedContentType(value);
           }
         },
-        created(){
+        created() {
             this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
         },
-        beforeDestroy(){
+        beforeDestroy() {
             this.projectLayer && this.projectLayer.clearProxyData('wms');
             this.projectLayer = null;
         }

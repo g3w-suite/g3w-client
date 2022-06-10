@@ -26,15 +26,15 @@ class Routerservice {
      * }
      */
     this.ouputplaces = {
-      async gui(dataPromise, options={}){
+      async gui(dataPromise, options={}) {
         GUI.setLoadingContent(true);
         try {
           GUI.outputDataPlace(dataPromise, options);
           await dataPromise;
-        } catch(err){}
+        } catch(err) {}
         GUI.setLoadingContent(false);
       },
-      async iframe(dataPromise, options={}){
+      async iframe(dataPromise, options={}) {
         IFrameRouterService.outputDataPlace(dataPromise, options);
       }
     };
@@ -44,7 +44,7 @@ class Routerservice {
    *
    * @returns {Promise<void>}
    */
-  async init(){
+  async init() {
     this.services = {
       query: queryService,
       search: searchService,
@@ -60,7 +60,7 @@ class Routerservice {
    * @param options
    * @returns {Promise<void>}
    */
-  async getData(contextAndMethod, options={}){
+  async getData(contextAndMethod, options={}) {
     const {context, method} = utils.splitContextAndMethod(contextAndMethod);
     const service = getService(context);
     const {inputs={}, outputs={}} = options;
@@ -78,7 +78,7 @@ class Routerservice {
    *Force to show empty output data
    *
    * */
-  showEmptyOutputs(){
+  showEmptyOutputs() {
     const dataPromise = Promise.resolve({
       data: []
     });
@@ -91,7 +91,7 @@ class Routerservice {
    * Set a costum datapromiseoutput to applicationa outputs settede
    * @param dataPromise
    */
-  showCustomOutputDataPromise(dataPromise){
+  showCustomOutputDataPromise(dataPromise) {
     currentoutputplaces.forEach(place =>{
       ouputplaces[place](dataPromise, {});
     });
@@ -102,13 +102,13 @@ class Routerservice {
    * @param serviceName
    * @returns {*}
    */
-  getService(serviceName){
+  getService(serviceName) {
     return services[serviceName]
   };
 
   /*
   * */
-  setOutputPlaces(places=[]){
+  setOutputPlaces(places=[]) {
     this.currentoutputplaces = places;
   };
 
@@ -116,7 +116,7 @@ class Routerservice {
    *
    * @param place
    */
-  addCurrentOutputPlace(place){
+  addCurrentOutputPlace(place) {
     place && currentoutputplaces.indexOf(place) === -1 && currentoutputplaces.push(place);
   };
 
@@ -126,17 +126,17 @@ class Routerservice {
    * @param method has to get two parameters data (promise) and options (Object)
    * ex {
    * place: <newplace>
-   * method(dataPromise, options={}){}
+   * method(dataPromise, options={}) {}
    *   }
    */
-  addNewOutputPlace({place, method=()=>{}}={}){
+  addNewOutputPlace({place, method=()=>{}}={}) {
     const added = ouputplaces[place] === undefined;
     if (added) ouputplaces[place] = method;
     return added;
   };
 
   // reset default configuration
-  resetDefaultOutput(){
+  resetDefaultOutput() {
     this.currentoutputplaces = [...defaultoutputplaces];
   };
 

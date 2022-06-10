@@ -18,7 +18,7 @@ class ProjectsRegistry extends G3WObject {
     this.projectType = null;
     this.overviewproject;
     this.setters = {
-      createProject(projectConfig){
+      createProject(projectConfig) {
         //hook to get project config and modify it
       },
       setCurrentProject(project) {
@@ -79,7 +79,7 @@ class ProjectsRegistry extends G3WObject {
     return d.promise();
   };
 
-  clear(){
+  clear() {
     this.config = null;
     this.initialized = false;
     this.projectType = null;
@@ -243,7 +243,7 @@ class ProjectsRegistry extends G3WObject {
           if (find_map_theme) {
             const url_theme = `/${type}/api/prjtheme/${id}/${map_theme}`;
             $.get(url_theme).done(({result, data:layerstree}) =>{
-              if (result){
+              if (result) {
                 projectFullConfig.layerstree = layerstree;
                 find_map_theme.layetstree = layerstree;
                 find_map_theme.default = true;

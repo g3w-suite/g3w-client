@@ -111,7 +111,7 @@ class ContentsViewerComponent extends Component {
   };
 
 // get current contentdata
-  getCurrentContentData(){
+  getCurrentContentData() {
     return this.stack.getCurrentContentData();
   };
 

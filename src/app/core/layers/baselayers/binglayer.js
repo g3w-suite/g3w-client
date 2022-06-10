@@ -4,10 +4,10 @@ import  BaseLayer from 'core/layers/baselayers/baselayer';
 import BasesLayers  from 'g3w-ol/src/layers/bases';
 
 class BingLayer extends BaseLayer {
-  constructor(config={}, options={}){
+  constructor(config={}, options={}) {
     super(config, options);
   }
-  makeOlLayer(){
+  makeOlLayer() {
     let olLayer;
     const key = ApplicationState.keys.vendorkeys.bing || BING_API_KEY;
     const subtype = this.config.source ? this.config.source.subtype : null;

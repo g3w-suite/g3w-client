@@ -49,7 +49,7 @@ export function  createControlUserMessageTool(tool={
     }
   },
   title: 'Scelgli il tipo di operazione'
-}){
+}) {
   GUI.showUserMessage({
     type: 'tool',
     message: tool.message,

@@ -28,7 +28,7 @@ class WMSTLayer extends MapLayer {
     return this.getOLLayer().getSource().getGetFeatureInfoUrl(coordinate,resolution,epsg,params);
   };
 
-  getLayerConfigs(){
+  getLayerConfigs() {
     return this.layers;
   };
 
@@ -49,7 +49,7 @@ class WMSTLayer extends MapLayer {
     this._updateLayers(mapState, extraParams);
   };
 
-  isVisible(){
+  isVisible() {
     return this._getVisibleLayers().length > 0;
   };
 

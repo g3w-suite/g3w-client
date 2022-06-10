@@ -16,7 +16,7 @@
     props: ['forminput','autocompleteRequest'],
     mixins: [select2Mixin],
     methods: {
-      emitChangeEvent(evt){
+      emitChangeEvent(evt) {
         const id = $(evt.target).attr('id');
         const attribute = $(evt.target).attr('name');
         const data = evt.params.data;
@@ -48,7 +48,7 @@
                   value
                 });
                 success({results: data});
-              } catch(error){
+              } catch(error) {
                 failure(error);
               }
             }
@@ -72,7 +72,7 @@
         }
       }
     },
-    created(){
+    created() {
       this.allvalue = ALLVALUE;
     },
     async mounted() {

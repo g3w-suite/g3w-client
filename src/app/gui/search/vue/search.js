@@ -16,7 +16,7 @@ const vueComponentOptions = {
     'g3w-search-querybuilder': G3WSearchQuerybuilder
   },
   computed: {
-    show(){
+    show() {
       return this.state.searches.length + this.state.searchtools.length + this.state.querybuildersearches.length > 0;
     }
   },
@@ -24,7 +24,7 @@ const vueComponentOptions = {
     showPanel(config={}) {
       this.$options.service.showPanel(config);
     },
-    removeItem({type, index}){
+    removeItem({type, index}) {
       this.$options.service.removeItem({
         type,
         index

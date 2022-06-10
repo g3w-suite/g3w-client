@@ -24,11 +24,11 @@ class G3WObject extends EventEmitter {
    * @param {function} listener - listener function (only syncron)
    * @param {number} priority - Priorità di esecuzione: valore minore viene eseuito prima
    */
-  onafter(setter, listener, priority){
+  onafter(setter, listener, priority) {
     return this._onsetter('after', setter, listener, false, priority);
   };
 
-  onceafter(setter, listener, priority){
+  onceafter(setter, listener, priority) {
     return this._onsetter('after', setter, listener, false, priority, true);
   };
 
@@ -43,7 +43,7 @@ class G3WObject extends EventEmitter {
   };
 
 // once before
-  oncebefore(setter, listener, priority){
+  oncebefore(setter, listener, priority) {
     return this._onsetter('before', setter, listener, false, priority, true);
   };
 

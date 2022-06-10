@@ -19,7 +19,7 @@ class ExpressionService extends BaseService {
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  async expression({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
+  async expression({qgs_layer_id, layer_id, form_data, expression, formatter=1}) {
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
@@ -45,7 +45,7 @@ class ExpressionService extends BaseService {
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   async expression_eval({qgs_layer_id, form_data, expression, formatter=1}={}){
+   async expression_eval({qgs_layer_id, form_data, expression, formatter=1}={}) {
     const url = this.project.getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
@@ -66,7 +66,7 @@ class ExpressionService extends BaseService {
    * @contentType
    * @returns {Promise<*>}
    */
-  async handleRequest({url, params={}, contentType='application/json'}={}){
+  async handleRequest({url, params={}, contentType='application/json'}={}) {
     const {XHR} = utils;
     let data;
     try {
@@ -75,7 +75,7 @@ class ExpressionService extends BaseService {
         contentType,
         data: JSON.stringify(params)
       });
-    } catch(err){}
+    } catch(err) {}
     return data;
   };
 
@@ -83,7 +83,7 @@ class ExpressionService extends BaseService {
    * Common method to handle response
    * @param response
    */
-  handleResponse(response={}){
+  handleResponse(response={}) {
     return geoutils.getFeaturesFromResponseVectorApi(response);
 
   };

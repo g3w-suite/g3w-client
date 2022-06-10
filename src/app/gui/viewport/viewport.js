@@ -271,21 +271,21 @@ class ViewportService extends G3WObject {
     return prevContentPerc;
   };
 
-  resetToDefaultContentPercentage(){
+  resetToDefaultContentPercentage() {
     const currentRightPanel = this.getCurrentContentLayout();
     currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_default`];
     currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
   };
 
-  toggleFullViewContent(){
+  toggleFullViewContent() {
     ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`];
     this._layoutComponents();
   };
 
-  isFullViewContent(){
+  isFullViewContent() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
       .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`]
   };
@@ -323,12 +323,12 @@ class ViewportService extends G3WObject {
     return this.contentLength() ? this.state.content.contentsdata[this.contentLength() -1] : null;
   };
 
-  getCurrentContentTitle(){
+  getCurrentContentTitle() {
     const currentContent = this.getCurrentContent();
     return currentContent && currentContent.options.title
   };
 
-  changeCurrentContentTitle(title=''){
+  changeCurrentContentTitle(title='') {
     const currentContent = this.getCurrentContent();
     if (currentContent) currentContent.options.title = title;
   };
@@ -357,7 +357,7 @@ class ViewportService extends G3WObject {
     return d.promise()
   };
 
-  disableContent(disabled){
+  disableContent(disabled) {
     this.state.content.disabled = disabled;
   };
   removeContent() {
@@ -516,7 +516,7 @@ class ViewportService extends G3WObject {
     this.state[secondaryView].sizes.height = secondaryHeight;
   };
 
-  getViewportSize(){
+  getViewportSize() {
     return {
       width: this._viewportWidth(),
       height: this._viewportHeight()
@@ -542,7 +542,7 @@ class ViewportService extends G3WObject {
    * @param sizes
    * @param perc
    */
-  resizeViewComponents(type, sizes={}, perc){
+  resizeViewComponents(type, sizes={}, perc) {
     this.setResized(type, true);
     this.setContentPercentageFromCurrentLayout(type, perc);
     this._layout('resize');
@@ -553,15 +553,15 @@ class ViewportService extends G3WObject {
    * @param type
    * @param perc
    */
-  setContentPercentageFromCurrentLayout(type=this.state.split, perc){
+  setContentPercentageFromCurrentLayout(type=this.state.split, perc) {
     this.getCurrentContentLayout()[type==='h'? 'width': 'height'] = perc;
   };
 
-  getContentPercentageFromCurrentLayout(type= this.state.split){
+  getContentPercentageFromCurrentLayout(type= this.state.split) {
     return this.getCurrentContentLayout()[type==='h'? 'width': 'height'];
   };
 
-  getCurrentContentLayout(){
+  getCurrentContentLayout() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
   };
 
@@ -661,11 +661,11 @@ const ViewportComponent = Vue.extend({
     }
   },
   computed: {
-    showresize(){
+    showresize() {
       const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
       return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
     },
-    showresizeicon(){
+    showresizeicon() {
       return this.state.secondaryPerc !== 100;
     },
     hooks() {
@@ -706,7 +706,7 @@ const ViewportComponent = Vue.extend({
         return {title, post_title};
       }
     },
-    backOrBackTo(){
+    backOrBackTo() {
       const contentsData = this.state.content.contentsdata;
       return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
 
@@ -729,10 +729,10 @@ const ViewportComponent = Vue.extend({
     gotoPreviousContent() {
       viewportService.popContent();
     },
-    closeUserMessage(){
+    closeUserMessage() {
       viewportService.closeUserMessage();
     },
-    moveFnc(evt){
+    moveFnc(evt) {
       const size =  this.state.split === 'h' ? 'width' : 'height';
       evt.preventDefault();
       const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH : $('#main-navbar').height();

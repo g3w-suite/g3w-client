@@ -42,7 +42,7 @@ class VectorParser {
         layers
       });
       return parser.readFeatures(gml);
-    } catch(err){
+    } catch(err) {
       return [];
     }
   };
@@ -57,7 +57,7 @@ class VectorParser {
         geometryName: "geometry"
       });
       return geojson.readFeatures(data);
-    } catch(err){
+    } catch(err) {
       return [];
     }
   };

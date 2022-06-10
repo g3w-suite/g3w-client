@@ -76,7 +76,7 @@ export default  function({steps={}}={}) {
             }, step.dynamic),
             step.buttonnext && h('button', {
               on: {
-                click(){
+                click() {
                   step.done = true;
                   step.buttonnext.done();
                 }

@@ -19,7 +19,7 @@ class AppService extends BaseService{
    * Init service
    * @returns {Promise<unknown>}
    */
-  init(){
+  init() {
     return new Promise((resolve, reject) =>{
       this.mapService.once('ready', ()=>{
         this._map = this.mapService.getMap();
@@ -37,12 +37,12 @@ class AppService extends BaseService{
    *
    * @returns {Promise<void>}
    */
-  async results({capture=true}){
+  async results({capture=true}) {
     capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
     return [];
   };
 
-  async screenshot({capture=true}){
+  async screenshot({capture=true}) {
     const action = 'app:screenshot';
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
       try {
@@ -54,7 +54,7 @@ class AppService extends BaseService{
             data: blob
           }
         })
-      } catch(err){
+      } catch(err) {
         this.emit('response', {
           action,
           response: {
@@ -72,7 +72,7 @@ class AppService extends BaseService{
    * @param params
    * @returns {Promise<void>}
    */
-  async getcenter(params={}){
+  async getcenter(params={}) {
     return this.mapService.getCenter();
   };
 
@@ -81,7 +81,7 @@ class AppService extends BaseService{
    * @param params
    * @returns {Promise<[]>}
    */
-  async zoomtocoordinates(params={}){
+  async zoomtocoordinates(params={}) {
     const {coordinates=[], highlight=false} = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       this.mapService.zoomTo(coordinates);
@@ -94,7 +94,7 @@ class AppService extends BaseService{
    * @param params
    * @returns {Promise<void>}
    */
-  async getextent(params={}){
+  async getextent(params={}) {
     return this.mapService.getMapExtent();
   };
 
@@ -103,16 +103,16 @@ class AppService extends BaseService{
    * @param params
    * @returns {Promise<[]>}
    */
-  async zoomtoextent(params={}){
+  async zoomtoextent(params={}) {
     const {extent=[]} = params;
-    if (extent && Array.isArray(extent) && extent.length === 4){
+    if (extent && Array.isArray(extent) && extent.length === 4) {
       this.mapService.goToBBox(extent);
       return extent;
     } else return Promise.reject(extent);
   };
 
   //method to zoom to features
-  async zoomtofeature(params={}){
+  async zoomtofeature(params={}) {
     return new Promise(async (resolve, reject) => {
       let {qgs_layer_id, feature, highlight=false} = params;
       qgs_layer_id = this.getQgsLayerId({

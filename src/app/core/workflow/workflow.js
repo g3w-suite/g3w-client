@@ -133,11 +133,11 @@ class Workflow extends G3WObject{
     return Object.keys(this._userMessageSteps).length;
   };
 
-  reject (){
+  reject () {
     this._promise && this._promise.reject();
   };
 
-  resolve(){
+  resolve() {
     this._promise && this._promise.resolve();
   };
 
@@ -211,7 +211,7 @@ class Workflow extends G3WObject{
     return d.promise();
   };
 
-  clearUserMessagesSteps(){
+  clearUserMessagesSteps() {
     this._resetUserMessaggeStepsDone();
     GUI.closeUserMessage();
   };

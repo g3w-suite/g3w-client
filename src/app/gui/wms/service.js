@@ -25,9 +25,9 @@ class Service {
   /**
    * Getting Wms Urls from local browser storage
    */
-  async loadClientWmsUrls(){
+  async loadClientWmsUrls() {
     let data = this.getLocalWMSData();
-    if (data === undefined){
+    if (data === undefined) {
       data = {
         urls: [], // unique url fro wms
         wms: {} // object contain url as key and array of layers bind to url
@@ -69,7 +69,7 @@ class Service {
    * @param name
    * @param config
    */
-  changeLayerData(name, attribute={}){
+  changeLayerData(name, attribute={}) {
     const data = this.getLocalWMSData();
     Object.keys(data.wms).find(wmsurl =>{
       const wmsConfigLayers = data.wms[wmsurl];
@@ -88,7 +88,7 @@ class Service {
    * @param added
    * @returns {{error, status: string}}
    */
-  getRequestStatusObject({error=false, added=false}={}){
+  getRequestStatusObject({error=false, added=false}={}) {
     return {
       error,
       added
@@ -100,7 +100,7 @@ class Service {
    * @param wmsurl
    * @returns {*}
    */
-  addNewWmsUrl = async function(wmsurl){
+  addNewWmsUrl = async function(wmsurl) {
     const findwmsurl = this.state.localwmsurls.find(url => url == wmsurl);
     const status = this.getRequestStatusObject({
       added: !!findwmsurl
@@ -118,7 +118,7 @@ class Service {
           this.showWmsLayersPanel(response);
         } else status.error = true;
       }
-      catch(err){
+      catch(err) {
         status.error = true;
       }
     }
@@ -129,7 +129,7 @@ class Service {
    * Delete WMS
    * @param name
    */
-  deleteWms(name){
+  deleteWms(name) {
     const data = this.getLocalWMSData();
     Object.keys(data.wms).find(wmsurl =>{
       const wmsConfigLayers = data.wms[wmsurl];
@@ -147,13 +147,13 @@ class Service {
    * @param name
    * @param layers
    */
-  checkIfWMSAlreadyAdded({url, layers=[]}={}){
+  checkIfWMSAlreadyAdded({url, layers=[]}={}) {
     let added = false;
     const data = this.getLocalWMSData();
-    if (data.wms[url]){
+    if (data.wms[url]) {
       added = !!data.wms[url].find(({layers:addedLayers}) => {
         const layersLength = layers.length;
-        if (addedLayers.length === layersLength){
+        if (addedLayers.length === layersLength) {
           return layers.reduce((accumulator, layerName) =>{
             return accumulator + addedLayers.indexOf(layerName) !== -1 ? 1 : 0;
           },0) === layersLength;
@@ -167,7 +167,7 @@ class Service {
    * Delete url from local storage
    * @param wmsurl
    */
-  deleteWmsUrl(wmsurl){
+  deleteWmsUrl(wmsurl) {
     this.state.localwmsurls = this.state.localwmsurls.filter(url => url !== wmsurl);
     const data = this.getLocalWMSData();
     data.urls = this.state.localwmsurls;
@@ -179,16 +179,16 @@ class Service {
    * @param wmsurl
    * @returns {Promise<{added: boolean, error: boolean}>}
    */
-  loadWMSDataAndShowWmsLayersPanel = async function(wmsurl){
+  loadWMSDataAndShowWmsLayersPanel = async function(wmsurl) {
     const status = this.getRequestStatusObject();
     try {
       const response = await this.getWMSLayers(wmsurl);
       status.error = !response.result;
-      if (response.result){
+      if (response.result) {
         response.wmsurl = wmsurl;
         this.showWmsLayersPanel(response);
       }
-    } catch(err){
+    } catch(err) {
       status.error = true;
     }
     return status;
@@ -199,7 +199,7 @@ class Service {
    * @param wmsurl
    * @returns {WmsLayersPanel}
    */
-  showWmsLayersPanel(config={}){
+  showWmsLayersPanel(config={}) {
     this.panel = new WMSLayersPanel({
       service: this,
       config
@@ -213,7 +213,7 @@ class Service {
    * @param url
    * @returns {Promise<{result: boolean, info_formats: [], layers: [], map_formats: [], abstract: null, title: null}>}
    */
-  getWMSLayers = async function(url){
+  getWMSLayers = async function(url) {
     let response = {
       result: false,
       layers: [],
@@ -229,14 +229,14 @@ class Service {
         },
         outputs: false
       });
-    } catch(err){
+    } catch(err) {
       console.log(err)
     }
     if (response.result) return response;
     return response;
   };
 
-  loadWMSLayerToMap({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
+  loadWMSLayerToMap({url, name, epsg, position, opacity, visible=true, layers=[]}={}) {
     const mapService = GUI.getService('map');
     return mapService.addExternalWMSLayer({
       url,
@@ -258,7 +258,7 @@ class Service {
    * @param layers
    * @returns {Promise<void>}
    */
-  addWMSlayer = async function({url, name=`wms_${utils.uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}){
+  addWMSlayer = async function({url, name=`wms_${utils.uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}) {
     const data = this.getLocalWMSData();
     const wmsLayerConfig = {
       url,
@@ -274,7 +274,7 @@ class Service {
     this.updateLocalWMSData(data);
     try {
       await this.loadWMSLayerToMap(wmsLayerConfig);
-    } catch(err){
+    } catch(err) {
       const mapService = GUI.getService('map');
       mapService.removeExternalLayer(name);
       this.deleteWms(name);
@@ -292,7 +292,7 @@ class Service {
    * Method to get local storage wms  data based on current projectId
    * @returns {*}
    */
-  getLocalWMSData(){
+  getLocalWMSData() {
     return ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) && ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM)[this.projectId];
   };
 
@@ -300,7 +300,7 @@ class Service {
    * Method to update local storage data based on changes
    * @param data
    */
-  updateLocalWMSData(data){
+  updateLocalWMSData(data) {
     // in case for the firs time is non present set empty object
     const alldata = ApplicationService.getLocalItem(LOCALSTORAGE_EXTERNALWMS_ITEM) || {};
     alldata[this.projectId] = data;
@@ -310,7 +310,7 @@ class Service {
     })
   };
 
-  clear(){
+  clear() {
     this.panel = null;
   };
 }

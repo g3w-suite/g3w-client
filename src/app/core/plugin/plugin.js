@@ -34,15 +34,15 @@ class Plugin extends G3WObject{
    * Handle layout plugin
    */
 
-  setLayout(config=ApplicationService.cloneLayout('app')){
+  setLayout(config=ApplicationService.cloneLayout('app')) {
     ApplicationService.setLayout(this.name, config);
   };
 
-  setCurrentLayout(){
+  setCurrentLayout() {
     ApplicationService.setCurrentLayout(this.name);
   };
 
-  removeLayout(){
+  removeLayout() {
     ApplicationService.removeLayout(this.name)
   };
 
@@ -150,7 +150,7 @@ class Plugin extends G3WObject{
   };
 
 // create to not replace above plugin method used by non changed old  plugin
-  async getDependencyPluginsObject(pluginsName){
+  async getDependencyPluginsObject(pluginsName) {
     const pluginsApiObject = {};
     const promises = await this.getDependencyPlugins(pluginsName);
     this.dependencies.forEach((pluginName, index) => pluginsApiObject[pluginName] = promises[index]);
@@ -188,7 +188,7 @@ class Plugin extends G3WObject{
     service.addToolGroup(order, group);
   };
 
-  removeToolGroup({hook, group}={}){
+  removeToolGroup({hook, group}={}) {
     const {title} = group;
     const service = this.getHookService(hook);
     service.removeToolGroup(title);
@@ -220,7 +220,7 @@ class Plugin extends G3WObject{
     return tools;
   };
 
-  setToolState({id, state={type:null, message: null}}={}){
+  setToolState({id, state={type:null, message: null}}={}) {
     const service = this._services[this._hook];
     service.setToolState({id, state});
   };
@@ -233,7 +233,7 @@ class Plugin extends G3WObject{
   /**
    * Method to create sibebar item component
    */
-  createSideBarComponent(vueComponentObject, options={}){
+  createSideBarComponent(vueComponentObject, options={}) {
     const {
       id,
       title,
@@ -280,14 +280,14 @@ class Plugin extends G3WObject{
     //console.log('LOAD  need to be overwrite by plugin';
   };
 
-  addFontClass({name, className}){
+  addFontClass({name, className}) {
     Vue.prototype.g3wtemplate.addFontClass({
       name,
       className
     });
   };
 
-  addFontClasses(fonClasses=[]){
+  addFontClasses(fonClasses=[]) {
     fonClasses.forEach(fontClass=> this.addFontClass(fontClass));
   };
 };

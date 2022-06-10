@@ -143,19 +143,19 @@ class Layer extends G3WObject{
    * Proxyparams
    */
 
-  getProxyData(type){
+  getProxyData(type) {
     return type ? this.proxyData[type] : this.proxyData;
   };
 
-  setProxyData= function(type, data={}){
+  setProxyData= function(type, data={}) {
     this.proxyData[type] = data;
   };
 
-  clearProxyData(type){
+  clearProxyData(type) {
     this.proxyData[type] = null;
   };
 
-  async getDataProxyFromServer(type= 'wms', proxyParams={}){
+  async getDataProxyFromServer(type= 'wms', proxyParams={}) {
     try {
       const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
         inputs: proxyParams,
@@ -163,7 +163,7 @@ class Layer extends G3WObject{
       });
       this.setProxyData(type, JSON.parse(data));
       return response;
-    } catch(err){
+    } catch(err) {
       return;
     }
   };
@@ -182,11 +182,11 @@ class Layer extends G3WObject{
    * editing method used by plugin
    */
 
-  isInEditing(){
+  isInEditing() {
     return this.state.inediting;
   };
 
-  setInEditing(bool=false){
+  setInEditing(bool=false) {
     this.state.inediting = bool;
   };
 
@@ -194,7 +194,7 @@ class Layer extends G3WObject{
    * end proxy params
    */
 
-  getSearchParams(){
+  getSearchParams() {
     return this.config.searchParams;
   };
 
@@ -202,7 +202,7 @@ class Layer extends G3WObject{
    *
    * @returns {*}
    */
-  getSearchEndPoint(){
+  getSearchEndPoint() {
     return this.getType() !== Layer.LayerTypes.TABLE ? this.config.search_endpoint : "api";
   };
 
@@ -272,37 +272,37 @@ class Layer extends G3WObject{
 
 
 // global state
-  setAttributeTablePageLength(pageLength){
+  setAttributeTablePageLength(pageLength) {
     this.state.attributetable.pageLength = pageLength
   };
 
-  getAttributeTablePageLength(){
+  getAttributeTablePageLength() {
     return this.state.attributetable.pageLength;
   };
 
 // end global state
 
 //filter token
-  setFilter(bool=false){
+  setFilter(bool=false) {
     this.state.filter.active = bool;
   };
 
-  getFilterActive(){
+  getFilterActive() {
     return this.state.filter.active;
   };
 
-  async toggleFilterToken(){
+  async toggleFilterToken() {
     this.state.filter.active = !this.state.filter.active;
     await this.activeFilterToken(this.state.filter.active);
     return this.state.filter.active;
   };
 
-  async activeFilterToken(bool){
+  async activeFilterToken(bool) {
     await bool ? this.createFilterToken() : this.deleteFilterToken();
   };
 
-  async deleteFilterToken(){
-    if (this.providers['filtertoken']){
+  async deleteFilterToken() {
+    if (this.providers['filtertoken']) {
       try {
         await this.providers['filtertoken'].deleteFilterToken();
         ApplicationService.setFilterToken(null);
@@ -315,8 +315,8 @@ class Layer extends G3WObject{
     }
   };
 
-  async createFilterToken(){
-    if (this.providers['filtertoken']){
+  async createFilterToken() {
+    if (this.providers['filtertoken']) {
       let filtertoken = null;
       try {
         if (this.selectionFids.size > 0) {
@@ -335,7 +335,7 @@ class Layer extends G3WObject{
             layerId: this.getId()
           });
         }
-      } catch(err){
+      } catch(err) {
         console.log('Error create update token');
       }
     }
@@ -343,7 +343,7 @@ class Layer extends G3WObject{
 // end filter token
 //selection Ids layer methods
 
-  setSelectionFidsAll(){
+  setSelectionFidsAll() {
     this.selectionFids.clear();
     this.selectionFids.add(Layer.SELECTION_STATE.ALL);
     this.isGeoLayer() && this.showAllOlSelectionFeatures();
@@ -351,11 +351,11 @@ class Layer extends G3WObject{
     this.state.filter.active && this.createFilterToken();
   };
 
-  getSelectionFids(){
+  getSelectionFids() {
     return this.selectionFids;
   };
 
-  invertSelectionFids(){
+  invertSelectionFids() {
     if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) this.selectionFids.delete(Layer.SELECTION_STATE.EXCLUDE);
     else if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) this.selectionFids.delete(Layer.SELECTION_STATE.ALL);
     else if (this.selectionFids.size > 0) this.selectionFids.add(Layer.SELECTION_STATE.EXCLUDE);
@@ -364,13 +364,13 @@ class Layer extends G3WObject{
     this.setSelection(this.selectionFids.size > 0);
   };
 
-  hasSelectionFid(fid){
+  hasSelectionFid(fid) {
     if (this.selectionFids.has(Layer.SELECTION_STATE.ALL)) return true;
     else if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE)) return !this.selectionFids.has(fid);
     else return this.selectionFids.has(fid) ;
   };
 
-  includeSelectionFid = async function(fid, createToken=true){
+  includeSelectionFid = async function(fid, createToken=true) {
     if (this.selectionFids.has(Layer.SELECTION_STATE.EXCLUDE) && this.selectionFids.has(fid)) {
       this.selectionFids.delete(fid);
       this.selectionFids.size === 1 && this.setSelectionFidsAll();
@@ -382,7 +382,7 @@ class Layer extends G3WObject{
     createToken && this.state.filter.active && await this.createFilterToken();
   };
 
-  includeSelectionFids(fids=[]){
+  includeSelectionFids(fids=[]) {
     fids.forEach(fid => this.includeSelectionFid(fid));
   };
 
@@ -405,7 +405,7 @@ class Layer extends G3WObject{
     fids.forEach(fid => this.excludeSelectionFid(fid));
   };
 
-  clearSelectionFids(){
+  clearSelectionFids() {
     this.selectionFids.clear();
     this.isGeoLayer() && this.setOlSelectionFeatures();
     this.setSelection(false);
@@ -425,7 +425,7 @@ class Layer extends G3WObject{
    * DOWNLOAD METHODS
    */
 
-  getDownloadFilefromDownloadDataType(type, {data, options}){
+  getDownloadFilefromDownloadDataType(type, {data, options}) {
     let promise;
     switch (type) {
       case 'shapefile':
@@ -453,7 +453,7 @@ class Layer extends G3WObject{
     return promise;
   };
 
-  getGeoTIFF({data}={}){
+  getGeoTIFF({data}={}) {
     const url = this.getUrl('geotiff');
     return utils.XHR.fileDownload({
       url,
@@ -462,7 +462,7 @@ class Layer extends G3WObject{
     })
   };
 
-  getXls({data}={}){
+  getXls({data}={}) {
     const url = this.getUrl('xls');
     return utils.XHR.fileDownload({
       url,
@@ -480,7 +480,7 @@ class Layer extends G3WObject{
     })
   };
 
-  getGpx({data}={}){
+  getGpx({data}={}) {
     const url = this.getUrl('gpx');
     return utils.XHR.fileDownload({
       url,
@@ -489,7 +489,7 @@ class Layer extends G3WObject{
     })
   };
 
-  getGpkg({data}={}){
+  getGpkg({data}={}) {
     const url = this.getUrl('gpkg');
     return utils.XHR.fileDownload({
       url,
@@ -498,7 +498,7 @@ class Layer extends G3WObject{
     })
   };
 
-  getCsv({data}={}){
+  getCsv({data}={}) {
     const url = this.getUrl('csv');
     return utils.XHR.fileDownload({
       url,
@@ -559,7 +559,7 @@ class Layer extends G3WObject{
    * Search layer feature by fids
    * @param fids formatter
    */
-  async getFeatureByFids({fids=[], formatter=0}={}){
+  async getFeatureByFids({fids=[], formatter=0}={}) {
     const url = this.getUrl('data');
     let features;
     try {
@@ -571,12 +571,12 @@ class Layer extends G3WObject{
         }
       });
       features = response && response.result && response.vector && response.vector.data && response.vector.data.features;
-    } catch(err){}
+    } catch(err) {}
     return features
   };
 
 //search Features methods
-  searchFeatures(options={}, params={}){
+  searchFeatures(options={}, params={}) {
     const {search_endpoint = this.config.search_endpoint} = options;
     return new Promise(async (resolve, reject) =>{
       switch (search_endpoint) {
@@ -601,7 +601,7 @@ class Layer extends G3WObject{
               unique
             });
             resolve(response);
-          } catch(err){
+          } catch(err) {
             reject(err);
           }
           break;
@@ -615,7 +615,7 @@ class Layer extends G3WObject{
   * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
   * - fields: Array of object with type of suggest (see above)
   * */
-  async getFilterData({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
+  async getFilterData({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}) {
     const provider =  this.getProvider('data');
     const response = await provider.getFilterData({
       queryUrl,
@@ -675,7 +675,7 @@ class Layer extends G3WObject{
    * @param fieldName
    * @returns {*}
    */
-  getFieldByName(fieldName){
+  getFieldByName(fieldName) {
     return this.getFields().find(field => field.name === fieldName)
   };
 
@@ -687,7 +687,7 @@ class Layer extends G3WObject{
     return this.config.fields.filter(field => field.show);
   };
 
-  getTableHeaders(){
+  getTableHeaders() {
     return this.getTableFields().filter(field => geoutils.geometryFields.indexOf(field.name) === -1);
   };
 
@@ -704,7 +704,7 @@ class Layer extends G3WObject{
    * @param fields
    * @returns {[]}
    */
-  getLayerEditingFormStructure(fields){
+  getLayerEditingFormStructure(fields) {
     return this.config.editor_form_structure;
   };
 
@@ -726,7 +726,7 @@ class Layer extends G3WObject{
   };
 
 //get custom style for future implementation
-  getCustomStyle(){
+  getCustomStyle() {
     return this.config.customstyle;
   };
 
@@ -738,16 +738,16 @@ class Layer extends G3WObject{
     return this.state.source;
   };
 
-  isDownloadable(){
+  isDownloadable() {
     return this.isShpDownlodable() || this.isXlsDownlodable() ||
       this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
   };
 
-  getDownloadableFormats(){
+  getDownloadableFormats() {
     return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
   };
 
-  getDownloadUrl(format){
+  getDownloadUrl(format) {
     const find = Object.values(DOWNLOAD_FORMATS).find(download_format => download_format.format === format);
     return find && find.url;
   };
@@ -760,19 +760,19 @@ class Layer extends G3WObject{
     return !this.isBaseLayer() && this.config.download && this.config.source.type !== 'gdal';
   };
 
-  isXlsDownlodable(){
+  isXlsDownlodable() {
     return !this.isBaseLayer() && this.config.download_xls;
   };
 
-  isGpxDownlodable(){
+  isGpxDownlodable() {
     return !this.isBaseLayer() && this.config.download_gpx;
   };
 
-  isGpkgDownlodable(){
+  isGpkgDownlodable() {
     return !this.isBaseLayer() && this.config.download_gpkg;
   };
 
-  isCsvDownlodable(){
+  isCsvDownlodable() {
     return !this.isBaseLayer() && this.config.download_csv;
   };
 
@@ -840,7 +840,7 @@ class Layer extends G3WObject{
     this.state.selected = bool;
   };
 
-  async setSelection(bool=false){
+  async setSelection(bool=false) {
     this.state.selection.active = bool;
     if (!bool) {
       this.state.filter.active && await this.deleteFilterToken();
@@ -849,15 +849,15 @@ class Layer extends G3WObject{
     }
   };
 
-  isSelectionActive(){
+  isSelectionActive() {
     return this.state.selection.active;
   };
 
-  getSelection(){
+  getSelection() {
     return this.state.selection;
   };
 
-  getFilter(){
+  getFilter() {
     return this.state.filter;
   };
 
@@ -890,11 +890,11 @@ class Layer extends G3WObject{
     return queryEnabled;
   };
 
-  getOws(){
+  getOws() {
     return this.config.ows;
   };
 
-  getTocHighlightable(){
+  getTocHighlightable() {
     return this.state.tochighlightable
   };
 
@@ -923,7 +923,7 @@ class Layer extends G3WObject{
   /**
    * Check if layer is setup as time series
    */
-  isQtimeseries(){
+  isQtimeseries() {
     return this.config.qtimeseries;
   };
 
@@ -945,7 +945,7 @@ class Layer extends G3WObject{
    * @param type
    * @param url
    */
-  setUrl({type, url}={}){
+  setUrl({type, url}={}) {
     this.config.urls[type] = url;
   };
 
@@ -982,7 +982,7 @@ class Layer extends G3WObject{
     else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
   };
 
-  getInfoFormats(){
+  getInfoFormats() {
     return this.state.infoformats;
   };
 
@@ -1030,7 +1030,7 @@ class Layer extends G3WObject{
   };
 
   canShowTable() {
-    if (!this.config.not_show_attributes_table){
+    if (!this.config.not_show_attributes_table) {
       if (this.getServerType() === Layer.ServerTypes.QGIS) {
         if( ([
           Layer.SourceTypes.POSTGIS,
@@ -1051,10 +1051,10 @@ class Layer extends G3WObject{
     } else return false
   };
 
-  changeFieldType({name, type, options={}, reset=false}={}){
+  changeFieldType({name, type, options={}, reset=false}={}) {
     const field = this.getFields().find(field => field.name === name);
-    if (field){
-      if (reset){
+    if (field) {
+      if (reset) {
         field.type = field._type;
         delete field._type;
         delete field[`${type}options`];
@@ -1068,11 +1068,11 @@ class Layer extends G3WObject{
     }
   };
 
-  changeConfigFieldType({name, type, options={},reset=false}){
+  changeConfigFieldType({name, type, options={},reset=false}) {
     return this.changeFieldType({name, type, options, reset});
   };
 
-  resetConfigField({name}){
+  resetConfigField({name}) {
     this.changeConfigFieldType({
       name,
       reset: true
@@ -1080,13 +1080,13 @@ class Layer extends G3WObject{
   };
 
 //function called in case of change project to remove all sored information
-  clear(){};
+  clear() {};
 
   isVector() {
     return this.getType() === Layer.LayerTypes.VECTOR;
   };
 
-  isTable(){
+  isTable() {
     return this.getType() === Layer.LayerTypes.TABLE;
   };
 

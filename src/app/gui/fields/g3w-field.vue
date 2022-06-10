@@ -22,7 +22,7 @@
     components: {
       ...Fields
     },
-    created(){
+    created() {
       this.type = fieldsService.getType(this.state)
     }
   }

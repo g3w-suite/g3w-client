@@ -27,13 +27,13 @@ const vueComponentObject = {
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
-    isRootComponent(component){
+    isRootComponent(component) {
       return this.$options.service.isRootComponent(component);
     },
-    backToRoot(){
+    backToRoot() {
       this.$options.service.setRootComponent();
     },
-    handleRelation(relationId){
+    handleRelation(relationId) {
       this.$options.service.handleRelation(relationId);
     },
      disableComponent({id, disabled=false}) {
@@ -42,7 +42,7 @@ const vueComponentObject = {
          disabled
        });
      },
-    resizeForm(perc){
+    resizeForm(perc) {
       this.$options.service.setCurrentFormPercentage(perc)
     },
     switchComponent(id) {
@@ -119,11 +119,11 @@ class FormComponent extends Component {
    * Used to add component to form body
    * @param component
    */
-  addBodyFormComponent({component, where='after'}={}){
+  addBodyFormComponent({component, where='after'}={}) {
     this.getInternalComponent().body.components[where].push(component);
   };
 
-  addBodyFormComponents({components=[], where="after"}={}){
+  addBodyFormComponents({components=[], where="after"}={}) {
     components.forEach(component =>  this.addBodyFormComponent({
       component,
       where

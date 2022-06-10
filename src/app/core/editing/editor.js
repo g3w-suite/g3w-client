@@ -89,7 +89,7 @@ class Editor extends G3WObject {
     return this._layer;
   };
 
-  removeNotEditablePropriertiesFromFeature(feature){
+  removeNotEditablePropriertiesFromFeature(feature) {
     this._noteditablefileds.forEach(field => {
       feature.unset([field]);
     });
@@ -100,7 +100,7 @@ class Editor extends G3WObject {
     return features.map(feature => feature.clone());
   };
 
-  _addFeaturesFromServer(features=[]){
+  _addFeaturesFromServer(features=[]) {
     features = this._cloneFeatures(features);
     this._featuresstore.addFeatures(features);
   };
@@ -166,7 +166,7 @@ class Editor extends G3WObject {
     }
   };
 
-  setFieldValueToRelationField({relationId, ids, field, values=[]}={}){
+  setFieldValueToRelationField({relationId, ids, field, values=[]}={}) {
     const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
     ids.forEach(id => {
       const feature = editingLayerSource.getFeatureById(id);
@@ -206,7 +206,7 @@ class Editor extends G3WObject {
     }
   };
 
-  getLockIds(){
+  getLockIds() {
     return this._layer.getSource().getLockIds();
   };
 
@@ -277,11 +277,11 @@ class Editor extends G3WObject {
     this._featuresstore.setFeatures(features);
   };
 
-  readFeatures(){
+  readFeatures() {
     return this._layer.readFeatures();
   };
 
-  readEditingFeatures(){
+  readEditingFeatures() {
     return this._featuresstore.readFeatures()
   };
 
@@ -357,7 +357,7 @@ class Editor extends G3WObject {
     return this._layer;
   };
 
-  removeNotEditablePropriertiesFromFeature(feature){
+  removeNotEditablePropriertiesFromFeature(feature) {
     this._noteditablefileds.forEach(field => {
       feature.unset([field]);
     });
@@ -368,7 +368,7 @@ class Editor extends G3WObject {
     return features.map(feature => feature.clone());
   };
 
-  _addFeaturesFromServer(features=[]){
+  _addFeaturesFromServer(features=[]) {
     features = this._cloneFeatures(features);
     this._featuresstore.addFeatures(features);
   };
@@ -434,7 +434,7 @@ class Editor extends G3WObject {
     }
   };
 
-  setFieldValueToRelationField({relationId, ids, field, values=[]}={}){
+  setFieldValueToRelationField({relationId, ids, field, values=[]}={}) {
     const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
     ids.forEach(id => {
       const feature = editingLayerSource.getFeatureById(id);
@@ -474,7 +474,7 @@ class Editor extends G3WObject {
     }
   };
 
-  getLockIds(){
+  getLockIds() {
     return this._layer.getSource().getLockIds();
   };
 
@@ -545,11 +545,11 @@ class Editor extends G3WObject {
     this._featuresstore.setFeatures(features);
   };
 
-  readFeatures(){
+  readFeatures() {
     return this._layer.readFeatures();
   };
 
-  readEditingFeatures(){
+  readEditingFeatures() {
     return this._featuresstore.readFeatures()
   };
 

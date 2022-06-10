@@ -60,7 +60,7 @@ class Service {
     this._validator = validator;
   };
 
-  setEmpty(){
+  setEmpty() {
     this.state.validate.empty = !((Array.isArray(this.state.value) && this.state.value.length) || !_.isEmpty(_.trim(this.state.value)));
   };
 

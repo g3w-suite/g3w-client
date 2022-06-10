@@ -92,12 +92,12 @@
       }
     },
     methods: {
-      loadingRelation(relation){
+      loadingRelation(relation) {
         const layer = ProjectRegistry.getCurrentProject().getLayerById(this.layerid);
         const relation_project = layer.getRelationById(relation.name);
         return relation_project.state;
       },
-      isRelationDisabled(relation){
+      isRelationDisabled(relation) {
         return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
@@ -105,7 +105,7 @@
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-      isRelationChildLayerNotEditable(relation){
+      isRelationChildLayerNotEditable(relation) {
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
         const currentProject = ProjectRegistry.getCurrentProject();

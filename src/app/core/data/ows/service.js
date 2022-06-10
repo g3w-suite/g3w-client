@@ -10,7 +10,7 @@ class OWSService extends BaseService {
    * @param params
    * @returns {Promise<{data: string, response: *}>}
    */
-  async wmsCapabilities({url} ={}){
+  async wmsCapabilities({url} ={}) {
     const {XHR} = utils;
     const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
     try {
@@ -25,7 +25,7 @@ class OWSService extends BaseService {
         data
       });
       return response;
-    } catch(err){
+    } catch(err) {
       return;
     }
   };

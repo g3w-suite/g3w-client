@@ -77,7 +77,7 @@ class EditingService extends BaseService{
 
   // METHODS CALLED FROM EACH ACTION METHOD
   // run before each action
-  async startAction({toolboxes, resolve, reject}){
+  async startAction({toolboxes, resolve, reject}) {
     this.responseObject.cb = reject;
     // set same mode autosave
     this.dependencyApi.setSaveConfig({
@@ -105,7 +105,7 @@ class EditingService extends BaseService{
   };
 
   //run after each action
-  async stopAction(options={}){
+  async stopAction(options={}) {
     const {qgs_layer_id} = options;
     qgs_layer_id && await this.stopEditing(qgs_layer_id);
   };
@@ -129,7 +129,7 @@ class EditingService extends BaseService{
       const disableToolboxes = [];
       toolboxes.forEach(toolbox => {
         const addFeatureTool = toolbox.getToolById('addfeature');
-        if (addFeatureTool.isActive()){
+        if (addFeatureTool.isActive()) {
           addFeatureTool.setEnabled(false);
           activeTool = addFeatureTool;
         } else {
@@ -158,7 +158,7 @@ class EditingService extends BaseService{
   };
 
   // method to add subscribe refenrence
-  addSubscribeEvents(event, options={}){
+  addSubscribeEvents(event, options={}) {
     const handler = this.subscribersHandlers[event](options);
     this.dependencyApi.subscribe(event, handler);
     this.subscribevents.push({
@@ -171,7 +171,7 @@ class EditingService extends BaseService{
   /**
    * Reset subscriber editing plugin events
    */
-  resetSubscribeEvents(){
+  resetSubscribeEvents() {
     this.subscribevents.forEach(({event, handler}) =>{
       this.dependencyApi.unsubscribe(event, handler);
     })
@@ -182,9 +182,9 @@ class EditingService extends BaseService{
    * @param options
    * @returns {Promise<void>}
    */
-  add(config={}){
+  add(config={}) {
     return new Promise(async (resolve, reject) => {
-      if (this.isRunning){
+      if (this.isRunning) {
         reject();
       } else {
         // extract qgslayerid from configuration message
@@ -226,9 +226,9 @@ class EditingService extends BaseService{
    * @param config
    * @returns {Promise<unknown>}
    */
-  async update(config={}){
+  async update(config={}) {
     return new Promise(async (resolve, reject)=>{
-      if (this.isRunning){
+      if (this.isRunning) {
         reject();
       } else {
         const {qgs_layer_id: configQglLayerId, ...data} = config;
@@ -271,7 +271,7 @@ class EditingService extends BaseService{
     })
   };
 
-  delete(){};
+  delete() {};
 
   /**
    * Start editing called when we want to start editing
@@ -312,7 +312,7 @@ class EditingService extends BaseService{
     this.clear();
   };
 
-  stop(){
+  stop() {
     return new Promise((resolve, reject)=>{
       this.dependencyApi.hidePanel();
       GUI.hideSidebar();
@@ -324,7 +324,7 @@ class EditingService extends BaseService{
    * Method called wen we want to reset default editing plugin behaviour
    *
    * */
-  clear(){
+  clear() {
     this.dependencyApi.resetDefault();
     this.isRunning = false;
     this.responseObject = {

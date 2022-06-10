@@ -52,7 +52,7 @@ class GeoLayerMixin{
   /**
    * Clear all selection openlayer features
    */
-  clearOlSelectionFeatures(){
+  clearOlSelectionFeatures() {
     this.olSelectionFeatures = null;
   };
 
@@ -61,11 +61,11 @@ class GeoLayerMixin{
    * @param id
    * @returns {*}
    */
-  getOlSelectionFeature(id){
+  getOlSelectionFeature(id) {
     return this.olSelectionFeatures[id];
   };
 
-  updateOlSelectionFeature({id, geometry}={}){
+  updateOlSelectionFeature({id, geometry}={}) {
     const featureObject = this.getOlSelectionFeature(id);
     if (featureObject) {
       geometry = new geom[geometry.type](geometry.coordinates);
@@ -82,7 +82,7 @@ class GeoLayerMixin{
    * Delete openlayer feature selection by feature id
    * @param id
    */
-  deleteOlSelectionFeature(id){
+  deleteOlSelectionFeature(id) {
     const featureObject = this.olSelectionFeatures[id];
     if (featureObject) {
       mapService.setSelectionFeatures('remove', {
@@ -96,11 +96,11 @@ class GeoLayerMixin{
    * Get all openlyare feature selection
    * @returns {{}|null}
    */
-  getOlSelectionFeatures(){
+  getOlSelectionFeatures() {
     return this.olSelectionFeatures;
   };
 
-  addOlSelectionFeature({id, geometry}={}){
+  addOlSelectionFeature({id, geometry}={}) {
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
       feature: geoutils.createFeatureFromGeometry({id, geometry}),
       added: false
@@ -108,7 +108,7 @@ class GeoLayerMixin{
     return this.olSelectionFeatures[id];
   };
 
-  showAllOlSelectionFeatures(){
+  showAllOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
     Object.values(this.olSelectionFeatures).forEach(featureObject =>{
       !featureObject.added && mapService.setSelectionFeatures('add', {
@@ -118,7 +118,7 @@ class GeoLayerMixin{
     })
   };
 
-  setInversionOlSelectionFeatures(){
+  setInversionOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
     Object.values(this.olSelectionFeatures).forEach(featureObject => {
       mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
@@ -128,12 +128,12 @@ class GeoLayerMixin{
     });
   };
 
-  setOlSelectionFeatureByFid(fid, action){
+  setOlSelectionFeatureByFid(fid, action) {
     const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
     return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
   };
 
-  setOlSelectionFeatures(feature, action='add'){
+  setOlSelectionFeatures(feature, action='add') {
     const mapService = GUI.getComponent('map').getService();
     if (!feature) {
       Object.values(this.olSelectionFeatures).forEach(featureObject => {
@@ -164,7 +164,7 @@ class GeoLayerMixin{
    * @param type
    * @private
    */
-  _sanitizeSourceUrl(type='wms'){
+  _sanitizeSourceUrl(type='wms') {
     const sanitizedUrl = utils.sanitizeUrl({
       url: this.config.source.url,
       reserverParameters: RESERVERDPARAMETRS[type]
@@ -172,11 +172,11 @@ class GeoLayerMixin{
     this.config.source.url = sanitizedUrl;
   };
 
-  isLayerCheckedAndAllParents(){
+  isLayerCheckedAndAllParents() {
     let checked = this.isChecked();
     if (checked) {
       let parentGroup = this.state.parentGroup;
-      while(checked && parentGroup){
+      while(checked && parentGroup) {
         checked = checked && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
@@ -220,11 +220,11 @@ class GeoLayerMixin{
   };
 
 //get style form layer
-  getStyles(){
+  getStyles() {
     return this.config.source.external ? this.config.source.styles : this.config.styles;
   };
 
-  getStyle(){
+  getStyle() {
     return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
   };
 
@@ -233,7 +233,7 @@ class GeoLayerMixin{
    * @param currentStyleName
    * @returns {boolean}
    */
-  setCurrentStyle(currentStyleName){
+  setCurrentStyle(currentStyleName) {
     let changed = false;
     this.config.styles.forEach(style => {
       if (style.name === currentStyleName)
@@ -257,7 +257,7 @@ class GeoLayerMixin{
       // looping through parentfolter checked
       let setVisible = true;
       let parentGroup = this.state.parentGroup;
-      while (parentGroup){
+      while (parentGroup) {
         setVisible = setVisible && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
@@ -287,7 +287,7 @@ class GeoLayerMixin{
     return this.config.projection;
   };
 
-  getEpsg(){
+  getEpsg() {
     return this.config.crs.epsg;
   };
 
@@ -295,7 +295,7 @@ class GeoLayerMixin{
     return this.config.projection && this.config.projection.getCode() || null;
   };
 
-  getMapCrs(){
+  getMapCrs() {
     return this.config.map_crs;
   };
 

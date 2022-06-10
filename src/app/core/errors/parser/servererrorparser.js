@@ -23,7 +23,7 @@ class serverErrorParser{
               error_message = `${error_message}${field} ${Array.isArray(error)? error[0] : error} `;
             });
           }
-        } catch(err){}
+        } catch(err) {}
         return error_message.replace(/\:|\./g, '');
       } else {
         const [, value] = entries[0];

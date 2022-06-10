@@ -89,7 +89,7 @@ class TableService extends G3WObject {
     this.layer.on('filtertokenchange', this.filterChangeHandler);
   }
 
-  async toggleFilterToken(){
+  async toggleFilterToken() {
     await this.layer.toggleFilterToken();
   };
 
@@ -117,7 +117,7 @@ class TableService extends G3WObject {
     return data;
   };
 
-  addRemoveSelectedFeature(feature){
+  addRemoveSelectedFeature(feature) {
     feature.selected = !feature.selected;
     if (this.state.selectAll) {
       this.state.selectAll = false;
@@ -138,21 +138,21 @@ class TableService extends G3WObject {
       }
     }
     this.state.tools.show = this.selectedfeaturesfid.size > 0;
-    if (!this.state.pagination){
+    if (!this.state.pagination) {
       if (this.nopaginationsfilter.length) {
         this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.nopaginationsfilter.length;
       }
     }
   };
 
-  getAllFeatures(params){
+  getAllFeatures(params) {
     GUI.setLoadingContent(true);
     return new Promise((resolve, reject) =>{
       this.layer.getDataTable(params || {})
         .then(data =>{
           const {features} = data;
           if (this.geolayer && features) {
-            if (!params){
+            if (!params) {
               const LoadedFeaturesId = this.state.features.map(feature => feature.id);
               features.forEach(feature => {
                 if (LoadedFeaturesId.indexOf(feature.id) === -1) {
@@ -172,7 +172,7 @@ class TableService extends G3WObject {
     })
   };
 
-  async switchSelection(){
+  async switchSelection() {
     if (!this.state.pagination) { // no pagination
       if (this.nopaginationsfilter.length) { //filtered
         let selected = false;
@@ -206,7 +206,7 @@ class TableService extends G3WObject {
     }
   };
 
-  clearLayerSelection(){
+  clearLayerSelection() {
     this.layer.clearSelectionFids();
   };
 
@@ -214,7 +214,7 @@ class TableService extends G3WObject {
    * Called when alla selected feature is checked
    * @returns {Promise<void>}
    */
-  async selectAllFeatures(){
+  async selectAllFeatures() {
     // set inverse of selectAll
     this.state.selectAll = !this.state.selectAll;
     if (!this.state.pagination) { //no pagination no filter
@@ -270,13 +270,13 @@ class TableService extends G3WObject {
    * Method to set filtered features
    * @param featuresIndex
    */
-  setFilteredFeature(featuresIndex){
+  setFilteredFeature(featuresIndex) {
     this.nopaginationsfilter = featuresIndex;
     this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
       : this.nopaginationsfilter.map(index=> this.state.features[index]));
   };
 
-  setAttributeTablePageLength(length){
+  setAttributeTablePageLength(length) {
     this.layer.setAttributeTablePageLength(length);
   };
 
@@ -355,17 +355,17 @@ class TableService extends G3WObject {
     });
   };
 
-  setInBBoxParam(){
+  setInBBoxParam() {
     this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : void 0;
   };
 
-  resetMapBBoxEventHandlerKey(){
+  resetMapBBoxEventHandlerKey() {
     unByKey(this.mapBBoxEventHandlerKey.key);
     this.mapBBoxEventHandlerKey.key = null;
     this.mapBBoxEventHandlerKey.cb = null;
   };
 
-  async getDataFromBBOX(){
+  async getDataFromBBOX() {
     this.state.tools.geolayer.active = !this.state.tools.geolayer.active;
     if (this.state.tools.geolayer.active) {
       this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
@@ -401,7 +401,7 @@ class TableService extends G3WObject {
     this.state.features.push(tableFeature);
   };
 
-  checkSelectAll(features=this.state.features){
+  checkSelectAll(features=this.state.features) {
     this.state.selectAll = this.selectedfeaturesfid.has(Layer.SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
   };
 
@@ -411,7 +411,7 @@ class TableService extends G3WObject {
     this.checkSelectAll();
   };
 
-  async reloadData(pagination=false){
+  async reloadData(pagination=false) {
     this.state.features.splice(0);
     this.state.pagination = pagination;
     const tabledata = await this.getData();
@@ -441,7 +441,7 @@ class TableService extends G3WObject {
   /**
    * Zoom to eventually features relation
    */
-  zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true){
+  zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true) {
     if (this.relationsGeometry.length) {
       const features = [];
       const promises = [];
@@ -451,7 +451,7 @@ class TableService extends G3WObject {
         values.push(value);
         if (features[value] === undefined) {
           let promise;
-          if (zoom){
+          if (zoom) {
             promise = DataRouterService.getData('search:features', {
               inputs:{
                 layer,
@@ -474,10 +474,10 @@ class TableService extends G3WObject {
       });
       const promisesData = await Promise.allSettled(promises);
       promisesData.forEach(({status, value}, index) => {
-        if (status === 'fulfilled'){
+        if (status === 'fulfilled') {
           const _features = value.data[0] ? value.data[0].features : [];
           _features.forEach(feature => features.push(feature));
-          if (this.relationsGeometry[index].features[values[index]] === undefined){
+          if (this.relationsGeometry[index].features[values[index]] === undefined) {
             this.relationsGeometry[index].features[values[index]] = _features;
           }
         }
@@ -488,7 +488,7 @@ class TableService extends G3WObject {
     }
   };
 
-  clear(){
+  clear() {
     this.layer.off('unselectionall', this.clearAllSelection);
     this.layer.off('filtertokenchange', this.filterChangeHandler);
     this.resetMapBBoxEventHandlerKey();

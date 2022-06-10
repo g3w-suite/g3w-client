@@ -36,7 +36,7 @@ class PickFeatureInteraction extends Pointer {
   };
 
   handleUpEvent_(event) {
-    if(this.pickedFeature_){
+    if(this.pickedFeature_) {
       this.dispatchEvent(
         new PickFeatureEvent(
           PickFeatureEventType.PICKED,
@@ -70,11 +70,11 @@ class PickFeatureInteraction extends Pointer {
     return featureFound;
   };
 
-  shouldStopEvent(){
+  shouldStopEvent() {
     return false;
   };
 
-  setMap(map){
+  setMap(map) {
     if (!map) {
       const elem = this.getMap().getTargetElement();
       elem.style.cursor = '';

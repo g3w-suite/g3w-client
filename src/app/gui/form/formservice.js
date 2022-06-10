@@ -88,10 +88,10 @@ class FormService extends G3WObject {
    * Method to handle expression on
    * @param fields
    */
-  handleFieldsWithExpression(fields=[]){
+  handleFieldsWithExpression(fields=[]) {
     fields.forEach(field => {
       const {options={}} = field.input;
-      if (options.filter_expression){
+      if (options.filter_expression) {
         const {referencing_fields=[]} = options.filter_expression;
         referencing_fields.forEach(referencing_field =>{
           if (referencing_field) {
@@ -109,7 +109,7 @@ class FormService extends G3WObject {
     })
   };
 
-  setCurrentFormPercentage(perc){
+  setCurrentFormPercentage(perc) {
     this.layer.setFormPercentage(perc)
   };
 
@@ -117,7 +117,7 @@ class FormService extends G3WObject {
     this.state.loading = bool;
   };
 
-  setValidComponent({id, valid}){
+  setValidComponent({id, valid}) {
     this.state.componentstovalidate[id] = valid;
     this.isValid();
   };
@@ -126,12 +126,12 @@ class FormService extends G3WObject {
     return this.state.componentstovalidate[id];
   };
 
-  changeInput(input){
+  changeInput(input) {
     this.evaluateExpression(input);
     this.isValid(input);
   };
 
-  evaluateExpression(input){
+  evaluateExpression(input) {
     const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
     if (expression_fields_dependencies) {
       const feature = this.feature.clone();
@@ -235,7 +235,7 @@ class FormService extends G3WObject {
     else this.state.disabledcomponents = this.state.disabledcomponents.filter(disableId => disabledId !== id);
   };
 
-  setCurrentComponentById(id){
+  setCurrentComponentById(id) {
     if (this.state.disabledcomponents.indexOf(id) === -1) {
       this.setIdHeader(id);
       this.state.component = this.state.components.find(component => component.id === id).component;
@@ -246,15 +246,15 @@ class FormService extends G3WObject {
   /**
    * setRootComponent (is form )
    */
-  setRootComponent(){
+  setRootComponent() {
     this.state.component = this.state.components.find(component => component.root).component;
   };
 
-  getRootComponent(){
+  getRootComponent() {
     return this.state.components.find(component => component.root).component;
   };
 
-  isRootComponent(component){
+  isRootComponent(component) {
     return this.getRootComponent() == component;
   };
 
@@ -286,7 +286,7 @@ class FormService extends G3WObject {
     return this.state.fields;
   };
 
-  _getField(fieldName){
+  _getField(fieldName) {
     return this.state.fields.find(field => field.name === fieldName);
   };
 
@@ -314,7 +314,7 @@ class FormService extends G3WObject {
    * handleRelation
    */
 
-  handleRelation({relationId, feature}){
+  handleRelation({relationId, feature}) {
     //OVERWRITE BY  PLUGIN EDITING PLUGIN
   };
 

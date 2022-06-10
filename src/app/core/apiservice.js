@@ -19,12 +19,12 @@ class ApiService extends G3WObject {
     return d.promise();
   };
 
-  _incrementLoaders(){
+  _incrementLoaders() {
     this.howManyAreLoading === 0 && this.emit('apiquerystart');
     this.howManyAreLoading += 1;
   };
 
-  _decrementLoaders(){
+  _decrementLoaders() {
     this.howManyAreLoading -= 1;
     this.howManyAreLoading === 0 && this.emit('apiqueryend');
   };

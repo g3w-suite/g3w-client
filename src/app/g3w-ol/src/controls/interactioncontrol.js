@@ -35,22 +35,22 @@ class InteractionControl extends Control {
     toggled && this.toggle(toggled);
   }
 
-  isClickMap(){
+  isClickMap() {
     return this.clickmap;
   };
 
   /**
    * Enable map control dom
    */
-  enable(){
+  enable() {
     $(this.element).removeClass('g3w-disabled');
   };
 
-  disable(){
+  disable() {
     $(this.element).addClass('g3w-disabled');
   };
 
-  createControlTool(toggledTool={}){
+  createControlTool(toggledTool={}) {
     /**
      * how can be {
      *  'toggled'(default) => show tools when control is toggled
@@ -58,7 +58,7 @@ class InteractionControl extends Control {
      * }
      */
     const {type, component, how="toggled"} = toggledTool;
-    switch(type){
+    switch(type) {
       case 'spatialMethod':
         const method = this.getSpatialMethod();
         this.toggledTool = {
@@ -77,10 +77,10 @@ class InteractionControl extends Control {
           watch: {
             'method': method => this.setSpatialMethod(method)
           },
-          created(){
+          created() {
             GUI.setCloseUserMessageBeforeSetContent(false);
           },
-          beforeDestroy(){
+          beforeDestroy() {
             GUI.setCloseUserMessageBeforeSetContent(true);
           }
         };
@@ -97,7 +97,7 @@ class InteractionControl extends Control {
     }
   };
 
-  _createToolOnHoverButton(){
+  _createToolOnHoverButton() {
     if (this._onhover) {
       this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
       $(this.element).prepend(this._toolButton);
@@ -110,8 +110,8 @@ class InteractionControl extends Control {
     }
   };
 
-  showToggledTool(show=true){
-    if (show){
+  showToggledTool(show=true) {
+    if (show) {
       GUI.showUserMessage({
         title: '',
         type: 'tool',
@@ -163,16 +163,16 @@ class InteractionControl extends Control {
    * Get dom bottom
    * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
    */
-  getControlBottom(){
+  getControlBottom() {
     return $(this.element).find('button').first();
   };
 
-  addClassToControlBottom(className=''){
+  addClassToControlBottom(className='') {
     const controlButton = this.getControlBottom();
     controlButton.addClass(className);
   };
 
-  removeClassToControlBottom(className=''){
+  removeClassToControlBottom(className='') {
     const controlButton = this.getControlBottom();
     controlButton.removeClass(className);
   };
@@ -229,15 +229,15 @@ class InteractionControl extends Control {
    * Method to set filter operation intersect or Contains
    */
 
-  setSpatialMethod(method='intersects'){
+  setSpatialMethod(method='intersects') {
     this.spatialMethod = method;
   };
 
-  getSpatialMethod(){
+  getSpatialMethod() {
     return this.spatialMethod;
   };
 
-  setLayers(layers=[]){
+  setLayers(layers=[]) {
     this.layers = layers;
   };
 
@@ -245,7 +245,7 @@ class InteractionControl extends Control {
    * called when project change
    * @param layers
    */
-  change(layers=[]){
+  change(layers=[]) {
     //to owerwite to each control
   };
 };

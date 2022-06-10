@@ -18,7 +18,7 @@ class VectorLayer extends TableLayer{
     return this.getMapLayer().getOLLayer();
   };
 
-  resetEditingSource(features=[]){
+  resetEditingSource(features=[]) {
     this.getMapLayer().resetSource(features)
   };
 

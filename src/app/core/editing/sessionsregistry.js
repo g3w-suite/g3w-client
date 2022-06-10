@@ -23,7 +23,7 @@ class SessionsRegistry {
     return this._sessions;
   };
 
-  clear(){
+  clear() {
     this._sessions = {};
   }
 }

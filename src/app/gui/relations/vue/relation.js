@@ -17,7 +17,7 @@ export default  {
   components: {
     Field
   },
-  data(){
+  data() {
     return {
       feature: null,
       fields: null,
@@ -41,7 +41,7 @@ export default  {
     }
   },
   methods: {
-    async resize(){
+    async resize() {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       setTimeout(()=>{
@@ -55,11 +55,11 @@ export default  {
       });
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
-    saveRelation(type){
+    saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
-    async showFormStructureRow(event, row){
+    async showFormStructureRow(event, row) {
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
       this.resize();
@@ -67,14 +67,14 @@ export default  {
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
-    editFeature(featureId){
+    editFeature(featureId) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
         layerId: this.table.layerId,
         featureId
       });
     },
-    getRowFields(row){
+    getRowFields(row) {
       const fields = this.table.fields.map((field, index)=> {
         field.value = row[index];
         field.query = true;
@@ -98,7 +98,7 @@ export default  {
     is(type,value) {
       return this.fieldIs(type, value);
     },
-    moveFnc(evt){
+    moveFnc(evt) {
       const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
       const size = evt.pageX+2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
@@ -106,11 +106,11 @@ export default  {
     }
   },
   watch: {
-    async chart(){
+    async chart() {
       await this.$nextTick();
       this.resize();
     },
-    async headercomponent(){
+    async headercomponent() {
       await this.$nextTick();
       this.resize();
     }
@@ -123,7 +123,7 @@ export default  {
     this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
     const downloadformatsLength = downloadformats.length;
-    if (downloadformatsLength > 0){
+    if (downloadformatsLength > 0) {
       this.downloadButton = {
         toggled: false,
         tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
@@ -179,7 +179,7 @@ export default  {
       this.resize();
     }
   },
-  beforeDestroy(){
+  beforeDestroy() {
     this.relationDataTable.destroy();
     this.relationDataTable = null;
     this.chartContainer && this.$emit('hide-chart', this.chartContainer);

@@ -18,25 +18,25 @@ class PluginService extends G3WObject{
       currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
   }
   //set dafault init method (overwrite by each plugin
-  init(config){
+  init(config) {
     this.config = config;
   }
 
-  setCurrentLayout(){
+  setCurrentLayout() {
     ApplicationService.setCurrentLayout(this.getPlugin().getName());
   };
 
-  resetCurrentLayout(){
+  resetCurrentLayout() {
     ApplicationService.setCurrentLayout(this.currentLayout);
   };
 
 // set owner plugin of the service
-  setPlugin(plugin){
+  setPlugin(plugin) {
     this.plugin = plugin;
   };
 
 // return the instance of the plugin owner of the service
-  getPlugin(){
+  getPlugin() {
     return this.plugin;
   };
 
@@ -47,11 +47,11 @@ class PluginService extends G3WObject{
   /**
    * Get Current Project
    */
-  getCurrentProject(){
+  getCurrentProject() {
     return ApplicationService.getCurrentProject();
   };
 
-  getGid(){
+  getGid() {
     const {gid} = this.config;
     return gid && gid.split(':')[1];
   };
@@ -125,12 +125,12 @@ class PluginService extends G3WObject{
   };
 
 // to owerwrite if we need some condition to load or not the plugin
-  loadPlugin(){
+  loadPlugin() {
     return true
   };
 
 //Called when plugin is removed to clear events and memory
-  clear(){
+  clear() {
     // to overwrite
   };
 }

@@ -12,7 +12,7 @@ class ResetControl extends InteractionControl {
     this._toggled = true;
     this._startCoordinate = null;
   }
-  _postRender(){
+  _postRender() {
     this.toggle(true);
   };
 }

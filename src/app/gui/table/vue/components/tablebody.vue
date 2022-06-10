@@ -52,7 +52,7 @@
       SelectRow
     },
     methods: {
-      getField(feature, header){
+      getField(feature, header) {
         return {
           value: feature.attributes[header.name],
           label: undefined // temporary to avoid label

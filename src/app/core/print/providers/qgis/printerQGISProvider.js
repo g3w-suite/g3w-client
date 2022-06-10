@@ -60,7 +60,7 @@ class PrinterQGISProvider extends PrintProvider{
     })
   };
 
-  _getAtlasParamsFromOptions(options={}){
+  _getAtlasParamsFromOptions(options={}) {
     const {field, values, template, download=false} = options;
     const multiValues = values.length > 1;
     const EXPRESSION = `${field}${multiValues ?
@@ -103,11 +103,11 @@ class PrinterQGISProvider extends PrintProvider{
     return params;
   };
 
-  getUrl(){
+  getUrl() {
     return this._currentLayerStore.getWmsUrl();
   };
 
-  printAtlas(options={}, method='GET'){
+  printAtlas(options={}, method='GET') {
     const url = this.getUrl();
     const params = this._getAtlasParamsFromOptions(options);
     return this[method]({

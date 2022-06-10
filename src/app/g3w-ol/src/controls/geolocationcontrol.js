@@ -38,7 +38,7 @@ class GeolocationControl extends InteractionControl {
    * @param show
    * @private
    */
-  _showMarker({map, coordinates, show=true}){
+  _showMarker({map, coordinates, show=true}) {
     //in case of control is initialized
     if (this._layer) {
       this._layer.getSource().clear();
@@ -53,7 +53,7 @@ class GeolocationControl extends InteractionControl {
     }
   };
 
-  getMap(){
+  getMap() {
     return super.getMap();
   };
 

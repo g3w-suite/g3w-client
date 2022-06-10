@@ -43,7 +43,7 @@ export const MAP_SETTINGS = {
   },
   LAYER_POSITIONS: {
     default: 'top',
-    getPositions(){
+    getPositions() {
       return [
         'top',
         'bottom'

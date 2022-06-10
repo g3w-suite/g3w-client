@@ -14,11 +14,11 @@ class QueryByPolygonControl extends InteractionControl {
       tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
       label: options.label || "\ue903",
       // function to get selection layer
-      onSelectlayer(selectedLayer){
+      onSelectlayer(selectedLayer) {
         const selected = selectedLayer.isSelected();
         const geometryType = selectedLayer.getGeometryType();
         const querable = selectedLayer.isQueryable();
-        if (selected){
+        if (selected) {
           if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
             this.setEnable(querable ? selectedLayer.isVisible(): querable);
           } else this.setEnable(false, false);
@@ -43,7 +43,7 @@ class QueryByPolygonControl extends InteractionControl {
     this.setEnable(false);
   }
 
-  listenPolygonLayersChange(){
+  listenPolygonLayersChange() {
     this.unwatches.forEach(unwatch => unwatch());
     this.unwatches.splice(0);
     const polygonLayers = this.layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
@@ -56,7 +56,7 @@ class QueryByPolygonControl extends InteractionControl {
     });
   };
 
-  change(layers=[]){
+  change(layers=[]) {
     this.layers = layers;
     const visible = this.checkVisibile(layers);
     this.setVisible(visible);
@@ -76,7 +76,7 @@ class QueryByPolygonControl extends InteractionControl {
       const querableLayers = layers.filter(layer => VALIDGEOMETRIES.indexOf(layer.getGeometryType()) !== -1);
       const filterableLength = filterableLayers.length;
       const querableLength = querableLayers.length;
-      if (querableLength === 1 && filterableLength === 1){
+      if (querableLength === 1 && filterableLength === 1) {
         visible = filterableLayers[0] !== querableLayers[0];
       } else visible = querableLength > 0 && filterableLength > 0;
     }

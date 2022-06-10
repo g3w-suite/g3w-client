@@ -28,7 +28,7 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
   };
 };
 
-RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
+RasterLayers.TiledWMSLayer = function(layerObj, extraParams) {
   const options = {
     layerObj: layerObj,
     extraParams: extraParams || {},
@@ -37,7 +37,7 @@ RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
+RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET') {
   const options = {
     layerObj,
     extraParams,
@@ -46,7 +46,7 @@ RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMTSLayer = function(layerObj, extraParams){
+RasterLayers.WMTSLayer = function(layerObj, extraParams) {
  const optionsFromCapabilities = WMTSSource.optionsFromCapabilities;
  return new TileLayer({
     opacity: 1,
@@ -54,7 +54,7 @@ RasterLayers.WMTSLayer = function(layerObj, extraParams){
   })
 };
 
-RasterLayers.ImageArgisMapServer = function(options={}){
+RasterLayers.ImageArgisMapServer = function(options={}) {
   return  new ImageLayer({
     source: new ImageArcGISRestSource({
       ratio: options.ratio,
@@ -66,7 +66,7 @@ RasterLayers.ImageArgisMapServer = function(options={}){
   })
 };
 
-RasterLayers.TiledArgisMapServer = function(options={}){
+RasterLayers.TiledArgisMapServer = function(options={}) {
   const {url, visible=true, extent, projection, attributions} = options;
   const source = new TileArcGISRestSource({
     url,

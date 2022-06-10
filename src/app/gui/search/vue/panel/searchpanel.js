@@ -16,7 +16,7 @@ const SearchPanelComponent = {
     }
   },
   methods: {
-    getLabelOperator(operator){
+    getLabelOperator(operator) {
       return `[ ${EXPRESSION_OPERATORS[operator]} ]`
     },
     async onFocus(event) {
@@ -28,7 +28,7 @@ const SearchPanelComponent = {
           }, 500);
       }
     },
-    async autocompleteRequest(params={}){
+    async autocompleteRequest(params={}) {
       return this.$options.service.autocompleteRequest(params);
     },
     changeDependencyFields({attribute:field, value}) {
@@ -49,7 +49,7 @@ const SearchPanelComponent = {
         //try to trim value inside try catch some cases tha trim doesn't work to avoid
         // to check if has one reason to trim
         value = type === 'textfield' || type === 'textField' ? value : value.trim();
-      } catch(err){}
+      } catch(err) {}
       this.$options.service.changeInput({id, value});
       this.state.searching = true;
       this.changeDependencyFields({

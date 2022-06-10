@@ -77,7 +77,7 @@ class Expression {
     return [`"${field}"`, OPERATORS[operator], `${value}`].join(' ');
   };
 
-  createSingleExpressionElement({value, attribute, operator, logicop}={}){
+  createSingleExpressionElement({value, attribute, operator, logicop}={}) {
     let filterElement;
     const valueExtra = (operator === 'LIKE' || operator === 'ILIKE')  ? "%": "";
     const filterOp = OPERATORS[operator];
@@ -105,7 +105,7 @@ class Expression {
   return filterElement;
   };
 
-  createExpressionFromFilterObject(filter={}){
+  createExpressionFromFilterObject(filter={}) {
     let filterElements = [];
     let rootFilter;
     for (const operator in filter) {
@@ -135,7 +135,7 @@ class Expression {
     return rootFilter;
   };
 
-  createExpressionFromField({layerName, field, value, operator='eq'}){
+  createExpressionFromField({layerName, field, value, operator='eq'}) {
     const filter = this.createSingleExpressionElement({
       attribute: field,
       value,
@@ -145,7 +145,7 @@ class Expression {
     return this;
   };
 
-  createExpressionFromFilterArray(inputs=[]){
+  createExpressionFromFilterArray(inputs=[]) {
     let filter = '';
     // set logicop of last element to null
     const inputsLength = inputs.length ? inputs.length - 1 : inputs.length;

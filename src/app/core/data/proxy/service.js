@@ -10,7 +10,7 @@ class ProxyService extends BaseService {
    * @param data: Object conitans data to pass to proxy
    * @returns {Promise<{data: string, response: *}>}
    */
-  async wms({url, method='GET', params={}, headers={}}={}){
+  async wms({url, method='GET', params={}, headers={}}={}) {
     const {XHR} = utils;
     let proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
@@ -34,7 +34,7 @@ class ProxyService extends BaseService {
         response,
         data
       };
-    } catch(err){
+    } catch(err) {
       return;
     }
   };
@@ -43,7 +43,7 @@ class ProxyService extends BaseService {
    * Generic proxy data function
    * @param params
    */
-  data(params={}){}
+  data(params={}) {}
 }
 
 export default  new ProxyService;

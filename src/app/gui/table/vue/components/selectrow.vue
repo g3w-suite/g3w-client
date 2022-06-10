@@ -16,17 +16,17 @@
         required: true
       }
     },
-    data(){
+    data() {
       return {
         id: utils.getUniqueDomId()
       }
     },
     methods: {
-      select(){
+      select() {
         this.$emit('selected', this.feature);
       }
     },
-    destroyed(){
+    destroyed() {
       this.$off('selected')
     }
   }

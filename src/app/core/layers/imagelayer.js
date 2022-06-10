@@ -13,7 +13,7 @@ import GeoLayerMixin  from './geolayermixin';
 class ImageLayer extends Layer{
   constructor(config={}, options={}) {
     options.setters = {
-      change(){},
+      change() {},
     };
     super(config, options);
     /*{
@@ -108,11 +108,11 @@ class ImageLayer extends Layer{
     return layerName;
   };
 
-  getWFSLayerName(){
+  getWFSLayerName() {
     return this.getQueryLayerName().replace(/[/\s]/g, '_')
   };
 
-  useProxy(){
+  useProxy() {
     return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()
   };
 
@@ -137,7 +137,7 @@ class ImageLayer extends Layer{
   };
 
   //used to Catalog layer menu
-  getCatalogWmsUrl(){
+  getCatalogWmsUrl() {
     const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
     return this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
   };
@@ -185,7 +185,7 @@ class ImageLayer extends Layer{
     return this.legendUrl;
   };
 
-  setMapParamstoLegendUrl({bbox, crs}){
+  setMapParamstoLegendUrl({bbox, crs}) {
     this.customParams = {
       ...this.customParams,
       bbox,

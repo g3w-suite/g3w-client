@@ -54,19 +54,19 @@
       TableBody
     },
     methods: {
-      getDataFromBBOX(){
+      getDataFromBBOX() {
         this.$options.service.getDataFromBBOX();
       },
-      toggleFilterToken(){
+      toggleFilterToken() {
         this.$options.service.toggleFilterToken();
       },
-      clearAllSelection(){
+      clearAllSelection() {
         this.$options.service.clearLayerSelection();
       },
-      switchSelection(){
+      switchSelection() {
         this.$options.service.switchSelection();
       },
-      selectAllRow(){
+      selectAllRow() {
         this.state.features.length && this.$options.service.selectAllFeatures();
       },
       _setLayout() {
@@ -76,7 +76,7 @@
         if (feature.geometry) this.$options.service.zoomAndHighLightFeature(feature, zoom);
         else await this.$options.service.zoomAndHighLightGeometryRelationFeatures(feature, zoom);
       },
-      addRemoveSelectedFeature(feature){
+      addRemoveSelectedFeature(feature) {
         this.$options.service.addRemoveSelectedFeature(feature);
       },
       async reloadLayout() {
@@ -146,7 +146,7 @@
         $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
       }
     },
-    beforeCreate(){
+    beforeCreate() {
       this.delayType = 'debounce';
     },
     async mounted() {

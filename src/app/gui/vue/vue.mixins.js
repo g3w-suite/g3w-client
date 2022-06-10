@@ -10,7 +10,7 @@ import {GeoJSON} from "ol/format";
 
 export const autocompleteMixin = {
   methods: {
-    async autocompleteRequest({layerId, field, value}={}){
+    async autocompleteRequest({layerId, field, value}={}) {
       let data = [];
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       try {
@@ -29,7 +29,7 @@ export const autocompleteMixin = {
 
 export const fieldsMixin = {
   methods: {
-    getFieldService(){
+    getFieldService() {
       if (this._fieldsService === undefined)
         this._fieldsService = fieldService;
       return this._fieldsService;
@@ -37,19 +37,19 @@ export const fieldsMixin = {
     getFieldType(field) {
       return this.getFieldService().getType(field);
     },
-    isSimple(field){
+    isSimple(field) {
       return this.getFieldService().isSimple(field);
     },
-    isLink(field){
+    isLink(field) {
       return this.getFieldService().isLink(field);
     },
-    isImage(field){
+    isImage(field) {
       return this.getFieldService().isImage(field);
     },
-    isPhoto(field){
+    isPhoto(field) {
       return this.getFieldService().isPhoto(field);
     },
-    isVue(field){
+    isVue(field) {
       return this.getFieldService().isVue(field);
     },
     sanitizeFieldValue(value) {
@@ -195,16 +195,16 @@ export const DELAY_TYPE = {
 };
 
 export const resizeMixin = {
-  created(){
+  created() {
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
     this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
     GUI.on('resize', this.delayResize);
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
     this.resize && this.resize();
   },
-  beforeDestroy(){
+  beforeDestroy() {
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
     this.delayTime = null;
@@ -214,7 +214,7 @@ export const resizeMixin = {
 export const  select2Mixin = {
   mixins: [resizeMixin],
   methods: {
-    setValue(){
+    setValue() {
       this.select2.val(this.state.value).trigger('change');
     },
     resize() {
@@ -232,16 +232,16 @@ export const  select2Mixin = {
 
 // FormInputsMixins
 export const  formInputsMixins = {
-  data(){
+  data() {
     return {
       valid: false
     }
   },
   methods: {
-    addToValidate(input){
+    addToValidate(input) {
       this.tovalidate.push(input);
     },
-    changeInput(input){
+    changeInput(input) {
       this.isValid(input)
     },
     // Every input send to form it valid value that will change the genaral state of form
@@ -292,10 +292,10 @@ export const  formInputsMixins = {
       }, true);
     }
   },
-  created(){
+  created() {
     this.tovalidate = [];
   },
-  destroyed(){
+  destroyed() {
     this.tovalidate = null;
   }
 };

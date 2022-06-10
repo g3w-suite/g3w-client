@@ -10,7 +10,7 @@ import G3WObject from './g3wobject';
  *
  *To listen to router has to be add  RouterService.addRoute(pattern, callback). Es.:
  *
- * var route = RouterService.addRoute('map/{?query}',function(query){
+ * var route = RouterService.addRoute('map/{?query}',function(query) {
  *  console.log(query.point);
  *  console.log(query.zoom);
  * });
@@ -33,7 +33,7 @@ class RouterService extends G3WObject {
   constructor() {
     super({
       setters: {
-        setRouteQuery(routeQuery){
+        setRouteQuery(routeQuery) {
           this._routeQuery = routeQuery;
           crossroads.parse(routeQuery);
         }
@@ -65,7 +65,7 @@ class RouterService extends G3WObject {
     return crossroads.parse(request,defaultArgs);
   };
 
-  goto(routeQuery){
+  goto(routeQuery) {
     if (!this._initialQuery) {
       this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
     }
@@ -83,13 +83,13 @@ class RouterService extends G3WObject {
     return '?'+this._initialLocationQuery + '&q='+this._encodeRouteQuery(routeQuery);
   };
 
-  makeQueryString(queryParams){};
+  makeQueryString(queryParams) {};
 
-  slicePath(path){
+  slicePath(path) {
     return path.split('?')[0].split('/');
   };
 
-  sliceFirst(path){
+  sliceFirst(path) {
     const pathAndQuery = path.split('?');
     const queryString = pathAndQuery[1];
     const pathArr = pathAndQuery[0].split('/');
@@ -110,7 +110,7 @@ class RouterService extends G3WObject {
       queryPairs = query.split('&');
     }
     try {
-      _.forEach(queryPairs,function(queryPair){
+      _.forEach(queryPairs,function(queryPair) {
         var pair = queryPair.split('=');
         var key = pair[0];
         var value = pair[1];
@@ -121,16 +121,16 @@ class RouterService extends G3WObject {
     return queryParams;
   };
 
-  getQueryString(path){
+  getQueryString(path) {
     return path.split('?')[1];
   };
 
-  _getQueryPortion(query,queryKey){
+  _getQueryPortion(query,queryKey) {
     var queryPortion;
     try {
       var queryPairs = query.split('&');
       var queryParams = {};
-      _.forEach(queryPairs,function(queryPair){
+      _.forEach(queryPairs,function(queryPair) {
         var pair = queryPair.split('=');
         var key = pair[0];
         if (key == queryKey) {

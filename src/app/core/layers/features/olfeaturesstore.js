@@ -73,7 +73,7 @@ class OlFeaturesStore extends FeaturesStore{
   _clearFeatures() {
     try {
       this._features.clear();
-    } catch(err){}
+    } catch(err) {}
     this._features = null;
     this._features = new Collection([]);
   };

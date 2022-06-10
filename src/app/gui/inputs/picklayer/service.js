@@ -16,7 +16,7 @@ class PickLayerService {
     }) : new PickCoordinatesInteraction();
   }
 
-  isPicked(){
+  isPicked() {
     return this.ispicked;
   };
 
@@ -55,7 +55,7 @@ class PickLayerService {
         if (this.pick_type === 'map') {
           const feature = event.feature;
           afterPick(feature);
-        } else if (this.pick_type === 'wms'){
+        } else if (this.pick_type === 'wms') {
           const layer = MapCatalogLayersRegistry.getLayerById(this.layerId);
           if (layer) {
             geoutils.getQueryLayersPromisesByCoordinates(

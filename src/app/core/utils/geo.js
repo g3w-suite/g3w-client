@@ -82,7 +82,7 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
-  getDefaultLayerStyle(geometryType, options={}){
+  getDefaultLayerStyle(geometryType, options={}) {
     const {color} = options;
     switch (geometryType) {
       case Geometry.GeometryTypes.LINESTRINGZ:
@@ -223,7 +223,7 @@ const geoutils = {
     return style
   },
 
-  createFeatureFromCoordinates(coordinates){
+  createFeatureFromCoordinates(coordinates) {
     let feature;
     if (Array.isArray(coordinates) && coordinates.length === 2) {
       const geometry = new Point(coordinates);
@@ -232,7 +232,7 @@ const geoutils = {
     return feature;
   },
 
-  createFeatureFromBBOX(bbox){
+  createFeatureFromBBOX(bbox) {
     let feature;
     if (Array.isArray(bbox) && bbox.length === 4) {
       const geometry = Polygon.fromExtent(bbox);
@@ -241,7 +241,7 @@ const geoutils = {
     return feature;
   },
 
-  createFeatureFromGeometry({id,geometry}={}){
+  createFeatureFromGeometry({id,geometry}={}) {
     if (geometry) {
       const feature = new Feature(geometry);
       id && feature.setId(id);
@@ -338,7 +338,7 @@ const geoutils = {
     return olLayer;
   },
 
-  createWMSLayer({url, name, projection, layers=[]}={}){
+  createWMSLayer({url, name, projection, layers=[]}={}) {
     const {uniqueId} = utils;
     const id = name || uniqueId();
     name = name || id;
@@ -357,12 +357,12 @@ const geoutils = {
     }
   },
 
-  createVectorLayerFromGeometry(geometry){
+  createVectorLayerFromGeometry(geometry) {
     const feature = new Feature(geometry);
     return geoutils.createVectorLayerFromFeatures(feature);
   },
 
-  createVectorLayerFromFeatures(feature){
+  createVectorLayerFromFeatures(feature) {
     return new VectorLayer({
       source: new VectorSource({
         features: Array.isArray(feature) ? feature : [feature]
@@ -429,7 +429,7 @@ const geoutils = {
               properties[field] = value;
             });
             // check if all coordinates is right
-            if (coordinates.find(value => Number.isNaN(value)) === undefined){
+            if (coordinates.find(value => Number.isNaN(value)) === undefined) {
               const geometry = new Point(coordinates);
               if (crs !== mapCrs) geometry.transform(crs, mapCrs);
               const feature = new Feature(geometry);
@@ -443,7 +443,7 @@ const geoutils = {
           })
         });
         if (!features.length) return Promise.reject();
-        if (errorrows.length){
+        if (errorrows.length) {
           GUI.showUserMessage({
             type: 'warning',
             message: 'sdk.mapcontrols.addlayer.messages.csv.warning',
@@ -452,7 +452,7 @@ const geoutils = {
                 template: `<select v-select2="errorrows[0].value" class="skin-color" :search="false" style="width:100%">
                     <option v-for="errorrow in errorrows" :key="errorrow.row" :value="errorrow.value">[{{ errorrow.row}}] {{errorrow.value}}</option>
                 </select>`,
-                data(){
+                data() {
                   return {
                     errorrows
                   };
@@ -514,7 +514,7 @@ const geoutils = {
     return layer;
   },
 
-  createStyleFunctionToVectorLayer(options={}){
+  createStyleFunctionToVectorLayer(options={}) {
     const styleFunction = (feature, resolution) => {
       let {color, field} = options;
       color = color.rgba ? 'rgba(' + color.rgba.r + ',' + color.rgba.g + ',' + color.rgba.b + ','  + color.rgba.a + ')': color;
@@ -588,7 +588,7 @@ const geoutils = {
    * @param feature
    * @param type
    */
-  getFormDataExpressionRequestFromFeature(feature){
+  getFormDataExpressionRequestFromFeature(feature) {
     delete feature.attributes.geometry;
     const _feature = new Feature(feature.geometry);
     const properties = {};
@@ -604,7 +604,7 @@ const geoutils = {
    * Convert Feature  to GEOJSON Format
    * @param feature
    */
-  convertFeatureToGEOJSON(feature){
+  convertFeatureToGEOJSON(feature) {
     const GeoJSONFormat = new GeoJSON();
     return GeoJSONFormat.writeFeatureObject(feature);
   },
@@ -617,7 +617,7 @@ const geoutils = {
    * @param multilayers
    * @returns {JQuery.Promise<any, any, any>}
    */
-  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}){
+  getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}) {
     let queriesPromise;
     const geometry = Polygon.fromExtent(bbox);
     const map = GUI.getService('map').getMap();
@@ -718,7 +718,7 @@ const geoutils = {
             .fail(error => queryErrors.push(error))
             .always(() => {
               layersLenght -= 1;
-              if (layersLenght === 0){
+              if (layersLenght === 0) {
                 queryErrors.length === layers.length ? d.reject(queryErrors) : d.resolve(queryResponses)
               }
             })
@@ -796,7 +796,7 @@ const geoutils = {
     return d.promise();
   },
 
-  transformBBOX({bbox, sourceCrs, destinationCrs}={}){
+  transformBBOX({bbox, sourceCrs, destinationCrs}={}) {
     const point1 = new Point([bbox[0], bbox[1]]);
     const point2 = new Point([bbox[2], bbox[3]]);
     point1.transform(sourceCrs, destinationCrs);
@@ -857,7 +857,7 @@ const geoutils = {
     } else return null;
   },
 
-  covertVectorFeaturesToResultFeatures(features=[]){
+  covertVectorFeaturesToResultFeatures(features=[]) {
     return features.map(feature => {
       const {id, properties:attributes, geometry} = feature;
       attributes[G3W_FID]= id;
@@ -889,7 +889,7 @@ const geoutils = {
     for (let i = 0; i < targetCoordinatesLength -1; i++) {
       startPoint = targetCoordinates[i];
       endPoint = targetCoordinates[i+1];
-      if (isZType){
+      if (isZType) {
         startPoint.z = lineGeometry.getCoordinates()[i][2];
         endPoint.z = lineGeometry.getCoordinates()[i+1][2];
       }
@@ -902,7 +902,7 @@ const geoutils = {
           if (isZType) splitPoint.z = startPoint.z;
           if (pointsNotSplitted.length) {
             const lineNewSegment = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted.concat([startPoint, splitPoint])));
-            if (isZType){
+            if (isZType) {
               const coordinates = lineNewSegment.getCoordinates();
               lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
             }
@@ -910,7 +910,7 @@ const geoutils = {
             pointsNotSplitted = [];
           } else {
             const lineNewSegment = olFromJsts.write(geometryFactory.createLineString([startPoint, splitPoint]));
-            if (isZType){
+            if (isZType) {
               const coordinates = lineNewSegment.getCoordinates();
               lineNewSegment.setCoordinates([[...coordinates[0], startPoint.z],[...coordinates[1], splitPoint.z]])
             }
@@ -922,7 +922,7 @@ const geoutils = {
       } else pointsNotSplitted = pointsNotSplitted.concat([startPoint, endPoint]);
     }
     const restOfLine = olFromJsts.write(geometryFactory.createLineString(pointsNotSplitted));
-    if (isZType){
+    if (isZType) {
       const zCoordinates = [];
       pointsNotSplitted.forEach((pointNotSplitted, index) => {
         const coordinate =  restOfLine.getCoordinates()[index];
@@ -935,7 +935,7 @@ const geoutils = {
     return splitted && splittedSegments || []
   },
 
-  splitFeatures({features=[], splitfeature} ={}){
+  splitFeatures({features=[], splitfeature} ={}) {
     const splitterdGeometries = [];
     features.forEach(feature => {
       const geometries = geoutils.splitFeature({feature, splitfeature});
@@ -947,7 +947,7 @@ const geoutils = {
     return splitterdGeometries;
   },
 
-  splitFeature({feature, splitfeature} ={}){
+  splitFeature({feature, splitfeature} ={}) {
     const geometries = {
       feature: feature.getGeometry(), //geometry of the feature to split
       split: splitfeature.getGeometry() // geometry of split feature
@@ -959,7 +959,7 @@ const geoutils = {
     // array of splitted geometries
     const splittedFeatureGeometries = [];
     const parser = new jsts.io.OL3Parser();
-    switch (splitType){
+    switch (splitType) {
       case 'LineString':
         // check if geometry is Polygon
         if (featureGeometryType.indexOf('Polygon') !== -1 ) {
@@ -989,7 +989,7 @@ const geoutils = {
             let holePolygons;
             if (polygonFeature.getLinearRingCount() > 1) {
               let holeFeaturesGeometry;
-              for (let index=1; index < polygonFeature.getLinearRingCount(); index++){
+              for (let index=1; index < polygonFeature.getLinearRingCount(); index++) {
                 const holeRing = parser.read(polygonFeature.getLinearRing(index));
                 if (holeFeaturesGeometry === undefined) holeFeaturesGeometry = holeRing;
                 else holeFeaturesGeometry = holeFeaturesGeometry.union(holeRing);
@@ -1004,7 +1004,7 @@ const geoutils = {
               holePolygons = holyPolygonUnion;
             }
 
-            if (isZType){
+            if (isZType) {
               polygonFeature.getCoordinates()[0].forEach((coordinate, index) =>{
                 externalPolygonFeatureGeometry.getCoordinates()[index].z = coordinate[2];
               });
@@ -1020,7 +1020,7 @@ const geoutils = {
               if (polygonFeatureGeometry.intersects(polygon.getInteriorPoint())) {
                 const geometry = parser.write(polygon);
                 const polygonCoordinates = polygon.getCoordinates();
-                if (isZType){
+                if (isZType) {
                   polygonCoordinates.forEach((coordinate, index) => {
                     coordinate.z = coordinate.z === undefined ? polygonCoordinates[index === 0 ? index+1 : index-1].z : coordinate.z;
                   })
@@ -1034,10 +1034,10 @@ const geoutils = {
                   geometry.setCoordinates([zCoordinates]);
                 }
                 const geometryType = geometry.getType();
-                if (isMulti){
+                if (isMulti) {
                   splittedFeatureGeometries.push(new MultiPolygon(geometryType=== 'Polygon' ? [geometry.getCoordinates()] : geometry.getCoordinates()))
                 } else {
-                  if (geometryType === 'Polygon'){
+                  if (geometryType === 'Polygon') {
                     splittedFeatureGeometries.push(geometry);
                   } else geometry.getCoordinates().forEach(coordinates => {
                     splittedFeatureGeometries.push(new Polygon(coordinates))
@@ -1071,9 +1071,9 @@ const geoutils = {
    * Return Point feature vertex from geometry
    * @param geometry
    */
-  getPointFeaturesfromGeometryVertex(geometry){
+  getPointFeaturesfromGeometryVertex(geometry) {
     const pointFeatures = [];
-    switch(geometry.getType()){
+    switch(geometry.getType()) {
       case Geometry.GeometryTypes.MULTIPOLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
@@ -1130,9 +1130,9 @@ const geoutils = {
    * @param geometries
    * @returns {*}
    */
-  getVertexLength(geometry){
+  getVertexLength(geometry) {
     let vertexLength = 0;
-    switch(geometry.getType()){
+    switch(geometry.getType()) {
       case Geometry.GeometryTypes.MULTIPOLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
@@ -1158,13 +1158,13 @@ const geoutils = {
    *  Point <--> Polygon => false
    *
    */
-  isSameBaseGeometryType(geometryType1, geometryType2){
+  isSameBaseGeometryType(geometryType1, geometryType2) {
     geometryType1 = geometryType1.replace('Multi','');
     geometryType2 = geometryType2.replace('Multi','');
     return geometryType1 === geometryType2;
   },
 
-  isSingleGeometry(geometry){
+  isSingleGeometry(geometry) {
     return !Geometry.isMultiGeometry(geometry.getType());
   },
 
@@ -1177,7 +1177,7 @@ const geoutils = {
     return geometryType && new geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
   },
 
-  multiGeometryToSingleGeometries(geometry){
+  multiGeometryToSingleGeometries(geometry) {
     const geometryType = geometry.getType();
     let geometries = [];
     switch (geometryType) {
@@ -1200,8 +1200,8 @@ const geoutils = {
    * @param toGeometryType
    * @returns {*}
    */
-  convertSingleMultiGeometry(geometry, toGeometryType){
-      if (toGeometryType){
+  convertSingleMultiGeometry(geometry, toGeometryType) {
+      if (toGeometryType) {
         const isFromGeometryMulti = geoutils.isMultiGeometry(geometry);
         const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
         if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
@@ -1291,7 +1291,7 @@ const geoutils = {
     if (epsg !== '') return `EPSG:${parseInt(epsg)}`;
   },
 
-  crsToCrsObject(crs){
+  crsToCrsObject(crs) {
     const {toRawType} = utils;
     if (crs === null || crs === undefined) return crs;
     if  (toRawType(crs) === 'Object' && crs.epsg) crs.epsg = geoutils.normalizeEpsg(crs.epsg);
@@ -1402,7 +1402,7 @@ const geoutils = {
    * }
    * @returns {Promise<Blob>}
    */
-  async getGeoTIFFfromServer(options={}){
+  async getGeoTIFFfromServer(options={}) {
     const {url, params:{image, csrfmiddlewaretoken, bbox}, method="POST"} = options;
     const body = new FormData();
     body.append('image', image);
@@ -1420,7 +1420,7 @@ const geoutils = {
    * @param feature
    * @returns {*|Feature|Feature}
    */
-  createOlFeatureFromApiResponseFeature(feature){
+  createOlFeatureFromApiResponseFeature(feature) {
     const {properties={}, geometry, id} = feature;
     properties[G3W_FID] = id;
     const Feature = new Feature(geometry && new geom[geometry.type](geometry.coordinates));
@@ -1429,7 +1429,7 @@ const geoutils = {
     return Feature;
   },
 
-  sanitizeFidFeature(fid){
+  sanitizeFidFeature(fid) {
     const {toRawType} = utils;
     if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
       fid = fid.split('.');

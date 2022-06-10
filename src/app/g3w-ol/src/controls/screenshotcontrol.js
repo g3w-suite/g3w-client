@@ -12,12 +12,12 @@ class ScreenshotControl extends OnClickControl{
     this.change(this.layers);
   }
 
-  change(layers=[]){
+  change(layers=[]) {
     const visible = this.checkVisible(layers);
     this.setVisible(visible);
   };
 
-  checkVisible(layers=[]){
+  checkVisible(layers=[]) {
     const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
     return !find;
   };

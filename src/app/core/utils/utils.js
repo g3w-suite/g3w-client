@@ -20,7 +20,7 @@ const utils = {
     return utils.merge(destination.prototype, source);
   },
 
-  mixin(destination,source){
+  mixin(destination,source) {
     const sourceInstance = new source;
     utils.merge(destination, sourceInstance);
     utils.merge(destination.prototype, source.prototype);
@@ -35,19 +35,19 @@ const utils = {
     return Object.prototype.hasOwnProperty.call(object, key);
   },
 
-  noop(){},
+  noop() {},
 
-  truefnc(){return true},
+  truefnc() {return true},
 
-  falsefnc(){return true},
+  falsefnc() {return true},
 
-  resolve(value){
+  resolve(value) {
     const d = $.Deferred();
     d.resolve(value);
     return d.promise();
   },
 
-  reject(value){
+  reject(value) {
     const d = $.Deferred();
     d.reject(value);
     return d.promise();
@@ -86,7 +86,7 @@ const utils = {
    */
   isURL: url => url && url.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g),
 
-  sanitizeUrl({url, reserverParameters=[]}={}){
+  sanitizeUrl({url, reserverParameters=[]}={}) {
     const checkUrl = new URL(url);
     reserverParameters.forEach((param) => {
       let _params = [param.toUpperCase(), param.toLowerCase()];
@@ -134,14 +134,14 @@ const utils = {
     };
     image.src = src;
   },
-  capitalize_first_letter(string){
+  capitalize_first_letter(string) {
     return `${string[0].toUpperCase()}${string.slice(1)}`;
   },
   toRawType(value) {
     const _toString = Object.prototype.toString;
     return _toString.call(value).slice(8, -1)
   },
-  isEmptyObject(obj){
+  isEmptyObject(obj) {
     return JSON.stringify(obj) === '{}';
   },
   // build throttle function
@@ -166,10 +166,10 @@ const utils = {
       }, delay);
     };
   },
-  getRandomColor(){
+  getRandomColor() {
     return `#${((1<<24)*Math.random() | 0).toString(16)}`;
   },
-  copyUrl(url){
+  copyUrl(url) {
     const tempinput = document.createElement('input');
     document.body.appendChild(tempinput);
     tempinput.value = url;
@@ -177,7 +177,7 @@ const utils = {
     document.execCommand('copy');
     document.body.removeChild(tempinput);
   },
-  downloadFile({filename, content, url, mime_type='text/plain'}={}){
+  downloadFile({filename, content, url, mime_type='text/plain'}={}) {
     const download = blob =>{
       let temapAncor = document.createElement('a');
       temapAncor.setAttribute('href', window.URL.createObjectURL(blob));
@@ -199,7 +199,7 @@ const utils = {
              filename = filename || response.headers.get('content-disposition').split('filename=').length ?
                response.headers.get('content-disposition').split('filename=')[1] : 'g3w_download_file';
              return response.blob();
-           } else if (response.status === 400 || response.status === 500){
+           } else if (response.status === 400 || response.status === 500) {
              const {message} = await response.json();
              return Promise.reject(message)
            }
@@ -237,7 +237,7 @@ const utils = {
     })
   },
 
-  downloadCSV({filename= utils.getUniqueDomId(), items=[]}={}){
+  downloadCSV({filename= utils.getUniqueDomId(), items=[]}={}) {
     function convertToCSV(items) {
       let str = '';
       for (let i = 0; i < items.length; i++) {
@@ -274,7 +274,7 @@ const utils = {
    * @param data
    * @returns {number}
    */
-  getTimeoutPromise({timeout=TIMEOUT, resolve, data}){
+  getTimeoutPromise({timeout=TIMEOUT, resolve, data}) {
     const timeoutKey = setTimeout(()=>{
       resolve(data)
     }, timeout);
@@ -347,7 +347,7 @@ const utils = {
         }
       })
     },
-    htmlescape(string){
+    htmlescape(string) {
       string = string.replace("&", "&amp;");
       string = string.replace("<", "&lt;");
       string = string.replace(">", "&gt;");
@@ -374,9 +374,9 @@ const utils = {
       })
     }
   },
-  createSingleFieldParameter({field, value, operator='eq', logicop=null}){
+  createSingleFieldParameter({field, value, operator='eq', logicop=null}) {
     logicop = logicop && `|${logicop}`;
-    if (Array.isArray(value)){
+    if (Array.isArray(value)) {
       let filter = '';
       const valueLenght = value.length;
       value.forEach((value, index) =>{
@@ -385,7 +385,7 @@ const utils = {
       return filter
     } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
-  createFilterFromString({layer, search_endpoint='ows', filter=''}){
+  createFilterFromString({layer, search_endpoint='ows', filter=''}) {
     let stringFilter = filter;
     switch (search_endpoint) {
       case 'ows':
@@ -427,13 +427,13 @@ const utils = {
    * @param inputs
    * @returns {*}
    */
-  createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
+  createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}) {
     const isLayerArray = Array.isArray(layer);
     let filter;
     let filters = []; // in case of layer is an array
     switch (search_endpoint) {
       case 'ows':
-        if (isLayerArray){
+        if (isLayerArray) {
           layer.forEach(layer =>{
             const expression = new Expression();
             const layerName = layer.getWMSLayerName();
@@ -466,7 +466,7 @@ const utils = {
     return isLayerArray ? filters  : filter;
   },
   //method to create filter from field based on search_endpoint
-  createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
+  createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}) {
     let filter;
     switch (search_endpoint) {
       case 'ows':
@@ -491,7 +491,7 @@ const utils = {
     }
     return filter;
   },
-  splitContextAndMethod(string=''){
+  splitContextAndMethod(string='') {
     const [context, method] = string.split(':')
     return {
       context,
@@ -504,7 +504,7 @@ const utils = {
    * @param color
    * @returns {number[]}
    */
-  colorHEXToRGB(color='#FFFFFF'){
+  colorHEXToRGB(color='#FFFFFF') {
     const r = parseInt(color.substr(1,2), 16);
     const g = parseInt(color.substr(3,2), 16);
     const b = parseInt(color.substr(5,2), 16);

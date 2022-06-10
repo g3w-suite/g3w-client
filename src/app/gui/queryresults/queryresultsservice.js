@@ -53,7 +53,7 @@ class QueryResultsService extends G3WObject {
          */
         setLayersData(layers, options={add:false}) {
           const {add} = options;
-          if (!add){
+          if (!add) {
             // here set the right order of result layers based on toc
             this._currentLayerIds = layers.map(layer => layer.id);
             this._orderResponseByProjectLayers(layers);
@@ -73,13 +73,13 @@ class QueryResultsService extends G3WObject {
         addActionsForLayers(actions, layers) {},
         postRender(element) {},
         closeComponent() {},
-        changeLayerResult(layer){
+        changeLayerResult(layer) {
           this._changeLayerResult(layer);
         },
-        activeMapInteraction(){},
+        activeMapInteraction() {},
         // setter hook to relation table
-        editFeature({layerId, featureId}={}){},
-        openCloseFeatureResult({open, layer, feature, container}={}){}
+        editFeature({layerId, featureId}={}) {},
+        openCloseFeatureResult({open, layer, feature, container}={}) {}
       }
     });
     this.printService = new PrintService();
@@ -176,11 +176,11 @@ class QueryResultsService extends G3WObject {
     this.plotLayerIds = layerIds;
   };
 
-  getPlotIds (){
+  getPlotIds () {
     return this.plotLayerIds;
   };
 
-  findPlotId(id){
+  findPlotId(id) {
     return this.plotLayerIds.find(plotId => plotId == id);
   };
 
@@ -191,7 +191,7 @@ class QueryResultsService extends G3WObject {
    * @param component custom component
    * @param type feature or layer
    */
-  registerCustomComponent({id=utils.getUniqueDomId(), layerId, component, type='feature', position='after'}={}){
+  registerCustomComponent({id=utils.getUniqueDomId(), layerId, component, type='feature', position='after'}={}) {
     if (this.state.layerscustomcomponents[layerId] === undefined)
       this.state.layerscustomcomponents[layerId] = {
         layer: {
@@ -216,7 +216,7 @@ class QueryResultsService extends G3WObject {
    * @param layerId
    * @param type
    */
-  unRegisterCustomComponent({id, layerId, type, position}){
+  unRegisterCustomComponent({id, layerId, type, position}) {
     if (position) this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
     else Object.keys(this.state.layerscustomcomponents[layerId][type]).forEach(position =>{
       this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
@@ -228,7 +228,7 @@ class QueryResultsService extends G3WObject {
    * @param layer
    * @param feature
    */
-  addFeatureLayerToResult(layer, feature){
+  addFeatureLayerToResult(layer, feature) {
     this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
   };
 
@@ -237,7 +237,7 @@ class QueryResultsService extends G3WObject {
    * @param layer
    * @param feature
    */
-  removeFeatureLayerFromResult(layer, feature){
+  removeFeatureLayerFromResult(layer, feature) {
     const {id, external} = layer;
     this.addRemoveFeaturesToLayerResult({
       id,
@@ -250,12 +250,12 @@ class QueryResultsService extends G3WObject {
    * Method wrapper for download
    */
 
-  async downloadApplicationWrapper(downloadFnc, options={}){
+  async downloadApplicationWrapper(downloadFnc, options={}) {
     const download_caller_id = ApplicationService.setDownload(true);
     GUI.setLoadingContent(true);
     try {
       await downloadFnc(options);
-    } catch(err){
+    } catch(err) {
       GUI.showUserMessage({
         type: 'alert',
         message: err || 'server_error',
@@ -270,13 +270,13 @@ class QueryResultsService extends G3WObject {
    * Based on layer response check if features layer are to add or remove to current state.layers results
    * @param layer
    */
-  addRemoveFeaturesToLayerResult(layer){
+  addRemoveFeaturesToLayerResult(layer) {
     //extract features from layer object
     let {features=[]} = layer;
     // get layer from current state.layers showed on result
     const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
     // if get features and find layer
-    if (findLayer && features.length){
+    if (findLayer && features.length) {
       // get id external layer or not (external is a layer added by mapcontrol addexternlayer)
       const {external} = findLayer;
       // is array of idexes od features that we has to remove from state.layer because is already loaded
@@ -288,7 +288,7 @@ class QueryResultsService extends G3WObject {
         const indexFindFeature = features_ids.indexOf(!external ? feature.attributes[G3W_FID]: feature.id);
         // check if need to filter or not
         const filtered = indexFindFeature === -1;
-        if (!filtered){
+        if (!filtered) {
           removeFeatureIndexes.push(indexFindFeature);
           const featureRemoved = features[indexFindFeature];
           this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
@@ -319,7 +319,7 @@ class QueryResultsService extends G3WObject {
    * Method called when layer result features for example is changed
    * @param layer
    */
-  _changeLayerResult(layer){
+  _changeLayerResult(layer) {
     const layeractions = this.state.layersactions[layer.id];
     // call if present change mthod to action
     layeractions.forEach(action => action.change && action.change(layer));
@@ -330,7 +330,7 @@ class QueryResultsService extends G3WObject {
   /**
    * Check and do action if layer has no features after delete feature(s
    */
-  checkIfLayerHasNoFeatures(layer){
+  checkIfLayerHasNoFeatures(layer) {
     if (layer.features.length === 0) {
       // used to do all vue reactive thing before update layers
       setTimeout(() => {
@@ -350,7 +350,7 @@ class QueryResultsService extends G3WObject {
    * @param relation_index
    * @returns {string}
    */
-  getBoxId(layer, feature, relation_index){
+  getBoxId(layer, feature, relation_index) {
     return relation_index !== null && relation_index !== undefined ? `${layer.id}_${feature.id}_${relation_index}` : `${layer.id}_${feature.id}`;
   };
 
@@ -476,7 +476,7 @@ class QueryResultsService extends G3WObject {
               })
             }
           });
-        } else if (layer.downloads.length > 1 ){
+        } else if (layer.downloads.length > 1 ) {
           // SET CONSTANT TO AVOID TO CHANGE ALL THINGS
           const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
           const downloads = [];
@@ -604,7 +604,7 @@ class QueryResultsService extends G3WObject {
     }
   };
 
-  createActionState({layer, dynamicProperties=['toggled']}){
+  createActionState({layer, dynamicProperties=['toggled']}) {
     // check number of download formats
     const propertiesObject = dynamicProperties.reduce((accumulator, property) =>{
       accumulator[property] = {};
@@ -624,7 +624,7 @@ class QueryResultsService extends G3WObject {
    * @param id action id
    * @returns {*}
    */
-  getActionLayerById({layer, id}={}){
+  getActionLayerById({layer, id}={}) {
     return this.state.layersactions[layer.id].find(action => action.id === id);
   };
 
@@ -634,8 +634,8 @@ class QueryResultsService extends G3WObject {
    * @param index feature index
    * @param value component value or null
    */
-  setCurrentActionLayerFeatureTool({layer, action, index, component=null}={}){
-    if (component){
+  setCurrentActionLayerFeatureTool({layer, action, index, component=null}={}) {
+    if (component) {
       if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable)
         this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
       this.state.currentactionfeaturelayer[layer.id][index] = action;
@@ -644,7 +644,7 @@ class QueryResultsService extends G3WObject {
   };
 
 
-  addCurrentActionToolsLayer({id, layer, config={}}){
+  addCurrentActionToolsLayer({id, layer, config={}}) {
     this.state.actiontools[id] = {};
     this.state.actiontools[id][layer.id] = config;
   };
@@ -653,7 +653,7 @@ class QueryResultsService extends G3WObject {
    * Reset current action tools on layer when feature layer change
    * @param layer
    */
-  resetCurrentActionToolsLayer(layer){
+  resetCurrentActionToolsLayer(layer) {
     layer.features.forEach((feature, index)=>{
       if (this.state.currentactiontools[layer.id]) {
         if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
@@ -666,7 +666,7 @@ class QueryResultsService extends G3WObject {
   /**
    *
    */
-  setLayerActionTool({layer, component=null, config=null}={}){
+  setLayerActionTool({layer, component=null, config=null}={}) {
     this.state.layeractiontool[layer.id].component = component;
     this.state.layeractiontool[layer.id].config = config;
   };
@@ -676,7 +676,7 @@ class QueryResultsService extends G3WObject {
    * @param layer
    * @param feature
    */
-  copyZoomToFidUrl(layer, feature, action){
+  copyZoomToFidUrl(layer, feature, action) {
     const fid = feature.attributes[G3W_FID];
     const url = new URL(location.href);
     const zoom_to_fid = `${layer.id}|${fid}`;
@@ -711,7 +711,7 @@ class QueryResultsService extends G3WObject {
     this.closeComponent();
   };
 
-  getCurrentLayersIds(){
+  getCurrentLayersIds() {
     return this._currentLayerIds;
   };
 
@@ -731,7 +731,7 @@ class QueryResultsService extends G3WObject {
     this.state.zoomToResult = bool;
   };
 
-  highlightFeaturesPermanently(layer){
+  highlightFeaturesPermanently(layer) {
     const {features} = layer;
     this.mapService.highlightFeatures(features, {
       duration: Infinity
@@ -742,7 +742,7 @@ class QueryResultsService extends G3WObject {
    * Check if one layer result
    * @returns {boolean}
    */
-  isOneLayerResult(){
+  isOneLayerResult() {
     return this.state.layers.length === 1;
   };
 
@@ -750,7 +750,7 @@ class QueryResultsService extends G3WObject {
    *
    * @param toggle boolean If true toggle true the mapcontrol
    */
-  removeAddFeaturesLayerResultInteraction({toggle=false}={}){
+  removeAddFeaturesLayerResultInteraction({toggle=false}={}) {
     if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
     this._addFeaturesLayerResultInteraction.interaction = null;
     this._addFeaturesLayerResultInteraction.id = null;
@@ -766,11 +766,11 @@ class QueryResultsService extends G3WObject {
    * Adde feature to Features results
    * @param layer
    */
-  addLayerFeaturesToResultsAction(layer){
+  addLayerFeaturesToResultsAction(layer) {
     /**
      * Check if layer is current layer to add or clear previous
      */
-    if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id){
+    if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id) {
       const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
       if (layer) layer.addfeaturesresults.active = false;
       //remove previous add result interaction
@@ -825,7 +825,7 @@ class QueryResultsService extends G3WObject {
     });
   };
 
-  deactiveQueryInteractions(){
+  deactiveQueryInteractions() {
     this.state.layers.forEach(layer => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false});
     this.removeAddFeaturesLayerResultInteraction();
   };
@@ -871,7 +871,7 @@ class QueryResultsService extends G3WObject {
     return this._atlas.filter(atlas => atlas.atlas.qgs_layer_id === layerId);
   };
 
-  _setAtlasActions(project){
+  _setAtlasActions(project) {
     this._atlas = project.getPrint().filter(printconfig => printconfig.atlas) || [];
   };
 
@@ -910,7 +910,7 @@ class QueryResultsService extends G3WObject {
         infoformats = layer.getInfoFormats(); // add infoformats property
         infoformat = layer.getInfoFormat();
         // set selection filter and relation if not wms
-        if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1){
+        if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1) {
           filter = layer.state.filter;
           selection = layer.state.selection;
           extractRelations = true;
@@ -918,7 +918,7 @@ class QueryResultsService extends G3WObject {
         downloads = layer.getDownloadableFormats();
         try {
           sourceType = layer.getSourceType()
-        } catch(err){}
+        } catch(err) {}
         // sanitize attributes layer only if is ows
         layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
           const sanitizeAttribute = {...attribute};
@@ -951,7 +951,7 @@ class QueryResultsService extends G3WObject {
             fields
           }
         }
-      } else if (layer instanceof OLVectorLayer){
+      } else if (layer instanceof OLVectorLayer) {
         layerAttributes = layer.getProperties();
         layerRelationsAttributes =  [];
         layerTitle = layer.get('name');
@@ -997,7 +997,7 @@ class QueryResultsService extends G3WObject {
         rawdata: null, // rawdata response
         loading: false
       };
-      if (featuresForLayer.rawdata){
+      if (featuresForLayer.rawdata) {
         layerObj.rawdata = featuresForLayer.rawdata;
         layers.push(layerObj)
       } else if (featuresForLayer.features && featuresForLayer.features.length) {
@@ -1071,8 +1071,8 @@ class QueryResultsService extends G3WObject {
    * @param feature
    * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
    */
-  getFeaturePropertiesAndGeometry(feature){
-    if (feature instanceof Feature){
+  getFeaturePropertiesAndGeometry(feature) {
+    if (feature instanceof Feature) {
       return {
         properties:feature.getProperties(),
         geometry: feature.getGeometry(),
@@ -1133,7 +1133,7 @@ class QueryResultsService extends G3WObject {
     if (action.route) {
       let url;
       let urlTemplate = action.route;
-      url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
+      url = urlTemplate.replace(/{(\w*)}/g,function(m,key) {
         return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
       });
       url && url !== '' && GUI.goto(url);
@@ -1151,7 +1151,7 @@ class QueryResultsService extends G3WObject {
     });
   };
 
-  getVectorLayerFeaturesFromQueryRequest(vectorLayer, query={}){
+  getVectorLayerFeaturesFromQueryRequest(vectorLayer, query={}) {
     let isVisible = false;
     const {coordinates, bbox, geometry} = query; // extract information about query type
     let features = [];
@@ -1223,7 +1223,7 @@ class QueryResultsService extends G3WObject {
     this.state.components.push(component)
   };
 
-  _printSingleAtlas({atlas={}, features=[]}={}){
+  _printSingleAtlas({atlas={}, features=[]}={}) {
     let {name:template, atlas: {field_name}} = atlas;
     field_name = field_name || '$id';
     const values = features.map(feature => feature.attributes[field_name === '$id' ?  G3W_FID: field_name]);
@@ -1250,17 +1250,17 @@ class QueryResultsService extends G3WObject {
     })
   };
 
-  showChart(ids, container, relationData){
+  showChart(ids, container, relationData) {
     this.emit('show-chart', ids, container, relationData);
   };
 
-  hideChart(container){
+  hideChart(container) {
     this.emit('hide-chart', container);
   };
 
-  showRelationsChart(ids=[], layer, feature, action, index, container){
+  showRelationsChart(ids=[], layer, feature, action, index, container) {
     action.state.toggled[index] = !action.state.toggled[index];
-    if (action.state.toggled[index]){
+    if (action.state.toggled[index]) {
       const relations = this._relations[layer.id];
       const relationData = {
         relations,
@@ -1271,7 +1271,7 @@ class QueryResultsService extends G3WObject {
     } else this.hideChart(container)
   };
 
-  printAtlas(layer, feature){
+  printAtlas(layer, feature) {
     let {id:layerId, features} = layer;
     const inputAtlasAttr = 'g3w_atlas_index';
     features = feature ? [feature]: features;
@@ -1331,7 +1331,7 @@ class QueryResultsService extends G3WObject {
    * @param layerId
    * @param features
    */
-  async downloadFeatures(type, layer, features=[], action, index){
+  async downloadFeatures(type, layer, features=[], action, index) {
     const layerId = layer.id;
     const {query={}} = this.state;
     features = features ? Array.isArray(features) ? features : [features]: features;
@@ -1356,7 +1356,7 @@ class QueryResultsService extends G3WObject {
         await projectLayer.getDownloadFilefromDownloadDataType(type, {
           data
         }) || Promise.resolve();
-      } catch(err){
+      } catch(err) {
         GUI.notify.error(err || t("info.server_error"));
       }
       ApplicationService.setDownload(false, download_caller_id);
@@ -1381,7 +1381,7 @@ class QueryResultsService extends G3WObject {
         });
       }
     };
-    if (query.type === 'polygon'){
+    if (query.type === 'polygon') {
       //check if multidownload if present
       const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
       let {fid, layer:polygonLayer} = query;
@@ -1400,7 +1400,7 @@ class QueryResultsService extends G3WObject {
         ],
         download: type =>{
           // choose between only feature attribute or also polygon attibute
-          if (type === 'polygon'){
+          if (type === 'polygon') {
             // id type polygon add paramateres to api download
             data.sbp_qgs_layer_id = polygonLayer.getId();
             data.sbp_fid = fid;
@@ -1447,7 +1447,7 @@ class QueryResultsService extends G3WObject {
     } else runDownload();
   };
 
-  downloadGpx({id:layerId}={}, feature){
+  downloadGpx({id:layerId}={}, feature) {
     const fid = feature ? feature.attributes[G3W_FID] : null;
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.getGpx({fid}).catch((err) => {
@@ -1458,7 +1458,7 @@ class QueryResultsService extends G3WObject {
     })
   };
 
-  downloadXls({id:layerId}={}, feature){
+  downloadXls({id:layerId}={}, feature) {
     const fid = feature ? feature.attributes[G3W_FID] : null;
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.getXls({fid}).catch(err => {
@@ -1469,7 +1469,7 @@ class QueryResultsService extends G3WObject {
     })
   };
 
-  listenClearSelection(layer, actionId){
+  listenClearSelection(layer, actionId) {
     const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     const handler = ()=>{
       const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
@@ -1483,12 +1483,12 @@ class QueryResultsService extends G3WObject {
     })
   };
 
-  unlistenerEventsActions(){
+  unlistenerEventsActions() {
     this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
     this.unlistenerlayeractionevents = [];
   };
 
-  addRemoveFilter(layer){
+  addRemoveFilter(layer) {
     const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     _layer.toggleFilterToken();
   };
@@ -1517,7 +1517,7 @@ class QueryResultsService extends G3WObject {
    * @returns {Promise<void>}
    * @private
    */
-  async _addRemoveSelectionFeature(layer, feature, index, force){
+  async _addRemoveSelectionFeature(layer, feature, index, force) {
     const fid = feature ? feature.attributes[G3W_FID]: null;
     const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
     if (!hasAlreadySelectioned) {
@@ -1540,7 +1540,7 @@ class QueryResultsService extends G3WObject {
     }
   };
 
-  checkFeatureSelection({layerId, feature, index, action}={}){
+  checkFeatureSelection({layerId, feature, index, action}={}) {
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     if (feature) {
       const fid = feature ? feature.attributes[G3W_FID]: null;
@@ -1555,19 +1555,19 @@ class QueryResultsService extends G3WObject {
    * @param action
    * @param index
    */
-  addToSelection(layer, feature, action, index){
+  addToSelection(layer, feature, action, index) {
     action.state.toggled[index] = !action.state.toggled[index];
     const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     this._addRemoveSelectionFeature(_layer, feature, index);
   };
 
-  removeQueryResultLayerFromMap(){
+  removeQueryResultLayerFromMap() {
     this.resultsQueryLayer.getSource().clear();
     this.mapService.getMap().removeLayer(this.resultsQueryLayer)
   };
 
 // show layerQuery result on map
-  addQueryResultsLayerToMap({feature, timeout=1500}){
+  addQueryResultsLayerToMap({feature, timeout=1500}) {
     this.removeQueryResultLayerFromMap();
     this.resultsQueryLayer.getSource().addFeature(feature);
     this.mapService.getMap().addLayer(this.resultsQueryLayer);
@@ -1575,7 +1575,7 @@ class QueryResultsService extends G3WObject {
       const center = getCenter(feature.getGeometry().getExtent());
       this.mapService.getMap().getView().setCenter(center);
       console.log(center)
-    } catch(err){
+    } catch(err) {
 
     }
     timeout && setTimeout(()=>{
@@ -1587,7 +1587,7 @@ class QueryResultsService extends G3WObject {
    *
    Show featureFormCoordinates
    */
-  showCoordinates(coordinates){
+  showCoordinates(coordinates) {
     const feature = geoutils.createFeatureFromCoordinates(coordinates);
     this.addQueryResultsLayerToMap({feature});
   };
@@ -1596,7 +1596,7 @@ class QueryResultsService extends G3WObject {
    * Show BBox
    * @param bbox
    */
-  showBBOX(bbox){
+  showBBOX(bbox) {
     const feature = geoutils.createFeatureFromBBOX(bbox);
     this.addQueryResultsLayerToMap({feature});
   };
@@ -1605,7 +1605,7 @@ class QueryResultsService extends G3WObject {
    * Show Geometry
    * @param geometry
    */
-  showGeometry(geometry){
+  showGeometry(geometry) {
     const feature = geoutils.createFeatureFromGeometry({
       geometry
     });
@@ -1656,7 +1656,7 @@ class QueryResultsService extends G3WObject {
    * layerId : current layer fathre id
    * feature: current feature father id
    */
-  showRelation({relation, layerId, feature}={}){
+  showRelation({relation, layerId, feature}={}) {
     const {name: relationId, nmRelationId} = relation;
     const chartRelationIds = [];
     const projectRelation = this._project.getRelationById(relationId);

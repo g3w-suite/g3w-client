@@ -8,7 +8,7 @@ const Input = {
     'baseinput': BaseInput
   },
   watch: {
-    'notvalid'(newValid){
+    'notvalid'(newValid) {
       if (newValid) this.service.setErrorMessage(this.state)
     },
   },

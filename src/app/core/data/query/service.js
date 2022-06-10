@@ -92,7 +92,7 @@ class QueryService extends BaseService {
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  async coordinates({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
+  async coordinates({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}) {
     const layersFilterObject =  {
       QUERYABLE: true,
       SELECTEDORALL: layerIds.length === 0,
@@ -120,7 +120,7 @@ class QueryService extends BaseService {
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  handleRequest(request, query={}){
+  handleRequest(request, query={}) {
     return new Promise((resolve, reject) =>{
       request.then(response => {
         const results = this.handleResponse(response, query);
@@ -134,7 +134,7 @@ class QueryService extends BaseService {
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  handleResponse(response, query={}){
+  handleResponse(response, query={}) {
     const layersResults = response;
     const results = {
       query,
@@ -149,7 +149,7 @@ class QueryService extends BaseService {
   /**
    * Exxception response has user message attribute
    */
-  async returnExceptionResponse({usermessage}){
+  async returnExceptionResponse({usermessage}) {
     return {
       data: [],
       usermessage,

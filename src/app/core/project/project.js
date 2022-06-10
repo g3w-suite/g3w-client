@@ -76,11 +76,11 @@ class Project extends G3WObject{
 
 
 //get search end point value (ows or api)
-  getSearchEndPoint(){
+  getSearchEndPoint() {
     return this.state.search_endpoint;
   };
 
-  setSearchEndPoint(){
+  setSearchEndPoint() {
     const {search_endpoint, search=[]} = this.state;
     search.forEach(search => search.search_endpoint = search_endpoint);
   };
@@ -101,11 +101,11 @@ class Project extends G3WObject{
     return this.state.wms_use_layer_ids;
   };
 
-  getContextBaseLegend(){
+  getContextBaseLegend() {
     return this.state.context_base_legend;
   };
 
-  getQueryPointTolerance(){
+  getQueryPointTolerance() {
     return this.state.query_point_tolerance;
   };
 
@@ -122,11 +122,11 @@ class Project extends G3WObject{
     return this.state.relations;
   };
 
-  getRelationById(relationId){
+  getRelationById(relationId) {
     return this.state.relations.find(relation => relation.id === relationId);
   };
 
-  getRelationsByLayerId({layerId, type}={}){
+  getRelationsByLayerId({layerId, type}={}) {
     return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
   };
 
@@ -236,11 +236,11 @@ class Project extends G3WObject{
    * Legend Position
    */
 
-  setLegendPosition(legend_position='tab'){
+  setLegendPosition(legend_position='tab') {
     this.state.legend_position = legend_position;
   };
 
-  getLegendPosition(){
+  getLegendPosition() {
     return this.state.legend_position;
   };
 
@@ -256,11 +256,11 @@ class Project extends G3WObject{
     return this.state;
   };
 
-  getPrint(){
+  getPrint() {
     return this.state.print || [];
   };
 
-  getSearches(){
+  getSearches() {
     return this.state.search || [];
   };
 
@@ -268,7 +268,7 @@ class Project extends G3WObject{
     return this.state.vectorurl;
   };
 
-  getRasterUrl(){
+  getRasterUrl() {
     return this.state.rasterurl;
   };
 
@@ -327,7 +327,7 @@ class Project extends G3WObject{
    * @param map_theme map theme name
    * @param layerstree // current layerstree of TOC
    */
-  async setLayersTreePropertiesFromMapTheme({map_theme, layerstree=this.state.layerstree}){
+  async setLayersTreePropertiesFromMapTheme({map_theme, layerstree=this.state.layerstree}) {
     /**
      * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
      * plus layerstree of map_theme get from api map theme
@@ -399,11 +399,11 @@ class Project extends G3WObject{
   /**
    * get map Theme_configuration
    */
-  async getMapThemeFromThemeName(map_theme){
+  async getMapThemeFromThemeName(map_theme) {
     // get map theme configuration from map_themes project config
     const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
     // check if mapThemeConfig exist
-    if (mapThemeConfig){
+    if (mapThemeConfig) {
       // check if has layerstree (property get from server with a specific api
       const {layerstree} = mapThemeConfig;
       if (layerstree === undefined) {
@@ -419,7 +419,7 @@ class Project extends G3WObject{
    * @param map_theme
    * @returns {Promise<*>}
    */
-  getMapThemeConfiguration = async function(map_theme){
+  getMapThemeConfiguration = async function(map_theme) {
     let config;
     const url = `${this.urls.map_themes}${map_theme}/`;
     try {
@@ -428,11 +428,11 @@ class Project extends G3WObject{
       });
       const {result, data} = response;
       if (result) config = data;
-    } catch(err){}
+    } catch(err) {}
     return config;
   };
 
-  getUrl(type){
+  getUrl(type) {
     return this.urls[type];
   };
 }

@@ -16,7 +16,7 @@ class BaseLayer extends ImageLayer {
     } else this._mapLayer = this;
   }
 
-  getProjectionFromCrs(crs={}){
+  getProjectionFromCrs(crs={}) {
     crs.epsg = crs.epsg ? crs.epsg : "EPSG:3857";
     return Projections.get(crs);
   };
@@ -34,7 +34,7 @@ class BaseLayer extends ImageLayer {
     });
   };
 
-  getSource(){
+  getSource() {
     return this.getOLLayer().getSource();
   };
 

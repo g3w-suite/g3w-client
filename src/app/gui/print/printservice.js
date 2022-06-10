@@ -31,7 +31,7 @@ class PrintComponentService extends G3WObject {
     this._scalesResolutions = {};
   };
 
-  init(){
+  init() {
     this._project = ProjectsRegistry.getCurrentProject();
     this.state.print = this._project.getPrint() || [];
     this.state.visible = this.state.print.length > 0;
@@ -54,7 +54,7 @@ class PrintComponentService extends G3WObject {
     this.state.visible && this.setInitState();
   };
 
-  setInitState(){
+  setInitState() {
     this.state.template = this.state.print[0].name;
     this.state.atlas = this.state.print[0].atlas;
     this.state.atlasValues = [];

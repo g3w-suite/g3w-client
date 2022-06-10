@@ -21,7 +21,7 @@ const DateTimePickerInput = Vue.extend({
     }
   },
   methods: {
-    resize(){
+    resize() {
       const domeDataPicker = $(`#${this.iddatetimepicker}`);
       domeDataPicker && domeDataPicker.data("DateTimePicker") && domeDataPicker.data("DateTimePicker").hide();
     },

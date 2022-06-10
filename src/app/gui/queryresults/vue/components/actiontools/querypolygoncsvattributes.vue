@@ -26,7 +26,7 @@
         default: null
       },
     },
-    data(){
+    data() {
       return {
         type: this.config.choices[0].type
       }

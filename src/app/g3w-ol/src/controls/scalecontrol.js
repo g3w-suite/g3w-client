@@ -41,7 +41,7 @@ class ScaleControl extends Control{
         if (params.term.indexOf('1:') !== -1) {
           // Return null to disable tag creation
           scale = params.term.split('1:')[1];
-        } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0){
+        } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0) {
           scale = Number(params.term);
           if (1*scale <= self.scales[0]) {
             newTag = {
