@@ -1,11 +1,11 @@
 import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
 import ApplicationService  from 'core/applicationservice';
-import utils  from 'core/utils//utils';
+import utils  from 'core/utils/utils';
 import geoutils from 'core/utils/geo';
 import G3WObject from 'core/g3wobject';
 import LayerFactory  from 'core/layers/layerfactory';
 import LayersStore  from 'core/layers/layersstore';
-import Projections  from '/g3w-ol/src/projection/projections';
+import Projections  from 'g3w-ol/src/projection/projections';
 class Project extends G3WObject{
   constructor(config={}, options={}) {
     super({

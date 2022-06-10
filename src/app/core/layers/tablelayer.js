@@ -1,4 +1,4 @@
-import {DEFAULT_EDITING_CAPABILITIES} from '/constant';
+import {DEFAULT_EDITING_CAPABILITIES} from 'constant';
 import ProjectsRegistry  from 'core/project/projectsregistry';
 import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
 import Layer  from './layer';

@@ -156,7 +156,7 @@ gulp.task('browserify', function(done) {
   // trasformation
   bundler
     .transform(vueify)
-    .transform(babelify/*, { babelrc: true }*/)
+    .transform(babelify, { global: true, /*babelrc: true*/ })
     .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] }})
     .transform(imgurify);
 
