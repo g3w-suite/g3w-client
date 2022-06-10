@@ -4,10 +4,10 @@
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
-    "build": "gulp g3w-admin --max-old-space-size=2048",
-    "build:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
+    "build": "gulp g3w-admin",
+    "build:client": "gulp g3w-admin:client_only",
     "build:plugins": "gulp g3w-admin-plugins-select",
-    "dev": "gulp dev --max-old-space-size=2048",
+    "dev": "gulp dev",
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",

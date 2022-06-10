@@ -28,6 +28,7 @@ const path        = require('path');
 const babelify    = require('babelify');
 const browserSync = require('browser-sync');
 const browserify  = require('browserify');
+const esmify      = require('esmify');
 const httpProxy   = require('http-proxy');
 const karma       = require('karma');
 const imgurify    = require('imgurify');
@@ -137,9 +138,7 @@ gulp.task('browserify', function(done) {
     debug: !production,
     cache: {},
     packageCache: {},
-    plugin: [
-      [ require('esmify'), { /* ... options ... */ } ]
-    ]
+    plugin: [ esmify ]
   });
   if (production) {
     // ignore dev file index
@@ -160,10 +159,10 @@ gulp.task('browserify', function(done) {
   bundler
     .transform(vueify)
     .transform(babelify, {
-      global: true,
-      sourceMaps: true, 
-      ignore: [/\/node_modules\/(?!ol\/)/],
-      /*babelrc: true*/
+      // global: true,
+      // sourceMaps: true, 
+      // ignore: [/\/node_modules\/(?!ol\/)/],
+      // babelrc: true
     })
     .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] }})
     .transform(imgurify);
