@@ -136,7 +136,10 @@ gulp.task('browserify', function(done) {
     paths: ['./src/', './src/app/', './src/plugins/'],
     debug: !production,
     cache: {},
-    packageCache: {}
+    packageCache: {},
+    plugin: [
+      [ require('esmify'), { /* ... options ... */ } ]
+    ]
   });
   if (production) {
     // ignore dev file index
@@ -156,7 +159,12 @@ gulp.task('browserify', function(done) {
   // trasformation
   bundler
     .transform(vueify)
-    .transform(babelify, { global: true, /*babelrc: true*/ })
+    .transform(babelify, {
+      global: true,
+      sourceMaps: true, 
+      ignore: [/\/node_modules\/(?!ol\/)/],
+      /*babelrc: true*/
+    })
     .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] }})
     .transform(imgurify);
 
