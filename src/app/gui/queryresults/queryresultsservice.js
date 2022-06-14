@@ -159,9 +159,9 @@ class QueryResultsService extends G3WObject {
         async: false
       }
     };
-    GUI.onbefore('setContent', options=>{
+    GUI.onbefore('setContent', options => {
       const {perc} = options;
-      this.mapService = this.mapService || ApplicationService.getApplicationService('map');
+      this.mapService = this.mapService ?? GUI.getService('map');
       if (perc === 100 && GUI.isMobile()) {
         this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
         this._asyncFnc.goToGeometry.async = true;
@@ -1251,11 +1251,11 @@ class QueryResultsService extends G3WObject {
   };
 
   showChart(ids, container, relationData) {
-    this.emit('show-chart', ids, container, relationData);
+    this.fire('show-chart', ids, container, relationData);
   };
 
   hideChart(container) {
-    this.emit('hide-chart', container);
+    this.fire('hide-chart', container);
   };
 
   showRelationsChart(ids=[], layer, feature, action, index, container) {
@@ -1267,7 +1267,7 @@ class QueryResultsService extends G3WObject {
         fid: feature.attributes[G3W_FID],
         height: 400
       };
-      this.emit('show-chart', ids, container, relationData)
+      this.fire('show-chart', ids, container, relationData)
     } else this.hideChart(container)
   };
 

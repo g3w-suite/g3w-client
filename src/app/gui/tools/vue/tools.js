@@ -4,7 +4,7 @@ import Component  from 'gui/vue/component';
 import ToolsService  from 'gui/tools/service';
 import template from './tools.html';
 const InternalComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   data() {
     return {
       state: null

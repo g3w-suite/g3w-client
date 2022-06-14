@@ -1,4 +1,3 @@
-import utils from 'core/utils/utils';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import ApplicationService  from 'core/applicationservice';
 import Layer  from 'core/layers/layer';
@@ -8,9 +7,9 @@ import WMSTLayer  from './map/wmstlayer';
 import ARCGISMAPSERVERLayer  from './map/arcgismapserverlayer';
 import XYZLayer  from './map/xyzlayer';
 import LegendService  from './legend/legendservice';
-import GeoLayerMixin  from './geolayermixin';
+import GeoLayerMixin from 'core/layers/geolayermixin';
 
-class ImageLayer extends Layer{
+class ImageLayer extends Layer {
   constructor(config={}, options={}) {
     options.setters = {
       change() {},
@@ -46,29 +45,30 @@ class ImageLayer extends Layer{
       wms_use_layer_ids,
       styles
     }*/
+    this.setup(config, options);
     this.config.baselayer = config.baselayer || false;
     this.type = Layer.LayerTypes.IMAGE;
     this.legendUrl = null;
     this.customParams = {};
-    this.setup(config, options);
-    utils.mixin(ImageLayer, GeoLayerMixin);
   }
 
   async getLayerForEditing({force=false, vectorurl, project_type, project}={}) {
     if (this.isEditable() || force) {
       const project = project || ProjectsRegistry.getCurrentProject();
-    const editableLayer = new VectorLayer(this.config, {
-      vectorurl,
-      project_type,
-      project
-    });
-    // set editing layer
-    try {
-    const editingLayer = await editableLayer.layerForEditing;
-    this.setEditingLayer(editingLayer);
-    return editingLayer
-  } catch(err) {return Promise.reject(err);}
-  } else return null
+      const editableLayer = new VectorLayer(this.config, {
+        vectorurl,
+        project_type,
+        project
+      });
+      // set editing layer
+      try {
+        const editingLayer = await editableLayer.layerForEditing;
+        this.setEditingLayer(editingLayer);
+        return editingLayer
+      } catch(err) {
+        return Promise.reject(err);
+      }
+    } else return null
 };
 
   isBaseLayer() {
@@ -233,6 +233,8 @@ class ImageLayer extends Layer{
   ];
 
 }
+
+Object.assign(ImageLayer.prototype, GeoLayerMixin);
 
 
 export default  ImageLayer;

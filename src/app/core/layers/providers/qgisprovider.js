@@ -307,28 +307,28 @@ class QGISProvider extends Provider {
       if (_.isNull(layer.vector)) noVectorlayerCodes.push(layerCode);
     });
     const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
-    this.emit('loadingvectorlayersstart');
+    this.fire('loadingvectorlayersstart');
     $.when.apply(this, vectorLayersSetup)
       .then(() => {
         const vectorLayersCodes = Array.prototype.slice.call(arguments);
-        this.emit('loadingvectolayersdatastart');
+        this.fire('loadingvectolayersdatastart');
         this.loadAllVectorsData(vectorLayersCodes)
           .then(() => {
             this._vectorLayersCodes = vectorLayersCodes;
             d.resolve(vectorLayersCodes);
-            this.emit('loadingvectorlayersend');
+            this.fire('loadingvectorlayersend');
             this.setReady(true);
           })
           .fail(() =>  {
             this._layers.forEach(layer => layer.vector = null);
             d.reject();
-            this.emit('errorloadingvectorlayersend');
+            this.fire('errorloadingvectorlayersend');
             this.setReady(false);
           })
       })
       .fail(() => {
         this.setReady(false);
-        this.emit('errorloadingvectorlayersend');
+        this.fire('errorloadingvectorlayersend');
         d.reject();
       });
     return d.promise();

@@ -19,11 +19,11 @@
         methods:{
             toggleFull() {
                 GUI.toggleFullViewContent();
-                GUI.emit('resize');
+                GUI.fire('resize');
             },
             resetToDefault() {
                 GUI.resetToDefaultContentPercentage();
-                GUI.emit('resize');
+                GUI.fire('resize');
             }
         }
     };

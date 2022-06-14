@@ -41,7 +41,7 @@
       async stop() {
         this.domElementMoveListen.removeEventListener('mousemove', this.wrapMoveFnc);
         await this.$nextTick();
-        GUI.emit('resize');
+        GUI.fire('resize');
       }
     },
     watch:{

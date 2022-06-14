@@ -4,25 +4,11 @@ import {unByKey} from "ol/Observable";
 
 class Control extends OLControl {
   constructor(options={}) {
-    const {name="", visible=true, enabled=false} = options;
-    super(options);
-    this._enabled = enabled;
-    this.offline = options.offline !== undefined ? options.offline : true;
-    this.name = name.split(' ').join('-').toLowerCase();
-    this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
-    this.eventKeys = {}; // store eventKey and original havenHandler
-    /*
-      tl: top-left
-      tr: top-right
-      bl: bottom-left
-      bt: bottom-right
-     */
-    this.positionCode = options.position || 'tl';
-    this.priority = options.priority || 0;
-    if (!options.element) {
-      const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
-      const customClass = options.customClass;
-      const tipLabel = options.tipLabel || this.name;
+    let {name="", visible=true, enabled=false, element, customClass, buttonClickHandler} = options;
+    name =  name.split(' ').join('-').toLowerCase();
+    if (!element) {
+      const className = "ol-"+name.split(' ').join('-').toLowerCase();
+      const tipLabel = options.tipLabel || name;
       const label = options.label || '';
       const mapControlButtonVue =  Vue.extend({
         functional: true,
@@ -57,7 +43,21 @@ class Control extends OLControl {
       const mapControlButtonDOMElement = new mapControlButtonVue().$mount().$el;
       options.element = mapControlButtonDOMElement;
     }
-    const buttonClickHandler = options.buttonClickHandler || super._handleClick;
+    super(options);
+    this._enabled = enabled;
+    this.offline = options.offline !== undefined ? options.offline : true;
+    this.name = name;
+    this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
+    this.eventKeys = {}; // store eventKey and original havenHandler
+    /*
+      tl: top-left
+      tr: top-right
+      bl: bottom-left
+      bt: bottom-right
+     */
+    this.positionCode = options.position || 'tl';
+    this.priority = options.priority || 0;
+    buttonClickHandler = options.buttonClickHandler || this._handleClick.bind(this);
     $(options.element).on('click', buttonClickHandler);
     this.setVisible(visible);
     this._postRender();
@@ -121,12 +121,12 @@ class Control extends OLControl {
     this.dispatchEvent('controlclick');
   };
 
-//shift of control position
+  //shift of control position
   shiftPosition(position) {
     $(this.element).css(hWhere, position+'px');
   };
 
-// layout handler
+  // layout handler
   layout(map) {
     if (map) {
       const position =  this.getPosition();
@@ -135,10 +135,10 @@ class Control extends OLControl {
     }
   };
 
-// change layout of controls // overwrite to customize beahviour
+  // change layout of controls // overwrite to customize beahviour
   changelayout(map) {};
 
-//called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
+  //called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
   setMap(map) {
     if (map) {
       this.layout(map);
@@ -152,7 +152,7 @@ class Control extends OLControl {
     $(this.element).show();
   };
 
-//hide control and move all controls that sit on his right position
+  //hide control and move all controls that sit on his right position
   hideControl() {
     let position = $(this.element).position().left;
     let controlWidth = $(this.element).outerWidth();

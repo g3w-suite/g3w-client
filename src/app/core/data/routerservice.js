@@ -9,11 +9,10 @@ import utils  from 'core/utils/utils';
 
 class Routerservice {
   constructor() {
-
     //set deafult outputplace
     this.defaultoutputplaces = ['gui'];
     // set current outputplaces
-    this.currentoutputplaces =  [...defaultoutputplaces]; // array contains all
+    this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
 
     /**
      * Object contain output function to show results
@@ -62,12 +61,12 @@ class Routerservice {
    */
   async getData(contextAndMethod, options={}) {
     const {context, method} = utils.splitContextAndMethod(contextAndMethod);
-    const service = getService(context);
+    const service = this.getService(context);
     const {inputs={}, outputs={}} = options;
     //return a promise and not the data
     const dataPromise = service[method](inputs);
-    outputs && currentoutputplaces.forEach(place =>{
-      ouputplaces[place](dataPromise, outputs);
+    outputs && this.currentoutputplaces.forEach(place =>{
+      this.ouputplaces[place](dataPromise, outputs);
     });
     //return always data
     const data = await dataPromise;
@@ -82,8 +81,8 @@ class Routerservice {
     const dataPromise = Promise.resolve({
       data: []
     });
-    currentoutputplaces.forEach(place =>{
-      ouputplaces[place](dataPromise);
+    this.currentoutputplaces.forEach(place =>{
+      this.ouputplaces[place](dataPromise);
     });
   };
 
@@ -92,8 +91,8 @@ class Routerservice {
    * @param dataPromise
    */
   showCustomOutputDataPromise(dataPromise) {
-    currentoutputplaces.forEach(place =>{
-      ouputplaces[place](dataPromise, {});
+    this.currentoutputplaces.forEach(place =>{
+      this.ouputplaces[place](dataPromise, {});
     });
   };
 
@@ -103,7 +102,7 @@ class Routerservice {
    * @returns {*}
    */
   getService(serviceName) {
-    return services[serviceName]
+    return this.services[serviceName]
   };
 
   /*
@@ -117,7 +116,7 @@ class Routerservice {
    * @param place
    */
   addCurrentOutputPlace(place) {
-    place && currentoutputplaces.indexOf(place) === -1 && currentoutputplaces.push(place);
+    place && this.currentoutputplaces.indexOf(place) === -1 && this.currentoutputplaces.push(place);
   };
 
   /**
@@ -130,14 +129,14 @@ class Routerservice {
    *   }
    */
   addNewOutputPlace({place, method=()=>{}}={}) {
-    const added = ouputplaces[place] === undefined;
-    if (added) ouputplaces[place] = method;
+    const added = this.ouputplaces[place] === undefined;
+    if (added) this.ouputplaces[place] = method;
     return added;
   };
 
   // reset default configuration
   resetDefaultOutput() {
-    this.currentoutputplaces = [...defaultoutputplaces];
+    this.currentoutputplaces = [...this.defaultoutputplaces];
   };
 
 }

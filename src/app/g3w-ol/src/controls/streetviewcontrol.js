@@ -2,7 +2,7 @@ import ApplicationState from 'core/applicationstate';
 import InteractionControl  from './interactioncontrol';
 import PickCoordinatesInteraction  from '../interactions/pickcoordinatesinteraction';
 import Feature from 'ol/Feature';
-import {Vector as SourceVector} from 'ol/source';
+import {Vector as VectorSource} from 'ol/source';
 import {Vector as VectorLayer} from 'ol/layer';
 import {Style, Text, Icon, Fill} from 'ol/style';
 import {transform} from "ol/proj";
@@ -27,7 +27,7 @@ class StreetViewControl extends InteractionControl {
     this._projection = null;
     this._lastposition = null;
     this._streetViewFeature = new Feature();
-    const streetVectorSource = new SourceVector({
+    const streetVectorSource = new VectorSource({
       features: []
     });
     this._layer = new VectorLayer({

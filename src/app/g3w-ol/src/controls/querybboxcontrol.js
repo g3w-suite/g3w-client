@@ -37,11 +37,10 @@ class QueryBBoxControl extends InteractionControl {
     this._startCoordinate = null;
     this.layers = options.layers || [];
     const visible = this.checkVisible(this.layers);
-    options.visible = visible;
+    this.setVisible(visible);
     options.enabled = visible && this.checkEnabled(this.layers);
     this.unwatches = [];
     this.listenLayersVisibleChange();
-
   }
 
   listenLayersVisibleChange() {

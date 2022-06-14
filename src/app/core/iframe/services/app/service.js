@@ -47,7 +47,7 @@ class AppService extends BaseService{
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
       try {
         const blob = await this.mapService.createMapImage();
-        this.emit('response', {
+        this.fire('response', {
           action,
           response: {
             result: true,
@@ -55,7 +55,7 @@ class AppService extends BaseService{
           }
         })
       } catch(err) {
-        this.emit('response', {
+        this.fire('response', {
           action,
           response: {
             result: false,

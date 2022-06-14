@@ -26,8 +26,9 @@ class MetadataComponent extends Component {
   }
 
   setInternalComponent() {
+    const service = this.getService();
     this.internalComponent = new InternalComponent({
-      service: service
+      service
     });
     this.internalComponent.state = service.state;
     return this.internalComponent;

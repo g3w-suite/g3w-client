@@ -39,4 +39,3 @@ const bootstrap = function() {
 
 // run  bootstrap function
 bootstrap();
-

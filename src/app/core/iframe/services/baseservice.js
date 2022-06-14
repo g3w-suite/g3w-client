@@ -8,27 +8,17 @@ class BaseIframeService extends G3WObject{
   constructor(options={}) {
     super(options);
     this.ready = false;
+    this.mapService = GUI.getService('map');
+    /**
+     *
+     * @type {null}
+     */
+    this.layers = undefined;
   };
 
   init() {
     //overwrite each service
   }
-
-  /**
-   * Common mapService attribute
-   */
-  mapService = GUI.getService('map');
-
-  /**
-   * Common current project attribute
-   */
-  project = ProjectsRegistry.getCurrentProject();
-
-  /**
-   *
-   * @type {null}
-   */
-  layers = undefined;
 
   /**
    * Return a qgs_layer_id array based on passed qgis_layer_id
@@ -45,7 +35,7 @@ class BaseIframeService extends G3WObject{
    * @private
    */
   async searchFeature({layer, feature}) {
-    const search_endpoint = this.project.getSearchEndPoint();
+    const search_endpoint = ProjectsRegistry.getCurrentProject().getSearchEndPoint();
     const {field, value} = feature;
     const { data=[] } = await DataRouterService.getData('search:features', {
       inputs: {
@@ -80,7 +70,7 @@ class BaseIframeService extends G3WObject{
     let layersCount = qgs_layer_id.length;
     let i = 0;
     while (!response.found && i < layersCount) {
-      const layer = this.project.getLayerById(qgs_layer_id[i]);
+      const layer = ProjectsRegistry.getCurrentProject().getLayerById(qgs_layer_id[i]);
       try {
         const data = layer && await this.searchFeature({
           layer,
@@ -111,11 +101,11 @@ class BaseIframeService extends G3WObject{
    * @param layers
    */
   setLayers(layers=[]) {
-    layers = layers;
+    this.layers = layers;
   };
 
   getLayers() {
-    return layers;
+    return this.layers;
   };
 
   /**

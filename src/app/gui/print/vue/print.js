@@ -72,6 +72,7 @@ class PrintComponent extends Component {
   }
 
   setInternalComponent() {
+    const service = this.getService();
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
       service

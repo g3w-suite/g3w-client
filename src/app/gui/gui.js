@@ -1,7 +1,6 @@
 import G3WObject from 'core/g3wobject';
-
-//import RouterService  from 'core/router';
-//import ComponentsRegistry  from 'gui/componentsregistry';
+import RouterService  from 'core/router';
+import ComponentsRegistry  from 'gui/componentsregistry';
 
 class GUI extends G3WObject {
   constructor() {
@@ -9,7 +8,7 @@ class GUI extends G3WObject {
     super({
         setters: {
           setContent(options = {}) {
-            this.emit('opencontent', true);
+            this.fire('opencontent', true);
             this._setContent(options)
           }
         }
@@ -54,7 +53,7 @@ class GUI extends G3WObject {
   };
 
   getService(idComponent) {
-    const component = getComponent(idComponent);
+    const component = this.getComponent(idComponent);
     return component && component.getService();
   };
 
@@ -62,11 +61,11 @@ class GUI extends G3WObject {
     RouterService.goto(url);
   };
   ready() {
-    this.emit('ready');
+    this.fire('ready');
     this.isready = true;
   };
   guiResized() {
-    this.emit('guiresized');
+    this.fire('guiresized');
   };
   //ready GUI
   isReady() {

@@ -26,7 +26,7 @@ class QueryService extends BaseService {
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  polygon({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  polygon({feature, feature_count=this.getProject().getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
     const fid = feature.get(G3W_FID);
     const geometry = feature.getGeometry();
@@ -51,7 +51,7 @@ class QueryService extends BaseService {
         multilayers,
         feature_count,
         filterConfig,
-        projection: this.project.getProjection()
+        projection: this.getProject().getProjection()
       });
       return this.handleRequest(request, {
         fid,
@@ -70,7 +70,7 @@ class QueryService extends BaseService {
    * @param layersFilterObject
    * @returns {Promise<unknown>}
    */
-  bbox({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+  bbox({ bbox, feature_count=this.getProject().getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     const layers = geoutils.getMapLayersByFilter(layersFilterObject, condition);
     const request = geoutils.getQueryLayersPromisesByBBOX(layers, {
       bbox,
@@ -120,13 +120,13 @@ class QueryService extends BaseService {
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  handleRequest(request, query={}) {
-    return new Promise((resolve, reject) =>{
-      request.then(response => {
-        const results = this.handleResponse(response, query);
-        resolve(results);
-      }).fail(reject)
-    })
+  async handleRequest(request, query={}) {
+    try {
+      const response = await request;
+      return this.handleResponse(response, query);
+    } catch(err) {
+      throw err
+    }
   };
 
   /**
@@ -147,7 +147,7 @@ class QueryService extends BaseService {
   };
 
   /**
-   * Exxception response has user message attribute
+   * Exception response has user message attribute
    */
   async returnExceptionResponse({usermessage}) {
     return {
@@ -157,6 +157,9 @@ class QueryService extends BaseService {
       error: true
     }
   }
+  ciao(){
+    console.log('sono io')
+  }
 }
 
-export default  new QueryService();
+export default new QueryService();

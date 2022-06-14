@@ -25,9 +25,9 @@ class WMSTLayer extends WMSLayer {
     const representativeLayer = this.layers[0];
     if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
     const olLayer = new RasterLayers.TiledWMSLayer(wmsConfig, this.extraParams, this._method);
-    olLayer.getSource().on('tileloadstart', () => this.emit("loadstart"));
-    olLayer.getSource().on('tileloadend', () => this.emit("loadend"));
-    olLayer.getSource().on('tileloaderror', ()=> this.emit("loaderror"));
+    olLayer.getSource().on('tileloadstart', () => this.fire("loadstart"));
+    olLayer.getSource().on('tileloadend', () => this.fire("loadend"));
+    olLayer.getSource().on('tileloaderror', ()=> this.fire("loaderror"));
     return olLayer
   };
 }

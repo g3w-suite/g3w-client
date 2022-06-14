@@ -160,8 +160,8 @@ gulp.task('browserify', function(done) {
     .transform(vueify)
     .transform(babelify, {
       // global: true,
-      // sourceMaps: true, 
-      // ignore: [/\/node_modules\/(?!ol\/)/],
+      // sourceMaps: true,
+      ignore: [/\/node_modules\//],
       // babelrc: true
     })
     .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] }})
@@ -170,7 +170,6 @@ gulp.task('browserify', function(done) {
   const bundle = function() {
     return bundler.bundle()
       .on('error', function(err) {
-        console.log(err);
         this.emit('end');
         del([
           g3w.clientFolder + '/js/app.js',
@@ -315,7 +314,7 @@ gulp.task('html:compiletemplate', function() {
 });
 
 gulp.task('browser-sync', function() {
-  const port = g3w.port ?? 3000;
+  const port = g3w.localServerPort ?? 3000;
   const proxy = httpProxy.createProxyServer({ target: g3w.proxy.url });
   proxy.on('error', function(e) { gutil.log(e); });
   browserSync.init({
@@ -327,8 +326,8 @@ gulp.task('browser-sync', function() {
           let rootUrl;
           if (req.url.indexOf('plugin.js') > -1) rootUrl = req.url;
           else rootUrl = req.url.split('?')[0];
-          for (let i in g3w.proxy.routes) {
-            if (rootUrl.indexOf(g3w.proxy.routes[i]) > -1) {
+          for (let i in g3w.proxy.urls) {
+            if (rootUrl.indexOf(g3w.proxy.urls[i]) > -1) {
               doproxy = true;
               break;
             }

@@ -12,21 +12,19 @@ class PluginsRegistry extends G3WObject{
           if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
         }
       }
-    })
+    });
     this.config = null;
     this._plugins = {};
     this._configurationPlugins = [];
     this.pluginsConfigs = {};
     this._loadedPluginUrls = [];
-
-    ProjectsRegistry.onafter('setCurrentProject', project =>{
-      this.gidProject = project.getGid();
-    });
-
   }
 
   // initialize plugin
   init(options={}) {
+    ProjectsRegistry.onafter('setCurrentProject', project =>{
+      this.gidProject = project.getGid();
+    });
     return new Promise(async (resolve, reject) =>{
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations

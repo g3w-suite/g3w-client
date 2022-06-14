@@ -94,7 +94,7 @@ import AreaInteraction from 'g3w-ol/src/interactions/areainteraction';
 import LengthInteraction from 'g3w-ol/src/interactions/lengthinteraction';
 import g3wolutils from 'g3w-ol/src/utils/utils';
 
-const g3w = g3w || {};
+const g3w = {};
 //set G3W-CLIENT application constant
 g3w.constant = G3W_CONSTANT;
 //set core api method and objects

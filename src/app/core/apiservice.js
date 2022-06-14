@@ -20,13 +20,13 @@ class ApiService extends G3WObject {
   };
 
   _incrementLoaders() {
-    this.howManyAreLoading === 0 && this.emit('apiquerystart');
+    this.howManyAreLoading === 0 && this.fire('apiquerystart');
     this.howManyAreLoading += 1;
   };
 
   _decrementLoaders() {
     this.howManyAreLoading -= 1;
-    this.howManyAreLoading === 0 && this.emit('apiqueryend');
+    this.howManyAreLoading === 0 && this.fire('apiqueryend');
   };
 
   get(api, options) {
@@ -35,15 +35,15 @@ class ApiService extends G3WObject {
       let completeUrl = this._baseUrl + '/' + apiEndPoint;
       if (options.request) completeUrl = completeUrl + '/' + options.request;
       const params = options.params || {};
-      this.emit(api+'querystart');
+      this.fire(api+'querystart');
       this._incrementLoaders();
       return
       $.get(completeUrl,params)
         .done(response => {
-          this.emit(api+'queryend',response);
+          this.fire(api+'queryend',response);
           return response;
         }).fail(error => {
-          this.emit(api+'queryfail', error);
+          this.fire(api+'queryfail', error);
           return error;
       }).always(() => this._decrementLoaders());
     }

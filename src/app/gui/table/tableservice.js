@@ -84,7 +84,7 @@ class TableService extends G3WObject {
       if (!this.state.pagination) {
         data = emitRedraw ? await this.reloadData() : [];
       }
-      emitRedraw && this.emit('redraw', data);
+      emitRedraw && this.fire('redraw', data);
     };
     this.layer.on('filtertokenchange', this.filterChangeHandler);
   }
@@ -370,7 +370,7 @@ class TableService extends G3WObject {
     if (this.state.tools.geolayer.active) {
       this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
         this.setInBBoxParam();
-        this.emit('ajax-reload');
+        this.fire('ajax-reload');
       } : async ()=>{
         this.setInBBoxParam();
         this.filterChangeHandler({

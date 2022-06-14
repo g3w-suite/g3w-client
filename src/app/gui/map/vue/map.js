@@ -88,7 +88,7 @@ Vue.component('g3w-map', vueComponentOptions);
 class MapComponent extends Component {
   constructor(options={}) {
     super(options);
-    this.id = "map-component";
+    this.id = "map";
     this.title = "Map Component";
     const target = options.target || "map";
     const maps_container = options.maps_container || "g3w-maps";

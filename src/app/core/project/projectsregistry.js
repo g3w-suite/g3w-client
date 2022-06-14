@@ -12,30 +12,31 @@ import MapLayersStoresRegistry  from 'core/map/maplayersstoresregistry';
 // Public interface
 class ProjectsRegistry extends G3WObject {
   constructor() {
-    super();
+    super({
+      setters: {
+        createProject(projectConfig) {
+          //hook to get project config and modify it
+        },
+        setCurrentProject(project) {
+          if (this.state.currentProject !== project) {
+            CatalogLayersStoresRegistry.removeLayersStores();
+            MapLayersStoresRegistry.removeLayersStores();
+          }
+          this.state.currentProject = project;
+          this.state.qgis_version = project.getQgisVersion();
+          this.setProjectType(project.state.type);
+          const projectLayersStore = project.getLayersStore();
+          //set in first position (catalog)
+          CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+          //set in first position (map)
+          MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
+        }
+      }
+    });
     this.config = null;
     this.initialized = false;
     this.projectType = null;
     this.overviewproject;
-    this.setters = {
-      createProject(projectConfig) {
-        //hook to get project config and modify it
-      },
-      setCurrentProject(project) {
-        if (this.state.currentProject !== project) {
-          CatalogLayersStoresRegistry.removeLayersStores();
-          MapLayersStoresRegistry.removeLayersStores();
-        }
-        this.state.currentProject = project;
-        this.state.qgis_version = project.getQgisVersion();
-        this.setProjectType(project.state.type);
-        const projectLayersStore = project.getLayersStore();
-        //set in first position (catalog)
-        CatalogLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-        //set in first position (map)
-        MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
-      }
-    };
 
     this.state = {
       baseLayers: {},

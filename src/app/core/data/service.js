@@ -1,9 +1,8 @@
 import ProjectsRegistry from 'core/project/projectsregistry';
 
 class BaseService {
-  constructor() {
-    ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
-    this.project = ProjectsRegistry.getCurrentProject();
+  getProject() {
+    return ProjectsRegistry.getCurrentProject();
   }
   /**
    *
@@ -11,12 +10,15 @@ class BaseService {
    * @returns {Promise<unknown>}
    */
   handleRequest(request) {
+    console.log(request)
     //  OVERWRITE TO SERVICE
   };
 
-  handleResponse = async function(response) {
+  async handleResponse(response) {
+    console.log(response,'baseervice')
     //  OVERWRITE TO SERVICE
   };
+
 }
 
-export default  BaseService;
+export default BaseService;

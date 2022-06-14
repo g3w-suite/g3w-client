@@ -101,7 +101,7 @@ class PluginService extends G3WObject{
   };
 
   triggerEvent({name, params={}}) {
-    this.emit(name, params);
+    this.fire(name, params);
   };
 
   unsubscribeEvent({name, owner}) {

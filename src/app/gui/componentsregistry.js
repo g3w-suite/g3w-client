@@ -11,7 +11,7 @@ class ComponentsRegistry extends G3WObject {
     const id = component.getId();
     if (!this.components[id]) {
       this.components[id] = component;
-      this.emit('componentregistered', component);
+      this.fire('componentregistered', component);
     }
   };
 

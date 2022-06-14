@@ -17,11 +17,11 @@ class Component extends BaseComponent {
     } else this.internalComponent.$mount(parent);
     this.internalComponent.$nextTick(() => {
       $(parent).localize();
-      this.emit('ready');
+      this.fire('ready');
       d.resolve(true);
     });
     // emit mount event
-    this.emit('mount');
+    this.fire('mount');
     return d.promise();
   }
 
@@ -36,7 +36,7 @@ class Component extends BaseComponent {
     // set internal componet to null (for GC)
     this.internalComponent = null;
     // emit unmount event
-    this.emit('unmount');
+    this.fire('unmount');
     return utils.resolve();
   }
 
@@ -56,7 +56,7 @@ class Component extends BaseComponent {
       })
     });
     // emit layout event
-    this.emit('layout');
+    this.fire('layout');
   };
 };
 

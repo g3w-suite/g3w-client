@@ -51,7 +51,7 @@ class TableComponent extends Component {
         });
       })
       .catch(err => GUI.notify.error(t("info.server_error")))
-      .finally(() => this.emit('show'));
+      .finally(() => this.fire('show'));
   };
 
   unmount() {

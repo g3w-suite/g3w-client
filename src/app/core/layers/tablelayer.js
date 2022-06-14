@@ -1,17 +1,16 @@
 import {DEFAULT_EDITING_CAPABILITIES} from 'constant';
 import ProjectsRegistry  from 'core/project/projectsregistry';
 import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
-import Layer  from './layer';
-import Editor  from 'core/editing/editor';
-import FeaturesStore  from './features/featuresstore';
-import Feature  from './features/feature';
+import Layer from './layer';
+import Editor from 'core/editing/editor';
+import FeaturesStore from './features/featuresstore';
+import Feature from './features/feature';
 import {Feature as OLFeature} from "ol/Feature";
 
 // Base Layer that support editing
 class TableLayer extends Layer {
   constructor(config = {}, options = {}) {
-    super({
-      setters: {
+    options.setters = {
         // delete all features
         clearFeatures() {
           this._clearFeatures();
@@ -35,13 +34,14 @@ class TableLayer extends Layer {
           this._featuresstore.getFeatures(options)
             .then(promise => {
               promise.then(features => {
-                this.emit('getFeatures', features);
+                this.fire('getFeatures', features);
                 return d.resolve(features);
               }).fail(err => d.reject(err))
             })
             .fail(err => d.reject(err));
           return d.promise();
         },
+
         commit(commitItems) {
           const d = $.Deferred();
           this._featuresstore.commit(commitItems)
@@ -58,11 +58,12 @@ class TableLayer extends Layer {
             });
           return d.promise();
         },
+
         setColor(color) {
           this._setColor(color)
         }
-      }
-    });
+    };
+    super(config, options);
     /*
    * editing url api:
    * /api/vector/<type of request: data/editing/config>/<project_type>/<project_id>/<layer_id>
@@ -80,9 +81,6 @@ class TableLayer extends Layer {
     config.editing = {
       fields: [] // editing fields
     };
-    // call base layer
-    base(this, config, options);
-
     // get configuration from server if is editable
     this._editatbleLayer;
     if (this.isEditable()) {
@@ -124,7 +122,7 @@ class TableLayer extends Layer {
 
     }
     this._featuresstore = new FeaturesStore({
-      provider: this.providers.data
+      provider: this.getProvider('data')
     });
   }
 
@@ -178,7 +176,7 @@ class TableLayer extends Layer {
     return this._featuresstore.readFeatures();
   };
 
-// return layer for editing
+  // return layer for editing
   getLayerForEditing = async function({vectorurl, project_type}={}) {
     vectorurl && this.setVectorUrl(vectorurl);
     project_type && this.setProjectType(project_type);
@@ -203,7 +201,7 @@ class TableLayer extends Layer {
     return this;
   };
 
-//check if is editingLayer useful to get editingstyle
+  //check if is editingLayer useful to get editingstyle
   isEditingLayer() {
     return !!this.config.editing
   };
@@ -235,7 +233,7 @@ class TableLayer extends Layer {
     return required;
   };
 
-// unlock editng features
+  // unlock editng features
   unlock() {
     const d = $.Deferred();
     this._featuresstore.unlock()
@@ -248,7 +246,7 @@ class TableLayer extends Layer {
     // overwrite by vector layer
   };
 
-// return layer fields
+  // return layer fields
   getEditingFields(editable=false) {
     let fields = this.config.editing.fields.length ? this.config.editing.fields: this.config.fields;
     if (editable) fields = fields.filter(field => field.editable);
@@ -283,7 +281,7 @@ class TableLayer extends Layer {
     return this.config.editing.format;
   };
 
-// raw data
+  // raw data
   getEditingFormat() {
     return this.config.editing.format;
   };
@@ -296,7 +294,7 @@ class TableLayer extends Layer {
     this.state.editing.ready = bool;
   };
 
-// get configuration from server
+  // get configuration from server
   getEditingConfig(options={}) {
     const d = $.Deferred();
     const provider = this.getProvider('data');
@@ -345,7 +343,7 @@ class TableLayer extends Layer {
     return this.config.urls.widget;
   };
 
-// set data url
+  // set data url
   setDataUrl(url) {
     this.config.urls.data = url;
   };
@@ -354,7 +352,7 @@ class TableLayer extends Layer {
     return this.config.urls.data;
   };
 
-// url to get config layer
+  // url to get config layer
   getConfigUrl() {
     return this.config.urls.config;
   };
@@ -391,7 +389,7 @@ class TableLayer extends Layer {
     return this._featuresstore;
   };
 
-// get editing style
+  // get editing style
   getEditingStyle() {
     return this.config.editing.style;
   };
@@ -487,11 +485,6 @@ class TableLayer extends Layer {
     feature.setNew();
     return feature;
   };
-
-
 }
-
-
-
 
 export default  TableLayer;

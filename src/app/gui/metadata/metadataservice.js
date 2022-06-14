@@ -85,7 +85,7 @@ class MetadataService extends G3WObject{
   };
 
   reload() {
-    this.emit('reload');
+    this.fire('reload');
     this._buildProjectGroupMetadata();
   };
 

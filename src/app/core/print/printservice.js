@@ -1,5 +1,5 @@
 import G3WObject from 'core/g3wobject';
-import PrinterProviderFactory  from './providers/printerproviderfactory';
+import PrinterProviderFactory  from 'core/print/providers/printerproviderfactory';
 
 class PrintService extends G3WObject{
   constructor(options={}) {
@@ -15,8 +15,6 @@ class PrintService extends G3WObject{
   printAtlas(options={}, method="GET") {
     return this.provider.printAtlas(options, method);
   };
-
 }
-
 
 export default  PrintService;

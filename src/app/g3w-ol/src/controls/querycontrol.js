@@ -1,4 +1,4 @@
-import {Observable} from "ol";
+import {unByKey} from 'ol/Observable';
 import InteractionControl  from './interactioncontrol';
 import PickCoordinatesInteraction  from '../interactions/pickcoordinatesinteraction';
 
@@ -30,7 +30,7 @@ class QueryControl extends InteractionControl {
         const toggled = event.target.isToggled();
         toggled && map.on('singleclick', querySingleClickFnc) || map.un('singleclick', querySingleClickFnc);
       });
-    } else Observable.unByKey(eventToggledKey);
+    } else unByKey(eventToggledKey);
     super.setMap(map);
   };
 

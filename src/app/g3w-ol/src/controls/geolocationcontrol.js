@@ -5,7 +5,7 @@ import {Style, Text, Fill} from "ol/style";
 import {Feature} from "ol";
 import {Point} from "ol/geom";
 import {Geolocation} from "ol";
-import {Observable} from "ol";
+import {unByKey} from 'ol/Observable';
 
 class GeolocationControl extends InteractionControl {
   constructor() {
@@ -59,7 +59,7 @@ class GeolocationControl extends InteractionControl {
 
   setMap(map) {
     let toggledKeyEvent; // key toggled event handler
-    supre.setMap.call(map);
+    super.setMap.call(map);
     const geolocation = new Geolocation({
       projection: map.getView().getProjection(),
       tracking: true, // set tracking
@@ -88,7 +88,7 @@ class GeolocationControl extends InteractionControl {
       this.hideControl();
       this._layer = null;
       evt.code !== 1 && this.dispatchEvent('error');
-      Observable.unByKey(toggledKeyEvent);
+      unByKey(toggledKeyEvent);
       toggledKeyEvent = null;
     });
 

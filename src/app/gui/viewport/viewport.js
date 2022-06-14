@@ -580,8 +580,8 @@ class ViewportService extends G3WObject {
         component.layout(width, height);
       });
       event && setTimeout(()=> {
-        this.emit(event);
-        GUI.emit(event);
+        this.fire(event);
+        GUI.fire(event);
       })
     });
   };

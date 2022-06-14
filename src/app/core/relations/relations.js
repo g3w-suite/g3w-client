@@ -3,7 +3,7 @@ import Relation  from './relation';
 
 // class Relations
 class Relations extends G3WObject {
-  constructor() {
+  constructor(options={}) {
     super();
     const {relations} = options;
     //store relations

@@ -303,4 +303,4 @@ const ResponseParser = {
   }
 };
 
-export default  ResponseParser;
+export default ResponseParser;

@@ -74,9 +74,9 @@ class WMSLayer extends MapLayer{
     const representativeLayer = this.layers[0];
     if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
     const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
-    olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-    olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
-    olLayer.getSource().on('imageloaderror', ()=> this.emit("loaderror"));
+    olLayer.getSource().on('imageloadstart', () => this.fire("loadstart"));
+    olLayer.getSource().on('imageloadend', () => this.fire("loadend"));
+    olLayer.getSource().on('imageloaderror', ()=> this.fire("loaderror"));
     return olLayer
   };
 

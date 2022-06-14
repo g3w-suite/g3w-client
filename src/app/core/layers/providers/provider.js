@@ -1,6 +1,7 @@
 import G3WObject from 'core/g3wobject';
 import geoutils from 'core/utils/geo';
-import Parser from 'core/parsers/response/parser';
+import utils from 'core/utils/utils';
+import ResponseParser from 'core/parsers/response/parser';
 
 class Provider extends G3WObject {
   constructor(options={}) {
@@ -62,10 +63,10 @@ class Provider extends G3WObject {
      * set timeout of a query
      * @type {number}
      */
-    return getTimeoutPromise({
+    return utils.getTimeoutPromise({
       resolve,
       data: {
-        data: Parser.utils.queryResponseUtils.getTimeoutData(layers),
+        data: ResponseParser.utils.getTimeoutData(layers),
         query
       }
     });

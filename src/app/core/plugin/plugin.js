@@ -72,7 +72,7 @@ class Plugin extends G3WObject{
   setReady(bool) {
     this._ready = bool;
     bool && this.setLayout();
-    this.emit('set-ready', bool, this.name);
+    this.fire('set-ready', bool, this.name);
     setTimeout(()=>{
       clearTimeout(this._timeout);
       PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
@@ -271,7 +271,7 @@ class Plugin extends G3WObject{
 // unload (case change map)
   unload() {
     this.service && this.service.clearAllEvents();
-    this.emit('unload');
+    this.fire('unload');
     //console.log('UNLOAD can be overwrite by plugin';
   };
 

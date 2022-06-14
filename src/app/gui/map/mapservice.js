@@ -83,7 +83,7 @@ class MapService extends G3WObject {
           this.state.center = this.viewer.getCenter();
           this._setupAllLayers();
           this.setUpMapOlEvents();
-          this.emit('viewerset');
+          this.fire('viewerset');
         },
         controlClick(mapcontrol, info={}) {},
         loadExternalLayer(layer) {}, // used in general to alert exteexternal layer is  load
@@ -159,7 +159,7 @@ class MapService extends G3WObject {
           color: 'red'
         }
       },
-      highlightLayer: new VectorLayer({
+      highlightLayer: new OLVectorLayer({
         source: new VectorSource(),
         style:(feature) => {
           let styles = [];
@@ -203,7 +203,7 @@ class MapService extends G3WObject {
     // function to show spinner layers
     this._incrementLoaders = () => {
       if (this._howManyAreLoading === 0) {
-        this.emit('loadstart');
+        this.fire('loadstart');
         GUI.showSpinner({
           container: $('#map-spinner'),
           id: 'maploadspinner',
@@ -216,7 +216,7 @@ class MapService extends G3WObject {
     this._decrementLoaders = () => {
       this._howManyAreLoading -= 1;
       if (this._howManyAreLoading === 0) {
-        this.emit('loadend');
+        this.fire('loadend');
         GUI.hideSpinner('maploadspinner');
       }
     };
@@ -432,7 +432,7 @@ class MapService extends G3WObject {
 
   setLayersExtraParams(params,update) {
     this.layersExtraParams = _.assign(this.layersExtraParams, params);
-    this.emit('extraParamsSet',params,update);
+    this.fire('extraParamsSet',params,update);
   };
 
   getProject() {
@@ -617,7 +617,7 @@ class MapService extends G3WObject {
   };
 
   showAddLayerModal() {
-    this.emit('addexternallayer');
+    this.fire('addexternallayer');
   };
 
   _checkMapControls() {
@@ -670,9 +670,7 @@ class MapService extends G3WObject {
           case 'zoombox':
             if (!isMobile.any) {
               control = this.createMapControl(controlType, {});
-              control.on('zoomend', (e) => {
-                this.viewer.fit(e.extent);
-              });
+              control.on('zoomend', evt => this.viewer.fit(evt.extent));
             }
             break;
           case 'zoomtoextent':
@@ -785,6 +783,7 @@ class MapService extends G3WObject {
             const runQuery = utils.throttle(async e => {
               const coordinates = e.coordinates;
               GUI.closeOpenSideBarComponent();
+              console.log(coordinates)
               try {
                 const {data=[]} = await DataRouterService.getData('query:coordinates', {
                   inputs: {
@@ -795,7 +794,9 @@ class MapService extends G3WObject {
                   }
                 });
                 data.length && this.showMarker(coordinates);
-              } catch(error) {}
+              } catch(error) {
+                console.log(error)
+              }
             });
             const eventKey = control.on('picked', runQuery);
             control.setEventKey({
@@ -1085,7 +1086,7 @@ class MapService extends G3WObject {
           case 'addlayers':
             if (!isMobile.any) {
               control = this.createMapControl(controlType, {});
-              control.on('addlayer', () => this.emit('addexternallayer'));
+              control.on('addlayer', () => this.fire('addexternallayer'));
             }
             break;
           case 'length':
@@ -1410,7 +1411,7 @@ class MapService extends G3WObject {
   addControl(id, type, control, addToMapControls=true, visible=true) {
     this.state.mapcontrolready = false;
     this.viewer.map.addControl(control);
-    control.on('toggled', evt => this.emit('mapcontrol:toggled', evt));
+    control.on('toggled', evt => this.fire('mapcontrol:toggled', evt));
     this._mapControls.push({
       id,
       type,
@@ -1575,7 +1576,7 @@ class MapService extends G3WObject {
         })
       });
     }
-    this.emit('change-map-legend-params')
+    this.fire('change-map-legend-params')
   };
 
   addMapLayer(mapLayer) {
@@ -1942,282 +1943,282 @@ class MapService extends G3WObject {
     return mapLayer;
   };
 
-getOverviewMapLayers(project) {
-const projectLayers = project.getLayersStore().getLayers({
-  GEOLAYER: true,
-  BASELAYER: false,
-});
-const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
-let overviewMapLayers = [];
+  getOverviewMapLayers(project) {
+    const projectLayers = project.getLayersStore().getLayers({
+      GEOLAYER: true,
+      BASELAYER: false,
+    });
+    const multiLayers = _.groupBy(projectLayers,layer => layer.getMultiLayerId());
+    let overviewMapLayers = [];
 
-Object.entries(multiLayers).forEach(([id, layers]) => {
-  const multilayerId = 'overview_layer_'+id;
-  const tiled = layers[0].state.tiled;
-  const config = {
-    url: project.getWmsUrl(),
-    id: multilayerId,
-    tiled: tiled
+    Object.entries(multiLayers).forEach(([id, layers]) => {
+      const multilayerId = 'overview_layer_'+id;
+      const tiled = layers[0].state.tiled;
+      const config = {
+        url: project.getWmsUrl(),
+        id: multilayerId,
+        tiled: tiled
+      };
+      const mapLayer = new WMSLayer(config);
+      layers.reverse().forEach(layer => mapLayer.addLayer(layer));
+      overviewMapLayers.push(mapLayer.getOLLayer(true));
+    });
+    return overviewMapLayers.reverse();
   };
-  const mapLayer = new WMSLayer(config);
-  layers.reverse().forEach(layer => mapLayer.addLayer(layer));
-  overviewMapLayers.push(mapLayer.getOLLayer(true));
-});
-return overviewMapLayers.reverse();
-};
 
-/**
- * method to update MapLayer
- * @param mapLayer
- * @param options
- */
-updateMapLayer(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parametter to force request of map layer from server
-  if (options.force) options.g3w_time = Date.now();
-  if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
-    mapLayer.showSpinnerWhenLoading = showSpinner;
-    this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
-  }
-  mapLayer.update(this.state, options);
-  return mapLayer;
-};
-
-// run update function on each mapLayer
-updateMapLayers(options={}) {
-  this.getMapLayers().forEach(mapLayer => this.updateMapLayer(mapLayer, options));
-  const baseLayers = this.getBaseLayers();
-  //updatebase layer
-  Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
-};
-
-// register map Layer listeners of creation
-registerMapLayerListeners(mapLayer, projectLayer=true) {
-  this.registerMapLayerLoadingEvents(mapLayer);
-  //listen change filter token
-  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
-    mapLayer.layers.forEach(layer => {
-      layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
-      layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
-    });
-  ///
-};
-
-/** Methos to register and unregister map loadmap
- *
- * */
-registerMapLayerLoadingEvents(mapLayer) {
-  mapLayer.on('loadstart', this._incrementLoaders);
-  mapLayer.on('loadend', this._decrementLoaders);
-  mapLayer.on('loaderror', this._mapLayerLoadError);
-};
-
-unregisterMapLayerLoadingEvents(mapLayer) {
-  mapLayer.off('loadstart', this._incrementLoaders );
-  mapLayer.off('loadend', this._decrementLoaders );
-  mapLayer.off('loaderror', this._mapLayerLoadError);
-};
-
-/**
- * End
- */
-
-// unregister listeners of mapLayers creation
-unregisterMapLayerListeners(mapLayer, projectLayer=false) {
-  this.unregisterMapLayerLoadingEvents(mapLayer);
-  // try to remove layer filter token
-  if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
-    mapLayer.layers.forEach(layer => {
-      layer.un('change');
-      layer.removeEvent('filtertokenchange')
-    });
-};
-
-setTarget(elId) {
-  this.target = elId;
-};
-
-getCurrentToggledMapControl() {
-  const mapControl = this._mapControls.find(({control}) => control && control.isToggled && control.isToggled());
-  return mapControl && mapControl.control;
-};
-
-/**
- * close: param to close eventually right content open
- * @param interaction
- * @param options is an object contain: {
- *   active: If set new interaction active or not
- *   active: If set new interaction active or not
- *   close: if close eventually GUI Content (es. result right content )
- * }
- * return object having current toggled control if there is a toggled mapcontrol
- */
-addInteraction(interaction, options={active:true, close:true}) {
-  const {active=true} = options;
-  const control = this.getCurrentToggledMapControl();
-  const toggled = control && control.isToggled && control.isToggled() || false;
-  const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
-  untoggleMapControls && active && this._unToggleControls(options);
-  this.getMap().addInteraction(interaction);
-  interaction.setActive(active);
-  this._externalInteractions.push(interaction);
-  return {
-    control,
-    toggled// return current toggled map control if toggled
-  }
-};
-
-removeInteraction(interaction) {
-  interaction && interaction.setActive(false);
-  this.viewer.map.removeInteraction(interaction);
-  this._externalInteractions = this._externalInteractions.filter(_interaction => interaction !== _interaction);
-};
-
-_watchInteraction(interaction) {
-  interaction.on('change:active', e => {
-    if ((e.target instanceof Pointer) && e.target.getActive()) {
-      this.emit('mapcontrol:active', e.target);
+  /**
+   * method to update MapLayer
+   * @param mapLayer
+   * @param options
+   */
+  updateMapLayer(mapLayer, options={force:false}, {showSpinner=true} = {}) {
+    // if force add g3w_time parametter to force request of map layer from server
+    if (options.force) options.g3w_time = Date.now();
+    if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
+      mapLayer.showSpinnerWhenLoading = showSpinner;
+      this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);
     }
-  })
-};
-
-/**
- * Show map Info
- * @param info
- */
-showMapInfo({info, style} = {}) {
-  this.state.map_info.info = info;
-  this.state.map_info.style = style || this.state.map_info.style;
-};
-
-hideMapInfo() {
-  this.state.map_info.info = null;
-  this.state.map_info.style = null;
-};
-
-zoomTo(coordinate, zoom=6) {
-  this.viewer.zoomTo(coordinate, zoom);
-};
-
-goTo(coordinates,zoom) {
-  const options = {
-    zoom: zoom || 6
+    mapLayer.update(this.state, options);
+    return mapLayer;
   };
-  this.viewer.goTo(coordinates, options);
-};
 
-goToRes(coordinates, resolution) {
-  this.viewer.goToRes(coordinates, {
-    resolution
-  });
-};
+  // run update function on each mapLayer
+  updateMapLayers(options={}) {
+    this.getMapLayers().forEach(mapLayer => this.updateMapLayer(mapLayer, options));
+    const baseLayers = this.getBaseLayers();
+    //updatebase layer
+    Object.values(baseLayers).forEach(baseLayer => baseLayer.update(this.state, this.layersExtraParams));
+  };
 
-getGeometryAndExtentFromFeatures(features=[]) {
-  let extent;
-  let geometryType;
-  let geometry;
-  let coordinates;
-  let geometryCoordinates = [];
-  for (let i=0; i < features.length; i++) {
-    const feature = features[i];
-    const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
-    if (geometry) {
-      if (geometry instanceof Geometry) {
-        const featureExtent = [...geometry.getExtent()];
-        extent = !extent ? featureExtent : extend(extent, featureExtent);
-        geometryType = geometryType ? geometryType : geometry.getType();
-        coordinates = geometry.getCoordinates();
+  // register map Layer listeners of creation
+  registerMapLayerListeners(mapLayer, projectLayer=true) {
+    this.registerMapLayerLoadingEvents(mapLayer);
+    //listen change filter token
+    if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
+      mapLayer.layers.forEach(layer => {
+        layer.onbefore('change', ()=>this.updateMapLayer(mapLayer, {force: true}));
+        layer.on('filtertokenchange', ()=> this.updateMapLayer(mapLayer, {force: true}))
+      });
+    ///
+  };
+
+  /** Methos to register and unregister map loadmap
+   *
+   * */
+  registerMapLayerLoadingEvents(mapLayer) {
+    mapLayer.on('loadstart', this._incrementLoaders);
+    mapLayer.on('loadend', this._decrementLoaders);
+    mapLayer.on('loaderror', this._mapLayerLoadError);
+  };
+
+  unregisterMapLayerLoadingEvents(mapLayer) {
+    mapLayer.off('loadstart', this._incrementLoaders );
+    mapLayer.off('loadend', this._decrementLoaders );
+    mapLayer.off('loaderror', this._mapLayerLoadError);
+  };
+
+  /**
+   * End
+   */
+
+  // unregister listeners of mapLayers creation
+  unregisterMapLayerListeners(mapLayer, projectLayer=false) {
+    this.unregisterMapLayerLoadingEvents(mapLayer);
+    // try to remove layer filter token
+    if (projectLayer && mapLayer.layers && Array.isArray(mapLayer.layers))
+      mapLayer.layers.forEach(layer => {
+        layer.un('change');
+        layer.removeEvent('filtertokenchange')
+      });
+  };
+
+  setTarget(elId) {
+    this.target = elId;
+  };
+
+  getCurrentToggledMapControl() {
+    const mapControl = this._mapControls.find(({control}) => control && control.isToggled && control.isToggled());
+    return mapControl && mapControl.control;
+  };
+
+  /**
+   * close: param to close eventually right content open
+   * @param interaction
+   * @param options is an object contain: {
+   *   active: If set new interaction active or not
+   *   active: If set new interaction active or not
+   *   close: if close eventually GUI Content (es. result right content )
+   * }
+   * return object having current toggled control if there is a toggled mapcontrol
+   */
+  addInteraction(interaction, options={active:true, close:true}) {
+    const {active=true} = options;
+    const control = this.getCurrentToggledMapControl();
+    const toggled = control && control.isToggled && control.isToggled() || false;
+    const untoggleMapControls = control && control.isClickMap ? control.isClickMap() : true;
+    untoggleMapControls && active && this._unToggleControls(options);
+    this.getMap().addInteraction(interaction);
+    interaction.setActive(active);
+    this._externalInteractions.push(interaction);
+    return {
+      control,
+      toggled// return current toggled map control if toggled
+    }
+  };
+
+  removeInteraction(interaction) {
+    interaction && interaction.setActive(false);
+    this.viewer.map.removeInteraction(interaction);
+    this._externalInteractions = this._externalInteractions.filter(_interaction => interaction !== _interaction);
+  };
+
+  _watchInteraction(interaction) {
+    interaction.on('change:active', e => {
+      if ((e.target instanceof Pointer) && e.target.getActive()) {
+        this.fire('mapcontrol:active', e.target);
+      }
+    })
+  };
+
+  /**
+   * Show map Info
+   * @param info
+   */
+  showMapInfo({info, style} = {}) {
+    this.state.map_info.info = info;
+    this.state.map_info.style = style || this.state.map_info.style;
+  };
+
+  hideMapInfo() {
+    this.state.map_info.info = null;
+    this.state.map_info.style = null;
+  };
+
+  zoomTo(coordinate, zoom=6) {
+    this.viewer.zoomTo(coordinate, zoom);
+  };
+
+  goTo(coordinates,zoom) {
+    const options = {
+      zoom: zoom || 6
+    };
+    this.viewer.goTo(coordinates, options);
+  };
+
+  goToRes(coordinates, resolution) {
+    this.viewer.goToRes(coordinates, {
+      resolution
+    });
+  };
+
+  getGeometryAndExtentFromFeatures(features=[]) {
+    let extent;
+    let geometryType;
+    let geometry;
+    let coordinates;
+    let geometryCoordinates = [];
+    for (let i=0; i < features.length; i++) {
+      const feature = features[i];
+      const geometry = feature.getGeometry ? feature.getGeometry() : feature.geometry;
+      if (geometry) {
+        if (geometry instanceof Geometry) {
+          const featureExtent = [...geometry.getExtent()];
+          extent = !extent ? featureExtent : extend(extent, featureExtent);
+          geometryType = geometryType ? geometryType : geometry.getType();
+          coordinates = geometry.getCoordinates();
+          if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
+          else geometryCoordinates.push(coordinates);
+        } else {
+          const featureExtent = feature.bbox;
+          extent = !extent ? featureExtent : extend(extent, featureExtent);
+          geometryType = geometry.type;
+          coordinates = geometry.coordinates;
+        }
         if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
         else geometryCoordinates.push(coordinates);
-      } else {
-        const featureExtent = feature.bbox;
-        extent = !extent ? featureExtent : extend(extent, featureExtent);
-        geometryType = geometry.type;
-        coordinates = geometry.coordinates;
       }
-      if (geometryType.includes('Multi')) geometryCoordinates = [...geometryCoordinates, ...coordinates];
-      else geometryCoordinates.push(coordinates);
     }
-  }
-  try {
-    const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
-    geometry = new geom[olClassGeomType](geometryCoordinates);
-    if (extent === undefined) extent = geometry.getExtent();
-  } catch(err) {}
-  return {
-    extent,
-    geometry
-  }
-};
+    try {
+      const olClassGeomType = geometryType.includes('Multi') ? geometryType : `Multi${geometryType}`;
+      geometry = new geom[olClassGeomType](geometryCoordinates);
+      if (extent === undefined) extent = geometry.getExtent();
+    } catch(err) {}
+    return {
+      extent,
+      geometry
+    }
+  };
 
-highlightFeatures(features, options={}) {
-  const {geometry} = this.getGeometryAndExtentFromFeatures(features);
-  //force zoom false
-  options.zoom = false;
-  this.highlightGeometry(geometry, options);
-};
+  highlightFeatures(features, options={}) {
+    const {geometry} = this.getGeometryAndExtentFromFeatures(features);
+    //force zoom false
+    options.zoom = false;
+    this.highlightGeometry(geometry, options);
+  };
 
-/**
- * Zoom methods
- */
+  /**
+   * Zoom methods
+   */
 
-zoomToGeometry(geometry, options={highlight: false}) {
-  const extent = geometry && geometry.getExtent();
-  const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
-};
+  zoomToGeometry(geometry, options={highlight: false}) {
+    const extent = geometry && geometry.getExtent();
+    const {highlight} = options;
+    if (highlight && extent) options.highLightGeometry = geometry;
+    extent && this.zoomToExtent(extent, options);
+  };
 
-zoomToFeatures(features, options={highlight: false}) {
-  let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
-  const {highlight} = options;
-  if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
-};
+  zoomToFeatures(features, options={highlight: false}) {
+    let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
+    const {highlight} = options;
+    if (highlight && extent) options.highLightGeometry = geometry;
+    extent && this.zoomToExtent(extent, options);
+  };
 
-zoomToExtent(extent, options={}) {
-  const center = getCenter(extent);
-  const resolution = this.getResolutionForZoomToExtent(extent);
-  this.goToRes(center, resolution);
-  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
-    zoom: false,
-    duration: options.duration
-  });
-};
+  zoomToExtent(extent, options={}) {
+    const center = getCenter(extent);
+    const resolution = this.getResolutionForZoomToExtent(extent);
+    this.goToRes(center, resolution);
+    options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+      zoom: false,
+      duration: options.duration
+    });
+  };
 
-zoomToProjectInitExtent() {
-  this.zoomToExtent(this.project.state.initextent);
-};
+  zoomToProjectInitExtent() {
+    this.zoomToExtent(this.project.state.initextent);
+  };
 
-/**
- * End zoom methods
- */
+  /**
+   * End zoom methods
+   */
 
-compareExtentWithProjectMaxExtent(extent) {
-  const projectExtent = this.project.state.extent;
-  const inside = containsExtent(projectExtent, extent);
-  return inside ? extent : projectExtent;
-};
+  compareExtentWithProjectMaxExtent(extent) {
+    const projectExtent = this.project.state.extent;
+    const inside = containsExtent(projectExtent, extent);
+    return inside ? extent : projectExtent;
+  };
 
-getResolutionForZoomToExtent(extent) {
-  let resolution;
-  const {ZOOM} = MAP_SETTINGS;
-  const map = this.getMap();
-  const projectExtent = this.project.state.extent;
-  const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
-  const inside = containsExtent(projectExtent, extent);
-  // max resolution of the map
-  const maxResolution = g3wolutils.getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
-  // check if
-  if (inside) {
-    // calculate main resolutions
-    const currentResolution = map.getView().getResolution(); // Current Resolution
-    const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
-    ////
-    // set the final resolution to go to
-    resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
-    resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
-  } else resolution = projectMaxResolution; // set max resolution
-  return resolution
-};
+  getResolutionForZoomToExtent(extent) {
+    let resolution;
+    const {ZOOM} = MAP_SETTINGS;
+    const map = this.getMap();
+    const projectExtent = this.project.state.extent;
+    const projectMaxResolution = map.getView().getResolutionForExtent(projectExtent, map.getSize());
+    const inside = containsExtent(projectExtent, extent);
+    // max resolution of the map
+    const maxResolution = g3wolutils.getResolutionFromScale(ZOOM.maxScale, this.getMapUnits()); // map resolution of the map
+    // check if
+    if (inside) {
+      // calculate main resolutions
+      const currentResolution = map.getView().getResolution(); // Current Resolution
+      const extentResolution = map.getView().getResolutionForExtent(extent, map.getSize()); // resolution of request extent
+      ////
+      // set the final resolution to go to
+      resolution = extentResolution > maxResolution ? extentResolution: maxResolution;
+      resolution = (currentResolution < resolution) && (currentResolution > extentResolution) ? currentResolution : resolution;
+    } else resolution = projectMaxResolution; // set max resolution
+    return resolution
+  };
 
   goToBBox(bbox, epsg=this.getEpsg()) {
     bbox = epsg === this.getEpsg() ? bbox : transformExtent(bbox, epsg, this.getEpsg());
@@ -2360,7 +2361,7 @@ getResolutionForZoomToExtent(extent) {
       this.setupViewer(width,height);
       if (this.viewer) {
         this.setupControls();
-        this.emit('ready');
+        this.fire('ready');
       }
     } else {
       if (!is_hidden) {
@@ -2537,13 +2538,13 @@ getResolutionForZoomToExtent(extent) {
   changeLayerVisibility({id, visible}) {
     const layer = this.getLayerById(id);
     layer && layer.setVisible(visible);
-    this.emit('change-layer-visibility', {id, visible});
+    this.fire('change-layer-visibility', {id, visible});
   };
 
   changeLayerOpacity({id, opacity=1}={}) {
     const layer = this.getLayerById(id);
     layer && layer.setOpacity(opacity);
-    this.emit('change-layer-opacity', {id, opacity});
+    this.fire('change-layer-opacity', {id, opacity});
   };
 
   changeLayerMapPosition({id, position=MAP_SETTINGS.LAYER_POSITIONS.default}) {
@@ -2556,7 +2557,7 @@ getResolutionForZoomToExtent(extent) {
         layer.setZIndex(1);
         break
     }
-    this.emit('change-layer-position-map', {id, position});
+    this.fire('change-layer-position-map', {id, position});
   };
 
   /**
@@ -2580,7 +2581,7 @@ getResolutionForZoomToExtent(extent) {
     });
     this._externalLayers = this._externalLayers.filter(externalLayer => externalLayer.get('id') !== layer.get('id'));
     this.unloadExternalLayer(layer);
-    this.emit('remove-external-layer', name);
+    this.fire('remove-external-layer', name);
   };
 
   /**

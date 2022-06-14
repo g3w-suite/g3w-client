@@ -7,15 +7,14 @@ import GeojsonLayer  from './geojson';
 
 // Class to build layer based on configuration
 class LayerFactory {
-  constructor() {
-  }
-  build(config, options) {
+  constructor() {}
+  build(config={}, options={}) {
     // return the layer instance
-    const layerClass = this.get(config);
+    const layerClass = this.get(config, options);
     return layerClass ? new layerClass(config, options) : null
   };
 
-  get(config={}) {
+  get(config={}, options={}) {
     let LayerClass;
     const serverType = config.servertype;
     switch (serverType) {
@@ -81,4 +80,4 @@ class LayerFactory {
   }
 }
 
-export default  new LayerFactory();
+export default new LayerFactory();

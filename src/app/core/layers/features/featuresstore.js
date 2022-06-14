@@ -1,7 +1,7 @@
 import G3WObject from 'core/g3wobject';
 
 // Class to store and handle features of layer
-class FeaturesStore extends G3WObject (options={}) {
+class FeaturesStore extends G3WObject {
   constructor(options={}) {
     super({
       setters: {

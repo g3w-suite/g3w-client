@@ -27,10 +27,10 @@ class BaseLayer extends ImageLayer {
 
   _registerLoadingEvent() {
     this._olLayer.getSource().on('imageloadstart', () => {
-      this.emit("loadstart");
+      this.fire("loadstart");
     });
     this._olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
+      this.fire("loadend");
     });
   };
 

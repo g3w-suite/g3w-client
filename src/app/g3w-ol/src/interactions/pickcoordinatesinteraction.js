@@ -12,40 +12,13 @@ const PickCoordinatesEvent = function(type, coordinate) {
 class PickCoordinatesInteraction extends Pointer {
   constructor() {
     super({
-      handleDownEvent: PickCoordinatesInteraction.handleDownEvent_,
-      handleUpEvent: PickCoordinatesInteraction.handleUpEvent_,
-      handleMoveEvent: PickCoordinatesInteraction.handleMoveEvent_
+      handleDownEvent: handleDownEvent_,
+      handleUpEvent: handleUpEvent_,
+      handleMoveEvent: handleMoveEvent_
     });
     this.previousCursor_ = null;
     this._centerMap = null;
   }
-
-  handleDownEvent_(event) {
-    this._centerMap = event.map.getView().getCenter();
-    // set timeout to avoid to block pan
-    setTimeout(() => {
-      if (this._centerMap === event.map.getView().getCenter()) {
-        super.handleUpEvent_(event);
-      }
-    }, 300);
-    // return false to avoid  start of drag event
-    return false
-  };
-
-  handleUpEvent_(event) {
-    this.dispatchEvent(
-      new PickCoordinatesEvent(
-        PickCoordinatesEventType.PICKED,
-        event.coordinate));
-    // it used to stop drag event
-    return false;
-  };
-
-  handleMoveEvent_(event) {
-    const elem = event.map.getTargetElement();
-    elem.style.cursor =  'pointer';
-    return true;
-  };
 
   shouldStopEvent() {
     return false;
@@ -67,6 +40,33 @@ class PickCoordinatesInteraction extends Pointer {
     }
     super.setMap(map);
   };
+}
+
+function handleDownEvent_(event) {
+  this._centerMap = event.map.getView().getCenter();
+  // set timeout to avoid to block pan
+  setTimeout(() => {
+    if (this._centerMap === event.map.getView().getCenter()) {
+      this.handleUpEvent(event);
+    }
+  }, 300);
+  // return false to avoid  start of drag event
+  return false
+}
+
+function handleUpEvent_(event) {
+  this.dispatchEvent(
+    new PickCoordinatesEvent(
+      PickCoordinatesEventType.PICKED,
+      event.coordinate));
+  // it used to stop drag event
+  return false;
+}
+
+function handleMoveEvent_(event) {
+  const elem = event.map.getTargetElement();
+  elem.style.cursor =  'pointer';
+  return true;
 }
 
 export default  PickCoordinatesInteraction;

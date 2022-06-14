@@ -1,15 +1,15 @@
 import BaseLayer  from 'core/layers/baselayers/baselayer';
 import BasesLayers  from 'g3w-ol/src/layers/bases';
 
-class OSMLayer extends BaseLayer{
-  constructor(options={}) {
-    super(options);
+class OSMLayer extends BaseLayer {
+  constructor(config={}, options={}) {
+    super(config, options);
   }
 
   _makeOlLayer() {
     const olLayer = BasesLayers.OSM;
-    olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
-    olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
+    olLayer.getSource().on('imageloadstart', () => this.fire("loadstart"));
+    olLayer.getSource().on('imageloadend', () => this.fire("loadend"));
     return olLayer
   };
 }

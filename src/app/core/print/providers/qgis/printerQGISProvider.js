@@ -16,7 +16,6 @@ class PrinterQGISProvider extends PrintProvider{
   constructor() {
     super();
     this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
-    ProjectsRegistry.onbefore('setCurrentProject', project=> this._currentLayerStore = project.getLayersStore());
   };
 
   POST({url, params, mime_type}) {

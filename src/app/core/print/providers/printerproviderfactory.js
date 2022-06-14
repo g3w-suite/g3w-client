@@ -16,6 +16,6 @@ class PrinterProviderFactory extends G3WObject {
 
 }
 
-export default PrinterProviderFactory;
+export default new PrinterProviderFactory;
 
 

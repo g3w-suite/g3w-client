@@ -1,24 +1,40 @@
 import appConfig from 'config';
+import utils from 'core/utils/utils';
 // LOAD DEVELOPMENT CONFIGURATION
 import dev from 'dev/index';
 import {TIMEOUT} from "constant";
 import ApplicationState from './applicationstate';
 import G3WObject from 'core/g3wobject';
 import GUI from 'gui/gui';
-import iframeService  from 'core/iframe/routerservice';
-import utils from 'core/utils/utils';
-// const {init:i18ninit, changeLanguage}  from 'core/i18n/i18n.service';
-import ApiService  from 'core/apiservice';
-import ProjectsRegistry  from 'core/project/projectsregistry';
-import  PluginsRegistry  from 'core/plugin/pluginsregistry';
+import iframeService from 'core/iframe/routerservice';
+import {init as i18ninit, changeLanguage}  from 'core/i18n/i18n.service';
+import ApiService from 'core/apiservice';
+import RouterDataService from 'core/data/routerservice';
+import ProjectsRegistry from 'core/project/projectsregistry';
+import PluginsRegistry from 'core/plugin/pluginsregistry';
 const G3W_VERSION = "{G3W_VERSION}";
 let production = false;
 
 //Manage Application
 class ApplicationService extends G3WObject {
   constructor() {
-    super();
-    version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
+    super({
+      setters: {
+        changeProject({gid, host}={}) {
+          return this._changeProject({gid, host})
+        },
+        online() {
+          this.setOnline();
+        },
+        offline() {
+          this.setOffline();
+        },
+        setFilterToken(filtertoken) {
+          this._setFilterToken(filtertoken)
+        }
+      }
+    });
+    this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
     ApplicationState.iframe = window.top !== window.self;
     ApplicationState.online = navigator.onLine;
     ApplicationState.ismobile= isMobile.any;
@@ -32,30 +48,18 @@ class ApplicationService extends G3WObject {
     this._initConfig = null;
     this._groupId = null;
     this._gid = null;
-    this.setters = {
-      changeProject({gid, host}={}) {
-        return this._changeProject({gid, host})
-      },
-      online() {
-        this.setOnline();
-      },
-      offline() {
-        this.setOffline();
-      },
-      setFilterToken(filtertoken) {
-        this._setFilterToken(filtertoken)
-      }
-    };
     // on obtain init config (also for change project)
     this.on('initconfig', ()=>{
       // can put the configuration project here
       this.setApplicationUser(initConfig.user);
     });
   }
-
   // init application
   async init() {
     try {
+      dev.init({
+        ApplicationService: this
+      });
       const config = await this.createApplicationConfig();
       this.setConfig(config);
       this.setLayout('app', config.layout);
@@ -355,7 +359,7 @@ class ApplicationService extends G3WObject {
       production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
-      this.emit('initconfig');
+      this.fire('initconfig');
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -391,7 +395,7 @@ class ApplicationService extends G3WObject {
         } catch(error) {
           return Promise.reject(error);
         } finally {
-          this.emit('initconfig')
+          this.fire('initconfig')
         }
       }
     }
@@ -400,8 +404,8 @@ class ApplicationService extends G3WObject {
   // method to get initial application configuration
   getInitConfig(url) {
     return new Promise((resolve, reject) => {
-      if (_initConfig) resolve(this._initConfig);
-      else XHR.get({url})
+      if (this._initConfig) resolve(this._initConfig);
+      else utils.XHR.get({url})
         .then(initConfig => resolve(initConfig))
         .catch(error => reject(error));
     })
@@ -424,7 +428,7 @@ class ApplicationService extends G3WObject {
       } catch(err) {
       } finally {
         this.complete = true;
-        this.emit('complete');
+        this.fire('complete');
       }
     }
   };
@@ -473,7 +477,7 @@ class ApplicationService extends G3WObject {
           clearTimeout(timeout);
           //clear
           this.registerOnlineOfflineEvent();
-          this.emit('ready');
+          this.fire('ready');
           ApplicationState.ready = true;
           // set current project gid
           const project = ProjectsRegistry.getCurrentProject();
@@ -628,7 +632,7 @@ class ApplicationService extends G3WObject {
   clear() {
     this.unregisterOnlineOfflineEvent();
   }
-};
+}
 
 
 export default new ApplicationService();

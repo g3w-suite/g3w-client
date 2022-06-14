@@ -5,7 +5,7 @@ import {getAllPolygonGeometryTypes} from 'core/geometry/geometry';
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 class QueryByPolygonControl extends InteractionControl {
-  constructor(option={}) {
+  constructor(options={}) {
     const {spatialMethod=SPATIALMETHODS[0]} = options;
     options = {
       ...options,
@@ -34,7 +34,7 @@ class QueryByPolygonControl extends InteractionControl {
       onhover: true
     };
     options.geometryTypes = VALIDGEOMETRIES;
-    super(option);
+    super(options);
     this.layers = options.layers || [];
     this.unwatches = [];
     this.listenPolygonLayersChange();

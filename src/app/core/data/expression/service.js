@@ -20,7 +20,7 @@ class ExpressionService extends BaseService {
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
   async expression({qgs_layer_id, layer_id, form_data, expression, formatter=1}) {
-    const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
+    const url = `${this.getProject().getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
       params: {
@@ -46,7 +46,7 @@ class ExpressionService extends BaseService {
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
    async expression_eval({qgs_layer_id, form_data, expression, formatter=1}={}) {
-    const url = this.project.getUrl('expression_eval');
+    const url = this.getProject().getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
       params: {

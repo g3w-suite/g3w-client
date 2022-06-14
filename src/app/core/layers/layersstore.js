@@ -2,7 +2,7 @@ import utils from 'core/utils/utils';
 import G3WObject from 'core/g3wobject';
 
 // Interface for Layers
-class LayersStore extends G3WObject{
+class LayersStore extends G3WObject {
   constructor(config={}) {
     super({
       setters:{

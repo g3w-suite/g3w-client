@@ -42,7 +42,7 @@ class G3WObject extends EventEmitter {
     return this._onsetter('before', setter, listener, false, priority);
   };
 
-// once before
+  // once before
   oncebefore(setter, listener, priority) {
     return this._onsetter('before', setter, listener, false, priority, true);
   };
@@ -68,7 +68,7 @@ class G3WObject extends EventEmitter {
     });
   };
 
-// base function to handle onafter or before listeners
+  // base function to handle onafter or before listeners
   /*
     when=before|after,
     type=sync|async

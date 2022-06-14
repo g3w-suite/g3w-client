@@ -48,13 +48,13 @@ class XYZLayer extends MapLayer{
     this._olLayer = new RasterLayers.XYZLayer(layerOptions, this._method);
 
     this._olLayer.getSource().on('imageloadstart', () => {
-      this.emit("loadstart");
+      this.fire("loadstart");
     });
     this._olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
+      this.fire("loadend");
     });
     this._olLayer.getSource().on('imageloaderror', () => {
-      this.emit("loaderror");
+      this.fire("loaderror");
     });
     return this._olLayer
   };

@@ -54,16 +54,20 @@ import layout  from './layout';
 layout.loading(true);
 
 class ApplicationTemplate extends G3WObject {
+  static ApplicationService = null;
+  static appLayoutConfig= null;
   constructor({ApplicationService}) {
     super();
+    ApplicationTemplate.ApplicationService = ApplicationService;
     const appLayoutConfig = ApplicationService.getConfig().layout || {};
+    ApplicationTemplate.appLayoutConfig = appLayoutConfig;
     // useful to build a difference layout/compoìnent based on mobile or not
     this._isMobile = isMobile.any;
     this._isIframe = appLayoutConfig.iframe;
     //ussefult ot not close user message when set content is called
     this.sizes = {
       sidebar: {
-        width:0
+        width: 0
       }
     };
     /*
@@ -84,7 +88,7 @@ class ApplicationTemplate extends G3WObject {
   // create application config
   _createTemplateConfig() {
     const G3WTemplate = Vue.prototype.g3wtemplate;
-    const appTitle = ApplicationService.getConfig().apptitle || 'G3W Suite';
+    const appTitle = ApplicationTemplate.ApplicationService.getConfig().apptitle || 'G3W Suite';
     return {
       title: appTitle,
       placeholders: {
@@ -157,7 +161,7 @@ class ApplicationTemplate extends G3WObject {
               mobile: true,
               config: {
                 legend: {
-                  config: appLayoutConfig.legend
+                  config: ApplicationTemplate.appLayoutConfig.legend
                 },
               }
             }),
@@ -216,7 +220,7 @@ class ApplicationTemplate extends G3WObject {
         const skinColor = $('.navbar').css('background-color');
         GUI.skinColor = skinColor && `#${skinColor.substr(4, skinColor.indexOf(')') - 4).split(',').map((color) => parseInt(color).toString(16)).join('')}`;
         await this.$nextTick();
-        self.emit('ready');
+        self.fire('ready');
         self.sizes.sidebar.width = $('#g3w-sidebar').width();
         //getSkinColor
         GUI.ready();
@@ -267,7 +271,7 @@ class ApplicationTemplate extends G3WObject {
 
   // route setting att beginning (is an example)
   _addRoutes() {
-    const RouterService = ApplicationService.getRouterService();
+    const RouterService = ApplicationTemplate.ApplicationService.getRouterService();
     const mapService = GUI.getComponent('map').getService();
     RouterService.addRoute('map/zoomto/{coordinate}/:zoom:', function(coordinate, zoom) {
       coordinate = _.map(coordinate.split(','), function(xy) {
@@ -286,12 +290,12 @@ class ApplicationTemplate extends G3WObject {
   _setUpServices() {
     Object.keys(ApplicationTemplate.Services).forEach(element => {
       const service = ApplicationTemplate.Services[element];
-      ApplicationService.registerService(element, service);
+      ApplicationTemplate.ApplicationService.registerService(element, service);
     });
     Object.values(GUI.getComponents()).forEach(component => {
-      ApplicationService.registerService(component.id, component.getService());
+      ApplicationTemplate.ApplicationService.registerService(component.id, component.getService());
     });
-    ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.emit('resize'));
+    ApplicationTemplate.Services.viewport.on('resize', ()=>GUI.fire('resize'));
   };
   // build template function
   _buildTemplate() {
@@ -346,7 +350,7 @@ class ApplicationTemplate extends G3WObject {
     Object.entries(components).forEach(([key, component])=> {
       if (register) {
         ComponentsRegistry.registerComponent(component);
-        ApplicationService.registerService(component.id, component.getService())
+        ApplicationTemplate.ApplicationService.registerService(component.id, component.getService())
       }
     })
   };
@@ -406,7 +410,7 @@ class ApplicationTemplate extends G3WObject {
     GUI.addComponent = this._addComponent.bind(this);
     GUI.removeComponent = this._removeComponent.bind(this);
     /* Metodos to define */
-    GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
+    GUI.getResourcesUrl = ()=>ApplicationTemplate.ApplicationService.getConfig().resourcesurl;
     //LIST
     GUI.showList = floatbar.FloatbarService.showPanel.bind(floatbar.FloatbarService);
     GUI.closeList = floatbar.FloatbarService.closePanel.bind(floatbar.FloatbarService);
@@ -550,7 +554,7 @@ class ApplicationTemplate extends G3WObject {
       return formService;
     };
     GUI.closeForm = function() {
-      this.emit('closeform', false);
+      this.fire('closeform', false);
       viewport.ViewportService.removeContent();
       // force set modal to false
       GUI.setModal(false);
@@ -577,7 +581,7 @@ class ApplicationTemplate extends G3WObject {
     };
 
     GUI.closeContent = function() {
-      this.emit('closecontent', false);
+      this.fire('closecontent', false);
       return viewport.ViewportService.closeContent();
     };
 
@@ -606,7 +610,7 @@ class ApplicationTemplate extends G3WObject {
     GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
     ///
     GUI.disableApplication = function(bool=false) {
-      ApplicationService.disableApplication(bool);
+      ApplicationTemplate.ApplicationService.disableApplication(bool);
     };
 
     //showusermessage
@@ -815,11 +819,11 @@ class ApplicationTemplate extends G3WObject {
     };
 
     GUI.hideClientMenu = function() {
-      ApplicationService.getConfig().user = null;
+      ApplicationTemplate.ApplicationService.getConfig().user = null;
     };
 
     GUI.hideChangeMaps = function() {
-      ApplicationService.getConfig().projects = [];
+      ApplicationTemplate.ApplicationService.getConfig().projects = [];
     };
 
     // return specific classes
@@ -890,10 +894,9 @@ ApplicationTemplate.fail = function({language='en', error }) {
       f5: "Press Ctrl+F5"
     }
   };
-  const compiledTemplate = Vue.compile(template500);
   const app = new Vue({
     el: '#app',
-    ...compiledTemplate,
+    template500,
     data: {
       messages: error_page[language]
     }

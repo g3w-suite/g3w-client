@@ -531,7 +531,7 @@ const vueComponentOptions = {
      */
     CatalogEventHub.$on('treenodevisible', layer => {
       const mapservice = GUI.getService('map');
-      mapservice.emit('cataloglayervisible', layer);
+      mapservice.fire('cataloglayervisible', layer);
     });
 
     /**
@@ -542,7 +542,7 @@ const vueComponentOptions = {
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
       CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
       // emit signal of select layer from catalog
-      mapservice.emit('cataloglayerselected', layer);
+      mapservice.fire('cataloglayerselected', layer);
     });
 
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
@@ -961,10 +961,10 @@ Vue.component('layerslegend-items',{
   async mounted() {
     await this.$nextTick();
     const mapService = GUI.getService('map');
-    mapService.on('change-map-legend-params', ()=>{
-      this.mapReady = true;
-      this.getLegendSrc(this.layers);
-    })
+    // mapService.on('change-map-legend-params', ()=>{
+    //   this.mapReady = true;
+    //   this.getLegendSrc(this.layers);
+    // })
   },
 });
 

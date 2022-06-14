@@ -1,7 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 import ApplicationService  from 'core/applicationservice';
 import DataRouterService  from 'core/data/routerservice';
-import ProjectsRegistry  from 'core/project/projectsregistry';
 import {DOWNLOAD_FORMATS} from '../../constant';
 import {t}  from 'core/i18n/i18n.service';
 import utils from 'core/utils/utils';
@@ -11,9 +10,9 @@ import Relations  from 'core/relations/relations';
 import ProviderFactory  from 'core/layers/providers/providersfactory';
 
 // Base Class of all Layer
-class Layer extends G3WObject{
+class Layer extends G3WObject {
   constructor(config={}, options={}) {
-    const {project=ProjectsRegistry.getCurrentProject(), setters} = options;
+    const {project, setters} = options;
     super({
       setters
     });
@@ -63,7 +62,7 @@ class Layer extends G3WObject{
       };
     }
 
-    // dinamic layer values useful for layerstree
+    // dynamic layer values useful for layerstree
     const defaultstyle = config.styles && config.styles.find(style => style.current).name;
     this.state = {
       id: config.id,
@@ -113,6 +112,7 @@ class Layer extends G3WObject{
     const serverType = this.config.servertype;
     // source layer
     const sourceType = this.config.source ? this.config.source.type : null;
+
     if (serverType && sourceType) {
       this.providers = {
         query: ProviderFactory.build('query', serverType, sourceType, {
@@ -147,7 +147,7 @@ class Layer extends G3WObject{
     return type ? this.proxyData[type] : this.proxyData;
   };
 
-  setProxyData= function(type, data={}) {
+  setProxyData(type, data={}) {
     this.proxyData[type] = data;
   };
 
@@ -306,7 +306,7 @@ class Layer extends G3WObject{
       try {
         await this.providers['filtertoken'].deleteFilterToken();
         ApplicationService.setFilterToken(null);
-        this.emit('filtertokenchange', {
+        this.fire('filtertokenchange', {
           layerId: this.getId()
         });
       } catch(err) {
@@ -331,7 +331,7 @@ class Layer extends G3WObject{
             filtertoken = await this.providers['filtertoken'].getFilterToken(params);
           }
           ApplicationService.setFilterToken(filtertoken);
-          this.emit('filtertokenchange', {
+          this.fire('filtertokenchange', {
             layerId: this.getId()
           });
         }
@@ -817,7 +817,7 @@ class Layer extends G3WObject{
   };
 
   getServerType() {
-    return (this.config.servertype && this.config.servertype !== '') ? this.config.servertype : ServerTypes.QGIS;
+    return (this.config.servertype && this.config.servertype !== '') ? this.config.servertype : Layer.ServerTypes.QGIS;
   };
 
   getType() {
@@ -845,7 +845,7 @@ class Layer extends G3WObject{
     if (!bool) {
       this.state.filter.active && await this.deleteFilterToken();
       this.state.filter.active = bool;
-      this.emit('unselectionall', this.getId());
+      this.fire('unselectionall', this.getId());
     }
   };
 

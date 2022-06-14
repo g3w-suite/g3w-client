@@ -7,6 +7,7 @@ import WMSLayer  from 'core/layers/map/wmslayer';
 import responseParser  from 'core/parsers/response/parser';
 import MapLayersStoreRegistry  from 'core/map/maplayersstoresregistry';
 import {Point, MultiPoint, LineString, MultiLineString, Polygon, MultiPolygon} from 'ol/geom';
+import {fromExtent} from 'ol/geom/Polygon';
 import geom from 'ol/geom';
 import {Style, Circle, Stroke, Fill, Icon, Text} from 'ol/style';
 import {Feature} from "ol";
@@ -619,10 +620,10 @@ const geoutils = {
    */
   getQueryLayersPromisesByBBOX(layers, { bbox, filterConfig={}, feature_count=10, multilayers=false}) {
     let queriesPromise;
-    const geometry = Polygon.fromExtent(bbox);
+    const geometry = fromExtent(bbox);
     const map = GUI.getService('map').getMap();
     const mapProjection = map.getView().getProjection();
-
+    console.log(map)
     if (multilayers) {
       queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
         geometry,
@@ -731,7 +732,7 @@ const geoutils = {
   getQueryLayersPromisesByCoordinates(layers, {coordinates, feature_count=10, query_point_tolerance=QUERY_POINT_TOLERANCE, multilayers=false, reproject=true}={}) {
     const d = $.Deferred();
     if (!layers.length) return d.resolve(layers);
-    const map = GUI.getService('map');
+    const map = GUI.getService('map').getMap();
     const size = map.getSize();
     const queryResponses = [];
     const queryErrors = [];

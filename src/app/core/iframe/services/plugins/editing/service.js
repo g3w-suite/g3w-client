@@ -333,7 +333,7 @@ class EditingService extends BaseService{
       error: null
     };
     this.resetSubscribeEvents();
-    this.emit('clear');
+    this.fire('clear');
   }
 }
 

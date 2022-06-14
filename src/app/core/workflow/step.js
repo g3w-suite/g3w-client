@@ -51,7 +51,7 @@ class Step extends G3WObject{
 // method to start task
   run(inputs, context, queques) {
     //emit run
-    this.emit('run', {
+    this.fire('run', {
       inputs,
       context
     });
@@ -90,7 +90,7 @@ class Step extends G3WObject{
     //emit run
     // running to false
     this.state.running = false;
-    this.emit('stop');
+    this.fire('stop');
     this._task.setInputs(null);
     this._task.setContext(null);
   };

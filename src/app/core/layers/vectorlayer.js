@@ -1,16 +1,14 @@
-import utils from 'core/utils/utils';
-import Layer  from './layer';
-import TableLayer  from './tablelayer';
-import GeoLayerMixin  from './geolayermixin';
-import VectoMapLayer  from './map/vectorlayer';
+import Layer from 'core/layers/layer';
+import TableLayer from 'core/layers/tablelayer';
+import GeoLayerMixin from 'core/layers/geolayermixin';
+import VectoMapLayer from 'core/layers/map/vectorlayer';
 
-class VectorLayer extends TableLayer{
-  constructor(config={}, options) {
+class VectorLayer extends TableLayer {
+  constructor(config={}, options={}) {
     super(config, options);
+    this.setup(config, options);
     this._mapLayer = null; // later tah will be added to map
     this.type = Layer.LayerTypes.VECTOR;
-    // need a ol layer for add to map
-    this.setup(config, options);
     this.onafter('setColor', color => {})
   }
 
@@ -50,7 +48,7 @@ class VectorLayer extends TableLayer{
   };
 }
 
-utils.mixin(VectorLayer, GeoLayerMixin);
+Object.assign(VectorLayer.prototype, GeoLayerMixin);
 
 
 export default  VectorLayer;

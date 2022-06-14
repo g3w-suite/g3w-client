@@ -256,7 +256,7 @@ const vueComponentOptions = {
       return this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
     },
     showFeatureInfo(layer, boxid) {
-      this.$options.queryResultsService.emit('show-query-feature-info', {
+      this.$options.queryResultsService.fire('show-query-feature-info', {
         layer,
         tabs: this.hasFormStructure(layer),
         show: !this.layersFeaturesBoxes[boxid].collapsed

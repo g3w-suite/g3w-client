@@ -8,10 +8,7 @@ const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };
 
-class GeoLayerMixin{
-  constructor(config={}) {
-  }
-
+const GeoLayerMixin = {
   setup(config={}, options={}) {
     if (!this.config) {
       console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
@@ -47,14 +44,14 @@ class GeoLayerMixin{
     if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
     if (config.attributions) this.config.attributions = config.attributions;
     config.source && config.source.url && this._sanitizeSourceUrl()
-  };
+  },
 
   /**
    * Clear all selection openlayer features
    */
   clearOlSelectionFeatures() {
     this.olSelectionFeatures = null;
-  };
+  },
 
   /**
    * Get openlayer selection feature by feature id
@@ -63,7 +60,7 @@ class GeoLayerMixin{
    */
   getOlSelectionFeature(id) {
     return this.olSelectionFeatures[id];
-  };
+  },
 
   updateOlSelectionFeature({id, geometry}={}) {
     const featureObject = this.getOlSelectionFeature(id);
@@ -76,7 +73,7 @@ class GeoLayerMixin{
         feature
       })
     }
-  };
+  },
 
   /**
    * Delete openlayer feature selection by feature id
@@ -90,7 +87,7 @@ class GeoLayerMixin{
       });
       delete this.olSelectionFeatures[id];
     }
-  };
+  },
 
   /**
    * Get all openlyare feature selection
@@ -98,7 +95,7 @@ class GeoLayerMixin{
    */
   getOlSelectionFeatures() {
     return this.olSelectionFeatures;
-  };
+  },
 
   addOlSelectionFeature({id, geometry}={}) {
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
@@ -106,7 +103,7 @@ class GeoLayerMixin{
       added: false
     };
     return this.olSelectionFeatures[id];
-  };
+  },
 
   showAllOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
@@ -116,7 +113,7 @@ class GeoLayerMixin{
       });
       featureObject.added = true;
     })
-  };
+  },
 
   setInversionOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
@@ -126,12 +123,12 @@ class GeoLayerMixin{
       });
       featureObject.added = !featureObject.added
     });
-  };
+  },
 
   setOlSelectionFeatureByFid(fid, action) {
     const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
     return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
-  };
+  },
 
   setOlSelectionFeatures(feature, action='add') {
     const mapService = GUI.getComponent('map').getService();
@@ -157,7 +154,7 @@ class GeoLayerMixin{
       }
     }
     return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
-  };
+  },
 
   /**
    * Create a get parameter url right
@@ -170,7 +167,7 @@ class GeoLayerMixin{
       reserverParameters: RESERVERDPARAMETRS[type]
     });
     this.config.source.url = sanitizedUrl;
-  };
+  },
 
   isLayerCheckedAndAllParents() {
     let checked = this.isChecked();
@@ -182,15 +179,15 @@ class GeoLayerMixin{
       }
     }
     return checked;
-  };
+  },
 
   setChecked(bool) {
     this.state.checked = bool;
-  };
+  },
 
   isChecked() {
     return this.state.checked;
-  };
+  },
 
   /**
    * Is a method that check for visiblitity dissabled (based on scalevisibility) and checked on toc
@@ -205,28 +202,28 @@ class GeoLayerMixin{
     //if changed call change
     changed && this.change();
     return this.state.visible;
-  };
+  },
 
   isVisible() {
     return this.state.visible;
-  };
+  },
 
   isDisabled() {
     return this.state.disabled;
-  };
+  },
 
   isPrintable({scale}={}) {
     return this.isLayerCheckedAndAllParents() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
-  };
+  },
 
 //get style form layer
   getStyles() {
     return this.config.source.external ? this.config.source.styles : this.config.styles;
-  };
+  },
 
   getStyle() {
     return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
-  };
+  },
 
   /**
    * Method to change current style  of layer
@@ -241,7 +238,7 @@ class GeoLayerMixin{
       style.current = style.name === currentStyleName;
     });
     return changed;
-  };
+  },
 
   /**
    * Disable layer by check scalevisibility configuration value
@@ -265,66 +262,62 @@ class GeoLayerMixin{
       // change toc highlight property based on disabled otr not
       this.isFilterable() && this.setTocHighlightable(!this.state.disabled);
     } else this.state.disabled = false;
-  };
+  },
 
   getMultiLayerId() {
     return this.config.multilayerid;
-  };
+  },
 
   getGeometryType() {
     return this.config.geometrytype;
-  };
+  },
 
   getOwsMethod() {
     return this.config.ows_method;
-  };
+  },
 
   setProjection(crs={}) {
     this.config.projection = Projections.get(crs);
-  };
+  },
 
   getProjection() {
     return this.config.projection;
-  };
+  },
 
   getEpsg() {
     return this.config.crs.epsg;
-  };
+  },
 
   getCrs() {
     return this.config.projection && this.config.projection.getCode() || null;
-  };
+  },
 
   getMapCrs() {
     return this.config.map_crs;
-  };
+  },
 
   isCached() {
     return this.config.cache_url && this.config.cache_url !== '';
-  };
+  },
 
   getCacheUrl() {
     if (this.isCached()) return this.config.cache_url;
-  };
+  },
 
 // return if layer has inverted axis
   hasAxisInverted() {
     const projection = this.getProjection();
     const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
     return axisOrientation.substr(0, 2) === 'ne';
-  };
-
-  getMapLayer() {
-    console.log('overwrite by single layer')
-  };
+  },
 
   setMapProjection(mapProjection) {
     this._mapProjection = mapProjection;
-  };
+  },
 
   getMapProjection() {
     return this._mapProjection;
-  };
-}
+  }
+};
 
 export default  GeoLayerMixin;

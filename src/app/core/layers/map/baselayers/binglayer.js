@@ -23,10 +23,10 @@ class BingLayer extends BaseLayer{
         break;
     }
     olLayer.getSource().on('imageloadstart', () => {
-      this.emit("loadstart");
+      this.fire("loadstart");
     });
     olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
+      this.fire("loadend");
     });
     return olLayer
   };

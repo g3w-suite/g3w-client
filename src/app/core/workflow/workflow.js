@@ -186,7 +186,7 @@ class Workflow extends G3WObject{
       .always(()=>{
         this.runOnce && this.stop();
       });
-    this.emit('start');
+    this.fire('start');
     return d.promise();
   };
 
@@ -207,7 +207,7 @@ class Workflow extends G3WObject{
           .fail(err => d.reject(err))
           .always(() => this.clearMessages())
       });
-    this.emit('stop');
+    this.fire('stop');
     return d.promise();
   };
 
