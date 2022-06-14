@@ -32,4 +32,4 @@ const GlobalComponents = {
   }
 };
 
-module.exports = GlobalComponents;
+export default  GlobalComponents;

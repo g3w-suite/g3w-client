@@ -3,7 +3,7 @@
 </template>
 
 <script>
-  const GUI = require('gui/gui');
+  import GUI  from 'gui/gui';
   export default {
     name: "g3w-resize",
     props: {
@@ -35,18 +35,18 @@
         this.domElementMoveListen.addEventListener('mouseup', this.stop, {once: true});
         this.moveFnc(evt);
       },
-      start(){
+      start() {
         this.domElementMoveListen.addEventListener('mousemove', this.wrapMoveFnc);
       },
-      async stop(){
+      async stop() {
         this.domElementMoveListen.removeEventListener('mousemove', this.wrapMoveFnc);
         await this.$nextTick();
-        GUI.emit('resize');
+        GUI.fire('resize');
       }
     },
     watch:{
       'orientation':{
-        handler(orientation){
+        handler(orientation) {
           this.style.cursor = orientation === 'v' ? 'ns-resize' : 'col-resize';
         },
         immediate: true

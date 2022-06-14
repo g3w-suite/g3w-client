@@ -9,16 +9,14 @@
 
 <script>
   import { ALLVALUE }  from '../../constants';
-  const autocompleteOptions = require('gui/external/select2/options/autocomplete');
-  const { t } = require('core/i18n/i18n.service');
-  const { debounce } = require('core/utils/utils');
-  const {select2Mixin} = require('gui/vue/vue.mixins');
+  import autocompleteOptions  from 'gui/external/select2/options/autocomplete';
+  import  {select2Mixin}  from 'gui/vue/vue.mixins';
   export default {
     name: "select2",
     props: ['forminput','autocompleteRequest'],
     mixins: [select2Mixin],
     methods: {
-      emitChangeEvent(evt){
+      emitChangeEvent(evt) {
         const id = $(evt.target).attr('id');
         const attribute = $(evt.target).attr('name');
         const data = evt.params.data;
@@ -50,7 +48,7 @@
                   value
                 });
                 success({results: data});
-              } catch(error){
+              } catch(error) {
                 failure(error);
               }
             }
@@ -74,7 +72,7 @@
         }
       }
     },
-    created(){
+    created() {
       this.allvalue = ALLVALUE;
     },
     async mounted() {

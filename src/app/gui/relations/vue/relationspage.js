@@ -1,12 +1,14 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
-const Service = require('../relationsservice');
-const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
-const RelationPageEventBus = require('./relationeventbus');
-const compiledTemplate = createCompiledTemplate(require('./relationspage.html'));
+import GUI  from 'gui/gui';
+import relations from './relations';
+import relation from './relation';
+import Component  from 'gui/vue/component';
+import Service  from '../relationsservice';
+import geoutils from 'core/utils/geo';
+import RelationPageEventBus  from './relationeventbus';
+import RelationPageTemplate from './relationspage.html';
+const compiledTemplate = createCompiledTemplate(RelationPageTemplate);
 
 const InternalComponent = Vue.extend({
   ...compiledTemplate,
@@ -32,21 +34,21 @@ const InternalComponent = Vue.extend({
     }
   },
   components: {
-    'relations': require('./relations'),
-    'relation': require('./relation')
+    relations,
+    relation
   },
   methods: {
-    saveRelations(type){
+    saveRelations(type) {
       this.$options.service.saveRelations(type)
     },
     reloadLayout() {
       RelationPageEventBus.$emit('reload');
     },
-    showChart(container, relationData){
+    showChart(container, relationData) {
       const relationLayerId = this.relation.referencingLayer;
       GUI.getService('queryresults').showChart([relationLayerId], container, relationData)
     },
-    hideChart(container){
+    hideChart(container) {
       GUI.getService('queryresults').hideChart(container)
     },
     async showRelation(relation) {
@@ -63,7 +65,7 @@ const InternalComponent = Vue.extend({
           relation,
           fid
         });
-        let relations = getFeaturesFromResponseVectorApi(response, {
+        let relations = geoutils.getFeaturesFromResponseVectorApi(response, {
           type: 'result'
         });
         if (this.nmRelation) {
@@ -77,7 +79,7 @@ const InternalComponent = Vue.extend({
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
         this.currentview = 'relation';
         this.previousview = 'relations'
-      } catch(err){
+      } catch(err) {
         // manage error here
       }
       GUI.setLoadingContent(false);
@@ -127,8 +129,8 @@ const RelationsPage = function(options={}) {
   };
 };
 
-inherit(RelationsPage, Component);
 
-module.exports = RelationsPage;
+
+export default  RelationsPage;
 
 

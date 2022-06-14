@@ -5,10 +5,10 @@
 </template>
 
 <script>
-    const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-    const responseParser = require('core/parsers/response/parser');
-    const {getAlphanumericPropertiesFromFeature, query} = require('core/utils/geo');
-    const GUI = require('gui/gui');
+    import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+    import responseParser  from 'core/parsers/response/parser';
+    import geoutils  from 'core/utils/geo';
+    import GUI  from 'gui/gui';
     export default {
         name: 'Infoformats',
         props: {
@@ -17,18 +17,18 @@
                 required: true
             }
         },
-        data(){
+        data() {
           return {
               infoformat: this.layer.infoformat
           }
         },
         computed: {
-            infoformats(){
+            infoformats() {
                 return this.layer.infoformats || [];
             }
         },
         methods: {
-          async reloadLayerDataWithChangedContentType(contenttype){
+          async reloadLayerDataWithChangedContentType(contenttype) {
               const queryService = GUI.getService('queryresults');
               this.layer.loading = true;
               try {
@@ -46,7 +46,7 @@
                       layers: [this.projectLayer],
                       response
                   });
-                  if (data.features){
+                  if (data.features) {
                       this.layer.rawdata = null;
                       data.features.forEach(feature => {
                           const {id:fid, geometry, properties:attributes} = queryService.getFeaturePropertiesAndGeometry(feature);
@@ -55,7 +55,7 @@
                               this.layer.hasgeometry = !!geometry;
                               // need to setActionsForLayers to visualize eventually actions
                               queryService.setActionsForLayers([this.layer]);
-                              getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
+                              geoutils.getAlphanumericPropertiesFromFeature(attributes).forEach(name =>{
                                   this.layer.attributes.push({
                                       name,
                                       label:name,
@@ -85,14 +85,14 @@
           }
         },
         watch: {
-          'infoformat'(value){
+          'infoformat'(value) {
               this.reloadLayerDataWithChangedContentType(value);
           }
         },
-        created(){
+        created() {
             this.projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
         },
-        beforeDestroy(){
+        beforeDestroy() {
             this.projectLayer && this.projectLayer.clearProxyData('wms');
             this.projectLayer = null;
         }

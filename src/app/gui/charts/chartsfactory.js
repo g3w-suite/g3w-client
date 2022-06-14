@@ -1,7 +1,9 @@
+import C3XYLine from './vue/c3/line/lineXY';
+
 const Chartsfactory = {
   CHARTS: {
     c3:{
-      lineXY: require('./vue/c3/line/lineXY')
+      lineXY: C3XYLine
     }
   },
   /*
@@ -15,4 +17,4 @@ const Chartsfactory = {
 };
 
 
-module.exports = Chartsfactory;
+export default  Chartsfactory;

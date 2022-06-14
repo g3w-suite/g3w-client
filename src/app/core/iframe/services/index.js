@@ -1,8 +1,8 @@
-const appService = require('./app/service');
+import appService  from './app/service';
 //return an object contains key plugin name  and related service
-const pluginsServices = require('./plugins/index');
+import pluginsServices  from './plugins';
 
-module.exports =  {
+export default   {
   app: appService,
   ...pluginsServices
 };

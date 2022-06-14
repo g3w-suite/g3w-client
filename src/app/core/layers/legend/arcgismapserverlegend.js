@@ -4,4 +4,4 @@ function ARGISMAPSERVERLegend({layer, params}) {
   return `${serviceUrl}/WMSServer?request=GetLegendGraphic&version=1.3.0&format=image/png&LAYER=${layername}`
 };
 
-module.exports = ARGISMAPSERVERLegend;
+export default  ARGISMAPSERVERLegend;

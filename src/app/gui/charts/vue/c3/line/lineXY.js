@@ -1,6 +1,7 @@
-const {getUniqueDomId} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const templateCompiled = Vue.compile(require('./lineXY.html'));
+import utils  from 'core/utils/utils';
+import GUI  from 'gui/gui';
+import lineXYTemplate from './lineXY.html'
+const templateCompiled = Vue.compile(lineXYTemplate);
 const C3XYLine = {
   ...templateCompiled,
   props: {
@@ -11,7 +12,7 @@ const C3XYLine = {
   },
   data() {
     return {
-      id: `graphline${getUniqueDomId()}`,
+      id: `graphline${utils.getUniqueDomId()}`,
       selectitems: [],
       data: [],
       components: [],
@@ -33,10 +34,10 @@ const C3XYLine = {
     addComponent(component) {
       this.components.push(component);
     },
-    addComponents(components=[]){
+    addComponents(components=[]) {
       components.forEach(component => this.addComponent(component))
     },
-    setConfig(config={}){
+    setConfig(config={}) {
       this.config = config;
     },
     setDataOffset(offset, render=false) {
@@ -64,7 +65,7 @@ const C3XYLine = {
     unselectItems(ids=[]) {
       this.chart.unselect(['y'], ids);
     },
-    unselectAll(){
+    unselectAll() {
       this.chart.unselect();
     },
     selectAll() {
@@ -130,7 +131,7 @@ const C3XYLine = {
         const _temp = [...self.selectitems, evt];
         self.selectitems = _temp;
       };
-      this.config.data.onunselected = function(evt){
+      this.config.data.onunselected = function(evt) {
         self.selectitems = self.selectitems.filter((selectitem) => {
           return selectitem.index !== evt.index
         });
@@ -154,4 +155,4 @@ const C3XYLine = {
   }
 };
 
-module.exports = C3XYLine;
+export default  C3XYLine;

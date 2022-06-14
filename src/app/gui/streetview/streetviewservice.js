@@ -1,16 +1,19 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
-const StreetViewComponent = require('gui/streetview/vue/streetview');
+import G3WObject from 'core/g3wobject';
+import GUI  from 'gui/gui';
+import StreetViewComponent  from 'gui/streetview/vue/streetview';
 
-function StreetViewService() {
-  this._position = null;
-  this.setters = {
-    postRender(position) {}
+class StreetViewService extends G3WObject{
+  constructor() {
+    super({
+      setters: {
+        postRender(position) {}
+      }
+    });
+    this._position = null;
   };
 
-  this.init = function() {
+  init() {
     const KEY = ApplicationState.keys.vendorkeys.google;
     return KEY ? new Promise(resolve => {
       $script(`https://maps.googleapis.com/maps/api/js?key=${KEY}`, () => {
@@ -18,26 +21,20 @@ function StreetViewService() {
       })
     }) : Promise.reject();
   };
-  base(this);
+
+  getPosition() {
+    return this._position;
+  };
+
+  showStreetView(position) {
+    this._position = position;
+    GUI.setContent({
+      content: new StreetViewComponent({
+        service: this
+      }),
+      title: 'StreetView'
+    });
+  };
 }
 
-inherit(StreetViewService, G3WObject);
-
-const proto = StreetViewService.prototype;
-
-proto.getPosition = function() {
-  return this._position;
-};
-
-proto.showStreetView = function(position) {
-  this._position = position;
-  GUI.setContent({
-    content: new StreetViewComponent({
-      service: this
-    }),
-    title: 'StreetView'
-  });
-};
-
-
-module.exports = StreetViewService;
+export default  StreetViewService;

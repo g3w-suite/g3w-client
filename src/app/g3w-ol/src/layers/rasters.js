@@ -1,6 +1,15 @@
-const RasterLayers = {};
-const DPI = require('../utils/utils').getDPI();
+import utils  from '../utils/utils';
+import {Image as ImageLayer, Tile as TileLayer} from "ol/layer";
+import TileState from 'ol/TileState';
+import {createXYZ} from 'ol/tilegrid';
+import {TileGrid} from 'ol/tilegrid/TileGrid';
+import {
+  WMTS as WMTSSource, Tile as TileSource, ImageWMS as ImageWMSSource,
+  TileWMS as TileWMSSource, XYZ as XYZSource, ImageArcGISRest as ImageArcGISRestSource,
+  TileArcGISRest as TileArcGISRestSource} from 'ol/source'
 
+const RasterLayers = {};
+const DPI = utils.getDPI();
 const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
   window.URL = window.URL || window.webkitURL;
   sourceOptions[`${type}LoadFunction`] = function(imageTile, url) {
@@ -12,16 +21,14 @@ const loadImageTileFunction = function({method='GET', type='image', sourceOption
     xhr.onload = function() {
       const data = this.response;
       if (data !== undefined) imageTile.getImage().src = window.URL.createObjectURL(data);
-      else imageTile.setState(ol.TileState.ERROR);
+      else imageTile.setState(TileState.ERROR);
     };
-    xhr.onerror = function() {
-      image.setState(ol.TileState.ERROR);
-    };
+    xhr.onerror = () => image.setState(TileState.ERROR);
     xhr.send(method=== 'POST' && params);
   };
 };
 
-RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
+RasterLayers.TiledWMSLayer = function(layerObj, extraParams) {
   const options = {
     layerObj: layerObj,
     extraParams: extraParams || {},
@@ -30,7 +37,7 @@ RasterLayers.TiledWMSLayer = function(layerObj, extraParams){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
+RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET') {
   const options = {
     layerObj,
     extraParams,
@@ -39,17 +46,17 @@ RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMTSLayer = function(layerObj, extraParams){
- const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
- return new ol.layer.Tile({
+RasterLayers.WMTSLayer = function(layerObj, extraParams) {
+ const optionsFromCapabilities = WMTSSource.optionsFromCapabilities;
+ return new TileLayer({
     opacity: 1,
-    source: new ol.source.WMTS(options)
+    source: new WMTSSource(options)
   })
 };
 
-RasterLayers.ImageArgisMapServer = function(options={}){
-  return  new ol.layer.Image({
-    source: new ol.source.ImageArcGISRest({
+RasterLayers.ImageArgisMapServer = function(options={}) {
+  return  new ImageLayer({
+    source: new ImageArcGISRestSource({
       ratio: options.ratio,
       params: {
         FORMAT: options.format
@@ -59,14 +66,14 @@ RasterLayers.ImageArgisMapServer = function(options={}){
   })
 };
 
-RasterLayers.TiledArgisMapServer = function(options={}){
+RasterLayers.TiledArgisMapServer = function(options={}) {
   const {url, visible=true, extent, projection, attributions} = options;
-  const source = new ol.source.TileArcGISRest({
+  const source = new TileArcGISRestSource({
     url,
     projection,
     attributions
   });
-  return  new ol.layer.Tile({
+  return  new TileLayer({
     extent,
     visible,
     source
@@ -123,11 +130,11 @@ RasterLayers._WMSLayer = function(options={}) {
   let imageClass;
   let source;
   if (tiled) {
-    source = new ol.source.TileWMS(sourceOptions);
-    imageClass = ol.layer.Tile;
+    source = new TileWMSSource(sourceOptions);
+    imageClass = TileLayer;
   } else {
-    source = new ol.source.ImageWMS(sourceOptions);
-    imageClass = ol.layer.Image;
+    source = new ImageWMSSource(sourceOptions);
+    imageClass = ImageLayer;
   }
   imageOptions.source = source;
   const image = new imageClass(imageOptions);
@@ -153,25 +160,25 @@ RasterLayers.XYZLayer = function(options={}, method='GET') {
 
   if (projection.getUnits() === 'degrees') {
     const extent = projection.getExtent();
-    const resolutions = ol.tilegrid.createXYZ({extent, maxZoom}).getResolutions();
+    const resolutions = createXYZ({extent, maxZoom}).getResolutions();
     // needed to remove the first resolutis because in this version of ol createXYZ doesn't  accept maxResolution options .
     // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculate by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
     // we need to calculate to Math.min instead so we have to remove the first resolution
     resolutions.splice(0,1);
     //////////////////////////////////////////
-    sourceOptions.tileGrid =  new ol.tilegrid.TileGrid({
+    sourceOptions.tileGrid =  new TileGrid({
       extent,
       resolutions
     })
   }
 
-  const source = new ol.source.XYZ(sourceOptions);
-  return new ol.layer.Tile({
+  const source = new XYZSource(sourceOptions);
+  return new TileLayer({
     visible,
     projection,
     source
   });
 };
 
-module.exports = RasterLayers;
+export default RasterLayers;
 

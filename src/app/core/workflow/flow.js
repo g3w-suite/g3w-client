@@ -1,42 +1,43 @@
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const Queque = require('./queque');
+import G3WObject from 'core/g3wobject';
+import Queque  from './queque';
 
 //Class Flow of workflow step by step
-function Flow() {
-  let steps = [];
-  let inputs;
-  let counter = 0;
-  let context = null;
-  let d;
-  let _workflow;
-  this.queques = {
-    end: new Queque(),
-    micro: new Queque()
-  };
+class Flow extends G3WObject {
+  constructor() {
+    super();
+    this.steps = [];
+    this.inputs;
+    this.counter = 0;
+    this.context = null;
+    this._workflow;
+    this.queques = {
+      end: new Queque(),
+      micro: new Queque()
+    };
+    this.d = $.Deferred();
+  }
   //start workflow
-  this.start = function(workflow) {
-    d = $.Deferred();
+  start(workflow) {
     if (counter > 0) {
       console.log("reset workflow before restarting");
     }
-    _workflow = workflow;
-    inputs = workflow.getInputs();
-    context = workflow.getContext();
-    steps = workflow.getSteps();
+    this._workflow = workflow;
+    this.inputs = workflow.getInputs();
+    this.context = workflow.getContext();
+    this.steps = workflow.getSteps();
     // check if there are steps
-    if (steps && steps.length) {
+    if (this.steps && this.steps.length) {
       //run step (first)
-      this.runStep(steps[0], inputs, context);
+      this.runStep(this.steps[0], this.inputs, this.context);
     }
     // return a promise that will be reolved if all step go right
-    return d.promise();
+    return this.d.promise();
   };
 
   //run step
-  this.runStep = function(step, inputs) {
+  runStep(step, inputs) {
     //run step that run task
-    _workflow.setMessages({
+    this._workflow.setMessages({
       help: step.state.help
     });
     const runMicroTasks = this.queques.micro.getLength();
@@ -49,31 +50,31 @@ function Flow() {
   };
 
   //check if all step are resolved
-  this.onDone = function(outputs) {
-    counter++;
-    if (counter === steps.length) {
-      counter = 0;
-      d.resolve(outputs);
+  onDone(outputs) {
+    this.counter++;
+    if (this.counter === this.steps.length) {
+      this.counter = 0;
+      this.d.resolve(outputs);
       return;
     }
     this.runStep(steps[counter], outputs);
   };
 
   // in case of error
-  this.onError = function(err) {
-    counter = 0;
+  onError(err) {
+    this.counter = 0;
     this.clearQueques();
-    d.reject(err);
+    this.d.reject(err);
   };
 
   // stop flow
-  this.stop = function() {
+  stop() {
     const d = $.Deferred();
-    steps[counter].isRunning() ? steps[counter].stop() : null;
+    this.steps[counter].isRunning() ? this.steps[counter].stop() : null;
     this.clearQueques();
-    if (counter > 0) {
+    if (this.counter > 0) {
       // set counter to 0
-      counter = 0;
+      this.counter = 0;
       // reject flow
       d.reject();
     } else {
@@ -82,17 +83,12 @@ function Flow() {
     }
     return d.promise();
   };
-  base(this)
+
+  clearQueques() {
+    this.queques.micro.clear();
+    this.queques.end.clear();
+  };
 }
 
-inherit(Flow, G3WObject);
-
-const proto = Flow.prototype;
-
-proto.clearQueques = function(){
-  this.queques.micro.clear();
-  this.queques.end.clear();
-};
-
-module.exports = Flow;
+export default  Flow;
 

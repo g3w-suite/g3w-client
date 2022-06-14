@@ -27,10 +27,10 @@
 </template>
 
 <script>
-  const ProjectsRegistry = require('core/project/projectsregistry');
+  import ProjectsRegistry  from 'core/project/projectsregistry';
   export default {
     name: "changemapthemes",
-    data(){
+    data() {
       const collapsed = ProjectsRegistry.getCurrentProject().state.toc_themes_init_status === 'collapsed';
       const current_map_theme = this.map_themes.find(map_theme => map_theme.default);
       return {
@@ -47,7 +47,7 @@
     watch: {
       'current_map_theme': {
         immediate: false,
-        handler(map_theme){
+        handler(map_theme) {
           this.$emit('change-map-theme', map_theme);
           $(this.$refs['g3w-map-theme-ancor']).click();
         }

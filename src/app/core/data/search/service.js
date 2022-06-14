@@ -1,11 +1,13 @@
-const {base, inherit} = require('core/utils/utils');
-const {createOlFeatureFromApiResponseFeature} = require('core/utils/geo');
-const BaseService = require('core/data/service');
+import geoutils from 'core/utils/geo';
+import BaseService from 'core/data/service'
 
-function SearchService(){
-  base(this);
+class SearchService extends BaseService {
+  constructor() {
+    super();
+  }
+
   // method to searchfeature features
-  this.features = async function(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}){
+  async features(options={layer, search_endpoint, filter, raw:false, queryUrl, feature_count, ordering}) {
     const promisesSearch =[];
     const {layer, ...params} = options;
     const {raw=false, filter} = options;
@@ -46,7 +48,7 @@ function SearchService(){
     const responses = await Promise.allSettled(promisesSearch);
     responses.forEach(({status, value}={}) => {
       // need to filter only fulfilled response
-      if (status === 'fulfilled'){
+      if (status === 'fulfilled') {
         if (raw) {
           dataSearch.data.push(params.search_endpoint === 'api' ? {
             data: value
@@ -66,7 +68,7 @@ function SearchService(){
    * @param fid
    * @returns {Promise<{data: [], layer}|{data: [{features: ([*]|[]), query: {type: string}, layer: *}]}>}
    */
-  this.fids = async function({layer, formatter=0, fids=[]}={}){
+  async fids({layer, formatter=0, fids=[]}={}) {
     const response = {
       data: [
         {
@@ -80,8 +82,8 @@ function SearchService(){
     };
     try {
       const features = layer && await layer.getFeatureByFids({fids, formatter});
-      features && features.forEach(feature => response.data[0].features.push(createOlFeatureFromApiResponseFeature(feature)));
-    } catch(err){}
+      features && features.forEach(feature => response.data[0].features.push(geoutils.createOlFeatureFromApiResponseFeature(feature)));
+    } catch(err) {}
     return response;
   };
 
@@ -92,7 +94,7 @@ function SearchService(){
    * @param formatter: how we want visualize
    * @returns {Promise<void>}
    */
-  this.layersfids = async function({layers=[], fids=[], formatter=0}={}){
+  async layersfids({layers=[], fids=[], formatter=0}={}) {
     const promises = [];
     const response = {
       data: [],
@@ -110,13 +112,9 @@ function SearchService(){
     try {
       const layersresponses = await Promise.all(promises);
       layersresponses.forEach(layerresponse =>response.data.push(layerresponse.data))
-    } catch(err){
-      console.log(err)
-    }
+    } catch(err) {}
     return response;
   }
 }
 
-inherit(SearchService, BaseService);
-
-module.exports = new SearchService();
+export default  new SearchService();

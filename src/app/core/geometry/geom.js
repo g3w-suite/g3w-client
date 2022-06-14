@@ -1,8 +1,8 @@
 const geom = {
-  distance(c1,c2){
+  distance(c1,c2) {
     return Math.sqrt(geom.squaredDistance(c1,c2));
   },
-  squaredDistance(c1,c2){
+  squaredDistance(c1,c2) {
     const x1 = c1[0];
     const y1 = c1[1];
     const x2 = c2[0];
@@ -39,4 +39,4 @@ const geom = {
   }
 };
 
-module.exports = geom;
+export default  geom;

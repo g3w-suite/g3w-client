@@ -1,11 +1,11 @@
 import Service from "../service";
 import {OPERATORS} from 'core/layers/filter/operators';
-const templateCompiled = Vue.compile(require('./querybuilder.html'));
-const ProjectsRegistry = require('core/project/projectsregistry');
+import template from './querybuilder.html';
+import ProjectsRegistry  from 'core/project/projectsregistry';
 const operators = Object.values(OPERATORS);
 
 const QueryBuilder = Vue.extend({
-  ...templateCompiled,
+  template,
   data() {
     const options = this.$options.options;
     const edit = options !== undefined;
@@ -36,13 +36,13 @@ const QueryBuilder = Vue.extend({
     }
   },
   watch: {
-    'select.field'(){
+    'select.field'() {
       this.values = [];
       this.manual = true;
     }
   },
   methods: {
-    addToExpression({value, type}={}){
+    addToExpression({value, type}={}) {
       switch(type) {
         case 'operator':
           value = ` ${value} `;
@@ -56,20 +56,20 @@ const QueryBuilder = Vue.extend({
       }
       if (value) this.filter = (`${this.filter}${value}`);
     },
-    async all(){
+    async all() {
       this.loading.values = true;
       try {
         this.values = await Service.getValues({
           layerId: this.currentlayer.id,
           field: this.select.field
         });
-      } catch(err){}
+      } catch(err) {}
       this.loading.values = false;
       await this.$nextTick();
       this.manualvalue = null;
       this.manual = false;
     },
-    reset(){
+    reset() {
       this.filter = '';
       this.message = '';
       this.filterElement.previous = null;
@@ -86,13 +86,13 @@ const QueryBuilder = Vue.extend({
           filter: this.filter
         });
         this.message = number_of_features !== undefined ? ` ${number_of_features}` : ''
-      } catch(err){
+      } catch(err) {
         this.message = err;
       }
       this.loading.test = false;
       await this.$nextTick();
     },
-    async run(){
+    async run() {
       const layerId = this.currentlayer.id;
       this.loading.test = true;
       try {
@@ -100,7 +100,7 @@ const QueryBuilder = Vue.extend({
           layerId,
           filter: this.filter
         });
-      } catch(err){}
+      } catch(err) {}
       this.loading.test = false;
     },
     save() {
@@ -147,7 +147,7 @@ const QueryBuilder = Vue.extend({
     this.operators = operators;
     this.currentlayer = this.edit ? this.layers.find(layer => layer.id === this.$options.options.layerId) : this.layers[0];
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
     this.select2 = $('#query_builder_layers_select').select2({
       width: '100%',
@@ -164,10 +164,10 @@ const QueryBuilder = Vue.extend({
       this.reset();
     });
   },
-  beforeDestroy(){
+  beforeDestroy() {
     this.select2.select2('destroy');
     this.select2 = null;
   }
 });
 
-module.exports = QueryBuilder;
+export default  QueryBuilder;

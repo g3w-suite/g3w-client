@@ -1,8 +1,10 @@
-const {toRawType} = require('core/utils/utils');
+import utils from 'core/utils/utils';
+import {GeoJSON, WMSGetFeatureInfo} from "ol/format";
 
-const VectorParser = function() {
+class VectorParser {
+  constructor(props) {}
   // return the right parser for the request
-  this.get = function(options={}) {
+  get(options={}) {
     const type = options.type;
     let parser;
     switch (type) {
@@ -18,7 +20,7 @@ const VectorParser = function() {
     }
     return parser;
   };
-  this._parseLayermsGMLOutput = function({data, layer}) {
+  _parseLayermsGMLOutput({data, layer}) {
     try {
       let gml;
       // to extract gml from multiple (Tuscany region)
@@ -36,30 +38,29 @@ const VectorParser = function() {
         });
       }
       const layers = layer.getQueryLayerOrigName();
-      const parser = new ol.format.WMSGetFeatureInfo({
+      const parser = new WMSGetFeatureInfo({
         layers
       });
       return parser.readFeatures(gml);
-    } catch(err){
+    } catch(err) {
       return [];
     }
   };
 
-  this._parseLayerGeoJSON = function(data, options) {
+  _parseLayerGeoJSON(data, options) {
     try {
-      data = toRawType(data) === 'String' ? JSON.parse(data): data;
+      data = utils.toRawType(data) === 'String' ? JSON.parse(data): data;
       const {crs, mapCrs} = options;
-      const geojson = new ol.format.GeoJSON({
+      const geojson = new GeoJSON({
         dataProjection: crs,
         featureProjection: mapCrs || crs,
         geometryName: "geometry"
       });
       return geojson.readFeatures(data);
-    } catch(err){
+    } catch(err) {
       return [];
     }
-
   };
-};
+}
 
-module.exports = new VectorParser();
+export default  new VectorParser();

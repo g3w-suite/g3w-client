@@ -1,24 +1,23 @@
 import {G3W_FID} from 'constant';
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const compiledTemplate = createCompiledTemplate(require('./relation.html'));
-const GUI = require('gui/gui');
-const {throttle} = require('core/utils/utils');
-const RelationPageEventBus = require('./relationeventbus');
-const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import template from './relation.html';
+import GUI  from 'gui/gui';
+import utils from 'core/utils/utils';
+import RelationPageEventBus  from './relationeventbus';
+import {fieldsMixin, resizeMixin}  from 'gui/vue/vue.mixins';
 let SIDEBARWIDTH;
 
-module.exports = {
-  ...compiledTemplate,
+export default  {
+  template,
   props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
     Field
   },
-  data(){
+  data() {
     return {
       feature: null,
       fields: null,
@@ -42,7 +41,7 @@ module.exports = {
     }
   },
   methods: {
-    async resize(){
+    async resize() {
       await this.$nextTick();
       const tableHeight = $(".content").height();
       setTimeout(()=>{
@@ -56,11 +55,11 @@ module.exports = {
       });
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
-    saveRelation(type){
+    saveRelation(type) {
       this.$emit('save-relation', type);
       this.downloadButton.toggled = false;
     },
-    async showFormStructureRow(event, row){
+    async showFormStructureRow(event, row) {
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
       this.resize();
@@ -68,14 +67,14 @@ module.exports = {
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
     },
-    editFeature(featureId){
+    editFeature(featureId) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
         layerId: this.table.layerId,
         featureId
       });
     },
-    getRowFields(row){
+    getRowFields(row) {
       const fields = this.table.fields.map((field, index)=> {
         field.value = row[index];
         field.query = true;
@@ -99,7 +98,7 @@ module.exports = {
     is(type,value) {
       return this.fieldIs(type, value);
     },
-    moveFnc(evt){
+    moveFnc(evt) {
       const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
       const size = evt.pageX+2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
@@ -107,11 +106,11 @@ module.exports = {
     }
   },
   watch: {
-    async chart(){
+    async chart() {
       await this.$nextTick();
       this.resize();
     },
-    async headercomponent(){
+    async headercomponent() {
       await this.$nextTick();
       this.resize();
     }
@@ -124,7 +123,7 @@ module.exports = {
     this.isEditable =  layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
     const downloadformatsLength = downloadformats.length;
-    if (downloadformatsLength > 0){
+    if (downloadformatsLength > 0) {
       this.downloadButton = {
         toggled: false,
         tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
@@ -149,7 +148,7 @@ module.exports = {
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     });
-    this.showChart = throttle(async ()=> {
+    this.showChart = utils.throttle(async ()=> {
       this.chart = !this.chart;
       await this.$nextTick();
       this.chartContainer = this.chartContainer ||  $('#chart_content');
@@ -180,7 +179,7 @@ module.exports = {
       this.resize();
     }
   },
-  beforeDestroy(){
+  beforeDestroy() {
     this.relationDataTable.destroy();
     this.relationDataTable = null;
     this.chartContainer && this.$emit('hide-chart', this.chartContainer);

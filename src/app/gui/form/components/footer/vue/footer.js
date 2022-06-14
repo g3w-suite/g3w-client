@@ -1,7 +1,6 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-const compiledTemplate = createCompiledTemplate(require('./footer.html'));
+import template from './footer.html';
 const FooterFormComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   props: {
     state: {
       type: Object
@@ -41,11 +40,11 @@ const FooterFormComponent = Vue.extend({
     }
   },
   watch: {
-    'state.component'(component){
+    'state.component'(component) {
       this.show = this.isRootComponent(component)
     }
   },
-  activated(){
+  activated() {
     this.active = true;
   },
   deactivated() {
@@ -60,4 +59,4 @@ const FooterFormComponent = Vue.extend({
   }
 });
 
-module.exports = FooterFormComponent;
+export default  FooterFormComponent;

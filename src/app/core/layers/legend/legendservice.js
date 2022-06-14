@@ -1,6 +1,8 @@
+import wms from './wmslegend';
+import argismapserver from './arcgismapserverlegend';
 const TYPES = {
-  'wms': require('./wmslegend'),
-  'argismapserver': require('./arcgismapserverlegend')
+  wms,
+  argismapserver
 };
 
 const Legendservice = {
@@ -13,4 +15,4 @@ const Legendservice = {
   }
 };
 
-module.exports = Legendservice;
+export default  Legendservice;

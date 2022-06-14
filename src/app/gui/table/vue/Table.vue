@@ -30,9 +30,9 @@
   import SelectRow from './components/selectrow.vue';
   import G3wTableToolbar from './components/g3w-table-toolbar.vue';
   import Field from 'gui/fields/g3w-field.vue';
-  const {debounce} = require('core/utils/utils');
-  const {resizeMixin} = require('gui/vue/vue.mixins');
-  const GUI = require('gui/gui');
+  import utils from 'core/utils/utils';
+  import {resizeMixin}  from 'gui/vue/vue.mixins';
+  import GUI  from 'gui/gui';
   let dataTable;
   let fieldsComponents = [];
   let eventHandlers = {
@@ -54,19 +54,19 @@
       TableBody
     },
     methods: {
-      getDataFromBBOX(){
+      getDataFromBBOX() {
         this.$options.service.getDataFromBBOX();
       },
-      toggleFilterToken(){
+      toggleFilterToken() {
         this.$options.service.toggleFilterToken();
       },
-      clearAllSelection(){
+      clearAllSelection() {
         this.$options.service.clearLayerSelection();
       },
-      switchSelection(){
+      switchSelection() {
         this.$options.service.switchSelection();
       },
-      selectAllRow(){
+      selectAllRow() {
         this.state.features.length && this.$options.service.selectAllFeatures();
       },
       _setLayout() {
@@ -76,7 +76,7 @@
         if (feature.geometry) this.$options.service.zoomAndHighLightFeature(feature, zoom);
         else await this.$options.service.zoomAndHighLightGeometryRelationFeatures(feature, zoom);
       },
-      addRemoveSelectedFeature(feature){
+      addRemoveSelectedFeature(feature) {
         this.$options.service.addRemoveSelectedFeature(feature);
       },
       async reloadLayout() {
@@ -146,7 +146,7 @@
         $('#open_attribute_table  div.dataTables_scrollBody').height(tableHeight - tableHeaderHeight - 130);
       }
     },
-    beforeCreate(){
+    beforeCreate() {
       this.delayType = 'debounce';
     },
     async mounted() {
@@ -185,7 +185,7 @@
         dataTable = $('#open_attribute_table table').DataTable({
           ...commonDataTableOptions,
           "columns": this.state.headers,
-          "ajax": debounce((data, callback) => {
+          "ajax": utils.debounce((data, callback) => {
             //remove listeners
             const trDomeElements = $('#open_attribute_table table tr');
             trDomeElements.each(element => {
@@ -207,7 +207,7 @@
           "deferLoading": this.state.allfeatures
         });
         this.$options.service.on('ajax-reload', dataTable.ajax.reload);
-        this.changeColumn = debounce(async (event, index) =>{
+        this.changeColumn = utils.debounce(async (event, index) =>{
           dataTable.columns(index).search(event.target.value.trim()).draw();
         });
       } else { // no pagination all data
@@ -215,7 +215,7 @@
           ...commonDataTableOptions,
           searchDelay: 600
         });
-        const debounceSearch = debounce(() => {
+        const debounceSearch = utils.debounce(() => {
           this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'} )[0])
         }, 600);
         eventHandlers.nopagination['search.dt'] = debounceSearch;
@@ -223,7 +223,7 @@
         dataTable.on('length.dt', (evt, settings, length)=> {
           this.$options.service.setAttributeTablePageLength(length)
         });
-        this.changeColumn = debounce(async (event, index) =>{
+        this.changeColumn = utils.debounce(async (event, index) =>{
           dataTable.columns(index).search(event.target.value.trim()).draw();
           this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);
         });

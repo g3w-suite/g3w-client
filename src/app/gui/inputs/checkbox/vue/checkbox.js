@@ -1,19 +1,20 @@
-const Input = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const WidgetMixins = require('gui/inputs/widgetmixins');
+import Input  from 'gui/inputs/input';
+import utils  from 'core/utils/utils';
+import WidgetMixins  from 'gui/inputs/widgetmixins';
+import checkBoxTemplate from  './checkbox.html';
 
 const CheckBoxInput = Vue.extend({
   mixins: [Input, WidgetMixins],
-  template: require('./checkbox.html'),
+  template: checkBoxTemplate,
   data() {
     return {
       value: null,
       label:null,
-      id: getUniqueDomId() // new id
+      id: utils.getUniqueDomId() // new id
     }
   },
   methods: {
-    setLabel(){
+    setLabel() {
       // convert label
       this.label = this.service.convertCheckedToValue(this.value);
     },
@@ -41,4 +42,4 @@ const CheckBoxInput = Vue.extend({
   }
 });
 
-module.exports = CheckBoxInput;
+export default  CheckBoxInput;

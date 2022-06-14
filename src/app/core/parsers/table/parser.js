@@ -1,6 +1,7 @@
-const Feature = require('core/layers/features/feature');
-const TableParser = function() {
-  this.get = function(options={}) {
+import Feature  from 'core/layers/features/feature';
+class TableParser {
+  constructor() {}
+  get(options={}) {
     const type = options.type;
     let parser;
     switch (type) {
@@ -13,7 +14,7 @@ const TableParser = function() {
     return parser;
   };
 
-  this._parserJSON = function(data={}) {
+  _parserJSON(data={}) {
     const {features=[]} = data;
     return features.map(_feature => {
       const {id, properties} = _feature;
@@ -23,7 +24,7 @@ const TableParser = function() {
       return feature;
     });
   }
-};
+}
 
-module.exports = new TableParser();
+export default new TableParser();
 

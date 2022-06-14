@@ -1,9 +1,10 @@
-const Input = require('gui/inputs/input');
-const Service = require('../service');
+import Input  from 'gui/inputs/input';
+import Service  from '../service';
+import template from './picklayer.html';
 
 const PickLayerInput = Vue.extend({
   mixins: [Input],
-  template: require('./picklayer.html'),
+  template,
   methods: {
     pickLayer() {
       this.pickservice.pick()
@@ -22,4 +23,4 @@ const PickLayerInput = Vue.extend({
   }
 });
 
-module.exports = PickLayerInput;
+export default  PickLayerInput;

@@ -1,10 +1,8 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-const {base, inherit} = require('core/utils/utils');
-const Component = require('gui/vue/component');
-const compiledTemplate = createCompiledTemplate(require('./streetview.html'));
+import Component  from 'gui/vue/component';
+import template from './streetview.html';
 
 const InternalComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   data() {
     return {
       state: null
@@ -18,23 +16,22 @@ const InternalComponent = Vue.extend({
   }
 });
 
-const StreetViewComponent = function(options) {
-  base(this);
-  options = options || {};
-  const service = options.service;
-  this.setService(service);
-  const internalComponent = new InternalComponent({
-    service: service
-  });
-  this.setInternalComponent(internalComponent);
-  this.unmount = function() {
-    return base(this, 'unmount');
+class StreetViewComponent extends Component{
+  constructor(options={}) {
+    super(options);
+    const service = options.service;
+    this.setService(service);
+    const internalComponent = new InternalComponent({
+      service: service
+    });
+    this.setInternalComponent(internalComponent);
+  };
+
+  unmount() {
+    return super.unmount();
   }
-};
+}
 
-inherit(StreetViewComponent, Component);
-
-
-module.exports = StreetViewComponent;
+export default StreetViewComponent;
 
 

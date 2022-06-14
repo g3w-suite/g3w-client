@@ -10,9 +10,9 @@
 
 <script>
   import CatalogEventHub from '../catalogeventhub';
-  const ApplicationService = require('core/applicationservice');
-  const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-  const GUI = require('gui/gui');
+  import ApplicationService  from 'core/applicationservice';
+  import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+  import GUI  from 'gui/gui';
   export default {
     name: "layerlegend",
     props: {
@@ -20,14 +20,14 @@
         type: Object
       }
     },
-    data(){
+    data() {
       return {}
     },
     computed:{
-      legend(){
+      legend() {
         return this.layer.legend;
       },
-      show(){
+      show() {
         return this.layer.visible && this.legend.show;
       }
     },
@@ -39,7 +39,7 @@
       async urlLoaded() {
         this.legend.loading = false;
       },
-      handlerChangeLegend(options={}){
+      handlerChangeLegend(options={}) {
         const { layerId } = options;
         layerId === this.layer.id && this.getLegendSrc(this.layer);
       },

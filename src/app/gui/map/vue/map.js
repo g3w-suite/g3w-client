@@ -1,14 +1,12 @@
-import ApplicationState from '../../../core/applicationstate';
-import { createCompiledTemplate } from 'gui/vue/utils';
-const {base, merge, inherit} = require('core/utils/utils');
-const Component = require('gui/vue/component');
-const AddLayerComponent = require('./components/addlayer');
-const MapService = require('../mapservice');
-const templateCompiled = createCompiledTemplate(require('./map.html'));
+import ApplicationState from 'core/applicationstate';
+import Component  from 'gui/vue/component';
+import AddLayerComponent  from './components/addlayer';
+import MapService  from '../mapservice';
+import template from './map.html';
 
 // map vue component
 const vueComponentOptions = {
-  ...templateCompiled,
+  template,
   data() {
     const {service, target} = this.$options;
     return {
@@ -30,13 +28,13 @@ const vueComponentOptions = {
     'addlayer': AddLayerComponent
   },
   computed: {
-    showmapunits(){
+    showmapunits() {
       return this.service.state.mapunits.length > 1;
     },
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
-    disableMapControls(){
+    disableMapControls() {
       return this.service.state.mapControl.disabled;
     }
   },
@@ -48,15 +46,15 @@ const vueComponentOptions = {
     getPermalinkUrl() {
       return this.ready ? this.$options.service.getMapExtentUrl(): null;
     },
-    createCopyMapExtentUrl(){
+    createCopyMapExtentUrl() {
       const mapService = this.$options.service.createCopyMapExtentUrl();
     },
-    switchMapsCoordinateTo4326(){
+    switchMapsCoordinateTo4326() {
       this.mouse.epsg_4326 = !this.mouse.epsg_4326;
     }
   },
   watch: {
-    'mapunit'(unit){
+    'mapunit'(unit) {
       ApplicationState.map.unit = unit;
       this.$options.service.changeScaleLineUnit(unit);
     }
@@ -87,38 +85,37 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 
 Vue.component('g3w-map', vueComponentOptions);
 
-function MapComponent(options = {}) {
-  base(this, options);
-  this.id = "map-component";
-  this.title = "Map Component";
-  const target = options.target || "map";
-  const maps_container = options.maps_container || "g3w-maps";
-  options.target = target;
-  options.maps_container = maps_container;
-  const service = new MapService(options);
-  this.setService(service);
-  merge(this, options);
-  this.internalComponent = new InternalComponent({
-    service,
-    target,
-    maps_container
-  });
-  /**
-   * add Vue get cookie method
-   *
-   */
-  service.getCookie = this.internalComponent.$cookie.get;
+class MapComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this.id = "map";
+    this.title = "Map Component";
+    const target = options.target || "map";
+    const maps_container = options.maps_container || "g3w-maps";
+    options.target = target;
+    options.maps_container = maps_container;
+    const service = new MapService(options);
+    this.setService(service);
+    this.internalComponent = new InternalComponent({
+      service,
+      target,
+      maps_container
+    });
+    /**
+     * add Vue get cookie method
+     *
+     */
+    service.getCookie = this.internalComponent.$cookie.get;
+  }
+
+  layout(width, height) {
+    $(`#${this.target}`).height(height);
+    $(`#${this.target}`).width(width);
+    this._service.layout({width, height});
+  };
+
 }
 
-inherit(MapComponent, Component);
 
-const proto = MapComponent.prototype;
-
-proto.layout = function(width, height) {
-  $(`#${this.target}`).height(height);
-  $(`#${this.target}`).width(width);
-  this._service.layout({width, height});
-};
-
-module.exports =  MapComponent;
+export default   MapComponent;
 

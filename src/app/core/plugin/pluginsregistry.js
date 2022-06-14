@@ -1,28 +1,30 @@
-const {base, inherit} = require('core/utils/utils');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const G3WObject = require('core/g3wobject');
+import ApplicationService  from 'core/applicationservice';
+import ProjectsRegistry  from 'core/project/projectsregistry';
+import G3WObject from 'core/g3wobject';
 const OTHERPLUGINS = ['law'];
 
-function PluginsRegistry() {
-  this.config = null;
-  this._plugins = {};
-  this._configurationPlugins = [];
-  this.pluginsConfigs = {};
-  this._loadedPluginUrls = [];
-  this.setters = {
-    //setters to register plugin
-    registerPlugin(plugin) {
-      if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
-    }
-  };
-  ProjectsRegistry.onafter('setCurrentProject', project =>{
-    this.gidProject = project.getGid();
-  });
-
-  base(this);
+class PluginsRegistry extends G3WObject{
+  constructor() {
+    super({
+      setters: {
+        //setters to register plugin
+        registerPlugin(plugin) {
+          if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
+        }
+      }
+    });
+    this.config = null;
+    this._plugins = {};
+    this._configurationPlugins = [];
+    this.pluginsConfigs = {};
+    this._loadedPluginUrls = [];
+  }
 
   // initialize plugin
-  this.init = function(options={}) {
+  init(options={}) {
+    ProjectsRegistry.onafter('setCurrentProject', project =>{
+      this.gidProject = project.getGid();
+    });
     return new Promise(async (resolve, reject) =>{
       this.pluginsBaseUrl = options.pluginsBaseUrl;
       // plugin configurations
@@ -37,33 +39,32 @@ function PluginsRegistry() {
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error);
       }
     })
   };
 
-  this.addLoadingPlugins = function(){
-    const ApplicationService = require('core/applicationservice');
+  addLoadingPlugins() {
+
     Object.keys(this.pluginsConfigs).forEach(plugin => {
       ApplicationService.loadingPlugin(plugin);
     });
   };
 
-  this.removeLoadingPlugin = function(plugin, ready){
-    const ApplicationService = require('core/applicationservice');
+  removeLoadingPlugin(plugin, ready) {
     ApplicationService.loadedPlugin(plugin, ready);
   };
 
-  this._loadPlugins = function() {
+  _loadPlugins() {
     const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => {
       return this._setup(name, pluginConfig);
     });
     return Promise.allSettled(pluginLoadPromises)
   };
 
-  this.setDependencyPluginConfig = function(){
-    for (const pluginName in this.pluginsConfigs){
+  setDependencyPluginConfig() {
+    for (const pluginName in this.pluginsConfigs) {
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
       dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName =>{
         this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
@@ -71,7 +72,7 @@ function PluginsRegistry() {
     }
   };
 
-  this.setOtherPlugins = function() {
+  setOtherPlugins() {
     const law = OTHERPLUGINS[0];
     if (this.otherPluginsConfig && this.otherPluginsConfig[law] && this.otherPluginsConfig[law].length) {
       // law plugin
@@ -81,7 +82,7 @@ function PluginsRegistry() {
   };
 
   // reaload plugin in case of change map
-  this.reloadPlugins = function(initConfig, project) {
+  reloadPlugins(initConfig, project) {
     return new Promise(async (resolve, reject) => {
       const scripts = $('script');
       const plugins = this.getPlugins();
@@ -108,7 +109,7 @@ function PluginsRegistry() {
       try {
         const plugins = await this._loadPlugins();
         resolve(plugins);
-      } catch(error){
+      } catch(error) {
         reject(error)
       }
     })
@@ -118,7 +119,7 @@ function PluginsRegistry() {
    * setup plugin config only filtered by gid configuration
    * @param config
    */
-  this.setPluginsConfig = function(config={}) {
+  setPluginsConfig(config={}) {
     const enabledPluginConfig = {};
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
@@ -134,12 +135,12 @@ function PluginsRegistry() {
    * @returns {*}
    * @private
    */
-  this._loadScript = function(url) {
+  _loadScript(url) {
     return $.getScript(url);
   };
 
   //load plugin script
-  this._setup = function(name, pluginConfig) {
+  _setup(name, pluginConfig) {
     return new Promise(async (resolve, reject) => {
       if (!_.isNull(pluginConfig)) {
         const {jsscripts=[]} = pluginConfig;
@@ -165,7 +166,7 @@ function PluginsRegistry() {
               this.removeLoadingPlugin(name, false);
               reject();
             })
-        } catch(err){
+        } catch(err) {
           this.removeLoadingPlugin(name, false);
           reject();
         }
@@ -173,28 +174,33 @@ function PluginsRegistry() {
     })
   };
 
-  this.getPluginConfig = function(pluginName) {
+  getPluginConfig(pluginName) {
     return this.pluginsConfigs[pluginName];
   };
 
-  this.getPlugins = function() {
+  getPlugins() {
     return this._plugins;
   };
 
-  this.getPlugin = function(pluginName) {
+  getPlugin(pluginName) {
     return this._plugins[pluginName];
   };
 
   // method to check if a plugin is in confiuration and will be added to apllication
-  this.isPluginInConfiguration = function(pluginName){
+  isPluginInConfiguration(pluginName) {
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
 
-  this.isTherePlugin = function(pluginName){
+  isTherePlugin(pluginName) {
     return this.pluginsConfigs[pluginName];
   }
 }
 
-inherit(PluginsRegistry,G3WObject);
+export default new PluginsRegistry();
 
-module.exports = new PluginsRegistry;
+
+
+
+
+
+

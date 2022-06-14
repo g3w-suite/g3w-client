@@ -1,11 +1,12 @@
-const PickLayerInputService = require('gui/inputs/picklayer/service');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const Layer = require('core/layers/layer');
-const InputMixin = require('gui/inputs/input');
-const selectMixin = require('./selectmixin');
-const {select2Mixin} = require('gui/vue/vue.mixins');
-const GUI = require('gui/gui');
+import PickLayerInputService  from 'gui/inputs/picklayer/service';
+import MapLayersStoreRegistry  from 'core/map/maplayersstoresregistry';
+import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import Layer  from 'core/layers/layer';
+import InputMixin  from 'gui/inputs/input';
+import selectMixin  from './selectmixin';
+import {select2Mixin}  from 'gui/vue/vue.mixins';
+import GUI  from 'gui/gui';
+import template from  './select.html';
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
 const SelectInput = Vue.extend({
@@ -16,15 +17,15 @@ const SelectInput = Vue.extend({
       picked: false
     }
   },
-  template: require('./select.html'),
+  template,
   computed:{
-    showNullOption(){
+    showNullOption() {
       return this.state.nullOption === undefined || this.state.nullOption === true;
     },
-    select2NullValue(){
+    select2NullValue() {
       return this.showNullOption && G3W_SELECT2_NULL_VALUE;
     },
-    disabled(){
+    disabled() {
       return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
     }
   },
@@ -48,9 +49,9 @@ const SelectInput = Vue.extend({
     }
   },
   methods: {
-    async pickLayerValue(){
+    async pickLayerValue() {
       try {
-        if (this.picked){
+        if (this.picked) {
           this.pickLayerInputService.unpick();
           this.picked = false;
         } else {
@@ -66,7 +67,7 @@ const SelectInput = Vue.extend({
           });
           this.picked = false;
         }
-      } catch(err){
+      } catch(err) {
         GUI.showUserMessage({
           type: "warning",
           message: 'sdk.form.inputs.messages.errors.picklayer',
@@ -75,7 +76,7 @@ const SelectInput = Vue.extend({
         this.picked = false;
       }
     },
-    setAndListenSelect2Change(){
+    setAndListenSelect2Change() {
       this.select2.on('select2:select', event => {
         let value = event.params.data.$value ? event.params.data.$value : event.params.data.id;
         value = this.showNullOption ? value === G3W_SELECT2_NULL_VALUE ? null : value.toString() : value.toString();
@@ -146,7 +147,7 @@ const SelectInput = Vue.extend({
     this.setValue();
   },
   beforeDestroy() {
-    if (this.pickLayerInputService){
+    if (this.pickLayerInputService) {
       this.pickLayerInputService.clear();
       this.pickLayerInputService = null;
     }
@@ -155,4 +156,4 @@ const SelectInput = Vue.extend({
   }
 });
 
-module.exports = SelectInput;
+export default  SelectInput;

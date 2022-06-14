@@ -1,24 +1,21 @@
-const InteractionControl = require('./interactioncontrol');
+import InteractionControl from './interactioncontrol';
 
-const MeasureControl = function(options={}) {
-  this._map = null;
-  InteractionControl.call(this, options);
-};
-
-ol.inherits(MeasureControl, InteractionControl);
-
-const proto = MeasureControl.prototype;
-
-proto.setMap = function(map) {
-  InteractionControl.prototype.setMap.call(this, map);
-};
-
-proto.toggle = function(toggle) {
-  InteractionControl.prototype.toggle.call(this, toggle);
-  if (!this.isToggled() && this.getIteraction()) {
-    //clean of the measure control if it was activated
-    this.getIteraction().clear();
+class MeasureControl extends InteractionControl{
+  constructor(options={}) {
+    super(options);
+    this._map = null;
   }
-};
+  setMap(map) {
+    super.setMap(map);
+  };
 
-module.exports = MeasureControl;
+  toggle(toggle) {
+    super.toggle();
+    if (!this.isToggled() && this.getIteraction()) {
+      //clean of the measure control if it was activated
+      this.getIteraction().clear();
+    }
+  };
+}
+
+export default  MeasureControl;

@@ -1,27 +1,29 @@
-const G3WObject = require('core/g3wobject');
-const {base, inherit} = require('core/utils/utils');
-
+import G3WObject from 'core/g3wobject';
 //class Componet Registry (singleton)
 // store all components added
-function ComponentsRegistry() {
-  this.components = {};
-  this.registerComponent = function(component) {
+class ComponentsRegistry extends G3WObject {
+  constructor() {
+    super();
+    this.components = {};
+  };
+
+  registerComponent(component) {
     const id = component.getId();
     if (!this.components[id]) {
       this.components[id] = component;
-      this.emit('componentregistered', component);
+      this.fire('componentregistered', component);
     }
   };
 
-  this.getComponent = function(id) {
+  getComponent(id) {
     return this.components[id];
   };
 
-  this.getComponents = function() {
+  getComponents() {
     return this.components;
   };
 
-  this.unregisterComponent = function(id) {
+  unregisterComponent(id) {
     const component = this.components[id];
     if (component) {
       if (typeof component.destroy === 'function') component.destroy();
@@ -29,8 +31,6 @@ function ComponentsRegistry() {
     }
     return component;
   };
-  base(this);
 }
-inherit(ComponentsRegistry, G3WObject);
 
-module.exports = new ComponentsRegistry;
+export default  new ComponentsRegistry;

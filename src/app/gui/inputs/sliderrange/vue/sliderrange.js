@@ -1,16 +1,17 @@
-const Input = require('gui/inputs/input');
+import Input  from 'gui/inputs/input';
+import template from './sliderrange.html';
 
 const RangeInput = Vue.extend({
   mixins: [Input],
-  template: require('./sliderrange.html'),
+  template,
   watch:{
-    'state.input.options.min'(){
+    'state.input.options.min'() {
       this.service.changeInfoMessage()
     },
-    'state.input.options.max'(){
+    'state.input.options.max'() {
       this.service.changeInfoMessage()
     }
   }
 });
 
-module.exports = RangeInput;
+export default  RangeInput;

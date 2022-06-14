@@ -1,20 +1,20 @@
-const ResetControl = require('g3w-ol/src/controls/resetcontrol');
-const QueryControl = require('g3w-ol/src/controls/querycontrol');
-const ZoomBoxControl = require('g3w-ol/src/controls/zoomboxcontrol');
-const QueryBBoxControl = require('g3w-ol/src/controls/querybboxcontrol');
-const QueryByPolygonControl = require('g3w-ol/src/controls/querybypolygoncontrol');
-const GeolocationControl = require('g3w-ol/src/controls/geolocationcontrol');
-const StreetViewControl = require('g3w-ol/src/controls/streetviewcontrol');
-const AddLayersControl = require('g3w-ol/src/controls/addlayers');
-const LengthControl = require('g3w-ol/src/controls/lengthcontrol');
-const AreaControl = require('g3w-ol/src/controls/areacontrol');
-const OLControl = require('g3w-ol/src/controls/olcontrol');
-const NominatimControl = require('g3w-ol/src/controls/nominatimcontrol');
-const MousePositionControl = require('g3w-ol/src/controls/mousepositioncontrol');
-const ScaleControl = require('g3w-ol/src/controls/scalecontrol');
-const OnClikControl = require('g3w-ol/src/controls/onclickcontrol');
-const ScreenshotControl = require('g3w-ol/src/controls/screenshotcontrol');
-const geoScreenshotControl = require('g3w-ol/src/controls/geoscreenshotcontrol');
+import ResetControl  from 'g3w-ol/src/controls/resetcontrol';
+import QueryControl  from 'g3w-ol/src/controls/querycontrol';
+import ZoomBoxControl  from 'g3w-ol/src/controls/zoomboxcontrol';
+import QueryBBoxControl  from 'g3w-ol/src/controls/querybboxcontrol';
+import QueryByPolygonControl  from 'g3w-ol/src/controls/querybypolygoncontrol';
+import GeolocationControl  from 'g3w-ol/src/controls/geolocationcontrol';
+import StreetViewControl  from 'g3w-ol/src/controls/streetviewcontrol';
+import AddLayersControl  from 'g3w-ol/src/controls/addlayers';
+import LengthControl  from 'g3w-ol/src/controls/lengthcontrol';
+import AreaControl  from 'g3w-ol/src/controls/areacontrol';
+import OLControl  from 'g3w-ol/src/controls/olcontrol';
+import NominatimControl  from 'g3w-ol/src/controls/nominatimcontrol';
+import MousePositionControl  from 'g3w-ol/src/controls/mousepositioncontrol';
+import ScaleControl  from 'g3w-ol/src/controls/scalecontrol';
+import OnClikControl  from 'g3w-ol/src/controls/onclickcontrol';
+import ScreenshotControl  from 'g3w-ol/src/controls/screenshotcontrol';
+import geoScreenshotControl  from 'g3w-ol/src/controls/geoscreenshotcontrol';
 
 const ControlsFactory = {
   create(options={}) {
@@ -48,4 +48,4 @@ ControlsFactory.CONTROLS = {
   'geoscreenshot': geoScreenshotControl
 };
 
-module.exports = ControlsFactory;
+export default  ControlsFactory;

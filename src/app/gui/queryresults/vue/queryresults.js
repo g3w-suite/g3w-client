@@ -1,19 +1,18 @@
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
 import InfoFormats from './components/actiontools/infoformats.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit, throttle} = require('core/utils/utils');
-const {fieldsMixin} = require('gui/vue/vue.mixins');
-const Component = require('gui/vue/component');
-const QueryResultsService = require('gui/queryresults/queryresultsservice');
+import utils from 'core/utils/utils';
+import {fieldsMixin}  from 'gui/vue/vue.mixins';
+import Component  from 'gui/vue/component';
+import QueryResultsService  from 'gui/queryresults/queryresultsservice';
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
 const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
-const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
+import template from './queryresults.html';
 
 const vueComponentOptions = {
-  ...compiledTemplate,
+  template,
   data() {
     return {
       state: this.$options.queryResultsService.state,
@@ -31,7 +30,7 @@ const vueComponentOptions = {
     layersFeaturesBoxes() {
       return this.state.layersFeaturesBoxes;
     },
-    onelayerresult(){
+    onelayerresult() {
       return this.state.layers.length  === 1;
     },
     hasLayers() {
@@ -40,14 +39,14 @@ const vueComponentOptions = {
     hasResults() {
       return this.state.layers.length > 0;
     },
-    info(){
+    info() {
       const info = {
         icon: null,
         message: null,
         action: null
       };
       const {query, search} = this.state;
-      if (query){
+      if (query) {
         if (query.type === 'coordinates') {
           info.icon = 'marker';
           info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
@@ -61,7 +60,7 @@ const vueComponentOptions = {
           info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
           info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
         }
-      } else if (search){}
+      } else if (search) {}
       return info;
     }
   },
@@ -72,7 +71,7 @@ const vueComponentOptions = {
      * @param type feature or layer
      * @returns {*}
      */
-    getLayerCustomComponents(layerId, type='feature', position='after'){
+    getLayerCustomComponents(layerId, type='feature', position='after') {
       return this.state.layerscustomcomponents[layerId] &&
         this.state.layerscustomcomponents[layerId][type] &&
         this.state.layerscustomcomponents[layerId][type][position] ||
@@ -100,23 +99,23 @@ const vueComponentOptions = {
       }
       return fields;
     },
-    getColSpan(layer){
+    getColSpan(layer) {
       return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
     },
-    getDownloadActions(layer){
+    getDownloadActions(layer) {
       return this.state.layersactions[layer.id].find(action => action.formats);
     },
-    addLayerFeaturesToResults(layer){
+    addLayerFeaturesToResults(layer) {
       this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
     },
-    showDownloadAction(evt){
+    showDownloadAction(evt) {
       const display = evt.target.children[0].style.display;
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
     },
-    printAtlas(layer){
+    printAtlas(layer) {
       this.$options.queryResultsService.printAtlas(layer);
     },
-    showLayerDownloadFormats(layer){
+    showLayerDownloadFormats(layer) {
       this.$options.queryResultsService.showLayerDownloadFormats(layer)
     },
     saveLayerResult(layer, type="csv") {
@@ -125,10 +124,10 @@ const vueComponentOptions = {
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;
     },
-    addRemoveFilter(layer){
+    addRemoveFilter(layer) {
       this.$options.queryResultsService.addRemoveFilter(layer);
     },
-    getContainerFromFeatureLayer({layer, index}={}){
+    getContainerFromFeatureLayer({layer, index}={}) {
       return $(`#${layer.id}_${index} > td`);
     },
     hasOneLayerAndOneFeature(layer) {
@@ -152,14 +151,14 @@ const vueComponentOptions = {
     geometryAvailable(feature) {
       return feature.geometry ? true : false;
     },
-    extractAttributesFromFirstTabOfFormStructureLayers(layer){
+    extractAttributesFromFirstTabOfFormStructureLayers(layer) {
       const attributes = new Set();
       const traverseStructure = item => {
         if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
         else {
           let field = layer.formStructure.fields.find(field => field.name === item.field_name);
           if (field) {
-            if (this.state.type === 'ows'){
+            if (this.state.type === 'ows') {
               // clone it to avoid to replace original
               field = {...field};
               field.name = field.name.replace(/ /g, '_');
@@ -228,7 +227,7 @@ const vueComponentOptions = {
     getLayerAttributeFromStructureItem(layer, field_name) {
       return layer.attributes.find(attribute => attribute.name === field_name);
     },
-    getLayerFeatureBox(layer, feature, relation_index){
+    getLayerFeatureBox(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       if (this.layersFeaturesBoxes[boxid] === undefined) {
         this.layersFeaturesBoxes[boxid] = Vue.observable({
@@ -257,7 +256,7 @@ const vueComponentOptions = {
       return this.layersFeaturesBoxes[boxid] ? this.layersFeaturesBoxes[boxid].collapsed : true;
     },
     showFeatureInfo(layer, boxid) {
-      this.$options.queryResultsService.emit('show-query-feature-info', {
+      this.$options.queryResultsService.fire('show-query-feature-info', {
         layer,
         tabs: this.hasFormStructure(layer),
         show: !this.layersFeaturesBoxes[boxid].collapsed
@@ -328,9 +327,9 @@ const vueComponentOptions = {
       bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
     }
   },
-  created(){
+  created() {
     //PUT HERE THROTTLED FUNCTION
-    this.zoomToLayerFeaturesExtent = throttle(layer => {
+    this.zoomToLayerFeaturesExtent = utils.throttle(layer => {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
         highlight: true
       });
@@ -347,34 +346,35 @@ const vueComponentOptions = {
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultsComponent(options={}) {
-  base(this, options);
-  this.id = "queryresults";
-  this.title = "Query Results";
-  this._service = new QueryResultsService();
-  this.setInternalComponent = function() {
+class QueryResultsComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this.id = "queryresults";
+    this.title = "Query Results";
+    this._service = new QueryResultsService();
+    this._service.onafter('setLayersData', async () => {
+      !this.internalComponent && this.setInternalComponent();
+      await this.internalComponent.$nextTick();
+    });
+  }
+
+
+  setInternalComponent() {
     this.internalComponent = new InternalComponent({
       queryResultsService: this._service
     });
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
 
-  this.getElement = function() {
+  getElement() {
     if (this.internalComponent) return this.internalComponent.$el;
   };
 
-  this._service.onafter('setLayersData', async () => {
-    !this.internalComponent && this.setInternalComponent();
-    await this.internalComponent.$nextTick();
-  });
-
-  this.layout = function(width,height) {};
-  this.unmount = function() {
+  layout(width,height) {};
+  unmount() {
     this.getService().closeComponent();
-    return base(this, 'unmount')
+    return super.unmount();
   }
 }
 
-inherit(QueryResultsComponent, Component);
-
-module.exports = QueryResultsComponent;
+export default  QueryResultsComponent;

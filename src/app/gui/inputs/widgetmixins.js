@@ -20,4 +20,4 @@ const WidgetMixins = {
   }
 };
 
-module.exports = WidgetMixins;
+export default  WidgetMixins;

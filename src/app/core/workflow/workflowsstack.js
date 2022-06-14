@@ -1,61 +1,63 @@
 // Store all workflow activated
-const WorkFlowsStack = function() {
-  this._workflows = [];
-  this.push = function(workflow) {
+class WorkFlowsStack {
+  constructor() {
+    this._workflows = [];
+  }
+
+  push(workflow) {
     if (this._workflows.indexOf(workflow) === -1) return this._workflows.push(workflow) - 1;
     return this._workflows.indexOf(workflow);
   };
 
-  this.getParent = function() {
+  getParent() {
     const index = this._getCurrentIndex();
     return index > 0 &&  this._workflows[index -1];
   };
 
-  this.pop = function() {
-   return this._workflows.pop()
+  pop() {
+   return _workflows.pop()
   };
 
-  this.getLength = function() {
+  getLength() {
     return this._workflows.length;
   };
 
-  this._getCurrentIndex = function() {
+  _getCurrentIndex() {
     const currentWorkflow = this.getCurrent();
     return this._workflows.findIndex(workfow => workfow === currentWorkflow)
   };
 
-  this.getCurrent = function() {
+  getCurrent() {
     return this.getLast();
   };
 
-  this.getLast = function() {
+  getLast() {
     const length = this._workflows.length;
     return length ? this._workflows[length -1] : null;
   };
 
-  this.getFirst = function() {
+  getFirst() {
     return this._workflows[0];
   };
 
-  this.removeAt = function(index) {
+  removeAt(index) {
     this._workflows.splice(index, 1);
   };
 
-  this.getAt = function(index) {
+  getAt(index) {
     return this._workflows[index];
   };
 
-  this.insertAt = function(index, workflow) {
+  insertAt(index, workflow) {
     this._workflows[index] = workflow;
   };
 
-  this.clear = function(){
+  clear() {
     while (this._workflows.length) {
       const workflow = this.pop();
       workflow.stop();
     }
   }
+}
 
-};
-
-module.exports = new WorkFlowsStack;
+export default  new WorkFlowsStack;

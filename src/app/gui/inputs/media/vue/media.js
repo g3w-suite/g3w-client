@@ -1,13 +1,14 @@
-const InputMixins = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const {media_field:MediaField} = require('gui/fields/fields');
-const GUI = require('gui/gui');
+import InputMixins  from 'gui/inputs/input';
+import utils  from 'core/utils/utils';
+import {t}  from 'core/i18n/i18n.service';
+import Fields  from 'gui/fields/fields';
+import GUI  from 'gui/gui';
+import template from './media.html';
 
 const MediaInput = Vue.extend({
   mixins: [InputMixins],
   components: {
-    'g3w-media': MediaField
+    'g3w-media': Fields.media_field
   },
   data() {
     return {
@@ -15,11 +16,11 @@ const MediaInput = Vue.extend({
         value: null,
         mime_type: null
       },
-      mediaid: `media_${getUniqueDomId()}`,
+      mediaid: `media_${utils.getUniqueDomId()}`,
       loading: false
     }
   },
-  template: require('./media.html'),
+  template,
   methods: {
     onClick(e) {
       document.getElementById(this.mediaid).click();
@@ -83,4 +84,4 @@ const MediaInput = Vue.extend({
   }
 });
 
-module.exports = MediaInput;
+export default  MediaInput;

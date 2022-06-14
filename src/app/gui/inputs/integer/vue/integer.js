@@ -1,8 +1,9 @@
-const Input = require('gui/inputs/input');
+import Input  from 'gui/inputs/input';
+import template from './integer.html';
 
 const IntegerInput = Vue.extend({
   mixins: [Input],
-  template: require('./integer.html')
+  template
 });
 
-module.exports = IntegerInput;
+export default  IntegerInput;

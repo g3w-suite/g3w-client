@@ -1,34 +1,36 @@
-const ApplicationService = require('core/applicationservice');
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
+import ApplicationService  from 'core/applicationservice';
+import G3WObject from 'core/g3wobject';
+import GUI  from 'gui/gui';
 
-function ControlsRegistry() {
-  this._controls = {};
-  this._offlineids = [];
-  ApplicationService.onbefore('offline', () =>{
-    this._offlineids.forEach(controlItem => {
-      const {id} = controlItem;
-      const control = this._controls[id];
-      controlItem.enable = control.getEnable();
-      control.setEnable(false);
-    })
-  });
+class ControlsRegistry extends G3WObject {
+  constructor(options={}) {
+    super({
+      setters: {
+        registerControl(id, control) {
+          this._registerControl(id, control);
+        }
+      }
+    });
+    this._controls = {};
+    this._offlineids = [];
+    ApplicationService.onbefore('offline', () =>{
+      this._offlineids.forEach(controlItem => {
+        const {id} = controlItem;
+        const control = this._controls[id];
+        controlItem.enable = control.getEnable();
+        control.setEnable(false);
+      })
+    });
 
-  ApplicationService.onbefore('online', ()=>{
-    this._offlineids.forEach(controlItem => {
-      const {id, enable} = controlItem;
-      this._controls[id].setEnable(enable);
-    })
-  });
-
-  this.setters = {
-    registerControl(id, control) {
-      this._registerControl(id, control);
-    }
+    ApplicationService.onbefore('online', ()=>{
+      this._offlineids.forEach(controlItem => {
+        const {id, enable} = controlItem;
+        this._controls[id].setEnable(enable);
+      })
+    });
   };
 
-  this._registerControl = function(id, control) {
+  _registerControl(id, control) {
     this._controls[id] = control;
     if (control.offline === false) {
       this._offlineids.push({
@@ -39,15 +41,15 @@ function ControlsRegistry() {
     }
   };
 
-  this.getControl = function(id) {
+  getControl(id) {
     return this._controls[id];
   };
 
-  this.getControls = function() {
+  getControls() {
     return this._controls;
   };
 
-  this.unregisterControl = function(id) {
+  unregisterControl(id) {
     const control = this.getControl(id);
     const mapService = GUI.getComponent('map').getService();
     const map = mapService.getMap();
@@ -59,9 +61,7 @@ function ControlsRegistry() {
     }
     return false
   };
-  base(this);
+
 }
 
-inherit(ControlsRegistry, G3WObject);
-
-module.exports = new ControlsRegistry;
+export default  new ControlsRegistry;

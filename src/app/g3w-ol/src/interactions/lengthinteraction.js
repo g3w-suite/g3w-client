@@ -1,12 +1,11 @@
-const MeasureInteraction = require('./measureinteraction');
+import MeasureInteraction  from './measureinteraction';
 
 // LenghtInteracion
-const LengthIteraction = function(options={}) {
-  options.geometryType = "LineString";
-  MeasureInteraction.call(this, options)
-};
+class LengthIteraction extends MeasureInteraction {
+  constructor(options={}) {
+    options.geometryType = "LineString";
+    super(options);
+  }
+}
 
-ol.inherits(LengthIteraction, MeasureInteraction);
-
-
-module.exports = LengthIteraction;
+export default  LengthIteraction;

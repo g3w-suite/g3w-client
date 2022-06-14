@@ -1,10 +1,11 @@
-const MeasureInteraction = require('./measureinteraction');
+import MeasureInteraction  from './measureinteraction';
 // Area
-const AreaIteraction = function(options={}) {
-  options.geometryType = "Polygon";
-  MeasureInteraction.call(this, options);
+class AreaIteraction extends MeasureInteraction {
+  constructor(options={}) {
+    options.geometryType = "Polygon";
+    super(options);
+  }
 };
 
-ol.inherits(AreaIteraction, MeasureInteraction);
 
-module.exports = AreaIteraction;
+export default  AreaIteraction;

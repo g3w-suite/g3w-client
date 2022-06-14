@@ -1,11 +1,9 @@
-const {base, inherit} = require('core/utils/utils');
-const Service = require('gui/inputs/service');
+import Service  from 'gui/inputs/service';
 
-function IntegerService(options={}) {
-  base(this, options);
+class IntegerService extends Service {
+  constructor(options={}) {
+    super(options);
+  }
 }
 
-inherit(IntegerService, Service);
-
-
-module.exports = IntegerService;
+export default  IntegerService;

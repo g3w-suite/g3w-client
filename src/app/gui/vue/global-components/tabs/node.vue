@@ -8,10 +8,8 @@
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
-            @removeinput="removeToValidate"
             :changeInput="changeInput"
             :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
             :feature="feature"
             :is="getComponent(getField(getNode(row, column)))">
           </component>
@@ -40,12 +38,12 @@
 
 <script>
   import G3wInput from 'gui/inputs/g3w-input.vue';
-  const Fields = require('gui/fields/fields');
-  const ProjectRegistry = require('core/project/projectsregistry');
-  const GUI = require('gui/gui');
+  import Fields  from 'gui/fields/fields';
+  import ProjectRegistry  from 'core/project/projectsregistry';
+  import GUI  from 'gui/gui';
   export default {
     name: "node",
-    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'removeToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
+    props: ['contenttype', 'node', 'fields', 'showTitle', 'addToValidate', 'changeInput', 'layerid', 'feature', 'showRelationByField',  'handleRelation'],
     components: {
       G3wInput,
       ...Fields
@@ -94,12 +92,12 @@
       }
     },
     methods: {
-      loadingRelation(relation){
+      loadingRelation(relation) {
         const layer = ProjectRegistry.getCurrentProject().getLayerById(this.layerid);
         const relation_project = layer.getRelationById(relation.name);
         return relation_project.state;
       },
-      isRelationDisabled(relation){
+      isRelationDisabled(relation) {
         return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && this.isRelationChildLayerNotEditable(relation));
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
@@ -107,7 +105,7 @@
         const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
-      isRelationChildLayerNotEditable(relation){
+      isRelationChildLayerNotEditable(relation) {
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
         const currentProject = ProjectRegistry.getCurrentProject();

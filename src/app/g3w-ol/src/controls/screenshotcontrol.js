@@ -1,27 +1,28 @@
-const OnClickControl = require('./onclickcontrol');
-function ScreenshotControl(options = {}) {
-  this.layers = options.layers || [];
-  const visible = this.checkVisible(this.layers);
-  options.visible = visible;
-  options.name = options.name || "maptoimage";
-  options.tipLabel =  options.tipLabel|| "Screenshot";
-  options.label = options.label || "\ue90f";
-  options.toggled = false;
-  OnClickControl.call(this, options);
+import OnClickControl  from './onclickcontrol';
+class ScreenshotControl extends OnClickControl{
+  constructor(options={}) {
+    options.visible = false;
+    options.name = options.name || "maptoimage";
+    options.tipLabel =  options.tipLabel|| "Screenshot";
+    options.label = options.label || "\ue90f";
+    options.toggled = false;
+    super(options);
+    this.layers = options.layers || [];
+    // setVisibility at start time
+    this.change(this.layers);
+  }
+
+  change(layers=[]) {
+    const visible = this.checkVisible(layers);
+    this.setVisible(visible);
+  };
+
+  checkVisible(layers=[]) {
+    const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
+    return !find;
+  };
+
 }
 
-ol.inherits(ScreenshotControl, OnClickControl);
 
-const proto = ScreenshotControl.prototype;
-
-proto.change = function(layers=[]){
-  const visible = this.checkVisible(layers);
-  this.setVisible(visible);
-};
-
-proto.checkVisible = function(layers=[]){
-  const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
-  return !find;
-};
-
-module.exports = ScreenshotControl;
+export default  ScreenshotControl;

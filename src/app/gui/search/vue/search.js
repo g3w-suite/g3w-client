@@ -1,13 +1,11 @@
 import G3WTool from 'gui/tools/vue/tool.vue'
 import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
-const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/vue/component');
-const Service = require('gui/search/service');
-const templateCompiled = createCompiledTemplate(require('./search.html'));
+import Component  from 'gui/vue/component';
+import Service  from 'gui/search/service';
+import template from './search.html';
 
 const vueComponentOptions = {
-  ...templateCompiled,
+  template,
   data() {
     return {
       state: null
@@ -18,7 +16,7 @@ const vueComponentOptions = {
     'g3w-search-querybuilder': G3WSearchQuerybuilder
   },
   computed: {
-    show(){
+    show() {
       return this.state.searches.length + this.state.searchtools.length + this.state.querybuildersearches.length > 0;
     }
   },
@@ -26,7 +24,7 @@ const vueComponentOptions = {
     showPanel(config={}) {
       this.$options.service.showPanel(config);
     },
-    removeItem({type, index}){
+    removeItem({type, index}) {
       this.$options.service.removeItem({
         type,
         index
@@ -41,26 +39,29 @@ const vueComponentOptions = {
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function SearchComponent(options={}){
-  base(this, options);
-  this.id = "search";
-  this._service = options.service || new Service();
-  this._service.init();
-  this.title = this._service.getTitle();
-  this.internalComponent = new InternalComponent({
-    service: this._service
-  });
-  this.internalComponent.state = this._service.state;
-  this.state.visible = true;
-  this._reload = function() {
+class SearchComponent extends Component {
+  constructor(options={}) {
+    super(options);
+    this.id = "search";
+    this._service = options.service || new Service();
+    this._service.init();
+    this.title = this._service.getTitle();
+    this.internalComponent = new InternalComponent({
+      service: this._service
+    });
+    this.internalComponent.state = this._service.state;
+    this.state.visible = true;
+  }
+
+  _reload() {
     this._service.reload();
   };
-  this.unmount = function() {
+
+  unmount() {
     this._searches_searchtools.$destroy();
-    return base(this, 'unmount');
+    return super.unmount();
   }
 }
 
-inherit(SearchComponent, Component);
 
-module.exports = SearchComponent;
+export default  SearchComponent;

@@ -1,5 +1,5 @@
 const utils = {
-  merge(obj1,obj2){
+  merge(obj1,obj2) {
     const obj3 = {
       ...obj1,
       ...obj2
@@ -8,4 +8,4 @@ const utils = {
   }
 };
 
-module.exports = utils;
+export default  utils;

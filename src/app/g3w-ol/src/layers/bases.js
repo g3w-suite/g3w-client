@@ -1,11 +1,17 @@
-const RasterLayers = require('./rasters');
+import RasterLayers  from './rasters';
+import {Tile as TileLayer} from 'ol/layer';
+import {OSM, WMTS as WMTSSource, BingMaps} from "ol/source";
+import {getWidth} from 'ol/extent';
+import {getTopLeft} from 'ol/extent';
+import WMTS from 'ol/tilegrid/WMTS';
+
 const BaseLayers = {};
 
 BaseLayers.OSM = {};
 
-BaseLayers.OSM.get = function({title, id, url}={}){
-  return new ol.layer.Tile({
-    source: new ol.source.OSM({
+BaseLayers.OSM.get = function({title, id, url}={}) {
+  return new TileLayer({
+    source: new OSM({
       url
     }),
     id: id || 'osm',
@@ -43,7 +49,7 @@ BaseLayers.TMS =  {
 };
 
 BaseLayers.WMS = {
-  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
+  get({url, projection, attributions, layers, singleTile=false, opacity=1}) {
     return RasterLayers.WMSLayer({
       url,
       projection,
@@ -59,16 +65,16 @@ BaseLayers.WMTS = {
   get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
-    const size = ol.extent.getWidth(projectionExtent) / 256;
+    const size = getWidth(projectionExtent) / 256;
     const matrixIds = new Array(14);
     for (var z = 0; z < 14; ++z) {
       // generate resolutions and matrixIds arrays for this WMTS
       resolutions[z] = size / Math.pow(2, z);
       matrixIds[z] = z;
     }
-    return new ol.layer.Tile({
+    return new TileLayer({
       opacity,
-      source: new ol.source.WMTS({
+      source: new WMTSSource({
         url,
         projection,
         layer,
@@ -76,8 +82,8 @@ BaseLayers.WMTS = {
         requestEncoding,
         format,
         attributions,
-        tileGrid: new ol.tilegrid.WMTS({
-          origin: ol.extent.getTopLeft(projectionExtent),
+        tileGrid: new WMTS({
+          origin: getTopLeft(projectionExtent),
           resolutions: resolutions,
           matrixIds: matrixIds
         }),
@@ -91,11 +97,11 @@ BaseLayers.BING = {};
 
 BaseLayers.BING.get = (config={})=>{
   const imagerySet = config.imagerySet || 'Aerial'; // 'Road', 'AerialWithLabels', 'Aerial'
-  return new ol.layer.Tile({
+  return new TileLayer({
     name: imagerySet,
     visible: false,
     preload: Infinity,
-    source: new ol.source.BingMaps({
+    source: new BingMaps({
       imagerySet: imagerySet,
       key: config.key
     }),
@@ -103,4 +109,4 @@ BaseLayers.BING.get = (config={})=>{
   });
 };
 
-module.exports = BaseLayers;
+export default  BaseLayers;

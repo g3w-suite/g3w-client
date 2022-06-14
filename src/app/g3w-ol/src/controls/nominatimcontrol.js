@@ -1,4 +1,6 @@
-const Control = require('./control');
+import Control  from './control';
+import {transformExtent, transform} from "ol/proj";
+import {containsXY} from "ol/extent";
 
 function NominatimControl(options={}) {
   const self = this;
@@ -525,7 +527,7 @@ function NominatimControl(options={}) {
   const containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
   const nominatimVueContainer = Vue.extend({
     functional: true,
-    render(h){
+    render(h) {
       return h('div', {class: {[containerClass]: true}}, [
         h('div', {
           class: {
@@ -622,7 +624,7 @@ function NominatimControl(options={}) {
 
 
   OpenStreet.prototype.getParameters = function getParameters(options) {
-    let viewbox = ol.proj.transformExtent(self.options.viewbox, self.options.mapCrs, 'EPSG:4326').join(',');
+    let viewbox = transformExtent(self.options.viewbox, self.options.mapCrs, 'EPSG:4326').join(',');
     return {
       url: this.settings.url,
       params: {
@@ -759,14 +761,14 @@ function NominatimControl(options={}) {
         utils.json(ajax)
           .done(function(res) {
             const extent = provider.params.viewbox.split(',').map(coordinate => 1*coordinate);
-            res = res.filter(place => ol.extent.containsXY(extent, place.lon, place.lat));
+            res = res.filter(place => containsXY(extent, place.lon, place.lat));
             utils.removeClass(this$1.els.reset, klasses$1.spin);
             const res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
             this$1.createList(res_);
             res_ && this$1.listenMapClick();
             resolve(res_ ? res_ : []);
           })
-          .fail(function(error){
+          .fail(function(error) {
             utils.removeClass(this$1.els.reset, klasses$1.spin);
             const li = utils.createElement(
               'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
@@ -796,7 +798,7 @@ function NominatimControl(options={}) {
       const noresults = this.options.noresults;
       const elementVue = Vue.extend({
         functional: true,
-        render(h){
+        render(h) {
           return h('li', {
             class: {
               'nominatim-noresult': true
@@ -814,7 +816,7 @@ function NominatimControl(options={}) {
     const map = this.Base.getMap();
     const coord_ = [parseFloat(place.lon), parseFloat(place.lat)];
     const projection = map.getView().getProjection();
-    const coord = ol.proj.transform(coord_, 'EPSG:4326', projection);
+    const coord = transform(coord_, 'EPSG:4326', projection);
     const address = {
       formatted: addressHtml,
       details: addressObj,
@@ -926,6 +928,5 @@ function NominatimControl(options={}) {
   });
 }
 
-ol.inherits(NominatimControl, Control);
 
-module.exports = NominatimControl;
+export default  NominatimControl;

@@ -1,7 +1,6 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-const compiledTemplate = createCompiledTemplate(require('./header.html'));
+import template from './header.html';
 const HeaderFormComponent = Vue.extend({
-  ...compiledTemplate,
+  template,
   props: {
     headers: {
       type: Array,
@@ -16,10 +15,10 @@ const HeaderFormComponent = Vue.extend({
       if (this.currentid !== id)
         this.$emit('clickheader', id);
     },
-    resizeForm(perc){
+    resizeForm(perc) {
       this.$emit('resize-form', perc);
     }
   }
 });
 
-module.exports = HeaderFormComponent;
+export default  HeaderFormComponent;

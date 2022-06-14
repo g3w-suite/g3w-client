@@ -1,15 +1,15 @@
 import CookieLaw from "vue-cookie-law";
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const { uniqueId } = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const HeaderItem = require('gui/header/headeritem');
-const GUI = require('gui/gui');
-const layout = require('./layout');
-const compiledTemplate = Vue.compile(require('./app.html'));
-const { resizeMixin } = require('gui/vue/vue.mixins');
+import ApplicationService from 'core/applicationservice';
+import ProjectsRegistry  from 'core/project/projectsregistry';
+import utils from 'core/utils/utils';
+import {t}  from 'core/i18n/i18n.service';
+import HeaderItem  from 'gui/header/headeritem';
+import GUI  from 'gui/gui';
+import layout  from './layout';
+import template from  './app.html';
+import { resizeMixin }  from 'gui/vue/vue.mixins';
 const AppUI = Vue.extend({
-  ...compiledTemplate,
+  template,
   mixins: [resizeMixin],
   data() {
     return {
@@ -25,7 +25,7 @@ const AppUI = Vue.extend({
     CookieLaw
   },
   computed: {
-    app(){
+    app() {
       return this.appState.gui.app;
     },
     languages() {
@@ -43,13 +43,13 @@ const AppUI = Vue.extend({
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+    staticurl() {
       return this.urls.staticurl;
     },
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+    clienturl() {
       return this.urls.clienturl;
     },
     g3w_suite_logo() {
@@ -76,7 +76,7 @@ const AppUI = Vue.extend({
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
+    login_url() {
       return this.appconfig.user.login_url
     },
     numberOfProjectsInGroup() {
@@ -102,7 +102,7 @@ const AppUI = Vue.extend({
       );
       return $state;
     },
-    async resize(){
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
@@ -110,11 +110,11 @@ const AppUI = Vue.extend({
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
+    showCustomModalContent(id) {
       const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+    closePanel() {
       sidebarService.closePanel();
     },
     getLogoLink() {
@@ -148,7 +148,7 @@ const AppUI = Vue.extend({
     };
     this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
       if (customitem !== null) {
-        const id = customitem.id = uniqueId();
+        const id = customitem.id = utils.uniqueId();
         customitem.type === 'modal' && this.custom_modals.push({
           id,
           content: customitem.content
@@ -191,7 +191,7 @@ const AppUI = Vue.extend({
       $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
+    function setModalHeight() {
       $('#g3w-modal-overlay').css('height',$(window).height());
     }
     $(window).resize(() => {
@@ -201,4 +201,4 @@ const AppUI = Vue.extend({
   },
 });
 
-module.exports = AppUI;
+export default  AppUI;

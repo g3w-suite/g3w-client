@@ -1,14 +1,15 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+import Validator  from './validator';
 
-function IntegerValidator(options) {
-  base(this, options);
-  this.validate = function(value) {
+class IntegerValidator extends Validator {
+  constructor(options={}) {
+    super(options);
+  }
+  validate(value) {
     const integer = 1*value;
     return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
   }
 }
 
-inherit(IntegerValidator, Validator);
+export default IntegerValidator
 
-module.exports =  IntegerValidator;
+

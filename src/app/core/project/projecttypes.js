@@ -3,4 +3,4 @@ const ProjectTypes = {
   OGR: 'ogr'
 };
 
-module.exports = ProjectTypes;
+export default  ProjectTypes;

@@ -1,4 +1,4 @@
-const {getAppLanguage} = require('core/i18n/i18n.service');
+import {getAppLanguage}  from 'core/i18n/i18n.service';
 const selectMixin = {
   methods: {
     getLanguage() {
@@ -32,4 +32,4 @@ const selectMixin = {
   }
 };
 
-module.exports = selectMixin;
+export default  selectMixin;

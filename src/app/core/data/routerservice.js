@@ -1,47 +1,49 @@
-const queryService = require('./query/service');
-const searchService = require('./search/service');
-const expressionService = require('./expression/service');
-const proxyService = require('./proxy/service');
-const owsService = require('./ows/service');
-const IFrameRouterService = require('core/iframe/routerservice');
-const {splitContextAndMethod} = require('core/utils/utils');
-const GUI = require('gui/gui');
+import GUI from 'gui/gui';
+import queryService  from './query/service';
+import searchService  from './search/service';
+import expressionService  from './expression/service';
+import proxyService  from './proxy/service';
+import owsService  from './ows/service';
+import IFrameRouterService  from 'core/iframe/routerservice';
+import utils  from 'core/utils/utils';
 
-function Routerservice() {
-  //set deafult outputplace
-  this.defaultoutputplaces = ['gui'];
-  // set current outputplaces
-  this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
+class Routerservice {
+  constructor() {
+    //set deafult outputplace
+    this.defaultoutputplaces = ['gui'];
+    // set current outputplaces
+    this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
 
-  /**
-   * Object contain output function to show results
-   * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
-   * dataPromise: is thre promise request for data,
-   * options: {
-   *   show: method or Boolean to set if show or not the result on output
-   *   before : async function to handle data return from server
-   *   after: method to handle or do some thisn after show data
-   * }
-   */
-  this.ouputplaces = {
-    async gui(dataPromise, options={}){
-      GUI.setLoadingContent(true);
-      try {
-        GUI.outputDataPlace(dataPromise, options);
-        await dataPromise;
-      } catch(err){}
-      GUI.setLoadingContent(false);
-    },
-    async iframe(dataPromise, options={}){
-      IFrameRouterService.outputDataPlace(dataPromise, options);
-    }
-  };
-
+    /**
+     * Object contain output function to show results
+     * @type {{gui(*=, *=): void, iframe(*=, *=): void}}
+     * dataPromise: is thre promise request for data,
+     * options: {
+     *   show: method or Boolean to set if show or not the result on output
+     *   before : async function to handle data return from server
+     *   after: method to handle or do some thisn after show data
+     * }
+     */
+    this.ouputplaces = {
+      async gui(dataPromise, options={}) {
+        GUI.setLoadingContent(true);
+        try {
+          GUI.outputDataPlace(dataPromise, options);
+          await dataPromise;
+        } catch(err) {}
+        GUI.setLoadingContent(false);
+      },
+      async iframe(dataPromise, options={}) {
+        IFrameRouterService.outputDataPlace(dataPromise, options);
+      }
+    };
+  }
+  
   /**
    *
    * @returns {Promise<void>}
    */
-  this.init = async function(){
+  async init() {
     this.services = {
       query: queryService,
       search: searchService,
@@ -57,8 +59,8 @@ function Routerservice() {
    * @param options
    * @returns {Promise<void>}
    */
-  this.getData = async function(contextAndMethod, options={}){
-    const {context, method} = splitContextAndMethod(contextAndMethod);
+  async getData(contextAndMethod, options={}) {
+    const {context, method} = utils.splitContextAndMethod(contextAndMethod);
     const service = this.getService(context);
     const {inputs={}, outputs={}} = options;
     //return a promise and not the data
@@ -75,7 +77,7 @@ function Routerservice() {
    *Force to show empty output data
    *
    * */
-  this.showEmptyOutputs = function(){
+  showEmptyOutputs() {
     const dataPromise = Promise.resolve({
       data: []
     });
@@ -88,7 +90,7 @@ function Routerservice() {
    * Set a costum datapromiseoutput to applicationa outputs settede
    * @param dataPromise
    */
-  this.showCustomOutputDataPromise = function(dataPromise){
+  showCustomOutputDataPromise(dataPromise) {
     this.currentoutputplaces.forEach(place =>{
       this.ouputplaces[place](dataPromise, {});
     });
@@ -99,13 +101,13 @@ function Routerservice() {
    * @param serviceName
    * @returns {*}
    */
-  this.getService = function(serviceName){
+  getService(serviceName) {
     return this.services[serviceName]
   };
 
   /*
   * */
-  this.setOutputPlaces = function(places=[]){
+  setOutputPlaces(places=[]) {
     this.currentoutputplaces = places;
   };
 
@@ -113,7 +115,7 @@ function Routerservice() {
    *
    * @param place
    */
-  this.addCurrentOutputPlace = function(place){
+  addCurrentOutputPlace(place) {
     place && this.currentoutputplaces.indexOf(place) === -1 && this.currentoutputplaces.push(place);
   };
 
@@ -123,23 +125,20 @@ function Routerservice() {
    * @param method has to get two parameters data (promise) and options (Object)
    * ex {
    * place: <newplace>
-   * method(dataPromise, options={}){}
+   * method(dataPromise, options={}) {}
    *   }
    */
-  this.addNewOutputPlace = function({place, method=()=>{}}={}){
-    let added = false;
-    if (this.ouputplaces[place] === undefined) {
-      this.ouputplaces[place] = method;
-      added = true;
-    }
+  addNewOutputPlace({place, method=()=>{}}={}) {
+    const added = this.ouputplaces[place] === undefined;
+    if (added) this.ouputplaces[place] = method;
     return added;
   };
 
   // reset default configuration
-  this.resetDefaultOutput = function(){
+  resetDefaultOutput() {
     this.currentoutputplaces = [...this.defaultoutputplaces];
   };
 
 }
 
-module.exports = new Routerservice();
+export default new Routerservice();

@@ -1,7 +1,11 @@
+import vector from './vector/parser';
+import table from './table/parser';
+import response from './response/parser';
+
 const Parsers = {
-  vector: require('./vector/parser'),
-  table: require('./table/parser'),
-  response: require('./response/parser')
+  vector,
+  table,
+  response
 };
 
-module.exports = Parsers;
+export default  Parsers;

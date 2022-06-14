@@ -10,7 +10,6 @@
             :contenttype="'editing'"
             :addToValidate="addToValidate"
             :changeInput="changeInput"
-            :removeToValidate="removeToValidate"
             :tabs="state.formstructure"
             :fields="state.fields">
           </tabs>
@@ -19,11 +18,9 @@
           <g3w-form-inputs
             :state="state"
             :addToValidate="addToValidate"
-            :removeToValidate="removeToValidate"
             :changeInput="changeInput"
             @changeinput="changeInput"
-            @addinput="addToValidate"
-            @removeinput="removeToValidate">
+            @addinput="addToValidate">
           </g3w-form-inputs>
         </template>
       </div>

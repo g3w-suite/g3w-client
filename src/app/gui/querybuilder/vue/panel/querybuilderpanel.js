@@ -1,14 +1,13 @@
-const {inherit, base} = require('core/utils/utils');
-const Panel = require('gui/panel');
-const QueryBuilder = require('gui/querybuilder/vue/querybuilder');
+import Panel  from 'gui/panel';
+import QueryBuilder  from 'gui/querybuilder/vue/querybuilder';
 
-function QueryBuilderPanel(options={}) {
-  options.title = 'Query Builder';
-  base(this, options);
-  const internalPanel = new QueryBuilder(options);
-  this.setInternalPanel(internalPanel);
+class QueryBuilderPanel extends Panel {
+  constructor(options={}) {
+    options.title = 'Query Builder';
+    super(props);
+    const internalPanel = new QueryBuilder(options);
+    this.setInternalPanel(internalPanel);
+  }
 }
 
-inherit(QueryBuilderPanel, Panel);
-
-module.exports = QueryBuilderPanel;
+export default  QueryBuilderPanel;

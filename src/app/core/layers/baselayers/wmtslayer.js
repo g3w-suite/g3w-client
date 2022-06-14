@@ -1,32 +1,28 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseLayer = require('core/layers/baselayers/baselayer');
-const BasesLayers = require('g3w-ol/src/layers/bases');
+import BaseLayer  from 'core/layers/baselayers/baselayer';
+import BasesLayers  from 'g3w-ol/src/layers/bases';
 
-function WMTSLayer(config={}, options={}) {
-  this.config = config;
-  base(this, config, options);
+class WMTSLayer extends BaseLayer {
+  constructor(config={}, options={}) {
+    super(config, options);
+    this.config = config;
+  }
+
+  _makeOlLayer() {
+    //use this config to get params
+    const {url, layer, attributions, matrixSet, format, style, requestEncoding, crs} = this.config;
+    const projection = this.getProjectionFromCrs(crs);
+    const olLayer = BasesLayers.WMTS.get({
+      url,
+      layer,
+      attributions,
+      format,
+      projection,
+      requestEncoding,
+      matrixSet,
+      style
+    });
+    return olLayer
+  };
 }
 
-inherit(WMTSLayer, BaseLayer);
-
-const proto = WMTSLayer.prototype;
-
-proto._makeOlLayer = function() {
-  //use this config to get params
-  const {url, layer, attributions, matrixSet, format, style, requestEncoding, crs} = this.config;
-  const projection = this.getProjectionFromCrs(crs);
-  const olLayer = BasesLayers.WMTS.get({
-    url,
-    layer,
-    attributions,
-    format,
-    projection,
-    requestEncoding,
-    matrixSet,
-    style
-  });
-  return olLayer
-};
-
-
-module.exports = WMTSLayer;
+export default  WMTSLayer;

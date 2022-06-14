@@ -27,8 +27,8 @@
 </template>
 
 <script>
-  const AppState = require('core/applicationservice').getState();
-  const GUI = require('gui/gui');
+  import ApplicationState  from 'core/applicationstate';
+  import GUI  from 'gui/gui';
   const TOOLSTATE = {
     alert: {
       color: 'red'
@@ -54,7 +54,7 @@
       fireAction(tool) {
         this.tool.action(tool);
       },
-      showToolStateMessage(){
+      showToolStateMessage() {
         GUI.showModalDialog({
           title: this.tool.state.type.toUpperCase(),
           message: this.tool.state.message
@@ -63,7 +63,7 @@
     },
     computed: {
       disabled() {
-        return (!this.tool.offline && !AppState.online)  || (this.tool.loading || this.tool.disabled);
+        return (!this.tool.offline && !ApplicationState.online)  || (this.tool.loading || this.tool.disabled);
       },
       icon() {
         return this.tool.icon || 'caret-right'

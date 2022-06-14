@@ -1,58 +1,54 @@
-const {base, inherit, mixin} = require('core/utils/utils');
-const Layer = require('./layer');
-const TableLayer = require('./tablelayer');
-const GeoLayerMixin = require('./geolayermixin');
-const VectoMapLayer = require('./map/vectorlayer');
+import Layer from 'core/layers/layer';
+import TableLayer from 'core/layers/tablelayer';
+import GeoLayerMixin from 'core/layers/geolayermixin';
+import VectoMapLayer from 'core/layers/map/vectorlayer';
 
-function VectorLayer(config={}, options) {
-  base(this, config, options);
-  this._mapLayer = null; // later tah will be added to map
-  this.type = Layer.LayerTypes.VECTOR;
-  // need a ol layer for add to map
-  this.setup(config, options);
-  this.onafter('setColor', color => {})
+class VectorLayer extends TableLayer {
+  constructor(config={}, options={}) {
+    super(config, options);
+    this.setup(config, options);
+    this._mapLayer = null; // later tah will be added to map
+    this.type = Layer.LayerTypes.VECTOR;
+    this.onafter('setColor', color => {})
+  }
+
+  getEditingLayer() {
+    return this.getMapLayer().getOLLayer();
+  };
+
+  resetEditingSource(features=[]) {
+    this.getMapLayer().resetSource(features)
+  };
+
+  _setOtherConfigParameters(config) {
+    this.config.editing.geometrytype = config.geometrytype;
+  };
+
+  getEditingGeometryType() {
+    return this.config.editing.geometrytype;
+  };
+
+  getMapLayer() {
+    if (this._mapLayer)
+      return this._mapLayer;
+    const id = this.getId();
+    const geometryType =  this.getGeometryType();
+    const color = this.getColor();
+    const style = this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle();
+    const provider = this.getProvider('data');
+    this._mapLayer = new VectoMapLayer({
+      id,
+      geometryType,
+      color,
+      style,
+      provider,
+      features: this._editor && this._editor.getEditingSource().getFeaturesCollection()
+    });
+    return this._mapLayer;
+  };
 }
 
-inherit(VectorLayer, TableLayer);
-
-mixin(VectorLayer, GeoLayerMixin);
-
-const proto = VectorLayer.prototype;
-
-proto.getEditingLayer = function() {
-  return this.getMapLayer().getOLLayer();
-};
-
-proto.resetEditingSource = function(features=[]){
-  this.getMapLayer().resetSource(features)
-};
-
-proto._setOtherConfigParameters = function(config) {
-  this.config.editing.geometrytype = config.geometrytype;
-};
-
-proto.getEditingGeometryType = function() {
-  return this.config.editing.geometrytype;
-};
-
-proto.getMapLayer = function() {
-  if (this._mapLayer)
-    return this._mapLayer;
-  const id = this.getId();
-  const geometryType =  this.getGeometryType();
-  const color = this.getColor();
-  const style = this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle();
-  const provider = this.getProvider('data');
-  this._mapLayer = new VectoMapLayer({
-    id,
-    geometryType,
-    color,
-    style,
-    provider,
-    features: this._editor && this._editor.getEditingSource().getFeaturesCollection()
-  });
-  return this._mapLayer;
-};
+Object.assign(VectorLayer.prototype, GeoLayerMixin);
 
 
-module.exports = VectorLayer;
+export default  VectorLayer;

@@ -1,85 +1,86 @@
-// class Filter to build filter
-// useful by provider providers to get data
-function Filter(config={}) {
-  this._filter = null;
-  this._type = null;
-  this.config = config;
-}
+export default class Filter {
+  // class attributes
+  static TYPES = {
+    bbox: 'bbox',
+    geometry: 'geometry',
+    expression: 'expression',
+    fids: 'fids',
+    all: 'all'
+  };
 
-const proto = Filter.prototype;
+  constructor(config={}) {
+    this._filter = null;
+    this._type = null;
+    this.config = config;
+  }
+  /**
+   * Config methods
+   */
 
-/**
- * Config methods
- */
+  getConfig() {
+    return this.config;
+  };
 
-proto.getConfig = function(){
-  return this.config;
-};
+  setConfig(config = {}) {
+    this.config = config;
+  };
 
-proto.setConfig = function(config = {}){
-  this.config = config;
-};
+  mergeConfig(config={}) {
+    this.config = {...this.config, ...config};
+  };
 
-proto.mergeConfig = function(config={}){
-  this.config = {...this.config, ...config};
-};
+  /***
+   *  end config methods
+   */
 
-/***
- *  end config methods
- */
+  getAll() {
+    this._type = Filter.TYPES.all;
+    this._filter = null
+  };
 
-proto.getAll = function() {
-  this._type = Filter.TYPES.all;
-  this._filter = null
-};
+  // to create complex filter
+  setExpression(expression) {
+    this._type = Filter.TYPES.expression;
+    this._filter = expression;
+  };
 
-// to create complex filter
-proto.setExpression = function(expression) {
-  this._type = Filter.TYPES.expression;
-  this._filter = expression;
-};
+  setGeometry(geometry) {
+    this._type = Filter.TYPES.geometry;
+    this._filter = geometry;
+    return this;
+  };
 
-proto.setGeometry = function(geometry) {
-  this._type = Filter.TYPES.geometry;
-  this._filter = geometry;
-  return this;
-};
+  setBBOX(bbox) {
+    this._type = Filter.TYPES.bbox;
+    this._filter = bbox;
+    return this;
+  };
 
-proto.setBBOX = function(bbox) {
-  this._type = Filter.TYPES.bbox;
-  this._filter = bbox;
-  return this;
-};
+  setFids(ids) {
+    this._type = Filter.TYPES.fids;
+    this._filter = ids;
+    return this;
+  };
 
-proto.setFids = function(ids) {
-  this._type = Filter.TYPES.fids;
-  this._filter = ids;
-  return this;
-};
-
-proto.serialize = function() {
-  return JSON.stringify(this);
-};
+  serialize() {
+    return JSON.stringify(this);
+  };
 
 // get filter value
-proto.get = function() {
-  return this._filter;
-};
+  get() {
+    return this._filter;
+  };
 
-proto.getType = function() {
-  return this._type;
-};
+  getType() {
+    return this._type;
+  };
 
-proto.clear = function() {
-  this._filter = null;
-};
+  clear() {
+    this._filter = null;
+  };
 
-Filter.TYPES = {
-  bbox: 'bbox',
-  geometry: 'geometry',
-  expression: 'expression',
-  fids: 'fids',
-  all: 'all'
-};
+}
 
-module.exports = Filter;
+
+
+

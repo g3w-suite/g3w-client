@@ -1,26 +1,29 @@
-const MousePositionControl = function(options= {}) {
-  options.target = options.target || 'mouse-position-control';
-  ol.control.MousePosition.call(this, options);
-};
+import  {MousePosition} from "ol/control";
 
-ol.inherits(MousePositionControl, ol.control.MousePosition);
-
-module.exports = MousePositionControl;
-
-const proto = MousePositionControl.prototype;
-
-proto.offline = true;
-
-proto.setEnable = function(bool) {
-  bool ? $(this.element) : $(this.element)
-};
-
-proto.setMap = function(map) {
-  if (map) {
-    $(this.element).removeClass('ol-control');
-    ol.control.MousePosition.prototype.setMap.call(this, map);
+class MousePositionControl extends  MousePosition {
+  constructor(options={}) {
+    options.target = options.target || 'mouse-position-control';
+    super(options);
   }
-};
+
+  offline = true;
+
+  setEnable(bool) {
+    bool ? $(this.element) : $(this.element)
+  };
+
+  setMap(map) {
+    if (map) {
+      $(this.element).removeClass('ol-control');
+      super.setMap(map);
+    }
+  };
+}
+
+export default  MousePositionControl;
+
+
+
 
 
 

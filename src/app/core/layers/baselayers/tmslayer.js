@@ -1,29 +1,31 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseLayer = require('core/layers/baselayers/baselayer');
-const BasesLayers = require('g3w-ol/src/layers/bases');
+import BaseLayer  from 'core/layers/baselayers/baselayer';
+import BasesLayers  from 'g3w-ol/src/layers/bases';
 
-function TMSLayer(config={}, options={}) {
-  this.config = config;
-  base(this, config, options);
+class TMSLayer extends BaseLayer{
+  constructor(config={}, options={}) {
+    super(config, options);
+    this.config = config;
+  }
+
+  _makeOlLayer() {
+    // here configuration to create TMS
+    const {url, attributions, minZoom, maxZoom, crs} = this.config;
+    const projection = this.getProjectionFromCrs(crs);
+    const olLayer = BasesLayers.TMS.get({
+      url,
+      minZoom,
+      maxZoom,
+      attributions,
+      projection
+    });
+    return olLayer
+  };
+
+
 }
 
-inherit(TMSLayer, BaseLayer);
-
-const proto = TMSLayer.prototype;
-
-proto._makeOlLayer = function() {
-  // here configuration to create TMS
-  const {url, attributions, minZoom, maxZoom, crs} = this.config;
-  const projection = this.getProjectionFromCrs(crs);
-  const olLayer = BasesLayers.TMS.get({
-    url,
-    minZoom,
-    maxZoom,
-    attributions,
-    projection
-  });
-  return olLayer
-};
 
 
-module.exports = TMSLayer;
+
+
+export default  TMSLayer;

@@ -1,1 +1,1 @@
-module.exports = new Vue();
+export default  new Vue();

@@ -1,6 +1,6 @@
-const { t } = require('core/i18n/i18n.service');
+import { t }  from 'core/i18n/i18n.service';
 
-module.exports = {
+export default  {
   matcher: (params, data) => {
     const searchItem = params.term ? params.term.toLowerCase(): params.term;
     // If there are no search terms, return all of the data
@@ -19,13 +19,13 @@ module.exports = {
     return null;
   },
   language: {
-    noResults(){
+    noResults() {
       return t("sdk.search.no_results");
     },
-    errorLoading(){
+    errorLoading() {
       return t("sdk.search.error_loading")
     },
-    searching(){
+    searching() {
       return t("sdk.search.searching")
     },
     inputTooShort(args) {

@@ -1,13 +1,13 @@
 import ApplicationState from 'core/applicationstate';
-const {t, tPlugin} = require('core/i18n/i18n.service');
-const { uniqueId, toRawType } = require('core/utils/utils');
+import {t, tPlugin} from 'core/i18n/i18n.service';
+import utils from 'core/utils/utils';
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
     const directives = {};
     const createDirectiveObj = ({el, attr}) =>{
       //create unique id
-      const unique_attr_id = uniqueId();
+      const unique_attr_id = utils.uniqueId();
       // set new attribute
       el.setAttribute(attr, unique_attr_id);
       directives[unique_attr_id] = {};
@@ -56,7 +56,7 @@ const GlobalDirective = {
       bind(_el, binding) {
         // handle automatic creation of tooltip
         if (binding.modifiers.create) {
-          if (binding.arg){
+          if (binding.arg) {
             _el.setAttribute('data-placement', binding.arg);
             _el.classList.add(`skin-tooltip-${binding.arg}`);
             _el.classList.add('skin-color');
@@ -67,7 +67,7 @@ const GlobalDirective = {
             html: true
           });
           // in case of mobile hide tooltip after click
-          ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
+          ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function() {
             setTimeout(()=>$(this).tooltip('hide'), 600);
           });
         }
@@ -92,7 +92,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.lng, handler)
         })
       },
-      componentUpdated(el, oldVnode){
+      componentUpdated(el, oldVnode) {
         runHandlerOnUpdate({
           el,
           attrId: 'g3w-v-t-tooltip-id',
@@ -100,7 +100,7 @@ const GlobalDirective = {
           oldValue: oldVnode.oldValue
         });
       },
-      unbind(el){
+      unbind(el) {
         $(el).tooltip('hide');
         unbindWatch({
           attr:'g3w-v-t-tooltip-id',
@@ -110,7 +110,7 @@ const GlobalDirective = {
     });
 
     Vue.directive('t-html', {
-      bind(el, binding){
+      bind(el, binding) {
         const unique_v_t_html_attr = createDirectiveObj({
           el,
           attr: 'g3w-v-t-html-id'
@@ -124,7 +124,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.lng, handlerElement)
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           attr:'g3w-v-t-html-id',
           el
@@ -133,7 +133,7 @@ const GlobalDirective = {
     });
 
     Vue.directive('t-placeholder', {
-      bind(el, binding){
+      bind(el, binding) {
         const unique_v_t_placeholder_attr = createDirectiveObj({
           el,
           attr: 'g3w-v-t-placeholder-id'
@@ -150,7 +150,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.lng, handler)
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           attr:'g3w-v-t-placeholder-id',
           el
@@ -159,7 +159,7 @@ const GlobalDirective = {
     });
     
     Vue.directive('t-title', {
-      bind(el, binding){
+      bind(el, binding) {
         // get unique id
         const unique_v_t_title_attr = createDirectiveObj({
           el,
@@ -178,7 +178,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.lng, handler)
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           attr:'g3w-v-t-title-id',
           el
@@ -201,7 +201,7 @@ const GlobalDirective = {
           })
         })
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
           attr:'g3w-v-t-id'
@@ -224,7 +224,7 @@ const GlobalDirective = {
           })
         })
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
           attr: 'g3w-v-t-plugin-id'
@@ -247,7 +247,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.plugins, showHideHandler)
         })
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
           attr: 'g3w-v-plugins-id'
@@ -273,7 +273,7 @@ const GlobalDirective = {
           unwatch: vm.$watch(() => ApplicationState.online, showHideHandler)
         })
       },
-      unbind(){
+      unbind() {
         unbindWatch({
           el,
           attr: 'g3w-v-offline-id'
@@ -284,7 +284,7 @@ const GlobalDirective = {
     Vue.directive("download", {
       bind(el, binding) {
         const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
-        const listen = toRawType(binding.value) === 'Boolean' ? binding.value : true;
+        const listen = utils.toRawType(binding.value) === 'Boolean' ? binding.value : true;
         const downloadHandler = bool => {
           el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool: bool)
         };
@@ -300,7 +300,7 @@ const GlobalDirective = {
           })
         }
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
           attr: 'g3w-v-download-id'
@@ -309,7 +309,7 @@ const GlobalDirective = {
     });
 
     Vue.directive('select2', {
-      inserted(el, binding, vnode){
+      inserted(el, binding, vnode) {
         const { templateResult, templateSelection, multiple=false, search=true, select2_value} = vnode.data.attrs || {};
         const selectDOMElement = $(el);
         selectDOMElement.select2({
@@ -319,7 +319,7 @@ const GlobalDirective = {
           templateSelection,
           minimumResultsForSearch: !search ? -1 : undefined
         });
-        if (binding.value){
+        if (binding.value) {
           selectDOMElement.on('select2:select', evt =>{
             const value = evt.params.data.id;
             if (multiple) {
@@ -335,12 +335,12 @@ const GlobalDirective = {
           if (select2_value) selectDOMElement.val(select2_value).trigger('change');
         }
       },
-      unbind(el, binding, vnode){
+      unbind(el, binding, vnode) {
         $(el).select2('destroy');
       }
     })
   }
 };
 
-module.exports = GlobalDirective;
+export default  GlobalDirective;
 

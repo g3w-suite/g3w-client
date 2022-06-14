@@ -1,67 +1,63 @@
-const {base, inherit} = require('core/utils/utils');
-const G3WObject = require('core/g3wobject');
+import G3WObject from 'core/g3wobject';
 
-function Task(options={}) {
-  base(this, options);
-  this.state = {
-    usermessagesteps: {}
+class Task extends G3WObject {
+  constructor(options={}) {
+    super(options);
+    this.state = {
+      usermessagesteps: {}
+    };
+  }
+  /**
+   * Set and get task usefult properties used to run
+   */
+
+  setInputs(inputs) {
+    this.inputs = inputs;
+  };
+
+  getInputs() {
+    return this.inputs;
+  };
+
+  setContext(context) {
+    return this.context = context;
+  };
+
+  getContext() {
+    return this.context;
+  };
+
+  revert() {
+    console.log('Revert to implemente ');
+  };
+
+  panic() {
+    console.log('Panic to implement ..');
+  };
+
+  stop() {
+    console.log('Task Stop to implement ..');
+  };
+
+  run() {
+    console.log('Wrong. This method has to be overwrite from task');
+  };
+
+  setRoot(task) {
+    this.state.root = task;
+  };
+
+  getUserMessageSteps() {
+    return this.state.usermessagesteps;
+  };
+
+  setUserMessageSteps(steps={}) {
+    this.state.usermessagesteps = steps;
+  };
+
+  setUserMessageStepDone(type) {
+    if (type) this.state.usermessagesteps[type].done = true;
   };
 }
 
-inherit(Task, G3WObject);
-
-const proto = Task.prototype;
-
-/**
- * Set and get task usefult properties used to run
- */
-
-proto.setInputs = function(inputs){
-  this.inputs = inputs;
-};
-
-proto.getInputs = function(){
-  return this.inputs;
-};
-
-proto.setContext = function(context){
-  return this.context = context;
-};
-
-proto.getContext = function(){
-  return this.context;
-};
-
-proto.revert = function() {
-  console.log('Revert to implemente ');
-};
-
-proto.panic = function() {
-  console.log('Panic to implement ..');
-};
-
-proto.stop = function() {
-  console.log('Task Stop to implement ..');
-};
-
-proto.run = function() {
-  console.log('Wrong. This method has to be overwrite from task');
-};
-
-proto.setRoot = function(task) {
-  this.state.root = task;
-};
-
-proto.getUserMessageSteps = function() {
-  return this.state.usermessagesteps;
-};
-
-proto.setUserMessageSteps = function(steps={}) {
-  this.state.usermessagesteps = steps;
-};
-
-proto.setUserMessageStepDone = function(type) {
-  if (type) this.state.usermessagesteps[type].done = true;
-};
-
-module.exports = Task;
+export default  Task;

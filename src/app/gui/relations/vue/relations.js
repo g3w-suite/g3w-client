@@ -1,7 +1,6 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-const compiledTemplate = createCompiledTemplate(require('./relations.html'));
-module.exports =  {
-  ...compiledTemplate,
+import template from './relations.html';
+export default   {
+  template,
   props: ['relations', 'feature','loading'],
   methods: {
     showRelation(relation) {

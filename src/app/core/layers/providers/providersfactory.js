@@ -1,10 +1,17 @@
+import geojson from './geojsonprovider';
+import kml from './kmlprovider';
+import xml from './xmlprovider';
+import qgis from './qgisprovider';
+import wms from './wmsprovider';
+import wfs from './wfsprovider';
+
 const Providers = {
-  geojson: require('./geojsonprovider'),
-  kml: require('./kmlprovider'),
-  xml: require('./xmlprovider'),
-  qgis: require('./qgisprovider'),
-  wms: require('./wmsprovider'),
-  wfs: require('./wfsprovider')
+  geojson,
+  kml,
+  xml,
+  qgis,
+  wms,
+  wfs
 };
 
 const ProvidersForServerTypes = {
@@ -119,8 +126,10 @@ const ProvidersForServerTypes = {
   }
 };
 
-function ProviderFactory() {
-  this.build = function(providerType, serverType, sourceType,options) {
+class ProviderFactory {
+  constructor(props) {}
+
+  build(providerType, serverType, sourceType,options) {
     // return instace of seletced provider
     const providerClass = this.get(providerType,serverType,sourceType);
     if (providerClass) {
@@ -129,9 +138,9 @@ function ProviderFactory() {
     return null;
   };
 
-  this.get = function(providerType, serverType, sourceType) {
+  get(providerType, serverType, sourceType) {
     return ProvidersForServerTypes[serverType][sourceType][providerType];
   }
 }
 
-module.exports = new ProviderFactory();
+export default  new ProviderFactory();

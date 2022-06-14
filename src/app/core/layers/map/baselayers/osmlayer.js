@@ -1,25 +1,17 @@
-const {inherit, base} = require('core/utils/utils');
-const BaseLayer = require('core/layers/baselayers/baselayer');
-const BasesLayers = require('g3w-ol/src/layers/bases');
+import BaseLayer  from 'core/layers/baselayers/baselayer';
+import BasesLayers  from 'g3w-ol/src/layers/bases';
 
-function OSMLayer(options={}){
-  base(this, options);
+class OSMLayer extends BaseLayer {
+  constructor(config={}, options={}) {
+    super(config, options);
+  }
+
+  _makeOlLayer() {
+    const olLayer = BasesLayers.OSM;
+    olLayer.getSource().on('imageloadstart', () => this.fire("loadstart"));
+    olLayer.getSource().on('imageloadend', () => this.fire("loadend"));
+    return olLayer
+  };
 }
 
-inherit(OSMLayer, BaseLayer);
-
-const proto = OSMLayer.prototype;
-
-proto._makeOlLayer = function() {
-  const olLayer = BasesLayers.OSM;
-  olLayer.getSource().on('imageloadstart', () => {
-        this.emit("loadstart");
-      });
-  olLayer.getSource().on('imageloadend', () => {
-      this.emit("loadend");
-  });
-  return olLayer
-};
-
-
-module.exports = OSMLayer;
+export default  OSMLayer;

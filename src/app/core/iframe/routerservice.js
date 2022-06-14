@@ -1,12 +1,16 @@
-const { splitContextAndMethod, uniqueId } = require('core/utils/utils');
-const GUI = require('gui/gui');
+import services from './services';
+import utils from 'core/utils/utils';
+import GUI  from 'gui/gui';
+import {GeoJSON} from "ol/format";
 
-function IframePluginService(options={}) {
-  //project is current project send by application service
-  this.pendingactions = {};
-  this.init = async function({project}={}) {
+class IframePluginService {
+  constructor(options={}) {//project is current project send by application service
+    this.pendingactions = {};
+  }
+
+  async init({project}={}) {
     await GUI.isReady();
-    this.services = require('./services/index');
+    this.services = services;
     //set eventResponse handler to alla services
     this.eventResponseServiceHandler = ({action, response}) => {
       this.postMessage({
@@ -24,7 +28,7 @@ function IframePluginService(options={}) {
     }));
     //initialize all service
     const serviceNames = Object.keys(this.services);
-    for (let i=0; i < serviceNames.length; i++){
+    for (let i=0; i < serviceNames.length; i++) {
       const service = this.services[serviceNames[i]];
       // set common layer attribute service just one time
       service.getLayers() === undefined && service.setLayers(layers);
@@ -55,10 +59,10 @@ function IframePluginService(options={}) {
    * @param options
    * @returns {Promise<void>}
    */
-  this.outputDataPlace = async function(dataPromise, options={}){
+  async outputDataPlace(dataPromise, options={}) {
     const {action='app:results'} = options;
     let {result, data=[]} = await dataPromise;
-    const parser = new ol.format.GeoJSON();
+    const parser = new GeoJSON();
     let outputData = [];
     try {
       outputData = data.map(({layer, features})=>({
@@ -66,7 +70,7 @@ function IframePluginService(options={}) {
           features: parser.writeFeatures(features)
         }
       }));
-    } catch(err){
+    } catch(err) {
       result: false;
       outputData: err;
     }
@@ -81,11 +85,11 @@ function IframePluginService(options={}) {
   };
 
   // method to post message to parent
-  this.postMessage = function (message={}) {
+  postMessage(message={}) {
     if (window.parent) window.parent.postMessage(message, "*")
   };
 
-  this.stopPendingActions = async function(){
+  async stopPendingActions() {
     const promises = [];
     Object.keys(this.pendingactions).forEach(id => {
       const {context} = this.pendingactions[id];
@@ -96,10 +100,10 @@ function IframePluginService(options={}) {
   };
 
   // method to handle all message from window
-  this.getMessage = async evt => {
+  getMessage = async evt => {
     if (evt && evt.data) {
-      const { id = uniqueId(), single=true, action, data:params } = evt.data;
-      const {context, method} = splitContextAndMethod(action);
+      const { id = utils.uniqueId(), single=true, action, data:params } = evt.data;
+      const {context, method} = utils.splitContextAndMethod(action);
       let result = false;
       let data;
       try {
@@ -111,7 +115,7 @@ function IframePluginService(options={}) {
           data = await this.services[context][method](params);
           result = true;
         }
-      } catch(err){
+      } catch(err) {
         result = false;
         data = err;
       }
@@ -128,7 +132,7 @@ function IframePluginService(options={}) {
   };
 
   // Called when change map or clear
-  this.clear = function() {
+  clear() {
     const serviceNames = Object.keys(this.services);
     for (let i=0; i < serviceNames.length; i++) {
       const service = this.services[serviceNames[i]];
@@ -140,4 +144,4 @@ function IframePluginService(options={}) {
   }
 }
 
-module.exports = new IframePluginService;
+export default new IframePluginService();

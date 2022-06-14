@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  const {debounce} = require('core/utils/utils');
+  import utils from 'core/utils/utils';
   export default {
     name: "range",
     props:{
@@ -38,21 +38,21 @@
         default: false
       }
     },
-    data(){
+    data() {
       return {}
     },
     methods:{
-      changeBackGround(value){
+      changeBackGround(value) {
         this.$refs['range-input'].style.backgroundSize = `${value ? (value - this.min) * 100 / (this.max - this.min): 0}% 100%`;
       },
-      setValue(value){
+      setValue(value) {
         this.changedValue(value);
       },
-      change(evt){
+      change(evt) {
         const value = 1*evt.target.value;
         this.changedValue(value);
       },
-      emitChangeValue(value){
+      emitChangeValue(value) {
         this.value = value;
         this.$emit('change-range', {
           id: this.id,
@@ -61,17 +61,17 @@
       }
     },
     watch:{
-      value(value){
+      value(value) {
         this.changeBackGround(value);
         this.sync && this.emitChangeValue(value);
       }
     },
-    created(){
-      this.changedValue =  this.sync ? ()=> this.$emit('changed') : debounce(value => {
+    created() {
+      this.changedValue =  this.sync ? ()=> this.$emit('changed') : utils.debounce(value => {
         this.emitChangeValue(value)
       })
     },
-    async mounted(){
+    async mounted() {
       await this.$nextTick();
       this.changeBackGround(this.value);
     },

@@ -13,8 +13,8 @@
 </template>
 
 <script>
-  import ApplicationState from '../../../core/applicationstate';
-  const {getUniqueDomId} = require('core/utils/utils');
+  import ApplicationState from 'core/applicationstate';
+  import utils  from 'core/utils/utils';
   export default {
     name: "datetime",
     props: {
@@ -40,28 +40,28 @@
         default:'Date'
       }
     },
-    data(){
+    data() {
       return {
         datetimevalue: this.value
       }
     },
     methods: {
-      play(){
+      play() {
 
       },
-      pause(){
+      pause() {
 
       },
-      stop(){
+      stop() {
 
       },
-      back(step=1){
+      back(step=1) {
 
       },
-      forward(step=1){
+      forward(step=1) {
 
       },
-      changeInput(evt){},
+      changeInput(evt) {},
       change(value) {
         const date = moment(value).format(this.format);
         this.$emit('change', date)
@@ -94,22 +94,22 @@
       ApplicationState.ismobile && setTimeout(()=>datetimeinputelement.blur());
     },
     watch: {
-      value(datetime){
+      value(datetime) {
         this.datetimevalue = datetime;
         this.datetimeinputelement.data("DateTimePicker").date(datetime)
       },
-      async minDate(datetime){
+      async minDate(datetime) {
         this.datetimeinputelement.data("DateTimePicker").minDate(datetime);
       },
-      async maxDate(datetime){
+      async maxDate(datetime) {
         this.datetimeinputelement.data("DateTimePicker").maxDate(datetime);
       },
-      enabledDates(dates){
+      enabledDates(dates) {
         this.datetimeinputelement.data("DateTimePicker").enabledDates(dates);
       }
     },
-    created(){
-      this.id = getUniqueDomId();
+    created() {
+      this.id = utils.getUniqueDomId();
     }
   }
 </script>

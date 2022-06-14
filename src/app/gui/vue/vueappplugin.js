@@ -129,7 +129,7 @@ const Vueappplugin = {
           font: this.font
         }
       },
-      addFontClass({name, className}={}){
+      addFontClass({name, className}={}) {
         let added = this.font[name] === undefined;
         if (added) this.font[name] = className;
         return added;
@@ -151,4 +151,4 @@ const Vueappplugin = {
 };
 
 
-module.exports = Vueappplugin;
+export default  Vueappplugin;

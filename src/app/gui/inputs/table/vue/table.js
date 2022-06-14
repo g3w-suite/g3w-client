@@ -1,10 +1,11 @@
 import InputTableHeader from './components/input-table-header.vue';
 import InputTableBody from './components/input-table-body.vue';
-const Input = require('gui/inputs/input');
+import Input  from 'gui/inputs/input';
+import template from  './table.html';
 
 const TableInput = Vue.extend({
   mixins: [Input],
-  template: require('./table.html'),
+  template,
   components: {
     InputTableHeader,
     InputTableBody
@@ -29,4 +30,4 @@ const TableInput = Vue.extend({
   }
 });
 
-module.exports = TableInput;
+export default  TableInput;

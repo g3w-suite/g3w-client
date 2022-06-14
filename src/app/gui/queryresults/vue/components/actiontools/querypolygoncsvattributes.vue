@@ -14,7 +14,7 @@
 
 <script>
   import ApplicationState from 'core/applicationstate'
-  const {t}= require('core/i18n/i18n.service');
+  import {t} from 'core/i18n/i18n.service';
   export default {
     name: "querypolygonaddattributes",
     props: {
@@ -26,7 +26,7 @@
         default: null
       },
     },
-    data(){
+    data() {
       return {
         type: this.config.choices[0].type
       }

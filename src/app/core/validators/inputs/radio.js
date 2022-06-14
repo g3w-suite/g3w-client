@@ -1,10 +1,10 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+import Validator  from './validator';
 
-function RadioValidator(options) {
-  base(this, options);
+class RadioValidator extends Validator {
+  constructor(options = {}) {
+    super(options);
+  }
 }
 
-inherit(RadioValidator, Validator);
+export default RadioValidator;
 
-module.exports = RadioValidator;

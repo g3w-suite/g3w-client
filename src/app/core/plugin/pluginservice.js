@@ -1,141 +1,138 @@
 import ApplicationState from '../applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
-const G3WObject = require('core/g3wobject');
+import ApplicationService  from 'core/applicationservice';
+import G3WObject from 'core/g3wobject';
 
-function PluginService(options={}) {
-  base(this, options);
-  this.plugin;
-  this._api = {
-    own: null,
-    dependencies: {}
-  };
-  this._pluginEvents = {};
-  this._appEvents = [];
-  this.currentLayout = ApplicationService.getCurrentLayoutName();
-  this.vm = new Vue();
-  this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
+class PluginService extends G3WObject{
+  constructor() {
+    super();
+    this.plugin;
+    this._api = {
+      own: null,
+      dependencies: {}
+    };
+    this._pluginEvents = {};
+    this._appEvents = [];
+    this.currentLayout = ApplicationService.getCurrentLayoutName();
+    this.vm = new Vue();
+    this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
       currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
-  this.init = function(config) { //set dafault init method (overwrite by each plugin
+  }
+  //set dafault init method (overwrite by each plugin
+  init(config) {
     this.config = config;
   }
-}
 
-inherit(PluginService, G3WObject);
+  setCurrentLayout() {
+    ApplicationService.setCurrentLayout(this.getPlugin().getName());
+  };
 
-const proto = PluginService.prototype;
-
-proto.setCurrentLayout = function(){
-  ApplicationService.setCurrentLayout(this.getPlugin().getName());
-};
-
-proto.resetCurrentLayout = function(){
-  ApplicationService.setCurrentLayout(this.currentLayout);
-};
+  resetCurrentLayout() {
+    ApplicationService.setCurrentLayout(this.currentLayout);
+  };
 
 // set owner plugin of the service
-proto.setPlugin = function(plugin){
-  this.plugin = plugin;
-};
+  setPlugin(plugin) {
+    this.plugin = plugin;
+  };
 
 // return the instance of the plugin owner of the service
-proto.getPlugin = function(){
-  return this.plugin;
-};
+  getPlugin() {
+    return this.plugin;
+  };
 
-proto.isIframe = function() {
-  return ApplicationService.isIframe();
-};
+  isIframe() {
+    return ApplicationService.isIframe();
+  };
 
-/**
- * Get Current Project
- */
-proto.getCurrentProject = function(){
-  return ApplicationService.getCurrentProject();
-};
+  /**
+   * Get Current Project
+   */
+  getCurrentProject() {
+    return ApplicationService.getCurrentProject();
+  };
 
-proto.getGid = function(){
-  const {gid} = this.config;
-  return gid && gid.split(':')[1];
-};
+  getGid() {
+    const {gid} = this.config;
+    return gid && gid.split(':')[1];
+  };
 
-proto.getConfig = function() {
-  return this.config;
-};
+  getConfig() {
+    return this.config;
+  };
 
-proto.setConfig = function(config) {
-  this.config = config;
-};
+  setConfig(config) {
+    this.config = config;
+  };
 
-proto.setApi = function({dependency, api} = {}) {
-  if (!dependency) this._api.own = api;
-  else this._api.dependencies[dependency] = api;
-};
+  setApi({dependency, api} = {}) {
+    if (!dependency) this._api.own = api;
+    else this._api.dependencies[dependency] = api;
+  };
 
-proto.getApi = function({dependency} = {}) {
-  return dependency && this._api.dependencies[dependency] || this._api.own;
-};
+  getApi({dependency} = {}) {
+    return dependency && this._api.dependencies[dependency] || this._api.own;
+  };
 
-proto.initEvents = function(events=[]) {
-  for (let i in events) {
-    const name = events[i];
-    this._pluginEvents[name] = {};
-  }
-};
+  initEvents(events=[]) {
+    for (let i in events) {
+      const name = events[i];
+      this._pluginEvents[name] = {};
+    }
+  };
 
-proto.registerWindowEvent = function({evt, cb}={}) {
-  ApplicationService.registerWindowEvent({
-    evt,
-    cb
-  })
-};
+  registerWindowEvent({evt, cb}={}) {
+    ApplicationService.registerWindowEvent({
+      evt,
+      cb
+    })
+  };
 
-proto.unregisterWindowEvent = function({evt, cb}) {
-  ApplicationService.unregisterWindowEvent({
-    evt,
-    cb
-  })
-};
+  unregisterWindowEvent({evt, cb}) {
+    ApplicationService.unregisterWindowEvent({
+      evt,
+      cb
+    })
+  };
 
-proto.subscribeEvent = function({name, once=false, owner, listener}) {
-  this._pluginEvents[name] = this._pluginEvents[name] ? this._pluginEvents[name] : {};
-  this._pluginEvents[name][owner] = listener;
-  once ? this.once(name, listener): this.on(name, listener);
-};
+  subscribeEvent({name, once=false, owner, listener}) {
+    this._pluginEvents[name] = this._pluginEvents[name] ? this._pluginEvents[name] : {};
+    this._pluginEvents[name][owner] = listener;
+    once ? this.once(name, listener): this.on(name, listener);
+  };
 
-proto.triggerEvent = function({name, params={}}) {
-  this.emit(name, params);
-};
+  triggerEvent({name, params={}}) {
+    this.fire(name, params);
+  };
 
-proto.unsubscribeEvent = function({name, owner}) {
-  const listener = this._pluginEvents[name][owner];
-  this.removeEvent(name, listener);
-  delete this._pluginEvents[name][owner];
-};
+  unsubscribeEvent({name, owner}) {
+    const listener = this._pluginEvents[name][owner];
+    this.removeEvent(name, listener);
+    delete this._pluginEvents[name][owner];
+  };
 
-proto.unsubscribeAllEvents = function() {
-  for (const name in this._pluginEvents) {
-    this.removeEvent(name);
-    delete this._pluginEvents[name];
-  }
-};
+  unsubscribeAllEvents() {
+    for (const name in this._pluginEvents) {
+      this.removeEvent(name);
+      delete this._pluginEvents[name];
+    }
+  };
 
-proto.clearAllEvents = function() {
-  this.unsubscribeAllEvents();
-  this.unwatch();
-  this.vm = null;
-  this._pluginEvents = null
-};
+  clearAllEvents() {
+    this.unsubscribeAllEvents();
+    this.unwatch();
+    this.vm = null;
+    this._pluginEvents = null
+  };
 
 // to owerwrite if we need some condition to load or not the plugin
-proto.loadPlugin = function(){
-  return true
-};
+  loadPlugin() {
+    return true
+  };
 
 //Called when plugin is removed to clear events and memory
-proto.clear = function(){
-  // to overwrite
-};
+  clear() {
+    // to overwrite
+  };
+}
 
-
-module.exports = PluginService;
+export default  PluginService;

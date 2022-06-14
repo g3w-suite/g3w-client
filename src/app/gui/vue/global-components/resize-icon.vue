@@ -6,7 +6,7 @@
 </template>
 
 <script>
-    const GUI = require('gui/gui');
+    import GUI  from 'gui/gui';
     export default {
         name: 'resize-icon',
         props: {
@@ -15,15 +15,15 @@
               default: 'h'
           }
         },
-        computed(){},
+        computed() {},
         methods:{
-            toggleFull(){
+            toggleFull() {
                 GUI.toggleFullViewContent();
-                GUI.emit('resize');
+                GUI.fire('resize');
             },
-            resetToDefault(){
+            resetToDefault() {
                 GUI.resetToDefaultContentPercentage();
-                GUI.emit('resize');
+                GUI.fire('resize');
             }
         }
     };

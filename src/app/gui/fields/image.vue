@@ -9,7 +9,7 @@
 
 <script>
   import Field from './field.vue';
-  const {toRawType} = require('core/utils/utils');
+  import utils  from 'core/utils/utils';
   export default {
     name: "image",
     props: ['state'],
@@ -30,11 +30,11 @@
     },
     methods: {
       getSrc(value) {
-        return toRawType(value) === 'Object' ? value.photo: value;
+        return utils.toRawType(value) === 'Object' ? value.photo: value;
       },
       showGallery(index) {
         this.active = index;
-        if (toRawType(this.value) === 'Object') this.value.active = true;
+        if (utils.toRawType(this.value) === 'Object') this.value.active = true;
         $(`#${this.galleryId}`).modal('show');
       },
       getGalleryImages() {
