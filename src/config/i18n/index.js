@@ -41,6 +41,8 @@ const translations = {
         },
         print: {
           no_layers: 'Nessun Layer visibile',
+          template: "Template",
+          labels: "Etichette",
           scale: "Scala",
           format: "Formato",
           rotation: "Rotazione",
@@ -537,6 +539,8 @@ const translations = {
         },
         print: {
           no_layers: 'No Layer to print',
+          template: "Template",
+          labels: "Labels",
           scale: "Scale",
           format: "Format",
           rotation: "Rotation",
@@ -1031,6 +1035,8 @@ const translations = {
         },
         print: {
           no_layers: 'Ei tulostettavia tasoja',
+          template: "Template",
+          labels: "Labels",
           scale: "Mittakaava",
           format: "Formaatti",
           rotation: "Kierto",
@@ -1525,6 +1531,8 @@ const translations = {
         },
         print: {
           no_layers: 'Inga nivåer att skriva ut',
+          template: "Template",
+          labels: "Labels",
           scale: "Skala",
           format: "Format",
           rotation: "Rotation",
@@ -2517,6 +2525,8 @@ const translations = {
         },
         print: {
           no_layers: 'Kein Layer zu drucken',
+          template: "Template",
+          labels: "Labels",
           scale: "Skala",
           format: "Format",
           rotation: "Drehung",
@@ -3011,6 +3021,8 @@ const translations = {
         },
         print: {
           no_layers: 'Nu avem straturi de print',
+          template: "Template",
+          labels: "Labels",
           scale: "Scară",
           format: "Format",
           rotation: "Rotație",
