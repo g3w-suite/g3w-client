@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "build": "gulp g3w-admin",
-    "build:client": "gulp g3w-admin:client_only",
     "build:plugins": "gulp g3w-admin-plugins-select",
     "dev": "gulp dev",
     "test": "gulp test",
