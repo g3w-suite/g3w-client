@@ -1,13 +1,13 @@
 import { BING_API_KEY } from 'config/keys';
 import ApplicationState from 'core/applicationstate'
-import  BaseLayer from 'core/layers/baselayers/baselayer';
+import BaseLayer from 'core/layers/baselayers/baselayer';
 import BasesLayers  from 'g3w-ol/src/layers/bases';
 
 class BingLayer extends BaseLayer {
   constructor(config={}, options={}) {
     super(config, options);
   }
-  makeOlLayer() {
+  _makeOlLayer() {
     let olLayer;
     const key = ApplicationState.keys.vendorkeys.bing || BING_API_KEY;
     const subtype = this.config.source ? this.config.source.subtype : null;
