@@ -4,7 +4,8 @@ import {Style, Circle, Fill, Stroke} from "ol/style";
 import {Vector as VectorLayer} from "ol/layer";
 import {Vector as VectorSource} from "ol/source";
 import {createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, needUseSphereMethods}  from '../utils/utils';
-import {Observable, Overlay} from "ol";
+import {Overlay} from "ol";
+import {unByKey} from 'ol/Observable';
 import {LineString, Polygon} from "ol/geom";
 
 class MeasureIteraction extends Draw {
@@ -98,8 +99,8 @@ class MeasureIteraction extends Draw {
       this._measureTooltipElement = null;
       this._helpTooltipElement.innerHTML = '';
       this._helpTooltipElement.classList.add('hidden');
-      Observable.unByKey(this._featureGeometryChangelistener);
-      Observable.unByKey(this._poinOnMapMoveListener);
+      unByKey(this._featureGeometryChangelistener);
+      unByKey(this._poinOnMapMoveListener);
       $(document).off('keydown', this._keyDownEventHandler);
     }
   };

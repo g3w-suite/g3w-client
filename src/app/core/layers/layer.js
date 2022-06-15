@@ -453,7 +453,7 @@ class Layer extends G3WObject {
     return promise;
   };
 
-  getGeoTIFF({data}={}) {
+  getGeoTIFF({data={}}={}){
     const url = this.getUrl('geotiff');
     return utils.XHR.fileDownload({
       url,
@@ -462,7 +462,7 @@ class Layer extends G3WObject {
     })
   };
 
-  getXls({data}={}) {
+  getXls({data={}}={}){
     const url = this.getUrl('xls');
     return utils.XHR.fileDownload({
       url,
@@ -471,7 +471,7 @@ class Layer extends G3WObject {
     })
   };
 
-  getShp({data}={}) {
+  getShp({data={}}={}){
     const url = this.getUrl('shp');
     return utils.XHR.fileDownload({
       url,
@@ -480,7 +480,7 @@ class Layer extends G3WObject {
     })
   };
 
-  getGpx({data}={}) {
+  getGpx({data={}}={}){
     const url = this.getUrl('gpx');
     return utils.XHR.fileDownload({
       url,
@@ -489,7 +489,7 @@ class Layer extends G3WObject {
     })
   };
 
-  getGpkg({data}={}) {
+  getGpkg({data={}}={}){
     const url = this.getUrl('gpkg');
     return utils.XHR.fileDownload({
       url,

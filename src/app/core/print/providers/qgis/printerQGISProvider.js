@@ -79,8 +79,8 @@ class PrinterQGISProvider extends PrintProvider{
   };
 
   _getParamsFromOptions(layers=[], options={}) {
-    const { rotation, dpi, format, crs, template, maps=[], labels=[]} = options;
-    layers = layers.map(layer => layer.getPrintLayerName());
+    const { rotation, dpi, format, crs, template, maps=[], labels=[], is_maps_preset_theme} = options;
+    const LAYERS = layers.map(layer => layer.getPrintLayerName()).join();
     const params = {
       ...COMMON_REQUEST_PARAMETERS,
       REQUEST: 'GetPrint',
@@ -88,14 +88,15 @@ class PrinterQGISProvider extends PrintProvider{
       DPI: dpi,
       FORMAT: format,
       CRS: crs,
-      LAYERS: layers.join(),
       filtertoken: ApplicationState.tokens.filtertoken
     };
 
-    maps.forEach(({name, scale, extent}) => {
+    if (!is_maps_preset_theme) params.LAYERS = LAYERS;
+    maps.forEach(({name, scale, extent, preset_theme}) => {
       params[name + ':SCALE'] = scale;
       params[name + ':EXTENT'] = extent;
       params[name + ':ROTATION'] = rotation;
+      if (is_maps_preset_theme &&  preset_theme === undefined) params[name + ':LAYERS'] = LAYERS;
     });
 
     labels.forEach(label => params[label.id] = label.text);

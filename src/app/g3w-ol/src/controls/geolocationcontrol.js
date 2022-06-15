@@ -4,7 +4,7 @@ import {Vector as VectorSource} from "ol/source";
 import {Style, Text, Fill} from "ol/style";
 import {Feature} from "ol";
 import {Point} from "ol/geom";
-import {Geolocation} from "ol";
+import Geolocation from 'ol/Geolocation';
 import {unByKey} from 'ol/Observable';
 
 class GeolocationControl extends InteractionControl {

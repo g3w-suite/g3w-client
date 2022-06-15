@@ -1,6 +1,7 @@
 import GUI  from 'gui/gui';
 const TOPOFFSET = 35;
 export function layout({map, position, element}) {};
+
 export function changeLayoutBottomControl({map, position, element, isMobile=false}) {
   const viewPort = map.getViewport();
   const positionCode = (position['top'] ? 't' : 'b') + (position['left'] ? 'l' : 'r');

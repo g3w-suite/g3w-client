@@ -38,6 +38,7 @@ export function getExtentForViewAndSize(center, resolution, rotation, size) {
   const y3 = y + xSin - yCos;
   return [Math.min(x0, x1, x2, x3), Math.min(y0, y1, y2, y3), Math.max(x0, x1, x2, x3), Math.max(y0, y1, y2, y3)]
 };
+
 export function createPolygonLayerFromBBox(bbox) {
   const polygonFeature = new Feature(new Polygon.fromExtent(bbox));
   const vectorSource = new VectorSource({
@@ -48,6 +49,7 @@ export function createPolygonLayerFromBBox(bbox) {
   });
   return polygonLayer;
 };
+
 export function reverseGeometry(geometry) {
   const reverseCoordinates = coordinates => {
     coordinates.find(coordinate => {
@@ -66,25 +68,31 @@ export function reverseGeometry(geometry) {
   geometry.setCoordinates(coordinates);
   return geometry
 };
+
 export function getScaleFromResolution(resolution, units="m") {
   return Math.round(resolution * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
 };
+
 export function getResolutionFromScale(scale, units="m") {
   const normScale = (scale >= 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
   return  1 / (normScale * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
 };
+
 export function getDPI() {
   return DOTS_PER_INCH;
 };
+
 export function getMetersFromDegrees(degrees) {
   return degrees * Units.METERS_PER_UNIT.degrees;
 };
+
 export function needUseSphereMethods(projection) {
   return projection.getCode() === 'EPSG:3857' || projection.getUnits() === 'degrees';
 };
+
 export function getLengthMessageText({unit, projection, geometry}={}) {
   const geometryType = geometry.getType();
-  const useSphereMethods = this.needUseSphereMethods(projection);
+  const useSphereMethods = needUseSphereMethods(projection);
   const length = useSphereMethods ? sphere.getLength(geometry, {
     projection: projection.getCode()
   }) : Geometry.isMultiGeometry(geometryType) ?
@@ -93,7 +101,7 @@ export function getLengthMessageText({unit, projection, geometry}={}) {
   let message;
   switch(unit) {
     case 'nautical':
-      message = `${this.transformMeterLength(length, unit)} nm`;
+      message = `${transformMeterLength(length, unit)} nm`;
       break;
     case 'metric':
     default:
@@ -101,8 +109,9 @@ export function getLengthMessageText({unit, projection, geometry}={}) {
   }
   return message;
 };
+
 export function getAreaMessageText({unit, geometry, projection, segments=[]}) {
-  const useSphereMethods = this.needUseSphereMethods(projection);
+  const useSphereMethods = needUseSphereMethods(projection);
   const area =  Math.round(useSphereMethods ? sphere.getArea(geometry, {
     projection: projection.getCode()
   }): geometry.getArea());
@@ -110,7 +119,7 @@ export function getAreaMessageText({unit, geometry, projection, segments=[]}) {
   let segments_info_meausure = '';
   const segmentLength = segments.length;
   if (segmentLength > 2) {
-    segments_info_meausure+=`${this.getLengthMessageText({
+    segments_info_meausure+=`${getLengthMessageText({
       unit,
       projection,
       geometry: new LineString([segments[segmentLength-3], segments[segmentLength-2]])
@@ -118,7 +127,7 @@ export function getAreaMessageText({unit, geometry, projection, segments=[]}) {
   }
   switch (unit) {
     case 'nautical':
-      message = `${this.transformMeterArea(area, unit)}  nmi²`;
+      message = `${transformMeterArea(area, unit)}  nmi²`;
       break;
     case 'metric':
     default:
@@ -128,20 +137,22 @@ export function getAreaMessageText({unit, geometry, projection, segments=[]}) {
     message =`Area: ${message} <br><div style="width: 100%; padding: 3px; border-bottom: 2px solid #ffffff"></div> ${segments_info_meausure}`;
   return message;
 };
+
 export function formatMeasure({geometry, projection}={}, options={}) {
   const geometryType = geometry.getType();
-  const unit = this.getCurrentMapUnit();
+  const unit = getCurrentMapUnit();
   if (Geometry.isLineGeometryType(geometryType)) {
-    return this.getLengthMessageText({
+    return getLengthMessageText({
       unit,
       projection,
       geometry
     });
   } else if (Geometry.isPolygonGeometryType(geometryType)) {
     const segments = geometry.getLinearRing().getCoordinates();
-    return this.getAreaMessageText({unit, geometry, projection, segments});
+    return getAreaMessageText({unit, geometry, projection, segments});
   }
 };
+
 export function createMeasureTooltip({map, feature}={}, options={}) {
   const element = document.createElement('div');
   element.className = 'mtooltip mtooltip-measure';
@@ -173,9 +184,11 @@ export function createMeasureTooltip({map, feature}={}, options={}) {
     unbyKey
   }
 };
+
 export function getCurrentMapUnit() {
   return ApplicationState.map.unit;
 };
+
 /**
  * Method to transform length meter in a specific unti (ex.nautilcal mile)
  * @param length
