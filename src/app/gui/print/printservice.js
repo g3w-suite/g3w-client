@@ -1,4 +1,4 @@
-const { base, inherit, downloadFile} = require('core/utils/utils');
+const {base, inherit, downloadFile} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const {t} = require('core/i18n/i18n.service');
 const GUI = require('gui/gui');
@@ -106,11 +106,16 @@ proto.getOverviewExtent = function(extent={}) {
 };
 
 proto._getOptionsPrint = function() {
-  const maps = this.state.maps.map(map => ({
-    name: map.name,
-    scale: map.overview ? map.scale : this.state.scala,
-    extent: map.overview ? this.getOverviewExtent(map.extent) : this._getPrintExtent()
-  }));
+  let is_maps_preset_theme = false;
+  const maps = this.state.maps.map(map => {
+    is_maps_preset_theme = is_maps_preset_theme || map.preset_theme !== undefined;
+    return {
+      name: map.name,
+      preset_theme: map.preset_theme,
+      scale: map.overview ? map.scale : this.state.scala,
+      extent: map.overview ? this.getOverviewExtent(map.extent) : this._getPrintExtent()
+    }
+  });
   const options = {
     rotation: this.state.rotation,
     dpi: this.state.dpi,
@@ -118,7 +123,8 @@ proto._getOptionsPrint = function() {
     maps,
     scale: this.state.scala,
     format: this.state.output.format,
-    labels: this.state.labels
+    labels: this.state.labels,
+    is_maps_preset_theme
   };
 
   return options;
