@@ -1,5 +1,13 @@
 const scale = [
   {
+    value:100,
+    label:'1:100'
+  },
+  {
+    value:200,
+    label:'1:200'
+  },
+  {
     value:500,
     label:'1:500'
   },
