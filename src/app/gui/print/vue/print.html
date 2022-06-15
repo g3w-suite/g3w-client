@@ -6,7 +6,7 @@
           <bar-loader :loading="state.loading"></bar-loader>
         </transition>
         <helpdiv message='sdk.print.help'></helpdiv>
-        <label for="templates">Template</label>
+        <label for="templates" v-t="'sdk.print.template'"></label>
         <select class="form-control" @change="onChangeTemplate" v-model="state.template" :style="{marginBottom: this.state.atlas && '10px'}" id="templates">
           <option v-for="print in state.print" :value="print.name">{{ print.name }}</option>
         </select>
@@ -34,7 +34,7 @@
         </template>
         <template v-if="state.labels && state.labels.length">
           <div class="print-labels-content" style="margin-top: 5px;">
-            <label style="font-weight: bold; font-size: 1.1em; display: block; border-bottom: 2px solid #ffffff; margin-bottom: 5px;" class="skin-color">Labels</label>
+            <label style="font-weight: bold; font-size: 1.1em; display: block; border-bottom: 2px solid #ffffff; margin-bottom: 5px;" class="skin-color" v-t="'sdk.print.labels'"></label>
             <div class="labels-input-content" style="max-height: 120px; overflow-y: auto">
               <template v-for="label in state.labels" :key="label.id">
                 <label :for="`g3w_label_id_input_${label.id}`">{{label.id}}</label>
