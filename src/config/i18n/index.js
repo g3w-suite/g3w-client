@@ -41,6 +41,8 @@ const translations = {
         },
         print: {
           no_layers: 'Nessun Layer visibile',
+          template: "Template",
+          labels: "Etichette",
           scale: "Scala",
           format: "Formato",
           rotation: "Rotazione",
@@ -233,12 +235,12 @@ const translations = {
             download: {
               title: "Download attributi",
               choiches:{
-               feature: {
-                 label: "Solo features",
-               },
-               feature_polygon: {
-                 label: "Features+Poligono Interrogazione",
-               }
+                feature: {
+                  label: "Solo features",
+                },
+                feature_polygon: {
+                  label: "Features+Poligono Interrogazione",
+                }
               }
             },
             tooltip: 'Interroga per poligono',
@@ -537,6 +539,8 @@ const translations = {
         },
         print: {
           no_layers: 'No Layer to print',
+          template: "Template",
+          labels: "Labels",
           scale: "Scale",
           format: "Format",
           rotation: "Rotation",
@@ -1031,6 +1035,8 @@ const translations = {
         },
         print: {
           no_layers: 'Ei tulostettavia tasoja',
+          template: "Template",
+          labels: "Labels",
           scale: "Mittakaava",
           format: "Formaatti",
           rotation: "Kierto",
@@ -1178,7 +1184,7 @@ const translations = {
               },
               relations_charts: {
                 hint: "Näytä relaatiokaavio"
-              },			  
+              },
               download_features_shapefile:{
                 hint: 'Lataa ominaisuuden SHP-tiedosto'
               },
@@ -1525,6 +1531,8 @@ const translations = {
         },
         print: {
           no_layers: 'Inga nivåer att skriva ut',
+          template: "Template",
+          labels: "Labels",
           scale: "Skala",
           format: "Format",
           rotation: "Rotation",
@@ -1672,7 +1680,7 @@ const translations = {
               },
               relations_charts: {
                 hint: "Visa relationsdiagrammet" //Tero 9.12.2020
-              },			  
+              },
               download_features_shapefile:{
                 hint: 'Ladda egenskapens SHP-fil'
               },
@@ -2517,6 +2525,8 @@ const translations = {
         },
         print: {
           no_layers: 'Kein Layer zu drucken',
+          template: "Template",
+          labels: "Labels",
           scale: "Skala",
           format: "Format",
           rotation: "Drehung",
@@ -3011,6 +3021,8 @@ const translations = {
         },
         print: {
           no_layers: 'Nu avem straturi de print',
+          template: "Șablon",
+          labels: "Etichete",
           scale: "Scară",
           format: "Format",
           rotation: "Rotație",
