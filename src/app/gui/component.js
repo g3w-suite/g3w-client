@@ -6,27 +6,26 @@ const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 // Class Component (Base)
 class Component extends G3WObject {
   constructor(options = {}) {
-    super({
-      setters: {
-        setOpen(bool) {
-          this.state.open = bool;
-          this._setOpen(bool);
-        },
-        setVisible(bool) {
-          this.state.visible = bool;
-          this._setVisible(bool);
-        },
-        setLoading(bool = false) {
-          this.state.loading = bool;
-        },
-        setDisabled(bool = false) {
-          this.state.disabled = bool;
-        },
-        reload() {
-          this._reload();
-        },
+    options.setters = {
+      setOpen(bool) {
+        this.state.open = bool;
+        this._setOpen(bool);
       },
-    });
+      setVisible(bool) {
+        this.state.visible = bool;
+        this._setVisible(bool);
+      },
+      setLoading(bool = false) {
+        this.state.loading = bool;
+      },
+      setDisabled(bool = false) {
+        this.state.disabled = bool;
+      },
+      reload() {
+        this._reload();
+      },
+    };
+    super(options);
     // internal VUE component
     this.internalComponent = null;
     this._components = [];
@@ -39,10 +38,12 @@ class Component extends G3WObject {
       info = null,
       loading = false,
       disabled = false,
+      icon= null,
       closewhenshowviewportcontent = true,
     } = options;
     this.id = id;
     this.title = title;
+    this.icon = icon;
     this.state = {
       visible, // visibile
       open, // open,
