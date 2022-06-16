@@ -1,7 +1,7 @@
 import { t } from 'core/i18n/i18n.service';
 import GUI from 'gui/gui';
 import Component from 'gui/vue/component';
-import TableService from '../tableservice';
+import TableService from 'gui/table/tableservice';
 import Table from './Table.vue';
 
 const InternalComponent = Vue.extend(Table);

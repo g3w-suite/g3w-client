@@ -7,7 +7,7 @@ import G3WObject from 'core/g3wobject';
 import geoutils from 'core/utils/geo';
 import Relations from 'core/relations/relations';
 import ProviderFactory from 'core/layers/providers/providersfactory';
-import { DOWNLOAD_FORMATS } from '../../constant';
+import { DOWNLOAD_FORMATS } from 'app/constant';
 
 // Base Class of all Layer
 class Layer extends G3WObject {

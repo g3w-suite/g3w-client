@@ -1,6 +1,6 @@
+import ApplicationState from 'core/applicationstate';
 import ApplicationService from 'core/applicationservice';
 import G3WObject from 'core/g3wobject';
-import ApplicationState from '../applicationstate';
 
 class PluginService extends G3WObject {
   constructor() {

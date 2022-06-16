@@ -4,7 +4,7 @@ import geoutils from 'g3w-ol/src/utils/utils';
 import Provider from 'core/layers/providers/provider';
 import { Polygon, Circle } from 'ol/geom';
 import { WKT } from 'ol/format';
-import { QUERY_POINT_TOLERANCE } from '../../../constant';
+import { QUERY_POINT_TOLERANCE } from 'app/constant';
 
 const GETFEATUREINFO_IMAGE_SIZE = [101, 101];
 const DPI = geoutils.getDPI();

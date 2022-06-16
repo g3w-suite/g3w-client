@@ -1,5 +1,5 @@
+import BaseService from 'core/iframe/services/plugins/service';
 import GUI from 'gui/gui';
-import BaseService from '../service';
 
 class EditingService extends BaseService {
   constructor() {

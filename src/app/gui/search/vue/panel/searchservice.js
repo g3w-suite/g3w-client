@@ -1,3 +1,4 @@
+import { ALLVALUE } from 'gui/search/constants';
 import utils from 'core/utils/utils';
 import DataRouterService from 'core/data/routerservice';
 import GUI from 'gui/gui';
@@ -5,7 +6,6 @@ import G3WObject from 'core/g3wobject';
 import CatalogLayersStorRegistry from 'core/catalog/cataloglayersstoresregistry';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import SearchPanel from 'gui/search/vue/panel/searchpanel';
-import { ALLVALUE } from '../../constants';
 
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
 

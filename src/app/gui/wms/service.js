@@ -1,9 +1,9 @@
+import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
 import ApplicationService from 'core/applicationservice';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import utils from 'core/utils/utils';
 import DataRouteService from 'core/data/routerservice';
 import GUI from 'gui/gui';
-import { LOCALSTORAGE_EXTERNALWMS_ITEM } from '../../constant';
 import WMSLayersPanel from './vue/panel/wmslayerspanel';
 
 class Service {

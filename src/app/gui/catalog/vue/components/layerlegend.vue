@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import CatalogEventHub from '../catalogeventhub';
+  import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import ApplicationService  from 'core/applicationservice';
   import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
   import GUI  from 'gui/gui';

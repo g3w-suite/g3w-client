@@ -1,7 +1,7 @@
 import GUI from 'gui/gui';
 import Component from 'gui/vue/component';
+import Service from 'gui/wms/service';
 import WMS from './wms.vue';
-import Service from '../service';
 
 const InternalComponent = Vue.extend(WMS);
 

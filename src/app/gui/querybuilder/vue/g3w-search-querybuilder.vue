@@ -35,8 +35,8 @@
 </template>
 
 <script>
-  import Service from '../service';
-  import QueryBuilderUIFactory  from '../querybuilderuifactory';
+  import Service from 'gui/querybuilder/service';
+  import QueryBuilderUIFactory from 'gui/querybuilder/querybuilderuifactory';
   export default {
     name: "g3w-querybuilder-search",
     props: {

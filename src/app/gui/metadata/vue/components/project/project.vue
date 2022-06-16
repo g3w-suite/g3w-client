@@ -47,7 +47,7 @@
 </template>
 
 <script>
-  import Layer from '../layer/layer.vue';
+  import Layer from 'gui/metadata/vue/components/layer/layer.vue';
   import MetadataTabContent from './metadatatabcontent.vue';
   import MetadataBBOXContent from './metadatabboxcontent.vue';
   import MetadataContactsContent from './metadatacontactscontent.vue';

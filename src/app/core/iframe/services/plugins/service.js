@@ -1,5 +1,5 @@
 import PluginsRegistry from 'core/plugin/pluginsregistry';
-import BaseService from '../baseservice';
+import BaseService from 'core/iframe/services/baseservice';
 
 class BasePluginService extends BaseService {
   constructor() {

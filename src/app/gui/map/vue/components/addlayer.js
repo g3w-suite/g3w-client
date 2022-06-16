@@ -1,5 +1,5 @@
+import { EPSG } from 'app/constant';
 import geoutils from 'core/utils/geo';
-import { EPSG } from '../../../../constant';
 import template from './addlayer.html';
 
 const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON', 'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];

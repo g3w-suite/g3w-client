@@ -1,5 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-import G3wFormInputs from '../../../../inputs/g3w-form-inputs.vue';
+import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
 import template from './body.html';
 
 const BodyFormComponent = Vue.extend({

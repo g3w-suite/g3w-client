@@ -1,6 +1,6 @@
 import { OPERATORS } from 'core/layers/filter/operators';
 import ProjectsRegistry from 'core/project/projectsregistry';
-import Service from '../service';
+import Service from 'gui/querybuilder/service';
 import template from './querybuilder.html';
 
 const operators = Object.values(OPERATORS);

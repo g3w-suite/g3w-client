@@ -36,7 +36,7 @@ import {
 import { Pointer } from 'ol/interaction';
 import { GeoJSON } from 'ol/format';
 import { DEVICE_PIXEL_RATIO } from 'ol/has';
-import wms from '../wms/vue/wms';
+import wms from 'gui/wms/vue/wms';
 
 const SETTINGS = {
   zoom: {

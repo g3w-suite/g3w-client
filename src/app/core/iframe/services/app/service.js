@@ -1,5 +1,5 @@
+import BaseService from 'core/iframe/services/baseservice';
 import DataRouterService from 'core/data/routerservice';
-import BaseService from '../baseservice';
 
 class AppService extends BaseService {
   constructor() {

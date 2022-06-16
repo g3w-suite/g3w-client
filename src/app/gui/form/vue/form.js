@@ -1,10 +1,11 @@
 import GUI from 'gui/gui';
 import Component from 'gui/vue/component';
+import Service from 'gui/form/formservice';
 import G3wFormFooter from 'gui/form/components/footer/vue/footer';
-import Service from '../formservice';
+import HeaderFormComponent from 'gui/form/components/header/vue/header';
+import BodyFormComponent from 'gui/form/components/body/vue/body';
 import template from './form.html';
-import HeaderFormComponent from '../components/header/vue/header';
-import BodyFormComponent from '../components/body/vue/body';
+
 
 // vue component
 const vueComponentObject = {

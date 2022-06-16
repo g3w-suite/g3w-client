@@ -1,5 +1,5 @@
 import Input from 'gui/inputs/input';
-import Service from '../service';
+import Service from 'gui/inputs/picklayer/service';
 import template from './picklayer.html';
 
 const PickLayerInput = Vue.extend({

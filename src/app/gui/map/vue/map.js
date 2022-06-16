@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import Component from 'gui/vue/component';
+import MapService from 'gui/map/mapservice';
 import AddLayerComponent from './components/addlayer';
-import MapService from '../mapservice';
 import template from './map.html';
 
 // map vue component

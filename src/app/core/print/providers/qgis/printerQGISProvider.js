@@ -1,7 +1,7 @@
+import ApplicationState from 'core/applicationstate';
 import utils from 'core/utils/utils';
+import PrintProvider from 'core/print/providers/printerprovider';
 import ProjectsRegistry from 'core/project/projectsregistry';
-import ApplicationState from '../../../applicationstate';
-import PrintProvider from '../printerprovider';
 
 const OUTPUT_FORMATS = {
   pdf: 'application/pdf',

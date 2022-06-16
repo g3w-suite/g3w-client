@@ -1,6 +1,6 @@
 import Projections from 'g3w-ol/src/projection/projections';
+import WMSLayer from 'core/layers/map/wmslayer';
 import ImageLayer from 'core/layers/imagelayer';
-import WMSLayer from '../map/wmslayer';
 
 class BaseLayer extends ImageLayer {
   constructor(config = {}, options = {}) {

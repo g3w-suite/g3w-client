@@ -1,7 +1,7 @@
+import { TIMEOUT } from 'app/constant';
 import utils from 'core/utils/utils';
 import GUI from 'gui/gui';
 import Component from 'gui/vue/component';
-import { TIMEOUT } from '../../../constant';
 import template from './printpage.html';
 
 const InternalComponent = Vue.extend({
