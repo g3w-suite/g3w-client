@@ -2,9 +2,9 @@ import geoutils from 'core/utils/geo';
 import BaseService from 'core/data/service';
 
 class SearchService extends BaseService {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   // method to searchfeature features
   async features(options = {

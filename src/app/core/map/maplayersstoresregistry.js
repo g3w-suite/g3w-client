@@ -1,9 +1,9 @@
 import LayersStoresRegistry from 'core/layers/layersstoresregistry';
 
 class MapLayersStoresRegistry extends LayersStoresRegistry {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 }
 
 export default new MapLayersStoresRegistry();

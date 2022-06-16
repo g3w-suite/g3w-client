@@ -3,9 +3,9 @@ import ApplicationService from 'core/applicationservice';
 import utils from 'core/utils/utils';
 
 class ProxyService extends BaseService {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   /**
    *

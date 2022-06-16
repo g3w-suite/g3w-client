@@ -1,8 +1,8 @@
 import LayersStoresRegistry from 'core/layers/layersstoresregistry';
 
 class CatalogLayersStoresRegistry extends LayersStoresRegistry {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 }
 export default new CatalogLayersStoresRegistry();

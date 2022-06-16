@@ -6,9 +6,9 @@ import ProjectsRegistry from 'core/project/projectsregistry';
 import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
 
 class RelationsService extends G3WObject {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   createUrl(options = {}) {
     const currentProject = ProjectsRegistry.getCurrentProject();

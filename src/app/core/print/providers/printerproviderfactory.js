@@ -6,9 +6,9 @@ const Providers = {
 };
 
 class PrinterProviderFactory extends G3WObject {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   get(type = 'QGIS') {
     return new Providers[type]();

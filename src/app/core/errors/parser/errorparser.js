@@ -1,9 +1,9 @@
 import G3WObject from 'core/g3wobject';
 
 class ErrorParser extends G3WObject {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 }
 
 export default ErrorParser;

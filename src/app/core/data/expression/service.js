@@ -3,9 +3,9 @@ import utils from 'core/utils/utils';
 import geoutils from 'core/utils/geo';
 
 class ExpressionService extends BaseService {
-  constructor() {
-    super();
-  }
+  // constructor() {
+  //   super();
+  // }
 
   /**
    *
