@@ -170,7 +170,7 @@ gulp.task('browserify:app', function(done) {
   }
 
   const bundle = () => bundler.bundle()
-      .on('error', (err) => {
+      .on('error', function(err){
         console.log(err);
         this.emit('end');
         del([
