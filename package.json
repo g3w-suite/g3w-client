@@ -7,7 +7,7 @@
     "build": "gulp g3w-admin",
     "build:plugins": "gulp g3w-admin-plugins-select",
     "dev": "gulp dev",
-    "test": "gulp test",
+    "test": "eslint src && gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
     "version": "npm run build && git add -A dist",
@@ -37,6 +37,10 @@
     "browser-sync": "^2.27.10",
     "browserify": "^17.0.0",
     "del": "^6.1.1",
+    "eslint": "^8.17.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-vue": "^9.1.1",
     "esmify": "^2.1.1",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
@@ -74,7 +78,29 @@
       "@babel/plugin-transform-runtime"
     ]
   },
-  "browserslist": "> 0.25%, not dead",
+  "browserslist": "> 0.25%",
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "airbnb-base"
+    ],
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "plugins": [
+      "vue"
+    ],
+    "rules": {
+      "camelcase": "warn",
+      "max-len": "warn",
+      "no-underscore-dangle": "off"
+    }
+  },
   "engines": {
     "node": ">=16.13.2",
     "npm": ">=8.1.2"
