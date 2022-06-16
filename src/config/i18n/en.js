@@ -40,6 +40,8 @@ export default {
       },
       print: {
         no_layers: 'No Layer to print',
+        template: "Template",
+        labels: "Labels",
         scale: 'Scale',
         format: 'Format',
         rotation: 'Rotation',

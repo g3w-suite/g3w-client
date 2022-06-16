@@ -40,6 +40,8 @@ export default {
       },
       print: {
         no_layers: 'Ei tulostettavia tasoja',
+        template: "Template",
+        labels: "Labels",
         scale: 'Mittakaava',
         format: 'Formaatti',
         rotation: 'Kierto',

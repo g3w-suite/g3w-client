@@ -40,6 +40,8 @@ export default {
       },
       print: {
         no_layers: 'Nessun Layer visibile',
+        template: "Template",
+        labels: "Etichette",
         scale: 'Scala',
         format: 'Formato',
         rotation: 'Rotazione',

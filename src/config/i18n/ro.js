@@ -40,6 +40,8 @@ export default {
       },
       print: {
         no_layers: 'Nu avem straturi de print',
+        template: "Șablon",
+        labels: "Etichete",
         scale: 'Scară',
         format: 'Format',
         rotation: 'Rotație',

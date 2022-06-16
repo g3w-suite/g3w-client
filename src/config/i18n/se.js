@@ -40,6 +40,8 @@ export default {
       },
       print: {
         no_layers: 'Inga nivåer att skriva ut',
+        template: "Template",
+        labels: "Labels",
         scale: 'Skala',
         format: 'Format',
         rotation: 'Rotation',
