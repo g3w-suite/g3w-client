@@ -2468,8 +2468,8 @@ class MapService extends G3WObject {
     let x_min; let x_max; let y_min; let y_max; let rotation; let
       scale;
     this.stopDrawGreyCover();
-    const postcompose = (evt) => {
-      const ctx = evt.context;
+    const postrender = evt => {
+      const ctx = document.getElementById(evt.target.getTarget()).querySelector('canvas').getContext('2d');
       const size = this.getMap().getSize();
       // Inner polygon,must be counter-clockwise
       const height = size[1] * DEVICE_PIXEL_RATIO;
@@ -2518,7 +2518,7 @@ class MapService extends G3WObject {
       }
       ctx.restore();
     };
-    this._greyListenerKey = map.on('postcompose', postcompose);
+    this._greyListenerKey = map.on('postrender', postrender);
   }
 
   stopDrawGreyCover() {
