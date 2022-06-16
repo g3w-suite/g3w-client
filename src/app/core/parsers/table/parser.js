@@ -1,8 +1,10 @@
-import Feature  from 'core/layers/features/feature';
+import Feature from 'core/layers/features/feature';
+
 class TableParser {
   constructor() {}
-  get(options={}) {
-    const type = options.type;
+
+  get(options = {}) {
+    const { type } = options;
     let parser;
     switch (type) {
       case 'json':
@@ -12,12 +14,12 @@ class TableParser {
         parser = this._parserJSON.bind(this);
     }
     return parser;
-  };
+  }
 
-  _parserJSON(data={}) {
-    const {features=[]} = data;
-    return features.map(_feature => {
-      const {id, properties} = _feature;
+  _parserJSON(data = {}) {
+    const { features = [] } = data;
+    return features.map((_feature) => {
+      const { id, properties } = _feature;
       const feature = new Feature();
       feature.setProperties(properties);
       feature.setId(id);
@@ -27,4 +29,3 @@ class TableParser {
 }
 
 export default new TableParser();
-

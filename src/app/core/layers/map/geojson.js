@@ -1,15 +1,15 @@
 import VectorLayer from './vectorlayer';
 
-class GeojsonLayer extends VectorLayer{
+class GeojsonLayer extends VectorLayer {
   constructor(options = {}) {
     super(options);
-    const provider = options.provider;
+    const { provider } = options;
     this.setProvider(provider);
     this.getFeatures({
       url: options.url,
-      mapProjection: this.mapProjection
+      mapProjection: this.mapProjection,
     });
   }
 }
 
-export default  GeojsonLayer;
+export default GeojsonLayer;

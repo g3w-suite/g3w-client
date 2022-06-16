@@ -1,8 +1,8 @@
 import utils from 'core/utils/utils';
-import GUI  from 'gui/gui';
+import GUI from 'gui/gui';
 import G3WObject from 'core/g3wobject';
 
-class Panel extends G3WObject{
+class Panel extends G3WObject {
   constructor(poptions) {
     super();
     this.id = options.id || null;
@@ -13,35 +13,35 @@ class Panel extends G3WObject{
 
   getId() {
     return this.id;
-  };
+  }
 
   getTitle() {
     return this.title;
-  };
+  }
 
   getService() {
     return this.service;
-  };
+  }
 
   setService(service) {
     this.service = service;
-  };
+  }
 
   getInternalPanel() {
     return this.internalPanel;
-  };
+  }
 
   setInternalPanel(internalPanel) {
     this.internalPanel = internalPanel;
-  };
+  }
 
   show() {
     GUI.showPanel(this);
-  };
+  }
 
   close() {
     GUI.closePanel();
-  };
+  }
 
   mount(parent) {
     const panel = this.internalPanel;
@@ -52,7 +52,7 @@ class Panel extends G3WObject{
       panel.onShow && panel.onShow();
     });
     return utils.resolve(true);
-  };
+  }
 
   unmount() {
     const panel = this.internalPanel;
@@ -63,9 +63,9 @@ class Panel extends G3WObject{
     this.internalComponent = null;
     d.resolve();
     return d.promise();
-  };
+  }
 
-  onResize(parentWidth,parentHeight) {};
-};
+  onResize(parentWidth, parentHeight) {}
+}
 
-export default  Panel;
+export default Panel;

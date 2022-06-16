@@ -2,11 +2,11 @@
  * It contains all contants values used on application to
  * manage in easy way all constant values
  */
-export const G3W_FID = 'g3w_fid'; //fid name field referred of fid feature
-//default editing capabilities
+export const G3W_FID = 'g3w_fid'; // fid name field referred of fid feature
+// default editing capabilities
 export const DEFAULT_EDITING_CAPABILITIES = ['add_feature', 'change_feature', 'change_attr_feature', 'delete_feature'];
 
-//Geometry fields used to exlude or get geometry information from server request
+// Geometry fields used to exlude or get geometry information from server request
 export const GEOMETRY_FIELDS = ['geometryProperty', 'boundedBy', 'geom', 'the_geom', 'geometry', 'bbox', 'GEOMETRY', 'geoemtria', 'geometria'];
 // TIMEOUT
 export const TIMEOUT = 60000; // 1 minute
@@ -17,21 +17,21 @@ export const TIMEOUT = 60000; // 1 minute
  */
 export const QUERY_POINT_TOLERANCE = {
   unit: 'pixel',
-  value: 10
+  value: 10,
 };
 
 export const EPSG = [
-  "EPSG:3003",
-  "EPSG:3004",
-  "EPSG:3045",
-  "EPSG:3857",
-  "EPSG:4326",
-  "EPSG:6708",
-  "EPSG:23032",
-  "EPSG:23033",
-  "EPSG:25833",
-  "EPSG:32632",
-  "EPSG:32633",
+  'EPSG:3003',
+  'EPSG:3004',
+  'EPSG:3045',
+  'EPSG:3857',
+  'EPSG:4326',
+  'EPSG:6708',
+  'EPSG:23032',
+  'EPSG:23033',
+  'EPSG:25833',
+  'EPSG:32632',
+  'EPSG:32633',
 ];
 
 export const MAP_SETTINGS = {
@@ -39,45 +39,45 @@ export const MAP_SETTINGS = {
     maxScale: 1000,
   },
   ANIMATION: {
-    duration: 2000
+    duration: 2000,
   },
   LAYER_POSITIONS: {
     default: 'top',
     getPositions() {
       return [
         'top',
-        'bottom'
-      ]
-    }
-  }
+        'bottom',
+      ];
+    },
+  },
 
 };
 
 export const DOWNLOAD_FORMATS = {
   download: {
     format: 'shapefile',
-    url: 'shp'
+    url: 'shp',
   },
   download_gpkg: {
     format: 'gpkg',
-    url: 'gpkg'
+    url: 'gpkg',
   },
   download_gpx: {
     format: 'gpx',
-    url: 'gpx'
+    url: 'gpx',
   },
   download_csv: {
     format: 'csv',
-    url: 'csv'
+    url: 'csv',
   },
   download_xls: {
     format: 'xls',
-    url: 'xls'
+    url: 'xls',
   },
   download_raster: {
     format: 'geotiff',
-    url: 'geotiff'
-  }
+    url: 'geotiff',
+  },
 };
 
 export const LIST_OF_RELATIONS_TITLE = '__G3W_LIST_OF_RELATIONS_TITLE__';
@@ -99,5 +99,5 @@ export default {
   TIMEOUT,
   LOCALSTORAGE_EXTERNALWMS_ITEM,
   TOC_LAYERS_INIT_STATUS,
-  TOC_THEMES_INIT_STATUS
-}
+  TOC_THEMES_INIT_STATUS,
+};

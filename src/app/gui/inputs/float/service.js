@@ -1,9 +1,9 @@
-import Service  from 'gui/inputs/service';
+import Service from 'gui/inputs/service';
 
-class FloatService extends Service{
-  constructor(options={}) {
+class FloatService extends Service {
+  constructor(options = {}) {
     super(options);
   }
 }
 
-export default  FloatService;
+export default FloatService;

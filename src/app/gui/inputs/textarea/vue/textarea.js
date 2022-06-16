@@ -3,7 +3,7 @@ import template from './textarea.html';
 
 const TextAreaInput = {
   mixins: [Input],
-  template
+  template,
 };
 
 export default TextAreaInput;

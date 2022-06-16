@@ -1,18 +1,19 @@
-import Fields  from './fields';
 import utils from 'core/utils/utils';
-import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
+import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
+import Fields from './fields';
+
 const URLPattern = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
 const FieldType = {
-  SIMPLE:'simple',
-  GEO:'geo',
-  LINK:'link',
+  SIMPLE: 'simple',
+  GEO: 'geo',
+  LINK: 'link',
   PHOTO: 'photo',
-  PHOTOLINK: "photolink",
-  IMAGE:'image',
-  POINTLINK:'pointlink',
+  PHOTOLINK: 'photolink',
+  IMAGE: 'image',
+  POINTLINK: 'pointlink',
   ROUTE: 'route',
-  VUE: 'vue'
+  VUE: 'vue',
 };
 
 export default {
@@ -23,17 +24,17 @@ export default {
    * @returns {string}
    */
   getType(field) {
-    let type = field.type;
+    let { type } = field;
     if (type !== 'vue') {
       const fieldValue = field.value;
       const value = fieldValue && utils.toRawType(fieldValue) === 'Object' && !fieldValue.coordinates && !fieldValue.vue ? fieldValue.value : fieldValue;
       if (!value) type = FieldType.SIMPLE;
-      else if (value && typeof value == 'object') {
+      else if (value && typeof value === 'object') {
         if (value.coordinates) type = FieldType.GEO;
         else if (value.vue) type = FieldType.VUE;
-      } else if(value && Array.isArray(value)) {
+      } else if (value && Array.isArray(value)) {
         if (value.length && value[0].photo) type = FieldType.PHOTO;
-        else type = FieldType.SIMPLE
+        else type = FieldType.SIMPLE;
       } else if (value.toString().toLowerCase().match(PhotoPattern)) {
         type = FieldType.PHOTO;
       } else if (value.toString().match(URLPattern)) {
@@ -62,7 +63,7 @@ export default {
    * @param type
    * @param field
    */
-  add({type, field}) {
+  add({ type, field }) {
     Fields[type] = field;
   },
   /**
@@ -77,7 +78,7 @@ export default {
    * @param layerId
    * @param field
    */
-  changeConfigFieldType({layerId, field={}}) {
+  changeConfigFieldType({ layerId, field = {} }) {
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.changeConfigFieldType(field);
   },
@@ -86,8 +87,8 @@ export default {
    * @param layerId
    * @param field
    */
-  resetConfigFieldType({layerId, field={}}) {
+  resetConfigFieldType({ layerId, field = {} }) {
     const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
     layer.resetConfigField(field);
-  }
+  },
 };

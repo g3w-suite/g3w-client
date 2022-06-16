@@ -1,8 +1,7 @@
-
 import G3WObject from 'core/g3wobject';
 
-class History extends G3WObject{
-  constructor(options={}) {
+class History extends G3WObject {
+  constructor(options = {}) {
     super();
     this.id = options.id;
     // registered all changes
@@ -31,32 +30,31 @@ class History extends G3WObject{
     // reactive state of histrory
     this.state = {
       commit: false,
-      undo:false,
-      redo: false
+      undo: false,
+      redo: false,
     };
     this._current = null; // store the current state of history (useful for undo /redo)
-  };
+  }
 
   add(uniqueId, items) {
-    //state object is an array of feature/features changed in a transaction
+    // state object is an array of feature/features changed in a transaction
     const d = $.Deferred();
     // before insert an item into the history
     // check if are at last state step (no redo was done)
     // in this way avoid starge barch in the history
-    //If we are in the middle of undo, delete all changes in the histroy from the current "state"
+    // If we are in the middle of undo, delete all changes in the histroy from the current "state"
     // so i can create a new history
 
     if (this._current === null) {
       this._states = [{
         id: uniqueId,
-        items
-      }]
+        items,
+      }];
     } else {
-      if (this._states.length && this._current < this.getLastState().id)
-        this._states = this._states.filter(state => state.id <= this._current);
+      if (this._states.length && this._current < this.getLastState().id) this._states = this._states.filter((state) => state.id <= this._current);
       this._states.push({
         id: uniqueId,
-        items
+        items,
       });
     }
 
@@ -66,42 +64,40 @@ class History extends G3WObject{
     // it can be used in save relation
     d.resolve(uniqueId);
     return d.promise();
-  };
+  }
 
-  getRelationStates(layerId, {clear=false}={}) {
+  getRelationStates(layerId, { clear = false } = {}) {
     const relationStates = [];
-    for (let i=0; i < this._states.length; i++) {
+    for (let i = 0; i < this._states.length; i++) {
       const state = this._states[i];
       const relationItems = state.items.filter((item) => {
-        const _layerId = Array.isArray(item) ? item[0].layerId: item.layerId;
-        return _layerId === layerId
+        const _layerId = Array.isArray(item) ? item[0].layerId : item.layerId;
+        return _layerId === layerId;
       });
       relationItems.length && relationStates.push({
         id: state.id,
-        items:relationItems
-      })
+        items: relationItems,
+      });
     }
     return relationStates;
-  };
+  }
 
   insertState(state) {
     const stateId = state.id;
     let index = this._states.length;
-    for (let i=0; i < this._states.length; i++) {
+    for (let i = 0; i < this._states.length; i++) {
       const _state = this._states[i];
       if (_state.id > stateId) {
         index = i;
         break;
-      } else if (_state.id === stateId)
-        index = -1;
+      } else if (_state.id === stateId) index = -1;
       break;
     }
     if (index > -1) {
-      if (this._current < stateId)
-        this._current = stateId;
-      this._states.splice(index, 0, state)
+      if (this._current < stateId) this._current = stateId;
+      this._states.splice(index, 0, state);
     }
-  };
+  }
 
   removeState(stateId) {
     let index;
@@ -112,63 +108,62 @@ class History extends G3WObject{
         break;
       }
     }
-    if (this._current === stateId)
-      this._current = this._states.length > 1 ? this._states[index-1].id : null;
-    this._states.splice(index,1);
-  };
+    if (this._current === stateId) this._current = this._states.length > 1 ? this._states[index - 1].id : null;
+    this._states.splice(index, 1);
+  }
 
   removeStates(stateIds = []) {
     for (let i = 0; i < stateIds.length; i++) {
       const stateId = stateIds[i];
-      this.removeState(stateId)
+      this.removeState(stateId);
     }
-  };
+  }
 
-  insertStates(states=[]) {
-    for (let i=0; i< states.length; i++) {
+  insertStates(states = []) {
+    for (let i = 0; i < states.length; i++) {
       this.insertState(states[i]);
     }
     this.canCommit();
-  };
+  }
 
-// internal method to change the state of the  history when we check
-// a call to a function that modify the hsitory state
+  // internal method to change the state of the  history when we check
+  // a call to a function that modify the hsitory state
   _setState() {
     this.canUndo();
     this.canCommit();
     this.canRedo();
-  };
+  }
 
-//check if was did an update (update are array contains two items , old e new value)
+  // check if was did an update (update are array contains two items , old e new value)
   _checkItems(items, action) {
     /**
      * action: <reffererd to array index>
      *  0: undo;
      *  1: redo;
-     **/
+     * */
     const newItems = {
-      own: [], //array of changes of layer of the current session
-      dependencies: {} // dependencies
+      own: [], // array of changes of layer of the current session
+      dependencies: {}, // dependencies
     };
     items.forEach((item) => {
-      if (Array.isArray(item))
-        item = item[action];
+      if (Array.isArray(item)) item = item[action];
       // check if belong to session
       if (this.id === item.layerId) {
-        newItems.own.push(item)
+        newItems.own.push(item);
       } else {
-        if (!newItems.dependencies[item.layerId])
+        if (!newItems.dependencies[item.layerId]) {
           newItems.dependencies[item.layerId] = {
             own: [],
-            dependencies: {}
+            dependencies: {},
           };
+        }
         newItems.dependencies[item.layerId].own.push(item);
       }
     });
     return newItems;
-  };
+  }
 
-// method undo
+  // method undo
   undo() {
     let items;
     if (this._current === this.getFirstState().id) {
@@ -178,17 +173,17 @@ class History extends G3WObject{
       this._states.find((state, idx) => {
         if (state.id === this._current) {
           items = this._states[idx].items;
-          this._current = this._states[idx-1].id;
+          this._current = this._states[idx - 1].id;
           return true;
         }
-      })
+      });
     }
     items = this._checkItems(items, 0);
     this._setState();
     return items;
-  };
+  }
 
-//method redo
+  // method redo
   redo() {
     let items;
     // if not set get first state
@@ -199,45 +194,44 @@ class History extends G3WObject{
     } else {
       this._states.find((state, idx) => {
         if (this._current === state.id) {
-          this._current = this._states[idx+1].id;
-          items = this._states[idx+1].items;
+          this._current = this._states[idx + 1].id;
+          items = this._states[idx + 1].items;
           return true;
         }
-      })
+      });
     }
     items = this._checkItems(items, 1);
     this._setState();
     return items;
-  };
+  }
 
-  setItemsFeatureIds(unsetnewids=[]) {
-    unsetnewids.forEach(unsetnewid =>{
-      const {id, clientid} = unsetnewid;
-      this._states.forEach(state => {
-        const {items} = state;
-        items.forEach(item => {
+  setItemsFeatureIds(unsetnewids = []) {
+    unsetnewids.forEach((unsetnewid) => {
+      const { id, clientid } = unsetnewid;
+      this._states.forEach((state) => {
+        const { items } = state;
+        items.forEach((item) => {
           const feature = item.feature.getId() === clientid && item.feature;
           if (feature) {
             feature.setId(id);
           }
-        })
+        });
       });
-    })
-  };
+    });
+  }
 
   clear(ids) {
-    if (ids)
+    if (ids) {
       this._states.forEach((state, idx) => {
         if (ids.indexOf(state.id) !== -1) {
-          if (this._current && this._current === state.id())
-            this.undo();
+          if (this._current && this._current === state.id()) this.undo();
           this._states.splice(idx, 1);
         }
       });
-    else this._clearAll();
-  };
+    } else this._clearAll();
+  }
 
-  _clearAll =  function() {
+  _clearAll = function () {
     this._states = [];
     this._current = null;
     this.state.commit = false;
@@ -246,108 +240,103 @@ class History extends G3WObject{
   };
 
   getState(id) {
-    return this._states.find(state => state.id === id);
-  };
+    return this._states.find((state) => state.id === id);
+  }
 
   getFirstState() {
     return this._states.length ? this._states[0] : null;
-  };
+  }
 
   getLastState() {
-    const length = this._states.length;
-    return length ? this._states[length -1] : null;
-  };
+    const { length } = this._states;
+    return length ? this._states[length - 1] : null;
+  }
 
   getCurrentState() {
     let currentState = null;
     if (this._current && this._states.length) {
-      currentState = this._states.find((state) => {
-        return this._current === state.id;
-      });
+      currentState = this._states.find((state) => this._current === state.id);
     }
     return currentState;
-  };
+  }
 
-// funzione che mi permette di ricavarel'indice dello stato corrente
+  // funzione che mi permette di ricavarel'indice dello stato corrente
   getCurrentStateIndex() {
     let currentStateIndex = null;
     if (this._current && this._states.length) {
       this._states.forEach((state, idx) => {
         if (this._current === state.id) {
           currentStateIndex = idx;
-          return false
+          return false;
         }
       });
     }
     return currentStateIndex;
-  };
+  }
 
-// method that response true if we can commit
+  // method that response true if we can commit
   canCommit() {
     const checkCommitItems = this.commit();
     let canCommit = false;
-    for (let layerId in checkCommitItems) {
+    for (const layerId in checkCommitItems) {
       const commitItem = checkCommitItems[layerId];
-      canCommit = canCommit || !!commitItem.length
+      canCommit = canCommit || !!commitItem.length;
     }
     this.state.commit = canCommit;
     return this.state.commit;
-  };
+  }
 
-//cauUdo method
+  // cauUdo method
   canUndo() {
     const steps = (this._states.length - 1) - this.getCurrentStateIndex();
     this.state.undo = !_.isNull(this._current) && (this._maxSteps > steps);
     return this.state.undo;
-  };
+  }
 
-// Caon Redo function
+  // Caon Redo function
   canRedo() {
     this.state.redo = this.getLastState() && this.getLastState().id != this._current || _.isNull(this._current) && this._states.length > 0;
     return this.state.redo;
-  };
+  }
 
   _getStatesToCommit() {
-    return this._states.filter(state => state.id <= this._current);
-  };
+    return this._states.filter((state) => state.id <= this._current);
+  }
 
-//get all changes to send to server (mandare al server)
+  // get all changes to send to server (mandare al server)
   commit() {
     const commitItems = {};
     const statesToCommit = this._getStatesToCommit();
-    statesToCommit.forEach(state => {
-      state.items.forEach(item => {
+    statesToCommit.forEach((state) => {
+      state.items.forEach((item) => {
         let add = true;
         if (Array.isArray(item)) item = item[1];
         commitItems[item.layerId] && commitItems[item.layerId].forEach((commitItem, index) => {
           // check if already inserted feature
           if (commitItem.getUid() === item.feature.getUid()) {
-            if (item.feature.isNew() && !commitItem.isDeleted() && item.feature.isUpdated() ) {
+            if (item.feature.isNew() && !commitItem.isDeleted() && item.feature.isUpdated()) {
               const _item = item.feature.clone();
               _item.add();
               commitItems[item.layerId][index] = _item;
             } else if (item.feature.isNew() && item.feature.isDeleted()) {
               commitItems[item.layerId].splice(index, 1);
-            } else if (item.feature.isUpdated() || item.feature.isDeleted())
-              commitItems[item.layerId][index] = item.feature;
+            } else if (item.feature.isUpdated() || item.feature.isDeleted()) commitItems[item.layerId][index] = item.feature;
             add = false;
             return false;
           }
         });
         if (add) {
-          const feature = item.feature;
-          const layerId = item.layerId;
+          const { feature } = item;
+          const { layerId } = item;
           if (!(!feature.isNew() && feature.isAdded())) {
-            if (!commitItems[layerId])
-              commitItems[layerId] = [];
+            if (!commitItems[layerId]) commitItems[layerId] = [];
             commitItems[layerId].push(feature);
           }
         }
       });
     });
     return commitItems;
-  };
+  }
 }
 
-export default  History;
-
+export default History;

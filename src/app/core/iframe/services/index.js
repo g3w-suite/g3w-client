@@ -1,8 +1,8 @@
-import appService  from './app/service';
-//return an object contains key plugin name  and related service
-import pluginsServices  from './plugins';
+import appService from './app/service';
+// return an object contains key plugin name  and related service
+import pluginsServices from './plugins';
 
-export default   {
+export default {
   app: appService,
-  ...pluginsServices
+  ...pluginsServices,
 };

@@ -4,7 +4,7 @@ import utils from 'core/utils/utils';
 import ResponseParser from 'core/parsers/response/parser';
 
 class Provider extends G3WObject {
-  constructor(options={}) {
+  constructor(options = {}) {
     super();
     this._isReady = false;
     this._name = 'provider';
@@ -12,53 +12,53 @@ class Provider extends G3WObject {
     this._hasFieldsStartWithNotPermittedKey;
   }
 
-  async getData() {};
+  async getData() {}
 
   getLayer() {
     return this._layer;
-  };
+  }
 
   setLayer(layer) {
     this._layer = layer;
-  };
+  }
 
   getFeatures() {
-    console.log('overwriteby single provider')
-  };
+    console.log('overwriteby single provider');
+  }
 
   query() {
-    console.log('overwriteby single provider')
-  };
+    console.log('overwriteby single provider');
+  }
 
   setReady(bool) {
     this._isReady = bool;
-  };
+  }
 
   isReady() {
     return this._isReady;
-  };
+  }
 
-  error() {};
+  error() {}
 
   isValid() {
     console.log('overwriteby single provider');
-  };
+  }
 
   getName() {
     return this._name;
-  };
+  }
 
-// Method to transform xml from server to present to queryresult component
-  handleQueryResponseFromServer(response, projections, layers=[this._layer], wms=true) {
+  // Method to transform xml from server to present to queryresult component
+  handleQueryResponseFromServer(response, projections, layers = [this._layer], wms = true) {
     return geoutils.handleQueryResponse({
       response,
       projections,
       layers,
-      wms
-    })
-  };
+      wms,
+    });
+  }
 
-  getQueryResponseTimeoutKey({layers=[this._layer], resolve, query}=[]) {
+  getQueryResponseTimeoutKey({ layers = [this._layer], resolve, query } = []) {
     /**
      * set timeout of a query
      * @type {number}
@@ -67,10 +67,10 @@ class Provider extends G3WObject {
       resolve,
       data: {
         data: ResponseParser.utils.getTimeoutData(layers),
-        query
-      }
+        query,
+      },
     });
-  };
+  }
 }
 
 export default Provider;

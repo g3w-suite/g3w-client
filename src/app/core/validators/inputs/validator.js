@@ -1,5 +1,5 @@
 class InputValidator {
-  constructor(options={}) {
+  constructor(options = {}) {
     this.options = options;
   }
 
@@ -8,4 +8,4 @@ class InputValidator {
   }
 }
 
-export default  InputValidator;
+export default InputValidator;

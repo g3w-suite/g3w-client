@@ -2,16 +2,17 @@ import Projections from 'g3w-ol/src/projection/projections';
 import g3w_ol_utils from 'g3w-ol/src/utils/utils';
 import utils from 'core/utils/utils';
 import geoutils from 'core/utils/geo';
-import GUI  from 'gui/gui';
+import GUI from 'gui/gui';
 import geom from 'ol/geom';
+
 const RESERVERDPARAMETRS = {
-  wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
+  wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS'],
 };
 
 const GeoLayerMixin = {
-  setup(config={}, options={}) {
+  setup(config = {}, options = {}) {
     if (!this.config) {
-      console.log("GeoLayerMixin must be used from a valid (geo) Layer instance");
+      console.log('GeoLayerMixin must be used from a valid (geo) Layer instance');
       return;
     }
     const { project } = options;
@@ -22,12 +23,12 @@ const GeoLayerMixin = {
     // state extend of layer setting geolayer property to true
     // and adding informations of bbox
     _.extend(this.state, {
-      geolayer: config.geometrytype !== "NoGeometry",
+      geolayer: config.geometrytype !== 'NoGeometry',
       legend: {
         url: null,
         loading: false,
         error: false,
-        show: true
+        show: true,
       },
       external: config.source && config.source.external || false,
       bbox: config.bbox || null,
@@ -39,11 +40,11 @@ const GeoLayerMixin = {
       minscale: config.minscale,
       maxscale: config.maxscale,
       ows_method: config.ows_method,
-      exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
+      exclude_from_legend: (typeof config.exclude_from_legend === 'boolean') ? config.exclude_from_legend : true,
     });
-    if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
+    if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection : Projections.get(config.crs);
     if (config.attributions) this.config.attributions = config.attributions;
-    config.source && config.source.url && this._sanitizeSourceUrl()
+    config.source && config.source.url && this._sanitizeSourceUrl();
   },
 
   /**
@@ -62,16 +63,16 @@ const GeoLayerMixin = {
     return this.olSelectionFeatures[id];
   },
 
-  updateOlSelectionFeature({id, geometry}={}) {
+  updateOlSelectionFeature({ id, geometry } = {}) {
     const featureObject = this.getOlSelectionFeature(id);
     if (featureObject) {
       geometry = new geom[geometry.type](geometry.coordinates);
-      const feature = featureObject.feature;
+      const { feature } = featureObject;
       const mapService = GUI.getService('map');
       feature.setGeometry(geometry);
       mapService.setSelectionFeatures('update', {
-        feature
-      })
+        feature,
+      });
     }
   },
 
@@ -83,7 +84,7 @@ const GeoLayerMixin = {
     const featureObject = this.olSelectionFeatures[id];
     if (featureObject) {
       mapService.setSelectionFeatures('remove', {
-        feature: featureObject.feature
+        feature: featureObject.feature,
       });
       delete this.olSelectionFeatures[id];
     }
@@ -97,63 +98,63 @@ const GeoLayerMixin = {
     return this.olSelectionFeatures;
   },
 
-  addOlSelectionFeature({id, geometry}={}) {
+  addOlSelectionFeature({ id, geometry } = {}) {
     this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-      feature: geoutils.createFeatureFromGeometry({id, geometry}),
-      added: false
+      feature: geoutils.createFeatureFromGeometry({ id, geometry }),
+      added: false,
     };
     return this.olSelectionFeatures[id];
   },
 
   showAllOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
-    Object.values(this.olSelectionFeatures).forEach(featureObject =>{
+    Object.values(this.olSelectionFeatures).forEach((featureObject) => {
       !featureObject.added && mapService.setSelectionFeatures('add', {
-        feature: featureObject.feature
+        feature: featureObject.feature,
       });
       featureObject.added = true;
-    })
+    });
   },
 
   setInversionOlSelectionFeatures() {
     const mapService = GUI.getComponent('map').getService();
-    Object.values(this.olSelectionFeatures).forEach(featureObject => {
-      mapService.setSelectionFeatures(featureObject.added ? 'remove': 'add', {
-        feature: featureObject.feature
+    Object.values(this.olSelectionFeatures).forEach((featureObject) => {
+      mapService.setSelectionFeatures(featureObject.added ? 'remove' : 'add', {
+        feature: featureObject.feature,
       });
-      featureObject.added = !featureObject.added
+      featureObject.added = !featureObject.added;
     });
   },
 
   setOlSelectionFeatureByFid(fid, action) {
     const feature = this.olSelectionFeatures[fid] && this.olSelectionFeatures[fid].feature;
-    return feature && this.setOlSelectionFeatures({id:fid, feature}, action);
+    return feature && this.setOlSelectionFeatures({ id: fid, feature }, action);
   },
 
-  setOlSelectionFeatures(feature, action='add') {
+  setOlSelectionFeatures(feature, action = 'add') {
     const mapService = GUI.getComponent('map').getService();
     if (!feature) {
-      Object.values(this.olSelectionFeatures).forEach(featureObject => {
+      Object.values(this.olSelectionFeatures).forEach((featureObject) => {
         featureObject.added && mapService.setSelectionFeatures('remove', {
-          feature: featureObject.feature
+          feature: featureObject.feature,
         });
-        featureObject.added = false
+        featureObject.added = false;
       });
     } else {
       const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
       if (action === 'add') {
         !featureObject.added && mapService.setSelectionFeatures(action, {
-          feature: featureObject.feature
+          feature: featureObject.feature,
         });
         featureObject.added = true;
       } else {
         mapService.setSelectionFeatures(action, {
-          feature: featureObject.feature
+          feature: featureObject.feature,
         });
         featureObject.added = false;
       }
     }
-    return !Object.values(this.olSelectionFeatures).find(featureObject=> featureObject.added);
+    return !Object.values(this.olSelectionFeatures).find((featureObject) => featureObject.added);
   },
 
   /**
@@ -161,10 +162,10 @@ const GeoLayerMixin = {
    * @param type
    * @private
    */
-  _sanitizeSourceUrl(type='wms') {
+  _sanitizeSourceUrl(type = 'wms') {
     const sanitizedUrl = utils.sanitizeUrl({
       url: this.config.source.url,
-      reserverParameters: RESERVERDPARAMETRS[type]
+      reserverParameters: RESERVERDPARAMETRS[type],
     });
     this.config.source.url = sanitizedUrl;
   },
@@ -172,8 +173,8 @@ const GeoLayerMixin = {
   isLayerCheckedAndAllParents() {
     let checked = this.isChecked();
     if (checked) {
-      let parentGroup = this.state.parentGroup;
-      while(checked && parentGroup) {
+      let { parentGroup } = this.state;
+      while (checked && parentGroup) {
         checked = checked && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
       }
@@ -195,11 +196,11 @@ const GeoLayerMixin = {
    * @returns {*}
    */
   setVisible(bool) {
-    //check if is changed
+    // check if is changed
     const oldVisibile = this.state.visible;
     this.state.visible = bool && this.isChecked(); // bool and is checked
     const changed = oldVisibile !== this.state.visible;
-    //if changed call change
+    // if changed call change
     changed && this.change();
     return this.state.visible;
   },
@@ -212,17 +213,17 @@ const GeoLayerMixin = {
     return this.state.disabled;
   },
 
-  isPrintable({scale}={}) {
+  isPrintable({ scale } = {}) {
     return this.isLayerCheckedAndAllParents() && (!this.state.scalebasedvisibility || (scale >= this.state.maxscale && scale <= this.state.minscale));
   },
 
-//get style form layer
+  // get style form layer
   getStyles() {
     return this.config.source.external ? this.config.source.styles : this.config.styles;
   },
 
   getStyle() {
-    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
+    return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find((style) => style.current).name : '';
   },
 
   /**
@@ -232,9 +233,8 @@ const GeoLayerMixin = {
    */
   setCurrentStyle(currentStyleName) {
     let changed = false;
-    this.config.styles.forEach(style => {
-      if (style.name === currentStyleName)
-        changed = !style.current;
+    this.config.styles.forEach((style) => {
+      if (style.name === currentStyleName) changed = !style.current;
       style.current = style.name === currentStyleName;
     });
     return changed;
@@ -245,7 +245,7 @@ const GeoLayerMixin = {
    * @param resolution
    * @param mapUnits
    */
-  setDisabled(resolution, mapUnits='m') {
+  setDisabled(resolution, mapUnits = 'm') {
     if (this.state.scalebasedvisibility) {
       const mapScale = g3w_ol_utils.getScaleFromResolution(resolution, mapUnits);
       this.state.disabled = !(mapScale >= this.state.maxscale && mapScale <= this.state.minscale);
@@ -253,7 +253,7 @@ const GeoLayerMixin = {
       // needed to check if call setVisible if change disable property
       // looping through parentfolter checked
       let setVisible = true;
-      let parentGroup = this.state.parentGroup;
+      let { parentGroup } = this.state;
       while (parentGroup) {
         setVisible = setVisible && parentGroup.checked;
         parentGroup = parentGroup.parentGroup;
@@ -276,7 +276,7 @@ const GeoLayerMixin = {
     return this.config.ows_method;
   },
 
-  setProjection(crs={}) {
+  setProjection(crs = {}) {
     this.config.projection = Projections.get(crs);
   },
 
@@ -304,10 +304,10 @@ const GeoLayerMixin = {
     if (this.isCached()) return this.config.cache_url;
   },
 
-// return if layer has inverted axis
+  // return if layer has inverted axis
   hasAxisInverted() {
     const projection = this.getProjection();
-    const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : "enu";
+    const axisOrientation = projection.getAxisOrientation ? projection.getAxisOrientation() : 'enu';
     return axisOrientation.substr(0, 2) === 'ne';
   },
 
@@ -317,7 +317,7 @@ const GeoLayerMixin = {
 
   getMapProjection() {
     return this._mapProjection;
-  }
+  },
 };
 
-export default  GeoLayerMixin;
+export default GeoLayerMixin;

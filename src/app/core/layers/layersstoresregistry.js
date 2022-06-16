@@ -1,6 +1,6 @@
 import G3WObject from 'core/g3wobject';
 
-class LayersStoresRegistry extends G3WObject{
+class LayersStoresRegistry extends G3WObject {
   constructor() {
     super({
       setters: {
@@ -12,8 +12,8 @@ class LayersStoresRegistry extends G3WObject{
         },
         removeLayersStores() {
           this._removeLayersStores();
-        }
-      }
+        },
+      },
     });
     this.stores = {};
     this.storesArray = [];
@@ -26,26 +26,24 @@ class LayersStoresRegistry extends G3WObject{
       layer = layerStore.getLayerById(layerId);
       if (layer) break;
     }
-    return layer
-  };
+    return layer;
+  }
 
   getLayers(filter) {
     let layers = [];
     Object.entries(this.stores).forEach(([storeId, layersStore]) => {
-      layers = layers.concat(layersStore.getLayers(filter))
+      layers = layers.concat(layersStore.getLayers(filter));
     });
     return layers;
-  };
+  }
 
   getQuerableLayersStores() {
-    return this.getLayersStores().filter((layersStore) => {
-      return layersStore.isQueryable();
-    })
-  };
+    return this.getLayersStores().filter((layersStore) => layersStore.isQueryable());
+  }
 
   getLayersStore(id) {
     return this.stores[id];
-  };
+  }
 
   getLayersStores() {
     const stores = [];
@@ -53,28 +51,27 @@ class LayersStoresRegistry extends G3WObject{
       stores.push(this.stores[storeId]);
     });
     return stores;
-  };
+  }
 
   _addLayersStore(layersStore, idx) {
     const storeId = layersStore.getId();
     this.stores[storeId] = layersStore;
-    if (!_.isNil(idx)) this.storesArray.splice(idx,0, storeId);
+    if (!_.isNil(idx)) this.storesArray.splice(idx, 0, storeId);
     else this.storesArray.push(storeId);
-
-  };
+  }
 
   _removeLayersStore(layerStore) {
     if (layerStore) {
       const storeId = layerStore.getId();
-      this.storesArray = this.storesArray.filter(_storeId => _storeId != storeId);
+      this.storesArray = this.storesArray.filter((_storeId) => _storeId != storeId);
       delete this.stores[storeId];
     }
-  };
+  }
 
   _removeLayersStores() {
     this.storesArray = [];
     this.stores = {};
-  };
+  }
 }
 
-export default  LayersStoresRegistry;
+export default LayersStoresRegistry;

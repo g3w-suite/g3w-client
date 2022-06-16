@@ -1,8 +1,8 @@
-import BaseLayer  from 'core/layers/baselayers/baselayer';
-import BasesLayers  from 'g3w-ol/src/layers/bases';
+import BaseLayer from 'core/layers/baselayers/baselayer';
+import BasesLayers from 'g3w-ol/src/layers/bases';
 
-class OSMLayer extends BaseLayer{
-  constructor(config={}, options={}) {
+class OSMLayer extends BaseLayer {
+  constructor(config = {}, options = {}) {
     super(config, options);
   }
 
@@ -10,11 +10,10 @@ class OSMLayer extends BaseLayer{
     const olLayer = BasesLayers.OSM.get({
       id: this.config.name,
       title: this.config.title,
-      url: this.config.url
+      url: this.config.url,
     });
-    return olLayer
-  };
-
+    return olLayer;
+  }
 }
 
-export default  OSMLayer;
+export default OSMLayer;

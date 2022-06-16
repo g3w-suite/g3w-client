@@ -1,9 +1,9 @@
 import utils from 'core/utils/utils';
-import BaseComponent  from 'gui/component';
+import BaseComponent from 'gui/component';
 
 // class component
 class Component extends BaseComponent {
-  constructor(options={}) {
+  constructor(options = {}) {
     super(options);
     this._firstLayout = true;
   }
@@ -42,7 +42,7 @@ class Component extends BaseComponent {
 
   ismount() {
     return this.internalComponent && this.internalComponent.$el;
-  };
+  }
 
   layout(width, height) {
     if (this.state.resizable && this._firstLayout) {
@@ -52,12 +52,12 @@ class Component extends BaseComponent {
     this.internalComponent.$nextTick(() => {
       this.internalComponent.$emit('resize-component', {
         width,
-        height
-      })
+        height,
+      });
     });
     // emit layout event
     this.fire('layout');
-  };
-};
+  }
+}
 
-export default  Component;
+export default Component;

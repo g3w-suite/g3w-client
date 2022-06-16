@@ -1,8 +1,8 @@
 const WidgetMixins = {
   data() {
     return {
-      changed: false
-    }
+      changed: false,
+    };
   },
   methods: {
     widgetChanged() {
@@ -10,14 +10,14 @@ const WidgetMixins = {
       this.change();
     },
     stateValueChanged(value) {
-      console.log('need to be implemented by widget') // method to overwrite
-    }
+      console.log('need to be implemented by widget'); // method to overwrite
+    },
   },
   watch: {
-    'state.value'(value) {
+    'state.value': function (value) {
       this.changed ? this.changed = false : this.stateValueChanged(value);
-    }
-  }
+    },
+  },
 };
 
-export default  WidgetMixins;
+export default WidgetMixins;

@@ -1,5 +1,5 @@
-import Input  from 'gui/inputs/input';
-import utils  from 'core/utils/utils';
+import Input from 'gui/inputs/input';
+import utils from 'core/utils/utils';
 import template from './radio.html';
 
 const RadioInput = Vue.extend({
@@ -9,16 +9,16 @@ const RadioInput = Vue.extend({
     return {
       ids: [utils.getUniqueDomId(), utils.getUniqueDomId()],
       name: `name_${utils.getUniqueDomId()}`,
-      radio_value: this.state.value
-    }
+      radio_value: this.state.value,
+    };
   },
   watch: {
-    'radio_value'() {
+    radio_value() {
       this.state.value = this.radio_value;
-      this.change()
-    }
-  }
+      this.change();
+    },
+  },
 
 });
 
-export default  RadioInput;
+export default RadioInput;

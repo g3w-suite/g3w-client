@@ -1,20 +1,20 @@
-import InteractionControl  from './interactioncontrol';
-import {Vector as VectorLayer} from "ol/layer";
-import {Vector as VectorSource} from "ol/source";
-import {Style, Text, Fill} from "ol/style";
-import {Feature} from "ol";
-import {Point} from "ol/geom";
+import { Vector as VectorLayer } from 'ol/layer';
+import { Vector as VectorSource } from 'ol/source';
+import { Style, Text, Fill } from 'ol/style';
+import { Feature } from 'ol';
+import { Point } from 'ol/geom';
 import Geolocation from 'ol/Geolocation';
-import {unByKey} from 'ol/Observable';
+import { unByKey } from 'ol/Observable';
+import InteractionControl from './interactioncontrol';
 
 class GeolocationControl extends InteractionControl {
   constructor() {
     const options = {
       visible: false, // set initial to false. Is set visible if is autorized
       offline: false,
-      name: "geolocation",
-      tipLabel: "sdk.mapcontrols.geolocation.tooltip",
-      label: "\ue904"
+      name: 'geolocation',
+      tipLabel: 'sdk.mapcontrols.geolocation.tooltip',
+      label: '\ue904',
     };
     super(options);
     this._layer = new VectorLayer({
@@ -24,10 +24,10 @@ class GeolocationControl extends InteractionControl {
           text: '\uf3c5',
           font: '900 3em "Font Awesome 5 Free"',
           fill: new Fill({
-            color: 'red'
-          })
-        })
-      })
+            color: 'red',
+          }),
+        }),
+      }),
     });
   }
 
@@ -38,24 +38,24 @@ class GeolocationControl extends InteractionControl {
    * @param show
    * @private
    */
-  _showMarker({map, coordinates, show=true}) {
-    //in case of control is initialized
+  _showMarker({ map, coordinates, show = true }) {
+    // in case of control is initialized
     if (this._layer) {
       this._layer.getSource().clear();
-      if (show)  {
+      if (show) {
         map.getView().setCenter(coordinates);
         const feature = new Feature({
-          geometry: new Point(coordinates)
+          geometry: new Point(coordinates),
         });
         this._layer.getSource().addFeature(feature);
         map.addLayer(this._layer);
       } else map.removeLayer(this._layer);
     }
-  };
+  }
 
   getMap() {
     return super.getMap();
-  };
+  }
 
   setMap(map) {
     let toggledKeyEvent; // key toggled event handler
@@ -64,8 +64,8 @@ class GeolocationControl extends InteractionControl {
       projection: map.getView().getProjection(),
       tracking: true, // set tracking
       trackingOptions: {
-        enableHighAccuracy: true
-      }
+        enableHighAccuracy: true,
+      },
     });
 
     geolocation.on('change:position', () => {
@@ -79,12 +79,12 @@ class GeolocationControl extends InteractionControl {
         this._showMarker({
           map,
           coordinates,
-          show: this.isToggled()
-        })
+          show: this.isToggled(),
+        });
       } else this.hideControl(); // remove control from map control flow
     });
 
-    geolocation.once('error', evt => {
+    geolocation.once('error', (evt) => {
       this.hideControl();
       this._layer = null;
       evt.code !== 1 && this.dispatchEvent('error');
@@ -92,19 +92,18 @@ class GeolocationControl extends InteractionControl {
       toggledKeyEvent = null;
     });
 
-    //only when authorized register toogled event
-    geolocation.once('authorized', ()=>{
+    // only when authorized register toogled event
+    geolocation.once('authorized', () => {
       toggledKeyEvent = this.on('toggled', () => {
         const coordinates = geolocation.getPosition();
         this._showMarker({
           map,
           coordinates,
-          show: this.isToggled()
-        })
+          show: this.isToggled(),
+        });
       });
-    })
-  };
+    });
+  }
 }
 
-
-export default  GeolocationControl;
+export default GeolocationControl;

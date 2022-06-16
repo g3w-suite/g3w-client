@@ -1,10 +1,10 @@
-import {Pointer} from "ol/interaction";
+import { Pointer } from 'ol/interaction';
 
 const PickCoordinatesEventType = {
-  PICKED: 'picked'
+  PICKED: 'picked',
 };
 
-const PickCoordinatesEvent = function(type, coordinate) {
+const PickCoordinatesEvent = function (type, coordinate) {
   this.type = type;
   this.coordinate = coordinate;
 };
@@ -14,7 +14,7 @@ class PickCoordinatesInteraction extends Pointer {
     super({
       handleDownEvent: handleDownEvent_,
       handleUpEvent: handleUpEvent_,
-      handleMoveEvent: handleMoveEvent_
+      handleMoveEvent: handleMoveEvent_,
     });
     this.previousCursor_ = null;
     this._centerMap = null;
@@ -22,7 +22,7 @@ class PickCoordinatesInteraction extends Pointer {
 
   shouldStopEvent() {
     return false;
-  };
+  }
 
   setActive(active) {
     const map = this.getMap();
@@ -31,7 +31,7 @@ class PickCoordinatesInteraction extends Pointer {
       elem.style.cursor = '';
     }
     super.setActive(active);
-  };
+  }
 
   setMap(map) {
     if (!map) {
@@ -39,7 +39,7 @@ class PickCoordinatesInteraction extends Pointer {
       elem.style.cursor = '';
     }
     super.setMap(map);
-  };
+  }
 }
 
 function handleDownEvent_(event) {
@@ -51,22 +51,24 @@ function handleDownEvent_(event) {
     }
   }, 300);
   // return false to avoid  start of drag event
-  return false
+  return false;
 }
 
 function handleUpEvent_(event) {
   this.dispatchEvent(
     new PickCoordinatesEvent(
       PickCoordinatesEventType.PICKED,
-      event.coordinate));
+      event.coordinate,
+    ),
+  );
   // it used to stop drag event
   return false;
 }
 
 function handleMoveEvent_(event) {
   const elem = event.map.getTargetElement();
-  elem.style.cursor =  'pointer';
+  elem.style.cursor = 'pointer';
   return true;
 }
 
-export default  PickCoordinatesInteraction;
+export default PickCoordinatesInteraction;

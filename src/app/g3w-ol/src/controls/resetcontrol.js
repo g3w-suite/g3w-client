@@ -1,22 +1,21 @@
-import InteractionControl  from './interactioncontrol';
+import InteractionControl from './interactioncontrol';
 
 class ResetControl extends InteractionControl {
-  constructor(options={}) {
+  constructor(options = {}) {
     options = {
       ...options,
-      name: "reset",
-      tipLabel: "Pan",
-      label: "\ue901"
+      name: 'reset',
+      tipLabel: 'Pan',
+      label: '\ue901',
     };
     super(options);
     this._toggled = true;
     this._startCoordinate = null;
   }
+
   _postRender() {
     this.toggle(true);
-  };
+  }
 }
 
 export default ResetControl;
-
-

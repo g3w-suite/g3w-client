@@ -1,19 +1,20 @@
-import {EPSG} from '../../../../constant';
-import geoutils  from 'core/utils/geo';
-import template  from './addlayer.html';
-const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
+import geoutils from 'core/utils/geo';
+import { EPSG } from '../../../../constant';
+import template from './addlayer.html';
+
+const SUPPORTED_FORMAT = ['zip', 'geojson', 'GEOJSON', 'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 
-//Vue color componet
+// Vue color componet
 const ChromeComponent = VueColor.Chrome;
-ChromeComponent.mounted = async function() {
-  await this.$nextTick();    // remove all the tihing that aren't useful
+ChromeComponent.mounted = async function () {
+  await this.$nextTick(); // remove all the tihing that aren't useful
   $('.vue-color__chrome__toggle-btn').remove();
   $('.vue-color__editable-input__label').remove();
-  $('.vue-color__chrome__saturation-wrap').css('padding-bottom','100px');
+  $('.vue-color__chrome__saturation-wrap').css('padding-bottom', '100px');
   $('.vue-color__chrome').css({
     'box-shadow': '0 0 0 0',
-    'border': '1px solid #97A1A8'
+    border: '1px solid #97A1A8',
   });
 };
 
@@ -21,9 +22,9 @@ const AddLayerComponent = {
   template,
   props: ['service'],
   data() {
-    //add map crs if not present
+    // add map crs if not present
     const MAPEPSG = this.service.getCrs();
-    EPSG.find(epsg => epsg === MAPEPSG) === undefined && EPSG.unshift(MAPEPSG);
+    EPSG.find((epsg) => epsg === MAPEPSG) === undefined && EPSG.unshift(MAPEPSG);
     return {
       vectorLayer: null,
       options: EPSG,
@@ -31,16 +32,16 @@ const AddLayerComponent = {
       error_message: null,
       position: null,
       loading: false,
-      fields:[],
+      fields: [],
       field: null,
-      accepted_extension: SUPPORTED_FORMAT.map(format => `.${format}`).join(','),
+      accepted_extension: SUPPORTED_FORMAT.map((format) => `.${format}`).join(','),
       csv: {
         valid: false,
-        loading:false,
+        loading: false,
         headers: [],
         x: null,
         y: null,
-        separators : CSV_SEPARATORS,
+        separators: CSV_SEPARATORS,
         separator: CSV_SEPARATORS[0],
       },
       layer: {
@@ -54,20 +55,20 @@ const AddLayerComponent = {
             r: 25,
             g: 77,
             b: 51,
-            a: 1
+            a: 1,
           },
-          a: 1
+          a: 1,
         },
         data: null,
         visible: true,
         title: null,
         id: null,
         external: true,
-      }
-    }
+      },
+    };
   },
   components: {
-    'chrome-picker': ChromeComponent
+    'chrome-picker': ChromeComponent,
   },
   methods: {
     setLayerMapPosition(position) {
@@ -87,9 +88,9 @@ const AddLayerComponent = {
     async onAddLayer(evt) {
       this.csv.valid = true;
       const reader = new FileReader();
-      const name = evt.target.files[0].name;
+      const { name } = evt.target.files[0];
       let type = evt.target.files[0].name.split('.');
-      type = type[type.length-1].toLowerCase();
+      type = type[type.length - 1].toLowerCase();
       const input_file = $(this.$refs.input_file);
       if (SUPPORTED_FORMAT.indexOf(type) !== -1) {
         this.clearError();
@@ -99,11 +100,11 @@ const AddLayerComponent = {
         this.layer.id = name;
         this.layer.type = type;
         if (this.layer.type === 'csv') { // in case of csv
-          reader.onload = evt => {
+          reader.onload = (evt) => {
             input_file.val(null);
-            const csv_data = evt.target.result.split(/\r\n|\n/).filter(row => row);
+            const csv_data = evt.target.result.split(/\r\n|\n/).filter((row) => row);
             const [headers, ...values] = csv_data;
-            const handle_csv_headers = separator => {
+            const handle_csv_headers = (separator) => {
               let data;
               this.csv.loading = true;
               const csv_headers = headers.split(separator);
@@ -118,7 +119,7 @@ const AddLayerComponent = {
                   separator,
                   x: this.csv.x,
                   y: this.csv.y,
-                  values
+                  values,
                 };
                 this.csv.valid = true;
               } else {
@@ -131,18 +132,18 @@ const AddLayerComponent = {
               return data;
             };
             this.layer.data = handle_csv_headers(this.csv.separator);
-            this.$watch('csv.separator', separator => this.layer.data = handle_csv_headers(separator))
+            this.$watch('csv.separator', (separator) => this.layer.data = handle_csv_headers(separator));
           };
           reader.readAsText(evt.target.files[0]);
         } else {
-          const promiseData = new Promise((resolve, reject) =>{
+          const promiseData = new Promise((resolve, reject) => {
             if (this.layer.type === 'zip'
               || this.layer.type === 'kmz') { // in case of shapefile (zip file)
               const data = evt.target.files[0];
               input_file.val(null);
               resolve(data);
             } else {
-              reader.onload = evt => {
+              reader.onload = (evt) => {
                 const data = evt.target.result;
                 input_file.val(null);
                 resolve(data);
@@ -152,10 +153,10 @@ const AddLayerComponent = {
           });
           this.layer.data = await promiseData;
           try {
-            this.fields.splice(0); //reset eventually the fields
+            this.fields.splice(0); // reset eventually the fields
             await this.createVectorLayer();
             this.fields = this.vectorLayer.get('_fields');
-          } catch(err) {}
+          } catch (err) {}
         }
       } else this.setError('unsupported_format');
     },
@@ -163,31 +164,31 @@ const AddLayerComponent = {
       try {
         this.vectorLayer = await geoutils.createVectorLayerFromFile(this.layer);
         await this.$nextTick();
-      } catch(err) {this.setError('add_external_layer');}
+      } catch (err) { this.setError('add_external_layer'); }
     },
     async addLayer() {
       if (this.vectorLayer || this.csv.valid) {
         this.loading = true;
-        //Recreate always the vector layer because we can set the right epsg after first load the file
+        // Recreate always the vector layer because we can set the right epsg after first load the file
         // if we change the epsg of the layer after loaded
         try {
           this.vectorLayer = await geoutils.createVectorLayerFromFile(this.layer);
           this.vectorLayer.setStyle(geoutils.createStyleFunctionToVectorLayer({
             color: this.layer.color,
-            field: this.field
+            field: this.field,
           }));
           await this.service.addExternalLayer(this.vectorLayer, {
             crs: this.layer.crs,
             type: this.layer.type,
-            position: this.position
+            position: this.position,
 
-        });
+          });
           $(this.$refs.modal_addlayer).modal('hide');
           this.clearLayer();
-        } catch(err) {
+        } catch (err) {
           this.setError('add_external_layer');
         }
-        this.loading = false
+        this.loading = false;
       }
     },
     clearLayer() {
@@ -204,31 +205,31 @@ const AddLayerComponent = {
           r: 25,
           g: 77,
           b: 51,
-          a: 1
+          a: 1,
         },
-        a: 1
+        a: 1,
       };
       this.layer.data = null;
       this.vectorLayer = null;
       this.fields = [];
       this.field = null;
-    }
+    },
   },
-  computed:{
+  computed: {
     csv_extension() {
       return this.layer.type === 'csv';
     },
     add() {
       return this.vectorLayer || this.csv.valid;
-    }
-  },
-  watch:{
-    'csv.x'(value) {
-      if (value) this.layer.data.x = value
     },
-    'csv.y'(value) {
-      if (value) this.layer.data.y = value
-    }
+  },
+  watch: {
+    'csv.x': function (value) {
+      if (value) this.layer.data.x = value;
+    },
+    'csv.y': function (value) {
+      if (value) this.layer.data.y = value;
+    },
   },
   created() {
     this.layer.crs = this.service.getCrs();
@@ -236,14 +237,14 @@ const AddLayerComponent = {
   },
   async mounted() {
     await this.$nextTick();
-    this.modal =  $('#modal-addlayer').modal('hide');
-    this.modal.on('hidden.bs.modal',  () => this.clearLayer());
+    this.modal = $('#modal-addlayer').modal('hide');
+    this.modal.on('hidden.bs.modal', () => this.clearLayer());
   },
   beforeDestroy() {
     this.clearLayer();
     this.modal.modal('hide');
     this.modal.remove();
-  }
+  },
 };
 
-export default  AddLayerComponent;
+export default AddLayerComponent;

@@ -1,5 +1,5 @@
-import Input  from 'gui/inputs/input';
-import Service  from '../service';
+import Input from 'gui/inputs/input';
+import Service from '../service';
 import template from './picklayer.html';
 
 const PickLayerInput = Vue.extend({
@@ -8,19 +8,19 @@ const PickLayerInput = Vue.extend({
   methods: {
     pickLayer() {
       this.pickservice.pick()
-        .then(value => this.state.value = value).catch(()=>{})
+        .then((value) => this.state.value = value).catch(() => {});
     },
     unpick() {
-      setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200)
-    }
+      setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200);
+    },
   },
   created() {
-    this.pickservice = new Service(this.state.input.options)
+    this.pickservice = new Service(this.state.input.options);
   },
   beforeDestroy() {
     this.pickservice.clear();
     this.pickservice = null;
-  }
+  },
 });
 
-export default  PickLayerInput;
+export default PickLayerInput;

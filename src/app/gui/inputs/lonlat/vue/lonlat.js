@@ -1,5 +1,5 @@
 import utils from 'core/utils/utils';
-import Input  from 'gui/inputs/input';
+import Input from 'gui/inputs/input';
 import template from './lonlat.html';
 
 const LatLontInput = Vue.extend({
@@ -10,14 +10,14 @@ const LatLontInput = Vue.extend({
       lonId: utils.getUniqueDomId(),
       latId: utils.getUniqueDomId(),
       coordinatebutton: {
-        active: false
-      }
-    }
+        active: false,
+      },
+    };
   },
-  computed:{
+  computed: {
     getCoordinateActive() {
       return this.service.state.getCoordinateActive;
-    }
+    },
   },
   methods: {
     toggleGetCoordinate() {
@@ -28,11 +28,11 @@ const LatLontInput = Vue.extend({
       this.setValue();
     },
     setValue() {
-      this.state.value = [[1*this.state.values.lon, 1*this.state.values.lat]]
-    }
+      this.state.value = [[1 * this.state.values.lon, 1 * this.state.values.lat]];
+    },
   },
   created() {
-    this.state.values = this.state.values || {lon:0, lat:0};
+    this.state.values = this.state.values || { lon: 0, lat: 0 };
     this.setValue();
     this.service.setCoordinateButtonReactiveObject(this.coordinatebutton);
   },
@@ -40,13 +40,13 @@ const LatLontInput = Vue.extend({
     await this.$nextTick();
     this.$nextTick(() => {
       $(this.$refs['g3w-input-lat-lon']).tooltip({
-        trigger: 'hover'
+        trigger: 'hover',
       });
     });
   },
   destroyed() {
     this.service.clear();
-  }
+  },
 });
 
-export default  LatLontInput;
+export default LatLontInput;

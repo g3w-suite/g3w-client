@@ -1,9 +1,9 @@
-import Service  from 'gui/inputs/service';
+import Service from 'gui/inputs/service';
 
 class UniqueService extends Service {
-  constructor(options={}) {
+  constructor(options = {}) {
     super(options);
   }
 }
 
-export default  UniqueService;
+export default UniqueService;

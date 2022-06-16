@@ -1,20 +1,20 @@
-import WMSLayersPanel from './wmslayerspanel.vue';
 import utils from 'core/utils/utils';
 import Panel from 'gui/panel';
+import WMSLayersPanel from './wmslayerspanel.vue';
 
 const WMSLayersPanelComponent = Vue.extend(WMSLayersPanel);
 
 class WmsLayersPanel extends Panel {
-  constructor(options={}) {
+  constructor(options = {}) {
     super(options);
-    const {service, config} = options;
+    const { service, config } = options;
     this.setService(service);
     this.id = utils.uniqueId();
     this.title = 'sidebar.wms.panel.title';
     const panel = WMSLayersPanelComponent;
     const internalPanel = new panel({
       service,
-      config
+      config,
     });
     this.setInternalPanel(internalPanel);
   }

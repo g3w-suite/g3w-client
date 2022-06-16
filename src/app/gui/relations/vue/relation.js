@@ -1,21 +1,22 @@
-import {G3W_FID} from 'constant';
+import { G3W_FID } from 'constant';
 import Field from 'gui/fields/g3w-field.vue';
 import DownloadFormats from 'gui/queryresults/vue/components/actiontools/downloadformats.vue';
-import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
-import template from './relation.html';
-import GUI  from 'gui/gui';
+import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
+import GUI from 'gui/gui';
 import utils from 'core/utils/utils';
-import RelationPageEventBus  from './relationeventbus';
-import {fieldsMixin, resizeMixin}  from 'gui/vue/vue.mixins';
+import { fieldsMixin, resizeMixin } from 'gui/vue/vue.mixins';
+import RelationPageEventBus from './relationeventbus';
+import template from './relation.html';
+
 let SIDEBARWIDTH;
 
-export default  {
+export default {
   template,
   props: ['table', 'feature', 'relation', 'previousview', 'showChartButton', 'cardinality'],
   inject: ['relationnoback'],
   mixins: [fieldsMixin, resizeMixin],
   components: {
-    Field
+    Field,
   },
   data() {
     return {
@@ -27,27 +28,27 @@ export default  {
       downloadLayer: {
         state: null,
         config: {
-          downloads:[]
-        }
-      }
-    }
+          downloads: [],
+        },
+      },
+    };
   },
   computed: {
     showrelationslist() {
       return this.previousview === 'relations' && !this.relationnoback;
     },
     one() {
-      return this.relation.type === 'ONE'
-    }
+      return this.relation.type === 'ONE';
+    },
   },
   methods: {
     async resize() {
       await this.$nextTick();
-      const tableHeight = $(".content").height();
-      setTimeout(()=>{
+      const tableHeight = $('.content').height();
+      setTimeout(() => {
         const datatableBody = $('.query-relation div.dataTables_scrollBody').last();
         const OtherElementHeight = $('.navbar-header').height() + $('.close-panel-block').height() + $(this.$refs['relation-header']).height() + $('.dataTables_filter').last().height() + $('.dataTables_scrollHead').last().height() + (this.isMobile() ? 20 : 0);
-        datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+        datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight);
         if (this.table.rowFormStructure) {
           const width = datatableBody.width() - 60;
           $('.row-wrap-tabs > .tabs-wrapper').width(width);
@@ -64,22 +65,22 @@ export default  {
       this.fields = this.getRowFields(row);
       this.resize();
       await this.$nextTick();
-      $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
+      $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure ? 'hidden' : 'auto');
       this.resize();
     },
     editFeature(featureId) {
       const queryResultsService = GUI.getService('queryresults');
       queryResultsService.editFeature({
         layerId: this.table.layerId,
-        featureId
+        featureId,
       });
     },
     getRowFields(row) {
-      const fields = this.table.fields.map((field, index)=> {
+      const fields = this.table.fields.map((field, index) => {
         field.value = row[index];
         field.query = true;
         field.input = {
-          type: `${this.getFieldType(field)}`
+          type: `${this.getFieldType(field)}`,
         };
         return field;
       });
@@ -95,15 +96,15 @@ export default  {
       const fieldType = this.getFieldType(value);
       return fieldType === type;
     },
-    is(type,value) {
+    is(type, value) {
       return this.fieldIs(type, value);
     },
     moveFnc(evt) {
-      const sidebarHeaderSize =  $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
-      const size = evt.pageX+2 - sidebarHeaderSize;
+      const sidebarHeaderSize = $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH;
+      const size = evt.pageX + 2 - sidebarHeaderSize;
       this.$refs.tablecontent.style.width = `${size}px`;
       this.$refs.chartcontent.style.width = `${$(this.$refs.relationwrapper).width() - size - 10}px`;
-    }
+    },
   },
   watch: {
     async chart() {
@@ -113,24 +114,24 @@ export default  {
     async headercomponent() {
       await this.$nextTick();
       this.resize();
-    }
+    },
   },
   beforeCreate() {
     this.delayType = 'debounce';
   },
   created() {
     const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-    this.isEditable =  layer.isEditable() && !layer.isInEditing();
+    this.isEditable = layer.isEditable() && !layer.isInEditing();
     const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
     const downloadformatsLength = downloadformats.length;
     if (downloadformatsLength > 0) {
       this.downloadButton = {
         toggled: false,
         tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-        handler: downloadformatsLength > 1 ? async ()=> {
+        handler: downloadformatsLength > 1 ? async () => {
           this.downloadButton.toggled = !this.downloadButton.toggled;
           this.downloadLayer.state = this.downloadLayer.state || layer.state;
-          this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
+          this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map((format) => (
             {
               id: format,
               format,
@@ -138,41 +139,40 @@ export default  {
                 this.saveRelation(layer.getDownloadUrl(format));
                 this.headercomponent = null;
               },
-              download: true
-            })
-          );
+              download: true,
+            }));
           this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-        } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-      }
+        } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0])),
+      };
     }
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     });
-    this.showChart = utils.throttle(async ()=> {
+    this.showChart = utils.throttle(async () => {
       this.chart = !this.chart;
       await this.$nextTick();
-      this.chartContainer = this.chartContainer ||  $('#chart_content');
+      this.chartContainer = this.chartContainer || $('#chart_content');
       const relationData = {
         relations: [this.relation],
         fid: this.feature.attributes[G3W_FID],
       };
-      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
+      this.$emit(this.chart ? 'show-chart' : 'hide-chart', this.chartContainer, relationData);
     });
   },
   async mounted() {
-    SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
+    SIDEBARWIDTH = GUI.getSize({ element: 'sidebar', what: 'width' });
     this.relation.title = this.relation.name;
     await this.$nextTick();
     if (!this.one) {
-      this.relationDataTable = $(this.$refs.relationtable).DataTable( {
-        "pageLength": 10,
-        "bLengthChange": true,
-        "scrollResize": true,
-        "scrollCollapse": true,
-        "scrollX": true,
-        "responsive": true,
-        "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
-        "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
+      this.relationDataTable = $(this.$refs.relationtable).DataTable({
+        pageLength: 10,
+        bLengthChange: true,
+        scrollResize: true,
+        scrollCollapse: true,
+        scrollX: true,
+        responsive: true,
+        order: [this.table.formStructure ? 1 : 0, 'asc'],
+        columnDefs: [{ orderable: !this.table.formStructure, targets: 0 }],
       });
       $('.row-form').tooltip();
       this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
@@ -185,5 +185,5 @@ export default  {
     this.chartContainer && this.$emit('hide-chart', this.chartContainer);
     this.chartContainer = null;
     this.tableHeaderHeight = null;
-  }
+  },
 };

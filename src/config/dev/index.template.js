@@ -1,21 +1,21 @@
-//HERE YOU CAN PUT ALL DEV initConfiguration to test in realtime possible future configuration keys or test configuration in a fast way
+// HERE YOU CAN PUT ALL DEV initConfiguration to test in realtime possible future configuration keys or test configuration in a fast way
 export default {
   createProject: {
     before(projectConfig) {
-      //code here
+      // code here
     },
     after(projectConfig) {
-      //code here
-    }
+      // code here
+    },
   },
-  //insert code to change project setting here
+  // insert code to change project setting here
   setCurrentProject: {
     before(project) {
-      //code here
+      // code here
     },
     after(project) {
-      //code here
-    }
+      // code here
+    },
   },
-  plugins: {} // plugin configuration dev
-}
+  plugins: {}, // plugin configuration dev
+};

@@ -1,4 +1,3 @@
-import G3W_CONSTANT from './constant';
 // api file interface for external plugin
 /**
  * Core modules
@@ -20,7 +19,7 @@ import Geometry from 'core/geometry/geometry';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import Project from 'core/project/project';
 import MapLayersStoreRegistry from 'core/map/maplayersstoresregistry';
-import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry'
+import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
 import LayersStoreRegistry from 'core/layers/layersstoresregistry';
 import LayersStore from 'core/layers/layersstore';
 import Layer from 'core/layers/layer';
@@ -46,10 +45,10 @@ import Step from 'core/workflow/step';
 import Flow from 'core/workflow/flow';
 import Workflow from 'core/workflow/workflow';
 import WorkflowsStack from 'core/workflow/workflowsstack';
-import ApiService from 'core/apiservice'
-import G3WObject from "core/g3wobject";
+import ApiService from 'core/apiservice';
+import G3WObject from 'core/g3wobject';
 import utils from 'core/utils/utils';
-import geoutils from 'core/utils/geo'
+import geoutils from 'core/utils/geo';
 
 /**
  * gui modules
@@ -67,7 +66,7 @@ import PrintComponent from 'gui/print/vue/print';
 import CatalogComponent from 'gui/catalog/vue/catalog';
 import MapComponent from 'gui/map/vue/map';
 import ToolsComponent from 'gui/tools/vue/tools';
-import QueryResultsComponent  from 'gui/queryresults/vue/queryresults';
+import QueryResultsComponent from 'gui/queryresults/vue/queryresults';
 // main Form Component
 import FormComponent from 'gui/form/vue/form';
 import FormBody from 'gui/form/components/body/vue/body';
@@ -77,10 +76,9 @@ import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
 import InputsComponents from 'gui/inputs/inputs';
 import ChartsFactory from 'gui/charts/chartsfactory';
 import lineXY from 'gui/charts/vue/c3/line/lineXY';
-import Fields  from 'gui/fields/fields';
+import Fields from 'gui/fields/fields';
 import Mixins from 'gui/vue/vue.mixins';
 import SearchPanelService from 'gui/search/vue/panel/searchservice';
-
 
 /**
  * g3w openlayers custom modules
@@ -89,15 +87,16 @@ import SearchPanelService from 'gui/search/vue/panel/searchservice';
 
 import PickCoordinatesInteraction from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
 import PickFeatureInteraction from 'g3w-ol/src/interactions/pickfeatureinteraction';
-import DeleteFeatureInteraction from 'g3w-ol/src/interactions/deletefeatureinteraction'
+import DeleteFeatureInteraction from 'g3w-ol/src/interactions/deletefeatureinteraction';
 import AreaInteraction from 'g3w-ol/src/interactions/areainteraction';
 import LengthInteraction from 'g3w-ol/src/interactions/lengthinteraction';
 import g3wolutils from 'g3w-ol/src/utils/utils';
+import G3W_CONSTANT from './constant';
 
 const g3w = {};
-//set G3W-CLIENT application constant
+// set G3W-CLIENT application constant
 g3w.constant = G3W_CONSTANT;
-//set core api method and objects
+// set core api method and objects
 g3w.core = {
   G3WObject,
   utils,
@@ -107,7 +106,7 @@ g3w.core = {
   ApiService,
   Router,
   i18n,
-  task:{
+  task: {
     TaskService,
   },
   data: {
@@ -118,28 +117,28 @@ g3w.core = {
   },
   errors: {
     parsers: {
-      Server
-    }
+      Server,
+    },
   },
   editing: {
     Session,
     SessionsRegistry,
     Editor,
-    ChangesManager
+    ChangesManager,
   },
   geometry: {
     Geom,
-    Geometry
+    Geometry,
   },
   project: {
     ProjectsRegistry,
     Project,
   },
   map: {
-    MapLayersStoreRegistry
+    MapLayersStoreRegistry,
   },
   catalog: {
-    CatalogLayersStoresRegistry
+    CatalogLayersStoresRegistry,
   },
   layer: {
     LayersStoreRegistry,
@@ -154,37 +153,37 @@ g3w.core = {
     MapLayer,
     geometry: {
       Geometry,
-      Geom
+      Geom,
     },
     features: {
       Feature,
       FeaturesStore,
-      OlFeaturesStore
+      OlFeaturesStore,
     },
     filter: {
       Filter,
-      Expression
-    }
+      Expression,
+    },
   },
   relations: {
-    RelationsService
+    RelationsService,
   },
   interaction: {
     PickCoordinatesInteraction,
-    PickFeatureInteraction
+    PickFeatureInteraction,
   },
   plugin: {
     Plugin,
     PluginsRegistry,
-    PluginService
+    PluginService,
   },
   workflow: {
     Task,
     Step,
     Flow,
     Workflow,
-    WorkflowsStack
-  }
+    WorkflowsStack,
+  },
 };
 
 g3w.gui = {
@@ -209,39 +208,39 @@ g3w.gui = {
     // Form Components
     FormComponents: {
       FormBody,
-      FormFooter
+      FormFooter,
     },
     Inputs: {
       G3wFormInputs,
       G3WInput,
-      InputsComponents
+      InputsComponents,
     },
     Charts: {
       ChartsFactory,
       c3: {
-        lineXY
-      }
+        lineXY,
+      },
     },
     Fields,
     Mixins,
     services: {
-      SearchPanel: SearchPanelService
-    }
-  }
+      SearchPanel: SearchPanelService,
+    },
+  },
 };
 
 g3w.ol = {
-  interactions : {
+  interactions: {
     PickFeatureInteraction,
     PickCoordinatesInteraction,
     DeleteFeatureInteraction,
     measure: {
       AreaInteraction,
-      LengthInteraction
-    }
+      LengthInteraction,
+    },
   },
   controls: {},
-  utils: g3wolutils
+  utils: g3wolutils,
 };
 
 g3w.test = {};
@@ -251,5 +250,5 @@ export default {
   gui: g3w.gui,
   ol: g3w.ol,
   test: g3w.test,
-  constant: g3w.constant
+  constant: g3w.constant,
 };

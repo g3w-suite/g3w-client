@@ -1,11 +1,11 @@
 import G3WObject from 'core/g3wobject';
-//class Componet Registry (singleton)
+// class Componet Registry (singleton)
 // store all components added
 class ComponentsRegistry extends G3WObject {
   constructor() {
     super();
     this.components = {};
-  };
+  }
 
   registerComponent(component) {
     const id = component.getId();
@@ -13,15 +13,15 @@ class ComponentsRegistry extends G3WObject {
       this.components[id] = component;
       this.fire('componentregistered', component);
     }
-  };
+  }
 
   getComponent(id) {
     return this.components[id];
-  };
+  }
 
   getComponents() {
     return this.components;
-  };
+  }
 
   unregisterComponent(id) {
     const component = this.components[id];
@@ -30,7 +30,7 @@ class ComponentsRegistry extends G3WObject {
       this.components[id] = null;
     }
     return component;
-  };
+  }
 }
 
-export default  new ComponentsRegistry;
+export default new ComponentsRegistry();

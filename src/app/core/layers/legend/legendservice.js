@@ -1,18 +1,19 @@
 import wms from './wmslegend';
 import argismapserver from './arcgismapserverlegend';
+
 const TYPES = {
   wms,
-  argismapserver
+  argismapserver,
 };
 
 const Legendservice = {
-  get({layer, params}={}) {
-    const type = layer.isArcgisMapserver() ? 'argismapserver': 'wms';
+  get({ layer, params } = {}) {
+    const type = layer.isArcgisMapserver() ? 'argismapserver' : 'wms';
     return TYPES[type]({
       layer,
-      params
-    })
-  }
+      params,
+    });
+  },
 };
 
-export default  Legendservice;
+export default Legendservice;

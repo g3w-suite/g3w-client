@@ -1,16 +1,16 @@
-import LenghtIteraction  from '../interactions/lengthinteraction';
-import MeasureControl  from './measurecontrol';
+import LenghtIteraction from '../interactions/lengthinteraction';
+import MeasureControl from './measurecontrol';
 
 class LengthControl extends MeasureControl {
-  constructor(options={}) {
+  constructor(options = {}) {
     super({
       ...options,
-      tipLabel: "sdk.mapcontrols.measures.length.tooltip",
-      label: "\ue908",
+      tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
+      label: '\ue908',
       clickmap: true, // set ClickMap
-      interactionClass: LenghtIteraction
+      interactionClass: LenghtIteraction,
     });
   }
 }
 
-export default  LengthControl;
+export default LengthControl;

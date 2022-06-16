@@ -1,17 +1,17 @@
-import AreaIteraction  from '../interactions/areainteraction';
-import MeasureControl  from './measurecontrol';
+import AreaIteraction from '../interactions/areainteraction';
+import MeasureControl from './measurecontrol';
 
 class AreaControl extends MeasureControl {
-  constructor(options={}) {
+  constructor(options = {}) {
     options = {
       ...options,
-      tipLabel: "sdk.mapcontrols.measures.area.tooltip",
-      label: "\ue909",
+      tipLabel: 'sdk.mapcontrols.measures.area.tooltip',
+      label: '\ue909',
       clickmap: true, // set ClickMap
-      interactionClass: AreaIteraction
+      interactionClass: AreaIteraction,
     };
     super(options);
   }
-};
+}
 
-export default  AreaControl;
+export default AreaControl;

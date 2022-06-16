@@ -1,7 +1,7 @@
-import Input  from 'gui/inputs/input';
-import utils  from 'core/utils/utils';
-import WidgetMixins  from 'gui/inputs/widgetmixins';
-import checkBoxTemplate from  './checkbox.html';
+import Input from 'gui/inputs/input';
+import utils from 'core/utils/utils';
+import WidgetMixins from 'gui/inputs/widgetmixins';
+import checkBoxTemplate from './checkbox.html';
 
 const CheckBoxInput = Vue.extend({
   mixins: [Input, WidgetMixins],
@@ -9,9 +9,9 @@ const CheckBoxInput = Vue.extend({
   data() {
     return {
       value: null,
-      label:null,
-      id: utils.getUniqueDomId() // new id
-    }
+      label: null,
+      id: utils.getUniqueDomId(), // new id
+    };
   },
   methods: {
     setLabel() {
@@ -29,7 +29,7 @@ const CheckBoxInput = Vue.extend({
     stateValueChanged() {
       this.setValue();
       this.setLabel();
-    }
+    },
   },
   created() {
     this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
@@ -39,7 +39,7 @@ const CheckBoxInput = Vue.extend({
       this.setLabel();
       this.change();
     }
-  }
+  },
 });
 
-export default  CheckBoxInput;
+export default CheckBoxInput;

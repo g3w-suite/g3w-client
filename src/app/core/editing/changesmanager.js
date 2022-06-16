@@ -1,6 +1,7 @@
-//Class that is usefult to apply changes to features (undo/redo) singleton
+// Class that is usefult to apply changes to features (undo/redo) singleton
 class ChangesManager {
   constructor() {}
+
   execute(object, items, reverse) {
     let fnc;
     let feature;
@@ -13,23 +14,24 @@ class ChangesManager {
       // get method from object
       fnc = ChangesManager.Actions[feature.getState()].fnc;
       object[fnc](feature);
-    })
+    });
   }
+
   // class attribute
   static Actions = {
-    'add': {
+    add: {
       fnc: 'addFeature',
-      opposite: 'delete'
+      opposite: 'delete',
     },
-    'delete': {
+    delete: {
       fnc: 'removeFeature',
-      opposite: 'add'
+      opposite: 'add',
     },
-    'update': {
+    update: {
       fnc: 'updateFeature',
-      opposite: 'update'
-    }
+      opposite: 'update',
+    },
   };
 }
 
-export default  new ChangesManager();
+export default new ChangesManager();

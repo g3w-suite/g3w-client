@@ -1,11 +1,11 @@
 import ApplicationState from 'core/applicationstate';
-import {t}  from 'core/i18n/i18n.service';
-import Provider  from 'core/layers/providers/provider';
-import responseParser  from 'core/parsers/response/parser';
-import RelationsService  from 'core/relations/relationsservice';
-import Feature  from 'core/layers/features/feature';
-import Parsers  from 'core/parsers/parsers';
-import {containsExtent, extend} from "ol/extent";
+import { t } from 'core/i18n/i18n.service';
+import Provider from 'core/layers/providers/provider';
+import responseParser from 'core/parsers/response/parser';
+import RelationsService from 'core/relations/relationsservice';
+import Feature from 'core/layers/features/feature';
+import Parsers from 'core/parsers/parsers';
+import { containsExtent, extend } from 'ol/extent';
 
 class QGISProvider extends Provider {
   constructor(options = {}) {
@@ -14,16 +14,16 @@ class QGISProvider extends Provider {
     this._layer = options.layer || {};
     this._projections = {
       map: null,
-      layer: null
+      layer: null,
     };
     // url referred to query
     this._queryUrl = this._layer.getUrl('query');
-    //filtertokenurl
+    // filtertokenurl
     this._filtertokenUrl = this._layer.getUrl('filtertoken');
     // layer name
     this._layerName = this._layer.getName() || null; // get name  from QGIS layer, because the query are proxed from g3w-server
     this._infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
-  };
+  }
   /*
     *
     * token: current token if provide
@@ -33,25 +33,27 @@ class QGISProvider extends Provider {
   async deleteFilterToken() {
     await XHR.get({
       url: this._filtertokenUrl,
-      params:{
-        mode: 'delete'
-      }
-    })
-  };
+      params: {
+        mode: 'delete',
+      },
+    });
+  }
 
-  async getFilterToken(params={}) {
+  async getFilterToken(params = {}) {
     try {
-      const {data={} } = await XHR.get({
+      const { data = {} } = await XHR.get({
         url: this._filtertokenUrl,
-        params
+        params,
       });
       return data.filtertoken;
-    } catch(err) {
+    } catch (err) {
       return Promise.reject(err);
     }
-  };
+  }
 
-  async getFilterData({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}) {
+  async getFilterData({
+    field, raw = false, suggest = {}, unique, formatter = 1, queryUrl, ordering,
+  } = {}) {
     const dataUrl = this._layer.getUrl('data');
     const params = {
       field,
@@ -59,53 +61,53 @@ class QGISProvider extends Provider {
       ordering,
       formatter,
       unique,
-      filtertoken: ApplicationState.tokens.filtertoken
+      filtertoken: ApplicationState.tokens.filtertoken,
     };
     try {
-      let response = await XHR.get({
-        url: `${queryUrl ?  queryUrl : dataUrl}`,
-        params
+      const response = await XHR.get({
+        url: `${queryUrl || dataUrl}`,
+        params,
       });
-      const isVector = this._layer.getType() !== "table";
+      const isVector = this._layer.getType() !== 'table';
       isVector && this.setProjections();
-      const data = raw ? response : response.result ?  unique ? response.data :  {
+      const data = raw ? response : response.result ? unique ? response.data : {
         data: responseParser.get('application/json')({
           layers: [this._layer],
-          response:response.vector.data,
-          projections: this._projections
-        })
-      }: Promise.reject();
+          response: response.vector.data,
+          projections: this._projections,
+        }),
+      } : Promise.reject();
       return data;
-    } catch(error) {
+    } catch (error) {
       return Promise.reject(error);
     }
-  };
+  }
 
   setProjections() {
-    //COMMENTED LAYER PROJECTION: EXPECT ONLY RESULT IN MAP PROJECTION
-    //this._projections.layer = this._layer.getProjection();
+    // COMMENTED LAYER PROJECTION: EXPECT ONLY RESULT IN MAP PROJECTION
+    // this._projections.layer = this._layer.getProjection();
     this._projections.map = this._layer.getMapProjection() || this._projections.layer;
-  };
+  }
 
-//query by filter
-  query(options={}) {
+  // query by filter
+  query(options = {}) {
     const d = $.Deferred();
     const feature_count = options.feature_count || 10;
     // parameter to get rwa response
     const raw = options.raw || false;
-    let {filter=null} = options;
+    let { filter = null } = options;
     filter = filter && Array.isArray(filter) ? filter : [filter];
-    const isVector = this._layer.getType() !== "table";
+    const isVector = this._layer.getType() !== 'table';
     isVector && this.setProjections();
     const CRS = isVector ? this._projections.map.getCode() : ApplicationState.map.epsg;
     const queryUrl = options.queryUrl || this._queryUrl;
-    const {I,J, layers} = options;
-    const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
+    const { I, J, layers } = options;
+    const layerNames = layers ? layers.map((layer) => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
     if (filter) {
       // check if geometry filter. If not i have to remove projection layer
       if (filter[0].getType() !== 'geometry') this._projections.layer = null;
-      filter = filter.map(filter => filter.get()).filter(value => value);
-      const url = queryUrl ;
+      filter = filter.map((filter) => filter.get()).filter((value) => value);
+      const url = queryUrl;
       const params = {
         SERVICE: 'WMS',
         VERSION: '1.3.0',
@@ -119,20 +121,20 @@ class QGISProvider extends Provider {
         I,
         J,
         FILTER: filter && filter.length ? filter.join(';') : undefined,
-        WITH_GEOMETRY: isVector
+        WITH_GEOMETRY: isVector,
       };
       XHR.get({
         url,
-        params
-      }).then(response => {
+        params,
+      }).then((response) => {
         const featuresForLayers = raw ? response : this.handleQueryResponseFromServer(response, this._projections, layers);
         d.resolve(featuresForLayers);
-      }).catch(err => d.reject(err));
+      }).catch((err) => d.reject(err));
     } else d.reject();
     return d.promise();
-  };
+  }
 
-// get layer config
+  // get layer config
   getConfig() {
     const d = $.Deferred();
     const url = this._layer.getUrl('config');
@@ -141,60 +143,59 @@ class QGISProvider extends Provider {
       return;
     }
     $.get(url)
-      .then(config => d.resolve(config))
-      .fail(err => d.reject(err));
+      .then((config) => d.resolve(config))
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-  getWidgetData(options={}) {
-    const {type, fields} = options;
+  getWidgetData(options = {}) {
+    const { type, fields } = options;
     const widgetUrls = this._layer.getUrl('widget');
     const url = widgetUrls[type];
     return $.get(url, {
-      fields
+      fields,
     });
-  };
+  }
 
-// unlock feature
+  // unlock feature
   unlock() {
-    const unlockUrl =  this._layer.getUrl('unlock');
+    const unlockUrl = this._layer.getUrl('unlock');
     const d = $.Deferred();
     $.post(unlockUrl)
-      .then(response => d.resolve(response))
-      .fail(err => d.reject(err));
-    return d.promise()
-  };
+      .then((response) => d.resolve(response))
+      .fail((err) => d.reject(err));
+    return d.promise();
+  }
 
-// commit function
+  // commit function
   commit(commitItems) {
     const d = $.Deferred();
-    //check if editing or not;
+    // check if editing or not;
     const url = this._layer.getUrl('commit');
     const jsonCommits = JSON.stringify(commitItems);
     $.post({
       url,
       data: jsonCommits,
-      contentType: "application/json"
+      contentType: 'application/json',
     })
-      .then(response => d.resolve(response))
-      .fail(err => d.reject(err));
+      .then((response) => d.resolve(response))
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-// METODS LOADING EDITING FEATURES (READ/WRITE) //
-  getFeatures(options={}, params={}) {
+  // METODS LOADING EDITING FEATURES (READ/WRITE) //
+  getFeatures(options = {}, params = {}) {
     const d = $.Deferred();
     // filter null value
     Object.entries(params).forEach(([key, value]) => {
-      if (value === null || value === void 0)
-        delete params[key]
+      if (value === null || value === void 0) delete params[key];
     });
     const layerType = this._layer.getType();
     // check if data are requested in read or write mode;
     let url;
-    //set contentType
-    const contentType = "application/json";
-    //editing mode
+    // set contentType
+    const contentType = 'application/json';
+    // editing mode
     if (options.editing) {
       let promise;
       url = this._layer.getUrl('editing');
@@ -203,23 +204,23 @@ class QGISProvider extends Provider {
         return;
       }
       const urlParams = $.param(params);
-      url+=  urlParams ? '?' + urlParams : '';
+      url += urlParams ? `?${urlParams}` : '';
       const features = [];
       let filter = options.filter || null;
       if (filter) {
         // filterbbox
         if (filter.bbox) {
-          const bbox = filter.bbox;
+          const { bbox } = filter;
           filter = {
             in_bbox: `${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`,
-            filtertoken: ApplicationState.tokens.filtertoken
+            filtertoken: ApplicationState.tokens.filtertoken,
           };
           const jsonFilter = JSON.stringify(filter);
           promise = XHR.post({
             url,
             data: jsonFilter,
-            contentType
-          })
+            contentType,
+          });
           // filter fid
         } else if (filter.fid) {
           const options = filter.fid;
@@ -229,84 +230,82 @@ class QGISProvider extends Provider {
           promise = XHR.post({
             url,
             data: jsonFilter,
-            contentType
-          })
+            contentType,
+          });
         } else if (filter.fids) {
           promise = XHR.get({
             url,
-            params: filter
-          })
+            params: filter,
+          });
         } else if (filter.nofeatures) {
           const jsonFilter = JSON.stringify({
-            field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
+            field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`,
           });
           promise = XHR.post({
             url,
             data: jsonFilter,
-            contentType
-          })
+            contentType,
+          });
         }
-      } else promise = XHR.post({url,contentType});
-      promise.then(response => {
-        const {vector, result, featurelocks} = response;
+      } else promise = XHR.post({ url, contentType });
+      promise.then((response) => {
+        const { vector, result, featurelocks } = response;
         if (result) {
-          const {data, geometrytype} = vector;
+          const { data, geometrytype } = vector;
           const parser = Parsers[layerType].get({
-            type: 'json'
+            type: 'json',
           });
-          //const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
+          // const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs(), mapCrs: this._layer.getMapCrs() } : {};
           const parser_options = (geometrytype !== 'NoGeometry') ? { crs: this._layer.getCrs() } : {};
-          //get lockIds
-          const lockIds = featurelocks.map(featureLock => {
-            return featureLock.featureid
-          });
-          parser(data, parser_options).forEach(feature => {
+          // get lockIds
+          const lockIds = featurelocks.map((featureLock) => featureLock.featureid);
+          parser(data, parser_options).forEach((feature) => {
             const featureId = `${feature.getId()}`;
             if (lockIds.indexOf(featureId) > -1) {
               features.push(new Feature({
-                feature
+                feature,
               }));
             }
           });
           // resolve with features locked and requested
           d.resolve({
             features,
-            featurelocks
+            featurelocks,
           });
-        } else {// case when server responde with result false (error)
+        } else { // case when server responde with result false (error)
           d.reject({
-            message: t("info.server_error")
+            message: t('info.server_error'),
           });
         }
       })
-        .catch(err => d.reject({ message: t("info.server_error")}));
+        .catch((err) => d.reject({ message: t('info.server_error') }));
     } else {
       url = this._layer.getUrl('data');
       const urlParams = $.param(params);
-      url+= urlParams ? '?' + urlParams : '';
+      url += urlParams ? `?${urlParams}` : '';
       $.get({
         url,
-        contentType
+        contentType,
       })
-        .then(response => {
-          const vector = response.vector;
-          const data = vector.data;
+        .then((response) => {
+          const { vector } = response;
+          const { data } = vector;
           d.resolve({
             data,
-            count: vector.count
-          })
+            count: vector.count,
+          });
         })
-        .fail(err => d.reject(err))
+        .fail((err) => d.reject(err));
     }
     return d.promise();
-  };
+  }
 
   _loadLayerData(mode, customUrlParameters) {
     const d = $.Deferred();
     Obkect.entries(this._layers).forEach(([layerCode, layer]) => {
       if (_.isNull(layer.vector)) noVectorlayerCodes.push(layerCode);
     });
-    const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
+    const vectorLayersSetup = noVectorlayerCodes.map((layerCode) => this._setupVectorLayer(layerCode));
     this.fire('loadingvectorlayersstart');
     $.when.apply(this, vectorLayersSetup)
       .then(() => {
@@ -319,12 +318,12 @@ class QGISProvider extends Provider {
             this.fire('loadingvectorlayersend');
             this.setReady(true);
           })
-          .fail(() =>  {
-            this._layers.forEach(layer => layer.vector = null);
+          .fail(() => {
+            this._layers.forEach((layer) => layer.vector = null);
             d.reject();
             this.fire('errorloadingvectorlayersend');
             this.setReady(false);
-          })
+          });
       })
       .fail(() => {
         this.setReady(false);
@@ -332,25 +331,25 @@ class QGISProvider extends Provider {
         d.reject();
       });
     return d.promise();
-  };
+  }
 
   setVectorLayersCodes(vectorLayersCodes) {
     this._vectorLayersCodes = vectorLayersCodes;
-  };
+  }
 
   getVectorLayersCodes() {
     return this._vectorLayersCodes;
-  };
+  }
 
   getLayers() {
     return this._layers;
-  };
+  }
 
   reloadVectorData(layerCode) {
     const d = $.Deferred();
-    const bbox = this._mapService.state.bbox;
+    const { bbox } = this._mapService.state;
     this._createVectorLayerFromConfig(layerCode)
-      .then(vectorLayer => {
+      .then((vectorLayer) => {
         this._getVectorLayerData(vectorLayer, bbox)
           .then((vectorDataResponse) => {
             this.setVectorLayerData(vectorLayer[this._editingApiField], vectorDataResponse);
@@ -359,12 +358,12 @@ class QGISProvider extends Provider {
           });
       });
     return d.promise();
-  };
+  }
 
   loadAllVectorsData(layerCodes) {
     const d = $.Deferred();
     let layers = this._layers;
-    const bbox = this._mapService.state.bbox;
+    const { bbox } = this._mapService.state;
     const loadedExtent = this._loadedExtent;
     if (loadedExtent && containsExtent(loadedExtent, bbox)) {
       return resolvedValue();
@@ -372,19 +371,19 @@ class QGISProvider extends Provider {
     this._loadedExtent = !loadedExtent ? bbox : extend(loadedExtent, bbox);
     if (layerCodes) {
       layers = [];
-      layerCodes.forEach(layerCode => layers.push(this._layers[layerCode]));
+      layerCodes.forEach((layerCode) => layers.push(this._layers[layerCode]));
     }
-    const vectorDataRequests = layers.map(Layer => this._loadVectorData(Layer.vector, bbox));
+    const vectorDataRequests = layers.map((Layer) => this._loadVectorData(Layer.vector, bbox));
 
     $.when.apply(this, vectorDataRequests)
       .then(() => d.resolve(layerCodes))
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
   _setCustomUrlParameters(customUrlParameters) {
     this._customUrlParameters = customUrlParameters;
-  };
+  }
 
   _checkVectorGeometryTypeFromConfig(vectorConfig) {
     switch (vectorConfig.geometrytype) {
@@ -396,13 +395,13 @@ class QGISProvider extends Provider {
         break;
     }
     return vectorConfig;
-  };
+  }
 
   _createVectorLayerFromConfig(layerCode) {
     const layerConfig = this._layers[layerCode];
     const d = $.Deferred();
     this._getVectorLayerConfig(layerConfig[this._editingApiField])
-      .then(vectorConfigResponse => {
+      .then((vectorConfigResponse) => {
         let vectorConfig = vectorConfigResponse.vector;
         vectorConfig = this._checkVectorGeometryTypeFromConfig(vectorConfig);
         const crsLayer = layerConfig.crs || this._mapService.getProjection().getCode();
@@ -410,14 +409,14 @@ class QGISProvider extends Provider {
           geometrytype: vectorConfig.geometrytype,
           format: vectorConfig.format,
           crs: this._mapService.getProjection().getCode(),
-          crsLayer : crsLayer,
+          crsLayer,
           id: layerConfig.id,
           name: layerConfig.name,
-          editing: self._editingMode
+          editing: self._editingMode,
         });
         vectorLayer.setFields(vectorConfig.fields);
         vectorLayer.setCrs(crsLayer);
-        const relations = vectorConfig.relations;
+        const { relations } = vectorConfig;
         if (relations) {
           vectorLayer.lazyRelations = true;
           vectorLayer.setRelations(relations);
@@ -427,23 +426,23 @@ class QGISProvider extends Provider {
       })
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
   _setupVectorLayer(layerCode) {
     const d = $.Deferred();
     this._createVectorLayerFromConfig(layerCode)
-      .then(vectorLayer => {
+      .then((vectorLayer) => {
         const layerConfig = this._layers[layerCode];
         layerConfig.vector = vectorLayer;
         d.resolve(layerCode);
       })
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
   _loadVectorData(vectorLayer, bbox) {
     return self._getVectorLayerData(vectorLayer, bbox)
-      .then(vectorDataResponse => {
+      .then((vectorDataResponse) => {
         this.setVectorLayerData(vectorLayer[this._editingApiField], vectorDataResponse);
         if (this._editingMode && vectorDataResponse.featurelocks) {
           this.setVectorFeaturesLock(vectorLayer, vectorDataResponse.featurelocks);
@@ -451,73 +450,71 @@ class QGISProvider extends Provider {
         vectorLayer.setData(vectorDataResponse.vector.data);
         if (this._) return vectorDataResponse;
       })
-      .fail(() => {
-        return false;
-      })
-  };
+      .fail(() => false);
+  }
 
   getVectorLayerData(layerCode) {
     return this._vectorLayersData[layerCode];
-  };
+  }
 
   getVectorLayersData() {
     return this._vectorLayersData;
-  };
+  }
 
   setVectorLayerData(layerCode, vectorLayerData) {
     this._vectorLayersData[layerCode] = vectorLayerData;
-  };
+  }
 
   setVectorFeaturesLock(vectorLayer, featureslock) {
     const newFeaturesLockIds = _.differenceBy(featureslock, vectorLayer.getFeatureLocks(), 'featureid');
     newFeaturesLockIds.forEach((newLockId) => {
-      vectorLayer.addLockId(newLockId)
+      vectorLayer.addLockId(newLockId);
     });
-  };
+  }
 
   cleanVectorFeaturesLock(vectorLayer) {
     vectorLayer.cleanFeatureLocks();
-  };
+  }
 
   lockFeatures(layerName) {
     const d = $.Deferred();
-    const bbox = this._mapService.state.bbox;
+    const { bbox } = this._mapService.state;
     const vectorLayer = this._layers[layerName].vector;
-    $.get(this._baseUrl+layerName+"/?lock" + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-      .done(data => {
+    $.get(`${this._baseUrl + layerName}/?lock${this._customUrlParameters}&in_bbox=${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`)
+      .done((data) => {
         this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
         d.resolve(data);
       })
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
   _getVectorLayerConfig(layerApiField) {
     const d = $.Deferred();
-    $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
-      .done(data => d.resolve(data))
+    $.get(`${this._baseUrl + layerApiField}/?config${this._customUrlParameters}`)
+      .done((data) => d.resolve(data))
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
   _getVectorLayerData(vectorLayer, bbox) {
     const d = $.Deferred();
-    const lock = this.getMode() == 'w' ? true : false;
-    const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
-    $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-      .done(data => d.resolve(data))
+    const lock = this.getMode() == 'w';
+    const apiUrl = lock ? `${this._baseUrl + vectorLayer[this._editingApiField]}/?editing` : `${this._baseUrl + vectorLayer[this._editingApiField]}/?`;
+    $.get(`${apiUrl + this._customUrlParameters}&in_bbox=${bbox[0]},${bbox[1]},${bbox[2]},${bbox[3]}`)
+      .done((data) => d.resolve(data))
       .fail(() => d.reject());
     return d.promise();
-  };
+  }
 
-  _createVectorLayer(options={}) {
+  _createVectorLayer(options = {}) {
     const vector = new VectorLayer(options);
     return vector;
-  };
+  }
 
   cleanUpLayers() {
     this._loadedExtent = null;
-  };
+  }
 }
 
-export default  QGISProvider;
+export default QGISProvider;

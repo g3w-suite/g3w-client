@@ -1,23 +1,22 @@
-import {Overlay} from "ol";
-/* POP UP SECTION*/
+import { Overlay } from 'ol';
+/* POP UP SECTION */
 
-_gis3wlib._interaction.prototype.addPopup = function(element) {
+_gis3wlib._interaction.prototype.addPopup = function (element) {
   this.popup = new Overlay({
-    element: element,
+    element,
     autoPan: true,
     autoPanAnimation: {
-      duration: 250
-    }
+      duration: 250,
+    },
   });
   this.map.addOverlay(this.popup);
-
 };
 
-_gis3wlib._interaction.prototype.closePopup = function() {
+_gis3wlib._interaction.prototype.closePopup = function () {
   if (this.popup) {
     this.popup.setPosition(undefined);
     this.popup.getElement().blur();
   }
 };
 
-///* END  POP UP SECTION*/
+/// * END  POP UP SECTION*/

@@ -1,7 +1,8 @@
-import GUI  from 'gui/gui';
+import GUI from 'gui/gui';
 import G3WObject from 'core/g3wobject';
-import ProjectsRegistry  from 'core/project/projectsregistry';
-import ProjectMetadataComponent  from './vue/components/project/project';
+import ProjectsRegistry from 'core/project/projectsregistry';
+import ProjectMetadataComponent from './vue/components/project/project';
+
 const METADATAGROUPS = {
   general: [
     'title',
@@ -12,25 +13,25 @@ const METADATAGROUPS = {
     'fees',
     'accessconstraints',
     'contactinformation',
-    'wms_url'
+    'wms_url',
   ],
   spatial: [
     'crs',
-    'extent'
+    'extent',
   ],
   layers: [
-    'layers'
-  ]
+    'layers',
+  ],
 };
 
-class MetadataService extends G3WObject{
+class MetadataService extends G3WObject {
   constructor() {
     super();
     this.content = null;
     this.show = false;
     this.state = {
       name: '',
-      groups: {}
+      groups: {},
     };
     this._buildProjectGroupMetadata();
   }
@@ -41,54 +42,52 @@ class MetadataService extends G3WObject{
     const groups = {};
     Object.entries(METADATAGROUPS).forEach(([groupName, value]) => {
       groups[groupName] = {};
-      value.forEach(field => {
+      value.forEach((field) => {
         const fieldValue = project.metadata && project.metadata[field] ? project.metadata[field] : project[field];
-        if (!!fieldValue) {
+        if (fieldValue) {
           groups[groupName][field] = {
-            label: ['sdk','metadata','groups', groupName, 'fields', field].join('.'),
-            value: fieldValue
-          }
+            label: ['sdk', 'metadata', 'groups', groupName, 'fields', field].join('.'),
+            value: fieldValue,
+          };
         }
-      })
+      });
     });
     this.state.groups = groups;
-  };
+  }
 
   getProjectMetadata() {
     return this.state;
-  };
+  }
 
   getLayersMetadata() {
     return this.state.groups.layers;
-  };
+  }
 
   getLayerMetadata(id) {
-    const layerMetadata = this.state.groups.layers.filter(layer => layer.id === id);
+    const layerMetadata = this.state.groups.layers.filter((layer) => layer.id === id);
     return layerMetadata[0];
-  };
+  }
 
   showMetadata(bool) {
     this.show = bool;
     if (this.show) {
       this.content = new ProjectMetadataComponent({
         state: this.getProjectMetadata(),
-        service: this
+        service: this,
       });
       GUI.setContent({
         content: this.content,
-        title: "sdk.metadata.title",
-        perc: 100
+        title: 'sdk.metadata.title',
+        perc: 100,
       });
       this.show = true;
-    } else GUI.closeContent()
-
-  };
+    } else GUI.closeContent();
+  }
 
   reload() {
     this.fire('reload');
     this._buildProjectGroupMetadata();
-  };
-
+  }
 }
 
-export default  MetadataService;
+export default MetadataService;

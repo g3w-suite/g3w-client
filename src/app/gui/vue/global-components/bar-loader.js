@@ -1,18 +1,17 @@
 export default {
-  name: "bar-loader",
+  name: 'bar-loader',
   props: ['loading', 'color'],
   render(createElement) {
     if (this.loading) {
       return createElement('div', {
-        style:{
+        style: {
           backgroundColor: this.color || '#FFFFFF',
-          border:0
+          border: 0,
         },
         class: {
-          "bar-loader": true
-        }
-      })
+          'bar-loader': true,
+        },
+      });
     }
-
-  }
-}
+  },
+};

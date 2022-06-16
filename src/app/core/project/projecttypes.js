@@ -1,6 +1,6 @@
 const ProjectTypes = {
   QDJANGO: 'qdjango',
-  OGR: 'ogr'
+  OGR: 'ogr',
 };
 
-export default  ProjectTypes;
+export default ProjectTypes;

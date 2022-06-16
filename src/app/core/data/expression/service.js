@@ -6,6 +6,7 @@ class ExpressionService extends BaseService {
   constructor() {
     super();
   }
+
   /**
    *
    * @param qgis_layer_id
@@ -19,7 +20,9 @@ class ExpressionService extends BaseService {
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  async expression({qgs_layer_id, layer_id, form_data, expression, formatter=1}) {
+  async expression({
+    qgs_layer_id, layer_id, form_data, expression, formatter = 1,
+  }) {
     const url = `${this.getProject().getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
@@ -27,12 +30,12 @@ class ExpressionService extends BaseService {
         qgs_layer_id,
         form_data,
         expression,
-        formatter
-      }
+        formatter,
+      },
     });
     const data = this.handleResponse(response);
     return data;
-  };
+  }
 
   /**
    *
@@ -45,7 +48,9 @@ class ExpressionService extends BaseService {
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   async expression_eval({qgs_layer_id, form_data, expression, formatter=1}={}) {
+  async expression_eval({
+    qgs_layer_id, form_data, expression, formatter = 1,
+  } = {}) {
     const url = this.getProject().getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
@@ -53,11 +58,11 @@ class ExpressionService extends BaseService {
         qgs_layer_id,
         form_data,
         expression,
-        formatter
-      }
+        formatter,
+      },
     });
     return data;
-  };
+  }
 
   /**
    * Common method to handel request
@@ -66,28 +71,26 @@ class ExpressionService extends BaseService {
    * @contentType
    * @returns {Promise<*>}
    */
-  async handleRequest({url, params={}, contentType='application/json'}={}) {
-    const {XHR} = utils;
+  async handleRequest({ url, params = {}, contentType = 'application/json' } = {}) {
+    const { XHR } = utils;
     let data;
     try {
       data = await XHR.post({
         url,
         contentType,
-        data: JSON.stringify(params)
+        data: JSON.stringify(params),
       });
-    } catch(err) {}
+    } catch (err) {}
     return data;
-  };
+  }
 
-  /***
+  /** *
    * Common method to handle response
    * @param response
    */
-  handleResponse(response={}) {
+  handleResponse(response = {}) {
     return geoutils.getFeaturesFromResponseVectorApi(response);
-
-  };
+  }
 }
 
-
-export default  new ExpressionService;
+export default new ExpressionService();

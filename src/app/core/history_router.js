@@ -33,18 +33,17 @@ class RouterService extends G3WObject {
         setRouteQuery(routeQuery) {
           this._routeQuery = routeQuery;
           crossroads.parse(routeQuery);
-        }
-      }
+        },
+      },
     });
     this._initialLocationQuery;
     this._routeQuery = '';
-    History.Adapter.bind(window,'statechange',() =>{
+    History.Adapter.bind(window, 'statechange', () => {
       const state = History.getState();
       const locationQuery = state.hash;
-      if(state.data && state.data.routequery) {
+      if (state.data && state.data.routequery) {
         this.setRouteQuery(state.data.routequery);
-      }
-      else {
+      } else {
         this._setRouteQueryFromLocationQuery(locationQuery);
       }
     });
@@ -53,61 +52,60 @@ class RouterService extends G3WObject {
   init() {
     const query = window.location.search;
     this._setRouteQueryFromLocationQuery(query);
-  };
+  }
 
-  addRoute(pattern,handler,priority) {
-    return crossroads.addRoute(pattern,handler,priority);
-  };
+  addRoute(pattern, handler, priority) {
+    return crossroads.addRoute(pattern, handler, priority);
+  }
 
   removeRoute(route) {
     return crossroads.removeRoute(route);
-  };
+  }
 
   removeAllRoutes() {
     return crossroads.removeAllRoutes();
-  };
+  }
 
-  parse(request,defaultArgs) {
-    return crossroads.parse(request,defaultArgs);
-  };
+  parse(request, defaultArgs) {
+    return crossroads.parse(request, defaultArgs);
+  }
 
   goto(routeQuery) {
-    //var pathb64 = Base64.encode(path);
-    //History.pushState({path:path},null,'?p='+pathb64);
+    // var pathb64 = Base64.encode(path);
+    // History.pushState({path:path},null,'?p='+pathb64);
     if (!this._initialQuery) {
       this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
     }
     if (routeQuery) {
-      let encodedRouteQuery = this._encodeRouteQuery(routeQuery);
-      const path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
-      History.pushState({routequery:routeQuery},null,path);
+      const encodedRouteQuery = this._encodeRouteQuery(routeQuery);
+      const path = `?${this._initialLocationQuery}&q=${encodedRouteQuery}`;
+      History.pushState({ routequery: routeQuery }, null, path);
     }
-  };
+  }
 
-  makeQueryString(queryParams) {};
+  makeQueryString(queryParams) {}
 
   slicePath(path) {
     return path.split('?')[0].split('/');
-  };
+  }
 
   sliceFirst(path) {
     const pathAndQuery = path.split('?');
     const queryString = pathAndQuery[1];
-    const pathArr = pathAndQuery[0].split('/')
+    const pathArr = pathAndQuery[0].split('/');
     const firstPath = pathArr[0];
     path = pathArr.slice(1).join('/');
-    path = [path,queryString].join('?')
-    return [firstPath,path];
-  };
+    path = [path, queryString].join('?');
+    return [firstPath, path];
+  }
 
   getQueryParams(query) {
-    query = query.replace('?','');
+    query = query.replace('?', '');
     const queryParams = {};
     let queryPairs = [];
-    if (query != "" && query.indexOf("&") == -1) {
+    if (query != '' && query.indexOf('&') == -1) {
       queryPairs = [query];
-    }
-    else {
+    } else {
       queryPairs = query.split('&');
     }
     try {
@@ -117,16 +115,15 @@ class RouterService extends G3WObject {
         const value = pair[1];
         queryParams[key] = value;
       });
-    }
-    catch (e) {}
+    } catch (e) {}
     return queryParams;
-  };
+  }
 
   getQueryString(path) {
     return path.split('?')[1];
-  };
+  }
 
-  _getQueryPortion(query,queryKey) {
+  _getQueryPortion(query, queryKey) {
     let queryPortion;
     try {
       const queryPairs = query.split('&');
@@ -138,51 +135,50 @@ class RouterService extends G3WObject {
           queryPortion = queryPair;
         }
       });
-    }
-    catch (e) {}
+    } catch (e) {}
     return queryPortion;
-  };
+  }
 
   _encodeRouteQuery(routeQuery) {
-    routeQuery = routeQuery.replace('?','@');
-    routeQuery = routeQuery.replace('&','|');
-    routeQuery = routeQuery.replace('=','!');
+    routeQuery = routeQuery.replace('?', '@');
+    routeQuery = routeQuery.replace('&', '|');
+    routeQuery = routeQuery.replace('=', '!');
     return routeQuery;
-  };
+  }
 
   _decodeRouteQuery(routeQuery) {
-    routeQuery = routeQuery.replace('@','?');
-    routeQuery = routeQuery.replace('|','&');
-    routeQuery = routeQuery.replace('!','=');
+    routeQuery = routeQuery.replace('@', '?');
+    routeQuery = routeQuery.replace('|', '&');
+    routeQuery = routeQuery.replace('!', '=');
     return routeQuery;
-  };
+  }
 
   _setRouteQueryFromLocationQuery(locationQuery) {
-    //var pathb64 = this.getQueryParams(locationQuery)['q'];
-    //var path = pathb64 ? Base64.decode(pathb64) : '';
+    // var pathb64 = this.getQueryParams(locationQuery)['q'];
+    // var path = pathb64 ? Base64.decode(pathb64) : '';
     const encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
     if (encodedRouteQuery) {
       const routeQuery = this._decodeRouteQuery(encodedRouteQuery);
       this.setRouteQuery(routeQuery);
     }
-  };
+  }
 
   _getRouteQueryFromLocationQuery(locationQuery) {
-    return this.getQueryParams(locationQuery)['q'];
-  };
+    return this.getQueryParams(locationQuery).q;
+  }
 
   _stripInitialQuery(locationQuery) {
-    const previousQuery = this._getQueryPortion(locationQuery,'q');
+    const previousQuery = this._getQueryPortion(locationQuery, 'q');
     if (previousQuery) {
       const previousQueryLength = previousQuery.length;
       const previousQueryPosition = locationQuery.indexOf(previousQuery);
-      var queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
-      var querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
-      querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
+      const queryPrefix = _.trimEnd(locationQuery.substring(0, previousQueryPosition), '&');
+      let querySuffix = locationQuery.substring(previousQueryPosition + previousQueryLength);
+      querySuffix = (queryPrefix != '') ? querySuffix : _.trimStart(querySuffix, '&');
       locationQuery = queryPrefix + querySuffix;
     }
     return locationQuery;
-  };
+  }
 }
 
 export default new RouterService();

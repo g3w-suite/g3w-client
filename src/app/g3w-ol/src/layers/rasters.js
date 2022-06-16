@@ -1,95 +1,100 @@
-import utils  from '../utils/utils';
-import {Image as ImageLayer, Tile as TileLayer} from "ol/layer";
+import { Image as ImageLayer, Tile as TileLayer } from 'ol/layer';
 import TileState from 'ol/TileState';
-import {createXYZ} from 'ol/tilegrid';
-import {TileGrid} from 'ol/tilegrid/TileGrid';
+import { createXYZ } from 'ol/tilegrid';
+import { TileGrid } from 'ol/tilegrid/TileGrid';
 import {
   WMTS as WMTSSource, Tile as TileSource, ImageWMS as ImageWMSSource,
   TileWMS as TileWMSSource, XYZ as XYZSource, ImageArcGISRest as ImageArcGISRestSource,
-  TileArcGISRest as TileArcGISRestSource} from 'ol/source'
+  TileArcGISRest as TileArcGISRestSource,
+} from 'ol/source';
+import utils from '../utils/utils';
 
 const RasterLayers = {};
 const DPI = utils.getDPI();
-const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
+const loadImageTileFunction = function ({ method = 'GET', type = 'image', sourceOptions = {} }) {
   window.URL = window.URL || window.webkitURL;
-  sourceOptions[`${type}LoadFunction`] = function(imageTile, url) {
+  sourceOptions[`${type}LoadFunction`] = function (imageTile, url) {
     const xhr = new XMLHttpRequest();
     const [_url, params] = url.split('?');
     xhr.open(method, method === 'POST' && _url || url);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
     xhr.responseType = 'blob';
-    xhr.onload = function() {
+    xhr.onload = function () {
       const data = this.response;
       if (data !== undefined) imageTile.getImage().src = window.URL.createObjectURL(data);
       else imageTile.setState(TileState.ERROR);
     };
     xhr.onerror = () => image.setState(TileState.ERROR);
-    xhr.send(method=== 'POST' && params);
+    xhr.send(method === 'POST' && params);
   };
 };
 
-RasterLayers.TiledWMSLayer = function(layerObj, extraParams) {
+RasterLayers.TiledWMSLayer = function (layerObj, extraParams) {
   const options = {
-    layerObj: layerObj,
+    layerObj,
     extraParams: extraParams || {},
-    tiled: true
+    tiled: true,
   };
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET') {
+RasterLayers.WMSLayer = function (layerObj, extraParams = {}, method = 'GET') {
   const options = {
     layerObj,
     extraParams,
-    method
+    method,
   };
   return RasterLayers._WMSLayer(options);
 };
 
-RasterLayers.WMTSLayer = function(layerObj, extraParams) {
- const optionsFromCapabilities = WMTSSource.optionsFromCapabilities;
- return new TileLayer({
+RasterLayers.WMTSLayer = function (layerObj, extraParams) {
+  const { optionsFromCapabilities } = WMTSSource;
+  return new TileLayer({
     opacity: 1,
-    source: new WMTSSource(options)
-  })
+    source: new WMTSSource(options),
+  });
 };
 
-RasterLayers.ImageArgisMapServer = function(options={}) {
-  return  new ImageLayer({
+RasterLayers.ImageArgisMapServer = function (options = {}) {
+  return new ImageLayer({
     source: new ImageArcGISRestSource({
       ratio: options.ratio,
       params: {
-        FORMAT: options.format
+        FORMAT: options.format,
       },
-      url: options.url
-    })
-  })
+      url: options.url,
+    }),
+  });
 };
 
-RasterLayers.TiledArgisMapServer = function(options={}) {
-  const {url, visible=true, extent, projection, attributions} = options;
+RasterLayers.TiledArgisMapServer = function (options = {}) {
+  const {
+    url, visible = true, extent, projection, attributions,
+  } = options;
   const source = new TileArcGISRestSource({
     url,
     projection,
-    attributions
+    attributions,
   });
-  return  new TileLayer({
+  return new TileLayer({
     extent,
     visible,
-    source
-  })
+    source,
+  });
 };
 
-RasterLayers._WMSLayer = function(options={}) {
-  const {layerObj, method='GET', extraParams, tiled=false} = options;
+RasterLayers._WMSLayer = function (options = {}) {
   const {
-    iframe_internal=false,
-    layers='',
-    version='1.3.0',
-    sld_version='1.1.0',
+    layerObj, method = 'GET', extraParams, tiled = false,
+  } = options;
+  const {
+    iframe_internal = false,
+    layers = '',
+    version = '1.3.0',
+    sld_version = '1.1.0',
     id,
     name,
-    opacity=1.0,
+    opacity = 1.0,
     visible,
     extent,
     maxResolution,
@@ -100,23 +105,24 @@ RasterLayers._WMSLayer = function(options={}) {
     VERSION: version,
     TRANSPARENT: true,
     SLD_VERSION: sld_version,
-    DPI
+    DPI,
   };
 
-  params = Object.assign({}, params, extraParams);
+  params = { ...params, ...extraParams };
   const sourceOptions = {
     url: layerObj.url,
     params,
     ratio: 1,
-    projection
+    projection,
   };
 
-  if (iframe_internal || method === 'POST')
+  if (iframe_internal || method === 'POST') {
     loadImageTileFunction({
       method,
       type: 'image',
-      sourceOptions
+      sourceOptions,
     });
+  }
 
   const imageOptions = {
     id,
@@ -124,7 +130,7 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity,
     visible,
     extent,
-    maxResolution
+    maxResolution,
   };
 
   let imageClass;
@@ -141,44 +147,46 @@ RasterLayers._WMSLayer = function(options={}) {
   return image;
 };
 
-RasterLayers.XYZLayer = function(options={}, method='GET') {
+RasterLayers.XYZLayer = function (options = {}, method = 'GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom, visible=true} = options;
+  const {
+    url, projection, maxZoom, minZoom, visible = true,
+  } = options;
   if (!url) return;
   const sourceOptions = {
     url,
     maxZoom,
     minZoom,
-    projection
+    projection,
   };
-  if (iframe_internal)
+  if (iframe_internal) {
     loadImageTileFunction({
       method,
       type: 'tile',
-      sourceOptions
+      sourceOptions,
     });
+  }
 
   if (projection.getUnits() === 'degrees') {
     const extent = projection.getExtent();
-    const resolutions = createXYZ({extent, maxZoom}).getResolutions();
+    const resolutions = createXYZ({ extent, maxZoom }).getResolutions();
     // needed to remove the first resolutis because in this version of ol createXYZ doesn't  accept maxResolution options .
     // The extent of EPSG:4326 is not squared [-180, -90, 180, 90] as EPSG:3857 so the resolution is calculate by Math.max(width(extent)/tileSize,Height(extent)/tileSize)
     // we need to calculate to Math.min instead so we have to remove the first resolution
-    resolutions.splice(0,1);
-    //////////////////////////////////////////
-    sourceOptions.tileGrid =  new TileGrid({
+    resolutions.splice(0, 1);
+    /// ///////////////////////////////////////
+    sourceOptions.tileGrid = new TileGrid({
       extent,
-      resolutions
-    })
+      resolutions,
+    });
   }
 
   const source = new XYZSource(sourceOptions);
   return new TileLayer({
     visible,
     projection,
-    source
+    source,
   });
 };
 
 export default RasterLayers;
-

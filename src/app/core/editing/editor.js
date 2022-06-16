@@ -1,15 +1,15 @@
 import Applicationstate from 'core/applicationstate';
 import G3WObject from 'core/g3wobject';
-import FeaturesStore  from 'core/layers/features/featuresstore';
-import OlFeaturesStore  from 'core/layers/features/olfeaturesstore';
+import FeaturesStore from 'core/layers/features/featuresstore';
+import OlFeaturesStore from 'core/layers/features/olfeaturesstore';
 import Layer from 'core/layers/layer';
-import ChangesManager  from './changesmanager';
-import SessionsRegistry from "./sessionsregistry";
-import {containsExtent, extend} from "ol/extent";
+import { containsExtent, extend } from 'ol/extent';
+import ChangesManager from './changesmanager';
+import SessionsRegistry from './sessionsregistry';
 
 // class Editor bind editor to layer to do main actions
 class Editor extends G3WObject {
-  constructor(options={}) {
+  constructor(options = {}) {
     super({
       setters: {
         save() {
@@ -29,12 +29,12 @@ class Editor extends G3WObject {
         },
         getFeatures(options = {}) {
           return this._getFeatures(options);
-        }
-      }
+        },
+      },
     });
     // filter to getFeaturerequest
     this._filter = {
-      bbox: null
+      bbox: null,
     };
 
     this._allfeatures = false;
@@ -46,11 +46,12 @@ class Editor extends G3WObject {
     this._started = false;
     // not editable fields
     this._noteditablefileds = this._layer.getEditingNotEditableFields() || [];
-  };
-  _canDoGetFeaturesRequest(options={}) {
+  }
+
+  _canDoGetFeaturesRequest(options = {}) {
     let doRequest = true;
     if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
-      const {bbox} = options.filter || {};
+      const { bbox } = options.filter || {};
       if (bbox) {
         if (!this._filter.bbox) this._filter.bbox = bbox;
         else if (!containsExtent(this._filter.bbox, bbox)) {
@@ -58,95 +59,94 @@ class Editor extends G3WObject {
         } else doRequest = false;
       }
     }
-    return doRequest
-  };
+    return doRequest;
+  }
 
   getEditingSource() {
     return this._featuresstore;
-  };
+  }
 
   /**
    * get Source
    */
   getSource() {
     this._layer.getSource();
-  };
+  }
 
-  _applyChanges(items=[], reverse=true) {
+  _applyChanges(items = [], reverse = true) {
     ChangesManager.execute(this._featuresstore, items, reverse);
-  };
+  }
 
   setChanges(items, reverse) {
-    this._applyChanges(items, reverse)
-  };
+    this._applyChanges(items, reverse);
+  }
 
   getLayer() {
     return this._layer;
-  };
+  }
 
   setLayer(layer) {
     this._layer = layer;
     return this._layer;
-  };
+  }
 
   removeNotEditablePropriertiesFromFeature(feature) {
-    this._noteditablefileds.forEach(field => {
+    this._noteditablefileds.forEach((field) => {
       feature.unset([field]);
     });
-  };
+  }
 
- //clone features method
-  _cloneFeatures(features=[]) {
-    return features.map(feature => feature.clone());
-  };
+  // clone features method
+  _cloneFeatures(features = []) {
+    return features.map((feature) => feature.clone());
+  }
 
-  _addFeaturesFromServer(features=[]) {
+  _addFeaturesFromServer(features = []) {
     features = this._cloneFeatures(features);
     this._featuresstore.addFeatures(features);
-  };
+  }
 
-  _doGetFeaturesRequest(options={}) {
-    const doRequest = Applicationstate.online &&  !this._allfeatures;
-    return doRequest && this._canDoGetFeaturesRequest(options)
-  };
+  _doGetFeaturesRequest(options = {}) {
+    const doRequest = Applicationstate.online && !this._allfeatures;
+    return doRequest && this._canDoGetFeaturesRequest(options);
+  }
 
-// fget features methods
-  _getFeatures(options={}) {
+  // fget features methods
+  _getFeatures(options = {}) {
     const d = $.Deferred();
     const doRequest = this._doGetFeaturesRequest(options);
     if (!doRequest) d.resolve();
-    else
+    else {
       this._layer.getFeatures(options)
         .then((promise) => {
           promise.then((features) => {
             this._addFeaturesFromServer(features);
             this._allfeatures = !options.filter;
             return d.resolve(features);
-          }).fail((err) => {
-            return d.reject(err);
-          })
+          }).fail((err) => d.reject(err));
         })
-        .fail(function (err) {
+        .fail((err) => {
           d.reject(err);
         });
+    }
     return d.promise();
-  };
+  }
 
-// method to revert (cancel) all changes in history and clean session
+  // method to revert (cancel) all changes in history and clean session
   revert() {
     const d = $.Deferred();
-    const features  = this._cloneFeatures(this._layer.readFeatures());
+    const features = this._cloneFeatures(this._layer.readFeatures());
     this._featuresstore.setFeatures(features);
     d.resolve();
     return d.promise();
-  };
+  }
 
-  rollback(changes=[]) {
+  rollback(changes = []) {
     const d = $.Deferred();
     this._applyChanges(changes, true);
     d.resolve();
-    return d.promise()
-  };
+    return d.promise();
+  }
 
   applyChangesToNewRelationsAfterCommit(relationsResponse) {
     for (const relationLayerId in relationsResponse) {
@@ -160,151 +160,152 @@ class Editor extends G3WObject {
       layer.getSource().setFeatures(features);
       layer.applyCommitResponse({
         response,
-        result: true
+        result: true,
       });
       editingLayerSource.setFeatures(layer.getSource().readFeatures());
     }
-  };
+  }
 
-  setFieldValueToRelationField({relationId, ids, field, values=[]}={}) {
+  setFieldValueToRelationField({
+    relationId, ids, field, values = [],
+  } = {}) {
     const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const feature = editingLayerSource.getFeatureById(id);
       if (feature) {
         const fieldvalue = feature.get(field);
         fieldvalue == values[0] && feature.set(field, values[1]);
       }
-    })
-  };
+    });
+  }
 
-// apply response data from server in case of new inserted feature
-  applyCommitResponse(response={}, relations=[]) {
+  // apply response data from server in case of new inserted feature
+  applyCommitResponse(response = {}, relations = []) {
     if (response && response.result) {
-      const {response:data} = response;
+      const { response: data } = response;
       const ids = data.new;
       const lockids = data.new_lockids;
-      ids.forEach(idobj => {
+      ids.forEach((idobj) => {
         const feature = this._featuresstore.getFeatureById(idobj.clientid);
         feature.setId(idobj.id);
         feature.setProperties(idobj.properties);
-        relations.forEach(relation =>{
+        relations.forEach((relation) => {
           Object.entries(relation).forEach(([relationId, options]) => {
             const value = feature.get(options.fatherField);
             this.setFieldValueToRelationField({
               relationId,
               ids: options.ids,
               field: options.childField,
-              values:[idobj.clientid, value]
-            })
-          })
-        })
+              values: [idobj.clientid, value],
+            });
+          });
+        });
       });
       const features = this._featuresstore.readFeatures();
-      features.forEach(feature => feature.clearState());
+      features.forEach((feature) => feature.clearState());
       this._layer.setFeatures(features);
       this._layer.getSource().addLockIds(lockids);
     }
-  };
+  }
 
   getLockIds() {
     return this._layer.getSource().getLockIds();
-  };
+  }
 
-// run after server apply changed to origin resource
+  // run after server apply changed to origin resource
   commit(commitItems) {
     const d = $.Deferred();
     // in case of relations bind to new feature
-    const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
+    const relations = commitItems.add.length ? Object.keys(commitItems.relations).map((relationId) => {
       const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-      const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-      const add = commitItems.relations[relationId].add.map(relation => relation.id);
+      const updates = commitItems.relations[relationId].update.map((relation) => relation.id);
+      const add = commitItems.relations[relationId].add.map((relation) => relation.id);
       return {
-        [relationId]:{
+        [relationId]: {
           ids: [...add, ...updates],
           fatherField: layerRelation.getFatherField(),
-          childField: layerRelation.getChildField()
-        }
-      }
+          childField: layerRelation.getChildField(),
+        },
+      };
     }) : [];
     this._layer.commit(commitItems)
-      .then(promise => {
+      .then((promise) => {
         promise
-          .then(response => {
+          .then((response) => {
             this.applyCommitResponse(response, relations);
             d.resolve(response);
           })
-          .fail(err => d.reject(err))
+          .fail((err) => d.reject(err));
       })
-      .fail(err => d.reject(err));
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-//start editing function
-  start(options={}) {
+  // start editing function
+  start(options = {}) {
     const d = $.Deferred();
     // load features of layer based on filter type
     this.getFeatures(options)
-      .then(promise => {
+      .then((promise) => {
         promise
-          .then(features => {
+          .then((features) => {
             // the features are already inside featuresstore
             d.resolve(features);
-            //if all ok set to started
+            // if all ok set to started
             this._started = true;
           })
-          .fail(err => d.reject(err))
-
+          .fail((err) => d.reject(err));
       })
-      .fail(err => d.reject(err));
-    return d.promise()
-  };
+      .fail((err) => d.reject(err));
+    return d.promise();
+  }
 
-//action to layer
+  // action to layer
 
   _addFeature(feature) {
     this._featuresstore.addFeature(feature);
-  };
+  }
 
   _deleteFeature(feature) {
     this._featuresstore.deleteFeature(feature);
-  };
+  }
 
   _updateFeature(feature) {
     this._featuresstore.updateFeature(feature);
-  };
+  }
 
   _setFeatures(features) {
     this._featuresstore.setFeatures(features);
-  };
+  }
 
   readFeatures() {
     return this._layer.readFeatures();
-  };
+  }
 
   readEditingFeatures() {
-    return this._featuresstore.readFeatures()
-  };
+    return this._featuresstore.readFeatures();
+  }
 
-// stop editor
+  // stop editor
   stop() {
     const d = $.Deferred();
     this._layer.unlock()
-      .then(response => {
+      .then((response) => {
         this.clear();
         d.resolve(response);
       })
-      .fail(err => d.reject(err));
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-//run save layer
+  // run save layer
   _save() {
     this._layer.save();
-  };
+  }
 
   isStarted() {
     return this._started;
-  };
+  }
 
   clear() {
     this._started = false;
@@ -312,13 +313,13 @@ class Editor extends G3WObject {
     this._allfeatures = false;
     this._featuresstore.clear();
     this._layer.getFeaturesStore().clear();
-    this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
-  };
+    this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
+  }
 
-  _canDoGetFeaturesRequest(options={}) {
+  _canDoGetFeaturesRequest(options = {}) {
     let doRequest = true;
     if (this._layer.getType() === Layer.LayerTypes.VECTOR) {
-      const {bbox} = options.filter || {};
+      const { bbox } = options.filter || {};
       if (bbox) {
         if (!this._filter.bbox) this._filter.bbox = bbox;
         else if (!containsExtent(this._filter.bbox, bbox)) {
@@ -326,95 +327,94 @@ class Editor extends G3WObject {
         } else doRequest = false;
       }
     }
-    return doRequest
-  };
+    return doRequest;
+  }
 
   getEditingSource() {
     return this._featuresstore;
-  };
+  }
 
   /**
    * get Source
    */
   getSource() {
     this._layer.getSource();
-  };
+  }
 
-  _applyChanges(items=[], reverse=true) {
+  _applyChanges(items = [], reverse = true) {
     ChangesManager.execute(this._featuresstore, items, reverse);
-  };
+  }
 
   setChanges(items, reverse) {
-    this._applyChanges(items, reverse)
-  };
+    this._applyChanges(items, reverse);
+  }
 
   getLayer() {
     return this._layer;
-  };
+  }
 
   setLayer(layer) {
     this._layer = layer;
     return this._layer;
-  };
+  }
 
   removeNotEditablePropriertiesFromFeature(feature) {
-    this._noteditablefileds.forEach(field => {
+    this._noteditablefileds.forEach((field) => {
       feature.unset([field]);
     });
-  };
+  }
 
-//clone features method
-  _cloneFeatures(features=[]) {
-    return features.map(feature => feature.clone());
-  };
+  // clone features method
+  _cloneFeatures(features = []) {
+    return features.map((feature) => feature.clone());
+  }
 
-  _addFeaturesFromServer(features=[]) {
+  _addFeaturesFromServer(features = []) {
     features = this._cloneFeatures(features);
     this._featuresstore.addFeatures(features);
-  };
+  }
 
-  _doGetFeaturesRequest(options={}) {
-    const doRequest = Applicationstate.online &&  !this._allfeatures;
-    return doRequest && this._canDoGetFeaturesRequest(options)
-  };
+  _doGetFeaturesRequest(options = {}) {
+    const doRequest = Applicationstate.online && !this._allfeatures;
+    return doRequest && this._canDoGetFeaturesRequest(options);
+  }
 
-// fget features methods
-  _getFeatures(options={}) {
+  // fget features methods
+  _getFeatures(options = {}) {
     const d = $.Deferred();
     const doRequest = this._doGetFeaturesRequest(options);
     if (!doRequest) d.resolve();
-    else
+    else {
       this._layer.getFeatures(options)
         .then((promise) => {
           promise.then((features) => {
             this._addFeaturesFromServer(features);
             this._allfeatures = !options.filter;
             return d.resolve(features);
-          }).fail((err) => {
-            return d.reject(err);
-          })
+          }).fail((err) => d.reject(err));
         })
-        .fail(function (err) {
+        .fail((err) => {
           d.reject(err);
         });
+    }
     return d.promise();
-  };
+  }
 
- // method to revert (cancel) all changes in history and clean session
+  // method to revert (cancel) all changes in history and clean session
   revert() {
     const d = $.Deferred();
-    const features  = this._cloneFeatures(this._layer.readFeatures());
+    const features = this._cloneFeatures(this._layer.readFeatures());
     this._featuresstore.setFeatures(features);
     d.resolve();
     return d.promise();
-  };
+  }
 
-  rollback(changes=[]) {
+  rollback(changes = []) {
     const d = $.Deferred();
     this._applyChanges(changes, true);
     d.resolve();
-    return d.promise()
-  };
+    return d.promise();
+  }
 
   applyChangesToNewRelationsAfterCommit(relationsResponse) {
     for (const relationLayerId in relationsResponse) {
@@ -428,151 +428,152 @@ class Editor extends G3WObject {
       layer.getSource().setFeatures(features);
       layer.applyCommitResponse({
         response,
-        result: true
+        result: true,
       });
       editingLayerSource.setFeatures(layer.getSource().readFeatures());
     }
-  };
+  }
 
-  setFieldValueToRelationField({relationId, ids, field, values=[]}={}) {
+  setFieldValueToRelationField({
+    relationId, ids, field, values = [],
+  } = {}) {
     const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
-    ids.forEach(id => {
+    ids.forEach((id) => {
       const feature = editingLayerSource.getFeatureById(id);
       if (feature) {
         const fieldvalue = feature.get(field);
         fieldvalue == values[0] && feature.set(field, values[1]);
       }
-    })
-  };
+    });
+  }
 
-// apply response data from server in case of new inserted feature
-  applyCommitResponse(response={}, relations=[]) {
+  // apply response data from server in case of new inserted feature
+  applyCommitResponse(response = {}, relations = []) {
     if (response && response.result) {
-      const {response:data} = response;
+      const { response: data } = response;
       const ids = data.new;
       const lockids = data.new_lockids;
-      ids.forEach(idobj => {
+      ids.forEach((idobj) => {
         const feature = this._featuresstore.getFeatureById(idobj.clientid);
         feature.setId(idobj.id);
         feature.setProperties(idobj.properties);
-        relations.forEach(relation =>{
+        relations.forEach((relation) => {
           Object.entries(relation).forEach(([relationId, options]) => {
             const value = feature.get(options.fatherField);
             this.setFieldValueToRelationField({
               relationId,
               ids: options.ids,
               field: options.childField,
-              values:[idobj.clientid, value]
-            })
-          })
-        })
+              values: [idobj.clientid, value],
+            });
+          });
+        });
       });
       const features = this._featuresstore.readFeatures();
-      features.forEach(feature => feature.clearState());
+      features.forEach((feature) => feature.clearState());
       this._layer.setFeatures(features);
       this._layer.getSource().addLockIds(lockids);
     }
-  };
+  }
 
   getLockIds() {
     return this._layer.getSource().getLockIds();
-  };
+  }
 
-// run after server apply changed to origin resource
+  // run after server apply changed to origin resource
   commit(commitItems) {
     const d = $.Deferred();
     // in case of relations bind to new feature
-    const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
+    const relations = commitItems.add.length ? Object.keys(commitItems.relations).map((relationId) => {
       const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-      const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-      const add = commitItems.relations[relationId].add.map(relation => relation.id);
+      const updates = commitItems.relations[relationId].update.map((relation) => relation.id);
+      const add = commitItems.relations[relationId].add.map((relation) => relation.id);
       return {
-        [relationId]:{
+        [relationId]: {
           ids: [...add, ...updates],
           fatherField: layerRelation.getFatherField(),
-          childField: layerRelation.getChildField()
-        }
-      }
+          childField: layerRelation.getChildField(),
+        },
+      };
     }) : [];
     this._layer.commit(commitItems)
-      .then(promise => {
+      .then((promise) => {
         promise
-          .then(response => {
+          .then((response) => {
             this.applyCommitResponse(response, relations);
             d.resolve(response);
           })
-          .fail(err => d.reject(err))
+          .fail((err) => d.reject(err));
       })
-      .fail(err => d.reject(err));
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-//start editing function
-  start(options={}) {
+  // start editing function
+  start(options = {}) {
     const d = $.Deferred();
     // load features of layer based on filter type
     this.getFeatures(options)
-      .then(promise => {
+      .then((promise) => {
         promise
-          .then(features => {
+          .then((features) => {
             // the features are already inside featuresstore
             d.resolve(features);
-            //if all ok set to started
+            // if all ok set to started
             this._started = true;
           })
-          .fail(err => d.reject(err))
-
+          .fail((err) => d.reject(err));
       })
-      .fail(err => d.reject(err));
-    return d.promise()
-  };
+      .fail((err) => d.reject(err));
+    return d.promise();
+  }
 
-//action to layer
+  // action to layer
 
   _addFeature(feature) {
     this._featuresstore.addFeature(feature);
-  };
+  }
 
   _deleteFeature(feature) {
     this._featuresstore.deleteFeature(feature);
-  };
+  }
 
   _updateFeature(feature) {
     this._featuresstore.updateFeature(feature);
-  };
+  }
 
   _setFeatures(features) {
     this._featuresstore.setFeatures(features);
-  };
+  }
 
   readFeatures() {
     return this._layer.readFeatures();
-  };
+  }
 
   readEditingFeatures() {
-    return this._featuresstore.readFeatures()
-  };
+    return this._featuresstore.readFeatures();
+  }
 
-// stop editor
+  // stop editor
   stop() {
     const d = $.Deferred();
     this._layer.unlock()
-      .then(response => {
+      .then((response) => {
         this.clear();
         d.resolve(response);
       })
-      .fail(err => d.reject(err));
+      .fail((err) => d.reject(err));
     return d.promise();
-  };
+  }
 
-//run save layer
+  // run save layer
   _save() {
     this._layer.save();
-  };
+  }
 
   isStarted() {
     return this._started;
-  };
+  }
 
   clear() {
     this._started = false;
@@ -580,9 +581,8 @@ class Editor extends G3WObject {
     this._allfeatures = false;
     this._featuresstore.clear();
     this._layer.getFeaturesStore().clear();
-    this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());
-  };
-
+    this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource(this._featuresstore.getFeaturesCollection());
+  }
 }
 
-export default  Editor;
+export default Editor;

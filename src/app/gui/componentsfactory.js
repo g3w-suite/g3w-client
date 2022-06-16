@@ -1,31 +1,32 @@
 import GUI from 'gui/gui';
-import Component  from './vue/component';
+import Component from './vue/component';
+
 const ComponentsFactory = {
   // build a componet
-  build({vueComponentObject, service, propsData}, options={}) {
+  build({ vueComponentObject, service, propsData }, options = {}) {
     const component = new Component(options);
     component.init({
       vueComponentObject,
       service,
-      propsData
+      propsData,
     });
-    return component
+    return component;
   },
-  //buildSidebarComponent and add to sidebar
-  buildSidebar({vueComponentObject, service, propsData}, options={}) {
+  // buildSidebarComponent and add to sidebar
+  buildSidebar({ vueComponentObject, service, propsData }, options = {}) {
     const {
       id,
       title,
-      open=false,
-      collapsible= true,
-      isolate=false,
-      mobile=true,
-      iconConfig={},
-      events={},
-      sidebarOptions={position:1}
+      open = false,
+      collapsible = true,
+      isolate = false,
+      mobile = true,
+      iconConfig = {},
+      events = {},
+      sidebarOptions = { position: 1 },
     } = options;
 
-    const component = this.build({vueComponentObject}, {
+    const component = this.build({ vueComponentObject }, {
       id,
       title,
       open,
@@ -34,12 +35,12 @@ const ComponentsFactory = {
       iconColor: iconConfig.color && iconConfig.color,
       icon: iconConfig.icon && GUI.getFontClass(iconConfig.icon),
       mobile,
-      events
+      events,
     });
 
     GUI.addComponent(component, 'sidebar', sidebarOptions);
     return component;
-  }
+  },
 };
 
-export default  ComponentsFactory;
+export default ComponentsFactory;

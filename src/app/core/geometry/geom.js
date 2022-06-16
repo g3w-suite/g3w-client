@@ -1,8 +1,8 @@
 const geom = {
-  distance(c1,c2) {
-    return Math.sqrt(geom.squaredDistance(c1,c2));
+  distance(c1, c2) {
+    return Math.sqrt(geom.squaredDistance(c1, c2));
   },
-  squaredDistance(c1,c2) {
+  squaredDistance(c1, c2) {
     const x1 = c1[0];
     const y1 = c1[1];
     const x2 = c2[0];
@@ -22,9 +22,10 @@ const geom = {
     const y2 = end[1];
     const dx = x2 - x1;
     const dy = y2 - y1;
-    const along = (dx === 0 && dy === 0) ? 0 :
-        ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
-    let x, y;
+    const along = (dx === 0 && dy === 0) ? 0
+      : ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
+    let x; let
+      y;
     if (along <= 0) {
       x = x1;
       y = y1;
@@ -36,7 +37,7 @@ const geom = {
       y = y1 + along * dy;
     }
     return [x, y];
-  }
+  },
 };
 
-export default  geom;
+export default geom;

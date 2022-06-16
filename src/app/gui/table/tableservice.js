@@ -1,16 +1,16 @@
-import DataRouterService  from 'core/data/routerservice';
+import DataRouterService from 'core/data/routerservice';
 import G3WObject from 'core/g3wobject';
-import CatalogLayersStoresRegistry  from 'core/catalog/cataloglayersstoresregistry';
-import GUI  from 'gui/gui';
-import {t}  from 'core/i18n/i18n.service';
+import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
+import GUI from 'gui/gui';
+import { t } from 'core/i18n/i18n.service';
 import geoutils from 'core/utils/geo';
-import Layer  from 'core/layers/layer';
-import {unByKey} from "ol/Observable";
+import Layer from 'core/layers/layer';
+import { unByKey } from 'ol/Observable';
 
 const PAGELENGTHS = [10, 25, 50];
 
 class TableService extends G3WObject {
-  constructor(options={}) {
+  constructor(options = {}) {
     super(options);
     this.currentPage = 0; // number of pages
     this.layer = options.layer;
@@ -21,27 +21,27 @@ class TableService extends G3WObject {
     this.selectedfeaturesfid = this.layer.getSelectionFids();
     this.geolayer = this.layer.isGeoLayer();
     this.relationsGeometry = [];
-    !this.geolayer && this.layer.getRelations().getArray().forEach(relation => {
+    !this.geolayer && this.layer.getRelations().getArray().forEach((relation) => {
       const relationLayer = CatalogLayersStoresRegistry.getLayerById(relation.getChild());
       if (relationLayer.isGeoLayer()) {
         this.relationsGeometry.push({
           layer: relationLayer,
           child_field: relation.getChildField(),
           field: relation.getFatherField(),
-          features: {}
-        })
+          features: {},
+        });
       }
     });
-    this.projection = this.geolayer  ? this.layer.getProjection() : null;
+    this.projection = this.geolayer ? this.layer.getProjection() : null;
     this.mapService = GUI.getService('map');
     this.getAll = false;
     this.paginationfilter = false;
     this.mapBBoxEventHandlerKey = {
       key: null,
-      cb: null
+      cb: null,
     };
     this.clearAllSelection = () => {
-      this.state.features.forEach(feature => feature.selected = false);
+      this.state.features.forEach((feature) => feature.selected = false);
       this.state.tools.show = false;
       this.state.selectAll = false;
     };
@@ -61,22 +61,22 @@ class TableService extends G3WObject {
         geolayer: {
           show: this.geolayer,
           active: false,
-          in_bbox: void 0
+          in_bbox: void 0,
         },
         show: false,
-        filter: this.layer.state.filter
-      }
+        filter: this.layer.state.filter,
+      },
     };
     // pagination filter features
     this._async = {
       state: false,
-      fnc: ()=>{}
+      fnc: () => {},
     };
-    GUI.onbefore('setContent', options => {
+    GUI.onbefore('setContent', (options) => {
       this._async.state = options.perc === 100;
     });
     this.layer.on('unselectionall', this.clearAllSelection);
-    this.filterChangeHandler = async ({type}={})=>{
+    this.filterChangeHandler = async ({ type } = {}) => {
       this.allfeaturesnumber = undefined;
       let data = [];
       // emit redraw if in_bbox filter or not select all
@@ -91,31 +91,31 @@ class TableService extends G3WObject {
 
   async toggleFilterToken() {
     await this.layer.toggleFilterToken();
-  };
+  }
 
   getHeaders() {
-    //add null as firs vale of header because need to add a custom input selector fro datatable purpose
+    // add null as firs vale of header because need to add a custom input selector fro datatable purpose
     return [null, ...this.layer.getTableHeaders()];
-  };
+  }
 
-// function need to work with pagination
+  // function need to work with pagination
   setDataForDataTable() {
     const data = [];
-    this.state.features.forEach(feature => {
+    this.state.features.forEach((feature) => {
       const attributes = feature.attributes ? feature.attributes : feature.properties;
       const values = [null];
-      this.state.headers.forEach(header => {
+      this.state.headers.forEach((header) => {
         if (header) {
           const value = attributes[header.name];
           header.value = value;
-          //header.label = undefined; // removed label
+          // header.label = undefined; // removed label
           values.push(value);
         }
       });
-      data.push(values)
+      data.push(values);
     });
     return data;
-  };
+  }
 
   addRemoveSelectedFeature(feature) {
     feature.selected = !feature.selected;
@@ -124,14 +124,14 @@ class TableService extends G3WObject {
       this.layer.excludeSelectionFid(feature.id, this.state.pagination);
     } else if (this.selectedfeaturesfid.has(Layer.SELECTION_STATE.EXCLUDE)) {
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-      const size = this.selectedfeaturesfid.size;
+      const { size } = this.selectedfeaturesfid;
       if (size === 1) {
         !this.state.tools.filter.active && this.layer.setSelectionFidsAll();
         this.state.selectAll = true;
-      } else if (size -1 === this.state.features.length) this.layer.clearSelectionFids();
+      } else if (size - 1 === this.state.features.length) this.layer.clearSelectionFids();
     } else {
       this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-      const size = this.selectedfeaturesfid.size;
+      const { size } = this.selectedfeaturesfid;
       if (size === this.allfeaturesnumber) {
         this.state.selectAll = true;
         !this.state.tools.filter.active && this.layer.setSelectionFidsAll();
@@ -140,25 +140,25 @@ class TableService extends G3WObject {
     this.state.tools.show = this.selectedfeaturesfid.size > 0;
     if (!this.state.pagination) {
       if (this.nopaginationsfilter.length) {
-        this.state.selectAll = this.state.features.filter(feature => feature.selected).length === this.nopaginationsfilter.length;
+        this.state.selectAll = this.state.features.filter((feature) => feature.selected).length === this.nopaginationsfilter.length;
       }
     }
-  };
+  }
 
   getAllFeatures(params) {
     GUI.setLoadingContent(true);
-    return new Promise((resolve, reject) =>{
+    return new Promise((resolve, reject) => {
       this.layer.getDataTable(params || {})
-        .then(data =>{
-          const {features} = data;
+        .then((data) => {
+          const { features } = data;
           if (this.geolayer && features) {
             if (!params) {
-              const LoadedFeaturesId = this.state.features.map(feature => feature.id);
-              features.forEach(feature => {
+              const LoadedFeaturesId = this.state.features.map((feature) => feature.id);
+              features.forEach((feature) => {
                 if (LoadedFeaturesId.indexOf(feature.id) === -1) {
                   feature.geometry && this.layer.addOlSelectionFeature({
                     id: feature.id,
-                    geometry: this._returnGeometry(feature)
+                    geometry: this._returnGeometry(feature),
                   });
                 }
               });
@@ -167,26 +167,26 @@ class TableService extends G3WObject {
             resolve(features);
           }
         })
-        .fail(()=> reject())
-        .always(()=>GUI.setLoadingContent(false))
-    })
-  };
+        .fail(() => reject())
+        .always(() => GUI.setLoadingContent(false));
+    });
+  }
 
   async switchSelection() {
     if (!this.state.pagination) { // no pagination
-      if (this.nopaginationsfilter.length) { //filtered
+      if (this.nopaginationsfilter.length) { // filtered
         let selected = false;
         const filterFeatures = [];
-        this.state.features.forEach((feature, index) =>{
+        this.state.features.forEach((feature, index) => {
           if (this.nopaginationsfilter.indexOf(index) !== -1) filterFeatures.push(feature);
           feature.selected = !feature.selected;
-          this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid' ](feature.id);
+          this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
           selected = selected || feature.selected;
         });
         this.state.tools.show = selected;
-        this.checkSelectAll(filterFeatures)
+        this.checkSelectAll(filterFeatures);
       } else { // no filter
-        this.state.features.forEach(feature => {
+        this.state.features.forEach((feature) => {
           feature.selected = !feature.selected;
         });
         this.layer.invertSelectionFids();
@@ -195,20 +195,20 @@ class TableService extends G3WObject {
       }
     } else { // pagination
       let selected = false;
-      this.state.features.forEach(feature => {
+      this.state.features.forEach((feature) => {
         feature.selected = !feature.selected;
         selected = feature.selected;
       });
       !this.getAll && await this.getAllFeatures();
-      this.state.selectAll = this.paginationfilter ? selected: this.state.selectAll;
+      this.state.selectAll = this.paginationfilter ? selected : this.state.selectAll;
       this.layer.invertSelectionFids();
       this.state.tools.show = this.selectedfeaturesfid.size > 0;
     }
-  };
+  }
 
   clearLayerSelection() {
     this.layer.clearSelectionFids();
-  };
+  }
 
   /**
    * Called when alla selected feature is checked
@@ -217,54 +217,56 @@ class TableService extends G3WObject {
   async selectAllFeatures() {
     // set inverse of selectAll
     this.state.selectAll = !this.state.selectAll;
-    if (!this.state.pagination) { //no pagination no filter
-      if (this.nopaginationsfilter.length) {  //check if filter is set (no pagination)
+    if (!this.state.pagination) { // no pagination no filter
+      if (this.nopaginationsfilter.length) { // check if filter is set (no pagination)
         let selected = false;
-        this.state.features.forEach((feature, index) =>{
+        this.state.features.forEach((feature, index) => {
           if (this.nopaginationsfilter.indexOf(index) !== -1) {
             feature.selected = this.state.selectAll;
-            this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
+            this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
             selected = selected || feature.selected;
           }
         });
         this.state.tools.show = selected;
       } else {
         this.state.tools.show = this.state.selectAll;
-        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
-        this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+        this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
+        this.state.features.forEach((feature) => feature.selected = this.state.selectAll);
       }
-    } else { //pagination
+    } else { // pagination
       if (this.paginationfilter) { // filtered
-        if (this.state.featurescount >= this.state.allfeatures)
-          this.state.features.forEach(feature => {
+        if (this.state.featurescount >= this.state.allfeatures) {
+          this.state.features.forEach((feature) => {
             feature.selected = this.state.selectAll;
-            this.layer[feature.selected ? 'includeSelectionFid': 'excludeSelectionFid'](feature.id);
+            this.layer[feature.selected ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
           });
-        else {
-          const {search, ordering, formatter, in_bbox } = this.paginationParams;
+        } else {
+          const {
+            search, ordering, formatter, in_bbox,
+          } = this.paginationParams;
           const features = await this.getAllFeatures({
             search,
             ordering,
             formatter,
-            in_bbox
+            in_bbox,
           });
-          features.forEach(feature =>{
+          features.forEach((feature) => {
             !this.getAll && this.geolayer && feature.geometry && this.layer.addOlSelectionFeature({
               id: feature.id,
-              geometry: this._returnGeometry(feature)
+              geometry: this._returnGeometry(feature),
             });
             this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
-          })
+          });
         }
-        this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+        this.state.features.forEach((feature) => feature.selected = this.state.selectAll);
       } else {
-        this.state.features.forEach(feature => feature.selected = this.state.selectAll);
+        this.state.features.forEach((feature) => feature.selected = this.state.selectAll);
         !this.getAll && await this.getAllFeatures();
-        this.layer[this.state.selectAll ? 'setSelectionFidsAll': 'clearSelectionFids']();
+        this.layer[this.state.selectAll ? 'setSelectionFidsAll' : 'clearSelectionFids']();
       }
       this.state.tools.show = this.state.selectAll || this.selectedfeaturesfid.size > 0;
     }
-  };
+  }
 
   /**
    * Method to set filtered features
@@ -273,12 +275,12 @@ class TableService extends G3WObject {
   setFilteredFeature(featuresIndex) {
     this.nopaginationsfilter = featuresIndex;
     this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
-      : this.nopaginationsfilter.map(index=> this.state.features[index]));
-  };
+      : this.nopaginationsfilter.map((index) => this.state.features[index]));
+  }
 
   setAttributeTablePageLength(length) {
     this.layer.setAttributeTablePageLength(length);
-  };
+  }
 
   /**
    * Main method to get data table layer
@@ -290,30 +292,32 @@ class TableService extends G3WObject {
    * @param firstCall
    * @returns {Promise<unknown>}
    */
-  getData({start = 0, order = [], length = this.state.pageLength, columns=[], search={value:null}, firstCall=false} = {}) {
+  getData({
+    start = 0, order = [], length = this.state.pageLength, columns = [], search = { value: null }, firstCall = false,
+  } = {}) {
     // reset features before load
     GUI.setLoadingContent(true);
     this.setAttributeTablePageLength(length);
     return new Promise((resolve, reject) => {
-      if (!this.state.headers.length)
+      if (!this.state.headers.length) {
         resolve({
           data: [],
           recordsTotal: 0,
-          recordsFiltered: 0
+          recordsFiltered: 0,
         });
-      else {
-        let searchText = search.value && search.value.length > 0 ? search.value : null;
+      } else {
+        const searchText = search.value && search.value.length > 0 ? search.value : null;
         this.state.features.splice(0);
         if (!order.length) {
           order.push({
             column: 1,
-            dir: 'asc'
-          })
+            dir: 'asc',
+          });
         }
-        const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
-        this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start/length) + 1;
-        const in_bbox = this.state.tools.geolayer.in_bbox;
-        const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|ilike|${column.search.value}|and`).join(',') : undefined;
+        const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : `-${this.state.headers[order[0].column].name}`;
+        this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start / length) + 1;
+        const { in_bbox } = this.state.tools.geolayer;
+        const field = this.state.pagination ? columns.filter((column) => column.search && column.search.value).map((column) => `${column.name}|ilike|${column.search.value}|and`).join(',') : undefined;
         this.paginationParams = {
           field: field || undefined,
           page: this.currentPage,
@@ -321,18 +325,18 @@ class TableService extends G3WObject {
           search: searchText,
           in_bbox,
           formatter: this.formatter,
-          ordering
+          ordering,
         };
-        const getDataPromise = this.state.pagination ?
-          this.layer.getDataTable(this.paginationParams) :
-          this.layer.getDataTable({
+        const getDataPromise = this.state.pagination
+          ? this.layer.getDataTable(this.paginationParams)
+          : this.layer.getDataTable({
             ordering,
             in_bbox,
-            formatter: this.formatter
+            formatter: this.formatter,
           });
         getDataPromise
-          .then(data => {
-            const {features=[]} = data;
+          .then((data) => {
+            const { features = [] } = data;
             this.state.allfeatures = data.count || this.state.features.length;
             this.state.featurescount = features.length;
             this.allfeaturesnumber = this.allfeaturesnumber === undefined ? data.count : this.allfeaturesnumber;
@@ -342,28 +346,28 @@ class TableService extends G3WObject {
             resolve({
               data: this.setDataForDataTable(),
               recordsFiltered: data.count,
-              recordsTotal: data.count
+              recordsTotal: data.count,
             });
           })
-          .fail(err => {
-            GUI.notify.error(t("info.server_error"));
+          .fail((err) => {
+            GUI.notify.error(t('info.server_error'));
             reject(err);
-          }).always(()=>{
-          GUI.setLoadingContent(false);
-        })
+          }).always(() => {
+            GUI.setLoadingContent(false);
+          });
       }
     });
-  };
+  }
 
   setInBBoxParam() {
     this.state.tools.geolayer.in_bbox = this.state.tools.geolayer.active ? this.mapService.getMapBBOX().join(',') : void 0;
-  };
+  }
 
   resetMapBBoxEventHandlerKey() {
     unByKey(this.mapBBoxEventHandlerKey.key);
     this.mapBBoxEventHandlerKey.key = null;
     this.mapBBoxEventHandlerKey.cb = null;
-  };
+  }
 
   async getDataFromBBOX() {
     this.state.tools.geolayer.active = !this.state.tools.geolayer.active;
@@ -371,10 +375,10 @@ class TableService extends G3WObject {
       this.mapBBoxEventHandlerKey.cb = this.state.pagination ? () => {
         this.setInBBoxParam();
         this.fire('ajax-reload');
-      } : async ()=>{
+      } : async () => {
         this.setInBBoxParam();
         this.filterChangeHandler({
-          type: 'in_bbox'
+          type: 'in_bbox',
         });
       };
       this.mapBBoxEventHandlerKey.key = this.mapService.getMap().on('moveend', this.mapBBoxEventHandlerKey.cb);
@@ -383,107 +387,112 @@ class TableService extends G3WObject {
       this.mapBBoxEventHandlerKey.cb && this.mapBBoxEventHandlerKey.cb();
       this.resetMapBBoxEventHandlerKey();
     }
-  };
+  }
 
   addFeature(feature) {
     const tableFeature = {
       id: feature.id,
       selected: this.state.tools.filter.active || this.layer.hasSelectionFid(feature.id),
-      attributes: feature.attributes ? feature.attributes : feature.properties
+      attributes: feature.attributes ? feature.attributes : feature.properties,
     };
     if (this.geolayer && feature.geometry) {
       this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
         id: tableFeature.id,
-        geometry: this._returnGeometry(feature)
+        geometry: this._returnGeometry(feature),
       });
       tableFeature.geometry = feature.geometry;
     }
     this.state.features.push(tableFeature);
-  };
+  }
 
-  checkSelectAll(features=this.state.features) {
+  checkSelectAll(features = this.state.features) {
     this.state.selectAll = this.selectedfeaturesfid.has(Layer.SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
-  };
+  }
 
-  addFeatures(features=[]) {
-    features.forEach(feature => this.addFeature(feature));
-    this.state.tools.show = this.layer.getFilterActive() ||  this.selectedfeaturesfid.size > 0;
+  addFeatures(features = []) {
+    features.forEach((feature) => this.addFeature(feature));
+    this.state.tools.show = this.layer.getFilterActive() || this.selectedfeaturesfid.size > 0;
     this.checkSelectAll();
-  };
+  }
 
-  async reloadData(pagination=false) {
+  async reloadData(pagination = false) {
     this.state.features.splice(0);
     this.state.pagination = pagination;
     const tabledata = await this.getData();
-    const {data=[], reloadData} = tabledata;
+    const { data = [], reloadData } = tabledata;
     return data;
-  };
+  }
 
   _setLayout() {
-    //TODO
-  };
+    // TODO
+  }
 
   _returnGeometry(feature) {
     let geometry;
     if (feature.attributes) geometry = feature.geometry;
     else if (feature.geometry) geometry = geoutils.coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
     return geometry;
-  };
+  }
 
-  zoomAndHighLightFeature(feature, zoom=true) {
-    const geometry = feature.geometry;
+  zoomAndHighLightFeature(feature, zoom = true) {
+    const { geometry } = feature;
     if (geometry) {
-      if (this._async.state) this._async.fnc = this.mapService.highlightGeometry.bind(mapService, geometry, {zoom});
-      else this.mapService.highlightGeometry(geometry , { zoom });
+      if (this._async.state) this._async.fnc = this.mapService.highlightGeometry.bind(mapService, geometry, { zoom });
+      else this.mapService.highlightGeometry(geometry, { zoom });
     }
-  };
+  }
 
   /**
    * Zoom to eventually features relation
    */
-  zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true) {
+  zoomAndHighLightGeometryRelationFeatures = async function (feature, zoom = true) {
     if (this.relationsGeometry.length) {
       const features = [];
       const promises = [];
       const values = []; // usefult to check if add or not
-      this.relationsGeometry.forEach(({layer, child_field, field, features}) =>{
+      this.relationsGeometry.forEach(({
+        layer, child_field, field, features,
+      }) => {
         const value = feature.attributes[field];
         values.push(value);
         if (features[value] === undefined) {
           let promise;
           if (zoom) {
             promise = DataRouterService.getData('search:features', {
-              inputs:{
+              inputs: {
                 layer,
-                filter:`${child_field}|eq|${value}`,
+                filter: `${child_field}|eq|${value}`,
                 formatter: 1, // set formatter to 1
-                search_endpoint: 'api'
+                search_endpoint: 'api',
               },
-              outputs: false
+              outputs: false,
             });
           } else promise = Promise.reject();
           promises.push(promise);
-        } else promises.push(Promise.resolve(
-          {
-            data:[
-              {
-                features: features[value]
-              }
-            ]
-          }))
+        } else {
+          promises.push(Promise.resolve(
+            {
+              data: [
+                {
+                  features: features[value],
+                },
+              ],
+            },
+          ));
+        }
       });
       const promisesData = await Promise.allSettled(promises);
-      promisesData.forEach(({status, value}, index) => {
+      promisesData.forEach(({ status, value }, index) => {
         if (status === 'fulfilled') {
           const _features = value.data[0] ? value.data[0].features : [];
-          _features.forEach(feature => features.push(feature));
+          _features.forEach((feature) => features.push(feature));
           if (this.relationsGeometry[index].features[values[index]] === undefined) {
             this.relationsGeometry[index].features[values[index]] = _features;
           }
         }
       });
       zoom ? this.mapService.zoomToFeatures(features, {
-        highlight: true
+        highlight: true,
       }) : this.mapService.highlightFeatures(features);
     }
   };
@@ -494,14 +503,12 @@ class TableService extends G3WObject {
     this.resetMapBBoxEventHandlerKey();
     this.allfeaturesnumber = null;
     this.mapService = null;
-    this._async.state && setTimeout(()=> {
+    this._async.state && setTimeout(() => {
       this._async.fnc();
       this._async.state = false;
-      this._async.fnc = ()=>{};
+      this._async.fnc = () => {};
     });
-  };
+  }
+}
 
-};
-
-
-export default  TableService;
+export default TableService;

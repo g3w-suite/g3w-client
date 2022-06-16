@@ -1,11 +1,11 @@
-import MeasureInteraction  from './measureinteraction';
+import MeasureInteraction from './measureinteraction';
 
 // LenghtInteracion
 class LengthIteraction extends MeasureInteraction {
-  constructor(options={}) {
-    options.geometryType = "LineString";
+  constructor(options = {}) {
+    options.geometryType = 'LineString';
     super(options);
   }
 }
 
-export default  LengthIteraction;
+export default LengthIteraction;

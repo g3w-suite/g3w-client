@@ -1,18 +1,18 @@
 import G3WObject from 'core/g3wobject';
-import RouterService  from 'core/router';
-import ComponentsRegistry  from 'gui/componentsregistry';
+import RouterService from 'core/router';
+import ComponentsRegistry from 'gui/componentsregistry';
 
 class GUI extends G3WObject {
   constructor() {
-    const noop = ()=>{};
+    const noop = () => {};
     super({
-        setters: {
-          setContent(options = {}) {
-            this.fire('opencontent', true);
-            this._setContent(options)
-          }
-        }
-      });
+      setters: {
+        setContent(options = {}) {
+          this.fire('opencontent', true);
+          this._setContent(options);
+        },
+      },
+    });
     this.isready = false;
     // images urls
     this.getResourcesUrl = noop;
@@ -40,37 +40,46 @@ class GUI extends G3WObject {
     this.dialog = noop;
     this.isMobile = noop;
   }
-  addComponent(component, placeholder) {};
-  removeComponent(id) {};
+
+  addComponent(component, placeholder) {}
+
+  removeComponent(id) {}
+
   setComponent(component) {
     ComponentsRegistry.registerComponent(component);
-  };
+  }
+
   getComponent(id) {
     return ComponentsRegistry.getComponent(id);
-  };
+  }
+
   getComponents() {
     return ComponentsRegistry.getComponents();
-  };
+  }
 
   getService(idComponent) {
     const component = this.getComponent(idComponent);
     return component && component.getService();
-  };
+  }
 
   goto(url) {
     RouterService.goto(url);
-  };
+  }
+
   ready() {
     this.fire('ready');
     this.isready = true;
-  };
+  }
+
   guiResized() {
     this.fire('guiresized');
-  };
-  //ready GUI
+  }
+
+  // ready GUI
   isReady() {
-    return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
-  };
+    return new Promise((resolve) => (this.isready ? resolve() : this.once('ready', resolve)));
+  }
+
   /**
    * Passing a component application ui id return service that belong to component
    * @param componentId
@@ -79,10 +88,12 @@ class GUI extends G3WObject {
   getService(componentId) {
     const component = this.getComponent(componentId);
     return component && component.getService();
-  };
+  }
+
   /* spinner */
-  showSpinner(options={}) {};
-  hideSpinner(id) {};
+  showSpinner(options = {}) {}
+
+  hideSpinner(id) {}
 }
 
 export default new GUI();

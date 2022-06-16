@@ -1,10 +1,11 @@
-import OnClickControl  from './onclickcontrol';
-class ScreenshotControl extends OnClickControl{
-  constructor(options={}) {
+import OnClickControl from './onclickcontrol';
+
+class ScreenshotControl extends OnClickControl {
+  constructor(options = {}) {
     options.visible = false;
-    options.name = options.name || "maptoimage";
-    options.tipLabel =  options.tipLabel|| "Screenshot";
-    options.label = options.label || "\ue90f";
+    options.name = options.name || 'maptoimage';
+    options.tipLabel = options.tipLabel || 'Screenshot';
+    options.label = options.label || '\ue90f';
     options.toggled = false;
     super(options);
     this.layers = options.layers || [];
@@ -12,17 +13,15 @@ class ScreenshotControl extends OnClickControl{
     this.change(this.layers);
   }
 
-  change(layers=[]) {
+  change(layers = []) {
     const visible = this.checkVisible(layers);
     this.setVisible(visible);
-  };
+  }
 
-  checkVisible(layers=[]) {
-    const find = layers.find(layer => layer.isExternalWMS ? layer.isExternalWMS() : false);
+  checkVisible(layers = []) {
+    const find = layers.find((layer) => (layer.isExternalWMS ? layer.isExternalWMS() : false));
     return !find;
-  };
-
+  }
 }
 
-
-export default  ScreenshotControl;
+export default ScreenshotControl;

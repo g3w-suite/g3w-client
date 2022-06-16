@@ -1,24 +1,26 @@
 import ApplicationState from 'core/applicationstate';
-import InteractionControl  from './interactioncontrol';
-import PickCoordinatesInteraction  from '../interactions/pickcoordinatesinteraction';
 import Feature from 'ol/Feature';
-import {Vector as VectorSource} from 'ol/source';
-import {Vector as VectorLayer} from 'ol/layer';
-import {Style, Text, Icon, Fill} from 'ol/style';
-import {transform} from "ol/proj";
-import {Point} from "ol/geom";
+import { Vector as VectorSource } from 'ol/source';
+import { Vector as VectorLayer } from 'ol/layer';
+import {
+  Style, Text, Icon, Fill,
+} from 'ol/style';
+import { transform } from 'ol/proj';
+import { Point } from 'ol/geom';
+import PickCoordinatesInteraction from '../interactions/pickcoordinatesinteraction';
+import InteractionControl from './interactioncontrol';
 
 class StreetViewControl extends InteractionControl {
-  constructor(options={}) {
+  constructor(options = {}) {
     options = {
       ...options,
       offline: false,
       visible: !!ApplicationState.keys.vendorkeys.google,
-      name: "streetview",
-      tipLabel: "StreetView",
+      name: 'streetview',
+      tipLabel: 'StreetView',
       clickmap: true, // set ClickMap
-      label: "\ue905",
-      interactionClass: PickCoordinatesInteraction
+      label: '\ue905',
+      interactionClass: PickCoordinatesInteraction,
     };
     super(options);
     this._sv = null;
@@ -28,7 +30,7 @@ class StreetViewControl extends InteractionControl {
     this._lastposition = null;
     this._streetViewFeature = new Feature();
     const streetVectorSource = new VectorSource({
-      features: []
+      features: [],
     });
     this._layer = new VectorLayer({
       source: streetVectorSource,
@@ -44,49 +46,47 @@ class StreetViewControl extends InteractionControl {
               text: '\ue905',
               font: 'bold 18px icomoon',
               fill: new Fill({
-                color: '#ffffff'
-              })
-            })
+                color: '#ffffff',
+              }),
+            }),
           }),
           new Style({
             image: new Icon({
               src: '/static/client/images/streetviewarrow.png',
-              rotation
-            })
-          })
+              rotation,
+            }),
+          }),
         ];
         this._lastposition = coordinates;
-        return styles
-      }
+        return styles;
+      },
     });
   }
 
   getLayer() {
     return this._layer;
-  };
+  }
 
   setProjection(projection) {
     this._projection = projection;
-  };
+  }
 
   setPosition(position) {
     const self = this;
     let pixel;
     if (!this._sv) this._sv = new google.maps.StreetViewService();
-    this._sv.getPanorama({location: position}, function (data) {
-      self._panorama = new google.maps.StreetViewPanorama(
-        document.getElementById('streetview'), {
-          imageDateControl: true
-        }
-      );
-      self._panorama.addListener('position_changed', function() {
+    this._sv.getPanorama({ location: position }, (data) => {
+      self._panorama = new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
+        imageDateControl: true,
+      });
+      self._panorama.addListener('position_changed', function () {
         if (self.isToggled()) {
           const lnglat = transform([this.getPosition().lng(), this.getPosition().lat()], 'EPSG:4326', self._projection.getCode());
           self._layer.getSource().getFeatures()[0].setGeometry(
-            new Point(lnglat)
+            new Point(lnglat),
           );
           pixel = self._map.getPixelFromCoordinate(lnglat);
-          if ((pixel[0] + 15) > self._map.getSize()[0] || (pixel[1] + 15) > self._map.getSize()[1] || pixel[0] < 15 || pixel [1] < 15 ) {
+          if ((pixel[0] + 15) > self._map.getSize()[0] || (pixel[1] + 15) > self._map.getSize()[1] || pixel[0] < 15 || pixel[1] < 15) {
             self._map.getView().setCenter(lnglat);
           }
         }
@@ -94,42 +94,42 @@ class StreetViewControl extends InteractionControl {
       if (data && data.location) {
         self._panorama.setPov({
           pitch: 0,
-          heading: 0
+          heading: 0,
         });
         self._panorama.setPosition(data.location.latLng);
       }
-    })
-  };
+    });
+  }
 
   setMap(map) {
     this._map = map;
     super.setMap.call(map);
-    this._interaction.on('picked', evt => {
+    this._interaction.on('picked', (evt) => {
       this.dispatchEvent({
         type: 'picked',
-        coordinates: evt.coordinate
+        coordinates: evt.coordinate,
       });
       this._autountoggle && this.toggle();
     });
-  };
+  }
 
   clearMarker() {
-    this._streetViewFeature.setGeometry(null)
-  };
+    this._streetViewFeature.setGeometry(null);
+  }
 
   clear() {
     this._layer.getSource().clear();
     this._streetViewFeature.setGeometry(null);
     this.clearMarker();
     this._panorama = null;
-    this.dispatchEvent('disabled')
-  };
+    this.dispatchEvent('disabled');
+  }
 
   toggle(toggle) {
     super.toggle(toggle);
     if (!this.isToggled()) this.clear();
     else this._layer.getSource().addFeatures([this._streetViewFeature]);
-  };
+  }
 }
 
-export default  StreetViewControl;
+export default StreetViewControl;

@@ -1,39 +1,39 @@
-import Control  from './control';
-import {transformExtent, transform} from "ol/proj";
-import {containsXY} from "ol/extent";
+import { transformExtent, transform } from 'ol/proj';
+import { containsXY } from 'ol/extent';
+import Control from './control';
 
-const inputQueryId = "gcd-input-query";
-const inputResetId = "gcd-input-reset";
+const inputQueryId = 'gcd-input-query';
+const inputResetId = 'gcd-input-reset';
 const cssClasses = {
-  "namespace": "ol-geocoder",
-  "spin": "gcd-pseudo-rotate",
-  "hidden": "gcd-hidden",
-  "country": "gcd-country",
-  "city": "gcd-city",
-  "road": "gcd-road",
-  "olControl": "ol-control",
-  "glass": {
-    "container": "gcd-gl-container",
-    "control": "gcd-gl-control",
-    "button": "gcd-gl-btn",
-    "input": "gcd-gl-input",
-    "expanded": "gcd-gl-expanded",
-    "reset": "gcd-gl-reset",
-    "result": "gcd-gl-result"
+  namespace: 'ol-geocoder',
+  spin: 'gcd-pseudo-rotate',
+  hidden: 'gcd-hidden',
+  country: 'gcd-country',
+  city: 'gcd-city',
+  road: 'gcd-road',
+  olControl: 'ol-control',
+  glass: {
+    container: 'gcd-gl-container',
+    control: 'gcd-gl-control',
+    button: 'gcd-gl-btn',
+    input: 'gcd-gl-input',
+    expanded: 'gcd-gl-expanded',
+    reset: 'gcd-gl-reset',
+    result: 'gcd-gl-result',
   },
-  "inputText": {
-    "container": "gcd-txt-container",
-    "control": "gcd-txt-control",
-    "input": "gcd-txt-input",
-    "reset": "gcd-txt-reset",
-    "icon": "gcd-txt-glass",
-    "result": "gcd-txt-result"
-  }
+  inputText: {
+    container: 'gcd-txt-container',
+    control: 'gcd-txt-control',
+    input: 'gcd-txt-input',
+    reset: 'gcd-txt-reset',
+    icon: 'gcd-txt-glass',
+    result: 'gcd-txt-result',
+  },
 };
 
 const targetType = {
   GLASS: 'glass-button',
-  INPUT: 'text-input'
+  INPUT: 'text-input',
 };
 const vars = Object.freeze({
   inputQueryId,
@@ -42,8 +42,8 @@ const vars = Object.freeze({
   default: {
     inputQueryId,
     inputResetId,
-    cssClasses
-  }
+    cssClasses,
+  },
 });
 
 const klasses = vars.cssClasses;
@@ -52,38 +52,40 @@ const klasses$1 = vars.cssClasses;
 const utils = {
   toQueryString(obj) {
     const this$1 = this;
-    return Object.keys(obj).reduce(function (a, k) {
+    return Object.keys(obj).reduce((a, k) => {
       a.push(
-        typeof obj[k] === 'object' ?
-          this$1.toQueryString(obj[k]) :
-          encodeURIComponent(k) + '=' + encodeURIComponent(obj[k])
+        typeof obj[k] === 'object'
+          ? this$1.toQueryString(obj[k])
+          : `${encodeURIComponent(k)}=${encodeURIComponent(obj[k])}`,
       );
       return a;
     }, []).join('&');
   },
   encodeUrlXhr(url, data) {
-    if(data && typeof data === 'object') {
-      var str_data = this.toQueryString(data);
+    if (data && typeof data === 'object') {
+      const str_data = this.toQueryString(data);
       url += (/\?/.test(url) ? '&' : '?') + str_data;
     }
     return url;
   },
   json(url, data) {
-    return $.get(url, data)
+    return $.get(url, data);
   },
   jsonp(url, key, callback) {
     // https://github.com/Fresheyeball/micro-jsonp/blob/master/src/jsonp.js
-    const head = document.head,
-      script = document.createElement('script'),
-      // generate minimally unique name for callback function
-      callbackName = 'f' + Math.round(Math.random() * Date.now());
+    const { head } = document;
+    const script = document.createElement('script');
+    // generate minimally unique name for callback function
+    const callbackName = `f${Math.round(Math.random() * Date.now())}`;
 
     // set request url
-    script.setAttribute('src',
+    script.setAttribute(
+      'src',
       /*  add callback parameter to the url
        where key is the parameter key supplied
        and callbackName is the parameter value */
-      (url + (url.indexOf('?') > 0 ? '&' : '?') + key + '=' + callbackName));
+      (`${url + (url.indexOf('?') > 0 ? '&' : '?') + key}=${callbackName}`),
+    );
 
     /*  place jsonp callback on window,
      the script sent by the server should call this
@@ -92,7 +94,7 @@ const utils = {
       window[callbackName] = undefined;
 
       // clean up script tag created for request
-      setTimeout(function () {
+      setTimeout(() => {
         head.removeChild(script);
       }, 0);
 
@@ -108,19 +110,18 @@ const utils = {
     // @license http://opensource.org/licenses/MIT
     // copyright Paul Irish 2015
     // https://gist.github.com/paulirish/5438650
-    if('performance' in window === false) {
+    if ('performance' in window === false) {
       window.performance = {};
     }
 
-    Date.now = (Date.now || function () {  // thanks IE8
+    Date.now = (Date.now || function () { // thanks IE8
       return new Date().getTime();
     });
 
-    if('now' in window.performance === false) {
-
+    if ('now' in window.performance === false) {
       let nowOffset = Date.now();
 
-      if(performance.timing && performance.timing.navigationStart) {
+      if (performance.timing && performance.timing.navigationStart) {
         nowOffset = performance.timing.navigationStart;
       }
 
@@ -135,8 +136,10 @@ const utils = {
     resolution = resolution || 2.388657133911758;
     duration = duration || 500;
     const view = map.getView();
-    view.animate({duration: duration, resolution: resolution},
-      {duration: duration, center: coord});
+    view.animate(
+      { duration, resolution },
+      { duration, center: coord },
+    );
   },
   randomId(prefix) {
     const id = this.now().toString(36);
@@ -146,7 +149,7 @@ const utils = {
     return /^\d+$/.test(str);
   },
   classRegex(classname) {
-    return new RegExp(("(^|\\s+) " + classname + " (\\s+|$)"));
+    return new RegExp((`(^|\\s+) ${classname} (\\s+|$)`));
   },
   /**
    * @param {Element|Array<Element>} element DOM node or array of nodes.
@@ -157,8 +160,8 @@ const utils = {
   addClass(element, classname, timeout) {
     const this$1 = this;
 
-    if(Array.isArray(element)) {
-      element.forEach(function (each) {
+    if (Array.isArray(element)) {
+      element.forEach((each) => {
         this$1.addClass(each, classname);
       });
       return;
@@ -170,7 +173,7 @@ const utils = {
     let i = array.length;
 
     while (i--) {
-      if(!this$1.hasClass(element, array[i])) {
+      if (!this$1.hasClass(element, array[i])) {
         this$1._addClass(element, array[i], timeout);
       }
     }
@@ -179,14 +182,14 @@ const utils = {
     const this$1 = this;
 
     // use native if available
-    if(el.classList) {
+    if (el.classList) {
       el.classList.add(klass);
     } else {
-      el.className = (el.className + ' ' + klass).trim();
+      el.className = (`${el.className} ${klass}`).trim();
     }
 
-    if(timeout && this.isNumeric(timeout)) {
-      window.setTimeout(function () {
+    if (timeout && this.isNumeric(timeout)) {
+      window.setTimeout(() => {
         this$1._removeClass(el, klass);
       }, timeout);
     }
@@ -200,8 +203,8 @@ const utils = {
   removeClass(element, classname, timeout) {
     const this$1 = this;
 
-    if(Array.isArray(element)) {
-      element.forEach(function (each) {
+    if (Array.isArray(element)) {
+      element.forEach((each) => {
         this$1.removeClass(each, classname, timeout);
       });
       return;
@@ -213,7 +216,7 @@ const utils = {
     let i = array.length;
 
     while (i--) {
-      if(this$1.hasClass(element, array[i])) {
+      if (this$1.hasClass(element, array[i])) {
         this$1._removeClass(element, array[i], timeout);
       }
     }
@@ -221,13 +224,13 @@ const utils = {
   _removeClass(el, klass, timeout) {
     const this$1 = this;
 
-    if(el.classList) {
+    if (el.classList) {
       el.classList.remove(klass);
     } else {
       el.className = (el.className.replace(this.classRegex(klass), ' ')).trim();
     }
-    if(timeout && this.isNumeric(timeout)) {
-      window.setTimeout(function () {
+    if (timeout && this.isNumeric(timeout)) {
+      window.setTimeout(() => {
         this$1._addClass(el, klass);
       }, timeout);
     }
@@ -250,22 +253,20 @@ const utils = {
   toggleClass(element, classname) {
     const this$1 = this;
 
-    if(Array.isArray(element)) {
-      element.forEach(function (each) {
+    if (Array.isArray(element)) {
+      element.forEach((each) => {
         this$1.toggleClass(each, classname);
       });
       return;
     }
 
     // use native if available
-    if(element.classList) {
+    if (element.classList) {
       element.classList.toggle(classname);
+    } else if (this.hasClass(element, classname)) {
+      this._removeClass(element, classname);
     } else {
-      if(this.hasClass(element, classname)) {
-        this._removeClass(element, classname);
-      } else {
-        this._addClass(element, classname);
-      }
+      this._addClass(element, classname);
     }
   },
   /**
@@ -277,23 +278,24 @@ const utils = {
    * @return (find_all) {Element} : {Array}
    */
   find(selector, context, find_all) {
-    if(context === void 0) context = window.document;
-    let simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/,
-      periodRe = /\./g,
-      slice = Array.prototype.slice,
-      matches = [];
+    if (context === void 0) context = window.document;
+    const simpleRe = /^(#?[\w-]+|\.[\w-.]+)$/;
+    const periodRe = /\./g;
+    const { slice } = Array.prototype;
+    let matches = [];
 
     // Redirect call to the more performant function
     // if it's a simple selector and return an array
     // for easier usage
-    if(simpleRe.test(selector)) {
+    if (simpleRe.test(selector)) {
       switch (selector[0]) {
         case '#':
           matches = [this.$(selector.substr(1))];
           break;
         case '.':
           matches = slice.call(context.getElementsByClassName(
-            selector.substr(1).replace(periodRe, ' ')));
+            selector.substr(1).replace(periodRe, ' '),
+          ));
           break;
         default:
           matches = slice.call(context.getElementsByTagName(selector));
@@ -311,18 +313,18 @@ const utils = {
   },
   isElement(obj) {
     // DOM, Level2
-    if('HTMLElement' in window) {
+    if ('HTMLElement' in window) {
       return (!!obj && obj instanceof HTMLElement);
     }
     // Older browsers
-    return (!!obj && typeof obj === 'object' && obj.nodeType === 1 &&
-      !!obj.nodeName);
+    return (!!obj && typeof obj === 'object' && obj.nodeType === 1
+      && !!obj.nodeName);
   },
   getAllChildren(node, tag) {
     return [].slice.call(node.getElementsByTagName(tag));
   },
   isEmpty(str) {
-    return (!str || 0 === str.length);
+    return (!str || str.length === 0);
   },
   emptyArray(array) {
     while (array.length) {
@@ -330,22 +332,18 @@ const utils = {
     }
   },
   anyMatchInArray(source, target) {
-    return source.some(function (each) {
-      return target.indexOf(each) >= 0;
-    });
+    return source.some((each) => target.indexOf(each) >= 0);
   },
   everyMatchInArrayy(arr1, arr2) {
-    return arr2.every(function (each) {
-      return arr1.indexOf(each) >= 0;
-    });
+    return arr2.every((each) => arr1.indexOf(each) >= 0);
   },
   anyItemHasValue(obj, has) {
     const this$1 = this;
-    if(has === void 0) has = false;
+    if (has === void 0) has = false;
 
     const keys = Object.keys(obj);
-    keys.forEach(function (key) {
-      if(!this$1.isEmpty(obj[key])) {
+    keys.forEach((key) => {
+      if (!this$1.isEmpty(obj[key])) {
         has = true;
       }
     });
@@ -363,18 +361,14 @@ const utils = {
     }
   },
   getChildren(node, tag) {
-    return [].filter.call(
-      node.childNodes, function (el) {
-        return tag
-          ? el.nodeType === 1 && el.tagName.toLowerCase() === tag
-          : el.nodeType === 1;
-      }
-    );
+    return [].filter.call(node.childNodes, (el) => (tag
+      ? el.nodeType === 1 && el.tagName.toLowerCase() === tag
+      : el.nodeType === 1));
   },
   template(html, row) {
     const this$1 = this;
 
-    return html.replace(/\{ *([\w_-]+) *\}/g, function (htm, key) {
+    return html.replace(/\{ *([\w_-]+) *\}/g, (htm, key) => {
       const value = (row[key] === undefined) ? '' : row[key];
       return this$1.htmlEscape(value);
     });
@@ -394,29 +388,29 @@ const utils = {
    */
   mergeOptions(obj1, obj2) {
     const obj3 = {};
-    for (var attr1 in obj1) {
+    for (const attr1 in obj1) {
       obj3[attr1] = obj1[attr1];
     }
-    for (var attr2 in obj2) {
+    for (const attr2 in obj2) {
       obj3[attr2] = obj2[attr2];
     }
     return obj3;
   },
   createElement(node, html) {
     let elem;
-    if(Array.isArray(node)) {
+    if (Array.isArray(node)) {
       elem = document.createElement(node[0]);
 
-      if(node[1].id) {
+      if (node[1].id) {
         elem.id = node[1].id;
       }
-      if(node[1].classname) {
+      if (node[1].classname) {
         elem.className = node[1].classname;
       }
 
-      if(node[1].attr) {
-        const attr = node[1].attr;
-        if(Array.isArray(attr)) {
+      if (node[1].attr) {
+        const { attr } = node[1];
+        if (Array.isArray(attr)) {
           let i = -1;
           while (++i < attr.length) {
             elem.setAttribute(attr[i].name, attr[i].value);
@@ -438,19 +432,19 @@ const utils = {
     return elem;
   },
   assert(condition, message) {
-    if(message === void 0) message = 'Assertion failed';
+    if (message === void 0) message = 'Assertion failed';
 
-    if(!condition) {
-      if(typeof Error !== 'undefined') {
+    if (!condition) {
+      if (typeof Error !== 'undefined') {
         throw new Error(message);
       }
       throw message; // Fallback
     }
-  }
+  },
 };
 
 // classe Nomitatim //
-class Nominatim{
+class Nominatim {
   constructor(base, els) {
     this.Base = base;
     this.options = base.options;
@@ -459,7 +453,7 @@ class Nominatim{
     this.lastQuery = '';
     this.container = this.els.container;
     this.registeredListeners = {
-      mapClick: false
+      mapClick: false,
     };
     this.setListeners();
     this.OpenStreet = new OpenStreet(this);
@@ -467,16 +461,17 @@ class Nominatim{
 
   setListeners() {
     const this$1 = this;
-    let timeout, lastQuery;
+    let timeout; let
+      lastQuery;
     const openSearch = function () {
-      utils.hasClass(this$1.els.control, klasses$1.glass.expanded) ?
-        this$1.collapse() : this$1.expand();
+      utils.hasClass(this$1.els.control, klasses$1.glass.expanded)
+        ? this$1.collapse() : this$1.expand();
     };
     const query = function (evt) {
-      var value = evt.target.value.trim();
-      var hit = evt.key ? evt.key === 'Enter' :
-        evt.which ? evt.which === 13 :
-          evt.keyCode ? evt.keyCode === 13 : false;
+      const value = evt.target.value.trim();
+      const hit = evt.key ? evt.key === 'Enter'
+        : evt.which ? evt.which === 13
+          : evt.keyCode ? evt.keyCode === 13 : false;
 
       if (hit) {
         evt.preventDefault();
@@ -500,7 +495,7 @@ class Nominatim{
       if (this$1.options.autoComplete && value !== lastQuery) {
         lastQuery = value;
         timeout && clearTimeout(timeout);
-        timeout = setTimeout(function () {
+        timeout = setTimeout(() => {
           if (value.length >= this$1.options.autoCompleteMinLength) {
             this$1.query(value);
           }
@@ -513,31 +508,30 @@ class Nominatim{
     if (this.options.targetType === targetType.GLASS) {
       this.els.button.addEventListener('click', openSearch, false);
     }
-  };
+  }
 
-  query(q){
+  query(q) {
     return new Promise((resolve, reject) => {
-      const isNumber = (value) => {
-        return typeof value === 'number' && !Number.isNaN(value);
-      };
+      const isNumber = (value) => typeof value === 'number' && !Number.isNaN(value);
       let lonlat = null;
       if (q && q.split(',').length === 2) {
         lonlat = q.split(',');
-        lonlat = isNumber(1*lonlat[0]) && isNumber(1*lonlat[1]) ? lonlat.map(coordinate => 1*coordinate) : null;
+        lonlat = isNumber(1 * lonlat[0]) && isNumber(1 * lonlat[1]) ? lonlat.map((coordinate) => 1 * coordinate) : null;
       }
       if (lonlat) {
         this.options.lonlat(lonlat);
       } else {
         const this$1 = this;
         const ajax = {
-        }, options = this.options;
+        }; const
+          { options } = this;
         const provider = this.getProvider({
           query: q,
           provider: options.provider,
           key: options.key,
           lang: options.lang,
           countrycodes: options.countrycodes,
-          limit: options.limit
+          limit: options.limit,
         });
         if (this.lastQuery === q && this.els.result.firstChild) { return; }
         this.lastQuery = q;
@@ -546,58 +540,56 @@ class Nominatim{
         ajax.url = provider.url;
         ajax.data = provider.params;
         utils.json(ajax)
-          .done(function(res) {
-            const extent = provider.params.viewbox.split(',').map(coordinate => 1*coordinate);
-            res = res.filter(place => containsXY(extent, place.lon, place.lat));
+          .done((res) => {
+            const extent = provider.params.viewbox.split(',').map((coordinate) => 1 * coordinate);
+            res = res.filter((place) => containsXY(extent, place.lon, place.lat));
             utils.removeClass(this$1.els.reset, klasses$1.spin);
-            const res_= res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
+            const res_ = res.length ? this$1.OpenStreet.handleResponse(res) : undefined;
             this$1.createList(res_);
             res_ && this$1.listenMapClick();
-            resolve(res_ ? res_ : []);
+            resolve(res_ || []);
           })
-          .fail(function(error) {
+          .fail((error) => {
             utils.removeClass(this$1.els.reset, klasses$1.spin);
-            const li = utils.createElement(
-              'li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
+            const li = utils.createElement('li', `<h5>  ${this$1.options.notresponseserver}</h5>`);
             this$1.els.result.appendChild(li);
-            reject(error)
-          })
+            reject(error);
+          });
       }
+    });
+  }
 
-    })
-  };
-
-  createList (response) {
+  createList(response) {
     const this$1 = this;
     const ul = this.els.result;
     if (response) {
-      response.forEach(function (row) {
-        const addressHtml = this$1.addressTemplate(row.address),
-          html = ['<a href="#">', addressHtml, '</a>'].join(''),
-          li = utils.createElement('li', html);
-        li.addEventListener('click', function (evt) {
+      response.forEach((row) => {
+        const addressHtml = this$1.addressTemplate(row.address);
+        const html = ['<a href="#">', addressHtml, '</a>'].join('');
+        const li = utils.createElement('li', html);
+        li.addEventListener('click', (evt) => {
           evt.preventDefault();
           this$1.chosen(row, addressHtml, row.address, row.original);
         }, false);
         ul.appendChild(li);
       });
     } else {
-      const noresults = this.options.noresults;
+      const { noresults } = this.options;
       const elementVue = Vue.extend({
         functional: true,
         render(h) {
           return h('li', {
             class: {
-              'nominatim-noresult': true
+              'nominatim-noresult': true,
             },
-            directives:[{name: 't', value: noresults}]
-          })
-        }
+            directives: [{ name: 't', value: noresults }],
+          });
+        },
       });
       const li = new elementVue().$mount().$el;
       ul.appendChild(li);
     }
-  };
+  }
 
   chosen(place, addressHtml, addressObj, addressOriginal) {
     const map = this.Base.getMap();
@@ -607,17 +599,17 @@ class Nominatim{
     const address = {
       formatted: addressHtml,
       details: addressObj,
-      original: addressOriginal
+      original: addressOriginal,
     };
     this.options.keepOpen === false && this.clearResults(true);
     this.Base.dispatchEvent({
       type: 'addresschosen',
-      address: address,
-      coordinate: coord
+      address,
+      coordinate: coord,
     });
-  };
+  }
 
-  addressTemplate (address) {
+  addressTemplate(address) {
     const html = [];
     if (address.name) {
       html.push(['<div class="', klasses$1.road, '">{name}</div>'].join(''));
@@ -625,45 +617,45 @@ class Nominatim{
     if (address.road || address.building || address.house_number) {
       html.push([
         '<div class="', klasses$1.road,
-        '">{building} {road} {house_number}</div>'
+        '">{building} {road} {house_number}</div>',
       ].join(''));
     }
     if (address.city || address.town || address.village) {
       html.push([
         '<div class="', klasses$1.city,
-        '">{postcode} {city} {town} {village}</div>'
+        '">{postcode} {city} {town} {village}</div>',
       ].join(''));
     }
     if (address.state || address.country) {
       html.push([
-        '<div class="', klasses$1.country, '">{state} {country}</div>'
+        '<div class="', klasses$1.country, '">{state} {country}</div>',
       ].join(''));
     }
     return utils.template(html.join('<br>'), address);
-  };
+  }
 
-  getProvider (options) {
+  getProvider(options) {
     return this.OpenStreet.getParameters(options);
-  };
+  }
 
-  expand () {
+  expand() {
     const this$1 = this;
 
     utils.removeClass(this.els.input, klasses$1.spin);
     utils.addClass(this.els.control, klasses$1.glass.expanded);
-    window.setTimeout(function () { return this$1.els.input.focus(); }, 100);
+    window.setTimeout(() => this$1.els.input.focus(), 100);
     this.listenMapClick();
-  };
+  }
 
-  collapse () {
+  collapse() {
     this.els.input.value = '';
     this.els.input.blur();
     utils.addClass(this.els.reset, klasses$1.hidden);
     utils.removeClass(this.els.control, klasses$1.glass.expanded);
     this.clearResults();
-  };
+  }
 
-  listenMapClick () {
+  listenMapClick() {
     // already registered
     if (this.registeredListeners.mapClick) { return; }
 
@@ -671,139 +663,138 @@ class Nominatim{
     const mapElement = this.Base.getMap().getTargetElement();
     this.registeredListeners.mapClick = true;
 
-    //one-time fire click
+    // one-time fire click
     mapElement.addEventListener('click', {
-      handleEvent (evt) {
+      handleEvent(evt) {
         this_.clearResults(true);
         mapElement.removeEventListener(evt.type, this, false);
         this_.registeredListeners.mapClick = false;
-      }
+      },
     }, false);
-  };
+  }
 
-  clearResults (collapse) {
-    collapse && this.options.targetType === targetType.GLASS ?
-      this.collapse() : utils.removeAllChildren(this.els.result);
-  };
+  clearResults(collapse) {
+    collapse && this.options.targetType === targetType.GLASS
+      ? this.collapse() : utils.removeAllChildren(this.els.result);
+  }
 
-  getSource () {
+  getSource() {
     return this.layer.getSource();
-  };
+  }
 
-  addLayer () {
+  addLayer() {
     const this$1 = this;
 
     let found = false;
     const map = this.Base.getMap();
 
-    map.getLayers().forEach(function (layer) {
+    map.getLayers().forEach((layer) => {
       if (layer === this$1.layer) { found = true; }
     });
     if (!found) { map.addLayer(this.layer); }
-  };
-};
-
+  }
+}
 
 // classe Html //
 class Html {
-  constructor(options={}) {
+  constructor(options = {}) {
     this.options = options;
-    const {placeholder, fontIcon} = this.options;
-    const containerClass = klasses.namespace + ' ' + klasses.inputText.container + ' ' + this.options.classMobile;
+    const { placeholder, fontIcon } = this.options;
+    const containerClass = `${klasses.namespace} ${klasses.inputText.container} ${this.options.classMobile}`;
     const nominatimVueContainer = Vue.extend({
       functional: true,
       render(h) {
-        return h('div', {class: {[containerClass]: true}}, [
+        return h('div', { class: { [containerClass]: true } }, [
           h('div', {
             class: {
               [klasses.inputText.control]: true,
-            }
+            },
           }, [
             h('input', {
               attrs: {
                 type: 'text',
                 id: vars.inputQueryId,
-                autocomplete: 'off'
+                autocomplete: 'off',
               },
-              class:{
-                [klasses.inputText.input]: true
+              class: {
+                [klasses.inputText.input]: true,
               },
-              directives:[
+              directives: [
                 {
                   name: 't-placeholder',
-                  value: placeholder
-                }
-              ]
+                  value: placeholder,
+                },
+              ],
             }),
             h('button', {
               attrs: {
                 type: 'button',
-                id: 'search_nominatim'
-              },
-              class:{
-                btn: true
-              }
-            }, [h('i', {
-              attrs: {
-                'aria-hidden': true
-              },
-              style: {
-                color:'#ffffff'
+                id: 'search_nominatim',
               },
               class: {
-                [fontIcon]: true
-              }
+                btn: true,
+              },
+            }, [h('i', {
+              attrs: {
+                'aria-hidden': true,
+              },
+              style: {
+                color: '#ffffff',
+              },
+              class: {
+                [fontIcon]: true,
+              },
             })]),
             h('button', {
               attrs: {
                 type: 'button',
-                id:  vars.inputResetId
+                id: vars.inputResetId,
               },
               class: {
-                [`${klasses.inputText.reset}  ${klasses.hidden}`]: true
-              }
+                [`${klasses.inputText.reset}  ${klasses.hidden}`]: true,
+              },
             }),
           ]),
           h('ul', {
             class: {
-              [klasses.inputText.result]: true
-            }
-          })]
-        )
-      }
+              [klasses.inputText.result]: true,
+            },
+          })]);
+      },
     });
     this.container = new nominatimVueContainer().$mount().$el;
     this.els = this.createControl();
   }
 
-  createControl () {
-    let container, containerClass, elements;
+  createControl() {
+    let container; let containerClass; let
+      elements;
     if (this.options.targetType === targetType.INPUT) {
       container = this.container;
       elements = {
-        container: container,
-        control: utils.find('.' + klasses.inputText.control, container),
-        input: utils.find('.' + klasses.inputText.input, container),
-        reset: utils.find('.' + klasses.inputText.reset, container),
-        result: utils.find('.' + klasses.inputText.result, container)
+        container,
+        control: utils.find(`.${klasses.inputText.control}`, container),
+        input: utils.find(`.${klasses.inputText.input}`, container),
+        reset: utils.find(`.${klasses.inputText.reset}`, container),
+        result: utils.find(`.${klasses.inputText.result}`, container),
       };
     } else {
-      containerClass = klasses.namespace + ' ' + klasses.glass.container;
-      container = utils.createElement(
-        ['div', { classname: containerClass }], Html.glass);
+      containerClass = `${klasses.namespace} ${klasses.glass.container}`;
+      container = utils.createElement(['div', { classname: containerClass }], Html.glass);
       elements = {
-        container: container,
-        control: utils.find('.' + klasses.glass.control, container),
-        button: utils.find('.' + klasses.glass.button, container),
-        input: utils.find('.' + klasses.glass.input, container),
-        reset: utils.find('.' + klasses.glass.reset, container),
-        result: utils.find('.' + klasses.glass.result, container)
+        container,
+        control: utils.find(`.${klasses.glass.control}`, container),
+        button: utils.find(`.${klasses.glass.button}`, container),
+        input: utils.find(`.${klasses.glass.input}`, container),
+        reset: utils.find(`.${klasses.glass.reset}`, container),
+        result: utils.find(`.${klasses.glass.result}`, container),
       };
     }
-    //set placeholder from options
-    //elements.input.placeholder = this.options.placeholder;
+    // set placeholder from options
+    // elements.input.placeholder = this.options.placeholder;
     return elements;
-  };
+  }
+
   static glass = [
     '<div class="', klasses.glass.control, ' ', klasses.olControl, '">',
     '<button type="button" class="', klasses.glass.button, '"></button>',
@@ -816,9 +807,9 @@ class Html {
     ' class="', klasses.glass.reset, ' ', klasses.hidden, '"',
     '></a>',
     '</div>',
-    '<ul class="', klasses.glass.result, '"></ul>'
+    '<ul class="', klasses.glass.result, '"></ul>',
   ].join('');
-};
+}
 
 // class OpenStreet //
 class OpenStreet {
@@ -831,11 +822,12 @@ class OpenStreet {
         format: 'json',
         addressdetails: 1,
         limit: 10,
-      }
+      },
     };
   }
+
   getParameters(options) {
-    let viewbox = transformExtent(this.control.options.viewbox, this.control.options.mapCrs, 'EPSG:4326').join(',');
+    const viewbox = transformExtent(this.control.options.viewbox, this.control.options.mapCrs, 'EPSG:4326').join(',');
     return {
       url: this.settings.url,
       params: {
@@ -843,34 +835,33 @@ class OpenStreet {
         format: 'json',
         addressdetails: 1,
         limit: options.limit || this.settings.params.limit,
-        //countrycodes: options.countrycodes || this.settings.params.countrycodes,
-        //'accept-language': options.lang || this.settings.params['accept-language'],
+        // countrycodes: options.countrycodes || this.settings.params.countrycodes,
+        // 'accept-language': options.lang || this.settings.params['accept-language'],
         viewbox,
-        bounded: 1
-      }
+        bounded: 1,
+      },
     };
-  };
+  }
+
   handleResponse(results) {
-    return results.map(function (result) {
-      return ({
-        lon: result.lon,
-        lat: result.lat,
-        address: {
-          name: result.address.neighbourhood || '',
-          road: result.address.road || '',
-          postcode: result.address.postcode,
-          city: result.address.city || result.address.town,
-          state: result.address.state,
-          country: result.address.country
-        },
-        original: {
-          formatted: result.display_name,
-          details: result.address
-        }
-      });
-    });
-  };
-};
+    return results.map((result) => ({
+      lon: result.lon,
+      lat: result.lat,
+      address: {
+        name: result.address.neighbourhood || '',
+        road: result.address.road || '',
+        postcode: result.address.postcode,
+        city: result.address.city || result.address.town,
+        state: result.address.state,
+        country: result.address.country,
+      },
+      original: {
+        formatted: result.display_name,
+        details: result.address,
+      },
+    }));
+  }
+}
 
 class NominatimControl extends Control {
   constructor(options) {
@@ -893,14 +884,14 @@ class NominatimControl extends Control {
       bounded: 1,
       classMobile: options.isMobile ? 'nominatim-mobile' : '',
       mapCrs: options.mapCrs,
-      fontIcon: options.fontIcon || "fa fa-search fas fa-search"
+      fontIcon: options.fontIcon || 'fa fa-search fas fa-search',
     };
     const $html = new Html(options);
-    const container = $html.els.container;
+    const { container } = $html.els;
     super({
       element: container,
-      name: "nominatim",
-      offline: false
+      name: 'nominatim',
+      offline: false,
     });
     this.options = options;
     this.container = container;
@@ -909,4 +900,4 @@ class NominatimControl extends Control {
   }
 }
 
-export default  NominatimControl;
+export default NominatimControl;

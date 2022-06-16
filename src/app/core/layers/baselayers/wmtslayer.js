@@ -1,15 +1,17 @@
-import BaseLayer  from 'core/layers/baselayers/baselayer';
-import BasesLayers  from 'g3w-ol/src/layers/bases';
+import BaseLayer from 'core/layers/baselayers/baselayer';
+import BasesLayers from 'g3w-ol/src/layers/bases';
 
 class WMTSLayer extends BaseLayer {
-  constructor(config={}, options={}) {
+  constructor(config = {}, options = {}) {
     super(config, options);
     this.config = config;
   }
 
   _makeOlLayer() {
-    //use this config to get params
-    const {url, layer, attributions, matrixSet, format, style, requestEncoding, crs} = this.config;
+    // use this config to get params
+    const {
+      url, layer, attributions, matrixSet, format, style, requestEncoding, crs,
+    } = this.config;
     const projection = this.getProjectionFromCrs(crs);
     const olLayer = BasesLayers.WMTS.get({
       url,
@@ -19,10 +21,10 @@ class WMTSLayer extends BaseLayer {
       projection,
       requestEncoding,
       matrixSet,
-      style
+      style,
     });
-    return olLayer
-  };
+    return olLayer;
+  }
 }
 
-export default  WMTSLayer;
+export default WMTSLayer;

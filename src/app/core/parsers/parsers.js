@@ -5,7 +5,7 @@ import response from './response/parser';
 const Parsers = {
   vector,
   table,
-  response
+  response,
 };
 
-export default  Parsers;
+export default Parsers;

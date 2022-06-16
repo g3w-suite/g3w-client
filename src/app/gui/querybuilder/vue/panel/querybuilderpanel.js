@@ -1,8 +1,8 @@
-import Panel  from 'gui/panel';
-import QueryBuilder  from 'gui/querybuilder/vue/querybuilder';
+import Panel from 'gui/panel';
+import QueryBuilder from 'gui/querybuilder/vue/querybuilder';
 
 class QueryBuilderPanel extends Panel {
-  constructor(options={}) {
+  constructor(options = {}) {
     options.title = 'Query Builder';
     super(props);
     const internalPanel = new QueryBuilder(options);
@@ -10,4 +10,4 @@ class QueryBuilderPanel extends Panel {
   }
 }
 
-export default  QueryBuilderPanel;
+export default QueryBuilderPanel;

@@ -1,17 +1,17 @@
-import Component  from 'gui/vue/component';
+import Component from 'gui/vue/component';
 import Layer from './layer.vue';
 
 class LayerComponent extends Component {
-  constructor({state = {}, service} = {}) {
+  constructor({ state = {}, service } = {}) {
     super();
     const vueComponent = Vue.extend(Layer);
     this.setService(service);
     this.internalComponent = new vueComponent({
-      state
+      state,
     });
+  }
 
-  };
-  layout() {};
+  layout() {}
 }
 
-export default  LayerComponent;
+export default LayerComponent;

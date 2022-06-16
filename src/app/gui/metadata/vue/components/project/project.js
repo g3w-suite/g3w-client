@@ -1,17 +1,16 @@
-import Component  from 'gui/vue/component';
-import ProjectCatalog from './project.vue'
+import Component from 'gui/vue/component';
+import ProjectCatalog from './project.vue';
 
 class ProjectMetadataComponent extends Component {
-  constructor({state = {}, service} = {}) {
+  constructor({ state = {}, service } = {}) {
     super();
     const vueComponent = Vue.extend(ProjectCatalog);
     this.setService(service);
     this.internalComponent = new vueComponent({
-      state
+      state,
     });
-    this.layout = function() {};
+    this.layout = function () {};
   }
 }
 
-
-export default  ProjectMetadataComponent;
+export default ProjectMetadataComponent;

@@ -1,4 +1,4 @@
-import template  from './baseinput.html';
+import template from './baseinput.html';
 
 export const BaseInputMixin = {
   computed: {
@@ -10,11 +10,11 @@ export const BaseInputMixin = {
     },
     showhelpicon() {
       return this.state.help && this.state.help.message.trim();
-    }
+    },
   },
   methods: {
     showHideHelp() {
-      this.state.help.visible = !this.state.help.visible
+      this.state.help.visible = !this.state.help.visible;
     },
     // used to text input to listen mobile changes
     mobileChange(event) {
@@ -29,17 +29,17 @@ export const BaseInputMixin = {
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isVisible() {}
-  }
+    isVisible() {},
+  },
 };
 
 export const BaseInput = {
   props: ['state'],
   template,
-  ...BaseInputMixin
+  ...BaseInputMixin,
 };
 
-export default  {
+export default {
   BaseInput,
-  BaseInputMixin
+  BaseInputMixin,
 };

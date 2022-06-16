@@ -15,14 +15,14 @@ const Validators = {
     integer,
     float,
     string: validator,
-    default: validator
+    default: validator,
   },
 
-  get(type, options={}) {
+  get(type, options = {}) {
     const Validator = this.validators[type] || this.validators.default;
     return new Validator(options);
-  }
+  },
 
 };
 
-export default  Validators;
+export default Validators;

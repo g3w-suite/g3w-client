@@ -1,4 +1,4 @@
-import Validator  from './validator';
+import Validator from './validator';
 
 class RadioValidator extends Validator {
   constructor(options = {}) {
@@ -7,4 +7,3 @@ class RadioValidator extends Validator {
 }
 
 export default RadioValidator;
-

@@ -1,14 +1,15 @@
-import BaseLayer  from 'core/layers/baselayers/baselayer';
-import BasesLayers  from 'g3w-ol/src/layers/bases';
+import BaseLayer from 'core/layers/baselayers/baselayer';
+import BasesLayers from 'g3w-ol/src/layers/bases';
 
-class BingLayer extends BaseLayer{
-  constructor(options={}) {
+class BingLayer extends BaseLayer {
+  constructor(options = {}) {
     super(options);
   }
+
   _makeOlLayer() {
     let olLayer;
     const subtype = this.config.source ? this.config.source.subtype : null;
-    switch(subtype) {
+    switch (subtype) {
       case 'streets':
         olLayer = BasesLayers.BING.Road;
         break;
@@ -23,13 +24,13 @@ class BingLayer extends BaseLayer{
         break;
     }
     olLayer.getSource().on('imageloadstart', () => {
-      this.fire("loadstart");
+      this.fire('loadstart');
     });
     olLayer.getSource().on('imageloadend', () => {
-      this.fire("loadend");
+      this.fire('loadend');
     });
-    return olLayer
-  };
+    return olLayer;
+  }
 }
 
-export default  BingLayer;
+export default BingLayer;

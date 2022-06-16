@@ -1,8 +1,9 @@
-import Input  from 'gui/inputs/input';
+import Input from 'gui/inputs/input';
 import template from './text.html';
+
 const TextInput = Vue.extend({
   template,
-  mixins: [Input]
+  mixins: [Input],
 });
 
-export default  TextInput;
+export default TextInput;

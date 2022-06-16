@@ -1,43 +1,44 @@
 import { BING_API_KEY } from 'config/keys';
-import ApplicationState from 'core/applicationstate'
+import ApplicationState from 'core/applicationstate';
 import BaseLayer from 'core/layers/baselayers/baselayer';
-import BasesLayers  from 'g3w-ol/src/layers/bases';
+import BasesLayers from 'g3w-ol/src/layers/bases';
 
 class BingLayer extends BaseLayer {
-  constructor(config={}, options={}) {
+  constructor(config = {}, options = {}) {
     super(config, options);
   }
+
   _makeOlLayer() {
     let olLayer;
     const key = ApplicationState.keys.vendorkeys.bing || BING_API_KEY;
     const subtype = this.config.source ? this.config.source.subtype : null;
-    switch(subtype) {
+    switch (subtype) {
       case 'streets':
         olLayer = BasesLayers.BING.get({
           imagerySet: 'Road',
-          key
+          key,
         });
         break;
       case 'aerial':
         olLayer = BasesLayers.BING.get({
           imagerySet: 'Aerial',
-          key
+          key,
         });
         break;
       case 'aerialwithlabels':
         olLayer = BasesLayers.BING.get({
           imagerySet: 'AerialWithLabels',
-          key
+          key,
         });
         break;
       default:
         olLayer = BasesLayers.BING.get({
           imagerySet: 'Aerial',
-          key
+          key,
         });
     }
-    return olLayer
-  };
+    return olLayer;
+  }
 }
 
-export default  BingLayer;
+export default BingLayer;

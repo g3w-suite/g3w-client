@@ -1,16 +1,17 @@
 import utils from 'core/utils/utils';
 import G3WObject from 'core/g3wobject';
-import Flow  from './flow';
-import WorkflowsStack  from './workflowsstack';
-import {MESSAGES}  from './step';
-import createUserMessageStepsFactory  from 'gui/workflow/createUserMessageStepsFactory';
-import GUI  from 'gui/gui';
-//Class to manage flow of steps
-class Workflow extends G3WObject{
-
-  constructor(options={}) {
+import createUserMessageStepsFactory from 'gui/workflow/createUserMessageStepsFactory';
+import GUI from 'gui/gui';
+import Flow from './flow';
+import WorkflowsStack from './workflowsstack';
+import { MESSAGES } from './step';
+// Class to manage flow of steps
+class Workflow extends G3WObject {
+  constructor(options = {}) {
     super();
-    const {inputs=null, context=null, flow=new Flow(), steps=[], runOnce=false} = options;
+    const {
+      inputs = null, context = null, flow = new Flow(), steps = [], runOnce = false,
+    } = options;
     this._promise = null;
     // inputs mandatory to work with editing
     this._inputs = inputs;
@@ -31,28 +32,28 @@ class Workflow extends G3WObject{
       return usermessagesteps && {
         ...messagesSteps,
         ...usermessagesteps,
-      } || messagesSteps
-    },  {});
-  };
+      } || messagesSteps;
+    }, {});
+  }
 
   getContextService() {
     const context = this.getContext();
     return context.service;
-  };
+  }
 
   setContextService(service) {
     const context = this.getContext();
     context.service = service;
-  };
+  }
 
   getStackIndex() {
     return this._stackIndex;
-  };
+  }
 
   addChild(workflow) {
     if (this._child) this._child.addChild(workflow);
     else this._child = workflow;
-  };
+  }
 
   removeChild() {
     if (this._child) {
@@ -60,97 +61,97 @@ class Workflow extends G3WObject{
       WorkflowsStack.removeAt(index);
     }
     this._child = null;
-  };
+  }
 
   _setInputs(inputs) {
     this._inputs = inputs;
-  };
+  }
 
   getInputs() {
     return this._inputs;
-  };
+  }
 
   setContext(context) {
     this._context = context;
-  };
+  }
 
   getContext() {
     return this._context;
-  };
+  }
 
   getFlow() {
     return this._flow;
-  };
+  }
 
   setFlow(flow) {
     this._flow = flow;
-  };
+  }
 
   addStep(step) {
     this._steps.push(step);
-  };
+  }
 
   setSteps(steps) {
     this._steps = steps;
-  };
+  }
 
   getSteps() {
     return this._steps;
-  };
+  }
 
   getStep(index) {
     return this._steps[index];
-  };
+  }
 
   setMessages(messages) {
     Object.assign(this._messages, messages);
-  };
+  }
 
   getMessages() {
     return this._messages;
-  };
+  }
 
   clearMessages() {
     this._messages.help = null;
     this._isThereUserMessaggeSteps() && this.clearUserMessagesSteps();
-  };
+  }
 
   getLastStep() {
-    const length = this._steps.length;
+    const { length } = this._steps;
     return length ? this._steps[length] : null;
-  };
+  }
 
   getRunningStep() {
-    return this._steps.find(step => step.isRunning());
-  };
+    return this._steps.find((step) => step.isRunning());
+  }
 
-//stop all workflow children
+  // stop all workflow children
   _stopChild() {
-    return this._child ? this._child.stop(): utils.resolve();
-  };
+    return this._child ? this._child.stop() : utils.resolve();
+  }
 
   _isThereUserMessaggeSteps() {
     return Object.keys(this._userMessageSteps).length;
-  };
+  }
 
-  reject () {
+  reject() {
     this._promise && this._promise.reject();
-  };
+  }
 
   resolve() {
     this._promise && this._promise.resolve();
-  };
+  }
 
-// start workflow
-  start(options={}) {
+  // start workflow
+  start(options = {}) {
     const d = $.Deferred();
     this._promise = d;
     this._inputs = options.inputs;
     this._context = options.context || {};
     const isChild = this._context.isChild || false;
-    //check if are workflow running and if need to stop child
+    // check if are workflow running and if need to stop child
     if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
-      !isChild && WorkflowsStack.getCurrent().addChild(this)
+      !isChild && WorkflowsStack.getCurrent().addChild(this);
     }
     this._stackIndex = WorkflowsStack.push(this);
     this._flow = options.flow || this._flow;
@@ -158,7 +159,7 @@ class Workflow extends G3WObject{
     const showUserMessage = this._isThereUserMessaggeSteps();
     if (showUserMessage) {
       const stepsComponent = createUserMessageStepsFactory({
-        steps: this._userMessageSteps
+        steps: this._userMessageSteps,
       });
       GUI.showUserMessage({
         title: 'sdk.workflow.steps.title',
@@ -167,33 +168,33 @@ class Workflow extends G3WObject{
         size: 'small',
         closable: false,
         hooks: {
-          body: stepsComponent
-        }
+          body: stepsComponent,
+        },
       });
     }
 
     this._flow.start(this)
-      .then(outputs => {
-        showUserMessage && setTimeout(()=>{
+      .then((outputs) => {
+        showUserMessage && setTimeout(() => {
           this.clearUserMessagesSteps();
-          d.resolve(outputs)
+          d.resolve(outputs);
         }, 500) || d.resolve(outputs);
       })
-      .fail(error => {
+      .fail((error) => {
         showUserMessage && this.clearUserMessagesSteps();
         d.reject(error);
       })
-      .always(()=>{
+      .always(() => {
         this.runOnce && this.stop();
       });
     this.fire('start');
     return d.promise();
-  };
+  }
 
-// stop workflow during flow
+  // stop workflow during flow
   stop() {
     this._promise = null;
-    ////console.log('Workflow stopping .... ';
+    /// /console.log('Workflow stopping .... ';
     const d = $.Deferred();
     // stop child workflow indpendent from father workflow
     this._stopChild()
@@ -204,26 +205,25 @@ class Workflow extends G3WObject{
         // call stop flow
         this._flow.stop()
           .then(() => d.resolve())
-          .fail(err => d.reject(err))
-          .always(() => this.clearMessages())
+          .fail((err) => d.reject(err))
+          .always(() => this.clearMessages());
       });
     this.fire('stop');
     return d.promise();
-  };
+  }
 
   clearUserMessagesSteps() {
     this._resetUserMessaggeStepsDone();
     GUI.closeUserMessage();
-  };
+  }
 
   _resetUserMessaggeStepsDone() {
-    Object.keys(this._userMessageSteps).forEach(type => {
+    Object.keys(this._userMessageSteps).forEach((type) => {
       const userMessageSteps = this._userMessageSteps[type];
       userMessageSteps.done = false;
       if (userMessageSteps.buttonnext) userMessageSteps.buttonnext.disabled = true;
-    })
-  };
-
+    });
+  }
 }
 
-export default  Workflow;
+export default Workflow;

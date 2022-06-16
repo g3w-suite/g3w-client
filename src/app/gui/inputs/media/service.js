@@ -1,9 +1,9 @@
-import Service  from 'gui/inputs/service';
+import Service from 'gui/inputs/service';
 
 class MediaService extends Service {
-  constructor(options={}) {
+  constructor(options = {}) {
     super(options);
   }
 }
 
-export default  MediaService;
+export default MediaService;

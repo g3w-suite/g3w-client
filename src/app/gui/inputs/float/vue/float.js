@@ -1,9 +1,9 @@
-import Input  from 'gui/inputs/input';
+import Input from 'gui/inputs/input';
 import template from './float.html';
 
 const FloatInput = Vue.extend({
   mixins: [Input],
-  template
+  template,
 });
 
-export default  FloatInput;
+export default FloatInput;

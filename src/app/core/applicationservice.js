@@ -2,26 +2,27 @@ import appConfig from 'config';
 import utils from 'core/utils/utils';
 // LOAD DEVELOPMENT CONFIGURATION
 import dev from 'dev/index';
-import {TIMEOUT} from "constant";
-import ApplicationState from './applicationstate';
+import { TIMEOUT } from 'constant';
 import G3WObject from 'core/g3wobject';
 import GUI from 'gui/gui';
 import iframeService from 'core/iframe/routerservice';
-import {init as i18ninit, changeLanguage}  from 'core/i18n/i18n.service';
+import { init as i18ninit, changeLanguage } from 'core/i18n/i18n.service';
 import ApiService from 'core/apiservice';
 import RouterDataService from 'core/data/routerservice';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import PluginsRegistry from 'core/plugin/pluginsregistry';
-const G3W_VERSION = "{G3W_VERSION}";
+import ApplicationState from './applicationstate';
+
+const G3W_VERSION = '{G3W_VERSION}';
 let production = false;
 
-//Manage Application
+// Manage Application
 class ApplicationService extends G3WObject {
   constructor() {
     super({
       setters: {
-        changeProject({gid, host}={}) {
-          return this._changeProject({gid, host})
+        changeProject({ gid, host } = {}) {
+          return this._changeProject({ gid, host });
         },
         online() {
           this.setOnline();
@@ -30,14 +31,14 @@ class ApplicationService extends G3WObject {
           this.setOffline();
         },
         setFilterToken(filtertoken) {
-          this._setFilterToken(filtertoken)
-        }
-      }
+          this._setFilterToken(filtertoken);
+        },
+      },
     });
-    this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
+    this.version = G3W_VERSION.indexOf('G3W_VERSION') === -1 ? G3W_VERSION : '';
     ApplicationState.iframe = window.top !== window.self;
     ApplicationState.online = navigator.onLine;
-    ApplicationState.ismobile= isMobile.any;
+    ApplicationState.ismobile = isMobile.any;
     this.complete = false;
     this.baseurl = '/'; // set base url
     this.download_caller_id = null;
@@ -49,40 +50,40 @@ class ApplicationService extends G3WObject {
     this._groupId = null;
     this._gid = null;
     // on obtain init config (also for change project)
-    this.on('initconfig', ()=>{
+    this.on('initconfig', () => {
       // can put the configuration project here
       this.setApplicationUser(initConfig.user);
     });
   }
+
   // init application
   async init() {
     try {
       dev.init({
-        ApplicationService: this
+        ApplicationService: this,
       });
       const config = await this.createApplicationConfig();
       this.setConfig(config);
       this.setLayout('app', config.layout);
       return await this.bootstrap();
-    } catch(error) {
+    } catch (error) {
       const browserLng = navigator && navigator.language || 'en';
-      const language = appConfig.supportedLng.find(lng => browserLng.indexOf(lng) !== -1);
+      const language = appConfig.supportedLng.find((lng) => browserLng.indexOf(lng) !== -1);
       return Promise.reject({
         error,
-        language
-      })
+        language,
+      });
     }
-  };
-
+  }
 
   /**
    * setup Internalization
    */
   setupI18n() {
     const lngConfig = this._config._i18n;
-    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
+    lngConfig.appLanguages = this._config.i18n.map((lngLabel) => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
-    //setup internalization for translation
+    // setup internalization for translation
     i18ninit(lngConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set accept-language reuest header based on config language
@@ -90,13 +91,13 @@ class ApplicationService extends G3WObject {
     $.ajaxSetup({
       beforeSend(jqXHR) {
         jqXHR.setRequestHeader('Accept-Language', userLanguage);
-      }
+      },
     });
-  };
+  }
 
   getCurrentProject() {
     return ProjectsRegistry.getCurrentProject();
-  };
+  }
 
   /**
    *
@@ -104,7 +105,7 @@ class ApplicationService extends G3WObject {
    * @param download_caller_id
    * @returns {null}
    */
-  setDownload(bool=false, download_caller_id) {
+  setDownload(bool = false, download_caller_id) {
     if (download_caller_id) {
       if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
         ApplicationState.download = false;
@@ -115,160 +116,160 @@ class ApplicationService extends G3WObject {
       }
     } else ApplicationState.download = bool;
     return this.download_caller_id;
-  };
+  }
 
   getDownload() {
     return ApplicationState.download;
-  };
+  }
 
   loadingPlugin(plugin) {
     ApplicationState.plugins.push(plugin);
-  };
+  }
 
   /*
   * plugin: name of plugin
   * ready: Boolen - true if loaded and ready otherwise non ready - TO DO
   * */
   loadedPlugin(plugin, ready) {
-    ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
-  };
+    ApplicationState.plugins = ApplicationState.plugins.filter((_plugin) => _plugin !== plugin);
+  }
 
   _setFilterToken(filtertoken) {
     ApplicationState.tokens.filtertoken = filtertoken;
-  };
+  }
 
   getFilterToken() {
     return ApplicationState.tokens.filtertoken;
-  };
+  }
 
   changeLanguage(lng) {
     changeLanguage(lng);
     ApplicationState.lng = lng;
-    const pathname = window.location.pathname;
+    const { pathname } = window.location;
     const pathArray = pathname.split('/');
     pathArray[1] = lng;
     history.replaceState(null, null, pathArray.join('/'));
-  };
+  }
 
   registerOnlineOfflineEvent() {
     this.registerWindowEvent({
       evt: 'online',
-      cb:() => this.online()
+      cb: () => this.online(),
     });
 
     this.registerWindowEvent({
       evt: 'offline',
-      cb:() => this.offline()
-    })
-  };
+      cb: () => this.offline(),
+    });
+  }
 
   getBaseLayerId() {
     return ApplicationState.baseLayerId;
-  };
+  }
 
   setBaseLayerId(baseLayerId) {
     ApplicationState.baseLayerId = baseLayerId;
-  };
+  }
 
-  registerLeavePage({bool=false, message=''}={}) {
+  registerLeavePage({ bool = false, message = '' } = {}) {
     const _return = !bool ? undefined : bool;
-    window.onbeforeunload = function(event) {
+    window.onbeforeunload = function (event) {
       return _return;
     };
-  };
+  }
 
   unregisterOnlineOfflineEvent() {
     window.removeEventListener('online');
     window.removeEventListener('offline');
-  };
+  }
 
   getState() {
     return ApplicationState;
-  };
+  }
 
-  disableApplication(bool=false) {
+  disableApplication(bool = false) {
     ApplicationState.gui.app.disabled = bool;
-  };
+  }
 
-  setApplicationLanguage(lng='en') {
+  setApplicationLanguage(lng = 'en') {
     ApplicationState.lng = lng;
-  };
+  }
 
   getApplicationLanguage() {
     return ApplicationState.lng;
-  };
+  }
 
   setOnline() {
     ApplicationState.online = true;
-  };
+  }
 
   setOffline() {
     ApplicationState.online = false;
-  };
+  }
 
   isOnline() {
     return ApplicationState.online;
-  };
+  }
 
-  async setOfflineItem(id, data={}) {
+  async setOfflineItem(id, data = {}) {
     this.setLocalItem({
       id,
-      data
-    })
-  };
+      data,
+    });
+  }
 
-  setLocalItem({id, data}={}) {
+  setLocalItem({ id, data } = {}) {
     try {
       const item = JSON.stringify(data);
       window.localStorage.setItem(id, item);
-    } catch(error) {
+    } catch (error) {
       return error;
     }
-  };
+  }
 
   removeLocalItem(id) {
     window.localStorage.removeItem(id);
-  };
+  }
 
   getLocalItem(id) {
     const item = window.localStorage.getItem(id);
     if (item) return JSON.parse(item);
-    else return undefined;
-  };
+    return undefined;
+  }
 
   getOfflineItem(id) {
     return this.getLocalItem(id);
-  };
+  }
 
   removeOfflineItem(id) {
     this.removeLocalItem(id);
-  };
+  }
 
-  //check if is in Iframe
+  // check if is in Iframe
   isIframe() {
     return ApplicationState.iframe;
-  };
+  }
 
   // get config
   getConfig() {
     return this._config;
-  };
+  }
 
-  setConfig(config={}) {
+  setConfig(config = {}) {
     this._config = config;
-  };
+  }
 
-  //application proxy url
+  // application proxy url
   getProxyUrl() {
     return `${this._initConfig.proxyurl}`;
-  };
+  }
 
   /**
    * Get Interface OWS Url
    */
   getInterfaceOwsUrl() {
     return `${this._initConfig.interfaceowsurl}`;
-  };
+  }
 
   /**
    * Create application config object
@@ -277,18 +278,18 @@ class ApplicationService extends G3WObject {
    */
   async createApplicationConfig(initConfig) {
     const config = {
-      ...appConfig
+      ...appConfig,
     };
     try {
-      initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
-        initConfigUrl:  `${appConfig.server.urls.initconfig}`
+      initConfig = initConfig || await this.obtainInitConfig({
+        initConfigUrl: `${appConfig.server.urls.initconfig}`,
       });
       // write urls of static files and media url (base url and vector url)
       this.baseurl = initConfig.baseurl;
       config.server.urls.baseurl = initConfig.baseurl;
       config.server.urls.frontendurl = initConfig.frontendurl;
       config.server.urls.staticurl = initConfig.staticurl;
-      config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
+      config.server.urls.clienturl = initConfig.staticurl + initConfig.client;
       config.server.urls.mediaurl = initConfig.mediaurl;
       config.server.urls.vectorurl = initConfig.vectorurl;
       config.server.urls.proxyurl = initConfig.proxyurl;
@@ -304,7 +305,7 @@ class ApplicationService extends G3WObject {
       // create application configuration
       // check if is inside a iframe
       config.group.layout.iframe = window.top !== window.self;
-      return  {
+      return {
         apptitle: config.apptitle || '',
         logo_img: config.group.header_logo_img,
         logo_link: config.group.header_logo_link,
@@ -316,8 +317,8 @@ class ApplicationService extends G3WObject {
         urls: config.server.urls,
         mediaurl: config.server.urls.mediaurl,
         resourcesurl: config.server.urls.clienturl,
-        vectorurl:config.server.urls.vectorurl,
-        rasterurl:config.server.urls.rasterurl,
+        vectorurl: config.server.urls.vectorurl,
+        rasterurl: config.server.urls.rasterurl,
         interfaceowsurl: config.server.urls.interfaceowsurl,
         projects: config.group.projects,
         initproject: config.group.initproject,
@@ -335,23 +336,23 @@ class ApplicationService extends G3WObject {
         layout: config.group.layout || {},
         // needed by ProjectService
         getWmsUrl(project) {
-          return `${config.server.urls.baseurl+config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
+          return `${config.server.urls.baseurl + config.server.urls.ows}/${config.group.id}/${project.type}/${project.id}/`;
         },
         // needed by ProjectsRegistry to get informations about project configuration
         getProjectConfigUrl(project) {
-          return `${config.server.urls.baseurl+config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
+          return `${config.server.urls.baseurl + config.server.urls.config}/${config.group.id}/${project.type}/${project.id}?_t=${project.modified}`;
         },
         plugins: config.group.plugins,
         tools: config.tools,
         views: config.views || {},
-        user: config.user || null
+        user: config.user || null,
       };
-    } catch(error) {
+    } catch (error) {
       return Promise.reject(error);
     }
-  };
+  }
 
-  async obtainInitConfig({initConfigUrl, url, host}={}) {
+  async obtainInitConfig({ initConfigUrl, url, host } = {}) {
     if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
     else this.clearInitConfig();
     // if exist a global initiConfig (in production)
@@ -362,99 +363,100 @@ class ApplicationService extends G3WObject {
       this.fire('initconfig');
       return window.initConfig;
       // case development need to ask to api
-    } else {
+    }
 
-      let projectPath;
-      let queryTuples;
-      const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
-      if (locationsearch) {
-        queryTuples = locationsearch.split('&');
-        queryTuples.forEach(queryTuple => {
-          //check if exist project in url
-          if( queryTuple.indexOf("project") > -1) {
-            projectPath = queryTuple.split("=")[1];
-          }
-        });
-      } else {
-        const type_id = this._gid.split(':').join('/');
-        projectPath = `${this._groupId}/${type_id}`;
-      }
-      if (projectPath) {
-        const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
-        // get configuration from server (return a promise)
-        try {
-          const initConfig =  await this.getInitConfig(url);
-          //group, mediaurl, staticurl, user
-          initConfig.staticurl = "../dist/"; // in development force  asset
-          initConfig.clienturl = "../dist/"; // in development force  asset
-          this._initConfig = initConfig;
-          // set initConfig
-          window.initConfig = initConfig;
-          this.setInitVendorKeys(initConfig);
-          return initConfig;
-        } catch(error) {
-          return Promise.reject(error);
-        } finally {
-          this.fire('initconfig')
+    let projectPath;
+    let queryTuples;
+    const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
+    if (locationsearch) {
+      queryTuples = locationsearch.split('&');
+      queryTuples.forEach((queryTuple) => {
+        // check if exist project in url
+        if (queryTuple.indexOf('project') > -1) {
+          projectPath = queryTuple.split('=')[1];
         }
+      });
+    } else {
+      const type_id = this._gid.split(':').join('/');
+      projectPath = `${this._groupId}/${type_id}`;
+    }
+    if (projectPath) {
+      const url = `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
+      // get configuration from server (return a promise)
+      try {
+        const initConfig = await this.getInitConfig(url);
+        // group, mediaurl, staticurl, user
+        initConfig.staticurl = '../dist/'; // in development force  asset
+        initConfig.clienturl = '../dist/'; // in development force  asset
+        this._initConfig = initConfig;
+        // set initConfig
+        window.initConfig = initConfig;
+        this.setInitVendorKeys(initConfig);
+        return initConfig;
+      } catch (error) {
+        return Promise.reject(error);
+      } finally {
+        this.fire('initconfig');
       }
     }
-  };
+  }
 
   // method to get initial application configuration
   getInitConfig(url) {
     return new Promise((resolve, reject) => {
       if (this._initConfig) resolve(this._initConfig);
-      else utils.XHR.get({url})
-        .then(initConfig => resolve(initConfig))
-        .catch(error => reject(error));
-    })
-  };
+      else {
+        utils.XHR.get({ url })
+          .then((initConfig) => resolve(initConfig))
+          .catch((error) => reject(error));
+      }
+    });
+  }
 
   getInitConfigUrl() {
     return this._initConfigUrl;
-  };
+  }
 
   setInitConfigUrl(initConfigUrl) {
     this._initConfigUrl = initConfigUrl;
-  };
+  }
 
   // post boostratp
   async postBootstrap() {
     if (!this.complete) {
       try {
         // register  plugins
-        await this._bootstrapPlugins()
-      } catch(err) {
+        await this._bootstrapPlugins();
+      } catch (err) {
       } finally {
         this.complete = true;
         this.fire('complete');
       }
     }
-  };
+  }
 
-  //boostrap plugins
+  // boostrap plugins
   _bootstrapPlugins() {
     return PluginsRegistry.init({
       pluginsBaseUrl: this._config.urls.staticurl,
       pluginsConfigs: this._config.plugins,
-      otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState()
+      otherPluginsConfig: ProjectsRegistry.getCurrentProject().getState(),
     });
-  };
+  }
 
-  //set EPSG of Application is usefule for example to wms request for table layer
+  // set EPSG of Application is usefule for example to wms request for table layer
   setEPSGApplication(project) {
     ApplicationState.map.epsg = project.state.crs.epsg;
-  };
+  }
 
-  //Application User
+  // Application User
   setApplicationUser(user) {
     ApplicationState.user = user;
-  };
+  }
 
   getApplicationUser() {
     return ApplicationState.user;
-  };
+  }
 
   //  bootstrap (when called init)
   bootstrap() {
@@ -462,70 +464,70 @@ class ApplicationService extends G3WObject {
       // setup All i18n configuration
       this.setupI18n();
       // run Timeout
-      const timeout = setTimeout(() =>{
-        reject('Timeout')
+      const timeout = setTimeout(() => {
+        reject('Timeout');
       }, TIMEOUT);
-      //first time l'application service is not ready
+      // first time l'application service is not ready
       if (!ApplicationState.ready) {
         $.when(
           // register project
           ProjectsRegistry.init(this._config),
           // inizialize api service
-          ApiService.init(this._config)
+          ApiService.init(this._config),
         ).then(() => {
           // clear TIMEOUT
           clearTimeout(timeout);
-          //clear
+          // clear
           this.registerOnlineOfflineEvent();
           this.fire('ready');
           ApplicationState.ready = true;
           // set current project gid
           const project = ProjectsRegistry.getCurrentProject();
           this._gid = project.getGid();
-          //sett
+          // sett
           this.setEPSGApplication(project);
-          //IFRAME CHECK
+          // IFRAME CHECK
           ApplicationState.iframe && this.startIFrameService({
-            project
+            project,
           });
           // initilize routerdataservice
           RouterDataService.init();
           resolve(true);
-        }).fail(error => reject(error))
+        }).fail((error) => reject(error));
       }
     });
-  };
+  }
 
-  //iframeservice
-  startIFrameService({project}={}) {
-    iframeService.init({project});
-  };
+  // iframeservice
+  startIFrameService({ project } = {}) {
+    iframeService.init({ project });
+  }
 
-  registerWindowEvent({evt, cb} ={}) {
+  registerWindowEvent({ evt, cb } = {}) {
     window.addEventListener(evt, cb);
-  };
+  }
 
-  unregisterWindowEvent({evt, cb}={}) {
-    window.removeEventListener(evt, cb)
-  };
+  unregisterWindowEvent({ evt, cb } = {}) {
+    window.removeEventListener(evt, cb);
+  }
 
   registerService(element, service) {
     this._applicationServices[element] = service;
-  };
+  }
 
   unregisterService(element) {
     delete this._applicationServices[element];
-  };
+  }
 
   getApplicationService(type) {
     return this._applicationServices[type];
-  };
+  }
 
   getService(element) {
     return this._applicationServices[element];
-  };
+  }
 
-  errorHandler(error) {};
+  errorHandler(error) {}
 
   /**
    * clear initConfig
@@ -533,39 +535,39 @@ class ApplicationService extends G3WObject {
   clearInitConfig() {
     window.initConfig = null;
     this._initConfig = null;
-  };
+  }
 
-  setInitVendorKeys(config={}) {
+  setInitVendorKeys(config = {}) {
     const vendorkeys = config.group.vendorkeys || {};
-    config.group.baselayers.forEach(baselayer =>{
+    config.group.baselayers.forEach((baselayer) => {
       if (baselayer.apikey) {
         const type = baselayer.servertype ? baselayer.servertype.toLowerCase() : null;
-        vendorkeys[type] = baselayer.apikey
+        vendorkeys[type] = baselayer.apikey;
       }
     });
     this.setVendorKeys(vendorkeys);
-  };
+  }
 
-  setVendorKeys(keys={}) {
-    Object.keys(keys).forEach(key =>{
+  setVendorKeys(keys = {}) {
+    Object.keys(keys).forEach((key) => {
       ApplicationState.keys.vendorkeys[key] = keys[key];
-    })
-  };
+    });
+  }
 
   // change View
   changeProjectView(change) {
     ApplicationState.changeProjectview = change;
-  };
+  }
 
   isProjectViewChanging() {
     return ApplicationState.changeProjectview;
-  };
+  }
 
   reloadCurrentProject() {
     return this.changeProject({
-      gid: ProjectsRegistry.getCurrentProject().getGid()
-    })
-  };
+      gid: ProjectsRegistry.getCurrentProject().getGid(),
+    });
+  }
 
   /**
    * Change project method that do all request and rebuild interface
@@ -574,7 +576,7 @@ class ApplicationService extends G3WObject {
    * @returns {JQuery.Promise<any, any, any>}
    * @private
    */
-  _changeProject({gid, host}={}) {
+  _changeProject({ gid, host } = {}) {
     const d = $.Deferred();
     this._gid = gid;
     const projectUrl = ProjectsRegistry.getProjectUrl(gid);
@@ -583,13 +585,13 @@ class ApplicationService extends G3WObject {
     location.replace(url);
     d.resolve();
     return d.promise();
-  };
+  }
 
   /**
    * Layout section
    */
 
-  setLayout(who='app', config={}) {
+  setLayout(who = 'app', config = {}) {
     /**
      * Set default height percentage of height when show vertical content (for example show table attribute)
      * @type {{}}
@@ -601,29 +603,33 @@ class ApplicationService extends G3WObject {
       config.rightpanel.height_default = config.rightpanel.height;
       config.rightpanel.width_100 = false;
       config.rightpanel.height_100 = false;
-    } else config.rightpanel = {width: 50, height: 50, width_default: 50, height_default: 50, width_100: false, height_100: false};
+    } else {
+      config.rightpanel = {
+        width: 50, height: 50, width_default: 50, height_default: 50, width_100: false, height_100: false,
+      };
+    }
     ApplicationState.gui.layout[who] = config;
-  };
+  }
 
   removeLayout(who) {
     who && delete ApplicationState.gui.layout[who];
-  };
+  }
 
-  setCurrentLayout(who='app') {
+  setCurrentLayout(who = 'app') {
     ApplicationState.gui.layout.__current = who;
-  };
+  }
 
   getCurrentLayout() {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
-  };
+  }
 
   getCurrentLayoutName() {
     return ApplicationState.gui.layout.__current;
-  };
+  }
 
-  cloneLayout(which='app') {
-    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
-  };
+  cloneLayout(which = 'app') {
+    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]));
+  }
 
   /**
    * Layout section
@@ -633,6 +639,5 @@ class ApplicationService extends G3WObject {
     this.unregisterOnlineOfflineEvent();
   }
 }
-
 
 export default new ApplicationService();

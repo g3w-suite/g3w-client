@@ -1,7 +1,7 @@
 import G3WObject from 'core/g3wobject';
-import Queque  from './queque';
+import Queque from './queque';
 
-//Class Flow of workflow step by step
+// Class Flow of workflow step by step
 class Flow extends G3WObject {
   constructor() {
     super();
@@ -12,14 +12,15 @@ class Flow extends G3WObject {
     this._workflow;
     this.queques = {
       end: new Queque(),
-      micro: new Queque()
+      micro: new Queque(),
     };
     this.d = $.Deferred();
   }
-  //start workflow
+
+  // start workflow
   start(workflow) {
     if (counter > 0) {
-      console.log("reset workflow before restarting");
+      console.log('reset workflow before restarting');
     }
     this._workflow = workflow;
     this.inputs = workflow.getInputs();
@@ -27,29 +28,29 @@ class Flow extends G3WObject {
     this.steps = workflow.getSteps();
     // check if there are steps
     if (this.steps && this.steps.length) {
-      //run step (first)
+      // run step (first)
       this.runStep(this.steps[0], this.inputs, this.context);
     }
     // return a promise that will be reolved if all step go right
     return this.d.promise();
-  };
+  }
 
-  //run step
+  // run step
   runStep(step, inputs) {
-    //run step that run task
+    // run step that run task
     this._workflow.setMessages({
-      help: step.state.help
+      help: step.state.help,
     });
     const runMicroTasks = this.queques.micro.getLength();
     step.run(inputs, context, this.queques)
-      .then(outputs => {
+      .then((outputs) => {
         runMicroTasks && this.queques.micro.run();
         this.onDone(outputs);
       })
-      .fail(error => this.onError(error));
-  };
+      .fail((error) => this.onError(error));
+  }
 
-  //check if all step are resolved
+  // check if all step are resolved
   onDone(outputs) {
     this.counter++;
     if (this.counter === this.steps.length) {
@@ -58,14 +59,14 @@ class Flow extends G3WObject {
       return;
     }
     this.runStep(steps[counter], outputs);
-  };
+  }
 
   // in case of error
   onError(err) {
     this.counter = 0;
     this.clearQueques();
     this.d.reject(err);
-  };
+  }
 
   // stop flow
   stop() {
@@ -78,17 +79,16 @@ class Flow extends G3WObject {
       // reject flow
       d.reject();
     } else {
-      //reject to force rollback session
+      // reject to force rollback session
       d.resolve();
     }
     return d.promise();
-  };
+  }
 
   clearQueques() {
     this.queques.micro.clear();
     this.queques.end.clear();
-  };
+  }
 }
 
-export default  Flow;
-
+export default Flow;
