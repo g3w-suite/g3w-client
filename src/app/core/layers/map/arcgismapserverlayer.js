@@ -2,9 +2,9 @@ import RasterLayers from 'g3w-ol/src/layers/rasters';
 import WMSLAYER from './wmslayer';
 
 class ARCGISMAPSERVERLayer extends WMSLAYER {
-  constructor(options = {}, extraParams = {}) {
-    super(options, extraParams);
-  }
+  // constructor(options = {}, extraParams = {}) {
+  //   super(options, extraParams);
+  // }
 
   _makeOlLayer() {
     const config = {
