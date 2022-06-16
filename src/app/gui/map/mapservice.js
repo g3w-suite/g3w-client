@@ -789,7 +789,6 @@ class MapService extends G3WObject {
             const runQuery = utils.throttle(async (e) => {
               const { coordinates } = e;
               GUI.closeOpenSideBarComponent();
-              console.log(coordinates);
               try {
                 const { data = [] } = await DataRouterService.getData('query:coordinates', {
                   inputs: {
