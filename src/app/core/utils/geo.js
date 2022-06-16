@@ -239,7 +239,7 @@ const geoutils = {
   createFeatureFromBBOX(bbox) {
     let feature;
     if (Array.isArray(bbox) && bbox.length === 4) {
-      const geometry = Polygon.fromExtent(bbox);
+      const geometry = fromExtent(bbox);
       feature = new Feature(geometry);
     }
     return feature;
@@ -636,7 +636,6 @@ const geoutils = {
     const geometry = fromExtent(bbox);
     const map = GUI.getService('map').getMap();
     const mapProjection = map.getView().getProjection();
-    console.log(map);
     if (multilayers) {
       queriesPromise = geoutils.getQueryLayersPromisesByGeometry(layers, {
         geometry,
