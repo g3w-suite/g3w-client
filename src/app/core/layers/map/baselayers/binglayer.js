@@ -2,9 +2,9 @@ import BaseLayer from 'core/layers/baselayers/baselayer';
 import BasesLayers from 'g3w-ol/src/layers/bases';
 
 class BingLayer extends BaseLayer {
-  constructor(options = {}) {
-    super(options);
-  }
+  // constructor(options = {}) {
+  //   super(options);
+  // }
 
   _makeOlLayer() {
     let olLayer;

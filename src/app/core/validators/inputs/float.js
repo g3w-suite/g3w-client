@@ -1,9 +1,9 @@
 import Validator from './validator';
 
 class FloatValidator extends Validator {
-  constructor(options = {}) {
-    super(options);
-  }
+  // constructor(options = {}) {
+  //   super(options);
+  // }
 
   validate(value) {
     const float = Number(1 * value);

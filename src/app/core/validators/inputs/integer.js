@@ -1,9 +1,9 @@
 import Validator from './validator';
 
 class IntegerValidator extends Validator {
-  constructor(options = {}) {
-    super(options);
-  }
+  // constructor(options = {}) {
+  //   super(options);
+  // }
 
   validate(value) {
     const integer = 1 * value;
