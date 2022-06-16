@@ -1,10 +1,12 @@
 import Provider from 'core/layers/providers/provider';
 import Filter from 'core/layers/filter/filter';
-import { filter as olfilter, WFS } from 'ol/format';
+import utils from 'core/utils/utils';
+import {WFS} from 'ol/format';
+import {bbox, intersects, within} from 'ol/format/filter';
 
 class WFSDataProvider extends Provider {
   constructor(options = {}) {
-    super();
+    super(options);
     this._name = 'wfs';
   }
 
@@ -34,7 +36,7 @@ class WFSDataProvider extends Provider {
           // sanitize in case of nil:true
           features.forEach((feature) => {
             Object.entries(feature.getProperties()).forEach(([attribute, value]) => {
-              if (toRawType(value) === 'Object' && value['xsi:nil'])feature.set(attribute, 'NULL');
+              if (utils.toRawType(value) === 'Object' && value['xsi:nil'])feature.set(attribute, 'NULL');
             });
           });
         });
@@ -42,7 +44,7 @@ class WFSDataProvider extends Provider {
           data: featuresForLayers,
         });
       })
-      .fail((e) => d.reject(e))
+      .fail(e => d.reject(e))
       .always(() => {
         clearTimeout(timeoutKey);
       });
@@ -53,8 +55,8 @@ class WFSDataProvider extends Provider {
     url = url.match(/\/$/) ? url : `${url}/`;
     const d = $.Deferred();
     $.post(url, params)
-      .then((response) => d.resolve(response))
-      .fail((err) => d.reject(err));
+      .then(response => d.resolve(response))
+      .fail(err => d.reject(err));
     return d.promise();
   }
 
@@ -93,23 +95,30 @@ class WFSDataProvider extends Provider {
       const filterType = filter.getType();
       const filterConfig = filter.getConfig();
       let featureRequest;
-      // get filter from ol
-      const f = olfilter;
       /// //
       filter = filter.get();
       switch (filterType) {
         case 'bbox':
           featureRequest = new WFS().writeGetFeature({
-            featureTypes: [layer],
-            filter: f.bbox('the_geom', filter),
+            featureTypes: [layer.getWMSLayerName()],
+            filter: bbox('the_geom', filter),
           });
           break;
         case 'geometry':
-          // speatial methos. <inteserct, within>
+          // speatial methods. <inteserct, within>
           const { spatialMethod = 'intersects' } = filterConfig;
+          let olFilter;
+          switch (spatialMethod) {
+            case 'within':
+              olFilter = within;
+              break;
+            case 'intersects':
+            default:
+              olFilter = intersects;
+          }
           featureRequest = new WFS().writeGetFeature({
-            featureTypes: [layer],
-            filter: f[spatialMethod]('the_geom', filter),
+            featureTypes: [layer.getWMSLayerName()],
+            filter: olFilter('the_geom', filter),
           });
           break;
         case 'expression':
@@ -126,9 +135,8 @@ class WFSDataProvider extends Provider {
       }
       params.FILTER = `(${featureRequest.children[0].innerHTML})`.repeat(layers ? layers.length : 1);
       const queryPromise = httpMethod === 'GET' && filterType !== 'geometry' ? this._get(url, params) : this._post(url, params);
-      queryPromise.then((response) => {
-        d.resolve(response);
-      }).fail((err) => {
+      queryPromise.then(response => {d.resolve(response);
+      }).fail(err => {
         if (err.status === 200) d.resolve(err.responseText);
         else d.reject(err);
       });
