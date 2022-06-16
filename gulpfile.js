@@ -11,7 +11,7 @@ const rename      = require('gulp-rename');
 const replace     = require('gulp-replace');
 const uglify      = require('gulp-uglify');
 const gutil       = require('gulp-util');
-const useref      = require('gulp-useref'); // used to parse index.html.template
+const useref      = require('gulp-useref'); // used to parse index.dev.html
 
 // Gulp vinyl (virtual memory filesystem stuff)
 const buffer      = require('vinyl-buffer');
@@ -261,7 +261,7 @@ gulp.task('assets', gulp.series('fonts', 'images', 'less', 'datatable-images'));
     const pluginName = path.dirname(this.file.relative);
     return path.relative(path.resolve('./src'), path.resolve(`${g3w.pluginsFolder}/${pluginName}`))  + '/' ;
   };
-  return gulp.src('./src/index.html.template')
+  return gulp.src('./src/index.dev.html')
     // replace css and js sources
     .pipe(htmlreplace({
       'app_vendor_css':
@@ -296,7 +296,7 @@ gulp.task('html:dev', gulp.series('build_external_assets', 'assets' , function()
  * Build django g3w-admin template with the refercenced of all css and js minified and added versionHash
  */
 gulp.task('html:prod', function() {
-  return gulp.src('./src/index.html.admin.template')
+  return gulp.src('./src/index.prod.html')
     .pipe(replace('{VENDOR_CSS}', 'vendor.' + hashtable.vendor.css.hash + '.min.css'))
     .pipe(replace('{APP_CSS}',       'app.' + hashtable.app.css.hash    + '.min.css'))
     .pipe(replace('{VENDOR_JS}',  'vendor.' + hashtable.vendor.js.hash  + '.min.js'))
