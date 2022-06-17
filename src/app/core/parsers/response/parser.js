@@ -142,7 +142,7 @@ const utils = {
       sanitizeLayerName = sanitizeLayerName.replace(/(\'+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\)+)/, '');
       sanitizeLayerName = sanitizeLayerName.replace(/(\(+)/, '');
-      const reg = new RegExp(`qgs:${sanitizeLayerName}\\b`, 'g');
+      const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
     }
     const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
