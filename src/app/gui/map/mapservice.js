@@ -451,7 +451,7 @@ class MapService extends G3WObject {
 
   getMapCanvas(map) {
     const viewport = map ? map.getViewport() : $(`#${this.maps_container} .g3w-map`).last().children('.ol-viewport')[0];
-    return $(viewport).children('canvas')[0];
+    return $(viewport).find('canvas')[0];
   }
 
   getProjection() {
