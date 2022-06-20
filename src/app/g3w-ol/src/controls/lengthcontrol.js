@@ -5,6 +5,7 @@ class LengthControl extends MeasureControl {
   constructor(options = {}) {
     super({
       ...options,
+      name: "length",
       tipLabel: 'sdk.mapcontrols.measures.length.tooltip',
       label: '\ue908',
       clickmap: true, // set ClickMap

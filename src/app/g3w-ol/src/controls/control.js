@@ -112,9 +112,9 @@ class Control extends OLControl {
     let resetControl = null;
     // remove all the other, eventually toggled, interactioncontrols
     const controls = map.getControls();
-    this._toggled && controls.forEach((control) => {
+    this._toggled && controls.forEach(control => {
       if (control.id && control.toggle && (control.id !== this.id)) {
-        control.toggle(false);
+        control.isToggled() && control.toggle(false);
         if (control.name === 'reset') resetControl = control;
       }
     });

@@ -5,6 +5,7 @@ class AreaControl extends MeasureControl {
   constructor(options = {}) {
     options = {
       ...options,
+      name: "area",
       tipLabel: 'sdk.mapcontrols.measures.area.tooltip',
       label: '\ue909',
       clickmap: true, // set ClickMap
