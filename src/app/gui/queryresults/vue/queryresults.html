@@ -79,7 +79,7 @@
                     <template v-if="feature.show" v-for="(feature, index) in layer.features">
                       <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
                         :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                        :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset">
+                        :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset" :getLayerField="getLayerField">
                       </header-feature-body>
                       <tr class="g3w-feature-result-action-tools">
                         <template v-if="state.currentactiontools[layer.id][index]">
@@ -119,7 +119,7 @@
                   <template v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
                     <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
                     :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                    :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset">
+                    :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset" :getLayerField="getLayerField">
                     </header-feature-body>
                     <tr class="g3w-feature-result-action-tools">
                       <template v-if="state.currentactiontools[layer.id][index]">
