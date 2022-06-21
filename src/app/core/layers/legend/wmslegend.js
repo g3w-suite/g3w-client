@@ -1,4 +1,4 @@
-function WMSLegend({layer, params}) {
+function WMSLegend({layer, params, options={}}) {
   const {
     width,
     height,
@@ -27,12 +27,13 @@ function WMSLegend({layer, params}) {
   const LAYER = layer.getWMSLayerName({
     type: 'legend'
   });
+  const {categories=false} = options;
   let url = layer.getWmsUrl({type: 'legend'});
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
     `${width ? '&WIDTH=' + width: ''}`,
     `${height ? '&HEIGHT=' + height: ''}`,
-    `&FORMAT=image/png`,
+    `&FORMAT=${categories ? 'application/json' : 'image/png'}`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
     `&LAYERFONTCOLOR=${color}`,
