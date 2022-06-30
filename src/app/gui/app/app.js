@@ -3,7 +3,7 @@ import ApplicationService from 'core/applicationservice';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import utils from 'core/utils/utils';
 import { t } from 'core/i18n/i18n.service';
-import HeaderItem from 'gui/header/headeritem';
+import HeaderItem from 'gui/header/headeritem.vue';
 import GUI from 'gui/gui';
 import { resizeMixin } from 'gui/vue/vue.mixins';
 import layout from './layout';
