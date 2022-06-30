@@ -14,8 +14,6 @@
 </template>
 
 <script>
-  import template from "./headeritem.html";
-
   export default {
     name: "headeritem",
     props: ['state'],
