@@ -68,9 +68,9 @@ import MapComponent from 'gui/map/vue/map';
 import ToolsComponent from 'gui/tools/vue/tools';
 import QueryResultsComponent from 'gui/queryresults/vue/queryresults';
 // main Form Component
-import FormComponent from 'gui/form/vue/form';
-import FormBody from 'gui/form/components/body/vue/body';
-import FormFooter from 'gui/form/components/footer/vue/footer';
+import FormComponent from 'gui/form/vue/form.vue';
+import FormBody from 'gui/form/components/body.vue';
+import FormFooter from 'gui/form/components/footer.vue';
 import G3WInput from 'gui/inputs/g3w-input.vue';
 import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
 import InputsComponents from 'gui/inputs/inputs';

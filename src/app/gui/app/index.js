@@ -9,7 +9,7 @@ import VueAppPlugin from 'gui/vue/vueappplugin';
 import G3wApplicationFilterPlugin from 'gui/vue/vue.filter';
 import GlobalComponents from 'gui/vue/vue.globalcomponents';
 import GlobalDirective from 'gui/vue/vue.directives';
-import FormComponent from 'gui/form/vue/form';
+import FormComponent from 'gui/form/vue/form.vue';
 /**
  *
  */

@@ -1,0 +1,42 @@
+<template>
+  <div class="g3wform_header box-header with-border">
+  <span style="display:flex;"
+        class="title"
+        :style="{fontSize: isMobile() && '1em !important'}"
+        :class="[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
+        v-for="header in headers" :key="header.id"
+        @click="click(header.id)">
+    <span v-if="header.icon" style="margin-right: 5px">
+      <i :class="header.icon"></i>
+    </span>
+    <span v-t:pre="header.title">{{ header.name }}</span>
+  </span>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: "header",
+    props: {
+      headers: {
+        type: Array,
+        default: [],
+      },
+      currentid: {
+        type: String,
+      },
+    },
+    methods: {
+      click(id) {
+        if (this.currentid !== id) this.$emit('clickheader', id);
+      },
+      resizeForm(perc) {
+        this.$emit('resize-form', perc);
+      },
+    }
+  }
+</script>
+
+<style scoped>
+
+</style>
