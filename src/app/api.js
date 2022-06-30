@@ -75,7 +75,7 @@ import G3WInput from 'gui/inputs/g3w-input.vue';
 import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
 import InputsComponents from 'gui/inputs/inputs';
 import ChartsFactory from 'gui/charts/chartsfactory';
-import lineXY from 'gui/charts/vue/c3/line/lineXY';
+import lineXY from 'gui/charts/vue/c3/line/lineXY.vue';
 import Fields from 'gui/fields/fields';
 import Mixins from 'gui/vue/vue.mixins';
 import SearchPanelService from 'gui/search/vue/panel/searchservice';
