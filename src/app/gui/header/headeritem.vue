@@ -17,7 +17,6 @@
   export default {
     name: "headeritem",
     props: ['state'],
-    template,
     methods: {
       showCustomModal(id) {
         this.$emit('show-custom-modal-content', id);
