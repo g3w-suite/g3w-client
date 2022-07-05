@@ -86,11 +86,13 @@ class PrinterQGISProvider extends PrintProvider {
       rotation, dpi, format, crs, template, maps = [], labels = [], is_maps_preset_theme,
     } = options;
     const LAYERS = layers.map((layer) => layer.getPrintLayerName()).join();
+    const STYLES = layers.map((layer) => layer.getStyle()).join(',');
     const params = {
       ...COMMON_REQUEST_PARAMETERS,
       REQUEST: 'GetPrint',
       TEMPLATE: template,
       DPI: dpi,
+      STYLES,
       FORMAT: format,
       CRS: crs,
       filtertoken: ApplicationState.tokens.filtertoken,
