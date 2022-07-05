@@ -13,8 +13,6 @@ import ProjectsRegistry from 'core/project/projectsregistry';
 import PluginsRegistry from 'core/plugin/pluginsregistry';
 import ApplicationState from './applicationstate';
 
-const G3W_VERSION = '{G3W_VERSION}';
-
 // Manage Application
 class ApplicationService extends G3WObject {
   constructor() {
@@ -34,7 +32,6 @@ class ApplicationService extends G3WObject {
         },
       },
     });
-    this.version = G3W_VERSION.indexOf('G3W_VERSION') === -1 ? G3W_VERSION : '';
     ApplicationState.iframe = window.top !== window.self;
     ApplicationState.online = navigator.onLine;
     ApplicationState.ismobile = isMobile.any;
