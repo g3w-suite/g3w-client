@@ -133,17 +133,31 @@ class ImageLayer extends Layer {
     return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
   }
 
+  isWfsActive() {
+    return Array.isArray(this.config.ows) && this.config.ows.find(ows_type => ows_type === 'WFS') !== undefined;
+  };
+
+  /**
+   * Metyhod to get wms url of the layer
+   * @returns {*}
+   */
   getFullWmsUrl() {
     const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
     return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url;
   }
 
-  // used to Catalog layer menu
+  //used to Catalog layer menu to show wms url
   getCatalogWmsUrl() {
-    const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
-    return this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url;
+    const metadata_wms_url = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
+    const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
+    return catalogWmsUrl;
   }
 
+  //used to Catalog layer menu to show wfs url
+  getCatalogWfsUrl() {
+    return `${this.getWfsUrl()}?service=WFS&version=1.3.0&request=GetCapabilities`;
+  }
+  
   // values: map, legend
   getWmsUrl({ type = 'map' } = {}) {
     const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
@@ -156,6 +170,10 @@ class ImageLayer extends Layer {
       : this.config.wmsUrl;
     return wmsUrl;
   }
+
+  getWfsUrl() {
+    return ProjectsRegistry.getCurrentProject().getMetadata().wms_url || this.config.wmsUrl;
+  };
 
   /**
    * Get query url based on type, external or same projection of map

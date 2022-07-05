@@ -252,6 +252,10 @@ class Project extends G3WObject {
     return this.state.thumbnail;
   }
 
+  getMetadata() {
+    return this.state.metadata || {};
+  };
+
   getState() {
     return this.state;
   }
