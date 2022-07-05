@@ -84,7 +84,8 @@ proto._getAtlasParamsFromOptions = function(options={}){
 
 proto._getParamsFromOptions = function(layers=[], options={}) {
   const { rotation, dpi, format, crs, template, maps=[], labels=[]} = options;
-  layers = layers.map(layer => layer.getPrintLayerName());
+  const LAYERS = layers.map(layer => layer.getPrintLayerName()).join(',');
+  const STYLES = layers.map(layer => layer.getStyle()).join(',');
   const params = {
     ...COMMON_REQUEST_PARAMETERS,
     REQUEST: 'GetPrint',
@@ -92,7 +93,8 @@ proto._getParamsFromOptions = function(layers=[], options={}) {
     DPI: dpi,
     FORMAT: format,
     CRS: crs,
-    LAYERS: layers.join(),
+    LAYERS,
+    STYLES,
     filtertoken: ApplicationState.tokens.filtertoken
   };
 
