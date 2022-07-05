@@ -219,6 +219,10 @@ const vueComponentOptions = {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
     },
+    canShowWfsUrl(layerId){
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return originalLayer && !originalLayer.isType('table') && originalLayer.isWfsActive();
+    },
     canDownloadXls(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isXlsDownlodable(): false;
@@ -247,8 +251,12 @@ const vueComponentOptions = {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return originalLayer.getCatalogWmsUrl();
     },
-    copyWmsUrl(evt, layerId) {
-      const url = this.getWmsUrl(layerId);
+    getWfsUrl(layerId) {
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return originalLayer.getCatalogWfsUrl();
+    },
+    copyUrl({evt, layerId, type}={}) {
+      const url = this[`get${type}Url`](layerId);
       let ancorEement = document.createElement('a');
       ancorEement.href = url;
       const tempInput = document.createElement('input');
@@ -260,6 +268,7 @@ const vueComponentOptions = {
       $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
       document.body.removeChild(tempInput);
       ancorEement = null;
+      setTimeout(()=>this._hideMenu(), 600);
     },
     downloadGeoTIFF(layerId, map_extent=false){
       const caller_download_id = ApplicationService.setDownload(true);
