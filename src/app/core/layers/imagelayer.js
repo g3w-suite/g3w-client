@@ -160,7 +160,7 @@ proto.getCatalogWmsUrl = function(){
 
 //used to Catalog layer menu to show wfs url
 proto.getCatalogWfsUrl = function(){
-  return `${this.getWfsUrl()}?service=WFS&version=1.3.0&request=GetCapabilities`;
+  return `${this.getWfsUrl()}?service=WFS&request=GetCapabilities`;
 };
 
 // values: map, legend
