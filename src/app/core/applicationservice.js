@@ -14,7 +14,6 @@ import PluginsRegistry from 'core/plugin/pluginsregistry';
 import ApplicationState from './applicationstate';
 
 const G3W_VERSION = '{G3W_VERSION}';
-let production = false;
 
 // Manage Application
 class ApplicationService extends G3WObject {
@@ -357,7 +356,6 @@ class ApplicationService extends G3WObject {
     else this.clearInitConfig();
     // if exist a global initiConfig (in production)
     if (window.initConfig) {
-      production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
       this.fire('initconfig');
