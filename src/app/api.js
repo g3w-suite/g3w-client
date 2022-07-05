@@ -1,6 +1,7 @@
-// api file interface for external plugin
+// api file interface for external plugins
+
 /**
- * Core modules
+ * CORE modules
  */
 import ApplicationService from 'core/applicationservice';
 import ApplicationState from 'core/applicationstate';
@@ -36,7 +37,6 @@ import OlFeaturesStore from 'core/layers/features/olfeaturesstore';
 import Filter from 'core/layers/filter/filter';
 import Expression from 'core/layers/filter/expression';
 import RelationsService from 'core/relations/relationsservice';
-
 import Plugin from 'core/plugin/plugin';
 import PluginsRegistry from 'core/plugin/pluginsregistry';
 import PluginService from 'core/plugin/pluginservice';
@@ -51,7 +51,7 @@ import utils from 'core/utils/utils';
 import geoutils from 'core/utils/geo';
 
 /**
- * gui modules
+ * GUI modules
  */
 import GUI from 'gui/gui';
 import Panel from 'gui/panel';
@@ -67,7 +67,6 @@ import CatalogComponent from 'gui/catalog/vue/catalog';
 import MapComponent from 'gui/map/vue/map';
 import ToolsComponent from 'gui/tools/vue/tools';
 import QueryResultsComponent from 'gui/queryresults/vue/queryresults';
-// main Form Component
 import FormComponent from 'gui/form/vue/form.vue';
 import FormBody from 'gui/form/components/body.vue';
 import FormFooter from 'gui/form/components/footer.vue';
@@ -81,10 +80,8 @@ import Mixins from 'gui/vue/vue.mixins';
 import SearchPanelService from 'gui/search/vue/panel/searchservice';
 
 /**
- * g3w openlayers custom modules
- * @type {{}}
+ * G3W-OL modules
  */
-
 import PickCoordinatesInteraction from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
 import PickFeatureInteraction from 'g3w-ol/src/interactions/pickfeatureinteraction';
 import DeleteFeatureInteraction from 'g3w-ol/src/interactions/deletefeatureinteraction';
@@ -93,162 +90,155 @@ import LengthInteraction from 'g3w-ol/src/interactions/lengthinteraction';
 import g3wolutils from 'g3w-ol/src/utils/utils';
 import G3W_CONSTANT from './constant';
 
-const g3w = {};
-// set G3W-CLIENT application constant
-g3w.constant = G3W_CONSTANT;
-// set core api method and objects
-g3w.core = {
-  G3WObject,
-  utils,
-  geoutils,
-  ApplicationService,
-  ApplicationState,
-  ApiService,
-  Router,
-  i18n,
-  task: {
-    TaskService,
-  },
-  data: {
-    DataRouterService,
-  },
-  iframe: {
-    IFrameRouterService,
-  },
-  errors: {
-    parsers: {
-      Server,
+export default {
+  // APP CONSTANTS
+  constant: G3W_CONSTANT,
+  // CORE API METHODS AND OBJECTS
+  core: {
+    G3WObject,
+    utils,
+    geoutils,
+    ApplicationService,
+    ApplicationState,
+    ApiService,
+    Router,
+    i18n,
+    task: {
+      TaskService,
     },
-  },
-  editing: {
-    Session,
-    SessionsRegistry,
-    Editor,
-    ChangesManager,
-  },
-  geometry: {
-    Geom,
-    Geometry,
-  },
-  project: {
-    ProjectsRegistry,
-    Project,
-  },
-  map: {
-    MapLayersStoreRegistry,
-  },
-  catalog: {
-    CatalogLayersStoresRegistry,
-  },
-  layer: {
-    LayersStoreRegistry,
-    LayersStore,
-    Layer,
-    LayerFactory,
-    TableLayer,
-    VectorLayer,
-    ImageLayer,
-    WmsLayer,
-    XYZLayer,
-    MapLayer,
-    geometry: {
-      Geometry,
-      Geom,
+    data: {
+      DataRouterService,
     },
-    features: {
-      Feature,
-      FeaturesStore,
-      OlFeaturesStore,
+    iframe: {
+      IFrameRouterService,
     },
-    filter: {
-      Filter,
-      Expression,
-    },
-  },
-  relations: {
-    RelationsService,
-  },
-  interaction: {
-    PickCoordinatesInteraction,
-    PickFeatureInteraction,
-  },
-  plugin: {
-    Plugin,
-    PluginsRegistry,
-    PluginService,
-  },
-  workflow: {
-    Task,
-    Step,
-    Flow,
-    Workflow,
-    WorkflowsStack,
-  },
-};
-
-g3w.gui = {
-  GUI,
-  Panel,
-  ControlFactory,
-  ComponentsFactory,
-  FieldsService,
-  vue: {
-    Component,
-    Panel,
-    MetadataComponent,
-    SearchComponent,
-    SearchPanel,
-    PrintComponent,
-    CatalogComponent,
-    MapComponent,
-    ToolsComponent,
-    QueryResultsComponent,
-    // main Form Component
-    FormComponent,
-    // Form Components
-    FormComponents: {
-      FormBody,
-      FormFooter,
-    },
-    Inputs: {
-      G3wFormInputs,
-      G3WInput,
-      InputsComponents,
-    },
-    Charts: {
-      ChartsFactory,
-      c3: {
-        lineXY,
+    errors: {
+      parsers: {
+        Server,
       },
     },
-    Fields,
-    Mixins,
-    services: {
-      SearchPanel: SearchPanelService,
+    editing: {
+      Session,
+      SessionsRegistry,
+      Editor,
+      ChangesManager,
+    },
+    geometry: {
+      Geom,
+      Geometry,
+    },
+    project: {
+      ProjectsRegistry,
+      Project,
+    },
+    map: {
+      MapLayersStoreRegistry,
+    },
+    catalog: {
+      CatalogLayersStoresRegistry,
+    },
+    layer: {
+      LayersStoreRegistry,
+      LayersStore,
+      Layer,
+      LayerFactory,
+      TableLayer,
+      VectorLayer,
+      ImageLayer,
+      WmsLayer,
+      XYZLayer,
+      MapLayer,
+      geometry: {
+        Geometry,
+        Geom,
+      },
+      features: {
+        Feature,
+        FeaturesStore,
+        OlFeaturesStore,
+      },
+      filter: {
+        Filter,
+        Expression,
+      },
+    },
+    relations: {
+      RelationsService,
+    },
+    interaction: {
+      PickCoordinatesInteraction,
+      PickFeatureInteraction,
+    },
+    plugin: {
+      Plugin,
+      PluginsRegistry,
+      PluginService,
+    },
+    workflow: {
+      Task,
+      Step,
+      Flow,
+      Workflow,
+      WorkflowsStack,
     },
   },
-};
-
-g3w.ol = {
-  interactions: {
-    PickFeatureInteraction,
-    PickCoordinatesInteraction,
-    DeleteFeatureInteraction,
-    measure: {
-      AreaInteraction,
-      LengthInteraction,
+  // APPLICATION INTERFACE (vue)
+  gui: {
+    GUI,
+    Panel,
+    ControlFactory,
+    ComponentsFactory,
+    FieldsService,
+    vue: {
+      Component,
+      Panel,
+      MetadataComponent,
+      SearchComponent,
+      SearchPanel,
+      PrintComponent,
+      CatalogComponent,
+      MapComponent,
+      ToolsComponent,
+      QueryResultsComponent,
+      // main Form Component
+      FormComponent,
+      // Form Components
+      FormComponents: {
+        FormBody,
+        FormFooter,
+      },
+      Inputs: {
+        G3wFormInputs,
+        G3WInput,
+        InputsComponents,
+      },
+      Charts: {
+        ChartsFactory,
+        c3: {
+          lineXY,
+        },
+      },
+      Fields,
+      Mixins,
+      services: {
+        SearchPanel: SearchPanelService,
+      },
     },
   },
-  controls: {},
-  utils: g3wolutils,
-};
-
-g3w.test = {};
-
-export default {
-  core: g3w.core,
-  gui: g3w.gui,
-  ol: g3w.ol,
-  test: g3w.test,
-  constant: g3w.constant,
+  // OPEN LAYERS COMPONENTS (g3w-ol)
+  ol: {
+    interactions: {
+      PickFeatureInteraction,
+      PickCoordinatesInteraction,
+      DeleteFeatureInteraction,
+      measure: {
+        AreaInteraction,
+        LengthInteraction,
+      },
+    },
+    controls: {},
+    utils: g3wolutils,
+  },
+  // TEST
+  // test: {},
 };
