@@ -254,6 +254,10 @@ proto.getThumbnail = function() {
   return this.state.thumbnail;
 };
 
+proto.getMetadata = function(){
+  return this.state.metadata || {};
+};
+
 proto.getState = function() {
   return this.state;
 };
