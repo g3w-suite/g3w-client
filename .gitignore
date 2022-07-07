@@ -1,5 +1,6 @@
 *~
 .idea
+package-lock.json
 /assets/style/less/g3w-skins-custom/
 /build
 /config.js
