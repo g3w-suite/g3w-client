@@ -9,11 +9,12 @@
     "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default --max-old-space-size=2048",
+    "dev": "npm run dev",
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
     "version": "npm run admin && git add -A dist",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
   },
   "repository": {
     "type": "git",
