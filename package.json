@@ -9,7 +9,7 @@
     "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
     "plugins": "gulp g3w-admin-plugins-select",
     "default": "gulp default --max-old-space-size=2048",
-    "dev": "npm run dev",
+    "dev": "npm run default",
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
