@@ -30,8 +30,7 @@
     "vue-cookie-law": "^1.13.3"
   },
   "resolutions": {
-    "graceful-fs": "4.2.3",
-    "glob-stream": "3.1.18"
+    "graceful-fs": "4.2.3"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
