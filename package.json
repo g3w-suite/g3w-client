@@ -113,15 +113,6 @@
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
   },
-  "babel": {
-    "presets": [
-      "env"
-    ],
-    "plugins": [
-      "transform-remove-strict-mode",
-      "transform-object-rest-spread"
-    ]
-  },
   "browserslist": "defaults",
   "engines" : { 
     "node" : ">=16.13.2",
