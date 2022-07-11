@@ -3,7 +3,7 @@ import utils from 'core/utils/utils';
 import { t } from 'core/i18n/i18n.service';
 import G3WObject from 'core/g3wobject';
 import ProjectsMenuComponent from 'gui/projectsmenu/projectsmenu';
-import ComponentsRegistry from 'gui/componentsregistry';
+import ComponentsRegistry from 'gui/component/componentsregistry';
 import GUI from 'gui/gui';
 import VueAppPlugin from 'gui/vue/vueappplugin';
 import G3wApplicationFilterPlugin from 'gui/vue/vue.filter';

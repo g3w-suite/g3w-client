@@ -1,4 +1,4 @@
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import Layer from './layer.vue';
 
 class LayerComponent extends Component {

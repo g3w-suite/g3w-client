@@ -1,5 +1,5 @@
 import GUI from 'gui/gui';
-import Component from './vue/component';
+import Component from './component';
 
 const ComponentsFactory = {
   // build a componet

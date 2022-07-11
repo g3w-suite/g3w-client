@@ -1,6 +1,6 @@
 import utils from 'core/utils/utils';
 import G3WObject from 'core/g3wobject';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import Panel from 'gui/panel';
 
 // Barstack Class

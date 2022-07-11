@@ -1,5 +1,5 @@
 import { t } from 'core/i18n/i18n.service';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import GUI from 'gui/gui';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import template from './menu.html';

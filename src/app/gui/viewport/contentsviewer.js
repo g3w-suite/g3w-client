@@ -1,5 +1,5 @@
 import { barstack as Stack } from 'gui/utils/utils';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import template from './contentsviewer.html';
 
 // Internal Component (VUE) of the content of the  viewport

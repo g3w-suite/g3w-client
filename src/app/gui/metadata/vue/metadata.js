@@ -1,5 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import GUI from 'gui/gui';
 import MetadataService from 'gui/metadata/metadataservice';
 import template from './metadata.html';

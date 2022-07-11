@@ -1,7 +1,7 @@
 import ApplicationService from 'core/applicationservice';
 import G3WObject from 'core/g3wobject';
 import GUI from 'gui/gui';
-import ComponentsFactory from 'gui/componentsfactory';
+import ComponentsFactory from 'gui/component/componentsfactory';
 import ProjectsRegistry from 'core/project/projectsregistry';
 import PluginsRegistry from './pluginsregistry';
 

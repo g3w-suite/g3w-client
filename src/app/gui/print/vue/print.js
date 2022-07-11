@@ -1,5 +1,5 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import PrintService from 'gui/print/printservice';
 import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
 import FidAtlasValues from './components/fidatlasvalues.vue';

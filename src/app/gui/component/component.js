@@ -3,29 +3,30 @@ import G3WObject from 'core/g3wobject';
 
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
-// Class Component (Base)
+// class component
 class Component extends G3WObject {
   constructor(options = {}) {
-    options.setters = {
-      setOpen(bool) {
-        this.state.open = bool;
-        this._setOpen(bool);
-      },
-      setVisible(bool) {
-        this.state.visible = bool;
-        this._setVisible(bool);
-      },
-      setLoading(bool = false) {
-        this.state.loading = bool;
-      },
-      setDisabled(bool = false) {
-        this.state.disabled = bool;
-      },
-      reload() {
-        this._reload();
-      },
-    };
-    super(options);
+    super({
+      setters: {
+        setOpen(bool) {
+          this.state.open = bool;
+          this._setOpen(bool);
+        },
+        setVisible(bool) {
+          this.state.visible = bool;
+          this._setVisible(bool);
+        },
+        setLoading(bool = false) {
+          this.state.loading = bool;
+        },
+        setDisabled(bool = false) {
+          this.state.disabled = bool;
+        },
+        reload() {
+          this._reload();
+        }
+      }
+    });
     // internal VUE component
     this.internalComponent = null;
     this._components = [];
@@ -60,6 +61,7 @@ class Component extends G3WObject {
     // add events options
     this.events = options.events;
     this.events && this.handleEventsComponent();
+    this._firstLayout = true;
   }
 
   init(options = {}) {
@@ -263,6 +265,57 @@ class Component extends G3WObject {
   _setVisible() {}
 
   _reload() {}
+
+  mount(parent, append) {
+    const d = $.Deferred();
+    if (!this.internalComponent) this.setInternalComponent();
+    if (append) {
+      const iCinstance = this.internalComponent.$mount();
+      $(parent).append(iCinstance.$el);
+    } else this.internalComponent.$mount(parent);
+    this.internalComponent.$nextTick(() => {
+      $(parent).localize();
+      this.fire('ready');
+      d.resolve(true);
+    });
+    // emit mount event
+    this.fire('mount');
+    return d.promise();
+  }
+
+  unmount() {
+    if (!this.internalComponent) return resolve();
+    if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
+    this.state.open = false;
+    // destroy vue component
+    this.internalComponent.$destroy(true);
+    // remove dom element
+    $(this.internalComponent.$el).remove();
+    // set internal componet to null (for GC)
+    this.internalComponent = null;
+    // emit unmount event
+    this.fire('unmount');
+    return utils.resolve();
+  }
+
+  ismount() {
+    return this.internalComponent && this.internalComponent.$el;
+  }
+
+  layout(width, height) {
+    if (this.state.resizable && this._firstLayout) {
+      this.internalComponent.$on('resize-component', this.internalComponent.layout);
+      this._firstLayout = false;
+    }
+    this.internalComponent.$nextTick(() => {
+      this.internalComponent.$emit('resize-component', {
+        width,
+        height,
+      });
+    });
+    // emit layout event
+    this.fire('layout');
+  }
 }
 
 export default Component;

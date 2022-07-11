@@ -1,4 +1,4 @@
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import template from './streetview.html';
 
 const InternalComponent = Vue.extend({

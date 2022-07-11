@@ -1,6 +1,6 @@
 import G3WObject from 'core/g3wobject';
 import RouterService from 'core/router';
-import ComponentsRegistry from 'gui/componentsregistry';
+import ComponentsRegistry from 'gui/component/componentsregistry';
 
 class GUI extends G3WObject {
   constructor() {

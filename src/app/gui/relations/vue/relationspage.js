@@ -1,7 +1,7 @@
 import { G3W_FID, LIST_OF_RELATIONS_TITLE } from 'constant';
 import { createCompiledTemplate } from 'gui/vue/utils';
 import GUI from 'gui/gui';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import Service from 'gui/relations/relationsservice';
 import geoutils from 'core/utils/geo';
 import relations from './relations';

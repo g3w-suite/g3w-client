@@ -1,6 +1,6 @@
 import G3WTool from 'gui/tools/vue/tool.vue';
 import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import Service from 'gui/search/service';
 import template from './search.html';
 

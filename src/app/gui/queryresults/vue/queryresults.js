@@ -1,6 +1,6 @@
 import utils from 'core/utils/utils';
 import { fieldsMixin } from 'gui/vue/vue.mixins';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import QueryResultsService from 'gui/queryresults/queryresultsservice';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import InfoFormats from './components/actiontools/infoformats.vue';

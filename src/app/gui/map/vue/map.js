@@ -1,5 +1,5 @@
 import ApplicationState from 'core/applicationstate';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import MapService from 'gui/map/mapservice';
 import AddLayerComponent from './components/addlayer.vue';
 import template from './map.html';

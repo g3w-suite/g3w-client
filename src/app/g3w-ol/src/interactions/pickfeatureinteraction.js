@@ -23,8 +23,8 @@ class PickFeatureInteraction extends Pointer {
     this.layers_ = options.layers || [];
     this.pickedFeature_ = null;
     this.pickedLayer_ = null;
-    this.layerFilter_ = (layer) => {
-      const include = _.includes(this.layers_, layer);
+    this.layerFilter_ = layer => {
+      const include = this.layers_.find(_layer => _layer === layer);
       this.pickedLayer_ = include && layer;
       return include;
     };
@@ -57,7 +57,7 @@ class PickFeatureInteraction extends Pointer {
 
   featuresAtPixel_(pixel, map) {
     let featureFound = null;
-    const intersectingFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
+    const intersectingFeature = map.forEachFeatureAtPixel(pixel, feature => {
       if (this.features_) {
         if (this.features_.indexOf(feature) > -1) return feature;
         return null;

@@ -1,5 +1,5 @@
 import GUI from 'gui/gui';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import ToolsService from 'gui/tools/service';
 import G3wTool from './tool.vue';
 import template from './tools.html';

@@ -27,7 +27,7 @@
 
 <script>
   import GUI from 'gui/gui';
-  import Component from 'gui/vue/component';
+  import Component from 'gui/component/component';
   import Service from 'gui/form/formservice';
   import G3wFormFooter from 'gui/form/components/footer.vue';
   import HeaderFormComponent from 'gui/form/components/header.vue';

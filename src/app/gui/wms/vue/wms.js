@@ -1,5 +1,5 @@
 import GUI from 'gui/gui';
-import Component from 'gui/vue/component';
+import Component from 'gui/component/component';
 import Service from 'gui/wms/service';
 import WMS from './wms.vue';
 

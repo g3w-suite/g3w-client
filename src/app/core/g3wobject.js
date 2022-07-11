@@ -61,13 +61,9 @@ class G3WObject extends EventEmitter {
     // cicle on after before (key) and for each settersListeners (array) find key
     Object.entries(this.settersListeners).forEach(([_key, settersListeners]) => {
       if (key === undefined) settersListeners[setter].splice(0);
-      else {
-        settersListeners[setter].forEach((setterListener, idx) => {
-          if (setterListener.key === key) {
-            settersListeners[setter].splice(idx, 1);
-          }
+      else settersListeners[setter].forEach((setterListener, idx) => {
+          setterListener.key === key && settersListeners[setter].splice(idx, 1);
         });
-      }
     });
   }
 
@@ -125,7 +121,7 @@ class G3WObject extends EventEmitter {
           // call all subscribed methods afet setter
           const onceListenerKeys = [];
           const afterListeners = this.settersListeners.after[setter];
-          afterListeners.forEach((listener) => {
+          afterListeners.forEach(listener => {
             listener.fnc.apply(this, args);
             listener.once && onceListenerKeys.push(listener.key);
           });
@@ -140,7 +136,7 @@ class G3WObject extends EventEmitter {
         const beforeListeners = this.settersListeners.before[setter];
         // listener counter
         counter = 0;
-        const next = (bool) => {
+        const next = bool => {
           // initilize cont to true (continue)
           let cont = true;
           // check if bool is Boolean
@@ -152,9 +148,7 @@ class G3WObject extends EventEmitter {
           } else if (counter === beforeListeners.length) {
             // call complete method methods
             const completed = callSetter();
-            if (completed === undefined || completed === true) {
-              this.emitEvent(`set:${setter}`, args);
-            }
+            if (completed === undefined || completed === true) this.emitEvent(`set:${setter}`, args);
           } else if (cont) {
             const listenerObj = beforeListeners[counter];
             const currentCounter = counter;
@@ -177,7 +171,7 @@ class G3WObject extends EventEmitter {
         };
           // run next to start to run all the subscribers and setrer its self
         next();
-        // retun a promise
+        // return a promise
       });
     }
     return this.settersListeners;
