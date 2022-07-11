@@ -1,7 +1,7 @@
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const Service = require('../formservice');
 const compiledTemplate = createCompiledTemplate(require('./form.html'));
 const HeaderFormComponent = require('../components/header/vue/header');

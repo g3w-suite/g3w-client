@@ -1,5 +1,5 @@
 const GUI = require ('gui/gui');
-const Component = require('./vue/component');
+const Component = require('./component');
 const ComponentsFactory = {
   // build a componet
   build({vueComponentObject, service, propsData}, options={}) {

@@ -1,7 +1,7 @@
 const {base, inherit, noop} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const RouterService = require('core/router');
-const ComponentsRegistry = require('gui/componentsregistry');
+const ComponentsRegistry = require('gui/component/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application

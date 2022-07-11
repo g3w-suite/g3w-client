@@ -101,10 +101,10 @@ g3w.gui = {
   GUI: require('gui/gui'),
   Panel: require('gui/panel'),
   ControlFactory: require('gui/map/control/factory'),
-  ComponentsFactory: require('gui/componentsfactory'),
+  ComponentsFactory: require('gui/component/componentsfactory'),
   FieldsService: require('gui/fields/fieldsservice'),
   vue: {
-    Component: require('gui/vue/component'),
+    Component: require('gui/component/component'),
     Panel: require('gui/panel'),
     MetadataComponent: require('gui/metadata/vue/metadata'),
     SearchComponent: require('gui/search/vue/search'),

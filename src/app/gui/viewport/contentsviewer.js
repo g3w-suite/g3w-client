@@ -1,6 +1,6 @@
 const { base, inherit }= require('core/utils/utils');
 const {barstack:Stack} = require('gui/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const compiledTemplate = Vue.compile(require('./contentsviewer.html'));
 
 // Internal Component (VUE) of the content of the  viewport

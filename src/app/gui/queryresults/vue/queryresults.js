@@ -4,7 +4,7 @@ import HeaderFeatureBody from './components/headerfeaturebody.vue';
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const {fieldsMixin} = require('gui/vue/vue.mixins');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;

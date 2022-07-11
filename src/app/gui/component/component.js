@@ -1,9 +1,10 @@
-const {inherit, merge, noop, base, capitalize_first_letter} = require('core/utils/utils');
+const {base, inherit, merge, noop, capitalize_first_letter, resolve} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const VUECOMPONENTSATTRIBUTES = ['methods', 'computed', 'data', 'components'];
 
-// Class Component (Base)
+// class component
 const Component = function(options={}) {
+  this._firstLayout = true;
   // internal VUE component
   this.internalComponent = null;
   this._components = [];
@@ -228,18 +229,14 @@ proto.addComponent = function(component) {
 
 proto.extendInternalComponentMethods = function(methods) {
   if (methods) {
-    _.forEach(methods, function (value, key) {
-      if (!(value instanceof Function))delete methods[key];
-    });
+    Object.entries(methods).forEach.forEach(([key, value]) => (!(value instanceof Function)) && delete methods[key]);
     merge(this.vueComponent.methods, methods);
   }
 };
 
 proto.extendInternalComponentComputed = function(computed) {
   if (computed) {
-    _.forEach(computed, function (value, key) {
-      if (!(value instanceof Function))delete computed[key];
-    });
+    Object.entries(computed).forEach(([key, value]) =>  (!(value instanceof Function)) && delete computed[key]);
     merge(this.vueComponent.computed, computed);
   }
 };
@@ -264,5 +261,56 @@ proto._setOpen = function(bool) {};
 proto._setVisible = function() {};
 
 proto._reload = function() {};
+
+proto.mount = function(parent, append) {
+  const d = $.Deferred();
+  if (!this.internalComponent) this.setInternalComponent();
+  if (append) {
+    const iCinstance = this.internalComponent.$mount();
+    $(parent).append(iCinstance.$el);
+  } else this.internalComponent.$mount(parent);
+  this.internalComponent.$nextTick(() => {
+    $(parent).localize();
+    this.emit('ready');
+    d.resolve(true);
+  });
+  // emit mount event
+  this.emit('mount');
+  return d.promise();
+};
+
+proto.unmount = function() {
+  if (!this.internalComponent) return resolve();
+  if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
+  this.state.open = false;
+  // destroy vue component
+  this.internalComponent.$destroy(true);
+  // remove dom element
+  $(this.internalComponent.$el).remove();
+  // set internal componet to null (for GC)
+  this.internalComponent = null;
+  // emit unmount event
+  this.emit('unmount');
+  return resolve();
+};
+
+proto.ismount = function() {
+  return this.internalComponent && this.internalComponent.$el;
+};
+
+proto.layout = function(width, height) {
+  if (this.state.resizable && this._firstLayout) {
+    this.internalComponent.$on('resize-component', this.internalComponent.layout);
+    this._firstLayout = false;
+  }
+  this.internalComponent.$nextTick(() => {
+    this.internalComponent.$emit('resize-component', {
+      width,
+      height
+    })
+  });
+  // emit layout event
+  this.emit('layout');
+};
 
 module.exports = Component;

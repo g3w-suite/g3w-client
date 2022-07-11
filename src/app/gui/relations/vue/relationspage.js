@@ -2,7 +2,7 @@ import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const Service = require('../relationsservice');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
 const RelationPageEventBus = require('./relationeventbus');
