@@ -1,5 +1,5 @@
 import BaseLayer from 'core/layers/baselayers/baselayer';
-import BasesLayers from 'g3w-ol/src/layers/bases';
+import BasesLayers from 'g3w-ol/layers/bases';
 
 class TMSLayer extends BaseLayer {
   constructor(config = {}, options = {}) {

@@ -1,4 +1,4 @@
-import Projections from 'g3w-ol/src/projection/projections';
+import Projections from 'g3w-ol/projection/projections';
 import WMSLayer from 'core/layers/map/wmslayer';
 import ImageLayer from 'core/layers/imagelayer';
 

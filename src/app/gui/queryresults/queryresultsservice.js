@@ -12,7 +12,7 @@ import VectorLayer from 'core/layers/vectorlayer';
 import PrintService from 'core/print/printservice';
 import CatalogLayersStoresRegistry from 'core/catalog/cataloglayersstoresregistry';
 import RelationsPage from 'gui/relations/vue/relationspage';
-import PickCoordinatesInteraction from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
+import PickCoordinatesInteraction from 'g3w-ol/interactions/pickcoordinatesinteraction';
 import {
   Style, Circle, Fill, Stroke,
 } from 'ol/style';

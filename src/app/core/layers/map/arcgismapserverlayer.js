@@ -1,4 +1,4 @@
-import RasterLayers from 'g3w-ol/src/layers/rasters';
+import RasterLayers from 'g3w-ol/layers/rasters';
 import WMSLAYER from './wmslayer';
 
 class ARCGISMAPSERVERLayer extends WMSLAYER {

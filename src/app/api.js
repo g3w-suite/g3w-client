@@ -82,12 +82,12 @@ import SearchPanelService from 'gui/search/vue/panel/searchservice';
 /**
  * G3W-OL modules
  */
-import PickCoordinatesInteraction from 'g3w-ol/src/interactions/pickcoordinatesinteraction';
-import PickFeatureInteraction from 'g3w-ol/src/interactions/pickfeatureinteraction';
-import DeleteFeatureInteraction from 'g3w-ol/src/interactions/deletefeatureinteraction';
-import AreaInteraction from 'g3w-ol/src/interactions/areainteraction';
-import LengthInteraction from 'g3w-ol/src/interactions/lengthinteraction';
-import g3wolutils from 'g3w-ol/src/utils/utils';
+import PickCoordinatesInteraction from 'g3w-ol/interactions/pickcoordinatesinteraction';
+import PickFeatureInteraction from 'g3w-ol/interactions/pickfeatureinteraction';
+import DeleteFeatureInteraction from 'g3w-ol/interactions/deletefeatureinteraction';
+import AreaInteraction from 'g3w-ol/interactions/areainteraction';
+import LengthInteraction from 'g3w-ol/interactions/lengthinteraction';
+import g3wolutils from 'g3w-ol/utils/utils';
 import G3W_CONSTANT from './constant';
 
 export default {

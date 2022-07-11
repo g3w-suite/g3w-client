@@ -5,7 +5,7 @@ import geoutils from 'core/utils/geo';
 import G3WObject from 'core/g3wobject';
 import LayerFactory from 'core/layers/layerfactory';
 import LayersStore from 'core/layers/layersstore';
-import Projections from 'g3w-ol/src/projection/projections';
+import Projections from 'g3w-ol/projection/projections';
 
 class Project extends G3WObject {
   constructor(config = {}, options = {}) {

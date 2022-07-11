@@ -1,5 +1,5 @@
 import ApplicationState from 'core/applicationstate';
-import RasterLayers from 'g3w-ol/src/layers/rasters';
+import RasterLayers from 'g3w-ol/layers/rasters';
 import WMSLayer from './wmslayer';
 
 class WMSTLayer extends WMSLayer {
