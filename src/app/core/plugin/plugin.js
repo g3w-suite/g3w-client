@@ -18,11 +18,17 @@ const Plugin = function() {
   };
   this._hook = null;
   this._ready = false;
-  this._services = {
+  /**
+   * Sidebar component service that usually plugin need to interact
+   * @type {{search: *, tools: *}}
+   * Hook mean place/name of component
+   */
+  this.hookservices = {
     'search': GUI.getService('search'),
     'tools': GUI.getService('tools')
   };
-  // timeout to remove loading plugin after timeout
+  // timeout to remove loading plugin after timeout.
+  // Stat when plugin is loaded
   this._timeout = setTimeout(()=>{
     PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
     this.removeLayout();
@@ -32,9 +38,11 @@ const Plugin = function() {
 inherit(Plugin, G3WObject);
 
 const proto = Plugin.prototype;
+
 /**
- * Handle layout plugin
+ * Handle layout of content. Plugin can set and store content width and height
  */
+
 
 proto.setLayout = function(config=ApplicationService.cloneLayout('app')){
   ApplicationService.setLayout(this.name, config);
@@ -78,7 +86,7 @@ proto.setReady = function(bool) {
   setTimeout(()=>{
     clearTimeout(this._timeout);
     PluginsRegistry.removeLoadingPlugin(this.name, this._ready);
-  }, )
+  })
 };
 
 proto.isReady = function() {
@@ -175,12 +183,12 @@ proto.getDependencyPlugin = function(pluginName) {
  * @param loading
  */
 proto.setHookLoading = function({hook="tools", loading=false} = {}) {
-  const service = this._services[hook];
+  const service = this.hookservices[hook];
   service.setLoading(loading);
 };
 
 proto.getHookService = function(hook="tools") {
-  return this._services[hook];
+  return this.hookservices[hook];
 };
 
 proto.addToolGroup = function({hook="tools", position:order, title:group} = {}) {
@@ -200,7 +208,7 @@ proto.addTools = function({hook="tools", action, html, offline=true, icon, name,
     return [];
   }
   this._hook = hook;
-  const service = this._services[hook];
+  const service = this.hookservices[hook];
   const configs = this.config.configs || [this.config];
   const tools = configs.map(config => {
     return {
@@ -221,12 +229,12 @@ proto.addTools = function({hook="tools", action, html, offline=true, icon, name,
 };
 
 proto.setToolState = function({id, state={type:null, message: null}}={}){
-  const service = this._services[this._hook];
+  const service = this.hookservices[this._hook];
   service.setToolState({id, state});
 };
 
 proto.removeTools = function() {
-  const service = this._services[this._hook];
+  const service = this.hookservices[this._hook];
   service.removeTools();
 };
 
