@@ -1,6 +1,6 @@
 const {base, inherit} = require('core/utils/utils');
 const BaseLayer = require('core/layers/baselayers/baselayer');
-const BasesLayers = require('g3w-ol/src/layers/bases');
+const BasesLayers = require('g3w-ol/layers/bases');
 
 function ARCGISMAPSERVERLayer(config={}, options={}) {
   this.config = config;

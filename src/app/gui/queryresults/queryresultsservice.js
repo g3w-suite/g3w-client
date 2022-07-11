@@ -14,7 +14,7 @@ const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
-const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 //used to get and set vue reactivity to queryresultservice
 const VM = new Vue();

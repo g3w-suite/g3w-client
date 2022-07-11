@@ -1,4 +1,4 @@
-import ApplicationState from "../../../core/applicationstate";
+import ApplicationState from "../../core/applicationstate";
 const Geometry = require('core/geometry/geometry');
 
 const INCHES_PER_UNIT = {

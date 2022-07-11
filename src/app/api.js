@@ -80,8 +80,8 @@ g3w.core = {
     RelationsService: require('core/relations/relationsservice')
   },
   interaction: {
-    PickCoordinatesInteraction: require('g3w-ol/src/interactions/pickcoordinatesinteraction'),
-    PickFeatureInteraction: require('g3w-ol/src/interactions/pickfeatureinteraction')
+    PickCoordinatesInteraction: require('g3w-ol/interactions/pickcoordinatesinteraction'),
+    PickFeatureInteraction: require('g3w-ol/interactions/pickfeatureinteraction')
   },
   plugin: {
     Plugin: require('core/plugin/plugin'),
@@ -142,16 +142,16 @@ g3w.gui = {
 
 g3w.ol = {
   interactions : {
-    PickFeatureInteraction : require('g3w-ol/src/interactions/pickfeatureinteraction'),
-    PickCoordinatesInteraction: require('g3w-ol/src/interactions/pickcoordinatesinteraction'),
-    DeleteFeatureInteraction: require('g3w-ol/src/interactions/deletefeatureinteraction'),
+    PickFeatureInteraction : require('g3w-ol/interactions/pickfeatureinteraction'),
+    PickCoordinatesInteraction: require('g3w-ol/interactions/pickcoordinatesinteraction'),
+    DeleteFeatureInteraction: require('g3w-ol/interactions/deletefeatureinteraction'),
     measure: {
-      AreaInteraction: require('g3w-ol/src/interactions/areainteraction'),
-      LengthInteraction: require('g3w-ol/src/interactions/lengthinteraction')
+      AreaInteraction: require('g3w-ol/interactions/areainteraction'),
+      LengthInteraction: require('g3w-ol/interactions/lengthinteraction')
     }
   },
   controls: {},
-  utils: require('g3w-ol/src/utils/utils')
+  utils: require('g3w-ol/utils/utils')
 };
 
 g3w.test = {};

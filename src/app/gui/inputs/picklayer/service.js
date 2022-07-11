@@ -1,5 +1,5 @@
-const PickFeatureInteraction = require('g3w-ol/src/interactions/pickfeatureinteraction');
-const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+const PickFeatureInteraction = require('g3w-ol/interactions/pickfeatureinteraction');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 const MapCatalogLayersRegistry = require('core/map/maplayersstoresregistry');
 const {getQueryLayersPromisesByCoordinates} = require('core/utils/geo');
 const GUI = require('gui/gui');
