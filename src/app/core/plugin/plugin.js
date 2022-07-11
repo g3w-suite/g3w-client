@@ -111,7 +111,7 @@ proto.setName = function(name) {
   this.name = name;
 };
 
-//get cplugin configuration
+//get plugin configuration
 proto.getConfig = function(name=this.name) {
   return PluginsRegistry.getPluginConfig(name);
 };
@@ -141,8 +141,6 @@ proto.registerPlugin = function(projectId) {
   }
   return iscompatible;
 };
-
-proto.setupGui = function() {};
 
 // method to get dependencies plugin
 proto.getDependencyPlugins = function(pluginsName) {
@@ -233,7 +231,7 @@ proto.removeTools = function() {
 };
 
 /**
- * Method to create sibebar item component
+ * Method to create sidebar item component
  */
 proto.createSideBarComponent = function(vueComponentObject, options={}){
   const {
