@@ -229,18 +229,14 @@ class Component extends G3WObject {
 
   extendInternalComponentMethods(methods) {
     if (methods) {
-      _.forEach(methods, (value, key) => {
-        if (!(value instanceof Function)) delete methods[key];
-      });
+      Object.entries(methods).forEach(([key, value]) => (!(value instanceof Function)) && delete methods[key]);
       merge(this.vueComponent.methods, methods);
     }
   }
 
   extendInternalComponentComputed(computed) {
     if (computed) {
-      _.forEach(computed, (value, key) => {
-        if (!(value instanceof Function)) delete computed[key];
-      });
+      Object.entries(computed).forEach(([key, value]) => (!(value instanceof Function)) && delete computed[key]);
       merge(this.vueComponent.computed, computed);
     }
   }
