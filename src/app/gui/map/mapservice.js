@@ -1053,10 +1053,6 @@ proto._setupControls = function() {
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
-
-          $('#search_nominatim').click(debounce(() => {
-            control.nominatim.query($('input.gcd-txt-input').val());
-          }));
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
