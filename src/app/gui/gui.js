@@ -47,11 +47,6 @@ function GUI() {
     return ComponentsRegistry.getComponents();
   };
 
-  this.getService = function(idComponent){
-    const component = this.getComponent(idComponent);
-    return component && component.getService();
-  };
-
   this.goto = function(url) {
     RouterService.goto(url);
   };
