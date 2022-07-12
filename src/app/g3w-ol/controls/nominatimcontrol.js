@@ -399,12 +399,12 @@ function NominatimControl(options={}) {
   const klasses$1 = vars.cssClasses;
 
   // classe Html //
-  const Html = function Html(base) {
+  const Html = function(base) {
     this.options = base.options;
     this.els = this.createControl();
   };
 
-  Html.prototype.createControl = function createControl () {
+  Html.prototype.createControl = function() {
     let container, containerClass, elements;
     if (this.options.targetType === targetType.INPUT) {
       container = Html.container;
@@ -538,7 +538,7 @@ function NominatimControl(options={}) {
 
   // classe OpenStreet //
 
-  const OpenStreet = function OpenStreet() {
+  const OpenStreet = function() {
     this.settings = {
       url: 'https://nominatim.openstreetmap.org/search/',
       params: {
@@ -552,7 +552,7 @@ function NominatimControl(options={}) {
     };
   };
 
-  OpenStreet.prototype.getParameters = function getParameters(options) {
+  OpenStreet.prototype.getParameters = function(options) {
     let viewbox = ol.proj.transformExtent(self.options.viewbox, self.options.mapCrs, 'EPSG:4326').join(',');
     return {
       url: this.settings.url,
@@ -569,7 +569,7 @@ function NominatimControl(options={}) {
     };
   };
 
-  OpenStreet.prototype.handleResponse = function handleResponse(results) {
+  OpenStreet.prototype.handleResponse = function(results) {
     return results.map(function (result) {
       return ({
         lon: result.lon,
@@ -594,7 +594,7 @@ function NominatimControl(options={}) {
 
   // classe Nomitatim //
 
-  const Nominatim = function Nominatim(base, els) {
+  const Nominatim = function(base, els) {
     this.Base = base;
     this.options = base.options;
     this.options.provider = this.options.provider.toLowerCase();
@@ -606,7 +606,7 @@ function NominatimControl(options={}) {
     this.OpenStreet = new OpenStreet();
   };
 
-  Nominatim.prototype.setListeners = function setListeners () {
+  Nominatim.prototype.setListeners = function() {
     let timeout, lastQuery;
     const openSearch =  () =>  {
       utils.hasClass(this.els.control, klasses$1.glass.expanded) ?
@@ -644,7 +644,7 @@ function NominatimControl(options={}) {
     if (this.options.targetType === targetType.GLASS) this.els.button.addEventListener('click', openSearch, false);
   };
 
-  Nominatim.prototype.query = function query (q) {
+  Nominatim.prototype.query = function(q) {
     return new Promise((resolve, reject) => {
       const isNumber = value => toRawType(value) === 'Number' && !Number.isNaN(value);
       let lonlat = null;
@@ -692,7 +692,7 @@ function NominatimControl(options={}) {
     })
   };
 
-  Nominatim.prototype.createList = function createList (response) {
+  Nominatim.prototype.createList = function(response) {
     const ul = this.els.result;
     if (response) {
       response.forEach(row => {
@@ -723,7 +723,7 @@ function NominatimControl(options={}) {
     }
   };
 
-  Nominatim.prototype.chosen = function chosen(place, addressHtml, addressObj, addressOriginal) {
+  Nominatim.prototype.chosen = function(place, addressHtml, addressObj, addressOriginal) {
     const map = this.Base.getMap();
     const coord_ = [parseFloat(place.lon), parseFloat(place.lat)];
     const projection = map.getView().getProjection();
@@ -741,7 +741,7 @@ function NominatimControl(options={}) {
     });
   };
 
-  Nominatim.prototype.addressTemplate = function addressTemplate (address) {
+  Nominatim.prototype.addressTemplate = function(address) {
     const html = [];
     if (address.name) html.push(['<div class="', klasses$1.road, '">{name}</div>'].join(''));
     if (address.road || address.building || address.house_number) {
@@ -764,18 +764,18 @@ function NominatimControl(options={}) {
     return utils.template(html.join('<br>'), address);
   };
 
-  Nominatim.prototype.getProvider = function getProvider (options) {
+  Nominatim.prototype.getProvider = function(options) {
     return this.OpenStreet.getParameters(options);
   };
 
-  Nominatim.prototype.expand = function expand () {
+  Nominatim.prototype.expand = function() {
     utils.removeClass(this.els.input, klasses$1.spin);
     utils.addClass(this.els.control, klasses$1.glass.expanded);
     setTimeout( () =>  this.els.input.focus(), 100);
     this.listenMapClick();
   };
 
-  Nominatim.prototype.collapse = function collapse () {
+  Nominatim.prototype.collapse = function() {
     this.els.input.value = '';
     this.els.input.blur();
     utils.addClass(this.els.reset, klasses$1.hidden);
@@ -783,7 +783,7 @@ function NominatimControl(options={}) {
     this.clearResults();
   };
 
-  Nominatim.prototype.listenMapClick = function listenMapClick () {
+  Nominatim.prototype.listenMapClick = function() {
     // already registered
     if (this.registeredListeners.mapClick) return;
     const mapElement = this.Base.getMap().getTargetElement();
@@ -796,16 +796,16 @@ function NominatimControl(options={}) {
     }, false);
   };
 
-  Nominatim.prototype.clearResults = function clearResults(collapse) {
+  Nominatim.prototype.clearResults = function(collapse) {
     collapse && this.options.targetType === targetType.GLASS ?
       this.collapse() : utils.removeAllChildren(this.els.result);
   };
 
-  Nominatim.prototype.getSource = function getSource() {
+  Nominatim.prototype.getSource = function() {
     return this.layer.getSource();
   };
 
-  Nominatim.prototype.addLayer = function addLayer() {
+  Nominatim.prototype.addLayer = function() {
     const map = this.Base.getMap();
     const layer = map.getLayers().find(layer =>  layer === this.layer);
     !layer && map.addLayer(this.layer);
