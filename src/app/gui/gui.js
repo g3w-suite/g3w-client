@@ -5,7 +5,7 @@ const ComponentsRegistry = require('gui/component/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application
-// app shold call GUI.ready() when GUI is ready
+// app should call GUI.ready() when GUI is ready
 function GUI() {
   this.setters = {
     setContent(options={}) {
@@ -35,8 +35,6 @@ function GUI() {
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
   this._closeUserMessageBeforeSetContent = true;
-  this.addComponent = function(component, placeholder) {};
-  this.removeComponent = function(id) {};
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
