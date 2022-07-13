@@ -1031,28 +1031,34 @@ proto._setupControls = function() {
           }
           break;
         case 'nominatim':
-          const lonlat = coordinates => {
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          };
+          const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
             add: false,
             options: {
-              lonlat,
               isMobile: isMobile.any,
-              bbox: this.project.state.extent,
-              mapCrs: this.project.state.crs.epsg,
+              bbox,
+              mapCrs,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
               fontIcon: GUI.getFontClass('search')
             }
           });
-          control.on('addresschosen', evt => {
+          /**
+           * event emit when an address location is clicked
+           */
+          control.on('address', evt => {
             const coordinate = evt.coordinate;
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
+
+          control.on('lonlat', ({lonlat}={}) => {
+            const coordinates = ol.proj.transform(lonlat, 'EPSG:4326', mapCrs);
+            this.zoomToExtent([...coordinates, ...coordinates]);
+            setTimeout(() => this.showMarker(coordinates), 1000);
+          });
+
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
