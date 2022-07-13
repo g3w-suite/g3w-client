@@ -17,5 +17,11 @@ export default {
       //code here
     }
   },
-  plugins: {} // plugin configuration dev
+  // override here "initConfig" plugins attribute for custom plugin development
+  plugins: {
+    // "your-plugin-folder-name": {
+    //    baseurl: '../dist',
+    //    gid: 'qdjango:1'    // 1 = current project id
+    // }
+  }
 }
