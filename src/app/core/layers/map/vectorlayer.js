@@ -1,5 +1,5 @@
-const {inherit} = require('core/utils/utils');
-const {createOlLayer, createLayerStyle} = require('core/utils/geo');
+const { inherit } = require('core/utils/utils');
+const { createOlLayer, createLayerStyle } = require('core/utils/geo');
 const GUI = require('gui/gui');
 
 const G3WObject = require('core/g3wobject');
@@ -8,9 +8,9 @@ function VectorLayer(options = {}) {
   this.mapService = GUI.getComponent('map').getService();
   this.geometrytype = options.geometrytype || null;
   this.type = options.type || null;
-  this.crs = options.crs  || null;
+  this.crs = options.crs || null;
   this.id = options.id;
-  this.name = options.name || "";
+  this.name = options.name || '';
   this.style = options.style;
   this.color = options.color;
   this.geometryType = options.geometryType;
@@ -28,32 +28,32 @@ module.exports = VectorLayer;
 
 const proto = VectorLayer.prototype;
 
-proto.setProvider = function(provider) {
+proto.setProvider = function (provider) {
   this._provider = provider;
 };
 
-proto.getProvider = function() {
+proto.getProvider = function () {
   return this._provider;
 };
 
-proto.resetSource = function(features=[]){
+proto.resetSource = function (features = []) {
   const source = new ol.source.Vector({
-    features
+    features,
   });
   this.setSource(source);
 };
 
-proto._makeOlLayer = function({style} = {}) {
+proto._makeOlLayer = function ({ style } = {}) {
   const _style = this._makeStyle(style);
   this._olLayer = new ol.layer.Vector({
     name: this.name,
     id: this.id,
     style: _style,
-    source: new ol.source.Vector({})
-  })
+    source: new ol.source.Vector({}),
+  });
 };
 
-proto._makeStyle = function(styleConfig) {
+proto._makeStyle = function (styleConfig) {
   let style;
   const styles = {};
   if (styleConfig) {
@@ -63,100 +63,98 @@ proto._makeStyle = function(styleConfig) {
           if (config.icon) {
             styles.image = new ol.style.Icon({
               src: config.icon.url,
-              imageSize: config.icon.width
-            })
+              imageSize: config.icon.width,
+            });
           }
           break;
         case 'line':
           styles.stroke = new ol.style.Stroke({
             color: config.color,
-            width: config.width
+            width: config.width,
           });
           break;
         case 'polygon':
           styles.fill = new ol.style.Fill({
-            color: config.color
+            color: config.color,
           });
-          break
+          break;
       }
     });
     style = new ol.style.Style(styles);
   }
-  return style
+  return style;
 };
 
-proto.getFeatures = function(options={}) {
+proto.getFeatures = function (options = {}) {
   const d = $.Deferred();
   this.provider.getFeatures(options)
-    .then(features => {
+    .then((features) => {
       this.addFeatures(features);
       d.resolve(features);
     })
-    .fail(err => d.reject(err));
-  return d.promise()
+    .fail((err) => d.reject(err));
+  return d.promise();
 };
 
-proto.addFeatures = function(features=[]) {
-  this.getSource().addFeatures(features)
+proto.addFeatures = function (features = []) {
+  this.getSource().addFeatures(features);
 };
 
-proto.addFeature = function(feature) {
-  feature && this.getSource().addFeature(feature)
+proto.addFeature = function (feature) {
+  feature && this.getSource().addFeature(feature);
 };
 
-proto.getOLLayer = function() {
+proto.getOLLayer = function () {
   if (this._olLayer) return this._olLayer;
-  else {
-    const id = this.id;
-    const geometryType =  this.geometryType;
-    const color = this.color;
-    const style = this.style ? createLayerStyle(this.style) : null;
-    this._olLayer = createOlLayer({
-      id,
-      geometryType,
-      color,
-      style,
-      features: this._features
-    })
-  }
+
+  const { id } = this;
+  const { geometryType } = this;
+  const { color } = this;
+  const style = this.style ? createLayerStyle(this.style) : null;
+  this._olLayer = createOlLayer({
+    id,
+    geometryType,
+    color,
+    style,
+    features: this._features,
+  });
+
   return this._olLayer;
 };
 
-proto.setOLLayer = function(olLayer) {
+proto.setOLLayer = function (olLayer) {
   this._olLayer = olLayer;
 };
 
-proto.getSource = function() {
+proto.getSource = function () {
   !this._olLayer && this.getOLLayer();
   return this._olLayer.getSource();
 };
 
-proto.setSource = function(source) {
+proto.setSource = function (source) {
   this._olLayer.setSource(source);
 };
 
-proto.setStyle = function(style) {
+proto.setStyle = function (style) {
   this._olLayer.setStyle(style);
 };
 
-proto.getFeatureById = function(fid){
+proto.getFeatureById = function (fid) {
   return fid ? this._olLayer.getSource().getFeatureById(fid) : null;
 };
 
-proto.isVisible = function() {
+proto.isVisible = function () {
   return this._olLayer.getVisible();
 };
 
-proto.setVisible = function(bool) {
+proto.setVisible = function (bool) {
   this._olLayer.setVisible(bool);
 };
 
-proto.clear = function(){
+proto.clear = function () {
   this.getSource().clear();
 };
 
-proto.addToMap = function(map){
+proto.addToMap = function (map) {
   map.addLayer(this._olLayer);
 };
-
-

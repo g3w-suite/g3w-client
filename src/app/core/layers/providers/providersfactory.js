@@ -4,134 +4,134 @@ const Providers = {
   xml: require('./xmlprovider'),
   qgis: require('./qgisprovider'),
   wms: require('./wmsprovider'),
-  wfs: require('./wfsprovider')
+  wfs: require('./wfsprovider'),
 };
 
 const ProvidersForServerTypes = {
-  'QGIS': {
-    'virtual': {
+  QGIS: {
+    virtual: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'postgres': {
+    postgres: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'oracle': {
+    oracle: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'mssql': {
+    mssql: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'spatialite': {
+    spatialite: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'ogr': {
+    ogr: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'delimitedtext': {
+    delimitedtext: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
       search: Providers.qgis,
-      filtertoken: Providers.qgis
+      filtertoken: Providers.qgis,
     },
-    'wmst': {
+    wmst: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: null,
-      search: null
+      search: null,
     },
-    'wcs': {
+    wcs: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: null,
-      search: null
+      search: null,
     },
-    'wms': {
+    wms: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: null,
-      search: null
+      search: null,
     },
-    'wfs': {
+    wfs: {
       query: Providers.wms,
       filter: Providers.wfs,
       data: Providers.qgis,
-      search: Providers.qgis
+      search: Providers.qgis,
     },
-    'gdal': {
+    gdal: {
       query: Providers.wms,
       filter: null,
       data: null,
-      search: null
+      search: null,
     },
     'vector-tile': {
       query: Providers.wms,
       filter: null,
       data: null,
-      search: null
+      search: null,
     },
-    'arcgismapserver': {
+    arcgismapserver: {
       query: Providers.wms,
       filter: null,
       data: null,
-      search: null
-    }
+      search: null,
+    },
   },
-  'OGC': {
-    'wms': {
+  OGC: {
+    wms: {
       query: Providers.wms,
       filter: null,
       data: null,
-      search: null
-    }
+      search: null,
+    },
   },
-  'G3WSUITE': {
-    'geojson': {
+  G3WSUITE: {
+    geojson: {
       query: Providers.geojson,
       filter: null,
       data: Providers.geojson,
-      search: null
-    }
-  }
+      search: null,
+    },
+  },
 };
 
 function ProviderFactory() {
-  this.build = function(providerType, serverType, sourceType,options) {
+  this.build = function (providerType, serverType, sourceType, options) {
     // return instace of seletced provider
-    const providerClass = this.get(providerType,serverType,sourceType);
+    const providerClass = this.get(providerType, serverType, sourceType);
     if (providerClass) {
       return new providerClass(options);
     }
     return null;
   };
 
-  this.get = function(providerType, serverType, sourceType) {
+  this.get = function (providerType, serverType, sourceType) {
     return ProvidersForServerTypes[serverType][sourceType][providerType];
-  }
+  };
 }
 
 module.exports = new ProviderFactory();

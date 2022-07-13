@@ -1,43 +1,44 @@
 import keys from 'config/keys';
-const apptitle = "G3W Client";
+
+const apptitle = 'G3W Client';
 const supportedLng = ['en', 'it'];
 
 export const plugins = {};
 
 export const tools = {
-  tools:  []
+  tools: [],
 };
 
 // get message from internationalization
 export const _i18n = {
-  resources: require('./i18n/index.js')
+  resources: require('./i18n/index.js'),
 };
 
 export const client = {
-  debug:  true,
-  local:  false
+  debug: true,
+  local: false,
 };
 
 export const server = {
-  urls:  {
+  urls: {
     baseurl: '/',
-    ows:  'ows',
-    api:  'api',
-    initconfig:  'api/initconfig',
-    config:  'api/config'
-  }
+    ows: 'ows',
+    api: 'api',
+    initconfig: 'api/initconfig',
+    config: 'api/config',
+  },
 };
 
 export const utils = {
   merge(type) {
     if (type) {
-      console.log(CONFIG)
+      console.log(CONFIG);
     }
-  }
+  },
 };
 
 export const secrets = {
-  keys
+  keys,
 };
 
 export default {
@@ -49,6 +50,5 @@ export default {
   supportedLng,
   tools,
   _i18n,
-  utils
+  utils,
 };
-

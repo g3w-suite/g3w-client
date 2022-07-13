@@ -5,6 +5,6 @@ export default {
     },
     findMetadataAttribute(name) {
       return this.state[name] !== undefined;
-    }
-  }
-}
+    },
+  },
+};

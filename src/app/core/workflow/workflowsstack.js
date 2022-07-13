@@ -1,61 +1,60 @@
 // Store all workflow activated
-const WorkFlowsStack = function() {
+const WorkFlowsStack = function () {
   this._workflows = [];
-  this.push = function(workflow) {
+  this.push = function (workflow) {
     if (this._workflows.indexOf(workflow) === -1) return this._workflows.push(workflow) - 1;
     return this._workflows.indexOf(workflow);
   };
 
-  this.getParent = function() {
+  this.getParent = function () {
     const index = this._getCurrentIndex();
-    return index > 0 &&  this._workflows[index -1];
+    return index > 0 && this._workflows[index - 1];
   };
 
-  this.pop = function() {
-   return this._workflows.pop()
+  this.pop = function () {
+    return this._workflows.pop();
   };
 
-  this.getLength = function() {
+  this.getLength = function () {
     return this._workflows.length;
   };
 
-  this._getCurrentIndex = function() {
+  this._getCurrentIndex = function () {
     const currentWorkflow = this.getCurrent();
-    return this._workflows.findIndex(workfow => workfow === currentWorkflow)
+    return this._workflows.findIndex((workfow) => workfow === currentWorkflow);
   };
 
-  this.getCurrent = function() {
+  this.getCurrent = function () {
     return this.getLast();
   };
 
-  this.getLast = function() {
-    const length = this._workflows.length;
-    return length ? this._workflows[length -1] : null;
+  this.getLast = function () {
+    const { length } = this._workflows;
+    return length ? this._workflows[length - 1] : null;
   };
 
-  this.getFirst = function() {
+  this.getFirst = function () {
     return this._workflows[0];
   };
 
-  this.removeAt = function(index) {
+  this.removeAt = function (index) {
     this._workflows.splice(index, 1);
   };
 
-  this.getAt = function(index) {
+  this.getAt = function (index) {
     return this._workflows[index];
   };
 
-  this.insertAt = function(index, workflow) {
+  this.insertAt = function (index, workflow) {
     this._workflows[index] = workflow;
   };
 
-  this.clear = function(){
+  this.clear = function () {
     while (this._workflows.length) {
       const workflow = this.pop();
       workflow.stop();
     }
-  }
-
+  };
 };
 
-module.exports = new WorkFlowsStack;
+module.exports = new WorkFlowsStack();

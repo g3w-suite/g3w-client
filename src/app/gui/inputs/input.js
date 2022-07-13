@@ -1,15 +1,17 @@
-import ApplicationState  from 'core/applicationstate';
+import ApplicationState from 'core/applicationstate';
+
 const InputServices = require('./services');
-const {BaseInput, BaseInputMixin}  = require('./baseinput/baseinput');
+const { BaseInput, BaseInputMixin } = require('./baseinput/baseinput');
+
 const Input = {
   props: ['state'],
   mixins: [BaseInputMixin],
   components: {
-    'baseinput': BaseInput
+    baseinput: BaseInput,
   },
   watch: {
-    'notvalid'(newValid){
-      if (newValid) this.service.setErrorMessage(this.state)
+    notvalid(newValid) {
+      if (newValid) this.service.setErrorMessage(this.state);
     },
   },
   created() {
@@ -20,10 +22,10 @@ const Input = {
     this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
   },
-  destroyed(){
+  destroyed() {
     // emit remove input to form (in case for example tab visibility condition)
     this.$emit('removeinput', this.state);
-  }
+  },
 };
 
 module.exports = Input;

@@ -1,8 +1,8 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol/layers/bases');
 
-function WMSLayer(config={}, options={}) {
+function WMSLayer(config = {}, options = {}) {
   this.config = config;
   base(this, config, options);
 }
@@ -11,9 +11,11 @@ inherit(WMSLayer, BaseLayer);
 
 const proto = WMSLayer.prototype;
 
-proto._makeOlLayer = function() {
-  //use this config to get params
-  const {url, layers, singleTile, attributions, crs, opacity} = this.config;
+proto._makeOlLayer = function () {
+  // use this config to get params
+  const {
+    url, layers, singleTile, attributions, crs, opacity,
+  } = this.config;
   const projection = this.getProjectionFromCrs(crs);
   const olLayer = BasesLayers.WMS.get({
     url,
@@ -21,9 +23,9 @@ proto._makeOlLayer = function() {
     singleTile,
     attributions,
     projection,
-    opacity
+    opacity,
   });
-  return olLayer
+  return olLayer;
 };
 
 module.exports = WMSLayer;

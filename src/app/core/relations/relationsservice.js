@@ -1,9 +1,13 @@
-const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
-const {sanitizeFidFeature, getFeaturesFromResponseVectorApi, covertVectorFeaturesToResultFeatures, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+const {
+  inherit, XHR, base, createSingleFieldParameter,
+} = require('core/utils/utils');
+const {
+  sanitizeFidFeature, getFeaturesFromResponseVectorApi, covertVectorFeaturesToResultFeatures, getAlphanumericPropertiesFromFeature,
+} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
-function RelationsService(options={}) {
+function RelationsService(options = {}) {
   base(this);
 }
 
@@ -11,25 +15,29 @@ inherit(RelationsService, G3WObject);
 
 const proto = RelationsService.prototype;
 
-proto.createUrl = function(options={}){
+proto.createUrl = function (options = {}) {
   const ProjectsRegistry = require('core/project/projectsregistry');
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
-  const {layer={}, relation={}, fid, type='data'} = options;
+  const {
+    layer = {}, relation = {}, fid, type = 'data',
+  } = options;
   let layerId;
-  const {father, child, referencedLayer, referencingLayer, id:relationId} = relation;
-  if (father !== undefined) layerId = layer.id === father ? child: father;
-  else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
+  const {
+    father, child, referencedLayer, referencingLayer, id: relationId,
+  } = relation;
+  if (father !== undefined) layerId = layer.id === father ? child : father;
+  else layerId = layer.id === referencedLayer ? referencingLayer : referencedLayer;
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
   const value = sanitizeFidFeature(fid);
   return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=1`;
 };
 
-proto.getRelations = function(options={}) {
+proto.getRelations = function (options = {}) {
   const url = this.createUrl(options);
   return XHR.get({
-    url
-  })
+    url,
+  });
 };
 
 /**
@@ -38,27 +46,27 @@ proto.getRelations = function(options={}) {
  * @param features
  * @returns {Promise<[]>}
  */
-proto.getRelationsNM = async function({nmRelation, features=[]}={}){
+proto.getRelationsNM = async function ({ nmRelation, features = [] } = {}) {
   const DataRouterService = require('core/data/routerservice');
-  const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
+  const { referencedLayer, referencingLayer, fieldRef: { referencingField, referencedField } } = nmRelation;
   let relationsNM = []; // start with empty relations result
   if (features.length) {
-    const values = features.map(feature => feature.attributes[referencingField]);
+    const values = features.map((feature) => feature.attributes[referencingField]);
     const responseFids = await DataRouterService.getData('search:features', {
       inputs: {
         layer: CatalogLayersStoresRegistry.getLayerById(referencedLayer),
         filter: `${createSingleFieldParameter({
           field: referencedField,
           value: values,
-          logicop: 'OR'
+          logicop: 'OR',
         })}`,
         formatter: 1, // set formatter to
-        search_endpoint: 'api'
+        search_endpoint: 'api',
       },
-      outputs: null
+      outputs: null,
     });
     if (responseFids.data && responseFids.data[0] && Array.isArray(responseFids.data[0].features)) {
-      relationsNM = responseFids.data[0].features.map(feature => {
+      relationsNM = responseFids.data[0].features.map((feature) => {
         const attributes = getAlphanumericPropertiesFromFeature(feature.getProperties()).reduce((accumulator, property) => {
           accumulator[property] = feature.get(property);
           return accumulator;
@@ -66,20 +74,20 @@ proto.getRelationsNM = async function({nmRelation, features=[]}={}){
         return {
           id: feature.getId(),
           attributes,
-          geometry: feature.getGeometry()
-        }
-      })
+          geometry: feature.getGeometry(),
+        };
+      });
     }
   }
   return relationsNM;
 };
 
-proto.save = function(options={}){
+proto.save = function (options = {}) {
   const url = this.createUrl(options);
   return XHR.fileDownload({
     url,
-    httpMethod: "GET"
-  })
+    httpMethod: 'GET',
+  });
 };
 
-module.exports = new RelationsService;
+module.exports = new RelationsService();

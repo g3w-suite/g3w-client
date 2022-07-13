@@ -1,16 +1,16 @@
-const {base, inherit, createFilterFormField } = require('core/utils/utils');
+const { base, inherit, createFilterFormField } = require('core/utils/utils');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 
 const G3WObject = require('core/g3wobject');
 
-function BaseIframeService(options={}){
+function BaseIframeService(options = {}) {
   base(this);
   this.ready = false;
-  this.init = function(){
-    //overwrite each service
-  }
+  this.init = function () {
+    // overwrite each service
+  };
 }
 
 inherit(BaseIframeService, G3WObject);
@@ -39,18 +39,18 @@ proto.layers = undefined;
  * @returns Array oa qgs_layer_id strings
  * @private
  */
-proto.getQgsLayerId = function({qgs_layer_id, noValue=this.layers.map(layer => layer.id)}){
-  return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id: [qgs_layer_id] : noValue;
+proto.getQgsLayerId = function ({ qgs_layer_id, noValue = this.layers.map((layer) => layer.id) }) {
+  return qgs_layer_id ? Array.isArray(qgs_layer_id) ? qgs_layer_id : [qgs_layer_id] : noValue;
 };
 
 /**
  * Method to getFeature from DataProvider
  * @private
  */
-proto.searchFeature = async function({layer, feature}){
+proto.searchFeature = async function ({ layer, feature }) {
   const search_endpoint = this.project.getSearchEndPoint();
-  const {field, value} = feature;
-  const { data=[] } = await DataRouterService.getData('search:features', {
+  const { field, value } = feature;
+  const { data = [] } = await DataRouterService.getData('search:features', {
     inputs: {
       layer,
       search_endpoint,
@@ -58,10 +58,10 @@ proto.searchFeature = async function({layer, feature}){
         layer,
         search_endpoint,
         field,
-        value
-      })
+        value,
+      }),
     },
-    outputs: false
+    outputs: false,
   });
   return data;
 };
@@ -74,34 +74,35 @@ proto.searchFeature = async function({layer, feature}){
  * @param highlight
  * @returns {Promise<{qgs_layer_id: null, features: [], found: boolean}>}
  */
-proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=false, highlight=false}={}){
+proto.findFeaturesWithGeometry = async function ({
+  qgs_layer_id = [], feature, zoom = false, highlight = false,
+} = {}) {
   const response = {
     found: false,
     features: [],
-    qgs_layer_id: null
+    qgs_layer_id: null,
   };
-  let layersCount = qgs_layer_id.length;
+  const layersCount = qgs_layer_id.length;
   let i = 0;
   while (!response.found && i < layersCount) {
     const layer = this.project.getLayerById(qgs_layer_id[i]);
     try {
       const data = layer && await this.searchFeature({
         layer,
-        feature
+        feature,
       });
       if (data.length) {
-        const features = data[0].features;
-        response.found = features.length > 0 && !!features.find(feature => feature.getGeometry());
+        const { features } = data[0];
+        response.found = features.length > 0 && !!features.find((feature) => feature.getGeometry());
         if (response.found) {
           response.features = features;
           response.qgs_layer_id = qgs_layer_id[i];
           zoom && this.mapService.zoomToFeatures(features, {
-            highlight
+            highlight,
           });
-        }
-        else i++;
+        } else i++;
       } else i++;
-    } catch(err){i++}
+    } catch (err) { i++; }
   }
   // in case of no response zoom too initial extent
   !response.found && this.mapService.zoomToProjectInitExtent();
@@ -113,11 +114,11 @@ proto.findFeaturesWithGeometry = async function({qgs_layer_id=[], feature, zoom=
  * Set layer function
  * @param layers
  */
-proto.setLayers = function(layers=[]){
+proto.setLayers = function (layers = []) {
   proto.layers = layers;
 };
 
-proto.getLayers = function(){
+proto.getLayers = function () {
   return proto.layers;
 };
 
@@ -125,11 +126,11 @@ proto.getLayers = function(){
  * Method to set ready the service
  * @param bool
  */
-proto.setReady = function(bool=false){
+proto.setReady = function (bool = false) {
   this.ready = bool;
 };
 
-proto.getReady = function(){
+proto.getReady = function () {
   return this.ready;
 };
 
@@ -137,13 +138,13 @@ proto.getReady = function(){
  * Method overwrite single service: Usefult to sto eventually running action
  * * @returns {Promise<void>}
  */
-proto.stop = async function(){};
+proto.stop = async function () {};
 
 /**
  * Overwrite each single service
  */
-proto.clear = function(){
-  //overwrite single service
+proto.clear = function () {
+  // overwrite single service
 };
 
 module.exports = BaseIframeService;

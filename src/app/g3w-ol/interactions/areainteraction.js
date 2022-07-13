@@ -1,7 +1,7 @@
 const MeasureInteraction = require('./measureinteraction');
 // Area
-const AreaIteraction = function(options={}) {
-  options.geometryType = "Polygon";
+const AreaIteraction = function (options = {}) {
+  options.geometryType = 'Polygon';
   MeasureInteraction.call(this, options);
 };
 

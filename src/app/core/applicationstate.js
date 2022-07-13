@@ -13,29 +13,29 @@ const STATE = Vue.observable({
   user: null,
   map: {
     epsg: '',
-    unit: 'metric'
+    unit: 'metric',
   },
   gui: {
     app: {
-      disabled: false // if application is disable non cliccable (in waiting)
+      disabled: false, // if application is disable non cliccable (in waiting)
     },
     sidebar: {
-      disabled: false // true if sidebar is disabled (not responsive)
+      disabled: false, // true if sidebar is disabled (not responsive)
     },
     layout: {
       __current: 'app', // store the current layout owner (app at beginning)
-      app: {}
-    }
+      app: {},
+    },
   },
   keys: {
     vendorkeys: {
       google: undefined,
-      bing: undefined
-    }
+      bing: undefined,
+    },
   },
   tokens: {
-    filtertoken: undefined
-  }
+    filtertoken: undefined,
+  },
 });
 
 /**

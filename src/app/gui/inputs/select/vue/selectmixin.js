@@ -1,4 +1,5 @@
-const {getAppLanguage} = require('core/i18n/i18n.service');
+const { getAppLanguage } = require('core/i18n/i18n.service');
+
 const selectMixin = {
   methods: {
     getLanguage() {
@@ -13,7 +14,7 @@ const selectMixin = {
     },
     resetValues() {
       this.state.input.options.values.splice(0);
-    }
+    },
   },
   computed: {
     autocomplete() {
@@ -21,15 +22,14 @@ const selectMixin = {
     },
     loadingState() {
       return this.state.input.options.loading ? this.state.input.options.loading.state : null;
-    }
+    },
   },
-  watch:{
+  watch: {
     async notvalid(value) {
       await this.$nextTick();
-      if (this.select2)
-        value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
-    }
-  }
+      if (this.select2) { value ? this.select2.data('select2').$container.addClass('input-error-validation') : this.select2.data('select2').$container.removeClass('input-error-validation'); }
+    },
+  },
 };
 
 module.exports = selectMixin;

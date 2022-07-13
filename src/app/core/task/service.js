@@ -4,14 +4,14 @@ const { XHR } = require('core/utils/utils');
  * Singletone service to run async task
  * @constructor
  */
-function TaskService(){
+function TaskService() {
   /**
    * Array contain all task id that are running. Each item is an object contain:
    * {
    *   taskId: //taskId,
    *   intervalId: interval to clear clearInterval()
    * }
-   **/
+   * */
   const tasks = [];
   /**
    *
@@ -27,42 +27,44 @@ function TaskService(){
    *
    * return a Promise that return a task id
    */
-  this.runTask = async function(options={}){
-    let {method='GET', params={}, url, taskUrl, interval=1000, timeout=Infinity, listener=()=>{}} = options;
+  this.runTask = async function (options = {}) {
+    let {
+      method = 'GET', params = {}, url, taskUrl, interval = 1000, timeout = Infinity, listener = () => {},
+    } = options;
     try {
-      const response =  method === 'GET' ? await XHR.get({
+      const response = method === 'GET' ? await XHR.get({
         url,
-        params
-      }): await XHR.post({
+        params,
+      }) : await XHR.post({
         url,
         data: params.data || {},
-        contentType: params.contentType || "application/json"
+        contentType: params.contentType || 'application/json',
       });
-      const {result, task_id} = response;
-      if (result){
-        const intervalId = setInterval(async ()=>{
+      const { result, task_id } = response;
+      if (result) {
+        const intervalId = setInterval(async () => {
           // check if timeout is defined
-          timeout = timeout - interval;
-          if (timeout > 0){
+          timeout -= interval;
+          if (timeout > 0) {
             let response;
             try {
               response = await XHR.get({
-                url: `${taskUrl}${task_id}`
+                url: `${taskUrl}${task_id}`,
               });
-            } catch(error){
+            } catch (error) {
               response = error;
             }
             listener({
               task_id,
               timeout: false,
-              response
+              response,
             });
           } else {
             listener({
-              timeout: true
+              timeout: true,
             });
             this.stopTask({
-              task_id
+              task_id,
             });
           }
         }, interval);
@@ -76,11 +78,10 @@ function TaskService(){
         // run first time listener function
         listener({
           task_id,
-          response
+          response,
         });
       } else return Promise.reject(response);
-
-    } catch(err) {
+    } catch (err) {
       return Promise.reject(err);
     }
   };
@@ -91,26 +92,25 @@ function TaskService(){
    *   taskId: taskId that is running
    * }
    */
-  this.stopTask = function(options={}){
+  this.stopTask = function (options = {}) {
     const { task_id } = options;
-    const task = tasks.find(task => task.task_id === task_id);
+    const task = tasks.find((task) => task.task_id === task_id);
     if (task)clearInterval(task.intervalId);
   };
 
   /**
    * clare all task
    */
-  this.clear = function(){
-    tasks.forEach(({ taskId }) =>{
+  this.clear = function () {
+    tasks.forEach(({ taskId }) => {
       this.stopTask({
-        taskId
-      })
+        taskId,
+      });
     });
-    //reset to empty tasks
+    // reset to empty tasks
     tasks.splice(0);
-  }
+  };
 }
-
 
 /**
  * SERVER
@@ -137,6 +137,6 @@ function TaskService(){
             }
         }
 
- **/
+ * */
 
-module.exports = new TaskService;
+module.exports = new TaskService();

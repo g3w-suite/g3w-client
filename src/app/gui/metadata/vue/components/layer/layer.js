@@ -1,15 +1,16 @@
-const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/component/component');
-import Layer from './layer.vue'
+import Layer from './layer.vue';
 
-function LayerComponent({state = {}, service} = {}) {
+const { inherit, base } = require('core/utils/utils');
+const Component = require('gui/component/component');
+
+function LayerComponent({ state = {}, service } = {}) {
   base(this);
   const vueComponent = Vue.extend(Layer);
   this.setService(service);
   this.internalComponent = new vueComponent({
-    state
+    state,
   });
-  this.layout = function() {};
+  this.layout = function () {};
 }
 
 inherit(LayerComponent, Component);

@@ -1,5 +1,5 @@
 const Input = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 const WidgetMixins = require('gui/inputs/widgetmixins');
 
 const CheckBoxInput = Vue.extend({
@@ -8,12 +8,12 @@ const CheckBoxInput = Vue.extend({
   data() {
     return {
       value: null,
-      label:null,
-      id: getUniqueDomId() // new id
-    }
+      label: null,
+      id: getUniqueDomId(), // new id
+    };
   },
   methods: {
-    setLabel(){
+    setLabel() {
       // convert label
       this.label = this.service.convertCheckedToValue(this.value);
     },
@@ -28,7 +28,7 @@ const CheckBoxInput = Vue.extend({
     stateValueChanged() {
       this.setValue();
       this.setLabel();
-    }
+    },
   },
   created() {
     this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
@@ -38,7 +38,7 @@ const CheckBoxInput = Vue.extend({
       this.setLabel();
       this.change();
     }
-  }
+  },
 });
 
 module.exports = CheckBoxInput;

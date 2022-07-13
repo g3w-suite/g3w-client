@@ -1,76 +1,74 @@
-const {base, inherit } = require('core/utils/utils');
-const BaseService = require('../baseservice');
+const { base, inherit } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
+const BaseService = require('../baseservice');
 
-function AppService(){
+function AppService() {
   base(this);
   this.mapControls = {
     screenshot: {
-      control: null
+      control: null,
     },
     changeMap: {
-      control: null
-    }
+      control: null,
+    },
   };
 
   /**
    * Init service
    * @returns {Promise<unknown>}
    */
-  this.init = function(){
-    return new Promise((resolve, reject) =>{
-      this.mapService.once('ready', ()=>{
+  this.init = function () {
+    return new Promise((resolve, reject) => {
+      this.mapService.once('ready', () => {
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
         this.mapControls.screenshot.control = this.mapService.getMapControlByType({
-          type: 'screenshot'
+          type: 'screenshot',
         });
         this.setReady(true);
         resolve();
       });
-    })
-
+    });
   };
   /**
    *
    * @returns {Promise<void>}
    */
-  this.results = async function({capture=true}){
+  this.results = async function ({ capture = true }) {
     capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
     return [];
   };
 
-  this.screenshot = async function({capture=true}){
+  this.screenshot = async function ({ capture = true }) {
     const action = 'app:screenshot';
-    capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
+    capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async () => {
       try {
         const blob = await this.mapService.createMapImage();
         this.emit('response', {
           action,
           response: {
             result: true,
-            data: blob
-          }
-        })
-      } catch(err){
+            data: blob,
+          },
+        });
+      } catch (err) {
         this.emit('response', {
           action,
           response: {
             result: false,
-            data: err
-          }
-        })
+            data: err,
+          },
+        });
       }
     }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
   };
-
 
   /**
    * Eventually send as param the projection in which we would like get center of map
    * @param params
    * @returns {Promise<void>}
    */
-  this.getcenter = async function(params={}){
+  this.getcenter = async function (params = {}) {
     return this.mapService.getCenter();
   };
 
@@ -79,12 +77,12 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtocoordinates = async function(params={}){
-    const {coordinates=[], highlight=false} = params;
+  this.zoomtocoordinates = async function (params = {}) {
+    const { coordinates = [], highlight = false } = params;
     if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
       this.mapService.zoomTo(coordinates);
-      return coordinates
-    } else return Promise.reject(coordinates)
+      return coordinates;
+    } return Promise.reject(coordinates);
   };
 
   /**
@@ -92,7 +90,7 @@ function AppService(){
    * @param params
    * @returns {Promise<void>}
    */
-  this.getextent = async function(params={}){
+  this.getextent = async function (params = {}) {
     return this.mapService.getMapExtent();
   };
 
@@ -101,35 +99,34 @@ function AppService(){
    * @param params
    * @returns {Promise<[]>}
    */
-  this.zoomtoextent = async function(params={}){
-    const {extent=[]} = params;
-    if (extent && Array.isArray(extent) && extent.length === 4){
+  this.zoomtoextent = async function (params = {}) {
+    const { extent = [] } = params;
+    if (extent && Array.isArray(extent) && extent.length === 4) {
       this.mapService.goToBBox(extent);
       return extent;
-    } else return Promise.reject(extent);
+    } return Promise.reject(extent);
   };
 
-
-  //method to zoom to features
-  this.zoomtofeature = async function(params={}){
+  // method to zoom to features
+  this.zoomtofeature = async function (params = {}) {
     return new Promise(async (resolve, reject) => {
-      let {qgs_layer_id, feature, highlight=false} = params;
+      let { qgs_layer_id, feature, highlight = false } = params;
       qgs_layer_id = this.getQgsLayerId({
-        qgs_layer_id
+        qgs_layer_id,
       });
 
       const response = await this.findFeaturesWithGeometry({
         qgs_layer_id,
         feature,
-        zoom:true,
-        highlight
+        zoom: true,
+        highlight,
       });
 
       resolve(response.qgs_layer_id);
-    })
+    });
   };
 }
 
 inherit(AppService, BaseService);
 
-module.exports = new AppService;
+module.exports = new AppService();

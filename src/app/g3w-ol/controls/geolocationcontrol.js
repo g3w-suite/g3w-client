@@ -1,11 +1,12 @@
 const InteractionControl = require('./interactioncontrol');
+
 function GeolocationControl() {
   const options = {
     visible: false, // set initial to false. Is set visible if is autorized
     offline: false,
-    name: "geolocation",
-    tipLabel: "sdk.mapcontrols.geolocation.tooltip",
-    label: "\ue904"
+    name: 'geolocation',
+    tipLabel: 'sdk.mapcontrols.geolocation.tooltip',
+    label: '\ue904',
   };
   this._layer = new ol.layer.Vector({
     source: new ol.source.Vector(),
@@ -14,10 +15,10 @@ function GeolocationControl() {
         text: '\uf3c5',
         font: '900 3em "Font Awesome 5 Free"',
         fill: new ol.style.Fill({
-          color: 'red'
-        })
-      })
-    })
+          color: 'red',
+        }),
+      }),
+    }),
   });
   InteractionControl.call(this, options);
 }
@@ -33,14 +34,14 @@ const proto = GeolocationControl.prototype;
  * @param show
  * @private
  */
-proto._showMarker = function({map, coordinates, show=true}){
-  //in case of control is initialized
+proto._showMarker = function ({ map, coordinates, show = true }) {
+  // in case of control is initialized
   if (this._layer) {
     this._layer.getSource().clear();
-    if (show)  {
+    if (show) {
       map.getView().setCenter(coordinates);
       const feature = new ol.Feature({
-        geometry: new ol.geom.Point(coordinates)
+        geometry: new ol.geom.Point(coordinates),
       });
       this._layer.getSource().addFeature(feature);
       map.addLayer(this._layer);
@@ -48,11 +49,11 @@ proto._showMarker = function({map, coordinates, show=true}){
   }
 };
 
-proto.getMap = function(){
+proto.getMap = function () {
   return InteractionControl.prototype.getMap.call(this);
 };
 
-proto.setMap = function(map) {
+proto.setMap = function (map) {
   let toggledKeyEvent; // key toggled event handler
   InteractionControl.prototype.setMap.call(this, map);
 
@@ -60,8 +61,8 @@ proto.setMap = function(map) {
     projection: map.getView().getProjection(),
     tracking: true, // set tracking
     trackingOptions: {
-      enableHighAccuracy: true
-    }
+      enableHighAccuracy: true,
+    },
   });
 
   geolocation.on('change:position', () => {
@@ -75,12 +76,12 @@ proto.setMap = function(map) {
       this._showMarker({
         map,
         coordinates,
-        show: this.isToggled()
-      })
+        show: this.isToggled(),
+      });
     } else this.hideControl(); // remove control from map control flow
   });
 
-  geolocation.once('error', evt => {
+  geolocation.once('error', (evt) => {
     this.hideControl();
     this._layer = null;
     evt.code !== 1 && this.dispatchEvent('error');
@@ -88,17 +89,17 @@ proto.setMap = function(map) {
     toggledKeyEvent = null;
   });
 
-  //only when authorized register toogled event
-  geolocation.once('authorized', ()=>{
+  // only when authorized register toogled event
+  geolocation.once('authorized', () => {
     toggledKeyEvent = this.on('toggled', () => {
       const coordinates = geolocation.getPosition();
       this._showMarker({
         map,
         coordinates,
-        show: this.isToggled()
-      })
+        show: this.isToggled(),
+      });
     });
-  })
+  });
 };
 
 module.exports = GeolocationControl;

@@ -1,17 +1,17 @@
+const IFrameRouterService = require('core/iframe/routerservice');
+const { splitContextAndMethod } = require('core/utils/utils');
+const GUI = require('gui/gui');
 const queryService = require('./query/service');
 const searchService = require('./search/service');
 const expressionService = require('./expression/service');
 const proxyService = require('./proxy/service');
 const owsService = require('./ows/service');
-const IFrameRouterService = require('core/iframe/routerservice');
-const {splitContextAndMethod} = require('core/utils/utils');
-const GUI = require('gui/gui');
 
 function Routerservice() {
-  //set deafult outputplace
+  // set deafult outputplace
   this.defaultoutputplaces = ['gui'];
   // set current outputplaces
-  this.currentoutputplaces =  [...this.defaultoutputplaces]; // array contains all
+  this.currentoutputplaces = [...this.defaultoutputplaces]; // array contains all
 
   /**
    * Object contain output function to show results
@@ -24,30 +24,30 @@ function Routerservice() {
    * }
    */
   this.ouputplaces = {
-    async gui(dataPromise, options={}){
+    async gui(dataPromise, options = {}) {
       GUI.setLoadingContent(true);
       try {
         GUI.outputDataPlace(dataPromise, options);
         await dataPromise;
-      } catch(err){}
+      } catch (err) {}
       GUI.setLoadingContent(false);
     },
-    async iframe(dataPromise, options={}){
+    async iframe(dataPromise, options = {}) {
       IFrameRouterService.outputDataPlace(dataPromise, options);
-    }
+    },
   };
 
   /**
    *
    * @returns {Promise<void>}
    */
-  this.init = async function(){
+  this.init = async function () {
     this.services = {
       query: queryService,
       search: searchService,
       expression: expressionService,
       proxy: proxyService,
-      ows: owsService
+      ows: owsService,
     };
   };
 
@@ -57,16 +57,16 @@ function Routerservice() {
    * @param options
    * @returns {Promise<void>}
    */
-  this.getData = async function(contextAndMethod, options={}){
-    const {context, method} = splitContextAndMethod(contextAndMethod);
+  this.getData = async function (contextAndMethod, options = {}) {
+    const { context, method } = splitContextAndMethod(contextAndMethod);
     const service = this.getService(context);
-    const {inputs={}, outputs={}} = options;
-    //return a promise and not the data
+    const { inputs = {}, outputs = {} } = options;
+    // return a promise and not the data
     const dataPromise = service[method](inputs);
-    outputs && this.currentoutputplaces.forEach(place =>{
+    outputs && this.currentoutputplaces.forEach((place) => {
       this.ouputplaces[place](dataPromise, outputs);
     });
-    //return always data
+    // return always data
     const data = await dataPromise;
     return await data;
   };
@@ -75,11 +75,11 @@ function Routerservice() {
    *Force to show empty output data
    *
    * */
-  this.showEmptyOutputs = function(){
+  this.showEmptyOutputs = function () {
     const dataPromise = Promise.resolve({
-      data: []
+      data: [],
     });
-    this.currentoutputplaces.forEach(place =>{
+    this.currentoutputplaces.forEach((place) => {
       this.ouputplaces[place](dataPromise);
     });
   };
@@ -88,8 +88,8 @@ function Routerservice() {
    * Set a costum datapromiseoutput to applicationa outputs settede
    * @param dataPromise
    */
-  this.showCustomOutputDataPromise = function(dataPromise){
-    this.currentoutputplaces.forEach(place =>{
+  this.showCustomOutputDataPromise = function (dataPromise) {
+    this.currentoutputplaces.forEach((place) => {
       this.ouputplaces[place](dataPromise, {});
     });
   };
@@ -99,13 +99,13 @@ function Routerservice() {
    * @param serviceName
    * @returns {*}
    */
-  this.getService = function(serviceName){
-    return this.services[serviceName]
+  this.getService = function (serviceName) {
+    return this.services[serviceName];
   };
 
   /*
   * */
-  this.setOutputPlaces = function(places=[]){
+  this.setOutputPlaces = function (places = []) {
     this.currentoutputplaces = places;
   };
 
@@ -113,7 +113,7 @@ function Routerservice() {
    *
    * @param place
    */
-  this.addCurrentOutputPlace = function(place){
+  this.addCurrentOutputPlace = function (place) {
     place && this.currentoutputplaces.indexOf(place) === -1 && this.currentoutputplaces.push(place);
   };
 
@@ -126,7 +126,7 @@ function Routerservice() {
    * method(dataPromise, options={}){}
    *   }
    */
-  this.addNewOutputPlace = function({place, method=()=>{}}={}){
+  this.addNewOutputPlace = function ({ place, method = () => {} } = {}) {
     let added = false;
     if (this.ouputplaces[place] === undefined) {
       this.ouputplaces[place] = method;
@@ -136,10 +136,9 @@ function Routerservice() {
   };
 
   // reset default configuration
-  this.resetDefaultOutput = function(){
+  this.resetDefaultOutput = function () {
     this.currentoutputplaces = [...this.defaultoutputplaces];
   };
-
 }
 
 module.exports = new Routerservice();

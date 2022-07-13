@@ -1,6 +1,6 @@
-//lass that is usefult to apply changes to features (undo/redo) singleton
+// lass that is usefult to apply changes to features (undo/redo) singleton
 function ChangesManager() {
-  this.execute = function(object, items, reverse) {
+  this.execute = function (object, items, reverse) {
     let fnc;
     let feature;
     items.forEach((item) => {
@@ -12,24 +12,24 @@ function ChangesManager() {
       // get method from object
       fnc = ChangesManager.Actions[feature.getState()].fnc;
       object[fnc](feature);
-    })
-  }
+    });
+  };
 }
 
 // know actions
 ChangesManager.Actions = {
-  'add': {
+  add: {
     fnc: 'addFeature',
-    opposite: 'delete'
+    opposite: 'delete',
   },
-  'delete': {
+  delete: {
     fnc: 'removeFeature',
-    opposite: 'add'
+    opposite: 'add',
   },
-  'update': {
+  update: {
     fnc: 'updateFeature',
-    opposite: 'update'
-  }
+    opposite: 'update',
+  },
 };
 
 module.exports = new ChangesManager();

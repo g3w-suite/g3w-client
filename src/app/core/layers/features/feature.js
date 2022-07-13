@@ -1,16 +1,15 @@
-const {uniqueId} = require('core/utils/utils');
-const {geometryFields} =  require('core/utils/geo');
-const Feature = function(options={}) {
+const { uniqueId } = require('core/utils/utils');
+const { geometryFields } = require('core/utils/geo');
+
+const Feature = function (options = {}) {
   ol.Feature.call(this);
   this._uid = uniqueId();
   this._newPrefix = '_new_';
   this._geometry = false;
-  const {feature, properties} = options;
+  const { feature, properties } = options;
   if (feature) {
     // check if has to set only some properties or all feature properties
-    if (properties && Array.isArray(properties))
-      properties.forEach(property => this.set(property, feature.get(property)));
-    else this.setProperties(feature.getProperties());
+    if (properties && Array.isArray(properties)) { properties.forEach((property) => this.set(property, feature.get(property))); } else this.setProperties(feature.getProperties());
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();
@@ -22,7 +21,7 @@ const Feature = function(options={}) {
   this.state = {
     new: false,
     state: null,
-    visible: true
+    visible: true,
   };
 };
 
@@ -30,15 +29,15 @@ ol.inherits(Feature, ol.Feature);
 
 const proto = Feature.prototype;
 
-//change constructor
+// change constructor
 proto.constructor = 'Feature';
 
 /**
  * Return unique id
  * @returns {*}
  */
-proto.getUid = function(){
-  return this._uid
+proto.getUid = function () {
+  return this._uid;
 };
 
 /**
@@ -46,15 +45,15 @@ proto.getUid = function(){
  * @param uid
  * @private
  */
-proto._setUid = function(uid){
+proto._setUid = function (uid) {
   this._uid = uid;
 };
 
-proto.isGeometry = function(){
+proto.isGeometry = function () {
   return this._geometry;
 };
 
-proto.cloneNew = function(){
+proto.cloneNew = function () {
   const clone = this.clone();
   const uid = uniqueId();
   clone._setUid(uid);
@@ -66,12 +65,12 @@ proto.cloneNew = function(){
  * clone existing feature
  * @returns {Feature}
  */
-proto.clone = function() {
+proto.clone = function () {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
   this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
   const clone = new Feature({
-    feature
+    feature,
   });
   const uid = this.getUid();
   clone._setUid(uid);
@@ -80,75 +79,74 @@ proto.clone = function() {
   return clone;
 };
 
-proto.setTemporaryId = function() {
+proto.setTemporaryId = function () {
   const newValue = `${this._newPrefix}${uniqueId()}`;
   this.setId(newValue);
   this.setNew();
 };
 
-proto.setNew = function() {
+proto.setNew = function () {
   this.state.new = true;
 };
 
-proto.delete = function() {
+proto.delete = function () {
   this.state.state = 'delete';
   return this;
 };
 
-proto.update = function() {
+proto.update = function () {
   this.state.state = 'update';
   return this;
 };
 
-proto.add = function() {
+proto.add = function () {
   this.state.state = 'add';
   return this;
 };
 
-proto.isNew = function() {
+proto.isNew = function () {
   return this.state.new;
 };
 
-proto.isAdded = function() {
+proto.isAdded = function () {
   return this.state.state === 'add';
 };
 
-proto.isUpdated = function() {
+proto.isUpdated = function () {
   return this.state.state === 'update';
 };
 
-proto.isDeleted = function() {
+proto.isDeleted = function () {
   return this.state.state === 'delete';
 };
 
-proto.setFullState = function(state) {
+proto.setFullState = function (state) {
   this.state = state;
 };
 
-proto.getFullState = function() {
+proto.getFullState = function () {
   return this.state;
 };
 
-proto.setState = function(state) {
+proto.setState = function (state) {
   this.state.state = state;
 };
 
-proto.getState = function() {
+proto.getState = function () {
   return this.state.state;
 };
 
-proto.getAlphanumericProperties = function() {
+proto.getAlphanumericProperties = function () {
   const properties = this.getProperties();
   const alphanumericproperties = {};
-  for (let name in properties) {
-    if (geometryFields.indexOf(name) === -1)
-      alphanumericproperties[name] = properties[name];
+  for (const name in properties) {
+    if (geometryFields.indexOf(name) === -1) { alphanumericproperties[name] = properties[name]; }
   }
   return alphanumericproperties;
 };
 
-//clean state of the features
-proto.clearState = function() {
+// clean state of the features
+proto.clearState = function () {
   this.state.state = null;
   this.state.new = false;
 };
@@ -157,13 +155,12 @@ proto.clearState = function() {
  * need to filter features visiblity on table
  * @returns {boolean}
  */
-proto.isVisible = function(){
+proto.isVisible = function () {
   return this.state.visible;
 };
 
-proto.setVisible = function(bool=true){
+proto.setVisible = function (bool = true) {
   this.state.visible = bool;
 };
-
 
 module.exports = Feature;

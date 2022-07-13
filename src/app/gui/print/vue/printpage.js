@@ -1,6 +1,7 @@
-import {TIMEOUT} from "../../../constant";
-import { createCompiledTemplate } from 'gui/vue/utils'
-const {inherit, base, imageToDataURL} = require('core/utils/utils');
+import { createCompiledTemplate } from 'gui/vue/utils';
+import { TIMEOUT } from '../../../constant';
+
+const { inherit, base, imageToDataURL } = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/component/component');
 const compiledTemplate = createCompiledTemplate(require('./printpage.html'));
@@ -12,44 +13,44 @@ const InternalComponent = Vue.extend({
       state: null,
       disableddownloadbutton: true,
       downloadImageName: '',
-      format: null
-    }
+      format: null,
+    };
   },
   computed: {
     loading() {
       return this.state.loading && this.state.layers;
-    }
+    },
   },
   methods: {
-    setLoading(bool=false){
+    setLoading(bool = false) {
       GUI.disableSideBar(bool);
       this.state.loading = bool;
       this.disableddownloadbutton = bool;
     },
-    downloadImage(){
+    downloadImage() {
       this.setLoading(true);
-      if (this.format === 'jpg' || this.format === 'png' ) {
+      if (this.format === 'jpg' || this.format === 'png') {
         this.downloadImageName = `download.${this.state.format}`;
         imageToDataURL({
           src: this.state.url,
           type: `image/${this.state.format}`,
-          callback: url => setTimeout(() => this.setLoading(false))
-        })
+          callback: (url) => setTimeout(() => this.setLoading(false)),
+        });
       }
-    }
+    },
   },
   watch: {
-    'state.url': async function(url) {
+    'state.url': async function (url) {
       if (url) {
         this.format = this.state.format;
         await this.$nextTick();
         // add timeout
-        const timeOut = setTimeout(()=>{
+        const timeOut = setTimeout(() => {
           this.setLoading(false);
           GUI.showUserMessage({
             type: 'alert',
-            message: 'timeout'
-          })
+            message: 'timeout',
+          });
         }, TIMEOUT);
 
         $(this.$refs.printoutput).load(url, (response, status) => {
@@ -59,7 +60,7 @@ const InternalComponent = Vue.extend({
           this.setLoading(false);
         });
       }
-    }
+    },
   },
   async mounted() {
     await this.$nextTick();
@@ -67,27 +68,24 @@ const InternalComponent = Vue.extend({
   },
   beforeDestroy() {
     (this.state.url && this.state.method === 'POST') && window.URL.revokeObjectURL(this.state.url);
-  }
+  },
 });
 
-const PrintPage = function(options={}) {
+const PrintPage = function (options = {}) {
   base(this);
-  const service = options.service;
+  const { service } = options;
   this.setService(service);
   const internalComponent = new InternalComponent({
-    service
+    service,
   });
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = service.state.output;
-  this.unmount = function() {
+  this.unmount = function () {
     this.getService().setPrintAreaAfterCloseContent();
-    return base(this, 'unmount')
-  }
+    return base(this, 'unmount');
+  };
 };
 
 inherit(PrintPage, Component);
 
-
 module.exports = PrintPage;
-
-

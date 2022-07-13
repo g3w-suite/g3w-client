@@ -1,16 +1,18 @@
-import ApplicationState from '../../core/applicationstate';
-import {viewport as viewportConstraints} from 'gui/constraints';
+import { viewport as viewportConstraints } from 'gui/constraints';
 import userMessage from 'gui/usermessage/vue/usermessage.vue';
 import onlineNotify from 'gui/notifications/online/vue/online.vue';
 import downloadNotify from 'gui/notifications/download/vue/download.vue';
 import pluginsNotify from 'gui/notifications/plugins/vue/plugins.vue';
-const {base, inherit, uniqueId} = require('core/utils/utils');
+import ApplicationState from '../../core/applicationstate';
+
+const { base, inherit, uniqueId } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
+
 let SIDEBARWIDTH;
 
 // calsse servizio della viewport
-const ViewportService = function() {
+const ViewportService = function () {
   // state of viewport
   this.state = {
     primaryView: 'map', // primary view (default)
@@ -19,42 +21,42 @@ const ViewportService = function() {
     // used to store if content vertical or horizontal is  changed by resised
     resized: {
       start: false,
-      'h': false,
-      'v': false
+      h: false,
+      v: false,
     },
     // splitting orientation (h = horizontal, v = vertical)
     split: 'h',
-    //map
+    // map
     map: {
       sizes: {
-        width:0,
-        height:0
+        width: 0,
+        height: 0,
       },
-      aside: false
+      aside: false,
     },
-    //content
+    // content
     content: {
       loading: false,
       disabled: false,
       sizes: {
         width: 0,
-        height: 0
+        height: 0,
       },
       // store the resize vertical or horizontal
       resize: {
-        'h': {
-          perc: 0
+        h: {
+          perc: 0,
         },
-        'v': {
-          perc: 0
-        }
+        v: {
+          perc: 0,
+        },
       },
       aside: true,
       showgoback: true,
       stack: [], // array elements of  stack contents
       closable: true, // (x) is closable
       backonclose: false, // back on prevoius content
-      contentsdata:[], // content data array
+      contentsdata: [], // content data array
     },
     usermessage: {
       id: null, // unique identify
@@ -70,14 +72,14 @@ const ViewportService = function() {
       hooks: {
         header: null,
         body: null,
-        footer: null
-      }
-    }
+        footer: null,
+      },
+    },
   };
   // content of viewport (map and content)
   this._components = {
     map: null,
-    content: null
+    content: null,
   };
   // default contents
   this._defaultMapComponent;
@@ -85,10 +87,10 @@ const ViewportService = function() {
 
   // minimun height and width of secondary view
   this._secondaryViewMinWidth = viewportConstraints.resize.content.min;
-  this._secondaryViewMinHeight =  viewportConstraints.resize.content.min;
+  this._secondaryViewMinHeight = viewportConstraints.resize.content.min;
   this._immediateComponentsLayout = true;
-  this.init = function(options={}) {
-    const {primaryview='map', split='h', components} = options;
+  this.init = function (options = {}) {
+    const { primaryview = 'map', split = 'h', components } = options;
     // check if it set primary view (map is default)
     this.state.primaryView = primaryview;
     // check splitting property
@@ -98,11 +100,13 @@ const ViewportService = function() {
   };
 
   // Method to set true or false of content
-  this.setResized = function (type, bool=false) {
+  this.setResized = function (type, bool = false) {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
+  this.showUserMessage = function ({
+    title, message, type, position, size, draggable, duration, textMessage = false, closable, autoclose, hooks = {},
+  } = {}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.id = uniqueId();
@@ -125,32 +129,32 @@ const ViewportService = function() {
     return this.state.usermessage;
   };
 
-  this.closeUserMessage = function() {
+  this.closeUserMessage = function () {
     this.state.usermessage.id = null;
     this.state.usermessage.show = false;
     this.state.usermessage.textMessage = false;
     this.state.usermessage.message = '';
   };
 
-  this.getState = function() {
+  this.getState = function () {
     return this.state;
   };
 
-  this.getMapState = function() {
+  this.getMapState = function () {
     return this.state.map;
   };
 
-  this.getContentState = function() {
+  this.getContentState = function () {
     return this.state.content;
   };
 
-  this.setLoadingContent = function(loading=false) {
+  this.setLoadingContent = function (loading = false) {
     this.state.content.loading = loading;
   };
 
-  this._addComponents = function(components) {
+  this._addComponents = function (components) {
     // components is an object
-    //(index.js)
+    // (index.js)
     /*
      {
       map: new MapComponent({
@@ -170,58 +174,58 @@ const ViewportService = function() {
             // check if view name is map
             if (viewName === 'map') this._defaultMapComponent = component; // set de default component to map
           })
-          .fail(err => console.log(err));
+          .fail((err) => console.log(err));
       }
-    })
+    });
   };
 
-  this.showMap = function() {
-    this._toggleMapComponentVisibility(this._defaultMapComponent,true);
-    this._components['map'] = this._defaultMapComponent;
+  this.showMap = function () {
+    this._toggleMapComponentVisibility(this._defaultMapComponent, true);
+    this._components.map = this._defaultMapComponent;
     this._showView('map');
   };
 
-  this.showContextualMap = function(options={}) {
+  this.showContextualMap = function (options = {}) {
     if (!this._contextualMapComponent) this._contextualMapComponent = this._defaultMapComponent;
-    if (this._contextualMapComponent != this._defaultMapComponent) this._toggleMapComponentVisibility(this._defaultMapComponent,false);
+    if (this._contextualMapComponent != this._defaultMapComponent) this._toggleMapComponentVisibility(this._defaultMapComponent, false);
     if (!this._contextualMapComponent.ismount()) {
       const contextualMapComponent = this._contextualMapComponent;
       contextualMapComponent.mount('#g3w-view-map', true)
-        .then(() => this._components['map'] = contextualMapComponent);
+        .then(() => this._components.map = contextualMapComponent);
     } else {
-      this._components['map'] = this._contextualMapComponent;
+      this._components.map = this._contextualMapComponent;
       this._toggleMapComponentVisibility(this._contextualMapComponent, true);
     }
-    this._showView('map',options);
+    this._showView('map', options);
   };
 
   // get default component
-  this.recoverDefaultMap = function() {
-    if (this._components['map'] !== this._defaultMapComponent) {
-      this._components['map'] = this._defaultMapComponent;
+  this.recoverDefaultMap = function () {
+    if (this._components.map !== this._defaultMapComponent) {
+      this._components.map = this._defaultMapComponent;
       this._toggleMapComponentVisibility(this._contextualMapComponent, false);
       this._toggleMapComponentVisibility(this._defaultMapComponent, true);
     }
-    return this._components['map']
+    return this._components.map;
   };
 
-  this.setContextualMapComponent = function(mapComponent) {
+  this.setContextualMapComponent = function (mapComponent) {
     if (mapComponent === this._defaultMapComponent) return;
     if (this._contextualMapComponent) this._contextualMapComponent.unmount();
     this._contextualMapComponent = mapComponent;
   };
 
-  this.resetContextualMapComponent = function() {
+  this.resetContextualMapComponent = function () {
     this._contextualMapComponent && this._contextualMapComponent.unmount();
     this._contextualMapComponent = this._defaultMapComponent;
   };
 
-  this._toggleMapComponentVisibility = function(mapComponent,toggle) {
+  this._toggleMapComponentVisibility = function (mapComponent, toggle) {
     mapComponent.internalComponent.$el.style.display = toggle ? 'block' : 'none';
   };
 
   // close map method
-  this.closeMap = function() {
+  this.closeMap = function () {
     this.state.secondaryPerc = (this.state.primaryView === 'map') ? 100 : 0;
     this.recoverDefaultMap();
     this._layout();
@@ -238,7 +242,7 @@ const ViewportService = function() {
    }
    */
 
-  this.showContent = function(options={}) {
+  this.showContent = function (options = {}) {
     options.perc = options.perc !== undefined ? options.perc : this.getContentPercentageFromCurrentLayout();
     // check if push is set
     options.push = options.push || false;
@@ -257,7 +261,7 @@ const ViewportService = function() {
   };
 
   // hide content
-  this.hideContent = function(bool) {
+  this.hideContent = function (bool) {
     const prevContentPerc = this.getContentPercentageFromCurrentLayout(this.state.split);
     this.state.secondaryVisible = !bool;
     this._layout('hide-content');
@@ -265,31 +269,31 @@ const ViewportService = function() {
     return prevContentPerc;
   };
 
-  this.resetToDefaultContentPercentage = function(){
+  this.resetToDefaultContentPercentage = function () {
     const currentRightPanel = this.getCurrentContentLayout();
-    currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_default`];
-    currentRightPanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = false;
+    currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}`] = currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_default`];
+    currentRightPanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`] = false;
     this._layoutComponents();
   };
 
-  this.toggleFullViewContent = function(){
+  this.toggleFullViewContent = function () {
     ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
-      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
-      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`];
+      .rightpanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`] = !ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
+        .rightpanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`];
     this._layoutComponents();
   };
 
-  this.isFullViewContent = function(){
+  this.isFullViewContent = function () {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current]
-      .rightpanel[`${this.state.split === 'h'? 'width' : 'height'}_100`]
+      .rightpanel[`${this.state.split === 'h' ? 'width' : 'height'}_100`];
   };
 
-  this.contentLength = function() {
+  this.contentLength = function () {
     return this.state.content.contentsdata.length;
   };
 
   // pull the last element of contentStack
-  this.popContent = function() {
+  this.popContent = function () {
     const d = $.Deferred();
     // check if content exist compontentStack
     if (this.state.content.contentsdata.length) {
@@ -303,8 +307,8 @@ const ViewportService = function() {
           this.state.secondaryPerc = data.options.perc;
           this._immediateComponentsLayout = true;
           this._layout('pop-content');
-          d.resolve(this._components.contentgetCurrentContentData)
-        })
+          d.resolve(this._components.contentgetCurrentContentData);
+        });
     } else d.reject();
     return d.promise();
   };
@@ -313,34 +317,34 @@ const ViewportService = function() {
    * Return current compoent data
    * @returns {*}
    */
-  this.getCurrentContent = function() {
-    return this.contentLength() ? this.state.content.contentsdata[this.contentLength() -1] : null;
+  this.getCurrentContent = function () {
+    return this.contentLength() ? this.state.content.contentsdata[this.contentLength() - 1] : null;
   };
 
-  this.getCurrentContentTitle = function(){
+  this.getCurrentContentTitle = function () {
     const currentContent = this.getCurrentContent();
-    return currentContent && currentContent.options.title
+    return currentContent && currentContent.options.title;
   };
 
-  this.changeCurrentContentTitle = function(title=''){
+  this.changeCurrentContentTitle = function (title = '') {
     const currentContent = this.getCurrentContent();
     if (currentContent) currentContent.options.title = title;
   };
 
-  this.isContentOpen = function() {
+  this.isContentOpen = function () {
     return !!this.state.content.contentsdata.length;
   };
 
   // close  content
-  this.closeContent = function() {
+  this.closeContent = function () {
     const d = $.Deferred();
     if (this.isContentOpen()) {
-      //.setFullViewContent(false);
+      // .setFullViewContent(false);
       this._components.content.removeContent();
       // close secondary view( return a promise)
       this.closeSecondaryView('close-content')
         .then(() => {
-          //recover default map
+          // recover default map
           const mapComponent = this.recoverDefaultMap();
           d.resolve(mapComponent);
         });
@@ -348,37 +352,37 @@ const ViewportService = function() {
       const mapComponent = this.recoverDefaultMap();
       d.resolve(mapComponent);
     }
-    return d.promise()
+    return d.promise();
   };
 
-  this.disableContent = function(disabled){
+  this.disableContent = function (disabled) {
     this.state.content.disabled = disabled;
   };
 
-  this.removeContent = function() {
+  this.removeContent = function () {
     // check if backonclose proprerty is  true o false
     // to remove all content stack or just last component
     if (this.state.content.backonclose && this.state.content.contentsdata.length > 1) this.popContent();
     else return this.closeContent();
   };
 
-  this.isPrimaryView = function(viewName) {
+  this.isPrimaryView = function (viewName) {
     return this.state.primaryView == viewName;
   };
 
-  this.setPrimaryView = function(viewTag) {
+  this.setPrimaryView = function (viewTag) {
     if (this.state.primaryView !== viewTag) this.state.primaryView = viewTag;
     this._layout();
   };
 
-  this.showPrimaryView = function(perc=null) {
+  this.showPrimaryView = function (perc = null) {
     if (perc && this.state.secondaryVisible && this.state.secondaryPerc === 100) {
       this.state.secondaryPerc = 100 - perc;
       this._layout();
     }
   };
 
-  this.showSecondaryView = function(split=this.state.split, perc=this.state.perc) {
+  this.showSecondaryView = function (split = this.state.split, perc = this.state.perc) {
     this.state.secondaryVisible = true;
     this.state.split = split;
     this.state.secondaryPerc = perc;
@@ -386,7 +390,7 @@ const ViewportService = function() {
   };
 
   // close secondary view
-  this.closeSecondaryView = function(event=null) {
+  this.closeSecondaryView = function (event = null) {
     const d = $.Deferred();
     const secondaryViewComponent = this._components[this._otherView(this.state.primaryView)];
     if (secondaryViewComponent.clearContents) {
@@ -405,20 +409,20 @@ const ViewportService = function() {
     return d.promise();
   };
 
-  this.getDefaultViewPerc = function(viewName) {
+  this.getDefaultViewPerc = function (viewName) {
     return this.isPrimaryView(viewName) ? 100 : 50;
   };
 
   // return the opposite view
-  this._otherView = function(viewName) {
+  this._otherView = function (viewName) {
     return (viewName === 'map') ? 'content' : 'map';
   };
 
-  this._isSecondary = function(view) {
+  this._isSecondary = function (view) {
     return this.state.primaryView !== view;
   };
 
-  this._setPrimaryView = function(viewTag) {
+  this._setPrimaryView = function (viewTag) {
     if (this.state.primaryView !== viewTag) this.state.primaryView = viewTag;
   };
 
@@ -427,11 +431,13 @@ const ViewportService = function() {
    * @param options
    * @private
    */
-  this._prepareContentView = function(options={}) {
-    const {title, split=null,
-      closable=true, backonclose=true, style={}, showgoback=true, headertools=[]} = options;
+  this._prepareContentView = function (options = {}) {
+    const {
+      title, split = null,
+      closable = true, backonclose = true, style = {}, showgoback = true, headertools = [],
+    } = options;
     this.state.content.title = title;
-    this.state.content.split =  split;
+    this.state.content.split = split;
     this.state.content.closable = closable;
     this.state.content.backonclose = backonclose;
     this.state.content.contentsdata = this._components.content.contentsdata;
@@ -442,24 +448,24 @@ const ViewportService = function() {
 
   // manage all layout logic
   // viewName: map or content
-  //options.  percentage , splitting title etc ..
-  this._showView = function(viewName, options={}) {
-    const {perc=this.getDefaultViewPerc(viewName), split='h'} = options;
+  // options.  percentage , splitting title etc ..
+  this._showView = function (viewName, options = {}) {
+    const { perc = this.getDefaultViewPerc(viewName), split = 'h' } = options;
     let aside;
-    if (this.isPrimaryView(viewName)) aside = (typeof(options.aside) == 'undefined') ? false : options.aside;
+    if (this.isPrimaryView(viewName)) aside = (typeof (options.aside) === 'undefined') ? false : options.aside;
     else aside = true;
     this.state[viewName].aside = aside;
-    //calculate the content
+    // calculate the content
     const secondaryPerc = this.isPrimaryView(viewName) ? 100 - perc : perc;
-    //show Secondary View content only if more then 0
+    // show Secondary View content only if more then 0
     if (secondaryPerc > 0) this.showSecondaryView(split, secondaryPerc);
     else return this.closeSecondaryView();
   };
 
-  this._getReducedSizes = function() {
+  this._getReducedSizes = function () {
     const contentEl = $('.content');
     let reducedWidth = 0;
-    let reducedHeight = 0;
+    const reducedHeight = 0;
     const sideBarToggleEl = $('.sidebar-aside-toggle');
     if (contentEl && this.state.secondaryVisible && this.isFullViewContent()) {
       if (sideBarToggleEl && sideBarToggleEl.is(':visible')) {
@@ -473,21 +479,21 @@ const ViewportService = function() {
     }
     return {
       reducedWidth,
-      reducedHeight
-    }
+      reducedHeight,
+    };
   };
 
-  //main layout function
-  this._layout = function(event=null) {
+  // main layout function
+  this._layout = function (event = null) {
     const reducesdSizes = this._getReducedSizes();
     this._setViewSizes(reducesdSizes.reducedWidth, reducesdSizes.reducedHeight);
     if (this._immediateComponentsLayout) this._layoutComponents(event);
   };
 
-  this._setViewSizes = function() {
-    const primaryView = this.state.primaryView;
+  this._setViewSizes = function () {
+    const { primaryView } = this.state;
     const secondaryView = this._otherView(primaryView);
-    const {width:viewportWidth, height:viewportHeight}= this.getViewportSize();
+    const { width: viewportWidth, height: viewportHeight } = this.getViewportSize();
     // assign all width and height of the view to primary view (map)
     let primaryWidth;
     let primaryHeight;
@@ -502,7 +508,7 @@ const ViewportService = function() {
       primaryHeight = viewportHeight;
     } else {
       secondaryWidth = viewportWidth;
-      secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight * scale),this._secondaryViewMinHeight) : 0;
+      secondaryHeight = this.state.secondaryVisible ? Math.max((viewportHeight * scale), this._secondaryViewMinHeight) : 0;
       primaryWidth = this.state.secondaryVisible && scale === 1 ? 0 : viewportWidth;
       primaryHeight = viewportHeight - secondaryHeight;
     }
@@ -512,20 +518,20 @@ const ViewportService = function() {
     this.state[secondaryView].sizes.height = secondaryHeight;
   };
 
-  this.getViewportSize = function(){
+  this.getViewportSize = function () {
     return {
       width: this._viewportWidth(),
-      height: this._viewportHeight()
-    }
+      height: this._viewportHeight(),
+    };
   };
 
-  this._viewportHeight = function() {
+  this._viewportHeight = function () {
     const topHeight = $('.navbar-header').innerHeight();
     return $(document).innerHeight() - topHeight;
   };
 
-  this._viewportWidth = function() {
-    const main_sidebar = $(".main-sidebar");
+  this._viewportWidth = function () {
+    const main_sidebar = $('.main-sidebar');
     const offset = main_sidebar.length && main_sidebar.offset().left;
     const width = main_sidebar.length && main_sidebar[0].getBoundingClientRect().width;
     const sideBarSpace = width + offset;
@@ -538,7 +544,7 @@ const ViewportService = function() {
    * @param sizes
    * @param perc
    */
-  this.resizeViewComponents = function(type, sizes={}, perc){
+  this.resizeViewComponents = function (type, sizes = {}, perc) {
     this.setResized(type, true);
     this.setContentPercentageFromCurrentLayout(type, perc);
     this._layout('resize');
@@ -549,21 +555,21 @@ const ViewportService = function() {
    * @param type
    * @param perc
    */
-  this.setContentPercentageFromCurrentLayout = function(type=this.state.split, perc){
-    this.getCurrentContentLayout()[type==='h'? 'width': 'height'] = perc;
+  this.setContentPercentageFromCurrentLayout = function (type = this.state.split, perc) {
+    this.getCurrentContentLayout()[type === 'h' ? 'width' : 'height'] = perc;
   };
 
-  this.getContentPercentageFromCurrentLayout = function(type= this.state.split){
-    return this.getCurrentContentLayout()[type==='h'? 'width': 'height'];
+  this.getContentPercentageFromCurrentLayout = function (type = this.state.split) {
+    return this.getCurrentContentLayout()[type === 'h' ? 'width' : 'height'];
   };
 
-  this.getCurrentContentLayout = function(){
+  this.getCurrentContentLayout = function () {
     return ApplicationState.gui.layout[ApplicationState.gui.layout.__current].rightpanel;
   };
 
   // load components of  viewport
   // after right size setting
-  this._layoutComponents = function(event=null) {
+  this._layoutComponents = function (event = null) {
     requestAnimationFrame(() => {
       const reducesdSizes = this._getReducedSizes();
       const reducedWidth = reducesdSizes.reducedWidth || 0;
@@ -571,14 +577,14 @@ const ViewportService = function() {
       // for each components
       this._setViewSizes();
       Object.entries(this._components).forEach(([name, component]) => {
-        const width = this.state[name].sizes.width - reducedWidth ;
+        const width = this.state[name].sizes.width - reducedWidth;
         const height = this.state[name].sizes.height - reducedHeight;
         component.layout(width, height);
       });
-      event && setTimeout(()=> {
+      event && setTimeout(() => {
         this.emit(event);
         GUI.emit(event);
-      })
+      });
     });
   };
 
@@ -586,7 +592,7 @@ const ViewportService = function() {
    * function called at start of application (just one time)
    * @private
    */
-  this._firstLayout = function() {
+  this._firstLayout = function () {
     let drawing = false;
     let resizeFired = false;
     function triggerResize() {
@@ -607,10 +613,10 @@ const ViewportService = function() {
       }
     };
     // GUI ready event
-    GUI.on('ready',() => {
-      SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
+    GUI.on('ready', () => {
+      SIDEBARWIDTH = GUI.getSize({ element: 'sidebar', what: 'width' });
       this._layout();
-      GUI.on('guiresized',() => triggerResize());
+      GUI.on('guiresized', () => triggerResize());
       // resize della window
       $(window).resize(() => {
         // set resizedFired to true and execute drawResize if it's not already running
@@ -618,7 +624,7 @@ const ViewportService = function() {
       });
       // resize on main siedemar open close sidebar
       $('.main-sidebar').on('webkitTransitionEnd transitionend msTransitionEnd oTransitionEnd', function (event) {
-        //be sure that is the main sidebar that is transitioned non his child
+        // be sure that is the main sidebar that is transitioned non his child
         if (event.target === this) {
           $(this).trigger('trans-end');
           triggerResize();
@@ -632,22 +638,22 @@ const ViewportService = function() {
 
 inherit(ViewportService, G3WObject);
 
-//singleton
-const viewportService = new ViewportService;
+// singleton
+const viewportService = new ViewportService();
 const compiledTemplate = Vue.compile(require('./viewport.html'));
 
 // COMPONENTE VUE VIEWPORT
 const ViewportComponent = Vue.extend({
   props: {
     appState: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   components: {
     userMessage,
     onlineNotify,
     downloadNotify,
-    pluginsNotify
+    pluginsNotify,
   },
   ...compiledTemplate,
   data() {
@@ -655,16 +661,16 @@ const ViewportComponent = Vue.extend({
       state: viewportService.state,
       updatePreviousTitle: false,
       media: {
-        matches: true
-      }
-    }
+        matches: true,
+      },
+    };
   },
   computed: {
-    showresize(){
+    showresize() {
       const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
       return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
     },
-    showresizeicon(){
+    showresizeicon() {
       return this.state.secondaryPerc !== 100;
     },
     hooks() {
@@ -677,7 +683,7 @@ const ViewportComponent = Vue.extend({
       let showtitle = true;
       const contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
-        const options = contentsData[contentsData.length - 1].options;
+        const { options } = contentsData[contentsData.length - 1];
         if (_.isBoolean(options.showtitle)) showtitle = options.showtitle;
       }
       return showtitle;
@@ -694,27 +700,26 @@ const ViewportComponent = Vue.extend({
         content: {
           width: `${this.state.content.sizes.width}px`,
           height: `${this.state.content.sizes.height}px`,
-          minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null
-        }
-      }
+          minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null,
+        },
+      };
     },
     contentTitle() {
       const contentsData = this.state.content.contentsdata;
       if (contentsData.length) {
-        const {title, post_title} = contentsData[contentsData.length - 1].options;
-        return {title, post_title};
+        const { title, post_title } = contentsData[contentsData.length - 1].options;
+        return { title, post_title };
       }
     },
-    backOrBackTo(){
+    backOrBackTo() {
       const contentsData = this.state.content.contentsdata;
       return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
-
     },
     previousTitle() {
       const contentsData = this.state.content.contentsdata;
       const title = (contentsData.length > 1 && this.state.content.showgoback) ? contentsData[contentsData.length - 2].options.title : null;
       this.updatePreviousTitle = true;
-      this.$nextTick(()=> this.updatePreviousTitle = false);
+      this.$nextTick(() => this.updatePreviousTitle = false);
       return title;
     },
   },
@@ -728,47 +733,44 @@ const ViewportComponent = Vue.extend({
     gotoPreviousContent() {
       viewportService.popContent();
     },
-    closeUserMessage(){
+    closeUserMessage() {
       viewportService.closeUserMessage();
     },
-    moveFnc(evt){
-      const size =  this.state.split === 'h' ? 'width' : 'height';
+    moveFnc(evt) {
+      const size = this.state.split === 'h' ? 'width' : 'height';
       evt.preventDefault();
       const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH : $('#main-navbar').height();
       const viewPortSize = $(this.$el)[size]();
-      let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
-      if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
-        mapSize = viewPortSize -  viewportConstraints.resize.content.min;
-      else if( mapSize < viewportConstraints.resize.map.min)
-        mapSize = viewportConstraints.resize.map.min;
+      let mapSize = (size === 'width' ? (evt.pageX + 2) : (evt.pageY + 2)) - sidebarHeaderSize;
+      if (mapSize > viewPortSize - viewportConstraints.resize.content.min) { mapSize = viewPortSize - viewportConstraints.resize.content.min; } else if (mapSize < viewportConstraints.resize.map.min) { mapSize = viewportConstraints.resize.map.min; }
       const contentSize = viewPortSize - mapSize;
       const resizePercentageMap = Math.round((mapSize / viewPortSize) * 100);
       const resizePercentageContent = 100 - resizePercentageMap;
       viewportService.resizeViewComponents(this.state.split, {
         map: {
-          [size]: mapSize
+          [size]: mapSize,
         },
         content: {
-          [size]: contentSize
-        }
+          [size]: contentSize,
+        },
       }, resizePercentageContent);
-    }
+    },
   },
   async mounted() {
     const handleResizeViewport = () => {
       this.state.resized.start = true;
     };
     await this.$nextTick();
-    const mediaQueryEventMobile = window.matchMedia("(min-height: 300px)");
+    const mediaQueryEventMobile = window.matchMedia('(min-height: 300px)');
     this.media.matches = mediaQueryEventMobile.matches;
-    mediaQueryEventMobile.addListener(event => {
+    mediaQueryEventMobile.addListener((event) => {
       if (event.type === 'change') this.media.matches = event.currentTarget.matches;
     });
     handleResizeViewport();
-  }
+  },
 });
 
 module.exports = {
   ViewportService: viewportService,
-  ViewportComponent
+  ViewportComponent,
 };

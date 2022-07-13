@@ -6,16 +6,16 @@ const BaseInputMixin = {
     editable() {
       return this.state.editable;
     },
-    showhelpicon(){
+    showhelpicon() {
       return this.state.help && this.state.help.message.trim();
-    }
+    },
   },
   methods: {
-    showHideHelp(){
-      this.state.help.visible = !this.state.help.visible
+    showHideHelp() {
+      this.state.help.visible = !this.state.help.visible;
     },
     // used to text input to listen mobile changes
-    mobileChange(event){
+    mobileChange(event) {
       this.state.value = event.target.value;
       this.change();
     },
@@ -27,17 +27,17 @@ const BaseInputMixin = {
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isVisible() {}
-  }
+    isVisible() {},
+  },
 };
 
 const BaseInput = {
   props: ['state'],
   template: require('./baseinput.html'),
-  ...BaseInputMixin
+  ...BaseInputMixin,
 };
 
 module.exports = {
   BaseInput,
-  BaseInputMixin
+  BaseInputMixin,
 };

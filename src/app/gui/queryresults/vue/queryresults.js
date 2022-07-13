@@ -1,15 +1,17 @@
+import { createCompiledTemplate } from 'gui/vue/utils';
 import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
 import InfoFormats from './components/actiontools/infoformats.vue';
 import HeaderFeatureBody from './components/headerfeaturebody.vue';
-import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit, throttle} = require('core/utils/utils');
-const {fieldsMixin} = require('gui/vue/vue.mixins');
+
+const { base, inherit, throttle } = require('core/utils/utils');
+const { fieldsMixin } = require('gui/vue/vue.mixins');
 const Component = require('gui/component/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
+
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
-const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
+const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
 const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
 
 const vueComponentOptions = {
@@ -17,22 +19,22 @@ const vueComponentOptions = {
   data() {
     return {
       state: this.$options.queryResultsService.state,
-      headerExpandActionCellWidth: headerExpandActionCellWidth,
-      headerActionsCellWidth: headerActionsCellWidth
-    }
+      headerExpandActionCellWidth,
+      headerActionsCellWidth,
+    };
   },
   mixins: [fieldsMixin],
   components: {
     TableAttributeFieldValue,
-    'infoformats': InfoFormats,
-    'header-feature-body': HeaderFeatureBody
+    infoformats: InfoFormats,
+    'header-feature-body': HeaderFeatureBody,
   },
   computed: {
     layersFeaturesBoxes() {
       return this.state.layersFeaturesBoxes;
     },
-    onelayerresult(){
-      return this.state.layers.length  === 1;
+    onelayerresult() {
+      return this.state.layers.length === 1;
     },
     hasLayers() {
       return this.hasResults || !!this.state.components.length;
@@ -40,30 +42,30 @@ const vueComponentOptions = {
     hasResults() {
       return this.state.layers.length > 0;
     },
-    info(){
+    info() {
       const info = {
         icon: null,
         message: null,
-        action: null
+        action: null,
       };
-      const {query, search} = this.state;
-      if (query){
+      const { query, search } = this.state;
+      if (query) {
         if (query.type === 'coordinates') {
           info.icon = 'marker';
           info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
           info.action = () => this.$options.queryResultsService.showCoordinates(query.coordinates);
-        } else if (query.type ==="bbox")  {
+        } else if (query.type === 'bbox') {
           info.icon = 'square';
           info.message = `  [${query.bbox.join(' , ')}]`;
-          info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
-        } else if (query.type === "polygon") {
-          info.icon =  'draw';
-          info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
+          info.action = () => this.$options.queryResultsService.showBBOX(query.bbox);
+        } else if (query.type === 'polygon') {
+          info.icon = 'draw';
+          info.message = `${query.layer.getName()} - Feature Id: ${query.fid}`;
           info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
         }
-      } else if (search){}
+      } else if (search) {}
       return info;
-    }
+    },
   },
   methods: {
     /**
@@ -72,63 +74,63 @@ const vueComponentOptions = {
      * @param type feature or layer
      * @returns {*}
      */
-    getLayerCustomComponents(layerId, type='feature', position='after'){
-      return this.state.layerscustomcomponents[layerId] &&
-        this.state.layerscustomcomponents[layerId][type] &&
-        this.state.layerscustomcomponents[layerId][type][position] ||
-        [];
+    getLayerCustomComponents(layerId, type = 'feature', position = 'after') {
+      return this.state.layerscustomcomponents[layerId]
+        && this.state.layerscustomcomponents[layerId][type]
+        && this.state.layerscustomcomponents[layerId][type][position]
+        || [];
     },
-    getLayerField({layer, feature, fieldName}) {
-      const layerField = layer.attributes.find(attribute => attribute.name === fieldName);
+    getLayerField({ layer, feature, fieldName }) {
+      const layerField = layer.attributes.find((attribute) => attribute.name === fieldName);
       const field = {
         ...layerField,
         label: null, // needed to hide label in query result dom table value content
-        value: feature.attributes[fieldName]
+        value: feature.attributes[fieldName],
       };
       return field;
     },
     getQueryFields(layer, feature) {
       const fields = [];
       for (const field of layer.formStructure.fields) {
-        const _field = {...field};
+        const _field = { ...field };
         _field.query = true;
         _field.value = feature.attributes[field.name];
         _field.input = {
-          type: `${this.getFieldType(_field)}`
+          type: `${this.getFieldType(_field)}`,
         };
         fields.push(_field);
       }
       return fields;
     },
-    getColSpan(layer){
-      return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
+    getColSpan(layer) {
+      return this.attributesSubsetLength(layer) + (this.state.layersactions[layer.id].length ? 1 : 0) + (!this.hasLayerOneFeature(layer) * 1);
     },
-    getDownloadActions(layer){
-      return this.state.layersactions[layer.id].find(action => action.formats);
+    getDownloadActions(layer) {
+      return this.state.layersactions[layer.id].find((action) => action.formats);
     },
-    addLayerFeaturesToResults(layer){
+    addLayerFeaturesToResults(layer) {
       this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
     },
-    showDownloadAction(evt){
-      const display = evt.target.children[0].style.display;
+    showDownloadAction(evt) {
+      const { display } = evt.target.children[0].style;
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
     },
-    printAtlas(layer){
+    printAtlas(layer) {
       this.$options.queryResultsService.printAtlas(layer);
     },
-    showLayerDownloadFormats(layer){
-      this.$options.queryResultsService.showLayerDownloadFormats(layer)
+    showLayerDownloadFormats(layer) {
+      this.$options.queryResultsService.showLayerDownloadFormats(layer);
     },
-    saveLayerResult(layer, type="csv") {
-      this.$options.queryResultsService.saveLayerResult({layer, type});
+    saveLayerResult(layer, type = 'csv') {
+      this.$options.queryResultsService.saveLayerResult({ layer, type });
     },
     hasLayerOneFeature(layer) {
       return layer.features.length === 1;
     },
-    addRemoveFilter(layer){
+    addRemoveFilter(layer) {
       this.$options.queryResultsService.addRemoveFilter(layer);
     },
-    getContainerFromFeatureLayer({layer, index}={}){
+    getContainerFromFeatureLayer({ layer, index } = {}) {
       return $(`#${layer.id}_${index} > td`);
     },
     hasOneLayerAndOneFeature(layer) {
@@ -138,7 +140,7 @@ const vueComponentOptions = {
       return !!layer.formStructure;
     },
     layerHasFeatures(layer) {
-      return layer.features && layer.features.length > 0 ? true: false;
+      return !!(layer.features && layer.features.length > 0);
     },
     selectionFeaturesLayer(layer) {
       this.$options.queryResultsService.selectionFeaturesLayer(layer);
@@ -146,65 +148,65 @@ const vueComponentOptions = {
     layerHasActions(layer) {
       return this.state.layersactions[layer.id].length > 0;
     },
-    featureHasActions(layer,feature) {
+    featureHasActions(layer, feature) {
       return this.geometryAvailable(feature);
     },
     geometryAvailable(feature) {
-      return feature.geometry ? true : false;
+      return !!feature.geometry;
     },
-    extractAttributesFromFirstTabOfFormStructureLayers(layer){
+    extractAttributesFromFirstTabOfFormStructureLayers(layer) {
       const attributes = new Set();
-      const traverseStructure = item => {
-        if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+      const traverseStructure = (item) => {
+        if (item.nodes) item.nodes.forEach((node) => traverseStructure(node));
         else {
-          let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          let field = layer.formStructure.fields.find((field) => field.name === item.field_name);
           if (field) {
-            if (this.state.type === 'ows'){
+            if (this.state.type === 'ows') {
               // clone it to avoid to replace original
-              field = {...field};
+              field = { ...field };
               field.name = field.name.replace(/ /g, '_');
             }
             attributes.add(field);
           }
         }
       };
-      layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
+      layer.formStructure.structure.length && layer.formStructure.structure.forEach((structure) => traverseStructure(structure));
       return Array.from(attributes);
     },
     attributesSubset(layer) {
       const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
-      const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
+      const _attributes = attributes.filter((attribute) => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
     relationsAttributesSubset(relationAttributes) {
       const attributes = [];
-      _.forEach(relationAttributes, function (value, attribute) {
+      _.forEach(relationAttributes, (value, attribute) => {
         if (Array.isArray(value)) return;
-        attributes.push({label: attribute, value: value})
+        attributes.push({ label: attribute, value });
       });
       const end = Math.min(maxSubsetLength, attributes.length);
       return attributes.slice(0, end);
     },
     relationsAttributes(relationAttributes) {
       const attributes = [];
-      _.forEach(relationAttributes, function (value, attribute) {
-        attributes.push({label: attribute, value: value})
+      _.forEach(relationAttributes, (value, attribute) => {
+        attributes.push({ label: attribute, value });
       });
       return attributes;
     },
     attributesSubsetLength(layer) {
       return this.attributesSubset(layer).length;
     },
-    cellWidth(index,layer) {
+    cellWidth(index, layer) {
       const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
       const subsetLength = this.attributesSubsetLength(layer);
       const diff = headerLength - subsetLength;
       const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
-      if ((index === subsetLength-1) && diff>0) return baseCellWidth * (diff+1);
-      else return baseCellWidth;
+      if ((index === subsetLength - 1) && diff > 0) return baseCellWidth * (diff + 1);
+      return baseCellWidth;
     },
     featureBoxColspan(layer) {
       let colspan = this.attributesSubsetLength(layer);
@@ -220,32 +222,32 @@ const vueComponentOptions = {
     },
     isAttributeOrTab(layer, item) {
       const isField = item.field_name !== undefined;
-      return  {
+      return {
         type: isField && 'field' || 'tab',
-        item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item]
+        item: isField && this.getLayerAttributeFromStructureItem(layer, item.field_name) || [item],
       };
     },
     getLayerAttributeFromStructureItem(layer, field_name) {
-      return layer.attributes.find(attribute => attribute.name === field_name);
+      return layer.attributes.find((attribute) => attribute.name === field_name);
     },
-    getLayerFeatureBox(layer, feature, relation_index){
+    getLayerFeatureBox(layer, feature, relation_index) {
       const boxid = this.getBoxId(layer, feature, relation_index);
       if (this.layersFeaturesBoxes[boxid] === undefined) {
         this.layersFeaturesBoxes[boxid] = Vue.observable({
-          collapsed: true
+          collapsed: true,
         });
-        this.$watch(()=> this.layersFeaturesBoxes[boxid].collapsed, collapsed => {
-          const index = layer.features.findIndex(_feature => feature.id === _feature.id);
+        this.$watch(() => this.layersFeaturesBoxes[boxid].collapsed, (collapsed) => {
+          const index = layer.features.findIndex((_feature) => feature.id === _feature.id);
           const container = this.getContainerFromFeatureLayer({
             layer,
-            index
+            index,
           });
           this.$options.queryResultsService.openCloseFeatureResult({
-            open:!collapsed,
+            open: !collapsed,
             layer,
             feature,
-            container
-          })
+            container,
+          });
         });
         this.layersFeaturesBoxes[boxid].collapsed = layer.features.length > 1;
       }
@@ -260,7 +262,7 @@ const vueComponentOptions = {
       this.$options.queryResultsService.emit('show-query-feature-info', {
         layer,
         tabs: this.hasFormStructure(layer),
-        show: !this.layersFeaturesBoxes[boxid].collapsed
+        show: !this.layersFeaturesBoxes[boxid].collapsed,
       });
     },
     getBoxId(layer, feature, relation_index) {
@@ -275,40 +277,40 @@ const vueComponentOptions = {
     toggleFeatureBoxAndZoom(layer, feature, relation_index) {
       !this.hasLayerOneFeature(layer) && this.toggleFeatureBox(layer, feature, relation_index);
     },
-    async trigger(action,layer,feature, index) {
+    async trigger(action, layer, feature, index) {
       if (action.opened && $(`#${layer.id}_${index}`).css('display') === 'none') {
         this.toggleFeatureBox(layer, feature);
         await this.$nextTick();
       }
-      const container = this.getContainerFromFeatureLayer({layer, index});
-      await this.$options.queryResultsService.trigger(action.id, layer,feature, index, container);
+      const container = this.getContainerFromFeatureLayer({ layer, index });
+      await this.$options.queryResultsService.trigger(action.id, layer, feature, index, container);
     },
     showFullPhoto(url) {
       this.$options.queryResultsService.showFullPhoto(url);
     },
     openLink(link_url) {
       window.open(link_url, '_blank');
-    }
+    },
   },
   watch: {
-    async 'state.layers'(layers) {
-      layers.forEach(layer => {
+    'state.layers': async function (layers) {
+      layers.forEach((layer) => {
         if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
-        layer.features.forEach(feature => {
+        layer.features.forEach((feature) => {
           this.getLayerFeatureBox(layer, feature);
-         if (feature.attributes.relations) {
-            const relations = feature.attributes.relations;
-            relations.forEach(relation => {
-              const boxid = layer.id + '_' + feature.id + '_' + relation.name;
-              const elements = relation.elements;
-              elements.forEach((element, index) =>{
-                this.layersFeaturesBoxes[boxid+index] = {
-                  collapsed: true
+          if (feature.attributes.relations) {
+            const { relations } = feature.attributes;
+            relations.forEach((relation) => {
+              const boxid = `${layer.id}_${feature.id}_${relation.name}`;
+              const { elements } = relation;
+              elements.forEach((element, index) => {
+                this.layersFeaturesBoxes[boxid + index] = {
+                  collapsed: true,
                 };
               });
-            })
+            });
           }
-        })
+        });
       });
 
       this.onelayerresult = layers.length === 1;
@@ -326,15 +328,15 @@ const vueComponentOptions = {
     },
     onelayerresult(bool) {
       bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
-    }
+    },
   },
-  created(){
-    //PUT HERE THROTTLED FUNCTION
-    this.zoomToLayerFeaturesExtent = throttle(layer => {
+  created() {
+    // PUT HERE THROTTLED FUNCTION
+    this.zoomToLayerFeaturesExtent = throttle((layer) => {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
-        highlight: true
+        highlight: true,
       });
-    })
+    });
   },
   beforeDestroy() {
     this.state.zoomToResult = true;
@@ -342,24 +344,24 @@ const vueComponentOptions = {
   },
   destroyed() {
     this.$options.queryResultsService.clear();
-  }
+  },
 };
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-function QueryResultsComponent(options={}) {
+function QueryResultsComponent(options = {}) {
   base(this, options);
-  this.id = "queryresults";
-  this.title = "Query Results";
+  this.id = 'queryresults';
+  this.title = 'Query Results';
   this._service = new QueryResultsService();
-  this.setInternalComponent = function() {
+  this.setInternalComponent = function () {
     this.internalComponent = new InternalComponent({
-      queryResultsService: this._service
+      queryResultsService: this._service,
     });
     this.internalComponent.querytitle = this._service.state.querytitle;
   };
 
-  this.getElement = function() {
+  this.getElement = function () {
     if (this.internalComponent) return this.internalComponent.$el;
   };
 
@@ -368,11 +370,11 @@ function QueryResultsComponent(options={}) {
     await this.internalComponent.$nextTick();
   });
 
-  this.layout = function(width,height) {};
-  this.unmount = function() {
+  this.layout = function (width, height) {};
+  this.unmount = function () {
     this.getService().closeComponent();
-    return base(this, 'unmount')
-  }
+    return base(this, 'unmount');
+  };
 }
 
 inherit(QueryResultsComponent, Component);

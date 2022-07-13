@@ -2,12 +2,12 @@ const utils = require('../utils');
 const AreaIteraction = require('../interactions/areainteraction');
 const MeasureControl = require('./measurecontrol');
 
-const AreaControl = function(options={}) {
+const AreaControl = function (options = {}) {
   const _options = {
-    tipLabel: "sdk.mapcontrols.measures.area.tooltip",
-    label: "\ue909",
+    tipLabel: 'sdk.mapcontrols.measures.area.tooltip',
+    label: '\ue909',
     clickmap: true, // set ClickMap
-    interactionClass: AreaIteraction
+    interactionClass: AreaIteraction,
   };
   options = utils.merge(options, _options);
   MeasureControl.call(this, options);

@@ -1,4 +1,4 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const LayersStoresRegistry = require('core/layers/layersstoresregistry');
 
 function MapLayersStoresRegistry() {

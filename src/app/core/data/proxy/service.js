@@ -1,19 +1,22 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-function ProxyService(){
+const { XHR } = require('core/utils/utils');
+
+function ProxyService() {
   base(this);
   /**
    *
    * @param data: Object conitans data to pass to proxy
    * @returns {Promise<{data: string, response: *}>}
    */
-  this.wms = async function({url, method='GET', params={}, headers={}}={}){
+  this.wms = async function ({
+    url, method = 'GET', params = {}, headers = {},
+  } = {}) {
     const ApplicationService = require('core/applicationservice');
-    let proxyUrl = `${ApplicationService.getProxyUrl()}`;
+    const proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
       url = new URL(url);
-      Object.keys(params).forEach(param => url.searchParams.set(param, params[param]));
+      Object.keys(params).forEach((param) => url.searchParams.set(param, params[param]));
       url = url.toString();
     }
     try {
@@ -21,19 +24,19 @@ function ProxyService(){
         url,
         params,
         headers,
-        method
+        method,
       });
       const response = await XHR.post({
         url: proxyUrl,
         contentType: 'application/json',
-        data
+        data,
       });
       return {
         response,
-        data
+        data,
       };
-    } catch(err){
-      return;
+    } catch (err) {
+
     }
   };
 
@@ -41,9 +44,9 @@ function ProxyService(){
    * Generic proxy data function
    * @param params
    */
-  this.data = function(params={}){}
+  this.data = function (params = {}) {};
 }
 
 inherit(ProxyService, BaseService);
 
-module.exports = new ProxyService;
+module.exports = new ProxyService();

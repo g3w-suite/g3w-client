@@ -1,75 +1,75 @@
 import ApplicationState from 'core/applicationstate';
+
 const GUI = require('gui/gui');
-const {throttle, debounce, XHR} = require('core/utils/utils');
+const { throttle, debounce, XHR } = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
   methods: {
-    async autocompleteRequest({layerId, field, value}={}){
+    async autocompleteRequest({ layerId, field, value } = {}) {
       let data = [];
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       try {
         data = await layer.getFilterData({
           suggest: `${field}|${value}`,
-          unique: field
-        })
-      } catch(error) {}
-      return data.map(value => ({
-        id:value,
-        text:value
-      }))
-    }
-  }
+          unique: field,
+        });
+      } catch (error) {}
+      return data.map((value) => ({
+        id: value,
+        text: value,
+      }));
+    },
+  },
 };
 
 const fieldsMixin = {
   methods: {
-    getFieldService(){
-      if (this._fieldsService === undefined)
-        this._fieldsService = require('gui/fields/fieldsservice');
+    getFieldService() {
+      if (this._fieldsService === undefined) { this._fieldsService = require('gui/fields/fieldsservice'); }
       return this._fieldsService;
     },
     getFieldType(field) {
       return this.getFieldService().getType(field);
     },
-    isSimple(field){
+    isSimple(field) {
       return this.getFieldService().isSimple(field);
     },
-    isLink(field){
+    isLink(field) {
       return this.getFieldService().isLink(field);
     },
-    isImage(field){
+    isImage(field) {
       return this.getFieldService().isImage(field);
     },
-    isPhoto(field){
+    isPhoto(field) {
       return this.getFieldService().isPhoto(field);
     },
-    isVue(field){
+    isVue(field) {
       return this.getFieldService().isVue(field);
     },
     sanitizeFieldValue(value) {
       return (Array.isArray(value) && !value.length) ? '' : value;
-    }
-  }
+    },
+  },
 };
 
 const mediaMixin = {
   computed: {
     filename() {
       return this.value ? this.value.split('/').pop() : this.value;
-    }
+    },
   },
   methods: {
     isMedia(value) {
-      if (value && typeof  value === 'object' && value.constructor === Object) return !!value.mime_type;
+      if (value && typeof value === 'object' && value.constructor === Object) return !!value.mime_type;
       return false;
     },
     getMediaType(mime_type) {
-      let media = {
+      const media = {
         type: null,
-        options: {}
+        options: {},
       };
-      switch(mime_type) {
+      switch (mime_type) {
         case 'image/gif':
         case 'image/png':
         case 'image/jpeg':
@@ -108,8 +108,8 @@ const mediaMixin = {
           media.type = 'unknow';
       }
       return media;
-    }
-  }
+    },
+  },
 };
 
 const geoMixin = {
@@ -117,10 +117,10 @@ const geoMixin = {
     showLayer() {
       this.visible = !this.visible;
       this.layer.setVisible(this.visible);
-    }
+    },
   },
   created() {
-    const data = this.data;
+    const { data } = this;
     const mapService = GUI.getComponent('map').getService();
     const mapProjection = mapService.getProjection().getCode();
     let style;
@@ -131,26 +131,26 @@ const geoMixin = {
           image: new ol.style.Circle({
             radius: 6,
             fill: new ol.style.Fill({
-              color: [255,255,255,1.0]
+              color: [255, 255, 255, 1.0],
             }),
             stroke: new ol.style.Stroke({
-              color: [0,0,0,1.0],
-              width: 2
-            })
-          })
+              color: [0, 0, 0, 1.0],
+              width: 2,
+            }),
+          }),
         }),
-          new ol.style.Style({
-            image: new ol.style.Circle({
-              radius: 2,
-              fill: new ol.style.Fill({
-                color: [255,255,255,1.0]
-              }),
-              stroke: new ol.style.Stroke({
-                color: [0,0,0,1.0],
-                width: 2
-              })
-            })
-          })];
+        new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 2,
+            fill: new ol.style.Fill({
+              color: [255, 255, 255, 1.0],
+            }),
+            stroke: new ol.style.Stroke({
+              color: [0, 0, 0, 1.0],
+              width: 2,
+            }),
+          }),
+        })];
         break;
       case 'Line':
       case 'MultiLineString':
@@ -158,86 +158,86 @@ const geoMixin = {
       case 'MultiPolygon':
         style = new ol.style.Style({
           fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.3)'
+            color: 'rgba(255, 255, 255, 0.3)',
           }),
           stroke: new ol.style.Stroke({
-            color: [0,0,0,1.0],
-            width: 2
-          })
+            color: [0, 0, 0, 1.0],
+            width: 2,
+          }),
         });
         break;
     }
     this.layer = new ol.layer.Vector({
       source: new ol.source.Vector({
         features: new ol.format.GeoJSON().readFeatures(data, {
-          featureProjection: mapProjection
-        })
+          featureProjection: mapProjection,
+        }),
       }),
       visible: !!this.visible,
-      style: style
+      style,
     });
     mapService.getMap().addLayer(this.layer);
   },
   beforeDestroy() {
     const mapService = GUI.getComponent('map').getService();
     mapService.getMap().removeLayer(this.layer);
-  }
+  },
 };
 
 const DELAY_TYPE = {
   throttle,
-  debounce
+  debounce,
 };
 
 const resizeMixin = {
-  created(){
+  created() {
     const delayWrapper = this.delayType && DELAY_TYPE[this.delayType] || DELAY_TYPE.throttle;
-    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime): null;
+    this.delayResize = this.resize ? delayWrapper(this.resize.bind(this), this.delayTime) : null;
     GUI.on('resize', this.delayResize);
   },
-  async mounted(){
+  async mounted() {
     await this.$nextTick();
     this.resize && this.resize();
   },
-  beforeDestroy(){
+  beforeDestroy() {
     GUI.off('resize', this.delayResize);
     this.delayResize = null;
     this.delayTime = null;
-  }
+  },
 };
 
 const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
-    setValue(){
+    setValue() {
       this.select2.val(this.state.value).trigger('change');
     },
     resize() {
       this.select2 && !ApplicationState.ismobile && this.select2.select2('close');
-    }
+    },
   },
   beforeDestroy() {
-    //destroy a select2  dom element
+    // destroy a select2  dom element
     this.select2 && this.select2.select2('destroy');
     // remove all event
     this.select2.off();
     this.select2 = null;
-  }
+  },
 };
 
 // FormInputsMixins
 const formInputsMixins = {
-  data(){
+  data() {
     return {
-      valid: false
-    }
+      valid: false,
+    };
   },
   methods: {
-    addToValidate(input){
+    addToValidate(input) {
       this.tovalidate.push(input);
     },
-    changeInput(input){
-      this.isValid(input)
+    changeInput(input) {
+      this.isValid(input);
     },
     // Every input send to form it valid value that will change the genaral state of form
     isValid(input) {
@@ -247,52 +247,48 @@ const formInputsMixins = {
           if (!input.validate.required) {
             if (!input.validate.empty) {
               input.validate._valid = input.validate.valid;
-              input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => {
-                return previous && this.tovalidate[inputname].validate.empty;
-              }, true);
+              input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => previous && this.tovalidate[inputname].validate.empty, true);
               input.validate.valid = input.validate.mutually_valid && input.validate.valid;
             } else {
               input.value = null;
               input.validate.mutually_valid = true;
               input.validate.valid = true;
               input.validate._valid = true;
-              let countNoTEmptyInputName = [];
+              const countNoTEmptyInputName = [];
               for (let i = input.validate.mutually.length; i--;) {
                 const inputname = input.validate.mutually[i];
-                !this.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname) ;
+                !this.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname);
               }
               if (countNoTEmptyInputName.length < 2) {
                 countNoTEmptyInputName.forEach((inputname) => {
                   this.tovalidate[inputname].validate.mutually_valid = true;
                   this.tovalidate[inputname].validate.valid = true;
-                  setTimeout(()=>{
+                  setTimeout(() => {
                     this.tovalidate[inputname].validate.valid = this.tovalidate[inputname].validate._valid;
                     this.state.valid = this.state.valid && this.tovalidate[inputname].validate.valid;
-                  })
-                })
+                  });
+                });
               }
             }
           }
-          //check if min_field or max_field is set
+          // check if min_field or max_field is set
         } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
           const input_name = input.validate.min_field || input.validate.max_field;
-          input.validate.valid = input.validate.min_field ?
-            this.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.tovalidate[input.validate.min_field].value :
-            this.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.tovalidate[input.validate.max_field].value;
-          if (input.validate.valid) this.tovalidate[input_name].validate.valid = true
+          input.validate.valid = input.validate.min_field
+            ? this.tovalidate[input.validate.min_field].validate.empty || 1 * input.value > 1 * this.tovalidate[input.validate.min_field].value
+            : this.tovalidate[input.validate.max_field].validate.empty || 1 * input.value < 1 * this.tovalidate[input.validate.max_field].value;
+          if (input.validate.valid) this.tovalidate[input_name].validate.valid = true;
         }
       }
-      this.valid = Object.values(this.tovalidate).reduce((previous, input) => {
-        return previous && input.validate.valid;
-      }, true);
-    }
+      this.valid = Object.values(this.tovalidate).reduce((previous, input) => previous && input.validate.valid, true);
+    },
   },
-  created(){
+  created() {
     this.tovalidate = [];
   },
-  destroyed(){
+  destroyed() {
     this.tovalidate = null;
-  }
+  },
 };
 
 module.exports = {
@@ -302,5 +298,5 @@ module.exports = {
   resizeMixin,
   autocompleteMixin,
   select2Mixin,
-  formInputsMixins
+  formInputsMixins,
 };

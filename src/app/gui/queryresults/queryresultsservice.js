@@ -1,11 +1,16 @@
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import { G3W_FID, LIST_OF_RELATIONS_TITLE } from 'constant';
 import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
 import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
+
 const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
+const {
+  base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl,
+} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
-const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
-const {t} = require('core/i18n/i18n.service');
+const {
+  getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates,
+} = require('core/utils/geo');
+const { t } = require('core/i18n/i18n.service');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
@@ -16,14 +21,14 @@ const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresreg
 const RelationsPage = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
-//used to get and set vue reactivity to queryresultservice
+// used to get and set vue reactivity to queryresultservice
 const VM = new Vue();
 
 function QueryResultsService() {
   this.printService = new PrintService();
   this._currentLayerIds = [];
 
-  ProjectsRegistry.onafter('setCurrentProject', project => {
+  ProjectsRegistry.onafter('setCurrentProject', (project) => {
     this._project = project;
     this._setRelations(project);
     this._setAtlasActions(project);
@@ -32,16 +37,16 @@ function QueryResultsService() {
   });
   this.unlistenerlayeractionevents = [];
   this._actions = {
-    'zoomto': QueryResultsService.zoomToElement,
-    'highlightgeometry': this.highlightGeometry.bind(this),
-    'clearHighlightGeometry': this.clearHighlightGeometry.bind(this)
+    zoomto: QueryResultsService.zoomToElement,
+    highlightgeometry: this.highlightGeometry.bind(this),
+    clearHighlightGeometry: this.clearHighlightGeometry.bind(this),
   };
   this._relations = [];
   this._atlas = [];
   this.plotLayerIds = [];
   const project = this._project = ProjectsRegistry.getCurrentProject();
   // userful to set right order for query result based on toc order layers
-  this._projectLayerIds = this._project.getConfigLayers().map(layer => layer.id);
+  this._projectLayerIds = this._project.getConfigLayers().map((layer) => layer.id);
   // set reactive state
   this.state = {
     zoomToResult: true,
@@ -51,34 +56,34 @@ function QueryResultsService() {
     query: null,
     type: 'ows', // or api in case of search
     layersactions: {},
-    actiontools:{}, // addd action tools (for features)
-    currentactiontools:{}, // current action tools contain component of a specific action (for example download)
-    currentactionfeaturelayer:{}, // contain current action that expose component vue (it useful to comprare id other action is toggled and expose component)
+    actiontools: {}, // addd action tools (for features)
+    currentactiontools: {}, // current action tools contain component of a specific action (for example download)
+    currentactionfeaturelayer: {}, // contain current action that expose component vue (it useful to comprare id other action is toggled and expose component)
     layeractiontool: {},
-    layersFeaturesBoxes:{},
-    layerscustomcomponents:{} // used to show a custom component for a layer
+    layersFeaturesBoxes: {},
+    layerscustomcomponents: {}, // used to show a custom component for a layer
   };
-  this.init = function() {
+  this.init = function () {
     this.clearState();
   };
   // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
   const color = 'blue';
   const stroke = new ol.style.Stroke({
     color,
-    width: 3
+    width: 3,
   });
   const fill = new ol.style.Fill({
-    color
+    color,
   });
   this.resultsQueryLayer = new ol.layer.Vector({
     style: new ol.style.Style({
       stroke,
       image: new ol.style.Circle({
         fill,
-        radius: 6
+        radius: 6,
       }),
     }),
-    source: new ol.source.Vector()
+    source: new ol.source.Vector(),
   });
 
   this._vectorLayers = [];
@@ -86,7 +91,7 @@ function QueryResultsService() {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
     mapcontrol: null, // add current toggled map control if toggled
-    toggleeventhandler: null
+    toggleeventhandler: null,
   };
   this.setters = {
     /**
@@ -94,15 +99,15 @@ function QueryResultsService() {
      * @param queryResponse
      * @param options: add is used to know if is a new query request or add/remove query request
      */
-    setQueryResponse(queryResponse, options={add:false}) {
-      const {add} = options;
+    setQueryResponse(queryResponse, options = { add: false }) {
+      const { add } = options;
       // in case of new request results reset the query otherwise maintain the previous request
       if (!add) {
         this.clearState();
         this.state.query = queryResponse.query;
         this.state.type = queryResponse.type;
       }
-      const {data} = queryResponse;
+      const { data } = queryResponse;
       const layers = this._digestFeaturesForLayers(data);
       this.setLayersData(layers, options);
     },
@@ -112,20 +117,20 @@ function QueryResultsService() {
      * @param layers
      * @param options
      */
-    setLayersData(layers, options={add:false}) {
-      const {add} = options;
-      if (!add){
+    setLayersData(layers, options = { add: false }) {
+      const { add } = options;
+      if (!add) {
         // here set the right order of result layers based on toc
-        this._currentLayerIds = layers.map(layer => layer.id);
+        this._currentLayerIds = layers.map((layer) => layer.id);
         this._orderResponseByProjectLayers(layers);
       }
-      layers.forEach(layer => {
+      layers.forEach((layer) => {
         // in case of a new request query
         if (!add) this.state.layers.push(layer);
-        //get features from add pick layer
+        // get features from add pick layer
         else this.addRemoveFeaturesToLayerResult(layer);
       });
-      this.setActionsForLayers(layers, {add});
+      this.setActionsForLayers(layers, { add });
       this.state.changed = true;
     },
     /**
@@ -133,7 +138,7 @@ function QueryResultsService() {
      * @param component
      */
     addComponent(component) {
-      this._addComponent(component)
+      this._addComponent(component);
     },
     /**
      *
@@ -152,17 +157,17 @@ function QueryResultsService() {
      *
      * @param layer
      */
-    changeLayerResult(layer){
+    changeLayerResult(layer) {
       this._changeLayerResult(layer);
     },
     /**
      *
      */
-    activeMapInteraction(){},
+    activeMapInteraction() {},
     /**
      *  setter hook to relation table
      */
-    editFeature({layerId, featureId}={}){},
+    editFeature({ layerId, featureId } = {}) {},
     /**
      * Method to listen open/close feature info data content.
      * @param open
@@ -170,20 +175,22 @@ function QueryResultsService() {
      * @param feature
      * @param container
      */
-    openCloseFeatureResult({open, layer, feature, container}={}){}
+    openCloseFeatureResult({
+      open, layer, feature, container,
+    } = {}) {},
   };
   base(this);
 
-  this.addLayersPlotIds = function(layerIds=[]) {
+  this.addLayersPlotIds = function (layerIds = []) {
     this.plotLayerIds = layerIds;
   };
 
-  this.getPlotIds = function(){
+  this.getPlotIds = function () {
     return this.plotLayerIds;
   };
 
-  this.findPlotId = function(id){
-    return this.plotLayerIds.find(plotId => plotId == id);
+  this.findPlotId = function (id) {
+    return this.plotLayerIds.find((plotId) => plotId == id);
   };
 
   this._setRelations(project);
@@ -192,14 +199,14 @@ function QueryResultsService() {
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
-      async: false
+      async: false,
     },
     goToGeometry: {
-      async: false
-    }
+      async: false,
+    },
   };
-  GUI.onbefore('setContent', (options)=>{
-    const {perc} = options;
+  GUI.onbefore('setContent', (options) => {
+    const { perc } = options;
     this.mapService = this.mapService || ApplicationService.getApplicationService('map');
     if (perc === 100 && GUI.isMobile()) {
       this._asyncFnc.zoomToLayerFeaturesExtent.async = true;
@@ -220,21 +227,24 @@ const proto = QueryResultsService.prototype;
  * @param component custom component
  * @param type feature or layer
  */
-proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type='feature', position='after'}={}){
-  if (this.state.layerscustomcomponents[layerId] === undefined)
+proto.registerCustomComponent = function ({
+  id = getUniqueDomId(), layerId, component, type = 'feature', position = 'after',
+} = {}) {
+  if (this.state.layerscustomcomponents[layerId] === undefined) {
     this.state.layerscustomcomponents[layerId] = {
       layer: {
         before: [],
-        after: []
+        after: [],
       },
       feature: {
         before: [],
-        after: []
-      }
+        after: [],
+      },
     };
+  }
   this.state.layerscustomcomponents[layerId][type][position].push({
     id,
-    component
+    component,
   });
   return id;
 };
@@ -245,11 +255,15 @@ proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, componen
  * @param layerId
  * @param type
  */
-proto.unRegisterCustomComponent = function({id, layerId, type, position}){
-  if (position) this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
-  else Object.keys(this.state.layerscustomcomponents[layerId][type]).forEach(position =>{
-    this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
-  })
+proto.unRegisterCustomComponent = function ({
+  id, layerId, type, position,
+}) {
+  if (position) this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({ id: componentId }) => componentId !== id);
+  else {
+    Object.keys(this.state.layerscustomcomponents[layerId][type]).forEach((position) => {
+      this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({ id: componentId }) => componentId !== id);
+    });
+  }
 };
 
 /**
@@ -257,7 +271,7 @@ proto.unRegisterCustomComponent = function({id, layerId, type, position}){
  * @param layer
  * @param feature
  */
-proto.addFeatureLayerToResult = function(layer, feature){
+proto.addFeatureLayerToResult = function (layer, feature) {
   this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
 };
 
@@ -266,30 +280,30 @@ proto.addFeatureLayerToResult = function(layer, feature){
  * @param layer
  * @param feature
  */
-proto.removeFeatureLayerFromResult = function(layer, feature){
-  const {id, external} = layer;
+proto.removeFeatureLayerFromResult = function (layer, feature) {
+  const { id, external } = layer;
   this.addRemoveFeaturesToLayerResult({
     id,
     external,
-    features: [feature]
-  })
+    features: [feature],
+  });
 };
 
 /**
  * Method wrapper for download
  */
 
-proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
+proto.downloadApplicationWrapper = async function (downloadFnc, options = {}) {
   const download_caller_id = ApplicationService.setDownload(true);
   GUI.setLoadingContent(true);
   try {
     await downloadFnc(options);
-  } catch(err){
+  } catch (err) {
     GUI.showUserMessage({
       type: 'alert',
       message: err || 'server_error',
-      textMessage: err ? true : false
-    })
+      textMessage: !!err,
+    });
   }
   ApplicationService.setDownload(false, download_caller_id);
   GUI.setLoadingContent(false);
@@ -299,29 +313,29 @@ proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
  * Based on layer response check if features layer are to add or remove to current state.layers results
  * @param layer
  */
-proto.addRemoveFeaturesToLayerResult = function(layer){
-  //extract features from layer object
-  let {features=[]} = layer;
+proto.addRemoveFeaturesToLayerResult = function (layer) {
+  // extract features from layer object
+  let { features = [] } = layer;
   // get layer from current state.layers showed on result
-  const findLayer = this.state.layers.find(_layer => _layer.id === layer.id);
+  const findLayer = this.state.layers.find((_layer) => _layer.id === layer.id);
   // if get features and find layer
-  if (findLayer && features.length){
+  if (findLayer && features.length) {
     // get id external layer or not (external is a layer added by mapcontrol addexternlayer)
-    const {external} = findLayer;
+    const { external } = findLayer;
     // is array of idexes od features that we has to remove from state.layer because is already loaded
     const removeFeatureIndexes = [];
     // get id of the features
-    const features_ids = features.map(feature => !external ? feature.attributes[G3W_FID]: feature.id);
+    const features_ids = features.map((feature) => (!external ? feature.attributes[G3W_FID] : feature.id));
     // loop nad filter the features that we had to remove)
-    findLayer.features = findLayer.features.filter(feature => {
-      const indexFindFeature = features_ids.indexOf(!external ? feature.attributes[G3W_FID]: feature.id);
+    findLayer.features = findLayer.features.filter((feature) => {
+      const indexFindFeature = features_ids.indexOf(!external ? feature.attributes[G3W_FID] : feature.id);
       // check if need to filter or not
       const filtered = indexFindFeature === -1;
-      if (!filtered){
+      if (!filtered) {
         removeFeatureIndexes.push(indexFindFeature);
         const featureRemoved = features[indexFindFeature];
         this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
-        setTimeout(()=> delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)]);
+        setTimeout(() => delete this.state.layersFeaturesBoxes[this.getBoxId(layer, featureRemoved)]);
       } else this.state.layersFeaturesBoxes[this.getBoxId(layer, feature)].collapsed = true;
       return filtered;
     });
@@ -332,10 +346,10 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
       const newlayerfeatures = [...findLayer.features, ...features];
       findLayer.features = newlayerfeatures;
     }
-    //in case of removed features
+    // in case of removed features
     if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
-      // used to do all vue reactive thing before update layers
-      setTimeout(() => this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
+    // used to do all vue reactive thing before update layers
+    { setTimeout(() => this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false); }
     // in case no more features on layer remove interaction pickcoordinate to get result from map
     this.checkIfLayerHasNoFeatures(findLayer);
   }
@@ -348,27 +362,27 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
  * Method called when layer result features for example is changed
  * @param layer
  */
-proto._changeLayerResult = function(layer){
+proto._changeLayerResult = function (layer) {
   const layeractions = this.state.layersactions[layer.id];
   // call if present change mthod to action
-  layeractions.forEach(action => action.change && action.change(layer));
-  //reset layer current actions tools
+  layeractions.forEach((action) => action.change && action.change(layer));
+  // reset layer current actions tools
   this.resetCurrentActionToolsLayer(layer);
 };
 
 /**
  * Check and do action if layer has no features after delete feature(s
  */
-proto.checkIfLayerHasNoFeatures = function(layer){
+proto.checkIfLayerHasNoFeatures = function (layer) {
   if (layer.features.length === 0) {
     // used to do all vue reactive thing before update layers
     setTimeout(() => {
-      this.state.layers = this.state.layers.filter(_layer => _layer.id !== layer.id);
+      this.state.layers = this.state.layers.filter((_layer) => _layer.id !== layer.id);
       this.clearHighlightGeometry(layer);
       this.removeAddFeaturesLayerResultInteraction({
-        toggle: true
+        toggle: true,
       });
-    })
+    });
   }
 };
 
@@ -379,26 +393,26 @@ proto.checkIfLayerHasNoFeatures = function(layer){
  * @param relation_index
  * @returns {string}
  */
-proto.getBoxId = function(layer, feature, relation_index){
+proto.getBoxId = function (layer, feature, relation_index) {
   return relation_index !== null && relation_index !== undefined ? `${layer.id}_${feature.id}_${relation_index}` : `${layer.id}_${feature.id}`;
 };
 
-proto.setActionsForLayers = function(layers, options={add: false}) {
-  const {add} = options;
+proto.setActionsForLayers = function (layers, options = { add: false }) {
+  const { add } = options;
   if (!add) {
     this.unlistenerlayeractionevents = [];
-    layers.forEach(layer => {
+    layers.forEach((layer) => {
       /**
        * set eventually layer action tool and need to be reactive
        * @type {{}}
        */
       this.state.layeractiontool[layer.id] = Vue.observable({
         component: null,
-        config: null
+        config: null,
       });
       const currentactiontoolslayer = {};
       const currentationfeaturelayer = {};
-      layer.features.forEach((feature, index)=> {
+      layer.features.forEach((feature, index) => {
         currentactiontoolslayer[index] = null;
         currentationfeaturelayer[index] = null;
       });
@@ -423,7 +437,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
        * }
        */
 
-      //in case of geometry
+      // in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
           id: 'gotogeometry',
@@ -431,18 +445,16 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           mouseover: true,
           class: GUI.getFontClass('marker'),
           hint: 'sdk.mapcontrols.query.actions.zoom_to_feature.hint',
-          cbk: throttle(this.goToGeometry.bind(this))
+          cbk: throttle(this.goToGeometry.bind(this)),
         });
       }
       // in case of relations
       if (this._relations) {
-        const relations = this._relations[layer.id] && this._relations[layer.id].filter(relation =>{
-          return relation.type === 'MANY';
-        });
+        const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) => relation.type === 'MANY');
         if (relations && relations.length) {
           const chartRelationIds = [];
-          relations.forEach(relation => {
-            const id = this.plotLayerIds.find(id => id === relation.referencingLayer);
+          relations.forEach((relation) => {
+            const id = this.plotLayerIds.find((id) => id === relation.referencingLayer);
             id && chartRelationIds.push(id);
           });
 
@@ -453,10 +465,10 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             hint: 'sdk.mapcontrols.query.actions.relations.hint',
             cbk: this.showQueryRelations,
             relations,
-            chartRelationIds
+            chartRelationIds,
           });
           const state = this.createActionState({
-            layer
+            layer,
           });
           chartRelationIds.length && this.state.layersactions[layer.id].push({
             id: 'show-plots-relations',
@@ -465,7 +477,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             class: GUI.getFontClass('chart'),
             state,
             hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
-            cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
+            cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds)),
           });
         }
       }
@@ -474,20 +486,20 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
        * Check if layer has atlas
        */
       this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
-        id: `printatlas`,
+        id: 'printatlas',
         download: true,
         class: GUI.getFontClass('print'),
-        hint: `sdk.tooltips.atlas`,
-        cbk: this.printAtlas.bind(this)
+        hint: 'sdk.tooltips.atlas',
+        cbk: this.printAtlas.bind(this),
       });
       const state = this.createActionState({
-        layer
+        layer,
       });
       if (layer.downloads.length === 1) {
         const [format] = layer.downloads;
         const cbk = this.downloadFeatures.bind(this, format);
         layer[format] = Vue.observable({
-          active: false
+          active: false,
         });
         this.state.layersactions[layer.id].push({
           id: `download_${format}_feature`,
@@ -495,51 +507,53 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           state,
           class: GUI.getFontClass('download'),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: (layer, feature, action, index)=>{
+          cbk: (layer, feature, action, index) => {
             action.state.toggled[index] = !action.state.toggled[index];
             if (action.state.toggled[index]) cbk(layer, feature, action, index);
-            else this.setCurrentActionLayerFeatureTool({
-              index,
-              action,
-              layer
-            })
-          }
+            else {
+              this.setCurrentActionLayerFeatureTool({
+                index,
+                action,
+                layer,
+              });
+            }
+          },
         });
-      } else if (layer.downloads.length > 1 ){
+      } else if (layer.downloads.length > 1) {
         // SET CONSTANT TO AVOID TO CHANGE ALL THINGS
         const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
         const downloads = [];
-        layer.downloads.forEach(format => {
+        layer.downloads.forEach((format) => {
           downloads.push({
             id: `download_${format}_feature`,
             download: true,
             format,
             class: GUI.getFontClass(format),
             hint: `sdk.tooltips.download_${format}`,
-            cbk: (layer, feature, action, index)=> {
-              //used to untoggle downloads action
+            cbk: (layer, feature, action, index) => {
+              // used to untoggle downloads action
               this.downloadFeatures(format, layer, feature, action, index);
-              const downloadsaction = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+              const downloadsaction = this.state.layersactions[layer.id].find((action) => action.id === 'downloads');
               if (this.state.query.type !== 'polygon') downloadsaction.cbk(layer, feature, downloadsaction, index);
-            }
+            },
           });
         });
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] = this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] || {};
         // set config of actionstools
         this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS][layer.id] = {
-          downloads // ARE DOWNLOAD ACTIONS,
+          downloads, // ARE DOWNLOAD ACTIONS,
         };
         // used to
-        //check if has download actions
+        // check if has download actions
         this.state.layersactions[layer.id].push({
-          id: `downloads`,
+          id: 'downloads',
           download: true,
           class: GUI.getFontClass('download'),
           state,
           toggleable: true,
-          hint: `Downloads`,
-          change({features}) {
-            features.forEach((feature, index) =>{
+          hint: 'Downloads',
+          change({ features }) {
+            features.forEach((feature, index) => {
               if (this.state.toggled[index] === undefined) VM.$set(this.state.toggled, index, false);
               else this.state.toggled[index] = false;
             });
@@ -550,9 +564,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
               layer,
               index,
               action,
-              component: action.state.toggled[index] ? DownloadFormats : null
+              component: action.state.toggled[index] ? DownloadFormats : null,
             });
-          }
+          },
         });
       }
       /*
@@ -564,10 +578,10 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         mouseover: true,
         class: GUI.getFontClass('minus-square'),
         style: {
-          color: 'red'
+          color: 'red',
         },
         hint: 'sdk.mapcontrols.query.actions.remove_feature_from_results.hint',
-        cbk: this.removeFeatureLayerFromResult.bind(this)
+        cbk: this.removeFeatureLayerFromResult.bind(this),
       });
 
       /**
@@ -576,7 +590,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       if (layer.selection.active !== undefined) {
         // selection action
         const state = this.createActionState({
-          layer
+          layer,
         });
 
         this.state.layersactions[layer.id].push({
@@ -585,18 +599,18 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           class: GUI.getFontClass('success'),
           hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
           state,
-          init: ({feature, index, action}={})=>{
+          init: ({ feature, index, action } = {}) => {
             layer.selection.active !== void 0 && this.checkFeatureSelection({
               layerId: layer.id,
               index,
               feature,
-              action
-            })
+              action,
+            });
           },
-          cbk: throttle(this.addToSelection.bind(this))
+          cbk: throttle(this.addToSelection.bind(this)),
         });
         this.listenClearSelection(layer, 'selection');
-        //end selection action
+        // end selection action
       }
       /*
         If not wms of external layer show copy link to feature
@@ -608,9 +622,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
           hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint_change',
-          duration: 1000
+          duration: 1000,
         },
-        cbk: this.copyZoomToFidUrl.bind(this)
+        cbk: this.copyZoomToFidUrl.bind(this),
       });
       layer.editable && this.state.layersactions[layer.id].push({
         id: 'editing',
@@ -620,29 +634,29 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           const layerId = layer.id;
           const featureId = feature.attributes[G3W_FID];
           feature.geometry && this.mapService.zoomToGeometry(feature.geometry);
-          setTimeout(()=>{
+          setTimeout(() => {
             this.editFeature({
               layerId,
-              featureId
+              featureId,
             });
-          }, 300)
-        }
+          }, 300);
+        },
       });
     });
     this.addActionsForLayers(this.state.layersactions, this.state.layers);
   }
 };
 
-proto.createActionState = function({layer, dynamicProperties=['toggled']}){
+proto.createActionState = function ({ layer, dynamicProperties = ['toggled'] }) {
   // check number of download formats
-  const propertiesObject = dynamicProperties.reduce((accumulator, property) =>{
+  const propertiesObject = dynamicProperties.reduce((accumulator, property) => {
     accumulator[property] = {};
     return accumulator;
   }, {});
-  layer.features.map((feature, index)=> {
-    Object.keys(propertiesObject).forEach(property =>{
+  layer.features.map((feature, index) => {
+    Object.keys(propertiesObject).forEach((property) => {
       propertiesObject[property][index] = null;
-    })
+    });
   });
   return Vue.observable(propertiesObject);
 };
@@ -653,8 +667,8 @@ proto.createActionState = function({layer, dynamicProperties=['toggled']}){
  * @param id action id
  * @returns {*}
  */
-proto.getActionLayerById = function({layer, id}={}){
-  return this.state.layersactions[layer.id].find(action => action.id === id);
+proto.getActionLayerById = function ({ layer, id } = {}) {
+  return this.state.layersactions[layer.id].find((action) => action.id === id);
 };
 
 /**
@@ -663,17 +677,17 @@ proto.getActionLayerById = function({layer, id}={}){
  * @param index feature index
  * @param value component value or null
  */
-proto.setCurrentActionLayerFeatureTool = function({layer, action, index, component=null}={}){
-  if (component){
-    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable)
-      this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
+proto.setCurrentActionLayerFeatureTool = function ({
+  layer, action, index, component = null,
+} = {}) {
+  if (component) {
+    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable) { this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false; }
     this.state.currentactionfeaturelayer[layer.id][index] = action;
   } else this.state.currentactionfeaturelayer[layer.id][index] = null;
   this.state.currentactiontools[layer.id][index] = component;
 };
 
-
-proto.addCurrentActionToolsLayer = function({id, layer, config={}}){
+proto.addCurrentActionToolsLayer = function ({ id, layer, config = {} }) {
   this.state.actiontools[id] = {};
   this.state.actiontools[id][layer.id] = config;
 };
@@ -682,20 +696,20 @@ proto.addCurrentActionToolsLayer = function({id, layer, config={}}){
  * Reset current action tools on layer when feature layer change
  * @param layer
  */
-proto.resetCurrentActionToolsLayer = function(layer){
-  layer.features.forEach((feature, index)=>{
+proto.resetCurrentActionToolsLayer = function (layer) {
+  layer.features.forEach((feature, index) => {
     if (this.state.currentactiontools[layer.id]) {
       if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
       else this.state.currentactiontools[layer.id][index] = null;
       this.state.currentactionfeaturelayer[layer.id][index] = null;
     }
-  })
+  });
 };
 
 /**
  *
  */
-proto.setLayerActionTool = function({layer, component=null, config=null}={}){
+proto.setLayerActionTool = function ({ layer, component = null, config = null } = {}) {
   this.state.layeractiontool[layer.id].component = component;
   this.state.layeractiontool[layer.id].config = config;
 };
@@ -705,7 +719,7 @@ proto.setLayerActionTool = function({layer, component=null, config=null}={}){
  * @param layer
  * @param feature
  */
-proto.copyZoomToFidUrl = function(layer, feature, action){
+proto.copyZoomToFidUrl = function (layer, feature, action) {
   const fid = feature.attributes[G3W_FID];
   const url = new URL(location.href);
   const zoom_to_fid = `${layer.id}|${fid}`;
@@ -717,38 +731,38 @@ proto.copyZoomToFidUrl = function(layer, feature, action){
 /**
  * Clear all
  */
-proto.clear = function() {
+proto.clear = function () {
   this.runAsyncTodo();
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
   this.removeAddFeaturesLayerResultInteraction({
-    toggle: true
+    toggle: true,
   });
   this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
-      async: false
+      async: false,
     },
     goToGeometry: {
-      async: false
-    }
+      async: false,
+    },
   };
   this.clearState();
   this.closeComponent();
 };
 
-proto.getCurrentLayersIds = function(){
+proto.getCurrentLayersIds = function () {
   return this._currentLayerIds;
 };
 
-proto.runAsyncTodo = function() {
+proto.runAsyncTodo = function () {
   this._asyncFnc.todo();
 };
 
-proto._orderResponseByProjectLayers = function(layers) {
+proto._orderResponseByProjectLayers = function (layers) {
   layers.sort((layerA, layerB) => {
     const aIndex = this._projectLayerIds.indexOf(layerA.id);
     const bIndex = this._projectLayerIds.indexOf(layerB.id);
@@ -756,22 +770,22 @@ proto._orderResponseByProjectLayers = function(layers) {
   });
 };
 
-proto.setZoomToResults = function(bool=true) {
+proto.setZoomToResults = function (bool = true) {
   this.state.zoomToResult = bool;
 };
 
-proto.highlightFeaturesPermanently = function(layer){
-  const {features} = layer;
+proto.highlightFeaturesPermanently = function (layer) {
+  const { features } = layer;
   this.mapService.highlightFeatures(features, {
-    duration: Infinity
-  })
+    duration: Infinity,
+  });
 };
 
 /**
  * Check if one layer result
  * @returns {boolean}
  */
-proto.isOneLayerResult = function(){
+proto.isOneLayerResult = function () {
   return this.state.layers.length === 1;
 };
 
@@ -779,7 +793,7 @@ proto.isOneLayerResult = function(){
  *
  * @param toggle boolean If true toggle true the mapcontrol
  */
-proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}){
+proto.removeAddFeaturesLayerResultInteraction = function ({ toggle = false } = {}) {
   if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   this._addFeaturesLayerResultInteraction.interaction = null;
   this._addFeaturesLayerResultInteraction.id = null;
@@ -795,85 +809,88 @@ proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}){
  * Adde feature to Features results
  * @param layer
  */
-proto.addLayerFeaturesToResultsAction = function(layer){
+proto.addLayerFeaturesToResultsAction = function (layer) {
   /**
    * Check if layer is current layer to add or clear previous
    */
-  if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id){
-    const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
+  if (this._addFeaturesLayerResultInteraction.id !== null && this._addFeaturesLayerResultInteraction.id !== layer.id) {
+    const layer = this.state.layers.find((layer) => layer.id === this._addFeaturesLayerResultInteraction.id);
     if (layer) layer.addfeaturesresults.active = false;
-    //remove previous add result interaction
+    // remove previous add result interaction
     if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
     this.activeMapInteraction(); // useful o send an event
-    const {external} = layer;
+    const { external } = layer;
     if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
-    this._addFeaturesLayerResultInteraction.interaction =  new PickCoordinatesInteraction();
+    this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, {
-      close: false
+      close: false,
     });
-    this._addFeaturesLayerResultInteraction.interaction.on('picked', async evt =>{
-      const {coordinate: coordinates} = evt;
-      if (!external)
-        await DataRouterService.getData('query:coordinates',
+    this._addFeaturesLayerResultInteraction.interaction.on('picked', async (evt) => {
+      const { coordinate: coordinates } = evt;
+      if (!external) {
+        await DataRouterService.getData(
+          'query:coordinates',
           {
             inputs: {
               coordinates,
               query_point_tolerance: this._project.getQueryPointTolerance(),
               layerIds: [layer.id],
               multilayers: false,
-            }, outputs: {
+            },
+            outputs: {
               show: {
-                add: true
-              }
-            }
-         });
-      else {
-        const vectorLayer = this._vectorLayers.find(vectorLayer => layer.id === vectorLayer.get('id'));
-        const responseObject = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer,{
-          coordinates
+                add: true,
+              },
+            },
+          },
+        );
+      } else {
+        const vectorLayer = this._vectorLayers.find((vectorLayer) => layer.id === vectorLayer.get('id'));
+        const responseObject = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, {
+          coordinates,
         });
         this.setQueryResponse({
           data: [responseObject],
           query: {
-            coordinates
-          }
-        }, {add:true});
+            coordinates,
+          },
+        }, { add: true });
       }
     });
-    const eventHandler = evt => {
+    const eventHandler = (evt) => {
       if (evt.target.isToggled() && evt.target.isClickMap()) layer.addfeaturesresults.active = false;
     };
     this._addFeaturesLayerResultInteraction.toggleeventhandler = eventHandler;
     this.mapService.once('mapcontrol:toggled', eventHandler);
-  } else this.removeAddFeaturesLayerResultInteraction({
-    toggle: true
-  });
+  } else {
+    this.removeAddFeaturesLayerResultInteraction({
+      toggle: true,
+    });
+  }
 };
 
-proto.deactiveQueryInteractions = function(){
-  this.state.layers.forEach(layer => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false});
+proto.deactiveQueryInteractions = function () {
+  this.state.layers.forEach((layer) => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false; });
   this.removeAddFeaturesLayerResultInteraction();
 };
 
-proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
-  const {features} = layer;
+proto.zoomToLayerFeaturesExtent = function (layer, options = {}) {
+  const { features } = layer;
   options.highlight = !this.isOneLayerResult();
-  if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
-    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(this.mapService, features, options);
-  else this.mapService.zoomToFeatures(features, options);
+  if (this._asyncFnc.zoomToLayerFeaturesExtent.async) { this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(this.mapService, features, options); } else this.mapService.zoomToFeatures(features, options);
 };
 
-proto.clearState = function(options={}) {
+proto.clearState = function (options = {}) {
   this.state.layers.splice(0);
   this.state.query = {};
-  this.state.querytitle = "";
+  this.state.querytitle = '';
   this.state.changed = false;
   // clear action if present
-  Object.values(this.state.layersactions).forEach(layeractions =>layeractions.forEach(action => action.clear && action.clear()));
+  Object.values(this.state.layersactions).forEach((layeractions) => layeractions.forEach((action) => action.clear && action.clear()));
   this.state.layersactions = {};
   this.state.actiontools = {};
   this.state.layeractiontool = {};
@@ -883,32 +900,32 @@ proto.clearState = function(options={}) {
   this.removeAddFeaturesLayerResultInteraction();
 };
 
-proto.getState = function() {
+proto.getState = function () {
   return this.state;
 };
 
-proto.setState = function(state) {
+proto.setState = function (state) {
   this.state = state;
 };
 
-proto._setRelations = function(project) {
+proto._setRelations = function (project) {
   const projectRelations = project.getRelations();
-  this._relations = projectRelations ? _.groupBy(projectRelations,'referencedLayer'):  [];
+  this._relations = projectRelations ? _.groupBy(projectRelations, 'referencedLayer') : [];
 };
 
-proto.getAtlasByLayerId = function(layerId) {
-  return this._atlas.filter(atlas => atlas.atlas.qgs_layer_id === layerId);
+proto.getAtlasByLayerId = function (layerId) {
+  return this._atlas.filter((atlas) => atlas.atlas.qgs_layer_id === layerId);
 };
 
-proto._setAtlasActions = function(project){
-  this._atlas = project.getPrint().filter(printconfig => printconfig.atlas) || [];
+proto._setAtlasActions = function (project) {
+  this._atlas = project.getPrint().filter((printconfig) => printconfig.atlas) || [];
 };
 
-proto.setTitle = function(querytitle) {
-  this.state.querytitle = querytitle || "";
+proto.setTitle = function (querytitle) {
+  this.state.querytitle = querytitle || '';
 };
 
-proto.reset = function() {
+proto.reset = function () {
   this.clearState();
 };
 
@@ -918,47 +935,47 @@ proto.reset = function() {
  * @returns {[]}
  * @private
  */
-proto._digestFeaturesForLayers = function(featuresForLayers) {
+proto._digestFeaturesForLayers = function (featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
   const layers = [];
-  let layerAttributes,
-    layerRelationsAttributes,
-    layerTitle,
-    layerId;
-  const _handleFeatureFoLayer = featuresForLayer => {
+  let layerAttributes;
+  let layerRelationsAttributes;
+  let layerTitle;
+  let layerId;
+  const _handleFeatureFoLayer = (featuresForLayer) => {
     let formStructure;
     let sourceType;
     let source;
     let extractRelations = false;
     let external = false;
     let editable = false;
-    const layer = featuresForLayer.layer;
+    const { layer } = featuresForLayer;
     let downloads = [];
     let infoformats = [];
     let infoformat;
     let filter = {};
-    let selection ={};
+    let selection = {};
     if (layer instanceof Layer) {
       editable = layer.isEditable();
       source = layer.getSource();
       infoformats = layer.getInfoFormats(); // add infoformats property
       infoformat = layer.getInfoFormat();
       // set selection filter and relation if not wms
-      if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1){
+      if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1) {
         filter = layer.state.filter;
         selection = layer.state.selection;
         extractRelations = true;
       }
-     downloads = layer.getDownloadableFormats();
+      downloads = layer.getDownloadableFormats();
       try {
-        sourceType = layer.getSourceType()
-      } catch(err){}
+        sourceType = layer.getSourceType();
+      } catch (err) {}
       // sanitize attributes layer only if is ows
-      layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
-        const sanitizeAttribute = {...attribute};
+      layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map((attribute) => {
+        const sanitizeAttribute = { ...attribute };
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
-        return sanitizeAttribute
+        return sanitizeAttribute;
       }) : layer.getAttributes();
 
       layerRelationsAttributes = [];
@@ -967,7 +984,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       if (layer.hasFormStructure()) {
         const structure = layer.getLayerEditingFormStructure();
         if (this._relations && this._relations.length) {
-          const getRelationFieldsFromFormStructure = node => {
+          const getRelationFieldsFromFormStructure = (node) => {
             if (!node.nodes) {
               node.name ? node.relation = true : null;
             } else {
@@ -980,15 +997,15 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
             getRelationFieldsFromFormStructure(node);
           }
         }
-        const fields = layer.getFields().filter(field => field.show); // get features show
+        const fields = layer.getFields().filter((field) => field.show); // get features show
         formStructure = {
           structure,
-          fields
-        }
+          fields,
+        };
       }
-    } else if (layer instanceof ol.layer.Vector){
+    } else if (layer instanceof ol.layer.Vector) {
       layerAttributes = layer.getProperties();
-      layerRelationsAttributes =  [];
+      layerRelationsAttributes = [];
       layerTitle = layer.get('name');
       layerId = layer.get('id');
       external = true;
@@ -996,9 +1013,9 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       sourceType = Layer.LayerTypes.VECTOR;
       const feature = featuresForLayer.features[0];
       layerAttributes = feature ? feature.getProperties() : [];
-      layerRelationsAttributes =  [];
+      layerRelationsAttributes = [];
       const split_layer_name = layer.split('_');
-      layerTitle = (split_layer_name.length > 4) ? split_layer_name.slice(0, split_layer_name.length -4).join(' '): layer;
+      layerTitle = (split_layer_name.length > 4) ? split_layer_name.slice(0, split_layer_name.length - 4).join(' ') : layer;
       layerId = layer;
       external = true;
     }
@@ -1016,10 +1033,10 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       show: true,
       filter,
       addfeaturesresults: {
-        active:false
+        active: false,
       },
       [DownloadFormats.name]: {
-        active: false
+        active: false,
       },
       external,
       editable,
@@ -1030,50 +1047,49 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       formStructure,
       error: '',
       rawdata: null, // rawdata response
-      loading: false
+      loading: false,
     };
-    if (featuresForLayer.rawdata){
+    if (featuresForLayer.rawdata) {
       layerObj.rawdata = featuresForLayer.rawdata;
-      layers.push(layerObj)
+      layers.push(layerObj);
     } else if (featuresForLayer.features && featuresForLayer.features.length) {
-      const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
+      const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter((attribute) => {
         try {
-          return attribute.name[0] === '_' || Number.isInteger(1*attribute.name[0])
-        } catch(e) {
-          return false
+          return attribute.name[0] === '_' || Number.isInteger(1 * attribute.name[0]);
+        } catch (e) {
+          return false;
         }
-      }).map(attribute => ({
+      }).map((attribute) => ({
         alias: attribute.name.replace(/_/, ''),
-        name: attribute.name
+        name: attribute.name,
       })) : [];
-      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
+      layerSpecialAttributesName.length && featuresForLayer.features.forEach((feature) => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
-      layerObj.attributes.forEach(attribute => {
+      layerObj.attributes.forEach((attribute) => {
         if (formStructure) {
-          const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
+          const relationField = layer.getFields().find((field) => field.name === attribute.name); // need to check all field also show false
           !relationField && formStructure.fields.push(attribute);
         }
         if (attribute.type === 'image') layerObj.hasImageField = true;
       });
-      featuresForLayer.features.forEach(feature => {
-        const {id:fid, geometry, properties:attributes} = this.getFeaturePropertiesAndGeometry(feature);
+      featuresForLayer.features.forEach((feature) => {
+        const { id: fid, geometry, properties: attributes } = this.getFeaturePropertiesAndGeometry(feature);
         if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
           id: fid,
           attributes,
           geometry,
-          show: true
+          show: true,
         };
         layerObj.features.push(featureObj);
         id += 1;
       });
       layers.push(layerObj);
-    }
-    else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
+    } else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
   };
-  featuresForLayers.forEach(featuresForLayer => {
+  featuresForLayers.forEach((featuresForLayer) => {
     if (!Array.isArray(featuresForLayer)) _handleFeatureFoLayer(featuresForLayer);
-    else featuresForLayer.forEach(featuresForLayer => _handleFeatureFoLayer(featuresForLayer));
+    else featuresForLayer.forEach((featuresForLayer) => _handleFeatureFoLayer(featuresForLayer));
   });
   return layers;
 };
@@ -1084,19 +1100,19 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
  * @param feature
  * @private
  */
-proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName, feature) {
+proto._setSpecialAttributesFeatureProperty = function (layerSpecialAttributesName, feature) {
   // get feature properties get from server request
   const featureAttributes = feature.getProperties();
   // get attributes special keys
   const featureAttributesNames = Object.keys(featureAttributes);
   if (layerSpecialAttributesName.length) {
-    layerSpecialAttributesName.forEach(attributeObj =>{
-      featureAttributesNames.find(featureAttribute => {
+    layerSpecialAttributesName.forEach((attributeObj) => {
+      featureAttributesNames.find((featureAttribute) => {
         if (featureAttribute === attributeObj.alias) {
           feature.set(attributeObj.name, feature.get(featureAttribute));
-          return true
+          return true;
         }
-      })
+      });
     });
   }
 };
@@ -1106,21 +1122,20 @@ proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName
  * @param feature
  * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
  */
-proto.getFeaturePropertiesAndGeometry = function(feature){
-  if (feature instanceof ol.Feature){
+proto.getFeaturePropertiesAndGeometry = function (feature) {
+  if (feature instanceof ol.Feature) {
     return {
-      properties:feature.getProperties(),
+      properties: feature.getProperties(),
       geometry: feature.getGeometry(),
-      id: feature.getId()
-    }
-  } else {
-    const {properties, geometry, id} = feature;
-    return {
-      properties,
-      geometry,
-      id
-    }
+      id: feature.getId(),
+    };
   }
+  const { properties, geometry, id } = feature;
+  return {
+    properties,
+    geometry,
+    id,
+  };
 };
 
 /**
@@ -1131,64 +1146,61 @@ proto.getFeaturePropertiesAndGeometry = function(feature){
  * @returns {{name: T, show: boolean, label: T}[]|*}
  * @private
  */
-proto._parseAttributes = function(layerAttributes, feature, sourceType) {
-  const {properties:featureAttributes} = this.getFeaturePropertiesAndGeometry(feature);
+proto._parseAttributes = function (layerAttributes, feature, sourceType) {
+  const { properties: featureAttributes } = this.getFeaturePropertiesAndGeometry(feature);
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
-    const attributes = layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1);
+    const attributes = layerAttributes.filter((attribute) => featureAttributesNames.indexOf(attribute.name) > -1);
     return attributes;
-  } else {
-    const {GDAL, WMS, WCS, WMST} = Layer.SourceTypes;
-    const showSourcesTypes = [GDAL, WMS, WCS, WMST];
-    return featureAttributesNames.map(featureAttributesName => {
-      return {
-        name: featureAttributesName,
-        label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
-      }
-    })
   }
+  const {
+    GDAL, WMS, WCS, WMST,
+  } = Layer.SourceTypes;
+  const showSourcesTypes = [GDAL, WMS, WCS, WMST];
+  return featureAttributesNames.map((featureAttributesName) => ({
+    name: featureAttributesName,
+    label: featureAttributesName,
+    show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1),
+  }));
 };
 
-proto.trigger = async function(actionId, layer, feature, index, container) {
+proto.trigger = async function (actionId, layer, feature, index, container) {
   const actionMethod = this._actions[actionId];
   actionMethod && actionMethod(layer, feature, index);
   if (layer) {
     const layerActions = this.state.layersactions[layer.id];
     if (layerActions) {
-      const action = layerActions.find(layerAction => layerAction.id === actionId);
-      action && await this.triggerLayerAction(action,layer,feature, index, container);
+      const action = layerActions.find((layerAction) => layerAction.id === actionId);
+      action && await this.triggerLayerAction(action, layer, feature, index, container);
     }
   }
 };
 
-proto.triggerLayerAction = async function(action,layer,feature, index, container) {
-  action.cbk && await action.cbk(layer,feature, action, index, container);
+proto.triggerLayerAction = async function (action, layer, feature, index, container) {
+  action.cbk && await action.cbk(layer, feature, action, index, container);
   if (action.route) {
     let url;
-    let urlTemplate = action.route;
-    url = urlTemplate.replace(/{(\w*)}/g,function(m,key){
-      return feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : "";
-    });
+    const urlTemplate = action.route;
+    url = urlTemplate.replace(/{(\w*)}/g, (m, key) => (feature.attributes.hasOwnProperty(key) ? feature.attributes[key] : ''));
     url && url !== '' && GUI.goto(url);
   }
 };
 
-proto.registerVectorLayer = function(vectorLayer) {
+proto.registerVectorLayer = function (vectorLayer) {
   this._vectorLayers.indexOf(vectorLayer) === -1 && this._vectorLayers.push(vectorLayer);
 };
 
-proto.unregisterVectorLayer = function(vectorLayer) {
-  this._vectorLayers = this._vectorLayers.filter(layer => {
-    this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== vectorLayer.get('id'));
+proto.unregisterVectorLayer = function (vectorLayer) {
+  this._vectorLayers = this._vectorLayers.filter((layer) => {
+    this.state.layers = this.state.layers && this.state.layers.filter((layer) => layer.id !== vectorLayer.get('id'));
     return layer !== vectorLayer;
   });
 };
 
-proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
+proto.getVectorLayerFeaturesFromQueryRequest = function (vectorLayer, query = {}) {
   let isVisible = false;
-  const {coordinates, bbox, geometry} = query; // extract information about query type
+  const { coordinates, bbox, geometry } = query; // extract information about query type
   let features = [];
   switch (vectorLayer.constructor) {
     case VectorLayer:
@@ -1204,12 +1216,12 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
     const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
     this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
       features.push(feature);
-    },  {
+    }, {
       layerFilter(layer) {
         return layer === vectorLayer;
-      }
+      },
     });
-    //case bbox
+    // case bbox
   } else if (bbox && Array.isArray(bbox)) {
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     switch (vectorLayer.constructor) {
@@ -1217,19 +1229,19 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
         features = vectorLayer.getIntersectedFeatures(geometry);
         break;
       case ol.layer.Vector:
-        vectorLayer.getSource().getFeatures().forEach(feature => {
+        vectorLayer.getSource().getFeatures().forEach((feature) => {
           geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
         });
         break;
     }
-    //case geometry
+    // case geometry
   } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
     switch (vectorLayer.constructor) {
       case VectorLayer:
         features = vectorLayer.getIntersectedFeatures(geometry);
         break;
       case ol.layer.Vector:
-        vectorLayer.getSource().getFeatures().forEach(feature => {
+        vectorLayer.getSource().getFeatures().forEach((feature) => {
           geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
         });
         break;
@@ -1237,82 +1249,82 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
   }
   return {
     features,
-    layer: vectorLayer
+    layer: vectorLayer,
   };
 };
 
-proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', (queryResponse, options={}) => {
-    const {query={}} = queryResponse;
-    const {add=false}= options;
-    !add && this._vectorLayers.forEach(vectorLayer => {
+proto._addVectorLayersDataToQueryResponse = function () {
+  this.onbefore('setQueryResponse', (queryResponse, options = {}) => {
+    const { query = {} } = queryResponse;
+    const { add = false } = options;
+    !add && this._vectorLayers.forEach((vectorLayer) => {
       const responseObj = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, query);
-      if(!queryResponse.data) queryResponse.data = [];
+      if (!queryResponse.data) queryResponse.data = [];
       queryResponse.data.push(responseObj);
-    })
+    });
   });
 };
 
-//function to add custom component in query result
-proto._addComponent = function(component) {
-  this.state.components.push(component)
+// function to add custom component in query result
+proto._addComponent = function (component) {
+  this.state.components.push(component);
 };
 
-proto._printSingleAtlas = function({atlas={}, features=[]}={}){
-  let {name:template, atlas: {field_name}} = atlas;
+proto._printSingleAtlas = function ({ atlas = {}, features = [] } = {}) {
+  let { name: template, atlas: { field_name } } = atlas;
   field_name = field_name || '$id';
-  const values = features.map(feature => feature.attributes[field_name === '$id' ?  G3W_FID: field_name]);
+  const values = features.map((feature) => feature.attributes[field_name === '$id' ? G3W_FID : field_name]);
   const download_caller_id = ApplicationService.setDownload(true);
   return this.printService.printAtlas({
     field: field_name,
     values,
     template,
-    download: true
-  }).then(({url}) =>{
-      downloadFile({
-        url,
-        filename: template,
-        mime_type: 'application/pdf'
-      }).catch(error=>{
-        GUI.showUserMessage({
-          type: 'alert',
-          error
-        })
-      }).finally(()=>{
-        ApplicationService.setDownload(false, download_caller_id);
-        GUI.setLoadingContent(false);
-      })
-  })
+    download: true,
+  }).then(({ url }) => {
+    downloadFile({
+      url,
+      filename: template,
+      mime_type: 'application/pdf',
+    }).catch((error) => {
+      GUI.showUserMessage({
+        type: 'alert',
+        error,
+      });
+    }).finally(() => {
+      ApplicationService.setDownload(false, download_caller_id);
+      GUI.setLoadingContent(false);
+    });
+  });
 };
 
-proto.showChart = function(ids, container, relationData){
+proto.showChart = function (ids, container, relationData) {
   this.emit('show-chart', ids, container, relationData);
 };
 
-proto.hideChart = function(container){
+proto.hideChart = function (container) {
   this.emit('hide-chart', container);
 };
 
-proto.showRelationsChart = function(ids=[], layer, feature, action, index, container){
+proto.showRelationsChart = function (ids = [], layer, feature, action, index, container) {
   action.state.toggled[index] = !action.state.toggled[index];
-  if (action.state.toggled[index]){
+  if (action.state.toggled[index]) {
     const relations = this._relations[layer.id];
     const relationData = {
       relations,
       fid: feature.attributes[G3W_FID],
-      height: 400
+      height: 400,
     };
-    this.emit('show-chart', ids, container, relationData)
-  } else this.hideChart(container)
+    this.emit('show-chart', ids, container, relationData);
+  } else this.hideChart(container);
 };
 
-proto.printAtlas = function(layer, feature){
-  let {id:layerId, features} = layer;
+proto.printAtlas = function (layer, feature) {
+  let { id: layerId, features } = layer;
   const inputAtlasAttr = 'g3w_atlas_index';
-  features = feature ? [feature]: features;
+  features = feature ? [feature] : features;
   const atlasLayer = this.getAtlasByLayerId(layerId);
   if (atlasLayer.length > 1) {
-    let inputs='';
+    let inputs = '';
     atlasLayer.forEach((atlas, index) => {
       const id = getUniqueDomId();
       inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
@@ -1321,43 +1333,45 @@ proto.printAtlas = function(layer, feature){
     });
 
     GUI.showModalDialog({
-      title: "Seleziona Template",
+      title: 'Seleziona Template',
       message: inputs,
       buttons: {
         success: {
-          label: "OK",
-          className: "skin-button",
-          callback: ()=> {
+          label: 'OK',
+          className: 'skin-button',
+          callback: () => {
             const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
             if (index !== null || index !== undefined) {
               const atlas = atlasLayer[index];
               this._printSingleAtlas({
                 atlas,
-                features
-              })
+                features,
+              });
             }
-          }
-        }
-      }
-    })
-  } else this._printSingleAtlas({
+          },
+        },
+      },
+    });
+  } else {
+    this._printSingleAtlas({
       atlas: atlasLayer[0],
-      features
-    })
+      features,
+    });
+  }
 };
 
 /**
  * Method that in case
  * @param layer
  */
-proto.showLayerDownloadFormats = function(layer) {
+proto.showLayerDownloadFormats = function (layer) {
   const layerKey = DownloadFormats.name;
   layer[layerKey].active = !layer[layerKey].active;
   this.setLayerActionTool({
     layer,
     component: layer[layerKey].active ? DownloadFormats : null,
-    config: layer[layerKey].active ? this.state.actiontools[layerKey][layer.id] : null
-  })
+    config: layer[layerKey].active ? this.state.actiontools[layerKey][layer.id] : null,
+  });
 };
 
 /**
@@ -1366,60 +1380,58 @@ proto.showLayerDownloadFormats = function(layer) {
  * @param layerId
  * @param features
  */
-proto.downloadFeatures = async function(type, layer, features=[], action, index){
+proto.downloadFeatures = async function (type, layer, features = [], action, index) {
   const layerId = layer.id;
-  const {query={}} = this.state;
-  features = features ? Array.isArray(features) ? features : [features]: features;
+  const { query = {} } = this.state;
+  features = features ? Array.isArray(features) ? features : [features] : features;
   const data = {
-    fids : features.map(feature => feature.attributes[G3W_FID]).join(',')
+    fids: features.map((feature) => feature.attributes[G3W_FID]).join(','),
   };
   /**
    * is a function that che be called in case of querybypolygon
    * @param active
    */
-  const runDownload = async (active=false) => {
+  const runDownload = async (active = false) => {
     if (features.length > 1) {
       layer[DownloadFormats.name].active = active;
       this.setLayerActionTool({
-        layer
-      })
+        layer,
+      });
     }
     const projectLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
     const download_caller_id = ApplicationService.setDownload(true);
     GUI.setLoadingContent(true);
     try {
       await projectLayer.getDownloadFilefromDownloadDataType(type, {
-        data
+        data,
       }) || Promise.resolve();
-    } catch(err){
-      GUI.notify.error(err || t("info.server_error"));
+    } catch (err) {
+      GUI.notify.error(err || t('info.server_error'));
     }
     ApplicationService.setDownload(false, download_caller_id);
     GUI.setLoadingContent(false);
-    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+    const downloadsactions = this.state.layersactions[layer.id].find((action) => action.id === 'downloads');
     if (features.length > 1) {
       if (downloadsactions === undefined) {
         layer[type].active = false;
         this.setLayerActionTool({
-          layer
-        })
-      }
-      else layer[DownloadFormats.name].active = false;
-    }
-    else {
+          layer,
+        });
+      } else layer[DownloadFormats.name].active = false;
+    } else {
       if (downloadsactions === undefined) action.state.toggled[index] = false;
       else downloadsactions.state.toggled[index] = false;
       this.setCurrentActionLayerFeatureTool({
         index,
         action,
-        layer
+        layer,
       });
     }
   };
-  if (query.type === 'polygon'){
-    //check if multidownload if present
-    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
-    let {fid, layer:polygonLayer} = query;
+  if (query.type === 'polygon') {
+    // check if multidownload if present
+    const downloadsactions = this.state.layersactions[layer.id].find((action) => action.id === 'downloads');
+    const { fid, layer: polygonLayer } = query;
     const config = {
       choices: [
         {
@@ -1433,9 +1445,9 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
           label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
         },
       ],
-      download: type =>{
+      download: (type) => {
         // choose between only feature attribute or also polygon attibute
-        if (type === 'polygon'){
+        if (type === 'polygon') {
           // id type polygon add paramateres to api download
           data.sbp_qgs_layer_id = polygonLayer.getId();
           data.sbp_fid = fid;
@@ -1444,8 +1456,8 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
           delete data.sbp_fid;
           delete data.sbp_qgs_layer_id;
         }
-        runDownload(true)
-      }
+        runDownload(true);
+      },
     };
     if (features.length === 1) {
       if (downloadsactions === undefined) {
@@ -1457,73 +1469,73 @@ proto.downloadFeatures = async function(type, layer, features=[], action, index)
         layer,
         index,
         action,
-        component: QueryPolygonCsvAttributesComponent
+        component: QueryPolygonCsvAttributesComponent,
       });
-    } else {
-      if (downloadsactions === undefined) {
-        layer[type].active = !layer[type].active;
-        if (layer[type].active) {
-          this.setLayerActionTool({
-            layer,
-            component: QueryPolygonCsvAttributesComponent,
-            config
-          });
-        } else this.setLayerActionTool({
-          layer
-        })
-      } else {
+    } else if (downloadsactions === undefined) {
+      layer[type].active = !layer[type].active;
+      if (layer[type].active) {
         this.setLayerActionTool({
           layer,
           component: QueryPolygonCsvAttributesComponent,
-          config
+          config,
+        });
+      } else {
+        this.setLayerActionTool({
+          layer,
         });
       }
+    } else {
+      this.setLayerActionTool({
+        layer,
+        component: QueryPolygonCsvAttributesComponent,
+        config,
+      });
     }
   } else runDownload();
 };
 
-proto.downloadGpx = function({id:layerId}={}, feature){
+proto.downloadGpx = function ({ id: layerId } = {}, feature) {
   const fid = feature ? feature.attributes[G3W_FID] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  layer.getGpx({fid}).catch((err) => {
-    GUI.notify.error(t("info.server_error"));
+  layer.getGpx({ fid }).catch((err) => {
+    GUI.notify.error(t('info.server_error'));
   }).finally(() => {
     this.layerMenu.loading.shp = false;
     this._hideMenu();
-  })
+  });
 };
 
-proto.downloadXls = function({id:layerId}={}, feature){
+proto.downloadXls = function ({ id: layerId } = {}, feature) {
   const fid = feature ? feature.attributes[G3W_FID] : null;
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  layer.getXls({fid}).catch(err => {
-    GUI.notify.error(t("info.server_error"));
+  layer.getXls({ fid }).catch((err) => {
+    GUI.notify.error(t('info.server_error'));
   }).finally(() => {
     this.layerMenu.loading.shp = false;
     this._hideMenu();
-  })
+  });
 };
 
-proto.listenClearSelection = function(layer, actionId){
+proto.listenClearSelection = function (layer, actionId) {
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
-  const handler = ()=>{
-    const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
+  const handler = () => {
+    const action = this.state.layersactions[layer.id].find((action) => action.id === actionId);
     layer.features.forEach((feature, index) => action.state.toggled[index] = false);
   };
   _layer.on('unselectionall', handler);
   this.unlistenerlayeractionevents.push({
-    layer:_layer,
-    event:'unselectionall',
-    handler
-  })
+    layer: _layer,
+    event: 'unselectionall',
+    handler,
+  });
 };
 
-proto.unlistenerEventsActions = function(){
-  this.unlistenerlayeractionevents.forEach(obj => obj.layer.off(obj.event, obj.handler));
+proto.unlistenerEventsActions = function () {
+  this.unlistenerlayeractionevents.forEach((obj) => obj.layer.off(obj.event, obj.handler));
   this.unlistenerlayeractionevents = [];
 };
 
-proto.addRemoveFilter = function(layer){
+proto.addRemoveFilter = function (layer) {
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   _layer.toggleFilterToken();
 };
@@ -1532,15 +1544,15 @@ proto.addRemoveFilter = function(layer){
  *
  * @param layer
  */
-proto.selectionFeaturesLayer = function(layer) {
+proto.selectionFeaturesLayer = function (layer) {
   const layerId = layer.id;
-  const action = this.state.layersactions[layerId].find(action => action.id === 'selection');
+  const action = this.state.layersactions[layerId].find((action) => action.id === 'selection');
   const bool = Object.values(action.state.toggled).reduce((acculmulator, value) => acculmulator && value, true);
   const _layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   layer.features.forEach((feature, index) => {
     action.state.toggled[index] = !bool;
     this._addRemoveSelectionFeature(_layer, feature, index, bool ? 'remove' : 'add');
-  })
+  });
 };
 
 /**
@@ -1552,33 +1564,35 @@ proto.selectionFeaturesLayer = function(layer) {
  * @returns {Promise<void>}
  * @private
  */
-proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
-  const fid = feature ? feature.attributes[G3W_FID]: null;
+proto._addRemoveSelectionFeature = async function (layer, feature, index, force) {
+  const fid = feature ? feature.attributes[G3W_FID] : null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (!hasAlreadySelectioned) {
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
       layer.addOlSelectionFeature({
         id: fid,
-        geometry: feature.geometry
-      })
+        geometry: feature.geometry,
+      });
     }
   }
   if (force === undefined) {
-    layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
+    layer[hasAlreadySelectioned ? 'excludeSelectionFid' : 'includeSelectionFid'](fid);
   } else if (!hasAlreadySelectioned && force === 'add') await layer.includeSelectionFid(fid);
-    else if (hasAlreadySelectioned && force === 'remove') await layer.excludeSelectionFid(fid);
+  else if (hasAlreadySelectioned && force === 'remove') await layer.excludeSelectionFid(fid);
   if (layer.getFilterActive()) {
-    const currentLayer = this.state.layers.find(_layer => _layer.id === layer.getId());
+    const currentLayer = this.state.layers.find((_layer) => _layer.id === layer.getId());
     layer.getSelectionFids().size > 0 && currentLayer && currentLayer.features.splice(index, 1);
     this.mapService.clearHighlightGeometry();
     this.state.layers.length === 1 && !this.state.layers[0].features.length && this.state.layers.splice(0);
   }
 };
 
-proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
+proto.checkFeatureSelection = function ({
+  layerId, feature, index, action,
+} = {}) {
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   if (feature) {
-    const fid = feature ? feature.attributes[G3W_FID]: null;
+    const fid = feature ? feature.attributes[G3W_FID] : null;
     action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
   }
 };
@@ -1590,61 +1604,61 @@ proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
  * @param action
  * @param index
  */
-proto.addToSelection = function(layer, feature, action, index){
+proto.addToSelection = function (layer, feature, action, index) {
   action.state.toggled[index] = !action.state.toggled[index];
   const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
-proto.removeQueryResultLayerFromMap = function(){
+proto.removeQueryResultLayerFromMap = function () {
   this.resultsQueryLayer.getSource().clear();
-  this.mapService.getMap().removeLayer(this.resultsQueryLayer)
+  this.mapService.getMap().removeLayer(this.resultsQueryLayer);
 };
 
 // show layerQuery result on map
-proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
+proto.addQueryResultsLayerToMap = function ({ feature, timeout = 1500 }) {
   this.removeQueryResultLayerFromMap();
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
   try {
     const center = ol.extent.getCenter(feature.getGeometry().getExtent());
     this.mapService.getMap().getView().setCenter(center);
-    console.log(center)
-  } catch(err){
+    console.log(center);
+  } catch (err) {
 
   }
-  timeout && setTimeout(()=>{
+  timeout && setTimeout(() => {
     this.removeQueryResultLayerFromMap();
-  }, timeout)
+  }, timeout);
 };
 
 /**
  *
   Show featureFormCoordinates
  */
-proto.showCoordinates = function(coordinates){
+proto.showCoordinates = function (coordinates) {
   const feature = createFeatureFromCoordinates(coordinates);
-  this.addQueryResultsLayerToMap({feature});
+  this.addQueryResultsLayerToMap({ feature });
 };
 
 /**
  * Show BBox
  * @param bbox
  */
-proto.showBBOX = function(bbox){
+proto.showBBOX = function (bbox) {
   const feature = createFeatureFromBBOX(bbox);
-  this.addQueryResultsLayerToMap({feature});
+  this.addQueryResultsLayerToMap({ feature });
 };
 
 /**
  * Show Geometry
  * @param geometry
  */
-proto.showGeometry = function(geometry){
+proto.showGeometry = function (geometry) {
   const feature = createFeatureFromGeometry({
-    geometry
+    geometry,
   });
-  this.addQueryResultsLayerToMap({feature});
+  this.addQueryResultsLayerToMap({ feature });
 };
 
 /**
@@ -1652,35 +1666,35 @@ proto.showGeometry = function(geometry){
  * @param layer
  * @param feature
  */
-proto.goToGeometry = function(layer, feature) {
+proto.goToGeometry = function (layer, feature) {
   if (feature.geometry) {
     const handlerOptions = {
       mapServiceMethod: this.isOneLayerResult() ? 'zoomToFeatures' : 'highlightGeometry',
       firstParam: this.isOneLayerResult() ? [feature] : feature.geometry,
       options: this.isOneLayerResult() ? {} : {
         layerId: layer.id,
-        duration: 1500
-      }
+        duration: 1500,
+      },
     };
     if (this._asyncFnc.goToGeometry.async) this._asyncFnc.todo = this.mapService[handlerOptions.mapServiceMethod].bind(this.mapService, handlerOptions.firstParam, handlerOptions.options);
-    else setTimeout(() => this.mapService[handlerOptions.mapServiceMethod](handlerOptions.firstParam, handlerOptions.options))
+    else setTimeout(() => this.mapService[handlerOptions.mapServiceMethod](handlerOptions.firstParam, handlerOptions.options));
   }
 };
 
-//save layer result
-proto.saveLayerResult = function({layer, type='csv'}={}) {
+// save layer result
+proto.saveLayerResult = function ({ layer, type = 'csv' } = {}) {
   this.downloadFeatures(type, layer, layer.features);
 };
 
-proto.highlightGeometry = function(layer, feature) {
-  feature.geometry &&  this.mapService.highlightGeometry(feature.geometry, {
-      layerId: layer.id,
-      zoom: false,
-      duration: Infinity
-    });
+proto.highlightGeometry = function (layer, feature) {
+  feature.geometry && this.mapService.highlightGeometry(feature.geometry, {
+    layerId: layer.id,
+    zoom: false,
+    duration: Infinity,
+  });
 };
 
-proto.clearHighlightGeometry = function(layer) {
+proto.clearHighlightGeometry = function (layer) {
   this.mapService.clearHighlightGeometry();
   this.isOneLayerResult() && this.highlightFeaturesPermanently(layer);
 };
@@ -1691,8 +1705,8 @@ proto.clearHighlightGeometry = function(layer) {
  * layerId : current layer fathre id
  * feature: current feature father id
  */
-proto.showRelation = function({relation, layerId, feature}={}){
-  const {name: relationId, nmRelationId} = relation;
+proto.showRelation = function ({ relation, layerId, feature } = {}) {
+  const { name: relationId, nmRelationId } = relation;
   const chartRelationIds = [];
   const projectRelation = this._project.getRelationById(relationId);
   const nmRelation = this._project.getRelationById(nmRelationId);
@@ -1705,28 +1719,26 @@ proto.showRelation = function({relation, layerId, feature}={}){
       nmRelation,
       feature,
       layer: {
-        id: layerId
-      }
+        id: layerId,
+      },
     }),
     title: projectRelation.name,
-    closable: false
-  })
+    closable: false,
+  });
 };
 
-proto.showQueryRelations = function(layer, feature, action) {
+proto.showQueryRelations = function (layer, feature, action) {
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
       chartRelationIds: action.chartRelationIds,
       feature,
-      layer
+      layer,
     }),
     backonclose: true,
     title: LIST_OF_RELATIONS_TITLE,
-    closable: false
+    closable: false,
   });
 };
 
 module.exports = QueryResultsService;
-
-

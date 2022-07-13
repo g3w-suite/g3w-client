@@ -1,27 +1,29 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
+
 const compiledTemplate = createCompiledTemplate(require('./relations.html'));
-module.exports =  {
+
+module.exports = {
   ...compiledTemplate,
-  props: ['relations', 'feature','loading'],
+  props: ['relations', 'feature', 'loading'],
   methods: {
     showRelation(relation) {
       this.$parent.showRelation(relation);
     },
     featureInfo() {
-      let infoFeatures = [];
+      const infoFeatures = [];
       let index = 0;
       Object.entries(this.feature.attributes).forEach(([key, value]) => {
         if (index > 2) return false;
-        if (value && _.isString(value) && value.indexOf('/') === -1 ) {
+        if (value && _.isString(value) && value.indexOf('/') === -1) {
           infoFeatures.push({
-            key: key,
-            value: value
+            key,
+            value,
           });
-          index+=1;
+          index += 1;
         }
       });
-      return infoFeatures
-    }
+      return infoFeatures;
+    },
   },
   mounted() {
     if (this.relations.length === 1) {
@@ -34,5 +36,5 @@ module.exports =  {
     if (this.relations.length === 1) {
       delete this.relations[0].noback;
     }
-  }
+  },
 };

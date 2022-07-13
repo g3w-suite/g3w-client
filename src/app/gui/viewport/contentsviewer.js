@@ -1,5 +1,5 @@
-const { base, inherit }= require('core/utils/utils');
-const {barstack:Stack} = require('gui/utils/utils');
+const { base, inherit } = require('core/utils/utils');
+const { barstack: Stack } = require('gui/utils/utils');
 const Component = require('gui/component/component');
 const compiledTemplate = Vue.compile(require('./contentsviewer.html'));
 
@@ -8,20 +8,20 @@ const InternalComponent = Vue.extend({
   ...compiledTemplate,
   data() {
     return {
-      state: null
-    }
-  }
+      state: null,
+    };
+  },
 });
 
-function ContentsViewerComponent(options={}) {
+function ContentsViewerComponent(options = {}) {
   base(this, options);
   this.stack = new Stack();
   this.setService(this);
-  this.title = "contents";
+  this.title = 'contents';
   this.contentsdata = this.stack.state.contentsdata;
   this.state.visible = true;
   const internalComponent = new InternalComponent({
-    service: this
+    service: this,
   });
   this.setInternalComponent(internalComponent);
   this.internalComponent.state = this.state;
@@ -31,28 +31,28 @@ inherit(ContentsViewerComponent, Component);
 
 const proto = ContentsViewerComponent.prototype;
 
-proto.setContent = function(options={}) {
+proto.setContent = function (options = {}) {
   const d = $.Deferred();
   const push = options.push || false;
-  const content = options.content;
+  const { content } = options;
   // clean the stack every time, sure to have just one component.
   // Use barstack because it handle the logic og mounting component on DOM
   if (!push) {
     // clear stack
     this.clearContents()
-    .then(() => {
-      this.addContent(content, options)
-      .then(() => d.resolve(options));
-    })
+      .then(() => {
+        this.addContent(content, options)
+          .then(() => d.resolve(options));
+      });
   } else {
-    this.addContent(content,options)
-    .then(() => d.resolve(options));
+    this.addContent(content, options)
+      .then(() => d.resolve(options));
   }
   this.setOpen(true);
   return d.promise();
 };
 
-proto.addContent = function(content, options={}) {
+proto.addContent = function (content, options = {}) {
   const d = $.Deferred();
   // parent element is the internal element
   options.parent = this.internalComponent.$el;
@@ -69,63 +69,63 @@ proto.addContent = function(content, options={}) {
 };
 
 // remove content from stack
-proto.removeContent = function() {
+proto.removeContent = function () {
   this.setOpen(false);
   return this.clearContents();
 };
 
 // used by  viewport.js
-proto.popContent = function() {
+proto.popContent = function () {
   return this.stack.pop()
-  .then(() => {
+    .then(() => {
     // update the content of contentsdata only after stack is updated
-    this.contentsdata = this.stack.state.contentsdata;
-    this.updateContentVisibility();
-  });
+      this.contentsdata = this.stack.state.contentsdata;
+      this.updateContentVisibility();
+    });
 };
 
 // get component through class
-proto.getComponentByClass = function(componentClass) {
+proto.getComponentByClass = function (componentClass) {
   let component;
   const contentdata = this.stack.getContentData();
-  contentdata.forEach(content => {
+  contentdata.forEach((content) => {
     if (content.content instanceof componentClass) {
       component = content.content;
-      return false
+      return false;
     }
   });
-  return component
+  return component;
 };
 
 // get component by component id
-proto.getComponentById = function(id) {
+proto.getComponentById = function (id) {
   let component;
   const contentdata = this.stack.getContentData();
-  contentdata.forEach(content => {
+  contentdata.forEach((content) => {
     if (content.content.id == id) {
       component = content.content;
-      return false
+      return false;
     }
   });
-  return component
+  return component;
 };
 
-proto.getContentData = function() {
+proto.getContentData = function () {
   return this.stack.getContentData();
 };
 
 // get current contentdata
-proto.getCurrentContentData = function(){
+proto.getCurrentContentData = function () {
   return this.stack.getCurrentContentData();
 };
 
 // get  previuos contentdata
-proto.getPreviousContentData = function() {
+proto.getPreviousContentData = function () {
   return this.stack.getPreviousContentData();
 };
 
 // update visibility of the components of content
-proto.updateContentVisibility = function() {
+proto.updateContentVisibility = function () {
   // hide each elements but not the last one
   const contentsEls = $(this.internalComponent.$el).children();
   contentsEls.hide();
@@ -134,29 +134,29 @@ proto.updateContentVisibility = function() {
 
 // stack clear because if we want the contentComponente stack
 // it has to be empty stack
-proto.clearContents = function() {
+proto.clearContents = function () {
   return this.stack.clear().then(() => this.contentsdata = this.stack.state.contentsdata);
 };
 
 // Set layout of the content each time
 // Parameters are: height and with of the parent content
-proto.layout = function(parentWidth, parentHeight) {
+proto.layout = function (parentWidth, parentHeight) {
   const el = $(this.internalComponent.$el);
-  //run the callback only after that vue state is updated
+  // run the callback only after that vue state is updated
   Vue.nextTick(() => {
-    const contentsdata = this.stack.state.contentsdata;
+    const { contentsdata } = this.stack.state;
     // el.parent() is div g3w-view-content
     const height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - 10; // margin 10 from bottom
     el.height(height);
     el.children().first().height(height);
-    contentsdata.forEach(data => {
-      //check each componentstored in stack
-      if (typeof data.content.layout == 'function') {
-        //call function layout of each component that are stored into the stack
+    contentsdata.forEach((data) => {
+      // check each componentstored in stack
+      if (typeof data.content.layout === 'function') {
+        // call function layout of each component that are stored into the stack
         data.content.layout(parentWidth + 0.5, height);
       }
-    })
-  })
+    });
+  });
 };
 
 module.exports = ContentsViewerComponent;

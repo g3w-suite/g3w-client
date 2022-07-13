@@ -2,20 +2,20 @@ const BaseLayers = require('../layers/bases');
 const Projections = require('../projection/projections');
 
 const MapHelpers = {
-  createViewer(opts={}){
+  createViewer(opts = {}) {
     return new _Viewer(opts);
-  }
+  },
 };
 
-const _Viewer = function(opts={}) {
+const _Viewer = function (opts = {}) {
   const controls = ol.control.defaults({
     attribution: false,
-    zoom: false
+    zoom: false,
   });
 
   const interactions = ol.interaction.defaults()
     .extend([
-      new ol.interaction.DragRotate()
+      new ol.interaction.DragRotate(),
     ]);
   interactions.removeAt(1);// remove douclickzoom
   const view = opts.view instanceof ol.View ? opts.view : new ol.View(opts.view);
@@ -24,46 +24,46 @@ const _Viewer = function(opts={}) {
     interactions,
     ol3Logo: false,
     view,
-    keyboardEventTarget: document
+    keyboardEventTarget: document,
   };
   if (opts.id) {
     options.target = opts.id;
   }
   Projections.setApplicationProjections();
-  const map  = new ol.Map(options);
+  const map = new ol.Map(options);
   this.map = map;
 };
 
-_Viewer.prototype.destroy = function(){
+_Viewer.prototype.destroy = function () {
   if (this.map) {
     this.map.dispose();
-    this.map = null
+    this.map = null;
   }
 };
 
-_Viewer.prototype.getView = function() {
+_Viewer.prototype.getView = function () {
   return this.map.getView();
 };
 
-_Viewer.prototype.updateMap = function(mapObject){};
+_Viewer.prototype.updateMap = function (mapObject) {};
 
-_Viewer.prototype.updateView = function(){};
+_Viewer.prototype.updateView = function () {};
 
-_Viewer.prototype.getMap = function(){
+_Viewer.prototype.getMap = function () {
   return this.map;
 };
 
-_Viewer.prototype.setTarget = function(id){
+_Viewer.prototype.setTarget = function (id) {
   this.map.setTarget(id);
 };
 
-_Viewer.prototype.zoomTo = function(coordinate, zoom) {
-  var view = this.map.getView();
+_Viewer.prototype.zoomTo = function (coordinate, zoom) {
+  const view = this.map.getView();
   view.setCenter(coordinate);
   view.setZoom(zoom);
 };
 
-_Viewer.prototype.goTo = function(coordinates, options) {
+_Viewer.prototype.goTo = function (coordinates, options) {
   options = options || {};
   const animate = options.animate || true;
   const zoom = options.zoom || false;
@@ -74,20 +74,20 @@ _Viewer.prototype.goTo = function(coordinates, options) {
   if (animate) {
     panAnimation = {
       duration,
-      center: coordinates
+      center: coordinates,
     };
     if (zoom) {
       zoomAnimation = {
         duration,
-        zoom
+        zoom,
       };
     } else {
       zoomAnimation = {
         duration,
-        resolution: view.getResolution()
+        resolution: view.getResolution(),
       };
     }
-    view.animate(panAnimation,zoomAnimation);
+    view.animate(panAnimation, zoomAnimation);
   } else {
     view.setCenter(coordinates);
     if (zoom) {
@@ -96,7 +96,7 @@ _Viewer.prototype.goTo = function(coordinates, options) {
   }
 };
 
-_Viewer.prototype.goToRes = function(coordinates, options){
+_Viewer.prototype.goToRes = function (coordinates, options) {
   options = options || {};
   const animate = options.animate || true;
   const view = this.map.getView();
@@ -106,20 +106,20 @@ _Viewer.prototype.goToRes = function(coordinates, options){
   if (animate) {
     panAnimation = {
       duration: 200,
-      center: coordinates
+      center: coordinates,
     };
     zoomAnimation = {
       duration: 200,
-      resolution: resolution
+      resolution,
     };
-    view.animate(panAnimation,zoomAnimation);
+    view.animate(panAnimation, zoomAnimation);
   } else {
     view.setCenter(coordinates);
     view.setResolution(resolution);
   }
 };
 
-_Viewer.prototype.fit = function(geometry, options={}){
+_Viewer.prototype.fit = function (geometry, options = {}) {
   const view = this.map.getView();
   const animate = options.animate || true;
   let panAnimation;
@@ -128,42 +128,42 @@ _Viewer.prototype.fit = function(geometry, options={}){
   if (animate) {
     panAnimation = view.animate({
       duration,
-      center: view.getCenter()
+      center: view.getCenter(),
     });
     zoomAnimation = view.animate({
       duration,
-      resolution: view.getResolution()
+      resolution: view.getResolution(),
     });
   }
 
   if (options.animate) {
     delete options.animate; // non lo passo al metodo di OL3 perché è un'opzione interna
   }
-  options.constrainResolution = options.constrainResolution === undefined && true ||  options.constrainResolution;
+  options.constrainResolution = options.constrainResolution === undefined && true || options.constrainResolution;
   options.size = this.map.getSize();
   view.fit(geometry, options);
 };
 
-_Viewer.prototype.getZoom = function(){
+_Viewer.prototype.getZoom = function () {
   const view = this.map.getView();
   return view.getZoom();
 };
 
-_Viewer.prototype.getResolution = function(){
+_Viewer.prototype.getResolution = function () {
   const view = this.map.getView();
   return view.getResolution();
 };
 
-_Viewer.prototype.getCenter = function(){
+_Viewer.prototype.getCenter = function () {
   const view = this.map.getView();
   return view.getCenter();
 };
 
-_Viewer.prototype.getBBOX = function(){
+_Viewer.prototype.getBBOX = function () {
   return this.map.getView().calculateExtent(this.map.getSize());
 };
 
-_Viewer.prototype.getLayerByName = function(layerName) {
+_Viewer.prototype.getLayerByName = function (layerName) {
   const layers = this.map.getLayers();
   const length = layers.getLength();
   for (let i = 0; i < length; i++) {
@@ -174,35 +174,35 @@ _Viewer.prototype.getLayerByName = function(layerName) {
   return null;
 };
 
-_Viewer.prototype.removeLayerByName = function(layerName){
+_Viewer.prototype.removeLayerByName = function (layerName) {
   let layer = this.getLayerByName(layerName);
-  if (layer){
+  if (layer) {
     this.map.removeLayer(layer);
     layer = undefined;
   }
 };
 
-_Viewer.prototype.getActiveLayers = function(){
+_Viewer.prototype.getActiveLayers = function () {
   const activelayers = [];
   this.map.getLayers().forEach((layer) => {
     const props = layer.getProperties();
-    if (props.basemap !== true && props.visible){
-       activelayers.push(layer);
+    if (props.basemap !== true && props.visible) {
+      activelayers.push(layer);
     }
   });
 
   return activelayers;
 };
 
-_Viewer.prototype.removeLayers = function() {
+_Viewer.prototype.removeLayers = function () {
   this.map.getLayers().clear();
 };
 
-_Viewer.prototype.getLayersNoBase = function(){
+_Viewer.prototype.getLayersNoBase = function () {
   const layers = [];
   this.map.getLayers().forEach((layer) => {
     const props = layer.getProperties();
-    if (props.basemap != true){
+    if (props.basemap != true) {
       layers.push(layer);
     }
   });
@@ -210,13 +210,13 @@ _Viewer.prototype.getLayersNoBase = function(){
   return layers;
 };
 
-_Viewer.prototype.addBaseLayer = function(type){
+_Viewer.prototype.addBaseLayer = function (type) {
   let layer;
-  type ? layer = BaseLayers[type]:  layer = BaseLayers.BING.Aerial;
+  type ? layer = BaseLayers[type] : layer = BaseLayers.BING.Aerial;
   this.map.addLayer(layer);
 };
 
-_Viewer.prototype.changeBaseLayer = function(layerName){
+_Viewer.prototype.changeBaseLayer = function (layerName) {
   const baseLayer = this.getLayerByName(layername);
   const layers = this.map.getLayers();
   layers.insertAt(0, baseLayer);

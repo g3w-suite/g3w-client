@@ -17,35 +17,35 @@ const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
 const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
 
 const ControlsFactory = {
-  create(options={}) {
+  create(options = {}) {
     let control;
     const ControlClass = ControlsFactory.CONTROLS[options.type];
     if (ControlClass) control = new ControlClass(options);
     return control;
-  }
+  },
 };
 
 ControlsFactory.CONTROLS = {
-  'reset': ResetControl,
-  'zoombox': ZoomBoxControl,
-  'zoomtoextent': OLControl,
-  'query': QueryControl,
-  'querybbox': QueryBBoxControl,
-  'querybypolygon': QueryByPolygonControl,
-  'geolocation': GeolocationControl,
-  'streetview': StreetViewControl,
-  'zoom': OLControl,
-  'scaleline': OLControl,
-  'overview': OLControl,
-  'nominatim': NominatimControl,
-  'addlayers': AddLayersControl,
-  'length': LengthControl,
-  'area': AreaControl,
-  'mouseposition': MousePositionControl,
-  'scale': ScaleControl,
-  'onclick': OnClikControl,
-  'screenshot': ScreenshotControl,
-  'geoscreenshot': geoScreenshotControl
+  reset: ResetControl,
+  zoombox: ZoomBoxControl,
+  zoomtoextent: OLControl,
+  query: QueryControl,
+  querybbox: QueryBBoxControl,
+  querybypolygon: QueryByPolygonControl,
+  geolocation: GeolocationControl,
+  streetview: StreetViewControl,
+  zoom: OLControl,
+  scaleline: OLControl,
+  overview: OLControl,
+  nominatim: NominatimControl,
+  addlayers: AddLayersControl,
+  length: LengthControl,
+  area: AreaControl,
+  mouseposition: MousePositionControl,
+  scale: ScaleControl,
+  onclick: OnClikControl,
+  screenshot: ScreenshotControl,
+  geoscreenshot: geoScreenshotControl,
 };
 
 module.exports = ControlsFactory;

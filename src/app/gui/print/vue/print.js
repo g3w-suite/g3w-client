@@ -1,7 +1,8 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
 import FidAtlasValues from './components/fidatlasvalues.vue';
-const {inherit, base} = require('core/utils/utils');
+
+const { inherit, base } = require('core/utils/utils');
 const Component = require('gui/component/component');
 const PrintService = require('gui/print/printservice');
 const compiledTemplate = createCompiledTemplate(require('./print.html'));
@@ -12,33 +13,33 @@ const vueComponentOptions = {
     return {
       state: null,
       button: {
-        class: "btn-success",
-        type:"stampa",
-        disabled: false
-      }
-    }
+        class: 'btn-success',
+        type: 'stampa',
+        disabled: false,
+      },
+    };
   },
   components: {
     SelectAtlasFieldValues,
-    FidAtlasValues
+    FidAtlasValues,
   },
   computed: {
     disabled() {
       return this.state.output.loading || (!!this.state.atlas && this.state.atlasValues.length === 0);
-    }
+    },
   },
   methods: {
-    setDisabledPrintButton(bool=false){
+    setDisabledPrintButton(bool = false) {
       this.button.disabled = bool;
     },
-    setAtlasValues(values=[]){
+    setAtlasValues(values = []) {
       this.state.atlasValues = values;
     },
     onChangeTemplate() {
       this.$options.service.changeTemplate();
     },
     onChangeScale() {
-      this.$options.service.changeScale()
+      this.$options.service.changeScale();
     },
     onChangeFormat() {},
     onChangeDpi() {},
@@ -56,36 +57,36 @@ const vueComponentOptions = {
     },
     print() {
       this.$options.service.print();
-    }
-  }
+    },
+  },
 };
 
-function PrintComponent(options={}) {
+function PrintComponent(options = {}) {
   base(this, options);
-  this.title = "print";
+  this.title = 'print';
   this.vueComponent = vueComponentOptions;
   this.internalComponent = null;
-  const service = options.service || new PrintService;
+  const service = options.service || new PrintService();
   this.setService(service);
   // init service
   this._service.init();
   this.setInternalComponent = function () {
     const InternalComponent = Vue.extend(this.vueComponent);
     this.internalComponent = new InternalComponent({
-      service
+      service,
     });
     this.state.visible = service.state.visible;
     this.internalComponent.state = service.state;
     return this.internalComponent;
   };
 
-  this._reload = function() {
+  this._reload = function () {
     const service = this.getService();
     service.reload();
     this.state.visible = service.state.visible;
   };
 
-  this._setOpen = function(bool) {
+  this._setOpen = function (bool) {
     this._service.showPrintArea(bool);
   };
 }
@@ -93,5 +94,3 @@ function PrintComponent(options={}) {
 inherit(PrintComponent, Component);
 
 module.exports = PrintComponent;
-
-

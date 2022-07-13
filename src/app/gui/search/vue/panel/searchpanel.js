@@ -1,69 +1,72 @@
-import Select2 from './select2.vue'
-import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const {base, inherit, uniqueId} = require('core/utils/utils');
+import { EXPRESSION_OPERATORS } from 'core/layers/filter/operators';
+import Select2 from './select2.vue';
+
+const { base, inherit, uniqueId } = require('core/utils/utils');
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 const compiledTemplate = Vue.compile(require('./searchpanel.html'));
 
 const SearchPanelComponent = Vue.extend({
   ...compiledTemplate,
-  components:{
-    Select2
+  components: {
+    Select2,
   },
   data() {
     return {
-     state: this.$options.service.state
-    }
+      state: this.$options.service.state,
+    };
   },
   methods: {
-    getLabelOperator(operator){
-      return `[ ${EXPRESSION_OPERATORS[operator]} ]`
+    getLabelOperator(operator) {
+      return `[ ${EXPRESSION_OPERATORS[operator]} ]`;
     },
     async onFocus(event) {
       if (this.isMobile()) {
-        const top = $(event.target).position().top - 10 ;
+        const top = $(event.target).position().top - 10;
         await this.$nextTick();
         setTimeout(() => {
           $('.sidebar').scrollTop(top);
-          }, 500);
+        }, 500);
       }
     },
-    async autocompleteRequest(params={}){
+    async autocompleteRequest(params = {}) {
       return this.$options.service.autocompleteRequest(params);
     },
-    changeDependencyFields({attribute:field, value}) {
+    changeDependencyFields({ attribute: field, value }) {
       const subscribers = this.$options.service.getDependencies(field);
       return subscribers.length ? this.$options.service.fillDependencyInputs({
         field,
         subscribers,
-        value
-      }): Promise.resolve();
+        value,
+      }) : Promise.resolve();
     },
     changeNumericInput(input) {
       input.value = input.value || input.value === 0 ? input.value : null;
       this.changeInput(input);
     },
     changeInput(input) {
-      let {id, attribute, value, type} = input;
+      let {
+        id, attribute, value, type,
+      } = input;
       try {
-        //try to trim value inside try catch some cases tha trim doesn't work to avoid
+        // try to trim value inside try catch some cases tha trim doesn't work to avoid
         // to check if has one reason to trim
         value = type === 'textfield' || type === 'textField' ? value : value.trim();
-      } catch(err){}
-      this.$options.service.changeInput({id, value});
+      } catch (err) {}
+      this.$options.service.changeInput({ id, value });
       this.state.searching = true;
       this.changeDependencyFields({
         attribute,
-        value
+        value,
       }).finally(() => {
         this.state.searching = false;
-      })
+      });
     },
     doSearch(event) {
-     event.preventDefault();
-     this.$options.service.run();
-    }
-  }
+      event.preventDefault();
+      this.$options.service.run();
+    },
+  },
 });
 
 function SearchPanel(options = {}) {
@@ -72,14 +75,14 @@ function SearchPanel(options = {}) {
   this.id = uniqueId();
   const SearchPanel = options.component || SearchPanelComponent;
   const internalPanel = new SearchPanel({
-    service
+    service,
   });
   this.setInternalPanel(internalPanel);
-  this.unmount = function() {
+  this.unmount = function () {
     return base(this, 'unmount').then(() => {
-      service.clear()
-    })
-  }
+      service.clear();
+    });
+  };
 }
 
 inherit(SearchPanel, Panel);

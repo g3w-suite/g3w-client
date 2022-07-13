@@ -1,62 +1,66 @@
-const {base, inherit}= require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
-function Step(options={}) {
+function Step(options = {}) {
   base(this);
-  const {inputs=null, context=null, task= null, outputs=null, escKeyPressEventHandler} = options;
+  const {
+    inputs = null, context = null, task = null, outputs = null, escKeyPressEventHandler,
+  } = options;
   this._inputs = inputs;
   this._context = context;
   this._task = task;
   this._outputs = outputs;
-  //dynamic state of step
+  // dynamic state of step
   this.state = {
     id: options.id || null,
     name: options.name || null,
     help: options.help || null, // help to show wat the user has to do
     running: false, // running
     error: null, // error
-    message: options.message || null // message
+    message: options.message || null, // message
   };
-  escKeyPressEventHandler && this.registerEscKeyEvent(escKeyPressEventHandler)
+  escKeyPressEventHandler && this.registerEscKeyEvent(escKeyPressEventHandler);
 }
 
 inherit(Step, G3WObject);
 
 const proto = Step.prototype;
 
-//bind interrupt event on keys escape pressed
+// bind interrupt event on keys escape pressed
 
-proto.escKeyUpHandler = function(evt) {
-   const {task, callback} = evt.data;
-  if (evt.key === 'Escape') callback({
-    task
-  });
+proto.escKeyUpHandler = function (evt) {
+  const { task, callback } = evt.data;
+  if (evt.key === 'Escape') {
+    callback({
+      task,
+    });
+  }
 };
 
-proto.unbindEscKeyUp = function() {
+proto.unbindEscKeyUp = function () {
   $(document).unbind('keyup', this.escKeyUpHandler);
 };
 
-proto.bindEscKeyUp = function(callback=()=>{}) {
+proto.bindEscKeyUp = function (callback = () => {}) {
   $(document).on('keyup', {
     callback,
-    task: this.getTask()
+    task: this.getTask(),
   }, this.escKeyUpHandler);
 };
 
-proto.registerEscKeyEvent = function(callback){
-  this.on('run', ()=> this.bindEscKeyUp(callback));
-  this.on('stop', ()=> this.unbindEscKeyUp());
+proto.registerEscKeyEvent = function (callback) {
+  this.on('run', () => this.bindEscKeyUp(callback));
+  this.on('stop', () => this.unbindEscKeyUp());
 };
 
 // End of handle key esc pressed
 
 // method to start task
-proto.run = function(inputs, context, queques) {
-  //emit run
+proto.run = function (inputs, context, queques) {
+  // emit run
   this.emit('run', {
     inputs,
-    context
+    context,
   });
   const d = $.Deferred();
   if (this._task) {
@@ -66,17 +70,16 @@ proto.run = function(inputs, context, queques) {
       this._task.setInputs(inputs);
       this._task.setContext(context);
       this._task.run(inputs, context, queques)
-        .then(outputs => {
+        .then((outputs) => {
           this.stop();
           d.resolve(outputs);
         })
-        .fail(err => {
+        .fail((err) => {
           this.stop();
           d.reject(err);
-        })
-    }
-    catch(err) {
-      console.log(err)
+        });
+    } catch (err) {
+      console.log(err);
       this.state.error = err;
       this.state.error = 'Problem ..';
       this.stop();
@@ -87,10 +90,10 @@ proto.run = function(inputs, context, queques) {
 };
 
 // stop step
-proto.stop = function() {
+proto.stop = function () {
   // stop task
   this._task.stop(this._inputs, this._context);
-  //emit run
+  // emit run
   // running to false
   this.state.running = false;
   this.emit('stop');
@@ -99,66 +102,65 @@ proto.stop = function() {
 };
 
 // revert task
-proto.revert = function() {
+proto.revert = function () {
   if (this._task && this._task.revert) this._task.revert();
 };
 
-//panic
-proto.panic = function() {
+// panic
+proto.panic = function () {
   if (this._task && this._task.panic) this._task.panic();
 };
 
-proto.getId = function() {
+proto.getId = function () {
   return this.state.id;
 };
 
-proto.getName = function() {
+proto.getName = function () {
   return this.state.name;
 };
 
-proto.getHelp = function() {
+proto.getHelp = function () {
   return this.state.help;
 };
 
-proto.getError = function() {
+proto.getError = function () {
   return this.state.error;
 };
 
-proto.getMessage = function() {
+proto.getMessage = function () {
   return this.state.message;
 };
 
-proto.isRunning = function() {
+proto.isRunning = function () {
   return this.state.running;
 };
 
-proto.setInputs = function(inputs) {
+proto.setInputs = function (inputs) {
   this._inputs = inputs;
 };
 
-proto.getInputs = function() {
+proto.getInputs = function () {
   return this._inputs;
 };
 
-proto.setTask = function(task) {
+proto.setTask = function (task) {
   this._task = task;
 };
 
-proto.getTask = function() {
+proto.getTask = function () {
   return this._task;
 };
 
-proto.setOutputs = function(outputs) {
+proto.setOutputs = function (outputs) {
   this._outputs = outputs;
 };
 
-proto.getOutputs = function() {
+proto.getOutputs = function () {
   return this._outputs;
 };
 
 Step.MESSAGES = {
-  help: null
+  help: null,
 };
-
 
 module.exports = Step;

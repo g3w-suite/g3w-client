@@ -1,13 +1,15 @@
-import CookieLaw from "vue-cookie-law";
+import CookieLaw from 'vue-cookie-law';
+
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const { uniqueId } = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const { t } = require('core/i18n/i18n.service');
 const HeaderItem = require('gui/header/headeritem');
 const GUI = require('gui/gui');
 const layout = require('./layout');
 const compiledTemplate = Vue.compile(require('./app.html'));
 const { resizeMixin } = require('gui/vue/vue.mixins');
+
 const AppUI = Vue.extend({
   ...compiledTemplate,
   mixins: [resizeMixin],
@@ -17,20 +19,19 @@ const AppUI = Vue.extend({
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
       language: null,
-      cookie_law_buttonText: t('cookie_law.buttonText')
-    }
+      cookie_law_buttonText: t('cookie_law.buttonText'),
+    };
   },
   components: {
     HeaderItem,
-    CookieLaw
+    CookieLaw,
   },
   computed: {
-    app(){
+    app() {
       return this.appState.gui.app;
     },
     languages() {
-
-      /***
+      /** *
        * check if is length of languages is more than one
        */
       const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
@@ -48,13 +49,13 @@ const AppUI = Vue.extend({
     urls() {
       return this.appconfig.urls;
     },
-    staticurl(){
+    staticurl() {
       return this.urls.staticurl;
     },
     powered_by() {
       return this.appconfig.group.powered_by;
     },
-    clienturl(){
+    clienturl() {
       return this.urls.clienturl;
     },
     g3w_suite_logo() {
@@ -65,15 +66,15 @@ const AppUI = Vue.extend({
     },
     logo_url() {
       const logo_project_url = this.currentProject.getThumbnail();
-      return logo_project_url ? logo_project_url : `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
+      return logo_project_url || `${this.appconfig.mediaurl}${this.appconfig.logo_img}`;
     },
     logo_link() {
       const logo_link = this.getLogoLink();
-      return logo_link ? logo_link : "#";
+      return logo_link || '#';
     },
     logo_link_target() {
       const logo_link = this.getLogoLink();
-      return logo_link ? "_blank" : "";
+      return logo_link ? '_blank' : '';
     },
     project_title() {
       return this.currentProject.getState().name;
@@ -81,8 +82,8 @@ const AppUI = Vue.extend({
     user() {
       return (this.appconfig.user && this.appconfig.user.username) ? this.appconfig.user : null;
     },
-    login_url(){
-      return this.appconfig.user.login_url
+    login_url() {
+      return this.appconfig.user.login_url;
     },
     numberOfProjectsInGroup() {
       return this.appconfig.projects.length;
@@ -103,39 +104,38 @@ const AppUI = Vue.extend({
       const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
             <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
             <span style="margin-left: 5px;">${state.text}</span> 
-          </span>`
-      );
+          </span>`);
       return $state;
     },
-    async resize(){
+    async resize() {
       if (!this.isIframe) {
         await this.$nextTick();
-        const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
-          this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
+        const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth
+          : this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
         this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
-    showCustomModalContent(id){
-      const {content} = this.custom_modals.find(custommodal => custommodal.id === id);
+    showCustomModalContent(id) {
+      const { content } = this.custom_modals.find((custommodal) => custommodal.id === id);
       this.current_custom_modal_content = content;
     },
-    closePanel(){
+    closePanel() {
       sidebarService.closePanel();
     },
     getLogoLink() {
-      return this.appconfig.logo_link ? this.appconfig.logo_link: null;
+      return this.appconfig.logo_link ? this.appconfig.logo_link : null;
     },
     openProjectsMenu() {
       GUI.openProjectsMenu();
-    }
+    },
   },
   watch: {
-    'language'(lng, currentlng) {
+    language(lng, currentlng) {
       if (currentlng) {
         ApplicationService.changeLanguage(lng);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
-    }
+    },
   },
   beforeCreate() {
     this.delayType = 'debounce';
@@ -149,24 +149,24 @@ const AppUI = Vue.extend({
       1: [],
       2: [],
       3: [],
-      4: []
+      4: [],
     };
-    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter(customitem => {
+    this.customlinks = Array.isArray(this.appconfig.header_custom_links) ? this.appconfig.header_custom_links.filter((customitem) => {
       if (customitem !== null) {
         const id = customitem.id = uniqueId();
         customitem.type === 'modal' && this.custom_modals.push({
           id,
-          content: customitem.content
+          content: customitem.content,
         });
-        let position = 1*(customitem.position || 0);
-        position = position > 4 ? 4 : position < 0 || Number.isNaN(position)? 0 : position;
+        let position = 1 * (customitem.position || 0);
+        position = position > 4 ? 4 : position < 0 || Number.isNaN(position) ? 0 : position;
         this.custom_header_items_position[position].push(customitem);
-        return true
+        return true;
       }
       return false;
-    }): [];
+    }) : [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
+    !!this.appconfig.credits && $.get(this.appconfig.credits).then((credits) => this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
     this.logoWidth = 0;
@@ -174,30 +174,30 @@ const AppUI = Vue.extend({
     const rightNavBarElements = !this.isIframe ? this.$refs.mainnavbar.getElementsByTagName('ul') : [];
     const elementLenght = rightNavBarElements.length;
     this.rightNavbarWidth = 15; // margin right
-    for (let i = 0; i < elementLenght; i++ ) {
-      this.rightNavbarWidth+= rightNavBarElements.item(i).offsetWidth;
+    for (let i = 0; i < elementLenght; i++) {
+      this.rightNavbarWidth += rightNavBarElements.item(i).offsetWidth;
     }
     this.language = this.appconfig.user.i18n;
     await this.$nextTick();
-    !this.isIframe && this.$refs.img_logo.addEventListener('load', ()=>{
+    !this.isIframe && this.$refs.img_logo.addEventListener('load', () => {
       this.logoWidth = this.$refs.img_logo.offsetWidth + 15; // added marging
       this.resize();
-    }, {once: true});
+    }, { once: true });
     /* start to render LayoutManager layout */
     layout.loading(false);
     layout.setup();
-    //Fix the problem with right sidebar and layout boxed
+    // Fix the problem with right sidebar and layout boxed
     layout.pushMenu.expandOnHover();
-    layout.controlSidebar._fix($(".control-sidebar-bg"));
-    layout.controlSidebar._fix($(".control-sidebar"));
+    layout.controlSidebar._fix($('.control-sidebar-bg'));
+    layout.controlSidebar._fix($('.control-sidebar'));
     const controlsidebarEl = layout.options.controlSidebarOptions.selector;
     function setFloatBarMaxHeight() {
-      $(controlsidebarEl).css('max-height',$(window).innerHeight());
-      $('.g3w-sidebarpanel').css('height',$(window).height() - $("#main-navbar").height());
+      $(controlsidebarEl).css('max-height', $(window).innerHeight());
+      $('.g3w-sidebarpanel').css('height', $(window).height() - $('#main-navbar').height());
     }
     setFloatBarMaxHeight();
-    function setModalHeight(){
-      $('#g3w-modal-overlay').css('height',$(window).height());
+    function setModalHeight() {
+      $('#g3w-modal-overlay').css('height', $(window).height());
     }
     $(window).resize(() => {
       setFloatBarMaxHeight();

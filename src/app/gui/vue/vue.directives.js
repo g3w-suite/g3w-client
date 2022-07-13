@@ -1,119 +1,123 @@
 import ApplicationState from 'core/applicationstate';
-const {t, tPlugin} = require('core/i18n/i18n.service');
+
+const { t, tPlugin } = require('core/i18n/i18n.service');
 const { uniqueId, toRawType } = require('core/utils/utils');
+
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
     const directives = {};
-    const createDirectiveObj = ({el, attr}) =>{
-      //create unique id
+    const createDirectiveObj = ({ el, attr }) => {
+      // create unique id
       const unique_attr_id = uniqueId();
       // set new attribute
       el.setAttribute(attr, unique_attr_id);
       directives[unique_attr_id] = {};
       return unique_attr_id;
     };
-    const setUnwatch = ({id, unwatch})=>{
+    const setUnwatch = ({ id, unwatch }) => {
       directives[id].unwatch = unwatch;
     };
-    const unbindWatch = ({attr, el})=>{
+    const unbindWatch = ({ attr, el }) => {
       const unique_attr_id = el.getAttribute(attr);
       if (unique_attr_id) {
         directives[unique_attr_id].unwatch();
         delete directives[unique_attr_id];
       }
     };
-    const runHandlerOnUpdate = ({el, attrId, attr, oldValue})=>{
-      const unique_attr_id =  el.getAttribute(attrId);
+    const runHandlerOnUpdate = ({
+      el, attrId, attr, oldValue,
+    }) => {
+      const unique_attr_id = el.getAttribute(attrId);
       const attr_value = el.getAttribute(attr);
-      (attr_value != null && attr_value !== oldValue) && directives[unique_attr_id].handler({el});
+      (attr_value != null && attr_value !== oldValue) && directives[unique_attr_id].handler({ el });
     };
-    const prePositioni18n = ({el, binding, i18nFnc=t}) => {
-      const innerHTML = el.innerHTML;
+    const prePositioni18n = ({ el, binding, i18nFnc = t }) => {
+      const { innerHTML } = el;
       const position = binding.arg ? binding.arg : 'post';
-      const handlerElement = innerHTML => {
-        const value = binding.value !== null ?  i18nFnc(binding.value) : '';
-        if (position === 'pre') el.innerHTML =  `${value} ${innerHTML}`;
+      const handlerElement = (innerHTML) => {
+        const value = binding.value !== null ? i18nFnc(binding.value) : '';
+        if (position === 'pre') el.innerHTML = `${value} ${innerHTML}`;
         else if (position === 'post') el.innerHTML = `${innerHTML} ${value}`;
       };
       handlerElement(innerHTML);
       return vm.$watch(() => ApplicationState.lng, () => handlerElement(innerHTML));
     };
 
-    Vue.directive("disabled", (el, binding) => {
+    Vue.directive('disabled', (el, binding) => {
       binding.value ? el.classList.add('g3w-disabled') : el.classList.remove('g3w-disabled');
     });
 
-    Vue.directive("checked",(el, binding) => {
-      binding.value ? el.setAttribute('checked','checked') : el.removeAttribute('checked');
+    Vue.directive('checked', (el, binding) => {
+      binding.value ? el.setAttribute('checked', 'checked') : el.removeAttribute('checked');
     });
 
-    Vue.directive("selected-first", (el, binding) => {
-      binding.value===0 ? el.setAttribute('selected','') : el.removeAttribute('selected');
+    Vue.directive('selected-first', (el, binding) => {
+      binding.value === 0 ? el.setAttribute('selected', '') : el.removeAttribute('selected');
     });
 
     Vue.directive('t-tooltip', {
       bind(_el, binding) {
         // handle automatic creation of tooltip
         if (binding.modifiers.create) {
-          if (binding.arg){
+          if (binding.arg) {
             _el.setAttribute('data-placement', binding.arg);
             _el.classList.add(`skin-tooltip-${binding.arg}`);
             _el.classList.add('skin-color');
           }
           const domelement = $(_el);
           domelement.tooltip({
-            trigger : ApplicationState.ismobile ? 'click': 'hover',
-            html: true
+            trigger: ApplicationState.ismobile ? 'click' : 'hover',
+            html: true,
           });
           // in case of mobile hide tooltip after click
-          ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
-            setTimeout(()=>$(this).tooltip('hide'), 600);
+          ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function () {
+            setTimeout(() => $(this).tooltip('hide'), 600);
           });
         }
 
         const unique_v_t_tooltip_attr = createDirectiveObj({
-          el:_el,
-          attr: 'g3w-v-t-tooltip-id'
+          el: _el,
+          attr: 'g3w-v-t-tooltip-id',
         });
         const i18Fnc = binding.arg;
         directives[unique_v_t_tooltip_attr].modifiers = binding.modifiers;
-        const handler = ({el=_el}={}) =>{
+        const handler = ({ el = _el } = {}) => {
           const current_tooltip = el.getAttribute('current-tooltip');
-          const unique_v_t_tooltip_attr =  el.getAttribute('g3w-v-t-tooltip-id');
-          const value = current_tooltip !== null ? current_tooltip:  binding.value;
-          const title = directives[unique_v_t_tooltip_attr].modifiers.text  ? value : (i18Fnc === 'plugin') ? tPlugin(value) : t(value);
+          const unique_v_t_tooltip_attr = el.getAttribute('g3w-v-t-tooltip-id');
+          const value = current_tooltip !== null ? current_tooltip : binding.value;
+          const title = directives[unique_v_t_tooltip_attr].modifiers.text ? value : (i18Fnc === 'plugin') ? tPlugin(value) : t(value);
           el.setAttribute('data-original-title', title);
         };
         handler();
         directives[unique_v_t_tooltip_attr].handler = handler;
         setUnwatch({
-          id:unique_v_t_tooltip_attr,
-          unwatch: vm.$watch(() => ApplicationState.lng, handler)
-        })
+          id: unique_v_t_tooltip_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handler),
+        });
       },
-      componentUpdated(el, oldVnode){
+      componentUpdated(el, oldVnode) {
         runHandlerOnUpdate({
           el,
           attrId: 'g3w-v-t-tooltip-id',
-          attr:'current-tooltip',
-          oldValue: oldVnode.oldValue
+          attr: 'current-tooltip',
+          oldValue: oldVnode.oldValue,
         });
       },
-      unbind(el){
+      unbind(el) {
         $(el).tooltip('hide');
         unbindWatch({
-          attr:'g3w-v-t-tooltip-id',
-          el
-        })
-      }
+          attr: 'g3w-v-t-tooltip-id',
+          el,
+        });
+      },
     });
 
     Vue.directive('t-html', {
-      bind(el, binding){
+      bind(el, binding) {
         const unique_v_t_html_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-t-html-id'
+          attr: 'g3w-v-t-html-id',
         });
         const handlerElement = () => {
           el.innerHTML = `${t(binding.value)}`;
@@ -121,99 +125,99 @@ const GlobalDirective = {
         handlerElement();
         setUnwatch({
           id: unique_v_t_html_attr,
-          unwatch: vm.$watch(() => ApplicationState.lng, handlerElement)
+          unwatch: vm.$watch(() => ApplicationState.lng, handlerElement),
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
-          attr:'g3w-v-t-html-id',
-          el
-        })
-      }
+          attr: 'g3w-v-t-html-id',
+          el,
+        });
+      },
     });
 
     Vue.directive('t-placeholder', {
-      bind(el, binding){
+      bind(el, binding) {
         const unique_v_t_placeholder_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-t-placeholder-id'
+          attr: 'g3w-v-t-placeholder-id',
         });
-        const value= binding.value;
+        const { value } = binding;
         const i18Fnc = binding.arg;
-        const handler = () =>{
+        const handler = () => {
           const placeholder = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
           el.setAttribute('placeholder', placeholder);
         };
         handler();
         setUnwatch({
-          id:unique_v_t_placeholder_attr,
-          unwatch: vm.$watch(() => ApplicationState.lng, handler)
+          id: unique_v_t_placeholder_attr,
+          unwatch: vm.$watch(() => ApplicationState.lng, handler),
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
-          attr:'g3w-v-t-placeholder-id',
-          el
-        })
-      }
+          attr: 'g3w-v-t-placeholder-id',
+          el,
+        });
+      },
     });
-    
+
     Vue.directive('t-title', {
-      bind(el, binding){
+      bind(el, binding) {
         // get unique id
         const unique_v_t_title_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-t-title-id'
+          attr: 'g3w-v-t-title-id',
         });
-        const value= binding.value;
+        const { value } = binding;
         const i18Fnc = binding.arg;
-        const handler = () =>{
+        const handler = () => {
           const title = i18Fnc === 'plugin' ? tPlugin(value) : t(value);
           el.setAttribute('title', title);
-          el.setAttribute('data-original-title', title)
+          el.setAttribute('data-original-title', title);
         };
         handler();
         setUnwatch({
           id: unique_v_t_title_attr,
-          unwatch: vm.$watch(() => ApplicationState.lng, handler)
+          unwatch: vm.$watch(() => ApplicationState.lng, handler),
         });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
-          attr:'g3w-v-t-title-id',
-          el
-        })
-      }
+          attr: 'g3w-v-t-title-id',
+          el,
+        });
+      },
     });
-    
-    Vue.directive("t", {
-      bind (el, binding) {
+
+    Vue.directive('t', {
+      bind(el, binding) {
         const unique_v_t_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-t-id'
+          attr: 'g3w-v-t-id',
         });
         setUnwatch({
           id: unique_v_t_attr,
           unwatch: prePositioni18n({
             el,
             binding,
-            i18nFnc: t
-          })
-        })
+            i18nFnc: t,
+          }),
+        });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
-          attr:'g3w-v-t-id'
-        })
-      }
+          attr: 'g3w-v-t-id',
+        });
+      },
     });
 
-    Vue.directive("t-plugin", {
-      bind (el, binding) {
+    Vue.directive('t-plugin', {
+      bind(el, binding) {
         const unique_v_t_plugin_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-t-plugin-id'
+          attr: 'g3w-v-t-plugin-id',
         });
         setUnwatch({
           id: unique_v_t_plugin_attr,
@@ -221,126 +225,128 @@ const GlobalDirective = {
             el,
             binding,
             i18nFnc: tPlugin,
-          })
-        })
+          }),
+        });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
-          attr: 'g3w-v-t-plugin-id'
-        })
-      }
+          attr: 'g3w-v-t-plugin-id',
+        });
+      },
     });
 
-    Vue.directive("plugins", {
+    Vue.directive('plugins', {
       bind(el) {
-        const showHideHandler = plugins =>{
-          el.classList.toggle('g3w-hide', plugins.length === 0)
+        const showHideHandler = (plugins) => {
+          el.classList.toggle('g3w-hide', plugins.length === 0);
         };
         showHideHandler(ApplicationState.plugins);
         const unique_v_plugins_notify_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-plugins-id'
+          attr: 'g3w-v-plugins-id',
         });
         setUnwatch({
           id: unique_v_plugins_notify_attr,
-          unwatch: vm.$watch(() => ApplicationState.plugins, showHideHandler)
-        })
+          unwatch: vm.$watch(() => ApplicationState.plugins, showHideHandler),
+        });
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
-          attr: 'g3w-v-plugins-id'
-        })
-      }
+          attr: 'g3w-v-plugins-id',
+        });
+      },
     });
 
-    Vue.directive("online", {
+    Vue.directive('online', {
       bind(el, binding) {
         // show if online
-        const showOnline = binding.arg && binding.arg === 'hide' ? false : true;
-        const showHideHandler = bool =>{
-          bool = showOnline ?  bool : !bool;
-          el.classList.toggle('g3w-hide', !bool)
+        const showOnline = !(binding.arg && binding.arg === 'hide');
+        const showHideHandler = (bool) => {
+          bool = showOnline ? bool : !bool;
+          el.classList.toggle('g3w-hide', !bool);
         };
         showHideHandler(ApplicationState.online);
         const unique_v_online_notify_attr = createDirectiveObj({
           el,
-          attr: 'g3w-v-offline-id'
+          attr: 'g3w-v-offline-id',
         });
         setUnwatch({
           id: unique_v_online_notify_attr,
-          unwatch: vm.$watch(() => ApplicationState.online, showHideHandler)
-        })
+          unwatch: vm.$watch(() => ApplicationState.online, showHideHandler),
+        });
       },
-      unbind(){
+      unbind() {
         unbindWatch({
           el,
-          attr: 'g3w-v-offline-id'
-        })
-      }
+          attr: 'g3w-v-offline-id',
+        });
+      },
     });
 
-    Vue.directive("download", {
+    Vue.directive('download', {
       bind(el, binding) {
         const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
         const listen = toRawType(binding.value) === 'Boolean' ? binding.value : true;
-        const downloadHandler = bool => {
-          el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool: bool)
+        const downloadHandler = (bool) => {
+          el.classList.toggle(`g3w-${className}`, className === 'hide' ? !bool : bool);
         };
         if (listen) {
           const unique_v_download_attr = createDirectiveObj({
             el,
-            attr: 'g3w-v-download-id'
+            attr: 'g3w-v-download-id',
           });
           downloadHandler(listen && ApplicationState.download);
           setUnwatch({
             id: unique_v_download_attr,
-            unwatch: vm.$watch(() => ApplicationState.download, downloadHandler)
-          })
+            unwatch: vm.$watch(() => ApplicationState.download, downloadHandler),
+          });
         }
       },
-      unbind(el){
+      unbind(el) {
         unbindWatch({
           el,
-          attr: 'g3w-v-download-id'
-        })
-      }
+          attr: 'g3w-v-download-id',
+        });
+      },
     });
 
     Vue.directive('select2', {
-      inserted(el, binding, vnode){
-        const { templateResult, templateSelection, multiple=false, search=true, select2_value} = vnode.data.attrs || {};
+      inserted(el, binding, vnode) {
+        const {
+          templateResult, templateSelection, multiple = false, search = true, select2_value,
+        } = vnode.data.attrs || {};
         const selectDOMElement = $(el);
         selectDOMElement.select2({
           width: '100%',
           dropdownCssClass: 'skin-color',
           templateResult,
           templateSelection,
-          minimumResultsForSearch: !search ? -1 : undefined
+          minimumResultsForSearch: !search ? -1 : undefined,
         });
-        if (binding.value){
-          selectDOMElement.on('select2:select', evt =>{
+        if (binding.value) {
+          selectDOMElement.on('select2:select', (evt) => {
             const value = evt.params.data.id;
             if (multiple) {
-              const alreadyinside = vnode.context[binding.value].filter(addedvalue => value === addedvalue);
+              const alreadyinside = vnode.context[binding.value].filter((addedvalue) => value === addedvalue);
               alreadyinside.length === 0 && vnode.context[binding.value].push(value);
             } else vnode.context[binding.value] = value;
           });
-          if (multiple)
-            selectDOMElement.on('select2:unselect', evt =>{
+          if (multiple) {
+            selectDOMElement.on('select2:unselect', (evt) => {
               const value = evt.params.data.id;
-              vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
+              vnode.context[binding.value] = vnode.context[binding.value].filter((addedvalue) => value !== addedvalue);
             });
+          }
           if (select2_value) selectDOMElement.val(select2_value).trigger('change');
         }
       },
-      unbind(el, binding, vnode){
+      unbind(el, binding, vnode) {
         $(el).select2('destroy');
-      }
-    })
-  }
+      },
+    });
+  },
 };
 
 module.exports = GlobalDirective;
-

@@ -1,3 +1,3 @@
 module.exports = {
-  barstack: require('./barstack')
+  barstack: require('./barstack'),
 };

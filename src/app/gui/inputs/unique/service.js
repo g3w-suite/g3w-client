@@ -1,7 +1,7 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 
-function UniqueService(options={}) {
+function UniqueService(options = {}) {
   base(this, options);
 }
 

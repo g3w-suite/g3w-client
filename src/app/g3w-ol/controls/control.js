@@ -1,10 +1,11 @@
 const { layout } = require('./utils');
-const Control = function(options={}) {
-  const {name="", visible=true, enabled=false} = options;
+
+const Control = function (options = {}) {
+  const { name = '', visible = true, enabled = false } = options;
   this._enabled = enabled;
   this.offline = options.offline !== undefined ? options.offline : true;
   this.name = name.split(' ').join('-').toLowerCase();
-  this.id = this.name+'_'+(Math.floor(Math.random() * 1000000));
+  this.id = `${this.name}_${Math.floor(Math.random() * 1000000)}`;
   this.eventKeys = {}; // store eventKey and original havenHandler
   /*
     tl: top-left
@@ -15,45 +16,44 @@ const Control = function(options={}) {
   this.positionCode = options.position || 'tl';
   this.priority = options.priority || 0;
   if (!options.element) {
-    const className = "ol-"+this.name.split(' ').join('-').toLowerCase();
-    const customClass = options.customClass;
+    const className = `ol-${this.name.split(' ').join('-').toLowerCase()}`;
+    const { customClass } = options;
     const tipLabel = options.tipLabel || this.name;
     const label = options.label || '';
-    const mapControlButtonVue =  Vue.extend({
+    const mapControlButtonVue = Vue.extend({
       functional: true,
-      render(h){
+      render(h) {
         return h('div', {
           class: {
             [className]: !!className,
             'ol-unselectable': true,
-            'ol-control': true
-          }
+            'ol-control': true,
+          },
         }, [
-            h('button', {
-              attrs: {
-                type: 'button',
+          h('button', {
+            attrs: {
+              type: 'button',
+            },
+            directives: [{
+              name: 't-tooltip',
+              value: tipLabel,
+            }],
+          }, [
+            label,
+            h('i', {
+              class: {
+                [customClass]: !!customClass,
               },
-              directives: [{
-                name: 't-tooltip',
-                value: tipLabel
-              }]
-            }, [
-                label,
-                h('i', {
-                  class: {
-                    [customClass]: !!customClass
-                  }
-                })
-            ])
-          ]
-        )
-      }
+            }),
+          ]),
+        ]);
+      },
     });
     const mapControlButtonDOMElement = new mapControlButtonVue().$mount().$el;
     options.element = mapControlButtonDOMElement;
   }
   const buttonClickHandler = options.buttonClickHandler || Control.prototype._handleClick.bind(this);
-  $(options.element).on('click',buttonClickHandler);
+  $(options.element).on('click', buttonClickHandler);
   ol.control.Control.call(this, options);
   this.setVisible(visible);
   this._postRender();
@@ -63,42 +63,41 @@ ol.inherits(Control, ol.control.Control);
 
 const proto = Control.prototype;
 
-
-//return if clickmap
-proto.isClickMap = function(){
+// return if clickmap
+proto.isClickMap = function () {
   return this.clickmap;
 };
 
-proto.isToggled = function() {
+proto.isToggled = function () {
   return this._toggled;
 };
 
-proto.setEventKey = function({eventType, eventKey}){
+proto.setEventKey = function ({ eventType, eventKey }) {
   this.eventKeys[eventType] = {
     eventKey,
-    originalHandler: eventKey.linstener
+    originalHandler: eventKey.linstener,
   };
 };
 
-proto.resetOriginalHandlerEvent = function(eventType){
-  const eventKey = this.eventKeys[eventType].eventKey;
+proto.resetOriginalHandlerEvent = function (eventType) {
+  const { eventKey } = this.eventKeys[eventType];
   eventKey && ol.Observable.unByKey(eventKey);
   this.eventKeys[eventType].eventKey = this.on(eventType, this.eventKeys[eventType].originalHandler);
 };
 
-proto.overwriteEventHandler = function({eventType, handler}) {
-  const eventKey = this.eventKeys[eventType].eventKey;
+proto.overwriteEventHandler = function ({ eventType, handler }) {
+  const { eventKey } = this.eventKeys[eventType];
   eventKey && ol.Observable.unByKey(eventKey);
   this.eventKeys[eventType].eventKey = this.on(eventType, handler);
 };
 
-proto.getPosition = function(positionCode) {
+proto.getPosition = function (positionCode) {
   positionCode = positionCode || this.positionCode;
   const position = {};
-  position['top'] = (positionCode.indexOf('t') > -1) ? true : false;
-  position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
-  position ['bottom'] = (positionCode.indexOf('b') > -1) ? true : false;
-  position ['right'] = (positionCode.indexOf('r') > -1) ? true : false;
+  position.top = (positionCode.indexOf('t') > -1);
+  position.left = (positionCode.indexOf('l') > -1);
+  position.bottom = (positionCode.indexOf('b') > -1);
+  position.right = (positionCode.indexOf('r') > -1);
   return position;
 };
 
@@ -106,13 +105,13 @@ proto.getPosition = function(positionCode) {
  * Method to handle toggle map controls
  * @param event
  */
-proto._handleClick = function(event) {
+proto._handleClick = function (event) {
   event.preventDefault();
   const map = this.getMap();
   let resetControl = null;
   // remove all the other, eventually toggled, interactioncontrols
   const controls = map.getControls();
-  this._toggled && controls.forEach(control => {
+  this._toggled && controls.forEach((control) => {
     if (control.id && control.toggle && (control.id !== this.id)) {
       control.toggle(false);
       if (control.name === 'reset') resetControl = control;
@@ -122,25 +121,25 @@ proto._handleClick = function(event) {
   this.dispatchEvent('controlclick');
 };
 
-//shift of control position
-proto.shiftPosition = function(position) {
-  $(this.element).css(hWhere, position+'px');
+// shift of control position
+proto.shiftPosition = function (position) {
+  $(this.element).css(hWhere, `${position}px`);
 };
 
 // layout handler
-proto.layout = function(map) {
+proto.layout = function (map) {
   if (map) {
-    const position =  this.getPosition();
+    const position = this.getPosition();
     const element = $(this.element);
-    layout({map, position, element})
+    layout({ map, position, element });
   }
 };
 
 // change layout of controls // overwrite to customize beahviour
-proto.changelayout = function(map) {};
+proto.changelayout = function (map) {};
 
-//called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
-proto.setMap = function(map) {
+// called when a control is added ore removed to map (added: map is an ol.Map instance , removed map is null)
+proto.setMap = function (map) {
   if (map) {
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
@@ -149,23 +148,23 @@ proto.setMap = function(map) {
 /**
  *
  */
-proto.showControl = function(){
+proto.showControl = function () {
   $(this.element).show();
 };
 
-//hide control and move all controls that sit on his right position
-proto.hideControl = function() {
+// hide control and move all controls that sit on his right position
+proto.hideControl = function () {
   let position = $(this.element).position().left;
   let controlWidth = $(this.element).outerWidth();
   let newPosition = position;
   const controls = $(this.element).siblings('.ol-control-tl');
-  controls.each(function() {
+  controls.each(function () {
     if ($(this).position().left > position) {
       newPosition = $(this).position().left;
       if (controlWidth > $(this).outerWidth()) {
-        position = position + (controlWidth - $(this).outerWidth())
+        position += (controlWidth - $(this).outerWidth());
       }
-      $(this).css('left', position+'px');
+      $(this).css('left', `${position}px`);
       position = newPosition;
       controlWidth = $(this).outerWidth();
     }
@@ -173,7 +172,7 @@ proto.hideControl = function() {
   $(this.element).hide();
 };
 
-proto.setEnable = function(enabled, toggled=false) {
+proto.setEnable = function (enabled, toggled = false) {
   const controlButton = $(this.element).find('button').first();
   if (enabled) controlButton.removeClass('g3w-ol-disabled');
   else {
@@ -184,20 +183,19 @@ proto.setEnable = function(enabled, toggled=false) {
   this._enabled = enabled;
 };
 
-proto.getEnable = function() {
+proto.getEnable = function () {
   return this._enabled;
 };
 
-proto.setVisible = function(visible=true){
+proto.setVisible = function (visible = true) {
   this._visible = visible;
-  $(this.element)[visible ? 'show': 'hide']();
+  $(this.element)[visible ? 'show' : 'hide']();
 };
 
-proto.isVisible = function(){
+proto.isVisible = function () {
   return this._visible;
 };
 
-
-proto._postRender = function() {};
+proto._postRender = function () {};
 
 module.exports = Control;

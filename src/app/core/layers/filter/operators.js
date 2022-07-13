@@ -1,4 +1,4 @@
-export const OPERATORS =  {
+export const OPERATORS = {
   gte: '>=',
   lte: '<=',
   NOT: '!=',

@@ -1,8 +1,10 @@
 const DataRouterService = require('core/data/routerservice');
-const {getFormDataExpressionRequestFromFeature, convertFeatureToGEOJSON} = require('core/utils/geo');
+const { getFormDataExpressionRequestFromFeature, convertFeatureToGEOJSON } = require('core/utils/geo');
 
 export default {
-  async getVisibility({qgs_layer_id, expression, feature={}, contenttype}){
+  async getVisibility({
+    qgs_layer_id, expression, feature = {}, contenttype,
+  }) {
     const formatter = contenttype === 'query' ? 1 : 0;
     const form_data = contenttype === 'editing' ? convertFeatureToGEOJSON(feature) : getFormDataExpressionRequestFromFeature(feature);
     const response = await DataRouterService.getData('expression:expression_eval', {
@@ -10,10 +12,10 @@ export default {
         qgs_layer_id,
         form_data,
         expression,
-        formatter
+        formatter,
       },
-      outputs: false
+      outputs: false,
     });
     return response;
-  }
-}
+  },
+};

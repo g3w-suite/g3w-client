@@ -1,9 +1,9 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
+const { XHR } = require('core/utils/utils');
+const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
 
-function ExpressionService(){
+function ExpressionService() {
   base(this);
   /**
    *
@@ -18,7 +18,9 @@ function ExpressionService(){
    * Mandatory JSON body: expression
    * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-  this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
+  this.expression = async function ({
+    qgs_layer_id, layer_id, form_data, expression, formatter = 1,
+  }) {
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
     const response = await this.handleRequest({
       url,
@@ -26,8 +28,8 @@ function ExpressionService(){
         qgs_layer_id,
         form_data,
         expression,
-        formatter
-      }
+        formatter,
+      },
     });
     const data = this.handleResponse(response);
     return data;
@@ -44,7 +46,9 @@ function ExpressionService(){
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = async function({qgs_layer_id, form_data, expression, formatter=1}={}){
+  this.expression_eval = async function ({
+    qgs_layer_id, form_data, expression, formatter = 1,
+  } = {}) {
     const url = this.project.getUrl('expression_eval');
     const data = await this.handleRequest({
       url,
@@ -52,8 +56,8 @@ function ExpressionService(){
         qgs_layer_id,
         form_data,
         expression,
-        formatter
-      }
+        formatter,
+      },
     });
     return data;
   };
@@ -65,28 +69,27 @@ function ExpressionService(){
    * @contentType
    * @returns {Promise<*>}
    */
-  this.handleRequest = async function({url, params={}, contentType='application/json'}={}){
+  this.handleRequest = async function ({ url, params = {}, contentType = 'application/json' } = {}) {
     let data;
     try {
       data = await XHR.post({
         url,
         contentType,
-        data: JSON.stringify(params)
+        data: JSON.stringify(params),
       });
-    } catch(err){}
+    } catch (err) {}
     return data;
   };
 
-  /***
+  /** *
    * Common method to handle response
    * @param response
    */
-  this.handleResponse = function(response={}){
+  this.handleResponse = function (response = {}) {
     return getFeaturesFromResponseVectorApi(response);
-
   };
 }
 
 inherit(ExpressionService, BaseService);
 
-module.exports = new ExpressionService;
+module.exports = new ExpressionService();

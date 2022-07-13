@@ -1,11 +1,14 @@
-import {SPATIALMETHODS} from "../constants";
-const {t} = require('core/i18n/i18n.service');
-const Control = require('./control');
-const GUI = require('gui/gui');
+import { SPATIALMETHODS } from '../constants';
 
-const InteractionControl = function(options={}) {
-  const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onSelectlayer, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
+const { t } = require('core/i18n/i18n.service');
+const GUI = require('gui/gui');
+const Control = require('./control');
+
+const InteractionControl = function (options = {}) {
+  const {
+    visible = true, enabled = true, toggled = false, clickmap = false, interactionClass = null, autountoggle = false,
+    geometryTypes = [], onSelectlayer, onhover = false, help = null, toggledTool, interactionClassOptions = {}, spatialMethod,
+  } = options;
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
@@ -18,7 +21,7 @@ const InteractionControl = function(options={}) {
   this._help = help;
   this._helpButton; // used to show help info button
   this._toolButton; // used to show toolbutton
-  //spatial method (intersect, within)
+  // spatial method (intersect, within)
   this.spatialMethod = spatialMethod;
   this.toggledTool;
   this._interactionClassOptions = interactionClassOptions;
@@ -28,7 +31,7 @@ const InteractionControl = function(options={}) {
   this._help && this._createModalHelp();
   // create tool
   toggledTool && this.createControlTool(toggledTool);
-  ///se enabled
+  /// se enabled
   this.setEnable(enabled);
   toggled && this.toggle(toggled);
 };
@@ -37,38 +40,38 @@ ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
 
-proto.isClickMap = function(){
+proto.isClickMap = function () {
   return this.clickmap;
 };
 
 /**
  * Enable map control dom
  */
-proto.enable = function(){
+proto.enable = function () {
   $(this.element).removeClass('g3w-disabled');
 };
 
-proto.disable = function(){
+proto.disable = function () {
   $(this.element).addClass('g3w-disabled');
 };
 
-proto.createControlTool = function(toggledTool={}){
+proto.createControlTool = function (toggledTool = {}) {
   /**
    * how can be {
    *  'toggled'(default) => show tools when control is toggled
    *  'hover' =>  (show button tool as info help)
    * }
    */
-  const {type, component, how="toggled"} = toggledTool;
-  switch(type){
+  const { type, component, how = 'toggled' } = toggledTool;
+  switch (type) {
     case 'spatialMethod':
       const method = this.getSpatialMethod();
       this.toggledTool = {
         data() {
           this.methods = SPATIALMETHODS;
           return {
-            method
-          }
+            method,
+          };
         },
         template: `
           <div style="width: 100%; padding: 5px;">
@@ -77,14 +80,14 @@ proto.createControlTool = function(toggledTool={}){
             </select>
           </div>`,
         watch: {
-          'method': method => this.setSpatialMethod(method)
+          method: (method) => this.setSpatialMethod(method),
         },
-        created(){
+        created() {
           GUI.setCloseUserMessageBeforeSetContent(false);
         },
-        beforeDestroy(){
+        beforeDestroy() {
           GUI.setCloseUserMessageBeforeSetContent(true);
-        }
+        },
       };
       break;
     case 'custom':
@@ -99,11 +102,11 @@ proto.createControlTool = function(toggledTool={}){
   }
 };
 
-proto._createToolOnHoverButton = function(){
+proto._createToolOnHoverButton = function () {
   if (this._onhover) {
     this._toolButton = $(`<span style="display:none" class="tool_mapcontrol_button"><i class="${GUI.getFontClass('tool')}"></i></span>`);
     $(this.element).prepend(this._toolButton);
-    this._toolButton.on('click', event => {
+    this._toolButton.on('click', (event) => {
       event.stopPropagation();
       this.showToggledTool(true);
     });
@@ -112,22 +115,22 @@ proto._createToolOnHoverButton = function(){
   }
 };
 
-proto.showToggledTool = function(show=true){
-  if (show){
+proto.showToggledTool = function (show = true) {
+  if (show) {
     GUI.showUserMessage({
       title: '',
       type: 'tool',
       size: 'small',
-      closable: this._toolButton ? true : false,
+      closable: !!this._toolButton,
       hooks: {
-        body: this.toggledTool
-      }
+        body: this.toggledTool,
+      },
     });
   } else GUI.closeUserMessage();
 };
 
-//show help message
-proto._showModalHelp = function() {
+// show help message
+proto._showModalHelp = function () {
   GUI.showModalDialog({
     title: t(this._help.title),
     message: t(this._help.message),
@@ -135,11 +138,11 @@ proto._showModalHelp = function() {
 };
 
 // create modal help
-proto._createModalHelp = function() {
+proto._createModalHelp = function () {
   if (this._onhover) {
     this._helpButton = $('<span style="display:none" class="info_mapcontrol_button">i</span>');
     $(this.element).prepend(this._helpButton);
-    this._helpButton.on('click', event => {
+    this._helpButton.on('click', (event) => {
       event.stopPropagation();
       this._showModalHelp();
     });
@@ -148,15 +151,15 @@ proto._createModalHelp = function() {
   }
 };
 
-proto.getGeometryTypes = function() {
+proto.getGeometryTypes = function () {
   return this._geometryTypes;
 };
 
-proto.getInteraction = function() {
+proto.getInteraction = function () {
   return this._interaction;
 };
 
-proto.isToggled = function() {
+proto.isToggled = function () {
   return this._toggled;
 };
 
@@ -165,22 +168,22 @@ proto.isToggled = function() {
  * Get dom bottom
  * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
  */
-proto.getControlBottom = function(){
+proto.getControlBottom = function () {
   return $(this.element).find('button').first();
 };
 
-proto.addClassToControlBottom = function(className=''){
+proto.addClassToControlBottom = function (className = '') {
   const controlButton = this.getControlBottom();
   controlButton.addClass(className);
 };
 
-proto.removeClassToControlBottom = function(className=''){
+proto.removeClassToControlBottom = function (className = '') {
   const controlButton = this.getControlBottom();
   controlButton.removeClass(className);
 };
 
 // press or not press
-proto.toggle = function(toggle) {
+proto.toggle = function (toggle) {
   toggle = toggle !== undefined ? toggle : !this._toggled;
   this._toggled = toggle;
   if (toggle) {
@@ -198,32 +201,32 @@ proto.toggle = function(toggle) {
   this.dispatchEvent('toggled', toggle);
 };
 
-proto.getGeometryTypes = function() {
+proto.getGeometryTypes = function () {
   return this._geometryTypes;
 };
 
-proto.setGeometryTypes = function(types) {
+proto.setGeometryTypes = function (types) {
   this._geometryTypes = types;
 };
 
-proto.setMap = function(map) {
+proto.setMap = function (map) {
   Control.prototype.setMap.call(this, map);
   if (!this._interaction && this._interactionClass) {
     this._interaction = new this._interactionClass(this._interactionClassOptions);
     map.addInteraction(this._interaction);
     this._interaction.setActive(false);
   }
-  this._toggled && setTimeout(()=> {this.toggle(true)});
+  this._toggled && setTimeout(() => { this.toggle(true); });
 };
 
-proto._handleClick = function(evt) {
+proto._handleClick = function (evt) {
   if (this._enabled) {
     this.toggle();
     Control.prototype._handleClick.call(this, evt);
   }
 };
 
-proto.getIteraction = function() {
+proto.getIteraction = function () {
   return this._interaction;
 };
 
@@ -231,15 +234,15 @@ proto.getIteraction = function() {
  * Method to set filter operation intersect or Contains
  */
 
-proto.setSpatialMethod = function(method='intersects'){
+proto.setSpatialMethod = function (method = 'intersects') {
   this.spatialMethod = method;
 };
 
-proto.getSpatialMethod = function(){
+proto.getSpatialMethod = function () {
   return this.spatialMethod;
 };
 
-proto.setLayers = function(layers=[]){
+proto.setLayers = function (layers = []) {
   this.layers = layers;
 };
 
@@ -247,8 +250,8 @@ proto.setLayers = function(layers=[]){
  * called when project change
  * @param layers
  */
-proto.change = function(layers=[]){
-  //to owerwite to each control
+proto.change = function (layers = []) {
+  // to owerwite to each control
 };
 
 module.exports = InteractionControl;

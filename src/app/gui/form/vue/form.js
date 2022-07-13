@@ -1,5 +1,6 @@
-import {createCompiledTemplate} from 'gui/vue/utils';
-const {base, inherit} = require('core/utils/utils');
+import { createCompiledTemplate } from 'gui/vue/utils';
+
+const { base, inherit } = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/component/component');
 const Service = require('../formservice');
@@ -8,9 +9,9 @@ const HeaderFormComponent = require('../components/header/vue/header');
 const BodyFormComponent = require('../components/body/vue/body');
 const G3wFormFooter = require('gui/form/components/footer/vue/footer');
 
-//vue component
+// vue component
 const vueComponentObject = {
- ...compiledTemplate,
+  ...compiledTemplate,
   data() {
     return {
       state: {},
@@ -18,34 +19,34 @@ const vueComponentObject = {
       body: {
         components: {
           before: [],
-          after: []
-        }
-      }
-    }
+          after: [],
+        },
+      },
+    };
   },
   components: {
     g3wformheader: HeaderFormComponent,
-    G3wFormFooter
+    G3wFormFooter,
   },
-  transitions: {'addremovetransition': 'showhide'},
+  transitions: { addremovetransition: 'showhide' },
   methods: {
-    isRootComponent(component){
+    isRootComponent(component) {
       return this.$options.service.isRootComponent(component);
     },
-    backToRoot(){
+    backToRoot() {
       this.$options.service.setRootComponent();
     },
-    handleRelation(relationId){
+    handleRelation(relationId) {
       this.$options.service.handleRelation(relationId);
     },
-     disableComponent({id, disabled=false}) {
-       this.$options.service.disableComponent({
-         id,
-         disabled
-       });
-     },
-    resizeForm(perc){
-      this.$options.service.setCurrentFormPercentage(perc)
+    disableComponent({ id, disabled = false }) {
+      this.$options.service.disableComponent({
+        id,
+        disabled,
+      });
+    },
+    resizeForm(perc) {
+      this.$options.service.setCurrentFormPercentage(perc);
     },
     switchComponent(id) {
       this.switchcomponent = true;
@@ -63,26 +64,26 @@ const vueComponentObject = {
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
-      if(!height) return;
+      if (!height) return;
       const footerDOM = $(this.$refs.g3w_form_footer.$el);
       const bodyFromDOM = $(this.$refs.g3wform_body);
       const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
-      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
+      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() + footerHeight);
       bodyFromDOM.height(bodyHeight);
     },
   },
   async updated() {
     await this.$nextTick();
-    this.switchcomponent && setTimeout(()=> this.switchcomponent = false, 0)
+    this.switchcomponent && setTimeout(() => this.switchcomponent = false, 0);
   },
   created() {
     this.$options.service.getEventBus().$on('set-main-component', () => {
       this.switchComponent(0);
     });
-    this.$options.service.getEventBus().$on('component-validation', ({id, valid}) => {
+    this.$options.service.getEventBus().$on('component-validation', ({ id, valid }) => {
       this.$options.service.setValidComponent({
         id,
-        valid
+        valid,
       });
     });
     this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
@@ -95,23 +96,23 @@ const vueComponentObject = {
   },
   beforeDestroy() {
     this.$options.service.clearAll();
-  }
+  },
 };
 
 function FormComponent(options = {}) {
-  const {id='form', name, title} = options;
+  const { id = 'form', name, title } = options;
   base(this, options);
-  options.service = options.service ? new options.service : new Service;
-  options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
-  //set element of the form
+  options.service = options.service ? new options.service() : new Service();
+  options.vueComponentObject = options.vueComponentObject || vueComponentObject;
+  // set element of the form
   const components = options.components || [
     {
       id,
       title,
       name,
       root: true,
-      component: BodyFormComponent
-    }
+      component: BodyFormComponent,
+    },
   ];
   options.perc = options.layer.getFormPercentage() !== null ? options.layer.getFormPercentage() : options.perc;
   // initialize component
@@ -122,55 +123,55 @@ function FormComponent(options = {}) {
    * Used to add component to form body
    * @param component
    */
-  this.addBodyFormComponent = function({component, where='after'}={}){
+  this.addBodyFormComponent = function ({ component, where = 'after' } = {}) {
     this.getInternalComponent().body.components[where].push(component);
   };
 
-  this.addBodyFormComponents = function({components=[], where="after"}={}){
-    components.forEach(component =>  this.addBodyFormComponent({
+  this.addBodyFormComponents = function ({ components = [], where = 'after' } = {}) {
+    components.forEach((component) => this.addBodyFormComponent({
       component,
-      where
-    }))
+      where,
+    }));
   };
 
-  this.addFormComponents = function(components = []) {
+  this.addFormComponents = function (components = []) {
     this.getService().addComponents(components);
   };
 
-  this.addFormComponent = function(component) {
-    component && this.getService().addComponent(component)
+  this.addFormComponent = function (component) {
+    component && this.getService().addComponent(component);
   };
   // some utilities methods
-  this.addDependecyComponents = function(components) {
-    this.getService().addDependecyComponents(components)
+  this.addDependecyComponents = function (components) {
+    this.getService().addDependecyComponents(components);
   };
-  this.addComponentBeforeBody = function(Component) {
-    //this.getService().addedComponentTo('body');
-    //this.insertComponentAt(1, Component);
-  };
-
-  this.addComponentAfterBody = function(Component) {
-    //this.getService().addedComponentTo('body');
-    //this.insertComponentAt(2, Component)
+  this.addComponentBeforeBody = function (Component) {
+    // this.getService().addedComponentTo('body');
+    // this.insertComponentAt(1, Component);
   };
 
-  this.addComponentBeforeFooter = function() {
-   //TODO
+  this.addComponentAfterBody = function (Component) {
+    // this.getService().addedComponentTo('body');
+    // this.insertComponentAt(2, Component)
   };
 
-  this.addComponentAfterFooter = function(Component) {
-    //TODO
+  this.addComponentBeforeFooter = function () {
+    // TODO
+  };
+
+  this.addComponentAfterFooter = function (Component) {
+    // TODO
   };
   // overwrite father mount method.
-  this.mount = function(parent, append) {
+  this.mount = function (parent, append) {
     return base(this, 'mount', parent, append)
-    .then(() => {
+      .then(() => {
       // set modal window to true
-      GUI.setModal(true);
-    });
+        GUI.setModal(true);
+      });
   };
 
-  this.layout = function() {
+  this.layout = function () {
     this.internalComponent.reloadLayout();
   };
 }
@@ -178,4 +179,3 @@ function FormComponent(options = {}) {
 inherit(FormComponent, Component);
 
 module.exports = FormComponent;
-

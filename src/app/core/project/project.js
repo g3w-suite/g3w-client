@@ -1,11 +1,13 @@
-import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
-const {base, inherit, XHR} = require('core/utils//utils');
-const {crsToCrsObject} = require('core/utils/geo');
+import { QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS } from '../../constant';
+
+const { base, inherit, XHR } = require('core/utils//utils');
+const { crsToCrsObject } = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
 const Projections = require('g3w-ol/projection/projections');
-function Project(config={}, options={}) {
+
+function Project(config = {}, options = {}) {
   /* structure 'project' object
   {
     id,
@@ -41,12 +43,12 @@ function Project(config={}, options={}) {
    * View
    *
    */
-  //information about api project
+  // information about api project
   this.urls = {
     map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`,
     expression_eval: `/api/expression_eval/${this.getId()}/`,
     vector_data: `${this.getVectorUrl()}data/${this.getType()}/${this.getId()}/`,
-};
+  };
   /*
    *
    * End View
@@ -62,11 +64,11 @@ function Project(config={}, options={}) {
   ///
   this.setters = {
     setBaseLayer(id) {
-      this.state.baselayers.forEach(baseLayer => {
+      this.state.baselayers.forEach((baseLayer) => {
         this._layersStore.getLayerById(baseLayer.id).setVisible(baseLayer.id === id);
         baseLayer.visible = (baseLayer.id === id);
-      })
-    }
+      });
+    },
   };
   this.setSearchEndPoint();
   base(this);
@@ -76,87 +78,87 @@ inherit(Project, G3WObject);
 
 const proto = Project.prototype;
 
-//get search end point value (ows or api)
-proto.getSearchEndPoint = function(){
+// get search end point value (ows or api)
+proto.getSearchEndPoint = function () {
   return this.state.search_endpoint;
 };
 
-proto.setSearchEndPoint = function(){
-  const {search_endpoint, search=[]} = this.state;
-  search.forEach(search => search.search_endpoint = search_endpoint);
+proto.setSearchEndPoint = function () {
+  const { search_endpoint, search = [] } = this.state;
+  search.forEach((search) => search.search_endpoint = search_endpoint);
 };
 
-proto.getAliasUrl = function() {
+proto.getAliasUrl = function () {
   return this.state.aliasUrl;
 };
 
-proto.getActiveCatalogTab = function() {
+proto.getActiveCatalogTab = function () {
   return this.state.catalog_tab;
 };
 
-proto.setActiveCatalogTab = function(tab='layers') {
+proto.setActiveCatalogTab = function (tab = 'layers') {
   this.state.catalog_tab = tab;
 };
 
-proto.isWmsUseLayerIds = function() {
+proto.isWmsUseLayerIds = function () {
   return this.state.wms_use_layer_ids;
 };
 
-proto.getContextBaseLegend = function(){
+proto.getContextBaseLegend = function () {
   return this.state.context_base_legend;
 };
 
-proto.getQueryPointTolerance = function(){
+proto.getQueryPointTolerance = function () {
   return this.state.query_point_tolerance;
 };
 
 // check if multi
-proto.getQueryFeatureCount = function() {
+proto.getQueryFeatureCount = function () {
   return this.state.feature_count || 5;
 };
 
-proto.isQueryMultiLayers = function(mapcontrol) {
+proto.isQueryMultiLayers = function (mapcontrol) {
   return this.state.querymultilayers && this.state.querymultilayers.indexOf(mapcontrol) !== -1;
 };
 
-proto.getRelations = function() {
+proto.getRelations = function () {
   return this.state.relations;
 };
 
-proto.getRelationById = function(relationId){
-  return this.state.relations.find(relation => relation.id === relationId);
+proto.getRelationById = function (relationId) {
+  return this.state.relations.find((relation) => relation.id === relationId);
 };
 
-proto.getRelationsByLayerId = function({layerId, type}={}){
-  return this.state.relations.filter(relation => relation.referencedLayer === layerId && (type ? relation.type === type : true))
+proto.getRelationsByLayerId = function ({ layerId, type } = {}) {
+  return this.state.relations.filter((relation) => relation.referencedLayer === layerId && (type ? relation.type === type : true));
 };
 
-proto.getOwsMethod = function() {
+proto.getOwsMethod = function () {
   return this.state.ows_method;
 };
 
 // process layerstree and baselayers of the project
-proto._processLayers = function() {
-  //info useful for catalog
-  const traverse = tree => {
+proto._processLayers = function () {
+  // info useful for catalog
+  const traverse = (tree) => {
     for (let i = 0; i < tree.length; i++) {
       const layer = tree[i];
       let layer_name_originale;
-      //check if layer (node) of folder
+      // check if layer (node) of folder
       if (layer.id !== undefined) {
-        this.state.layers.forEach(_layer => {
+        this.state.layers.forEach((_layer) => {
           layer_name_originale = _layer.name;
           if (layer.id === _layer.id) {
             layer.name = _layer.name;
             _layer.wmsUrl = this.getWmsUrl();
             _layer.project = this;
             tree[i] = Object.assign(_layer, layer);
-            return false
+            return false;
           }
         });
       }
       if (Array.isArray(layer.nodes)) {
-        //add title to tree
+        // add title to tree
         layer.title = layer.name;
         traverse(layer.nodes);
       }
@@ -166,7 +168,7 @@ proto._processLayers = function() {
   traverse(this.state.layerstree);
   const ApplicationService = require('core/applicationservice');
   const baseLayerId = ApplicationService.getBaseLayerId();
-  for (let i=0; i < this.state.baselayers.length; i++) {
+  for (let i = 0; i < this.state.baselayers.length; i++) {
     const baseLayerConfig = this.state.baselayers[i];
     const baseLayerVisibleId = baseLayerId !== null ? baseLayerId : this.state.initbaselayer;
     const visible = baseLayerVisibleId && (baseLayerConfig.id === baseLayerVisibleId) || !!baseLayerConfig.fixed;
@@ -176,10 +178,10 @@ proto._processLayers = function() {
 };
 
 // build layersstore and create layersstree
-proto._buildLayersStore = function() {
+proto._buildLayersStore = function () {
   // create a layersStore object
   const layersStore = new LayersStore();
-  //check if we have owerview project
+  // check if we have owerview project
   const overviewprojectgid = this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
   layersStore.setOptions({
     id: this.state.gid,
@@ -187,41 +189,41 @@ proto._buildLayersStore = function() {
     extent: this.state.extent,
     initextent: this.state.initextent,
     wmsUrl: this.state.WMSUrl,
-    catalog: this.state.gid !== overviewprojectgid
+    catalog: this.state.gid !== overviewprojectgid,
   });
 
   // instance each layer ad area added to layersstore
   const layers = this.getLayers();
-  layers.forEach(layerConfig => {
-    //check and set crs in objectformat
+  layers.forEach((layerConfig) => {
+    // check and set crs in objectformat
     layerConfig.crs = crsToCrsObject(layerConfig.crs);
     // add projection
     layerConfig.projection = layerConfig.crs ? Projections.get(layerConfig.crs) : this._projection;
-    //add ows_method
+    // add ows_method
     layerConfig.ows_method = this.getOwsMethod();
     layerConfig.wms_use_layer_ids = this.state.wms_use_layer_ids;
     const layer = LayerFactory.build(layerConfig, {
-      project: this
+      project: this,
     });
     layer && layersStore.addLayer(layer);
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
     layerstree: this.state.layerstree,
-    expanded: this.state.toc_layers_init_status === 'not_collapsed' // config to show layerstrees toc expanded or not
+    expanded: this.state.toc_layers_init_status === 'not_collapsed', // config to show layerstrees toc expanded or not
   });
   return layersStore;
 };
 
-proto.getLayerById = function(layerId) {
+proto.getLayerById = function (layerId) {
   return this._layersStore.getLayerById(layerId);
 };
 
-proto.getLayers = function() {
+proto.getLayers = function () {
   return [...this.state.layers, ...this.state.baselayers];
 };
 
-proto.getBaseLayers = function() {
+proto.getBaseLayers = function () {
   return this.state.baselayers;
 };
 
@@ -230,19 +232,19 @@ proto.getBaseLayers = function() {
  * @param filter property layer config to filter
  * @returns {*}
  */
-proto.getConfigLayers = function({key}={}) {
-  return key ? this.state.layers.filter(layer => layer[key] !== undefined) : this.state.layers;
+proto.getConfigLayers = function ({ key } = {}) {
+  return key ? this.state.layers.filter((layer) => layer[key] !== undefined) : this.state.layers;
 };
 
 /**
  * Legend Position
  */
 
-proto.setLegendPosition = function(legend_position='tab'){
+proto.setLegendPosition = function (legend_position = 'tab') {
   this.state.legend_position = legend_position;
 };
 
-proto.getLegendPosition = function(){
+proto.getLegendPosition = function () {
   return this.state.legend_position;
 };
 
@@ -250,79 +252,79 @@ proto.getLegendPosition = function(){
  * End Legend Position
  */
 
-proto.getThumbnail = function() {
+proto.getThumbnail = function () {
   return this.state.thumbnail;
 };
 
-proto.getMetadata = function(){
+proto.getMetadata = function () {
   return this.state.metadata || {};
 };
 
-proto.getState = function() {
+proto.getState = function () {
   return this.state;
 };
 
-proto.getPrint = function(){
+proto.getPrint = function () {
   return this.state.print || [];
 };
 
-proto.getSearches = function(){
+proto.getSearches = function () {
   return this.state.search || [];
 };
 
-proto.getVectorUrl = function() {
+proto.getVectorUrl = function () {
   return this.state.vectorurl;
 };
 
-proto.getRasterUrl = function(){
+proto.getRasterUrl = function () {
   return this.state.rasterurl;
 };
 
-proto.getId = function() {
+proto.getId = function () {
   return this.state.id;
 };
 
-proto.getType = function() {
+proto.getType = function () {
   return this.state.type;
 };
 
-proto.getGid = function() {
+proto.getGid = function () {
   return this.state.gid;
 };
 
-proto.getName = function() {
+proto.getName = function () {
   return this.state.name;
 };
 
-proto.getOverviewProjectGid = function() {
+proto.getOverviewProjectGid = function () {
   return this.state.overviewprojectgid ? this.state.overviewprojectgid.gid : null;
 };
 
-proto.getCrs = function() {
+proto.getCrs = function () {
   return this._projection.getCode();
 };
 
 /*
 * type: major, minor, patch
 * */
-proto.getQgisVersion = function({type}={}) {
+proto.getQgisVersion = function ({ type } = {}) {
   const index = ['major', 'minor', 'patch'].indexOf(type);
-  return index === -1 ? this.state.qgis_version: +this.state.qgis_version.split('.')[index];
+  return index === -1 ? this.state.qgis_version : +this.state.qgis_version.split('.')[index];
 };
 
-proto.getProjection = function() {
+proto.getProjection = function () {
   return this._projection;
 };
 
-proto.getWmsUrl = function() {
+proto.getWmsUrl = function () {
   return this.state.WMSUrl;
 };
 
-proto.getInfoFormat = function() {
+proto.getInfoFormat = function () {
   return 'application/vnd.ogc.gml';
 };
 
-proto.getLayersStore = function() {
+proto.getLayersStore = function () {
   return this._layersStore;
 };
 
@@ -333,17 +335,17 @@ proto.getLayersStore = function() {
  * @param map_theme map theme name
  * @param layerstree // current layerstree of TOC
  */
-proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}){
+proto.setLayersTreePropertiesFromMapTheme = async function ({ map_theme, layerstree = this.state.layerstree }) {
   /**
    * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
    * plus layerstree of map_theme get from api map theme
    */
   const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
   // extract layerstree
-  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  const { layerstree: mapThemeLayersTree } = mapThemeConfig;
   // create a chages need to apply map_theme changes to map and TOC
   const changes = {
-    layers: {} // key is the layer id and object has style, visibility change (Boolean)
+    layers: {}, // key is the layer id and object has style, visibility change (Boolean)
   };
   const promises = [];
   /**
@@ -352,12 +354,12 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
    * @param layerstree // current layerstree
    */
   const groups = [];
-  const traverse = (mapThemeLayersTree, layerstree, checked) =>{
+  const traverse = (mapThemeLayersTree, layerstree, checked) => {
     mapThemeLayersTree.forEach((node, index) => {
       if (node.nodes) { // case of group
         groups.push({
           node,
-          group: layerstree[index]
+          group: layerstree[index],
         });
         traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
       } else {
@@ -366,26 +368,30 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
         if (layerstree[index].checked !== node.visible) {
           changes.layers[node.id] = {
             visibility: true,
-            style: false
+            style: false,
           };
         }
         layerstree[index].checked = node.visible;
         // if has a style settled
         if (node.style) {
-          const promise = new Promise((resolve, reject) =>{
-            const setCurrentStyleAndResolvePromise = node => {
-              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
-                visibility: false,
-                style: false
-              };
+          const promise = new Promise((resolve, reject) => {
+            const setCurrentStyleAndResolvePromise = (node) => {
+              if (changes.layers[node.id] === undefined) {
+                changes.layers[node.id] = {
+                  visibility: false,
+                  style: false,
+                };
+              }
               changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
               resolve();
             };
             if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
             else // case of starting project creation
-              node => setTimeout(() => {
+            {
+              (node) => setTimeout(() => {
                 setCurrentStyleAndResolvePromise(node);
               })(node);
+            }
           });
           promises.push(promise);
         }
@@ -395,26 +401,26 @@ proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstre
   traverse(mapThemeLayersTree, layerstree);
   await Promise.allSettled(promises);
   // all groups checked after layer checked so is set checked but not visible
-  groups.forEach(({group, node:{checked, expanded}}) => {
+  groups.forEach(({ group, node: { checked, expanded } }) => {
     group.checked = checked;
     group.expanded = expanded;
   });
-  return changes // eventually information about changes (for example style etc..)
+  return changes; // eventually information about changes (for example style etc..)
 };
 
 /**
  * get map Theme_configuration
  */
-proto.getMapThemeFromThemeName = async function(map_theme){
+proto.getMapThemeFromThemeName = async function (map_theme) {
   // get map theme configuration from map_themes project config
-  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
+  const mapThemeConfig = this.state.map_themes.find((map_theme_config) => map_theme_config.theme === map_theme);
   // check if mapThemeConfig exist
-  if (mapThemeConfig){
+  if (mapThemeConfig) {
     // check if has layerstree (property get from server with a specific api
-    const {layerstree} = mapThemeConfig;
+    const { layerstree } = mapThemeConfig;
     if (layerstree === undefined) {
       const layerstree = await this.getMapThemeConfiguration(map_theme);
-      mapThemeConfig.layerstree =  layerstree;
+      mapThemeConfig.layerstree = layerstree;
     }
   }
   return mapThemeConfig;
@@ -425,22 +431,21 @@ proto.getMapThemeFromThemeName = async function(map_theme){
  * @param map_theme
  * @returns {Promise<*>}
  */
-proto.getMapThemeConfiguration = async function(map_theme){
+proto.getMapThemeConfiguration = async function (map_theme) {
   let config;
   const url = `${this.urls.map_themes}${map_theme}/`;
   try {
     const response = await XHR.get({
-      url
+      url,
     });
-    const {result, data} = response;
+    const { result, data } = response;
     if (result) config = data;
-  } catch(err){}
+  } catch (err) {}
   return config;
 };
 
-proto.getUrl = function(type){
+proto.getUrl = function (type) {
   return this.urls[type];
 };
-
 
 module.exports = Project;

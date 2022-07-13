@@ -1,8 +1,8 @@
-const {inherit, resolve:resolvedValue}= require('core/utils/utils');
+const { inherit, resolve: resolvedValue } = require('core/utils/utils');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 
-const Panel = function(options={}) {
+const Panel = function (options = {}) {
   this.id = options.id || null;
   this.title = options.title || '';
   this.internalPanel = options.panel || null;
@@ -13,39 +13,39 @@ inherit(Panel, G3WObject);
 
 const proto = Panel.prototype;
 
-proto.getId = function(){
+proto.getId = function () {
   return this.id;
 };
 
-proto.getTitle = function(){
+proto.getTitle = function () {
   return this.title;
 };
 
-proto.getService = function(){
+proto.getService = function () {
   return this.service;
 };
 
-proto.setService = function(service) {
+proto.setService = function (service) {
   this.service = service;
 };
 
-proto.getInternalPanel = function() {
+proto.getInternalPanel = function () {
   return this.internalPanel;
 };
 
-proto.setInternalPanel = function(internalPanel) {
+proto.setInternalPanel = function (internalPanel) {
   this.internalPanel = internalPanel;
 };
 
-proto.show = function() {
+proto.show = function () {
   GUI.showPanel(this);
 };
 
-proto.close = function(){
+proto.close = function () {
   GUI.closePanel();
 };
 
-proto.mount = function(parent) {
+proto.mount = function (parent) {
   const panel = this.internalPanel;
   const iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
@@ -56,7 +56,7 @@ proto.mount = function(parent) {
   return resolvedValue(true);
 };
 
-proto.unmount = function() {
+proto.unmount = function () {
   const panel = this.internalPanel;
   const d = $.Deferred();
   panel.$destroy(true);
@@ -67,7 +67,6 @@ proto.unmount = function() {
   return d.promise();
 };
 
-proto.onResize = function(parentWidth,parentHeight){};
-
+proto.onResize = function (parentWidth, parentHeight) {};
 
 module.exports = Panel;

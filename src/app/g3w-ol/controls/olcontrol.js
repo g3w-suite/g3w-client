@@ -1,4 +1,4 @@
-const OLControl = function(options={}) {
+const OLControl = function (options = {}) {
   this._control = null;
   this.positionCode = options.position || 'tl';
   switch (options.type) {
@@ -16,9 +16,9 @@ const OLControl = function(options={}) {
       break;
   }
 
-  $(this._control.element).addClass("ol-control-"+this.positionCode);
+  $(this._control.element).addClass(`ol-control-${this.positionCode}`);
 
-  ol.control.Control.call(this,{
+  ol.control.Control.call(this, {
     element: this._control.element,
   });
 };
@@ -36,21 +36,21 @@ proto.offline = true;
  * Return Ol Control
  * @returns {*}
  */
-proto.getOlControl = function(){
+proto.getOlControl = function () {
   return this._control;
 };
 
-proto.getPosition = function(positionCode) {
+proto.getPosition = function (positionCode) {
   positionCode = positionCode || this.positionCode;
   const position = {};
-  position['top'] = (positionCode.indexOf('t') > -1) ? true : false;
-  position['left'] = (positionCode.indexOf('l') > -1) ? true : false;
+  position.top = (positionCode.indexOf('t') > -1);
+  position.left = (positionCode.indexOf('l') > -1);
   return position;
 };
 
-proto.layout = function(map) {
+proto.layout = function (map) {
   if (map) {
-    const position =  this.getPosition();
+    const position = this.getPosition();
     const viewPort = map.getViewport();
     const previusControls = $(viewPort).find(`.ol-control-${this.positionCode}`);
     if (previusControls.length) {
@@ -59,18 +59,18 @@ proto.layout = function(map) {
       const hWhere = position.left ? 'left' : 'right';
       const previousWidth = previusControl[0].offsetWidth;
       const hOffset = $(this.element).position()[hWhere] + previousOffset + previousWidth + 2;
-      $(this.element).css(hWhere, hOffset+'px');
+      $(this.element).css(hWhere, `${hOffset}px`);
     }
   }
 };
 
-proto.changelayout = function() {};
+proto.changelayout = function () {};
 
-proto.showHide = function() {
+proto.showHide = function () {
   $(this.element).toggle();
 };
 
-proto.setMap = function(map) {
+proto.setMap = function (map) {
   this.layout(map);
   this._control.setMap(map);
 };

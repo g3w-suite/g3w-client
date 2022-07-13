@@ -1,8 +1,9 @@
-const t = require('core/i18n/i18n.service').t;
-const {getResolutionFromScale, getScaleFromResolution} = require('../utils/utils');
-const SCALES = [1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000];
+const { t } = require('core/i18n/i18n.service');
+const { getResolutionFromScale, getScaleFromResolution } = require('../utils/utils');
 
-const ScaleControl = function(options= {}) {
+const SCALES = [1000000, 5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000];
+
+const ScaleControl = function (options = {}) {
   this.isMobile = options.isMobile || false;
   options.target = 'scale-control';
   ol.control.Control.call(this, options);
@@ -17,25 +18,25 @@ const proto = ScaleControl.prototype;
 proto.offline = true;
 
 // called from map when layout change
-proto.changelayout = function(map) {
-  const position = this.position;
+proto.changelayout = function (map) {
+  const { position } = this;
   const element = $(this.element);
 };
 
-proto.layout = function(map) {
+proto.layout = function (map) {
   const self = this;
   let isMapResolutionChanged = false;
   let selectedOnClick = false;
   const element = $(this.element);
   const select2 = element.children('select').select2({
     tags: true,
-    dropdownParent:$(map.getTargetElement()),
+    dropdownParent: $(map.getTargetElement()),
     width: '120px',
     height: '20px',
     language: {
       noResults(params) {
-        return t("sdk.mapcontrols.scale.no_valid_scale");
-      }
+        return t('sdk.mapcontrols.scale.no_valid_scale');
+      },
     },
     minimumResultsForSearch: this.isMobile ? -1 : 0,
     createTag(params) {
@@ -45,28 +46,28 @@ proto.layout = function(map) {
       if (params.term.indexOf('1:') !== -1) {
         // Return null to disable tag creation
         scale = params.term.split('1:')[1];
-      } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0){
+      } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0) {
         scale = Number(params.term);
-        if (1*scale <= self.scales[0]) {
+        if (1 * scale <= self.scales[0]) {
           newTag = {
             id: scale,
             text: `1:${params.term}`,
-            new: true
+            new: true,
           };
-          deleteLastCustomScale()
+          deleteLastCustomScale();
         }
       }
-      return newTag
-    }
+      return newTag;
+    },
   });
-  //get change mapsize to close
-  map.on('change:size', ()=> select2.select2('close'));
+  // get change mapsize to close
+  map.on('change:size', () => select2.select2('close'));
   function deleteLastCustomScale() {
-    select2.find('option').each((index, option) => self.scales.indexOf(1*option.value) === -1 && $(option).remove());
+    select2.find('option').each((index, option) => self.scales.indexOf(1 * option.value) === -1 && $(option).remove());
   }
 
-  function addCustomTag (data) {
-    if (select2.find("option[value='" + data.id + "']").length) select2.val(data.id).trigger('change');
+  function addCustomTag(data) {
+    if (select2.find(`option[value='${data.id}']`).length) select2.val(data.id).trigger('change');
     else {
       deleteLastCustomScale();
       const newOption = new Option(data.text, data.id, true, true);
@@ -74,7 +75,7 @@ proto.layout = function(map) {
     }
   }
 
-  map.on('moveend', function() {
+  map.on('moveend', function () {
     if (isMapResolutionChanged) {
       const view = this.getView();
       const resolution = view.getResolution();
@@ -83,7 +84,7 @@ proto.layout = function(map) {
       const data = {
         id: scale,
         text: `1:${scale}`,
-        new: true
+        new: true,
       };
       addCustomTag(data);
       isMapResolutionChanged = false;
@@ -96,44 +97,44 @@ proto.layout = function(map) {
 
   map.on('change:view', () => setChangeResolutionHandler());
 
-  select2.on('select2:select', function(e) {
+  select2.on('select2:select', (e) => {
     selectedOnClick = true;
-    const data = e.params.data;
+    const { data } = e.params;
     if (data.new) {
       deleteLastCustomScale();
       addCustomTag(data);
     }
     const mapUnits = map.getView().getProjection().getUnits();
-    const scale = 1*data.id;
+    const scale = 1 * data.id;
     const resolution = getResolutionFromScale(scale, mapUnits);
     map.getView().setResolution(resolution);
   });
 };
 
-proto._setScales = function(map) {
+proto._setScales = function (map) {
   const mapUnits = map.getView().getProjection().getUnits();
   const currentResolution = map.getView().getResolution();
   const currentScale = parseInt(getScaleFromResolution(currentResolution, mapUnits));
-  this.scales = SCALES.filter(scale => scale < currentScale);
+  this.scales = SCALES.filter((scale) => scale < currentScale);
   this.scales.unshift(currentScale);
   this._createControl();
 };
 
-proto._createControl = function() {
+proto._createControl = function () {
   const controlDomElement = document.createElement('div');
   const select = document.createElement('select');
-  const optgroup  = document.createElement('optgroup');
+  const optgroup = document.createElement('optgroup');
   optgroup.label = '';
   this.scales.forEach((scale, index) => {
     const option = document.createElement('option');
     option.value = scale;
     option.text = `1:${scale}`;
-    option.selected = index === 0  ? true : false;
+    option.selected = index === 0;
     optgroup.appendChild(option);
   });
   select.appendChild(optgroup);
   if (!this.isMobile) {
-    const optgroup_custom  = document.createElement('optgroup');
+    const optgroup_custom = document.createElement('optgroup');
     optgroup_custom.label = 'Custom';
     select.appendChild(optgroup_custom);
   }
@@ -143,15 +144,10 @@ proto._createControl = function() {
   $(this.element).css('height', '20px');
 };
 
-proto.setMap = function(map) {
+proto.setMap = function (map) {
   if (map) {
     this._setScales(map);
     this.layout(map);
     ol.control.Control.prototype.setMap.call(this, map);
   }
 };
-
-
-
-
-

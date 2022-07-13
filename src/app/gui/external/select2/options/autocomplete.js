@@ -2,7 +2,7 @@ const { t } = require('core/i18n/i18n.service');
 
 module.exports = {
   matcher: (params, data) => {
-    const searchItem = params.term ? params.term.toLowerCase(): params.term;
+    const searchItem = params.term ? params.term.toLowerCase() : params.term;
     // If there are no search terms, return all of the data
     if ($.trim(searchItem) === '') return data;
     // Do not display the item if there is no 'text' property
@@ -19,18 +19,18 @@ module.exports = {
     return null;
   },
   language: {
-    noResults(){
-      return t("sdk.search.no_results");
+    noResults() {
+      return t('sdk.search.no_results');
     },
-    errorLoading(){
-      return t("sdk.search.error_loading")
+    errorLoading() {
+      return t('sdk.search.error_loading');
     },
-    searching(){
-      return t("sdk.search.searching")
+    searching() {
+      return t('sdk.search.searching');
     },
     inputTooShort(args) {
       const remainingChars = args.minimum - args.input.length;
-      return `${t("sdk.search.autocomplete.inputshort.pre")} ${remainingChars} ${t("sdk.search.autocomplete.inputshort.post")}`;
-    }
+      return `${t('sdk.search.autocomplete.inputshort.pre')} ${remainingChars} ${t('sdk.search.autocomplete.inputshort.post')}`;
+    },
   },
 };

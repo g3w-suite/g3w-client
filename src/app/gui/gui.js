@@ -1,4 +1,4 @@
-const {base, inherit, noop} = require('core/utils/utils');
+const { base, inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const RouterService = require('core/router');
 const ComponentsRegistry = require('gui/component/componentsregistry');
@@ -8,10 +8,10 @@ const ComponentsRegistry = require('gui/component/componentsregistry');
 // app should call GUI.ready() when GUI is ready
 function GUI() {
   this.setters = {
-    setContent(options={}) {
+    setContent(options = {}) {
       this.emit('opencontent', true);
-      this._setContent(options)
-    }
+      this._setContent(options);
+    },
   };
   this.isready = false;
   // images urls
@@ -35,50 +35,50 @@ function GUI() {
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
   this._closeUserMessageBeforeSetContent = true;
-  this.setComponent = function(component) {
+  this.setComponent = function (component) {
     ComponentsRegistry.registerComponent(component);
   };
-  this.getComponent = function(id) {
+  this.getComponent = function (id) {
     return ComponentsRegistry.getComponent(id);
   };
-  this.getComponents = function() {
+  this.getComponents = function () {
     return ComponentsRegistry.getComponents();
   };
 
-  this.goto = function(url) {
+  this.goto = function (url) {
     RouterService.goto(url);
   };
-  this.ready = function() {
+  this.ready = function () {
     this.emit('ready');
     this.isready = true;
   };
-  this.guiResized = function() {
+  this.guiResized = function () {
     this.emit('guiresized');
   };
-  //ready GUI
-  this.isReady = function(){
-    return new Promise(resolve => this.isready ? resolve() : this.once('ready', resolve));
+  // ready GUI
+  this.isReady = function () {
+    return new Promise((resolve) => (this.isready ? resolve() : this.once('ready', resolve)));
   };
   /**
    * Passing a component application ui id return service that belong to component
    * @param componentId
    * @returns {*}
    */
-  this.getService = function(componentId){
+  this.getService = function (componentId) {
     const component = this.getComponent(componentId);
     return component && component.getService();
   };
   /* spinner */
-  this.showSpinner = function(options={}){};
-  this.hideSpinner = function(id){};
+  this.showSpinner = function (options = {}) {};
+  this.hideSpinner = function (id) {};
   /* end spinner */
   this.notify = noop;
   this.dialog = noop;
   this.isMobile = noop;
-  //useful to registere setters
+  // useful to registere setters
   base(this);
 }
 
 inherit(GUI, G3WObject);
 
-module.exports = new GUI;
+module.exports = new GUI();

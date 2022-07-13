@@ -1,4 +1,4 @@
-const {inherit, base, Base64} = require('core/utils/utils');
+const { inherit, base, Base64 } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /*
@@ -27,91 +27,89 @@ const G3WObject = require('core/g3wobject');
  * RouterService.removeRoute(route);
 */
 
-const RouterService = function(){
+const RouterService = function () {
   this._initialLocationQuery;
   this._routeQuery = '';
   this.setters = {
-    setRouteQuery(routeQuery){
+    setRouteQuery(routeQuery) {
       this._routeQuery = routeQuery;
       crossroads.parse(routeQuery);
-    }
-  }
+    },
+  };
 
-  History.Adapter.bind(window,'statechange',() =>{
-      const state = History.getState();
-      const locationQuery = state.hash;
-      if(state.data && state.data.routequery){
-         this.setRouteQuery(state.data.routequery);
-      }
-      else {
-        this._setRouteQueryFromLocationQuery(locationQuery);
-      }
+  History.Adapter.bind(window, 'statechange', () => {
+    const state = History.getState();
+    const locationQuery = state.hash;
+    if (state.data && state.data.routequery) {
+      this.setRouteQuery(state.data.routequery);
+    } else {
+      this._setRouteQueryFromLocationQuery(locationQuery);
+    }
   });
 
   base(this);
 };
-inherit(RouterService,G3WObject);
+inherit(RouterService, G3WObject);
 
 const proto = RouterService.prototype;
 
-proto.init = function(){
+proto.init = function () {
   const query = window.location.search;
   this._setRouteQueryFromLocationQuery(query);
 };
 
-proto.addRoute = function(pattern,handler,priority) {
-  return crossroads.addRoute(pattern,handler,priority);
+proto.addRoute = function (pattern, handler, priority) {
+  return crossroads.addRoute(pattern, handler, priority);
 };
 
-proto.removeRoute = function(route) {
+proto.removeRoute = function (route) {
   return crossroads.removeRoute(route);
 };
 
-proto.removeAllRoutes = function() {
+proto.removeAllRoutes = function () {
   return crossroads.removeAllRoutes();
 };
 
-proto.parse = function(request,defaultArgs) {
-  return crossroads.parse(request,defaultArgs);
+proto.parse = function (request, defaultArgs) {
+  return crossroads.parse(request, defaultArgs);
 };
 
-proto.goto = function(routeQuery){
-  //var pathb64 = Base64.encode(path);
-  //History.pushState({path:path},null,'?p='+pathb64);
+proto.goto = function (routeQuery) {
+  // var pathb64 = Base64.encode(path);
+  // History.pushState({path:path},null,'?p='+pathb64);
   if (!this._initialQuery) {
     this._initialLocationQuery = this._stripInitialQuery(location.search.substring(1));
   }
   if (routeQuery) {
     encodedRouteQuery = this._encodeRouteQuery(routeQuery);
-    const path = '?'+this._initialLocationQuery + '&q='+encodedRouteQuery;
-    History.pushState({routequery:routeQuery},null,path);
+    const path = `?${this._initialLocationQuery}&q=${encodedRouteQuery}`;
+    History.pushState({ routequery: routeQuery }, null, path);
   }
 };
 
-proto.makeQueryString = function(queryParams){};
+proto.makeQueryString = function (queryParams) {};
 
-proto.slicePath = function(path){
+proto.slicePath = function (path) {
   return path.split('?')[0].split('/');
 };
 
-proto.sliceFirst = function(path){
+proto.sliceFirst = function (path) {
   const pathAndQuery = path.split('?');
   const queryString = pathAndQuery[1];
-  const pathArr = pathAndQuery[0].split('/')
+  const pathArr = pathAndQuery[0].split('/');
   const firstPath = pathArr[0];
   path = pathArr.slice(1).join('/');
-  path = [path,queryString].join('?')
-  return [firstPath,path];
+  path = [path, queryString].join('?');
+  return [firstPath, path];
 };
 
-proto.getQueryParams = function(query){
-  query = query.replace('?','');
+proto.getQueryParams = function (query) {
+  query = query.replace('?', '');
   const queryParams = {};
   let queryPairs = [];
-  if (query != "" && query.indexOf("&") == -1) {
+  if (query != '' && query.indexOf('&') == -1) {
     queryPairs = [query];
-  }
-  else {
+  } else {
     queryPairs = query.split('&');
   }
   try {
@@ -121,16 +119,15 @@ proto.getQueryParams = function(query){
       const value = pair[1];
       queryParams[key] = value;
     });
-  }
-  catch (e) {}
+  } catch (e) {}
   return queryParams;
 };
 
-proto.getQueryString = function(path){
+proto.getQueryString = function (path) {
   return path.split('?')[1];
 };
 
-proto._getQueryPortion = function(query,queryKey){
+proto._getQueryPortion = function (query, queryKey) {
   let queryPortion;
   try {
     const queryPairs = query.split('&');
@@ -142,28 +139,27 @@ proto._getQueryPortion = function(query,queryKey){
         queryPortion = queryPair;
       }
     });
-  }
-  catch (e) {}
+  } catch (e) {}
   return queryPortion;
 };
 
-proto._encodeRouteQuery = function(routeQuery) {
-  routeQuery = routeQuery.replace('?','@');
-  routeQuery = routeQuery.replace('&','|');
-  routeQuery = routeQuery.replace('=','!');
+proto._encodeRouteQuery = function (routeQuery) {
+  routeQuery = routeQuery.replace('?', '@');
+  routeQuery = routeQuery.replace('&', '|');
+  routeQuery = routeQuery.replace('=', '!');
   return routeQuery;
 };
 
-proto._decodeRouteQuery = function(routeQuery) {
-  routeQuery = routeQuery.replace('@','?');
-  routeQuery = routeQuery.replace('|','&');
-  routeQuery = routeQuery.replace('!','=');
+proto._decodeRouteQuery = function (routeQuery) {
+  routeQuery = routeQuery.replace('@', '?');
+  routeQuery = routeQuery.replace('|', '&');
+  routeQuery = routeQuery.replace('!', '=');
   return routeQuery;
 };
 
-proto._setRouteQueryFromLocationQuery = function(locationQuery) {
-  //var pathb64 = this.getQueryParams(locationQuery)['q'];
-  //var path = pathb64 ? Base64.decode(pathb64) : '';
+proto._setRouteQueryFromLocationQuery = function (locationQuery) {
+  // var pathb64 = this.getQueryParams(locationQuery)['q'];
+  // var path = pathb64 ? Base64.decode(pathb64) : '';
   const encodedRouteQuery = this._getRouteQueryFromLocationQuery(locationQuery);
   if (encodedRouteQuery) {
     const routeQuery = this._decodeRouteQuery(encodedRouteQuery);
@@ -171,21 +167,21 @@ proto._setRouteQueryFromLocationQuery = function(locationQuery) {
   }
 };
 
-proto._getRouteQueryFromLocationQuery = function(locationQuery) {
-  return this.getQueryParams(locationQuery)['q'];
+proto._getRouteQueryFromLocationQuery = function (locationQuery) {
+  return this.getQueryParams(locationQuery).q;
 };
 
-proto._stripInitialQuery = function(locationQuery) {
-  const previousQuery = this._getQueryPortion(locationQuery,'q');
+proto._stripInitialQuery = function (locationQuery) {
+  const previousQuery = this._getQueryPortion(locationQuery, 'q');
   if (previousQuery) {
     const previousQueryLength = previousQuery.length;
     const previousQueryPosition = locationQuery.indexOf(previousQuery);
-    queryPrefix = _.trimEnd(locationQuery.substring(0,previousQueryPosition),"&");
-    querySuffix = locationQuery.substring(previousQueryPosition+previousQueryLength);
-    querySuffix = (queryPrefix != "") ? querySuffix : _.trimStart(querySuffix,"&");
+    queryPrefix = _.trimEnd(locationQuery.substring(0, previousQueryPosition), '&');
+    querySuffix = locationQuery.substring(previousQueryPosition + previousQueryLength);
+    querySuffix = (queryPrefix != '') ? querySuffix : _.trimStart(querySuffix, '&');
     locationQuery = queryPrefix + querySuffix;
   }
   return locationQuery;
 };
 
-module.exports = new RouterService;
+module.exports = new RouterService();

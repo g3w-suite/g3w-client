@@ -8,13 +8,13 @@ const Validators = {
     string: require('./validator'),
     radio: require('./radio'),
     default: require('./validator'),
-    range: require('./range')
+    range: require('./range'),
   },
 
-  get(type, options={}) {
+  get(type, options = {}) {
     const Validator = this.validators[type] || this.validators.default;
     return new Validator(options);
-  }
+  },
 
 };
 

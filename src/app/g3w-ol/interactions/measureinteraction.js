@@ -1,7 +1,9 @@
-const {t} = require('core/i18n/i18n.service');
-const {createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, needUseSphereMethods} = require('../utils/utils');
+const { t } = require('core/i18n/i18n.service');
+const {
+  createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, needUseSphereMethods,
+} = require('../utils/utils');
 
-const MeasureIteraction = function(options={}) {
+const MeasureIteraction = function (options = {}) {
   this._helpTooltip;
   this._measureTooltipElement;
   this._measureTooltip;
@@ -15,22 +17,22 @@ const MeasureIteraction = function(options={}) {
   const useSphereMethods = needUseSphereMethods(this._projection);
   const measureStyle = new ol.style.Style({
     fill: new ol.style.Fill({
-      color: 'rgba(255, 255, 255, 0.2)'
+      color: 'rgba(255, 255, 255, 0.2)',
     }),
     stroke: new ol.style.Stroke({
       color: drawColor,
       lineDash: [10, 10],
-      width: 3
+      width: 3,
     }),
     image: new ol.style.Circle({
       radius: 5,
       stroke: new ol.style.Stroke({
-        color: 'rgba(0, 0, 0, 0.7)'
+        color: 'rgba(0, 0, 0, 0.7)',
       }),
       fill: new ol.style.Fill({
-        color: 'rgba(255, 255, 255, 0.2)'
-      })
-    })
+        color: 'rgba(255, 255, 255, 0.2)',
+      }),
+    }),
   });
   const geometryType = options.geometryType || 'LineString';
   const source = new ol.source.Vector();
@@ -45,21 +47,21 @@ const MeasureIteraction = function(options={}) {
         new ol.style.Style({
           stroke: new ol.style.Stroke({
             lineDash: [10, 10],
-            width: 3
+            width: 3,
           }),
           fill: new ol.style.Fill({
-            color: 'rgba(255, 255, 255, 0.2)'
-          })
-        })
+            color: 'rgba(255, 255, 255, 0.2)',
+          }),
+        }),
       ];
       return styles;
-    }
+    },
   });
 
   ol.interaction.Draw.call(this, {
     source,
     type: geometryType,
-    style: measureStyle
+    style: measureStyle,
   });
   this.set('beforeRemove', this.clear);
   this.set('layer', this._layer);
@@ -72,24 +74,24 @@ ol.inherits(MeasureIteraction, ol.interaction.Draw);
 
 const proto = MeasureIteraction.prototype;
 
-proto.setDrawMessage = function(message) {
+proto.setDrawMessage = function (message) {
   this._helpMsg = message;
 };
 
-proto.clear = function() {
+proto.clear = function () {
   this._layer.getSource().clear();
   this._clearMessagesAndListeners();
   if (this._map) {
     removeMeasureTooltip({
       map: this._map,
-      ...this.measureTooltip
+      ...this.measureTooltip,
     });
     this.measureTooltip = null;
     this._map.removeLayer(this._layer);
   }
 };
 
-proto._clearMessagesAndListeners = function() {
+proto._clearMessagesAndListeners = function () {
   this._feature = null;
   // unset tooltip so that a new one can be created
   if (this._map) {
@@ -102,19 +104,19 @@ proto._clearMessagesAndListeners = function() {
   }
 };
 
-proto._removeLastPoint = function(event) {
+proto._removeLastPoint = function (event) {
   const geom = this._feature.getGeometry();
   if (event.keyCode === 46) {
-    if( geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
+    if (geom instanceof ol.geom.Polygon && geom.getCoordinates()[0].length > 2) {
       this.removeLastPoint();
-    } else if(geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1) {
+    } else if (geom instanceof ol.geom.LineString && geom.getCoordinates().length > 1) {
       this.removeLastPoint();
     }
   }
 };
 
-//drawStart function
-proto._drawStart = function(evt) {
+// drawStart function
+proto._drawStart = function (evt) {
   this._map = this.getMap();
   this._map.removeLayer(this._layer);
   this._feature = evt.feature;
@@ -122,7 +124,7 @@ proto._drawStart = function(evt) {
   this._keyDownEventHandler = this._removeLastPoint.bind(this);
   $(document).on('keydown', this._keyDownEventHandler);
   this._layer.getSource().clear();
-  this._poinOnMapMoveListener = this._map.on('pointermove', evt => {
+  this._poinOnMapMoveListener = this._map.on('pointermove', (evt) => {
     if (evt.dragging) return;
     if (this._feature && this._helpMsg) {
       const helpMsg = t(this._helpMsg);
@@ -132,12 +134,12 @@ proto._drawStart = function(evt) {
     }
   });
   this._createHelpTooltip();
-  console.log('qi')
+  console.log('qi');
   this._createMeasureTooltip();
 };
 
-proto._drawEnd = function() {
-  const {tooltip}= this.measureTooltip;
+proto._drawEnd = function () {
+  const { tooltip } = this.measureTooltip;
   setMeasureTooltipStatic(tooltip);
   this._clearMessagesAndListeners();
   this._map.addLayer(this._layer);
@@ -146,7 +148,7 @@ proto._drawEnd = function() {
 /**
  * Creates a new help tooltip
  */
-proto._createHelpTooltip = function() {
+proto._createHelpTooltip = function () {
   this._helpTooltipElement && this._helpTooltipElement.parentNode.removeChild(this._helpTooltipElement);
   this._helpTooltip && this._map.removeOverlay(this._helpTooltip);
   this._helpTooltipElement = document.createElement('div');
@@ -154,7 +156,7 @@ proto._createHelpTooltip = function() {
   this._helpTooltip = new ol.Overlay({
     element: this._helpTooltipElement,
     offset: [15, 0],
-    positioning: 'center-left'
+    positioning: 'center-left',
   });
   this._map.addOverlay(this._helpTooltip);
 };
@@ -162,16 +164,15 @@ proto._createHelpTooltip = function() {
 /**
  * Creates a new measure tooltip
  */
-proto._createMeasureTooltip = function() {
+proto._createMeasureTooltip = function () {
   this.measureTooltip && removeMeasureTooltip({
     ...this.measureTooltip,
-    map: this._map
+    map: this._map,
   });
   this.measureTooltip = createMeasureTooltip({
-      map: this._map,
-      feature: this._feature
-    })
-
+    map: this._map,
+    feature: this._feature,
+  });
 };
 // END MEASURE CONTROLS //
 

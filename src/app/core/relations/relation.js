@@ -1,7 +1,7 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
-function Relation(config={}) {
+function Relation(config = {}) {
   const uniqueSuffix = Date.now();
   const id = config.id || `id_${uniqueSuffix}`;
   const name = config.name || `name_${uniqueSuffix}`;
@@ -15,7 +15,7 @@ function Relation(config={}) {
     fatherField: config.fieldRef.referencedField,
     childField: config.fieldRef.referencingField,
     type: config.type,
-    loading: false
+    loading: false,
   };
   base(this);
 }
@@ -24,58 +24,58 @@ inherit(Relation, G3WObject);
 
 const proto = Relation.prototype;
 
-proto.getId = function() {
+proto.getId = function () {
   return this.state.id;
 };
 
-proto.setId = function(id) {
+proto.setId = function (id) {
   this.state.id = id;
 };
 
-proto.getName = function() {
+proto.getName = function () {
   return this.state.name;
 };
 
-proto.setName = function(name) {
+proto.setName = function (name) {
   this.state.name = name;
 };
 
-proto.getTitle = function() {
+proto.getTitle = function () {
   return this.state.title;
 };
 
-proto.setTitle = function(title) {
+proto.setTitle = function (title) {
   return this.state.title = title;
 };
 
-proto.getChild = function() {
+proto.getChild = function () {
   return this.state.child;
 };
 
-proto.getFather = function() {
+proto.getFather = function () {
   return this.state.father;
 };
 
-proto.getState = function() {
+proto.getState = function () {
   return this.state;
 };
 
-proto.getType = function() {
+proto.getType = function () {
   return this.state.type;
 };
 
-proto.getFields = function() {
+proto.getFields = function () {
   return {
     father: this.state.fatherField,
-    child: this.state.childField
+    child: this.state.childField,
   };
 };
 
-proto.getFatherField = function() {
+proto.getFatherField = function () {
   return this.state.fatherField;
 };
 
-proto.getChildField = function() {
+proto.getChildField = function () {
   return this.state.childField;
 };
 
@@ -83,11 +83,11 @@ proto.getChildField = function() {
  * For editing purpose
  */
 
-proto.setLoading = function(bool=false){
+proto.setLoading = function (bool = false) {
   this.state.loading = bool;
 };
 
-proto.isLoading = function(){
+proto.isLoading = function () {
   return this.state.loading;
 };
 

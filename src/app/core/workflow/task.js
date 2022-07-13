@@ -1,10 +1,10 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
-function Task(options={}) {
+function Task(options = {}) {
   base(this, options);
   this.state = {
-    usermessagesteps: {}
+    usermessagesteps: {},
   };
 }
 
@@ -16,51 +16,51 @@ const proto = Task.prototype;
  * Set and get task usefult properties used to run
  */
 
-proto.setInputs = function(inputs){
+proto.setInputs = function (inputs) {
   this.inputs = inputs;
 };
 
-proto.getInputs = function(){
+proto.getInputs = function () {
   return this.inputs;
 };
 
-proto.setContext = function(context){
+proto.setContext = function (context) {
   return this.context = context;
 };
 
-proto.getContext = function(){
+proto.getContext = function () {
   return this.context;
 };
 
-proto.revert = function() {
+proto.revert = function () {
   console.log('Revert to implemente ');
 };
 
-proto.panic = function() {
+proto.panic = function () {
   console.log('Panic to implement ..');
 };
 
-proto.stop = function() {
+proto.stop = function () {
   console.log('Task Stop to implement ..');
 };
 
-proto.run = function() {
+proto.run = function () {
   console.log('Wrong. This method has to be overwrite from task');
 };
 
-proto.setRoot = function(task) {
+proto.setRoot = function (task) {
   this.state.root = task;
 };
 
-proto.getUserMessageSteps = function() {
+proto.getUserMessageSteps = function () {
   return this.state.usermessagesteps;
 };
 
-proto.setUserMessageSteps = function(steps={}) {
+proto.setUserMessageSteps = function (steps = {}) {
   this.state.usermessagesteps = steps;
 };
 
-proto.setUserMessageStepDone = function(type) {
+proto.setUserMessageStepDone = function (type) {
   if (type) this.state.usermessagesteps[type].done = true;
 };
 

@@ -1,8 +1,8 @@
-const {inherit, base} = require('core/utils/utils');
-const WMSLAYER = require('./wmslayer');
+const { inherit, base } = require('core/utils/utils');
 const RasterLayers = require('g3w-ol/layers/rasters');
+const WMSLAYER = require('./wmslayer');
 
-function ARCGISMAPSERVERLayer(options={}, extraParams={}) {
+function ARCGISMAPSERVERLayer(options = {}, extraParams = {}) {
   base(this, options, extraParams);
 }
 
@@ -10,26 +10,25 @@ inherit(ARCGISMAPSERVERLayer, WMSLAYER);
 
 const proto = ARCGISMAPSERVERLayer.prototype;
 
-proto._makeOlLayer = function() {
+proto._makeOlLayer = function () {
   const config = {
     url: this.config.url,
     id: this.config.id,
     projection: this.config.projection,
-    format: this.config.format
+    format: this.config.format,
   };
   const olLayer = new RasterLayers.TiledArgisMapServer(config);
   olLayer.getSource().on('imageloadstart', () => {
-    this.emit("loadstart");
+    this.emit('loadstart');
   });
   olLayer.getSource().on('imageloadend', () => {
-    this.emit("loadend");
+    this.emit('loadend');
   });
 
-  olLayer.getSource().on('imageloaderror', ()=> {
-    this.emit("loaderror");
+  olLayer.getSource().on('imageloaderror', () => {
+    this.emit('loaderror');
   });
-  return olLayer
+  return olLayer;
 };
-
 
 module.exports = ARCGISMAPSERVERLayer;

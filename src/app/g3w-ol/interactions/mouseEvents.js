@@ -1,4 +1,4 @@
-//gis3wlib._interaction.prototype.addIdentify = function(callback){
+// gis3wlib._interaction.prototype.addIdentify = function(callback){
 //        this.identifyCtx.callback = callback;
 //        var self = this;
 //        this.map.on('singleclick',function(evt){
@@ -6,13 +6,13 @@
 //                self.identify(evt);
 //            }
 //        })
-//};
+// };
 //
-//gis3wlib._interaction.prototype.setIdentifyLayers = function(layers){
+// gis3wlib._interaction.prototype.setIdentifyLayers = function(layers){
 //        this.identifyCtx.layers = layers;
-//};
+// };
 //
-//gis3wlib._interaction.prototype.identify = function(evt){
+// gis3wlib._interaction.prototype.identify = function(evt){
 //        var self = this;
 //        this.closePopup();
 //        var layer = this.identifyCtx.layers[0];
@@ -50,7 +50,7 @@
 //                }
 //            })
 //        }
-//}
+// }
 //
 //
 //

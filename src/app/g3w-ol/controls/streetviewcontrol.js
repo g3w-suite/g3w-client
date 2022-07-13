@@ -1,17 +1,18 @@
 import ApplicationState from 'core/applicationstate';
+
 const utils = require('../utils');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
-const StreetViewControl = function(options={}) {
+const StreetViewControl = function (options = {}) {
   const _options = {
     offline: false,
     visible: !!ApplicationState.keys.vendorkeys.google,
-    name: "streetview",
-    tipLabel: "StreetView",
+    name: 'streetview',
+    tipLabel: 'StreetView',
     clickmap: true, // set ClickMap
-    label: "\ue905",
-    interactionClass: PickCoordinatesInteraction
+    label: '\ue905',
+    interactionClass: PickCoordinatesInteraction,
   };
   this._sv = null;
   this._panorama = null;
@@ -20,7 +21,7 @@ const StreetViewControl = function(options={}) {
   this._lastposition = null;
   this._streetViewFeature = new ol.Feature();
   const streetVectorSource = new ol.source.Vector({
-    features: []
+    features: [],
   });
   this._layer = new ol.layer.Vector({
     source: streetVectorSource,
@@ -36,55 +37,53 @@ const StreetViewControl = function(options={}) {
             text: '\ue905',
             font: 'bold 18px icomoon',
             fill: new ol.style.Fill({
-              color: '#ffffff'
-            })
-          })
+              color: '#ffffff',
+            }),
+          }),
         }),
         new ol.style.Style({
           image: new ol.style.Icon({
             src: '/static/client/images/streetviewarrow.png',
-            rotation
-          })
-        })
+            rotation,
+          }),
+        }),
       ];
       this._lastposition = coordinates;
-      return styles
-    }
+      return styles;
+    },
   });
-  options = utils.merge(options,_options);
-  InteractionControl.call(this,options);
+  options = utils.merge(options, _options);
+  InteractionControl.call(this, options);
 };
 
 ol.inherits(StreetViewControl, InteractionControl);
 
 const proto = StreetViewControl.prototype;
 
-proto.getLayer = function() {
+proto.getLayer = function () {
   return this._layer;
 };
 
-proto.setProjection = function(projection) {
+proto.setProjection = function (projection) {
   this._projection = projection;
 };
 
-proto.setPosition = function(position) {
+proto.setPosition = function (position) {
   const self = this;
   let pixel;
   if (!this._sv) this._sv = new google.maps.StreetViewService();
-  this._sv.getPanorama({location: position}, function (data) {
-    self._panorama = new google.maps.StreetViewPanorama(
-      document.getElementById('streetview'), {
-        imageDateControl: true
-      }
-    );
-    self._panorama.addListener('position_changed', function() {
+  this._sv.getPanorama({ location: position }, (data) => {
+    self._panorama = new google.maps.StreetViewPanorama(document.getElementById('streetview'), {
+      imageDateControl: true,
+    });
+    self._panorama.addListener('position_changed', function () {
       if (self.isToggled()) {
         const lnglat = ol.proj.transform([this.getPosition().lng(), this.getPosition().lat()], 'EPSG:4326', self._projection.getCode());
         self._layer.getSource().getFeatures()[0].setGeometry(
-          new ol.geom.Point(lnglat)
+          new ol.geom.Point(lnglat),
         );
         pixel = self._map.getPixelFromCoordinate(lnglat);
-        if ((pixel[0] + 15) > self._map.getSize()[0] || (pixel[1] + 15) > self._map.getSize()[1] || pixel[0] < 15 || pixel [1] < 15 ) {
+        if ((pixel[0] + 15) > self._map.getSize()[0] || (pixel[1] + 15) > self._map.getSize()[1] || pixel[0] < 15 || pixel[1] < 15) {
           self._map.getView().setCenter(lnglat);
         }
       }
@@ -92,38 +91,38 @@ proto.setPosition = function(position) {
     if (data && data.location) {
       self._panorama.setPov({
         pitch: 0,
-        heading: 0
+        heading: 0,
       });
       self._panorama.setPosition(data.location.latLng);
     }
-  })
+  });
 };
 
-proto.setMap = function(map) {
+proto.setMap = function (map) {
   this._map = map;
-  InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('picked', evt => {
+  InteractionControl.prototype.setMap.call(this, map);
+  this._interaction.on('picked', (evt) => {
     this.dispatchEvent({
       type: 'picked',
-      coordinates: evt.coordinate
+      coordinates: evt.coordinate,
     });
     this._autountoggle && this.toggle();
   });
 };
 
-proto.clearMarker = function() {
-  this._streetViewFeature.setGeometry(null)
+proto.clearMarker = function () {
+  this._streetViewFeature.setGeometry(null);
 };
 
-proto.clear = function() {
+proto.clear = function () {
   this._layer.getSource().clear();
   this._streetViewFeature.setGeometry(null);
   this.clearMarker();
   this._panorama = null;
-  this.dispatchEvent('disabled')
+  this.dispatchEvent('disabled');
 };
 
-proto.toggle = function(toggle) {
+proto.toggle = function (toggle) {
   InteractionControl.prototype.toggle.call(this, toggle);
   if (!this.isToggled()) this.clear();
   else this._layer.getSource().addFeatures([this._streetViewFeature]);
