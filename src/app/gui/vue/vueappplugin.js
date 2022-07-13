@@ -116,7 +116,9 @@ const font = {
   'fast-backward': "fas fa-fast-backward",
   'step-forward': "fas fa-step-forward",
   'fast-forward': "fas fa-fast-forward",
-  crop: "fas fa-crop-alt"
+  crop: "fas fa-crop-alt",
+  osm: "",
+  google: "fab fa-google"
 };
 
 const Vueappplugin = {

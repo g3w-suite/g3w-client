@@ -9,7 +9,7 @@ const AddLayersControl = require('g3w-ol/controls/addlayers');
 const LengthControl = require('g3w-ol/controls/lengthcontrol');
 const AreaControl = require('g3w-ol/controls/areacontrol');
 const OLControl = require('g3w-ol/controls/olcontrol');
-const NominatimControl = require('g3w-ol/controls/geocodingcontrol');
+const GeocodingControl = require('g3w-ol/controls/geocodingcontrol');
 const MousePositionControl = require('g3w-ol/controls/mousepositioncontrol');
 const ScaleControl = require('g3w-ol/controls/scalecontrol');
 const OnClikControl = require('g3w-ol/controls/onclickcontrol');
@@ -35,7 +35,8 @@ ControlsFactory.CONTROLS = {
   'zoom': OLControl,
   'scaleline': OLControl,
   'overview': OLControl,
-  'nominatim': NominatimControl,
+  'nominatim': GeocodingControl, // temporary fro backward compatibility
+  'geocoding': GeocodingControl,
   'addlayers': AddLayersControl,
   'length': LengthControl,
   'area': AreaControl,

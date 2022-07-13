@@ -1,5 +1,6 @@
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
+const GUI = require('gui/gui');
 /**
  * Classes for all element of dom control
  * @type {{country: string, hidden: string, city: string, road: string, spin: string, namespace: string, inputText: {container: string, result: string, input: string, reset: string, control: string}, olControl: string, inputResetId: string, inputQueryId: string}}
@@ -232,7 +233,6 @@ const utils = {
     } else elem = document.createElement(node);
     elem.innerHTML = html;
     const frag = document.createDocumentFragment();
-
     while (elem.childNodes[0]) {
       frag.appendChild(elem.childNodes[0]);
     }
@@ -246,6 +246,7 @@ const utils = {
  */
 class Nominatim {
   constructor(options={}) {
+    const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://nominatim.openstreetmap.org/search/',
       params: {
@@ -254,7 +255,8 @@ class Nominatim {
         addressdetails: 1,
         limit: 10
       },
-      viewbox: ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326').join(',')
+      extent,
+      viewbox: extent.join(',')
     };
   }
   getParameters(options) {
@@ -271,8 +273,10 @@ class Nominatim {
       }
     };
   };
-  handleResponse(results) {
-    return results.map(result => ({
+  handleResponse(response=[]) {
+    const results = response
+      .filter(place => ol.extent.containsXY(this.settings.extent, place.lon, place.lat))
+      .map(result => ({
         lon: result.lon,
         lat: result.lat,
         address: {
@@ -288,7 +292,73 @@ class Nominatim {
           details: result.address
         }
       })
-    )
+    );
+    return {
+      results,
+      header: {
+        title: 'Nominatim',
+        icon: GUI.getFontClass('search')
+      }
+    }
+  }
+}
+
+class Google {
+  constructor(options={}) {
+    const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
+    this.settings = {
+      url: 'ttps://maps.googleapis.com/maps/api/geocode/outputFormat/json',
+      params: {
+        address: '',
+        addressdetails: 1,
+        limit: 10,
+        key
+      },
+      extent,
+      viewbox: extent.join(',')
+    };
+  }
+  getParameters(options) {
+    const {url, viewbox, params:{limit}} = this.settings;
+    return {
+      url,
+      params: {
+        q: options.query,
+        format: 'json',
+        addressdetails: 1,
+        limit: options.limit || limit,
+        viewbox,
+        bounded: 1
+      }
+    };
+  };
+  handleResponse(response=[]) {
+    const results = response
+      .filter(place => ol.extent.containsXY(this.settings.extent, place.lon, place.lat))
+      .map(result => ({
+          lon: result.lon,
+          lat: result.lat,
+          address: {
+            name: result.address.neighbourhood || '',
+            road: result.address.road || '',
+            postcode: result.address.postcode,
+            city: result.address.city || result.address.town,
+            state: result.address.state,
+            country: result.address.country
+          },
+          original: {
+            formatted: result.display_name,
+            details: result.address
+          }
+        })
+      );
+    return {
+      results,
+      header: {
+        title: 'Google',
+        icon: GUI.getFontClass('google')
+      }
+    }
   }
 }
 
@@ -314,25 +384,24 @@ function GeocodingControl(options={}) {
     bounded: 1,
     classMobile: options.isMobile ? 'nominatim-mobile' : '',
     mapCrs: options.mapCrs,
-    fontIcon: options.fontIcon || "fa fa-search fas fa-search"
+    fontIcon: GUI.getFontClass('search')
   };
-  /**
-   * set currentprovider
-   * @type {string|TableLayer.providers.data}
-   */
-  this.currentProvider = options.provider || 'nominatim';
+
   const {placeholder, fontIcon, mapCrs, viewbox} = this.options;
   /**
    * Providers
-   * @type {{nominatim: Nominatim, google: null}}
+   * @type []
    */
-  this.providers = {
-    nominatim: new Nominatim({
+  this.providers = [
+    new Nominatim({
       mapCrs,
       viewbox
     }),
-    google: null // TO DO
-  };
+    // new Google({
+    //   mapCrs,
+    //   viewbox
+    // })
+  ];
   const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
   const self = this;
   const nominatimVueContainer = Vue.extend({
@@ -445,7 +514,7 @@ function GeocodingControl(options={}) {
     this.reset.addEventListener('click', reset, false);
   };
   this.query = function(q) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const isNumber = value => toRawType(value) === 'Number' && !Number.isNaN(value);
       let lonlat = null;
       if (q && q.split(',').length === 2) {
@@ -458,50 +527,51 @@ function GeocodingControl(options={}) {
       });
       else {
         if (this.lastQuery === q && this.result.firstChild) { return; }
-        const provider =  this.providers[this.currentProvider]
-        const {url, params} = provider.getParameters({
-          query: q,
-          key: this.options.key,
-          lang: this.options.lang,
-          countrycodes: this.options.countrycodes,
-          limit: this.options.limit
+        const promises = [];
+        this.providers.forEach(provider => {
+          const {url, params} = provider.getParameters({
+              query: q,
+              key: this.options.key,
+              lang: this.options.lang,
+              countrycodes: this.options.countrycodes,
+              limit: this.options.limit
+            });
+          this.lastQuery = q;
+          this.clearResults();
+          utils.addClass(this.reset, cssClasses.spin);
+          promises.push(XHR.get({
+              url,
+              params
+            }))
         });
-        this.lastQuery = q;
-        this.clearResults();
-        utils.addClass(this.reset, cssClasses.spin);
-        XHR.get({
-          url,
-          params
-        })
-          .then(res => {
-            const extent = params.viewbox.split(',').map(coordinate => 1*coordinate);
-            res = res.filter(place => ol.extent.containsXY(extent, place.lon, place.lat));
-            utils.removeClass(this.reset, cssClasses.spin);
-            const res_= res.length ? provider.handleResponse(res) : undefined;
-            this.createList(res_);
-            res_ && this.listenMapClick();
-            resolve(res_ ? res_ : []);
-          })
-          .catch(error => {
-            utils.removeClass(this.reset, cssClasses.spin);
-            const li = utils.createElement(
-              'li', `<h5>  ${this.options.notresponseserver}</h5>`);
-            this.result.appendChild(li);
-            reject(error)
-          })
+        const responses = await Promise.allSettled(promises);
+        responses.forEach(({status, value: response}, index) =>{
+          if (status === 'fulfilled') {
+              const {header, results} = this.providers[index].handleResponse(response);
+              this.createList({
+                header,
+                results
+              });
+              if (results) {
+                this.listenMapClick();
+              }
+          }
+        });
+        utils.removeClass(this.reset, cssClasses.spin);
       }
     })
   };
-  this.createList = function(response) {
+  this.createList = function({header, results={}}={}) {
     const ul = this.result;
-    if (response) {
-      response.forEach(row => {
-        const addressHtml = this.addressTemplate(row.address),
+    ul.appendChild(this.createHeaderProviderResults(header));
+    if (results.length) {
+      results.forEach(result => {
+        const addressHtml = this.addressTemplate(result.address),
           html = ['<a href="#">', addressHtml, '</a>'].join(''),
           li = utils.createElement('li', html);
         li.addEventListener('click', evt => {
           evt.preventDefault();
-          this.chosen(row, addressHtml, row.address, row.original);
+          this.chosen(result, addressHtml, result.address, result.original);
         }, false);
         ul.appendChild(li);
       });
@@ -539,6 +609,17 @@ function GeocodingControl(options={}) {
       coordinate: coord
     });
   };
+  this.createHeaderProviderResults = function(header={}){
+    const headerNodeElement = `
+      <div style="display: flex; justify-content: space-between; padding: 5px">
+        <span class="skin-color" style="font-weight: bold">${header.title}</span>
+        <span class="${header.icon}"></span>
+      </div>`;
+    const li = utils.createElement('li', headerNodeElement);
+    li.style.backgroundColor = "#222d32";
+    return li;
+  };
+
   this.addressTemplate = function(address) {
     const html = [];
     if (address.name) html.push(['<div class="', cssClasses.road, '">{name}</div>'].join(''));

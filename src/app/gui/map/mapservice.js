@@ -1030,6 +1030,7 @@ proto._setupControls = function() {
             }
           }
           break;
+        case 'geocoding':
         case 'nominatim':
           const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
@@ -1041,7 +1042,6 @@ proto._setupControls = function() {
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
-              fontIcon: GUI.getFontClass('search')
             }
           });
           /**
