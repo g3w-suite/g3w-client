@@ -8,22 +8,24 @@ const PluginsRegistry = require('./pluginsregistry');
 const {addI18nPlugin} = require('core/i18n/i18n.service');
 const TIMEOUT = 10000;
 
-const Plugin = function(options = {
-    name = '(no name)',
-    config = null,
+const Plugin = function({
+    name = null,
+    config = this.getConfig(name),
     service = null,
     dependencies = [],
     i18n = null,
+    fontClasses = [],
     api = {}
   } = {}) {
   
   base(this);
-  
-  this.setName(name)
+
+  this.setName(name);
   this.setConfig(config);
   this.setLocale(i18n);
   this.setService(service);
   this.setDependencies(dependencies);
+  this.addFontClasses(fontClasses);
   this.setApi(api);
 
   this._hook = null;
@@ -135,10 +137,10 @@ proto.setName = function(name) {
 
 //get plugin configuration
 proto.getConfig = function(name=this.name) {
-  return PluginsRegistry.getPluginConfig(name);
+  return this.config || PluginsRegistry.getPluginConfig(name);
 };
 
-proto.setConfig = function(config={}) {
+proto.setConfig = function(config) {
   this.config = config;
 };
 
