@@ -5,17 +5,27 @@ const GUI = require('gui/gui');
 const ComponentsFactory = require('gui/component/componentsfactory');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('./pluginsregistry');
+const {addI18nPlugin} = require('core/i18n/i18n.service');
 const TIMEOUT = 10000;
 
-const Plugin = function() {
+const Plugin = function(options = {
+    name = '(no name)',
+    config = null,
+    service = null,
+    dependencies = [],
+    i18n = null,
+    api = {}
+  } = {}) {
+  
   base(this);
-  this.name = '(no name)';
-  this.config = null;
-  this.service = null;
-  this.dependencies = [];
-  this._api = {
-    getConfig: () => this.config
-  };
+  
+  this.setName(name)
+  this.setConfig(config);
+  this.setLocale(i18n);
+  this.setService(service);
+  this.setDependencies(dependencies);
+  this.setApi(api);
+
   this._hook = null;
   this._ready = false;
   /**
@@ -74,9 +84,9 @@ proto.getApi = function() {
 };
 
 proto.setApi = function(api={}) {
-  //add a common method to get plufin configuration
-  api.getConfig = this._api.getConfig;
   this._api = api;
+  // add alias for "api.getConfig()" method
+  api.getConfig = this._api.getConfig;
 };
 
 proto.setReady = function(bool) {
@@ -108,7 +118,11 @@ proto.getService = function() {
 //set plugin service
 proto.setService = function(service) {
   this.service = service;
-  service.setPlugin(this);
+  if (service) service.setPlugin(this);
+};
+
+proto.setLocale = function(i18n) {
+  if (i18n && this.name) addI18nPlugin({ name: this.name, config: i18n});
 };
 
 proto.getName = function() {
@@ -276,7 +290,7 @@ proto.createSideBarComponent = function(vueComponentObject, options={}){
   return PluginSiderbarComponent;
 };
 
-// unload (case change map)
+// DEPRECATED: will be removed after v3.4
 proto.unload  = function() {
   this.service && this.service.clearAllEvents();
   this.emit('unload');
