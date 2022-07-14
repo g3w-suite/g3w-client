@@ -10,7 +10,7 @@ const TIMEOUT = 10000;
 
 const Plugin = function({
     name = null,
-    config = this.getConfig(name),
+    config = PluginsRegistry.getPluginConfig(name),
     service = null,
     dependencies = [],
     i18n = null,
