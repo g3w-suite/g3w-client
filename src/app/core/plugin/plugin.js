@@ -1,4 +1,4 @@
-const {base, inherit} = require('core/utils/utils');
+const {base, inherit, toRawType} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
@@ -141,7 +141,10 @@ proto.getConfig = function(name=this.name) {
 };
 
 proto.setConfig = function(config) {
-  this.config = config;
+  /**
+   * config must be an object
+   */
+  this.config = toRawType(config) === 'Object' ? config : null;
 };
 
 //check if plugin is compatible with current project
