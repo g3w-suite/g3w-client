@@ -1,6 +1,10 @@
 const {base, inherit} = require('core/utils/utils');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const G3WObject = require('core/g3wobject');
+/**
+ * law project configuration on project is handle as plugin
+ * @type {string[]}
+ */
 const OTHERPLUGINS = ['law'];
 
 function PluginsRegistry() {
@@ -15,6 +19,10 @@ function PluginsRegistry() {
       if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
     }
   };
+  /**
+   * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
+   * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
+   */
   ProjectsRegistry.onafter('setCurrentProject', project =>{
     this.gidProject = project.getGid();
   });
@@ -45,9 +53,7 @@ function PluginsRegistry() {
 
   this.addLoadingPlugins = function(){
     const ApplicationService = require('core/applicationservice');
-    Object.keys(this.pluginsConfigs).forEach(plugin => {
-      ApplicationService.loadingPlugin(plugin);
-    });
+    Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   this.removeLoadingPlugin = function(plugin, ready){
@@ -56,16 +62,14 @@ function PluginsRegistry() {
   };
 
   this._loadPlugins = function() {
-    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => {
-      return this._setup(name, pluginConfig);
-    });
+    const pluginLoadPromises = Object.entries(this.pluginsConfigs).map(([name, pluginConfig]) => this._setup(name, pluginConfig));
     return Promise.allSettled(pluginLoadPromises)
   };
 
   this.setDependencyPluginConfig = function(){
     for (const pluginName in this.pluginsConfigs){
       const dependecyPluginConfig = this.pluginsConfigs[pluginName].plugins;
-      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName =>{
+      dependecyPluginConfig && Object.keys(dependecyPluginConfig).forEach(pluginName => {
         this.pluginsConfigs[pluginName] = {...this.pluginsConfigs[pluginName], ...dependecyPluginConfig[pluginName]}
       })
     }
@@ -122,9 +126,7 @@ function PluginsRegistry() {
     const enabledPluginConfig = {};
     Object.entries(config)
       .filter(([,pluginConfig]) => pluginConfig.gid === this.gidProject)
-      .forEach(([pluginName, pluginConfig]) =>{
-        enabledPluginConfig[pluginName] = pluginConfig;
-      });
+      .forEach(([pluginName, pluginConfig]) =>enabledPluginConfig[pluginName] = pluginConfig);
     this.pluginsConfigs = enabledPluginConfig;
   };
 
@@ -185,7 +187,7 @@ function PluginsRegistry() {
     return this._plugins[pluginName];
   };
 
-  // method to check if a plugin is in confiuration and will be added to apllication
+  // method to check if a plugin is in configuration and will be added to application
   this.isPluginInConfiguration = function(pluginName){
     return this._configurationPlugins.indexOf(pluginName) !== -1;
   };
@@ -195,6 +197,6 @@ function PluginsRegistry() {
   }
 }
 
-inherit(PluginsRegistry,G3WObject);
+inherit(PluginsRegistry, G3WObject);
 
 module.exports = new PluginsRegistry;
