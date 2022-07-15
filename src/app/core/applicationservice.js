@@ -44,10 +44,12 @@ const ApplicationService = function() {
     }
   };
   base(this);
-  // on obtain init config (also for change project)
-  this.on('initconfig', ()=>{
-    // can put the configuration project here
-    this.setApplicationUser(initConfig.user);
+  /*
+  * intiConfig as parameter
+  * */
+  this.on('initconfig', ({user}={}) =>{
+    // only user attribute is used
+    this.setApplicationUser(user);
   });
   // init application
   this.init = async function() {
@@ -119,12 +121,20 @@ const ApplicationService = function() {
 
   /*
   * plugin: name of plugin
-  * ready: Boolen - true if loaded and ready otherwise non ready - TO DO
   * */
-  this.loadedPlugin = function(plugin, ready) {
+  this.loadedPlugin = function(plugin) {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
 
+  /*
+   *filtertoken methods
+  */
+
+  /**
+   * token is a string passed by server and used as parameter in XHR request
+   * @param filtertoken
+   * @private
+   */
   this._setFilterToken = function(filtertoken){
     ApplicationState.tokens.filtertoken = filtertoken;
   };
@@ -132,6 +142,10 @@ const ApplicationService = function() {
   this.getFilterToken = function(){
     return ApplicationState.tokens.filtertoken;
   };
+
+  /**
+   *  filter token methods
+   */
 
   this.changeLanguage = function(lng){
     changeLanguage(lng);
@@ -361,7 +375,7 @@ const ApplicationService = function() {
       production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
-      this.emit('initconfig');
+      this.emit('initconfig', initConfig);
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -398,7 +412,7 @@ const ApplicationService = function() {
         } catch(error) {
           return Promise.reject(error);
         } finally {
-          this.emit('initconfig')
+          this.emit('initconfig', initConfig)
         }
       }
     }
@@ -493,7 +507,7 @@ const ApplicationService = function() {
           ApplicationState.iframe && this.startIFrameService({
             project
           });
-          // initilize routerdataservice
+          // initialize routerdataservice
           RouterDataService.init();
           resolve(true);
         }).fail(error => reject(error))
@@ -537,13 +551,12 @@ const ApplicationService = function() {
    * clear initConfig
    */
   this.clearInitConfig = function() {
-    window.initConfig = null;
-    this._initConfig = null;
+    window.initConfig = this._initConfig = null;
   };
 
   this.setInitVendorKeys = function(config={}){
    const vendorkeys = config.group.vendorkeys || {};
-   config.group.baselayers.forEach(baselayer =>{
+   config.group.baselayers.forEach(baselayer => {
      if (baselayer.apikey) {
        const type = baselayer.servertype ? baselayer.servertype.toLowerCase() : null;
        vendorkeys[type] = baselayer.apikey
@@ -553,9 +566,7 @@ const ApplicationService = function() {
   };
 
   this.setVendorKeys = function(keys={}){
-    Object.keys(keys).forEach(key =>{
-      ApplicationState.keys.vendorkeys[key] = keys[key];
-    })
+    Object.keys(keys).forEach(key =>ApplicationState.keys.vendorkeys[key] = keys[key])
   };
 
   // change View
