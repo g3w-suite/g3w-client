@@ -22,4 +22,4 @@ package-lock.json
 /src/libs/sdk/g3w-ol3/config/config.js
 /src/index.html
 /src/plugins/**
-!/src/plugins/.gitkeep
+!/src/plugins/README.md
