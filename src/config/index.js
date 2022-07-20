@@ -1,4 +1,5 @@
 import keys from 'config/keys';
+import translations from '../locale';
 const apptitle = "G3W Client";
 const supportedLng = ['en', 'it'];
 
@@ -10,7 +11,7 @@ export const tools = {
 
 // get message from internationalization
 export const _i18n = {
-  resources: require('./i18n/index.js')
+  resources: translations
 };
 
 export const client = {
