@@ -1,9 +1,18 @@
 const { version }     = require('./package.json');
 
-const G3W_HOST_SCHEMA = 'http';
-const G3W_HOST        = '127.0.0.1'; // local development server
-const G3W_ADMIN_PORT  = '8000';      // G3W-ADMIN development server
-const G3W_CLIENT_PORT = '3000';      // G3W-CLIENT development server
+const G3W_HOST_SCHEMA  = 'http';
+const G3W_HOST         = '127.0.0.1'; // local development server
+const G3W_ADMIN_PORT   = '8000';      // G3W-ADMIN development server
+const G3W_CLIENT_PORT  = '3000';      // G3W-CLIENT development server
+const G3W_PROXY_ROUTES = [            // G3W-ADMIN routes to be proxied while developing
+  '/media',
+  '/api',
+  '/ows',
+  '/static',
+  '/en/',
+  '/it/',
+  '/upload/'
+];
 
 const G3W_PLUGINS = {                // override "initConfig->group->plugins" attribute for custom plugin development
   // "your-plugin-folder-name": {
@@ -30,8 +39,8 @@ if (version < "4") {
     localServerPort: G3W_CLIENT_PORT, // port for local server. If not set local server run on port 3000
     proxy: {                          // proxy configuration for local server
       host: G3W_HOST,
-      url: `${G3W_HOST_SCHEMA}://${G3W_HOST}:${G3W_ADMIN_PORT}/`,            // local G3W_ADMIN server and port (where G3W-ADIMN is running)
-      urls: ['/media', '/api','/ows', '/static', '/en/', '/it/', '/upload/'] // urls to proxy referred to G3W-ADMIN
+      url: `${G3W_HOST_SCHEMA}://${G3W_HOST}:${G3W_ADMIN_PORT}/`, // local G3W_ADMIN server and port (where G3W-ADIMN is running)
+      urls: G3W_PROXY_ROUTES                                      // urls to proxy referred to G3W-ADMIN
     },
     test: {
       path: '/test/config/groups/'
@@ -61,7 +70,7 @@ if (version < "4") {
     proxy: {
       host: G3W_HOST,
       url: `${G3W_HOST_SCHEMA}://${G3W_HOST}:${G3W_ADMIN_PORT}/`,
-      routes: ['/api','/ows','/media','/static', '/en/', '/it/', '/upload/']
+      routes: G3W_PROXY_ROUTES
     },
     test: {
       path: '/test/config/groups/'
