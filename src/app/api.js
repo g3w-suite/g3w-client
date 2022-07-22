@@ -151,7 +151,7 @@ g3w.ol = {
     }
   },
   controls: {},
-  utils: require('g3w-ol/utils/utils')
+  utils: require('core/utils/ol')
 };
 
 g3w.test = {};

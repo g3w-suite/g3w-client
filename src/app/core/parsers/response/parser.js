@@ -1,7 +1,7 @@
 import {G3W_FID} from 'constant';
 const {t} = require('core/i18n/i18n.service');
 const vectorParser = require('../vector/parser');
-const geoutils = require('g3w-ol/utils/utils');
+const geoutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 //internal utilities
 const utils = {

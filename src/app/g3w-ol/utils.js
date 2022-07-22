@@ -1,11 +1,6 @@
-const utils = {
-  merge(obj1,obj2){
-    const obj3 = {
-      ...obj1,
-      ...obj2
-    };
-    return obj3;
-  }
-};
+const utils = require('core/utils/ol');
 
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "core/utils/ol" instead)
+ */
 module.exports = utils;
