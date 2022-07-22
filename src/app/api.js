@@ -38,8 +38,8 @@ g3w.core = {
     ChangesManager: require('core/editing/changesmanager')
   },
   geometry: {
-    Geom: require('core/geometry/geom'),
-    Geometry: require('core/geometry/geometry')
+    Geom: require('core/utils/geo'),
+    Geometry: require('core/utils/geo').Geometry
   },
   project: {
     ProjectsRegistry: require('core/project/projectsregistry'),
@@ -63,8 +63,8 @@ g3w.core = {
     XYZLayer: require('core/layers/map/xyzlayer'),
     MapLayer: require('core/layers/map/maplayer'),
     geometry: {
-      Geometry: require('core/geometry/geometry'),
-      geom: require('core/geometry/geom')
+      Geometry: require('core/utils/geo').Geometry,
+      geom: require('core/utils/geo')
     },
     features: {
       Feature: require('core/layers/features/feature'),
