@@ -1,6 +1,12 @@
 import ApplicationState from 'core/applicationstate';
+import vDisabled from 'gui/vue/directives/v-disabled';
+import vChecked from 'gui/vue/directives/v-checked';
+import vSelectedFirst from 'gui/vue/directives/v-selected-first';
+import vSelect2 from 'gui/vue/directives/v-select2';
+
 const {t, tPlugin} = require('core/i18n/i18n.service');
 const { uniqueId, toRawType } = require('core/utils/utils');
+
 const GlobalDirective = {
   install(Vue) {
     const vm = new Vue();
@@ -40,18 +46,13 @@ const GlobalDirective = {
       return vm.$watch(() => ApplicationState.lng, () => handlerElement(innerHTML));
     };
 
-    Vue.directive("disabled", (el, binding) => {
-      binding.value ? el.classList.add('g3w-disabled') : el.classList.remove('g3w-disabled');
-    });
+    Vue.directive("disabled", vDisabled);
+    Vue.directive("checked", vChecked);
+    Vue.directive("selected-first", vSelectedFirst);
 
-    Vue.directive("checked",(el, binding) => {
-      binding.value ? el.setAttribute('checked','checked') : el.removeAttribute('checked');
-    });
-
-    Vue.directive("selected-first", (el, binding) => {
-      binding.value===0 ? el.setAttribute('selected','') : el.removeAttribute('selected');
-    });
-
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t-tooltip.js"):
+     */
     Vue.directive('t-tooltip', {
       bind(_el, binding) {
         // handle automatic creation of tooltip
@@ -109,6 +110,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t-html.js"):
+     */
     Vue.directive('t-html', {
       bind(el, binding){
         const unique_v_t_html_attr = createDirectiveObj({
@@ -132,6 +136,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t-placeholder.js"):
+     */
     Vue.directive('t-placeholder', {
       bind(el, binding){
         const unique_v_t_placeholder_attr = createDirectiveObj({
@@ -157,7 +164,10 @@ const GlobalDirective = {
         })
       }
     });
-    
+
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t-title.js"):
+     */
     Vue.directive('t-title', {
       bind(el, binding){
         // get unique id
@@ -185,7 +195,10 @@ const GlobalDirective = {
         })
       }
     });
-    
+
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t.js"):
+     */
     Vue.directive("t", {
       bind (el, binding) {
         const unique_v_t_attr = createDirectiveObj({
@@ -209,6 +222,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-t-plugin.js"):
+     */
     Vue.directive("t-plugin", {
       bind (el, binding) {
         const unique_v_t_plugin_attr = createDirectiveObj({
@@ -232,6 +248,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-plugins.js"):
+     */
     Vue.directive("plugins", {
       bind(el) {
         const showHideHandler = plugins =>{
@@ -255,6 +274,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-online.js"):
+     */
     Vue.directive("online", {
       bind(el, binding) {
         // show if online
@@ -281,6 +303,9 @@ const GlobalDirective = {
       }
     });
 
+    /**
+     * TODO: split and refactor into a separated file (eg. "./directives/v-download.js"):
+     */
     Vue.directive("download", {
       bind(el, binding) {
         const className = binding.modifiers && binding.modifiers.show && 'hide' || 'disabled';
@@ -308,37 +333,7 @@ const GlobalDirective = {
       }
     });
 
-    Vue.directive('select2', {
-      inserted(el, binding, vnode){
-        const { templateResult, templateSelection, multiple=false, search=true, select2_value} = vnode.data.attrs || {};
-        const selectDOMElement = $(el);
-        selectDOMElement.select2({
-          width: '100%',
-          dropdownCssClass: 'skin-color',
-          templateResult,
-          templateSelection,
-          minimumResultsForSearch: !search ? -1 : undefined
-        });
-        if (binding.value){
-          selectDOMElement.on('select2:select', evt =>{
-            const value = evt.params.data.id;
-            if (multiple) {
-              const alreadyinside = vnode.context[binding.value].filter(addedvalue => value === addedvalue);
-              alreadyinside.length === 0 && vnode.context[binding.value].push(value);
-            } else vnode.context[binding.value] = value;
-          });
-          if (multiple)
-            selectDOMElement.on('select2:unselect', evt =>{
-              const value = evt.params.data.id;
-              vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
-            });
-          if (select2_value) selectDOMElement.val(select2_value).trigger('change');
-        }
-      },
-      unbind(el, binding, vnode){
-        $(el).select2('destroy');
-      }
-    })
+    Vue.directive('select2', vSelect2)
   }
 };
 

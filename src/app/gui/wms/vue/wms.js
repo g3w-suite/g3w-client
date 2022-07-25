@@ -1,9 +1,11 @@
-import WMS from './wms.vue';
+import * as vueComponentOptions from 'components/WMS.vue';
+
 import Service from '../service';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/component/component');
-const InternalComponent = Vue.extend(WMS);
+
+const InternalComponent = Vue.extend(vueComponentOptions);
 
 function ToolsComponent(options={}) {
   base(this, options);

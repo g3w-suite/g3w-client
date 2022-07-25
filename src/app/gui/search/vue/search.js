@@ -1,43 +1,8 @@
-import G3WTool from 'gui/tools/vue/tool.vue'
-import G3WSearchQuerybuilder from 'gui/querybuilder/vue/g3w-search-querybuilder.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import * as vueComponentOptions from 'components/Search.vue';
+
 const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/component/component');
 const Service = require('gui/search/service');
-const templateCompiled = createCompiledTemplate(require('./search.html'));
-
-const vueComponentOptions = {
-  ...templateCompiled,
-  data() {
-    return {
-      state: null
-    }
-  },
-  components: {
-    'g3w-tool': G3WTool,
-    'g3w-search-querybuilder': G3WSearchQuerybuilder
-  },
-  computed: {
-    show(){
-      return this.state.searches.length + this.state.searchtools.length + this.state.querybuildersearches.length > 0;
-    }
-  },
-  methods: {
-    showPanel(config={}) {
-      this.$options.service.showPanel(config);
-    },
-    removeItem({type, index}){
-      this.$options.service.removeItem({
-        type,
-        index
-      })
-    }
-  },
-  async mounted() {
-    await this.$nextTick();
-    $('.icon-search-action').tooltip();
-  }
-};
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 

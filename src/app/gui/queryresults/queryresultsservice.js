@@ -1,6 +1,6 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
-import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
-import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
+import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
+import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');

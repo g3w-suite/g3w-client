@@ -58,6 +58,10 @@ function FloatbarService(){
 }
 
 const floatbarService = new FloatbarService();
+
+/**
+ * TODO: split and refactor into dedicated file (eg. components/Floatbar.vue)
+ */
 const compiledFloatBarTemplate = Vue.compile(require('./floatbar.html'));
 
 const FloatbarComponent = Vue.extend({

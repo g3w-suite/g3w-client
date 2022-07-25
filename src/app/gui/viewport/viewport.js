@@ -1,9 +1,9 @@
 import ApplicationState from '../../core/applicationstate';
 import {viewport as viewportConstraints} from 'gui/constraints';
-import userMessage from 'gui/usermessage/vue/usermessage.vue';
-import onlineNotify from 'gui/notifications/online/vue/online.vue';
-import downloadNotify from 'gui/notifications/download/vue/download.vue';
-import pluginsNotify from 'gui/notifications/plugins/vue/plugins.vue';
+import userMessage from 'components/UserMessage.vue';
+import onlineNotify from 'components/NotifyOnline.vue';
+import downloadNotify from 'components/NotifyDownload.vue';
+import pluginsNotify from 'components/NotifyPlugins.vue';
 const {base, inherit, uniqueId} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');

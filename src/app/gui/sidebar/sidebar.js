@@ -213,6 +213,10 @@ function SidebarService() {
 inherit(SidebarService, G3WObject);
 
 const sidebarService = new SidebarService;
+
+/**
+ * TODO: split and refactor into a dedicated file (eg. components/Sidebar.vue)
+ */
 const compiledSideBarTemplate = Vue.compile(require('./sidebar.html'));
 const SidebarComponent = Vue.extend({
     ...compiledSideBarTemplate,

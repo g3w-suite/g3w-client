@@ -1,28 +1,11 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-import G3wTool from './tool.vue';
+import * as vueComponentOptions from 'components/Tools.vue';
+
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/component/component');
 const ToolsService = require('gui/tools/service');
-const compiledTemplate = createCompiledTemplate(require('./tools.html'));
-const InternalComponent = Vue.extend({
-  ...compiledTemplate,
-  data() {
-    return {
-      state: null
-    }
-  },
-  watch: {
-    'state.toolsGroups': {
-      handler(groups) {
-        this.$emit('visible', groups.length > 0);
-      }
-    }
-  },
-  components: {
-    G3wTool
-  }
-});
+
+const InternalComponent = Vue.extend(vueComponentOptions);
 
 function ToolsComponent(options={}) {
   base(this, options);

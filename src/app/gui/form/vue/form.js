@@ -1,108 +1,16 @@
-import {createCompiledTemplate} from 'gui/vue/utils';
+import * as vueComponentOptions from 'components/Form.vue';
+import BodyFormComponent from 'components/FormBody.vue';
+
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/component/component');
 const Service = require('../formservice');
-const compiledTemplate = createCompiledTemplate(require('./form.html'));
-const HeaderFormComponent = require('../components/header/vue/header');
-const BodyFormComponent = require('../components/body/vue/body');
-const G3wFormFooter = require('gui/form/components/footer/vue/footer');
-
-//vue component
-const vueComponentObject = {
- ...compiledTemplate,
-  data() {
-    return {
-      state: {},
-      switchcomponent: false,
-      body: {
-        components: {
-          before: [],
-          after: []
-        }
-      }
-    }
-  },
-  components: {
-    g3wformheader: HeaderFormComponent,
-    G3wFormFooter
-  },
-  transitions: {'addremovetransition': 'showhide'},
-  methods: {
-    isRootComponent(component){
-      return this.$options.service.isRootComponent(component);
-    },
-    backToRoot(){
-      this.$options.service.setRootComponent();
-    },
-    handleRelation(relationId){
-      this.$options.service.handleRelation(relationId);
-    },
-     disableComponent({id, disabled=false}) {
-       this.$options.service.disableComponent({
-         id,
-         disabled
-       });
-     },
-    resizeForm(perc){
-      this.$options.service.setCurrentFormPercentage(perc)
-    },
-    switchComponent(id) {
-      this.switchcomponent = true;
-      this.$options.service.setCurrentComponentById(id);
-    },
-    changeInput(input) {
-      return this.$options.service.changeInput(input);
-    },
-    addToValidate(input) {
-      this.$options.service.addToValidate(input);
-    },
-    removeToValidate(input) {
-      this.$options.service.removeToValidate(input);
-    },
-    // set layout
-    reloadLayout() {
-      const height = $(this.$el).height();
-      if(!height) return;
-      const footerDOM = $(this.$refs.g3w_form_footer.$el);
-      const bodyFromDOM = $(this.$refs.g3wform_body);
-      const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
-      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
-      bodyFromDOM.height(bodyHeight);
-    },
-  },
-  async updated() {
-    await this.$nextTick();
-    this.switchcomponent && setTimeout(()=> this.switchcomponent = false, 0)
-  },
-  created() {
-    this.$options.service.getEventBus().$on('set-main-component', () => {
-      this.switchComponent(0);
-    });
-    this.$options.service.getEventBus().$on('component-validation', ({id, valid}) => {
-      this.$options.service.setValidComponent({
-        id,
-        valid
-      });
-    });
-    this.$options.service.getEventBus().$on('addtovalidate', this.addToValidate);
-    this.$options.service.getEventBus().$on('disable-component', this.disableComponent);
-  },
-  mounted() {
-    // check if is valid form (it used by footer component)
-    this.$options.service.isValid();
-    this.$options.service.setReady(true);
-  },
-  beforeDestroy() {
-    this.$options.service.clearAll();
-  }
-};
 
 function FormComponent(options = {}) {
   const {id='form', name, title} = options;
   base(this, options);
   options.service = options.service ? new options.service : new Service;
-  options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
+  options.vueComponentObject = options.vueComponentObject  || vueComponentOptions;
   //set element of the form
   const components = options.components || [
     {
