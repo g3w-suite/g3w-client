@@ -1,6 +1,8 @@
 <!-- ORIGINAL SOURCE: -->
 <!-- gui/fields/field.vue@v3.4 -->
 
+<!-- FIXME: default content not displayed if no "slot" is provided (eg. see components/FieldText.vue) -->
+
 <template>
   <div class="field" :style="{fontSize: isMobile() && '0.8em'}">
     <div v-if="state.label" class="col-sm-6  field_label">

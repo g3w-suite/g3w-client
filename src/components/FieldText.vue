@@ -2,7 +2,10 @@
 <!-- gui/fields/text.vue@v3.4 -->
 
 <template>
-  <field :state="state"></field>
+  <field :state="state">
+    <span v-if="state.label" slot="label">{{state.label}}</span>
+    <span v-if="state.value" slot="field" style="word-wrap: break-word;" v-html="state.value"></span>
+  </field>
 </template>
 
 <script>
