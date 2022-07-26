@@ -1,10 +1,11 @@
-const {inherit, base} = require('core/utils/utils');
-const LayersStoresRegistry = require('core/layers/layersstoresregistry');
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "stores/map-layers.js" instead)
+ */
+import MapLayersStoresRegistry from 'stores/map-layers';
 
-function MapLayersStoresRegistry() {
-  base(this);
-}
+/**
+ * FIXME: application is broken using like the following line
+ */
+// import { MapLayersStoresRegistry } from 'stores';
 
-inherit(MapLayersStoresRegistry, LayersStoresRegistry);
-
-module.exports = new MapLayersStoresRegistry();
+module.exports = MapLayersStoresRegistry;

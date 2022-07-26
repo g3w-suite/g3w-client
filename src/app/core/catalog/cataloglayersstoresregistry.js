@@ -1,10 +1,11 @@
-const {base, inherit} = require('core/utils/utils');
-const LayersStoresRegistry = require('core/layers/layersstoresregistry');
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "stores/catalog-layers-stores.js" instead)
+ */
+import CatalogLayersStoresRegistry from 'stores/catalog-layers';
 
-function CatalogLayersStoresRegistry() {
-  base(this);
-}
+/**
+ * FIXME: application is broken using like the following line
+ */
+// import { CatalogLayersStoresRegistry } from 'stores';
 
-inherit(CatalogLayersStoresRegistry, LayersStoresRegistry);
-
-module.exports = new CatalogLayersStoresRegistry();
+module.exports = CatalogLayersStoresRegistry;
