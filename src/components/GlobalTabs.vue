@@ -50,7 +50,7 @@
 
 <script>
   import TabService from 'core/expression/tabservice';
-  import Node from 'components/G3WTabsNode.vue';
+  import Node from 'components/GlobalTabsNode.vue';
 
   const GUI = require('gui/gui');
   const {getUniqueDomId} = require ('core/utils/utils');

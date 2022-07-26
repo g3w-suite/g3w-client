@@ -13,7 +13,7 @@
 </template>
 
 <script>
-  import Gallery from 'components/G3WGallery.vue'
+  import Gallery from 'components/GlobalGallery.vue'
 
   export default {
     name: "g3w-image",
