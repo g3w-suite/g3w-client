@@ -1,5 +1,5 @@
 import keys from 'config/keys';
-import translations from '../locale';
+import translations from '../locales';
 const apptitle = "G3W Client";
 const supportedLng = ['en', 'it'];
 
