@@ -1,11 +1,11 @@
 /**
- * DEPRECATED: this file will be removed after v3.4 (use "stores/plugins.js" instead)
+ * DEPRECATED: this file will be removed after v3.4 (use "store/plugins.js" instead)
  */
- import PluginsRegistry from 'stores/plugins';
+ import PluginsRegistry from 'store/plugins';
 
 /**
  * FIXME: application is broken using like the following line
  */
-// import { PluginsRegistry } from 'stores';
+// import { PluginsRegistry } from 'store';
 
 module.exports = PluginsRegistry;

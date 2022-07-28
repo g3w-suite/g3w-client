@@ -1,12 +1,12 @@
 /**
- * DEPRECATED: this file will be removed after v3.4 (use "stores/projects.js" instead)
+ * DEPRECATED: this file will be removed after v3.4 (use "store/projects.js" instead)
  */
- import ProjectsRegistry from 'stores/projects';
+ import ProjectsRegistry from 'store/projects';
 
 /**
  * FIXME: application is broken using like the following line
  */
-// import { ProjectsRegistry } from 'stores';
+// import { ProjectsRegistry } from 'store';
 
 module.exports = ProjectsRegistry;
  
