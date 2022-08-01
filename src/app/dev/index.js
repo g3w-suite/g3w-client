@@ -1,13 +1,12 @@
-const DEVCONFIG = require('app/../../config');
+const {
+  createProject = {},
+    setCurrentProject = {},
+    plugins = {},
+} = require('../../../config');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ApplicationService = require('core/applicationservice');
 // const GUI = require('gui/gui');
 
-const {
-  createProject = {},
-  setCurrentProject = {},
-  plugins = {},
-} = DEVCONFIG;
 
 // ApplicationService.once('ready', () => {});
 
