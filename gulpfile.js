@@ -11,8 +11,7 @@ const rename = require('gulp-rename');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
 const flatten = require('gulp-flatten');
-// userref it used to parse build block of the template
-const useref = require('gulp-useref');
+const useref = require('gulp-useref'); // used to parse index.dev.html
 ///////////////////////////////////////////////////////
 const replace = require('gulp-replace');
 const gulpif = require('gulp-if');
@@ -274,7 +273,7 @@ gulp.task('html', ['add_external_resources_to_main_html', 'assets'] , function()
 
 //task used to build django g3w-admin template with the refercenced of all css and js minified and added versionHash
 gulp.task('html:compiletemplate', function() {
-  return gulp.src('./src/index.html.admin.template')
+  return gulp.src('./src/index.prod.html')
     .pipe(replace("{VENDOR_CSS}","vendor."+buildChanges.vendor.css.hash+".min.css"))
     .pipe(replace("{APP_CSS}","app."+buildChanges.app.css.hash+".min.css"))
     .pipe(replace("{VENDOR_JS}","vendor."+buildChanges.vendor.js.hash+".min.js"))
@@ -512,7 +511,7 @@ gulp.task('add_external_resources_to_main_html',  function() {
     const indexCss = 'index.css.html';
     const indexJs = 'index.js.html';
     const replaceRelativeAssetsFolderFolder =  path.relative(path.resolve(srcFolder), path.resolve(assetsFolder))  + '/' ;
-    return gulp.src(srcFolder + '/index.html.template')
+    return gulp.src(srcFolder + '/index.dev.html')
       // replace css and js sources
       .pipe(htmlreplace({
         'app_vendor_css': gulp.src(path.join(assetsFolder, 'vendors', indexCss)).pipe(replace('./',replaceRelativeAssetsFolderFolder)),
