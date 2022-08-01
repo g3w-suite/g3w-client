@@ -7,6 +7,13 @@ const ComponentsRegistry = require('gui/componentsregistry');
 const GUI = require('gui/gui');
 const VueAppPlugin = require('gui/vue/vueappplugin');
 const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
+const GlobalComponents = require('gui/vue/vue.globalcomponents');
+const GlobalDirective = require('gui/vue/vue.directives');
+
+// install global components
+Vue.use(GlobalComponents);
+// install gloabl directive
+Vue.use(GlobalDirective);
 
 // install Application Filter Plugin
 Vue.use(G3wApplicationFilterPlugin);
@@ -40,6 +47,14 @@ const ApplicationTemplate = function({ApplicationService}) {
       width:0
     }
   };
+  /*
+    usefull to show onaly last waiting request output
+    at moment will be an object
+    {
+      stop: function to sot to show result
+    }
+   */
+  this.waitingoutputdataplace = null;
   this.init = function() {
     // create Vue App
     this._createApp();
@@ -421,7 +436,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
 
-    //Function called from DataRouterservice fro output
+    //Function called from DataRouterservice for gui output
     /**
      *
      * @param data
@@ -432,19 +447,42 @@ const ApplicationTemplate = function({ApplicationService}) {
       const {title='', show} = options;
       const showQueryResults = this.showContentFactory('query');
       const queryResultsService = showQueryResults(title);
-      try {
-        const data = await dataPromise;
-        if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
-        else GUI.closeContent();
-      } catch(error){
-        const message = this.errorToMessage(error);
-        this.showUserMessage({
-          type: 'alert',
-          message,
-          textMessage: true
-        });
-        this.closeContent();
-      }
+      //check if waiting output data
+      // in case we stop and sobsitute with new request data
+      this.waitingoutputdataplace && await this.waitingoutputdataplace.stop();
+      this.waitingoutputdataplace = (() => {
+        let stop = false;
+        (async () =>{
+          try {
+            const data = await dataPromise;
+            // in case of usermessage show user message
+            data.usermessage && GUI.showUserMessage({
+              type: data.usermessage.type,
+              message: data.usermessage.message,
+              autoclose: data.usermessage.autoclose
+            });
+            if (!stop) {
+              if (!(show instanceof Function) || show(data)) queryResultsService.setQueryResponse(data);
+              else GUI.closeContent();
+            }
+          } catch(error) {
+            const message = this.errorToMessage(error);
+            this.showUserMessage({
+              type: 'alert',
+              message,
+              textMessage: true
+            });
+            this.closeContent();
+          } finally {
+            if (!stop) this.waitingoutputdataplace = null;
+          }
+        })();
+        return {
+          stop: async ()=> {
+            stop = true;
+          }
+        }
+      })();
       return queryResultsService;
     };
 

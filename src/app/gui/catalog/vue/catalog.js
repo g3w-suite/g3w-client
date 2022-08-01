@@ -1,7 +1,8 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 const ApplicationService = require('core/applicationservice');
-const {inherit, base, downloadFile, debounce} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
+const {inherit, base, downloadFile} = require('core/utils/utils');
+const shpwrite = require('shp-write');
+const {t} = require('core/i18n/i18n.service');
 const Component = require('gui/vue/component');
 const TableComponent = require('gui/table/vue/table');
 const ComponentsRegistry = require('gui/componentsregistry');
@@ -60,7 +61,7 @@ const vueComponentOptions = {
     }
   },
   directives: {
-    //create a vue directive fro click outside contextmenu
+    //create a vue directive from click outside contextmenu
     'click-outside-layer-menu': {
       bind(el, binding, vnode) {
         this.event = function (event) {
@@ -269,6 +270,45 @@ const vueComponentOptions = {
         this._hideMenu();
       })
     },
+    /**
+     * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
+     * @param layer
+     * @returns {Promise<void>}
+     */
+    async downloadExternalShapefile(layer){
+      const EPSG4326 = 'EPSG:4326';
+      this.layerMenu.loading.shp = true;
+      const mapService = GUI.getComponent('map').getService();
+      const vectorLayer = mapService.getLayerByName(layer.name);
+      const GeoJSONFormat = new ol.format.GeoJSON();
+      let features = vectorLayer.getSource().getFeatures();
+      if (layer.crs !== EPSG4326){
+        features = features.map(feature => {
+          const clonefeature = feature.clone();
+          clonefeature.getGeometry().transform(layer.crs, EPSG4326);
+          return clonefeature;
+        })
+      }
+      const GeoJSONFile = GeoJSONFormat.writeFeaturesObject(features, {
+        featureProjection: EPSG4326
+      });
+      const name = layer.name.split(`.${layer.type}`)[0];
+      shpwrite.download(GeoJSONFile,{
+        folder: name,
+        types: {
+          point:name,
+          mulipoint: name,
+          polygon: name,
+          multipolygon: name,
+          line: name,
+          polyline: name,
+          multiline: name
+        }
+      });
+      await this.$nextTick();
+      this.layerMenu.loading.shp = false;
+      this._hideMenu();
+    },
     showAttributeTable(layerId) {
       this.layerMenu.loading.data_table = false;
       GUI.closeContent();
@@ -301,15 +341,15 @@ const vueComponentOptions = {
     closeLayerMenu() {
       this._hideMenu();
       this.showColorMenu(false);
+      this.layerMenu.stylesMenu.show = false;
     },
     onChangeColor(val) {
       const mapService = GUI.getComponent('map').getService();
-      this.layerMenu.colorMenu.color = val;
+      this.layerMenu.layer.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       const style = layer.getStyle();
       style._g3w_options.color = val;
       layer.setStyle(style);
-
     },
     setCurrentLayerStyle(index){
       let changed = false;
@@ -322,8 +362,10 @@ const vueComponentOptions = {
       });
       if (changed) {
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
-        layer && layer.changeCurrentStyle();
+        layer && layer.change();
+        CatalogEventHub.$emit('layer-change-style');
       }
+      this.closeLayerMenu();
     },
     showStylesMenu(bool, evt) {
       if (bool) {
@@ -365,59 +407,125 @@ const vueComponentOptions = {
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {
       const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
       layerstree.filter.active =  await layer.toggleFilterToken();
-
     });
 
-    CatalogEventHub.$on('treenodetoogled', (storeid, node, parent_mutually_exclusive) => {
+    /**
+     * Event handle for layer toggled
+     */
+    CatalogEventHub.$on('treenodetoogled', (storeid, node, parent, parent_mutually_exclusive) => {
       const mapService = GUI.getComponent('map').getService();
       if (node.external && !node.source) {
         let layer = mapService.getLayerByName(node.name);
         layer.setVisible(!layer.getVisible());
         node.visible = !node.visible;
         node.checked = node.visible;
-      } else if(!storeid) {
+      } else if (!storeid) {
         node.visible = !node.visible;
         let layer = mapService.getLayerById(node.id);
         layer.setVisible(node.visible);
       } else {
+        const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
         if (!node.groupdisabled) {
-          let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, null, parent_mutually_exclusive);
+          let layer = layerStore.toggleLayer(node.id, null, parent_mutually_exclusive);
           mapService.emit('cataloglayertoggled', layer);
-        } else CatalogLayersStoresRegistry.getLayersStore(storeid).toggleLayer(node.id, false, parent_mutually_exclusive)
+        } else layerStore.toggleLayer(node.id, false, parent_mutually_exclusive)
+      }
+      /*
+       */
+      if (parent_mutually_exclusive && node.checked){
+        CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
+        // go down tro layer tree inside forder of layer
+        const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
+        siblingsGroups.forEach(group => {
+          if (group.checked) {
+            group.checked = false;
+            CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
+          }
+        });
+
+        //go up from parent layer folder to it's father parent folder
+        if (!parent.checked){
+          parent.checked = true;
+          let parentFolder;
+          const parentGroupId = parent.groupId;
+          const getParentFolder = tree => {
+            // tree is the currend group
+            if (Array.isArray(tree.nodes)) {
+              const find = tree.nodes.find(subtree => {
+                return Array.isArray(subtree.nodes) ? (subtree.groupId === parentGroupId) || getParentFolder(subtree) : false;
+              });
+              if (find && !parentFolder) {
+                parentFolder = tree;
+                return true;
+              }
+            } return false;
+          };
+          getParentFolder(this.state.layerstrees[0].tree[0]);
+          parentFolder && CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder);
+        }
       }
     });
-    // event that set all visible or not all children layer of the folder and if parent is mutually exclusive turn off all layer
-    CatalogEventHub.$on('treenodestoogled', (storeid, nodes, isGroupChecked) => {
-      let layersIds = [];
+
+    /**
+     * Event handler of check group
+     * nodes: is children nodes of group
+     * isGroupChecked: boolen id current group is checked or not
+     * parent: is the  group parent of current group
+     */
+    CatalogEventHub.$on('treenodestoogled', (storeid, currentgroup, isGroupChecked, parent) => {
+      if (parent && currentgroup.checked) parent.checked = true;
+      const {nodes, groupId} = currentgroup;
+      // get layestore that contains and handle all layers
       const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
+      // check if parent exist and is mutually exclusive
+      const parent_mutually_exclusive = parent && parent.mutually_exclusive;
+      //id of layers belong to current group and subgroups
+      const layersIds = [];
+      // function to turn on and off all layer belong to subgroup based on group checkd or not
       const turnOnOffSubGroups = (parentChecked, currentLayersIds, node) => {
         if (node.nodes) {
-          //node.disabled = !parentChecked;
           const isGroupChecked = (node.checked && parentChecked);
           const groupLayers = {
             checked: isGroupChecked,
-            layersIds: []
+            layersIds
           };
           const currentLayersIds = groupLayers.layersIds;
           parentLayers.push(groupLayers);
           node.nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
         } else if (node.geolayer) {
-          if (node.checked)
-            currentLayersIds.push(node.id);
+          if (node.checked) currentLayersIds.push(node.id);
           node.disabled = node.groupdisabled = !parentChecked;
         }
       };
       const parentLayers = [{
         checked: isGroupChecked,
-        layersIds: []
+        layersIds
       }];
       const currentLayersIds = parentLayers[0].layersIds;
       nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
       for (let i = parentLayers.length; i--;) {
         const {layersIds, checked} = parentLayers[i];
-        layerStore.toggleLayers(layersIds, checked , false);
+        layerStore.toggleLayers(layersIds, checked , false, parent_mutually_exclusive);
+      }
+      //force to set visible and unchecked al parent layers
+      if (parent_mutually_exclusive && isGroupChecked){
+        const parenGroupLayerIds = [];
+        const parentGroupSubGroups = [];
+        parent.nodes && parent.nodes.filter(node => {
+          node.id && node.checked && parenGroupLayerIds.push(node.id);
+          node.nodes && node.groupId !== groupId && node.checked && parentGroupSubGroups.push(node);
+        });
+        parenGroupLayerIds.length && layerStore.toggleLayers(parenGroupLayerIds, false, true);
+        parentGroupSubGroups.forEach(group =>{
+          group.checked = false;
+          CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
+        })
       }
     });
+
+    /**
+     * Eevent handle of select layer
+     */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
       const mapservice = GUI.getComponent('map').getService();
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
@@ -434,23 +542,14 @@ const vueComponentOptions = {
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
       this._hideMenu();
       await this.$nextTick();
-      const layerId = layerstree.id;
-      const constMenuHeight = ((layerId) => {
-        return (1*this.canShowWmsUrl(layerId)
-          + 1*!!layerstree.bbox
-          + 1*!!layerstree.openattributetable
-          + 1*!!layerstree.color
-          + 1*this.canDownloadShp(layerId)) * 30;
-      })(layerId);
-      this.layerMenu.top = evt.y - constMenuHeight;
       this.layerMenu.left = evt.x;
       this.layerMenu.name = layerstree.name;
       this.layerMenu.layer = layerstree;
       this.layerMenu.show = true;
       this.layerMenu.colorMenu.color = layerstree.color;
-      this.$nextTick(() => {
-        $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
-      });
+      await this.$nextTick();
+      this.layerMenu.top = $(evt.target).offset().top - $(this.$refs['layer-menu']).height() + ($(evt.target).height()/ 2);
+      $('.catalog-menu-wms[data-toggle="tooltip"]').tooltip();
     });
 
     ControlsRegistry.onafter('registerControl', (id, control) => {
@@ -484,7 +583,7 @@ const compiledTristateTreeTemplate = createCompiledTemplate(require('./tristate-
 // tree component
 Vue.component('tristate-tree', {
   ...compiledTristateTreeTemplate,
-  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', "parent"],
+  props : ['layerstree', 'storeid', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
   data() {
     return {
       expanded: this.layerstree.expanded,
@@ -526,6 +625,8 @@ Vue.component('tristate-tree', {
   watch:{
     'layerstree.disabled'(bool) {
       this.layerstree.selected = bool && this.layerstree.selected ? false : this.layerstree.selected;
+    },
+    'layerstree.checked'(){
     }
   },
   methods: {
@@ -539,8 +640,8 @@ Vue.component('tristate-tree', {
       if (isFolder) {
         this.layerstree.checked = !this.layerstree.checked;
         this.isFolderChecked = this.layerstree.checked && !this.layerstree.disabled;
-        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.isFolderChecked, this.parent_mutually_exclusive);
-      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent_mutually_exclusive);
+        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.isFolderChecked, this.parent);
+      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent, this.parent_mutually_exclusive);
     },
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
@@ -558,7 +659,7 @@ Vue.component('tristate-tree', {
         downloadFile(download.file);
       } else if (download.url) {}
     },
-    removeExternalLayer: function(name) {
+    removeExternalLayer(name) {
       const mapService = GUI.getComponent('map').getService();
       mapService.removeExternalLayer(name);
     },
@@ -569,7 +670,7 @@ Vue.component('tristate-tree', {
     }
   },
   created() {
-    (this.isFolder && !this.layerstree.checked) && CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree.nodes, this.layerstree.checked, this.parent_mutually_exclusive);
+    (this.isFolder && !this.layerstree.checked) && CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.layerstree.checked, this.parent);
   },
   async mounted() {
     if (this.isFolder && !this.root) {
@@ -588,11 +689,11 @@ const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
-    data: function() {
+    data() {
       return {}
     },
     computed: {
-      visiblelayers: function(){
+      visiblelayers(){
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
         let traverse = (obj) => {
@@ -611,7 +712,7 @@ Vue.component('layerslegend',{
     },
     watch: {
       'layerstree': {
-        handler: function(val, old){},
+        handler(val, old){},
         deep: true
       },
       'visiblelayers'(visibleLayers) {
@@ -620,7 +721,8 @@ Vue.component('layerslegend',{
       }
     },
     created() {
-      this.$emit('showlegend', !!this.visiblelayers.length);
+      const show = !!this.visiblelayers.length;
+      this.$emit('showlegend', show);
     }
 });
 
@@ -680,20 +782,24 @@ Vue.component('layerslegend-items',{
       const layers = _layers.filter(layer => layer.geolayer);
       for (let i=0; i< layers.length; i++) {
         const layer = layers[i];
+        const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
         const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
         const url = `${this.getLegendUrl(layer, this.legend)}`;
         if (layer.source && layer.source.url) urlLayersName[url] = [];
         else {
           const [prefix, layerName] = url.split('LAYER=');
           if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
-          urlLayersName[prefix].unshift(layerName);
+          urlLayersName[prefix].unshift({
+            layerName,
+            style: style && style.name
+          });
         }
       }
       for (const method in urlMethodsLayersName) {
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].join(',')}&filtertoken=${ApplicationService.getFilterToken()}`: url;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
             const legendUrlObject = {
               loading: true,
               url: legendUrl,
@@ -707,12 +813,14 @@ Vue.component('layerslegend-items',{
             let [_url, params] = url.split('?');
             params = params.split('&');
             const econdedParams = [];
-            params.forEach((param) => {
+            params.forEach(param => {
               const [key, value] = param.split('=');
               econdedParams.push(`${key}=${encodeURIComponent(value)}`);
             });
             params = econdedParams.join('&');
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].join(','))}`;
+            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
+            params+= `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
+            params+= `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
             xhr.open('POST', _url);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.responseType = 'blob';
@@ -740,6 +848,9 @@ Vue.component('layerslegend-items',{
   created(){
     this.mapReady = false;
     this.waitinglegendsurls = [] // urls that are waiting to be loaded
+    CatalogEventHub.$on('layer-change-style', () =>{
+      this.getLegendSrc(this.layers);
+    })
   },
   async mounted() {
     await this.$nextTick();

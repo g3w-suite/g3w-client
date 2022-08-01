@@ -9,18 +9,10 @@ const RouterDataService =  require('core/data/routerservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
-const GlobalDirective = require('gui/vue/vue.directives');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
 //timeout value
 const TIMEOUT = 60000; // 1 minute
-
-
-// install global components
-Vue.use(GlobalComponents);
-// install gloabl directive
-Vue.use(GlobalDirective);
 
 //Manage Application
 const ApplicationService = function() {
@@ -30,6 +22,7 @@ const ApplicationService = function() {
   ApplicationState.online = navigator.onLine;
   ApplicationState.ismobile= isMobile.any;
   this.complete = false;
+  this.baseurl = '/'; // set base url
   this.download_caller_id = null;
   // store all services sidebar etc..
   this._applicationServices = {};
@@ -257,10 +250,11 @@ const ApplicationService = function() {
       ...appConfig
     };
     try {
-      initConfig =   initConfig ? initConfig :  await this.obtainInitConfig({
-        initConfigUrl:  appConfig.server.urls.initconfig
+      initConfig = initConfig ? initConfig :  await this.obtainInitConfig({
+        initConfigUrl:  `${appConfig.server.urls.initconfig}`
       });
       // write urls of static files and media url (base url and vector url)
+      this.baseurl = initConfig.baseurl;
       config.server.urls.baseurl = initConfig.baseurl;
       config.server.urls.frontendurl = initConfig.frontendurl;
       config.server.urls.staticurl = initConfig.staticurl;
@@ -351,7 +345,7 @@ const ApplicationService = function() {
         projectPath = `${this._groupId}/${type_id}`;
       }
       if (projectPath) {
-        const url =  `${host || ''}/${this._initConfigUrl}/${projectPath}`;
+        const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
         // get configuration from server (return a promise)
         try {
           const initConfig =  await this.getInitConfig(url);
@@ -452,7 +446,9 @@ const ApplicationService = function() {
           //sett
           this.setEPSGApplication(project);
           //IFRAME CHECK
-          ApplicationState.iframe && this.startIFrameService();
+          ApplicationState.iframe && this.startIFrameService({
+            project
+          });
           // initilize routerdataservice
           RouterDataService.init();
           resolve(true);
@@ -462,9 +458,9 @@ const ApplicationService = function() {
   };
 
   //iframeservice
-  this.startIFrameService = function(){
+  this.startIFrameService = function({project}={}){
     const iframeService = require('core/iframe/routerservice');
-    iframeService.init();
+    iframeService.init({project});
   };
 
   this.registerWindowEvent = function({evt, cb} ={}) {
@@ -493,6 +489,9 @@ const ApplicationService = function() {
 
   this.errorHandler = function(error) {};
 
+  /**
+   * clear initConfig
+   */
   this.clearInitConfig = function() {
     window.initConfig = null;
     this._initConfig = null;
@@ -521,6 +520,13 @@ const ApplicationService = function() {
     })
   };
 
+  /**
+   * Change project method that do all request and rebuild interface
+   * @param gid
+   * @param host
+   * @returns {JQuery.Promise<any, any, any>}
+   * @private
+   */
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
     const reload = this._gid === gid;
@@ -548,7 +554,7 @@ const ApplicationService = function() {
             GUI.closeUserMessage();
             GUI.closeContent()
               .then(() => {
-                // remove all toos
+                // remove all tools
                 ProjectsRegistry.onceafter('setCurrentProject', ()=>{
                   GUI.getComponent('tools').getService().reload();
                   // reload metadati
@@ -568,19 +574,14 @@ const ApplicationService = function() {
                 this.setEPSGApplication(project);
                 ApplicationState.download = false;
               })
-              .fail(err => {
-                console.log(err);
-              })
+              .fail(err => console.log)
           })
-          .fail(() => {
-            d.reject();
-          });
+          .fail(() => d.reject());
       })
-      .catch((error) => {
-        d.reject(error);
-      });
+      .catch(error => d.reject(error));
     return d.promise();
   };
+
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();
   }

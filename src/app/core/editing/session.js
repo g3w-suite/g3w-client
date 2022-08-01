@@ -391,9 +391,7 @@ proto._stop = function() {
         this.clear();
         d.resolve();
       })
-      .fail((err) =>  {
-        d.reject(err);
-      });
+      .fail(err =>  d.reject(err));
   else d.resolve();
   return d.promise();
 };

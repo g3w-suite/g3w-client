@@ -1,7 +1,6 @@
-import { ALLVALUE }  from '../../constants';
-const { base, inherit, toRawType , createFilterFormInputs, createSingleFieldParameter} = require('core/utils/utils');
+import { ALLVALUE, RETURN_TYPES}  from '../../constants';
+const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
-const t = require('core/i18n/i18n.service').t;
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -12,7 +11,15 @@ function SearchService(config={}) {
   this.debounces =  {
     run: {
       fnc: (...args) => {
-        this._run(...args)
+        if (GUI.isMobile()){
+         const [width, heigth] = this.mapService.getMap().getSize();
+         if  (width === 0 || heigth === 0) {
+           GUI.hideSidebar();
+           setTimeout(()=>{
+             this._run(...args)
+           }, 600)
+         } else this._run(...args);
+        } else this._run(...args)
       }
     }
   };
@@ -26,6 +33,7 @@ function SearchService(config={}) {
   };
   const {options={}} = config;
   const layerid = options.querylayerid || options.layerid || null;
+  const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
   this.inputdependance = {};
   this.inputdependencies = [];
@@ -39,15 +47,34 @@ function SearchService(config={}) {
   this.search_endpoint = config.search_endpoint;
   this.url = options.queryurl;
   this.filter = options.filter;
+  this.return = options.return || 'data';
+  this.show = this.return === 'data';
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
-  this.createInputsFormFromFilter({
-    filter
-  });
+  this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
+  this.createInputsFormFromFilter({filter});
 }
 
 inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
+
+/**
+ * Get return type
+ */
+
+proto.getReturnType = function(){
+  return this.return;
+};
+
+/**
+ * Set return type
+ */
+
+proto.setReturnType = function(returnType='data'){
+  this.return = returnType;
+  //set show only in case return === 'data'
+  this.show = this.return === 'data';
+};
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
@@ -74,7 +101,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
 proto.getUniqueValuesFromField = async function({field, value, unique}){
   let data = [];
   try {
-    data = await this.searchLayer.getFilterData({
+    data = await this.searchLayers[0].getFilterData({
       field,
       suggest: value !== void 0 ? `${field}|${value}` : void 0,
       unique
@@ -100,7 +127,7 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
-proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=true} ={}) {
+proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=this.show} ={}) {
   filter = filter || this.createFilter();
   // call a generic method of layer
   let data;
@@ -108,22 +135,43 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
   try {
     data = await DataRouterService.getData('search:features', {
       inputs:{
-        layer: this.searchLayer,
+        layer: this.searchLayers,
         search_endpoint,
         filter,
         queryUrl,
         formatter: 1, // set formatter to 1
-        feature_count
+        feature_count,
+        raw: this.return === 'search' // parameter to get raw response
       },
       outputs: show && {
         title: this.state.title
       }
     });
-    // in case of autozoom_query
-    if (this.project.state.autozoom_query && data && data.data.length){
-      this.mapService.zoomToFeatures(data.data[0].features)
+    if (show){
+      // in case of autozoom_query
+      if (this.project.state.autozoom_query && data && data.data.length === 1){
+        this.mapService.zoomToFeatures(data.data[0].features)
+      }
+    } else {
+      switch (this.return) {
+        case 'search':
+          GUI.closeContent();
+          // in case of api get first response on array
+          data = data.data[0].data;
+          if (isEmptyObject(data)){
+            const dataPromise = Promise.resolve({});
+            DataRouterService.showCustomOutputDataPromise(dataPromise);
+          } else {
+            const SearchPanel = require('gui/search/vue/panel/searchpanel');
+            const add_panel = new SearchPanel(data);
+            add_panel.show();
+          }
+          break;
+      }
     }
-  } catch(err){}
+  } catch(err){
+    console.log(err)
+  }
   this.state.searching = false;
   return data;
 };
@@ -146,7 +194,7 @@ proto.getSearchEndPoint = function(){
 proto.createFilter = function(search_endpoint=this.getSearchEndPoint()){
   const inputs = this.filterValidFormInputs();
   return createFilterFormInputs({
-    layer: this.searchLayer,
+    layer: this.searchLayers,
     inputs,
     search_endpoint
   })
@@ -323,7 +371,10 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             this.state.loading[field] = false;
             resolve();
           })
-        } else resolve();
+        } else {
+          this.state.loading[field] = false;
+          resolve();
+        }
       }
     } else resolve();
   })
@@ -350,7 +401,6 @@ proto.valuesToKeysValues = function(values=[]){
 };
 
 proto.createInputsFormFromFilter = async function({filter=[]}={}) {
-  let id = 0;
   const filterLenght = filter.length - 1;
   for (let index = 0; index <= filterLenght; index ++) {
     const input = filter[index];
@@ -362,7 +412,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       value: null,
       operator: input.op,
       logicop: index === filterLenght ? null : input.logicop,
-      id: input.id || id,
+      id: input.id || getUniqueDomId(),
       loading: false
     };
     if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
@@ -398,7 +448,6 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       }
     }
     this.state.forminputs.push(forminput);
-    id+=1;
   }
 };
 

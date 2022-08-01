@@ -61,7 +61,7 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
   const params = {
     field,
     suggest,
@@ -70,13 +70,13 @@ proto.getFilterData = async function({field, suggest={}, unique, formatter=1}={}
     filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
-    const response = await XHR.get({
-      url: `${this._dataUrl}`,
+    let response = await XHR.get({
+      url: `${queryUrl ?  queryUrl : this._dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
-    const data = response.result ?  unique ? response.data :  {
+    const data = raw ? response : response.result ?  unique ? response.data :  {
       data: this._parseGeoJsonResponse({
         layers: [this._layer],
         response:response.vector.data,
@@ -99,7 +99,10 @@ proto.setProjections = function() {
 proto.query = function(options={}) {
   const d = $.Deferred();
   const feature_count = options.feature_count || 10;
-  const filter = options.filter || null;
+  // parameter to get rwa response
+  const raw = options.raw || false;
+  let {filter=null} = options;
+  filter = filter && Array.isArray(filter) ? filter : [filter];
   const isVector = this._layer.getType() !== "table";
   isVector && this.setProjections();
   const CRS = isVector ? this._projections.map.getCode() : ApplicationState.map.epsg;
@@ -107,8 +110,9 @@ proto.query = function(options={}) {
   const {I,J, layers} = options;
   const layerNames = layers ? layers.map(layer => layer.getWMSLayerName()).join(',') : this._layer.getWMSLayerName();
   if (filter) {
-    // check if geomemtry filter. If not i have to remove projection layer
-    if (filter.getType() !== 'geometry') this._projections.layer = null;
+    // check if geometry filter. If not i have to remove projection layer
+    if (filter[0].getType() !== 'geometry') this._projections.layer = null;
+    filter = filter.map(filter => filter.get()).filter(value => value);
     const url = queryUrl ;
     const params = {
       SERVICE: 'WMS',
@@ -122,18 +126,16 @@ proto.query = function(options={}) {
       CRS,
       I,
       J,
-      FILTER: filter.get(),
+      FILTER: filter && filter.length ? filter.join(';') : undefined,
       WITH_GEOMETRY: isVector ? 1: 0
     };
     XHR.get({
       url,
       params
     }).then(response => {
-      const featuresForLayers = this.handleQueryResponseFromServer(response, this._projections, layers);
+      const featuresForLayers = raw ? response : this.handleQueryResponseFromServer(response, this._projections, layers);
       d.resolve(featuresForLayers);
-    }).catch(err => {
-      d.reject(err);
-    });
+    }).catch(err => d.reject(err));
   } else d.reject();
   return d.promise();
 };
@@ -237,7 +239,7 @@ proto.getFeatures = function(options={}, params={}) {
         })
       } else if (filter.nofeatures){
         const jsonFilter = JSON.stringify({
-          field: 'id|eq|-999999'
+          field: `${filter.nofeatures_field || 'id'}|eq|__G3W__NO_FEATURES__`
         });
         promise = XHR.post({
           url,
@@ -278,11 +280,7 @@ proto.getFeatures = function(options={}, params={}) {
           });
         }
       })
-      .catch(function(err) {
-        d.reject({
-          message: t("info.server_error")
-        });
-      });
+      .catch(err => d.reject({ message: t("info.server_error")}));
   } else {
     url = this._dataUrl;
     const urlParams = $.param(params);
@@ -307,9 +305,7 @@ proto.getFeatures = function(options={}, params={}) {
 proto._loadLayerData = function(mode, customUrlParameters) {
   const d = $.Deferred();
   Obkect.entries(this._layers).forEach(([layerCode, layer]) => {
-    if (_.isNull(layer.vector)) {
-      noVectorlayerCodes.push(layerCode);
-    }
+    if (_.isNull(layer.vector)) noVectorlayerCodes.push(layerCode);
   });
   const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
   this.emit('loadingvectorlayersstart');
@@ -382,13 +378,8 @@ proto.loadAllVectorsData = function(layerCodes) {
   const vectorDataRequests = layers.map(Layer => this._loadVectorData(Layer.vector, bbox));
 
   $.when.apply(this, vectorDataRequests)
-    .then(() => {
-      d.resolve(layerCodes);
-    })
-    .fail(() => {
-      d.reject();
-    });
-
+    .then(() => d.resolve(layerCodes))
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -435,12 +426,9 @@ proto._createVectorLayerFromConfig = function(layerCode) {
       if (layerConfig.style) vectorLayer.setStyle(layerConfig.style);
       d.resolve(vectorLayer);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
-
 
 proto._setupVectorLayer = function(layerCode) {
   const d = $.Deferred();
@@ -450,9 +438,7 @@ proto._setupVectorLayer = function(layerCode) {
       layerConfig.vector = vectorLayer;
       d.resolve(layerCode);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -503,9 +489,7 @@ proto.lockFeatures = function(layerName) {
       this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
       d.resolve(data);
     })
-    .fail(() => {
-      d.reject();
-    });
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -522,12 +506,8 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
   const lock = this.getMode() == 'w' ? true : false;
   const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
   $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
-    .done(data => {
-      d.resolve(data);
-    })
-    .fail(() => {
-      d.reject();
-    });
+    .done(data => d.resolve(data))
+    .fail(() => d.reject());
   return d.promise();
 };
 
@@ -535,7 +515,6 @@ proto._createVectorLayer = function(options={}) {
   const vector = new VectorLayer(options);
   return vector;
 };
-
 
 proto.cleanUpLayers = function() {
   this._loadedExtent = null;

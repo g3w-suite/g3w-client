@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils//utils').base;
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Registy Layers
@@ -65,11 +64,9 @@ proto.getLayersStores = function() {
 proto._addLayersStore = function(layersStore, idx) {
   const storeId = layersStore.getId();
   this.stores[storeId] = layersStore;
-  if (!_.isNil(idx)) {
-    this.storesArray.splice(idx,0, storeId);
-  } else {
-    this.storesArray.push(storeId);
-  }
+  if (!_.isNil(idx)) this.storesArray.splice(idx,0, storeId);
+  else this.storesArray.push(storeId);
+
 };
 
 proto._removeLayersStore = function(layerStore) {

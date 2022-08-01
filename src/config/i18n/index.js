@@ -45,7 +45,8 @@ const translations = {
             edit: "Modifica"
           },
           messages: {
-            changed: 'Salvato correttamente'
+            changed: 'Salvato correttamente',
+            number_of_features: "Numero di features"
           },
           panel: {
             button: {
@@ -208,6 +209,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Interroga per poligono',
+            no_geometry: 'Non contiene la geometria nella risposta',
             help: `<h4>Guida - Interrogazione con Poligono</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Seleziona uno strato poligonale in legenda.</li>
@@ -224,6 +226,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "Il risultato in mappa è parziale a causa della presenza dei seguenti records non corretti:"
+              }
+            },
             tooltip: 'Aggiungi Layer'
           },
           geolocation: {
@@ -265,7 +272,8 @@ const translations = {
               }
             },
             tooltips: {
-              picklayer: "Prendi valore dalla mappa"
+              picklayer: "Prendi valore dalla mappa",
+              lonlat: "Clicca sulla mappa per prendere le coordinate"
             },
             input_validation_mutually_exclusive: "Campo mutualmente esclusivo con ",
             input_validation_error: "Campo obbligatorio o tipo valore non corretto",
@@ -299,6 +307,7 @@ const translations = {
             download: {
               shp: 'Scarica Shapefile',
               gpx: 'Scarica GPX',
+              gpkg: 'Scarica GPKG',
               csv: 'Scarica CSV',
               xls: 'Scarica XLS'
             }
@@ -374,6 +383,9 @@ const translations = {
           header: "Aggiungi Layer",
           select_projection: "Seleziona il sistema di proiezione del layer",
           select_field_to_show: "Seleziona il campo da visualizzare sulla mappa",
+          select_csv_separator: "Seleziona il separatore",
+          select_csv_x_field: "Seleziona il campo X",
+          select_csv_y_field: "Seleziona il campo Y",
           select_color: "Seleziona il colore del Layer",
           drag_layer: "Trascina il layer in questa area"
         },
@@ -389,8 +401,7 @@ const translations = {
         screenshot: {
           error: "Errore nella creazione dello screeshot"
         }
-      }
-      ,
+      },
       catalog_items: {
         helptext: "Tasto destro sui singoli layer per accedere alle funzionalità aggiuntive",
         contextmenu: {
@@ -457,7 +468,8 @@ const translations = {
             edit: "Edit"
           },
           messages: {
-            changed: 'Saved'
+            changed: 'Saved',
+            number_of_features: "Number of features"
           },
           panel: {
             button: {
@@ -619,6 +631,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Query By Polygon',
+            no_geometry: 'No geometry on response',
             help: `<h4>Guide - Query By Polygon</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Select a polygon layer on TOC.</li>
@@ -635,6 +648,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              }
+            },
             tooltip: 'Add Layer'
           },
           geolocation: {
@@ -676,7 +694,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Get value from ma layer"
+              picklayer: "Get value from ma layer",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Field mutually exclusive with ",
             input_validation_error: "Mandatory Field or wrong data type",
@@ -710,6 +729,7 @@ const translations = {
             download: {
               shp: 'Download Shapefile',
               gpx: 'Download GPX',
+              gpkg: 'Download GPKG',
               csv: 'Download CSV',
               xls: 'Download XLS'
             }
@@ -784,6 +804,9 @@ const translations = {
           header: "Add Layer",
           select_projection: "Select layer projection",
           select_field_to_show: "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Select Layer Color",
           drag_layer: "Drag and drop layer here"
         },
@@ -867,7 +890,8 @@ const translations = {
             edit: "Muokkaa"
           },
           messages: {
-            changed: 'Tallennettu'
+            changed: 'Tallennettu',
+            number_of_features: "Ominaisuuksien lukumäärä"
           },
           panel: {
             button: {
@@ -1029,6 +1053,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Kysely monikulmiolla',
+            no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Kysely monikulmiolla</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Valitse monikulmiotaso luettelosta.</li>
@@ -1045,6 +1070,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              }
+            },
             tooltip: 'Lisää taso'
           },
           geolocation: {
@@ -1086,7 +1116,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Valitse arvo karttatasolta"
+              picklayer: "Valitse arvo karttatasolta",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Kenttä toisensa poissulkeva.",
             input_validation_error: "Pakollinen kenttä tai väärä tietotyyppi.",
@@ -1120,6 +1151,7 @@ const translations = {
             download: {
               shp: 'Lataa SHP-tiedosto',
               gpx: 'Lataa GPX-tiedosto',
+              gpkg: 'Lataa GPKG-tiedosto',
               csv: 'Lataa CSV-tiedosto',
               xls: 'Lataa XLS-tiedosto'
             }
@@ -1194,6 +1226,9 @@ const translations = {
           header: "Lisää taso",
           select_projection: "Valitse tason projektio",
           select_field_to_show : "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Valitse tason väri",
           drag_layer: "Vedä ja pudota taso tähän"
         },
@@ -1277,7 +1312,8 @@ const translations = {
             edit: "Redigera"
           },
           messages: {
-            changed: 'Sparat'
+            changed: 'Sparat',
+            number_of_features: "Antal funktione"
           },
           panel: {
             button: {
@@ -1439,6 +1475,7 @@ const translations = {
           },
           querybypolygon: {
             tooltip: 'Förfrågan med polygon',
+            no_geometry: 'No geometry on response',
             help: `<h4>Ohje - Förfrågan med polygon</h4>
                   <ul style="padding-left: 10px;">
                     <li style="font-size:0.8em;">Välj polygonnivå i listan.</li>
@@ -1455,6 +1492,11 @@ const translations = {
                    </ul>`
           },
           addlayer: {
+            messages: {
+              csv: {
+                warning: "The result in the map is partial due to the presence of the below incorrect records list:"
+              }
+            },
             tooltip: 'Lägg till nivå'
           },
           geolocation: {
@@ -1497,7 +1539,8 @@ const translations = {
               }
             },
             tooltips:{
-              picklayer: "Välj värde på kartnivå"
+              picklayer: "Välj värde på kartnivå",
+              lonlat: "Click on map to get coordinates"
             },
             input_validation_mutually_exclusive: "Fälten utesluter varandra.",
             input_validation_error: "Obligatoriskt fält eller fel datatyp.",
@@ -1531,6 +1574,7 @@ const translations = {
             download: {
               shp: 'Ladda SHP-fil',
               gpx: 'Ladda GPX-fil',
+              gpkg: 'Ladda GPKG-fil',
               csv: 'Ladda CSV-fil',
               xls: 'Ladda XLS-fil'
             }
@@ -1605,6 +1649,9 @@ const translations = {
           header: "Lägg till nivå",
           select_projection: "Välj projektion för nivån",
           select_field_to_show: "Select Field to show on map",
+          select_csv_separator: "Select delimiter",
+          select_csv_x_field: "Select X field",
+          select_csv_y_field: "Select Y field",
           select_color: "Välj färg på nivån",
           drag_layer: "Dra och släpp nivån hit"
         },

@@ -5,7 +5,6 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
 const Component = require('gui/vue/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
-const GUI = require('gui/gui');
 const {fieldsMixin } = require('gui/vue/vue.mixins');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
@@ -61,23 +60,6 @@ const vueComponentOptions = {
     },
     hasOneLayerAndOneFeature(layer) {
       const one = this.hasLayerOneFeature(layer);
-      if (one) {
-        const feature = layer.features[0];
-        const boxid = this.getBoxId(layer, feature);
-        this.layersFeaturesBoxes[boxid].collapsed = false;
-        this.$options.queryResultsService.onceafter('postRender', () => {
-          this.showFeatureInfo(layer, boxid);
-          this.$options.queryResultsService.openCloseFeatureResult({
-            open:true,
-            layer,
-            feature,
-            container: this.getContainerFromFeatureLayer({
-              layer,
-              index: 0
-            })
-          })
-        });
-      }
       return one;
     },
     hasFormStructure(layer) {
@@ -121,17 +103,29 @@ const vueComponentOptions = {
     geometryAvailable(feature) {
       return feature.geometry ? true : false;
     },
-    attributesSubset: function(attributes) {
-      const _attributes = _.filter(attributes, function(attribute) {
-        return attribute.show && attribute.type != 'image';
-      });
+    extractAttributesFromFirstTabOfFormStructureLayers(layer){
+      const attributes = new Set();
+      const traverseStructure = item => {
+        if (item.nodes) {
+          item.nodes.forEach(node => traverseStructure(node));
+        } else {
+          const field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          field && attributes.add(field);
+        }
+      };
+      layer.formStructure.structure.length && traverseStructure(layer.formStructure.structure[0]);
+      return Array.from(attributes);
+    },
+    attributesSubset(layer) {
+      const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
+      const _attributes = attributes.filter(attribute => attribute.show && attribute.type != 'image');
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
     relationsAttributesSubset(relationAttributes) {
       const attributes = [];
       _.forEach(relationAttributes, function (value, attribute) {
-        if (_.isArray(value)) return;
+        if (Array.isArray(value)) return;
         attributes.push({label: attribute, value: value})
       });
       const end = Math.min(maxSubsetLength, attributes.length);
@@ -144,30 +138,26 @@ const vueComponentOptions = {
       });
       return attributes;
     },
-    attributesSubsetLength: function(attributes) {
-      return this.attributesSubset(attributes).length;
+    attributesSubsetLength(layer) {
+      return this.attributesSubset(layer).length;
     },
     cellWidth(index,layer) {
       const headerLength = maxSubsetLength + this.state.layersactions[layer.id].length;
-      const subsetLength = this.attributesSubsetLength(layer.attributes);
+      const subsetLength = this.attributesSubsetLength(layer);
       const diff = headerLength - subsetLength;
       const actionsCellWidth = layer.hasgeometry ? headerActionsCellWidth : 0;
       const headerAttributeCellTotalWidth = 100 - headerExpandActionCellWidth - actionsCellWidth;
       const baseCellWidth = headerAttributeCellTotalWidth / maxSubsetLength;
-      if ((index === subsetLength-1) && diff>0) {
-        return baseCellWidth * (diff+1);
-      }
-      else {
-        return baseCellWidth;
-      }
+      if ((index === subsetLength-1) && diff>0) return baseCellWidth * (diff+1);
+      else return baseCellWidth;
     },
     featureBoxColspan(layer) {
-      let colspan = this.attributesSubsetLength(layer.attributes);
+      let colspan = this.attributesSubsetLength(layer);
       if (layer.expandable) colspan += 1;
       if (layer.hasgeometry) colspan += 1;
       return colspan;
     },
-    relationsAttributesSubsetLength: function(elements) {
+    relationsAttributesSubsetLength(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
     getItemsFromStructure(layer) {
@@ -271,6 +261,39 @@ const vueComponentOptions = {
   watch: {
     'state.layers'(layers) {
       this.onelayerresult = layers.length === 1;
+      // check if is a single result layer and if has one feature
+      if (this.onelayerresult && this.hasLayerOneFeature(layers[0])) {
+        const layer = layers[0];
+        const feature = layer.features[0];
+        const boxid = this.getBoxId(layer, feature);
+        this.layersFeaturesBoxes[boxid].collapsed = false;
+        this.$options.queryResultsService.onceafter('postRender', () => {
+          this.showFeatureInfo(layer, boxid);
+          this.$options.queryResultsService.openCloseFeatureResult({
+            open:true,
+            layer,
+            feature,
+            container: this.getContainerFromFeatureLayer({
+              layer,
+              index: 0
+            })
+          })
+        });
+      } else { // for each layer check if there is one feature (usefult for plugin elevation)
+        const singlefeaturelayers = layers.filter(layer => this.hasLayerOneFeature(layer))
+        singlefeaturelayers.length && this.$options.queryResultsService.onceafter('postRender', () => {
+            singlefeaturelayers.forEach(layer =>
+              this.$options.queryResultsService.openCloseFeatureResult({
+                open:true,
+                layer,
+                feature: layer.features[0],
+                container: this.getContainerFromFeatureLayer({
+                  layer,
+                  index: 0
+                })
+              }))
+        })
+      }
       requestAnimationFrame(() => {
         this.$options.queryResultsService.postRender(this.$el);
       })
@@ -281,20 +304,19 @@ const vueComponentOptions = {
   },
   created(){
     //PUT HERE THROTTLED FUNCTION
-    this.zoomToLayerFeaturesExtent = throttle((layer) => {
+    this.zoomToLayerFeaturesExtent = throttle(layer => {
       this.$options.queryResultsService.zoomToLayerFeaturesExtent(layer, {
         highlight: true
       });
     })
   },
-  beforeMount() {
-    this.isMobile() && GUI.hideSidebar();
-  },
   beforeDestroy() {
     this.state.zoomToResult = true;
   },
-  async destroyed() {
-    this.$options.queryResultsService.clear();
+  destroyed() {
+    setTimeout(()=>{
+      this.$options.queryResultsService.clear();
+    })
   }
 };
 

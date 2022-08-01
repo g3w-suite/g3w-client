@@ -24,6 +24,9 @@ const vueComponentOptions = {
   computed: {
     mapcontrolsalignement: function() {
       return this.service.state.mapcontrolsalignement;
+    },
+    disableMapControls(){
+      return this.service.state.mapControl.disabled;
     }
   },
   methods: {

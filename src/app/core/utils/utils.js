@@ -11,9 +11,7 @@ const Expression = require('core/layers/filter/expression');
  */
 function decimalAdjust(type, value, exp) {
   // If the exp is undefined or zero...
-  if (typeof exp === 'undefined' || +exp === 0) {
-    return Math[type](value);
-  }
+  if (typeof exp === 'undefined' || +exp === 0) return Math[type](value);
   value = +value;
   exp = +exp;
   // If the value is not a number or the exp is not an integer...
@@ -63,37 +61,35 @@ const Base64 = {_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012
 let _uid = 0;
 
 const utils = {
-  getUniqueDomId: function() {
+  getUniqueDomId() {
     _uid+=1;
     return `${_uid}_${Date.now()}`;
   },
 
-  uniqueId: function() {
+  uniqueId() {
     return utils.getUniqueDomId();
   },
 
-  basemixin: function mixin(destination, source) {
-      return utils.merge(destination.prototype, source);
+  basemixin(destination, source) {
+    return utils.merge(destination.prototype, source);
   },
 
-  mixin: function mixininstance(destination,source){
-      const sourceInstance = new source;
-      utils.merge(destination, sourceInstance);
-      utils.merge(destination.prototype, source.prototype);
+  mixin(destination,source){
+    const sourceInstance = new source;
+    utils.merge(destination, sourceInstance);
+    utils.merge(destination.prototype, source.prototype);
   },
-  merge: function merge(destination, source) {
-      let key;
-      for (key in source) {
-          if (utils.hasOwn(source, key)) {
-              destination[key] = source[key];
-          }
-      }
+  merge(destination, source) {
+    let key;
+    for (key in source) {
+      if (utils.hasOwn(source, key)) destination[key] = source[key];
+    }
   },
-  hasOwn: function hasOwn(object, key) {
-      return Object.prototype.hasOwnProperty.call(object, key);
+  hasOwn(object, key) {
+    return Object.prototype.hasOwnProperty.call(object, key);
   },
   // google closure library impememtation
-  inherit:function(childCtor, parentCtor) {
+  inherit(childCtor, parentCtor) {
     function tempCtor() {}
     tempCtor.prototype = parentCtor.prototype;
     childCtor.superClass_ = parentCtor.prototype;
@@ -101,7 +97,7 @@ const utils = {
     childCtor.prototype.constructor = childCtor;
   },
   // goole closure library implementation
-  base: function(me, opt_methodName, var_args) {
+  base(me, opt_methodName, var_args) {
     // who call base
     // noinspection JSAnnotator
     const caller = arguments.callee.caller;
@@ -136,19 +132,19 @@ const utils = {
     }
   },
 
-  noop: function(){},
+  noop(){},
 
-  truefnc: function(){return true},
+  truefnc(){return true},
 
-  falsefnc: function(){return true},
+  falsefnc(){return true},
 
-  resolve: function(value){
+  resolve(value){
     const d = $.Deferred();
     d.resolve(value);
     return d.promise();
   },
 
-  reject: function(value){
+  reject(value){
     const d = $.Deferred();
     d.reject(value);
     return d.promise();
@@ -196,11 +192,11 @@ const utils = {
     return url;
   },
 
-  convertObjectToUrlParams: function(params = {}) {
+  convertObjectToUrlParams(params = {}) {
     return $.param(params)
   },
   // Appends query parameters to a URI
-  appendParams: function(uri, params) {
+  appendParams(uri, params) {
     const keyParams = [];
     // Skip any null or undefined parameter values
     Object.keys(params).forEach(function (k) {
@@ -215,7 +211,7 @@ const utils = {
     uri = uri.indexOf('?') === -1 ? uri + '?' : uri + '&';
     return uri + qs;
   },
-  imageToDataURL: function({src, type='image/jpeg', callback=()=>{}}) {
+  imageToDataURL({src, type='image/jpeg', callback=()=>{}}) {
     const image = new Image();
     image.onload = function() {
       const canvas = document.createElement('canvas');
@@ -236,8 +232,11 @@ const utils = {
     const _toString = Object.prototype.toString;
     return _toString.call(value).slice(8, -1)
   },
+  isEmptyObject(obj){
+    return JSON.stringify(obj) === '{}';
+  },
   // build throttle function
-  throttle: function(fnc, delay=500) {
+  throttle(fnc, delay=500) {
     let lastCall;
     return function (...args) {
       let previousCall = lastCall;
@@ -347,6 +346,10 @@ const utils = {
       }
     }
   },
+  getTimeoutPromise({timeout=600}){
+    const promise = new Promise(resolve =>setTimeout(resolve, timeout));
+    return promise;
+  },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
@@ -424,10 +427,10 @@ const utils = {
   },
   createSingleFieldParameter({field, value, operator='eq', logicop=null}){
     logicop = logicop && `|${logicop}`;
-    return `${field}|${operator.toLowerCase()}|${value}${logicop || ''}`;
+    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
-    const stringFilter = filter;
+    let stringFilter = filter;
     switch (search_endpoint) {
       case 'ows':
         const layerName = layer.getWMSLayerName();
@@ -439,29 +442,60 @@ const utils = {
          filter.setExpression(expression.get());
         break;
       case 'api':
-        filter = stringFilter.replace(/\s|'|"/g, '');
+        //remove all blank space between operators
+        Object.values(EXPRESSION_OPERATORS).forEach(operator =>{
+          const regexoperator = new RegExp(`\\s+${operator}\\s+`, 'g');
+          stringFilter = stringFilter.replace(regexoperator, `${operator}`);
+          let regexsinglequote = new RegExp(`'${operator}`, 'g');
+          stringFilter = stringFilter.replace(regexsinglequote, `${operator}`);
+          regexsinglequote = new RegExp(`${operator}'`, 'g');
+          stringFilter = stringFilter.replace(regexsinglequote, `${operator}`);
+        });
+        stringFilter = stringFilter.replace(/'$/g, '');
+        filter = stringFilter.replace(/"/g, '');
         Object.entries(EXPRESSION_OPERATORS).forEach(([key,value]) =>{
           const re = new RegExp(value, "g");
           const replaceValue = value === 'AND' || value === 'OR' ? `|${key},` : `|${key}|`;
-          filter = filter.replace(re, replaceValue)
+          filter = filter.replace(re, replaceValue);
         });
+        //encode value
+        filter = filter.split('|').map((value, index) => ((index +1) % 3 === 0) ? encodeURIComponent(value) : value).join('|');
         break;
     }
     return filter;
   },
-  // method to create filter for search based on
+  /**
+   *
+   * @param layer single layer or an array of layers
+   * @param search_endpoint
+   * @param inputs
+   * @returns {*}
+   */
   createFilterFormInputs({layer, search_endpoint='ows', inputs=[]}){
+    const isLayerArray = Array.isArray(layer);
     let filter;
+    let filters = []; // in case of layer is an array
     switch (search_endpoint) {
       case 'ows':
-        const expression = new Expression();
-        const layerName = layer.getWMSLayerName();
-        expression.createExpressionFromFilter(inputs, layerName);
-        filter = new Filter();
-        filter.setExpression(expression.get());
+        if (isLayerArray){
+          layer.forEach(layer =>{
+            const expression = new Expression();
+            const layerName = layer.getWMSLayerName();
+            expression.createExpressionFromFilter(inputs, layerName);
+            filter = new Filter();
+            filter.setExpression(expression.get());
+            filters.push(filter);
+          })
+        } else {
+          const expression = new Expression();
+          const layerName = layer.getWMSLayerName();
+          expression.createExpressionFromFilter(inputs, layerName);
+          filter = new Filter();
+          filter.setExpression(expression.get());
+        }
         break;
       case 'api':
-        const inputsLength = inputs.length -1 ;
+        const inputsLength = inputs.length -1;
         const fields = inputs.map((input, index) => utils.createSingleFieldParameter({
             field: input.attribute,
             value: input.value,
@@ -470,9 +504,10 @@ const utils = {
           })
         );
         filter = fields.length ? fields.join() : undefined;
+        isLayerArray && layer.forEach(()=>filters.push(filter));
         break;
     }
-    return filter;
+    return isLayerArray ? filters  : filter;
   },
   //method to create filter from field based on search_endpoint
   createFilterFormField({layer, search_endpoint='ows', field, value, operator='eq'}){
@@ -506,7 +541,19 @@ const utils = {
       context,
       method
     }
-  }
+  },
+
+  /**
+   * Convert Hex value color to RGB array
+   * @param color
+   * @returns {number[]}
+   */
+  colorHEXToRGB(color='#FFFFFF'){
+    const r = parseInt(color.substr(1,2), 16);
+    const g = parseInt(color.substr(3,2), 16);
+    const b = parseInt(color.substr(5,2), 16);
+    return [r,g,b]
+  },
 };
 
 module.exports = utils;

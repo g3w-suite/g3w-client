@@ -10,7 +10,7 @@ const SIDEBAREVENTBUS = new Vue();
 //title, icon type etc ..  is possible to customize component
 const SidebarItem = Vue.extend({
   ...compiledSideBarItemTemplate,
-  data: function() {
+  data() {
     return {
         info: this.$options.info || {
           state: null,
@@ -138,10 +138,11 @@ function SidebarService() {
     return this.state.components;
   };
 
-  this.closeOpenComponents = function(){
-    this.getComponents().forEach(component =>{
-      component.getOpen() && component.click({open: false});
-    })
+  /**
+   * close fo the moment only conlapsbale
+   */
+  this.closeOpenComponents = function(collapsible=true){
+    this.getComponents().forEach(component =>component.getOpen() && component.collapsible && component.click({open: false}))
   };
 
   this.reloadComponent = function(id) {
@@ -171,21 +172,34 @@ function SidebarService() {
     })
   };
   // show panel on stack
-  this.showPanel = function(panel) {
+  this.showPanel = function(panel, options={}) {
     return new Promise((resolve, reject) => {
       this.state.gui.title = panel.title;
-      const parent = "#g3w-sidebarpanel-placeholder";
+      const parent =  "#g3w-sidebarpanel-placeholder";
+      this.stack.getCurrentContentData() && $(this.stack.getCurrentContentData().content.internalPanel.$el).hide();
       this.stack.push(panel, {
-        parent: parent
+        parent,
+        ...options
       }).then(content => resolve(content))
     })
   };
 
   // close panel
   this.closePanel = function() {
+    this.state.gui.title = null;
     this.closeSidebarPanel();
-    this.stack.pop().then(content => content = null);
+    this.stack.pop().then(content => {
+      content = null;
+      this.stack.getCurrentContentData() && $(this.stack.getCurrentContentData().content.internalPanel.$el).show();
+    });
   };
+
+  this.closeAllPanels = function(){
+    this.state.gui.title = null;
+    this.closeSidebarPanel();
+    this.stack.clear();
+  };
+
   base(this);
 }
 
@@ -195,7 +209,7 @@ const sidebarService = new SidebarService;
 const compiledSideBarTemplate = Vue.compile(require('./sidebar.html'));
 const SidebarComponent = Vue.extend({
     ...compiledSideBarTemplate,
-    data: function() {
+    data() {
     	return {
         components: sidebarService.state.components,
         panels: sidebarService.stack.state.contentsdata,
@@ -227,8 +241,11 @@ const SidebarComponent = Vue.extend({
       }
     },
     methods: {
-      closePanel: function() {
+      closePanel() {
         sidebarService.closePanel();
+      },
+      closeAllPanels(){
+        sidebarService.closeAllPanels();
       }
     },
     created() {

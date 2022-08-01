@@ -54,7 +54,6 @@ module.exports = {
     },
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
-      this.feature = this.getTabFeature(row);
       this.fields = this.getRowFields(row);
       this.resize();
       await this.$nextTick();
@@ -101,7 +100,7 @@ module.exports = {
     }
   },
   watch: {
-    async chart(bool){
+    async chart(){
       await this.$nextTick();
       this.resize();
     }
@@ -120,7 +119,6 @@ module.exports = {
     RelationPageEventBus.$on('reload', () => {
       this.reloadLayout();
     });
-
     this.showChart = throttle(async ()=> {
       this.chart = !this.chart;
       await this.$nextTick();

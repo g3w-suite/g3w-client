@@ -1,8 +1,5 @@
-const layout = require('./utils').layout;
-const changeLayout = require('./utils').changeLayoutBottomControl;
 const t = require('core/i18n/i18n.service').t;
-const getResolutionFromScale = require('../utils/utils').getResolutionFromScale;
-const getScaleFromResolution = require('../utils/utils').getScaleFromResolution;
+const {getResolutionFromScale, getScaleFromResolution} = require('../utils/utils');
 const SCALES = [
   1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000
 ];
@@ -31,7 +28,6 @@ proto.layout = function(map) {
   const self = this;
   let isMapResolutionChanged = false;
   let selectedOnClick = false;
-  const position = this.position;
   const element = $(this.element);
   const select2 = element.children('select').select2({
     tags: true,
@@ -44,35 +40,32 @@ proto.layout = function(map) {
       }
     },
     minimumResultsForSearch: this.isMobile ? -1 : 0,
-    createTag: function (params) {
+    createTag(params) {
       let newTag = null;
       let scale;
       // Don't offset to create a tag if there is no @ symbol
       if (params.term.indexOf('1:') !== -1) {
         // Return null to disable tag creation
         scale = params.term.split('1:')[1];
-      } else if (Number.isInteger(Number(params.term)))
+      } else if (Number.isInteger(Number(params.term)) && Number(params.term) > 0){
         scale = Number(params.term);
-      if (1*scale <= self.scales[0]) {
-        newTag = {
-          id: scale,
-          text: `1:${params.term}`,
-          new: true
-        };
-        deleteLastCustomScale()
+        if (1*scale <= self.scales[0]) {
+          newTag = {
+            id: scale,
+            text: `1:${params.term}`,
+            new: true
+          };
+          deleteLastCustomScale()
+        }
       }
       return newTag
     }
   });
   //get change mapsize to close
-  map.on('change:size', ()=>{
-    select2.select2('close');
-  });
+  map.on('change:size', ()=> select2.select2('close'));
   function deleteLastCustomScale() {
     select2.find('option').each((index, option) => {
-      if (self.scales.indexOf(1*option.value) === -1) {
-        $(option).remove()
-      }
+      self.scales.indexOf(1*option.value) === -1 && $(option).remove();
     });
   }
 

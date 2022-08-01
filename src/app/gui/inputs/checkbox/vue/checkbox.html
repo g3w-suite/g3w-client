@@ -1,9 +1,8 @@
 <baseinput :state="state">
-  <div style="height: 20px; margin-top:8px;" slot="body">
+  <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
     <input
       @change="changeCheckBox"
       style="width:100%"
-      v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       class="magic-checkbox"
       v-model="value"

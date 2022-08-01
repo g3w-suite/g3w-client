@@ -2,17 +2,20 @@ const Control = require('./control');
 const GUI = require('gui/gui');
 
 const InteractionControl = function(options={}) {
-  this._visible = options.visible === false ? false : true;
-  this._toggled = options.toggled || false;
-  this._interactionClass = options.interactionClass || null;
+  const {visible=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
+    geometryTypes=[], onselectlayer=false, onhover=false, help=null, interactionClassOptions={}} = options;
+  this._visible = visible;
+  this._toggled = toggled;
+  this.clickmap = clickmap; // check if interact with map
+  this._interactionClass = interactionClass;
   this._interaction = null;
-  this._autountoggle = options.autountoggle || false;
-  this._geometryTypes = options.geometryTypes || []; // array of types geometries
-  this._onSelectLayer = options.onselectlayer || false;
-  this._onhover = options.onhover || false;
-  this._help = options.help  || null;
+  this._autountoggle = autountoggle;
+  this._geometryTypes = geometryTypes; // array of types geometries
+  this._onSelectLayer = onselectlayer;
+  this._onhover = onhover;
+  this._help = help;
   this._helpButton = null;
-  this._interactionClassOptions = options.interactionClassOptions || {};
+  this._interactionClassOptions = interactionClassOptions;
   options.buttonClickHandler = InteractionControl.prototype._handleClick.bind(this);
   Control.call(this, options);
   // create an help message
@@ -22,6 +25,21 @@ const InteractionControl = function(options={}) {
 ol.inherits(InteractionControl, Control);
 
 const proto = InteractionControl.prototype;
+
+proto.isClickMap = function(){
+  return this.clickmap;
+};
+
+/**
+ * Enable map control dom
+ */
+proto.enable = function(){
+  $(this.element).removeClass('g3w-disabled');
+};
+
+proto.disable = function(){
+  $(this.element).addClass('g3w-disabled');
+};
 
 proto.isVisible = function() {
   return this._visible
@@ -76,19 +94,37 @@ proto.isToggled = function() {
   return this._toggled;
 };
 
+/**
+ *
+ * Get dom bottom
+ * @returns {JQuery<HTMLElement> | jQuery | HTMLElement}
+ */
+proto.getControlBottom = function(){
+  return $(this.element).find('button').first();
+};
+
+proto.addClassToControlBottom = function(className=''){
+  const controlButton = this.getControlBottom();
+  controlButton.addClass(className);
+};
+
+proto.removeClassToControlBottom = function(className=''){
+  const controlButton = this.getControlBottom();
+  controlButton.removeClass(className);
+};
+
 // press or not press
 proto.toggle = function(toggle) {
   toggle = toggle !== undefined ? toggle : !this._toggled;
   this._toggled = toggle;
-  const controlButton = $(this.element).find('button').first();
   if (toggle) {
     //this._help && this._showModalHelp();
     this._interaction && this._interaction.setActive(true);
-    controlButton.addClass('g3w-ol-toggled');
+    this.addClassToControlBottom('g3w-ol-toggled');
   } else {
     this._help && this._helpButton.hide();
     this._interaction && this._interaction.setActive(false);
-    controlButton.removeClass('g3w-ol-toggled');
+    this.removeClassToControlBottom('g3w-ol-toggled');
   }
   this.dispatchEvent('toggled', toggle);
 };
@@ -125,6 +161,5 @@ proto._handleClick = function(e) {
 proto.getIteraction = function() {
   return this._interaction;
 };
-
 
 module.exports = InteractionControl;

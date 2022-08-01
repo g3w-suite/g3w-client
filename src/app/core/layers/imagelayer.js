@@ -39,7 +39,7 @@ function ImageLayer(config={}, options={}) {
     styles
   }*/
   this.setters = {
-    changeCurrentStyle(){},
+    change(){},
   };
 
   base(this, config, options);

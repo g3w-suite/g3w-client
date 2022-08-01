@@ -12,7 +12,10 @@ const InputsComponents = {
   'select_input': require('./select/vue/select'),
   'media_input': require('./media/vue/media'),
   'select_autocomplete_input': require('./select/vue/select'),
-  'picklayer_input': require('./picklayer/vue/picklayer')
+  'picklayer_input': require('./picklayer/vue/picklayer'),
+  'color_input': require('./color/vue/color'),
+  'slider_input': require('./sliderrange/vue/sliderrange'),
+  'lonlat_input': require('./lonlat/vue/lonlat')
 };
 
 module.exports = InputsComponents;

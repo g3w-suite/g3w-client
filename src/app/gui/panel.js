@@ -1,5 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const resolvedValue = require('core/utils/utils').resolve;
+const {inherit, resolve:resolvedValue}= require('core/utils/utils');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 
@@ -46,7 +45,7 @@ proto.mount = function(parent) {
   const panel = this.internalPanel;
   const iCinstance = panel.$mount();
   $(parent).append(iCinstance.$el);
-  iCinstance.$nextTick(function() {
+  iCinstance.$nextTick(() => {
     $(parent).localize();
     panel.onShow && panel.onShow();
   });

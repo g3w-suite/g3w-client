@@ -1,5 +1,5 @@
 const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile, throttle } = require('core/utils/utils');
+const {base, inherit, noop, downloadFile, throttle, getUniqueDomId } = require('core/utils/utils');
 const {getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const t = require('core/i18n/i18n.service').t;
 const ProjectsRegistry = require('core/project/projectsregistry');
@@ -41,6 +41,7 @@ function QueryResultsService() {
     components: [],
     layers: [],
     query: null,
+    type: 'ows', // or api in case of search
     loading: false,
     layersactions: {}
   };
@@ -50,13 +51,14 @@ function QueryResultsService() {
 
   this._vectorLayers = [];
   this.setters = {
-    setQueryResponse: function(queryResponse) {
+    setQueryResponse(queryResponse) {
       this.clearState();
       this.state.query = queryResponse.query;
+      this.state.type = queryResponse.type;
       const layers = this._digestFeaturesForLayers(queryResponse.data);
       this.setLayersData(layers);
     },
-    setLayersData: function(layers) {
+    setLayersData(layers) {
       // here set the right order of result layers based on toc
       this._currentLayerIds = layers.map(layer => layer.id);
       this._orderResponseByProjectLayers(layers);
@@ -64,18 +66,26 @@ function QueryResultsService() {
       layers.forEach(layer => this.state.layers.push(layer));
       this.setActionsForLayers(layers);
     },
-    addComponent: function(component) {
+    addComponent(component) {
       this._addComponent(component)
     },
-    addActionsForLayers: function(actions) {},
-    postRender: function(element) {},
-    closeComponent: function() {},
+    addActionsForLayers(actions) {},
+    postRender(element) {},
+    closeComponent() {},
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
 
   this.addLayersPlotIds = function(layerIds=[]) {
     this.plotLayerIds = layerIds;
+  };
+
+  this.getPlotIds = function(){
+    return this.plotLayerIds;
+  };
+
+  this.findPlotId = function(id){
+    return this.plotLayerIds.find(plotId => plotId == id);
   };
 
   this._setRelations(project);
@@ -156,7 +166,7 @@ proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
   const {features} = layer;
   options.highlight = !this.isOneLayerResult();
   if (this._asyncFnc.zoomToLayerFeaturesExtent.async)
-    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(mapService, features, options);
+    this._asyncFnc.todo = this.mapService.zoomToFeatures.bind(this.mapService, features, options);
   else this.mapService.zoomToFeatures(features, options);
 };
 
@@ -205,7 +215,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerRelationsAttributes,
     layerTitle,
     layerId;
-  const _handleFeatureFoLayer = (featuresForLayer) => {
+  const _handleFeatureFoLayer = featuresForLayer => {
     let formStructure;
     let sourceType;
     let extractRelations = false;
@@ -213,6 +223,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     const download = {
       shapefile: false,
       gpx: false,
+      gpkg:false,
       csv: false,
       xls: false
     };
@@ -227,17 +238,21 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       }
       download.shapefile = layer.isShpDownlodable();
       download.gpx = layer.isGpxDownlodable();
+      download.gpkg = layer.isGpkgDownlodable();
       download.csv = layer.isCsvDownlodable();
       download.xls = layer.isXlsDownlodable();
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
 
-      layerAttributes = layer.getAttributes().map(attribute => {
+      // sanitize qattributes layer only if is ows
+      layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
         return sanitizeAttribute
-      });
+      }) : layer.getAttributes();
+
+
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();
@@ -246,7 +261,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
           all:true
         });
         if (this._relations && this._relations.length) {
-          const getRelationFieldsFromFormStructure = (node) => {
+          const getRelationFieldsFromFormStructure = node => {
             if (!node.nodes) {
               node.name ? node.relation = true : null;
             } else {
@@ -273,6 +288,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerTitle = layer.get('name');
       layerId = layer.get('id');
     } else if (typeof layer === 'string' || layer instanceof String) {
+      sourceType = Layer.LayerTypes.VECTOR;
       const feature = featuresForLayer.features[0];
       layerAttributes = feature ? feature.getProperties() : [];
       layerRelationsAttributes =  [];
@@ -310,7 +326,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         alias: attribute.name.replace(/_/, ''),
         name: attribute.name
       })) : [];
-      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
+      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
       layerObj.attributes.forEach(attribute => {
         if (formStructure) {
@@ -336,20 +352,28 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     }
     else if (featuresForLayer.error) layerObj.error = featuresForLayer.error;
   };
-  featuresForLayers.forEach((featuresForLayer) => {
+  featuresForLayers.forEach(featuresForLayer => {
     if (!Array.isArray(featuresForLayer)) _handleFeatureFoLayer(featuresForLayer);
-    else featuresForLayer.forEach((featuresForLayer) => _handleFeatureFoLayer(featuresForLayer));
+    else featuresForLayer.forEach(featuresForLayer => _handleFeatureFoLayer(featuresForLayer));
   });
   return layers;
 };
 
-proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName, feature) {
+/**
+ * Method to set special attributes
+ * @param layerSpecialAttributesName
+ * @param feature
+ * @private
+ */
+proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName, feature) {
+  // get feature properties get from server request
   const featureAttributes = feature.getProperties();
+  // get attributes special keys
   const featureAttributesNames = Object.keys(featureAttributes);
   if (layerSpecialAttributesName.length) {
     layerSpecialAttributesName.forEach(attributeObj =>{
       featureAttributesNames.find(featureAttribute => {
-        if (featureAttribute.match(attributeObj.alias)) {
+        if (featureAttribute === attributeObj.alias) {
           feature.set(attributeObj.name, feature.get(featureAttribute));
           return true
         }
@@ -368,11 +392,11 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
     });
     return attributes;
   } else {
-    return featureAttributesNames.map((featureAttributesName) => {
+    return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms'
+        show: featureAttributesName !== 'g3w_fid' && sourceType === 'wms' || sourceType === undefined
       }
     })
   }
@@ -448,7 +472,6 @@ proto.setActionsForLayers = function(layers) {
       });
     });
 
-
     if (layer.selection.active !== undefined) {
       // selection action
       const toggled = {};
@@ -516,59 +539,55 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 };
 
 proto._addVectorLayersDataToQueryResponse = function() {
-  this.onbefore('setQueryResponse', (queryResponse, coordinates, resolution) => {
+  this.onbefore('setQueryResponse', queryResponse => {
+    const {query={}} = queryResponse;
+    const {coordinates, bbox, geometry} = query; // extract
     let isVisible = false;
     this._vectorLayers.forEach(vectorLayer => {
       let features = [];
-      let feature,
-        intersectGeom;
       switch (vectorLayer.constructor) {
         case VectorLayer:
-          isVisible = !vectorLayer.isVisible();
+          isVisible = vectorLayer.isVisible();
           break;
         case ol.layer.Vector:
-          isVisible = !vectorLayer.getVisible();
+          isVisible = vectorLayer.getVisible();
           break;
       }
-      if ((queryResponse.data && queryResponse.data.length && queryResponse.data[0].layer == vectorLayer) || !coordinates || isVisible ) { return true}
-      if (Array.isArray(coordinates)) {
-        if (coordinates.length === 2) {
-          const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
-          this.mapService.viewer.map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+      if (!isVisible) return true;
+      // case query coordinates
+      if (coordinates && Array.isArray(coordinates)) {
+        const pixel = this.mapService.viewer.map.getPixelFromCoordinate(coordinates);
+        this.mapService.viewer.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
             features.push(feature);
           },  {
-            layerFilter: function(layer) {
-              return layer === vectorLayer;
-            }
-          });
-        } else if (coordinates.length === 4) {
-          intersectGeom = ol.geom.Polygon.fromExtent(coordinates);
-          switch (vectorLayer.constructor) {
-            case VectorLayer:
-              features = vectorLayer.getIntersectedFeatures(intersectGeom);
-              break;
-            case ol.layer.Vector:
-              vectorLayer.getSource().getFeatures().forEach(feature => {
-                if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-                  features.push(feature);
-                }
-              });
-              break;
+          layerFilter(layer) {
+            return layer === vectorLayer;
           }
-        }
-      } else if (coordinates instanceof ol.geom.Polygon || coordinates instanceof ol.geom.MultiPolygon) {
-        intersectGeom = coordinates;
+        });
+        //case bbox
+      } else if (bbox && Array.isArray(bbox)) {
+        const geometry = ol.geom.Polygon.fromExtent(bbox);
         switch (vectorLayer.constructor) {
           case VectorLayer:
-            features = vectorLayer.getIntersectedFeatures(intersectGeom);
+            features = vectorLayer.getIntersectedFeatures(geometry);
             break;
           case ol.layer.Vector:
             vectorLayer.getSource().getFeatures().forEach(feature => {
-              if (intersectGeom.intersectsExtent(feature.getGeometry().getExtent())) {
-                features.push(feature);
-              }
+              geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
             });
             break;
+        }
+        //case geometry
+      } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
+        switch (vectorLayer.constructor) {
+          case VectorLayer:
+            features = vectorLayer.getIntersectedFeatures(geometry);
+            break;
+           case ol.layer.Vector:
+             vectorLayer.getSource().getFeatures().forEach(feature => {
+               geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+             });
+             break;
         }
       }
       queryResponse.data = queryResponse.data ? queryResponse.data : [];
@@ -635,13 +654,15 @@ proto.showRelationsChart = function(ids=[], layer, feature, action, index, conta
 
 proto.printAtlas = function(layer, feature){
   let {id:layerId, features} = layer;
+  const inputAtlasAttr = 'g3w_atlas_index';
   features = feature ? [feature]: features;
   const atlasLayer = this.getAtlasByLayerId(layerId);
   if (atlasLayer.length > 1) {
     let inputs='';
     atlasLayer.forEach((atlas, index) => {
-      inputs += `<input id="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
-                 <label for="${index}">${atlas.name}</label>
+      const id = getUniqueDomId();
+      inputs += `<input id="${id}" ${inputAtlasAttr}="${index}" class="magic-radio" type="radio" name="template" value="${atlas.name}"/>
+                 <label for="${id}">${atlas.name}</label>
                  <br>`;
     });
 
@@ -653,7 +674,7 @@ proto.printAtlas = function(layer, feature){
           label: "OK",
           className: "btn-success",
           callback: ()=> {
-            const index = $('input[name="template"]:checked').attr('id');
+            const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
             if (index !== null || index !== undefined) {
               const atlas = atlasLayer[index];
               this._printSingleAtlas({
@@ -671,6 +692,12 @@ proto.printAtlas = function(layer, feature){
     })
 };
 
+/**
+ *
+ * @param type
+ * @param layerId
+ * @param features
+ */
 proto.downloadFeatures = function(type, {id:layerId}={}, features=[]){
   const data = {};
   features = features ?  Array.isArray(features) ? features : [features]: features;
@@ -775,7 +802,7 @@ proto.selectionFeaturesLayer = function(layer) {
  * @private
  */
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
-  const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+  const fid = feature ? feature.attributes['g3w_fid']: null;
   const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
   if (!hasAlreadySelectioned) {
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
@@ -800,7 +827,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
 proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
   const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
   if (feature) {
-    const fid = feature ? 1*feature.attributes['g3w_fid']: null;
+    const fid = feature ? feature.attributes['g3w_fid']: null;
     action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
   }
 };

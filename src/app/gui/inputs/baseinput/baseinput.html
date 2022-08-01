@@ -9,8 +9,8 @@
     <slot name="loading"></slot>
     <slot name="body"></slot>
     <slot name="message">
-      <p v-if="notvalid" class="error-input-message" v-html="state.validate.message"></p>
-      <p v-else-if="state.info" v-html="state.info"></p>
+      <p v-if="notvalid" class="error-input-message" style="margin: 0" v-html="state.validate.message"></p>
+      <p v-else-if="state.info" style="margin: 0 " v-html="state.info"></p>
     </slot>
   </div>
 </div>

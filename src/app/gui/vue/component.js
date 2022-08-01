@@ -1,6 +1,4 @@
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
-const resolve = require('core/utils/utils').resolve;
+const {base, inherit, resolve} = require('core/utils/utils');
 const BaseComponent = require('gui/component');
 
 // class component
@@ -15,15 +13,11 @@ const proto = Component.prototype;
 
 proto.mount = function(parent, append) {
   const d = $.Deferred();
-  if (!this.internalComponent) {
-    this.setInternalComponent();
-  }
+  if (!this.internalComponent) this.setInternalComponent();
   if (append) {
     const iCinstance = this.internalComponent.$mount();
     $(parent).append(iCinstance.$el);
-  } else {
-    this.internalComponent.$mount(parent);
-  }
+  } else this.internalComponent.$mount(parent);
   this.internalComponent.$nextTick(() => {
     $(parent).localize();
     this.emit('ready');
@@ -35,12 +29,8 @@ proto.mount = function(parent, append) {
 };
 
 proto.unmount = function() {
-  if (!this.internalComponent) {
-    return resolve();
-  }
-  if (this.state.resizable) {
-    this.internalComponent.$off('resize-component', this.internalComponent.layout);
-  }
+  if (!this.internalComponent) return resolve();
+  if (this.state.resizable) this.internalComponent.$off('resize-component', this.internalComponent.layout);
   this.state.open = false;
   // destroy vue component
   this.internalComponent.$destroy(true);

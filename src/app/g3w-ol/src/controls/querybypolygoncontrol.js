@@ -11,6 +11,7 @@ const QueryByPolygonControl = function(options={}) {
     tipLabel: "sdk.mapcontrols.querybypolygon.tooltip",
     label: options.label || "\ue903",
     onselectlayer: true,
+    clickmap: true, // set ClickMap
     interactionClass: PickCoordinatesInteraction,
     onhover: true
   };

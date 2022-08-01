@@ -37,7 +37,7 @@ const MeasureIteraction = function(options={}) {
     case 'LineString':
      this._formatMeasure = function(feature) {
        let geometry = feature;
-       const length = useSphereMethods ? ol.Sphere.getLength(geometry, {
+       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
          projection: this._projection.getCode()
        }) : geometry.getLength();
        const output = (length > 1000) ? `${(Math.round(length / 1000 * 100) / 100).toFixed(3)} km`: `${(Math.round(length * 100) / 100).toFixed(2)} m`;
@@ -47,7 +47,7 @@ const MeasureIteraction = function(options={}) {
     case 'Polygon':
       this._formatMeasure = function(feature) {
         let geometry = feature;
-        const area =  Math.round(useSphereMethods ? ol.Sphere.getArea(geometry, {
+        const area =  Math.round(useSphereMethods ? ol.sphere.getArea(geometry, {
           projection: this._projection.getCode()
         }): geometry.getArea());
         const output = area > 1000000 ? `${(Math.round(area / 1000000 * 100) / 100) .toFixed(6)} km<sup>2</sup>` : `${(Math.round(area * 100) / 100).toFixed(3)} m<sup>2</sup>`;

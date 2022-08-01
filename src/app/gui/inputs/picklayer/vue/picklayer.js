@@ -7,16 +7,10 @@ const PickLayerInput = Vue.extend({
   methods: {
     pickLayer() {
       this.pickservice.pick()
-        .then((value) => {
-          this.state.value = value;
-        }).catch(()=>{
-
-        })
+        .then(value => this.state.value = value).catch(()=>{})
     },
     unpick() {
-      setTimeout(() => {
-        !this.pickservice.isPicked() && this.pickservice.unpick();
-      }, 200)
+      setTimeout(() => !this.pickservice.isPicked() && this.pickservice.unpick(), 200)
     }
   },
   created() {

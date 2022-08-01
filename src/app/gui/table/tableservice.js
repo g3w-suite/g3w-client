@@ -1,8 +1,7 @@
-const {inherit } = require('core/utils/utils');
+const {inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const t = require('core/i18n/i18n.service').t;
-const noop = require('core/utils/utils').noop;
 const {coordinatesToGeometry} =  require('core/utils/geo');
 const { SELECTION_STATE } = require('core/layers/layer');
 const PAGELENGTHS = [10, 25, 50];
@@ -18,7 +17,8 @@ const TableService = function(options = {}) {
   this.geolayer = this.layer.isGeoLayer();
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
   this.mapService = GUI.getComponent('map').getService();
-  this.getAll = this.selectedfeaturesfid.size > 0;
+  //this.getAll = this.selectedfeaturesfid.size > 0;
+  this.getAll = false;
   this.paginationfilter = false;
   this.mapBBoxEventHandlerKey = {
     key: null,
@@ -61,7 +61,9 @@ const TableService = function(options = {}) {
   });
   this.layer.on('unselectionall', this.clearAllSelection);
   this.filterChangeHandler = async ({type}={})=>{
+    this.allfeaturesnumber = undefined;
     let data = [];
+    // emit redraw if in_bbox filter or not select all
     const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
     if (!this.state.pagination) {
       data = emitRedraw ? await this.reloadData() : [];
@@ -191,6 +193,10 @@ proto.clearLayerSelection = function(){
   this.layer.clearSelectionFids();
 };
 
+/**
+ * Called when alla selected feature is checked
+ * @returns {Promise<void>}
+ */
 proto.selectAllFeatures = async function(){
   // set inverse of selectAll
   this.state.selectAll = !this.state.selectAll;
@@ -243,6 +249,10 @@ proto.selectAllFeatures = async function(){
   }
 };
 
+/**
+ * Method to set filtered features
+ * @param featuresIndex
+ */
 proto.setFilteredFeature = function(featuresIndex){
   this.nopaginationsfilter = featuresIndex;
   this.checkSelectAll((featuresIndex.length === this.allfeaturesnumber || featuresIndex.length === 0) ? undefined
@@ -253,6 +263,16 @@ proto.setAttributeTablePageLength = function(length){
   this.layer.setAttributeTablePageLength(length);
 };
 
+/**
+ * Main method to get data table layer
+ * @param start
+ * @param order
+ * @param length
+ * @param columns
+ * @param search
+ * @param firstCall
+ * @returns {Promise<unknown>}
+ */
 proto.getData = function({start = 0, order = [], length = this.state.pageLength, columns=[], search={value:null}, firstCall=false} = {}) {
   // reset features before load
   GUI.setLoadingContent(true);
@@ -274,7 +294,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
         })
       }
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
-      this.currentPage = start === 0  ? 1 : (start/length) + 1;
+      this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start/length) + 1;
       const in_bbox = this.state.tools.geolayer.in_bbox;
       const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|like|${column.search.value}|and`).join(',') : undefined;
       this.paginationParams = {
@@ -300,7 +320,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
           this.state.featurescount = features.length;
           this.allfeaturesnumber = this.allfeaturesnumber === undefined ? data.count : this.allfeaturesnumber;
           this.paginationfilter = data.count !== this.allfeaturesnumber;
-          this.state.pagination = firstCall ? features.length < this.allfeaturesnumber : this.state.pagination;
+          this.state.pagination = firstCall ? this.state.tools.filter.active || features.length < this.allfeaturesnumber : this.state.pagination;
           this.addFeatures(features);
           resolve({
             data: this.setDataForDataTable(),
@@ -374,10 +394,12 @@ proto.addFeatures = function(features=[]) {
   this.checkSelectAll();
 };
 
-proto.reloadData = async function(){
+proto.reloadData = async function(pagination=false){
   this.state.features.splice(0);
+  this.state.pagination = pagination;
   const tabledata = await this.getData();
-  return tabledata.data || [];
+  const {data=[], reloadData} = tabledata;
+  return data;
 };
 
 proto._setLayout = function() {
@@ -386,11 +408,8 @@ proto._setLayout = function() {
 
 proto._returnGeometry = function(feature) {
   let geometry;
-  const layerCode = this.layer.getProjection().getCode();
-  const mapCode = this.mapService.getProjection().getCode();
   if (feature.attributes) geometry = feature.geometry;
   else if (feature.geometry) geometry = coordinatesToGeometry(feature.geometry.type, feature.geometry.coordinates);
-  (geometry && layerCode !== mapCode) && geometry.transform(layerCode, mapCode);
   return geometry;
 };
 

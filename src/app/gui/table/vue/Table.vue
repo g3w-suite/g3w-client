@@ -36,12 +36,8 @@
   let dataTable;
   let fieldsComponents = [];
   let eventHandlers = {
-    pagination: {
-
-    },
-    nopagination: {
-
-    }
+    pagination: {},
+    nopagination: {}
   };
   export default {
     name: "G3WTable",
@@ -223,7 +219,9 @@
         }, 600);
         eventHandlers.nopagination['search.dt'] = debounceSearch;
         dataTable.on('search.dt', debounceSearch);
-        dataTable.on('length.dt', (evt, settings, length)=> this.$options.service.setAttributeTablePageLength(length));
+        dataTable.on('length.dt', (evt, settings, length)=> {
+          this.$options.service.setAttributeTablePageLength(length)
+        });
         this.changeColumn = debounce(async (event, index) =>{
           dataTable.columns(index).search(event.target.value.trim()).draw();
           this.$options.service.setFilteredFeature(dataTable.rows( {search:'applied'})[0]);

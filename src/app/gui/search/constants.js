@@ -1,4 +1,6 @@
 export const ALLVALUE = '__G3W_ALL__';
+export const RETURN_TYPES = ['data', 'search'];
 export default {
-  ALLVALUE
+  ALLVALUE,
+  RETURN_TYPES
 }

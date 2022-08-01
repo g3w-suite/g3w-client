@@ -1,8 +1,6 @@
-const {base, inherit,  createFilterFormField } = require('core/utils/utils');
-const ProjectsRegistry = require('core/project/projectsregistry');
+const {base, inherit } = require('core/utils/utils');
 const BaseService = require('../baseservice');
 const DataRouterService = require('core/data/routerservice');
-const GUI = require('gui/gui');
 
 function AppService(){
   base(this);
@@ -15,24 +13,14 @@ function AppService(){
     }
   };
 
-  this.project = ProjectsRegistry.getCurrentProject();
-  this.mapService = GUI.getComponent('map').getService();
   this.init = function(){
     return new Promise((resolve, reject) =>{
       this.mapService.once('ready', ()=>{
         this._map = this.mapService.getMap();
         this._mapCrs = this.mapService.getCrs();
-
-        // set alias url to project
-        this._iFrameSetCurrentAfterKey = ProjectsRegistry.onafter('setCurrentProject', project => {
-          this.project = project;
-          this.projectsDialog && this.projectsDialog.modal('hide');
-        });
-
         this.mapControls.screenshot.control = this.mapService.getMapControlByType({
           type: 'screenshot'
         });
-
         this.setReady(true);
         resolve();
       });
@@ -43,76 +31,99 @@ function AppService(){
    *
    * @returns {Promise<void>}
    */
-  this.getresults = async function(){
-    DataRouterService.setOutputPlaces(['iframe'])
+  this.results = async function({capture=true}){
+    capture ? DataRouterService.setOutputPlaces(['iframe']) : DataRouterService.resetDefaultOutput();
+    return [];
   };
 
   this.screenshot = async function({capture=true}){
+    const action = 'app:screenshot';
     capture ? this.mapControls.screenshot.control.overwriteOnClickEvent(async() =>{
-      const blob = await this.mapService.createMapImage();
+      try {
+        const blob = await this.mapService.createMapImage();
+        this.emit('response', {
+          action,
+          response: {
+            result: true,
+            data: blob
+          }
+        })
+      } catch(err){
+        this.emit('response', {
+          action,
+          response: {
+            result: false,
+            data: err
+          }
+        })
+      }
     }) : this.mapControls.screenshot.control.resetOriginalOnClickEvent();
+  };
+
+
+  /**
+   * Eventually send as param the projection in which we would like get center of map
+   * @param params
+   * @returns {Promise<void>}
+   */
+  this.getcenter = async function(params={}){
+    return this.mapService.getCenter();
+  };
+
+  /**
+   * Zoom to coordinates
+   * @param params
+   * @returns {Promise<[]>}
+   */
+  this.zoomtocoordinates = async function(params={}){
+    const {coordinates=[], highlight=false} = params;
+    if (coordinates && Array.isArray(coordinates) && coordinates.length === 2) {
+      this.mapService.zoomTo(coordinates);
+      return coordinates
+    } else return Promise.reject(coordinates)
+  };
+
+  /**
+   * Eventually send as param the projection in which we would like get center of map
+   * @param params
+   * @returns {Promise<void>}
+   */
+  this.getextent = async function(params={}){
+    return this.mapService.getMapExtent();
   };
 
   /**
    *
-   * @param bool
+   * @param params
+   * @returns {Promise<[]>}
    */
-  this.showchangemap = function(bool=false){
-    this.mapControls.changeMap.control =  this.mapService.createMapControl('onclick', {
-      id: "iframe-change-map",
-      options: {
-        add: true,
-        name: "change-map",
-        tipLabel: "Change Map",
-        customClass: GUI.getFontClass('change-map'),
-        onclick: async () => {
-          this._changeProjectModalWindow({
-            projects
-          });
-          return true;
-        }
-      }
-    });
+  this.zoomtoextent = async function(params={}){
+    const {extent=[]} = params;
+    if (extent && Array.isArray(extent) && extent.length === 4){
+      this.mapService.goToBBox(extent);
+      return extent;
+    } else return Promise.reject(extent);
   };
+
 
   //method to zoom to features
   this.zoomtofeature = async function(params={}){
     return new Promise(async (resolve, reject) => {
-      const {qgis_layer_id, feature:{field, value}, highlight=false} = params;
-      const layer = this.project.getLayerById(qgis_layer_id);
-      const search_endpoint = this.project.getSearchEndPoint();
-      const { data=[] } = await DataRouterService.getData('search:features', {
-        inputs: {
-          layer,
-          search_endpoint,
-          filter: createFilterFormField({
-            layer,
-            search_endpoint,
-            field,
-            value
-          })
-        },
-        outputs: false
+      let {qgs_layer_id, feature, highlight=false} = params;
+      qgs_layer_id = this.getQgsLayerId({
+        qgs_layer_id
       });
-      data.length && this.mapService.zoomToFeatures(data[0].features, {
+
+      const response = await this.findFeaturesWithGeometry({
+        qgs_layer_id,
+        feature,
+        zoom:true,
         highlight
       });
-      resolve();
-    })
 
-  };
-
-  this.changeMap = function({gid}) {
-    return ApplicationService.changeProject({
-      host: this._host,
-      gid
+      resolve(response.qgs_layer_id);
     })
   };
-
-  this.clear = function(){
-    ProjectsRegistry.un('setCurrentProject', this._iFrameSetCurrentAfterKey);
-    this._mapService.removeControlById('iframe-change-map');
-  }
 }
 
 inherit(AppService, BaseService);

@@ -98,7 +98,7 @@ const ViewportService = function() {
     this.state.resized[type] = bool;
   };
 
-  this.showUserMessage = function({title, message, type, position, size, draggable, textMessage=false, closable, autoclose, hooks={}}={}) {
+  this.showUserMessage = function({title, message, type, position, size, draggable, duration, textMessage=false, closable, autoclose, hooks={}}={}) {
     this.closeUserMessage();
     setTimeout(() => {
       this.state.usermessage.show = true;
@@ -106,6 +106,7 @@ const ViewportService = function() {
       this.state.usermessage.textMessage = textMessage;
       this.state.usermessage.title = title;
       this.state.usermessage.position = position;
+      this.state.usermessage.duration = duration;
       this.state.usermessage.type = type;
       this.state.usermessage.show = true;
       this.state.usermessage.size = size;

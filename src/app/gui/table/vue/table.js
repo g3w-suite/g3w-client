@@ -1,6 +1,5 @@
 const t = require('core/i18n/i18n.service').t;
-const inherit = require('core/utils/utils').inherit;
-const base = require('core/utils/utils').base;
+const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const Component = require('gui/vue/component');
 const TableService = require('../tableservice');

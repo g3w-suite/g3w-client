@@ -60,30 +60,11 @@ const utils = {
     geometry.setCoordinates(coordinates);
     return geometry
   },
-  resToScale: function(resolution, unit='m') {
-    let scale;
-    switch (unit) {
-      case 'm':
-        scale = (resolution*1000) / OGC_PIXEL_WIDTH;
-        break;
-    }
-    return scale;
-  },
-  scaleToRes: function(scale, unit) {
-    unit = unit || 'm';
-    let resolution;
-    switch (unit) {
-      case 'm':
-        resolution = (scale * OGC_PIXEL_WIDTH) / 1000;
-        break
-    }
-    return resolution;
-  },
   getScaleFromResolution: function(resolution, units="m") {
     return Math.round(resolution * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
   },
   getResolutionFromScale: function(scale, units="m") {
-    const normScale = (scale > 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
+    const normScale = (scale >= 1.0) ? (1.0 / scale) : scale; // just to prevent that scale is passed as 1:10000 or 0.0001
     return  1 / (normScale * INCHES_PER_UNIT[units] * DOTS_PER_INCH);
   },
   getDPI() {

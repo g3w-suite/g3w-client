@@ -24,7 +24,7 @@ const vueComponentOptions = {
     }
   },
   methods: {
-    showPanel: function(config={}) {
+    showPanel(config={}) {
       this.$options.service.showPanel(config);
     },
     removeItem({type, index}){

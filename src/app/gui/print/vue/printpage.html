@@ -15,5 +15,5 @@
       <img style="height:auto; max-width: 100%" ref="printoutput" :src="state.url">
     </div>
   </div>
-  <h4 v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
+  <h4 style="font-weight: bold" v-if="!state.layers" v-t="'sdk.print.no_layers'"></h4>
 </div>

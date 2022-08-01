@@ -1,6 +1,6 @@
 import Select2 from './select2.vue'
 import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-const {base, inherit, debounce} = require('core/utils/utils');
+const {base, inherit, uniqueId} = require('core/utils/utils');
 const Panel = require('gui/panel');
 const Service = require('./searchservice');
 const compiledTemplate = Vue.compile(require('./searchpanel.html'));
@@ -10,7 +10,7 @@ const SearchPanelComponent = Vue.extend({
   components:{
     Select2
   },
-  data: function() {
+  data() {
     return {
      state: this.$options.service.state
     }
@@ -43,13 +43,13 @@ const SearchPanelComponent = Vue.extend({
       input.value = input.value || input.value === 0 ? input.value : null;
       this.changeInput(input);
     },
-    changeInput({id, attribute, value}) {
+    changeInput(input) {
+      let {id, attribute, value, type} = input;
       try {
         //try to trim value inside try catch some cases tha trim doesn't work to avoid
-        value = value.trim();
-      } catch(err){
-
-      }
+        // to check if has one reason to trim
+        value = type === 'textfield' || type === 'textField' ? value : value.trim();
+      } catch(err){}
       this.$options.service.changeInput({id, value});
       this.state.searching = true;
       this.changeDependencyFields({
@@ -59,7 +59,7 @@ const SearchPanelComponent = Vue.extend({
         this.state.searching = false;
       })
     },
-    doSearch: function(event) {
+    doSearch(event) {
      event.preventDefault();
      this.$options.service.run();
     }
@@ -69,6 +69,7 @@ const SearchPanelComponent = Vue.extend({
 function SearchPanel(options = {}) {
   const service = options.service || new Service(options);
   this.setService(service);
+  this.id = uniqueId();
   const SearchPanel = options.component || SearchPanelComponent;
   const internalPanel = new SearchPanel({
     service

@@ -120,7 +120,7 @@ proto.checkLayerDisabled = function(layer, resolution, mapUnits) {
 
 // check which layers has to be disabled
 proto.checkLayersDisabled = function(resolution, mapUnits) {
-  this.allLayers.forEach((layer) => {
+  this.allLayers.forEach(layer => {
     this.checkLayerDisabled(layer, resolution, mapUnits);
   });
 };
@@ -134,7 +134,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   if (visibleLayers.length > 0) {
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
     let params = {
-      LAYERS: `${prefix}${visibleLayers.map((layer) => {
+      LAYERS: `${prefix}${visibleLayers.map(layer => {
         return layer.getWMSLayerName();
       }).join(',')}`
     };

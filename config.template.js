@@ -8,7 +8,7 @@ const conf = {
   pluginsFolder: './src/plugins', // plugins folder of app plugins
   distFolder: './dist', // G3W-CLIENT main dist folder
   clientFolder: './dist/client', // G3W-CLIENT client dist folder where are compiled
-  localServerPort: 3000, // port for local server. If not set local server run on port 3000
+  localServerPort: LOCAL_PORT, // port for local server. If not set local server run on port 3000
   g3w_admin_paths: {
     dev: {
       g3w_admin_plugins_basepath: '../g3w-admin/g3w-admin', // local G3W-ADMIN main path code

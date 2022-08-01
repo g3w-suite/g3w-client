@@ -209,7 +209,6 @@ proto.applyCommitResponse = function(response={}, relations=[]) {
   }
 };
 
-
 proto.getLockIds = function(){
   return this._layer.getSource().getLockIds();
 };
@@ -256,14 +255,10 @@ proto.start = function(options={}) {
           //if all ok set to started
           this._started = true;
         })
-        .fail((err) => {
-          d.reject(err);
-        })
+        .fail(err => d.reject(err))
 
     })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .fail(err => d.reject(err));
   return d.promise()
 };
 
@@ -297,16 +292,11 @@ proto.readEditingFeatures = function(){
 proto.stop = function() {
   const d = $.Deferred();
   this._layer.unlock()
-    .then((response) => {
-      this._started = false;
-      this._filter.bbox = null;
-      this._allfeatures = false;
+    .then(response => {
       this.clear();
       d.resolve(response);
     })
-    .fail((err) => {
-      d.reject(err);
-    });
+    .fail(err => d.reject(err));
   return d.promise();
 };
 
@@ -320,6 +310,9 @@ proto.isStarted = function() {
 };
 
 proto.clear = function() {
+  this._started = false;
+  this._filter.bbox = null;
+  this._allfeatures = false;
   this._featuresstore.clear();
   this._layer.getFeaturesStore().clear();
   this._layer.getType() === Layer.LayerTypes.VECTOR && this._layer.resetEditingSource( this._featuresstore.getFeaturesCollection());

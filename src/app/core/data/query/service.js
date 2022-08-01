@@ -1,4 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
+const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
 
 const {
@@ -27,6 +28,16 @@ function QueryService(){
    * @returns {Promise<unknown>}
    */
   this.polygon = function({geometry, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+    const polygonLayer = excludeLayers[0];
+    // in case no geometry on polygon layer response
+    if (!geometry) return this.returnExceptionResponse({
+      usermessage: {
+        type: 'warning',
+        message: `${polygonLayer.getName()} - ${t('sdk.mapcontrols.querybypolygon.no_geometry')}`,
+        messagetext: true,
+        autoclose: false
+      }
+    });
     const layerFilterObject = {
       ALLNOTSELECTED: true,
       FILTERABLE: true,
@@ -41,7 +52,9 @@ function QueryService(){
         feature_count,
         projection: this.project.getProjection()
       });
-      return this.handleRequest(request);
+      return this.handleRequest(request, {
+        geometry
+      });
   };
 
   /**
@@ -60,7 +73,9 @@ function QueryService(){
       feature_count,
       multilayers,
     });
-    return this.handleRequest(request);
+    return this.handleRequest(request, {
+      bbox
+    });
   };
 
   /**
@@ -80,10 +95,12 @@ function QueryService(){
     const layers = getMapLayersByFilter(layersFilterObject);
     const request = getQueryLayersPromisesByCoordinates(layers, {
       multilayers,
-        feature_count,
-        coordinates
+      feature_count,
+      coordinates
     });
-    return this.handleRequest(request);
+    return this.handleRequest(request, {
+      coordinates
+    });
   };
 
   /**
@@ -91,10 +108,10 @@ function QueryService(){
    * @param request is a Promise(jquery promise at moment
    * @returns {Promise<unknown>}
    */
-  this.handleRequest = function(request){
+  this.handleRequest = function(request, query={}){
     return new Promise((resolve, reject) =>{
       request.then(response => {
-        const results = this.handleResponse(response);
+        const results = this.handleResponse(response, query);
         resolve(results);
       }).fail(error=>reject(error))
     })
@@ -105,16 +122,29 @@ function QueryService(){
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = async function(response){
+  this.handleResponse = async function(response, query={}){
     const layersResults = response;
     const results = {
-      query: layersResults[0] ? layersResults[0].query: null,
+      query,
+      type: 'ows',
       data: [],
       result: true // set result to true
     };
     layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
     return results;
   };
+
+  /**
+   * Exxception response has user message attribute
+   */
+  this.returnExceptionResponse = async function({usermessage}){
+    return {
+      data: [],
+      usermessage,
+      result: true,
+      error: true
+    }
+  }
 }
 
 inherit(QueryService, BaseService);

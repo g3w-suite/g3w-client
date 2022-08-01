@@ -11,8 +11,8 @@
       <div id="query_builder_fields_content" class="querybuilder-content">
         <table class="table table-striped content-table">
           <tbody>
-            <tr v-for="field in fields" :key="field" @click="select.field = field" @dblclick="addToExpression({value: field, type: 'field'})" :class="{'skin-background-color lighten': select.field===field}" style="cursor: pointer">
-              <th scope="row">{{ field }}</th>
+            <tr v-for="{name, label} in fields" :key="name" @click="select.field = name" @dblclick="addToExpression({value: name, type: 'field'})" :class="{'skin-background-color lighten': select.field===name}" style="cursor: pointer">
+              <th scope="row">{{ label }}</th>
             </tr>
           </tbody>
         </table>
@@ -59,7 +59,7 @@
       </div>
       <div id="query_builder_message" class="margin-between-element">
         <bar-loader :loading="loading.test"></bar-loader>
-        <span class="bold">{{message}}</span>
+        <span class="bold skin-color" v-show="message" v-t="'sdk.querybuilder.messages.number_of_features'"></span><span class="bold skin-color">{{message}}</span>
       </div>
       <div id="query_builder_footer_buttons" class="content-end margin-between-element">
         <button class="query_builder_button btn btn-secondary  bold" @click="test" :disabled="disabled" v-t="'sdk.querybuilder.panel.button.test'"></button>

@@ -175,7 +175,10 @@ proto.print = function() {
           this.showError();
           reject(err);
         })
-        .finally(()=>ApplicationService.setDownload(false, caller_download_id))
+        .finally(()=> {
+          !this.state.output.layers && GUI.disableSideBar(false);
+          ApplicationService.setDownload(false, caller_download_id)
+        })
     }
   })
 
