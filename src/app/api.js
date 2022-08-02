@@ -4,9 +4,9 @@ import G3W_CONSTANT from './constant';
 
 /**
  * EXPERIMENTAL: not yet implemented
- * 
+ *
  * need to find a way not to include entire "package.json" in published bundle
- * 
+ *
  * @see https://github.com/g3w-suite/g3w-client-plugin-base-template/issues/2
  */
 // import { version } from 'app/../../package.json';
@@ -33,8 +33,8 @@ const Session = require('core/editing/session');
 const SessionsRegistry = require('core/editing/sessionsregistry');
 const Editor = require('core/editing/editor');
 const ChangesManager = require('core/editing/changesmanager');
-const Geom = require('core/geometry/geom');
-const Geometry = require('core/geometry/geometry');
+const Geom = require('core/utils/geo');
+const { Geometry } = require('core/utils/geo');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Project = require('core/project/project');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');

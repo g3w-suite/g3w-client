@@ -2,7 +2,7 @@ import {SPATIALMETHODS, VM} from '../constants';
 const {merge} = require('core/utils/ol');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-const {getAllPolygonGeometryTypes} = require('core/geometry/geometry');
+const {getAllPolygonGeometryTypes} = require('core/utils/geo').Geometry;
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {
