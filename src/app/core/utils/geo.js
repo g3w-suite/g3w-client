@@ -6,7 +6,108 @@ const {response: responseParser} = require('core/utils/parsers');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID, GeometryTypes} = CONSTANT;
+const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
+
+const GeometryTypes = {
+  POINT: "Point",
+  POINTZ: "PointZ",
+  POINTM: "PointM",
+  POINTZM: "PointZM",
+  POINT25D: "Point25D",
+  MULTIPOINT: "MultiPoint",
+  MULTIPOINTZ: "MultiPointZ",
+  MULTIPOINTM: "MutliPointM",
+  MULTIPOINTZM: "MultiPointZM",
+  MULTIPOINT25D: "MultiPoint25D",
+  LINESTRING: "LineString", // QGis definition .GeometryType, Line intead di Linestring.
+  LINESTRINGZ: "LineStringZ",
+  LINESTRINGM: "LineStringM",
+  LINESTRINGZM: "LineStringZM",
+  LINESTRING25D: "LineString25D",
+  LINE: "Line",
+  LINEZ: "LineZ",
+  LINEM: "LineM",
+  LINEZM: "LineZM",
+  LINE25D: "Line25D",
+  MULTILINESTRING: "MultiLineString",
+  MULTILINESTRINGZ: "MultiLineStringZ",
+  MULTILINESTRINGM: "MultiLineStringM",
+  MULTILINESTRINGZM: "MultiLineStringZM",
+  MULTILINESTRING25D: "MultiLineString25D",
+  MULTILINE:"MultiLine",
+  MULTILINEZ:"MultiLineZ",
+  MULTILINEM:"MultiLineM",
+  MULTILINEZM:"MultiLineZM",
+  MULTILINE25D:"MultiLine25D",
+  POLYGON: "Polygon",
+  POLYGONZ: "PolygonZ",
+  POLYGONM: "PolygonM",
+  POLYGONZM: "PolygonZM",
+  POLYGON25D: "Polygon25D",
+  MULTIPOLYGON: "MultiPolygon",
+  MULTIPOLYGONZ: "MultiPolygonZ",
+  MULTIPOLYGONM: "MultiPolygonM",
+  MULTIPOLYGONZM: "MultiPolygonZM",
+  MULTIPOLYGON25D: "MultiPolygon25D",
+  GEOMETRYCOLLECTION: "GeometryCollection",
+  GEOMETRYCOLLECTIONZ: "GeometryCollectionZ",
+  GEOMETRYCOLLECTIONM: "GeometryCollectionM",
+  GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
+  GEOMETRYCOLLECTION25D: "GeometryCollection25D"
+};
+
+const geom = {
+
+  /**
+   * core/geometry/geom::distance@v3.4
+   */
+  distance(c1,c2){
+    return Math.sqrt(geom.squaredDistance(c1,c2));
+  },
+
+  /**
+   * core/geometry/geom::squaredDistance@v3.4
+   */
+  squaredDistance(c1,c2){
+    const x1 = c1[0];
+    const y1 = c1[1];
+    const x2 = c2[0];
+    const y2 = c2[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx * dx + dy * dy;
+  },
+
+  /**
+   * core/geometry/geom::closestOnSegment@v3.4
+   */
+  closestOnSegment(coordinate, segment) {
+    const x0 = coordinate[0];
+    const y0 = coordinate[1];
+    const start = segment[0];
+    const end = segment[1];
+    const x1 = start[0];
+    const y1 = start[1];
+    const x2 = end[0];
+    const y2 = end[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const along = (dx === 0 && dy === 0) ? 0 :
+        ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
+    let x, y;
+    if (along <= 0) {
+      x = x1;
+      y = y1;
+    } else if (along >= 1) {
+      x = x2;
+      y = y2;
+    } else {
+      x = x1 + along * dx;
+      y = y1 + along * dy;
+    }
+    return [x, y];
+  },
+};
 
 const Geometry = {
 
@@ -297,9 +398,7 @@ const Geometry = {
 };
 
 const geoutils = {
-
   geometryFields,
-
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
@@ -361,7 +460,6 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
-
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
@@ -1479,7 +1577,7 @@ const geoutils = {
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
       if (toGeometryType){
-        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
+        const isFromGeometryMulti = geoutils.isMultiGeometry(geometry);
         const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
         if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
         else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
@@ -1741,59 +1839,16 @@ const geoutils = {
     return response;
   },
 
-
   /**
-   * core/geometry/geom::distance@v3.4
+   * core/geometry/geom@v3.4
    */
-  distance(c1,c2){
-    return Math.sqrt(geom.squaredDistance(c1,c2));
-  },
-
-  /**
-   * * core/geometry/geom::squaredDistance@v3.4
-   */
-  squaredDistance(c1,c2){
-    const x1 = c1[0];
-    const y1 = c1[1];
-    const x2 = c2[0];
-    const y2 = c2[1];
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return dx * dx + dy * dy;
-  },
-
-  /**
-   * core/geometry/geom::closestOnSegment@v3.4
-   */
-  closestOnSegment(coordinate, segment) {
-    const x0 = coordinate[0];
-    const y0 = coordinate[1];
-    const start = segment[0];
-    const end = segment[1];
-    const x1 = start[0];
-    const y1 = start[1];
-    const x2 = end[0];
-    const y2 = end[1];
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const along = (dx === 0 && dy === 0) ? 0 :
-      ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
-    let x, y;
-    if (along <= 0) {
-      x = x1;
-      y = y1;
-    } else if (along >= 1) {
-      x = x2;
-      y = y2;
-    } else {
-      x = x1 + along * dx;
-      y = y1 + along * dy;
-    }
-    return [x, y];
-  },
+  ...geom,
 
   /**
    * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)
+   * 
+   * - core/geometry/geometry::isMultiGeometry@v3.4
+   * - core/utils/geo::isMultiGeometry@v3.4
    */
   Geometry
 
