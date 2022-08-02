@@ -1445,10 +1445,6 @@ const geoutils = {
     return !Geometry.isMultiGeometry(geometry.getType());
   },
 
-  isMultiGeometry(geometry) {
-    return !Geometry.isMultiGeometry(geometry.getType());
-  },
-
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
