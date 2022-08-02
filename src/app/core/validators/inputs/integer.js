@@ -1,14 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function IntegerValidator(options) {
-  base(this, options);
-  this.validate = function(value) {
-    const integer = 1*value;
-    return !_.isNaN(integer) ? Number.isSafeInteger(integer) && (integer <= 2147483647) : false;
-  }
-}
-
-inherit(IntegerValidator, Validator);
-
-module.exports =  IntegerValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.integer;

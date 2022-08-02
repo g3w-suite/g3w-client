@@ -1,14 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function CheckBoxValidator(options) {
-  base(this, options);
-  this.validate = function(value) {
-    const values = this.options.values || [];
-    return values.indexOf(value) !== -1;
-  }
-}
-
-inherit(CheckBoxValidator, Validator);
-
-module.exports =  CheckBoxValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.checkbox;

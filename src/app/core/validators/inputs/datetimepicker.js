@@ -1,13 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function DateTimePickerValidator(options) {
-  base(this, options);
-  this.validate = function(value, options) {
-    const fielddatetimeformat = options.fielddatetimeformat;
-    return moment(value, fielddatetimeformat, true).isValid();
-  }
-}
-inherit(DateTimePickerValidator, Validator);
-
-module.exports =  DateTimePickerValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.datetimepicker;

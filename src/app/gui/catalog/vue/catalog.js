@@ -65,7 +65,9 @@ const vueComponentOptions = {
           top:0,
           left:0,
           style: null,
-          default: null
+          default: null,
+          maxHeight: null,
+          overflowY: null
         },
         //metadataInfo
         metadatainfoMenu: {
@@ -469,11 +471,23 @@ const vueComponentOptions = {
       }
       this.closeLayerMenu();
     },
+    /**
+     * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+     */
     async showStylesMenu(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.stylesMenu.top = elem.offset().top;
-        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        this.layerMenu.stylesMenu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
+        const contextmenu = $('#layer-menu');
+        const menuentry = $(evt.target);
+        const submenu = menuentry.children('ul');
+        const height = submenu.height();
+        const maxH = contextmenu.height();
+        this.layerMenu.stylesMenu.maxHeight = height >= maxH ? maxH : null;
+        this.layerMenu.stylesMenu.overflowY = height >= maxH ? 'scroll' : null;
+        this.layerMenu.stylesMenu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
+        this.layerMenu.stylesMenu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
         await this.$nextTick();
       }
       this.layerMenu.stylesMenu.show = bool;

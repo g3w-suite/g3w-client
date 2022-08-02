@@ -1,21 +1,6 @@
-const Validators = {
-  validators: {
-    float: require('./float'),
-    integer: require('./integer'),
-    checkbox: require('./checkbox'),
-    datetimepicker: require('./datetimepicker'),
-    text: require('./validator'),
-    string: require('./validator'),
-    radio: require('./radio'),
-    default: require('./validator'),
-    range: require('./range')
-  },
+const Validators = require('core/utils/validators');
 
-  get(type, options={}) {
-    const Validator = this.validators[type] || this.validators.default;
-    return new Validator(options);
-  }
-
-};
-
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
 module.exports = Validators;

@@ -88,6 +88,137 @@ export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
 
 export const TOC_THEMES_INIT_STATUS = 'collapsed';
 
+/**
+ * ORIGINAL SOURCE: gui/print/formats::scale@v3.4
+ */
+export const PRINT_FORMATS = [
+  {
+    value: 'pdf',
+    label: 'PDF'
+  },
+  {
+    value: 'png',
+    label: 'PNG'
+  }
+];
+
+/**
+ * ORIGINAL SOURCE: gui/print/dpis::scale@v3.4
+ */
+export const PRINT_RESOLUTIONS = [150, 300];
+
+/**
+ * ORIGINAL SOURCE: gui/print/printconfig::scale@v3.4
+ */
+export const PRINT_SCALES = [
+  {
+    value:100,
+    label:'1:100'
+  },
+  {
+    value:200,
+    label:'1:200'
+  },
+  {
+    value:500,
+    label:'1:500'
+  },
+  {
+    value:1000,
+    label:'1:1.000'
+  },
+  {
+    value:2000,
+    label:'1:2.000'
+  },
+  {
+    value:2500,
+    label:'1:2.500'
+  },
+  {
+    value:5000,
+    label:'1:5.000'
+  },
+  {
+    value:10000,
+    label:'1:10.000'
+  },
+  {
+    value:20000,
+    label:'1:20.000'
+  },
+  {
+    value:25000,
+    label:'1:25.000'
+  },
+  {
+    value:50000,
+    label:'1:50.000'
+  },
+  {
+    value:100000,
+    label:'1:100.000'
+  },
+  {
+    value:250000,
+    label:'1:250.000'
+  },
+  {
+    value:500000,
+    label:'1:500.000'
+  },
+  {
+    value:1000000,
+    label:'1:1.000.000'
+  },
+  {
+    value:2500000,
+    label:'1:2.500.000'
+  },
+  {
+    value:5000000,
+    label:'1:5.000.000'
+  },
+  {
+    value:10000000,
+    label:'1:10.000.000'
+  },
+  {
+    value:20000000,
+    label:'1:20.000.000'
+  },
+  {
+    value:50000000,
+    label:'1:50.000.000'
+  },
+  {
+    value:100000000,
+    label:'1:100.000.000'
+  },
+  {
+    value:250000000,
+    label:'1:250.000.000'
+  },
+  {
+    value:500000000,
+    label:'1:500.000.000'
+  }
+];
+
+/**
+ * ORIGINAL SOURCE: gui/constraints::viewport@v3.4
+ */
+export const VIEWPORT = {
+  resize: {
+    map: {
+      min: 200
+    },
+    content: {
+      min: 200
+    }
+  }
+};
+
 export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
@@ -99,5 +230,9 @@ export default {
   TIMEOUT,
   LOCALSTORAGE_EXTERNALWMS_ITEM,
   TOC_LAYERS_INIT_STATUS,
-  TOC_THEMES_INIT_STATUS
+  TOC_THEMES_INIT_STATUS,
+  VIEWPORT,
+  PRINT_FORMATS,
+  PRINT_RESOLUTIONS,
+  PRINT_SCALES,
 }
