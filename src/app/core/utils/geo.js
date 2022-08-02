@@ -2,7 +2,7 @@ import CONSTANT from '../../constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
-const responseParser = require('core/parsers/response/parser');
+const {response: responseParser} = require('core/utils/parsers');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
