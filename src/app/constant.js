@@ -219,6 +219,54 @@ export const VIEWPORT = {
   }
 };
 
+export const GeometryTypes = {
+  POINT: "Point",
+  POINTZ: "PointZ",
+  POINTM: "PointM",
+  POINTZM: "PointZM",
+  POINT25D: "Point25D",
+  MULTIPOINT: "MultiPoint",
+  MULTIPOINTZ: "MultiPointZ",
+  MULTIPOINTM: "MutliPointM",
+  MULTIPOINTZM: "MultiPointZM",
+  MULTIPOINT25D: "MultiPoint25D",
+  LINESTRING: "LineString", // QGis definition .GeometryType, Line intead di Linestring.
+  LINESTRINGZ: "LineStringZ",
+  LINESTRINGM: "LineStringM",
+  LINESTRINGZM: "LineStringZM",
+  LINESTRING25D: "LineString25D",
+  LINE: "Line",
+  LINEZ: "LineZ",
+  LINEM: "LineM",
+  LINEZM: "LineZM",
+  LINE25D: "Line25D",
+  MULTILINESTRING: "MultiLineString",
+  MULTILINESTRINGZ: "MultiLineStringZ",
+  MULTILINESTRINGM: "MultiLineStringM",
+  MULTILINESTRINGZM: "MultiLineStringZM",
+  MULTILINESTRING25D: "MultiLineString25D",
+  MULTILINE:"MultiLine",
+  MULTILINEZ:"MultiLineZ",
+  MULTILINEM:"MultiLineM",
+  MULTILINEZM:"MultiLineZM",
+  MULTILINE25D:"MultiLine25D",
+  POLYGON: "Polygon",
+  POLYGONZ: "PolygonZ",
+  POLYGONM: "PolygonM",
+  POLYGONZM: "PolygonZM",
+  POLYGON25D: "Polygon25D",
+  MULTIPOLYGON: "MultiPolygon",
+  MULTIPOLYGONZ: "MultiPolygonZ",
+  MULTIPOLYGONM: "MultiPolygonM",
+  MULTIPOLYGONZM: "MultiPolygonZM",
+  MULTIPOLYGON25D: "MultiPolygon25D",
+  GEOMETRYCOLLECTION: "GeometryCollection",
+  GEOMETRYCOLLECTIONZ: "GeometryCollectionZ",
+  GEOMETRYCOLLECTIONM: "GeometryCollectionM",
+  GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
+  GEOMETRYCOLLECTION25D: "GeometryCollection25D"
+};
+
 export default {
   G3W_FID,
   DEFAULT_EDITING_CAPABILITIES,
@@ -235,4 +283,5 @@ export default {
   PRINT_FORMATS,
   PRINT_RESOLUTIONS,
   PRINT_SCALES,
+  GeometryTypes
 }
