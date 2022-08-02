@@ -1,5 +1,5 @@
 import ApplicationState from 'core/applicationstate';
-const utils = require('../utils');
+const utils = require('core/utils/ol');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 

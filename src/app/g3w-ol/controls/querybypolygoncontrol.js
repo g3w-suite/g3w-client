@@ -1,5 +1,5 @@
 import {SPATIALMETHODS, VM} from '../constants';
-const {merge} = require('../utils');
+const {merge} = require('core/utils/ol');
 const InteractionControl = require('./interactioncontrol');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 const {getAllPolygonGeometryTypes} = require('core/geometry/geometry');
