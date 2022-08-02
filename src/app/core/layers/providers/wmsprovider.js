@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-import {QUERY_POINT_TOLERANCE} from '../../../constant';
+import {QUERY_POINT_TOLERANCE} from 'constant';
 const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
-const geoutils = require('g3w-ol/src/utils/utils');
+const geoutils = require('core/utils/ol');
 const DataProvider = require('core/layers/providers/provider');
 
 //overwrite method to read feature

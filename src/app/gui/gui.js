@@ -1,11 +1,11 @@
 const {base, inherit, noop} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const RouterService = require('core/router');
-const ComponentsRegistry = require('gui/componentsregistry');
+const ComponentsRegistry = require('gui/component/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application
-// app shold call GUI.ready() when GUI is ready
+// app should call GUI.ready() when GUI is ready
 function GUI() {
   this.setters = {
     setContent(options={}) {
@@ -35,8 +35,6 @@ function GUI() {
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
   this._closeUserMessageBeforeSetContent = true;
-  this.addComponent = function(component, placeholder) {};
-  this.removeComponent = function(id) {};
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
@@ -45,11 +43,6 @@ function GUI() {
   };
   this.getComponents = function() {
     return ComponentsRegistry.getComponents();
-  };
-
-  this.getService = function(idComponent){
-    const component = this.getComponent(idComponent);
-    return component && component.getService();
   };
 
   this.goto = function(url) {

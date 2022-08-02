@@ -1,6 +1,6 @@
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const compiledTemplate = createCompiledTemplate(require('./streetview.html'));
 
 const InternalComponent = Vue.extend({

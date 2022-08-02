@@ -22,7 +22,7 @@
 </template>
 
 <script>
-  const Projections = require('g3w-ol/src/projection/projections');
+  const Projections = require('g3w-ol/projection/projections');
   export default {
     name: "wmpspanel",
     data(){

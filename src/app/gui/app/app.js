@@ -29,7 +29,12 @@ const AppUI = Vue.extend({
       return this.appState.gui.app;
     },
     languages() {
-      return this.appconfig.i18n;
+
+      /***
+       * check if is length of languages is more than one
+       */
+      const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
+      return languages.length > 1 && languages;
     },
     currentProject() {
       return ProjectsRegistry.getCurrentProject();

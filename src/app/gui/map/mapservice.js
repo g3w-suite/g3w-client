@@ -15,8 +15,8 @@ const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/src/g3w.ol').helpers;
-const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol/src/utils/utils');
+const olhelpers = require('g3w-ol/g3w.ol').helpers;
+const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -1053,10 +1053,6 @@ proto._setupControls = function() {
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
-
-          $('#search_nominatim').click(debounce(() => {
-            control.nominatim.query($('input.gcd-txt-input').val());
-          }));
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);

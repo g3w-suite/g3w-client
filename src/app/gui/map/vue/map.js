@@ -1,7 +1,7 @@
 import ApplicationState from '../../../core/applicationstate';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const AddLayerComponent = require('./components/addlayer');
 const MapService = require('../mapservice');
 const templateCompiled = createCompiledTemplate(require('./map.html'));

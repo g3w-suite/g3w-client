@@ -14,7 +14,7 @@ const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
-const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 //used to get and set vue reactivity to queryresultservice
 const VM = new Vue();
@@ -90,13 +90,13 @@ function QueryResultsService() {
   };
   this.setters = {
     /**
-     *
+     * Method call when response is handled by Data Provider
      * @param queryResponse
      * @param options: add is used to know if is a new query request or add/remove query request
      */
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
-      // in case of new request results reset the query otherwise maintain the previos request
+      // in case of new request results reset the query otherwise maintain the previous request
       if (!add) {
         this.clearState();
         this.state.query = queryResponse.query;
@@ -128,18 +128,48 @@ function QueryResultsService() {
       this.setActionsForLayers(layers, {add});
       this.state.changed = true;
     },
+    /**
+     * Method
+     * @param component
+     */
     addComponent(component) {
       this._addComponent(component)
     },
+    /**
+     *
+     */
     addActionsForLayers(actions, layers) {},
+    /**
+     *
+     * @param element
+     */
     postRender(element) {},
+    /**
+     *
+     */
     closeComponent() {},
+    /**
+     *
+     * @param layer
+     */
     changeLayerResult(layer){
       this._changeLayerResult(layer);
     },
+    /**
+     *
+     */
     activeMapInteraction(){},
-    // setter hook to relation table
+    /**
+     *  setter hook to relation table
+     */
     editFeature({layerId, featureId}={}){},
+    /**
+     * Method to listen open/close feature info data content.
+     * @param open
+     * @param layer
+     * @param feature
+     * @param container
+     */
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
@@ -778,7 +808,7 @@ proto.addLayerFeaturesToResultsAction = function(layer){
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
-    this.activeMapInteraction(); // usefult o send an event
+    this.activeMapInteraction(); // useful o send an event
     const {external} = layer;
     if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
     this._addFeaturesLayerResultInteraction.interaction =  new PickCoordinatesInteraction();
@@ -814,7 +844,7 @@ proto.addLayerFeaturesToResultsAction = function(layer){
         }, {add:true});
       }
     });
-    const eventHandler = evt =>{
+    const eventHandler = evt => {
       if (evt.target.isToggled() && evt.target.isClickMap()) layer.addfeaturesresults.active = false;
     };
     this._addFeaturesLayerResultInteraction.toggleeventhandler = eventHandler;
@@ -882,6 +912,12 @@ proto.reset = function() {
   this.clearState();
 };
 
+/**
+ * Method that convert response from Data Provider to a Query Result component data structure
+ * @param featuresForLayers: Array contains for each layer features
+ * @returns {[]}
+ * @private
+ */
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
@@ -1088,7 +1124,7 @@ proto.getFeaturePropertiesAndGeometry = function(feature){
 };
 
 /**
- * parse attributre to show on rsult based on field
+ * parse attributre to show on result based on field
  * @param layerAttributes
  * @param feature
  * @param sourceType
