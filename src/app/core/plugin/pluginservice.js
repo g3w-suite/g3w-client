@@ -16,14 +16,20 @@ function PluginService(options={}) {
   this.vm = new Vue();
   this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
       currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
-  this.init = function(config) { //set dafault init method (overwrite by each plugin
-    this.config = config;
-  }
+
 }
 
 inherit(PluginService, G3WObject);
 
 const proto = PluginService.prototype;
+
+/**
+ * Set a default init method. Overwrite by each plugin
+ * @param config: plugin configuration object
+ */
+proto.init = function(config={}) {
+  this.config = config;
+};
 
 proto.setCurrentLayout = function(){
   ApplicationService.setCurrentLayout(this.getPlugin().getName());

@@ -1,4 +1,4 @@
-const utils = require('../utils');
+const utils = require('core/utils/ol');
 const LenghtIteraction = require('../interactions/lengthinteraction');
 const MeasureControl = require('./measurecontrol');
 

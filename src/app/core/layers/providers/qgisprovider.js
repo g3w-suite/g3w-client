@@ -2,10 +2,10 @@ import ApplicationState from 'core/applicationstate';
 const {base, inherit, XHR} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 const DataProvider = require('core/layers/providers/provider');
-const responseParser = require('core/parsers/response/parser');
+const {response: responseParser} = require('core/utils/parsers');
 const RelationsService = require('core/relations/relationsservice');
 const Feature = require('core/layers/features/feature');
-const Parsers = require('core/parsers/parsers');
+const Parsers = require('core/utils/parsers');
 
 function QGISProvider(options = {}) {
   base(this);
