@@ -99,7 +99,7 @@ const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesi
 const DeleteFeatureInteraction = require('g3w-ol/interactions/deletefeatureinteraction');
 const AreaInteraction = require('g3w-ol/interactions/areainteraction');
 const LengthInteraction = require('g3w-ol/interactions/lengthinteraction');
-const g3wolutils = require('g3w-ol/utils/utils');
+const g3wolutils = require('core/utils/ol');
 
 module.exports = {
 
