@@ -298,7 +298,7 @@ const Geometry = {
     * core/geometry/geometry::isPointGeometryType@v3.4
     */
    isPointGeometryType(geometryType){
-     return geoutils.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
+     return Geometry.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
@@ -332,7 +332,7 @@ const Geometry = {
     * core/geometry/geometry::isLineGeometryType@v3.4
     */
    isLineGeometryType(geometryType){
-     return geoutils.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
+     return Geometry.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
@@ -357,7 +357,7 @@ const Geometry = {
     * core/geometry/geometry::isPolygonGeometryType@v3.4
     */
    isPolygonGeometryType(geometryType){
-     return geoutils.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
+     return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
    },
  
    /**
@@ -1850,7 +1850,7 @@ const geoutils = {
    * - core/geometry/geometry::isMultiGeometry@v3.4
    * - core/utils/geo::isMultiGeometry@v3.4
    */
-  Geometry: Geometry,
+  Geometry
 
 };
 
