@@ -35,11 +35,10 @@ npm run docker pull # docker dependencies (admin)
 
 Create these configuration files from the available templates:
 
-- `/g3w-client/config.js` ← [config.template.js](https://github.com/g3w-suite/g3w-client/config.template.js)
-- `/g3w-client/src/config/dev/index.js` ← [index.template.js](https://github.com/g3w-suite/g3w-client/src/config/dev/index.template.js)
-- `/g3w-client/src/config/keys/index.js` ← [index.template.js](https://github.com/g3w-suite/g3w-client/src/config/keys/index.template.js)
-- `/g3w-suite-docker/.env` ← [.env.example](https://github.com/g3w-suite/g3w-suite-docker/.env.example)
-- `/g3w-suite-docker/config/g3w-suite/settings_docker.py` ← [settings_docker.py](https://github.com/g3w-suite/g3w-suite-docker/config/g3w-suite/settings_docker.py)
+- `/g3w-client/config.js` ← [config.template.js](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js)
+- `/g3w-client/src/config/keys/index.js` ← [index.template.js](https://github.com/g3w-suite/g3w-client/blob/dev/src/config/keys/index.template.js)
+- `/g3w-suite-docker/.env` ← [.env.example](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example)
+- `/g3w-suite-docker/config/g3w-suite/settings_docker.py` ← [settings_docker.py](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/config/g3w-suite/settings_docker.py)
 - `/g3w-suite-docker/shared-volume/` ← add this folder if it doesn't exist
 
 And check that the following parameters are set as follows:
@@ -62,8 +61,6 @@ Now your folder structure should matches this one:
 │   ├── node_modules/
 │   ├── src/
 │   │   └── config/
-│   │       ├── dev/
-│   │       │   └── index.js
 │   │       └── keys/
 │   │           └── index.js
 │   ├── package.json
