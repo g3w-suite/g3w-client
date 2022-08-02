@@ -1,8 +1,6 @@
-function InputValidator(options={}) {
-  this.options = options;
-  this.validate = function() {
-    return true; // always true. Generic validator
-  }
-}
+const { validators } = require('core/utils/validators');
 
-module.exports = InputValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.default;
