@@ -1,10 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function RadioValidator(options) {
-  base(this, options);
-}
-
-inherit(RadioValidator, Validator);
-
-module.exports = RadioValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.radio;
