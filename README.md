@@ -82,8 +82,8 @@ Now your folder structure should matches this one:
 
 For more info about this project dependencies see:
 
-- [package.json](https://github.com/g3w-suite/g3w-client/package.json)
-- [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/docker-compose-dev.yml)
+- [package.json](https://github.com/g3w-suite/g3w-client/blob/dev/package.json)
+- [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml)
 
 ---
 
@@ -155,7 +155,7 @@ docker:down
   npm run docker down
 ```
 
-Validate and view the Compose file (load and parse [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/docker-compose-dev.yml) and [.env](https://github.com/g3w-suite/g3w-suite-docker/.env.example) variables):
+Validate and view the Compose file (load and parse [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml) and [.env](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example) variables):
 
 ```
 docker:config
