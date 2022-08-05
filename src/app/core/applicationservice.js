@@ -1,4 +1,4 @@
-import appConfig from 'config';
+import appConfig from 'app/config';
 import {TIMEOUT} from "../constant";
 import ApplicationState from './applicationstate';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');

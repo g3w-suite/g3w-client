@@ -1,55 +1,6 @@
-import keys from 'config/keys';
-import translations from '../locales';
-const apptitle = "G3W Client";
-const supportedLng = ['en', 'it'];
+import appConfig from 'app/config';
 
-export const plugins = {};
-
-export const tools = {
-  tools:  []
-};
-
-// get message from internationalization
-export const _i18n = {
-  resources: translations
-};
-
-export const client = {
-  debug:  true,
-  local:  false
-};
-
-export const server = {
-  urls:  {
-    baseurl: '/',
-    ows:  'ows',
-    api:  'api',
-    initconfig:  'api/initconfig',
-    config:  'api/config'
-  }
-};
-
-export const utils = {
-  merge(type) {
-    if (type) {
-      console.log(CONFIG)
-    }
-  }
-};
-
-export const secrets = {
-  keys
-};
-
-export default {
-  apptitle,
-  secrets,
-  client,
-  server,
-  plugins,
-  supportedLng,
-  tools,
-  _i18n,
-  utils
-};
-
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "app/config" instead)
+ */
+export default appConfig;

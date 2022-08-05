@@ -21,6 +21,11 @@ const G3W_PLUGINS = {                // override "initConfig->group->plugins" at
   // }
 };
 
+const G3W_KEYS = {
+  // GOOGLE_API_KEY: '<INSERT HERE YOUR GOOGLE API KEY>',
+  // BING_API_KEY: '<INSERT HERE YOUR BING API KEY>'
+};
+
 if (version < "4") {
   module.exports = {
     assetsFolder:  './assets',        //template folder of template repository
@@ -54,6 +59,7 @@ if (version < "4") {
       after(project) { /* code here */ },
     },
     plugins: G3W_PLUGINS,
+    keys: G3W_KEYS
   };
 } else {
   module.exports = {
@@ -84,5 +90,6 @@ if (version < "4") {
       after(project) { /* code here */ },
     },
     plugins: G3W_PLUGINS,
+    keys: G3W_KEYS
   };
 }
