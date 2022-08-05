@@ -6,7 +6,7 @@ const {response: responseParser} = require('core/utils/parsers');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID, GeometryTypes} = CONSTANT;
+const {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes} = CONSTANT;
 
 const Geometry = {
 
