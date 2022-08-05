@@ -7,38 +7,28 @@ changelog:
   categories:
     - title: New Features
       labels:
-        - Semver-Minor
-        - enhancement
-        - add-feature
-        - new-feature
+        - feature
     - title: Bug fixed
       labels:
-        - Semver-Patch
-        - bug-fix
-        - fix
-        - patch
+        - bug
     - title: Improvements
       labels:
-        - behaviour-change
+        - behaviour
     - title: Documentation
       labels:
         - docs
     - title: Translations
       labels:
         - i18n
-        - add-language
-        - update-translation
     - title: Config
       labels:
-        - update-config
+        - config
     - title: API changes
       labels:
         - refactoring
-        
     - title: Breaking changes
       labels:
-        - Semver-Major
-        - breaking-change
+        - breaking
     - title: Other changes
       labels:
         - "*"
