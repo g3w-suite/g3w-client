@@ -21,6 +21,11 @@ const G3W_PLUGINS = {                // override "initConfig->group->plugins" at
   // }
 };
 
+const G3W_KEYS = {
+  // GOOGLE_API_KEY: '<INSERT HERE YOUR GOOGLE API KEY>',
+  // BING_API_KEY: '<INSERT HERE YOUR BING API KEY>'
+};
+
 let conf = {
   assetsFolder:  './assets',      // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins', // path to G3W-CLIENT plugins folder
@@ -50,6 +55,7 @@ let conf = {
   },
   // override "initConfig->group->plugins" attribute for custom plugin development
   plugins: G3W_PLUGINS,
+  keys: G3W_KEYS
 };
 
 // backward compatibilities (v3.x)
