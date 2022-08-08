@@ -248,7 +248,6 @@ const utils = {
 class Nominatim {
   constructor(options={}) {
     this.id = 'Nominatim';
-    this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://nominatim.openstreetmap.org/search/',
@@ -299,7 +298,8 @@ class Nominatim {
     return {
       results,
       header: {
-        title: this.id
+        title: this.id,
+        icon: GUI.getFontClass('search')
       }
     }
   }
@@ -308,22 +308,19 @@ class Nominatim {
 class Google {
   constructor(options={}) {
     this.id = 'Google';
-    this.active = ApplicationState.keys.vendorkeys.google !== undefined; // PUT HERE A CONDITION TO ACTIVATE OR NOT GOODGLE GEOCODING PROVIDER
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://maps.googleapis.com/maps/api/geocode/json',
       extent,
-      viewbox: `${extent[1]},${extent[0]}|${extent[3]},${extent[2]}`
+      viewbox: extent.join(',')
     };
   }
-  getParameters(options={}) {
-    const { lang:language } = options;
+  getParameters(options) {
     const {url, viewbox } = this.settings;
     const params = {
       address: options.query,
       key: ApplicationState.keys.vendorkeys.google,
-      bounds: viewbox,
-      language
+      addressdetails: 1
     };
 
     return {
@@ -332,48 +329,30 @@ class Google {
     };
   };
   handleResponse(response= {}) {
-    let results = []; // Set  to be an Array
-
-    if (response.status === 'OK') {
-      results = response.results
-      .filter(result => ol.extent.containsXY(this.settings.extent, result.geometry.location.lng, result.geometry.location.lat))
-      .map(result => {
-        let name,
-          road,
-          city,
-          postcode,
-          state,
-          country;
-        result.address_components.forEach(({types, short_name, long_name}) => {
-          if (types.find( type => type === 'route')) name = long_name;
-          else if (types.find( type => type === 'locality')) city = long_name;
-          else if (types.find( type => type === 'country')) country = long_name
-        });
-        return {
-          lon: result.geometry.location.lng,
-          lat: result.geometry.location.lat,
+    const results = response.results
+      .filter(place => ol.extent.containsXY(this.settings.extent, place.lon, place.lat))
+      .map(result => ({
+          lon: result.lon,
+          lat: result.lat,
           address: {
-            name,
-            road,
-            postcode: '',
-            city,
-            state,
-            country
+            name: result.address.neighbourhood || '',
+            road: result.address.road || '',
+            postcode: result.address.postcode,
+            city: result.address.city || result.address.town,
+            state: result.address.state,
+            country: result.address.country
           },
           original: {
             formatted: result.display_name,
             details: result.address
           }
-        };
-      })
-    } else if (response.status === 'REQUEST_DENIED') { /* disable google geocoding provider on API key error */
-      this.active = false;
-    }
-
+        })
+      );
     return {
       results,
       header: {
-        title: this.id
+        title: this.id,
+        icon: GUI.getFontClass('google')
       }
     }
   }
@@ -390,7 +369,7 @@ function GeocodingControl(options={}) {
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
-    lang: ApplicationState.lng || 'it-IT',
+    lang: 'it-IT',
     limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,
@@ -549,38 +528,33 @@ function GeocodingControl(options={}) {
         if (this.lastQuery === q && this.result.firstChild) { return; }
         const promises = [];
         /**
-         * For loop to active Providers
+         * For loop to provideres
          */
-        const activeProviders = this.providers.filter(provider => provider.active);
-        activeProviders.forEach(provider => {
-          /**
-           * Use active provider only
-           */
-          if (provider.active) {
-            const {url, params} = provider.getParameters({
+        this.providers.forEach(provider => {
+          const {url, params} = provider.getParameters({
               query: q,
               lang: this.options.lang,
               countrycodes: this.options.countrycodes,
               limit: this.options.limit
             });
-            this.lastQuery = q;
-            this.clearResults();
-            utils.addClass(this.reset, cssClasses.spin);
-            promises.push(XHR.get({
+          this.lastQuery = q;
+          this.clearResults();
+          utils.addClass(this.reset, cssClasses.spin);
+          promises.push(XHR.get({
               url,
               params
             }))
-          }
         });
         const responses = await Promise.allSettled(promises);
-        responses.forEach(({status, value: response}, index) => {
+        console.log(responses)
+        responses.forEach(({status, value: response}, index) =>{
           if (status === 'fulfilled') {
-              const {header, results} = activeProviders[index].handleResponse(response);
+              const {header, results} = this.providers[index].handleResponse(response);
               this.createList({
                 header,
                 results
               });
-              if (results) this.listenMapClick();
+              results && this.listenMapClick();
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
@@ -638,10 +612,11 @@ function GeocodingControl(options={}) {
   this.createHeaderProviderResults = function(header={}){
     const headerNodeElement = `
       <div style="display: flex; justify-content: space-between; padding: 5px">
-        <span  style="color: #FFFFFF; font-weight: bold">${header.title}</span>
+        <span class="skin-color" style="font-weight: bold">${header.title}</span>
+        <span class="${header.icon}"></span>
       </div>`;
     const li = utils.createElement('li', headerNodeElement);
-    li.classList.add("skin-background-color");
+    li.style.backgroundColor = "#222d32";
     return li;
   };
 
