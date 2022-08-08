@@ -1,3 +1,4 @@
+import ApplicationState from "../../core/applicationstate";
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
 const GUI = require('gui/gui');
@@ -246,6 +247,7 @@ const utils = {
  */
 class Nominatim {
   constructor(options={}) {
+    this.id = 'Nominatim';
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://nominatim.openstreetmap.org/search/',
@@ -296,7 +298,7 @@ class Nominatim {
     return {
       results,
       header: {
-        title: 'Nominatim',
+        title: this.id,
         icon: GUI.getFontClass('search')
       }
     }
@@ -305,35 +307,29 @@ class Nominatim {
 
 class Google {
   constructor(options={}) {
+    this.id = 'Google';
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
-      url: 'ttps://maps.googleapis.com/maps/api/geocode/outputFormat/json',
-      params: {
-        address: '',
-        addressdetails: 1,
-        limit: 10,
-        key
-      },
+      url: 'https://maps.googleapis.com/maps/api/geocode/json',
       extent,
       viewbox: extent.join(',')
     };
   }
   getParameters(options) {
-    const {url, viewbox, params:{limit}} = this.settings;
+    const {url, viewbox } = this.settings;
+    const params = {
+      address: options.query,
+      key: ApplicationState.keys.vendorkeys.google,
+      addressdetails: 1
+    };
+
     return {
       url,
-      params: {
-        q: options.query,
-        format: 'json',
-        addressdetails: 1,
-        limit: options.limit || limit,
-        viewbox,
-        bounded: 1
-      }
+      params
     };
   };
-  handleResponse(response=[]) {
-    const results = response
+  handleResponse(response= {}) {
+    const results = response.results
       .filter(place => ol.extent.containsXY(this.settings.extent, place.lon, place.lat))
       .map(result => ({
           lon: result.lon,
@@ -355,7 +351,7 @@ class Google {
     return {
       results,
       header: {
-        title: 'Google',
+        title: this.id,
         icon: GUI.getFontClass('google')
       }
     }
@@ -374,7 +370,7 @@ function GeocodingControl(options={}) {
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
     lang: 'it-IT',
-    limit: 5,
+    limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,
     autoComplete: false,
@@ -393,18 +389,21 @@ function GeocodingControl(options={}) {
    * @type []
    */
   this.providers = [
+    new Google({
+      mapCrs,
+      viewbox
+    }),
     new Nominatim({
       mapCrs,
       viewbox
     }),
-    // new Google({
-    //   mapCrs,
-    //   viewbox
-    // })
   ];
+
+
   const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
   const self = this;
-  const nominatimVueContainer = Vue.extend({
+
+  const GeocoderVueContainer = Vue.extend({
     functional: true,
     render(h){
       return h('div', {class: {[containerClass]: true}}, [
@@ -471,7 +470,7 @@ function GeocodingControl(options={}) {
         })])
     }
   });
-  this.container = new nominatimVueContainer().$mount().$el;
+  this.container = new GeocoderVueContainer().$mount().$el;
   this.lastQuery = '';
   this.registeredListeners = {
     mapClick: false
@@ -528,10 +527,12 @@ function GeocodingControl(options={}) {
       else {
         if (this.lastQuery === q && this.result.firstChild) { return; }
         const promises = [];
+        /**
+         * For loop to provideres
+         */
         this.providers.forEach(provider => {
           const {url, params} = provider.getParameters({
               query: q,
-              key: this.options.key,
               lang: this.options.lang,
               countrycodes: this.options.countrycodes,
               limit: this.options.limit
@@ -545,6 +546,7 @@ function GeocodingControl(options={}) {
             }))
         });
         const responses = await Promise.allSettled(promises);
+        console.log(responses)
         responses.forEach(({status, value: response}, index) =>{
           if (status === 'fulfilled') {
               const {header, results} = this.providers[index].handleResponse(response);
@@ -552,9 +554,7 @@ function GeocodingControl(options={}) {
                 header,
                 results
               });
-              if (results) {
-                this.listenMapClick();
-              }
+              results && this.listenMapClick();
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
