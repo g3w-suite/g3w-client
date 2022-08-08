@@ -1,7 +1,7 @@
 // FIXME: remove weird import (utility functions should be stateles)
 import ApplicationState from "core/applicationstate";
 //
-const Geometry = require('core/geometry/geometry');
+const { Geometry } = require('core/utils/geo');
 
 const INCHES_PER_UNIT = {
   m: 39.37, //

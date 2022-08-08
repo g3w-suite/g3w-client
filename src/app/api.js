@@ -1,15 +1,5 @@
 // api file interface for external plugins
-
 import G3W_CONSTANT from './constant';
-
-/**
- * EXPERIMENTAL: not yet implemented
- *
- * need to find a way not to include entire "package.json" in published bundle
- *
- * @see https://github.com/g3w-suite/g3w-client-plugin-base-template/issues/2
- */
-// import { version } from 'app/../../package.json';
 
 import ApplicationState from 'core/applicationstate';
 import G3WInput from 'gui/inputs/g3w-input.vue';
@@ -259,5 +249,5 @@ module.exports = {
   test: {},
 
   // G3W-CLIENT version
-  // version: version
+  version: G3W_CONSTANT.APP_VERSION
 };

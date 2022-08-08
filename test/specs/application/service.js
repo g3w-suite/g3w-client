@@ -1,4 +1,4 @@
-import { server as serverConfig } from '../../../src/config';
+import { server as serverConfig } from '../../../src/app/config';
 import { LOGIN as LoginConfig} from '../../config/config';
 window.g3wsdk = require('api'); //usefull for plugiin
 const GUI = require('gui/gui');

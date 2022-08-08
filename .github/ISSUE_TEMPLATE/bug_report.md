@@ -14,10 +14,10 @@ Describe your issue here.
 
 ## Environment
 - g3w-admin: __version__
-* g3-client: __version__
-* browser: __name__
-* operating system: __name and version (desktop or mobile)__
-* link to your project: __url or screenshots__
+- g3-client: __version__
+- browser: __name__
+- operating system: __name and version (desktop or mobile)__
+- link to your project: __url or screenshots__
 
 ## Steps to reproduce
 1. Go to '...'

@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.5-dev
+# G3W-CLIENT
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -36,7 +36,6 @@ npm run docker pull # docker dependencies (admin)
 Create these configuration files from the available templates:
 
 - `/g3w-client/config.js` ← [config.template.js](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js)
-- `/g3w-client/src/config/keys/index.js` ← [index.template.js](https://github.com/g3w-suite/g3w-client/blob/dev/src/config/keys/index.template.js)
 - `/g3w-suite-docker/.env` ← [.env.example](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example)
 - `/g3w-suite-docker/config/g3w-suite/settings_docker.py` ← [settings_docker.py](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/config/g3w-suite/settings_docker.py)
 - `/g3w-suite-docker/shared-volume/` ← add this folder if it doesn't exist
@@ -59,10 +58,6 @@ Now your folder structure should matches this one:
 │
 ├── g3w-client/
 │   ├── node_modules/
-│   ├── src/
-│   │   └── config/
-│   │       └── keys/
-│   │           └── index.js
 │   ├── package.json
 │   ├── package-lock.json
 │   └── config.js
@@ -82,8 +77,8 @@ Now your folder structure should matches this one:
 
 For more info about this project dependencies see:
 
-- [package.json](https://github.com/g3w-suite/g3w-client/package.json)
-- [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/docker-compose-dev.yml)
+- [package.json](https://github.com/g3w-suite/g3w-client/blob/dev/package.json)
+- [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml)
 
 ---
 
@@ -155,7 +150,7 @@ docker:down
   npm run docker down
 ```
 
-Validate and view the Compose file (load and parse [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/docker-compose-dev.yml) and [.env](https://github.com/g3w-suite/g3w-suite-docker/.env.example) variables):
+Validate and view the Compose file (load and parse [docker-compose-dev.yml](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/docker-compose-dev.yml) and [.env](https://github.com/g3w-suite/g3w-suite-docker/blob/dev/.env.example) variables):
 
 ```
 docker:config

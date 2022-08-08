@@ -1,15 +1,14 @@
 {
   "name": "g3w-client",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "admin": "gulp g3w-admin --max-old-space-size=2048",
-    "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
-    "plugins": "gulp g3w-admin-plugins-select",
-    "default": "npm run dev",
-    "dev": "gulp default --max-old-space-size=2048",
+    "build": "gulp version && gulp g3w-admin --max-old-space-size=2048",
+    "build:client": "gulp version && gulp g3w-admin:client_only --max-old-space-size=2048",
+    "build:plugins": "gulp version && gulp g3w-admin-plugins-select",
+    "dev": "gulp version && gulp default --max-old-space-size=2048",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
     "docker:up": "npm run docker up -- -d",
@@ -19,8 +18,12 @@
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
-    "version": "npm run admin && git add -A dist",
-    "postversion": "git push && git push --tags"
+    "version": "npm run build && git add -A",
+    "postversion": "git push && git push --tags",
+    "admin": "npm run build",
+    "admin:client": "npm run build:client",
+    "default": "npm run dev",
+    "plugins": "npm run build:plugins"
   },
   "repository": {
     "type": "git",
@@ -120,8 +123,8 @@
     "yargs": "^8.0.2"
   },
   "browserslist": "defaults",
-  "engines" : { 
-    "node" : ">=16.13.2",
+  "engines": {
+    "node": ">=16.13.2",
     "npm": ">=8.1.2"
   }
 }
