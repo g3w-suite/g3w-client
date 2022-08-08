@@ -1,6 +1,6 @@
 {
   "name": "g3w-client",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
@@ -123,8 +123,8 @@
     "yargs": "^8.0.2"
   },
   "browserslist": "defaults",
-  "engines" : { 
-    "node" : ">=16.13.2",
+  "engines": {
+    "node": ">=16.13.2",
     "npm": ">=8.1.2"
   }
 }
