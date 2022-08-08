@@ -1,4 +1,5 @@
-const { base, inherit} = require('core/utils/utils');
+import ApplicationState from '../applicationstate';
+const {base, inherit} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
 
@@ -11,14 +12,32 @@ function PluginService(options={}) {
   };
   this._pluginEvents = {};
   this._appEvents = [];
-  this.init = function(config) {
-    this.config = config;
-  }
+  this.currentLayout = ApplicationService.getCurrentLayoutName();
+  this.vm = new Vue();
+  this.unwatch = this.vm.$watch(()=> ApplicationState.gui.layout.__current,
+      currentLayoutName => this.currentLayout = currentLayoutName !== this.getPlugin().getName() ? currentLayoutName : this.currentLayout);
+
 }
 
 inherit(PluginService, G3WObject);
 
 const proto = PluginService.prototype;
+
+/**
+ * Set a default init method. Overwrite by each plugin
+ * @param config: plugin configuration object
+ */
+proto.init = function(config={}) {
+  this.config = config;
+};
+
+proto.setCurrentLayout = function(){
+  ApplicationService.setCurrentLayout(this.getPlugin().getName());
+};
+
+proto.resetCurrentLayout = function(){
+  ApplicationService.setCurrentLayout(this.currentLayout);
+};
 
 // set owner plugin of the service
 proto.setPlugin = function(plugin){
@@ -32,6 +51,13 @@ proto.getPlugin = function(){
 
 proto.isIframe = function() {
   return ApplicationService.isIframe();
+};
+
+/**
+ * Get Current Project
+ */
+proto.getCurrentProject = function(){
+  return ApplicationService.getCurrentProject();
 };
 
 proto.getGid = function(){
@@ -102,6 +128,8 @@ proto.unsubscribeAllEvents = function() {
 
 proto.clearAllEvents = function() {
   this.unsubscribeAllEvents();
+  this.unwatch();
+  this.vm = null;
   this._pluginEvents = null
 };
 

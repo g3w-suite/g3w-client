@@ -16,7 +16,7 @@
           </a></li>
         <li>
           <a data-toggle="tab" href="#metadata_layers" class="metadata-item-tab layers">
-            <i class="action-button nohover":class="iconsClass.bars" aria-hidden="true"></i>
+            <i class="action-button nohover" :class="iconsClass.bars" aria-hidden="true"></i>
             <span v-t="'sdk.metadata.groups.layers.title'" style="font-weight: bold"></span>
           </a>
         </li>

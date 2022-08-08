@@ -1,7 +1,9 @@
 const {inherit, noop } = require('core/utils/utils');
+const DataRouterService = require('core/data/routerservice');
 const G3WObject = require('core/g3wobject');
+const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const GUI = require('gui/gui');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {coordinatesToGeometry} =  require('core/utils/geo');
 const { SELECTION_STATE } = require('core/layers/layer');
 const PAGELENGTHS = [10, 25, 50];
@@ -15,9 +17,20 @@ const TableService = function(options = {}) {
   this.nopaginationsfilter = [];
   this.selectedfeaturesfid = this.layer.getSelectionFids();
   this.geolayer = this.layer.isGeoLayer();
+  this.relationsGeometry = [];
+  !this.geolayer && this.layer.getRelations().getArray().forEach(relation => {
+    const relationLayer = CatalogLayersStoresRegistry.getLayerById(relation.getChild());
+    if (relationLayer.isGeoLayer()) {
+      this.relationsGeometry.push({
+        layer: relationLayer,
+        child_field: relation.getChildField(),
+        field: relation.getFatherField(),
+        features: {}
+      })
+    }
+  });
   this.projection = this.geolayer  ? this.layer.getProjection() : null;
-  this.mapService = GUI.getComponent('map').getService();
-  //this.getAll = this.selectedfeaturesfid.size > 0;
+  this.mapService = GUI.getService('map');
   this.getAll = false;
   this.paginationfilter = false;
   this.mapBBoxEventHandlerKey = {
@@ -93,7 +106,12 @@ proto.setDataForDataTable = function() {
     const attributes = feature.attributes ? feature.attributes : feature.properties;
     const values = [null];
     this.state.headers.forEach(header => {
-      header && values.push(attributes[header.name]);
+      if (header) {
+        const value = attributes[header.name];
+        header.value = value;
+        //header.label = undefined; // removed label
+        values.push(value);
+      }
     });
     data.push(values)
   });
@@ -296,7 +314,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const ordering = order[0].dir === 'asc' ? this.state.headers[order[0].column].name : '-'+this.state.headers[order[0].column].name;
       this.currentPage = start === 0 || (this.state.pagination && this.state.tools.filter.active) ? 1 : (start/length) + 1;
       const in_bbox = this.state.tools.geolayer.in_bbox;
-      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|like|${column.search.value}|and`).join(',') : undefined;
+      const field =  this.state.pagination ? columns.filter(column => column.search && column.search.value).map(column => `${column.name}|ilike|${column.search.value}|and`).join(',') : undefined;
       this.paginationParams = {
         field: field || undefined,
         page: this.currentPage,
@@ -309,9 +327,9 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
       const getDataPromise = this.state.pagination ?
         this.layer.getDataTable(this.paginationParams) :
         this.layer.getDataTable({
-        ordering,
-        in_bbox,
-        formatter: this.formatter
+          ordering,
+          in_bbox,
+          formatter: this.formatter
       });
       getDataPromise
         .then(data => {
@@ -328,7 +346,7 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
             recordsTotal: data.count
           });
         })
-        .fail((err) => {
+        .fail(err => {
           GUI.notify.error(t("info.server_error"));
           reject(err);
         }).always(()=>{
@@ -375,17 +393,17 @@ proto.addFeature = function(feature) {
     attributes: feature.attributes ? feature.attributes : feature.properties
   };
   if (this.geolayer && feature.geometry) {
-    const olSelectionFeature = this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
+    this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
       id: tableFeature.id,
       geometry: this._returnGeometry(feature)
     });
-    tableFeature.geometry = olSelectionFeature.feature.getGeometry();
+    tableFeature.geometry = feature.geometry;
   }
   this.state.features.push(tableFeature);
 };
 
 proto.checkSelectAll = function(features=this.state.features){
-  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || features.reduce((accumulator, feature) => accumulator && feature.selected, true);
+  this.state.selectAll = this.selectedfeaturesfid.has(SELECTION_STATE.ALL) || (features.length && features.reduce((accumulator, feature) => accumulator && feature.selected, true));
 };
 
 proto.addFeatures = function(features=[]) {
@@ -418,6 +436,56 @@ proto.zoomAndHighLightFeature = function(feature, zoom=true) {
   if (geometry) {
     if (this._async.state) this._async.fnc = this.mapService.highlightGeometry.bind(mapService, geometry, {zoom});
     else this.mapService.highlightGeometry(geometry , { zoom });
+  }
+};
+
+/**
+ * Zoom to eventually features relation
+ */
+proto.zoomAndHighLightGeometryRelationFeatures = async function(feature, zoom=true){
+  if (this.relationsGeometry.length) {
+    const features = [];
+    const promises = [];
+    const values = []; // usefult to check if add or not
+    this.relationsGeometry.forEach(({layer, child_field, field, features}) =>{
+      const value = feature.attributes[field];
+      values.push(value);
+      if (features[value] === undefined) {
+        let promise;
+        if (zoom){
+          promise = DataRouterService.getData('search:features', {
+            inputs:{
+              layer,
+              filter:`${child_field}|eq|${value}`,
+              formatter: 1, // set formatter to 1
+              search_endpoint: 'api'
+            },
+            outputs: false
+          });
+        } else promise = Promise.reject();
+        promises.push(promise);
+      } else promises.push(Promise.resolve(
+        {
+          data:[
+            {
+              features: features[value]
+            }
+          ]
+      }))
+    });
+    const promisesData = await Promise.allSettled(promises);
+    promisesData.forEach(({status, value}, index) => {
+      if (status === 'fulfilled'){
+        const _features = value.data[0] ? value.data[0].features : [];
+        _features.forEach(feature => features.push(feature));
+        if (this.relationsGeometry[index].features[values[index]] === undefined){
+          this.relationsGeometry[index].features[values[index]] = _features;
+        }
+      }
+    });
+    zoom ? this.mapService.zoomToFeatures(features, {
+      highlight: true
+    }) : this.mapService.highlightFeatures(features);
   }
 };
 

@@ -31,7 +31,7 @@ const GlobalDirective = {
     const prePositioni18n = ({el, binding, i18nFnc=t}) => {
       const innerHTML = el.innerHTML;
       const position = binding.arg ? binding.arg : 'post';
-      const handlerElement = (innerHTML) => {
+      const handlerElement = innerHTML => {
         const value = binding.value !== null ?  i18nFnc(binding.value) : '';
         if (position === 'pre') el.innerHTML =  `${value} ${innerHTML}`;
         else if (position === 'post') el.innerHTML = `${innerHTML} ${value}`;
@@ -56,9 +56,15 @@ const GlobalDirective = {
       bind(_el, binding) {
         // handle automatic creation of tooltip
         if (binding.modifiers.create) {
+          if (binding.arg){
+            _el.setAttribute('data-placement', binding.arg);
+            _el.classList.add(`skin-tooltip-${binding.arg}`);
+            _el.classList.add('skin-color');
+          }
           const domelement = $(_el);
           domelement.tooltip({
-            trigger : ApplicationState.ismobile ? 'click': 'hover'
+            trigger : ApplicationState.ismobile ? 'click': 'hover',
+            html: true
           });
           // in case of mobile hide tooltip after click
           ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
@@ -304,19 +310,33 @@ const GlobalDirective = {
 
     Vue.directive('select2', {
       inserted(el, binding, vnode){
-        const { templateResult, templateSelection, search=true } = vnode.data.attrs || {};
-        vnode.context._select2 = $(el).select2({
+        const { templateResult, templateSelection, multiple=false, search=true, select2_value} = vnode.data.attrs || {};
+        const selectDOMElement = $(el);
+        selectDOMElement.select2({
+          width: '100%',
           dropdownCssClass: 'skin-color',
           templateResult,
           templateSelection,
           minimumResultsForSearch: !search ? -1 : undefined
         });
-        binding.value && vnode.context._select2.on('select2:select', evt =>{
-          vnode.context[binding.value] = evt.params.data.id;
-        });
+        if (binding.value){
+          selectDOMElement.on('select2:select', evt =>{
+            const value = evt.params.data.id;
+            if (multiple) {
+              const alreadyinside = vnode.context[binding.value].filter(addedvalue => value === addedvalue);
+              alreadyinside.length === 0 && vnode.context[binding.value].push(value);
+            } else vnode.context[binding.value] = value;
+          });
+          if (multiple)
+            selectDOMElement.on('select2:unselect', evt =>{
+              const value = evt.params.data.id;
+              vnode.context[binding.value] = vnode.context[binding.value].filter(addedvalue => value !== addedvalue);
+            });
+          if (select2_value) selectDOMElement.val(select2_value).trigger('change');
+        }
       },
-      unbind(ele, binding, vnode){
-        vnode.context._select2.select2('destroy');
+      unbind(el, binding, vnode){
+        $(el).select2('destroy');
       }
     })
   }

@@ -2,24 +2,27 @@ const {base, inherit, resolve}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Flow = require('./flow');
 const WorkflowsStack = require('./workflowsstack');
-const MESSAGES = require('./step').MESSAGES;
+const {MESSAGES} = require('./step');
 const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
 const GUI = require('gui/gui');
 //Class to manage flow of steps
 function Workflow(options={}) {
+  const {inputs=null, context=null, flow=new Flow(), steps=[], runOnce=false} = options;
   base(this);
   this._promise = null;
   // inputs mandatory to work with editing
-  this._inputs = options.inputs || null;
-  this._context = options.context || null;
+  this._inputs = inputs;
+  this._context = context;
   // flow object to control the flow
-  this._flow = options.flow || new Flow();
+  this._flow = flow;
   // all steps of flow
-  this._steps = options.steps || [];
+  this._steps = steps;
   // if is child of another workflow
   this._child = null;
   // stack workflowindex
   this._stackIndex = null;
+  // stop when flow stop
+  this.runOnce = runOnce;
   this._messages = MESSAGES;
   this._userMessageSteps = this._steps.reduce((messagesSteps, step) => {
     const usermessagesteps = step.getTask().getUserMessageSteps();
@@ -146,9 +149,10 @@ proto.start = function(options={}) {
   this._promise = d;
   this._inputs = options.inputs;
   this._context = options.context || {};
-  //check if are workflow running
+  const isChild = this._context.isChild || false;
+  //check if are workflow running and if need to stop child
   if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
-    WorkflowsStack.getCurrent().addChild(this);
+    !isChild && WorkflowsStack.getCurrent().addChild(this)
   }
   this._stackIndex = WorkflowsStack.push(this);
   this._flow = options.flow || this._flow;
@@ -180,6 +184,9 @@ proto.start = function(options={}) {
     .fail(error => {
       showUserMessage && this.clearUserMessagesSteps();
       d.reject(error);
+    })
+    .always(()=>{
+      this.runOnce && this.stop();
     });
   this.emit('start');
   return d.promise();

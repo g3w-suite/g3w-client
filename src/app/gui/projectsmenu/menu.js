@@ -1,6 +1,6 @@
 const t = require('core/i18n/i18n.service').t;
 const {base, inherit, merge} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const GUI = require('gui/gui');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const compiledTemplate = Vue.compile(require('./menu.html'));

@@ -30,7 +30,18 @@
         this.$emit('set-values', this.values)
       }
     },
+    data(){
+      return {
+        values: []
+      }
+    },
     watch: {
+      values: {
+        immediate: true,
+        handler(values){
+          this.$emit('disable-print-button', values.length === 0);
+        }
+      },
       reset(bool) {
        if (bool){
          this.select2 && this.select2.val(null).trigger('change');
@@ -40,13 +51,15 @@
       }
     },
     async mounted(){
-      this.values = [];
       await this.$nextTick();
       let {field_name:field, qgs_layer_id:layerId} = this.atlas;
+      setTimeout(()=>{
+
+      });
       this.select2 = $('#print_atlas_autocomplete').select2({
         width: '100%',
         multiple: true,
-        dropdownParent: $('.g3w-search-form:visible'),
+        dropdownParent: $(this.$el),
         minimumInputLength: 1,
         ajax: {
           delay: 500,
@@ -78,6 +91,7 @@
     },
     beforeDestroy() {
       this.values = null;
+      this.$emit('disable-print-button', false);
     }
   }
 </script>

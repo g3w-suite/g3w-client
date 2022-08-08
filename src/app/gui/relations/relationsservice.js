@@ -1,5 +1,7 @@
-const { inherit, base, downloadCSV} = require('core/utils/utils');
+import {G3W_FID} from 'constant';
+const {inherit, base} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
+const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const RelationsService = require('core/relations/relationsservice');
 
@@ -18,10 +20,26 @@ proto.getRelations = function(options={}) {
   return RelationsService.getRelations(options);
 };
 
-proto.saveRelations = function(type){
+proto.getRelationsNM = async function({nmRelation, features}){
+  return await RelationsService.getRelationsNM({
+    nmRelation,
+    features
+  })
+};
+
+proto.saveRelations = async function(type){
   this._options.type = type;
   const caller_download_id = ApplicationService.setDownload(true);
-  RelationsService.save(this._options).finally(()=> ApplicationService.setDownload(false, caller_download_id));
+  try {
+    await RelationsService.save(this._options)
+  } catch(err){
+    GUI.showUserMessage({
+      type: 'alert',
+      message: err || "info.server_error",
+      closable: true
+    })
+  }
+  ApplicationService.setDownload(false, caller_download_id);
 };
 
 proto.buildRelationTable = function(relations=[], id) {
@@ -29,13 +47,15 @@ proto.buildRelationTable = function(relations=[], id) {
   const headers = layer.getTableHeaders();
   let columns = null;
   let rows = [];
+  let rows_fid = [];
   let fields;
   if (relations.length) {
-    const properties = Object.keys(relations[0].properties);
-    columns = headers.filter(header => properties.indexOf(header.name) !==-1);
+    const attributes = Object.keys(relations[0].attributes);
+    columns = headers.filter(header => attributes.indexOf(header.name) !==-1);
     rows = relations.map(relation => {
+      rows_fid.push(relation.attributes[G3W_FID]);
       return columns.map(column => {
-        return relation.properties[column.name]
+        return relation.attributes[column.name]
       })
     });
     fields = columns;
@@ -44,8 +64,10 @@ proto.buildRelationTable = function(relations=[], id) {
   return {
     columns,
     rows,
+    rows_fid,
+    features: relations,
     fields,
-    formStructure : layer.getEditorFormStructure(),
+    formStructure : layer.getLayerEditingFormStructure(),
     rowFormStructure: null,
     layerId: layer.getId()
   }

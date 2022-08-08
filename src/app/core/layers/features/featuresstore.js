@@ -123,12 +123,8 @@ proto._commit = function(commitItems) {
   if (commitItems && this._provider) {
     commitItems.lockids = this._lockIds;
     this._provider.commit(commitItems)
-      .then((response) => {
-        d.resolve(response);
-      })
-      .fail((err) => {
-        d.reject(err);
-      })
+      .then(response => d.resolve(response))
+      .fail(err => d.reject(err))
   } else {
     d.reject();
   }

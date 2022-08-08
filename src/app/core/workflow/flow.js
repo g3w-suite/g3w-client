@@ -1,4 +1,4 @@
-const {base, inherit}= require('core/utils/utils');
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Queque = require('./queque');
 
@@ -41,13 +41,11 @@ function Flow() {
     });
     const runMicroTasks = this.queques.micro.getLength();
     step.run(inputs, context, this.queques)
-      .then((outputs) => {
+      .then(outputs => {
         runMicroTasks && this.queques.micro.run();
         this.onDone(outputs);
       })
-      .fail((error) => {
-        this.onError(error);
-      })
+      .fail(error => this.onError(error));
   };
 
   //check if all step are resolved
@@ -95,7 +93,6 @@ proto.clearQueques = function(){
   this.queques.micro.clear();
   this.queques.end.clear();
 };
-
 
 module.exports = Flow;
 

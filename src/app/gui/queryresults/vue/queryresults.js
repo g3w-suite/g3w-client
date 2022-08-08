@@ -1,29 +1,30 @@
-import Tabs from '../../tabs/tabs.vue';
-import Link from '../../fields/link.vue';
-import HeaderFeatureBody from './headerfeaturebody.vue';
-import { createCompiledTemplate } from 'gui/vue/utils';
+import TableAttributeFieldValue from './components/tableattributefieldvalue.vue';
+import InfoFormats from './components/actiontools/infoformats.vue';
+import HeaderFeatureBody from './components/headerfeaturebody.vue';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit, throttle} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const {fieldsMixin} = require('gui/vue/vue.mixins');
+const Component = require('gui/component/component');
 const QueryResultsService = require('gui/queryresults/queryresultsservice');
-const {fieldsMixin } = require('gui/vue/vue.mixins');
 const maxSubsetLength = 3;
 const headerExpandActionCellWidth = 10;
 const headerActionsCellWidth = 10;
+const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
 const compiledTemplate = createCompiledTemplate(require('./queryresults.html'));
 
 const vueComponentOptions = {
   ...compiledTemplate,
-  mixins: [fieldsMixin],
   data() {
     return {
       state: this.$options.queryResultsService.state,
       headerExpandActionCellWidth: headerExpandActionCellWidth,
-      headerActionsCellWidth: headerActionsCellWidth,
+      headerActionsCellWidth: headerActionsCellWidth
     }
   },
+  mixins: [fieldsMixin],
   components: {
-    Tabs,
-    'g3w-link': Link,
+    TableAttributeFieldValue,
+    'infoformats': InfoFormats,
     'header-feature-body': HeaderFeatureBody
   },
   computed: {
@@ -37,7 +38,7 @@ const vueComponentOptions = {
       return this.hasResults || !!this.state.components.length;
     },
     hasResults() {
-      return this.state.layers.length > 0
+      return this.state.layers.length > 0;
     },
     info(){
       const info = {
@@ -47,25 +48,64 @@ const vueComponentOptions = {
       };
       const {query, search} = this.state;
       if (query){
-        if (query.coordinates) {
+        if (query.type === 'coordinates') {
           info.icon = 'marker';
           info.message = `  ${query.coordinates[0]}, ${query.coordinates[1]}`;
           info.action = () => this.$options.queryResultsService.showCoordinates(query.coordinates);
-        } else if (query.bbox)  {
+        } else if (query.type ==="bbox")  {
           info.icon = 'square';
           info.message = `  [${query.bbox.join(' , ')}]`;
           info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
-        } else if (query.geometry) {
+        } else if (query.type === "polygon") {
           info.icon =  'draw';
-          info.message =  `  ${query.name} - Feature Id: ${query.fid}`;
-          info.action = () =>this.$options.queryResultsService.showGeometry(query.geometry);
+          info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
+          info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
         }
       } else if (search){}
-
       return info;
     }
   },
   methods: {
+    /**
+     *
+     * @param layerId
+     * @param type feature or layer
+     * @returns {*}
+     */
+    getLayerCustomComponents(layerId, type='feature', position='after'){
+      return this.state.layerscustomcomponents[layerId] &&
+        this.state.layerscustomcomponents[layerId][type] &&
+        this.state.layerscustomcomponents[layerId][type][position] ||
+        [];
+    },
+    getLayerField({layer, feature, fieldName}) {
+      const layerField = layer.attributes.find(attribute => attribute.name === fieldName);
+      const field = {
+        ...layerField,
+        label: null, // needed to hide label in query result dom table value content
+        value: feature.attributes[fieldName]
+      };
+      return field;
+    },
+    getQueryFields(layer, feature) {
+      const fields = [];
+      for (const field of layer.formStructure.fields) {
+        const _field = {...field};
+        _field.query = true;
+        _field.value = feature.attributes[field.name];
+        _field.input = {
+          type: `${this.getFieldType(_field)}`
+        };
+        fields.push(_field);
+      }
+      return fields;
+    },
+    getColSpan(layer){
+      return this.attributesSubsetLength(layer)+(this.state.layersactions[layer.id].length ? 1 : 0)+(!this.hasLayerOneFeature(layer)*1)
+    },
+    getDownloadActions(layer){
+      return this.state.layersactions[layer.id].find(action => action.formats);
+    },
     addLayerFeaturesToResults(layer){
       this.$options.queryResultsService.addLayerFeaturesToResultsAction(layer);
     },
@@ -74,7 +114,10 @@ const vueComponentOptions = {
       evt.target.children[0].style.display = display === 'none' ? 'inline-block' : 'none';
     },
     printAtlas(layer){
-      this.$options.queryResultsService.printAtlas(layer)
+      this.$options.queryResultsService.printAtlas(layer);
+    },
+    showLayerDownloadFormats(layer){
+      this.$options.queryResultsService.showLayerDownloadFormats(layer)
     },
     saveLayerResult(layer, type="csv") {
       this.$options.queryResultsService.saveLayerResult({layer, type});
@@ -94,24 +137,6 @@ const vueComponentOptions = {
     hasFormStructure(layer) {
       return !!layer.formStructure;
     },
-    hasFieldOutOfFormStructure(layer) {
-      return this.hasFormStructure(layer) ? layer.getFieldsOutOfFormStructure() : [];
-    },
-    isArray (value) {
-      return Array.isArray(value);
-    },
-    isSimple(layer,attributeName,attributeValue) {
-      return !this.isArray(attributeValue) && this.fieldIs(Fields.SIMPLE,layer,attributeName,attributeValue);
-    },
-    isLink(layer,attributeName,attributeValue) {
-      return this.fieldIs(Fields.LINK,layer,attributeName,attributeValue);
-    },
-    is(type,layer,attributeName,attributeValue) {
-      return this.fieldIs(type,layer,attributeName,attributeValue);
-    },
-    checkField(type, fieldname, attributes) {
-      return attributes.find(attribute => (attribute.name === fieldname) && (attribute.type === type)) ? true : false;
-    },
     layerHasFeatures(layer) {
       return layer.features && layer.features.length > 0 ? true: false;
     },
@@ -130,19 +155,25 @@ const vueComponentOptions = {
     extractAttributesFromFirstTabOfFormStructureLayers(layer){
       const attributes = new Set();
       const traverseStructure = item => {
-        if (item.nodes) {
-          item.nodes.forEach(node => traverseStructure(node));
-        } else {
-          const field = layer.formStructure.fields.find(field => field.name === item.field_name);
-          field && attributes.add(field);
+        if (item.nodes) item.nodes.forEach(node => traverseStructure(node));
+        else {
+          let field = layer.formStructure.fields.find(field => field.name === item.field_name);
+          if (field) {
+            if (this.state.type === 'ows'){
+              // clone it to avoid to replace original
+              field = {...field};
+              field.name = field.name.replace(/ /g, '_');
+            }
+            attributes.add(field);
+          }
         }
       };
-      layer.formStructure.structure.length && traverseStructure(layer.formStructure.structure[0]);
+      layer.formStructure.structure.length && layer.formStructure.structure.forEach(structure => traverseStructure(structure));
       return Array.from(attributes);
     },
     attributesSubset(layer) {
       const attributes = this.hasFormStructure(layer) ? this.extractAttributesFromFirstTabOfFormStructureLayers(layer) : layer.attributes;
-      const _attributes = attributes.filter(attribute => attribute.show && attribute.type != 'image');
+      const _attributes = attributes.filter(attribute => attribute.show && HEADERTYPESFIELD.indexOf(attribute.type) !== -1);
       const end = Math.min(maxSubsetLength, attributes.length);
       return _attributes.slice(0, end);
     },
@@ -184,22 +215,8 @@ const vueComponentOptions = {
     relationsAttributesSubsetLength(elements) {
       return this.relationsAttributesSubset(elements).length;
     },
-    getItemsFromStructure(layer) {
-      let prevtabitems = [];
-      const newstructure = [];
-      layer.formStructure.structure.forEach(item => {
-        const _item = this.isAttributeOrTab(layer, item);
-        if (_item.type === 'field') {
-          newstructure.push(_item);
-          prevtabitems = [];
-        } else {
-          if (!prevtabitems.length) {
-            newstructure.push(_item);
-            prevtabitems = _item.item;
-          } else prevtabitems.push(_item.item[0]);
-        }
-      });
-      return newstructure;
+    getLayerFormStructure(layer) {
+      return layer.formStructure.structure;
     },
     isAttributeOrTab(layer, item) {
       const isField = item.field_name !== undefined;
@@ -271,27 +288,10 @@ const vueComponentOptions = {
     },
     openLink(link_url) {
       window.open(link_url, '_blank');
-    },
-    fieldIs(TYPE,layer,attributeName,attributeValue) {
-      const fieldType = this.getFieldType(attributeValue);
-      return fieldType === TYPE;
-    },
-    getQueryFields(layer, feature) {
-      const fields = [];
-      for (const field of layer.formStructure.fields) {
-        const _field = {...field};
-        _field.query = true;
-        _field.value = feature.attributes[field.name];
-        _field.input = {
-          type: `${this.getFieldType(_field.value)}_field`
-        };
-        fields.push(_field);
-      }
-      return fields;
     }
   },
   watch: {
-    'state.layers'(layers) {
+    async 'state.layers'(layers) {
       layers.forEach(layer => {
         if (layer.attributes.length <= maxSubsetLength && !layer.hasImageField) layer.expandable = false;
         layer.features.forEach(feature => {
@@ -321,7 +321,8 @@ const vueComponentOptions = {
           this.showFeatureInfo(layer, boxid);
         });
       }
-      requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el))
+      requestAnimationFrame(() => this.$options.queryResultsService.postRender(this.$el));
+      await this.$nextTick();
     },
     onelayerresult(bool) {
       bool && this.$options.queryResultsService.highlightFeaturesPermanently(this.state.layers[0]);
@@ -340,7 +341,7 @@ const vueComponentOptions = {
     this.layersFeaturesBoxes = null;
   },
   destroyed() {
-    setTimeout(()=>this.$options.queryResultsService.clear())
+    this.$options.queryResultsService.clear();
   }
 };
 

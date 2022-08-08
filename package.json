@@ -1,16 +1,29 @@
 {
   "name": "g3w-client",
-  "version": "3.2.0",
+  "version": "3.5.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "admin": "gulp g3w-admin --max-old-space-size=2048",
-    "admin:client": "gulp g3w-admin:client_only --max-old-space-size=2048",
-    "plugins": "gulp g3w-admin-plugins-select",
-    "default": "gulp default --max-old-space-size=2048",
+    "build": "gulp version && gulp g3w-admin --max-old-space-size=2048",
+    "build:client": "gulp version && gulp g3w-admin:client_only --max-old-space-size=2048",
+    "build:plugins": "gulp version && gulp g3w-admin-plugins-select",
+    "dev": "gulp version && gulp default --max-old-space-size=2048",
+    "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
+    "docker:pull": "npm run docker pull",
+    "docker:up": "npm run docker up -- -d",
+    "docker:down": "npm run docker down",
+    "docker:config": "npm run docker config",
+    "docker:logs": "npm run docker logs",
     "test": "gulp test",
-    "cy:open": "cypress open"
+    "cy:open": "cypress open",
+    "preversion": "npm run test",
+    "version": "npm run build && git add -A",
+    "postversion": "git push && git push --tags",
+    "admin": "npm run build",
+    "admin:client": "npm run build:client",
+    "default": "npm run dev",
+    "plugins": "npm run build:plugins"
   },
   "repository": {
     "type": "git",
@@ -22,7 +35,8 @@
   "dependencies": {
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue-cookie-law": "^1.13.3"
   },
   "resolutions": {
     "graceful-fs": "4.2.3"
@@ -47,7 +61,6 @@
     "chai-http": "^4.3.0",
     "core-js-latest": "npm:core-js@^3.16.2",
     "current-git-branch": "^1.1.0",
-    "cypress": "^7.3.0",
     "del": "^2.2.2",
     "generator-browserify": "^0.4.1",
     "generator-karma": "^2.0.0",
@@ -108,5 +121,10 @@
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
+  },
+  "browserslist": "defaults",
+  "engines": {
+    "node": ">=16.13.2",
+    "npm": ">=8.1.2"
   }
 }

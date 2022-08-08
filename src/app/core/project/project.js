@@ -1,9 +1,10 @@
-const {base, inherit} = require('core/utils//utils');
+import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
+const {base, inherit, XHR} = require('core/utils//utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
 const LayersStore = require('core/layers/layersstore');
-const Projections = require('g3w-ol/src/projection/projections');
+const Projections = require('g3w-ol/projection/projections');
 function Project(config={}, options={}) {
   /* structure 'project' object
   {
@@ -25,20 +26,40 @@ function Project(config={}, options={}) {
     wms_use_layer_ids: <TRUE OR FALSE>
     search_endpoint : 'ows', 'api'
     legend_position: 'tab', 'toc'
+    query_point_tolerance
     wps: [] // array of wps service
   }
   */
   // for future implementation catalog tab actived
   config.catalog_tab = config.toc_tab_default || config._catalog_tab || 'layers'; // values : layers, baselayers, legend
   config.ows_method = config.ows_method || 'GET';
+  config.toc_layers_init_status = config.toc_layers_init_status || TOC_LAYERS_INIT_STATUS;
+  config.toc_themes_init_status = config.toc_themes_init_status || TOC_THEMES_INIT_STATUS;
+  config.query_point_tolerance = config.query_point_tolerance || QUERY_POINT_TOLERANCE;
   this.state = config;
+  /**
+   * View
+   *
+   */
+  //information about api project
+  this.urls = {
+    map_themes: `/${this.getType()}/api/prjtheme/${this.getId()}/`,
+    expression_eval: `/api/expression_eval/${this.getId()}/`,
+    vector_data: `${this.getVectorUrl()}data/${this.getType()}/${this.getId()}/`,
+};
+  /*
+   *
+   * End View
+   *
+   */
   // process layers
   this._processLayers();
   // set the project projection to object crs
   this.state.crs = crsToCrsObject(this.state.crs);
   this._projection = Projections.get(this.state.crs);
-  // build a layerstore of the project
+  // build a layersstore of the project
   this._layersStore = this._buildLayersStore();
+  ///
   this.setters = {
     setBaseLayer(id) {
       this.state.baselayers.forEach(baseLayer => {
@@ -83,6 +104,10 @@ proto.isWmsUseLayerIds = function() {
 
 proto.getContextBaseLegend = function(){
   return this.state.context_base_legend;
+};
+
+proto.getQueryPointTolerance = function(){
+  return this.state.query_point_tolerance;
 };
 
 // check if multi
@@ -182,7 +207,8 @@ proto._buildLayersStore = function() {
   });
   // create layerstree from layerstore
   layersStore.createLayersTree(this.state.name, {
-    layerstree: this.state.layerstree
+    layerstree: this.state.layerstree,
+    expanded: this.state.toc_layers_init_status === 'not_collapsed' // config to show layerstrees toc expanded or not
   });
   return layersStore;
 };
@@ -199,8 +225,13 @@ proto.getBaseLayers = function() {
   return this.state.baselayers;
 };
 
-proto.getConfigLayers = function() {
-  return this.state.layers;
+/**
+ * Get configuration layers array from server config
+ * @param filter property layer config to filter
+ * @returns {*}
+ */
+proto.getConfigLayers = function({key}={}) {
+  return key ? this.state.layers.filter(layer => layer[key] !== undefined) : this.state.layers;
 };
 
 /**
@@ -223,6 +254,10 @@ proto.getThumbnail = function() {
   return this.state.thumbnail;
 };
 
+proto.getMetadata = function(){
+  return this.state.metadata || {};
+};
+
 proto.getState = function() {
   return this.state;
 };
@@ -237,6 +272,10 @@ proto.getSearches = function(){
 
 proto.getVectorUrl = function() {
   return this.state.vectorurl;
+};
+
+proto.getRasterUrl = function(){
+  return this.state.rasterurl;
 };
 
 proto.getId = function() {
@@ -286,5 +325,122 @@ proto.getInfoFormat = function() {
 proto.getLayersStore = function() {
   return this._layersStore;
 };
+
+/// Map Themes
+
+/**
+ * Method to set properties ( checked and visible) from view to layerstree
+ * @param map_theme map theme name
+ * @param layerstree // current layerstree of TOC
+ */
+proto.setLayersTreePropertiesFromMapTheme = async function({map_theme, layerstree=this.state.layerstree}){
+  /**
+   * mapThemeConfig contain map_theme attributes coming from project map_themes attribute config
+   * plus layerstree of map_theme get from api map theme
+   */
+  const mapThemeConfig = await this.getMapThemeFromThemeName(map_theme);
+  // extract layerstree
+  const {layerstree:mapThemeLayersTree} = mapThemeConfig;
+  // create a chages need to apply map_theme changes to map and TOC
+  const changes = {
+    layers: {} // key is the layer id and object has style, visibility change (Boolean)
+  };
+  const promises = [];
+  /**
+   * Function to traverse current layerstree of toc anche get changes with the new one related to map_theme choose
+   * @param mapThemeLayersTree // new mapLayerTree
+   * @param layerstree // current layerstree
+   */
+  const groups = [];
+  const traverse = (mapThemeLayersTree, layerstree, checked) =>{
+    mapThemeLayersTree.forEach((node, index) => {
+      if (node.nodes) { // case of group
+        groups.push({
+          node,
+          group: layerstree[index]
+        });
+        traverse(node.nodes, layerstree[index].nodes, checked && node.checked);
+      } else {
+        // case of layer
+        node.style = mapThemeConfig.styles[node.id]; // set style from map_theme
+        if (layerstree[index].checked !== node.visible) {
+          changes.layers[node.id] = {
+            visibility: true,
+            style: false
+          };
+        }
+        layerstree[index].checked = node.visible;
+        // if has a style settled
+        if (node.style) {
+          const promise = new Promise((resolve, reject) =>{
+            const setCurrentStyleAndResolvePromise = node => {
+              if (changes.layers[node.id] === undefined) changes.layers[node.id] = {
+                visibility: false,
+                style: false
+              };
+              changes.layers[node.id].style = this.getLayerById(node.id).setCurrentStyle(node.style);
+              resolve();
+            };
+            if (this.getLayersStore()) setCurrentStyleAndResolvePromise(node);
+            else // case of starting project creation
+              node => setTimeout(() => {
+                setCurrentStyleAndResolvePromise(node);
+              })(node);
+          });
+          promises.push(promise);
+        }
+      }
+    });
+  };
+  traverse(mapThemeLayersTree, layerstree);
+  await Promise.allSettled(promises);
+  // all groups checked after layer checked so is set checked but not visible
+  groups.forEach(({group, node:{checked, expanded}}) => {
+    group.checked = checked;
+    group.expanded = expanded;
+  });
+  return changes // eventually information about changes (for example style etc..)
+};
+
+/**
+ * get map Theme_configuration
+ */
+proto.getMapThemeFromThemeName = async function(map_theme){
+  // get map theme configuration from map_themes project config
+  const mapThemeConfig = this.state.map_themes.find(map_theme_config => map_theme_config.theme === map_theme);
+  // check if mapThemeConfig exist
+  if (mapThemeConfig){
+    // check if has layerstree (property get from server with a specific api
+    const {layerstree} = mapThemeConfig;
+    if (layerstree === undefined) {
+      const layerstree = await this.getMapThemeConfiguration(map_theme);
+      mapThemeConfig.layerstree =  layerstree;
+    }
+  }
+  return mapThemeConfig;
+};
+
+/**
+ * get map_style from server
+ * @param map_theme
+ * @returns {Promise<*>}
+ */
+proto.getMapThemeConfiguration = async function(map_theme){
+  let config;
+  const url = `${this.urls.map_themes}${map_theme}/`;
+  try {
+    const response = await XHR.get({
+      url
+    });
+    const {result, data} = response;
+    if (result) config = data;
+  } catch(err){}
+  return config;
+};
+
+proto.getUrl = function(type){
+  return this.urls[type];
+};
+
 
 module.exports = Project;

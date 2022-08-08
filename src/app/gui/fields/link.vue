@@ -23,11 +23,7 @@
       }
     },
     created() {
-      if (this.state.value && typeof this.state.value === 'object') {
-        this.value = this.state.value.value;
-      } else {
-        this.value = this.state.value
-      }
+      this.value = this.state.value && typeof this.state.value === 'object' ? this.state.value.value : this.state.value;
     }
   }
 </script>

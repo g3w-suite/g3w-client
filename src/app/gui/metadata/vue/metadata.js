@@ -1,6 +1,6 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const GUI = require('gui/gui');
 const MetadataService = require('gui/metadata/metadataservice');
 const templateCompiled = createCompiledTemplate(require('./metadata.html'));

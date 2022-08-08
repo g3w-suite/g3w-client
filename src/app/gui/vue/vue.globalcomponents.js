@@ -6,6 +6,12 @@ import BarLoader from './global-components/bar-loader';
 import Progressbar from './global-components/progressbar';
 import HelpDiv from './global-components/helpdiv.vue';
 import Resize from './global-components/resize.vue'
+import LayerPositions from './global-components/layerpositions.vue';
+import DateTime from './global-components/datetime.vue';
+import Range from './global-components/range.vue';
+import ResizeIcon from './global-components/resize-icon.vue';
+import Tabs from './global-components/tabs/tabs.vue';
+import Divider from './global-components/divider.vue';
 
 const GlobalComponents = {
   install(Vue) {
@@ -17,6 +23,12 @@ const GlobalComponents = {
     Vue.component(Skeleton.name, Skeleton);
     Vue.component(HelpDiv.name, HelpDiv);
     Vue.component(Resize.name, Resize);
+    Vue.component(LayerPositions.name, LayerPositions);
+    Vue.component(DateTime.name, DateTime);
+    Vue.component(Range.name, Range);
+    Vue.component(ResizeIcon.name, ResizeIcon);
+    Vue.component(Tabs.name, Tabs);
+    Vue.component(Divider.name, Divider);
   }
 };
 

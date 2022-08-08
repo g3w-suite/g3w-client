@@ -41,6 +41,10 @@ proto.show = function() {
   GUI.showPanel(this);
 };
 
+proto.close = function(){
+  GUI.closePanel();
+};
+
 proto.mount = function(parent) {
   const panel = this.internalPanel;
   const iCinstance = panel.$mount();
@@ -57,7 +61,7 @@ proto.unmount = function() {
   const d = $.Deferred();
   panel.$destroy(true);
   $(panel.$el).remove();
-  panel.onClose &&  panel.onClose();
+  panel.onClose && panel.onClose();
   this.internalComponent = null;
   d.resolve();
   return d.promise();

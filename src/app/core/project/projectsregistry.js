@@ -1,4 +1,4 @@
-const {base, inherit }= require('core/utils/utils');
+const {base, inherit}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
@@ -17,6 +17,9 @@ function ProjectsRegistry() {
   this.projectType = null;
   this.overviewproject;
   this.setters = {
+    createProject(projectConfig){
+      //hook to get project config and modify it
+    },
     setCurrentProject(project) {
       if (this.state.currentProject !== project) {
         CatalogLayersStoresRegistry.removeLayersStores();
@@ -61,9 +64,14 @@ proto.init = function(config={}) {
     this.overviewproject = config.overviewproject;
     this.setupState();
     // get current configuration
-    this.getProject(config.initproject)
+    const searchParams = new URLSearchParams(location.search);
+    const map_theme = searchParams.get('map_theme');
+    this.getProject(config.initproject, {
+      map_theme
+    })
     .then(project => {
       // set current project
+
       this.setCurrentProject(project);
       this.initialized = true;
       d.resolve(project);
@@ -113,16 +121,6 @@ proto.setupState = function() {
   this.setProjects(this.config.projects);
 };
 
-proto.getProjectAliasUrl = function(gid) {
-  const project = this.config.projects.find(project => project.gid === gid);
-  return project.aliasUrl;
-};
-
-proto.setProjectAliasUrl = function({gid, url, host}) {
-  const project = this.config.projects.find(project => project.gid === gid);
-  if (project) project.aliasUrl = project && `${host? host : ''}${url}`;
-};
-
 proto.getProjectType = function() {
   return this.projectType;
 };
@@ -135,12 +133,12 @@ proto.setProjects = function(projects) {
   this.clearProjects();
   projects.forEach(project => {
     this.state.qgis_version = project.qgis_version || this.state.qgis_version;
-    project.aliasUrl = project.url || null;
     project.baselayers = this.config.baselayers;
     project.minscale = this.config.minscale;
     project.maxscale = this.config.maxscale;
     project.crs = this.config.crs;
     project.vectorurl = this.config.vectorurl;
+    project.rasterurl = this.config.rasterurl;
     project.overviewprojectgid = this.overviewproject ? this.overviewproject.gid : null;
     this._groupProjects.push(project);
   });
@@ -164,8 +162,8 @@ proto.getCurrentProject = function() {
 };
 
 // method to get project configuration - added reload to force to get configuratn project from server
-proto.getProject = function(projectGid, options={reload:false}) {
-  const {reload} = options;
+proto.getProject = function(projectGid, options={ reload:false}) {
+  const {reload, map_theme} = options;
   const d = $.Deferred();
   const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
   if (!pendingProject) {
@@ -177,7 +175,7 @@ proto.getProject = function(projectGid, options={reload:false}) {
     const project = new Project(projectConfig);
     d.resolve(project);
   } else {
-    this._getProjectFullConfig(pendingProject)
+    this._getProjectFullConfig(pendingProject, {map_theme})
       .then(projectFullConfig => {
         const projectConfig = _.merge(pendingProject, projectFullConfig);
         projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
@@ -185,6 +183,7 @@ proto.getProject = function(projectGid, options={reload:false}) {
         projectConfig.relations = this._setProjectRelations(projectConfig);
         this._projectConfigs[projectConfig.gid] = projectConfig;
         // instance of Project
+        this.createProject(projectConfig);
         const project = new Project(projectConfig);
         // add to project
         d.resolve(project);
@@ -215,28 +214,52 @@ proto.getProjectConfigByGid = function(gid) {
   return this._groupProjects.find(project => project.gid === gid);
 };
 
+proto.setProjectAliasUrl = function({gid, url, host}) {
+  const project = this.config.projects.find(project => project.gid === gid);
+  if (project) project.url = project && `${host? host : ''}${url}`;
+};
+/**
+ *
+ * @param gid
+ * @param mode production or development
+ * @returns {string}
+ */
 proto.getProjectUrl = function(gid) {
+  // get base url
+  const {urls:{ baseurl}} = this.config;
+  // get project configuration in initConfig group projects
   const projectConfig = this.getProjectConfigByGid(gid);
-  const projecId = projectConfig.gid.split(':')[1];
-  const type = projectConfig.type;
-  const currentUrl = window.location.href;
-  const paths = currentUrl.split('/');
-  if (!paths[ paths.length-1 ]) {
-    paths[ paths.length-2 ] = projecId;
-    paths[ paths.length-3 ] = type;
-  } else {
-    paths[ paths.length-1 ] = projecId;
-    paths[ paths.length-2 ] = type;
-  }
-  return paths.join('/');
+  const {url} = projectConfig;
+  const {origin} = location;
+  return `${origin}${baseurl}${url}`;
 };
 
 // method to call server to get project configuration
-proto._getProjectFullConfig = function(projectBaseConfig) {
+proto._getProjectFullConfig = function(projectBaseConfig, options={}) {
+  const {map_theme} = options;
   const d = $.Deferred();
   const url = this.config.getProjectConfigUrl(projectBaseConfig);
   $.get(url)
-    .done(projectFullConfig => d.resolve(projectFullConfig))
+    .done(projectFullConfig => {
+      if (map_theme) {
+        const {type, id} = projectBaseConfig;
+        const {map_themes} = projectFullConfig;
+        const find_map_theme = map_themes.find(({theme}) => theme === map_theme);
+        if (find_map_theme) {
+          const url_theme = `/${type}/api/prjtheme/${id}/${map_theme}`;
+          $.get(url_theme).done(({result, data:layerstree}) =>{
+            if (result){
+              projectFullConfig.layerstree = layerstree;
+              find_map_theme.layetstree = layerstree;
+              find_map_theme.default = true;
+            }
+          }).always(()=>{
+            d.resolve(projectFullConfig)
+          })
+        }
+
+      } else d.resolve(projectFullConfig);
+    })
     .fail(error => d.reject(error));
   return d.promise();
 };

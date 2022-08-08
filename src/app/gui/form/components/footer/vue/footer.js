@@ -2,11 +2,23 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 const compiledTemplate = createCompiledTemplate(require('./footer.html'));
 const FooterFormComponent = Vue.extend({
   ...compiledTemplate,
-  props: ['state'],
+  props: {
+    state: {
+      type: Object
+    },
+    backToRoot: {
+      type: Function,
+      default: ()=>{}
+    },
+    isRootComponent:{
+      type: Function
+    }
+  },
   data() {
     return {
       id:"footer",
-      active: true
+      active: true,
+      show: true
     }
   },
   methods: {
@@ -14,17 +26,23 @@ const FooterFormComponent = Vue.extend({
       cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
     },
     btnEnabled(button) {
-      return button.type !== 'save' || (button.type === 'save' && this.isValid());
+      const {enabled=true, type} = button;
+      return enabled && (type !== 'save' ||  (type === 'save' && this.isValid()));
     },
     isValid() {
-      return this.state.valid
+      return this.state.valid;
     },
     _enterEventHandler(evt) {
       if (evt.which === 13) {
         evt.preventDefault();
-        if (this.isValid() && this.active)
-          $(this.$el).find('button').click();
+        const domEL = $(this.$el);
+        if (domEL.is(':visible') && this.isValid() && this.active) domEL.find('button').click();
       }
+    }
+  },
+  watch: {
+    'state.component'(component){
+      this.show = this.isRootComponent(component)
     }
   },
   activated(){
@@ -33,10 +51,9 @@ const FooterFormComponent = Vue.extend({
   deactivated() {
     this.active = false;
   },
-  mounted() {
-    this.$nextTick(() => {
-      document.addEventListener('keydown', this._enterEventHandler)
-    })
+  async mounted() {
+    await this.$nextTick();
+    document.addEventListener('keydown', this._enterEventHandler);
   },
   beforeDestroy() {
     document.removeEventListener('keydown', this._enterEventHandler)

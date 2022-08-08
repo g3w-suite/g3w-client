@@ -1,4 +1,8 @@
 <div class="wrapper" v-disabled="app.disabled">
+  <cookie-law theme="dark-lime" :buttonText="cookie_law_buttonText">
+    <div slot="message" v-t="'cookie_law.message'">
+    </div>
+  </cookie-law>
   <header v-if="!isIframe" class="main-header">
     <!-- Logo -->
     <!-- Header Navbar: style can be found in header.less -->
@@ -14,10 +18,10 @@
           </a>
           <div class="logo-wrapper" :class="{'mobile': isMobile()}">
             <a  v-if="logo_url" :href="logo_link" :target="logo_link_target" class="project_logo_link">
-              <img style="max-width: 250px;" ref="img_logo" :src="logo_url">
+              <img class="img-responsive" style="max-width: 250px;" ref="img_logo" :src="logo_url">
             </a>
             <div ref="main_title_project_title" class="project_title_content">
-              <div  v-if="!isMobile()" class="main_title">{{ main_title }}</div>
+              <div class="main_title">{{ main_title }}</div>
               <div class="sub_title">{{project_title}}</div>
             </div>
           </div>
@@ -25,7 +29,7 @@
         <div ref="mainnavbar" class="collapse navbar-collapse" id="main-navbar" style="text-align: center; overflow: hidden">
           <navbarleftitems></navbarleftitems>
           <navbarrightitems></navbarrightitems>
-          <ul class="nav navbar-nav navbar-right app-navbar-nav">
+          <ul ref="app-navbar-nav" class="nav navbar-nav navbar-right app-navbar-nav">
             <li v-if="!user" class="dropdown user user-menu">
               <a :href="login_url">
                 <i :class="g3wtemplate.getFontClass('sign-in')" aria-hidden="true"></i>
@@ -116,7 +120,7 @@
             <div v-if="powered_by">
               <div class="g3w-credits-block">
                 <div v-t="'credits.g3wSuiteFramework'" style="background-color: #95ad36; padding: 5px; border-radius:3px; color: #ffffff" class="credit-title-logo"></div>
-                <a target="_blank" href="https://g3wsuite.gis3w.it/">
+                <a target="_blank" href="https://g3wsuite.it/">
                   <img class="g3w-suite-logo" :src="g3w_suite_logo" alt="">
                 </a>
                 <div v-t="'credits.g3wSuiteDescription'" style="margin-top: 10px;"></div>

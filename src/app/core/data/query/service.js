@@ -1,8 +1,7 @@
-import {G3W_FID} from 'constant';
+import {G3W_FID, QUERY_POINT_TOLERANCE} from 'constant';
 const {base, inherit} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
-
 const {
   getQueryLayersPromisesByCoordinates,
   getQueryLayersPromisesByGeometry,
@@ -16,7 +15,9 @@ function QueryService(){
    * @type {{filtrable: {ows: string}}}
    */
   this.condition = {
-    filtrable: {ows: 'WFS'}
+    filtrable: {
+      ows: 'WFS'
+    }
   };
 
   /**
@@ -42,7 +43,7 @@ function QueryService(){
       }
     });
     const layerFilterObject = {
-      ALLNOTSELECTED: true,
+      SELECTED: false,
       FILTERABLE: true,
       VISIBLE: true
     };
@@ -51,13 +52,13 @@ function QueryService(){
       {
         geometry,
         multilayers,
-        bbox: false,
         feature_count,
         filterConfig,
         projection: this.project.getProjection()
       });
       return this.handleRequest(request, {
         fid,
+        geometry,
         layer: polygonLayer,
         type: 'polygon'
       });
@@ -72,11 +73,12 @@ function QueryService(){
    * @param layersFilterObject
    * @returns {Promise<unknown>}
    */
-  this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+  this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     const layers = getMapLayersByFilter(layersFilterObject, condition);
     const request = getQueryLayersPromisesByBBOX(layers, {
       bbox,
       feature_count,
+      filterConfig,
       multilayers,
     });
     return this.handleRequest(request, {
@@ -93,10 +95,10 @@ function QueryService(){
    * @param feature_count
    * @returns {Promise<unknown>}
    */
-  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, feature_count}={}){
-    const layersFilterObject = {
+  this.coordinates = async function({coordinates, layerIds=[], multilayers=false, query_point_tolerance=QUERY_POINT_TOLERANCE, feature_count}={}){
+    const layersFilterObject =  {
       QUERYABLE: true,
-      SELECTEDORALL: true,
+      SELECTEDORALL: layerIds.length === 0,
       VISIBLE: true
     };
     Array.isArray(layerIds) && layerIds.forEach(layerId => {
@@ -107,6 +109,7 @@ function QueryService(){
     const request = getQueryLayersPromisesByCoordinates(layers, {
       multilayers,
       feature_count,
+      query_point_tolerance,
       coordinates
     });
     return this.handleRequest(request, {
@@ -134,7 +137,7 @@ function QueryService(){
    * @param response
    * @returns {Promise<{result: boolean, data: [], query: (*|null)}>}
    */
-  this.handleResponse = async function(response, query={}){
+  this.handleResponse = function(response, query={}){
     const layersResults = response;
     const results = {
       query,
@@ -142,7 +145,7 @@ function QueryService(){
       data: [],
       result: true // set result to true
     };
-    layersResults.forEach(result => result.data && result.data.forEach(data => {results.data.push(data)}));
+    layersResults.forEach(result => result.data && result.data.forEach(data => results.data.push(data)));
     return results;
   };
 

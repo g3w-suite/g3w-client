@@ -3,7 +3,7 @@
     <div v-if="state.label" class="col-sm-6  field_label">
       <slot name="label">{{state.label}}</slot>
     </div>
-    <div :class="[state.label ? 'col-sm-6' : null ]" class="field_value">
+    <div :class="[state.label ? 'col-sm-6' : null ]"  class="field_value">
       <slot name="field">
         <span style="word-wrap: break-word;" v-html="state.value"></span>
       </slot>
@@ -21,8 +21,8 @@
 <style scoped>
   .field {
     background-color: transparent !important;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     display: flex;
     align-items: center;
   }
@@ -30,8 +30,8 @@
     position: relative;
   }
   .field div {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 3px;
+    padding-right: 3px;
   }
 
   .field_value {

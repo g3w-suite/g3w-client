@@ -1,6 +1,6 @@
 import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
-const {throttle, debounce} = require('core/utils/utils');
+const {throttle, debounce, XHR} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 const autocompleteMixin = {
@@ -24,36 +24,31 @@ const autocompleteMixin = {
 
 const fieldsMixin = {
   methods: {
-    getFieldType(value) {
-      value = value && typeof  value === 'object' && value.constructor === Object && !value.coordinates? value.value : value;
-      let Fields = {};
-      Fields.SIMPLE = 'simple';
-      Fields.GEO = 'geo';
-      Fields.LINK = 'link';
-      Fields.PHOTO = 'photo';
-      Fields.PHOTOLINK = "photolink";
-      Fields.IMAGE = 'image';
-      Fields.POINTLINK = 'pointlink';
-      Fields.ROUTE = 'route';
-      const URLPattern = /^(https?:\/\/[^\s]+)/g;
-      const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
-      if (_.isNil(value)) {
-        return Fields.SIMPLE;
-      } else if (value && typeof value == 'object' && value.coordinates) {
-        return Fields.GEO;
-      } else if(value && Array.isArray(value)) {
-        if (value.length && value[0].photo) return Fields.PHOTO;
-        else return Fields.SIMPLE
-      } else if (value.toString().toLowerCase().match(PhotoPattern)) {
-        return Fields.PHOTO;
-      } else if (value.toString().match(URLPattern)) {
-        return Fields.LINK;
-      }
-      return Fields.SIMPLE;
+    getFieldService(){
+      if (this._fieldsService === undefined)
+        this._fieldsService = require('gui/fields/fieldsservice');
+      return this._fieldsService;
+    },
+    getFieldType(field) {
+      return this.getFieldService().getType(field);
+    },
+    isSimple(field){
+      return this.getFieldService().isSimple(field);
+    },
+    isLink(field){
+      return this.getFieldService().isLink(field);
+    },
+    isImage(field){
+      return this.getFieldService().isImage(field);
+    },
+    isPhoto(field){
+      return this.getFieldService().isPhoto(field);
+    },
+    isVue(field){
+      return this.getFieldService().isVue(field);
     },
     sanitizeFieldValue(value) {
-      if (Array.isArray(value) && !value.length) return '';
-      else return value
+      return (Array.isArray(value) && !value.length) ? '' : value;
     }
   }
 };
@@ -214,6 +209,9 @@ const resizeMixin = {
 const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
+    setValue(){
+      this.select2.val(this.state.value).trigger('change');
+    },
     resize() {
       this.select2 && !ApplicationState.ismobile && this.select2.select2('close');
     }
@@ -227,6 +225,75 @@ const select2Mixin = {
   }
 };
 
+// FormInputsMixins
+const formInputsMixins = {
+  data(){
+    return {
+      valid: false
+    }
+  },
+  methods: {
+    addToValidate(input){
+      this.tovalidate.push(input);
+    },
+    changeInput(input){
+      this.isValid(input)
+    },
+    // Every input send to form it valid value that will change the genaral state of form
+    isValid(input) {
+      if (input) {
+        // check mutually
+        if (input.validate.mutually) {
+          if (!input.validate.required) {
+            if (!input.validate.empty) {
+              input.validate._valid = input.validate.valid;
+              input.validate.mutually_valid = input.validate.mutually.reduce((previous, inputname) => {
+                return previous && this.tovalidate[inputname].validate.empty;
+              }, true);
+              input.validate.valid = input.validate.mutually_valid && input.validate.valid;
+            } else {
+              input.value = null;
+              input.validate.mutually_valid = true;
+              input.validate.valid = true;
+              input.validate._valid = true;
+              let countNoTEmptyInputName = [];
+              for (let i = input.validate.mutually.length; i--;) {
+                const inputname = input.validate.mutually[i];
+                !this.tovalidate[inputname].validate.empty && countNoTEmptyInputName.push(inputname) ;
+              }
+              if (countNoTEmptyInputName.length < 2) {
+                countNoTEmptyInputName.forEach((inputname) => {
+                  this.tovalidate[inputname].validate.mutually_valid = true;
+                  this.tovalidate[inputname].validate.valid = true;
+                  setTimeout(()=>{
+                    this.tovalidate[inputname].validate.valid = this.tovalidate[inputname].validate._valid;
+                    this.state.valid = this.state.valid && this.tovalidate[inputname].validate.valid;
+                  })
+                })
+              }
+            }
+          }
+          //check if min_field or max_field is set
+        } else if (!input.validate.empty && (input.validate.min_field || input.validate.max_field)) {
+          const input_name = input.validate.min_field || input.validate.max_field;
+          input.validate.valid = input.validate.min_field ?
+            this.tovalidate[input.validate.min_field].validate.empty || 1*input.value > 1*this.tovalidate[input.validate.min_field].value :
+            this.tovalidate[input.validate.max_field].validate.empty || 1*input.value < 1*this.tovalidate[input.validate.max_field].value;
+          if (input.validate.valid) this.tovalidate[input_name].validate.valid = true
+        }
+      }
+      this.valid = Object.values(this.tovalidate).reduce((previous, input) => {
+        return previous && input.validate.valid;
+      }, true);
+    }
+  },
+  created(){
+    this.tovalidate = [];
+  },
+  destroyed(){
+    this.tovalidate = null;
+  }
+};
 
 module.exports = {
   geoMixin,
@@ -234,5 +301,6 @@ module.exports = {
   mediaMixin,
   resizeMixin,
   autocompleteMixin,
-  select2Mixin
+  select2Mixin,
+  formInputsMixins
 };

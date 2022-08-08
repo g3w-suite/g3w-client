@@ -25,12 +25,24 @@
     width: 100%;
     z-index: 10;
   }
-
+  .sidebar-button-shadow {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+  }
+  .sidebar-button-run{
+    .sidebar-button-shadow;
+    color: #ffffff;
+  }
   .sidebar-button {
-    box-shadow: 0 2px 5px rgba(0,0,0, 0.6);
+    .sidebar-button-shadow;
     border-radius: 3px;
+    background-color: #ffffff !important;
     &.toggled {
+      color: #ffffff !important;
       box-shadow: 0 2px 5px rgba(0,0,0, 0.2);
+    }
+    &.sidebar-button-icon {
+      background-color: transparent !important;
     }
   }
 
@@ -66,9 +78,10 @@
     line-height: 1.5em;
     height: 1.3em;
     width: 1.3em;
-    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,.2);;
-    -moz-box-shadow: 0 2px 4px rgba(0,0,0,.2);;
-    box-shadow: 0 2px 4px rgba(0,0,0,.2);;
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+    .hide-cursor-caret-color();
     &:hover {
       cursor: pointer;
     }
@@ -100,6 +113,14 @@
       &:hover {
         background-color: lighten(@sidebar-dark-bg,15%);
       }
+    }
+  }
+
+  .sidebar-menu {
+    .new_line_too_long_text {
+      overflow: hidden;
+      white-space: normal;
+      //text-overflow: ellipsis;
     }
   }
 

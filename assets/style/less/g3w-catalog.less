@@ -126,7 +126,7 @@ Licensed under MIT
     &.disabled {
       color: darken(@color-white, 40%);
     }
-    padding-left: 2px;
+    padding-left: 3px;
     cursor: pointer;
     width: 80%;
     display: inline-flex;
@@ -142,11 +142,6 @@ Licensed under MIT
         background-color: #384247;
       }
     }
-    > span {
-      overflow: hidden;
-      white-space: normal;
-      text-overflow: ellipsis;
-    }
   }
 }
 
@@ -161,7 +156,7 @@ Licensed under MIT
 .catalog .root {
   padding: 2px 1px 1px 5px;
   .tree-item.group {
-      padding-left: 3px;
+      padding-left: 1px;
   }
 }
 
@@ -200,18 +195,16 @@ Licensed under MIT
       ul.tree-content-items.root {
         padding-left: 18px;
         > .tree-item.group {
-          padding-left: 0 !important;
+          padding-left: 1px !important;
         }
         & > li.itemmarginbottom{
           & > span.child {
-            span {
-              padding-left: 23px !important;
-            }
+            //padding-left: 23px !important;
           }
         }
       }
       ul.tree-content-items {
-        padding-left: 14px;
+        padding-left: 17px;
         &.g3w-lendplace-toc{
           padding-left: 23px;
           &.root {
@@ -222,9 +215,7 @@ Licensed under MIT
               }
               margin-left: -13px;
               & > span.child {
-                span {
-                  padding-left: 18px !important;
-                }
+                padding-left: 18px !important;
               }
             }
           }
@@ -233,7 +224,7 @@ Licensed under MIT
       }
     }
     span.root.collapse-expande-collapse-icon {
-      width: 20px;
+      width: 19px;
       &.project-root {
         width: 17px;
       }
@@ -270,6 +261,7 @@ Licensed under MIT
       flex: 1 1 0;
       align-items: stretch;
       a {
+        padding: 10px 0;
         text-align: center;
         height: 100%;
         width: 100%;
@@ -285,6 +277,13 @@ Licensed under MIT
     cursor: not-allowed;
   }
 }
+
+.catalog {
+  .g3w-external_wms_layers-group{
+    padding: 5px;
+  }
+}
+
 .catalog .baselayers {
   .radio {
     margin: 0;
@@ -340,6 +339,13 @@ Licensed under MIT
       color: #FAFAFA;
       cursor:pointer;
     }
+    .layer-menu-metadata-info {
+      padding: 5px;
+      max-width: 200px;
+      white-space: normal;
+      overflow-y: auto;
+      max-height: 150px;
+    }
   }
 }
 
@@ -377,6 +383,9 @@ Licensed under MIT
       li {
         padding-left: 2px !important;
       }
+    }
+    .sidebar-menu > li > a {
+      border:0;
     }
   }
   #layer-menu {

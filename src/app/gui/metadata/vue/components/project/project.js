@@ -1,5 +1,5 @@
 const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 import ProjectCatalog from './project.vue'
 
 function ProjectMetadataComponent({state = {}, service} = {}) {

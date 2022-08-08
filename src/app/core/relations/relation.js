@@ -16,7 +16,6 @@ function Relation(config={}) {
     childFields: config.fieldsRef.map(fieldRef => fieldRef.referencingField), // child fields
     type: config.type
   };
-
   base(this);
 }
 
@@ -78,5 +77,21 @@ proto.getFatherFields = function() {
 proto.getChildFields = function() {
   return this.state.childFields;
 };
+
+/**
+ * For editing purpose
+ */
+
+proto.setLoading = function(bool=false){
+  this.state.loading = bool;
+};
+
+proto.isLoading = function(){
+  return this.state.loading;
+};
+
+/**
+ * End editing loading purpose
+ */
 
 module.exports = Relation;

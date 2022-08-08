@@ -1,6 +1,6 @@
 <template>
-  <div class="usermessage-content" :style="style" :class="{'mobile': addClassMobile()}">
-    <div class="usermessage-header-content">
+  <div class="usermessage-content" :id="id" :style="style" :class="{'mobile': addClassMobile()}">
+    <div v-if="showheader" class="usermessage-header-content">
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
@@ -44,11 +44,17 @@
     tool: {
       backgroundColor: '#FFFFFF',
       color: "#222d32"
-    }
+    },
+    loading: {
+      backgroundColor: '#FFFFFF',
+      color: "#222d32",
+      fontWeight: "bold"
+    },
   };
   export default {
     name: "usermessage",
     props: {
+      id:{},
       type: {
         type: String,
         default: 'info' // info, warning, alert, tool
@@ -62,8 +68,8 @@
         default: 'top'
       },
       size: {
-        type: 'String',
-        default: null
+        type: 'String', // values [small, medium,fullpage]
+        default: 'fullpage'
       },
       message: {
         type: String,
@@ -90,6 +96,11 @@
         default: true
       }
     },
+    computed:{
+      showheader(){
+        return this.type !== 'loading';
+      }
+    },
     methods: {
       addClassMobile(){
         return this.isMobile() && !GUI.isSidebarVisible();
@@ -109,6 +120,7 @@
         case 'medium':
           width = '50%';
           break;
+        case 'fullpage':
         default:
           width = '100%';
       }
@@ -163,7 +175,7 @@
     z-index: 1000;
     position: absolute;
     line-height: normal;
-    padding: 10px;
+    padding: 3px;
     min-width: 250px;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
@@ -194,6 +206,7 @@
 
  .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
+   text-align: center;
   }
 
   .usermessage-content.mobile  .usermessage-header-title h4 {
@@ -212,9 +225,8 @@
 
   .usermessage-message {
     width: 100%;
-    padding: 5px;
+    padding: 0 0 3px 10px;
     max-height: 100px;
-    font-weight: bold;
     font-size: 1.1em;
     align-self: flex-start;
     overflow-y: auto;

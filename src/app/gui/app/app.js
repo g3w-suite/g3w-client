@@ -1,6 +1,8 @@
+import CookieLaw from "vue-cookie-law";
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const { uniqueId } = require('core/utils/utils');
+const {t} = require('core/i18n/i18n.service');
 const HeaderItem = require('gui/header/headeritem');
 const GUI = require('gui/gui');
 const layout = require('./layout');
@@ -12,22 +14,27 @@ const AppUI = Vue.extend({
   data() {
     return {
       customcredits: false,
-      current_custom_modal_content: null,
       appState: ApplicationService.getState(),
       current_custom_modal_content: null,
       language: null,
-
+      cookie_law_buttonText: t('cookie_law.buttonText')
     }
   },
   components: {
-    HeaderItem
+    HeaderItem,
+    CookieLaw
   },
   computed: {
     app(){
       return this.appState.gui.app;
     },
     languages() {
-      return this.appconfig.i18n;
+
+      /***
+       * check if is length of languages is more than one
+       */
+      const languages = Array.isArray(this.appconfig.i18n) && this.appconfig.i18n || [];
+      return languages.length > 1 && languages;
     },
     currentProject() {
       return ProjectsRegistry.getCurrentProject();
@@ -85,7 +92,7 @@ const AppUI = Vue.extend({
     },
     main_title() {
       const main_title = this.appconfig.main_map_title;
-      const group_name = this.appconfig.group.name;
+      const group_name = this.appconfig.group.name || this.appconfig.group.slug;
       return main_title ? `${main_title} - ${group_name}` : group_name;
     },
   },
@@ -95,7 +102,7 @@ const AppUI = Vue.extend({
       const flagsurl = `${this.staticurl}img/flags`;
       const $state = $(`<div style="font-weight: bold; display:flex; align-items: center; justify-content: space-around">
             <img src="${flagsurl}/${state.element.value.toLowerCase()}.png" />
-            <span>${state.text}</span> 
+            <span style="margin-left: 5px;">${state.text}</span> 
           </span>`
       );
       return $state;
@@ -104,8 +111,8 @@ const AppUI = Vue.extend({
       if (!this.isIframe) {
         await this.$nextTick();
         const max_width = this.$refs.navbar_toggle.offsetWidth > 0 ? this.$refs.navbar.offsetWidth - this.$refs.navbar_toggle.offsetWidth :
-          this.$refs.mainnavbar.offsetWidth - this.rightNavbarWidth;
-        this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth || 150 }px`;
+          this.$refs.mainnavbar.offsetWidth - this.$refs['app-navbar-nav'].offsetWidth;
+        this.$refs.main_title_project_title.style.maxWidth = `${max_width - this.logoWidth - 15}px`;
       }
     },
     showCustomModalContent(id){
@@ -124,7 +131,10 @@ const AppUI = Vue.extend({
   },
   watch: {
     'language'(lng, currentlng) {
-      currentlng && ApplicationService.changeLanguage(lng);
+      if (currentlng) {
+        ApplicationService.changeLanguage(lng);
+        this.cookie_law_buttonText = t('cookie_law.buttonText');
+      }
     }
   },
   beforeCreate() {
@@ -189,7 +199,7 @@ const AppUI = Vue.extend({
     function setModalHeight(){
       $('#g3w-modal-overlay').css('height',$(window).height());
     }
-    $(window).resize(function() {
+    $(window).resize(() => {
       setFloatBarMaxHeight();
       setModalHeight();
     });

@@ -1,7 +1,8 @@
+import ApplicationState from '../../../core/applicationstate';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
-const Component = require('gui/vue/component');
-const AddLayerComponent = require('./addlayer');
+const Component = require('gui/component/component');
+const AddLayerComponent = require('./components/addlayer');
 const MapService = require('../mapservice');
 const templateCompiled = createCompiledTemplate(require('./map.html'));
 
@@ -13,15 +14,25 @@ const vueComponentOptions = {
     return {
       ready: false,
       target,
+      mouse: {
+        switch_icon: false,
+        epsg_4326: false,
+        tooltip: null
+      },
       maps_container: this.$options.maps_container,
       service,
-      hidemaps: service.state.hidemaps
+      mapunit: ApplicationState.map.unit,
+      hidemaps: service.state.hidemaps,
+      map_info: service.state.map_info,
     }
   },
   components: {
     'addlayer': AddLayerComponent
   },
   computed: {
+    showmapunits(){
+      return this.service.state.mapunits.length > 1;
+    },
     mapcontrolsalignement() {
       return this.service.state.mapcontrolsalignement;
     },
@@ -32,22 +43,30 @@ const vueComponentOptions = {
   methods: {
     showHideControls () {
       const mapControls = this.$options.service.getMapControls();
-      mapControls.forEach((control) => {
-        if (control.type !== "scaleline")
-          control.control.showHide();
-      })
+      mapControls.forEach(control => control.type !== "scaleline" && control.control.showHide());
     },
     getPermalinkUrl() {
       return this.ready ? this.$options.service.getMapExtentUrl(): null;
     },
     createCopyMapExtentUrl(){
       const mapService = this.$options.service.createCopyMapExtentUrl();
+    },
+    switchMapsCoordinateTo4326(){
+      this.mouse.epsg_4326 = !this.mouse.epsg_4326;
+    }
+  },
+  watch: {
+    'mapunit'(unit){
+      ApplicationState.map.unit = unit;
+      this.$options.service.changeScaleLineUnit(unit);
     }
   },
   async mounted() {
     const mapService = this.$options.service;
-    mapService.once('ready', ()=>{
+    mapService.once('ready', ()=> {
       this.ready = true;
+      this.mouse.switch_icon = this.$options.service.getEpsg() !== 'EPSG:4326';
+      this.mouse.tooltip = `ESPG ${this.$options.service.getCrs().split(':')[1]} <--> WGS84`;
     });
     this.crs = mapService.getCrs();
     await this.$nextTick();
@@ -76,13 +95,19 @@ function MapComponent(options = {}) {
   const maps_container = options.maps_container || "g3w-maps";
   options.target = target;
   options.maps_container = maps_container;
-  this.setService(new MapService(options));
+  const service = new MapService(options);
+  this.setService(service);
   merge(this, options);
   this.internalComponent = new InternalComponent({
-    service: this._service,
+    service,
     target,
     maps_container
   });
+  /**
+   * add Vue get cookie method
+   *
+   */
+  service.getCookie = this.internalComponent.$cookie.get;
 }
 
 inherit(MapComponent, Component);

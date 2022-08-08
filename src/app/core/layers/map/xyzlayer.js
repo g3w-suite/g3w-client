@@ -1,6 +1,6 @@
 const {inherit, base} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
-const RasterLayers = require('g3w-ol/src/layers/rasters');
+const RasterLayers = require('g3w-ol/layers/rasters');
 
 function XYZLayer(options, method="GET") {
   base(this, options);
@@ -27,11 +27,8 @@ proto.getLayerConfigs = function(){
 
 proto.addLayer = function(layer){
   this.layer = layer;
+  this.layers.push(layer);
   this.allLayers.push(layer);
-};
-
-proto.toggleLayer = function(){
-  this._updateLayers();
 };
 
 proto.update = function(mapState, extraParams) {
@@ -45,7 +42,7 @@ proto.isVisible = function(){
 proto._makeOlLayer = function(){
   const projection = this.projection ? this.projection : this.layer.getProjection();
   const layerOptions = {
-    url: this.layer.getCacheUrl()+"/{z}/{x}/{y}.png",
+    url: `${this.layer.getCacheUrl()}/{z}/{x}/{y}.png`,
     maxZoom: 20,
     extent: this.config.extent,
     iframe_internal: this.iframe_internal
@@ -67,7 +64,8 @@ proto._makeOlLayer = function(){
 };
 
 proto._updateLayer = function(mapState={}, extraParams={}) {
-  this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
+  const {force=false} = extraParams;
+  !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   this._olLayer.setVisible(this.layer.isVisible());
 };
 

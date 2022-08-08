@@ -1,4 +1,4 @@
-const { base, inherit } = require('core/utils/utils');
+const {base, inherit, toRawType} = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -21,19 +21,39 @@ proto.query = function(options={}, params = {}) {
   const {reproject=false, feature_count=10, filter} = options;
   params.MAXFEATURES = feature_count;
   const d = $.Deferred();
-  const layers = options.layers;
+  const {layers=[this._layer]} = options;
+
+  const projections = {
+    map: this._layer.getMapProjection(),
+    layer: reproject ? this._layer.getProjection(): null
+  };
+
+  const timeoutKey = this.getQueryResponseTimeoutKey({
+    layers,
+    resolve: d.resolve,
+    query:{}
+  });
+
   this._doRequest(filter, params, layers, reproject)
     .then(response => {
-      const projections = {
-        map: this._layer.getMapProjection(),
-        layer: reproject ? this._layer.getProjection(): null
-      };
       const featuresForLayers = this.handleQueryResponseFromServer(response, projections, layers, wms=false);
+      featuresForLayers.forEach(featuresForLayer => {
+        const {features=[]} = featuresForLayer;
+        //sanitize in case of nil:true
+        features.forEach(feature => {
+          Object.entries(feature.getProperties()).forEach(([attribute, value])=>{
+            if (toRawType(value) === 'Object' && value['xsi:nil'])feature.set(attribute, 'NULL');
+          })
+        })
+      });
       d.resolve({
         data: featuresForLayers
       });
     })
-    .fail(e => d.reject(e));
+    .fail(e => d.reject(e))
+    .always(()=> {
+      clearTimeout(timeoutKey)
+    });
   return d.promise();
 };
 
@@ -93,6 +113,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
         });
         break;
       case 'geometry':
+        //speatial methos. <inteserct, within>
         const {spatialMethod = 'intersects'} = filterConfig;
         featureRequest = new ol.format.WFS().writeGetFeature({
           featureTypes: [layer],

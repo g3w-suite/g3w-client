@@ -1,10 +1,11 @@
 import ApplicationState from 'core/applicationstate';
-const { base, inherit, XHR} = require('core/utils/utils');
-const t = require('core/i18n/i18n.service').t;
+const {base, inherit, XHR} = require('core/utils/utils');
+const {t} = require('core/i18n/i18n.service');
 const DataProvider = require('core/layers/providers/provider');
+const {response: responseParser} = require('core/utils/parsers');
 const RelationsService = require('core/relations/relationsservice');
 const Feature = require('core/layers/features/feature');
-const Parsers = require('core/parsers/parsers');
+const Parsers = require('core/utils/parsers');
 
 function QGISProvider(options = {}) {
   base(this);
@@ -14,17 +15,8 @@ function QGISProvider(options = {}) {
     map: null,
     layer: null
   };
-  this._unlockUrl = this._layer.getUrl('unlock');
   // url referred to query
   this._queryUrl = this._layer.getUrl('query');
-  this._dataUrl = this._layer.getUrl('data');
-  // editing url api
-  this._editingUrl = this._layer.getUrl('editing');
-  this._commitUrl = this._layer.getUrl('commit');
-  // url to get configuration
-  this._configUrl = this._layer.getUrl('config');
-  // widget url
-  this._widgetUrls = this._layer.getUrl('widget');
   //filtertokenurl
   this._filtertokenUrl = this._layer.getUrl('filtertoken');
   // layer name
@@ -61,23 +53,25 @@ proto.getFilterToken = async function(params={}){
   }
 };
 
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
+  const dataUrl = this._layer.getUrl('data');
   const params = {
     field,
     suggest,
+    ordering,
     formatter,
     unique,
     filtertoken: ApplicationState.tokens.filtertoken
   };
   try {
     let response = await XHR.get({
-      url: `${queryUrl ?  queryUrl : this._dataUrl}`,
+      url: `${queryUrl ?  queryUrl : dataUrl}`,
       params
     });
     const isVector = this._layer.getType() !== "table";
     isVector && this.setProjections();
     const data = raw ? response : response.result ?  unique ? response.data :  {
-      data: this._parseGeoJsonResponse({
+      data: responseParser.get('application/json')({
         layers: [this._layer],
         response:response.vector.data,
         projections: this._projections
@@ -143,7 +137,7 @@ proto.query = function(options={}) {
 // get layer config
 proto.getConfig = function() {
   const d = $.Deferred();
-  const url = this._configUrl;
+  const url = this._layer.getUrl('config');
   if (!url) {
     d.reject('not valid url');
     return;
@@ -156,7 +150,8 @@ proto.getConfig = function() {
 
 proto.getWidgetData = function(options={}) {
   const {type, fields} = options;
-  const url = this._widgetUrls[type];
+  const widgetUrls = this._layer.getUrl('widget');
+  const url = widgetUrls[type];
   return $.get(url, {
     fields
   });
@@ -164,8 +159,9 @@ proto.getWidgetData = function(options={}) {
 
 // unlock feature
 proto.unlock = function() {
+  const unlockUrl =  this._layer.getUrl('unlock');
   const d = $.Deferred();
-  $.post(this._unlockUrl)
+  $.post(unlockUrl)
     .then(response => d.resolve(response))
     .fail(err => d.reject(err));
   return d.promise()
@@ -175,10 +171,10 @@ proto.unlock = function() {
 proto.commit = function(commitItems) {
   const d = $.Deferred();
   //check if editing or not;
-  const url = this._commitUrl;
+  const url = this._layer.getUrl('commit');
   const jsonCommits = JSON.stringify(commitItems);
   $.post({
-    url: url,
+    url,
     data: jsonCommits,
     contentType: "application/json"
   })
@@ -203,7 +199,7 @@ proto.getFeatures = function(options={}, params={}) {
   //editing mode
   if (options.editing) {
     let promise;
-    url = this._editingUrl;
+    url = this._layer.getUrl('editing');
     if (!url) {
       d.reject('Url not valid');
       return;
@@ -236,6 +232,11 @@ proto.getFeatures = function(options={}, params={}) {
           url,
           data: jsonFilter,
           contentType
+        })
+      } else if (filter.fids){
+        promise = XHR.get({
+          url,
+          params: filter
         })
       } else if (filter.nofeatures){
         const jsonFilter = JSON.stringify({
@@ -282,11 +283,11 @@ proto.getFeatures = function(options={}, params={}) {
       })
       .catch(err => d.reject({ message: t("info.server_error")}));
   } else {
-    url = this._dataUrl;
+    url = this._layer.getUrl('data');
     const urlParams = $.param(params);
-    url+=  urlParams ? '?' + urlParams : '';
+    url+= urlParams ? '?' + urlParams : '';
     $.get({
-      url: url,
+      url,
       contentType
     })
       .then(response => {

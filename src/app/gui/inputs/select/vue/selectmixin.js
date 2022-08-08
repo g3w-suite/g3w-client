@@ -1,4 +1,4 @@
-const getAppLanguage = require('core/i18n/i18n.service').getAppLanguage;
+const {getAppLanguage} = require('core/i18n/i18n.service');
 const selectMixin = {
   methods: {
     getLanguage() {
@@ -24,11 +24,10 @@ const selectMixin = {
     }
   },
   watch:{
-    notvalid(value) {
-      this.$nextTick(()=> {
-        if (this.select2)
-          value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
-      })
+    async notvalid(value) {
+      await this.$nextTick();
+      if (this.select2)
+        value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
     }
   }
 };

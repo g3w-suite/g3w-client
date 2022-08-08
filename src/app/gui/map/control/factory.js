@@ -1,19 +1,20 @@
-const ResetControl = require('g3w-ol/src/controls/resetcontrol');
-const QueryControl = require('g3w-ol/src/controls/querycontrol');
-const ZoomBoxControl = require('g3w-ol/src/controls/zoomboxcontrol');
-const QueryBBoxControl = require('g3w-ol/src/controls/querybboxcontrol');
-const QueryByPolygonControl = require('g3w-ol/src/controls/querybypolygoncontrol');
-const GeolocationControl = require('g3w-ol/src/controls/geolocationcontrol');
-const StreetViewControl = require('g3w-ol/src/controls/streetviewcontrol');
-const AddLayersControl = require('g3w-ol/src/controls/addlayers');
-const LengthControl = require('g3w-ol/src/controls/lengthcontrol');
-const AreaControl = require('g3w-ol/src/controls/areacontrol');
-const OLControl = require('g3w-ol/src/controls/olcontrol');
-const NominatimControl = require('g3w-ol/src/controls/nominatimcontrol');
-const MousePositionControl = require('g3w-ol/src/controls/mousepositioncontrol');
-const ScaleControl = require('g3w-ol/src/controls/scalecontrol');
-const OnClikControl = require('g3w-ol/src/controls/onclickcontrol');
-const ScreenshotControl = require('g3w-ol/src/controls/screenshotcontrol');
+const ResetControl = require('g3w-ol/controls/resetcontrol');
+const QueryControl = require('g3w-ol/controls/querycontrol');
+const ZoomBoxControl = require('g3w-ol/controls/zoomboxcontrol');
+const QueryBBoxControl = require('g3w-ol/controls/querybboxcontrol');
+const QueryByPolygonControl = require('g3w-ol/controls/querybypolygoncontrol');
+const GeolocationControl = require('g3w-ol/controls/geolocationcontrol');
+const StreetViewControl = require('g3w-ol/controls/streetviewcontrol');
+const AddLayersControl = require('g3w-ol/controls/addlayers');
+const LengthControl = require('g3w-ol/controls/lengthcontrol');
+const AreaControl = require('g3w-ol/controls/areacontrol');
+const OLControl = require('g3w-ol/controls/olcontrol');
+const NominatimControl = require('g3w-ol/controls/nominatimcontrol');
+const MousePositionControl = require('g3w-ol/controls/mousepositioncontrol');
+const ScaleControl = require('g3w-ol/controls/scalecontrol');
+const OnClikControl = require('g3w-ol/controls/onclickcontrol');
+const ScreenshotControl = require('g3w-ol/controls/screenshotcontrol');
+const geoScreenshotControl = require('g3w-ol/controls/geoscreenshotcontrol');
 
 const ControlsFactory = {
   create(options={}) {
@@ -43,7 +44,8 @@ ControlsFactory.CONTROLS = {
   'mouseposition': MousePositionControl,
   'scale': ScaleControl,
   'onclick': OnClikControl,
-  'screenshot': ScreenshotControl
+  'screenshot': ScreenshotControl,
+  'geoscreenshot': geoScreenshotControl
 };
 
 module.exports = ControlsFactory;

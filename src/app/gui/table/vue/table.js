@@ -1,7 +1,7 @@
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const TableService = require('../tableservice');
 import Table from './Table.vue';
 
@@ -10,8 +10,7 @@ const InternalComponent = Vue.extend(Table);
 const TableComponent = function(options = {}) {
   base(this);
   this.id = "openattributetable";
-  const layer = options.layer;
-  const formatter = options.formatter;
+  const {layer, formatter} = options;
   const service = options.service || new TableService({
     layer,
     formatter

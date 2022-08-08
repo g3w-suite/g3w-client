@@ -1,20 +1,22 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {MAP_SETTINGS} from "../../../constant";
+import {createCompiledTemplate} from 'gui/vue/utils';
 import CatalogEventHub from './catalogeventhub';
 import LayerLegend from './components/layerlegend.vue';
+import ChangeMapThemesComponent from './components/changemapthemes.vue';
 const ApplicationService = require('core/applicationservice');
 const {inherit, base, downloadFile} = require('core/utils/utils');
 const shpwrite = require('shp-write');
 const {t} = require('core/i18n/i18n.service');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const TableComponent = require('gui/table/vue/table');
-const ComponentsRegistry = require('gui/componentsregistry');
+const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
 const ControlsRegistry = require('gui/map/control/registry');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const Service = require('../catalogservice');
 const ChromeComponent = VueColor.Chrome;
 const compiledTemplate = createCompiledTemplate(require('./catalog.html'));
 const DEFAULT_ACTIVE_TAB = 'layers';
+const Service = require('../catalogservice');
 //OFFSETMENU
 const OFFSETMENU = {
   top: 50,
@@ -53,7 +55,7 @@ const vueComponentOptions = {
         colorMenu: {
           show: false,
           top:0,
-          left: 0,
+          left:0,
           color: null
         },
         //styleMenu
@@ -61,10 +63,18 @@ const vueComponentOptions = {
         stylesMenu: {
           show: false,
           top:0,
-          left: 0,
+          left:0,
           style: null,
-          default: null
+          default: null,
+          maxHeight: null,
+          overflowY: null
         },
+        //metadataInfo
+        metadatainfoMenu: {
+          show: false,
+          top:0,
+          left:0
+        }
       }
     }
   },
@@ -84,9 +94,17 @@ const vueComponentOptions = {
     }
   },
   components: {
-    'chrome-picker': ChromeComponent
+    'chrome-picker': ChromeComponent,
+    'changemapthemes': ChangeMapThemesComponent
+
   },
   computed: {
+    //show or not group toolbar
+    showTocTools(){
+      const {map_themes=[]} = this.project.state;
+      const show = map_themes.length > 1;
+      return show;
+    },
     project() {
       return this.state.prstate.currentProject
     },
@@ -102,10 +120,31 @@ const vueComponentOptions = {
     hasLayers() {
       let layerstresslength = 0;
       this.state.layerstrees.forEach(layerstree => layerstresslength+=layerstree.tree.length);
-      return this.state.externallayers.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
+      return this.state.external.vector.length > 0 || layerstresslength >0 || this.state.layersgroups.length > 0 ;
     }
   },
   methods: {
+    //change view method
+    async changeMapTheme(map_theme){
+      GUI.closeContent();
+      const changes = await this.$options.service.changeMapTheme(map_theme);
+      const changeStyleLayersId = Object.keys(changes.layers).filter(layerId => {
+        if (changes.layers[layerId].style) {
+          if (!changes.layers[layerId].visible){
+            const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+            layer.change();
+          }
+          return true
+        }
+      });
+      this.legend.place === 'tab' ? CatalogEventHub.$emit('layer-change-style') :
+        // get all layer tha changes style
+        changeStyleLayersId.forEach(layerId => {
+          CatalogEventHub.$emit('layer-change-style', {
+            layerId
+          })
+        });
+    },
     delegationClickEventTab(evt){
      this.activeTab = evt.target.attributes['aria-controls'] ? evt.target.attributes['aria-controls'].value : this.activeTab;
     },
@@ -150,10 +189,11 @@ const vueComponentOptions = {
       this.layerMenu.loading.gpx = false;
       this.layerMenu.loading.gpkg = false;
       this.layerMenu.loading.xls = false;
+      this.layerMenu.loading.geotiff = false;
     },
     zoomToLayer() {
       const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
       this._hideMenu();
     },
@@ -165,11 +205,12 @@ const vueComponentOptions = {
       }
       return canZoom;
     },
-    getGeometryType(layerId){
+    getGeometryType(layerId, external=false){
       let geometryType;
-      const layer = this.state.externallayers.find(layer => layer.id === layerId);
-      if (layer) geometryType = layer.geometryType;
-      else {
+      if (external){
+        const layer = this.state.external.vector.find(layer => layer.id === layerId);
+        if (layer) geometryType = layer.geometryType;
+      } else {
         const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
         geometryType = originalLayer.config.geometrytype;
       }
@@ -179,6 +220,10 @@ const vueComponentOptions = {
     canShowWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return originalLayer ? (!!(!originalLayer.isType('table') && originalLayer.getFullWmsUrl())) : false;
+    },
+    canShowWfsUrl(layerId){
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return originalLayer && !originalLayer.isType('table') && originalLayer.isWfsActive();
     },
     canDownloadXls(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
@@ -196,16 +241,24 @@ const vueComponentOptions = {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isCsvDownlodable(): false;
     },
+    canDownloadGeoTIFF(layerId){
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return layer ? layer.isGeoTIFFDownlodable(): false;
+    },
     canDownloadShp(layerId) {
       const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
       return layer ? layer.isShpDownlodable(): false;
     },
     getWmsUrl(layerId) {
       const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
-      return originalLayer.getFullWmsUrl();
+      return originalLayer.getCatalogWmsUrl();
     },
-    copyWmsUrl(evt, layerId) {
-      const url = this.getWmsUrl(layerId);
+    getWfsUrl(layerId) {
+      const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      return originalLayer.getCatalogWfsUrl();
+    },
+    copyUrl({evt, layerId, type}={}) {
+      const url = this[`get${type}Url`](layerId);
       let ancorEement = document.createElement('a');
       ancorEement.href = url;
       const tempInput = document.createElement('input');
@@ -217,6 +270,23 @@ const vueComponentOptions = {
       $(evt.target).attr('title', this.copywmsurltooltip).tooltip('fixTitle');
       document.body.removeChild(tempInput);
       ancorEement = null;
+      setTimeout(()=>this._hideMenu(), 600);
+    },
+    downloadGeoTIFF(layerId, map_extent=false){
+      const caller_download_id = ApplicationService.setDownload(true);
+      this.layerMenu.loading.geotiff = true;
+      const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+      layer.getGeoTIFF({
+        data:  map_extent ? {
+          map_extent: GUI.getService('map').getMapExtent().toString()
+        } : undefined
+      })
+        .catch(err => GUI.notify.error(t("info.server_error")))
+        .finally(() => {
+          this.layerMenu.loading.geotiff = false;
+          ApplicationService.setDownload(false, caller_download_id);
+          this._hideMenu();
+        })
     },
     downloadShp(layerId) {
       const caller_download_id = ApplicationService.setDownload(true);
@@ -278,6 +348,24 @@ const vueComponentOptions = {
           this._hideMenu();
         })
     },
+    changeLayerMapPosition({position, layer}){
+      const mapService = GUI.getService('map');
+      const changed = layer.position !== position;
+      layer.position = position;
+      mapService.changeLayerMapPosition({
+        id: layer.id,
+        position
+      });
+      changed && this._hideMenu();
+    },
+    setWMSOpacity({id=this.layerMenu.layer.id, value:opacity}){
+      this.layerMenu.layer.opacity = opacity;
+      const mapService = GUI.getService('map');
+      mapService.changeLayerOpacity({
+        id,
+        opacity
+      });
+    },
     /**
      * Create a Geojson file from vector OL vector layer and download it in shapefile with WGS84 Projection
      * @param layer
@@ -286,7 +374,7 @@ const vueComponentOptions = {
     async downloadExternalShapefile(layer){
       const EPSG4326 = 'EPSG:4326';
       this.layerMenu.loading.shp = true;
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       const vectorLayer = mapService.getLayerByName(layer.name);
       const GeoJSONFormat = new ol.format.GeoJSON();
       let features = vectorLayer.getSource().getFeatures();
@@ -351,8 +439,11 @@ const vueComponentOptions = {
       this.showColorMenu(false);
       this.layerMenu.stylesMenu.show = false;
     },
+    onbeforeDestroyChangeColor(){
+     this.$refs.color_picker.$off();
+    },
     onChangeColor(val) {
-      const mapService = GUI.getComponent('map').getService();
+      const mapService = GUI.getService('map');
       this.layerMenu.layer.color = val;
       const layer = mapService.getLayerByName(this.layerMenu.name);
       const style = layer.getStyle();
@@ -369,37 +460,66 @@ const vueComponentOptions = {
         } else style.current = false;
       });
       if (changed) {
+        const layerId = this.layerMenu.layer.id;
         const layer = CatalogLayersStoresRegistry.getLayerById(this.layerMenu.layer.id);
         if (layer) {
-          layer.change();
           CatalogEventHub.$emit('layer-change-style', {
-            layerId: layer.getId()
+            layerId
           });
+          layer.change();
         }
       }
       this.closeLayerMenu();
     },
+    /**
+     * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+     */
     async showStylesMenu(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.stylesMenu.top = elem.offset().top;
-        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        this.layerMenu.stylesMenu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
+        const contextmenu = $('#layer-menu');
+        const menuentry = $(evt.target);
+        const submenu = menuentry.children('ul');
+        const height = submenu.height();
+        const maxH = contextmenu.height();
+        this.layerMenu.stylesMenu.maxHeight = height >= maxH ? maxH : null;
+        this.layerMenu.stylesMenu.overflowY = height >= maxH ? 'scroll' : null;
+        this.layerMenu.stylesMenu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
+        this.layerMenu.stylesMenu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
         await this.$nextTick();
       }
       this.layerMenu.stylesMenu.show = bool;
+    },
+    //showmetadatainfo
+    async showMetadataInfo(bool, evt){
+      if (bool) {
+        const elem = $(evt.target);
+        this.layerMenu.metadatainfoMenu.top = elem.offset().top;
+        this.layerMenu.metadatainfoMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        await this.$nextTick();
+      }
+      this.layerMenu.metadatainfoMenu.show = bool;
     },
     showColorMenu(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.colorMenu.top = elem.offset().top;
-        this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2);
+        this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) / 2) - OFFSETMENU.left;
       }
       this.layerMenu.colorMenu.show = bool;
     }
   },
   watch: {
+    // listen external wms change. If remove all layer nee to set active the project or default tab
+    'state.external.wms'(newlayers, oldlayers){
+      if (oldlayers && newlayers.length === 0){
+        this.activeTab = this.project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
+      }
+    },
     'state.prstate.currentProject': {
-      async handler(project){
+      async handler(project, oldproject){
         const activeTab = project.state.catalog_tab || DEFAULT_ACTIVE_TAB;
         this.loading = activeTab === 'baselayers';
         await this.$nextTick();
@@ -412,6 +532,7 @@ const vueComponentOptions = {
     }
   },
   created() {
+    this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
       const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
       layer.clearSelectionFids();
@@ -423,134 +544,22 @@ const vueComponentOptions = {
     });
 
     /**
-     * Event handle for layer toggled
+     * Visible change layer
      */
-    CatalogEventHub.$on('treenodetoogled', (storeid, node, parent, parent_mutually_exclusive) => {
-      const mapService = GUI.getComponent('map').getService();
-      if (node.external && !node.source) {
-        let layer = mapService.getLayerByName(node.name);
-        layer.setVisible(!layer.getVisible());
-        node.visible = !node.visible;
-        node.checked = node.visible;
-      } else if (!storeid) {
-        node.visible = !node.visible;
-        let layer = mapService.getLayerById(node.id);
-        layer.setVisible(node.visible);
-      } else {
-        const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
-        if (!node.groupdisabled) {
-          let layer = layerStore.toggleLayer(node.id, null, parent_mutually_exclusive);
-          mapService.emit('cataloglayertoggled', layer);
-        } else layerStore.toggleLayer(node.id, false, parent_mutually_exclusive)
-      }
-      /*
-       */
-      //indipendentely of parent group  node group is mutally exlusive
-      if (node.checked) {
-        CatalogEventHub.$emit('treenodestoogled', storeid, parent, true);
-        // go down tro layer tree inside forder of layer
-        const siblingsGroups = parent.nodes && parent.nodes.filter(node => node.nodes) || [];
-        siblingsGroups.forEach(group => {
-          if (group.checked) {
-            group.checked = false;
-            CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
-          }
-        });
-
-        //go up from parent layer folder to it's father parent folder
-        if (!parent.checked){
-          parent.checked = true;
-          let parentFolder;
-          const parentGroupId = parent.groupId;
-          const getParentFolder = tree => {
-            // tree is the currend group
-            if (Array.isArray(tree.nodes)) {
-              const find = tree.nodes.find(subtree => {
-                return Array.isArray(subtree.nodes) ? (subtree.groupId === parentGroupId) || getParentFolder(subtree) : false;
-              });
-              if (find && !parentFolder) {
-                parentFolder = tree;
-                return true;
-              }
-            } return false;
-          };
-          getParentFolder(this.state.layerstrees[0].tree[0]);
-          parentFolder && CatalogEventHub.$emit('treenodestoogled', storeid, parent, parent.checked, parentFolder);
-        }
-      }
-    });
-
-    /**
-     * Event handler of check group
-     * nodes: is children nodes of group
-     * isGroupChecked: boolen id current group is checked or not
-     * parent: is the  group parent of current group
-     */
-    CatalogEventHub.$on('treenodestoogled', (storeid, currentgroup, isGroupChecked, parent) => {
-      if (parent && currentgroup.checked) parent.checked = true;
-      const {nodes, groupId} = currentgroup;
-      // get layestore that contains and handle all layers
-      const layerStore = CatalogLayersStoresRegistry.getLayersStore(storeid);
-      // check if parent exist and is mutually exclusive
-      const parent_mutually_exclusive = parent && parent.mutually_exclusive;
-      //id of layers belong to current group and subgroups
-      const layersIds = [];
-      // function to turn on and off all layer belong to subgroup based on group checkd or not
-      const turnOnOffSubGroups = (parentChecked, currentLayersIds, node) => {
-        if (node.nodes) {
-          const isGroupChecked = (node.checked && parentChecked);
-          const groupLayers = {
-            checked: isGroupChecked,
-            layersIds
-          };
-          const currentLayersIds = groupLayers.layersIds;
-          parentLayers.push(groupLayers);
-          node.nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
-        } else if (node.geolayer) {
-          if (node.checked) currentLayersIds.push(node.id);
-          node.disabled = node.groupdisabled = !parentChecked;
-        }
-      };
-      const parentLayers = [{
-        checked: isGroupChecked,
-        layersIds
-      }];
-      const currentLayersIds = parentLayers[0].layersIds;
-      nodes.map(turnOnOffSubGroups.bind(null, isGroupChecked, currentLayersIds));
-      for (let i = parentLayers.length; i--;) {
-        const {layersIds, checked} = parentLayers[i];
-        layerStore.toggleLayers(layersIds, checked , false, parent_mutually_exclusive);
-      }
-      //force to set visible and unchecked al parent layers
-      if (parent_mutually_exclusive && isGroupChecked){
-        const parenGroupLayerIds = [];
-        const parentGroupSubGroups = [];
-        parent.nodes && parent.nodes.filter(node => {
-          node.id && node.checked && parenGroupLayerIds.push(node.id);
-          node.nodes && node.groupId !== groupId && node.checked && parentGroupSubGroups.push(node);
-        });
-        parenGroupLayerIds.length && layerStore.toggleLayers(parenGroupLayerIds, false, true);
-        parentGroupSubGroups.forEach(group =>{
-          group.checked = false;
-          CatalogEventHub.$emit('treenodestoogled', storeid, group, false);
-        })
-      }
+    CatalogEventHub.$on('treenodevisible', layer => {
+      const mapservice = GUI.getService('map');
+      mapservice.emit('cataloglayervisible', layer);
     });
 
     /**
      * Eevent handle of select layer
      */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
-      const mapservice = GUI.getComponent('map').getService();
+      const mapservice = GUI.getService('map');
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      if (!layer.isSelected()) {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id);
-        // emit signal of select layer from catalog
-        mapservice.emit('cataloglayerselected', layer);
-      } else {
-        CatalogLayersStoresRegistry.getLayersStore(storeid).unselectLayer(node.id);
-        mapservice.emit('cataloglayerunselected', layer);
-      }
+      CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
+      // emit signal of select layer from catalog
+      mapservice.emit('cataloglayerselected', layer);
     });
 
     CatalogEventHub.$on('showmenulayer', async (layerstree, evt) => {
@@ -604,27 +613,27 @@ Vue.component('tristate-tree', {
   data() {
     return {
       expanded: this.layerstree.expanded,
-      isFolderChecked: true,
+      isGroupChecked: true,
       controltoggled: false,
       n_childs: null,
       filtered: false
     }
   },
   computed: {
-    isFolder() {
+    isGroup() {
       return !!this.layerstree.nodes
     },
     legendlayerposition(){
       return !this.layerstree.exclude_from_legend && this.legendplace === 'toc' && this.layerstree.visible && this.layerstree.legend ? 'toc' : 'tab';
     },
     showscalevisibilityclass(){
-      return !this.isFolder && this.layerstree.scalebasedvisibility
+      return !this.isGroup && this.layerstree.scalebasedvisibility
     },
     showScaleVisibilityToolip(){
-      return this.showscalevisibilityclass && this.isDisabled && this.layerstree.checked;
+      return this.showscalevisibilityclass && this.layerstree.disabled && this.layerstree.checked;
     },
     isTable() {
-      return !this.isFolder && !this.layerstree.geolayer && !this.layerstree.external;
+      return !this.isGroup && !this.layerstree.geolayer && !this.layerstree.external;
     },
     isHidden() {
       return this.layerstree.hidden && (this.layerstree.hidden === true);
@@ -634,38 +643,125 @@ Vue.component('tristate-tree', {
     },
     isHighLight() {
       const id = this.layerstree.id;
-      return this.highlightlayers && !this.isFolder && CatalogLayersStoresRegistry.getLayerById(id).getTocHighlightable() && this.layerstree.visible;
+      return this.highlightlayers && !this.isGroup && CatalogLayersStoresRegistry.getLayerById(id).getTocHighlightable() && this.layerstree.visible;
     },
-    isDisabled() {
-      return (!this.isFolder && !this.isTable && !this.layerstree.checked) || this.layerstree.disabled || this.layerstree.groupdisabled
+    isInGrey() {
+      return (!this.isGroup && !this.isTable && !this.layerstree.external && (!this.layerstree.visible || this.layerstree.disabled));
     }
   },
   watch:{
-    'layerstree.disabled'(bool) {
-      this.layerstree.selected = bool && this.layerstree.selected ? false : this.layerstree.selected;
-    },
-    'layerstree.checked'(){
+    'layerstree.disabled'(bool) {},
+    'layerstree.checked'(n, o) {
+      this.isGroup ? this.handleGroupChecked(this.layerstree) : this.handleLayerChecked(this.layerstree)
     }
   },
   methods: {
+    //method to inizialize layer (disable, visible etc..)
+    init(){
+      if (this.isGroup && !this.layerstree.checked) this.handleGroupChecked(this.layerstree);
+      if (this.isGroup && !this.root) {
+        this.layerstree.nodes.forEach(node => {
+          if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
+            if (node.id) node.uncheckable = true;
+        })
+      }
+    },
+    /**
+     * Handel change checked property of group
+     * @param group
+     */
+    handleGroupChecked(group){
+      let {checked, parentGroup, nodes} = group;
+      const setAllLayersVisible = ({nodes, visible}) => {
+        nodes.forEach(node => {
+          if (node.id !== undefined){
+            if (node.parentGroup.checked && node.checked) {
+              const projectLayer = CatalogLayersStoresRegistry.getLayerById(node.id);
+              projectLayer.setVisible(visible);
+            }
+          } else setAllLayersVisible({
+            nodes: node.nodes,
+            visible: visible && node.checked
+          })
+        });
+      };
+      if (checked){
+        const visible = parentGroup ? parentGroup.checked : true;
+        if (parentGroup && parentGroup.mutually_exclusive){
+          parentGroup.nodes.forEach(node => {
+            node.checked = node.groupId === group.groupId;
+            node.checked && setAllLayersVisible({
+              nodes: node.nodes,
+              visible
+            })
+          })
+        } else setAllLayersVisible({
+          nodes,
+          visible
+        });
+        while (parentGroup){
+          parentGroup.checked = parentGroup.root || parentGroup.checked;
+          parentGroup = parentGroup.parentGroup
+        }
+      } else {
+        nodes.forEach(node => {
+          if (node.id !== undefined) {
+            if (node.checked) {
+              const projectLayer = CatalogLayersStoresRegistry.getLayerById(node.id);
+              projectLayer.setVisible(false);
+            }
+          } else setAllLayersVisible({
+            nodes: node.nodes,
+            visible: false
+          })
+        });
+      }
+    },
+    /**
+     * Handle changing checked property of layer
+     * @param layer
+     */
+    handleLayerChecked(layerObject){
+      let {checked, id, disabled, projectLayer=false, parentGroup} = layerObject;
+      // in case of external layer
+      if (!projectLayer){
+        const mapService = GUI.getService('map');
+        mapService.changeLayerVisibility({
+          id,
+          visible: checked
+        });
+      } else {
+        const layer = CatalogLayersStoresRegistry.getLayerById(id);
+        if (checked) {
+          const visible = layer.setVisible(!disabled);
+          visible && this.legendplace === 'toc' && setTimeout(()=> CatalogEventHub.$emit('layer-change-style', {
+            layerId: id
+          }));
+          if (parentGroup.mutually_exclusive) {
+            parentGroup.nodes.forEach(node => node.checked = node.id === id);
+          }
+          while (parentGroup){
+            parentGroup.checked = true;
+            parentGroup = parentGroup.parentGroup;
+          }
+        } else layer.setVisible(false);
+        CatalogEventHub.$emit('treenodevisible', layer);
+      }
+    },
     toggleFilterLayer(){
       CatalogEventHub.$emit('activefiltertokenlayer', this.storeid, this.layerstree);
     },
     clearSelection(){
       CatalogEventHub.$emit('unselectionlayer', this.storeid, this.layerstree);
     },
-    toggle(isFolder) {
-      if (isFolder) {
-        this.layerstree.checked = !this.layerstree.checked;
-        this.isFolderChecked = this.layerstree.checked && !this.layerstree.disabled;
-        CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.isFolderChecked, this.parent);
-      } else CatalogEventHub.$emit('treenodetoogled', this.storeid, this.layerstree, this.parent, this.parent_mutually_exclusive);
+    toggle() {
+      this.layerstree.checked = !this.layerstree.checked;
     },
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
     select() {
-      if (!this.isFolder && !this.layerstree.external && !this.isTable) {
+      if (!this.isGroup && !this.layerstree.external && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
@@ -677,33 +773,27 @@ Vue.component('tristate-tree', {
         downloadFile(download.file);
       } else if (download.url) {}
     },
-    removeExternalLayer(name) {
-      const mapService = GUI.getComponent('map').getService();
-      mapService.removeExternalLayer(name);
+    removeExternalLayer(name, type) {
+      const mapService = GUI.getService('map');
+      mapService.removeExternalLayer(name, wms);
     },
     showLayerMenu(layerstree, evt) {
-      if (!this.isFolder && (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)) {
+      if (!this.isGroup && (this.layerstree.openattributetable || this.layerstree.downloadable || this.layerstree.geolayer || this.layerstree.external)) {
         CatalogEventHub.$emit('showmenulayer', layerstree, evt);
       }
     }
   },
   created() {
-    (this.isFolder && !this.layerstree.checked) && CatalogEventHub.$emit('treenodestoogled', this.storeid, this.layerstree, this.layerstree.checked, this.parent);
+    // just firs time
+    this.init();
   },
   async mounted() {
-    if (this.isFolder && !this.root) {
-      this.layerstree.nodes.forEach(node => {
-        if (this.parent_mutually_exclusive && !this.layerstree.mutually_exclusive)
-          if (node.id) node.uncheckable = true;
-      })
-    }
     await this.$nextTick();
     $('span.scalevisibility').tooltip();
   }
 });
 
 const compiletLegendTemplate = createCompiledTemplate(require('./legend.html'));
-
 Vue.component('layerslegend',{
     ...compiletLegendTemplate,
     props: ['layerstree', 'legend', 'active'],
@@ -714,14 +804,10 @@ Vue.component('layerslegend',{
       visiblelayers(){
         let _visiblelayers = [];
         const layerstree = this.layerstree.tree;
-        let traverse = (obj) => {
+        let traverse = obj => {
           for (const layer of obj) {
-            if (!_.isNil(layer.id) && layer.visible && !layer.exclude_from_legend) {
-              _visiblelayers.push(layer);
-            }
-            if (!_.isNil(layer.nodes)) {
-              traverse(layer.nodes);
-            }
+            if (!_.isNil(layer.id) && layer.visible && layer.geolayer && !layer.exclude_from_legend) _visiblelayers.push(layer);
+            if (!_.isNil(layer.nodes)) traverse(layer.nodes);
           }
         };
         traverse(layerstree);
@@ -735,7 +821,7 @@ Vue.component('layerslegend',{
       },
       'visiblelayers'(visibleLayers) {
         const show = !!visibleLayers.length;
-        this.$emit('showlegend', show)
+        this.$emit('showlegend', show);
       }
     },
     created() {
@@ -767,7 +853,10 @@ Vue.component('layerslegend-items',{
   watch: {
     layers: {
       handler(layers){
-        this.mapReady && this.getLegendSrc(layers)
+        // used to preved duplicate legend
+        setTimeout(()=>{
+          this.mapReady && this.getLegendSrc(layers)
+        })
       },
       immediate: false
     },
@@ -876,11 +965,19 @@ Vue.component('layerslegend-items',{
   created(){
     this.mapReady = false;
     this.waitinglegendsurls = []; // urls that are waiting to be loaded
-    CatalogEventHub.$on('layer-change-style', () => this.getLegendSrc(this.layers));
+    CatalogEventHub.$on('layer-change-style', (options={}) => {
+      const {layerId} = options;
+      let changeLayersLegend =[];
+      if (layerId){
+        const layer = this.layers.find(layer => layerId == layer.id);
+        layer && changeLayersLegend.push(layer);
+      } else changeLayersLegend = this.layers;
+      changeLayersLegend.length && this.getLegendSrc(changeLayersLegend);
+    });
   },
   async mounted() {
     await this.$nextTick();
-    const mapService = GUI.getComponent('map').getService();
+    const mapService = GUI.getService('map');
     mapService.on('change-map-legend-params', ()=>{
       this.mapReady = true;
       this.getLegendSrc(this.layers);
@@ -901,7 +998,7 @@ function CatalogComponent(options={}) {
     legend
   }));
   this.internalComponent.state = this.getService().state;
-  let listenToMapVisibility = (map) => {
+  let listenToMapVisibility = map => {
     const mapService = map.getService();
     this.state.visible = !mapService.state.hidden;
     mapService.onafter('setHidden', hidden => {

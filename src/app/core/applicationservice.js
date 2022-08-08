@@ -1,4 +1,5 @@
-import appConfig from 'config';
+import appConfig from 'app/config';
+import {TIMEOUT} from "../constant";
 import ApplicationState from './applicationstate';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
 const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
@@ -11,9 +12,6 @@ const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GUI = require('gui/gui');
 const G3W_VERSION = "{G3W_VERSION}";
-//timeout value
-const TIMEOUT = 60000; // 1 minute
-
 //Manage Application
 const ApplicationService = function() {
   let production = false;
@@ -46,11 +44,19 @@ const ApplicationService = function() {
     }
   };
   base(this);
+  /*
+  * intiConfig as parameter
+  * */
+  this.on('initconfig', ({user}={}) =>{
+    // only user attribute is used
+    this.setApplicationUser(user);
+  });
   // init application
   this.init = async function() {
     try {
       const config = await this.createApplicationConfig();
       this.setConfig(config);
+      this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
       const browserLng = navigator && navigator.language || 'en';
@@ -62,13 +68,15 @@ const ApplicationService = function() {
     }
   };
 
+
   /**
-   * setup Internalization
+   * setup Internationalization
    */
   this.setupI18n = function() {
     const lngConfig = this._config._i18n;
+    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
-    //setup internalization for translation
+    //setup internationalization for translation
     i18ninit(lngConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set accept-language reuest header based on config language
@@ -84,14 +92,22 @@ const ApplicationService = function() {
     return ProjectsRegistry.getCurrentProject();
   };
 
+  /**
+   *
+   * @param bool
+   * @param download_caller_id
+   * @returns {null}
+   */
   this.setDownload = function(bool=false, download_caller_id){
-    if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
-      ApplicationState.download = false;
-      this.download_caller_id = null;
-    } else if (bool && this.download_caller_id === null) {
-      ApplicationState.download = bool;
-      this.download_caller_id = uniqueId();
-    }
+    if (download_caller_id){
+      if (!bool && download_caller_id && this.download_caller_id === download_caller_id) {
+        ApplicationState.download = false;
+        this.download_caller_id = null;
+      } else if (bool && this.download_caller_id === null) {
+        ApplicationState.download = bool;
+        this.download_caller_id = uniqueId();
+      }
+    } else ApplicationState.download = bool;
     return this.download_caller_id;
   };
 
@@ -105,12 +121,20 @@ const ApplicationService = function() {
 
   /*
   * plugin: name of plugin
-  * ready: Boolen - true if loaded and ready otherwise non ready - TO DO
   * */
-  this.loadedPlugin = function(plugin, ready) {
+  this.loadedPlugin = function(plugin) {
     ApplicationState.plugins = ApplicationState.plugins.filter(_plugin => _plugin !== plugin);
   };
 
+  /*
+   *filtertoken methods
+  */
+
+  /**
+   * token is a string passed by server and used as parameter in XHR request
+   * @param filtertoken
+   * @private
+   */
   this._setFilterToken = function(filtertoken){
     ApplicationState.tokens.filtertoken = filtertoken;
   };
@@ -118,6 +142,10 @@ const ApplicationService = function() {
   this.getFilterToken = function(){
     return ApplicationState.tokens.filtertoken;
   };
+
+  /**
+   *  filter token methods
+   */
 
   this.changeLanguage = function(lng){
     changeLanguage(lng);
@@ -241,6 +269,18 @@ const ApplicationService = function() {
     return RouterService;
   };
 
+  //application proxy url
+  this.getProxyUrl = function(){
+    return `${this._initConfig.proxyurl}`;
+  };
+
+  /**
+   * Get Interface OWS Url
+   */
+  this.getInterfaceOwsUrl = function(){
+    return `${this._initConfig.interfaceowsurl}`;
+  };
+
   // clipboard service
   this.getClipboardService = function() {
     return ClipboardService;
@@ -267,6 +307,9 @@ const ApplicationService = function() {
       config.server.urls.clienturl = initConfig.staticurl+initConfig.client;
       config.server.urls.mediaurl = initConfig.mediaurl;
       config.server.urls.vectorurl = initConfig.vectorurl;
+      config.server.urls.proxyurl = initConfig.proxyurl;
+      config.server.urls.rasterurl = initConfig.rasterurl;
+      config.server.urls.interfaceowsurl = initConfig.interfaceowsurl;
       config.main_map_title = initConfig.main_map_title;
       config.group = initConfig.group;
       config.user = initConfig.user;
@@ -290,6 +333,8 @@ const ApplicationService = function() {
         mediaurl: config.server.urls.mediaurl,
         resourcesurl: config.server.urls.clienturl,
         vectorurl:config.server.urls.vectorurl,
+        rasterurl:config.server.urls.rasterurl,
+        interfaceowsurl: config.server.urls.interfaceowsurl,
         projects: config.group.projects,
         initproject: config.group.initproject,
         overviewproject: (config.group.overviewproject && config.group.overviewproject.gid) ? config.group.overviewproject : null,
@@ -330,6 +375,7 @@ const ApplicationService = function() {
       production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
+      this.emit('initconfig', initConfig);
       return window.initConfig;
       // case development need to ask to api
     } else {
@@ -340,7 +386,7 @@ const ApplicationService = function() {
       const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
       if (locationsearch) {
         queryTuples = locationsearch.split('&');
-        queryTuples.forEach((queryTuple) => {
+        queryTuples.forEach(queryTuple => {
           //check if exist project in url
           if( queryTuple.indexOf("project") > -1) {
             projectPath = queryTuple.split("=")[1];
@@ -366,7 +412,7 @@ const ApplicationService = function() {
         } catch(error) {
           return Promise.reject(error);
         } finally {
-          this.emit('initconfig')
+          this.emit('initconfig', initConfig)
         }
       }
     }
@@ -420,6 +466,14 @@ const ApplicationService = function() {
     ApplicationState.map.epsg = project.state.crs.epsg;
   };
 
+  //Application User
+  this.setApplicationUser = function(user){
+    ApplicationState.user = user;
+  };
+
+  this.getApplicationUser = function(){
+    return ApplicationState.user;
+  };
 
   //  bootstrap (when called init)
   this.bootstrap = function() {
@@ -453,7 +507,7 @@ const ApplicationService = function() {
           ApplicationState.iframe && this.startIFrameService({
             project
           });
-          // initilize routerdataservice
+          // initialize routerdataservice
           RouterDataService.init();
           resolve(true);
         }).fail(error => reject(error))
@@ -497,13 +551,12 @@ const ApplicationService = function() {
    * clear initConfig
    */
   this.clearInitConfig = function() {
-    window.initConfig = null;
-    this._initConfig = null;
+    window.initConfig = this._initConfig = null;
   };
 
   this.setInitVendorKeys = function(config={}){
    const vendorkeys = config.group.vendorkeys || {};
-   config.group.baselayers.forEach(baselayer =>{
+   config.group.baselayers.forEach(baselayer => {
      if (baselayer.apikey) {
        const type = baselayer.servertype ? baselayer.servertype.toLowerCase() : null;
        vendorkeys[type] = baselayer.apikey
@@ -513,9 +566,16 @@ const ApplicationService = function() {
   };
 
   this.setVendorKeys = function(keys={}){
-    Object.keys(keys).forEach(key =>{
-      ApplicationState.keys.vendorkeys[key] = keys[key];
-    })
+    Object.keys(keys).forEach(key =>ApplicationState.keys.vendorkeys[key] = keys[key])
+  };
+
+  // change View
+  this.changeProjectView = function(change){
+    ApplicationState.changeProjectview = change;
+  };
+
+  this.isProjectViewChanging = function(){
+    return ApplicationState.changeProjectview;
   };
 
   this.reloadCurrentProject = function(){
@@ -533,58 +593,58 @@ const ApplicationService = function() {
    */
   this._changeProject = function({gid, host}={}) {
     const d = $.Deferred();
-    const reload = this._gid === gid;
     this._gid = gid;
-    const aliasUrl = ProjectsRegistry.getProjectAliasUrl(gid);
-    const mapUrl = ProjectsRegistry.getProjectUrl(gid);
-    // change url using history
-    (production && aliasUrl) && history.replaceState(null, null, aliasUrl) || history.replaceState(null, null, mapUrl);
-    //remove tools
-    this.obtainInitConfig({
-      host
-    }).then(initConfig => {
-      // run Timeout
-      const timeout = setTimeout(() =>{
-        reject('Timeout')
-      }, TIMEOUT);
-        ProjectsRegistry.setProjects(initConfig.group.projects);
-        ProjectsRegistry.getProject(gid, {
-          reload // force to reload configuration
-        })
-          .then(project => {
-            //clearTimeout
-            clearTimeout(timeout);
-            ///
-            GUI.closeUserMessage();
-            GUI.closeContent()
-              .then(() => {
-                // remove all tools
-                ProjectsRegistry.onceafter('setCurrentProject', ()=>{
-                  GUI.getComponent('tools').getService().reload();
-                  // reload metadati
-                  GUI.getComponent('metadata').getService().reload();
-                  // reload plugins
-                  PluginsRegistry.reloadPlugins(initConfig, project)
-                    .then(()=>{})
-                    .catch(()=>{})
-                    .finally(()=> {
-                      // reload components
-                      GUI.reloadComponents();
-                      d.resolve(project);
-                    })
-                });
-                // change current project project
-                ProjectsRegistry.setCurrentProject(project);
-                this.setEPSGApplication(project);
-                ApplicationState.download = false;
-              })
-              .fail(err => console.log)
-          })
-          .fail(() => d.reject());
-      })
-      .catch(error => d.reject(error));
+    const projectUrl = ProjectsRegistry.getProjectUrl(gid);
+    const url = GUI.getService('map').addMapExtentUrlParameterToUrl(projectUrl);
+    history.replaceState(null, null, url);
+    location.replace(url);
+    d.resolve();
     return d.promise();
   };
+
+  /**
+   * Layout section
+   */
+
+  this.setLayout = function(who='app', config={}){
+    /**
+     * Set default height percentage of height when show vertical content (for example show table attribute)
+     * @type {{}}
+     */
+    if (config.rightpanel) {
+      config.rightpanel.width = config.rightpanel.width || 50;
+      config.rightpanel.height = config.rightpanel.height || 50;
+      config.rightpanel.width_default = config.rightpanel.width; // used eventually to reset starting values
+      config.rightpanel.height_default = config.rightpanel.height;
+      config.rightpanel.width_100 = false;
+      config.rightpanel.height_100 = false;
+    } else config.rightpanel = {width: 50, height: 50, width_default: 50, height_default: 50, width_100: false, height_100: false};
+    ApplicationState.gui.layout[who] = config;
+  };
+
+  this.removeLayout = function(who){
+    who && delete ApplicationState.gui.layout[who];
+  };
+
+  this.setCurrentLayout = function(who='app'){
+    ApplicationState.gui.layout.__current = who;
+  };
+
+  this.getCurrentLayout = function(){
+    return ApplicationState.gui.layout[ApplicationState.gui.layout.__current];
+  };
+
+  this.getCurrentLayoutName = function(){
+    return ApplicationState.gui.layout.__current;
+  };
+
+  this.cloneLayout = function(which='app'){
+    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
+  };
+
+  /**
+   * Layout section
+   */
 
   this.clear = function(){
     this.unregisterOnlineOfflineEvent();

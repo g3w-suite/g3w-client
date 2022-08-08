@@ -1,3 +1,4 @@
+import {TIMEOUT} from "../../constant";
 import {EXPRESSION_OPERATORS} from '../layers/filter/operators'
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
@@ -176,6 +177,13 @@ const utils = {
     return d.promise();
   },
   trimValue: value => value.replace(/ /g,''),
+  /**
+   * Method to check if is a url
+   * @param url
+   * @returns {boolean}
+   */
+  isURL: url => url && url.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g),
+
   sanitizeUrl({url, reserverParameters=[]}={}){
     const checkUrl = new URL(url);
     reserverParameters.forEach((param) => {
@@ -257,6 +265,9 @@ const utils = {
       }, delay);
     };
   },
+  getRandomColor(){
+    return `#${((1<<24)*Math.random() | 0).toString(16)}`;
+  },
   copyUrl(url){
     const tempinput = document.createElement('input');
     document.body.appendChild(tempinput);
@@ -281,12 +292,22 @@ const utils = {
         resolve();
       } else if (url) {
        fetch(url)
-         .then( response => response.blob())
+         .then(async response => {
+           if (response.status === 200) {
+             mime_type = mime_type || response.headers.get('content-type');
+             filename = filename || response.headers.get('content-disposition').split('filename=').length ?
+               response.headers.get('content-disposition').split('filename=')[1] : 'g3w_download_file';
+             return response.blob();
+           } else if (response.status === 400 || response.status === 500){
+             const {message} = await response.json();
+             return Promise.reject(message)
+           }
+         })
          .then(blob =>{
            download(blob);
            resolve();
-         }).catch(()=>{
-          reject()
+         }).catch(error =>{
+          reject(error)
         })
       }
     })
@@ -346,21 +367,32 @@ const utils = {
       }
     }
   },
-  getTimeoutPromise({timeout=600}){
-    const promise = new Promise(resolve =>setTimeout(resolve, timeout));
-    return promise;
+  /**
+   * Method to set timeout
+   * @param timeout
+   * @param resolve
+   * @param data
+   * @returns {number}
+   */
+  getTimeoutPromise({timeout=TIMEOUT, resolve, data}){
+    const timeoutKey = setTimeout(()=>{
+      resolve(data)
+    }, timeout);
+    return timeoutKey;
   },
   XHR: {
     get({url, params={}}={}) {
       return new Promise((resolve, reject) => {
         url ?
           $.get(url, params)
-            .then(response => resolve(response))
+            .then(response => {
+              resolve(response)
+            })
             .fail(error => reject(error))
         : reject('No url')
       })
     },
-    post({url, data, formdata = false, contentType} = {}) {
+    post({url, data, formdata = false, contentType} = {}, getResponseStatusHeaders=false) {
       return new Promise((resolve, reject) => {
         if (formdata) {
           const formdata = new FormData();
@@ -373,8 +405,12 @@ const utils = {
             data: formdata,
             processData: false,
             contentType: false
-          }).then(response => {
-              resolve(response)
+          }).then((response, status, request) => {
+            getResponseStatusHeaders ? resolve({
+                data: response,
+                status,
+                request
+              }) : resolve(response)
             })
             .fail(error => {
               reject(error);
@@ -386,16 +422,24 @@ const utils = {
             data,
             processData: false,
             contentType: contentType || false
-          }).then(response => {
-            resolve(response)
+          }).then((response, status, request) => {
+            getResponseStatusHeaders ? resolve({
+              data: response,
+              status,
+              request
+            }) : resolve(response)
           })
             .fail(error => {
               reject(error);
             })
         } else {
           $.post(url, data)
-            .then(response => {
-              resolve(response)
+            .then((response, status, request) => {
+              getResponseStatusHeaders ? resolve({
+                data: response,
+                status,
+                request
+              }) : resolve(response)
             })
             .fail(error => {
               reject(error)
@@ -403,7 +447,6 @@ const utils = {
         }
       })
     },
-
     htmlescape(string){
       string = string.replace("&", "&amp;");
       string = string.replace("<", "&lt;");
@@ -411,23 +454,36 @@ const utils = {
       string = string.replace('"', "&quot;");
       return string;
     },
-
     fileDownload({url, data, httpMethod="POST"} = {}) {
+      let timeoutId;
       return new Promise((resolve, reject) => {
-        $.fileDownload(url, {
+        const downloadPromise = $.fileDownload(url, {
           httpMethod,
-          data,
-        }).done(()=>{
-          resolve()
-        }).fail(()=>{
-          reject()
-        })
+          data
+        });
+        timeoutId = setTimeout(()=>{
+          reject('Timeout');
+          downloadPromise.abort();
+        }, TIMEOUT);
+        downloadPromise
+          .done(()=>resolve())
+          .fail(()=> reject())
+          .always(()=>{
+            clearTimeout(timeoutId)
+          });
       })
     }
   },
   createSingleFieldParameter({field, value, operator='eq', logicop=null}){
     logicop = logicop && `|${logicop}`;
-    return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+    if (Array.isArray(value)){
+      let filter = '';
+      const valueLenght = value.length;
+      value.forEach((value, index) =>{
+        filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+      });
+      return filter
+    } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;

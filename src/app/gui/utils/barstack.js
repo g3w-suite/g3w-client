@@ -1,6 +1,6 @@
 const {resolve, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const Panel = require('gui/panel');
 
 //Barstack Class
@@ -81,7 +81,7 @@ proto._mount = function(content, options) {
   }
   // Vue
   else if (content.mount && typeof content.mount == 'function') {
-    this._checkDuplicateVueContent(content); // if already exist it removed before
+    this._checkDuplicateVueContent(content); // if already exist it removed before based on id
     return this._setVueContent(content,options)
   }
   // DOM

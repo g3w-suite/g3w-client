@@ -1,20 +1,12 @@
 // main object content for i18n
-const plugins18nConfig = {
-  it: {
-    plugins: {}
-  },
-  en: {
-    plugins: {}
-  },
-  fi: {
-    plugins: {}
-  },
-  se: {
-    plugins: {}
-  }
-};
+const plugins18nConfig = {};
 
 function init(config) {
+  config.appLanguages.forEach(lng =>{
+    plugins18nConfig[lng] = {
+      plugins: {}
+    }
+  });
   i18next
   .use(i18nextXHRBackend)
   .init({
@@ -64,7 +56,8 @@ const tPrefix = function(filter) {
 
 const addI18nPlugin = function({name, config}) {
   for (const language in config) {
-    plugins18nConfig[language].plugins[name] = config[language];
+    const pluginLng = plugins18nConfig[language];
+    if (pluginLng) pluginLng.plugins[name] = config[language];
   }
   addI18n(plugins18nConfig);
 };

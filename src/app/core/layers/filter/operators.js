@@ -14,7 +14,7 @@ export const OPERATORS =  {
 };
 
 export const EXPRESSION_OPERATORS = {
-  'lte=': '<=',
+  lte: '<=',
   ltgt: '!=',
   ilike: 'ILIKE',
   like: 'LIKE',

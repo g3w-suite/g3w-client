@@ -1,9 +1,17 @@
 .g3wform_body {
+  .g3w_input_help {
+    font-weight: normal;
+    text-align: justify;
+    padding: 5px;
+    border-radius: 3px;
+    margin-top: 5px;
+    img {
+      max-height: 50px;
+    }
+  }
   .dataTable.no-footer {
     border-bottom:none;
   }
-
-
   h5.relation_title {
     font-size: 1.2em;
     font-weight: bold;
@@ -22,7 +30,7 @@
 
   .relation-editbtn {
     padding: 3px 3px 3px 3px;
-    margin: 0px 5px 0px 5px;
+    margin: 0 5px 0 5px;
     border-radius: 5px;
     font-size: 15px !important;
   }
@@ -66,12 +74,12 @@
     text-overflow: ellipsis;
   }
   .form_editing_relation_input {
+    position: relative;
     .info_helptext_button {
       text-align: center;
       font-size: 0.8em;
-      margin-top: -10px;
-      margin-left: 5px;
-      background-color: rgba(0,0,0,0.1);
+      margin-top: -5px;
+      margin-left: 0;
       font-weight: bold;
       position:absolute;
       top:0;
@@ -86,7 +94,6 @@
     font-weight: bold;
     width: 100%;
     padding: 10px;
-    background-color: rgba(0,0,0,0.1);
   }
   .preview {
     width: 100%;
@@ -186,7 +193,7 @@
 .g3wform_footer {
   text-align: center;
   position:absolute;
-  bottom: 5px;
+  bottom: 0;
   margin: auto;
   width: 100%;
   background-color: #ededed;
@@ -205,9 +212,12 @@
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: 0;
-    padding: 10px;
+    padding: 5px;
     overflow: hidden;         /* see note #2 */
     &.tabs {
+      border: 1px solid #eeeeee;
+      margin-right: 2px;
+      border-bottom: 0;
       &:hover {
         background-color: #ededed;
       }
@@ -224,7 +234,7 @@
     font-weight: bold;
   }
   .tab-node.group .sub-group {
-    background-color: #f9f9f9;
+    margin-top: 3px;
   }
 
   .field-child input.form-control {

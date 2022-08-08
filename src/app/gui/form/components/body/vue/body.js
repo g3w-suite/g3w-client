@@ -1,23 +1,24 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
+import {createCompiledTemplate} from 'gui/vue/utils';
 import G3wFormInputs from '../../../../inputs/g3w-form-inputs.vue';
-import Tabs from '../../../../tabs/tabs.vue';
 const compiledTemplate = createCompiledTemplate(require('./body.html'));
 
 const BodyFormComponent = Vue.extend({
   ...compiledTemplate,
-  props: ['state'],
+  props: ['state', 'handleRelation'],
   data() {
     return {
       show: true
     }
   },
   components: {
-    Tabs,
     G3wFormInputs
   },
   methods: {
     addToValidate(input) {
       this.$emit('addtovalidate', input);
+    },
+    removeToValidate(input){
+      this.$emit('removetovalidate', input);
     },
     changeInput(input) {
       this.$emit('changeinput', input);

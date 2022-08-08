@@ -24,19 +24,8 @@ function LayersStore(config={}) {
     setLayerSelection({layerId, selection}){
       const layer = this.getLayerById(layerId);
     },
-    setLayersVisible (layersIds, visible, checked=true) {
-      const layers = [];
-      layersIds.forEach(layerId => {
-        const layer = this.getLayerById(layerId);
-        layer.setVisible(visible);
-        checked && layer.setChecked(visible);
-        layers.push(layer);
-      });
-      return layers;
-    },
     setLayerSelected(layerId, selected) {
-      const layers = this.getLayers();
-      layers.forEach(layer => layer.state.selected = ((layerId === layer.getId()) && selected) || false);
+      this.getLayers().forEach(layer => layer.state.selected = (layerId === layer.getId()) ? selected : false);
     },
     addLayers(layers) {
       layers.forEach(layer => this.addLayer(layer))
@@ -92,95 +81,87 @@ proto.removeLayers = function() {
 };
 
 proto.getLayersDict = function(filter = {}, options={}) {
-  if (!filter) {
-    return this._layers;
-  }
-  const filterPrintable = filter.PRINTABLE;
-  const filterActive = filter.ACTIVE;
-  const filterQueryable = filter.QUERYABLE;
-  const filterFilterable = filter.FILTERABLE;
-  const filterEditable = filter.EDITABLE;
-  const filterVisible = filter.VISIBLE;
-  const filterSelected = filter.SELECTED;
-  const filterCached = filter.CACHED;
-  const filterSelectedOrAll = filter.SELECTEDORALL;
-  const filterAllNotSelected = filter.ALLNOTSELECTED;
-  const filterServerType = filter.SERVERTYPE;
-  const filterBaseLayer = filter.BASELAYER;
-  const filterGeoLayer = filter.GEOLAYER;
-  const filterVectorLayer = filter.VECTORLAYER;
-  const filterHidden = filter.HIDDEN;
-  const filterDisabled = filter.DISABLED;
-  const filterIds = filter.IDS;
-  if (_.isUndefined(filterQueryable)
-    && _.isUndefined(filterFilterable)
-    && _.isUndefined(filterEditable)
-    && _.isUndefined(filterVisible)
-    && _.isUndefined(filterActive)
-    && _.isUndefined(filterSelected)
-    && _.isUndefined(filterCached)
-    && _.isUndefined(filterSelectedOrAll)
-    && _.isUndefined(filterServerType)
-    && _.isUndefined(filterGeoLayer)
-    && _.isUndefined(filterHidden)
-    && _.isUndefined(filterDisabled)
-    && _.isUndefined(filterBaseLayer)
-    && _.isUndefined(filterVectorLayer)
-    && _.isUndefined(filterPrintable)
-    && _.isUndefined(filterIds)
-  ) {
-    return this._layers;
-  }
+  // in case  we pass filter = null
+  if (!filter) return this._layers;
+  const {
+    PRINTABLE,
+    QUERYABLE,
+    FILTERABLE,
+    EDITABLE,
+    VISIBLE,
+    SELECTED,
+    CACHED,
+    SELECTEDORALL,
+    SERVERTYPE,
+    BASELAYER,
+    GEOLAYER,
+    VECTORLAYER,
+    HIDDEN,
+    DISABLED,
+    IDS
+  } = filter;
+
+  // if filter is passed
+  if (
+    _.isUndefined(QUERYABLE)
+    && _.isUndefined(FILTERABLE)
+    && _.isUndefined(EDITABLE)
+    && _.isUndefined(VISIBLE)
+    && _.isUndefined(SERVERTYPE)
+    && _.isUndefined(CACHED)
+    && _.isUndefined(SELECTEDORALL)
+    && _.isUndefined(SERVERTYPE)
+    && _.isUndefined(GEOLAYER)
+    && _.isUndefined(HIDDEN)
+    && _.isUndefined(DISABLED)
+    && _.isUndefined(BASELAYER)
+    && _.isUndefined(VECTORLAYER)
+    && _.isUndefined(PRINTABLE)
+    && _.isUndefined(IDS)
+  ) return this._layers;
+
   let layers = [];
 
-  for(let key in this._layers) {
+  for (let key in this._layers) {
     layers.push(this._layers[key]);
   }
 
-  // return only selected
-  if (filterSelectedOrAll) {
-    let _layers = layers;
-    layers = layers.filter((layer) => {
-      return layer.isSelected();
-    });
-    layers = layers.length ? layers : _layers;
-  }
-
-  if (filterIds) {
-    const ids = Array.isArray(filterIds) ? filterIds : [filterIds];
+  if (IDS) {
+    const ids = Array.isArray(IDS) ? IDS : [IDS];
     layers = layers.filter(layer => ids.indexOf(layer.getId()) !== -1)
   }
 
-  if (typeof filterActive === 'boolean') layers = layers.filter(layer => filterActive === !layer.isDisabled());
+  // return only selected if some one are selected
+  if (SELECTEDORALL) {
+    let _layers = layers;
+    layers = layers.filter(layer => layer.isSelected());
+    layers = layers.length ? layers : _layers;
+  } else  if (typeof SELECTED === 'boolean') layers = layers.filter(layer => SELECTED === layer.isSelected());
 
-  if (typeof filterQueryable === 'boolean') layers = layers.filter(layer => filterQueryable === layer.isQueryable());
+  if (typeof QUERYABLE === 'boolean') layers = layers.filter(layer => QUERYABLE === layer.isQueryable());
 
-  if (typeof filterFilterable === 'boolean') layers = layers.filter(layer => filterFilterable === layer.isFilterable(options.filtrable || null));
+  if (typeof FILTERABLE === 'boolean') layers = layers.filter(layer => FILTERABLE === layer.isFilterable(options.filtrable || null));
 
-  if (typeof filterEditable === 'boolean') layers = layers.filter(layer => filterEditable === layer.isEditable());
+  if (typeof EDITABLE === 'boolean') layers = layers.filter(layer => EDITABLE === layer.isEditable());
 
-  if (typeof filterVisible === 'boolean') layers = layers.filter(layer => filterVisible === layer.isVisible());
+  if (typeof VISIBLE === 'boolean') layers = layers.filter(layer => VISIBLE === layer.isVisible());
 
-  if (typeof filterCached === 'boolean') layers = layers.filter(layer => filterCached === layer.isCached());
+  if (typeof CACHED === 'boolean') layers = layers.filter(layer => CACHED === layer.isCached());
 
-  if (typeof filterSelected === 'boolean') layers = layers.filter(layer => filterSelected === layer.isSelected());
+  if (typeof BASELAYER === 'boolean') layers = layers.filter(layer => BASELAYER === layer.isBaseLayer());
 
-  if (typeof filterBaseLayer === 'boolean') layers = layers.filter(layer => filterBaseLayer === layer.isBaseLayer());
+  if (typeof GEOLAYER === 'boolean') layers = layers.filter(layer => GEOLAYER === layer.state.geolayer);
 
-  if (typeof filterGeoLayer === 'boolean') layers = layers.filter(layer => filterGeoLayer === layer.state.geolayer);
+  if (typeof VECTORLAYER === 'boolean') layers = layers.filter(layer => VECTORLAYER === layer.isType('vector'));
 
-  if (typeof filterVectorLayer === 'boolean') layers = layers.filter(layer => filterVectorLayer === layer.isType('vector'));
+  if (typeof HIDDEN === 'boolean') layers = layers.filter(layer => HIDDEN == layer.isHidden());
 
-  if (typeof filterHidden === 'boolean') layers = layers.filter(layer => filterHidden == layer.isHidden());
+  if (typeof DISABLED === 'boolean') layers = layers.filter(layer => DISABLED === layer.isDisabled());
 
-  if (typeof filterDisabled === 'boolean') layers = layers.filter(layer => filterDisabled === layer.isDisabled());
+  if (typeof SERVERTYPE === 'string' && SERVERTYPE !=='') layers = layers.filter(layer => SERVERTYPE === layer.getServerType());
 
-  if (typeof filterServerType === 'string' && filterServerType !=='') layers = layers.filter(layer => filterServerType === layer.getServerType());
+  if (PRINTABLE) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: PRINTABLE.scale}));
 
-  if (filterPrintable) layers = layers.filter(layer => layer.state.geolayer && layer.isPrintable({scale: filterPrintable.scale}));
-
-  // return only not selected
-  if (filterAllNotSelected) layers = layers.filter((layer) => !layer.isSelected());
   return layers;
 };
 
@@ -234,7 +215,7 @@ proto._getAllSiblingsChildrenLayersId = function(layerstree) {
 proto._getAllParentLayersId = function(layerstree, node) {
   let nodeIds = [];
   let traverse = layerstree => {
-    layerstree.nodes.forEach((node) => {
+    layerstree.nodes.forEach(node => {
       if (node.id) nodeIds.push(node.id);
       //else traverse(node);
     });
@@ -247,77 +228,13 @@ proto._getAllParentLayersId = function(layerstree, node) {
   return nodeIds;
 };
 
-/**
- * Method to check mutually of group  belong to layerId
- * @param layerId
- * @private
- */
-proto._mutuallyExclude = function(layerId) {
-  let parentLayersTree = this.state.layerstree;
-  let traverse = obj => {
-    Object.entries(obj).forEach(([key, layer]) => {
-      if (layer.nodes !== null && layer.nodes !== undefined) {
-        let found = layer.nodes.reduce((previous, node) => {
-          return node.id === layerId ||  previous ;
-        }, false);
-        // if found mean that a found a group that contain layer with layerId
-        if (found) {
-          let checked_node;
-          let nodeIds = [];
-          layer.nodes.forEach(node => {
-            if (node.id) {
-              if (node.id !== layerId && node.geolayer) nodeIds.push(node.id);
-              else checked_node = node;
-            } //else nodeIds = nodeIds.concat(this._getAllSiblingsChildrenLayersId(node));
-          });
-          //set parent grouplayerstree
-          parentLayersTree = layer;
-          if (parentLayersTree.mutually_exclusive) {
-            nodeIds = nodeIds.concat(this._getAllParentLayersId(parentLayersTree));
-          }
-          this.setLayersVisible(nodeIds, false);
-        }
-        traverse(layer.nodes);
-      }
-    });
-  };
-  traverse(parentLayersTree)
-};
-
-/**
- * Toggle layer called from catalog event
- * @param layerId
- * @param visible
- * @param mutually_exclusive
- * @returns {*}
- */
-proto.toggleLayer = function(layerId, visible, mutually_exclusive) {
-  const layer = this.getLayerById(layerId);
-  const checked = layer.isChecked();
-  visible = visible !== null ? checked : !checked;
-  mutually_exclusive &&  this._mutuallyExclude(layerId);
-  if (layer.isDisabled()) layer.setVisible(false);
-  else this.setLayersVisible([layerId], visible);
-  layer.setChecked(!checked);
-  return layer;
-};
-
-proto.toggleLayers = function(layersIds, visible, checked=true) {
-  return this.setLayersVisible(layersIds, visible, checked)
-};
-
-proto.selectLayer = function(layerId){
-  this.setLayerSelected(layerId, true);
-};
-
-proto.unselectLayer = function(layerId) {
-  this.setLayerSelected(layerId, false);
+proto.selectLayer = function(layerId, selected){
+  this.setLayerSelected(layerId, selected);
 };
 
 proto.getProjection = function() {
   return this.config.projection;
 };
-
 
 proto.getExtent = function() {
   return this.config.extent;
@@ -332,28 +249,33 @@ proto.getWmsUrl = function() {
 };
 
 // set layersstree of layers inside the laysstore
-proto.setLayersTree = function(layerstree, name) {
-  const traverse = (obj, isChild=false, currentGroupDisabled=false) => {
-    Object.entries(obj).forEach(([key, layer]) => {
-      if (layer.id !== undefined) {
-        obj[key] = this.getLayerById(layer.id).getState();
-        obj[key].groupdisabled = currentGroupDisabled;
+proto.setLayersTree = function(layerstree, name, expanded=true) {
+  // this is a root group project that contain all layerstree of qgis project
+  const rootGroup = {
+    title: name || this.config.id,
+    root: true,
+    parentGroup: null,
+    expanded,
+    disabled: false,
+    checked: true,
+    nodes: layerstree
+  };
+  const traverse = (nodes, parentGroup) => {
+    nodes.forEach((node, index) => {
+      // case of layer substitute node with layere state
+      if (node.id !== undefined) nodes[index] = this.getLayerById(node.id).getState();
+      if (node.nodes) {
+        node.nodes.forEach(node => node.parentGroup = parentGroup);
+        traverse(node.nodes, node);
       }
-      if (layer.nodes) {
-        const _currentGroupDisabled = !isChild ? !layer.checked : currentGroupDisabled || !layer.checked;
-        traverse(layer.nodes, true, _currentGroupDisabled);
-      }
+      //SET PARENT GROUP
+      nodes[index].parentGroup = parentGroup;
     });
   };
   if (layerstree.length) {
-    traverse(layerstree);
-    this.state.layerstree.splice(0,0,{
-      title: name || this.config.id,
-      expanded: true,
-      disabled: false,
-      checked: true,
-      nodes: layerstree
-    });
+    traverse(layerstree, rootGroup);
+    // at the end
+    this.state.layerstree.splice(0,0, rootGroup);
   }
 };
 
@@ -361,6 +283,7 @@ proto.setLayersTree = function(layerstree, name) {
 // layer groupNem is a ProjectName
 proto.createLayersTree = function(groupName, options={}) {
   const full = options.full || false;
+  const expanded = options.expanded;
   const _layerstree = options.layerstree || null;
   const tocLayersId = this.getLayers({BASELAYER:false}).map(layer=>layer.getId());
   let layerstree = [];
@@ -371,9 +294,11 @@ proto.createLayersTree = function(groupName, options={}) {
         obj.forEach(layer => {
           let lightlayer = {};
           if (layer.id !== null && layer.id !== undefined) {
-            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) lightlayer.id = layer.id;
-            else lightlayer = null;
+            if (tocLayersId.find(toclayerId => toclayerId === layer.id)) {
+              lightlayer.id = layer.id;
+            } else lightlayer = null;
           }
+          // case group
           if (layer.nodes !== null && layer.nodes !== undefined) {
             lightlayer.title = layer.name;
             lightlayer.expanded = layer.expanded;
@@ -399,7 +324,8 @@ proto.createLayersTree = function(groupName, options={}) {
       })
     });
   }
-  this.setLayersTree(layerstree, groupName);
+  // setLayerstree
+  this.setLayersTree(layerstree, groupName, expanded);
 };
 
 proto.removeLayersTree = function() {
@@ -409,6 +335,5 @@ proto.removeLayersTree = function() {
 proto.getLayersTree = function() {
   return this.state.layerstree;
 };
-
 
 module.exports = LayersStore;

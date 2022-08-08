@@ -1,5 +1,6 @@
-import {G3W_FID} from 'constant';
-import QueryPolygonAttributesComponent from './vue/querypolygonaddattributes.vue';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
+import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
@@ -8,21 +9,22 @@ const {t} = require('core/i18n/i18n.service');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const Layer = require('core/layers/layer');
 const GUI = require('gui/gui');
-const ComponentsFactory = require('gui/componentsfactory');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
-const PickCoordinatesInteraction = require('g3w-ol/src/interactions/pickcoordinatesinteraction');
-// set formats for download single feature
-const DOWNLOAD_FEATURE_FORMATS = ['shapefile', 'gpx', 'gpkg', 'csv', 'xls'];
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+
+//used to get and set vue reactivity to queryresultservice
+const VM = new Vue();
 
 function QueryResultsService() {
   this.printService = new PrintService();
   this._currentLayerIds = [];
 
   ProjectsRegistry.onafter('setCurrentProject', project => {
+    this._project = project;
     this._setRelations(project);
     this._setAtlasActions(project);
     this.state.download_data = false;
@@ -45,27 +47,35 @@ function QueryResultsService() {
     zoomToResult: true,
     components: [],
     layers: [],
+    changed: false,
     query: null,
     type: 'ows', // or api in case of search
-    loading: false,
     layersactions: {},
-    layersFeaturesBoxes:{}
+    actiontools:{}, // addd action tools (for features)
+    currentactiontools:{}, // current action tools contain component of a specific action (for example download)
+    currentactionfeaturelayer:{}, // contain current action that expose component vue (it useful to comprare id other action is toggled and expose component)
+    layeractiontool: {},
+    layersFeaturesBoxes:{},
+    layerscustomcomponents:{} // used to show a custom component for a layer
   };
   this.init = function() {
     this.clearState();
   };
-
   // Is a vector layer used by query resul to show eventually query resuesta as coordnates, bbox, polygon, etc ..
+  const color = 'blue';
   const stroke = new ol.style.Stroke({
-    color: 'black',
+    color,
     width: 3
+  });
+  const fill = new ol.style.Fill({
+    color
   });
   this.resultsQueryLayer = new ol.layer.Vector({
     style: new ol.style.Style({
       stroke,
       image: new ol.style.Circle({
-        stroke,
-        radius: 5
+        fill,
+        radius: 6
       }),
     }),
     source: new ol.source.Vector()
@@ -80,18 +90,28 @@ function QueryResultsService() {
   };
   this.setters = {
     /**
-     *
+     * Method call when response is handled by Data Provider
      * @param queryResponse
      * @param options: add is used to know if is a new query request or add/remove query request
      */
     setQueryResponse(queryResponse, options={add:false}) {
       const {add} = options;
-      !add && this.clearState();
-      this.state.query = queryResponse.query;
-      this.state.type = queryResponse.type;
-      const layers = this._digestFeaturesForLayers(queryResponse.data);
+      // in case of new request results reset the query otherwise maintain the previous request
+      if (!add) {
+        this.clearState();
+        this.state.query = queryResponse.query;
+        this.state.type = queryResponse.type;
+      }
+      const {data} = queryResponse;
+      const layers = this._digestFeaturesForLayers(data);
       this.setLayersData(layers, options);
     },
+
+    /**
+     * method to add layer and feature for response
+     * @param layers
+     * @param options
+     */
     setLayersData(layers, options={add:false}) {
       const {add} = options;
       if (!add){
@@ -99,7 +119,6 @@ function QueryResultsService() {
         this._currentLayerIds = layers.map(layer => layer.id);
         this._orderResponseByProjectLayers(layers);
       }
-      this.state.loading = false;
       layers.forEach(layer => {
         // in case of a new request query
         if (!add) this.state.layers.push(layer);
@@ -107,13 +126,50 @@ function QueryResultsService() {
         else this.addRemoveFeaturesToLayerResult(layer);
       });
       this.setActionsForLayers(layers, {add});
+      this.state.changed = true;
     },
+    /**
+     * Method
+     * @param component
+     */
     addComponent(component) {
       this._addComponent(component)
     },
-    addActionsForLayers(actions) {},
+    /**
+     *
+     */
+    addActionsForLayers(actions, layers) {},
+    /**
+     *
+     * @param element
+     */
     postRender(element) {},
+    /**
+     *
+     */
     closeComponent() {},
+    /**
+     *
+     * @param layer
+     */
+    changeLayerResult(layer){
+      this._changeLayerResult(layer);
+    },
+    /**
+     *
+     */
+    activeMapInteraction(){},
+    /**
+     *  setter hook to relation table
+     */
+    editFeature({layerId, featureId}={}){},
+    /**
+     * Method to listen open/close feature info data content.
+     * @param open
+     * @param layer
+     * @param feature
+     * @param container
+     */
     openCloseFeatureResult({open, layer, feature, container}={}){}
   };
   base(this);
@@ -158,6 +214,45 @@ inherit(QueryResultsService, G3WObject);
 const proto = QueryResultsService.prototype;
 
 /**
+ * Method to register for plugin or other component of application to add custom component on result for each layer feature or layer
+ * @param id unique id identification
+ * @param layerId Layer id of layer
+ * @param component custom component
+ * @param type feature or layer
+ */
+proto.registerCustomComponent = function({id=getUniqueDomId(), layerId, component, type='feature', position='after'}={}){
+  if (this.state.layerscustomcomponents[layerId] === undefined)
+    this.state.layerscustomcomponents[layerId] = {
+      layer: {
+        before: [],
+        after: []
+      },
+      feature: {
+        before: [],
+        after: []
+      }
+    };
+  this.state.layerscustomcomponents[layerId][type][position].push({
+    id,
+    component
+  });
+  return id;
+};
+
+/**
+ * To check position
+ * @param id
+ * @param layerId
+ * @param type
+ */
+proto.unRegisterCustomComponent = function({id, layerId, type, position}){
+  if (position) this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
+  else Object.keys(this.state.layerscustomcomponents[layerId][type]).forEach(position =>{
+    this.state.layerscustomcomponents[layerId][type][position] = this.state.layerscustomcomponents[layerId][type][position].filter(({id:componentId}) => componentId !== id);
+  })
+};
+
+/**
  * Method to add a feature to current layer result
  * @param layer
  * @param feature
@@ -178,6 +273,26 @@ proto.removeFeatureLayerFromResult = function(layer, feature){
     external,
     features: [feature]
   })
+};
+
+/**
+ * Method wrapper for download
+ */
+
+proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
+  const download_caller_id = ApplicationService.setDownload(true);
+  GUI.setLoadingContent(true);
+  try {
+    await downloadFnc(options);
+  } catch(err){
+    GUI.showUserMessage({
+      type: 'alert',
+      message: err || 'server_error',
+      textMessage: err ? true : false
+    })
+  }
+  ApplicationService.setDownload(false, download_caller_id);
+  GUI.setLoadingContent(false);
 };
 
 /**
@@ -213,16 +328,32 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
     // filter features to add
     features = features.filter((feature, index) => removeFeatureIndexes.indexOf(index) === -1);
     // check if new feature ha to be added
-    if (features.length) findLayer.features = [...findLayer.features, ...features];
+    if (features.length) {
+      const newlayerfeatures = [...findLayer.features, ...features];
+      findLayer.features = newlayerfeatures;
+    }
     //in case of removed features
     if (findLayer.features.length === 1 && this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])])
       // used to do all vue reactive thing before update layers
       setTimeout(() => this.state.layersFeaturesBoxes[this.getBoxId(findLayer, findLayer.features[0])].collapsed = false);
-    // in case no more features on layer remove interaction pickoordinate to get result from map
+    // in case no more features on layer remove interaction pickcoordinate to get result from map
     this.checkIfLayerHasNoFeatures(findLayer);
   }
   // hightlight new feature
   this.state.layers.length === 1 && this.highlightFeaturesPermanently(this.state.layers[0]);
+  this.changeLayerResult(findLayer);
+};
+
+/**
+ * Method called when layer result features for example is changed
+ * @param layer
+ */
+proto._changeLayerResult = function(layer){
+  const layeractions = this.state.layersactions[layer.id];
+  // call if present change mthod to action
+  layeractions.forEach(action => action.change && action.change(layer));
+  //reset layer current actions tools
+  this.resetCurrentActionToolsLayer(layer);
 };
 
 /**
@@ -234,7 +365,9 @@ proto.checkIfLayerHasNoFeatures = function(layer){
     setTimeout(() => {
       this.state.layers = this.state.layers.filter(_layer => _layer.id !== layer.id);
       this.clearHighlightGeometry(layer);
-      this.removeAddFeaturesLayerResultInteraction(true);
+      this.removeAddFeaturesLayerResultInteraction({
+        toggle: true
+      });
     })
   }
 };
@@ -255,8 +388,41 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
   if (!add) {
     this.unlistenerlayeractionevents = [];
     layers.forEach(layer => {
-      const is_external_layer_or_wms = layer.external || layer.source ? layer.source.type === 'wms' : false;
+      /**
+       * set eventually layer action tool and need to be reactive
+       * @type {{}}
+       */
+      this.state.layeractiontool[layer.id] = Vue.observable({
+        component: null,
+        config: null
+      });
+      const currentactiontoolslayer = {};
+      const currentationfeaturelayer = {};
+      layer.features.forEach((feature, index)=> {
+        currentactiontoolslayer[index] = null;
+        currentationfeaturelayer[index] = null;
+      });
+      this.state.currentactiontools[layer.id] = Vue.observable(currentactiontoolslayer);
+      this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
+      const is_external_layer_or_wms = layer.external || (layer.source ? layer.source.type === 'wms' : false);
       if (!this.state.layersactions[layer.id]) this.state.layersactions[layer.id] = [];
+      /**
+       * An action is an object contains
+       * {
+       * id: Unique action Id => required True
+          download: if is action download or not => required False
+          class: calss fontawsome to show icon => required True,
+          state: need to be reactive. Used for example to toggled state of action icon => required False
+          hint: Tooltip text => required False
+          init: Method called when action is loaded => required False
+          clear: Method called before clear the service. Used for example to clear unwatch => require False
+          change: Method called when feature of layer is changed
+          cbk: Method called when action is cliccked => required True
+          }
+       *
+       * }
+       */
+
       //in case of geometry
       if (layer.hasgeometry) {
         this.state.layersactions[layer.id].push({
@@ -270,7 +436,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       }
       // in case of relations
       if (this._relations) {
-        const relations = this._relations[layer.id] && this._relations[layer.id].filter((relation) =>{
+        const relations = this._relations[layer.id] && this._relations[layer.id].filter(relation =>{
           return relation.type === 'MANY';
         });
         if (relations && relations.length) {
@@ -289,22 +455,24 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
             relations,
             chartRelationIds
           });
-          const toggled = {};
-          layer.features.map((feature, index) => toggled[index] = false);
+          const state = this.createActionState({
+            layer
+          });
           chartRelationIds.length && this.state.layersactions[layer.id].push({
             id: 'show-plots-relations',
             download: false,
             opened: true,
             class: GUI.getFontClass('chart'),
-            state: Vue.observable({
-              toggled
-            }),
+            state,
             hint: 'sdk.mapcontrols.query.actions.relations_charts.hint',
             cbk: throttle(this.showRelationsChart.bind(this, chartRelationIds))
           });
         }
       }
-
+      /**
+       *
+       * Check if layer has atlas
+       */
       this.getAtlasByLayerId(layer.id).length && this.state.layersactions[layer.id].push({
         id: `printatlas`,
         download: true,
@@ -312,17 +480,84 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         hint: `sdk.tooltips.atlas`,
         cbk: this.printAtlas.bind(this)
       });
-
-      DOWNLOAD_FEATURE_FORMATS.forEach(format => {
-        layer.download[format] && this.state.layersactions[layer.id].push({
+      const state = this.createActionState({
+        layer
+      });
+      if (layer.downloads.length === 1) {
+        const [format] = layer.downloads;
+        const cbk = this.downloadFeatures.bind(this, format);
+        layer[format] = Vue.observable({
+          active: false
+        });
+        this.state.layersactions[layer.id].push({
           id: `download_${format}_feature`,
           download: true,
-          class: GUI.getFontClass(format),
+          state,
+          class: GUI.getFontClass('download'),
           hint: `sdk.tooltips.download_${format}`,
-          cbk: this.downloadFeatures.bind(this, format)
+          cbk: (layer, feature, action, index)=>{
+            action.state.toggled[index] = !action.state.toggled[index];
+            if (action.state.toggled[index]) cbk(layer, feature, action, index);
+            else this.setCurrentActionLayerFeatureTool({
+              index,
+              action,
+              layer
+            })
+          }
         });
-      });
-
+      } else if (layer.downloads.length > 1 ){
+        // SET CONSTANT TO AVOID TO CHANGE ALL THINGS
+        const ACTIONTOOLSDOWNLOADFORMATS = DownloadFormats.name;
+        const downloads = [];
+        layer.downloads.forEach(format => {
+          downloads.push({
+            id: `download_${format}_feature`,
+            download: true,
+            format,
+            class: GUI.getFontClass(format),
+            hint: `sdk.tooltips.download_${format}`,
+            cbk: (layer, feature, action, index)=> {
+              //used to untoggle downloads action
+              this.downloadFeatures(format, layer, feature, action, index);
+              const downloadsaction = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+              if (this.state.query.type !== 'polygon') downloadsaction.cbk(layer, feature, downloadsaction, index);
+            }
+          });
+        });
+        this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] = this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS] || {};
+        // set config of actionstools
+        this.state.actiontools[ACTIONTOOLSDOWNLOADFORMATS][layer.id] = {
+          downloads // ARE DOWNLOAD ACTIONS,
+        };
+        // used to
+        //check if has download actions
+        this.state.layersactions[layer.id].push({
+          id: `downloads`,
+          download: true,
+          class: GUI.getFontClass('download'),
+          state,
+          toggleable: true,
+          hint: `Downloads`,
+          change({features}) {
+            features.forEach((feature, index) =>{
+              if (this.state.toggled[index] === undefined) VM.$set(this.state.toggled, index, false);
+              else this.state.toggled[index] = false;
+            });
+          },
+          cbk: (layer, feature, action, index) => {
+            action.state.toggled[index] = !action.state.toggled[index];
+            this.setCurrentActionLayerFeatureTool({
+              layer,
+              index,
+              action,
+              component: action.state.toggled[index] ? DownloadFormats : null
+            });
+          }
+        });
+      }
+      /*
+      Check if si external layer or wms
+       */
       !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
         id: 'removefeaturefromresult',
         download: false,
@@ -335,18 +570,21 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         cbk: this.removeFeatureLayerFromResult.bind(this)
       });
 
+      /**
+       * check if selection is active
+       */
       if (layer.selection.active !== undefined) {
         // selection action
-        const toggled = {};
-        layer.features.map((feature, index) => toggled[index] = false);
+        const state = this.createActionState({
+          layer
+        });
+
         this.state.layersactions[layer.id].push({
           id: 'selection',
           download: false,
           class: GUI.getFontClass('success'),
           hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
-          state: Vue.observable({
-            toggled
-          }),
+          state,
           init: ({feature, index, action}={})=>{
             layer.selection.active !== void 0 && this.checkFeatureSelection({
               layerId: layer.id,
@@ -360,9 +598,12 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         this.listenClearSelection(layer, 'selection');
         //end selection action
       }
-
-      !is_external_layer_or_wms && this.state.layersactions[layer.id].push({
+      /*
+        If not wms of external layer show copy link to feature
+       */
+      !is_external_layer_or_wms && layer.hasgeometry && this.state.layersactions[layer.id].push({
         id: 'link_zoom_to_fid',
+        download: false,
         class: GUI.getFontClass('link'),
         hint: 'sdk.mapcontrols.query.actions.copy_zoom_to_fid_url.hint',
         hint_change: {
@@ -371,9 +612,92 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         },
         cbk: this.copyZoomToFidUrl.bind(this)
       });
+      layer.editable && this.state.layersactions[layer.id].push({
+        id: 'editing',
+        class: GUI.getFontClass('pencil'),
+        hint: 'Editing',
+        cbk: (layer, feature) => {
+          const layerId = layer.id;
+          const featureId = feature.attributes[G3W_FID];
+          feature.geometry && this.mapService.zoomToGeometry(feature.geometry);
+          setTimeout(()=>{
+            this.editFeature({
+              layerId,
+              featureId
+            });
+          }, 300)
+        }
+      });
     });
-    this.addActionsForLayers(this.state.layersactions);
+    this.addActionsForLayers(this.state.layersactions, this.state.layers);
   }
+};
+
+proto.createActionState = function({layer, dynamicProperties=['toggled']}){
+  // check number of download formats
+  const propertiesObject = dynamicProperties.reduce((accumulator, property) =>{
+    accumulator[property] = {};
+    return accumulator;
+  }, {});
+  layer.features.map((feature, index)=> {
+    Object.keys(propertiesObject).forEach(property =>{
+      propertiesObject[property][index] = null;
+    })
+  });
+  return Vue.observable(propertiesObject);
+};
+
+/**
+ * Method to get action referred to layer getting the acion id
+ * @param layer layer linked to action
+ * @param id action id
+ * @returns {*}
+ */
+proto.getActionLayerById = function({layer, id}={}){
+  return this.state.layersactions[layer.id].find(action => action.id === id);
+};
+
+/**
+ * Set current layer action tool in feature
+ * @param layer current layer
+ * @param index feature index
+ * @param value component value or null
+ */
+proto.setCurrentActionLayerFeatureTool = function({layer, action, index, component=null}={}){
+  if (component){
+    if (this.state.currentactiontools[layer.id][index] && action.id !== this.state.currentactionfeaturelayer[layer.id][index].id && this.state.currentactionfeaturelayer[layer.id][index].toggleable)
+      this.state.currentactionfeaturelayer[layer.id][index].state.toggled[index] = false;
+    this.state.currentactionfeaturelayer[layer.id][index] = action;
+  } else this.state.currentactionfeaturelayer[layer.id][index] = null;
+  this.state.currentactiontools[layer.id][index] = component;
+};
+
+
+proto.addCurrentActionToolsLayer = function({id, layer, config={}}){
+  this.state.actiontools[id] = {};
+  this.state.actiontools[id][layer.id] = config;
+};
+
+/**
+ * Reset current action tools on layer when feature layer change
+ * @param layer
+ */
+proto.resetCurrentActionToolsLayer = function(layer){
+  layer.features.forEach((feature, index)=>{
+    if (this.state.currentactiontools[layer.id]) {
+      if (this.state.currentactiontools[layer.id][index] === undefined) Vue.set(this.state.currentactiontools[layer.id], index, null);
+      else this.state.currentactiontools[layer.id][index] = null;
+      this.state.currentactionfeaturelayer[layer.id][index] = null;
+    }
+  })
+};
+
+/**
+ *
+ */
+proto.setLayerActionTool = function({layer, component=null, config=null}={}){
+  this.state.layeractiontool[layer.id].component = component;
+  this.state.layeractiontool[layer.id].config = config;
 };
 
 /**
@@ -398,7 +722,9 @@ proto.clear = function() {
   this.unlistenerEventsActions();
   this.mapService.clearHighlightGeometry();
   this.resultsQueryLayer.getSource().clear();
-  this.removeAddFeaturesLayerResultInteraction(true);
+  this.removeAddFeaturesLayerResultInteraction({
+    toggle: true
+  });
   this.mapService.getMap().removeLayer(this.resultsQueryLayer);
   this._asyncFnc = null;
   this._asyncFnc = {
@@ -410,6 +736,8 @@ proto.clear = function() {
       async: false
     }
   };
+  this.clearState();
+  this.closeComponent();
 };
 
 proto.getCurrentLayersIds = function(){
@@ -451,9 +779,8 @@ proto.isOneLayerResult = function(){
  *
  * @param toggle boolean If true toggle true the mapcontrol
  */
-proto.removeAddFeaturesLayerResultInteraction = function(toggle=false){
-  if (this._addFeaturesLayerResultInteraction.interaction)
-    this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
+proto.removeAddFeaturesLayerResultInteraction = function({toggle=false}={}){
+  if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   this._addFeaturesLayerResultInteraction.interaction = null;
   this._addFeaturesLayerResultInteraction.id = null;
   // check if map control query map is register and if toggled
@@ -476,14 +803,15 @@ proto.addLayerFeaturesToResultsAction = function(layer){
     const layer = this.state.layers.find(layer => layer.id === this._addFeaturesLayerResultInteraction.id);
     if (layer) layer.addfeaturesresults.active = false;
     //remove previous add result interaction
-    this.removeAddFeaturesLayerResultInteraction();
+    if (this._addFeaturesLayerResultInteraction.interaction) this.mapService.removeInteraction(this._addFeaturesLayerResultInteraction.interaction);
   }
   this._addFeaturesLayerResultInteraction.id = layer.id;
   layer.addfeaturesresults.active = !layer.addfeaturesresults.active;
   if (layer.addfeaturesresults.active) {
+    this.activeMapInteraction(); // useful o send an event
     const {external} = layer;
     if (!this._addFeaturesLayerResultInteraction.mapcontrol) this._addFeaturesLayerResultInteraction.mapcontrol = this.mapService.getCurrentToggledMapControl();
-    this._addFeaturesLayerResultInteraction.interaction = new PickCoordinatesInteraction();
+    this._addFeaturesLayerResultInteraction.interaction =  new PickCoordinatesInteraction();
     this.mapService.addInteraction(this._addFeaturesLayerResultInteraction.interaction, {
       close: false
     });
@@ -494,10 +822,13 @@ proto.addLayerFeaturesToResultsAction = function(layer){
           {
             inputs: {
               coordinates,
+              query_point_tolerance: this._project.getQueryPointTolerance(),
               layerIds: [layer.id],
               multilayers: false,
             }, outputs: {
-              add: true
+              show: {
+                add: true
+              }
             }
          });
       else {
@@ -513,14 +844,19 @@ proto.addLayerFeaturesToResultsAction = function(layer){
         }, {add:true});
       }
     });
-    const eventHandler = evt =>{
-      if (evt.target.isToggled() && evt.target.isClickMap()){
-        layer.addfeaturesresults.active = false;
-      }
+    const eventHandler = evt => {
+      if (evt.target.isToggled() && evt.target.isClickMap()) layer.addfeaturesresults.active = false;
     };
     this._addFeaturesLayerResultInteraction.toggleeventhandler = eventHandler;
     this.mapService.once('mapcontrol:toggled', eventHandler);
-  } else this.removeAddFeaturesLayerResultInteraction(true);
+  } else this.removeAddFeaturesLayerResultInteraction({
+    toggle: true
+  });
+};
+
+proto.deactiveQueryInteractions = function(){
+  this.state.layers.forEach(layer => { if (layer.addfeaturesresults) layer.addfeaturesresults.active = false});
+  this.removeAddFeaturesLayerResultInteraction();
 };
 
 proto.zoomToLayerFeaturesExtent = function(layer, options={}) {
@@ -535,9 +871,16 @@ proto.clearState = function(options={}) {
   this.state.layers.splice(0);
   this.state.query = {};
   this.state.querytitle = "";
-  this.state.loading = true;
+  this.state.changed = false;
+  // clear action if present
+  Object.values(this.state.layersactions).forEach(layeractions =>layeractions.forEach(action => action.clear && action.clear()));
   this.state.layersactions = {};
+  this.state.actiontools = {};
+  this.state.layeractiontool = {};
+  // current action tools
+  this.state.currentactiontools = {};
   this.state.layersFeaturesBoxes = {};
+  this.removeAddFeaturesLayerResultInteraction();
 };
 
 proto.getState = function() {
@@ -569,6 +912,12 @@ proto.reset = function() {
   this.clearState();
 };
 
+/**
+ * Method that convert response from Data Provider to a Query Result component data structure
+ * @param featuresForLayers: Array contains for each layer features
+ * @returns {[]}
+ * @private
+ */
 proto._digestFeaturesForLayers = function(featuresForLayers) {
   let id = 0;
   featuresForLayers = featuresForLayers || [];
@@ -583,47 +932,40 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let source;
     let extractRelations = false;
     let external = false;
+    let editable = false;
     const layer = featuresForLayer.layer;
-    const download = {
-      shapefile: false,
-      gpx: false,
-      gpkg:false,
-      csv: false,
-      xls: false
-    };
+    let downloads = [];
+    let infoformats = [];
+    let infoformat;
     let filter = {};
     let selection ={};
     if (layer instanceof Layer) {
+      editable = layer.isEditable();
       source = layer.getSource();
-      // set selection filtere and relation if not wms
-      if (layer.getSourceType() !== 'wms'){
+      infoformats = layer.getInfoFormats(); // add infoformats property
+      infoformat = layer.getInfoFormat();
+      // set selection filter and relation if not wms
+      if ([Layer.SourceTypes.WMS, Layer.SourceTypes.WCS, Layer.SourceTypes.WMST].indexOf(layer.getSourceType()) === -1){
         filter = layer.state.filter;
         selection = layer.state.selection;
         extractRelations = true;
       }
-      download.shapefile = layer.isShpDownlodable();
-      download.gpx = layer.isGpxDownlodable();
-      download.gpkg = layer.isGpkgDownlodable();
-      download.csv = layer.isCsvDownlodable();
-      download.xls = layer.isXlsDownlodable();
+     downloads = layer.getDownloadableFormats();
       try {
         sourceType = layer.getSourceType()
       } catch(err){}
-      // sanitize qattributes layer only if is ows
+      // sanitize attributes layer only if is ows
       layerAttributes = this.state.type === 'ows' ? layer.getAttributes().map(attribute => {
         const sanitizeAttribute = {...attribute};
         sanitizeAttribute.name = sanitizeAttribute.name.replace(/ /g, '_');
         return sanitizeAttribute
       }) : layer.getAttributes();
 
-
       layerRelationsAttributes = [];
       layerTitle = layer.getTitle();
       layerId = layer.getId();
       if (layer.hasFormStructure()) {
-        const structure = layer.getEditorFormStructure({
-          all:true
-        });
+        const structure = layer.getLayerEditingFormStructure();
         if (this._relations && this._relations.length) {
           const getRelationFieldsFromFormStructure = node => {
             if (!node.nodes) {
@@ -638,9 +980,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
             getRelationFieldsFromFormStructure(node);
           }
         }
-        const fields = layer.getFields().filter(field => {
-          return field.show
-        }); // get features show
+        const fields = layer.getFields().filter(field => field.show); // get features show
         formStructure = {
           structure,
           fields
@@ -662,31 +1002,40 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerId = layer;
       external = true;
     }
-
     const layerObj = {
       title: layerTitle,
       id: layerId,
+      infoformat,
+      infoformats,
       attributes: [],
       features: [],
       hasgeometry: false,
       atlas: this.getAtlasByLayerId(layerId),
       source,
-      download,
+      downloads,
       show: true,
       filter,
       addfeaturesresults: {
         active:false
       },
+      [DownloadFormats.name]: {
+        active: false
+      },
       external,
+      editable,
       selection,
       expandable: true,
       hasImageField: false,
       relationsattributes: layerRelationsAttributes,
       formStructure,
-      error: ''
+      error: '',
+      rawdata: null, // rawdata response
+      loading: false
     };
-
-    if (featuresForLayer.features && featuresForLayer.features.length) {
+    if (featuresForLayer.rawdata){
+      layerObj.rawdata = featuresForLayer.rawdata;
+      layers.push(layerObj)
+    } else if (featuresForLayer.features && featuresForLayer.features.length) {
       const layerSpecialAttributesName = (layer instanceof Layer) ? layerAttributes.filter(attribute => {
         try {
           return attribute.name[0] === '_' || Number.isInteger(1*attribute.name[0])
@@ -697,7 +1046,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         alias: attribute.name.replace(/_/, ''),
         name: attribute.name
       })) : [];
-      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFetureProperty(layerSpecialAttributesName, feature));
+      layerSpecialAttributesName.length && featuresForLayer.features.forEach( feature => this._setSpecialAttributesFeatureProperty(layerSpecialAttributesName, feature));
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
       layerObj.attributes.forEach(attribute => {
         if (formStructure) {
@@ -707,13 +1056,12 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         if (attribute.type === 'image') layerObj.hasImageField = true;
       });
       featuresForLayer.features.forEach(feature => {
-        const fid = feature.getId() ? feature.getId() : id;
-        const geometry = feature.getGeometry();
+        const {id:fid, geometry, properties:attributes} = this.getFeaturePropertiesAndGeometry(feature);
         if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
           id: fid,
-          attributes: feature.getProperties(),
-          geometry: feature.getGeometry(),
+          attributes,
+          geometry,
           show: true
         };
         layerObj.features.push(featureObj);
@@ -730,13 +1078,21 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
   return layers;
 };
 
-proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName, feature) {
+/**
+ * Method to set special attributes
+ * @param layerSpecialAttributesName
+ * @param feature
+ * @private
+ */
+proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName, feature) {
+  // get feature properties get from server request
   const featureAttributes = feature.getProperties();
+  // get attributes special keys
   const featureAttributesNames = Object.keys(featureAttributes);
   if (layerSpecialAttributesName.length) {
     layerSpecialAttributesName.forEach(attributeObj =>{
       featureAttributesNames.find(featureAttribute => {
-        if (featureAttribute.match(attributeObj.alias)) {
+        if (featureAttribute === attributeObj.alias) {
           feature.set(attributeObj.name, feature.get(featureAttribute));
           return true
         }
@@ -745,21 +1101,51 @@ proto._setSpecialAttributesFetureProperty = function(layerSpecialAttributesName,
   }
 };
 
+/**
+ * Method to get properties geometry and id from different type of fetaure
+ * @param feature
+ * @returns {{geometry: (undefined|*|null|ol.Feature), id: *, properties: string[]}|{geometry: *, id: *, properties: *}}
+ */
+proto.getFeaturePropertiesAndGeometry = function(feature){
+  if (feature instanceof ol.Feature){
+    return {
+      properties:feature.getProperties(),
+      geometry: feature.getGeometry(),
+      id: feature.getId()
+    }
+  } else {
+    const {properties, geometry, id} = feature;
+    return {
+      properties,
+      geometry,
+      id
+    }
+  }
+};
+
+/**
+ * parse attributre to show on result based on field
+ * @param layerAttributes
+ * @param feature
+ * @param sourceType
+ * @returns {{name: T, show: boolean, label: T}[]|*}
+ * @private
+ */
 proto._parseAttributes = function(layerAttributes, feature, sourceType) {
-  const featureAttributes = feature.getProperties();
+  const {properties:featureAttributes} = this.getFeaturePropertiesAndGeometry(feature);
   let featureAttributesNames = Object.keys(featureAttributes);
   featureAttributesNames = getAlphanumericPropertiesFromFeature(featureAttributesNames);
   if (layerAttributes && layerAttributes.length) {
-    const attributes = layerAttributes.filter((attribute) => {
-      return featureAttributesNames.indexOf(attribute.name) > -1;
-    });
+    const attributes = layerAttributes.filter(attribute => featureAttributesNames.indexOf(attribute.name) > -1);
     return attributes;
   } else {
+    const {GDAL, WMS, WCS, WMST} = Layer.SourceTypes;
+    const showSourcesTypes = [GDAL, WMS, WCS, WMST];
     return featureAttributesNames.map(featureAttributesName => {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && sourceType === 'wms' || sourceType === undefined
+        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
       }
     })
   }
@@ -867,7 +1253,7 @@ proto._addVectorLayersDataToQueryResponse = function() {
   });
 };
 
-//function to add custom componet in query result
+//function to add custom component in query result
 proto._addComponent = function(component) {
   this.state.components.push(component)
 };
@@ -940,7 +1326,7 @@ proto.printAtlas = function(layer, feature){
       buttons: {
         success: {
           label: "OK",
-          className: "btn-success",
+          className: "skin-button",
           callback: ()=> {
             const index = $('input[name="template"]:checked').attr(inputAtlasAttr);
             if (index !== null || index !== undefined) {
@@ -961,66 +1347,139 @@ proto.printAtlas = function(layer, feature){
 };
 
 /**
+ * Method that in case
+ * @param layer
+ */
+proto.showLayerDownloadFormats = function(layer) {
+  const layerKey = DownloadFormats.name;
+  layer[layerKey].active = !layer[layerKey].active;
+  this.setLayerActionTool({
+    layer,
+    component: layer[layerKey].active ? DownloadFormats : null,
+    config: layer[layerKey].active ? this.state.actiontools[layerKey][layer.id] : null
+  })
+};
+
+/**
  *
  * @param type
  * @param layerId
  * @param features
  */
-proto.downloadFeatures = async function(type, {id:layerId}={}, features=[]){
-  const data = {};
-  const {query} = this.state;
-  if (query.type === 'polygon'){
-    const promise = new Promise((resolve, reject) => {
-      const {layer, fid} = query;
-      const content = ComponentsFactory.build({
-        vueComponentObject:QueryPolygonAttributesComponent,
-        service: {
-          state: {
-            buttons: [
-              {
-                type:'feature',
-                label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature.label',
-                tooltip: 'sdk.mapcontrols.querybypolygon.download.buttons.feature.tooltip'
-              },
-              {
-                type:'polygon',
-                label: 'sdk.mapcontrols.querybypolygon.download.buttons.feature_polygon.label',
-                tooltip: 'sdk.mapcontrols.querybypolygon.download.buttons.feature_polygon.tooltip'
-              },
-            ],
-          },
-          onClick: type =>{
-            // id type polygon add paramateres to api download
-            if (type === 'polygon') {
-              data.sbp_qgs_layer_id = layer.getId();
-              data.sbp_fid = fid;
-            }
-            GUI.popContent();
-            resolve();
-          }
-        }
-      });
-      GUI.pushContent({
-        content,
-        closable: false
+proto.downloadFeatures = async function(type, layer, features=[], action, index){
+  const layerId = layer.id;
+  const {query={}} = this.state;
+  features = features ? Array.isArray(features) ? features : [features]: features;
+  const data = {
+    fids : features.map(feature => feature.attributes[G3W_FID]).join(',')
+  };
+  /**
+   * is a function that che be called in case of querybypolygon
+   * @param active
+   */
+  const runDownload = async (active=false) => {
+    if (features.length > 1) {
+      layer[DownloadFormats.name].active = active;
+      this.setLayerActionTool({
+        layer
       })
-    });
-    await promise;
-  }
-  features = features ?  Array.isArray(features) ? features : [features]: features;
-  data.fids = features.map(feature => feature.attributes[G3W_FID]).join(',');
-  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  const download_caller_id = ApplicationService.setDownload(true);
-  GUI.setLoadingContent(true);
-  const promise = layer.getDownloadFilefromDownloadDataType(type, {
-    data
-  }) || Promise.resolve();
-  promise.catch(err => {
-    GUI.notify.error(t("info.server_error"));
-  }).finally(()=>{
+    }
+    const projectLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+    const download_caller_id = ApplicationService.setDownload(true);
+    GUI.setLoadingContent(true);
+    try {
+      await projectLayer.getDownloadFilefromDownloadDataType(type, {
+        data
+      }) || Promise.resolve();
+    } catch(err){
+      GUI.notify.error(err || t("info.server_error"));
+    }
     ApplicationService.setDownload(false, download_caller_id);
     GUI.setLoadingContent(false);
-  })
+    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+    if (features.length > 1) {
+      if (downloadsactions === undefined) {
+        layer[type].active = false;
+        this.setLayerActionTool({
+          layer
+        })
+      }
+      else layer[DownloadFormats.name].active = false;
+    }
+    else {
+      if (downloadsactions === undefined) action.state.toggled[index] = false;
+      else downloadsactions.state.toggled[index] = false;
+      this.setCurrentActionLayerFeatureTool({
+        index,
+        action,
+        layer
+      });
+    }
+  };
+  if (query.type === 'polygon'){
+    //check if multidownload if present
+    const downloadsactions = this.state.layersactions[layer.id].find(action => action.id === 'downloads');
+    let {fid, layer:polygonLayer} = query;
+    const config = {
+      choices: [
+        {
+          id: getUniqueDomId(),
+          type: 'feature',
+          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature.label',
+        },
+        {
+          id: getUniqueDomId(),
+          type: 'polygon',
+          label: 'sdk.mapcontrols.querybypolygon.download.choiches.feature_polygon.label',
+        },
+      ],
+      download: type =>{
+        // choose between only feature attribute or also polygon attibute
+        if (type === 'polygon'){
+          // id type polygon add paramateres to api download
+          data.sbp_qgs_layer_id = polygonLayer.getId();
+          data.sbp_fid = fid;
+        } else {
+          // force to remove
+          delete data.sbp_fid;
+          delete data.sbp_qgs_layer_id;
+        }
+        runDownload(true)
+      }
+    };
+    if (features.length === 1) {
+      if (downloadsactions === undefined) {
+        action.state.toggled[index] = true;
+      }
+      this.state.actiontools[QueryPolygonCsvAttributesComponent.name] = this.state.actiontools[layerId] || {};
+      this.state.actiontools[QueryPolygonCsvAttributesComponent.name][layerId] = config;
+      this.setCurrentActionLayerFeatureTool({
+        layer,
+        index,
+        action,
+        component: QueryPolygonCsvAttributesComponent
+      });
+    } else {
+      if (downloadsactions === undefined) {
+        layer[type].active = !layer[type].active;
+        if (layer[type].active) {
+          this.setLayerActionTool({
+            layer,
+            component: QueryPolygonCsvAttributesComponent,
+            config
+          });
+        } else this.setLayerActionTool({
+          layer
+        })
+      } else {
+        this.setLayerActionTool({
+          layer,
+          component: QueryPolygonCsvAttributesComponent,
+          config
+        });
+      }
+    }
+  } else runDownload();
 };
 
 proto.downloadGpx = function({id:layerId}={}, feature){
@@ -1147,6 +1606,13 @@ proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
   this.removeQueryResultLayerFromMap();
   this.resultsQueryLayer.getSource().addFeature(feature);
   this.mapService.getMap().addLayer(this.resultsQueryLayer);
+  try {
+    const center = ol.extent.getCenter(feature.getGeometry().getExtent());
+    this.mapService.getMap().getView().setCenter(center);
+    console.log(center)
+  } catch(err){
+
+  }
   timeout && setTimeout(()=>{
     this.removeQueryResultLayerFromMap();
   }, timeout)
@@ -1219,6 +1685,34 @@ proto.clearHighlightGeometry = function(layer) {
   this.isOneLayerResult() && this.highlightFeaturesPermanently(layer);
 };
 
+/**
+ * method to ahdle show Relation on result
+ * @param relationId,
+ * layerId : current layer fathre id
+ * feature: current feature father id
+ */
+proto.showRelation = function({relation, layerId, feature}={}){
+  const {name: relationId, nmRelationId} = relation;
+  const chartRelationIds = [];
+  const projectRelation = this._project.getRelationById(relationId);
+  const nmRelation = this._project.getRelationById(nmRelationId);
+  this.findPlotId(projectRelation.referencingLayer) && chartRelationIds.push(projectRelation.referencingLayer);
+  GUI.pushContent({
+    content: new RelationsPage({
+      currentview: 'relations',
+      relations: [projectRelation],
+      chartRelationIds,
+      nmRelation,
+      feature,
+      layer: {
+        id: layerId
+      }
+    }),
+    title: projectRelation.name,
+    closable: false
+  })
+};
+
 proto.showQueryRelations = function(layer, feature, action) {
   GUI.pushContent({
     content: new RelationsPage({
@@ -1227,8 +1721,8 @@ proto.showQueryRelations = function(layer, feature, action) {
       feature,
       layer
     }),
-    perc: 100,
     backonclose: true,
+    title: LIST_OF_RELATIONS_TITLE,
     closable: false
   });
 };

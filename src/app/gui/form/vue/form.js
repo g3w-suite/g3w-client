@@ -1,8 +1,7 @@
-import { createCompiledTemplate } from 'gui/vue/utils';
-import ApplicationState from 'core/applicationstate';
+import {createCompiledTemplate} from 'gui/vue/utils';
 const {base, inherit} = require('core/utils/utils');
 const GUI = require('gui/gui');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const Service = require('../formservice');
 const compiledTemplate = createCompiledTemplate(require('./form.html'));
 const HeaderFormComponent = require('../components/header/vue/header');
@@ -15,7 +14,13 @@ const vueComponentObject = {
   data() {
     return {
       state: {},
-      switchcomponent: false
+      switchcomponent: false,
+      body: {
+        components: {
+          before: [],
+          after: []
+        }
+      }
     }
   },
   components: {
@@ -24,45 +29,51 @@ const vueComponentObject = {
   },
   transitions: {'addremovetransition': 'showhide'},
   methods: {
-    disableComponent({index=-1, disabled=false}) {
-      this.$options.service.disableComponent({
-        index,
-        disabled
-      });
+    isRootComponent(component){
+      return this.$options.service.isRootComponent(component);
     },
-    resizeForm(){
-      const perc = GUI.getContentPercentage();
-      const currentFormPercentage = perc == 100 ? 50 : 100;
-      GUI.setContentPercentage(currentFormPercentage);
-      this.$options.service.setCurrentFormPercentage(currentFormPercentage)
+    backToRoot(){
+      this.$options.service.setRootComponent();
     },
-    switchComponent(index) {
+    handleRelation(relationId){
+      this.$options.service.handleRelation(relationId);
+    },
+     disableComponent({id, disabled=false}) {
+       this.$options.service.disableComponent({
+         id,
+         disabled
+       });
+     },
+    resizeForm(perc){
+      this.$options.service.setCurrentFormPercentage(perc)
+    },
+    switchComponent(id) {
       this.switchcomponent = true;
-      this.$options.service.setComponentByIndex(index);
+      this.$options.service.setCurrentComponentById(id);
     },
     changeInput(input) {
-      return this.$options.service.isValid(input);
+      return this.$options.service.changeInput(input);
     },
     addToValidate(input) {
       this.$options.service.addToValidate(input);
     },
+    removeToValidate(input) {
+      this.$options.service.removeToValidate(input);
+    },
     // set layout
     reloadLayout() {
       const height = $(this.$el).height();
-      if(!height)
-        return;
-      const footerHeight = $('.g3wform_footer').height() ? $('.g3wform_footer').height() + 50 : 50;
-      $(this.$el).find(".g3wform_body").height(height - ($('.g3wform_header').height() +  footerHeight));
+      if(!height) return;
+      const footerDOM = $(this.$refs.g3w_form_footer.$el);
+      const bodyFromDOM = $(this.$refs.g3wform_body);
+      const footerHeight = footerDOM.height() ? footerDOM.height() + 50 : 50;
+      const bodyHeight = height - ($(this.$refs.g3wformheader.$el).height() +  footerHeight);
+      bodyFromDOM.height(bodyHeight);
     },
   },
-  updated() {
-    this.$nextTick(()=> {
-      if (this.switchcomponent) {
-        setTimeout(()=>{
-          this.switchcomponent = false;
-        }, 0)
-      }
-    })
+  async updated() {
+    await this.$nextTick();
+    this.switchcomponent && setTimeout(()=> this.switchcomponent = false, 0)
   },
   created() {
     this.$options.service.getEventBus().$on('set-main-component', () => {
@@ -80,6 +91,7 @@ const vueComponentObject = {
   mounted() {
     // check if is valid form (it used by footer component)
     this.$options.service.isValid();
+    this.$options.service.setReady(true);
   },
   beforeDestroy() {
     this.$options.service.clearAll();
@@ -87,19 +99,39 @@ const vueComponentObject = {
 };
 
 function FormComponent(options = {}) {
-  options.id = options.id || 'form';
+  const {id='form', name, title} = options;
   base(this, options);
-  options.service = options.service ?  new options.service : new Service;
+  options.service = options.service ? new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentObject;
-  //set statdar element of the form
+  //set element of the form
   const components = options.components || [
-    {id: options.id, title: options.title, name:options.name, component: BodyFormComponent}
+    {
+      id,
+      title,
+      name,
+      root: true,
+      component: BodyFormComponent
+    }
   ];
   options.perc = options.layer.getFormPercentage() !== null ? options.layer.getFormPercentage() : options.perc;
   // initialize component
   this.init(options);
   this.getService().addComponents(components);
   this.getService().setComponent(components[0].component);
+  /**
+   * Used to add component to form body
+   * @param component
+   */
+  this.addBodyFormComponent = function({component, where='after'}={}){
+    this.getInternalComponent().body.components[where].push(component);
+  };
+
+  this.addBodyFormComponents = function({components=[], where="after"}={}){
+    components.forEach(component =>  this.addBodyFormComponent({
+      component,
+      where
+    }))
+  };
 
   this.addFormComponents = function(components = []) {
     this.getService().addComponents(components);

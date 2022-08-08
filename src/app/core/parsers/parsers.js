@@ -1,6 +1,6 @@
-const Parsers = {
-  vector: require('./vector/parser'),
-  table: require('./table/parser')
-};
+const Parsers = require('core/utils/parsers');
 
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/parsers" instead)
+ */
 module.exports = Parsers;

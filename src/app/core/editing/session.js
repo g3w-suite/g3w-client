@@ -3,7 +3,7 @@ const G3WObject = require('core/g3wobject');
 const History = require('./history');
 const Layer = require('core/layers/layer');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const { is3DGeometry } = require('core/geometry/geometry');
+const { is3DGeometry } = require('core/utils/geo').Geometry;
 const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
@@ -78,13 +78,11 @@ proto._getFeatures = function(options={}) {
   if (!this._allfeatures) {
     this._allfeatures = !options.filter;
     this._editor.getFeatures(options)
-      .then((promise) => {
-        promise.then((features) => {
+      .then(promise => {
+        promise.then(features => {
           this.state.getfeatures = true;
           d.resolve(features);
-        }).fail((err) => {
-          d.reject(err);
-          });
+        }).fail(err => d.reject(err));
       });
   } else d.resolve([]);
 
@@ -131,11 +129,14 @@ proto.updateTemporaryChanges = function(feature) {
 };
 
 // method to add temporary feature
-proto.pushAdd = function(layerId, feature) {
-  this._editor.removeNotEditablePropriertiesFromFeature(feature);
+proto.pushAdd = function(layerId, feature, removeNotEditableProperties=true) {
+  /**
+   * Please take care of this to understand
+   */
+  removeNotEditableProperties && this._editor.removeNotEditablePropriertiesFromFeature(feature);
   const newFeature = feature.clone();
   this.push({
-    layerId: layerId,
+    layerId,
     feature: newFeature.add()
   });
   return newFeature;
@@ -144,7 +145,7 @@ proto.pushAdd = function(layerId, feature) {
 // delete temporary feature
 proto.pushDelete = function(layerId, feature) {
   this.push({
-    layerId: layerId,
+    layerId,
     feature: feature.delete()
   });
   return feature;
@@ -165,11 +166,11 @@ proto.pushUpdate = function(layerId, newFeature, oldFeature) {
     }
   }
   this.push({
-      layerId: layerId,
+      layerId,
       feature: newFeature.update()
     },
     {
-      layerId: layerId,
+      layerId,
       feature: oldFeature.update()
     })
 };
@@ -200,7 +201,7 @@ proto.push = function(New, Old) {
     }
    */
   // check is set old (edit)
-  const feature = Old? [Old, New]: New;
+  const feature = Old ? [Old, New] : New;
   this._temporarychanges.push(feature);
 };
 
@@ -224,8 +225,7 @@ proto._filterChanges = function() {
   };
   this._temporarychanges.forEach((temporarychange) => {
     const change = Array.isArray(temporarychange) ? temporarychange[0] : temporarychange;
-    if (change.layerId === id)
-      changes.own.push(change);
+    if (change.layerId === id) changes.own.push(change);
     else {
       if (!changes.dependencies[change.layerId])
         changes.dependencies[change.layerId] = [];
@@ -237,9 +237,8 @@ proto._filterChanges = function() {
 };
 
 proto.rollback = function(changes) {
-  if (changes) {
-    return this._editor.rollback(changes);
-  } else {
+  if (changes) return this._editor.rollback(changes);
+  else {
     const d = $.Deferred();
     const changes = this._filterChanges();
     this._editor.rollback(changes.own).then(()=>{
@@ -378,16 +377,12 @@ proto.commit = function({ids=null, items, relations=true}={}) {
     commitItems = this._history.commit(ids);
     this._history.clear(ids);
   } else {
-    if (items) {
-      commitItems = items;
-    } else {
+    if (items) commitItems = items;
+    else {
       commitItems = this._history.commit();
       commitItems = this._serializeCommit(commitItems);
     }
     if (!relations) commitItems.relations = {};
-    // this.set3DGeometryType({
-    //   commitItems
-    // });
     this._editor.commit(commitItems)
       .then(response => {
         if (response && response.result) {
@@ -402,8 +397,8 @@ proto.commit = function({ids=null, items, relations=true}={}) {
           }
           this._history.clear();
           this.saveChangesOnServer(commitItems);
-        }
-        d.resolve(commitItems, response)
+          d.resolve(commitItems, response)
+        } else d.reject(response);
       })
       .fail(err => d.reject(err));
   }

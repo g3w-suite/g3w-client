@@ -2,7 +2,7 @@
   <input
     :placeholder="state.default"
     slot="body"
-    @keyup="change()"
+    @keyup="isMobile() ? mobileChange($event) : change()"
     v-disabled="!editable"
     :field="state.name"
     class="form-control"

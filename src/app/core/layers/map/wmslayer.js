@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 const {base, inherit} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
-const RasterLayers = require('g3w-ol/src/layers/rasters');
+const RasterLayers = require('g3w-ol/layers/rasters');
 
 function WMSLayer(options={}, extraParams={}, method='GET') {
   this.LAYERTYPE = {
@@ -39,12 +39,8 @@ proto.getLayerConfigs = function(){
 };
 
 proto.addLayer = function(layer) {
-  if (!this.allLayers.find(_layer => layer === _layer)) {
-    this.allLayers.push(layer);
-  }
-  if (!this.layers.find(_layer =>  layer === _layer)) {
-    this.layers.push(layer);
-  }
+  if (!this.allLayers.find(_layer => layer === _layer)) this.allLayers.push(layer);
+  if (!this.layers.find(_layer =>  layer === _layer)) this.layers.push(layer);
 };
 
 proto.removeLayer = function(layer) {
@@ -53,81 +49,59 @@ proto.removeLayer = function(layer) {
   })
 };
 
-proto.toggleLayer = function(layer) {
-  this.layers.forEach((_layer) => {
-    if (_layer.id === layer.id){
-      _layer.visible = layer.visible;
-    }
-  });
-  this._updateLayers();
-};
-
 proto.isVisible = function(){
   return this._getVisibleLayers().length > 0;
 };
 
 proto.getQueryUrl = function() {
   const layer = this.layers[0];
-  if (layer.infourl && layer.infourl !== '') {
-    return layer.infourl;
-  }
+  if (layer.infourl && layer.infourl !== '') return layer.infourl;
   return this.config.url;
 };
 
 proto.getQueryableLayers = function() {
-  return this.layers.filter((layer) => {
-    return layer.isQueryable();
-  });
+  return this.layers.filter(layer => layer.isQueryable());
 };
 
 proto._getVisibleLayers = function() {
-  return this.layers.filter((layer) => {
-    return layer.isVisible();
-  });
+  return this.layers.filter(layer => layer.isVisible());
 };
-
 
 proto._makeOlLayer = function(withLayers) {
   const wmsConfig = {
     url: this.config.url,
     id: this.config.id,
     projection: this.config.projection,
-    iframe_internal: this.iframe_internal
+    iframe_internal: this.iframe_internal,
+    layers: this.layers
   };
   if (withLayers) wmsConfig.layers = this.layers.map(layer => layer.getWMSLayerName());
   const representativeLayer = this.layers[0];
-  if (representativeLayer) wmsConfig.url = representativeLayer.getWmsUrl();
+  if (representativeLayer && representativeLayer.getWmsUrl) wmsConfig.url = representativeLayer.getWmsUrl();
   const olLayer = new RasterLayers.WMSLayer(wmsConfig, this.extraParams, this._method);
-
-  olLayer.getSource().on('imageloadstart', () => {
-    this.emit("loadstart");
-  });
-  olLayer.getSource().on('imageloadend', () => {
-    this.emit("loadend");
-  });
-
-  olLayer.getSource().on('imageloaderror', ()=> {
-    this.emit("loaderror");
-  });
+  olLayer.getSource().on('imageloadstart', () => this.emit("loadstart"));
+  olLayer.getSource().on('imageloadend', () => this.emit("loadend"));
+  olLayer.getSource().on('imageloaderror', ()=> this.emit("loaderror"));
   return olLayer
 };
 
 //update Layers
 proto._updateLayers = function(mapState={}, extraParams={}) {
+  let {force=false, ...params} = extraParams;
   //check disabled layers
-  this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
+  !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
     const STYLES = visibleLayers.map(layer => layer.getStyle()).join(',');
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
-    let params = {
+     params = {
+      ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
       STYLES,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`
     };
-    if (extraParams) params = _.assign(params, extraParams);
     this._olLayer.setVisible(true);
     this._olLayer.getSource().updateParams(params);
   } else this._olLayer.setVisible(false);
@@ -135,10 +109,7 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
 
 proto.setupCustomMapParamsToLegendUrl = function(params={}){
   if (this.layer) this.layer.setMapParamstoLegendUrl(params);
-  else this.layers.forEach(layer => {
-    layer.setMapParamstoLegendUrl(params)
-  });
-
+  else this.layers.forEach(layer => layer.setMapParamstoLegendUrl(params));
 };
 
 module.exports = WMSLayer;

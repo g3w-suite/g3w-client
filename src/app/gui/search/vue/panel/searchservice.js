@@ -1,4 +1,4 @@
-import { ALLVALUE, RETURN_TYPES}  from '../../constants';
+import { ALLVALUE }  from '../../constants';
 const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
@@ -37,10 +37,10 @@ function SearchService(config={}) {
   const otherquerylayerids = options.otherquerylayerids || [];
   const filter = options.filter || [];
   this.inputdependance = {};
-  this.inputdependencies = [];
+  this.inputdependencies = {};
   this.cachedependencies = {};
   this.project = ProjectsRegistry.getCurrentProject();
-  this.mapService = GUI.getComponent('map').getService();
+  this.mapService = GUI.getService('map');
   this.searchLayer = null;
   this.filter = null;
   this.inputs = [];
@@ -57,13 +57,106 @@ function SearchService(config={}) {
   this.return = options.return || 'data';
   this.show = this.return === 'data' && this.type === 'search';
   this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
+  // store layers that will be searchable for that form search. First one is layer owner of the search setted on admin
   this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
+  // stat to create the form search structure
   this.createInputsFormFromFilter({filter});
 }
 
 inherit(SearchService, G3WObject);
 
 const proto = SearchService.prototype;
+
+/**
+ * Start Method to create right search structure for search form
+ * @param filter
+ * @returns {Promise<void>}
+ */
+proto.createInputsFormFromFilter = async function({filter=[]}={}) {
+  const filterLenght = filter.length - 1;
+  for (let index = 0; index <= filterLenght; index ++) {
+    const input = filter[index];
+    const forminput = {
+      label: input.label,
+      attribute: input.attribute,
+      type: input.input.type || 'textfield',
+      options: {...input.input.options},
+      value: null,
+      operator: input.op,
+      logicop: index === filterLenght ? null : input.logicop,
+      id: input.id || getUniqueDomId(),
+      loading: false,
+      widget: null
+    };
+    //check if has a dependance
+    const {options:{ dependance, dependance_strict } } = forminput;
+    if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
+      // to be sure set values options to empty array if undefined
+      forminput.loading = forminput.type !== 'autocompletefield';
+      const promise = new Promise((resolve, reject) =>{
+        if (forminput.options.values === undefined) forminput.options.values = [];
+        else if (dependance){ // in case of dependence load rigth now
+          if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
+            values = this.valuesToKeysValues(values); // set values for select
+            forminput.options.values = values;
+          })
+            .catch(()=> forminput.options.values = [])// in case of error
+            .finally(()=> {
+              forminput.loading = false;
+              resolve();
+            });
+          else {
+            forminput.loading = false;
+            resolve();
+          }
+        } else {
+          // no dependance
+          this.getValuesFromField(forminput).then(values => { // return array of values
+            values = this.valuesToKeysValues(values); // set values for select
+            forminput.options.values = values;
+          })
+            .catch(()=> forminput.options.values = [])// in case of error
+            .finally(()=> {
+              resolve();
+              forminput.loading = false
+            })
+        }
+      });
+      if (dependance) {
+        //set dependance of input
+        this.inputdependance[forminput.attribute] = dependance;
+        this.state.loading[dependance] = false;
+        // set disabled false for back compatibility
+        forminput.options.disabled = dependance_strict;
+        /**
+         * Set dependance between input
+         */
+        this.setInputDependencies({
+          master: dependance,
+          slave: forminput
+        });
+        /**
+         * Set widget type for fill dependency
+         */
+        if (forminput.options.values.length) {
+          forminput.widget = 'valuemap';
+          forminput.options._values = [...forminput.options.values];
+        } else if (forminput.options.layer_id){
+          forminput.widget = 'valuerelation';
+        }
+      }
+      promise.then(()=>{
+        if (forminput.type !== 'autocompletefield') {
+          if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
+          else forminput.options.values.push({value:ALLVALUE});
+          forminput.value = ALLVALUE;
+        }
+      });
+    }
+    // ad form inputs to list of search input
+    this.state.forminputs.push(forminput);
+  }
+};
 
 /**
  * Get return type
@@ -85,7 +178,7 @@ proto.setReturnType = function(returnType='data'){
 
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
-  if (value !== void 0) {
+  if (value !== undefined) {
     const fieldParam = createSingleFieldParameter({
       field,
       value,
@@ -93,25 +186,84 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
     });
     fields.push(fieldParam);
   }
+
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
-    const operator = this.getFilterInputFromField(field).op;
+    // need to set to lower case for api purpose
+    const operator = this.getFilterInputFromField(field).op.toLowerCase();
     fields.unshift(`${field}|${operator}|${encodeURI(value)}`);
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
     })
   }
-  return fields.length && fields.join() || void 0;
+  return fields.length && fields.join() || undefined;
 };
 
+/**
+ * Request to server value for a specific select select field
+ * @param field (form input)
+ * @returns {Promise<*[]>}
+ */
+proto.getValuesFromField = function(field){
+  if (field.options.layer_id) return this.getValueRelationValues(field);
+  else if (field.options.values.length) return this.getValueMapValues(field);
+  else return this.getUniqueValuesFromField({
+      field,
+      unique: field.attribute
+    })
+};
+
+proto.getValueRelationValues = async function(field, filter){
+  const {layer_id, key, value} =  field.options;
+  const layer = CatalogLayersStorRegistry.getLayerById(layer_id);
+  try {
+    const {data=[]} = await DataRouterService.getData('search:features', {
+      inputs:{
+        layer,
+        search_endpoint: this.getSearchEndPoint(),
+        filter,
+        ordering: key
+      },
+      outputs: false
+    });
+    const features = data && data[0] && data[0].features || [];
+    const values = [];
+    features.forEach(feature =>{
+      values.push({
+        key: feature.get(key),
+        value: feature.get(value)
+      })
+    });
+    return values;
+  } catch(err) {
+    return [];
+  }
+};
+
+/**
+ * Return values map
+ * @param field
+ * @returns {Promise<*>}
+ */
+proto.getValueMapValues = async function(field){
+  return field.options.values.filter(value => value !== ALLVALUE);
+};
+
+/**
+ * Method to get unique values from field
+ * @param field
+ * @param value
+ * @param unique
+ * @returns {Promise<[]>}
+ */
 proto.getUniqueValuesFromField = async function({field, value, unique}){
   let data = [];
   try {
-    data = await this.searchLayers[0].getFilterData({
-      field,
-      suggest: value !== void 0 ? `${field}|${value}` : void 0,
-      unique
+    data = await this.searchLayer.getFilterData({
+      suggest: value !== undefined ? `${field}|${value}` : undefined,
+      unique,
+      ordering: field.attribute
     })
   } catch(err){}
   return data;
@@ -121,9 +273,6 @@ proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
   try {
     data = await this.searchLayer.getFilterData({
-      field: this.createFieldsDependenciesAutocompleteParameter({
-        field
-      }),
       suggest: `${field}|${value}`,
       unique: field
     })
@@ -134,6 +283,15 @@ proto.autocompleteRequest = async function({field, value}={}){
   }))
 };
 
+/**
+ * Method to run search
+ * @param filter
+ * @param search_endpoint
+ * @param queryUrl
+ * @param feature_count
+ * @param show
+ * @returns {Promise<void|unknown>}
+ */
 proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(), queryUrl=this.url, feature_count=10000, show=this.show} ={}) {
   filter = filter || this.createFilter();
   // call a generic method of layer
@@ -168,36 +326,29 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
           const relation = this.project.getRelationById(relationId);
           const inputs = [];
           if (relation){
-            const {referencedLayer, fieldsRef} = relation;
-            const fieldsRefLength = fieldsRef.length;
-            const uniqueValues = []; // to not repeat same request value
+            const {referencedLayer, fieldRef:{referencedField, referencingField}} = relation;
+            const uniqueValues = new Set();
             features.forEach(feature => {
-              const values = [];
-              fieldsRef.forEach(({referencedField, referencingField}) => {
-                values.push(feature.getProperties()[referencingField]);
-              });
-              const find = uniqueValues.find(uniqueValue => {
-                return uniqueValue.reduce((accumulator, value, valueIndex) => accumulator && value == values[valueIndex], true);
-              });
-              if (!find){
-                values.forEach((value, index) => {
-                  inputs.push({
-                    attribute: fieldsRef[index].referencedField,
-                    logicop: index === fieldsRefLength -1 ? "OR" : "AND", //last logic op to AND between fields in relations
-                    operator: "eq",
-                    value
-                  })
-                });
-                uniqueValues.push(values);
+              const value = feature.getProperties()[referencingField];
+              if (!uniqueValues.has(value)) {
+                uniqueValues.add(value);
+                inputs.push({
+                  attribute:referencedField,
+                  logicop: "OR",
+                  operator: "eq",
+                  value
+                })
               }
             });
+            const layer = this.project.getLayerById(referencedLayer);
             const filter = createFilterFormInputs({
+              layer,
               search_endpoint,
               inputs
             });
             data = await DataRouterService.getData('search:features', {
               inputs:{
-                layer: this.project.getLayerById(referencedLayer),
+                layer,
                 search_endpoint,
                 filter,
                 formatter: 1, // set formatter to 1
@@ -208,7 +359,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
               }
             });
           }
-        } else DataRouterService.showEmptyOutputs(); // in case of no child result return empty results
+        } else DataRouterService.showEmptyOutputs();
       } else {
         switch (this.return) {
           case 'search':
@@ -227,9 +378,7 @@ proto.doSearch = async function({filter, search_endpoint=this.getSearchEndPoint(
         }
       }
     }
-  } catch(err){
-    console.log(err)
-  }
+  } catch(err){}
   this.state.searching = false;
   return data;
 };
@@ -262,6 +411,11 @@ proto._run = function() {
   this.doSearch();
 };
 
+/**
+ * Method called when input search change
+ * @param id
+ * @param value
+ */
 proto.changeInput = function({id, value} = {}) {
   const input = this.state.forminputs.find(input => id == input.id);
   input.value = value;
@@ -293,6 +447,7 @@ proto.createQueryFilterFromConfig = function({filter}) {
     });
     return booleanObject;
   }
+
   for (const operator in filter) {
     const inputs = filter[operator];
     queryFilter = createBooleanObject(operator, inputs);
@@ -358,12 +513,13 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
     });
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
+    const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
     if (value && value !== ALLVALUE) {
       let isCached;
       let rootValues;
       if (isRoot) {
         const cachedValue = this.cachedependencies[field] && this.cachedependencies[field][value];
-        isCached = cachedValue !== void 0;
+        isCached = cachedValue !== undefined;
         rootValues = isCached && cachedValue;
       } else {
         const dependenceCurrentValue = this.getDependanceCurrentValue(field);
@@ -382,6 +538,8 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
               subscribe.options.values.push(values[i]);
             }
           }
+          // set disabled false to dependance field
+          subscribe.options.disabled = false;
           resolve()
         }
       } else {
@@ -393,36 +551,63 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           this.cachedependencies[field][dependenceValue][value] = this.cachedependencies[field][dependenceValue][value] || {}
         }
         // exclude autocomplete subscribers
-        const notAutocompleteSubscribers = subscribers.filter( subscribe => subscribe.type !== 'autocompletefield');
         if (notAutocompleteSubscribers.length) {
           const fieldParams = this.createFieldsDependenciesAutocompleteParameter({
             field,
             value
           });
-          const uniqueParams = notAutocompleteSubscribers.length && notAutocompleteSubscribers.length=== 1 ? notAutocompleteSubscribers[0].attribute : undefined;
+          //need to set undefined beacuse if we has a subscribe input with valuerelations widget i need to wxtract the value of the field to get
+          // filter data from relation layer
           this.searchLayer.getFilterData({
-            field: fieldParams,
-            unique: uniqueParams
-          }).then(data => {
-            data = uniqueParams ? data : data.data[0].features || [];
-            data = this.valuesToKeysValues(data);
+            field: fieldParams
+          }).then(async data => {
+            const parentData = data.data[0].features || [];
             for (let i = 0; i < notAutocompleteSubscribers.length; i++) {
               const subscribe = notAutocompleteSubscribers[i];
-              if (uniqueParams) data.forEach(value => subscribe.options.values.push(value));
-              else {
-                const { attribute } = subscribe;
-                const uniqueValues = new Set();
-                data.forEach(feature => {
+              const { attribute, widget } = subscribe;
+              const uniqueValues = new Set();
+              // case value map
+              if (widget === 'valuemap') {
+                let values = [...subscribe.options._values];
+                parentData.forEach(feature => {
                   const value = feature.get(attribute);
                   value && uniqueValues.add(value);
                 });
-                [...uniqueValues].sort().forEach(value => subscribe.options.values.push(value));
+                const data = [...uniqueValues];
+                values = values.filter(({key}) => data.indexOf(key) !== -1);
+                values.forEach(value => subscribe.options.values.push(value));
+              }
+              else if (widget === 'valuerelation') {
+                parentData.forEach(feature =>{
+                    const value = feature.get(attribute);
+                    value && uniqueValues.add(value);
+                  });
+                  if (uniqueValues.size > 0) {
+                    const filter = createSingleFieldParameter({
+                      field: subscribe.options.key,
+                      value: [...uniqueValues]
+                    });
+                    try {
+                      const values = await this.getValueRelationValues(subscribe, filter);
+                      values.forEach(value =>  subscribe.options.values.push(value));
+                    } catch(err){
+                      console.log(err)
+                    }
+                  }
+                }
+              else {
+                parentData.forEach(feature => {
+                  const value = feature.get(attribute);
+                  value && uniqueValues.add(value);
+                });
+                this.valuesToKeysValues([...uniqueValues].sort()).forEach(value => subscribe.options.values.push(value));
               }
               if (isRoot) this.cachedependencies[field][value][subscribe.attribute] = subscribe.options.values.slice(1);
               else {
-                const dependenceValue =  this.getDependanceCurrentValue(field);
+                const dependenceValue = this.getDependanceCurrentValue(field);
                 this.cachedependencies[field][dependenceValue][value][subscribe.attribute] = subscribe.options.values.slice(1);
               }
+              subscribe.options.disabled = false;
             }
           }).catch(error => reject(error))
             .finally(() => {
@@ -434,7 +619,10 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
           resolve();
         }
       }
-    } else resolve();
+    } else {
+      notAutocompleteSubscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
+      resolve();
+    }
   })
 };
 
@@ -443,70 +631,20 @@ proto.getDependencies = function(field){
 };
 
 proto.setInputDependencies = function({master, slave}={}) {
-  this.inputdependencies[master] = this.inputdependencies[master] !== void 0 ? this.inputdependencies[master] : [];
+  this.inputdependencies[master] = this.inputdependencies[master] !== undefined ? this.inputdependencies[master] : [];
   this.inputdependencies[master].push(slave);
 };
 
-proto.valuesToKeysValues = function(values=[]){
+//set key value for select
+proto.valuesToKeysValues = function(values){
   if (values.length) {
     const type = toRawType(values[0]);
     values = type !== 'Object' ? values.map(value =>({
-      key:value,
+      key: value,
       value
     })): values
   }
   return values;
-};
-
-proto.createInputsFormFromFilter = async function({filter=[]}={}) {
-  const filterLenght = filter.length - 1;
-  for (let index = 0; index <= filterLenght; index ++) {
-    const input = filter[index];
-    const forminput = {
-      label: input.label,
-      attribute: input.attribute,
-      type: input.input.type || 'textfield',
-      options: {...input.input.options},
-      value: null,
-      operator: input.op,
-      logicop: index === filterLenght ? null : input.logicop,
-      id: input.id || getUniqueDomId(),
-      loading: false
-    };
-    if (forminput.type === 'selectfield' || forminput.type === 'autocompletefield') {
-      if (forminput.options.values === void 0) forminput.options.values = [];
-      else if (forminput.options.dependance){
-        forminput.loading = true;
-        this.getUniqueValuesFromField({unique: forminput.attribute})
-          .then(values => {
-            values = this.valuesToKeysValues(values);
-            values.splice(0,0,forminput.options.values[0]);
-            forminput.options.values = values;
-          })
-          .catch(()=> forminput.options.values = [])
-          .finally(()=> forminput.loading = false)
-      } else forminput.options.values = this.valuesToKeysValues(forminput.options.values);
-      //check if has a dependance
-      const { options:{ dependance } } = forminput;
-      if (dependance) {
-        //set dependance of input
-        this.inputdependance[forminput.attribute] = dependance;
-        this.state.loading[dependance] = false;
-        // set disabled false for back compatibility
-        forminput.options.disabled = false;
-        this.setInputDependencies({
-          master: dependance,
-          slave: forminput
-        });
-      }
-      if (forminput.type !== 'autocompletefield') {
-        if (forminput.options.values.length) forminput.options.values[0].value !== ALLVALUE && forminput.options.values.unshift({value:ALLVALUE});
-        else forminput.options.values.push({value:ALLVALUE});
-        forminput.value = ALLVALUE;
-      }
-    }
-    this.state.forminputs.push(forminput);
-  }
 };
 
 proto.createQueryFilterObject = function({ogcService='wms', filter={}}={}) {

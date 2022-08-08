@@ -12,6 +12,16 @@
     &.hide {
       display: none;
     }
+    #g3w-map-info {
+      position: absolute;
+      top: 60px;
+      left: 5px;
+      font-weight: bold;
+      z-index: 100;
+      background: rgba(255,255,255, 0.6);
+      padding: 5px;
+      border-radius: 3px;
+    }
   }
   #map_footer {
     position:absolute;
@@ -21,8 +31,19 @@
     display: flex;
     justify-content: space-between;
     background-color: rgba(255, 255, 255, 0.7);
+
     #map_footer_right {
       flex-shrink: 0;
+    }
+    #switch-mouse-coordinate {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      cursor: pointer;
+      span {
+        padding: 3px;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
     }
     #permalink {
       font-weight: bold;

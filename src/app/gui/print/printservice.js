@@ -1,11 +1,11 @@
-const { base, inherit, downloadFile} = require('core/utils/utils');
+const {base, inherit, downloadFile} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PrintService = require('core/print/printservice');
-const {getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees} = require('g3w-ol/src/utils/utils');
+const {getScaleFromResolution, getResolutionFromScale, getMetersFromDegrees} = require('core/utils/ol');
 const printConfig = require('./printconfig');
 const PrintPage = require('./vue/printpage');
 const scale = printConfig.scale;
@@ -68,14 +68,17 @@ proto.setInitState = function(){
   this.state.formats = formats;
   this.state.output.format = formats[0].value;
   this.state.maps = this.state.print[0].maps;
+  // label section
+  this.state.labels = this.state.print[0].labels;
 };
 
 proto.changeTemplate = function() {
   if (!this.state.template) return;
   const isPreviousAtlas = this.state.atlas;
-  const {atlas, maps} = this.state.print.find(print => print.name === this.state.template);
+  const {atlas, maps, labels} = this.state.print.find(print => print.name === this.state.template);
   this.state.maps = maps;
   this.state.atlas = atlas;
+  this.state.labels = labels;
   this.state.atlasValues = [];
   this.state.atlas ? this._clearPrint() : isPreviousAtlas ? this.showPrintArea(true) : this._setPrintArea();
 };
@@ -103,19 +106,27 @@ proto.getOverviewExtent = function(extent={}) {
 };
 
 proto._getOptionsPrint = function() {
-  const maps = this.state.maps.map(map => ({
-    name: map.name,
-    scale: map.overview ? map.scale : this.state.scala,
-    extent: map.overview ? this.getOverviewExtent(map.extent) : this._getPrintExtent()
-  }));
+  let is_maps_preset_theme = false;
+  const maps = this.state.maps.map(map => {
+    is_maps_preset_theme = is_maps_preset_theme || map.preset_theme !== undefined;
+    return {
+      name: map.name,
+      preset_theme: map.preset_theme,
+      scale: map.overview ? map.scale : this.state.scala,
+      extent: map.overview ? this.getOverviewExtent(map.extent) : this._getPrintExtent()
+    }
+  });
   const options = {
     rotation: this.state.rotation,
     dpi: this.state.dpi,
     template: this.state.template,
     maps,
     scale: this.state.scala,
-    format: this.state.output.format
+    format: this.state.output.format,
+    labels: this.state.labels,
+    is_maps_preset_theme
   };
+
   return options;
 };
 
@@ -125,10 +136,11 @@ proto.setPrintAreaAfterCloseContent = function() {
 };
 
 proto.print = function() {
-  const caller_download_id = ApplicationService.setDownload(true);
   return new Promise((resolve, reject) => {
+    //disable sidebar
+    GUI.disableSideBar(true);
     if (this.state.atlas) {
-      GUI.disableSideBar(true);
+      const caller_download_id = ApplicationService.setDownload(true);
       this.state.loading = true;
       this.printService.printAtlas({
         template: this.state.template,
@@ -142,17 +154,16 @@ proto.print = function() {
           mime_type: 'application/pdf'
         }).then(()=>{
           resolve();
-        }).catch(()=> {
-          this.showError();
+        }).catch( error => {
+          this.showError(error);
           reject();
-        }).finally(() =>{
+        }).finally(()=> {
           this.state.loading = false;
           ApplicationService.setDownload(false, caller_download_id);
           GUI.disableSideBar(false);
-        })
+        });
       })
     } else {
-      GUI.disableSideBar(true);
       this.state.output.url = null;
       this.state.output.layers = true;
       this._page = new PrintPage({
@@ -175,7 +186,10 @@ proto.print = function() {
           this.showError();
           reject(err);
         })
-        .finally(()=>ApplicationService.setDownload(false, caller_download_id))
+        .finally(()=> {
+          // in case of no layers
+          !this.state.output.layers && GUI.disableSideBar(false)
+        });
     }
   })
 
@@ -189,8 +203,8 @@ proto.stopLoading = function() {
   this.state.output.loading = false;
 };
 
-proto.showError = function() {
-  GUI.notify.error(t("info.server_error"));
+proto.showError = function(error) {
+  GUI.notify.error(error || t("info.server_error"));
   GUI.closeContent();
 };
 

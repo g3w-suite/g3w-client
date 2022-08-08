@@ -33,7 +33,12 @@ function LayerFactory() {
               if (config.geometrytype && config.geometrytype === 'NoGeometry') LayerClass = TableLayer;
               else LayerClass = ImageLayer;
             }
-          } else if ([Layer.SourceTypes.WMS, Layer.SourceTypes.GDAL].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
+          } else if ([ // here set new layer has to be threat as wms
+            Layer.SourceTypes.WMST,
+            Layer.SourceTypes.WCS,
+            Layer.SourceTypes.WMS,
+            Layer.SourceTypes.GDAL
+          ].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
         }
         break;
       case Layer.ServerTypes.OGC:

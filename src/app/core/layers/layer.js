@@ -1,8 +1,9 @@
 import ApplicationState from 'core/applicationstate';
-const t = require('core/i18n/i18n.service').t;
-const {inherit, base, XHR } = require('core/utils/utils');
+import {DOWNLOAD_FORMATS} from './../../constant';
+const {t} = require('core/i18n/i18n.service');
+const {inherit, base, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const { geometryFields } =  require('core/utils/geo');
+const {geometryFields, parseAttributes} =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
@@ -33,6 +34,7 @@ function Layer(config={}, options={}) {
     const projectId = project.getId();
     const suffixUrl = `${projectType}/${projectId}/${config.id}/`;
     const vectorUrl = project.getVectorUrl();
+    const rasterUrl = project.getRasterUrl();
     this.config.urls.filtertoken = `${vectorUrl}filtertoken/${suffixUrl}`;
     this.config.urls.data = `${vectorUrl}data/${suffixUrl}`;
     this.config.urls.shp = `${vectorUrl}shp/${suffixUrl}`;
@@ -40,6 +42,7 @@ function Layer(config={}, options={}) {
     this.config.urls.xls = `${vectorUrl}xls/${suffixUrl}`;
     this.config.urls.gpx = `${vectorUrl}gpx/${suffixUrl}`;
     this.config.urls.gpkg = `${vectorUrl}gpkg/${suffixUrl}`;
+    this.config.urls.geotiff = `${rasterUrl}geotiff/${suffixUrl}`;
     this.config.urls.editing = `${vectorUrl}editing/${suffixUrl}`;
     this.config.urls.commit = `${vectorUrl}commit/${suffixUrl}`;
     this.config.urls.config = `${vectorUrl}config/${suffixUrl}`;
@@ -69,7 +72,10 @@ function Layer(config={}, options={}) {
     source: config.source,
     styles: config.styles,
     defaultstyle,
+    inediting: false, // state of if is in editing (setted by editing plugin )
     infoformat: this.getInfoFormat(),
+    infoformats: this.config.infoformats || [],
+    projectLayer: true,
     geolayer: false,
     selection: {
       active: false
@@ -120,12 +126,72 @@ function Layer(config={}, options={}) {
       })
     };
   }
+  // used to store last proxy params (useful for repeat request info formats for wms external layer)
+  this.proxyData = {
+    wms: null // at the moment only wms data from server
+  };
   base(this);
 }
 
 inherit(Layer, G3WObject);
 
 const proto = Layer.prototype;
+
+/**
+ * Proxyparams
+ */
+
+proto.getProxyData = function(type){
+  return type ? this.proxyData[type] : this.proxyData;
+};
+
+proto.setProxyData= function(type, data={}){
+  this.proxyData[type] = data;
+};
+
+proto.clearProxyData = function(type){
+  this.proxyData[type] = null;
+};
+
+proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
+  const DataRouterService = require('core/data/routerservice');
+  try {
+    const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
+      inputs: proxyParams,
+      outputs: false
+    });
+    this.setProxyData(type, JSON.parse(data));
+    return response;
+  } catch(err){
+    return;
+  }
+};
+
+proto.changeProxyDataAndReloadFromServer = function(type='wms', changes={}) {
+  Object.keys(changes).forEach(changeParam =>{
+    Object.keys(changes[changeParam]).forEach(param =>{
+      const value = changes[changeParam][param];
+      this.proxyData[type][changeParam][param] = value;
+    })
+  });
+  return this.getDataProxyFromServer(type, this.proxyData[type]);
+};
+
+/**
+ * editing method used by plugin
+ */
+
+proto.isInEditing = function(){
+  return this.state.inediting;
+};
+
+proto.setInEditing = function(bool=false){
+  this.state.inediting = bool;
+};
+
+/**
+ * end proxy params
+ */
 
 proto.getSearchParams = function(){
   return this.config.searchParams;
@@ -378,52 +444,67 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
     case 'gpkg':
       promise = this.getGpkg({data, options});
       break;
+    case 'geotiff':
+      promise: this.getGeoTIFF({
+        data,
+        options
+      })
+      break;
   }
   return promise;
 };
 
-proto.getXls = function({data}={}){
+proto.getGeoTIFF = function({data={}}={}){
+  const url = this.getUrl('geotiff');
+  return XHR.fileDownload({
+    url,
+    data,
+    httpMethod: "POST"
+  })
+};
+
+proto.getXls = function({data={}}={}){
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
-proto.getShp = function({data}={}) {
+proto.getShp = function({data={}}={}) {
   const url = this.getUrl('shp');
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
-proto.getGpx = function({data}={}){
+proto.getGpx = function({data={}}={}){
   const url = this.getUrl('gpx');
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
-proto.getGpkg = function({data}={}){
+proto.getGpkg = function({data={}}={}){
   const url = this.getUrl('gpkg');
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
-proto.getCsv = function({data}={}){
+proto.getCsv = function({data={}}={}){
   const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,
     data,
-    httpMethod: "GET"
+    httpMethod: "POST"
   })
 };
 
@@ -435,10 +516,11 @@ proto.isGeoLayer = function() {
   return this.state.geolayer;
 };
 
-proto.getDataTable = function({ page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox} = {}) {
+proto.getDataTable = function({page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox, custom_params={}} = {}) {
   const d = $.Deferred();
   let provider;
   const params = {
+    ...custom_params,
     field,
     page,
     page_size,
@@ -460,7 +542,7 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
         const title = this.getTitle();
         const features = data.features && data.features || [];
         let headers = features.length ? features[0].properties : [];
-        headers = provider._parseAttributes(this.getAttributes(), headers);
+        headers = parseAttributes(this.getAttributes(), headers);
         const dataTableObject = {
           headers,
           features,
@@ -475,22 +557,23 @@ proto.getDataTable = function({ page = null, page_size=null, ordering=null, sear
 };
 
 /**
- * Search layer feature by fid
- * @param fid
+ * Search layer feature by fids
+ * @param fids formatter
  */
-proto.getFeatureByFid = async function(fid){
+proto.getFeatureByFids = async function({fids=[], formatter=0}={}){
   const url = this.getUrl('data');
-  let feature;
+  let features;
   try {
     const response = await XHR.get({
       url,
       params: {
-        fid
+        fids:fids.toString(),
+        formatter
       }
     });
-    feature = response && response.result && response.vector && response.vector.data && response.vector.data.features[0];
+    features = response && response.result && response.vector && response.vector.data && response.vector.data.features;
   } catch(err){}
-  return feature
+  return features
 };
 
 //search Features methods
@@ -508,12 +591,13 @@ proto.searchFeatures = function(options={}, params={}){
           }).fail(error => reject(error));
         break;
       case 'api':
-        const {raw=false, filter:field, suggest={}, unique, queryUrl} = options;
+        const {raw=false, filter:field, suggest={}, unique, queryUrl, ordering} = options;
         try {
           const response = await this.getFilterData({
             queryUrl,
             raw,
             field,
+            ordering,
             suggest,
             unique
           });
@@ -532,12 +616,13 @@ proto.searchFeatures = function(options={}, params={}){
 * - suggest (mandatory): object with key is a field of layer and value is value of the field to filter
 * - fields: Array of object with type of suggest (see above)
 * */
-proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl}={}){
+proto.getFilterData = async function({field, raw=false, suggest={}, unique, formatter=1, queryUrl, ordering}={}){
   const provider =  this.getProvider('data');
   const response = await provider.getFilterData({
     queryUrl,
     field,
     raw,
+    ordering,
     suggest,
     formatter,
     unique
@@ -567,7 +652,7 @@ proto.search = function(options={}, params={}) {
 //Info from layer (only for querable layers)
 proto.query = function(options={}) {
   const d = $.Deferred();
-  const { filter } = options;
+  const {filter} = options;
   const provider = this.getProvider(filter ? 'filter' : 'query');
   if (provider)
     provider.query(options)
@@ -584,6 +669,15 @@ proto.get = function(property) {
 
 proto.getFields = function() {
   return this.config.fields
+};
+
+/**
+ * Get field by name
+ * @param fieldName
+ * @returns {*}
+ */
+proto.getFieldByName = function(fieldName){
+  return this.getFields().find(field => field.name === fieldName)
 };
 
 proto.getEditingFields = function() {
@@ -606,14 +700,24 @@ proto.getConfig = function() {
   return this.config;
 };
 
-proto.getEditorFormStructure = function({all=false}={}) {
-  return this.config.editor_form_structure && !all ? this.config.editor_form_structure.filter((structure) => {
-    return !structure.field_name;
-  }) : this.config.editor_form_structure;
+/**
+ * get form structur to show on form editing
+ * @param fields
+ * @returns {[]}
+ */
+proto.getLayerEditingFormStructure = function(fields){
+  return this.config.editor_form_structure;
+};
+
+/*
+Duplicate beacause we had to check if it used by some plugins to avoid to break back compatibility
+ */
+proto.getEditorFormStructure = function() {
+  return this.getLayerEditingFormStructure();
 };
 
 proto.getFieldsOutOfFormStructure = function() {
-  return this.config.editor_form_structure ? this.config.editor_form_structure.filter((structure) => {
+  return this.config.editor_form_structure ? this.config.editor_form_structure.filter(structure => {
     return structure.field_name;
   }) : []
 };
@@ -635,17 +739,26 @@ proto.getSource = function() {
   return this.state.source;
 };
 
-proto.getSourceType = function() {
-  return this.state.source ? this.state.source.type : null;
-};
-
 proto.isDownloadable = function(){
   return this.isShpDownlodable() || this.isXlsDownlodable() ||
     this.isGpxDownlodable() || this.isGpkgDownlodable() || this.isCsvDownlodable();
 };
 
+proto.getDownloadableFormats = function(){
+  return Object.keys(DOWNLOAD_FORMATS).filter(download_format => this.config[download_format]).map(format => DOWNLOAD_FORMATS[format].format);
+};
+
+proto.getDownloadUrl = function(format){
+  const find = Object.values(DOWNLOAD_FORMATS).find(download_format => download_format.format === format);
+  return find && find.url;
+};
+
+proto.isGeoTIFFDownlodable = function() {
+  return !this.isBaseLayer() && this.config.download && this.config.source.type === 'gdal';
+};
+
 proto.isShpDownlodable = function() {
-  return !this.isBaseLayer() && this.config.download;
+  return !this.isBaseLayer() && this.config.download && this.config.source.type !== 'gdal';
 };
 
 proto.isXlsDownlodable = function(){
@@ -751,7 +864,6 @@ proto.getFilter = function(){
 
 proto.setDisabled = function(bool) {
   this.state.disabled = bool;
-  this.isVisible();
 };
 
 proto.isDisabled = function() {
@@ -759,7 +871,6 @@ proto.isDisabled = function() {
 };
 
 proto.isVisible = function() {
-  this.state.visible = this.isGeoLayer() ? !this.state.groupdisabled && this.state.checked && !this.isDisabled() : this.state.visible;
   return this.state.visible;
 };
 
@@ -810,6 +921,13 @@ proto.isFilterable = function(conditions=null) {
   return isFiltrable;
 };
 
+/**
+ * Check if layer is setup as time series
+ */
+proto.isQtimeseries = function(){
+  return this.config.qtimeseries;
+};
+
 proto.isEditable = function() {
   return !!(this.config.capabilities && (this.config.capabilities & Layer.CAPABILITIES.EDITABLE));
 };
@@ -821,6 +939,15 @@ proto.isBaseLayer = function() {
 // get url by type ( data, shp, csv, xls,  editing..etc..)
 proto.getUrl = function(type) {
   return this.config.urls[type];
+};
+
+/**
+ * Method to set url
+ * @param type
+ * @param url
+ */
+proto.setUrl = function({type, url}={}){
+  this.config.urls[type] = url;
 };
 
 // return urls
@@ -849,9 +976,15 @@ proto.getQueryLayerOrigName = function() {
 };
 
 proto.getInfoFormat = function(ogcService) {
-  return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
-  //return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/json';
+  /**
+   * In case of qtime series (NETCDF)
+   */
+  if (this.config.qtimeseries === true || this.getSourceType() === 'gdal') return 'application/json';
+  else return (this.config.infoformat && this.config.infoformat !== '' && ogcService !== 'wfs') ?  this.config.infoformat : 'application/vnd.ogc.gml';
+};
 
+proto.getInfoFormats = function(){
+  return this.state.infoformats;
 };
 
 proto.getInfoUrl = function() {
@@ -859,7 +992,7 @@ proto.getInfoUrl = function() {
 };
 
 proto.setInfoFormat = function(infoFormat) {
-  this.state.infoformat = infoFormat;
+  this.config.infoformat = infoFormat;
 };
 
 proto.getAttributes = function() {
@@ -919,8 +1052,44 @@ proto.canShowTable = function() {
   } else return false
 };
 
+proto.changeFieldType = function({name, type, options={}, reset=false}={}){
+  const field = this.getFields().find(field => field.name === name);
+  if (field){
+    if (reset){
+      field.type = field._type;
+      delete field._type;
+      delete field[`${type}options`];
+      return field.type;
+    } else {
+      field._type = field.type;
+      field.type = type;
+      field[`${type}options`] = options;
+      return field._type;
+    }
+  }
+};
+
+proto.changeConfigFieldType = function({name, type, options={},reset=false}){
+  return this.changeFieldType({name, type, options, reset});
+};
+
+proto.resetConfigField = function({name}){
+  this.changeConfigFieldType({
+    name,
+    reset: true
+  })
+};
+
 //function called in case of change project to remove all sored information
 proto.clear = function(){};
+
+proto.isVector = function() {
+  return this.getType() === Layer.LayerTypes.VECTOR;
+};
+
+proto.isTable = function(){
+  return this.getType() === Layer.LayerTypes.TABLE;
+};
 
 /// LAYER PROPERTIES
 // Layer Types
@@ -962,7 +1131,9 @@ Layer.SourceTypes = {
   OGR: 'ogr',
   GDAL: 'gdal',
   WMS: 'wms',
+  WMST: "wmst",
   WFS: 'wfs',
+  WCS: "wcs",
   VECTORTILE: "vector-tile",
   ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"

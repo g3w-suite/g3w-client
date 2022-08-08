@@ -1,5 +1,5 @@
 const {base, inherit} = require('core/utils/utils');
-const Projections = require('g3w-ol/src/projection/projections');
+const Projections = require('g3w-ol/projection/projections');
 const WMSLayer = require('../map/wmslayer');
 const ImageLayer = require('core/layers/imagelayer');
 
@@ -40,10 +40,6 @@ proto._registerLoadingEvent = function() {
 
 proto.getSource = function(){
   return this.getOLLayer().getSource();
-};
-
-proto.toggleLayer = function(){
-  this._updateLayers();
 };
 
 proto.update = function(mapState, extraParams) {

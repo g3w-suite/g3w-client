@@ -1,5 +1,5 @@
 <template>
-  <select :name="forminput.attribute" class="form-control" :id="forminput.id" :disabled="forminput.options.disabled">
+  <select :name="forminput.attribute" class="form-control" :id="forminput.id" v-disabled="forminput.options.disabled || forminput.loading">
     <option :value="keyvalue.value" v-for="keyvalue in forminput.options.values" :key="keyvalue.value">
       <span v-if="keyvalue.value === allvalue " v-t="'sdk.search.all'"></span>
       <span v-else>{{ keyvalue.key }}</span>
@@ -18,6 +18,18 @@
     props: ['forminput','autocompleteRequest'],
     mixins: [select2Mixin],
     methods: {
+      emitChangeEvent(evt){
+        const id = $(evt.target).attr('id');
+        const attribute = $(evt.target).attr('name');
+        const data = evt.params.data;
+        const value =  data ?  data.id : ALLVALUE;
+        this.$emit('select-change', {
+          id,
+          attribute,
+          value,
+          type: this.forminput.type
+        });
+      },
       _initSelect2Element() {
         const { type, attribute, options } = this.forminput;
         // get numgigaut and validate it
@@ -45,24 +57,17 @@
           } : null,
          ...autocompleteOptions
         });
-        this.select2.on('select2:select', (evt) => {
-          const id = $(evt.target).attr('id');
-          const attribute = $(evt.target).attr('name');
-          const value = evt.params.data.id;
-          this.$emit('select-change', {
-            id,
-            attribute,
-            value,
-            type: this.forminput.type
-          });
+        this.select2.on('select2:select', evt => {
+          this.emitChangeEvent(evt);
         });
-        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', ()=>{
-          this.forminput.value = null;
-        })
+        this.forminput.type === 'autocompletefield' && this.select2.on('select2:unselecting', evt => {
+          this.emitChangeEvent(evt);
+        });
       }
     },
     watch : {
-      'forminput.value'(value) {
+      async 'forminput.value'(value) {
+        await this.$nextTick();
         if (value === ALLVALUE) {
           this.select2.val(value);
           this.select2.trigger('change');

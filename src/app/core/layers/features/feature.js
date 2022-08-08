@@ -1,13 +1,16 @@
 const {uniqueId} = require('core/utils/utils');
-const { geometryFields } =  require('core/utils/geo');
+const {geometryFields} =  require('core/utils/geo');
 const Feature = function(options={}) {
   ol.Feature.call(this);
   this._uid = uniqueId();
   this._newPrefix = '_new_';
   this._geometry = false;
-  const feature = options.feature;
+  const {feature, properties} = options;
   if (feature) {
-    this.setProperties(feature.getProperties());
+    // check if has to set only some properties or all feature properties
+    if (properties && Array.isArray(properties))
+      properties.forEach(property => this.set(property, feature.get(property)));
+    else this.setProperties(feature.getProperties());
     this.setId(feature.getId());
     this.setGeometryName(feature.getGeometryName());
     const geometry = feature.getGeometry();
@@ -18,7 +21,8 @@ const Feature = function(options={}) {
   }
   this.state = {
     new: false,
-    state: null
+    state: null,
+    visible: true
   };
 };
 
@@ -29,10 +33,19 @@ const proto = Feature.prototype;
 //change constructor
 proto.constructor = 'Feature';
 
+/**
+ * Return unique id
+ * @returns {*}
+ */
 proto.getUid = function(){
   return this._uid
 };
 
+/**
+ * set new uid
+ * @param uid
+ * @private
+ */
 proto._setUid = function(uid){
   this._uid = uid;
 };
@@ -49,11 +62,15 @@ proto.cloneNew = function(){
   return clone;
 };
 
+/**
+ * clone existing feature
+ * @returns {Feature}
+ */
 proto.clone = function() {
   const feature = ol.Feature.prototype.clone.call(this);
   feature.setId(this.getId());
   this.isGeometry() && feature.setGeometry(feature.getGeometry().clone());
-  const clone =  new Feature({
+  const clone = new Feature({
     feature
   });
   const uid = this.getUid();
@@ -64,7 +81,7 @@ proto.clone = function() {
 };
 
 proto.setTemporaryId = function() {
-  const newValue = this._newPrefix + Date.now();
+  const newValue = `${this._newPrefix}${uniqueId()}`;
   this.setId(newValue);
   this.setNew();
 };
@@ -73,20 +90,16 @@ proto.setNew = function() {
   this.state.new = true;
 };
 
-
-// setta la feature a state 2 delete
 proto.delete = function() {
   this.state.state = 'delete';
   return this;
 };
 
-//setta lo stato a feature aggiornata
 proto.update = function() {
   this.state.state = 'update';
   return this;
 };
 
-// setta lo stato a nuovo 0
 proto.add = function() {
   this.state.state = 'add';
   return this;
@@ -138,6 +151,18 @@ proto.getAlphanumericProperties = function() {
 proto.clearState = function() {
   this.state.state = null;
   this.state.new = false;
+};
+
+/**
+ * need to filter features visiblity on table
+ * @returns {boolean}
+ */
+proto.isVisible = function(){
+  return this.state.visible;
+};
+
+proto.setVisible = function(bool=true){
+  this.state.visible = bool;
 };
 
 

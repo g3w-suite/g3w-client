@@ -2,6 +2,7 @@ const {base, inherit, mixin } = require('core/utils/utils');
 const Layer = require('core/layers/layer');
 const VectorLayer = require('./vectorlayer');
 const WMSLayer = require('./map/wmslayer');
+const WMSTLayer = require('./map/wmstlayer');
 const ARCGISMAPSERVERLayer = require('./map/arcgismapserverlayer');
 const XYZLayer = require('./map/xyzlayer');
 const LegendService = require('./legend/legendservice');
@@ -116,8 +117,14 @@ proto.getWFSLayerName = function(){
   return this.getQueryLayerName().replace(/[/\s]/g, '_')
 };
 
+proto.useProxy = function(){
+  return this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()
+};
+
 proto.getWMSInfoLayerName = function() {
-  return this._getBaseLayerName();
+  if ( this.isExternalWMS() && this.isLayerProjectionASMapProjection() && this.getInfoFormats()) {
+    return this.getSource().layers;
+  } else return this._getBaseLayerName();
 };
 
 proto.getPrintLayerName = function() {
@@ -129,28 +136,61 @@ proto.getStringBBox = function() {
   return `${bbox.minx},${bbox.miny},${bbox.maxx},${bbox.maxy}`;
 };
 
+proto.isWfsActive = function(){
+  return Array.isArray(this.config.ows) && this.config.ows.find(ows_type => ows_type === 'WFS') !== undefined;
+};
+
+/**
+ * Metyhod to get wms url of the layer
+ * @returns {*}
+ */
 proto.getFullWmsUrl = function() {
   const ProjectsRegistry = require('core/project/projectsregistry');
   const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
   return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
+//used to Catalog layer menu to show wms url
+proto.getCatalogWmsUrl = function(){
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const metadata_wms_url = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
+  const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
+  return catalogWmsUrl;
+};
+
+//used to Catalog layer menu to show wfs url
+proto.getCatalogWfsUrl = function(){
+  return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
+};
+
 // values: map, legend
 proto.getWmsUrl = function({type='map'}={}) {
   const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  return (legendMapBoolean &&
-      this.config.source &&
-      (type === 'legend' || this.config.source.external) &&
-      this.config.source.type === 'wms' &&
-      this.config.source.url) ?
+  const wmsUrl = (legendMapBoolean &&
+    this.config.source &&
+    (type === 'legend' || this.config.source.external) &&
+    (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
+    this.config.source.url) ?
     this.config.source.url :
     this.config.wmsUrl;
+  return wmsUrl
 };
 
+proto.getWfsUrl = function() {
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  return ProjectsRegistry.getCurrentProject().getMetadata().wms_url || this.config.wmsUrl;
+};
+
+
+/**
+ * Get query url based on type, external or same projection of map
+ * @returns {string}
+ */
 proto.getQueryUrl = function() {
   let url = base(this, 'getQueryUrl');
   if (this.getServerType() === Layer.ServerTypes.QGIS && this.isExternalWMS() && this.isLayerProjectionASMapProjection()) {
-    url =`${url}SOURCE=${this.config.source.type}`;
+    if (this.getInfoFormats()) url = this.getSource().url;
+    else url =`${url}SOURCE=${this.config.source.type}`;
   }
   return url;
 };
@@ -202,7 +242,12 @@ proto.getMapLayer = function(options={}, extraParams) {
       mapLayer = new ARCGISMAPSERVERLayer(options, extraParams)
     } else {
       options.url = options.url || this.getWmsUrl();
-      mapLayer = new WMSLayer(options, extraParams, method);
+      /** check in case WMST Layer
+       *
+       */
+      if (this.isExternalWMS() && this.config.source && this.config.source.type === Layer.SourceTypes.WMST)
+        mapLayer = new WMSTLayer(options, extraParams, method);
+      else mapLayer = new WMSLayer(options, extraParams, method);
     }
   }
   return mapLayer;

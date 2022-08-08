@@ -1,7 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-const t = require('core/i18n/i18n.service').t;
+const {t} = require('core/i18n/i18n.service');
 const {base, inherit} = require('core/utils/utils');
-const Stack = require('gui/utils/utils').barstack;
+const {barstack:Stack} = require('gui/utils/utils');
 const G3WObject = require('core/g3wobject');
 const compiledSideBarItemTemplate = Vue.compile(require('./sidebar-item.html'));
 const SIDEBAREVENTBUS = new Vue();
@@ -86,7 +86,7 @@ function SidebarService() {
   // add each component to the sidebar
   // add also position insiede the sidebar
   this.addComponent = function(component, options={}) {
-    const {position, info} = options;
+    const {position, before=true, info} = options;
     if (isMobile.any && !component.mobile) {
       return false
     }
@@ -107,10 +107,17 @@ function SidebarService() {
     //append component to  g3w-sidebarcomponents (template sidebar.html)
     const DOMComponent = sidebarItem.$mount().$el;
     this.state.components.push(component);
-    const children = $('#g3w-sidebarcomponents').children(':visible');
+    const isPanelSidebarShow = $('.g3w-sidebarpanel').is(':visible');
+    const sidebarcomponetsdomid = `#g3w-sidebarcomponents${isPanelSidebarShow ? ':hidden': ''}`;
+    const children = $(sidebarcomponetsdomid).children().filter(function(){
+      return this.style.display !== 'none'
+    });
     const childrenLength = children.length;
-    if (position === null || position === undefined || position < 0 || position >= childrenLength) $('#g3w-sidebarcomponents').append(DOMComponent);
-    else children.each(function (index, element) {position === index && $(DOMComponent).insertBefore(element)});
+    if (position === null || position === undefined || position < 0 || position >= childrenLength) $(sidebarcomponetsdomid).append(DOMComponent);
+    else children.each((index, element) => {
+      const findElementIndexId = Number.isInteger(position) ? position === index : element.id === position;
+      findElementIndexId && $(DOMComponent)[`insert${before ? 'Before' : 'After'}`](element);
+    });
     //mount componet to g3w-sidebarcomponent-placeholder (template sidebar-item.html);
     component.mount("#g3w-sidebarcomponent-placeholder");
     // check if componentonent has iniService method
@@ -139,10 +146,10 @@ function SidebarService() {
   };
 
   /**
-   * close fo the moment only conlapsbale
+   * close for the moment only conlapsbale
    */
   this.closeOpenComponents = function(collapsible=true){
-    this.getComponents().forEach(component =>component.getOpen() && component.collapsible && component.click({open: false}))
+    this.getComponents().forEach(component => component.closeWhenViewportContentIsOpen() && component.collapsible && component.click({open: false}))
   };
 
   this.reloadComponent = function(id) {
@@ -165,7 +172,7 @@ function SidebarService() {
       if (component === sidebarComponent) {
         component.unmount();
         this.state.components.splice(index, 1);
-        if (position !== undefined) $('#g3w-sidebarcomponents').children(':visible')[position].remove();
+        if (position !== undefined && Number.isInteger(position)) $('#g3w-sidebarcomponents').children(':visible')[position].remove();
         else $('#g3w-sidebarcomponents').children(`#${component.id}`).remove();
         return false;
       }
