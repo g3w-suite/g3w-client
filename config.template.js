@@ -22,8 +22,8 @@ const G3W_PLUGINS = {                // override "initConfig->group->plugins" at
 };
 
 const G3W_KEYS = {
-  // GOOGLE_API_KEY: '<INSERT HERE YOUR GOOGLE API KEY>',
-  // BING_API_KEY: '<INSERT HERE YOUR BING API KEY>'
+  // google: '<INSERT HERE YOUR GOOGLE API KEY>',
+  // bing: '<INSERT HERE YOUR BING API KEY>'
 };
 
 let conf = {
