@@ -248,6 +248,7 @@ const utils = {
 class Nominatim {
   constructor(options={}) {
     this.id = 'Nominatim';
+    this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://nominatim.openstreetmap.org/search/',
@@ -298,8 +299,7 @@ class Nominatim {
     return {
       results,
       header: {
-        title: this.id,
-        icon: GUI.getFontClass('search')
+        title: this.id
       }
     }
   }
@@ -308,19 +308,22 @@ class Nominatim {
 class Google {
   constructor(options={}) {
     this.id = 'Google';
+    this.active = ApplicationState.keys.vendorkeys.google !== undefined; // PUT HERE A CONDITION TO ACTIVATE OR NOT GOODGLE GEOCODING PROVIDER
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
       url: 'https://maps.googleapis.com/maps/api/geocode/json',
       extent,
-      viewbox: extent.join(',')
+      viewbox: `${extent[1]},${extent[0]}|${extent[3]},${extent[2]}`
     };
   }
-  getParameters(options) {
+  getParameters(options={}) {
+    const { lang:language } = options;
     const {url, viewbox } = this.settings;
     const params = {
       address: options.query,
       key: ApplicationState.keys.vendorkeys.google,
-      addressdetails: 1
+      bounds: viewbox,
+      language
     };
 
     return {
@@ -329,30 +332,41 @@ class Google {
     };
   };
   handleResponse(response= {}) {
-    const results = response.results
-      .filter(place => ol.extent.containsXY(this.settings.extent, place.lon, place.lat))
-      .map(result => ({
-          lon: result.lon,
-          lat: result.lat,
+    const results = response.status === 'OK' ? response.results
+      .filter(result => ol.extent.containsXY(this.settings.extent, result.geometry.location.lng, result.geometry.location.lat))
+      .map(result => {
+        let name,
+          road,
+          city,
+          postcode,
+          state,
+          country;
+        result.address_components.forEach(({types, short_name, long_name}) => {
+          if (types.find( type => type === 'route')) name = long_name;
+          else if (types.find( type => type === 'locality')) city = long_name;
+          else if (types.find( type => type === 'country')) country = long_name
+        });
+        return {
+          lon: result.geometry.location.lng,
+          lat: result.geometry.location.lat,
           address: {
-            name: result.address.neighbourhood || '',
-            road: result.address.road || '',
-            postcode: result.address.postcode,
-            city: result.address.city || result.address.town,
-            state: result.address.state,
-            country: result.address.country
+            name,
+            road,
+            postcode: '',
+            city,
+            state,
+            country
           },
           original: {
             formatted: result.display_name,
             details: result.address
           }
-        })
-      );
+        };
+      }) : [];
     return {
       results,
       header: {
-        title: this.id,
-        icon: GUI.getFontClass('google')
+        title: this.id
       }
     }
   }
@@ -369,7 +383,7 @@ function GeocodingControl(options={}) {
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
-    lang: 'it-IT',
+    lang: ApplicationState.lng || 'it-IT',
     limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,
@@ -531,25 +545,31 @@ function GeocodingControl(options={}) {
          * For loop to provideres
          */
         this.providers.forEach(provider => {
-          const {url, params} = provider.getParameters({
+          /**
+           * Use active provider only
+           */
+          if (provider.active) {
+            const {url, params} = provider.getParameters({
               query: q,
               lang: this.options.lang,
               countrycodes: this.options.countrycodes,
               limit: this.options.limit
             });
-          this.lastQuery = q;
-          this.clearResults();
-          utils.addClass(this.reset, cssClasses.spin);
-          promises.push(XHR.get({
+            this.lastQuery = q;
+            this.clearResults();
+            utils.addClass(this.reset, cssClasses.spin);
+            promises.push(XHR.get({
               url,
               params
             }))
+          }
+
         });
         const responses = await Promise.allSettled(promises);
-        console.log(responses)
         responses.forEach(({status, value: response}, index) =>{
           if (status === 'fulfilled') {
-              const {header, results} = this.providers[index].handleResponse(response);
+              const {header, results} = this.providers
+                .filter(provider => provider.active)[index].handleResponse(response);
               this.createList({
                 header,
                 results
@@ -612,11 +632,10 @@ function GeocodingControl(options={}) {
   this.createHeaderProviderResults = function(header={}){
     const headerNodeElement = `
       <div style="display: flex; justify-content: space-between; padding: 5px">
-        <span class="skin-color" style="font-weight: bold">${header.title}</span>
-        <span class="${header.icon}"></span>
+        <span  style="color: #FFFFFF; font-weight: bold">${header.title}</span>
       </div>`;
     const li = utils.createElement('li', headerNodeElement);
-    li.style.backgroundColor = "#222d32";
+    li.classList.add("skin-background-color");
     return li;
   };
 
