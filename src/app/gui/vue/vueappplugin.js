@@ -1,6 +1,6 @@
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue
- *
+ * 
  * @link https://v2.vuejs.org/v2/guide/plugins.html
  */
 module.exports = {

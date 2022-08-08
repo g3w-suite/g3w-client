@@ -23,8 +23,7 @@ ApplicationService.once('initconfig', () => {
   // sets "initConfig->group->vendorkeys"
   if (Object.keys(keys).length > 0) {
     window.initConfig.group.vendorkeys = window.initConfig.group.vendorkeys || {};
-    Object.keys(keys).forEach(key => window.initConfig.group.vendorkeys[key] = keys[key]);
-    ApplicationService.setVendorKeys(keys);
+    Object.keys(keys).forEach((key) => { window.initConfig.group.vendorkeys[key] = keys[key]; });
   }
 });
 
