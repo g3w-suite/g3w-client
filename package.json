@@ -18,7 +18,7 @@
     "test": "gulp test",
     "cy:open": "cypress open",
     "preversion": "npm run test",
-    "version": "npm run admin && git add -A dist",
+    "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags",
     "admin": "npm run build",
     "admin:client": "npm run build:client",
