@@ -2,8 +2,26 @@
 import G3W_CONSTANT from './constant';
 
 import ApplicationState from 'core/applicationstate';
+
+/**
+ * Vue Single Components
+ */
+
+/**
+ * Inputs
+ */
 import G3WInput from 'components/InputG3W.vue';
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
+/**
+ * Form components
+ */
+import FormBody from 'components/FormBody.vue';
+import FormFooter from 'components/FormFooter.vue';
+/**
+ * Chart Line component
+ */
+import C3XYLine from 'components/C3XYLine.vue';
+
 
 
 /**
@@ -72,12 +90,9 @@ const CatalogComponent = require('gui/catalog/vue/catalog');
 const MapComponent = require('gui/map/vue/map');
 const ToolsComponent = require('gui/tools/vue/tools');
 const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
-const FormComponent = require('components/Form.vue');
-import FormBody from 'components/FormBody.vue';
-import FormFooter from 'components/FormFooter.vue';
+const FormComponent = require('gui/form/vue/form');
 const InputsComponents = require('gui/inputs/inputs');
 const ChartsFactory = require('gui/charts/chartsfactory');
-import C3XYLine from 'components/C3XYLine.vue';
 const Fields = require('gui/fields/fields');
 const Mixins = require('gui/vue/vue.mixins');
 const SearchPanelService = require('gui/search/vue/panel/searchservice');
