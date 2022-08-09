@@ -332,7 +332,10 @@ class Google {
     };
   };
   handleResponse(response= {}) {
-    const results = response.status === 'OK' ? response.results
+    let results;
+
+    if (response.status === 'OK') {
+      results = response.results
       .filter(result => ol.extent.containsXY(this.settings.extent, result.geometry.location.lng, result.geometry.location.lat))
       .map(result => {
         let name,
@@ -362,7 +365,12 @@ class Google {
             details: result.address
           }
         };
-      }) : [];
+      })
+    } else if (response.status === 'REQUEST_DENIED') { /* disable google geocoding provider on API key error */
+      this.active = false;
+      results = [];
+    }
+
     return {
       results,
       header: {
@@ -563,18 +571,20 @@ function GeocodingControl(options={}) {
               params
             }))
           }
-
         });
         const responses = await Promise.allSettled(promises);
-        responses.forEach(({status, value: response}, index) =>{
+        responses.forEach(({status, value: response}, index) => {
           if (status === 'fulfilled') {
-              const {header, results} = this.providers
-                .filter(provider => provider.active)[index].handleResponse(response);
-              this.createList({
-                header,
-                results
-              });
-              results && this.listenMapClick();
+              const {header, results} = this.providers[index].handleResponse(response);
+              if (this.providers[index].active) {
+                this.createList({
+                  header,
+                  results
+                });
+                if (results) {
+                  this.listenMapClick();
+                } 
+              }
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
