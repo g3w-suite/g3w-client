@@ -94,11 +94,11 @@
         <span class="menu-icon" :class="g3wtemplate.getFontClass('palette')"></span>
         <span class="item-text" v-t="'catalog_items.contextmenu.styles'"></span>
         <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
-        <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000" :style="{ top: layerMenu.stylesMenu.top + 'px', left: `${layerMenu.stylesMenu.left}px`}">
+        <ul v-show="layerMenu.stylesMenu.show" style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000" :style="{ top: layerMenu.stylesMenu.top + 'px', left: `${layerMenu.stylesMenu.left}px`, maxHeight: layerMenu.stylesMenu.maxHeight + 'px', overflowY: layerMenu.stylesMenu.overflowY }">
           <li v-for="(style, index) in layerMenu.layer.styles" @click.stop="setCurrentLayerStyle(index)" :key="style.name">
             <span v-if="style.current" style="font-size: 0.8em;" :class="g3wtemplate.getFontClass('circle')"></span>
             <span>{{style.name}}
-              <span v-if="style.name ===  layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">(<span v-t="'default'"></span>)</span></span>
+            <span v-if="style.name ===  layerMenu.layer.defaultstyle && layerMenu.layer.styles.length > 1">(<span v-t="'default'"></span>)</span></span>
           </li>
         </ul>
       </li>
@@ -684,11 +684,23 @@ export default {
       }
       this.closeLayerMenu();
     },
+    /**
+     * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+     */
     async showStylesMenu(bool, evt) {
       if (bool) {
         const elem = $(evt.target);
         this.layerMenu.stylesMenu.top = elem.offset().top;
-        this.layerMenu.stylesMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left;
+        this.layerMenu.stylesMenu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
+        const contextmenu = $('#layer-menu');
+        const menuentry = $(evt.target);
+        const submenu = menuentry.children('ul');
+        const height = submenu.height();
+        const maxH = contextmenu.height();
+        this.layerMenu.stylesMenu.maxHeight = height >= maxH ? maxH : null;
+        this.layerMenu.stylesMenu.overflowY = height >= maxH ? 'scroll' : null;
+        this.layerMenu.stylesMenu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
+        this.layerMenu.stylesMenu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
         await this.$nextTick();
       }
       this.layerMenu.stylesMenu.show = bool;

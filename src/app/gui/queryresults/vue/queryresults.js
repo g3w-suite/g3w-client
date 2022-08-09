@@ -1,4 +1,4 @@
-import * as vueComponentOptions from 'components/Queryresults.vue';
+import * as vueComponentOptions from 'components/QueryResults.vue';
 
 const {base, inherit} = require('core/utils/utils');
 const Component = require('gui/component/component');

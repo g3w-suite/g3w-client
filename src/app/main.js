@@ -2,6 +2,7 @@
 // add babel runtime support for compiled/transpiled async functions
 import "regenerator-runtime";
 //
+import App from 'components/App.vue';
 import ApplicationState from 'core/applicationstate';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
@@ -17,14 +18,14 @@ const GlobalDirective = require('gui/vue/vue.directives');
 
 /**
  * Expose "g3wsdk" variable globally
- * 
+ *
  * used by plugins to load sdk class and instances
  */
 window.g3wsdk = require('api');
 
 /**
  * EXPERIMENTAL: not yet implemented
- * 
+ *
  * @see https://github.com/g3w-suite/g3w-client/issues/71
  * @see https://github.com/g3w-suite/g3w-client/issues/46
  */
@@ -37,7 +38,6 @@ Vue.use(VueAppPlugin, {});           // install template information library (es
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
 // get all items needed by application
-const App = require('gui/app/app');
 const sidebar = require('gui/sidebar/sidebar');
 const floatbar = require('gui/floatbar/floatbar');
 const viewport = require('gui/viewport/viewport');
@@ -907,7 +907,7 @@ ApplicationTemplate.fail = function({language='en', error }) {
 
 /**
  * Application starting point
- * 
+ *
  * create the ApplicationTemplate instance passing template interface configuration
  * and the applicationService instance that is useful to work with project API
  */
