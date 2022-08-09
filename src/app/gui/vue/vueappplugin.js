@@ -141,7 +141,7 @@ module.exports = {
       // TODO: check if deprecated
       getInfoString() {},
       getFontClass(type) {
-        return this.font[type];
+        return typeof this.font[type] !== "undefined" ? this.font[type] : '';
       }
     };
     // include isMobile() method within all Vue instances

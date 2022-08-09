@@ -1,69 +1,358 @@
 import CONSTANT from '../../constant';
 const {toRawType, uniqueId} = require('core/utils/utils');
-const Geometry = require('core/geometry/geometry');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
-const responseParser = require('core/parsers/response/parser');
+const {response: responseParser} = require('core/utils/parsers');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
+const {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes} = CONSTANT;
+
+const Geometry = {
+
+  /**
+   * core/geometry/geometry::GeometryTypes@v3.4
+   */
+   GeometryTypes,
+
+   /**
+    * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
+    */
+   addZValueToOLFeatureGeometry({feature, geometryType}={}){
+     const geometry = feature.getGeometry();
+     geometryType = geometryType || geometry.getType();
+     const originalFeatureCoordinates = geometry.getCoordinates();
+     switch (geometryType){
+       // POINT: [x, y]
+       case GeometryTypes.POINTZ:
+       case GeometryTypes.POINTM:
+       case GeometryTypes.POINTZM:
+       case GeometryTypes.POINT25D:
+         originalFeatureCoordinates.push(0);
+         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+         break;
+       // MULTIPOINT: [ [x1, y1], [x2, y2] ]
+       case GeometryTypes.MULTIPOINTZ:
+       case GeometryTypes.MULTIPOINTM:
+       case GeometryTypes.MULTIPOINTZM:
+       case GeometryTypes.MULTIPOINT25D:
+       // LINE: [ [x1, y1], [x2, y2] ]
+       case GeometryTypes.LINESTRINGZ:
+       case GeometryTypes.LINESTRINGM:
+       case GeometryTypes.LINESTRINGZM:
+       case GeometryTypes.LINESTRING25D:
+       case GeometryTypes.LINEZ:
+       case GeometryTypes.LINEM:
+       case GeometryTypes.LINEZM:
+       case GeometryTypes.LINE25D:
+         originalFeatureCoordinates.forEach(coordinates => coordinates.push(0));
+         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+         break;
+       // MULTILINE: [
+       //   [ [x1, y1], [x2, y2] ],
+       //   [ [x3, y3], [x4, y4] ]
+       // ]
+       case GeometryTypes.MULTILINESTRINGZ:
+       case GeometryTypes.MULTILINESTRINGM:
+       case GeometryTypes.MULTILINESTRINGZM:
+       case GeometryTypes.MULTILINESTRING25D:
+       case GeometryTypes.MULTILINEZ:
+       case GeometryTypes.MULTILINEM:
+       case GeometryTypes.MULTILINEZM:
+       case GeometryTypes.MULTILINE25D:
+         originalFeatureCoordinates.forEach(singleLine => {
+           singleLine.forEach(coordinates => coordinates.push(0))
+         });
+         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+         break;
+       // POLYGON: [
+       //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
+       // ]
+       case GeometryTypes.POLYGONZ:
+       case GeometryTypes.POLYGONM:
+       case GeometryTypes.POLYGONZM:
+       case GeometryTypes.POLYGON25D:
+         originalFeatureCoordinates[0].forEach(coordinates => coordinates.push(0));
+         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+         break;
+       // MULTIPOLYGON:[
+       //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
+       //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
+       // ]
+       case GeometryTypes.MULTIPOLYGONZ:
+       case GeometryTypes.MULTIPOLYGONM:
+       case GeometryTypes.MULTIPOLYGOZM:
+       case GeometryTypes.MULTIPOLYGON25D:
+         originalFeatureCoordinates.forEach(singlePolygon => {
+           singlePolygon[0].forEach(coordinates => coordinates.push(0))
+         });
+         feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+         break;
+     }
+     return feature;
+   },
+ 
+   /**
+    * core/geometry/geometry::getOLGeometry@v3.4
+    */
+   getOLGeometry(geometryType){
+     switch (geometryType) {
+       case GeometryTypes.LINESTRINGZ:
+       case GeometryTypes.LINESTRINGM:
+       case GeometryTypes.LINESTRINGZM:
+       case GeometryTypes.LINESTRING25D:
+       case GeometryTypes.LINE:
+       case GeometryTypes.LINEZ:
+       case GeometryTypes.LINEM:
+       case GeometryTypes.LINEZM:
+       case GeometryTypes.LINE25D:
+         geometryType = 'LineString';
+         break;
+       case GeometryTypes.MULTILINESTRINGZ:
+       case GeometryTypes.MULTILINESTRINGM:
+       case GeometryTypes.MULTILINESTRINGZM:
+       case GeometryTypes.MULTILINESTRING25D:
+       case GeometryTypes.MULTILINE:
+       case GeometryTypes.MULTILINEZ:
+       case GeometryTypes.MULTILINEM:
+       case GeometryTypes.MULTILINEZM:
+       case GeometryTypes.MULTILINE25D:
+         geometryType = 'MultiLineString';
+         break;
+       case GeometryTypes.POINTZ:
+       case GeometryTypes.POINTM:
+       case GeometryTypes.POINTZM:
+       case GeometryTypes.POINT25D:
+         geometryType = 'Point';
+         break;
+       case GeometryTypes.MULTIPOINTZ:
+       case GeometryTypes.MULTIPOINTM:
+       case GeometryTypes.MULTIPOINTZM:
+       case GeometryTypes.MULTIPOINT25D:
+         geometryType = 'MultiPoint';
+         break;
+       case GeometryTypes.POLYGONZ:
+       case GeometryTypes.POLYGONM:
+       case GeometryTypes.POLYGONZM:
+       case GeometryTypes.POLYGON25D:
+         geometryType = 'Polygon';
+         break;
+       case GeometryTypes.MULTIPOLYGONZ:
+       case GeometryTypes.MULTIPOLYGONM:
+       case GeometryTypes.MULTIPOLYGONZM:
+       case GeometryTypes.MULTIPOLYGON25D:
+         geometryType = 'MultiPolygon';
+         break;
+     }
+     return geometryType;
+   },
+ 
+   /**
+    * core/geometry/geometry::isMultiGeometry@v3.4
+    */
+   isMultiGeometry(geometryType){
+     return [
+       GeometryTypes.MULTIPOINT,
+       GeometryTypes.MULTIPOINTZ,
+       GeometryTypes.MULTIPOINTZM,
+       GeometryTypes.MULTIPOINTM,
+       GeometryTypes.MULTIPOINT25D,
+       GeometryTypes.MULTILINESTRING,
+       GeometryTypes.MULTILINESTRINGZ,
+       GeometryTypes.MULTILINESTRINGM,
+       GeometryTypes.MULTILINESTRINGZM,
+       GeometryTypes.MULTILINESTRING25D,
+       GeometryTypes.MULTILINE,
+       GeometryTypes.MULTILINEZ,
+       GeometryTypes.MULTILINEM,
+       GeometryTypes.MULTILINEZM,
+       GeometryTypes.MULTILINE25D,
+       GeometryTypes.MULTIPOLYGON,
+       GeometryTypes.MULTIPOLYGONZ,
+       GeometryTypes.MULTIPOLYGONM,
+       GeometryTypes.MULTIPOLYGONZM,
+       GeometryTypes.MULTIPOLYGON25D
+     ].indexOf(geometryType) !== -1;
+   },
+ 
+   /**
+    * core/geometry/geometry::getAllPointGeometryTypes@v3.4
+    */
+   getAllPointGeometryTypes(){
+     return [
+       GeometryTypes.POINT,
+       GeometryTypes.POINTZ,
+       GeometryTypes.POINTM,
+       GeometryTypes.POINTZM,
+       GeometryTypes.POINT25D,
+       GeometryTypes.MULTIPOINT,
+       GeometryTypes.MULTIPOINTZ,
+       GeometryTypes.MULTIPOINTM,
+       GeometryTypes.MULTIPOINTZM,
+       GeometryTypes.MULTIPOINT25D
+     ]
+   },
+ 
+   /**
+    * core/geometry/geometry::isPointGeometryType@v3.4
+    */
+   isPointGeometryType(geometryType){
+     return Geometry.getAllPointGeometryTypes().indexOf(geometryType) !== -1;
+   },
+ 
+   /**
+    * core/geometry/geometry::getAllLineGeometryTypes@v3.4
+    */
+   getAllLineGeometryTypes(){
+     return [
+       GeometryTypes.LINESTRING,
+       GeometryTypes.LINESTRINGZ,
+       GeometryTypes.LINESTRINGM,
+       GeometryTypes.LINESTRINGZM,
+       GeometryTypes.LINESTRING25D,
+       GeometryTypes.MULTILINESTRING,
+       GeometryTypes.MULTILINESTRINGZ,
+       GeometryTypes.MULTILINESTRINGM,
+       GeometryTypes.MULTILINESTRINGZM,
+       GeometryTypes.MULTILINESTRING25D,
+       GeometryTypes.LINE,
+       GeometryTypes.LINEZ,
+       GeometryTypes.LINEM,
+       GeometryTypes.LINEZM,
+       GeometryTypes.LINE25D,
+       GeometryTypes.MULTILINE,
+       GeometryTypes.MULTILINEZ,
+       GeometryTypes.MULTILINEM,
+       GeometryTypes.MULTILINEZM,
+       GeometryTypes.MULTILINE25D]
+   },
+ 
+   /**
+    * core/geometry/geometry::isLineGeometryType@v3.4
+    */
+   isLineGeometryType(geometryType){
+     return Geometry.getAllLineGeometryTypes().indexOf(geometryType) !== -1;
+   },
+ 
+   /**
+    * core/geometry/geometry::getAllPolygonGeometryTypes@v3.4
+    */
+   getAllPolygonGeometryTypes(){
+     return [
+       GeometryTypes.POLYGON,
+       GeometryTypes.POLYGONZ,
+       GeometryTypes.POLYGONM,
+       GeometryTypes.POLYGONZM,
+       GeometryTypes.POLYGON25D,
+       GeometryTypes.MULTIPOLYGON,
+       GeometryTypes.MULTIPOLYGONZ,
+       GeometryTypes.MULTIPOLYGONM,
+       GeometryTypes.MULTIPOLYGONZM,
+       GeometryTypes.MULTIPOLYGON25D
+     ]
+   },
+ 
+   /**
+    * core/geometry/geometry::isPolygonGeometryType@v3.4
+    */
+   isPolygonGeometryType(geometryType){
+     return Geometry.getAllPolygonGeometryTypes().indexOf(geometryType) !== -1;
+   },
+ 
+   /**
+    * core/geometry/geometry::is3DGeometry@v3.4
+    */
+   is3DGeometry(geometryType){
+     return [
+       GeometryTypes.POINTZ,
+       GeometryTypes.POINTM,
+       GeometryTypes.POINTZM,
+       GeometryTypes.POINT25D,
+       GeometryTypes.LINESTRINGZ,
+       GeometryTypes.LINESTRINGM,
+       GeometryTypes.LINESTRINGZM,
+       GeometryTypes.LINESTRING25D,
+       GeometryTypes.MULTILINESTRINGZ,
+       GeometryTypes.MULTILINESTRINGM,
+       GeometryTypes.MULTILINESTRINGZM,
+       GeometryTypes.MULTILINESTRING25D,
+       GeometryTypes.LINEZ,
+       GeometryTypes.LINEM,
+       GeometryTypes.LINEZM,
+       GeometryTypes.LINE25D,
+       GeometryTypes.MULTILINEZ,
+       GeometryTypes.MULTILINEM,
+       GeometryTypes.MULTILINEZM,
+       GeometryTypes.MULTILINE25D,
+       GeometryTypes.POLYGONZ,
+       GeometryTypes.POLYGONM,
+       GeometryTypes.POLYGONZM,
+       GeometryTypes.POLYGON25D,
+       GeometryTypes.MULTIPOLYGONZ,
+       GeometryTypes.MULTIPOLYGONM,
+       GeometryTypes.MULTIPOLYGONZM,
+       GeometryTypes.MULTIPOLYGON25D
+     ].find( type3D => type3D === geometryType);
+   },
+};
 
 const geoutils = {
+
   geometryFields,
+
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
-      case Geometry.GeometryTypes.POLYGON:
-      case Geometry.GeometryTypes.POLYGONZ:
-      case Geometry.GeometryTypes.POLYGONM:
-      case Geometry.GeometryTypes.POLYGONZM:
-      case Geometry.GeometryTypes.POLYGON25D:
+      case GeometryTypes.POLYGON:
+      case GeometryTypes.POLYGONZ:
+      case GeometryTypes.POLYGONM:
+      case GeometryTypes.POLYGONZM:
+      case GeometryTypes.POLYGON25D:
         geometryClass = ol.geom.Polygon;
         break;
-      case Geometry.GeometryTypes.MULTIPOLYGON:
-      case Geometry.GeometryTypes.MULTIPOLYGONZ:
-      case Geometry.GeometryTypes.MULTIPOLYGONM:
-      case Geometry.GeometryTypes.MULTIPOLYGONZM:
-      case Geometry.GeometryTypes.MULTIPOLYGON25D:
+      case GeometryTypes.MULTIPOLYGON:
+      case GeometryTypes.MULTIPOLYGONZ:
+      case GeometryTypes.MULTIPOLYGONM:
+      case GeometryTypes.MULTIPOLYGONZM:
+      case GeometryTypes.MULTIPOLYGON25D:
         geometryClass = ol.geom.MultiPolygon;
         break;
-      case Geometry.GeometryTypes.LINESTRING:
-      case Geometry.GeometryTypes.LINESTRINGZ:
-      case Geometry.GeometryTypes.LINESTRINGM:
-      case Geometry.GeometryTypes.LINESTRINGZM:
-      case Geometry.GeometryTypes.LINESTRING25D:
-      case Geometry.GeometryTypes.LINE:
-      case Geometry.GeometryTypes.LINEZ:
-      case Geometry.GeometryTypes.LINEM:
-      case Geometry.GeometryTypes.LINEZM:
-      case Geometry.GeometryTypes.LINE25D:
+      case GeometryTypes.LINESTRING:
+      case GeometryTypes.LINESTRINGZ:
+      case GeometryTypes.LINESTRINGM:
+      case GeometryTypes.LINESTRINGZM:
+      case GeometryTypes.LINESTRING25D:
+      case GeometryTypes.LINE:
+      case GeometryTypes.LINEZ:
+      case GeometryTypes.LINEM:
+      case GeometryTypes.LINEZM:
+      case GeometryTypes.LINE25D:
         geometryClass = ol.geom.LineString;
         break;
-      case Geometry.GeometryTypes.MULTILINE:
-      case Geometry.GeometryTypes.MULTILINEZ:
-      case Geometry.GeometryTypes.MULTILINEM:
-      case Geometry.GeometryTypes.MULTILINEZM:
-      case Geometry.GeometryTypes.MULTILINE25D:
-      case Geometry.GeometryTypes.MULTILINESTRING:
-      case Geometry.GeometryTypes.MULTILINESTRINGZ:
-      case Geometry.GeometryTypes.MULTILINESTRINGM:
-      case Geometry.GeometryTypes.MULTILINESTRINGZM:
-      case Geometry.GeometryTypes.MULTILINESTRING25D:
+      case GeometryTypes.MULTILINE:
+      case GeometryTypes.MULTILINEZ:
+      case GeometryTypes.MULTILINEM:
+      case GeometryTypes.MULTILINEZM:
+      case GeometryTypes.MULTILINE25D:
+      case GeometryTypes.MULTILINESTRING:
+      case GeometryTypes.MULTILINESTRINGZ:
+      case GeometryTypes.MULTILINESTRINGM:
+      case GeometryTypes.MULTILINESTRINGZM:
+      case GeometryTypes.MULTILINESTRING25D:
         geometryClass = ol.geom.MultiLineString;
         break;
-      case Geometry.GeometryTypes.POINT:
-      case Geometry.GeometryTypes.POINTZ:
-      case Geometry.GeometryTypes.POINTM:
-      case Geometry.GeometryTypes.POINTZM:
-      case Geometry.GeometryTypes.POINT25D:
+      case GeometryTypes.POINT:
+      case GeometryTypes.POINTZ:
+      case GeometryTypes.POINTM:
+      case GeometryTypes.POINTZM:
+      case GeometryTypes.POINT25D:
         geometryClass = ol.geom.Point;
         break;
-      case Geometry.GeometryTypes.MULTIPOINT:
-      case Geometry.GeometryTypes.MULTIPOINTZ:
-      case Geometry.GeometryTypes.MULTIPOINTM:
-      case Geometry.GeometryTypes.MULTIPOINTZM:
-      case Geometry.GeometryTypes.MULTIPOINT25D:
+      case GeometryTypes.MULTIPOINT:
+      case GeometryTypes.MULTIPOINTZ:
+      case GeometryTypes.MULTIPOINTM:
+      case GeometryTypes.MULTIPOINTZM:
+      case GeometryTypes.MULTIPOINT25D:
         geometryClass = ol.geom.MultiPoint;
         break;
       default:
@@ -72,53 +361,54 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
+
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
-      case Geometry.GeometryTypes.LINESTRINGZ:
-      case Geometry.GeometryTypes.LINESTRINGM:
-      case Geometry.GeometryTypes.LINESTRINGZM:
-      case Geometry.GeometryTypes.LINESTRING25D:
-      case Geometry.GeometryTypes.LINE:
-      case Geometry.GeometryTypes.LINEZ:
-      case Geometry.GeometryTypes.LINEM:
-      case Geometry.GeometryTypes.LINEZM:
-      case Geometry.GeometryTypes.LINE25D:
+      case GeometryTypes.LINESTRINGZ:
+      case GeometryTypes.LINESTRINGM:
+      case GeometryTypes.LINESTRINGZM:
+      case GeometryTypes.LINESTRING25D:
+      case GeometryTypes.LINE:
+      case GeometryTypes.LINEZ:
+      case GeometryTypes.LINEM:
+      case GeometryTypes.LINEZM:
+      case GeometryTypes.LINE25D:
         geometryType = 'LineString';
         break;
-      case Geometry.GeometryTypes.MULTILINESTRINGZ:
-      case Geometry.GeometryTypes.MULTILINESTRINGM:
-      case Geometry.GeometryTypes.MULTILINESTRINGZM:
-      case Geometry.GeometryTypes.MULTILINESTRING25D:
-      case Geometry.GeometryTypes.MULTILINE:
-      case Geometry.GeometryTypes.MULTILINEZ:
-      case Geometry.GeometryTypes.MULTILINEM:
-      case Geometry.GeometryTypes.MULTILINEZM:
-      case Geometry.GeometryTypes.MULTILINE25D:
+      case GeometryTypes.MULTILINESTRINGZ:
+      case GeometryTypes.MULTILINESTRINGM:
+      case GeometryTypes.MULTILINESTRINGZM:
+      case GeometryTypes.MULTILINESTRING25D:
+      case GeometryTypes.MULTILINE:
+      case GeometryTypes.MULTILINEZ:
+      case GeometryTypes.MULTILINEM:
+      case GeometryTypes.MULTILINEZM:
+      case GeometryTypes.MULTILINE25D:
         geometryType = 'MultiLineString';
         break;
-      case Geometry.GeometryTypes.POINTZ:
-      case Geometry.GeometryTypes.POINTM:
-      case Geometry.GeometryTypes.POINTZM:
-      case Geometry.GeometryTypes.POINT25D:
+      case GeometryTypes.POINTZ:
+      case GeometryTypes.POINTM:
+      case GeometryTypes.POINTZM:
+      case GeometryTypes.POINT25D:
         geometryType = 'Point';
         break;
-      case Geometry.GeometryTypes.MULTIPOINTZ:
-      case Geometry.GeometryTypes.MULTIPOINTM:
-      case Geometry.GeometryTypes.MULTIPOINTZM:
-      case Geometry.GeometryTypes.MULTIPOINT25D:
+      case GeometryTypes.MULTIPOINTZ:
+      case GeometryTypes.MULTIPOINTM:
+      case GeometryTypes.MULTIPOINTZM:
+      case GeometryTypes.MULTIPOINT25D:
         geometryType = 'MultiPoint';
         break;
-      case Geometry.GeometryTypes.POLYGONZ:
-      case Geometry.GeometryTypes.POLYGONM:
-      case Geometry.GeometryTypes.POLYGONZM:
-      case Geometry.GeometryTypes.POLYGON25D:
+      case GeometryTypes.POLYGONZ:
+      case GeometryTypes.POLYGONM:
+      case GeometryTypes.POLYGONZM:
+      case GeometryTypes.POLYGON25D:
         geometryType = 'Polygon';
         break;
-      case Geometry.GeometryTypes.MULTIPOLYGONZ:
-      case Geometry.GeometryTypes.MULTIPOLYGONM:
-      case Geometry.GeometryTypes.MULTIPOLYGONZM:
-      case Geometry.GeometryTypes.MULTIPOLYGON25D:
+      case GeometryTypes.MULTIPOLYGONZ:
+      case GeometryTypes.MULTIPOLYGONM:
+      case GeometryTypes.MULTIPOLYGONZM:
+      case GeometryTypes.MULTIPOLYGON25D:
         geometryType = 'MultiPolygon';
         break;
     }
@@ -255,16 +545,16 @@ const geoutils = {
     });
     if (!style) {
       switch (geometryType) {
-        case Geometry.GeometryTypes.POINT:
-        case Geometry.GeometryTypes.POINTZ:
-        case Geometry.GeometryTypes.POINTM:
-        case Geometry.GeometryTypes.POINTZM:
-        case Geometry.GeometryTypes.POINT25D:
-        case Geometry.GeometryTypes.MULTIPOINT:
-        case Geometry.GeometryTypes.MULTIPOINTZ:
-        case Geometry.GeometryTypes.MULTIPOINTM:
-        case Geometry.GeometryTypes.MULTIPOINTZM:
-        case Geometry.GeometryTypes.MULTIPOINT25D:
+        case GeometryTypes.POINT:
+        case GeometryTypes.POINTZ:
+        case GeometryTypes.POINTM:
+        case GeometryTypes.POINTZM:
+        case GeometryTypes.POINT25D:
+        case GeometryTypes.MULTIPOINT:
+        case GeometryTypes.MULTIPOINTZ:
+        case GeometryTypes.MULTIPOINTM:
+        case GeometryTypes.MULTIPOINTZM:
+        case GeometryTypes.MULTIPOINT25D:
           style = new ol.style.Style({
             image: new ol.style.Circle({
               radius: 5,
@@ -274,26 +564,26 @@ const geoutils = {
             })
           });
           break;
-        case Geometry.GeometryTypes.LINESTRING:
-        case Geometry.GeometryTypes.LINESTRINGZ:
-        case Geometry.GeometryTypes.LINESTRINGM:
-        case Geometry.GeometryTypes.LINESTRINGZM:
-        case Geometry.GeometryTypes.LINESTRING25D:
-        case Geometry.GeometryTypes.MULTILINESTRING:
-        case Geometry.GeometryTypes.MULTILINESTRINGZ:
-        case Geometry.GeometryTypes.MULTILINESTRINGM:
-        case Geometry.GeometryTypes.MULTILINESTRINGZM:
-        case Geometry.GeometryTypes.MULTILINESTRING25D:
-        case Geometry.GeometryTypes.LINE:
-        case Geometry.GeometryTypes.LINEZ:
-        case Geometry.GeometryTypes.LINEM:
-        case Geometry.GeometryTypes.LINEZM:
-        case Geometry.GeometryTypes.LINE25D:
-        case Geometry.GeometryTypes.MULTILINE:
-        case Geometry.GeometryTypes.MULTILINEZ:
-        case Geometry.GeometryTypes.MULTILINEM:
-        case Geometry.GeometryTypes.MULTILINEZM:
-        case Geometry.GeometryTypes.MULTILINE25D:
+        case GeometryTypes.LINESTRING:
+        case GeometryTypes.LINESTRINGZ:
+        case GeometryTypes.LINESTRINGM:
+        case GeometryTypes.LINESTRINGZM:
+        case GeometryTypes.LINESTRING25D:
+        case GeometryTypes.MULTILINESTRING:
+        case GeometryTypes.MULTILINESTRINGZ:
+        case GeometryTypes.MULTILINESTRINGM:
+        case GeometryTypes.MULTILINESTRINGZM:
+        case GeometryTypes.MULTILINESTRING25D:
+        case GeometryTypes.LINE:
+        case GeometryTypes.LINEZ:
+        case GeometryTypes.LINEM:
+        case GeometryTypes.LINEZM:
+        case GeometryTypes.LINE25D:
+        case GeometryTypes.MULTILINE:
+        case GeometryTypes.MULTILINEZ:
+        case GeometryTypes.MULTILINEM:
+        case GeometryTypes.MULTILINEZM:
+        case GeometryTypes.MULTILINE25D:
           style = new ol.style.Style({
             stroke: new ol.style.Stroke({
               width: 3,
@@ -301,16 +591,16 @@ const geoutils = {
             })
           });
           break;
-        case Geometry.GeometryTypes.POLYGON:
-        case Geometry.GeometryTypes.POLYGONZ:
-        case Geometry.GeometryTypes.POLYGONM:
-        case Geometry.GeometryTypes.POLYGONZM:
-        case Geometry.GeometryTypes.POLYGON25D:
-        case Geometry.GeometryTypes.MULTIPOLYGON:
-        case Geometry.GeometryTypes.MULTIPOLYGONZ:
-        case Geometry.GeometryTypes.MULTIPOLYGONM:
-        case Geometry.GeometryTypes.MULTIPOLYGONZM:
-        case Geometry.GeometryTypes.MULTIPOLYGON25D:
+        case GeometryTypes.POLYGON:
+        case GeometryTypes.POLYGONZ:
+        case GeometryTypes.POLYGONM:
+        case GeometryTypes.POLYGONZM:
+        case GeometryTypes.POLYGON25D:
+        case GeometryTypes.MULTIPOLYGON:
+        case GeometryTypes.MULTIPOLYGONZ:
+        case GeometryTypes.MULTIPOLYGONM:
+        case GeometryTypes.MULTIPOLYGONZM:
+        case GeometryTypes.MULTIPOLYGON25D:
           style =  new ol.style.Style({
             stroke: new ol.style.Stroke({
               color:  "#000000",
@@ -1061,7 +1351,7 @@ const geoutils = {
   getPointFeaturesfromGeometryVertex(geometry){
     const pointFeatures = [];
     switch(geometry.getType()){
-      case Geometry.GeometryTypes.MULTIPOLYGON:
+      case GeometryTypes.MULTIPOLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
             coordinates.pop();
@@ -1072,7 +1362,7 @@ const geoutils = {
           })
         });
         break;
-      case Geometry.GeometryTypes.POLYGON:
+      case GeometryTypes.POLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.pop();
           coordinates.forEach(coordinates =>{
@@ -1081,7 +1371,7 @@ const geoutils = {
           })
         });
         break;
-      case Geometry.GeometryTypes.MULTILINESTRING:
+      case GeometryTypes.MULTILINESTRING:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
             const feature = new ol.Feature(new ol.geom.Point(coordinates));
@@ -1089,7 +1379,7 @@ const geoutils = {
           })
         });
         break;
-      case Geometry.GeometryTypes.LINESTRING:
+      case GeometryTypes.LINESTRING:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
             const feature = new ol.Feature(new ol.geom.Point(coordinates));
@@ -1097,13 +1387,13 @@ const geoutils = {
           })
         });
         break;
-      case Geometry.GeometryTypes.MULTIPOINT:
+      case GeometryTypes.MULTIPOINT:
         geometry.getCoordinates().forEach(coordinates =>{
           const feature = new ol.Feature(new ol.geom.Point(coordinates));
           pointFeatures.push(feature);
         });
         break;
-      case Geometry.GeometryTypes.POINT:
+      case GeometryTypes.POINT:
         const coordinates =  geometry.getCoordinates();
         const feature = new ol.geom.Point(coordinates);
         pointFeatures.push(feature);
@@ -1120,7 +1410,7 @@ const geoutils = {
   getVertexLength(geometry){
     let vertexLength = 0;
     switch(geometry.getType()){
-      case Geometry.GeometryTypes.MULTIPOLYGON:
+      case GeometryTypes.MULTIPOLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.forEach(coordinates =>{
             coordinates.pop();
@@ -1128,7 +1418,7 @@ const geoutils = {
           })
         });
         break;
-      case Geometry.GeometryTypes.POLYGON:
+      case GeometryTypes.POLYGON:
         geometry.getCoordinates().forEach(coordinates =>{
           coordinates.pop();
           coordinates.forEach(() => vertexLength+=1);
@@ -1155,10 +1445,6 @@ const geoutils = {
     return !Geometry.isMultiGeometry(geometry.getType());
   },
 
-  isMultiGeometry(geometry) {
-    return !Geometry.isMultiGeometry(geometry.getType());
-  },
-
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
@@ -1168,14 +1454,14 @@ const geoutils = {
     const geometryType = geometry.getType();
     let geometries = [];
     switch (geometryType) {
-      case Geometry.GeometryTypes.MULTIPOLYGON:
+      case GeometryTypes.MULTIPOLYGON:
         geometries = geometry.getPolygons();
         break;
-      case Geometry.GeometryTypes.MULTILINE:
-      case Geometry.GeometryTypes.MULTILINESTRING:
+      case GeometryTypes.MULTILINE:
+      case GeometryTypes.MULTILINESTRING:
         geometries = geometry.getLineStrings();
         break;
-      case Geometry.GeometryTypes.MULTIPOINT:
+      case GeometryTypes.MULTIPOINT:
         geometries = geometry.getPoints();
         break;
     }
@@ -1189,7 +1475,7 @@ const geoutils = {
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
       if (toGeometryType){
-        const isFromGeometryMulti = geoutils.isMultiGeometry(geometry);
+        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
         const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
         if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
         else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
@@ -1449,7 +1735,63 @@ const geoutils = {
       wms
     });
     return response;
-  }
+  },
+
+
+  /**
+   * core/geometry/geom::distance@v3.4
+   */
+  distance(c1,c2){
+    return Math.sqrt(geom.squaredDistance(c1,c2));
+  },
+
+  /**
+   * * core/geometry/geom::squaredDistance@v3.4
+   */
+  squaredDistance(c1,c2){
+    const x1 = c1[0];
+    const y1 = c1[1];
+    const x2 = c2[0];
+    const y2 = c2[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx * dx + dy * dy;
+  },
+
+  /**
+   * core/geometry/geom::closestOnSegment@v3.4
+   */
+  closestOnSegment(coordinate, segment) {
+    const x0 = coordinate[0];
+    const y0 = coordinate[1];
+    const start = segment[0];
+    const end = segment[1];
+    const x1 = start[0];
+    const y1 = start[1];
+    const x2 = end[0];
+    const y2 = end[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const along = (dx === 0 && dy === 0) ? 0 :
+      ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
+    let x, y;
+    if (along <= 0) {
+      x = x1;
+      y = y1;
+    } else if (along >= 1) {
+      x = x2;
+      y = y2;
+    } else {
+      x = x1 + along * dx;
+      y = y1 + along * dy;
+    }
+    return [x, y];
+  },
+
+  /**
+   * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)
+   */
+  Geometry
 
 };
 

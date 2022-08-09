@@ -3,7 +3,7 @@ const G3WObject = require('core/g3wobject');
 const History = require('./history');
 const Layer = require('core/layers/layer');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const { is3DGeometry } = require('core/geometry/geometry');
+const { is3DGeometry } = require('core/utils/geo').Geometry;
 const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
