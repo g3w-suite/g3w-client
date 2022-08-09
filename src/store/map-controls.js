@@ -53,7 +53,7 @@ function ControlsRegistry() {
 
   this.unregisterControl = function(id) {
     const control = this.getControl(id);
-    const mapService = GUI.getComponent('map').getService();
+    const mapService = GUI.getService('map');
     const map = mapService.getMap();
     if (control) {
       map.removeControl(control);
