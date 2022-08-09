@@ -1,5 +1,5 @@
 const Projections = require('g3w-ol/projection/projections');
-const { getScaleFromResolution } = require('g3w-ol/utils/utils');
+const { getScaleFromResolution } = require('core/utils/ol');
 const { sanitizeUrl } = require('core/utils/utils');
 const {createFeatureFromGeometry} = require('core/utils/geo');
 const GUI = require('gui/gui');

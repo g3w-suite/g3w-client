@@ -1,14 +1,7 @@
-export const viewport = {
-  resize: {
-    map: {
-      min: 200
-    },
-    content: {
-      min: 200
-    }
-  }
-};
+import { VIEWPORT as viewport } from 'app/constant';
 
-export default {
-  viewport
-}
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "app/constant" instead)
+ */
+export { viewport };
+export default { viewport };

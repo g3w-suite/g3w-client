@@ -1,15 +1,11 @@
-function ClipboardService() {
-  this._data = {};
-  this.set = function(formId, data) {
-    const formLayer = formId.split('form')[0];
-    this._data[formLayer] = data;
-  };
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "services/clipboard.js" instead)
+ */
+ import ClipboardService from 'services/clipboard';
 
-  this.get = function(formLayer) {
-    const data = this._data[formLayer] || {};
-    this._data[formLayer] = {};
-    return data;
-  };
-
-}
-module.exports = new ClipboardService;
+ /**
+  * FIXME: application is broken using like the following line
+  */
+ // import { ClipboardService } from 'services';
+ 
+ module.exports = ClipboardService;

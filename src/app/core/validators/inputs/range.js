@@ -1,15 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function RangeValidator(options={}) {
-  base(this, options);
-  const {min, max} = options;
-  this.validate = function(value) {
-    value = 1*value;
-    return value >= min && value <= max;
-  }
-}
-
-inherit(RangeValidator, Validator);
-
-module.exports =  RangeValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.range;

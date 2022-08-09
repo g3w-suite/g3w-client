@@ -1,7 +1,7 @@
 const {base, inherit, getTimeoutPromise} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {handleQueryResponse} =  require('core/utils/geo');
-const {utils:queryResponseUtils} = require('core/parsers/response/parser');
+const {response: responseParser} = require('core/utils/parsers');
 
 function Provider(options = {}) {
   this._isReady = false;
@@ -67,7 +67,7 @@ proto.getQueryResponseTimeoutKey = function({layers=[this._layer], resolve, quer
   return getTimeoutPromise({
     resolve,
     data: {
-      data: queryResponseUtils.getTimeoutData(layers),
+      data: responseParser.utils.getTimeoutData(layers),
       query
     }
   });

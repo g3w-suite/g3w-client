@@ -1,14 +1,6 @@
-const {base, inherit}= require('core/utils/utils');
-const Validator = require('./validator');
+const { validators } = require('core/utils/validators');
 
-function FloatValidator(options) {
-  base(this, options);
-  this.validate = function(value) {
-    const float = Number(1*value);
-    return !Number.isNaN(float) && float <= 2147483647;
-  }
-}
-
-inherit(FloatValidator, Validator);
-
-module.exports =  FloatValidator;
+/**
+ * DEPRECATED: this folder will be removed after v3.4 (use "core/utils/validators" instead)
+ */
+module.exports = validators.float;

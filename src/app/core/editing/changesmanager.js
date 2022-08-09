@@ -1,35 +1,11 @@
-//lass that is usefult to apply changes to features (undo/redo) singleton
-function ChangesManager() {
-  this.execute = function(object, items, reverse) {
-    let fnc;
-    let feature;
-    items.forEach((item) => {
-      feature = item.feature;
-      if (reverse) {
-        // change to opposite
-        feature[ChangesManager.Actions[feature.getState()].opposite]();
-      }
-      // get method from object
-      fnc = ChangesManager.Actions[feature.getState()].fnc;
-      object[fnc](feature);
-    })
-  }
-}
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "services/editing.js" instead)
+ */
+ import ChangesManager from 'services/editing';
 
-// know actions
-ChangesManager.Actions = {
-  'add': {
-    fnc: 'addFeature',
-    opposite: 'delete'
-  },
-  'delete': {
-    fnc: 'removeFeature',
-    opposite: 'add'
-  },
-  'update': {
-    fnc: 'updateFeature',
-    opposite: 'update'
-  }
-};
-
-module.exports = new ChangesManager();
+ /**
+  * FIXME: application is broken using like the following line
+  */
+ // import { ChangesManager } from 'services';
+ 
+ module.exports = ChangesManager;
