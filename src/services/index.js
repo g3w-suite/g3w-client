@@ -28,7 +28,7 @@ export {
   ApplicationService,
   ClipboardService,
   ExpressionService,
-  OWSService from,
+  OWSService,
   ProxyService,
   QueryService,
   SearchService,
