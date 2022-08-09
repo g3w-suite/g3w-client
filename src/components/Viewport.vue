@@ -76,6 +76,7 @@
   import onlineNotify from 'components/NotifyOnline.vue';
   import downloadNotify from 'components/NotifyDownload.vue';
   import pluginsNotify from 'components/NotifyPlugins.vue';
+  import {viewport as viewportConstraints} from 'gui/constraints';
   const GUI = require('gui/gui');
 
   export default {
