@@ -1,13 +1,8 @@
+import BaseInputComponent from 'components/InputBase.vue'
 const {baseInputMixin:BaseInputMixin} = require('gui/vue/vue.mixins');
 
-const BaseInput = {
-  props: ['state'],
-  template: require('./baseinput.html'),
-  ...BaseInputMixin
-};
-
 module.exports = {
-  BaseInput,
+  BaseInput: BaseInputComponent,
 
   /**
    * DEPRECATED: will be removed after v3.4 (use "gui/vue/vue.mixins" instead)
