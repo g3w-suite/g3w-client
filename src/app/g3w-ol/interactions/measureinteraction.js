@@ -1,5 +1,10 @@
 const {t} = require('core/i18n/i18n.service');
-const {createMeasureTooltip, setMeasureTooltipStatic, removeMeasureTooltip, needUseSphereMethods} = require('core/utils/ol');
+const {
+  createMeasureTooltip,
+  setMeasureTooltipStatic,
+  removeMeasureTooltip,
+  needUseSphereMethods
+} = require('core/utils/ol');
 
 const MeasureIteraction = function(options={}) {
   this._helpTooltip;
@@ -132,7 +137,6 @@ proto._drawStart = function(evt) {
     }
   });
   this._createHelpTooltip();
-  console.log('qi')
   this._createMeasureTooltip();
 };
 
