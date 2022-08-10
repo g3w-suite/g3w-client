@@ -1,7 +1,8 @@
 // FIXME: remove weird import (utility functions should be stateles)
 import ApplicationState from "core/applicationstate";
-//
-const { Geometry } = require('core/utils/geo');
+
+// FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+// const { Geometry } = require('core/utils/geo');
 
 const INCHES_PER_UNIT = {
   m: 39.37, //
@@ -89,12 +90,15 @@ const utils = {
       //return projection.getUnits() === 'degrees';
     },
     getLengthMessageText({unit, projection, geometry}={}){
+      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+      const { Geometry } = require('core/utils/geo');
+      //
       const geometryType = geometry.getType();
       const useSphereMethods = this.needUseSphereMethods(projection);
       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
         projection: projection.getCode()
       }) : Geometry.isMultiGeometry(geometryType) ?
-        geometry.getLineStrings().reduce((totalLength, lineGeometry)=>  totalLength+= lineGeometry.getLength(), 0)
+        geometry.getLineStrings().reduce((totalLength, lineGeometry) => totalLength+= lineGeometry.getLength(), 0)
         : geometry.getLength();
       let message;
       switch(unit) {
@@ -135,6 +139,9 @@ const utils = {
       return message;
     },
     formatMeasure({geometry, projection}={}, options={}){
+      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+      const { Geometry } = require('core/utils/geo');
+      //
       const geometryType = geometry.getType();
       const unit = this.getCurrentMapUnit();
       if (Geometry.isLineGeometryType(geometryType)) {
