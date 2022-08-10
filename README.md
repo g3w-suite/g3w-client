@@ -6,8 +6,6 @@ G3W-SUITE scripts and configuration files needed to set up a suitable local deve
 
 ![g3w-client](https://g3w-suite.readthedocs.io/en/latest/_images/g3wclient_interface.png)
 
-foo
-
 ---
 
 ## Project setup
