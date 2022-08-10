@@ -551,36 +551,34 @@ function GeocodingControl(options={}) {
         /**
          * For loop to active Providers
          */
-        const activeProviders = this.providers.filter(provider => provider.active);
-        activeProviders.forEach(provider => {
-          /**
-           * Use active provider only
-           */
-          if (provider.active) {
-            const {url, params} = provider.getParameters({
-              query: q,
-              lang: this.options.lang,
-              countrycodes: this.options.countrycodes,
-              limit: this.options.limit
-            });
-            this.lastQuery = q;
-            this.clearResults();
-            utils.addClass(this.reset, cssClasses.spin);
-            promises.push(XHR.get({
-              url,
-              params
-            }))
-          }
+        const providers = this.providers.filter(provider => provider.active);
+        providers.forEach(provider => {
+          const {url, params} = provider.getParameters({
+            query: q,
+            lang: this.options.lang,
+            countrycodes: this.options.countrycodes,
+            limit: this.options.limit
+          });
+          this.lastQuery = q;
+          this.clearResults();
+          utils.addClass(this.reset, cssClasses.spin);
+          promises.push(XHR.get({
+            url,
+            params
+          }))
         });
         const responses = await Promise.allSettled(promises);
         responses.forEach(({status, value: response}, index) => {
           if (status === 'fulfilled') {
-              const {header, results} = activeProviders[index].handleResponse(response);
-              this.createList({
-                header,
-                results
-              });
-              if (results) this.listenMapClick();
+              const {header, results} = providers[index].handleResponse(response);
+              if (providers[index].active) {
+                this.createList({
+                  header,
+                  results
+                });
+                if (results) this.listenMapClick();
+              }
+
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
