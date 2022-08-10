@@ -1,6 +1,9 @@
 // FIXME: remove weird import (utility functions should be stateles)
 import ApplicationState from "core/applicationstate";
 
+// FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+// const { Geometry } = require('core/utils/geo');
+
 const INCHES_PER_UNIT = {
   m: 39.37, //
   degrees: 4374754
@@ -87,7 +90,9 @@ const utils = {
       //return projection.getUnits() === 'degrees';
     },
     getLengthMessageText({unit, projection, geometry}={}){
+      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
       const { Geometry } = require('core/utils/geo');
+      //
       const geometryType = geometry.getType();
       const useSphereMethods = this.needUseSphereMethods(projection);
       const length = useSphereMethods ? ol.sphere.getLength(geometry, {
@@ -134,7 +139,9 @@ const utils = {
       return message;
     },
     formatMeasure({geometry, projection}={}, options={}){
+      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
       const { Geometry } = require('core/utils/geo');
+      //
       const geometryType = geometry.getType();
       const unit = this.getCurrentMapUnit();
       if (Geometry.isLineGeometryType(geometryType)) {
