@@ -180,7 +180,6 @@ gulp.task('browserify', [], function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
-      .pipe(gulpif(production, replace("{G3W_VERSION}", conf.version)))
       .pipe(gulpif(production, uglify({
         compress: {
           drop_console: true

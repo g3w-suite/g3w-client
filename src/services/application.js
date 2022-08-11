@@ -3,7 +3,7 @@
  */
 
 import appConfig from 'config';
-import {TIMEOUT} from "app/constant";
+import {TIMEOUT, APP_VERSION} from "app/constant";
 import ApplicationState from 'core/applicationstate';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
 const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
@@ -15,12 +15,10 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
 const GUI = require('gui/gui');
-const G3W_VERSION = "{G3W_VERSION}";
 
 //Manage Application
 const ApplicationService = function() {
-  let production = false;
-  this.version = G3W_VERSION.indexOf("G3W_VERSION") === -1 ? G3W_VERSION  : "";
+  this.version = APP_VERSION;
   ApplicationState.iframe = window.top !== window.self;
   ApplicationState.online = navigator.onLine;
   ApplicationState.ismobile= isMobile.any;
@@ -377,7 +375,6 @@ const ApplicationService = function() {
     else this.clearInitConfig();
     // if exist a global initiConfig (in production)
     if (window.initConfig) {
-      production = true;
       this._initConfig = window.initConfig;
       this.setInitVendorKeys(initConfig);
       this.emit('initconfig', initConfig);
