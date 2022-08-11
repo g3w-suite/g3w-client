@@ -1,43 +1,51 @@
-const g3w = require('./config');
-
-const path = require('path');
-const fs = require('fs');
-const del = require('del');
 //Gulp
-const gulp   = require('gulp');
-///
-const argv = require('yargs').argv;
-const runSequence = require('run-sequence');
-const rename = require('gulp-rename');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
-const flatten = require('gulp-flatten');
-const useref = require('gulp-useref'); // used to parse index.dev.html
-///////////////////////////////////////////////////////
-const replace = require('gulp-replace');
-const gulpif = require('gulp-if');
-const uglify = require('gulp-uglify');
-const watch = require('gulp-watch');
-const cleanCSS = require('gulp-clean-css');
-const gutil = require("gulp-util");
-const less = require('gulp-less');
-const LessGlob = require('less-plugin-glob');
-const browserify = require('browserify');
-const babelify = require('babelify');
-const imgurify = require('imgurify');
-const vueify = require('vueify');
-const watchify = require('watchify');
-const stringify = require('stringify');
-const browserSync = require('browser-sync');
-const httpProxy = require('http-proxy');
+const gulp        = require('gulp');
+const cleanCSS    = require('gulp-clean-css');
+const concat      = require('gulp-concat');
+const flatten     = require('gulp-flatten');
 const htmlreplace = require('gulp-html-replace');
-const concat = require('gulp-concat');
-const prompt = require('gulp-prompt');
-//add md5
+const gulpif      = require('gulp-if');
+const less        = require('gulp-less');
+const prompt      = require('gulp-prompt');
+const rename      = require('gulp-rename');
+const replace     = require('gulp-replace');
+const uglify      = require('gulp-uglify');
+const gutil       = require("gulp-util");
+const useref      = require('gulp-useref'); // used to parse index.dev.html
+const watch       = require('gulp-watch');
+
+// Gulp vinyl (virtual memory filesystem stuff)
+const buffer = require('vinyl-buffer');
+const source = require('vinyl-source-stream');
+
+// Node.js
+const del = require('del');
+const fs = require('fs');
 const md5 = require('md5');
-//test
-const Server = require('karma').Server;
-///
+const path = require('path');
+
+///////////////////////////////////////////////////////
+const babelify    = require('babelify');
+const browserSync = require('browser-sync');
+const browserify  = require('browserify');
+const httpProxy   = require('http-proxy');
+const Server      = require('karma').Server;
+const imgurify    = require('imgurify');
+const LessGlob    = require('less-plugin-glob');
+const stringify   = require('stringify');
+const vueify      = require('vueify');
+const watchify    = require('watchify');
+///////////////////////////////////////////////////////
+
+const argv        = require('yargs').argv;
+const runSequence = require('run-sequence');
+
+const packageJSON = require('./package.json');
+const g3w         = require('./config');
+
+///////////////////////////////////////////////////////
+
+//
 const client = argv.client || '';
 const client_version = (client !== '') ? 'client-'+client : 'client';
 // it used to change build minified js and css to avoid server cache
@@ -105,7 +113,7 @@ gulp.task('sethasvalues', function(done){
  * Start to think in vendor
  * @type {{name: string, version: string, description: string, main: string, scripts: {preinstall: string, admin: string, "admin:client": string, plugins: string, default: string, test: string, "cy:open": string}, repository: {type: string, url: string}, author: string, license: string, homepage: string, dependencies: {"shp-write": string, vue: string}, resolutions: {"graceful-fs": string}, devDependencies: {"babel-core": string, "babel-plugin-syntax-async-generators": string, "babel-plugin-syntax-jsx": string, "babel-plugin-transform-array-find": string, "babel-plugin-transform-async-to-generator": string, "babel-plugin-transform-es2015-classes": string, "babel-plugin-transform-object-rest-spread": string, "babel-plugin-transform-remove-strict-mode": string, "babel-plugin-transform-runtime": string, "babel-plugin-transform-vue-jsx": string, "babel-polyfill": string, "babel-preset-env": string, babelify: string, "browser-sync": string, browserify: string, chai: string, "chai-http": string, "current-git-branch": string, cypress: string, del: string, "generator-browserify": string, "generator-karma": string, gulp: string, "gulp-clean-css": string, "gulp-concat": string, "gulp-csso": string, "gulp-filenames": string, "gulp-filter": string, "gulp-flatten": string, "gulp-git": string, "gulp-html-extend": string, "gulp-html-replace": string, "gulp-if": string, "gulp-jshint": string, "gulp-less": string, "gulp-merge": string, "gulp-minify-css": string, "gulp-preprocess": string, "gulp-prompt": string, "gulp-refresh": string, "gulp-rename": string, "gulp-replace": string, "gulp-sourcemaps": string, "gulp-streamify": string, "gulp-uglify": string, "gulp-useref": string, "gulp-watch": string, "http-proxy": string, imgurify: string, inquirer: string, jshint: string, "jshint-stylish": string, karma: string, "karma-browserify": string, "karma-chai": string, "karma-chrome-launcher": string, "karma-cli": string, "karma-mocha": string, "karma-requirejs": string, "karma-sinon": string, less: string, "less-plugin-glob": string, md5: string, mocha: string, "node-lessify": string, preprocess: string, requirejs: string, "run-sequence": string, sinon: string, "stream-array": string, "stream-concat": string, stringify: string, "uglify-js": string, "vinyl-buffer": string, "vinyl-paths": string, "vinyl-source-stream": string, vueify: string, watchify: string, yargs: string}}}
  */
-const packageJSON = require('./package.json');
+
 const dependencies = Object.keys(packageJSON && packageJSON.dependencies || {}).filter(dep => dep !== 'vue');
 
 gulp.task('vendor_node_modules_js', function() {
@@ -567,7 +575,5 @@ gulp.task('default',['add_external_resources_to_main_html','serve']); // develop
  * @see src\app\version
  */
 gulp.task('version', function () {
-  var pkg = require('./package.json');
-  var fs = require('fs');
-  fs.writeFileSync('src/version.js', `/* WARNING: this file is autogenerated by gulpfile.js, please do not edit manually */\n\nexport default '${pkg.version}';`);
+  fs.writeFileSync('src/version.js', `/* WARNING: this file is autogenerated by gulpfile.js, please do not edit manually */\n\nexport default '${packageJSON.version}';`);
 });
