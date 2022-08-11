@@ -1,4 +1,4 @@
-import ApplicationState from '../../core/applicationstate';
+import ApplicationState from 'core/applicationstate';
 import {viewport as viewportConstraints} from 'gui/constraints';
 import userMessage from 'gui/usermessage/vue/usermessage.vue';
 import onlineNotify from 'gui/notifications/online/vue/online.vue';

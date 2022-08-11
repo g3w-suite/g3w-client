@@ -1,4 +1,4 @@
-import ApplicationState from '../../../core/applicationstate';
+import ApplicationState from 'core/applicationstate';
 import { createCompiledTemplate } from 'gui/vue/utils';
 const {base, merge, inherit} = require('core/utils/utils');
 const Component = require('gui/component/component');
