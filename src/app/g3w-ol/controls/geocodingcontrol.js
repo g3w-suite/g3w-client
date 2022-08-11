@@ -1,4 +1,4 @@
-import ApplicationState from "../../core/applicationstate";
+import ApplicationState from "core/applicationstate";
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
 const GUI = require('gui/gui');

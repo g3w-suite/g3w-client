@@ -13,7 +13,7 @@
 </template>
 
 <script>
-  import ApplicationState from '../../../core/applicationstate';
+  import ApplicationState from 'core/applicationstate';
   const {getUniqueDomId} = require('core/utils/utils');
   export default {
     name: "datetime",
