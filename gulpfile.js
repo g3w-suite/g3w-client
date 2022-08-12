@@ -529,11 +529,10 @@ gulp.task('add_external_resources_to_main_html',  function() {
       .pipe(rename('index.html'))
       .pipe(gulp.dest(srcFolder));
   } else {
-    return gulp.src(srcFolder + '/index.html.template')
+    return gulp.src(srcFolder + '/index.dev.html')
       .pipe(rename('index.html'))
       .pipe(gulp.dest(srcFolder));
   }
-
 });
 
 /**
