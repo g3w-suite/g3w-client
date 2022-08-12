@@ -1,4 +1,4 @@
-import ApplicationState from '../applicationstate';
+import ApplicationState from 'core/applicationstate';
 const {base, inherit} = require('core/utils/utils');
 const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');

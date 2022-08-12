@@ -2,7 +2,7 @@ import {G3W_FID} from 'constant';
 const {toRawType} = require('core/utils/utils');
 const Feature = require('core/layers/features/feature');
 const {t} = require('core/i18n/i18n.service');
-const geoutils = require('g3w-ol/utils/utils');
+const olutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**
@@ -123,7 +123,7 @@ const utils = {
   reverseFeaturesCoordinates(features) {
     features.forEach(feature => {
       const geometry = feature.getGeometry();
-      feature.setGeometry(geoutils.reverseGeometry(geometry))
+      feature.setGeometry(olutils.reverseGeometry(geometry))
     });
     return features
   },
