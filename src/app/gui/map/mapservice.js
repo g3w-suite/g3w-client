@@ -1337,11 +1337,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
         const freeSpace =  bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
         if (freeSpace < 10) {
-          if (isMobile.any) {
-            this.setMapControlsAlignement('rh');
-            return;
-          } else
-            this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
           // check if there enought space to expand mapcontrols
