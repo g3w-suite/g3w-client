@@ -211,8 +211,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-1.0-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.4.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.4.x)
 
 ---
 
