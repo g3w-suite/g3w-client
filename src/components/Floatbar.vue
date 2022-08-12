@@ -1,3 +1,7 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/floatbar/floatbar.html@v3.4 -->
+<!-- gui/floatbar/floatbar.js@v3.4 -->
+
 <template>
   <aside class="control-sidebar control-sidebar-light" >
     <a v-show="panelsinstack" href="#" class="floatbar-aside-toggle" data-toggle="control-sidebar" role="button">

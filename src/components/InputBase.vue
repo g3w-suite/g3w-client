@@ -1,3 +1,7 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/inputs/baseinput/baseinput.html@v3.4 -->
+<!-- gui/inputs/baseinput/baseinput.js@v3.4 -->
+
 <template>
   <div class="form-group">
     <slot name="label">

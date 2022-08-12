@@ -1,8 +1,11 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/navbar/navbarleftitems.html@v3.4 -->
+<!-- gui/navbar/navbaritems.js@v3.4 -->
+
 <template>
   <ul class="nav navbar-nav navbar-left">
     <li v-for="item in items" :is="item" :key="item.id"></li>
   </ul>
-
 </template>
 
 <script>

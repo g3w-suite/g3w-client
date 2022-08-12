@@ -1,10 +1,13 @@
+/**
+ * ORIGINAL SOURCE: src/app/gui/sidebar/sidebar.js@v3.4
+ */
 import SidebarItemComponent from 'components/SidebarItem.vue';
 const {base, inherit} = require('core/utils/utils');
 const {barstack:Stack} = require('gui/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**
- * Temporary need to remove it
+ * TODO: temporary need to remove it
  */
 const SidebarItem = Vue.extend(SidebarItemComponent);
 
@@ -164,4 +167,4 @@ function SidebarService() {
 
 inherit(SidebarService, G3WObject);
 
-export default new SidebarService;
+export default new SidebarService();

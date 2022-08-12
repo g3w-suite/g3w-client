@@ -1,7 +1,3 @@
-/**
- * STILL HERE: file viewport.html and viewport.js non possible convert to SFC for a bug on vue-template-compiler on v-slot
- */
-import ViewportService from "services/viewport";
 import viewportService from 'services/viewport';
 import userMessage from 'components/UserMessage.vue';
 import onlineNotify from 'components/NotifyOnline.vue';
@@ -10,6 +6,9 @@ import pluginsNotify from 'components/NotifyPlugins.vue';
 import {viewport as viewportConstraints} from 'gui/constraints';
 const GUI = require('gui/gui');
 
+/**
+ * TODO: convert into vue SFC (found a way to resolve bug for "vue-template-compiler" on "v-slot")
+ */
 const compiledTemplate = Vue.compile(require('./viewport.html'));
 
 // COMPONENTE VUE VIEWPORT
@@ -145,6 +144,6 @@ const ViewportComponent = Vue.extend({
 });
 
 module.exports = {
-  ViewportService,
+  ViewportService: viewportService,
   ViewportComponent
 };

@@ -1,3 +1,7 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/sidebar/sidebar-item.html@v3.4 -->
+<!-- gui/sidebar/sidebar.js@v3.4 -->
+
 <template>
   <li :id="component.id" v-show="state.visible" class="treeview sidebaritem" :class="{'active': open}" v-disabled="state.disabled">
     <bar-loader :loading="state.loading"></bar-loader>

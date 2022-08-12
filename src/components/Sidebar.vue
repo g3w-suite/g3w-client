@@ -1,3 +1,7 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/sidebar/sidebar.html@v3.4 -->
+<!-- gui/sidebar/sidebar.js@v3.4 -->
+
 <template>
   <aside class="main-sidebar" :class="{ iframe: iframe, 'g3w-disabled': disabled }" >
     <!-- sidebar: style can be found in sidebar.less -->

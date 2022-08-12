@@ -1,3 +1,6 @@
+/**
+ * ORIGINAL SOURCE: src/app/gui/viewport/viewport.js@v3.4
+ */
 import ApplicationState from 'core/applicationstate';
 import {viewport as viewportConstraints} from 'gui/constraints';
 const {base, inherit, uniqueId} = require('core/utils/utils');
@@ -628,4 +631,4 @@ const ViewportService = function() {
 inherit(ViewportService, G3WObject);
 
 //singleton
-export default new ViewportService;
+export default new ViewportService();
