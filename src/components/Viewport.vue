@@ -1,3 +1,7 @@
+<!-- ORIGINAL SOURCE: -->
+<!-- gui/viewport/viewport.html@v3.4 -->
+<!-- gui/viewport/viewport.js@v3.4 -->
+
 <template>
   <div class="g3w-viewport">
     <transition name="fade" :duration="{ enter: 500, leave: 500 }">
