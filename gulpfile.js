@@ -180,7 +180,6 @@ gulp.task('browserify', [], function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
-      .pipe(gulpif(production, replace("{G3W_VERSION}", conf.version)))
       .pipe(gulpif(production, uglify({
         compress: {
           drop_console: true
@@ -530,11 +529,10 @@ gulp.task('add_external_resources_to_main_html',  function() {
       .pipe(rename('index.html'))
       .pipe(gulp.dest(srcFolder));
   } else {
-    return gulp.src(srcFolder + '/index.html.template')
+    return gulp.src(srcFolder + '/index.dev.html')
       .pipe(rename('index.html'))
       .pipe(gulp.dest(srcFolder));
   }
-
 });
 
 /**

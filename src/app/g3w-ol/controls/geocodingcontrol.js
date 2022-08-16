@@ -1,4 +1,4 @@
-import ApplicationState from "../../core/applicationstate";
+import ApplicationState from "core/applicationstate";
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
 const GUI = require('gui/gui');
@@ -247,7 +247,7 @@ const utils = {
  */
 class Nominatim {
   constructor(options={}) {
-    this.id = 'Nominatim';
+    this.id = 'Nominatim (OSM)';
     this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {
