@@ -1609,7 +1609,6 @@ proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
   try {
     const center = ol.extent.getCenter(feature.getGeometry().getExtent());
     this.mapService.getMap().getView().setCenter(center);
-    console.log(center)
   } catch(err){
 
   }
