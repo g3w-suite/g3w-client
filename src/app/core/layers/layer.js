@@ -454,7 +454,7 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
   return promise;
 };
 
-proto.getGeoTIFF = function({data}={}){
+proto.getGeoTIFF = function({data={}}={}){
   const url = this.getUrl('geotiff');
   return XHR.fileDownload({
     url,
@@ -463,7 +463,7 @@ proto.getGeoTIFF = function({data}={}){
   })
 };
 
-proto.getXls = function({data}={}){
+proto.getXls = function({data={}}={}){
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
@@ -472,7 +472,7 @@ proto.getXls = function({data}={}){
   })
 };
 
-proto.getShp = function({data}={}) {
+proto.getShp = function({data={}}={}) {
   const url = this.getUrl('shp');
   return XHR.fileDownload({
     url,
@@ -481,7 +481,7 @@ proto.getShp = function({data}={}) {
   })
 };
 
-proto.getGpx = function({data}={}){
+proto.getGpx = function({data={}}={}){
   const url = this.getUrl('gpx');
   return XHR.fileDownload({
     url,
@@ -490,7 +490,7 @@ proto.getGpx = function({data}={}){
   })
 };
 
-proto.getGpkg = function({data}={}){
+proto.getGpkg = function({data={}}={}){
   const url = this.getUrl('gpkg');
   return XHR.fileDownload({
     url,
@@ -499,7 +499,7 @@ proto.getGpkg = function({data}={}){
   })
 };
 
-proto.getCsv = function({data}={}){
+proto.getCsv = function({data={}}={}){
   const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,

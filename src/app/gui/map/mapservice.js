@@ -15,8 +15,8 @@ const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/src/g3w.ol').helpers;
-const {getScaleFromResolution, getResolutionFromScale} = require('g3w-ol/src/utils/utils');
+const olhelpers = require('g3w-ol/g3w.ol').helpers;
+const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
 const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
@@ -1030,33 +1030,35 @@ proto._setupControls = function() {
             }
           }
           break;
+        case 'geocoding':
         case 'nominatim':
-          const lonlat = coordinates => {
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          };
+          const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
             add: false,
             options: {
-              lonlat,
               isMobile: isMobile.any,
-              bbox: this.project.state.extent,
-              mapCrs: this.project.state.crs.epsg,
+              bbox,
+              mapCrs,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
-              fontIcon: GUI.getFontClass('search')
             }
           });
-          control.on('addresschosen', evt => {
+          /**
+           * event emit when an address location is clicked
+           */
+          control.on('address', evt => {
             const coordinate = evt.coordinate;
             const geometry =  new ol.geom.Point(coordinate);
             this.highlightGeometry(geometry);
           });
 
-          $('#search_nominatim').click(debounce(() => {
-            control.nominatim.query($('input.gcd-txt-input').val());
-          }));
+          control.on('lonlat', ({lonlat}={}) => {
+            const coordinates = ol.proj.transform(lonlat, 'EPSG:4326', mapCrs);
+            this.zoomToExtent([...coordinates, ...coordinates]);
+            setTimeout(() => this.showMarker(coordinates), 1000);
+          });
+
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
@@ -1335,11 +1337,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
         const freeSpace =  bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
         if (freeSpace < 10) {
-          if (isMobile.any) {
-            this.setMapControlsAlignement('rh');
-            return;
-          } else
-            this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
           // check if there enought space to expand mapcontrols
@@ -1959,8 +1957,8 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add time parametter to force request of map layer from server
-  if (options.force) options.time = Date.now();
+  // if force add g3w_time parametter to force request of map layer from server
+  if (options.force) options.g3w_time = Date.now();
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
     this[showSpinner ? 'registerMapLayerLoadingEvents' : 'unregisterMapLayerLoadingEvents'](mapLayer);

@@ -2,6 +2,7 @@ const {base, inherit, mixin } = require('core/utils/utils');
 const Layer = require('core/layers/layer');
 const VectorLayer = require('./vectorlayer');
 const WMSLayer = require('./map/wmslayer');
+const WMSTLayer = require('./map/wmstlayer');
 const ARCGISMAPSERVERLayer = require('./map/arcgismapserverlayer');
 const XYZLayer = require('./map/xyzlayer');
 const LegendService = require('./legend/legendservice');
@@ -241,7 +242,12 @@ proto.getMapLayer = function(options={}, extraParams) {
       mapLayer = new ARCGISMAPSERVERLayer(options, extraParams)
     } else {
       options.url = options.url || this.getWmsUrl();
-      mapLayer = new WMSLayer(options, extraParams, method);
+      /** check in case WMST Layer
+       *
+       */
+      if (this.isExternalWMS() && this.config.source && this.config.source.type === Layer.SourceTypes.WMST)
+        mapLayer = new WMSTLayer(options, extraParams, method);
+      else mapLayer = new WMSLayer(options, extraParams, method);
     }
   }
   return mapLayer;

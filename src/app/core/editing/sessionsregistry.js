@@ -1,30 +1,11 @@
-const SessionsRegistry = function() {
-  this._sessions = {};
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "store/sessions.js" instead)
+ */
+import SessionsRegistry from 'store/sessions';
 
-  this.register = function(session) {
-    const id = session.getId();
-    this._sessions[id] = session;
-  };
+/**
+ * FIXME: application is broken using like the following line
+ */
+// import { SessionsRegistry } from 'store';
 
-  this.unregister = function(id) {
-    delete this._sessions[id];
-  };
-
-  this.getSession = function(id) {
-    return this._sessions[id];
-  };
-
-  this.setSession = function(id, session) {
-    this._sessions[id] = session;
-  };
-
-  this.getSessions = function() {
-    return this._sessions;
-  };
-
-  this.clear = function(){
-    this._sessions = {};
-  }
-};
-
-module.exports = new SessionsRegistry();
+module.exports = SessionsRegistry;

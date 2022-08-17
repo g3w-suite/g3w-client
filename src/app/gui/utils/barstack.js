@@ -1,6 +1,6 @@
 const {resolve, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const Panel = require('gui/panel');
 
 //Barstack Class

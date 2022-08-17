@@ -1,6 +1,6 @@
 const {inherit, base} = require('core/utils/utils');
 const MapLayer = require('./maplayer');
-const RasterLayers = require('g3w-ol/src/layers/rasters');
+const RasterLayers = require('g3w-ol/layers/rasters');
 
 function XYZLayer(options, method="GET") {
   base(this, options);

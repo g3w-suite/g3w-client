@@ -2,7 +2,7 @@ import { createCompiledTemplate } from 'gui/vue/utils';
 import SelectAtlasFieldValues from './components/selectatlasfieldvalues.vue';
 import FidAtlasValues from './components/fidatlasvalues.vue';
 const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/vue/component');
+const Component = require('gui/component/component');
 const PrintService = require('gui/print/printservice');
 const compiledTemplate = createCompiledTemplate(require('./print.html'));
 
