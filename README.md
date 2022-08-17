@@ -1,4 +1,5 @@
-# G3W-CLIENT v3.6-dev
+# G3W-CLIENT v3.4.1
+
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -7,6 +8,7 @@ G3W-SUITE scripts and configuration files needed to set up a suitable local deve
 ![g3w-client](https://g3w-suite.readthedocs.io/en/latest/_images/g3wclient_interface.png)
 
 ---
+***This branch is a replica of on*** https://github.com/g3w-suite/g3w-client/releases/tag/v3.6.1
 
 ## Project setup
 
