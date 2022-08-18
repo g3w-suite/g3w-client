@@ -1,16 +1,5 @@
-const Input = require('gui/inputs/input');
+import * as vueComponentOptions from 'components/InputSliderRange.vue';
 
-const RangeInput = Vue.extend({
-  mixins: [Input],
-  template: require('./sliderrange.html'),
-  watch:{
-    'state.input.options.min'(){
-      this.service.changeInfoMessage()
-    },
-    'state.input.options.max'(){
-      this.service.changeInfoMessage()
-    }
-  }
-});
+const RangeInput = Vue.extend(vueComponentOptions);
 
 module.exports = RangeInput;

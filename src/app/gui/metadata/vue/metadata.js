@@ -1,18 +1,11 @@
-import {createCompiledTemplate} from 'gui/vue/utils';
+import * as vueComponentOptions from 'components/Metadata.vue';
+
 const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/component/component');
 const GUI = require('gui/gui');
 const MetadataService = require('gui/metadata/metadataservice');
-const templateCompiled = createCompiledTemplate(require('./metadata.html'));
 
-const InternalComponent = Vue.extend({
-  ...templateCompiled,
-  data() {
-    return {
-      state: null
-    }
-  }
-});
+const InternalComponent = Vue.extend(vueComponentOptions);
 
 const MetadataComponent = function(options = {}) {
   base(this, options);

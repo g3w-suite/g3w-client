@@ -1,23 +1,6 @@
-const WidgetMixins = {
-  data() {
-    return {
-      changed: false
-    }
-  },
-  methods: {
-    widgetChanged() {
-      this.changed = true;
-      this.change();
-    },
-    stateValueChanged(value) {
-      console.log('need to be implemented by widget') // method to overwrite
-    }
-  },
-  watch: {
-    'state.value'(value) {
-      this.changed ? this.changed = false : this.stateValueChanged(value);
-    }
-  }
-};
+const {widgetMixins} = require('gui/vue/vue.mixins');
 
-module.exports = WidgetMixins;
+/**
+ * DEPRECATED: will be removed after v3.4 (use "gui/vue/vue.mixins" instead)
+ */
+module.exports = widgetMixins;

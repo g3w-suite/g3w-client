@@ -1,43 +1,11 @@
-const BaseInputMixin = {
-  computed: {
-    notvalid() {
-      return this.state.validate.valid === false;
-    },
-    editable() {
-      return this.state.editable;
-    },
-    showhelpicon(){
-      return this.state.help && this.state.help.message.trim();
-    }
-  },
-  methods: {
-    showHideHelp(){
-      this.state.help.visible = !this.state.help.visible
-    },
-    // used to text input to listen mobile changes
-    mobileChange(event){
-      this.state.value = event.target.value;
-      this.change();
-    },
-    // called when input value change
-    change() {
-      this.service.setEmpty();
-      // validate input
-      this.state.validate.required && this.service.validate();
-      // emit change input
-      this.$emit('changeinput', this.state);
-    },
-    isVisible() {}
-  }
-};
-
-const BaseInput = {
-  props: ['state'],
-  template: require('./baseinput.html'),
-  ...BaseInputMixin
-};
+import BaseInputComponent from 'components/InputBase.vue'
+const {baseInputMixin:BaseInputMixin} = require('gui/vue/vue.mixins');
 
 module.exports = {
-  BaseInput,
+  BaseInput: BaseInputComponent,
+
+  /**
+   * DEPRECATED: will be removed after v3.4 (use "gui/vue/vue.mixins" instead)
+   */
   BaseInputMixin
 };

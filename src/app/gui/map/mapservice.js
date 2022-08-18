@@ -838,9 +838,9 @@ proto._setupControls = function() {
                    outputs: {
                       show({data=[], query}){
                         const show = data.length === 0;
-                        // set coordinates to null to avoid that externalvector added to query result
-                        // response to coordinates
-                        query.coordinates = !show && null;
+                        // set coordinates to null in case of show  is false to avoid that externalvector added to query result
+                        // response to coordinates otherwise we show coordinate in point
+                        query.coordinates = !show ? null : query.coordinates;
                         return show;
                       }
                    }

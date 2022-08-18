@@ -1,9 +1,10 @@
-import Text from './text.vue';
-import Link from './link.vue';
-import Image from './image.vue'
-import Geo from './geo.vue';
-import Media from './media.vue';
-import VueField from './vuefield.vue';
+import Text from 'components/FieldText.vue';
+import Link from 'components/FieldLink.vue';
+import Image from 'components/FieldImage.vue'
+import Geo from 'components/FieldGeo.vue';
+import Media from 'components/FieldMedia.vue';
+import VueField from 'components/FieldVue.vue';
+
 const Fields = {
   simple_field: Text,
   text_field: Text,
