@@ -180,7 +180,7 @@
       moveFnc(evt){
         const size =  this.state.split === 'h' ? 'width' : 'height';
         evt.preventDefault();
-        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : SIDEBARWIDTH : $('#main-navbar').height();
+        const sidebarHeaderSize = (size === 'width') ? $('.sidebar-collapse').length ? 0 : viewportService.SIDEBARWIDTH : $('#main-navbar').height();
         const viewPortSize = $(this.$el)[size]();
         let mapSize = (size === 'width' ? (evt.pageX+2): (evt.pageY+2)) - sidebarHeaderSize;
         if (mapSize > viewPortSize - viewportConstraints.resize.content.min)
