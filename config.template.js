@@ -4,15 +4,6 @@ const G3W_HOST_SCHEMA  = 'http';
 const G3W_HOST         = '127.0.0.1'; // local development server
 const G3W_ADMIN_PORT   = '8000';      // G3W-ADMIN development server
 const G3W_CLIENT_PORT  = '3000';      // G3W-CLIENT development server
-const G3W_PROXY_ROUTES = [            // G3W-ADMIN routes to be proxied while developing
-  '/media',
-  '/api',
-  '/ows',
-  '/static',
-  '/en/',
-  '/it/',
-  '/upload/'
-];
 
 const G3W_PLUGINS = {                // override "initConfig->group->plugins" attribute for custom plugin development
   // "your-plugin-folder-name": {
@@ -42,7 +33,6 @@ let conf = {
   proxy: {
     host: G3W_HOST,
     url: `${G3W_HOST_SCHEMA}://${G3W_HOST}:${G3W_ADMIN_PORT}/`,
-    routes: G3W_PROXY_ROUTES
   },
   test: {
     path: '/test/config/groups/'
@@ -62,7 +52,6 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < "4") {
-  conf.proxy.urls      = conf.proxy.routes;
   conf.localServerPort = conf.port;
   conf.g3w_admin_paths = {
     dev: {

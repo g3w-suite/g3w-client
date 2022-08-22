@@ -28,7 +28,6 @@ const vueify = require('vueify');
 const watchify = require('watchify');
 const stringify = require('stringify');
 const browserSync = require('browser-sync');
-const httpProxy = require('http-proxy');
 const htmlreplace = require('gulp-html-replace');
 const concat = require('gulp-concat');
 const prompt = require('gulp-prompt');
@@ -284,40 +283,15 @@ gulp.task('html:compiletemplate', function() {
     .pipe(gulp.dest(clientFolder));
 });
 
-const proxy = httpProxy.createProxyServer({
-  target: conf.proxy.url
-});
-
-proxy.on('error',function(e){
-  gutil.log(e);
-});
-
-function proxyMiddleware(urls) {
-  return function(req, res, next){
-    let doproxy = false;
-    let rootUrl;
-    if (req.url.indexOf('plugin.js') > -1) rootUrl = req.url;
-    else rootUrl = req.url.split('?')[0];
-    for (let i in urls) {
-      if (rootUrl.indexOf(urls[i]) > -1) {
-        doproxy = true;
-        break;
-      }
-    }
-    doproxy ? proxy.web(req,res) : next();
-  }
-}
-
 gulp.task('browser-sync', function() {
   const port = conf.localServerPort ? conf.localServerPort : 3000;
   browserSync.init({
-    server: {
-      baseDir: ["src","."],
-      middleware: [proxyMiddleware(conf.proxy.urls)]
-    },
     port,
     open: false,
     startPath: "/",
+    proxy: {
+      target: conf.proxy.url
+    },
     socket: {
       domain: `${conf.host}:${port}`
     }
