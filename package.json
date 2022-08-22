@@ -35,11 +35,11 @@
   "dependencies": {
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
-    "vue": "^2.6.12",
+    "vue": "2.6.12",
     "vue-cookie-law": "^1.13.3"
   },
-  "resolutions": {
-    "graceful-fs": "4.2.3"
+  "overrides": {
+    "graceful-fs": "^4.2.10"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -118,13 +118,14 @@
     "vinyl-buffer": "^1.0.0",
     "vinyl-paths": "^2.1.0",
     "vinyl-source-stream": "^1.1.0",
+    "vue-template-compiler": "2.6.12",
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
   },
   "browserslist": "defaults",
   "engines": {
-    "node": ">=16.13.2",
-    "npm": ">=8.1.2"
+    "node": ">=16.15.0",
+    "npm": ">=8.5.5"
   }
 }
