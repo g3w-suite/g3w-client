@@ -247,7 +247,7 @@ const utils = {
  */
 class Nominatim {
   constructor(options={}) {
-    this.id = 'Nominatim';
+    this.id = 'Nominatim (OSM)';
     this.active = true;
     const extent = ol.proj.transformExtent(options.viewbox, options.mapCrs, 'EPSG:4326');
     this.settings = {

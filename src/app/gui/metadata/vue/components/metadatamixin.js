@@ -1,10 +1,6 @@
-export default {
-  methods: {
-    findAttributeFormMetadataAttribute(name) {
-      return this.state.metadata ? this.state.metadata[name] !== undefined : false;
-    },
-    findMetadataAttribute(name) {
-      return this.state[name] !== undefined;
-    }
-  }
-}
+const {metadataMixin} = require('gui/vue/vue.mixins');
+
+/**
+ * DEPRECATED: will be removed after v3.4 (use "gui/vue/vue.mixins" instead)
+ */
+export default metadataMixin;

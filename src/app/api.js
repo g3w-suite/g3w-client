@@ -2,8 +2,27 @@
 import G3W_CONSTANT from './constant';
 
 import ApplicationState from 'core/applicationstate';
-import G3WInput from 'gui/inputs/g3w-input.vue';
-import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
+
+/**
+ * Vue Single Components
+ */
+
+/**
+ * Inputs
+ */
+import G3WInput from 'components/InputG3W.vue';
+import G3wFormInputs from 'components/InputG3WFormInputs.vue';
+/**
+ * Form components
+ */
+import FormBody from 'components/FormBody.vue';
+import FormFooter from 'components/FormFooter.vue';
+/**
+ * Chart Line component
+ */
+import C3XYLine from 'components/C3XYLine.vue';
+
+
 
 /**
  * CORE modules
@@ -72,11 +91,8 @@ const MapComponent = require('gui/map/vue/map');
 const ToolsComponent = require('gui/tools/vue/tools');
 const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
 const FormComponent = require('gui/form/vue/form');
-const Body = require('gui/form/components/body/vue/body');
-const Footer = require('gui/form/components/footer/vue/footer');
 const InputsComponents = require('gui/inputs/inputs');
 const ChartsFactory = require('gui/charts/chartsfactory');
-const lineXY = require('gui/charts/vue/c3/line/lineXY');
 const Fields = require('gui/fields/fields');
 const Mixins = require('gui/vue/vue.mixins');
 const SearchPanelService = require('gui/search/vue/panel/searchservice');
@@ -208,8 +224,8 @@ module.exports = {
       FormComponent,
       // Form Components
       FormComponents: {
-        Body,
-        Footer
+        Body: FormBody,
+        Footer: FormFooter
       },
       Inputs: {
         G3wFormInputs,
@@ -219,7 +235,7 @@ module.exports = {
       Charts: {
         ChartsFactory,
         c3: {
-          lineXY
+          lineXY: C3XYLine
         }
       },
       Fields,

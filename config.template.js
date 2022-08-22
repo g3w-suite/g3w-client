@@ -26,14 +26,16 @@ const G3W_KEYS = {
   // bing: '<INSERT HERE YOUR BING API KEY>'
 };
 
+const G3W_ADMIN_PATH = '../g3w-admin/g3w-admin'; // path to G3W-ADMIN main code
+
 let conf = {
   assetsFolder:  './assets',      // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins', // path to G3W-CLIENT plugins folder
   distFolder:    './dist',        // path to G3W-CLIENT dist folder
   clientFolder:  './dist/client', // path to G3W-CLIENT client folder
-  admin_plugins_folder:   '../g3w-admin/g3w-admin',                  // path to G3W-ADMIN main code
-  admin_static_folder:    '../g3w-admin/g3w-admin/client/static',    // path to G3W-ADMIN client/static
-  admin_templates_folder: '../g3w-admin/g3w-admin/client/templates', // path to G3W-ADMIN client/templates
+  admin_plugins_folder:    G3W_ADMIN_PATH, // path to G3W-ADMIN where are stored all plugin folders
+  admin_static_folder:    `${G3W_ADMIN_PATH}/client/static`,    // path to G3W-ADMIN client/static
+  admin_templates_folder: `${G3W_ADMIN_PATH}/client/templates`, // path to G3W-ADMIN client/templates
   host: G3W_HOST,
   port: G3W_CLIENT_PORT,
   // proxy configuration for local G3W_ADMIN server (where G3W-ADMIN is running)
