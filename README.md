@@ -102,8 +102,8 @@ If everything went fine, you can now visit you local development server URL to s
 # project_type  = "qdjango";
 # project_id    = "1"
 
-http://localhost:8000/en/map/countries/qdjango/1   # g3w-admin  (production)
-http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
+http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
+http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
 ```
 
 ```sh
@@ -112,8 +112,8 @@ http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
 # project_type  = "qdjango";
 # project_id    = "2"
 
-http://localhost:8000/en/map/eleprofile/qdjango/2   # g3w-admin  (production)
-http://localhost:3000/?project=eleprofile/qdjango/2 # g3w-client (development)
+http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
+http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 ```
 
 ---
