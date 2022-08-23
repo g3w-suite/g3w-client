@@ -18,10 +18,7 @@
     "cy:open": "cypress open",
     "preversion": "npm run test",
     "version": "npm run build && git add -A",
-    "postversion": "git push && git push --tags",
-    "admin": "npm run build",
-    "default": "npm run dev",
-    "plugins": "npm run build:plugins"
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
