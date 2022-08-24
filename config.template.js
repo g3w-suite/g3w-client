@@ -29,7 +29,7 @@ const G3W_KEYS = {
 const G3W_ADMIN_PATH = '../g3w-admin/g3w-admin'; // path to G3W-ADMIN main code
 
 let conf = {
-  assetsFolder:  './assets',      // path to G3W-CLIENT assets folder
+  assetsFolder:  './src/assets',      // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins', // path to G3W-CLIENT plugins folder
   distFolder:    './dist',        // path to G3W-CLIENT dist folder
   clientFolder:  './dist/client', // path to G3W-CLIENT client folder

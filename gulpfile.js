@@ -383,21 +383,21 @@ gulp.task('browser:reload', function() {
  */
 gulp.task('watch', function(done) {
     /* Uncomment the following in next Gulp Release (v4.x) */
-  // gulp.watch(['./assets/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], gulp.series('less', 'browser:reload'));
-  // gulp.watch(['./assets/style/skins/*.less'],                                gulp.series('browser:reload'));
+  // gulp.watch([g3w.assetsFolder + '/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], gulp.series('less', 'browser:reload'));
+  // gulp.watch([g3w.assetsFolder + '/style/skins/*.less'],                                gulp.series('browser:reload'));
   // gulp.watch('./src/**/*.{png,jpg}',                                         gulp.series('images', 'browser:reload'));
   // gulp.watch(g3w.pluginsFolder + '/**/plugin.js',                            gulp.series('plugins', 'browser:reload'));
   // gulp.watch(g3w.pluginsFolder + '/**/style/less/plugin.less',               gulp.series('less', 'browser:reload'));
   // gulp.watch([g3w.pluginsFolder + '/*/index.*.html'],                        gulp.series('build_external_assets', 'browser:reload'));
-  // gulp.watch('./assets/vendors/index.*.html',                                gulp.series('build_external_assets', 'browser:reload'));
+  // gulp.watch(g3w.assetsFolder + '/vendors/index.*.html',                                gulp.series('build_external_assets', 'browser:reload'));
   // gulp.watch(['./src/index.html', './src/**/*.html'],                        gulp.series('browser:reload'));
-  watch(['./assets/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], prepareRunSequence('less','browser:reload'));
-  watch(['./assets/style/skins/*.less'],                                prepareRunSequence('less:skins','browser:reload'));
+  watch([g3w.assetsFolder + '/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], prepareRunSequence('less','browser:reload'));
+  watch([g3w.assetsFolder + '/style/skins/*.less'],                                prepareRunSequence('less:skins','browser:reload'));
   watch('./src/**/*.{png,jpg}',                                         prepareRunSequence('images','browser:reload'));
   watch(g3w.pluginsFolder + '/**/plugin.js',                            prepareRunSequence('plugins','browser:reload'));
   watch(g3w.pluginsFolder + '/**/style/less/plugin.less',               prepareRunSequence('less','browser:reload'));
   watch([g3w.pluginsFolder + '/*/index.*.html'],                        prepareRunSequence('build_external_assets','browser:reload'));
-  watch('./assets/vendors/index.*.html',                                prepareRunSequence('build_external_assets','browser:reload'));
+  watch(g3w.assetsFolder + '/vendors/index.*.html',                                prepareRunSequence('build_external_assets','browser:reload'));
   gulp.watch(['./src/index.html','./src/**/*.html'],                    function() { browserSync.reload(); });  
   done();
 });
