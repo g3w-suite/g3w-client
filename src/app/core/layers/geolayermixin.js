@@ -69,7 +69,11 @@ proto.updateOlSelectionFeature = function({id, geometry}={}){
   if (featureObject) {
     geometry = new ol.geom[geometry.type](geometry.coordinates);
     const feature = featureObject.feature;
-    const mapService = GUI.getComponent('map').getService();
+    /**
+     * add a property of feature __layerId used whe we work with selected Layer features
+     */
+    feature.__layerId = this.getId();
+    const mapService = GUI.getService('map');
     feature.setGeometry(geometry);
     mapService.setSelectionFeatures('update', {
       feature
@@ -108,7 +112,7 @@ proto.addOlSelectionFeature = function({id, geometry}={}){
 };
 
 proto.showAllOlSelectionFeatures = function(){
-  const mapService = GUI.getComponent('map').getService();
+  const mapService = GUI.getService('map');
   Object.values(this.olSelectionFeatures).forEach(featureObject =>{
     !featureObject.added && mapService.setSelectionFeatures('add', {
       feature: featureObject.feature
@@ -144,10 +148,16 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
   } else {
     const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
     if (action === 'add') {
-      !featureObject.added && mapService.setSelectionFeatures(action, {
-        feature: featureObject.feature
-      });
-      featureObject.added = true;
+      if (!featureObject.added) {
+        /**
+         * add a property of feature __layerId used whe we work with selected Layer features
+         */
+        featureObject.feature.__layerId = this.getId();
+        mapService.setSelectionFeatures(action, {
+          feature: featureObject.feature,
+        });
+        featureObject.added = true;
+      }
     } else {
       mapService.setSelectionFeatures(action, {
         feature: featureObject.feature
