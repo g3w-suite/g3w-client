@@ -1,7 +1,7 @@
-import { G3W_FID } from 'constant';
-const { toRawType } = require('core/utils/utils');
+import {G3W_FID} from 'constant';
+const {toRawType} = require('core/utils/utils');
 const Feature = require('core/layers/features/feature');
-const { t } = require('core/i18n/i18n.service');
+const {t} = require('core/i18n/i18n.service');
 const olutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
@@ -99,23 +99,10 @@ const utils = {
     return features;
   },
   parseLayerFeatureCollection({jsonresponse, layer, projections}) {
-    /**
-     * NEED here to avoid circular dependencies
-     */
-    const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
-    /********************************************************************************************************/
-
     const x2js = new X2JS();
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
     const parser = new ol.format.WMSGetFeatureInfo();
     const features = this.transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-    const geometryType = layer.getGeometryType();
-    if (!is3DGeometry(geometryType)){
-      features.forEach(feature => removeZValueToOLFeatureGeometry({
-        feature,
-        geometryType
-      }))
-    }
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
       const properties = Object.keys(features[0].getProperties());
       const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
