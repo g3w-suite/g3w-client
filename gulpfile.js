@@ -344,7 +344,7 @@ gulp.task('browser-sync', function() {
     open: false,
     startPath: '/',
     proxy: {
-      target: conf.proxy.url
+      target: g3w.proxy.url
     },
     socket: {
       domain: `${g3w.host}:${g3w.port}`
