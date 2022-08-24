@@ -14,6 +14,64 @@ const Geometry = {
    * core/geometry/geometry::GeometryTypes@v3.4
    */
    GeometryTypes,
+  /**
+   * Method to remove Z coordinates from geometry coordinates
+   * It in necessary due an wrong add Z value when using ol.format.WMSGetFeatureInfo readFeatures method from XML (ex. WMS getFeatureInfo);
+   * TO CHECK
+   * @param feature
+   * @param geometryType
+   */
+   removeZValueToOLFeatureGeometry({feature, geometryType}={}){
+    const geometry = feature.getGeometry();
+    geometryType = geometryType || geometry.getType();
+    const originalFeatureCoordinates = geometry.getCoordinates();
+    switch (geometryType){
+      // POINT: [x, y]
+      case GeometryTypes.POINT:
+        if (originalFeatureCoordinates.length === 3) {
+          originalFeatureCoordinates.splice(2);
+          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+        }
+        break;
+      // MULTIPOINT: [ [x1, y1], [x2, y2] ]
+      case GeometryTypes.MULTIPOINT:
+      // LINE: [ [x1, y1], [x2, y2] ]
+      case GeometryTypes.LINESTRING:
+      case GeometryTypes.LINE:
+        originalFeatureCoordinates.forEach(coordinates => coordinates.splice(2));
+        feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+        break;
+      // MULTILINE: [
+      //   [ [x1, y1], [x2, y2] ],
+      //   [ [x3, y3], [x4, y4] ]
+      // ]
+      case GeometryTypes.MULTILINESTRING:
+      case GeometryTypes.MULTILINE:
+        originalFeatureCoordinates.forEach(singleLine => {
+          singleLine.forEach(coordinates => coordinates.splice(2))
+        });
+        feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+        break;
+      // POLYGON: [
+      //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
+      // ]
+      case GeometryTypes.POLYGON:
+        originalFeatureCoordinates[0].forEach(coordinates => coordinates.splice(2));
+        feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+        break;
+      // MULTIPOLYGON:[
+      //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
+      //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
+      // ]
+      case GeometryTypes.MULTIPOLYGON:
+        originalFeatureCoordinates.forEach(singlePolygon => {
+          singlePolygon[0].forEach(coordinates => coordinates.splice(2))
+        });
+        feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+        break;
+    }
+    return feature;
+  },
 
    /**
     * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
