@@ -374,7 +374,7 @@ gulp.task('watch', function(done) {
   watch(['./assets/style/**/*.less', g3w.pluginsFolder + '/**/*.less'], prepareRunSequence('less','browser:reload'));
   watch(['./assets/style/skins/*.less'],                                prepareRunSequence('less:skins','browser:reload'));
   watch('./src/**/*.{png,jpg}',                                         prepareRunSequence('images','browser:reload'));
-  watch(g3w.pluginsFolder + '/**/plugin.js',                            prepareRunSequence('plugins','browser:reload'));
+  watch(g3w.pluginsFolder + '/**/plugin.js',                            prepareRunSequence('browser:reload'));
   watch(g3w.pluginsFolder + '/**/style/less/plugin.less',               prepareRunSequence('less','browser:reload'));
   watch([g3w.pluginsFolder + '/*/index.*.html'],                        prepareRunSequence('build_external_assets','browser:reload'));
   watch('./assets/vendors/index.*.html',                                prepareRunSequence('build_external_assets','browser:reload'));
@@ -398,15 +398,6 @@ gulp.task('dist', function(done) {
 });
 
 /**
- * Copy all plugins to g3w-admin's plugin folder
- */
-gulp.task('plugins', function() {
-  return gulp.src(`${g3w.pluginsFolder}/*/plugin.js`)
-    .pipe(rename((path) => { path.dirname = g3w.distFolder + '/' + path.dirname + '/js/'; }))
-    .pipe(gulp.dest('.'));
-});
-
-/**
  * Lets developer choose which plugins to include within generated bundle
  */
 gulp.task('select-plugins', function() {
@@ -418,7 +409,17 @@ gulp.task('select-plugins', function() {
         name: 'plugins',
         message: 'Plugins',
         // exclude from plugin list "client" and all "template_" plugins
-        choices: fs.readdirSync(g3w.distFolder).filter(file => file !== 'client' && file.indexOf('template_') === -1 && fs.statSync(`${g3w.distFolder}/${file}`).isDirectory())
+        choices: fs.readdirSync(g3w.pluginsFolder).filter(file => {
+          try {
+            return file !== 'client'
+                && file.indexOf('template_') === -1
+                && fs.statSync(`${g3w.pluginsFolder}/${file}`).isDirectory()
+                && fs.statSync(`${g3w.pluginsFolder}/${file}/plugin.js`).isFile();
+          } catch (e) {
+            console.warn(`[WARN] file not found: ${g3w.pluginsFolder}/${file}/plugin.js`);
+            return false;
+          }
+        })
       },
       response => process.env.G3W_PLUGINS = response.plugins
       )
@@ -428,19 +429,14 @@ gulp.task('select-plugins', function() {
 /**
  * Task plugins
  */
-gulp.task('g3w-admin:plugins', ['plugins', 'select-plugins'], function(done) {
+gulp.task('g3w-admin:plugins', ['select-plugins'], function(done) {
   const pluginNames = process.env.G3W_PLUGINS.split(',');
-  if (pluginNames.length === 1 && pluginNames[0] === '') {
-    console.log('No plugin selected');
-    done();
-  } else  {
-    return gulp.src(pluginNames.map(pluginName => `${g3w.distFolder}/${pluginName}*/js/plugin.js`))
-      .pipe(rename(path => {
-        const pluginname = path.dirname.replace('/js', '');
-        path.dirname = `${g3w.admin_plugins_folder}/${pluginname}/static/${pluginname}/js/`;
-      }))
-      .pipe(gulp.dest('.'));
-  }
+  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}*/plugin.js`))
+    .pipe(rename((path) => {
+        path.dirname = `${g3w.admin_plugins_folder}/${path.dirname}/static/${path.dirname}/js/`;
+        console.log(`[G3W-ADMIN] file updated: ${path.dirname}${path.basename}${path.extname}`);
+    }))
+    .pipe(gulp.dest('.'));
 });
 
 gulp.task('g3w-admin:static', function() {
@@ -486,7 +482,7 @@ gulp.task('test', async (done) => {
 /**
  * Deafult development task (BrowserSync server)
  */
-gulp.task('dev', ['build_external_assets', 'clean:dist', 'browserify:app', 'assets', 'watch', 'plugins', 'browser-sync']);
+gulp.task('dev', ['build_external_assets', 'clean:dist', 'browserify:app', 'assets', 'watch', 'browser-sync']);
 
 /**
  * Expose version of "package.json" without including whole file in published bundle,
@@ -542,11 +538,11 @@ gulp.task('production', function(){
 });
 
 gulp.task('serve', function(done) {
-  runSequence('clean','browserify',['assets','watch','plugins'],'browser-sync', done);
+runSequence('clean','browserify',['assets','watch'],'browser-sync', done);
 });
 
 gulp.task('copy-and-select-plugins', function(done) {
-  runSequence('plugins', 'select-plugins', done)
+  runSequence('select-plugins', done)
 });
 
 gulp.task('g3w-admin-client_test',['g3w-admin-client:static','g3w-admin-client:template', 'g3w-admin-client:check_client_version']);
