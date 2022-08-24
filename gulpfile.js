@@ -431,9 +431,11 @@ gulp.task('select-plugins', function() {
  */
 gulp.task('g3w-admin:plugins', ['select-plugins'], function(done) {
   const pluginNames = process.env.G3W_PLUGINS.split(',');
-  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}*/plugin.js`))
-    .pipe(rename((path) => {
-        path.dirname = `${g3w.admin_plugins_folder}/${path.dirname}/static/${path.dirname}/js/`;
+  const nodePath = path;
+  return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
+    .pipe(rename((path, file) => {
+        const pluginName = nodePath.basename(file.base);
+        path.dirname = `${g3w.admin_plugins_folder}/${pluginName}/static/${pluginName}/js/`;
         console.log(`[G3W-ADMIN] file updated: ${path.dirname}${path.basename}${path.extname}`);
     }))
     .pipe(gulp.dest('.'));
