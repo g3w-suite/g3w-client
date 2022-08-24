@@ -52,6 +52,8 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < "4") {
+  conf.proxy.routes    = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
+  conf.proxy.urls      = conf.proxy.routes;
   conf.localServerPort = conf.port;
   conf.g3w_admin_paths = {
     dev: {
