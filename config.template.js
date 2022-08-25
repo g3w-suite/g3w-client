@@ -61,7 +61,8 @@ let conf = {
 };
 
 // backward compatibilities (v3.x)
-if (version < "4") {
+if (version < '4') {
+  conf.assetsFolder    = (version < '3.7' ? './assets' : conf.assetsFolder);
   conf.proxy.urls      = conf.proxy.routes;
   conf.localServerPort = conf.port;
   conf.g3w_admin_paths = {
