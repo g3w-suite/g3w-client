@@ -420,6 +420,29 @@ function GeocodingControl(options={}) {
     }),
   ];
 
+  /**
+   * Layer to show marker after search
+   * IN FUTURE SET AS CONTROL UTILITY (at moment duplicate also in GEOLOCATION CONTROL)
+   */
+
+  this.layer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: new ol.style.Style({
+      text: new ol.style.Text({
+        text: '\uf3c5',
+        font: '900 3em "Font Awesome 5 Free"',
+        stroke: new ol.style.Stroke({
+          color: 'red',
+          width: 3
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 0,0, 0.7)'
+        })
+      })
+    })
+  });
+
+  this.projection;
 
   const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
   const self = this;
@@ -496,6 +519,21 @@ function GeocodingControl(options={}) {
   this.registeredListeners = {
     mapClick: false
   };
+
+  this.showMarker = function(coordinates) {
+    this.hideMarker();
+    coordinates = ol.proj.transform(coordinates, 'EPSG:4326', this.getMap().getView().getProjection());
+    const geometry =  new ol.geom.Point(coordinates);
+    const feature = new ol.Feature(geometry);
+    this.layer.getSource().addFeature(feature);
+    this.getMap().addLayer(this.layer);
+    GUI.getService('map').zoomToGeometry(geometry)
+  };
+
+  this.hideMarker = function(){
+    this.layer.getSource().clear();
+    this.getMap().removeLayer(this.layer);
+  };
   /**
    * Methods
    */
@@ -534,6 +572,10 @@ function GeocodingControl(options={}) {
     this.reset.addEventListener('click', reset, false);
   };
   this.query = function(q) {
+    /**
+     * Clear source
+     */
+    this.hideMarker();
     return new Promise(async (resolve, reject) => {
       const isNumber = value => toRawType(value) === 'Number' && !Number.isNaN(value);
       let lonlat = null;
@@ -541,10 +583,7 @@ function GeocodingControl(options={}) {
         lonlat = q.split(',');
         lonlat = isNumber(1*lonlat[0]) && isNumber(1*lonlat[1]) ? lonlat.map(coordinate => 1*coordinate) : null;
       }
-      if (lonlat) this.dispatchEvent({
-        type: 'lonlat',
-        lonlat
-      });
+      if (lonlat) this.showMarker(coordinates);
       else {
         if (this.lastQuery === q && this.result.firstChild) { return; }
         const promises = [];
@@ -617,21 +656,9 @@ function GeocodingControl(options={}) {
     }
   };
   this.chosen = function(place, addressHtml, addressObj, addressOriginal) {
-    const map = this.getMap();
-    const coord_ = [parseFloat(place.lon), parseFloat(place.lat)];
-    const projection = map.getView().getProjection();
-    const coord = ol.proj.transform(coord_, 'EPSG:4326', projection);
-    const address = {
-      formatted: addressHtml,
-      details: addressObj,
-      original: addressOriginal
-    };
+    const coord = [parseFloat(place.lon), parseFloat(place.lat)];
     this.options.keepOpen === false && this.clearResults(true);
-    this.dispatchEvent({
-      type: 'address',
-      address: address,
-      coordinate: coord
-    });
+    this.showMarker(coord);
   };
   this.createHeaderProviderResults = function(header={}){
     const headerNodeElement = `
@@ -691,6 +718,7 @@ function GeocodingControl(options={}) {
   };
   this.clearResults = function() {
     utils.removeAllChildren(this.result);
+    this.hideMarker();
   };
   this.getSource = function() {
     return this.layer.getSource();
