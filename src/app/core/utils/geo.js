@@ -14,12 +14,9 @@ const Geometry = {
    * core/geometry/geometry::GeometryTypes@v3.4
    */
    GeometryTypes,
+
   /**
-   * Method to remove Z coordinates from geometry coordinates
-   * It in necessary due an wrong add Z value when using ol.format.WMSGetFeatureInfo readFeatures method from XML (ex. WMS getFeatureInfo);
-   * TO CHECK
-   * @param feature
-   * @param geometryType
+   * Remove Z values from geometry coordinates
    */
    removeZValueToOLFeatureGeometry({feature, geometryType}={}){
     const geometry = feature.getGeometry();

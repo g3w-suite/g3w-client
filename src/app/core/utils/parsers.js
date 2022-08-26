@@ -114,12 +114,14 @@ const utils = {
     const parser = new ol.format.WMSGetFeatureInfo();
     const features = this.transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
     const geometryType = layer.getGeometryType();
+
+    // Need to remove Z values due a incorrect addition when using
+    // ol.format.WMSGetFeatureInfo readFeatures method from XML
+    // (eg. WMS getFeatureInfo); 
     if (!is3DGeometry(geometryType)){
-      features.forEach(feature => removeZValueToOLFeatureGeometry({
-        feature,
-        geometryType
-      }))
+      features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
     }
+
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
       const properties = Object.keys(features[0].getProperties());
       const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
