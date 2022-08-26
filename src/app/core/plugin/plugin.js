@@ -256,4 +256,15 @@ proto.load = function() {
   //console.log('LOAD  need to be overwrite by plugin');
 };
 
+proto.addFontClass = function({name, className}){
+  Vue.prototype.g3wtemplate.addFontClass({
+    name,
+    className
+  });
+};
+
+proto.addFontClasses = function(fonClasses=[]){
+  fonClasses.forEach(fontClass=> this.addFontClass(fontClass));
+};
+
 module.exports = Plugin;

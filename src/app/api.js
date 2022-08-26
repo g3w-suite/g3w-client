@@ -1,6 +1,8 @@
 import G3W_CONSTANT from './constant';
 // api file interface for external plugin
 import ApplicationState from 'core/applicationstate';
+import G3wFormInputs from 'gui/inputs/g3w-form-inputs.vue';
+
 const g3w = g3w || {};
 //set G3W-CLIENT application constant
 g3w.constant = G3W_CONSTANT;
@@ -118,6 +120,7 @@ g3w.gui = {
       Footer: require('gui/form/components/footer/vue/footer')
     },
     Inputs: {
+      G3wFormInputs,
       InputsComponents: require('gui/inputs/inputs')
     },
     Charts: {

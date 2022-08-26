@@ -65,8 +65,9 @@ const ApplicationService = function() {
    */
   this.setupI18n = function() {
     const lngConfig = this._config._i18n;
+    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
     this.setApplicationLanguage(lngConfig.lng);
-    //setup internalization for translation
+    //setup internationalization for translation
     i18ninit(lngConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set accept-language reuest header based on config language
