@@ -1044,21 +1044,6 @@ proto._setupControls = function() {
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
             }
           });
-          /**
-           * event emit when an address location is clicked
-           */
-          control.on('address', evt => {
-            const coordinate = evt.coordinate;
-            const geometry =  new ol.geom.Point(coordinate);
-            this.highlightGeometry(geometry);
-          });
-
-          control.on('lonlat', ({lonlat}={}) => {
-            const coordinates = ol.proj.transform(lonlat, 'EPSG:4326', mapCrs);
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          });
-
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
