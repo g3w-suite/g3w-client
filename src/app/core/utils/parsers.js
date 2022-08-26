@@ -6,6 +6,11 @@ const olutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**
+ * FIXME: circular dependency (ie. empty object when importing at top level)
+ */
+// const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
+
+/**
  * Response parser (internal utilities)
  */
 const utils = {
@@ -100,10 +105,9 @@ const utils = {
   },
   parseLayerFeatureCollection({jsonresponse, layer, projections}) {
     /**
-     * NEED here to avoid circular dependencies
+     * FIXME: circular dependency (ie. empty object when importing at top level)
      */
     const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
-    /********************************************************************************************************/
 
     const x2js = new X2JS();
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
