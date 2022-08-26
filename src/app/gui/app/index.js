@@ -814,6 +814,14 @@ const ApplicationTemplate = function({ApplicationService}) {
         });
       }
     }
+
+    /**
+     * Method to get current content
+     */
+    GUI.getCurrentContent = function(){
+      return ApplicationTemplate.Services.viewport.getCurrentContent();
+    };
+
   };
   base(this);
 };

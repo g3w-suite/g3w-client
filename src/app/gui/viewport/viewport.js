@@ -295,6 +295,10 @@ const ViewportService = function() {
     return d.promise();
   };
 
+  this.getCurrentContent = function() {
+    return this.contentLength() ? this.state.content.contentsdata[this.contentLength() -1] : null;
+  };
+
   this.isContentOpen = function() {
     return !!this.state.content.contentsdata.length;
   };
