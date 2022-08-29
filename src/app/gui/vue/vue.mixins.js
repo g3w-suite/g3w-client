@@ -2,6 +2,7 @@ import ApplicationState from 'core/applicationstate';
 const GUI = require('gui/gui');
 const {throttle, debounce, XHR} = require('core/utils/utils');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const {getAppLanguage} = require('core/i18n/i18n.service');
 
 const autocompleteMixin = {
   methods: {
@@ -206,6 +207,39 @@ const resizeMixin = {
   }
 };
 
+const selectMixin = {
+  methods: {
+    getLanguage() {
+      return getAppLanguage();
+    },
+    changeSelect(value) {
+      this.state.value = value === 'null' ? null : value;
+      this.change();
+    },
+    getValue(value) {
+      return value === null ? 'null' : value;
+    },
+    resetValues() {
+      this.state.input.options.values.splice(0);
+    }
+  },
+  computed: {
+    autocomplete() {
+      return this.state.input.type === 'select_autocomplete' && this.state.input.options.usecompleter;
+    },
+    loadingState() {
+      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
+    }
+  },
+  watch:{
+    async notvalid(value) {
+      await this.$nextTick();
+      if (this.select2)
+        value ? this.select2.data('select2').$container.addClass("input-error-validation") : this.select2.data('select2').$container.removeClass("input-error-validation")
+    }
+  }
+}
+
 const select2Mixin = {
   mixins: [resizeMixin],
   methods: {
@@ -295,12 +329,83 @@ const formInputsMixins = {
   }
 };
 
+const widgetMixins = {
+  data() {
+    return {
+      changed: false
+    }
+  },
+  methods: {
+    widgetChanged() {
+      this.changed = true;
+      this.change();
+    },
+    stateValueChanged(value) {
+      console.log('need to be implemented by widget') // method to overwrite
+    }
+  },
+  watch: {
+    'state.value'(value) {
+      this.changed ? this.changed = false : this.stateValueChanged(value);
+    }
+  }
+};
+
+const metadataMixin = {
+  methods: {
+    findAttributeFormMetadataAttribute(name) {
+      return this.state.metadata ? this.state.metadata[name] !== undefined : false;
+    },
+    findMetadataAttribute(name) {
+      return this.state[name] !== undefined;
+    }
+  }
+};
+
+const baseInputMixin = {
+  computed: {
+    notvalid() {
+      return this.state.validate.valid === false;
+    },
+    editable() {
+      return this.state.editable;
+    },
+    showhelpicon(){
+      return this.state.help && this.state.help.message.trim();
+    }
+  },
+  methods: {
+    showHideHelp(){
+      this.state.help.visible = !this.state.help.visible
+    },
+    // used to text input to listen mobile changes
+    mobileChange(event){
+      this.state.value = event.target.value;
+      this.change();
+    },
+    // called when input value change
+    change() {
+      this.service.setEmpty();
+      // validate input
+      this.state.validate.required && this.service.validate();
+      // emit change input
+      this.$emit('changeinput', this.state);
+    },
+    isVisible() {}
+  }
+};
+
+
 module.exports = {
   geoMixin,
   fieldsMixin,
   mediaMixin,
   resizeMixin,
   autocompleteMixin,
+  selectMixin,
   select2Mixin,
-  formInputsMixins
+  formInputsMixins,
+  widgetMixins,
+  metadataMixin,
+  baseInputMixin,
 };

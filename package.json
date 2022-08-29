@@ -1,12 +1,11 @@
 {
   "name": "g3w-client",
-  "version": "3.5.0",
+  "version": "3.7.0-alpha.0",
   "description": "Gis3W WebGIS Client",
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
     "build": "gulp version && gulp g3w-admin --max-old-space-size=2048",
-    "build:client": "gulp version && gulp g3w-admin:client_only --max-old-space-size=2048",
     "build:plugins": "gulp version && gulp g3w-admin-plugins-select",
     "dev": "gulp version && gulp default --max-old-space-size=2048",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
@@ -21,7 +20,6 @@
     "version": "npm run build && git add -A",
     "postversion": "git push && git push --tags",
     "admin": "npm run build",
-    "admin:client": "npm run build:client",
     "default": "npm run dev",
     "plugins": "npm run build:plugins"
   },
@@ -30,16 +28,16 @@
     "url": "https://github.com/g3w-suite/g3w-client.git"
   },
   "author": "",
-  "license": "GPL-3.0",
+  "license": "MPL-2.0",
   "homepage": "https://github.com/g3w-suite/g3w-client.git",
   "dependencies": {
     "regenerator-runtime": "^0.13.9",
     "shp-write": "^0.3.2",
-    "vue": "^2.6.12",
+    "vue": "2.6.12",
     "vue-cookie-law": "^1.13.3"
   },
-  "resolutions": {
-    "graceful-fs": "4.2.3"
+  "overrides": {
+    "graceful-fs": "^4.2.10"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -118,13 +116,14 @@
     "vinyl-buffer": "^1.0.0",
     "vinyl-paths": "^2.1.0",
     "vinyl-source-stream": "^1.1.0",
+    "vue-template-compiler": "2.6.12",
     "vueify": "^9.4.1",
     "watchify": "^3.7.0",
     "yargs": "^8.0.2"
   },
   "browserslist": "defaults",
   "engines": {
-    "node": ">=16.13.2",
-    "npm": ">=8.1.2"
+    "node": ">=16.15.0",
+    "npm": ">=8.5.5"
   }
 }

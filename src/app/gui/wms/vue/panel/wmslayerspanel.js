@@ -1,8 +1,9 @@
-import WMSLayersPanel from './wmslayerspanel.vue';
+import * as vueComponentOptions from 'components/WMSLayersPanel.vue';
+
 const {base, inherit, uniqueId} = require('core/utils/utils');
 const Panel = require('gui/panel');
 
-const WMSLayersPanelComponent = Vue.extend(WMSLayersPanel);
+const WMSLayersPanelComponent = Vue.extend(vueComponentOptions);
 
 function WmsLayersPanel(options = {}) {
   const {service, config} = options;

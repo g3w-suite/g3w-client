@@ -838,9 +838,9 @@ proto._setupControls = function() {
                    outputs: {
                       show({data=[], query}){
                         const show = data.length === 0;
-                        // set coordinates to null to avoid that externalvector added to query result
-                        // response to coordinates
-                        query.coordinates = !show && null;
+                        // set coordinates to null in case of show  is false to avoid that externalvector added to query result
+                        // response to coordinates otherwise we show coordinate in point
+                        query.coordinates = !show ? null : query.coordinates;
                         return show;
                       }
                    }
@@ -1030,28 +1030,19 @@ proto._setupControls = function() {
             }
           }
           break;
+        case 'geocoding':
         case 'nominatim':
-          const lonlat = coordinates => {
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          };
+          const {extent:bbox, crs:{epsg:mapCrs}} = this.project.state;
           control = this.createMapControl(controlType, {
             add: false,
             options: {
-              lonlat,
               isMobile: isMobile.any,
-              bbox: this.project.state.extent,
-              mapCrs: this.project.state.crs.epsg,
+              bbox,
+              mapCrs,
               placeholder: "mapcontrols.nominatim.placeholder",
               noresults: "mapcontrols.nominatim.noresults",
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
-              fontIcon: GUI.getFontClass('search')
             }
-          });
-          control.on('addresschosen', evt => {
-            const coordinate = evt.coordinate;
-            const geometry =  new ol.geom.Point(coordinate);
-            this.highlightGeometry(geometry);
           });
           break;
         case 'geolocation':
@@ -1331,11 +1322,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
         const bottomMapControlTop = bottomMapControls.length ? $(bottomMapControls[bottomMapControls.length - 1]).position().top: height;
         const freeSpace =  bottomMapControlTop > 0 ? bottomMapControlTop - mapControslHeight : height - mapControslHeight;
         if (freeSpace < 10) {
-          if (isMobile.any) {
-            this.setMapControlsAlignement('rh');
-            return;
-          } else
-            this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
+          this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
           // check if there enought space to expand mapcontrols
@@ -2154,17 +2141,17 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
+  return extent && this.zoomToExtent(extent, options) || Promise.resolve();
 };
 
 proto.zoomToExtent = function(extent, options={}) {
   const center = ol.extent.getCenter(extent);
   const resolution = this.getResolutionForZoomToExtent(extent);
   this.goToRes(center, resolution);
-  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+  return options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false,
     duration: options.duration
-  });
+  }) || Promise.resolve();
 };
 
 proto.zoomToProjectInitExtent = function(){
@@ -2229,11 +2216,13 @@ let animatingHighlight = false;
 * action: add, clear, remove :
 *                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
 *                             clear: remove selectionLayer
-*                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
+*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}){
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {color});
+  color && this.setDefaultLayerStyle('selectionLayer', {
+    color
+  });
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':

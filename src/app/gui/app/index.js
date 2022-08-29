@@ -1,3 +1,4 @@
+import App from 'components/App.vue';
 import ApplicationState from 'core/applicationstate';
 const {base, inherit, toRawType} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
@@ -26,8 +27,6 @@ Vue.mixin({
   inheritAttrs: false
 });
 
-// get all items needed by application
-const App = require('gui/app/app');
 const sidebar = require('gui/sidebar/sidebar');
 const floatbar = require('gui/floatbar/floatbar');
 const viewport = require('gui/viewport/viewport');
