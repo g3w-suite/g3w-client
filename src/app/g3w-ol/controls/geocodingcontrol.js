@@ -615,9 +615,7 @@ function GeocodingControl(options={}) {
                 header,
                 results
               });
-              if (results) this.listenMapClick();
             }
-
           }
         });
         utils.removeClass(this.reset, cssClasses.spin);
@@ -696,7 +694,6 @@ function GeocodingControl(options={}) {
     utils.removeClass(this.input, cssClasses.spin);
     utils.addClass(this.control, cssClasses.glass.expanded);
     setTimeout( () =>  this.input.focus(), 100);
-    this.listenMapClick();
   };
   this.collapse = function() {
     this.input.value = '';
@@ -704,18 +701,7 @@ function GeocodingControl(options={}) {
     utils.addClass(this.reset, cssClasses.hidden);
     this.clearResults();
   };
-  this.listenMapClick = function() {
-    // already registered
-    if (this.registeredListeners.mapClick) return;
-    const mapElement = this.getMap().getTargetElement();
-    this.registeredListeners.mapClick = true;
-    //one-time fire click
-    mapElement.addEventListener('click', evt => {
-      this.clearResults(true);
-      mapElement.removeEventListener(evt.type, this, false);
-      this.registeredListeners.mapClick = false;
-    }, false);
-  };
+
   this.clearResults = function() {
     utils.removeAllChildren(this.result);
     this.hideMarker();
