@@ -37,7 +37,9 @@ function LayerFactory() {
             Layer.SourceTypes.WMST,
             Layer.SourceTypes.WCS,
             Layer.SourceTypes.WMS,
-            Layer.SourceTypes.GDAL
+            Layer.SourceTypes.GDAL,
+            Layer.SourceTypes.VECTORTILE,
+            Layer.SourceTypes["VECTOR-TILE"],
           ].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
         }
         break;
