@@ -49,8 +49,8 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < "4") {
-  conf.distFolder             = (version < '3.7' ? './dist'                                        : conf.distFolder);
   conf.assetsFolder           = (version < '3.7' ? './assets'                                      : conf.assetsFolder);
+  conf.distFolder             = (version < '3.7' ? './dist'                                        : conf.distFolder);
   conf.clientFolder           = (version < '3.7' ? './dist/client'                                 : conf.clientFolder);
   conf.admin_static_folder    = (version < '3.7' ? `${conf.admin_plugins_folder}/client/static`    : conf.admin_static_folder);
   conf.admin_templates_folder = (version < '3.7' ? `${conf.admin_plugins_folder}/client/templates` : conf.admin_templates_folder);
