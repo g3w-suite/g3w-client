@@ -299,9 +299,11 @@ gulp.task('browser-sync', function() {
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
   gulp.watch(['./src/index.html'],                    () => runSequence('copy-html', 'browser:reload'));
-
-  // TODO: live reload (build and deploy) application on plugin.js changes
-  // gulp.watch(g3w.pluginsFolder + '/**/plugin.js',     () => runSequence('browser:reload'));
+  gulp.watch(g3w.pluginsFolder + '/**/plugin.js',     (file) => {
+    const plugins = process.env.G3W_PLUGINS;
+    process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
+    runSequence('deploy-plugins', 'browser:reload', () => process.env.G3W_PLUGINS = plugins)
+  });
 });
 
 gulp.task('browser:reload', function() {
