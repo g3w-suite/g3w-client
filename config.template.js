@@ -22,11 +22,8 @@ const G3W_ADMIN_PATH = '../g3w-admin/g3w-admin'; // path to G3W-ADMIN main code
 let conf = {
   assetsFolder:  './src/assets',      // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins', // path to G3W-CLIENT plugins folder
-  distFolder:    './dist',        // path to G3W-CLIENT dist folder
-  clientFolder:  './dist/client', // path to G3W-CLIENT client folder
-  admin_plugins_folder:    G3W_ADMIN_PATH, // path to G3W-ADMIN where are stored all plugin folders
-  admin_static_folder:    `${G3W_ADMIN_PATH}/client/static`,    // path to G3W-ADMIN client/static
-  admin_templates_folder: `${G3W_ADMIN_PATH}/client/templates`, // path to G3W-ADMIN client/templates
+  admin_plugins_folder:   '../g3w-admin/g3w-admin',                         // path to G3W-ADMIN where are stored all plugin folders
+  admin_overrides_folder: '../g3w-suite-docker/config/g3w-suite/overrides', // path to G3W-SUITE overrides folder
   host: G3W_HOST,
   port: G3W_CLIENT_PORT,
   // proxy configuration for local G3W_ADMIN server (where G3W-ADMIN is running)
@@ -52,11 +49,15 @@ let conf = {
 
 // backward compatibilities (v3.x)
 if (version < "4") {
-  conf.assetsFolder    = (version < '3.7' ? './assets' : conf.assetsFolder);
-  conf.proxy.routes    = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
-  conf.proxy.urls      = conf.proxy.routes;
-  conf.localServerPort = conf.port;
-  conf.g3w_admin_paths = {
+  conf.distFolder             = (version < '3.7' ? './dist'                                        : conf.distFolder);
+  conf.assetsFolder           = (version < '3.7' ? './assets'                                      : conf.assetsFolder);
+  conf.clientFolder           = (version < '3.7' ? './dist/client'                                 : conf.clientFolder);
+  conf.admin_static_folder    = (version < '3.7' ? `${conf.admin_plugins_folder}/client/static`    : conf.admin_static_folder);
+  conf.admin_templates_folder = (version < '3.7' ? `${conf.admin_plugins_folder}/client/templates` : conf.admin_templates_folder);
+  conf.proxy.routes           = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
+  conf.proxy.urls             = conf.proxy.routes;
+  conf.localServerPort        = conf.port;
+  conf.g3w_admin_paths        = {
     dev: {
       g3w_admin_plugins_basepath:     conf.admin_plugins_folder.replace(/\/?$/, '/'),
       g3w_admin_client_dest_static:   conf.admin_static_folder,
