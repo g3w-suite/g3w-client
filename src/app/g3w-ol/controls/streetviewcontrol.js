@@ -1,12 +1,13 @@
-import ApplicationState from 'core/applicationstate';
 const utils = require('core/utils/ol');
+const StreetViewService = require('services/streetview');
 const InteractionControl = require('./interactioncontrol');
+const GUI = require('gui/gui');
 const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
 
 const StreetViewControl = function(options={}) {
   const _options = {
     offline: false,
-    visible: !!ApplicationState.keys.vendorkeys.google,
+    visible: true, // always visible. Only change behavior if exist or not
     name: "streetview",
     tipLabel: "StreetView",
     clickmap: true, // set ClickMap
@@ -22,6 +23,7 @@ const StreetViewControl = function(options={}) {
   const streetVectorSource = new ol.source.Vector({
     features: []
   });
+  this.active = false;
   this._layer = new ol.layer.Vector({
     source: streetVectorSource,
     style(feature) {
@@ -59,28 +61,26 @@ ol.inherits(StreetViewControl, InteractionControl);
 
 const proto = StreetViewControl.prototype;
 
-proto.getLayer = function() {
-  return this._layer;
-};
-
 proto.setProjection = function(projection) {
   this._projection = projection;
 };
 
-proto.setPosition = function(position) {
+proto.setPosition = async function(position) {
   const self = this;
   let pixel;
   if (!this._sv) this._sv = new google.maps.StreetViewService();
-  this._sv.getPanorama({location: position}, function (data) {
+  const promise = this._sv.getPanorama({location: position}, (data, status) => {
     self._panorama = new google.maps.StreetViewPanorama(
       document.getElementById('streetview'), {
         imageDateControl: true
-      }
-    );
+    });
+    /**
+     * Listen on position change
+    */
     self._panorama.addListener('position_changed', function() {
       if (self.isToggled()) {
         const lnglat = ol.proj.transform([this.getPosition().lng(), this.getPosition().lat()], 'EPSG:4326', self._projection.getCode());
-        self._layer.getSource().getFeatures()[0].setGeometry(
+        self._streetViewFeature.setGeometry(
           new ol.geom.Point(lnglat)
         );
         pixel = self._map.getPixelFromCoordinate(lnglat);
@@ -94,19 +94,53 @@ proto.setPosition = function(position) {
         pitch: 0,
         heading: 0
       });
-      self._panorama.setPosition(data.location.latLng);
+      self._panorama.setPosition(latLng);
     }
-  })
+  });
+  try {
+    const response = await promise;
+    if (response === undefined) {
+      GUI.closeContent();
+    }
+  } catch (err) {
+    console.log(err)
+  }
+};
+
+proto.openNewTab = function(coordinate) {
+  this._streetViewFeature.setGeometry(
+    new ol.geom.Point(coordinate)
+  );
+  const [lon, lat] = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
+  window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lon}`, );
 };
 
 proto.setMap = function(map) {
   this._map = map;
-  InteractionControl.prototype.setMap.call(this,map);
-  this._interaction.on('picked', evt => {
-    this.dispatchEvent({
-      type: 'picked',
-      coordinates: evt.coordinate
+  InteractionControl.prototype.setMap.call(this, map);
+  /**
+   * Initialize service
+   */
+  StreetViewService.init()
+    .then(() => {
+      this.setProjection(this._map.getView().getProjection());
+      this._map.addLayer(this._layer);
+      (StreetViewService.key && !StreetViewService.errorKey) && StreetViewService.onafter('postRender', position => this.setPosition(position));
+    }).catch(() => {
     });
+
+  this._interaction.on('picked', ({coordinate}) => {
+    if (StreetViewService.key) {
+      const position = {
+        lat: null,
+        lng: null
+      };
+      const lonlat = ol.proj.transform(coordinate, this._map.getView().getProjection().getCode(), 'EPSG:4326');
+      position.lat = lonlat[1];
+      position.lng = lonlat[0];
+      this.active = true;
+      StreetViewService.showStreetView(position);
+    } else !StreetViewService.errorKey && this.openNewTab(coordinate);
     this._autountoggle && this.toggle();
   });
 };
@@ -120,7 +154,8 @@ proto.clear = function() {
   this._streetViewFeature.setGeometry(null);
   this.clearMarker();
   this._panorama = null;
-  this.dispatchEvent('disabled')
+  this.active && GUI.closeContent();
+  this.active = false;
 };
 
 proto.toggle = function(toggle) {
