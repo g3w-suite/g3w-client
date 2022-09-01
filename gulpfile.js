@@ -51,13 +51,19 @@ const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !==
 function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
   outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
+  console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
+  console.log('[G3W-CLIENT] output folder: ' + outputFolder + '\n');
 }
 
 setNODE_ENV();
 
 // gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
-gulp.task('clean:dist',  () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
-gulp.task('clean:admin', () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
+gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
+gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
+gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
+
+gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(outputFolder + '/templates/client')));
+gulp.task('browser:reload',  () => browserSync ? browserSync.reload() : null);
 
 /**
  * Concatenate and browserify vendor javascript files
@@ -131,7 +137,7 @@ gulp.task('concatenate:vendor_js', function() {
 });
 
 /**
- * Trasform modularized code in a browser compatible way
+ * Compile client application (src/app/main.js --> app.min.js)
  */
 gulp.task('browserify:app', function() {
   let rebundle;
@@ -198,18 +204,9 @@ gulp.task('browserify:app', function() {
   return rebundle();
 });
 
-gulp.task('fonts', function () {
-  return gulp.src([
-      `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
-      '!./src/**/node_modules/**/'
-    ])
-    .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/fonts/'))
-});
-
+/**
+ * Deploy client and vendor images
+ */
 gulp.task('images', function () {
   return gulp.src([
       `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
@@ -221,7 +218,31 @@ gulp.task('images', function () {
 });
 
 /**
- * Compile less file in css
+ * Deploy datatables images (src/assets/vendors/datatables)
+ */
+ gulp.task('datatable-images', function () {
+  return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
+    .pipe(flatten())
+    .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
+});
+
+/**
+ * Deploy client and vendor fonts
+ */
+ gulp.task('fonts', function () {
+  return gulp.src([
+      `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+      `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
+      `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
+      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+      '!./src/**/node_modules/**/'
+    ])
+    .pipe(flatten())
+    .pipe(gulp.dest(outputFolder + '/static/client/fonts/'))
+});
+
+/**
+ * Compile client styles (src/assets/style/less/app.less --> app.min.css)
  */
 gulp.task('less', ['fonts'], function() {
   return gulp.src(`${g3w.assetsFolder}/style/less/app.less`)
@@ -236,14 +257,21 @@ gulp.task('less', ['fonts'], function() {
     .pipe(gulp.dest(outputFolder + '/static/client/css/'))
 });
 
-gulp.task('datatable-images', function () {
-  return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
-    .pipe(flatten())
-    .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
+/**
+ * Compile less files in css (process.env.CUSTOM_LESS_FOLDER)
+ */
+gulp.task('custom-less', function () {
+  const customLessFolder = path.join(g3w.assetsFolder, 'style', 'less', 'g3w-skins-custom', process.env.CUSTOM_LESS_FOLDER);
+  return gulp.src(path.join(customLessFolder, 'main.less'))
+    .pipe(concat('custom.less'))
+    .pipe(less({
+      plugins: [LessGlob] //plugin to manage globs import es: @import path/***
+    }))
+    .pipe(gulp.dest(`${customLessFolder}/css/`))
 });
 
 /**
- * Create external assets (css and javascript libraries) referenced within main html
+ * Concatenate vendor css files
  */
 gulp.task('concatenate:vendor_css', function() {
   return gulp.src([
@@ -264,18 +292,9 @@ gulp.task('concatenate:vendor_css', function() {
     .pipe(gulp.dest(outputFolder + '/static/client/css/'));
 });
 
-gulp.task('assets', ['concatenate:vendor_css', 'fonts', 'images', 'less','datatable-images']);
-
-gulp.task('copy-html', function() {
-  return gulp.src('./src/index.html')
-    .pipe(gulp.dest(outputFolder + '/templates/client'));
-});
-
 /**
- * Create a index.html in src/ and add all external libraries and css to it
+ * Proxy development server for local G3W-ADMIN instance
  */
-gulp.task('html', done => runSequence('browserify:app', 'concatenate:vendor_js', 'assets', 'copy-html', done));
-
 gulp.task('browser-sync', function() {
   browserSync.init({
     port: g3w.port,
@@ -298,7 +317,7 @@ gulp.task('browser-sync', function() {
 
   gulp.watch([g3w.assetsFolder + '/style/**/*.less'], () => runSequence('less','browser:reload'));
   gulp.watch('./src/**/*.{png,jpg}',                  () => runSequence('images','browser:reload'));
-  gulp.watch(['./src/index.html'],                    () => runSequence('copy-html', 'browser:reload'));
+  gulp.watch(['./src/index.html'],                    () => runSequence('html', 'browser:reload'));
   gulp.watch(g3w.pluginsFolder + '/**/plugin.js',     (file) => {
     const plugins = process.env.G3W_PLUGINS;
     process.env.G3W_PLUGINS = path.basename(path.dirname(file.path));
@@ -306,14 +325,8 @@ gulp.task('browser-sync', function() {
   });
 });
 
-gulp.task('browser:reload', function() {
-  if (browserSync) {
-    browserSync.reload();
-  }
-});
-
 /**
- * Lets developer choose which plugins to include within generated bundle
+ * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
   return gulp
@@ -341,6 +354,9 @@ gulp.task('select-plugins', function() {
     );
 });
 
+/**
+ * Deploy local developed plugins (src/plugins)
+ */
 gulp.task('deploy-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
@@ -349,57 +365,56 @@ gulp.task('deploy-plugins', function() {
     .pipe(rename((path, file) => {
         const pluginName   = nodePath.basename(file.base);
         path.dirname = `${outputFolder}/${pluginName}/static/${pluginName}/js/`;
-        console.log(`[G3W-ADMIN] file updated: ${path.dirname}${path.basename}${path.extname}`);
+        console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
     }))
     .pipe(gulp.dest('.'));
 });
 
 /**
- * Task plugins
+ * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', done => runSequence('select-plugins', 'deploy-plugins', done));
-
-// gulp.task('build:static', function() {
-//   return gulp.src(`${g3w.distFolder}/client/static/**/*.*`)
-//     .pipe(gulp.dest(outputFolder + '/static/client/'));
-// });
+gulp.task('build:plugins', (done) => runSequence('select-plugins', 'deploy-plugins', done));
 
 /**
- * Copy local index.html to admin-client folder template
+ * Compile and deploy local developed client file assets (static and templates)
  */
-// gulp.task('build:templates', function() {
-//   return gulp.src(`${g3w.distFolder}/client/templates/**/*.*`)
-//     .pipe(gulp.dest(outputFolder + '/templates/client/'));
-// });
+gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatenate:vendor_css', 'fonts', 'images', 'less', 'datatable-images', 'html']);
 
 /**
- * Create g3w-admin files. It start from compile sdk source folder, app source folder and all plugins
+ * [PROD] Compile and deploy client application
+ * 
+ * production   = true,
+ * outputFolder = g3w.admin_plugins_folder + '/client'
  */
 gulp.task('build', done => runSequence(
   'production',
-  'clean:dist',
-  'html',
-  // 'clean:admin',
-  // 'build:static',
-  // 'build:templates',
-  // 'build:plugins',
+  'clean:admin',
+  'clean:overrides',
+  'build:client',
   done
   )
 );
 
 /**
- * Deafult development task (BrowserSync server)
+ * [DEV] Compile and deploy client application
+ * 
+ * production   = false,
+ * outputFolder = g3w.admin_overrides_folder
  */
 gulp.task('dev', done => runSequence(
-  'clean:dist',
-  'html',
+  'clean:admin',
+  'clean:overrides',
+  'build:client',
   'browser-sync',
   done
   )
 );
 
 /**
- * Run test once and exit
+ * [TEST] Run test once and exit
+ * 
+ * production   = false,
+ * outputFolder = g3w.admin_overrides_folder
  */
 gulp.task('test', async (done) => {
   const testPath = `${__dirname}${g3w.test.path}`;
@@ -433,6 +448,14 @@ gulp.task('version', function () {
   });
 });
 
+/**
+ * Set production to true
+ */
+ gulp.task('production', function(){
+  production = true;
+  setNODE_ENV();
+});
+
 // Backward compatibilities (v3.x)
 gulp.task('g3w-admin',                           ['build']);
 gulp.task('g3w-admin-plugins-select',            ['build:plugins']);
@@ -444,30 +467,3 @@ gulp.task('g3w-admin:static',                    ['build:static']);
 gulp.task('g3w-admin:templates',                 ['build:templates']);
 gulp.task('serve',                               ['dev']);
 gulp.task('default',                             ['dev']);
-
-//////////////////////////////////////////////////////////////////////////
-/**
- * TODO: check which of the following tasks is actually required
- */
-//////////////////////////////////////////////////////////////////////////
-
-// compile less file in css
-gulp.task('custom-less', function () {
-  const customLessFolder = path.join(g3w.assetsFolder, 'style', 'less', 'g3w-skins-custom', process.env.CUSTOM_LESS_FOLDER);
-  return gulp.src(path.join(customLessFolder, 'main.less'))
-    .pipe(concat('custom.less'))
-    .pipe(less({
-      plugins: [LessGlob] //plugin to manage globs import es: @import path/***
-    }))
-    .pipe(gulp.dest(`${customLessFolder}/css/`))
-});
-
-/**
- * Set production to true
- */
-gulp.task('production', function(){
-  production = true;
-  setNODE_ENV();
-});
-
-//////////////////////////////////////////////////////////////////////////
