@@ -1,8 +1,69 @@
+import ApplicationState from 'core/applicationstate';
+const { base, inherit, XHR } = require('core/utils/utils');
 const utils = require('core/utils/ol');
-const StreetViewService = require('services/streetview');
-const InteractionControl = require('./interactioncontrol');
+const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
-const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
+const StreetViewComponent = require('gui/streetview/vue/streetview');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+
+const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
+
+function StreetviewService() {
+  this._position = null;
+  this.key = null; //get google key
+  this.errorKey = null;
+  this.setters = {
+    postRender(position) {}
+  };
+
+  this.init = function() {
+    return new Promise(async (resolve, reject) => {
+      this.key = ApplicationState.keys.vendorkeys.google;
+      if (this.key) {
+        try {
+          await XHR.get({
+            url: `${GoogleStreetViewApiUrl}streetview?location=0,0&size=456x456&key=${this.key}`
+          })
+        } catch(error) {
+          this.errorKey = error.responseText;
+          reject(error);
+        }
+      }
+      $script(`${GoogleStreetViewApiUrl}js?${this.key ? 'key=' + this.key : '' }`,
+        resolve
+      )
+    })
+  };
+
+  this.getKey = function(){
+    return this.key;
+  };
+
+  this.setKey = function(key) {
+    this.key = key;
+  };
+
+  this.getPosition = function() {
+    return this._position;
+  };
+
+  this.showStreetView = function(position) {
+    this._position = position;
+    GUI.setContent({
+      content: new StreetViewComponent({
+        service: this
+      }),
+      title: 'StreetView'
+    });
+  };
+
+  base(this);
+}
+
+inherit(StreetviewService, G3WObject);
+
+const streetviewService = new StreetviewService();
 
 const StreetViewControl = function(options={}) {
   const _options = {
@@ -117,15 +178,15 @@ proto.setMap = function(map) {
   /**
    * Initialize service
    */
-  StreetViewService.init()
+   streetviewService.init()
     .then(() => {
       this.setProjection(this._map.getView().getProjection());
       this._map.addLayer(this._layer);
-      (StreetViewService.key && !StreetViewService.errorKey) && StreetViewService.onafter('postRender', position => this.setPosition(position));
+      (streetviewService.key && !streetviewService.errorKey) && streetviewService.onafter('postRender', position => this.setPosition(position));
     }).catch(() => {});
 
   this._interaction.on('picked', ({coordinate}) => {
-    if (StreetViewService.key) {
+    if (streetviewService.key) {
       const position = {
         lat: null,
         lng: null
@@ -134,8 +195,8 @@ proto.setMap = function(map) {
       position.lat = lonlat[1];
       position.lng = lonlat[0];
       this.active = true;
-      StreetViewService.showStreetView(position);
-    } else !StreetViewService.errorKey && this.openNewTab(coordinate);
+      streetviewService.showStreetView(position);
+    } else !streetviewService.errorKey && this.openNewTab(coordinate);
     this._autountoggle && this.toggle();
   });
 };

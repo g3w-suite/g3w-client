@@ -18,7 +18,6 @@ const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/g3w.ol').helpers;
 const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
-const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
 const SETTINGS = {
