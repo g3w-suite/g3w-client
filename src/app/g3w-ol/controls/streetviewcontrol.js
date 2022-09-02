@@ -65,11 +65,11 @@ proto.setProjection = function(projection) {
   this._projection = projection;
 };
 
-proto.setPosition = async function(position) {
+proto.setPosition = function(position) {
   const self = this;
   let pixel;
   if (!this._sv) this._sv = new google.maps.StreetViewService();
-  const promise = this._sv.getPanorama({location: position}, (data, status) => {
+  this._sv.getPanorama({location: position}, (data, status) => {
     self._panorama = new google.maps.StreetViewPanorama(
       document.getElementById('streetview'), {
         imageDateControl: true
@@ -96,15 +96,11 @@ proto.setPosition = async function(position) {
       });
       self._panorama.setPosition(latLng);
     }
-  });
-  try {
-    const response = await promise;
+  }).then(response => {
     if (response === undefined) {
       GUI.closeContent();
     }
-  } catch (err) {
-    console.log(err)
-  }
+  }).catch(() => this.toggle())
 };
 
 proto.openNewTab = function(coordinate) {
@@ -126,8 +122,7 @@ proto.setMap = function(map) {
       this.setProjection(this._map.getView().getProjection());
       this._map.addLayer(this._layer);
       (StreetViewService.key && !StreetViewService.errorKey) && StreetViewService.onafter('postRender', position => this.setPosition(position));
-    }).catch(() => {
-    });
+    }).catch(() => {});
 
   this._interaction.on('picked', ({coordinate}) => {
     if (StreetViewService.key) {
