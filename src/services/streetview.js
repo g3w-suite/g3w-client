@@ -6,7 +6,7 @@ const {base, inherit, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
 const StreetViewComponent = require('gui/streetview/vue/streetview');
-const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/js`;
+const GoogleStreetViewApiUrl = `https://maps.googleapis.com/maps/api/`;
 
 function StreetviewService() {
   this._position = null;
@@ -22,14 +22,14 @@ function StreetviewService() {
       if (this.key) {
         try {
           await XHR.get({
-            url: `https://maps.googleapis.com/maps/api/streetview?location=0,0&size=456x456&key=${this.key}`
+            url: `${GoogleStreetViewApiUrl}streetview?location=0,0&size=456x456&key=${this.key}`
           })
         } catch(error) {
           this.errorKey = error.responseText;
           reject(error);
         }
       }
-      $script(`${GoogleStreetViewApiUrl}?${this.key ? 'key=' + this.key : '' }`,
+      $script(`${GoogleStreetViewApiUrl}js?${this.key ? 'key=' + this.key : '' }`,
         resolve
       )
     })
