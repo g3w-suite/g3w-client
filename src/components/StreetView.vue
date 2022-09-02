@@ -4,8 +4,8 @@
 
 <template>
   <div id="streetview">
-    <div id="streetview-error-key" v-if="$options.service.errorKey">
-      <span class="skin-color"> {{ $options.service.errorKey }}</span>
+    <div id="streetview-error-key" v-if="$options.keyError">
+      <span class="skin-color"> {{ $options.keyError }}</span>
     </div>
   </div>
 </template>
@@ -16,11 +16,6 @@ export default {
     return {
       state: null
     }
-  },
-  async mounted() {
-    await this.$nextTick();
-    const position = this.$options.service.getPosition();
-    this.$options.service.postRender(position);
   }
 };
 </script>
