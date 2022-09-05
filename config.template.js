@@ -32,26 +32,27 @@ let conf = {
   test: {
     path: '/test/config/groups/'
   },
-  createProject: {
-    before(project) { /* code here */ },
-    after(project) { /* code here */ },
-  },
-  setCurrentProject: {
-    before(project) { /* code here */ },
-    after(project) { /* code here */ },
-  },
-  // override "initConfig->group->plugins" attribute for custom plugin development
   plugins: G3W_PLUGINS,
-  keys: G3W_KEYS
+  keys: G3W_KEYS,
+  devConfig: function() {
+    g3wsdk.core.ApplicationService.once('ready', () => { });
+    g3wsdk.core.project.ProjectsRegistry.onbefore('createProject', (projectConfig) => {});
+    g3wsdk.core.project.ProjectsRegistry.onafter('createProject', (projectConfig) => {});
+    g3wsdk.core.project.ProjectsRegistry.onbefore('setCurrentProject', (project) => {});
+    g3wsdk.core.project.ProjectsRegistry.onafter('setCurrentProject', (project) => {});
+    g3wsdk.gui.GUI.once('ready', () => { console.log('ready'); });
+  }
 };
 
 // backward compatibilities (v3.x)
-if (version < "4") {
-  conf.assetsFolder           = (version < '3.7' ? './assets'                                      : conf.assetsFolder);
-  conf.distFolder             = (version < '3.7' ? './dist'                                        : conf.distFolder);
-  conf.clientFolder           = (version < '3.7' ? './dist/client'                                 : conf.clientFolder);
-  conf.admin_static_folder    = (version < '3.7' ? `${conf.admin_plugins_folder}/client/static`    : conf.admin_static_folder);
-  conf.admin_templates_folder = (version < '3.7' ? `${conf.admin_plugins_folder}/client/templates` : conf.admin_templates_folder);
+if (version < '4') {
+  conf.assetsFolder           = (version < '3.7' ? './assets' : conf.assetsFolder);
+  conf.distFolder             = './dist';
+  conf.clientFolder           = './dist/client';
+  conf.admin_static_folder    = `${conf.admin_plugins_folder}/client/static`;
+  conf.admin_templates_folder = `${conf.admin_plugins_folder}/client/templates`;
+  conf.createProject          = { before() {}, after() {} };
+  conf.setCurrentProject      = { before() {}, after() {} };
   conf.proxy.routes           = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
   conf.proxy.urls             = conf.proxy.routes;
   conf.localServerPort        = conf.port;
