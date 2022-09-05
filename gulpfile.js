@@ -333,6 +333,18 @@ gulp.task('select-plugins', function() {
     .src('./package.json')
     .pipe(
       prompt.prompt({
+        type: 'list',
+        name: 'env',
+        message: 'Environment',
+        choices: ['development', 'production'],
+        }, (response) => {
+          production = response.env == 'production';
+          setNODE_ENV();
+        }
+      )
+    )
+    .pipe(
+      prompt.prompt({
         type: 'checkbox',
         name: 'plugins',
         message: 'Plugins',
@@ -364,7 +376,8 @@ gulp.task('deploy-plugins', function() {
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
         const pluginName   = nodePath.basename(file.base);
-        path.dirname = `${outputFolder}/${pluginName}/static/${pluginName}/js/`;
+        const staticFolder = production ? `${pluginName}/static/${pluginName}/js/` : `${pluginName}/js/`;
+        path.dirname = `${outputFolder}/${staticFolder}`;
         console.log(`[G3W-CLIENT] file updated: ${path.dirname}${path.basename}${path.extname}`);
     }))
     .pipe(gulp.dest('.'));
