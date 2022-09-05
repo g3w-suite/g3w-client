@@ -6,7 +6,6 @@ import {viewport as viewportConstraints} from 'gui/constraints';
 const {base, inherit, uniqueId} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const GUI = require('gui/gui');
-let SIDEBARWIDTH;
 
 const ViewportService = function() {
   // state of viewport
@@ -606,7 +605,10 @@ const ViewportService = function() {
     };
     // GUI ready event
     GUI.on('ready',() => {
-      SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
+      /**
+       * SetSidebar width (used by components/Viewport.vue single file component)
+       */
+      this.SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
       this._layout();
       GUI.on('guiresized',() => triggerResize());
       // resize della window

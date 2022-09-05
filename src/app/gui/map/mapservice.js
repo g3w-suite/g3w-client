@@ -1044,21 +1044,6 @@ proto._setupControls = function() {
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
             }
           });
-          /**
-           * event emit when an address location is clicked
-           */
-          control.on('address', evt => {
-            const coordinate = evt.coordinate;
-            const geometry =  new ol.geom.Point(coordinate);
-            this.highlightGeometry(geometry);
-          });
-
-          control.on('lonlat', ({lonlat}={}) => {
-            const coordinates = ol.proj.transform(lonlat, 'EPSG:4326', mapCrs);
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          });
-
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
@@ -2156,17 +2141,17 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
+  return extent && this.zoomToExtent(extent, options) || Promise.resolve();
 };
 
 proto.zoomToExtent = function(extent, options={}) {
   const center = ol.extent.getCenter(extent);
   const resolution = this.getResolutionForZoomToExtent(extent);
   this.goToRes(center, resolution);
-  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+  return options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false,
     duration: options.duration
-  });
+  }) || Promise.resolve();
 };
 
 proto.zoomToProjectInitExtent = function(){
@@ -2231,11 +2216,13 @@ let animatingHighlight = false;
 * action: add, clear, remove :
 *                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
 *                             clear: remove selectionLayer
-*                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
+*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}){
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {color});
+  color && this.setDefaultLayerStyle('selectionLayer', {
+    color
+  });
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
