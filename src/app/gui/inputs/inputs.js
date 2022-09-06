@@ -1,5 +1,6 @@
 const InputsComponents = {
-  'text_input': require('./text/vue/text'),
+  //'text_input': require('./text/vue/text'),
+  'text_input': require('./textarea/vue/textarea'), //TEMPORARY FOR TEST PUTPOSE
   'textarea_input': require('./textarea/vue/textarea'),
   'integer_input': require('./integer/vue/integer'),
   'string_input':require('./text/vue/text'), //temporary
