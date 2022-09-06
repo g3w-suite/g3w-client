@@ -13,15 +13,14 @@ const GUI = g3wsdk.gui.GUI;
 ApplicationService.once('initconfig', () => {
   // sets "initConfig->group->plugins"
   Object.keys(plugins || {}).forEach((plugin) => {
-    window.initConfig.group.plugins[plugin] = {
-      ...(window.initConfig.group.plugins[plugin] || {}),
-      ...plugins[plugin],
-    };
+    plugins[plugin].gid              = plugins[plugin].gid     || initConfig.group.initproject;
+    plugins[plugin].baseUrl          = plugins[plugin].baseUrl || initConfig.staticurl;
+    initConfig.group.plugins[plugin] = { ...(initConfig.group.plugins[plugin] || {}), ...plugins[plugin] };
   });
   // sets "initConfig->group->vendorkeys"
   Object.keys(keys || {}).forEach((key) => {
-    window.initConfig.group.vendorkeys = window.initConfig.group.vendorkeys || {};
-    window.initConfig.group.vendorkeys[key] = keys[key];
+    initConfig.group.vendorkeys      = initConfig.group.vendorkeys || {};
+    initConfig.group.vendorkeys[key] = keys[key];
   });
 });
 

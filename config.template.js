@@ -5,12 +5,11 @@ const G3W_HOST         = '127.0.0.1'; // local development server
 const G3W_ADMIN_PORT   = '8000';      // G3W-ADMIN development server
 const G3W_CLIENT_PORT  = '3000';      // G3W-CLIENT development server
 
-const G3W_PLUGINS = {                // override "initConfig->group->plugins" attribute for custom plugin development
-  // "your-plugin-folder-name": {
-  //    baseurl: '../dist',
-  //    gid: 'qdjango:1'             // 1 = current project id
-  // }
-};
+const G3W_PLUGINS = [                 // override "initConfig->group->plugins" attribute for custom plugin development
+  // "your-plugin-folder-name-1",
+  // "your-plugin-folder-name-2",
+  // "your-plugin-folder-name-3",
+];
 
 const G3W_KEYS = {
   // google: '<INSERT HERE YOUR GOOGLE API KEY>',
@@ -53,6 +52,7 @@ if (version < '4') {
   conf.admin_templates_folder = `${conf.admin_plugins_folder}/client/templates`;
   conf.createProject          = { before() {}, after() {} };
   conf.setCurrentProject      = { before() {}, after() {} };
+  conf.plugins                = conf.plugins.reduce((a, v) => ({ ...a, [v]: { gid: 'qdjango:1', baseurl: `.${conf.distFolder}` }}), {});
   conf.proxy.routes           = ['/media', '/api', '/ows', '/static', '/en/', '/it/', '/upload/'];
   conf.proxy.urls             = conf.proxy.routes;
   conf.localServerPort        = conf.port;
