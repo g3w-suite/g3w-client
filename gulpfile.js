@@ -191,8 +191,10 @@ gulp.task('browserify:app', function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
+      .pipe(gulpif(production, sourcemaps.init()))
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(rename('app.min.js'))
+      .pipe(gulpif(production, sourcemaps.write('.')))
       .pipe(gulp.dest(outputFolder + '/static/client/js/'));
 
   if (production) {
