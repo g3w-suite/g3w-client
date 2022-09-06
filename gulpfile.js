@@ -9,6 +9,7 @@ const merge       = require('gulp-merge');
 const prompt      = require('gulp-prompt');
 const rename      = require('gulp-rename');
 const replace     = require('gulp-replace');
+const sourcemaps  = require('gulp-sourcemaps');
 const uglify      = require('gulp-uglify');
 const gutil       = require('gulp-util');
 
@@ -151,12 +152,12 @@ gulp.task('browserify:app', function() {
     // plugin: [
     //   esmify
     // ],
-    // transform: [
-    //   vueify,
-    //   [ babelify, { babelrc: true } ]
-    //   [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
-    //   imgurify
-    // ]
+    transform: [
+      vueify,
+      [ babelify, { babelrc: true } ],
+      [ stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } } ],
+      imgurify
+    ]
   });
   if (production) {
     bundler.ignore('./src/app/dev/index.js');           // ignore dev index file
@@ -170,13 +171,6 @@ gulp.task('browserify:app', function() {
     });
     bundler = watchify(bundler);
   }
-
-  // trasformation
-  bundler
-    .transform(vueify)
-    .transform(babelify, { babelrc: true })
-    .transform(stringify, { appliesTo: { includeExtensions: ['.html', '.xml'] } })
-    .transform(imgurify);
 
   const bundle = () => bundler.bundle()
       .on('error', err => {
