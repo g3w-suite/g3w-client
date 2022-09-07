@@ -78,9 +78,11 @@ export default {
               html = !html;
               if (html) this.quill.container.firstChild.innerText = this.quill.container.firstChild.innerHTML;
               else this.quill.container.firstChild.innerHTML = this.quill.container.firstChild.innerText;
-              for (const button of this.$el.querySelectorAll('button')) {
-                if (!button.classList.contains('ql-html')) button.classList.toggle('g3w-disabled');
-                else button.classList.toggle('skin-color')
+              for (const qlformat of this.$el.querySelectorAll('.ql-formats')) {
+                for (const child of qlformat.children) {
+                  if (!child.classList.contains('ql-html')) child.classList.toggle('g3w-disabled');
+                  else child.classList.toggle('skin-color')
+                }
               }
             },
             'column-left': () => this.table.insertColumnLeft(),
