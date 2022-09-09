@@ -117,7 +117,7 @@ const utils = {
 
     // Need to remove Z values due a incorrect addition when using
     // ol.format.WMSGetFeatureInfo readFeatures method from XML
-    // (eg. WMS getFeatureInfo); 
+    // (eg. WMS getFeatureInfo);
     if (!is3DGeometry(geometryType)){
       features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
     }
