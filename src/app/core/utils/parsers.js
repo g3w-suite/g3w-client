@@ -118,10 +118,8 @@ const utils = {
     // Need to remove Z values due a incorrect addition when using
     // ol.format.WMSGetFeatureInfo readFeatures method from XML
     // (eg. WMS getFeatureInfo);
-    // Need to check also if feature has geometry in case of
-    // QGIS Project setting -> Add geometry to response is not checked
     if (!is3DGeometry(geometryType)){
-      features.forEach(feature => feature.getGeometry() && removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
     }
 
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
