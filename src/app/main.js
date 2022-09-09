@@ -3,6 +3,20 @@
 import "regenerator-runtime";
 //
 import App from 'components/App.vue';
+import ImageComponent from 'components/GlobalImage.vue';
+import GalleryImagesComponent from 'components/GlobalGallery.vue';
+import GeospatialComponet  from 'components/GlobalGeo.vue';
+import Skeleton from 'components/GlobalSkeleton.vue';
+import BarLoader from 'components/GlobalBarLoader.js';
+import Progressbar from 'components/GlobalProgressBar.js';
+import HelpDiv from 'components/GlobalHelpDiv.vue';
+import Resize from 'components/GlobalResize.vue'
+import LayerPositions from 'components/GlobalLayerPositions.vue';
+import DateTime from 'components/GlobalDateTime.vue';
+import Range from 'components/GlobalRange.vue';
+import ResizeIcon from 'components/GlobalResizeIcon.vue';
+import Tabs from 'components/GlobalTabs.vue';
+import Divider from 'components/GlobalDivider.vue';
 import ApplicationState from 'core/applicationstate';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
@@ -13,7 +27,6 @@ const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
 const VueAppPlugin = require('gui/vue/vueappplugin');
 const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 
 /**
@@ -31,7 +44,26 @@ window.g3wsdk = require('api');
  */
 // window.g3w = window.g3wsdk;
 
-Vue.use(GlobalComponents);           // install global components
+/**
+ * Install global components
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
+ */
+Vue.component(ImageComponent.name, ImageComponent);
+Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
+Vue.component(GeospatialComponet.name, GeospatialComponet);
+Vue.component(BarLoader.name, BarLoader);
+Vue.component(Progressbar.name, Progressbar);
+Vue.component(Skeleton.name, Skeleton);
+Vue.component(HelpDiv.name, HelpDiv);
+Vue.component(Resize.name, Resize);
+Vue.component(LayerPositions.name, LayerPositions);
+Vue.component(DateTime.name, DateTime);
+Vue.component(Range.name, Range);
+Vue.component(ResizeIcon.name, ResizeIcon);
+Vue.component(Tabs.name, Tabs);
+Vue.component(Divider.name, Divider);
+
 Vue.use(GlobalDirective);            // install gloabl directive
 Vue.use(G3wApplicationFilterPlugin); // install Application Filter Plugin
 Vue.use(VueAppPlugin, {});           // install template information library (es. classes etc..)
