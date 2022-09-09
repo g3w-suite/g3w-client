@@ -6,13 +6,12 @@ import App from 'components/App.vue';
 import ApplicationState from 'core/applicationstate';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
 const VueAppPlugin = require('gui/vue/vueappplugin');
-const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
 const GlobalComponents = require('gui/vue/vue.globalcomponents');
 const GlobalDirective = require('gui/vue/vue.directives');
 
@@ -33,7 +32,15 @@ window.g3wsdk = require('api');
 
 Vue.use(GlobalComponents);           // install global components
 Vue.use(GlobalDirective);            // install gloabl directive
-Vue.use(G3wApplicationFilterPlugin); // install Application Filter Plugin
+
+/**
+ * Install application filters
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
+ */
+Vue.filter('t', value => t(value));
+Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+
 Vue.use(VueAppPlugin, {});           // install template information library (es. classes etc..)
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
