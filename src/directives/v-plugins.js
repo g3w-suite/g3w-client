@@ -1,20 +1,21 @@
 import ApplicationState from 'core/applicationstate';
-import { createDirectiveObj, unbindWatch } from 'directives/utils';
+import { watch, unwatch } from 'directives/utils';
+
+const attr = 'g3w-v-plugins-id';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 export default {
   bind(el) {
-    const showHideHandler = plugins => {
-      el.classList.toggle('g3w-hide', plugins.length === 0)
-    };
-    showHideHandler(ApplicationState.plugins);
-    createDirectiveObj({
+    watch({
       el,
-      attr: 'g3w-v-plugins-id',
-      watcher: [() => ApplicationState.plugins, showHideHandler]
+      attr,
+      watcher: [
+        () => ApplicationState.plugins,
+        (plugins) => { el.classList.toggle('g3w-hide', plugins.length === 0) }
+      ]
     });
   },
-  unbind: (el) => unbindWatch({ el, attr: 'g3w-v-plugins-id' })
+  unbind: (el) => unwatch({ el, attr })
 };

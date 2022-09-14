@@ -1,19 +1,22 @@
 import ApplicationState from 'core/applicationstate';
-import { createDirectiveObj, unbindWatch } from 'directives/utils';
+import { watch, unwatch } from 'directives/utils';
 const {t} = require('core/i18n/i18n.service');
+
+const attr = 'g3w-v-t-html-id';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 export default {
   bind(el, binding) {
-    const handlerElement = () => { el.innerHTML = `${t(binding.value)}`; };
-    handlerElement();
-    createDirectiveObj({
+    watch({
       el,
-      attr: 'g3w-v-t-html-id',
-      watcher: [() => ApplicationState.lng, handlerElement]
+      attr,
+      watcher: [
+        () => ApplicationState.lng,
+        () => { el.innerHTML = `${t(binding.value)}`; }
+      ]
     });
   },
-  unbind: (el) => unbindWatch({ attr:'g3w-v-t-html-id', el })
+  unbind: (el) => unwatch({ el, attr })
 };

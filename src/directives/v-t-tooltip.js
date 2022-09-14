@@ -1,52 +1,43 @@
 import ApplicationState from 'core/applicationstate';
-import { createDirectiveObj, unbindWatch, getDirective } from 'directives/utils';
+import { watch, unwatch, trigger } from 'directives/utils';
 const {t, tPlugin} = require('core/i18n/i18n.service');
+
+const attr = 'g3w-v-t-tooltip-id';
 
 /**
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 export default {
   bind(_el, binding) {
-    // handle automatic creation of tooltip
+    // Automatically create tooltip
     if (binding.modifiers.create) {
-      if (binding.arg){
+      if (binding.arg) {
         _el.setAttribute('data-placement', binding.arg);
-        _el.classList.add(`skin-tooltip-${binding.arg}`);
-        _el.classList.add('skin-color');
+        _el.classList.add('skin-color', `skin-tooltip-${binding.arg}`);
       }
-      const domelement = $(_el);
-      domelement.tooltip({
-        trigger : ApplicationState.ismobile ? 'click': 'hover',
-        html: true
-      });
-      // in case of mobile hide tooltip after click
-      ApplicationState.ismobile && domelement.on('shown.bs.tooltip', function(){
-        setTimeout(()=>$(this).tooltip('hide'), 600);
-      });
+      $(_el)
+        .tooltip({ trigger : ApplicationState.ismobile ? 'click': 'hover', html: true })
+        // hide tooltip on mobile  after click
+        .on('shown.bs.tooltip', () => { ApplicationState.ismobile && setTimeout(()=>$(_el).tooltip('hide'), 600) });
     }
-    const handler = ({el=_el}={}) =>{
-      const current_tooltip = el.getAttribute('current-tooltip');
-      const value = current_tooltip !== null ? current_tooltip:  binding.value;
-      const dir = getDirective(el.getAttribute('g3w-v-t-tooltip-id'));
-      if (dir) {
-        const title = dir.modifiers.text  ? value : (binding.arg === 'plugin' ? tPlugin : t)(value);
-        el.setAttribute('data-original-title', title);
-      }
-    };
-    handler();
-    createDirectiveObj({
-      el:_el,
-      attr: 'g3w-v-t-tooltip-id',
-      modifiers: binding.modifiers,
-      handler: handler,
-      watcher: [() => ApplicationState.lng, handler]
+    watch({
+      el: _el,
+      attr,
+      watcher: [
+        () => ApplicationState.lng,
+        ({el = _el}) => {
+          let value = el.getAttribute('current-tooltip');
+          if (value === null) { value = binding.value; }
+          el.setAttribute('data-original-title', binding.modifiers.text ? value : (binding.arg === 'plugin' ? tPlugin : t)(value));
+        }
+      ]
     });
   },
   componentUpdated(el, oldVnode) {
-    const attr_value = el.getAttribute('current-tooltip');
-    if (attr_value != null && attr_value !== oldVnode.oldValue) {
-      getDirective(el.getAttribute('g3w-v-t-tooltip-id')).handler({el});
+    const value = el.getAttribute('current-tooltip');
+    if (value != null && value !== oldVnode.oldValue) {
+      trigger({ el, attr, data: {el}});
     }
   },
-  unbind: (el) => { $(el).tooltip('hide'); unbindWatch({ attr:'g3w-v-t-tooltip-id', el }) }
+  unbind: (el) => { $(el).tooltip('hide'); unwatch({ el, attr }); }
 };

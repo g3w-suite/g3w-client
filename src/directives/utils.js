@@ -5,34 +5,23 @@
 const {uniqueId} = require('core/utils/utils');
 
 /**
- * State
+ * Internal state
  */
 const vm = new Vue();
 const directives = {};
 
-/**
- * @deprecated
- */
-export const createDirectiveObj = ({el, attr, watcher, handler, modifiers}) => {
+export const watch = ({el, attr, watcher}) => {
   const unique_attr_id = uniqueId();
   el.setAttribute(attr, unique_attr_id);
   const dir = directives[unique_attr_id] = {};
   if (watcher) {
-    dir.unwatch = vm.$watch(watcher[0], watcher[1]);
-  }
-  if (handler) {
-    dir.handler = handler;
-  }
-  if (modifiers) {
-    dir.modifiers = modifiers;
+    dir.unwatch = vm.$watch(watcher[0], watcher[1], watcher[2] || { immediate: true });
+    dir.handler = watcher[1];
   }
   return unique_attr_id;
 };
 
-/**
- * @deprecated
- */
-export const unbindWatch = ({attr, el}) => {
+export const unwatch = ({el, attr}) => {
   const unique_attr_id = el.getAttribute(attr);
   if (unique_attr_id) {
     directives[unique_attr_id].unwatch();
@@ -40,8 +29,5 @@ export const unbindWatch = ({attr, el}) => {
   }
 };
 
-/**
- * @deprecated
- */
-export const getDirective = (unique_attr_id) => directives[unique_attr_id];
+export const trigger = ({el, attr, data}) => directives[el.getAttribute(attr)](data);
 
