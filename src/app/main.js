@@ -1,20 +1,45 @@
 // TODO: check if this still useful nowdays (IE 11 ?)
 // add babel runtime support for compiled/transpiled async functions
 import "regenerator-runtime";
-//
+//components
 import App from 'components/App.vue';
+import ImageComponent from 'components/GlobalImage.vue';
+import GalleryImagesComponent from 'components/GlobalGallery.vue';
+import GeospatialComponet  from 'components/GlobalGeo.vue';
+import Skeleton from 'components/GlobalSkeleton.vue';
+import BarLoader from 'components/GlobalBarLoader.js';
+import Progressbar from 'components/GlobalProgressBar.js';
+import HelpDiv from 'components/GlobalHelpDiv.vue';
+import Resize from 'components/GlobalResize.vue'
+import LayerPositions from 'components/GlobalLayerPositions.vue';
+import DateTime from 'components/GlobalDateTime.vue';
+import Range from 'components/GlobalRange.vue';
+import ResizeIcon from 'components/GlobalResizeIcon.vue';
+import Tabs from 'components/GlobalTabs.vue';
+import Divider from 'components/GlobalDivider.vue';
+//directives
+import vDisabled from 'directives/v-disabled';
+import vChecked from 'directives/v-checked';
+import vSelectedFirst from 'directives/v-selected-first';
+import vSelect2 from 'directives/v-select2';
+import vTToltip from 'directives/v-t-tooltip';
+import vTHtml from 'directives/v-t-html';
+import vTPlaceholder from 'directives/v-t-placeholder';
+import vTTitle from 'directives/v-t-title';
+import vT from "directives/v-t";
+import vTPlugin from 'directives/v-t-plugin';
+import vPlugins from 'directives/v-plugins';
+import vOnline from 'directives/v-online';
+import vDownload from 'directives/v-download';
+
 import ApplicationState from 'core/applicationstate';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
-const VueAppPlugin = require('gui/vue/vueappplugin');
-const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
-const GlobalDirective = require('gui/vue/vue.directives');
 
 /**
  * Expose "g3wsdk" variable globally
@@ -31,10 +56,212 @@ window.g3wsdk = require('api');
  */
 // window.g3w = window.g3wsdk;
 
-Vue.use(GlobalComponents);           // install global components
-Vue.use(GlobalDirective);            // install gloabl directive
-Vue.use(G3wApplicationFilterPlugin); // install Application Filter Plugin
-Vue.use(VueAppPlugin, {});           // install template information library (es. classes etc..)
+/**
+ * Install global components
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
+ */
+Vue.component(ImageComponent.name, ImageComponent);
+Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
+Vue.component(GeospatialComponet.name, GeospatialComponet);
+Vue.component(BarLoader.name, BarLoader);
+Vue.component(Progressbar.name, Progressbar);
+Vue.component(Skeleton.name, Skeleton);
+Vue.component(HelpDiv.name, HelpDiv);
+Vue.component(Resize.name, Resize);
+Vue.component(LayerPositions.name, LayerPositions);
+Vue.component(DateTime.name, DateTime);
+Vue.component(Range.name, Range);
+Vue.component(ResizeIcon.name, ResizeIcon);
+Vue.component(Tabs.name, Tabs);
+Vue.component(Divider.name, Divider);
+
+/**
+ * Install application filters
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
+ */
+Vue.filter('t', value => t(value));
+Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+
+/**
+ * Install gloabl directives
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
+ */
+Vue.directive("disabled", vDisabled);
+Vue.directive("checked", vChecked);
+Vue.directive("selected-first", vSelectedFirst);
+Vue.directive('select2', vSelect2);
+Vue.directive('t-tooltip', vTToltip);
+Vue.directive('t-html', vTHtml);
+Vue.directive('t-placeholder', vTPlaceholder);
+Vue.directive('t-title', vTTitle);
+Vue.directive("t", vT);
+Vue.directive("t-plugin", vTPlugin);
+Vue.directive("plugins", vPlugins);
+Vue.directive("online", vOnline);
+Vue.directive("download", vDownload);
+
+/**
+ * Vue 2 Plugin used to add global-level functionality to Vue
+ *
+ * @link https://v2.vuejs.org/v2/guide/plugins.html
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vueappplugin.js@3.6
+ */
+Vue.use({
+  install(Vue) {
+    // hold a list of registered fontawsome classes for current project
+    Vue.prototype.g3wtemplate = {
+      font: {
+        'change-map': "fas fa-map-signs",
+        map: "far fa-map",
+        file: "fas fa-file-code",
+        marker: "fas fa-map-marker-alt",
+        relation: "fas fa-sitemap",
+        tools: "fas fa-cogs",
+        tool: "fas fa-cog",
+        search: "fas fa-search",
+        print: "fas fa-print",
+        info: "fas fa-info-circle",
+        'info-circle': "fas fa-info-circle",
+        globe: "fas fa-globe",
+        mail: "fas fa-envelope",
+        mobile: "fas fa-mobile",
+        fax: "fas fa-fax",
+        user: "fas fa-user",
+        bars: "fas fa-bars",
+        uncheck: "far fa-square",
+        check: "far fa-check-square",
+        filluncheck: "fas fa-square",
+        table: "fas fa-table",
+        trash: "fas fa-trash",
+        'trash-o':"far fa-trash-alt",
+        pencil: "fas fa-pencil-alt",
+        'ellips-h': "fas fa-ellipsis-h",
+        'ellips-v': "fas fa-ellipsis-v",
+        'arrow-up': "fas fa-chevron-up",
+        'arrow-down': "fas fa-chevron-down",
+        'arrow-left': "fas fa-chevron-left",
+        'arrow-right': "fas fa-chevron-right",
+        'resize-h': "fas fa-arrows-alt-h",
+        'resize-v': "fas fa-arrows-alt-v",
+        'resize-default': "fas fa-compress",
+        'caret-up': "fas fa-caret-up",
+        'caret-down': "fas fa-caret-down",
+        'caret-left': "fas fa-caret-left",
+        'caret-right': "fas fa-caret-right",
+        'empty-circle': "far fa-circle",
+        'cloud-upload': "fas fa-cloud-upload-alt",
+        spinner: "fas fa-spinner",
+        minus: "fas fa-minus",
+        "minus-square":"far fa-minus-square",
+        plus: "fas fa-plus",
+        'plus-circle': "fas fa-plus-circle",
+        'plus-square': "far fa-plus-square",
+        grid: "fas fa-th",
+        home: "fas fa-home",
+        folder: "fas fa-folder",
+        'sign-out': "fas fa-sign-out-alt",
+        close: "fas fa-times",
+        time: "far fa-clock",
+        calendar: "fas fa-calendar-alt",
+        list: "fas fa-list-alt",
+        link: "fas fa-link",
+        unlink: "fas fa-unlink",
+        eye: "far fa-eye",
+        'eye-close': "far fa-eye-slash",
+        save: "far fa-save",
+        pdf: "fas fa-file-pdf",
+        image: "far fa-image",
+        video: "far fa-file-video",
+        unknow:"far fa-question-circle",
+        zip: "far fa-file-archive",
+        text: "far fa-file-alt",
+        excel: "far fa-file-excel",
+        xls:"far fa-file-excel",
+        gpx: "fas fa-location-arrow",
+        gpkg: "fas fa-box-open",
+        shapefile:"fas fa-file-archive",
+        csv: "fas fa-file-csv",
+        geotiff: "fas fa-th",
+        ppt: "far fa-file-powerpoint",
+        circle: "fas fa-circle",
+        calculator: "fas fa-calculator",
+        picture: "far fa-image",
+        keyboard: "far fa-keyboard",
+        'file-download':"fas fa-file-download",
+        copy: "far fa-copy",
+        draw: "fas fa-draw-polygon",
+        chart: "fas fa-chart-bar",
+        'chart-line': "fas fa-chart-line",
+        'chart-area': "fas fa-chart-area",
+        'chart-pie': "fas fa-chart-pie",
+        run: "fas fa-play",
+        warning: "fas fa-exclamation-circle",
+        alert: "fas fa-exclamation-triangle",
+        crosshairs: "fas fa-crosshairs",
+        success: "far fa-check-circle",
+        back: "fas fa-chevron-circle-left",
+        'file-upload': "fas fa-file-upload",
+        wifi: "fas fa-wifi",
+        mouse: "fas fa-mouse",
+        'copy-paste': "far fa-copy",
+        'vector-square': "fas fa-vector-square",
+        download: "fas fa-download",
+        credits: "fas fa-euro-sign",
+        filter: "fas fa-filter",
+        plugin: "fas fa-plug",
+        invert: "fas fa-exchange-alt",
+        clear: "fas fa-broom",
+        palette: "fas fa-palette",
+        layers: "fas fa-layer-group",
+        'sign-in': "fas fa-sign-in-alt",
+        language: "fas fa-language",
+        target: "fas fa-bullseye",
+        pin: "fas fa-map-pin",
+        square: "far fa-square",
+        move: "fas fa-arrows-alt",
+        moon: "fas fa-moon",
+        sun: "fas fa-sun",
+        refresh: "fas fa-sync-alt",
+        pause:"fas fa-pause",
+        'step-backward': "fas fa-step-backward",
+        'fast-backward': "fas fa-fast-backward",
+        'step-forward': "fas fa-step-forward",
+        'fast-forward': "fas fa-fast-forward",
+        crop: "fas fa-crop-alt"
+      },
+      // TODO: check if deprecated
+      get() {},
+      getInfo() {
+        return {
+          font: this.font
+        }
+      },
+      addFontClass({name, className}={}){
+        let added = this.font[name] === undefined;
+        if (added) this.font[name] = className;
+        return added;
+      },
+      // TODO: check if deprecated
+      getInfoString() {},
+      getFontClass(type) {
+        return typeof this.font[type] !== "undefined" ? this.font[type] : '';
+      }
+    };
+    // include isMobile() method within all Vue instances
+    Vue.mixin({
+      methods: {
+        isMobile () {
+          return isMobile.any
+        }
+      }
+    })
+  }
+}, {});
+
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
 // get all items needed by application
