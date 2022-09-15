@@ -1,19 +1,45 @@
 // TODO: check if this still useful nowdays (IE 11 ?)
 // add babel runtime support for compiled/transpiled async functions
 import "regenerator-runtime";
-//
+//components
 import App from 'components/App.vue';
+import ImageComponent from 'components/GlobalImage.vue';
+import GalleryImagesComponent from 'components/GlobalGallery.vue';
+import GeospatialComponet  from 'components/GlobalGeo.vue';
+import Skeleton from 'components/GlobalSkeleton.vue';
+import BarLoader from 'components/GlobalBarLoader.js';
+import Progressbar from 'components/GlobalProgressBar.js';
+import HelpDiv from 'components/GlobalHelpDiv.vue';
+import Resize from 'components/GlobalResize.vue'
+import LayerPositions from 'components/GlobalLayerPositions.vue';
+import DateTime from 'components/GlobalDateTime.vue';
+import Range from 'components/GlobalRange.vue';
+import ResizeIcon from 'components/GlobalResizeIcon.vue';
+import Tabs from 'components/GlobalTabs.vue';
+import Divider from 'components/GlobalDivider.vue';
+//directives
+import vDisabled from 'directives/v-disabled';
+import vChecked from 'directives/v-checked';
+import vSelectedFirst from 'directives/v-selected-first';
+import vSelect2 from 'directives/v-select2';
+import vTToltip from 'directives/v-t-tooltip';
+import vTHtml from 'directives/v-t-html';
+import vTPlaceholder from 'directives/v-t-placeholder';
+import vTTitle from 'directives/v-t-title';
+import vT from "directives/v-t";
+import vTPlugin from 'directives/v-t-plugin';
+import vPlugins from 'directives/v-plugins';
+import vOnline from 'directives/v-online';
+import vDownload from 'directives/v-download';
+
 import ApplicationState from 'core/applicationstate';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
-const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
-const GlobalComponents = require('gui/vue/vue.globalcomponents');
-const GlobalDirective = require('gui/vue/vue.directives');
 
 /**
  * Expose "g3wsdk" variable globally
@@ -30,15 +56,58 @@ window.g3wsdk = require('api');
  */
 // window.g3w = window.g3wsdk;
 
-Vue.use(GlobalComponents);           // install global components
-Vue.use(GlobalDirective);            // install gloabl directive
-Vue.use(G3wApplicationFilterPlugin); // install Application Filter Plugin
+/**
+ * Install global components
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.globalcomponents.js@3.6
+ */
+Vue.component(ImageComponent.name, ImageComponent);
+Vue.component(GalleryImagesComponent.name, GalleryImagesComponent);
+Vue.component(GeospatialComponet.name, GeospatialComponet);
+Vue.component(BarLoader.name, BarLoader);
+Vue.component(Progressbar.name, Progressbar);
+Vue.component(Skeleton.name, Skeleton);
+Vue.component(HelpDiv.name, HelpDiv);
+Vue.component(Resize.name, Resize);
+Vue.component(LayerPositions.name, LayerPositions);
+Vue.component(DateTime.name, DateTime);
+Vue.component(Range.name, Range);
+Vue.component(ResizeIcon.name, ResizeIcon);
+Vue.component(Tabs.name, Tabs);
+Vue.component(Divider.name, Divider);
+
+/**
+ * Install application filters
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
+ */
+Vue.filter('t', value => t(value));
+Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+
+/**
+ * Install gloabl directives
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
+ */
+Vue.directive("disabled", vDisabled);
+Vue.directive("checked", vChecked);
+Vue.directive("selected-first", vSelectedFirst);
+Vue.directive('select2', vSelect2);
+Vue.directive('t-tooltip', vTToltip);
+Vue.directive('t-html', vTHtml);
+Vue.directive('t-placeholder', vTPlaceholder);
+Vue.directive('t-title', vTTitle);
+Vue.directive("t", vT);
+Vue.directive("t-plugin", vTPlugin);
+Vue.directive("plugins", vPlugins);
+Vue.directive("online", vOnline);
+Vue.directive("download", vDownload);
 
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue
- * 
+ *
  * @link https://v2.vuejs.org/v2/guide/plugins.html
- * 
+ *
  * ORIGINAL SOURCE: src/app/gui/vue/vueappplugin.js@3.6
  */
 Vue.use({
