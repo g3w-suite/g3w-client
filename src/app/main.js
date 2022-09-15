@@ -269,7 +269,11 @@ const sidebar = require('gui/sidebar/sidebar');
 const floatbar = require('gui/floatbar/floatbar');
 const viewport = require('gui/viewport/viewport');
 const navbaritems = require('gui/navbar/navbaritems');
-const layout = require('gui/app/layout');
+
+/**
+ * @requires components/App.vue
+ */
+const layout = $.LayoutManager;
 
 // loading spinner at beginning
 layout.loading(true);
