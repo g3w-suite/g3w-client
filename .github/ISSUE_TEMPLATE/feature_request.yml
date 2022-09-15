@@ -1,7 +1,7 @@
 name: ☝️ Feature request
 description: Suggest an idea for this project
 labels: 'feature'
-assignees: ['volterra79']
+assignees: [volterra79]
 body:
   - type: checkboxes
     attributes:
