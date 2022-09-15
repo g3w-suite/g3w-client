@@ -20,13 +20,12 @@ import vDownload from 'directives/v-download';
 
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
 const ComponentsRegistry = require('gui/component/componentsregistry');
 const GUI = require('gui/gui');
 const VueAppPlugin = require('gui/vue/vueappplugin');
-const G3wApplicationFilterPlugin = require('gui/vue/vue.filter');
 const GlobalComponents = require('gui/vue/vue.globalcomponents');
 
 /**
@@ -47,8 +46,16 @@ window.g3wsdk = require('api');
 Vue.use(GlobalComponents);           // install global components
 
 /**
+ * Install application filters
+ *
+ * ORIGINAL SOURCE: src/app/gui/vue/vue.filter.js@3.6
+ */
+Vue.filter('t', value => t(value));
+Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
+
+/**
  * Install gloabl directives
- * 
+ *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
 Vue.directive("disabled", vDisabled);
@@ -65,7 +72,6 @@ Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
 
-Vue.use(G3wApplicationFilterPlugin); // install Application Filter Plugin
 Vue.use(VueAppPlugin, {});           // install template information library (es. classes etc..)
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
 
