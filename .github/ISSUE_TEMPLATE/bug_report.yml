@@ -5,7 +5,7 @@ assignees: [volterra79]
 body:
 - type: checkboxes
   attributes:
-    label: Checkbox
+    label: Checklist
     description: >
       Please confirm the following:
     options:
