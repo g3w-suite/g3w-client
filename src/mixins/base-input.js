@@ -24,7 +24,7 @@ export default {
     },
     // called when input value change
     change() {
-      this.state.setEmpty && this.service.setEmpty();
+      this.service.setEmpty && this.service.setEmpty();
       // validate input
       this.state.validate.required && this.service.validate();
       // emit change input
