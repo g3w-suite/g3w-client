@@ -5,7 +5,7 @@ function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
   // in case is set default input value to input
-  this.set_input_default_value = false;
+  this.has_default_value = false;
   // type of input
   //this.state.validate.required && this.setValue(this.state.value);
   /*
@@ -44,7 +44,7 @@ proto.setValue = function(value) {
       }
     } else {
       this.state.value = this.state.input.options.default;
-      this.set_input_default_value = true;
+      this.has_default_value = true;
     }
   }
 };

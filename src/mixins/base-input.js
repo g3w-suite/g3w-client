@@ -33,6 +33,6 @@ export default {
     isVisible() {},
   },
   mounted() {
-    this.service && this.service.set_input_default_value && this.change();
+    this.service && this.service.has_default_value && this.change();
   }
 };
