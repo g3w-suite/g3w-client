@@ -406,18 +406,20 @@ gulp.task('g3w-admin', done => runSequence('dist', 'clean:admin', 'g3w-admin:sta
 /**
  * Run test once and exit
  */
-gulp.task('test', async (done) => {
-  const testPath = `${__dirname}${g3w.test.path}`;
-  const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
-  for (let i = 0; i < testGroupFolders.length; i++) {
-    await new Promise(resolve => {
-      new karma.Server({
-        configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
-        singleRun: true
-      },() => { resolve() }).start();
-    });
-  }
-  done();
+gulp.task('test', function() {
+  return new Promise(async done => {
+    const testPath = `${__dirname}${g3w.test.path}`;
+    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+    for (let i = 0; i < testGroupFolders.length; i++) {
+      await new Promise(resolve => {
+        new karma.Server({
+          configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
+          singleRun: true
+        },() => { resolve() }).start();
+      });
+    }
+    done();
+  });
 });
 
 /**
