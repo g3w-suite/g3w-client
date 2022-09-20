@@ -160,9 +160,9 @@ gulp.task('browserify:app', function() {
 
 gulp.task('fonts', function () {
   return gulp.src([
-      `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-      '!./src/libs/**/node_modules/**/',
-      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`
+    `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+    `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`,
     ])
     .pipe(flatten())
     .pipe(gulp.dest(`${g3w.clientFolder}/fonts/`))
@@ -170,9 +170,9 @@ gulp.task('fonts', function () {
 
 gulp.task('images', function () {
   return gulp.src([
-      `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
-      '!./src/**/node_modules/**/',
-      `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`
+    `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
+    `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`
     ])
     .pipe(flatten())
     .pipe(gulp.dest(g3w.clientFolder + '/images/'))
