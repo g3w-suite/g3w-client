@@ -1,13 +1,14 @@
 <template>
   <baseinput :state="state" v-disabled="!editable">
-    <div @keydown.stop="" slot="body"
+    <div  @keydown.stop="" slot="body"
       class="form-control"
       :style="{border: novalid ? '1px solid reed' : '1px solid #ccc'}"
-      :id="state.name"></div>
+      :id="id"></div>
   </baseinput>
 </template>
 
 <script>
+const { getUniqueDomId } = require('core/utils/utils');
 const Input = require('gui/inputs/input');
 
 export default {
@@ -58,6 +59,22 @@ export default {
       buttonRowRemove.title = "Remove row";
     }
   },
+  created(){
+    /**
+     * Need to create an unique id and not use a state.name of field in case on duplicate field on form
+     */
+    this.id = `texthtml_input_${getUniqueDomId()}`;
+    /**
+     * edit_state is need if this input is repeated in different form tab
+     */
+    this.edit_state = {
+      edit: false,
+      show_html: false
+    };
+
+    if (!this.state.edit_states) this.state.edit_states = [];
+    this.state.edit_states.push(this.edit_state);
+  },
   async mounted(){
     const toolbarOptions = [
       [{ header: [1, 2, 3, 4, 5, 6,  false] }],
@@ -66,22 +83,21 @@ export default {
       ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
     ];
     await this.$nextTick();
-    let html = false;
 
-    this.quill = new Quill(`#${this.state.name}`, {
+    this.quill = new Quill(`#${this.id}`, {
       modules: {
         table: true,
         toolbar: {
           container: toolbarOptions,
           handlers: {
             html: () => {
-              html = !html;
-              if (html) this.quill.container.firstChild.innerText = this.quill.container.firstChild.innerHTML;
+              this.edit_state.show_html = !this.edit_state.show_html;
+              if (this.edit_state.show_html) this.quill.container.firstChild.innerText = this.quill.container.firstChild.innerHTML;
               else this.quill.container.firstChild.innerHTML = this.quill.container.firstChild.innerText;
               for (const qlformat of this.$el.querySelectorAll('.ql-formats')) {
                 for (const child of qlformat.children) {
                   if (!child.classList.contains('ql-html')) child.classList.toggle('g3w-disabled');
-                  else child.classList.toggle('skin-color')
+                  else child.classList.toggle('skin-color');
                 }
               }
             },
@@ -100,20 +116,31 @@ export default {
 
     this.table = this.quill.getModule('table');
     this.setupTableCustomTools();
-
-    this.handler = () => {
-      this.state.value = html ? this.quill.container.firstChild.innerText : this.quill.container.firstChild.innerHTML;
-      this.change()
+    this.handler =  () => {
+      this.state.value = this.edit_state.show_html ? this.quill.container.firstChild.innerText : this.quill.container.firstChild.innerHTML;
+      this.edit_state.edit = true;
+      this.change();
+      setTimeout(() => this.edit_state.edit = false);
     };
 
     this.quill.on('text-change', this.handler);
     this.quill.container.firstChild.innerHTML = this.state.value;
+  },
+  watch: {
+    'state.value'(value){
+      if (!this.edit_state.edit) {
+        if (this.edit_state.show_html) this.quill.container.firstChild.innerText = value;
+        else this.quill.container.firstChild.innerHTML = value;
+      }
+    }
   },
 
   beforeDestroy(){
     this.quill.off('text-change', this.handler);
     this.handler = null;
     this.quill = null;
+    this.edit_state.edit = false;
+    this.edit_state.show_html = false;
   }
 };
 </script>
