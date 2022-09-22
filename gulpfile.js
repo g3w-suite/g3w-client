@@ -425,18 +425,20 @@ gulp.task('dev', done => runSequence(
  * production   = false,
  * outputFolder = g3w.admin_overrides_folder
  */
-gulp.task('test', async (done) => {
-  const testPath = `${__dirname}${g3w.test.path}`;
-  const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
-  for (let i = 0; i < testGroupFolders.length; i++) {
-    await new Promise(resolve => {
-      new karma.Server({
-        configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
-        singleRun: true
-      },() => { resolve() }).start();
-    });
-  }
-  done();
+gulp.task('test', function() {
+  return new Promise(async done => {
+    const testPath = `${__dirname}${g3w.test.path}`;
+    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+    for (let i = 0; i < testGroupFolders.length; i++) {
+      await new Promise(resolve => {
+        new karma.Server({
+          configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
+          singleRun: true
+        },() => { resolve() }).start();
+      });
+    }
+    done();
+  });
 });
 
 /**
