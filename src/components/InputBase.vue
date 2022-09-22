@@ -37,6 +37,6 @@
 <style scoped>
   .control-label {
     text-align: left !important;
-    padding-top: 0;
+    margin-bottom: 10px;
   }
 </style>
