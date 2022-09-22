@@ -30,6 +30,9 @@ export default {
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isVisible() {}
+    isVisible() {},
+  },
+  mounted() {
+    this.service && this.service.has_default_value && this.change();
   }
 };
