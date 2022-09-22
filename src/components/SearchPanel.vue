@@ -38,7 +38,7 @@
               <span>{{forminput.label || forminput.attribute }}</span>
               <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
             </label>
-             <search-datetime :forminput="forminput"></search-datetime>
+             <search-datetime :forminput="forminput" @change="changeInput"></search-datetime>
           </div>
           <div v-if="forminput.logicop" class="search-logicop skin-border-color">
             <h4>{{ forminput.logicop }}</h4>

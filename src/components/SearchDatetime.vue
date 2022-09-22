@@ -25,9 +25,8 @@
     },
     async mounted() {
       await this.$nextTick();
-
       $(`#${this.id}`).datetimepicker({
-        defaultDate: '',
+        defaultDate: null,
         format: 'YYYY-MM-DD',
         ignoreReadonly: true,
         allowInputToggle: true,
@@ -43,6 +42,7 @@
       $(`#${this.id}`).on("dp.change", () => {
         const newDate = $(`#${this.forminput.id}`).val();
         this.forminput.value = _.isEmpty(_.trim(newDate)) ? null : moment(newDate, 'YYYY/MM/DD').format('YYYY/MM/DD');
+        this.emit('change', this.forminput);
       });
 
       ApplicationState.ismobile && setTimeout(()=>{
