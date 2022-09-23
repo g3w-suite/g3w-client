@@ -7,7 +7,7 @@
     <div v-for="row in rows" class="node-row" :class="{'mobile': isMobile()}">
       <template v-for="column in columnNumber" style="padding:2px">
         <template v-if="getNode(row, column)">
-          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 5px"
+          <component v-if="getNodeType(getNode(row, column)) === 'field'" style="padding: 0px 3px 0px 3px;"
             :state="getField(getNode(row, column))"
             @changeinput="changeInput"
             @addinput="addToValidate"
@@ -179,14 +179,14 @@
     width: 100%;
     color: #ffffff;
     padding: 3px;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin-top: 3px;
+    margin-bottom: 3px;
     border-radius: 2px;
   }
   .node-row {
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     column-gap: 2px;
-    margin-top: 3px;
+    margin-top: 2px;
     display: grid;
     grid-auto-columns: minmax(0, 1fr);
     grid-auto-flow: column;
