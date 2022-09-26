@@ -10,28 +10,18 @@
       <form class="g3w-search-form">
         <span v-for="forminput in state.forminputs" :key="forminput.id">
           <div v-if="forminput.type === 'numberfield'" class="form-group numeric">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
-              <input type="number" min="0" @change="changeNumericInput(forminput)" @input="changeNumericInput(forminput)"
-                v-model="forminput.value" class="form-control"
-                :id="forminput.id">
+            <search-panel-label :forminput="forminput"></search-panel-label>
+            <input type="number" min="0" @change="changeNumericInput(forminput)" @input="changeNumericInput(forminput)"
+              v-model="forminput.value" class="form-control" :id="forminput.id">
             </div>
-          <div v-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{ forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
+          <div v-else-if="forminput.type === 'textfield' || forminput.type === 'textField'" class="form-group form-item-search  text">
+            <search-panel-label :forminput="forminput"></search-panel-label>
             <input @focus="onFocus" type="text" v-model="forminput.value" @change="changeInput(forminput)" class="form-control" :id="forminput.id" >
           </div>
-          <div v-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || (forminput.loading || forminput.options.disabled) ">
-            <label :for="forminput.id" class="search-label" style="width: 100%; display: flex; justify-content: space-between">
-              <span>{{forminput.label || forminput.attribute }}</span>
-              <span class="skin-color">{{ getLabelOperator(forminput.operator)}}</span>
-            </label>
+          <div v-else-if="forminput.type === 'selectfield' || forminput.type === 'autocompletefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || (forminput.loading || forminput.options.disabled) ">
+            <search-panel-label :forminput="forminput"></search-panel-label>
             <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"></bar-loader>
-            <select2  :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
+            <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
           </div>
           <div v-if="forminput.logicop" class="search-logicop skin-border-color">
             <h4>{{ forminput.logicop }}</h4>
@@ -48,11 +38,11 @@
 
 <script>
 import Select2 from 'components/SearchSelect2.vue'
-import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
-
+import SearchPanelLabel from "./SearchPanelLabel.vue";
 export default {
   components:{
-    Select2
+    Select2,
+    SearchPanelLabel
   },
   data() {
     return {
@@ -60,9 +50,6 @@ export default {
     }
   },
   methods: {
-    getLabelOperator(operator){
-      return `[ ${EXPRESSION_OPERATORS[operator]} ]`
-    },
     async onFocus(event) {
       if (this.isMobile()) {
         const top = $(event.target).position().top - 10 ;
