@@ -5,13 +5,13 @@
 <template>
   <div class="form-group">
     <slot name="label">
-      <label :for="state.name" class="col-sm-4 control-label">{{ state.label }}
+      <label :for="state.name" class="col-sm-12 control-label">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
         <i v-if="showhelpicon" :class="g3wtemplate.font['info']" class="skin-color" style="margin-left: 3px; cursor: pointer" @click="showHideHelp"></i>
         <slot name="label-action"></slot>
       </label>
     </slot>
-    <div class="col-sm-8">
+    <div class="col-sm-12">
       <slot name="loading"></slot>
       <slot name="body"></slot>
       <slot name="message">
@@ -35,5 +35,8 @@
 </script>
 
 <style scoped>
-
+  .control-label {
+    text-align: left !important;
+    margin-bottom: 10px;
+  }
 </style>
