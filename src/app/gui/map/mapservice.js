@@ -1147,11 +1147,13 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
  */
 proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
   try {
-    const [layerNameorId, fieldsValuesSearch] = zoom_to_features.split(':');
-    if (layerNameorId && fieldsValuesSearch) {
-      const projectLayer = this.project.getLayers().find(layer => {
-        return layer.id === layerNameorId || layer.name === layerNameorId;
-      });
+    const [layerNameorIdorOrigname, fieldsValuesSearch] = zoom_to_features.split(':');
+    if (layerNameorIdorOrigname && fieldsValuesSearch) {
+      const projectLayer = this.project.getLayers().find(layer =>
+        layer.id === layerNameorIdorOrigname ||
+        layer.name === layerNameorIdorOrigname ||
+        layer.origname === layerNameorIdorOrigname
+      );
       if (projectLayer) {
         const layer = this.project.getLayerById(projectLayer.id);
         const filter = createFilterFromString({
