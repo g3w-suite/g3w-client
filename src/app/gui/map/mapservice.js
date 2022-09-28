@@ -1148,7 +1148,7 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
 proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
   try {
     const [layerNameorIdorOrigname, fieldsValuesSearch] = zoom_to_features.split(':');
-    if (layerNameorId && fieldsValuesSearch) {
+    if (layerNameorIdorOrigname && fieldsValuesSearch) {
       const projectLayer = this.project.getLayers().find(layer =>
         layer.id === layerNameorIdorOrigname ||
         layer.name === layerNameorIdorOrigname ||
