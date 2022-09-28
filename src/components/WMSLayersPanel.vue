@@ -81,11 +81,13 @@ export default {
         const firstLayer = layers[0];
         if (layers.length === 1) {
           this.epsg = this.layerProjections[firstLayer].crss[0];
-          this.projections = [...this.layerProjections[firstLayer].crss];
+          // take first layer selected supported crss
+          this.projections = this.layerProjections[firstLayer].crss;
         } else this.projections = this.projections.filter(projection => this.layerProjections[layers[layers.length -1]].crss.index(projection) !== -1);
       } else {
+        // Reset epsg and projections to initial values
         this.epsg = null;
-        this.projections.splice(0);
+        this.projections = [];
       }
     },
     async epsg(){
