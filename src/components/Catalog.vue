@@ -72,7 +72,7 @@
         </layerslegend>
       </div>
     </div>
-    <cataloglayermenu :layerMenu="layerMenu"></cataloglayermenu>
+    <cataloglayermenu/>
   </div>
 </template>
 
