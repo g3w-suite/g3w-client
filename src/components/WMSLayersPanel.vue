@@ -31,7 +31,7 @@ export default {
   name: "wmpspanel",
   data(){
     return {
-      laoding: false,
+      loading: false,
       position: undefined,
       name: undefined,
       title: null,
@@ -71,25 +71,23 @@ export default {
     },
     //filter layer based on current epsg
     filterLayerByCurrentEpsg(){
-      this.layers = this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1);
+      this.layers = this.epsg !== null ? this.layers.filter(({name}) => this.layerProjections[name].crss.indexOf(this.epsg) !== -1) : this.$options.config.layers;
     }
   },
   watch: {
-    // when chanhe selected layers
+    // when change selected layers
     selectedlayers(layers){
       if (layers.length) {
         const firstLayer = layers[0];
         if (layers.length === 1) {
           this.epsg = this.layerProjections[firstLayer].crss[0];
+          // take first layer selected supported crss
           this.projections = this.layerProjections[firstLayer].crss;
         } else this.projections = this.projections.filter(projection => this.layerProjections[layers[layers.length -1]].crss.index(projection) !== -1);
       } else {
+        // Reset epsg and projections to initial values
         this.epsg = null;
-        this.projections.splice(0);
-        this.layers = Object.keys(this.layerProjections).map(name => ({
-          name,
-          title: this.layerProjections[name].title
-        }));
+        this.projections = [];
       }
     },
     async epsg(){
@@ -111,8 +109,8 @@ export default {
         }).sort(),
         title: layer.title
       };
-      this.layers.push(layer)
     });
+    this.layers = layers;
     // title of wms
     this.title = title;
     // abstract of wms
