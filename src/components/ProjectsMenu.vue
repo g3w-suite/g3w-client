@@ -6,14 +6,14 @@
   <div id="menu-projects" class="container">
     <div class="row row-equal">
       <!-- item -->
-      <div v-for="menuitem in state.menuitems"  :key="menuitem.title" @click="trigger(menuitem)" class="col-xs-12 col-sm-4 project-menu">
+      <div v-for="(menuitem, index) in state.menuitems"  :key="menuitem.title" @click="trigger(menuitem)" class="col-xs-12 col-sm-4 project-menu">
         <div class="project-menu-item-image">
           <img :src="logoSrc(menuitem.thumbnail)" class="img-responsive">
         </div>
         <div class="project-menu-item-content">
           <div class="project-menu-item-text">
             <h4 class="project-menu-item-title">{{ menuitem.title }}</h4>
-            <div v-html="menuitem.description"></div>
+            <div :ref="`description_${index}`" class="project-menu-too-long-description" @mouseover="showFullDescription(index)" @mouseout="hideFullDescription(index)" v-html="menuitem.description"></div>
           </div>
         </div>
       </div>
@@ -38,6 +38,12 @@ export default {
     }
   },
   methods: {
+    showFullDescription(index){
+      this.$refs[`description_${index}`][0].classList.remove('project-menu-too-long-description');
+    },
+    hideFullDescription(index){
+      this.$refs[`description_${index}`][0].classList.add('project-menu-too-long-description');
+    },
     trigger(item) {
       if (item.cbk) {
         //set full screen modal
@@ -79,3 +85,11 @@ export default {
   }
 };
 </script>
+<style scoped>
+  .project-menu-too-long-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
