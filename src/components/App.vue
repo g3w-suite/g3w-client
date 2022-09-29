@@ -1052,9 +1052,9 @@ export default {
     }
   },
   watch: {
-    'language'(lng, currentlng) {
-      if (currentlng) {
-        ApplicationService.changeLanguage(lng);
+    'language'(language, currentlanguage) {
+      if (currentlanguage) {
+        ApplicationService.changeLanguage(language);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
@@ -1064,7 +1064,7 @@ export default {
     this.delayTime = 0;
   },
   created() {
-    this.language = this.appconfig._i18n.lng;
+    this.language = this.appconfig._i18n.language;
     this.custom_modals = [];
     this.custom_header_items_position = {
       0: [],

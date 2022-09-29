@@ -13,7 +13,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => {
           const title = (binding.arg === 'plugin' ? tPlugin : t)(binding.value);
           el.setAttribute('title', title);

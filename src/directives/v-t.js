@@ -14,7 +14,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => {
           const value = binding.value !== null ? t(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {

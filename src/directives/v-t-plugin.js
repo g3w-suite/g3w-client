@@ -14,7 +14,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => {
           const value = binding.value !== null ? tPlugin(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {

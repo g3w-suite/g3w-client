@@ -13,7 +13,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => { el.setAttribute('placeholder', (binding.arg === 'plugin' ? tPlugin : t)(binding.value)); }
       ]
     });

@@ -62,8 +62,8 @@ const ApplicationService = function() {
       this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
-      const browserLng = navigator && navigator.language || 'en';
-      const language = appConfig.supportedLng.find(lng => browserLng.indexOf(lng) !== -1);
+      const browserLanguage = navigator && navigator.language || 'en';
+      const language = appConfig.supportedLanguages.find(language => browserLanguage.indexOf(language) !== -1);
       return Promise.reject({
         error,
         language
@@ -76,11 +76,11 @@ const ApplicationService = function() {
    * setup Internationalization
    */
   this.setupI18n = function() {
-    const lngConfig = this._config._i18n;
-    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
-    this.setApplicationLanguage(lngConfig.lng);
+    const languageConfig = this._config._i18n;
+    languageConfig.appLanguages = this._config.i18n.map(languageLabel => languageLabel[0]);
+    this.setApplicationLanguage(languageConfig.language);
     //setup internationalization for translation
-    i18ninit(lngConfig);
+    i18ninit(languageConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set accept-language reuest header based on config language
     const userLanguage = this._config.user.i18n || 'en';
@@ -150,12 +150,12 @@ const ApplicationService = function() {
    *  filter token methods
    */
 
-  this.changeLanguage = function(lng){
-    changeLanguage(lng);
-    ApplicationState.lng = lng;
+  this.changeLanguage = function(language){
+    changeLanguage(language);
+    ApplicationState.language = language;
     const pathname = window.location.pathname;
     const pathArray = pathname.split('/');
-    pathArray[1] = lng;
+    pathArray[1] = language;
     history.replaceState(null, null, pathArray.join('/'));
   };
 
@@ -199,12 +199,12 @@ const ApplicationService = function() {
     ApplicationState.gui.app.disabled = bool;
   };
 
-  this.setApplicationLanguage = function(lng='en') {
-    ApplicationState.lng = lng;
+  this.setApplicationLanguage = function(language='en') {
+    ApplicationState.language = language;
   };
 
   this.getApplicationLanguage = function() {
-    return ApplicationState.lng;
+    return ApplicationState.language;
   };
 
   this.setOnline = function() {
@@ -319,7 +319,7 @@ const ApplicationService = function() {
       config.credits = initConfig.credits;
       config.i18n = initConfig.i18n;
       // get language from server
-      config._i18n.lng = config.user.i18n;
+      config._i18n.language = config.user.i18n;
       // create application configuration
       // check if is inside a iframe
       config.group.layout.iframe = window.top !== window.self;
