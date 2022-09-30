@@ -2,7 +2,7 @@
   <div :id="id" class="input-group date">
     <input :id="forminput.id" type='text' class="form-control"/>
     <span class="input-group-addon skin-color">
-      <span :class="g3wtemplate.getFontClass('calendar')"></span>
+      <span :class="g3wtemplate.getFontClass(time ? 'time': 'calendar')"></span>
     </span>
   </div>
 
@@ -22,18 +22,16 @@
     },
     created(){
       this.id = `search_datetime_${getUniqueDomId()}`;
-      this.forminput.options.formats = [{
-        "date": true,
-        "time": false,
-        "fieldformat": "yyyy-MM-dd",
-        "displayformat": "yyyy",
-        "default": null
-      }]
+    },
+    computed: {
+      time() {
+        return this.forminput.options.format.time;
+      }
     },
     async mounted() {
       await this.$nextTick();
-      const {options: {formats}} = this.forminput;
-      let {fieldformat, displayformat} = formats[0];
+      const {options: {format}} = this.forminput;
+      let {fieldformat, displayformat} = format;
       fieldformat = convertQGISDateTimeFormatToMoment(fieldformat);
       displayformat = convertQGISDateTimeFormatToMoment(displayformat);
       $(`#${this.id}`).datetimepicker({
