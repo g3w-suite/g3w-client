@@ -1,5 +1,6 @@
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
+const { createFeatureFromFeatureObject } = require('core/utils/geo');
 const { sanitizeUrl } = require('core/utils/utils');
 const GUI = require('gui/gui');
 const RESERVERDPARAMETRS = {
@@ -98,7 +99,7 @@ proto.getOlSelectionFeatures = function(){
 
 proto.addOlSelectionFeature = function({id, feature}={}){
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature,
+    feature: createFeatureFromFeatureObject({id, feature}),
     added: false
   };
   return this.olSelectionFeatures[id];

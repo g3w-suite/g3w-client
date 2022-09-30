@@ -1562,7 +1562,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
       layer.addOlSelectionFeature({
         id: fid,
-        geometry: feature.geometry
+        feature
       })
     }
   }
