@@ -1,3 +1,7 @@
+<!-- 
+  @since v3.7.0
+-->
+
 <template>
   <div id="map_footer_right" style="display: flex;">
     <div id="scale-control"></div>

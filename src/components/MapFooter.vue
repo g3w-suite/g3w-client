@@ -1,3 +1,7 @@
+<!-- 
+  @since v3.7.0
+-->
+
 <template>
   <div id="map_footer" class="skin-border-color">
     <map-footer-left/>

@@ -1,3 +1,7 @@
+<!-- 
+  @since v3.7.0
+-->
+
 <template>
   <div id="map_footer_left" style="display: flex;" >
     <a href="https://g3wsuite.it/" style="margin-left: 5px; align-self: center;" target="_blank">
