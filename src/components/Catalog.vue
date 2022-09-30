@@ -72,7 +72,7 @@
         </layerslegend>
       </div>
     </div>
-    <cataloglayermenu/>
+    <cataloglayercontextmenu/>
   </div>
 </template>
 
@@ -80,7 +80,7 @@
 import {MAP_SETTINGS} from "app/constant";
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
-import CatalogLayerMenu from 'components/CatalogLayerMenu.vue';
+import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
 
 const ApplicationService = require('core/applicationservice');
 const GUI = require('gui/gui');
@@ -104,7 +104,7 @@ export default {
   },
   components: {
     'changemapthemes': ChangeMapThemesComponent,
-    'cataloglayermenu' : CatalogLayerMenu
+    'cataloglayercontextmenu' : CatalogLayerContextMenu
   },
   computed: {
     //show or not group toolbar

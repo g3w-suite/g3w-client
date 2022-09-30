@@ -1,3 +1,7 @@
+<!--
+  @since v3.7.0
+-->
+
 <template>
   <ul id="layer-menu" ref="layer-menu" v-click-outside-layer-menu="closeLayerMenu" tabindex="-1" v-if="layerMenu.show" :style="{top: layerMenu.top + 'px', left: layerMenu.left + 'px' }">
     <li class="title">
