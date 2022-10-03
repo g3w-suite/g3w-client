@@ -205,8 +205,25 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
  * @param field (form input)
  * @returns {Promise<*[]>}
  */
-proto.getValuesFromField = function(field){
-  if (field.options.layer_id) return this.getValueRelationValues(field);
+proto.getValuesFromField = async function(field){
+  if (field.options.layer_id) {
+    const uniqueValues = await this.getUniqueValuesFromField({
+      field,
+      unique: field.options.key
+    });
+    const layer = CatalogLayersStorRegistry.getLayerById(field.options.layer_id);
+    const filter = createFilterFormInputs({
+      layer,
+      search_endpoint: this.getSearchEndPoint(),
+      inputs: uniqueValues.map( value => ({
+        attribute: field.options.value,
+        logicop: "OR",
+        operator: "eq",
+        value
+      }))
+    });
+    return this.getValueRelationValues(field, filter);
+  }
   else if (field.options.values.length) return this.getValueMapValues(field);
   else return this.getUniqueValuesFromField({
       field,
@@ -556,7 +573,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             field,
             value
           });
-          //need to set undefined beacuse if we has a subscribe input with valuerelations widget i need to wxtract the value of the field to get
+          //need to set undefined because if we has a subscribe input with valuerelations widget i need to extract the value of the field to get
           // filter data from relation layer
           this.searchLayer.getFilterData({
             field: fieldParams
