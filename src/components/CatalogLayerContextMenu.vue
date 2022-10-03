@@ -161,6 +161,11 @@
 
   export default {
     name: 'Cataloglayermenu',
+    props: {
+      external: {
+        type: Object
+      }
+    },
     data(){
       return {
         layerMenu: {
@@ -415,7 +420,7 @@
       getGeometryType(layerId, external=false){
         let geometryType;
         if (external){
-          const layer = this.state.external.vector.find(layer => layer.id === layerId);
+          const layer = this.external.vector.find(layer => layer.id === layerId);
           if (layer) geometryType = layer.geometryType;
         } else {
           const originalLayer = CatalogLayersStoresRegistry.getLayerById(layerId);

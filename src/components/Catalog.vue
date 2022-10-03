@@ -72,7 +72,7 @@
         </layerslegend>
       </div>
     </div>
-    <cataloglayercontextmenu/>
+    <cataloglayercontextmenu :external="this.state.external"/>
   </div>
 </template>
 
