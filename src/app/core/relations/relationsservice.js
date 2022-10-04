@@ -1,4 +1,5 @@
-const { inherit, XHR, base} = require('core/utils/utils');
+const {inherit, XHR, base } = require('core/utils/utils');
+const {sanitizeFidFeature} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 
 function RelationsService(options={}) {
@@ -19,12 +20,8 @@ proto.createUrl = function(options={}){
   if (father !== undefined) layerId = layer.id === father ? child: father;
   else layerId = layer.id === referencedLayer ? referencingLayer: referencedLayer;
   const dataUrl = currentProject.getLayerById(layerId).getUrl(type);
-  let  value = fid;
-  if (typeof value === 'string') {
-    value = value.split('.');
-    value = value.length === 1 ? value[0]: value[1];
-  }
-  return `${dataUrl}?relationonetomany=${relationId}|${value}`;
+  const value = sanitizeFidFeature(fid);
+  return `${dataUrl}?relationonetomany=${relationId}|${value}&formatter=1`;
 };
 
 proto.getRelations = function(options={}) {

@@ -1058,7 +1058,14 @@ const geoutils = {
     });
     const geoTIFF = await response.blob();
     return geoTIFF;
-  }
+  },
+  sanitizeFidFeature(fid){
+    if (toRawType(fid) === 'String' && Number.isNaN(1*fid))  {
+      fid = fid.split('.');
+      fid = fid.length === 2 ? fid[1] : fid[0];
+    }
+    return fid;
+  },
 };
 
 module.exports = geoutils;
