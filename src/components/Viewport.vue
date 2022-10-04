@@ -216,5 +216,10 @@
 </script>
 
 <style scoped>
-
+  #g3w-view-content {
+    /**
+     * used in with with user message component
+     */
+    z-index: 999;
+  }
 </style>
