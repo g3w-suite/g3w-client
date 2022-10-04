@@ -474,16 +474,27 @@ const utils = {
       })
     }
   },
-  createSingleFieldParameter({field, value, operator='eq', logicop=null}){
-    logicop = logicop && `|${logicop}`;
-    if (Array.isArray(value)){
-      let filter = '';
-      const valueLenght = value.length;
-      value.forEach((value, index) =>{
-        filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
-      });
-      return filter
-    } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+  createSingleFieldParameter({field, value, operator='eq', logicop=null, search_endpoint="api"}){
+    if (search_endpoint === 'api') {
+      logicop = logicop && `|${logicop}`;
+      if (Array.isArray(value)){
+        let filter = '';
+        const valueLenght = value.length;
+        value.forEach((value, index) =>{
+          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+        });
+        return filter
+      } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+    } else {
+      if (Array.isArray(value)){
+        let filter = '';
+        const valueLenght = value.length;
+        value.forEach((value, index) =>{
+          filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
+        });
+        return filter
+      } else return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+    }
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;
@@ -592,7 +603,7 @@ const utils = {
     return filter;
   },
   splitContextAndMethod(string=''){
-    const [context, method] = string.split(':')
+    const [context, method] = string.split(':');
     return {
       context,
       method
