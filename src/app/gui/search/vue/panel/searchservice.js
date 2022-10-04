@@ -209,7 +209,7 @@ proto.getValuesFromField = async function(field){
   if (field.options.layer_id) {
     const uniqueValues = await this.getUniqueValuesFromField({
       field,
-      unique: field.options.key
+      unique: field.attribute
     });
     const layer = CatalogLayersStorRegistry.getLayerById(field.options.layer_id);
     const filter = createFilterFormInputs({
