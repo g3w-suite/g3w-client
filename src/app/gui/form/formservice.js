@@ -105,6 +105,35 @@ proto.handleFieldsWithExpression = function(fields=[]){
         }
       })
     }
+    /**
+     * Case of a field that has a default value and the value depend of an expression set on qgis
+     */
+    if (options.default_expression){
+      const {referencing_fields=[]} = options.default_expression;
+      /**
+       * in case of explicit (with regular expression) server get a dependency of a field
+       * its value change of changing value of dependecy field/fields
+       */
+      if (referencing_fields.length) {
+        referencing_fields.forEach(referencing_field =>{
+          if (referencing_field) {
+            if (this.expression_fields_dependencies[referencing_field] === undefined)
+              this.expression_fields_dependencies[referencing_field] = [];
+            this.expression_fields_dependencies[referencing_field].push(field.name);
+          }
+        })
+      } else {
+        /**
+         * otherwise listen change of all field (exclude itself)
+         */
+        this.state.fields.forEach(_field => {
+          if (_field.name !== field.name)
+            if (this.expression_fields_dependencies[_field.name] === undefined)
+              this.expression_fields_dependencies[_field.name] = [];
+          this.expression_fields_dependencies[_field.name].push(field.name);
+        })
+      }
+    }
   });
   // start to evaluate field
   Object.keys(this.expression_fields_dependencies).forEach(name =>{
@@ -146,13 +175,13 @@ proto.evaluateExpression = function(input){
       inputService.handleFormInput({
         qgs_layer_id, // the owner of feature
         field, // field related
-        feature //featute to tranform in form_data
+        feature //feature to transform in form_data
       })
     })
   }
 };
 
-// Every input send to form it valid value that will change the genaral state of form
+// Every input send to form it valid value that will change the general state of form
 proto.isValid = function(input) {
   if (input) {
     // check mutually
@@ -220,7 +249,7 @@ proto.addComponent = function(component) {
       valid
     });
   }
-  // we can set a component cthat can be part of headeres (tabs or not)
+  // we can set a component that can be part of headers (tabs or not)
   if (header) {
     this.state.headers.push({title, name, id, icon});
     this.state.currentheaderid = this.state.currentheaderid || id;
