@@ -36,7 +36,7 @@
       <plugins-notify></plugins-notify>
     </div>
   </div>
-  <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content">
+  <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" style="z-index: 1000" :style="styles.content">
     <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block">
       <div v-if="previousTitle" class="g3w_contents_back">
         <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
