@@ -127,16 +127,17 @@ proto.handleFieldsWithExpression = function(fields=[]){
          * otherwise listen change of all field (exclude itself)
          */
         this.state.fields.forEach(_field => {
-          if (_field.name !== field.name)
+          if (_field.name !== field.name) {
             if (this.expression_fields_dependencies[_field.name] === undefined)
               this.expression_fields_dependencies[_field.name] = [];
-          this.expression_fields_dependencies[_field.name].push(field.name);
+            this.expression_fields_dependencies[_field.name].push(field.name);
+          }
         })
       }
     }
   });
-  // start to evaluate field
-  Object.keys(this.expression_fields_dependencies).forEach(name =>{
+  // start to evaluate field id feature is New
+  this.state.feature.isNew() && Object.keys(this.expression_fields_dependencies).forEach(name =>{
     const field = this.state.fields.find(field => field.name === name);
     field && this.evaluateExpression(field);
   })
@@ -159,6 +160,10 @@ proto.getValidComponent = function(id) {
   return this.state.componentstovalidate[id];
 };
 
+/**
+ * Method called when an input change value
+ * @param input
+ */
 proto.changeInput = function(input){
   this.evaluateExpression(input);
   this.isValid(input);
@@ -224,7 +229,6 @@ proto.isValid = function(input) {
         if (input.validate.valid) this.state.tovalidate[input_name].validate.valid = true
     }
   }
-
   this.state.valid = Object.values(this.state.tovalidate).reduce((previous, input) => {
     return previous && input.validate.valid;
   }, true) && Object.values(this.state.componentstovalidate).reduce((previous, valid) => {
