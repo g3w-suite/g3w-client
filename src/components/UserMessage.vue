@@ -26,6 +26,8 @@
 </template>
 
 <script>
+  import {ZINDEXES} from "../app/constant";
+
   const GUI = require('gui/gui');
   const COLORS = {
     success: {
@@ -64,7 +66,8 @@
     warning: {},
     alert: {},
     tool: {
-      "z-index": "900"
+      "z-index": ZINDEXES.usermessage.tool,
+      left: "40px"
     },
     loading: {},
   };
