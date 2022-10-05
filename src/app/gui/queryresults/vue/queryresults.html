@@ -46,8 +46,10 @@
                       data-placement="bottom" data-toggle="tooltip" v-t-tooltip="'layer_selection_filter.tools.filter'">
                 <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
               </span>
-                <button class="btn btn-box-tool" data-widget="collapse"><i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i></button>
               </div>
+              <button class="btn btn-box-tool" data-widget="collapse">
+                <i class="btn-collapser skin-color" :class="g3wtemplate.font['minus']"></i>
+              </button>
             </div>
             <template v-if="state.layeractiontool[layer.id].component">
               <div class="g3w-layer-action-tools with-border" style="padding: 5px" :class="{'mobile': isMobile()}">
