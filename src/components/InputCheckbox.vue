@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       value: null,
-      label:null,
+      label: null,
       id: getUniqueDomId() // new id
     }
   },
@@ -51,13 +51,11 @@ export default {
     }
   },
   created() {
-    this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
+    this.value = this.service.convertValueToChecked();
   },
-  mounted() {
-    if (!this.state.forceNull) {
-      this.setLabel();
-      this.change();
-    }
+  async mounted() {
+    await this.$nextTick();
+    this.setLabel();
   }
 };
 </script>
