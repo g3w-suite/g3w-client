@@ -6,11 +6,20 @@
     <li v-if="loading">
       <bar-loader :loading="loading"></bar-loader>
     </li>
-    <li style="display: flex; justify-content: space-between; background: transparent !important; margin-bottom: 10px;">
-      <input v-model="newwmsurl" class="form-control" style="flex-grow: 1; color:#000000;">
-      <button v-disabled="!newwmsurlvalid" style="width: 50px; border-radius: 0" @click.stop="addNewWmsUrl" class="btn btn-block skin-background-color">
-        <i :class="g3wtemplate.getFontClass('plus-square')"></i>
-      </button>
+    <li style="display: flex; flex-direction: column; justify-content: space-between; background: transparent !important; margin-bottom: 10px;">
+      <div class="wms_url_input_content">
+        <label for="add_custom_name_url_wms_input">Name</label>
+        <input id="add_custom_name_url_wms_input" v-model="name_newwmsurl" class="form-control" style="width: 100%; color:#000000;">
+      </div>
+      <div class="wms_url_input_content">
+        <label for="add_custom_url_wms_input">URL</label>
+        <input id="add_custom_url_wms_input" v-model="newwmsurl" class="form-control" style="width: 100%; color:#000000;">
+      </div>
+      <div>
+        <button v-disabled="!inputsnewwmsurlvalid" style="width: 100%;" @click.stop="addNewWmsUrl" class="btn btn-block skin-background-color">
+          <i :class="g3wtemplate.getFontClass('plus-square')"></i>
+        </button>
+      </div>
     </li>
     <li v-if="status.error">
       <div class="g3w-add-wms-url-message g3w-wmsurl-error" v-t="'server_error'"></div>
@@ -48,6 +57,7 @@
     data(){
       return {
         newwmsurl: null,
+        name_newwmsurl: null,
         loading: false,
         status: {
           error: false,
@@ -56,8 +66,8 @@
       }
     },
     computed: {
-      newwmsurlvalid() {
-        return this.newwmsurl !== null && this.newwmsurl.trim() && isURL(this.newwmsurl);
+      inputsnewwmsurlvalid() {
+        return (this.newwmsurl !== null && this.newwmsurl.trim() && isURL(this.newwmsurl)) && (this.name_newwmsurl !== null && this.name_newwmsurl.trim());
       }
     },
     methods: {
@@ -96,5 +106,8 @@
   }
   .g3w-wmsurl-already-added {
     background-color: orange;
+  }
+  .wms_url_input_content{
+    margin-bottom: 5px;
   }
 </style>
