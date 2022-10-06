@@ -51,11 +51,10 @@ export default {
     }
   },
   created() {
-    this.value = this.service.convertValueToChecked();
+    this.value = this.state.forceNull ? this.value : this.service.convertValueToChecked();
   },
-  async mounted() {
-    await this.$nextTick();
-    this.setLabel();
+  mounted() {
+    if (!this.state.forceNull) this.setLabel();
   }
 };
 </script>
