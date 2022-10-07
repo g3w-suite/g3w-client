@@ -4,8 +4,6 @@ const {t} = require('core/i18n/i18n.service');
 function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
-  // in case is set default input value to input
-  this.has_default_value = false;
   // type of input
   //this.state.validate.required && this.setValue(this.state.value);
   /*
@@ -43,8 +41,8 @@ proto.setValue = function(value) {
         }
       }
     } else {
-      this.state.value = this.state.input.options.default;
-      this.has_default_value = true;
+      if (typeof this.state.input.options.default != "undefined")
+        this.state.value = this.state.input.options.default;
     }
   }
 };
