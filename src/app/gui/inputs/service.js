@@ -41,7 +41,7 @@ proto.setValue = function(value) {
         }
       }
     } else {
-      if (typeof this.state.input.options.default != "undefined")
+      if (typeof this.state.input.options.default != "undefined" || this.state.input.options.default !== null)
         this.state.value = this.state.input.options.default;
     }
   }
