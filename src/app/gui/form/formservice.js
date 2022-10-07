@@ -170,7 +170,7 @@ proto.evaluateExpression = function(input) {
   if (filter_expression_fields_dependencies) {
     const feature = this.feature.clone();
     feature.set(input.name, input.value);
-    expression_fields_dependencies.forEach(expression_dependency_field =>{
+    filter_expression_fields_dependencies.forEach(expression_dependency_field =>{
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFormInput({
@@ -188,7 +188,7 @@ proto.evaluateExpression = function(input) {
     if (deafult_expression_fields_dependencies) {
       const feature = this.feature.clone();
       feature.set(input.name, input.value);
-      expression_fields_dependencies.forEach(expression_dependency_field =>{
+      deafult_expression_fields_dependencies.forEach(expression_dependency_field =>{
         const field = this.state.fields.find(field => field.name === expression_dependency_field);
         const qgs_layer_id = this.layer.getId();
         inputService.handleFormInput({
