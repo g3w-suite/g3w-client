@@ -70,7 +70,8 @@ function FormService() {
       footer,
       ready: false
     };
-    this.expression_fields_dependencies = {};
+    this.filter_expression_fields_dependencies = {}; // filter expression fields dependencies
+    this.default_expression_fields_depandencies = {}; // default expression fields dependencies
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -99,9 +100,9 @@ proto.handleFieldsWithExpression = function(fields=[]){
       const {referencing_fields=[]} = options.filter_expression;
       referencing_fields.forEach(referencing_field =>{
         if (referencing_field) {
-          if (this.expression_fields_dependencies[referencing_field] === undefined)
-            this.expression_fields_dependencies[referencing_field] = [];
-          this.expression_fields_dependencies[referencing_field].push(field.name);
+          if (this.filter_expression_fields_dependencies[referencing_field] === undefined)
+            this.filter_expression_fields_dependencies[referencing_field] = [];
+          this.filter_expression_fields_dependencies[referencing_field].push(field.name);
         }
       })
     }
@@ -117,9 +118,9 @@ proto.handleFieldsWithExpression = function(fields=[]){
       if (referencing_fields.length) {
         referencing_fields.forEach(referencing_field =>{
           if (referencing_field) {
-            if (this.expression_fields_dependencies[referencing_field] === undefined)
-              this.expression_fields_dependencies[referencing_field] = [];
-            this.expression_fields_dependencies[referencing_field].push(field.name);
+            if (this.default_expression_fields_depandencies[referencing_field] === undefined)
+              this.default_expression_fields_depandencies[referencing_field] = [];
+            this.default_expression_fields_depandencies[referencing_field].push(field.name);
           }
         })
       } else {
@@ -128,19 +129,14 @@ proto.handleFieldsWithExpression = function(fields=[]){
          */
         this.state.fields.forEach(_field => {
           if (_field.name !== field.name) {
-            if (this.expression_fields_dependencies[_field.name] === undefined)
-              this.expression_fields_dependencies[_field.name] = [];
-            this.expression_fields_dependencies[_field.name].push(field.name);
+            if (this.default_expression_fields_depandencies[_field.name] === undefined)
+              this.default_expression_fields_depandencies[_field.name] = [];
+            this.default_expression_fields_depandencies[_field.name].push(field.name);
           }
         })
       }
     }
   });
-  // start to evaluate field id feature is New
-  this.state.feature.isNew() && Object.keys(this.expression_fields_dependencies).forEach(name =>{
-    const field = this.state.fields.find(field => field.name === name);
-    field && this.evaluateExpression(field);
-  })
 };
 
 proto.setCurrentFormPercentage = function(perc){
@@ -169,9 +165,9 @@ proto.changeInput = function(input){
   this.isValid(input);
 };
 
-proto.evaluateExpression = function(input){
-  const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
-  if (expression_fields_dependencies) {
+proto.evaluateExpression = function(input) {
+  const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
+  if (filter_expression_fields_dependencies) {
     const feature = this.feature.clone();
     feature.set(input.name, input.value);
     expression_fields_dependencies.forEach(expression_dependency_field =>{
@@ -183,6 +179,25 @@ proto.evaluateExpression = function(input){
         feature //feature to transform in form_data
       })
     })
+  }
+  /***
+   * Only in case of new feature will evaluate eventually default_expression
+   */
+  if (this.state.feature.isNew()) {
+    const deafult_expression_fields_dependencies = this.default_expression_fields_depandencies[input.name];
+    if (deafult_expression_fields_dependencies) {
+      const feature = this.feature.clone();
+      feature.set(input.name, input.value);
+      expression_fields_dependencies.forEach(expression_dependency_field =>{
+        const field = this.state.fields.find(field => field.name === expression_dependency_field);
+        const qgs_layer_id = this.layer.getId();
+        inputService.handleFormInput({
+          qgs_layer_id, // the owner of feature
+          field, // field related
+          feature //feature to transform in form_data
+        })
+      })
+    }
   }
 };
 
