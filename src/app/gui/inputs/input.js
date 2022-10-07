@@ -8,8 +8,8 @@ const Input = {
     'baseinput': BaseInput
   },
   watch: {
-    'notvalid'(newValid){
-      if (newValid) this.service.setErrorMessage(this.state)
+    'notvalid'(notvalid){
+      notvalid && this.service.setErrorMessage(this.state)
     },
   },
   created() {
@@ -19,6 +19,30 @@ const Input = {
     this.$watch(() => ApplicationState.lng, () => this.service.setErrorMessage(this.state));
     this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
+  },
+  mounted() {
+    /**
+     * in case of input value is fill with default value option we nee to emit changeinput event
+     * without check validation. Example:
+     * {
+        "name": "id",
+        "type": "integer",
+        "label": "id",
+        "editable": false,
+        "validate": {
+            "required": true,
+            "unique": true
+        },
+        "pk": true,
+        "default": "nextval('g3wsuite.zone_id_seq'::regclass)",
+        "input": {
+            "type": "text",
+            "options": {}
+        }
+      }
+     in this case if we start a validation, it fail because default value is a string while input is interger
+     */
+    this.$emit('changeinput', this.state);
   },
   destroyed(){
     // emit remove input to form (in case for example tab visibility condition)
