@@ -161,11 +161,37 @@ proto.getValidComponent = function(id) {
  * @param input
  */
 proto.changeInput = function(input){
-  this.evaluateExpression(input);
+  this.evaluateFilterExpression(input);
+  this.evaluateDefaultExpression(input);
   this.isValid(input);
 };
 
-proto.evaluateExpression = function(input) {
+/**
+ * Method to evaluate default expression
+ * @param input
+ */
+proto.evaluateDefaultExpression = function(input) {
+  const default_expression_fields_dependencies = this.default_expression_fields_depandencies[input.name];
+  if (default_expression_fields_dependencies) {
+    const feature = this.feature.clone();
+    feature.set(input.name, input.value);
+    default_expression_fields_dependencies.forEach(expression_dependency_field =>{
+      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleFormInput({
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature //feature to transform in form_data
+      })
+    })
+  }
+};
+
+/**
+ * Method to evaluate filter expression
+ * @param input
+ */
+proto.evaluateFilterExpression = function(input) {
   const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
   if (filter_expression_fields_dependencies) {
     const feature = this.feature.clone();
@@ -179,25 +205,6 @@ proto.evaluateExpression = function(input) {
         feature //feature to transform in form_data
       })
     })
-  }
-  /***
-   * Only in case of new feature will evaluate eventually default_expression
-   */
-  if (this.state.feature.isNew()) {
-    const deafult_expression_fields_dependencies = this.default_expression_fields_depandencies[input.name];
-    if (deafult_expression_fields_dependencies) {
-      const feature = this.feature.clone();
-      feature.set(input.name, input.value);
-      deafult_expression_fields_dependencies.forEach(expression_dependency_field =>{
-        const field = this.state.fields.find(field => field.name === expression_dependency_field);
-        const qgs_layer_id = this.layer.getId();
-        inputService.handleFormInput({
-          qgs_layer_id, // the owner of feature
-          field, // field related
-          feature //feature to transform in form_data
-        })
-      })
-    }
   }
 };
 

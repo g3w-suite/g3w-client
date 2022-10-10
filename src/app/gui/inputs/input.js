@@ -19,10 +19,8 @@ const Input = {
     this.$watch(() => ApplicationState.lng, () => this.service.setErrorMessage(this.state));
     this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
-  },
-  mounted() {
     /**
-     * in case of input value is fill with default value option we nee to emit changeinput event
+     * in case of input value is fill with default value option we need to emit changeinput event
      * without check validation. Example:
      * {
         "name": "id",
@@ -42,7 +40,7 @@ const Input = {
       }
      in this case if we start a validation, it fail because default value is a string while input is interger
      */
-    this.$emit('changeinput', this.state);
+    this.state.value_from_default_value && this.$emit('changeinput', this.state);
   },
   destroyed(){
     // emit remove input to form (in case for example tab visibility condition)

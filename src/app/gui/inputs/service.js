@@ -41,8 +41,11 @@ proto.setValue = function(value) {
         }
       }
     } else {
-      if (typeof this.state.input.options.default != "undefined" || this.state.input.options.default !== null)
+      //check if we can state.check get_default_value from input.options.default is set
+      if ( this.state.get_default_value && typeof this.state.input.options.default !== "undefined" && this.state.input.options.default !== null) {
         this.state.value = this.state.input.options.default;
+        this.state.value_from_default_value = true;
+      }
     }
   }
 };
