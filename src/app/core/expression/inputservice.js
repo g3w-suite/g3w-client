@@ -2,10 +2,10 @@ const DataRouterService = require('core/data/routerservice');
 const {convertFeatureToGEOJSON} = require('core/utils/geo');
 
 export default {
-  async handleFormInput({field, feature,qgs_layer_id}={}){
+  async handleFilterExpressionFormInput({field, feature,qgs_layer_id}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
-    let {key, value, layer_id=qgs_layer_id, filter_expression, default_expression, loading} = options;
+    let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
     if (filter_expression) {
       let features = [];
       loading.state = 'loading';
@@ -34,7 +34,13 @@ export default {
           break;
       }
       loading.state = 'ready';
-    } else if (default_expression) {
+    }
+  },
+  async handleDefaultExpressionFormInput({field, feature,qgs_layer_id}={}){
+    const form_data = convertFeatureToGEOJSON(feature);
+    const options = field.input.options;
+    let {layer_id=qgs_layer_id, default_expression} = options;
+    if (default_expression) {
       /**
        * In case of default_expression call expression_eval to get value from expression and set it to field
        */
@@ -52,7 +58,5 @@ export default {
         field.value = value;
       } catch(err){}
     }
-
-
   }
 }
