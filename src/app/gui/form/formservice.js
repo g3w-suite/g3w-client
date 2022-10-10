@@ -171,7 +171,7 @@ proto.handleFieldsWithExpression = function(fields=[]){
        * In case on applyOnUpdate true always listend dependenencies change
        * otherwise only for new Feature
        */
-      if (applyOnUpdate || (!applyOnUpdate && this.state.isnew)) {
+      if (applyOnUpdate || this.state.isnew) {
         const default_expression_dependency_fields = new Set();
         [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
         default_expression_dependency_fields.forEach(dependency_field => {
