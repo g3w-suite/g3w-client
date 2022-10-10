@@ -70,8 +70,7 @@ function FormService() {
       footer,
       ready: false
     };
-    this.filter_expression_fields_dependencies = {}; // filter expression fields dependencies
-    this.default_expression_fields_depandencies = {}; // default expression fields dependencies
+    this.expression_fields_dependencies = {}; // expression fields dependencies from filter_expression and default_expression
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -95,47 +94,30 @@ proto.setReady = function(bool=false){
  */
 proto.handleFieldsWithExpression = function(fields=[]){
   fields.forEach(field => {
+    const dependency_fields = new Set();
     const {options={}} = field.input;
-    if (options.filter_expression){
-      const {referencing_fields=[]} = options.filter_expression;
-      referencing_fields.forEach(referencing_field =>{
-        if (referencing_field) {
-          if (this.filter_expression_fields_dependencies[referencing_field] === undefined)
-            this.filter_expression_fields_dependencies[referencing_field] = [];
-          this.filter_expression_fields_dependencies[referencing_field].push(field.name);
-        }
-      })
+    /**
+     * Case of a field that has a filter_expression value object
+     */
+    if (options.filter_expression) {
+      const {referencing_fields=[], referenced_columns=[]} = options.filter_expression;
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => dependency_fields.add(dependency_field))
     }
     /**
-     * Case of a field that has a default value and the value depend of an expression set on qgis
+     * Case of a field that has a default_value object
      */
-    if (options.default_expression){
-      const {referencing_fields=[]} = options.default_expression;
-      /**
-       * in case of explicit (with regular expression) server get a dependency of a field
-       * its value change of changing value of dependecy field/fields
-       */
-      if (referencing_fields.length) {
-        referencing_fields.forEach(referencing_field =>{
-          if (referencing_field) {
-            if (this.default_expression_fields_depandencies[referencing_field] === undefined)
-              this.default_expression_fields_depandencies[referencing_field] = [];
-            this.default_expression_fields_depandencies[referencing_field].push(field.name);
-          }
-        })
-      } else {
-        /**
-         * otherwise listen change of all field (exclude itself)
-         */
-        this.state.fields.forEach(_field => {
-          if (_field.name !== field.name) {
-            if (this.default_expression_fields_depandencies[_field.name] === undefined)
-              this.default_expression_fields_depandencies[_field.name] = [];
-            this.default_expression_fields_depandencies[_field.name].push(field.name);
-          }
-        })
-      }
+    if (options.default_expression) {
+      const {referencing_fields=[], referenced_columns=[]} = options.default_expression;
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => dependency_fields.add(dependency_field))
     }
+
+    [...dependency_fields].forEach(referencing_field =>{
+      if (referencing_field) {
+        if (this.expression_fields_dependencies[referencing_field] === undefined)
+          this.expression_fields_dependencies[referencing_field] = [];
+        this.expression_fields_dependencies[referencing_field].push(field.name);
+      }
+    })
   });
 };
 
@@ -161,42 +143,20 @@ proto.getValidComponent = function(id) {
  * @param input
  */
 proto.changeInput = function(input){
-  this.evaluateFilterExpression(input);
-  this.evaluateDefaultExpression(input);
+  this.evaluateFieldsExpression(input);
   this.isValid(input);
-};
-
-/**
- * Method to evaluate default expression
- * @param input
- */
-proto.evaluateDefaultExpression = function(input) {
-  const default_expression_fields_dependencies = this.default_expression_fields_depandencies[input.name];
-  if (default_expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
-    default_expression_fields_dependencies.forEach(expression_dependency_field =>{
-      const field = this.state.fields.find(field => field.name === expression_dependency_field);
-      const qgs_layer_id = this.layer.getId();
-      inputService.handleFormInput({
-        qgs_layer_id, // the owner of feature
-        field, // field related
-        feature //feature to transform in form_data
-      })
-    })
-  }
 };
 
 /**
  * Method to evaluate filter expression
  * @param input
  */
-proto.evaluateFilterExpression = function(input) {
-  const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
-  if (filter_expression_fields_dependencies) {
+proto.evaluateFieldsExpression = function(input) {
+  const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
+  if (expression_fields_dependencies) {
     const feature = this.feature.clone();
     feature.set(input.name, input.value);
-    filter_expression_fields_dependencies.forEach(expression_dependency_field =>{
+    expression_fields_dependencies.forEach(expression_dependency_field =>{
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFormInput({
