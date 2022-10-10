@@ -443,7 +443,7 @@ proto.setFieldsWithValues = function(feature, fields) {
 };
 
 proto.getFieldsWithValues = function(obj, options={}) {
-  const exclude = options.exclude || [];
+  const {exclude=[], get_default_value=true}  = options;
   let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
   let feature;
   if (obj instanceof Feature) feature = obj;
@@ -467,6 +467,8 @@ proto.getFieldsWithValues = function(obj, options={}) {
       field.forceNull = false;
       field.validate.valid = true;
       field.validate._valid = true; //useful to get previous value in certain case
+      field.value_from_default_value = false; // need to be check if default value is set by server configuration field
+      field.get_default_value = get_default_value; // specify if need to get value from form field.input.options.default value in case of missing value of field.value
       field.validate.unique = true;
       field.validate.required = field.validate.required === undefined ? false : field.validate.required;
       field.validate.mutually_valid = true;
