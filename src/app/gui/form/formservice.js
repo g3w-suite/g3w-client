@@ -62,6 +62,7 @@ function FormService() {
       fields: null,
       buttons: this.buttons,
       disabled: false,
+      isnew,
       valid: true, // global form validation state. True at beginning
       // when input change will be update
       tovalidate: {},
@@ -70,7 +71,8 @@ function FormService() {
       footer,
       ready: false
     };
-    this.expression_fields_dependencies = {}; // expression fields dependencies from filter_expression and default_expression
+    this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
+    this.default_expression_fields_dependencies = {};
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -89,35 +91,96 @@ proto.setReady = function(bool=false){
 };
 
 /**
+ * Method called when an input change value
+ * @param input
+ */
+proto.changeInput = function(input){
+  this.evaluateFilterExpressionFields(input);
+  this.evaluateDefaultExpressionFields(input);
+  this.isValid(input);
+};
+
+/**
+ * Method to evaluate filter expression
+ * @param input
+ */
+proto.evaluateDefaultExpressionFields = function(input) {
+  const default_expression_fields_dependencies = this.default_expression_fields_dependencies[input.name];
+  if (default_expression_fields_dependencies) {
+    const feature = this.feature.clone();
+    feature.set(input.name, input.value);
+    default_expression_fields_dependencies.forEach(expression_dependency_field =>{
+      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleDefaultExpressionFormInput({
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature //feature to transform in form_data
+      })
+    })
+  }
+};
+
+/**
+ * Method to evaluate filter expression
+ * @param input
+ */
+proto.evaluateFilterExpressionFields = function(input) {
+  const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
+  if (filter_expression_fields_dependencies) {
+    const feature = this.feature.clone();
+    feature.set(input.name, input.value);
+    filter_expression_fields_dependencies.forEach(expression_dependency_field =>{
+      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleFilterExpressionFormInput({
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature //feature to transform in form_data
+      })
+    })
+  }
+};
+
+/**
  * Method to handle expression on
  * @param fields
  */
 proto.handleFieldsWithExpression = function(fields=[]){
   fields.forEach(field => {
-    const dependency_fields = new Set();
     const {options={}} = field.input;
     /**
      * Case of a field that has a filter_expression value object
      */
     if (options.filter_expression) {
+      const filter_expression_dependency_fields = new Set();
       const {referencing_fields=[], referenced_columns=[]} = options.filter_expression;
-      [...referenced_columns, ...referencing_fields].forEach(dependency_field => dependency_fields.add(dependency_field))
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => filter_expression_dependency_fields.add(dependency_field))
+      filter_expression_dependency_fields.forEach(dependency_field => {
+        if (this.filter_expression_fields_dependencies[dependency_field] === undefined)
+          this.filter_expression_fields_dependencies[dependency_field] = [];
+        this.filter_expression_fields_dependencies[dependency_field].push(field.name);
+      })
     }
     /**
-     * Case of a field that has a default_value object
+     * Case of a field that has a default_value object and check if applyOnUpdate only
      */
     if (options.default_expression) {
-      const {referencing_fields=[], referenced_columns=[]} = options.default_expression;
-      [...referenced_columns, ...referencing_fields].forEach(dependency_field => dependency_fields.add(dependency_field))
-    }
-
-    [...dependency_fields].forEach(referencing_field =>{
-      if (referencing_field) {
-        if (this.expression_fields_dependencies[referencing_field] === undefined)
-          this.expression_fields_dependencies[referencing_field] = [];
-        this.expression_fields_dependencies[referencing_field].push(field.name);
+      const {referencing_fields=[], referenced_columns=[], applyOnUpdate=false} = options.default_expression;
+      /**
+       * In case on applyOnUpdate true always listend dependenencies change
+       * otherwise only for new Feature
+       */
+      if (applyOnUpdate || (!applyOnUpdate && this.state.isnew)) {
+        const default_expression_dependency_fields = new Set();
+        [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
+        default_expression_dependency_fields.forEach(dependency_field => {
+          if (this.default_expression_fields_dependencies[dependency_field] === undefined)
+            this.default_expression_fields_dependencies[dependency_field] = [];
+          this.default_expression_fields_dependencies[dependency_field].push(field.name);
+        })
       }
-    })
+    }
   });
 };
 
@@ -136,36 +199,6 @@ proto.setValidComponent = function({id, valid}){
 
 proto.getValidComponent = function(id) {
   return this.state.componentstovalidate[id];
-};
-
-/**
- * Method called when an input change value
- * @param input
- */
-proto.changeInput = function(input){
-  this.evaluateFieldsExpression(input);
-  this.isValid(input);
-};
-
-/**
- * Method to evaluate filter expression
- * @param input
- */
-proto.evaluateFieldsExpression = function(input) {
-  const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
-  if (expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
-    expression_fields_dependencies.forEach(expression_dependency_field =>{
-      const field = this.state.fields.find(field => field.name === expression_dependency_field);
-      const qgs_layer_id = this.layer.getId();
-      inputService.handleFormInput({
-        qgs_layer_id, // the owner of feature
-        field, // field related
-        feature //feature to transform in form_data
-      })
-    })
-  }
 };
 
 // Every input send to form it valid value that will change the general state of form
