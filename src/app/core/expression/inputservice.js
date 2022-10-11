@@ -2,6 +2,13 @@ const DataRouterService = require('core/data/routerservice');
 const {convertFeatureToGEOJSON} = require('core/utils/geo');
 
 export default {
+  /**
+   * handleFilterExpressionFormInput
+   * @param field
+   * @param feature
+   * @param qgs_layer_id
+   * @returns {Promise<void|unknown>}
+   */
   async handleFilterExpressionFormInput({field, feature,qgs_layer_id}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
@@ -20,22 +27,29 @@ export default {
           },
           outputs: false
         });
-      } catch(err){}
-      //based on input type
-      switch (field.input.type){
-        case 'select_autocomplete':
-          field.input.options.values = [];
-          for (let i = 0; i < features.length; i++) {
-            field.input.options.values.push({
-              key: features[i].properties[key],
-              value: features[i].properties[value]
-            })
-          }
-          break;
+        //based on input type
+        switch (field.input.type){
+          case 'select_autocomplete':
+            field.input.options.values = [];
+            for (let i = 0; i < features.length; i++) {
+              field.input.options.values.push({
+                key: features[i].properties[key],
+                value: features[i].properties[value]
+              })
+            }
+            break;
+        }
+        return features
+      } catch(err){
+        return Promise.reject(err);
+      } finally {
+        loading.state = 'ready';
       }
-      loading.state = 'ready';
     }
   },
+  /*
+  *handleDefaultExpressionFormInput
+   */
   async handleDefaultExpressionFormInput({field, feature,qgs_layer_id}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
@@ -56,7 +70,10 @@ export default {
           outputs: false
         });
         field.value = value;
-      } catch(err){}
+        return value;
+      } catch(err){
+        return Promise.reject(err);
+      }
     }
   }
 }
