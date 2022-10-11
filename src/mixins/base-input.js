@@ -25,8 +25,8 @@ export default {
     // called when input value change
     change() {
       this.service.setEmpty();
-      // validate input
-      this.state.validate.required && this.service.validate();
+      // validate input if is required or need to be unique
+      if (this.state.validate.required || this.state.validate.unique) this.service.validate();
       // emit change input
       this.$emit('changeinput', this.state);
     },

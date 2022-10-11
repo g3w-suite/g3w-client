@@ -11,6 +11,9 @@ const Input = {
     'notvalid'(notvalid){
       notvalid && this.service.setErrorMessage(this.state)
     },
+    'state.value'(){
+      this.state.input.options.default_expression && this.change();
+    }
   },
   created() {
     this.service = new InputServices[this.state.input.type]({

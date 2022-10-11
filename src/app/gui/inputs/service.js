@@ -91,11 +91,8 @@ proto.validate = function() {
         this.state.validate.valid = !this.state.validate.required;
       } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
-      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
-        this.state.validate.valid = false;
-        this.state.validate.unique = false;
-      } else this.state.validate.unique = true;
+    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
     } else this.state.validate.valid = this._validator.validate(this.state.value);
   }
   return this.state.validate.valid;
@@ -111,7 +108,9 @@ proto.setErrorMessage = function(input) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
   else if (!input.validate.unique && input.validate.exclude_values)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  else if (input.validate.required) {
+  else if (input.validate.unique) {
+    this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
+  } else if (input.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
     if (this.state.info) {
       message = `${message}
