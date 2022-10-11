@@ -24,19 +24,21 @@ function ExpressionService(){
    */
   this.expression = async function({qgs_layer_id, layer_id, form_data, expression, formatter=1}){
     const url = `${this.project.getUrl('vector_data')}${layer_id}/`;
-    const response = await this.handleRequest({
-      url,
-      params: {
-        qgs_layer_id,
-        form_data,
-        expression,
-        formatter
-      }
-    });
-    const data = this.handleResponse(response);
-    return data;
+    try {
+      const response = await this.handleRequest({
+        url,
+        params: {
+          qgs_layer_id,
+          form_data,
+          expression,
+          formatter
+        }
+      });
+      return this.handleResponse(response);
+    } catch(err) {
+      return Promise.reject(err);
+    }
   };
-
   /**
    *
    * @param qgis_layer_id
@@ -48,18 +50,17 @@ function ExpressionService(){
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = async function({qgs_layer_id, form_data, expression, formatter=1}={}){
-    const url = this.project.getUrl('expression_eval');
-    const data = await this.handleRequest({
-      url,
-      params: {
-        qgs_layer_id,
-        form_data,
-        expression,
-        formatter
-      }
-    });
-    return data;
+   this.expression_eval = function({qgs_layer_id, form_data, expression, formatter=1}={}){
+     const url = this.project.getUrl('expression_eval');
+     return this.handleRequest({
+       url,
+       params: {
+         qgs_layer_id,
+         form_data,
+         expression,
+         formatter
+       }
+     });
   };
 
   /**
@@ -69,16 +70,12 @@ function ExpressionService(){
    * @contentType
    * @returns {Promise<*>}
    */
-  this.handleRequest = async function({url, params={}, contentType='application/json'}={}){
-    let data;
-    try {
-      data = await XHR.post({
-        url,
-        contentType,
-        data: JSON.stringify(params)
-      });
-    } catch(err){}
-    return data;
+  this.handleRequest = function({url, params={}, contentType='application/json'}={}){
+    return XHR.post({
+      url,
+      contentType,
+      data: JSON.stringify(params)
+    });
   };
 
   /***
@@ -87,7 +84,6 @@ function ExpressionService(){
    */
   this.handleResponse = function(response={}){
     return getFeaturesFromResponseVectorApi(response);
-
   };
 }
 
