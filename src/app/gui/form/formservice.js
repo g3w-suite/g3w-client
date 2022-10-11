@@ -163,15 +163,15 @@ proto.handleFieldsWithExpression = function(fields=[]){
       })
     }
     /**
-     * Case of a field that has a default_value object and check if applyOnUpdate only
+     * Case of a field that has a default_value object and check if apply_on_update only
      */
     if (options.default_expression) {
-      const {referencing_fields=[], referenced_columns=[], applyOnUpdate=false} = options.default_expression;
+      const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
       /**
-       * In case on applyOnUpdate true always listend dependenencies change
+       * In case on apply_on_update true always listend dependenencies change
        * otherwise only for new Feature
        */
-      if (applyOnUpdate || this.state.isnew) {
+      if (apply_on_update || this.state.isnew) {
         const default_expression_dependency_fields = new Set();
         [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
         default_expression_dependency_fields.forEach(dependency_field => {
