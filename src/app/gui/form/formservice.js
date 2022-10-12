@@ -125,7 +125,7 @@ proto.evaluateDefaultExpressionFields = function(input) {
  * Method to evaluate filter expression
  * @param input
  */
-proto.evaluateFilterExpressionFields = function(input) {
+proto.evaluateFilterExpressionFields = function(input={}) {
   const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
   if (filter_expression_fields_dependencies) {
     const feature = this.feature.clone();
@@ -182,6 +182,11 @@ proto.handleFieldsWithExpression = function(fields=[]){
       }
     }
   });
+  // start to evaluate filter expression field
+  Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
+    const field = this.state.fields.find(field => field.name === name);
+    this.evaluateFilterExpressionFields(field);
+  })
 };
 
 proto.setCurrentFormPercentage = function(perc){
