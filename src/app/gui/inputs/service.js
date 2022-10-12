@@ -106,11 +106,9 @@ proto.setErrorMessage = function(input) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-  else if (!input.validate.unique && input.validate.exclude_values)
+  else if (input.validate.unique && input.validate.exclude_values.size)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  else if (input.validate.unique) {
-    this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
-  } else if (input.validate.required) {
+  else if (input.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
     if (this.state.info) {
       message = `${message}
