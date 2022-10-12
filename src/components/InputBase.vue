@@ -3,7 +3,7 @@
 <!-- gui/inputs/baseinput/baseinput.js@v3.4 -->
 
 <template>
-  <div class="form-group">
+  <div class="form-group" v-if="state.visible">
     <slot name="label">
       <label :for="state.name" class="col-sm-12 control-label">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
