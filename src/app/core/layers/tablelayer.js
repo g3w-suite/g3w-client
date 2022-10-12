@@ -453,8 +453,9 @@ proto.getFieldsWithValues = function(obj, options={}) {
   else feature = obj && this.getFeatureById(obj);
   if (feature) {
     const attributes = feature.getProperties();
-    fields = fields.filter(field => exclude.indexOf(field.name) === -1);
+
     fields.forEach(field => {
+
       field.value = attributes[field.name];
       if (field.type !== 'child' && field.input && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
@@ -462,6 +463,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
         field.input.options.loading = options.loading;
         field.input.options.values = options.values;
       }
+      /**
+       * exclude contain field to set visible false
+       */
+      field.visible = exclude.indexOf(field.name) === -1;
       // for editing purpose
       if (field.validate === undefined) field.validate = {};
       field.forceNull = false;
