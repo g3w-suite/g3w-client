@@ -96,8 +96,10 @@ proto.handleFieldsWithExpression = function(fields=[]){
   fields.forEach(field => {
     const {options={}} = field.input;
     if (options.filter_expression){
-      const {referencing_fields=[]} = options.filter_expression;
-      referencing_fields.forEach(referencing_field =>{
+      const filter_expression_dependency_fields = new Set();
+      const {referencing_fields=[], referenced_columns=[]} = options.filter_expression;
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => filter_expression_dependency_fields.add(dependency_field));
+      filter_expression_dependency_fields.forEach(referencing_field =>{
         if (referencing_field) {
           if (this.expression_fields_dependencies[referencing_field] === undefined)
             this.expression_fields_dependencies[referencing_field] = [];
