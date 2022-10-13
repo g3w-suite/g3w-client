@@ -25,35 +25,11 @@ export default {
     // called when input value change
     change() {
       this.service.setEmpty();
-      // validate input
-      this.state.validate.required && this.service.validate();
+      // validate input if is required or need to be unique
+      if (this.state.validate.required || this.state.validate.unique) this.service.validate();
       // emit change input
       this.$emit('changeinput', this.state);
     },
     isVisible() {}
-  },
-  mounted() {
-    /**
-     * in case of input value is fill with default value option we nee to emit changeinput event
-     * without check validation. Example:
-     * {
-        "name": "id",
-        "type": "integer",
-        "label": "id",
-        "editable": false,
-        "validate": {
-            "required": true,
-            "unique": true
-        },
-        "pk": true,
-        "default": "nextval('g3wsuite.zone_id_seq'::regclass)",
-        "input": {
-            "type": "text",
-            "options": {}
-        }
-      }
-     in this case if we start a validation, it fail because default value is a string while input is interger
-     */
-    this.service && this.service.has_default_value && this.$emit('changeinput', this.state);
   }
 };

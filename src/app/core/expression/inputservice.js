@@ -19,18 +19,21 @@ export default {
         },
         outputs: false
       });
+      //based on input type
+      switch (field.input.type){
+        case 'select_autocomplete':
+          field.input.options.values = [];
+          for (let i = 0; i < features.length; i++) {
+            field.input.options.values.push({
+              key: features[i].properties[key],
+              value: features[i].properties[value]
+            })
+          }
+
+      }
     } catch(err){}
-    //based on input type
-    switch (field.input.type){
-      case 'select_autocomplete':
-        field.input.options.values = [];
-        for (let i = 0; i < features.length; i++) {
-          field.input.options.values.push({
-            key: features[i].properties[key],
-            value: features[i].properties[value]
-          })
-        }
-        loading.state = 'ready';
+      finally {
+      loading.state = 'ready';
     }
   }
 }
