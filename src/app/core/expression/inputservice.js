@@ -9,18 +9,17 @@ export default {
    * @param qgs_layer_id
    * @returns {Promise<void|unknown>}
    */
-  async handleFilterExpressionFormInput({field, feature,qgs_layer_id}={}){
+  async handleFilterExpressionFormInput({field, feature, qgs_layer_id}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
     let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
     if (filter_expression) {
-      let features = [];
       loading.state = 'loading';
       try {
-        features = await DataRouterService.getData('expression:expression', {
+          const features = await DataRouterService.getData('expression:expression', {
           inputs: {
-            layer_id, // layer id owner of the data
-            qgs_layer_id, //
+            layer_id,
+            qgs_layer_id,// layer id owner of the data
             form_data,
             formatter:0,
             expression: filter_expression.expression

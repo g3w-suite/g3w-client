@@ -28,6 +28,7 @@ function ExpressionService(){
       const response = await this.handleRequest({
         url,
         params: {
+          layer_id,
           qgs_layer_id,
           form_data,
           expression,
@@ -50,11 +51,12 @@ function ExpressionService(){
    *  Mandatory JSON body: expression
     * Optional JSON body: form_data and qgs_layer_id (QGIS layer id)
    */
-   this.expression_eval = function({qgs_layer_id, form_data, expression, formatter=1}={}){
+   this.expression_eval = function({qgs_layer_id, layer_id, form_data, expression, formatter=1}={}){
      const url = this.project.getUrl('expression_eval');
      return this.handleRequest({
        url,
        params: {
+         layer_id,
          qgs_layer_id,
          form_data,
          expression,
