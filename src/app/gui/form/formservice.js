@@ -45,7 +45,10 @@ function FormService() {
   this._setInitForm = function(options = {}) {
     const {fields, feature, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
     this.layer = layer;
-    this.feature = feature;
+    /**
+     * clone feature
+     */
+    this.feature = feature.clone();
     this.title = title;
     this.formId = formId;
     this.name = name;
@@ -133,6 +136,7 @@ proto.getValidComponent = function(id) {
 };
 
 proto.changeInput = function(input){
+
   this.evaluateExpression(input);
   this.isValid(input);
 };
@@ -140,15 +144,14 @@ proto.changeInput = function(input){
 proto.evaluateExpression = function(input){
   const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
   if (expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
+    this.feature.set(input.name, input.value);
     expression_fields_dependencies.forEach(expression_dependency_field =>{
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFormInput({
         qgs_layer_id, // the owner of feature
         field, // field related
-        feature //featute to tranform in form_data
+        feature: this.feature //feature to transform in form_data
       })
     })
   }
