@@ -45,7 +45,8 @@ function FormService() {
   this._setInitForm = function(options = {}) {
     const {fields, feature, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
     this.layer = layer;
-    this.feature = feature;
+    // need to be cloned
+    this.feature = feature.clone();
     this.title = title;
     this.formId = formId;
     this.name = name;
@@ -107,15 +108,14 @@ proto.changeInput = function(input){
 proto.evaluateDefaultExpressionFields = function(input) {
   const default_expression_fields_dependencies = this.default_expression_fields_dependencies[input.name];
   if (default_expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
+    this.feature.set(input.name, input.value);
     default_expression_fields_dependencies.forEach(expression_dependency_field =>{
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleDefaultExpressionFormInput({
         qgs_layer_id, // the owner of feature
         field, // field related
-        feature //feature to transform in form_data
+        feature: this.feature //feature to transform in form_data
       })
     })
   }
@@ -128,15 +128,14 @@ proto.evaluateDefaultExpressionFields = function(input) {
 proto.evaluateFilterExpressionFields = function(input={}) {
   const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
   if (filter_expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
+    this.feature.set(input.name, input.value);
     filter_expression_fields_dependencies.forEach(expression_dependency_field =>{
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFilterExpressionFormInput({
         qgs_layer_id, // the owner of feature
         field, // field related
-        feature //feature to transform in form_data
+        feature: this.feature //feature to transform in form_data
       })
     })
   }

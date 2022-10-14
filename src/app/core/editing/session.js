@@ -43,6 +43,10 @@ proto.getId = function() {
   return this.state.id;
 };
 
+proto.getLastHistoryState = function(){
+  return this._history.getLastState();
+};
+
 proto.getLastStateId = function() {
   return this._history.getLastState().id;
 };
