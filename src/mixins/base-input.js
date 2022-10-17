@@ -11,6 +11,12 @@ export default {
     },
     showhelpicon(){
       return this.state.help && this.state.help.message.trim();
+    },
+    disabled(){
+      return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
+    },
+    loadingState() {
+      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
     }
   },
   methods: {

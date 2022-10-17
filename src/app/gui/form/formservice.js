@@ -43,7 +43,7 @@ function FormService() {
   };
   // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    const {fields, feature, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
+    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
     this.layer = layer;
     // need to be cloned
     this.feature = feature.clone();
@@ -52,6 +52,7 @@ function FormService() {
     this.name = name;
     this.buttons = buttons;
     this.context_inputs = context_inputs;
+    this.parentData = parentData;
     this.state = {
       layerid: layer.getId(),
       loading:false,
@@ -113,6 +114,7 @@ proto.evaluateDefaultExpressionFields = function(input) {
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleDefaultExpressionFormInput({
+        parentData: this.parentData,
         qgs_layer_id, // the owner of feature
         field, // field related
         feature: this.feature //feature to transform in form_data
@@ -133,6 +135,7 @@ proto.evaluateFilterExpressionFields = function(input={}) {
       const field = this.state.fields.find(field => field.name === expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFilterExpressionFormInput({
+        parentData: this.parentData,
         qgs_layer_id, // the owner of feature
         field, // field related
         feature: this.feature //feature to transform in form_data
@@ -159,7 +162,8 @@ proto.handleFieldsWithExpression = function(fields=[]){
         if (this.filter_expression_fields_dependencies[dependency_field] === undefined)
           this.filter_expression_fields_dependencies[dependency_field] = [];
         this.filter_expression_fields_dependencies[dependency_field].push(field.name);
-      })
+      });
+
     }
     /**
      * Case of a field that has a default_value object and check if apply_on_update only
@@ -177,7 +181,7 @@ proto.handleFieldsWithExpression = function(fields=[]){
           if (this.default_expression_fields_dependencies[dependency_field] === undefined)
             this.default_expression_fields_dependencies[dependency_field] = [];
           this.default_expression_fields_dependencies[dependency_field].push(field.name);
-        })
+        });
       }
     }
   });
@@ -185,7 +189,8 @@ proto.handleFieldsWithExpression = function(fields=[]){
   Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
     const field = this.state.fields.find(field => field.name === name);
     this.evaluateFilterExpressionFields(field);
-  })
+  });
+
 };
 
 proto.setCurrentFormPercentage = function(perc){

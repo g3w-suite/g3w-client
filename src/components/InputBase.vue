@@ -12,7 +12,11 @@
       </label>
     </slot>
     <div class="col-sm-12">
-      <slot name="loading"></slot>
+      <slot name="loading">
+        <div style="position:relative; width: 100%" slot="loading" v-if="loadingState === 'loading'">
+          <bar-loader loading="true"></bar-loader>
+        </div>
+      </slot>
       <slot name="body"></slot>
       <slot name="message">
         <p v-if="notvalid" class="error-input-message" style="margin: 0" v-html="state.validate.message"></p>

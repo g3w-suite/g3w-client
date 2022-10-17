@@ -457,10 +457,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
     fields.forEach(field => {
 
       field.value = attributes[field.name];
-      if (field.type !== 'child' && field.input && field.input.type === 'select_autocomplete' && !field.input.options.usecompleter) {
+      if (field.input) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
         const options = _configField.input.options;
-        field.input.options.loading = options.loading;
+        field.input.options.loading = options.loading || {state: null};
         field.input.options.values = options.values;
       }
       /**
