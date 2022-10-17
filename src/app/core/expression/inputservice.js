@@ -9,18 +9,22 @@ export default {
    * @param qgs_layer_id
    * @returns {Promise<void|unknown>}
    */
-  async handleFilterExpressionFormInput({field, feature, qgs_layer_id}={}){
+  async handleFilterExpressionFormInput({field, feature, qgs_layer_id, parentData}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
     let {key, value, layer_id=qgs_layer_id, filter_expression, loading} = options;
     if (filter_expression) {
       loading.state = 'loading';
       try {
-          const features = await DataRouterService.getData('expression:expression', {
+        const features = await DataRouterService.getData('expression:expression', {
           inputs: {
             layer_id,
             qgs_layer_id,// layer id owner of the data
             form_data,
+            parent: parentData && {
+              form_data: convertFeatureToGEOJSON(parentData.feature),
+              qgs_layer_id: parentData.qgs_layer_id
+            },
             formatter:0,
             expression: filter_expression.expression
           },
@@ -49,22 +53,27 @@ export default {
   /*
   *handleDefaultExpressionFormInput
    */
-  async handleDefaultExpressionFormInput({field, feature,qgs_layer_id}={}){
+  async handleDefaultExpressionFormInput({field, feature, qgs_layer_id, parentData}={}){
     const form_data = convertFeatureToGEOJSON(feature);
     const options = field.input.options;
-    let {layer_id=qgs_layer_id, default_expression} = options;
+    let {layer_id=qgs_layer_id, default_expression, loading} = options;
     if (default_expression) {
+      loading.state = 'loading';
       /**
        * In case of default_expression call expression_eval to get value from expression and set it to field
        */
       try {
         const value = await DataRouterService.getData('expression:expression_eval', {
           inputs: {
-            layer_id, // layer id owner of the data
-            qgs_layer_id, //
+            layer_id, //
+            qgs_layer_id, //layer id owner of the data
             form_data,
             formatter: 0,
-            expression: default_expression.expression
+            expression: default_expression.expression,
+            parent: parentData && {
+              form_data: convertFeatureToGEOJSON(parentData.feature),
+              qgs_layer_id: parentData.qgs_layer_id
+            }
           },
           outputs: false
         });
@@ -72,6 +81,8 @@ export default {
         return value;
       } catch(err){
         return Promise.reject(err);
+      } finally {
+        loading.state = 'ready';
       }
     }
   }
