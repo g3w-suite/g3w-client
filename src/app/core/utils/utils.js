@@ -621,6 +621,19 @@ const utils = {
     const b = parseInt(color.substr(5,2), 16);
     return [r,g,b]
   },
+  /**
+   * Covert datetime format from Qgis format to Moment
+   * @param datetimeformat
+   * @returns {*}
+   */
+  convertQGISDateTimeFormatToMoment(datetimeformat) {
+    datetimeformat = datetimeformat.replace('yyyy', 'YYYY');
+    const matchDayInDate = datetimeformat.match(/d/g);
+    if (matchDayInDate && matchDayInDate.length < 3) {
+      datetimeformat = datetimeformat.replace('d'.repeat(matchDayInDate.length), 'D'.repeat(matchDayInDate.length))
+    }
+    return datetimeformat
+  }
 };
 
 module.exports = utils;
