@@ -132,7 +132,8 @@ proto.evaluateFilterExpressionFields = function(input={}) {
   if (filter_expression_fields_dependencies) {
     //need in case of init form service where filter_expression option has
     //referencing_fields or referenced_columns from another layer
-    this._getField(input.name) && this.feature.set(input.name, input.value);
+    const fieldForm = this._getField(input.name);
+    fieldForm && this.feature.set(fieldForm.name, fieldForm.value);
     filter_expression_fields_dependencies.forEach(expression_dependency_field => {
       const field = this._getField(expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
