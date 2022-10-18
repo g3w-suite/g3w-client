@@ -106,12 +106,12 @@ proto.changeInput = function(input){
  * Method to evaluate filter expression
  * @param input
  */
-proto.evaluateDefaultExpressionFields = function(input) {
+proto.evaluateDefaultExpressionFields = function(input={}) {
   const default_expression_fields_dependencies = this.default_expression_fields_dependencies[input.name];
   if (default_expression_fields_dependencies) {
     this.feature.set(input.name, input.value);
     default_expression_fields_dependencies.forEach(expression_dependency_field =>{
-      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+      const field = this._getField(expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleDefaultExpressionFormInput({
         parentData: this.parentData,
@@ -130,9 +130,11 @@ proto.evaluateDefaultExpressionFields = function(input) {
 proto.evaluateFilterExpressionFields = function(input={}) {
   const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
   if (filter_expression_fields_dependencies) {
-    this.feature.set(input.name, input.value);
-    filter_expression_fields_dependencies.forEach(expression_dependency_field =>{
-      const field = this.state.fields.find(field => field.name === expression_dependency_field);
+    //need in case of init form service where filter_expression option has
+    //referencing_fields or referenced_columns from another layer
+    this._getField(input.name) && this.feature.set(input.name, input.value);
+    filter_expression_fields_dependencies.forEach(expression_dependency_field => {
+      const field = this._getField(expression_dependency_field);
       const qgs_layer_id = this.layer.getId();
       inputService.handleFilterExpressionFormInput({
         parentData: this.parentData,
@@ -187,8 +189,9 @@ proto.handleFieldsWithExpression = function(fields=[]){
   });
   // start to evaluate filter expression field
   Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
-    const field = this.state.fields.find(field => field.name === name);
-    this.evaluateFilterExpressionFields(field);
+    this.evaluateFilterExpressionFields({
+      name
+    });
   });
 
 };
