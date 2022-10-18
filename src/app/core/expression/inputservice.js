@@ -23,9 +23,10 @@ export default {
             form_data,
             parent: parentData && {
               form_data: convertFeatureToGEOJSON(parentData.feature),
-              qgs_layer_id: parentData.qgs_layer_id
+              qgs_layer_id: parentData.qgs_layer_id,
+              formatter: 0
             },
-            formatter:0,
+            formatter: 0,
             expression: filter_expression.expression
           },
           outputs: false
@@ -72,7 +73,8 @@ export default {
             expression: default_expression.expression,
             parent: parentData && {
               form_data: convertFeatureToGEOJSON(parentData.feature),
-              qgs_layer_id: parentData.qgs_layer_id
+              qgs_layer_id: parentData.qgs_layer_id,
+              formatter: 0
             }
           },
           outputs: false
