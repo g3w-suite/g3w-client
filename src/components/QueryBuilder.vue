@@ -216,9 +216,9 @@ export default {
       return {
         id: layer.id,
         label: layer.name,
-        fields: layer.fields.map(field => ({
-          label:field.label,
-          name: field.name
+        fields: layer.fields.filter(field => field.show).map(({label, name}) => ({
+          label,
+          name
         })).filter(field => excludejoinfields.indexOf(field) === -1)
       }
     });
