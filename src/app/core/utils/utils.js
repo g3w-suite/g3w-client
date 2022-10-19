@@ -627,11 +627,9 @@ const utils = {
    * @returns {*}
    */
   convertQGISDateTimeFormatToMoment(datetimeformat) {
-    datetimeformat = datetimeformat.replace('yyyy', 'YYYY');
+    datetimeformat = datetimeformat.replace(/y/g, 'Y');
     const matchDayInDate = datetimeformat.match(/d/g);
-    if (matchDayInDate && matchDayInDate.length < 3) {
-      datetimeformat = datetimeformat.replace('d'.repeat(matchDayInDate.length), 'D'.repeat(matchDayInDate.length))
-    }
+    if (matchDayInDate && matchDayInDate.length < 3) datetimeformat = datetimeformat.replace(/d/g, 'D');
     return datetimeformat
   }
 };

@@ -58,9 +58,9 @@ export default {
   },
   async mounted() {
     await this.$nextTick();
-    const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
+    const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
     this.service.setValidatorOptions({
-      fielddatetimeformat: fielddatetimeformat
+      fielddatetimeformat
     });
     const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     const locale = this.service.getLocale();
