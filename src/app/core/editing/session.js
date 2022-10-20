@@ -257,17 +257,21 @@ proto.rollback = function(changes) {
   }
 };
 
+/**
+ * Rollback child changes of current session
+ * @param ids [array of child layer id]
+ */
 proto.rollbackDependecies = function(ids=[]) {
   ids.forEach(id => {
     const changes = [];
     this._temporarychanges = this._temporarychanges.filter(temporarychange => {
-      if (temporarychange.layerId !== id) {
+      if (temporarychange.layerId === id) {
         changes.push(temporarychange);
-        return true
+        return false
       }
-    changes.length && SessionsRegistry.getSession(id).rollback(changes);
     });
-  })
+    changes.length && SessionsRegistry.getSession(id).rollback(changes);
+  });
 };
 
 // method undo
