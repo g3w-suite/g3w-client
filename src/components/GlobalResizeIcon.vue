@@ -2,7 +2,7 @@
 <!-- gui/vue/global-components/resize-icon.vue@v3.4 -->
 
 <template>
-  <div>
+  <div style="display: flex; justify-content: space-between">
       <i :class="g3wtemplate.getFontClass(`resize-${type}`)" v-t-tooltip:bottom.create="'enlange_reduce'" style="cursor: pointer; margin-right: 3px;" class="action-button skin-color-dark" @click="toggleFull"></i>
       <i :class="g3wtemplate.getFontClass(`resize-default`)" v-t-tooltip:left.create="'reset_default'" style="cursor: pointer" class="action-button skin-color-dark" @click="resetToDefault"></i>
   </div>
