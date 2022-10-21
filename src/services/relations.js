@@ -30,7 +30,6 @@ proto.createUrl = function(options={}){
 };
 
 proto.getRelations = function(options={}) {
-  console.log(options)
   const url = this.createUrl(options);
   return XHR.get({
     url
