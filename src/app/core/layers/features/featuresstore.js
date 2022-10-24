@@ -1,4 +1,4 @@
-const {inherit, base} = require('core/utils/utils');
+const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Object to store and handle features of layer
@@ -30,7 +30,11 @@ function FeaturesStore(options={}) {
     },
     commit(commitItems, featurestore) {
       return this._commit(commitItems, featurestore);
-    }
+    },
+    /**
+     * setter to know when some feature are locked
+     */
+    featuresLockedByOtherUser(){}
   };
 
   base(this);
@@ -78,6 +82,11 @@ proto._getFeatures = function(options={}) {
 
 //filter features to add
 proto._filterFeaturesResponse = function(options={}) {
+  /**
+   * get features returned from server and feature that are current locked.
+   * If featurelocks are less that a features, it means that other user is editing these feature
+   * @type {*[]}
+   */
   const {features=[], featurelocks=[]} = options;
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
@@ -86,17 +95,14 @@ proto._filterFeaturesResponse = function(options={}) {
     return !added
   });
   this._filterLockIds(featurelocks);
+  if (featurelocks.length < features.length) this.featuresLockedByOtherUser();
   return featuresToAdd;
 };
 
-// method cget fetaures locked
+// method get features locked
 proto._filterLockIds = function(featurelocks) {
-  const _lockIds = this._lockIds.map((lockid) => {
-    return lockid.featureid;
-  });
-  const toAddLockId = featurelocks.filter((featurelock) => {
-    return _lockIds.indexOf(featurelock.featureid) === -1;
-  });
+  const _lockIds = this._lockIds.map(lockid => lockid.featureid);
+  const toAddLockId = featurelocks.filter(featurelock => _lockIds.indexOf(featurelock.featureid) === -1);
   this._lockIds = [...this._lockIds, ...toAddLockId];
 };
 
@@ -125,19 +131,17 @@ proto._commit = function(commitItems) {
     this._provider.commit(commitItems)
       .then(response => d.resolve(response))
       .fail(err => d.reject(err))
-  } else {
-    d.reject();
-  }
+  } else d.reject();
   return d.promise();
 };
 
 // get feature from id
 proto.getFeatureById = function(featureId) {
-  return this._features.find((feature) => feature.getId() == featureId);
+  return this._features.find(feature => feature.getId() == featureId);
 };
 
 proto.getFeatureByUid = function(uid) {
-  return this._features.find((feature) => feature.getUid() === uid);
+  return this._features.find(feature => feature.getUid() === uid);
 };
 
 proto._addFeature = function(feature) {
@@ -159,9 +163,7 @@ proto.setFeatures = function(features) {
 };
 
 proto._removeFeature = function(feature) {
-  this._features = this._features.filter((feat) => {
-    return feature.getUid() !== feat.getUid();
-  })
+  this._features = this._features.filter(feat => feature.getUid() !== feat.getUid());
 };
 
 proto._clearFeatures = function() {

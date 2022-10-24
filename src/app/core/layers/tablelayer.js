@@ -99,7 +99,7 @@ function TableLayer(config={}, options={}) {
           };
           this._setOtherConfigParameters(vector);
           vector.style && this.setColor(vector.style.color);
-          // creare an instance of editor
+          // create an instance of editor
           this._editor = new Editor({
             layer: this
           });
@@ -112,14 +112,14 @@ function TableLayer(config={}, options={}) {
           this.setReady(false);
         })
     });
-    this.state = _.merge({
+    this.state = {
+      ...this.state,
       editing: {
         started: false,
         modified: false,
         ready: false
       }
-    }, this.state);
-
+    };
   }
   this._featuresstore = new FeaturesStore({
     provider: this.providers.data
@@ -448,8 +448,8 @@ proto.getFieldsWithValues = function(obj, options={}) {
   let feature;
   if (obj instanceof Feature) feature = obj;
   else if (obj instanceof ol.Feature) feature = new Feature({
-      feature: obj
-    });
+    feature: obj
+  });
   else feature = obj && this.getFeatureById(obj);
   if (feature) {
     const attributes = feature.getProperties();
