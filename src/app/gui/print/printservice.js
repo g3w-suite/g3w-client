@@ -213,12 +213,12 @@ proto._calculateInternalPrintExtent = function() {
   const scala = parseFloat(this.state.scala);
   const {h: height, w: width} = this.state.maps.find(map=> !map.overview);
   const resolutionInMeters = this._mapService.getMapUnits() === 'm' ? resolution : getMetersFromDegrees(resolution);
-  const w = (((width / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
-  const h = (((height  / 1000.0) * scala) / resolutionInMeters) * ol.has.DEVICE_PIXEL_RATIO;
+  const w = (((width / 1000.0) * scala) / resolutionInMeters);
+  const h = (((height  / 1000.0) * scala) / resolutionInMeters);
   // get current map center ( in pixel)
   const center = [
-    (this.state.size[0] * ol.has.DEVICE_PIXEL_RATIO) / 2, // X
-    (this.state.size[1] * ol.has.DEVICE_PIXEL_RATIO) / 2  // Y
+    (this.state.size[0]) / 2, // X
+    (this.state.size[1]) / 2  // Y
   ];
   // Calculate the inner bbox in pixel
   const xmin = center[0] - (w / 2);
@@ -332,7 +332,7 @@ proto.showPrintArea = function(bool) {
 
 proto.reload = function() {
   this._project = ProjectsRegistry.getCurrentProject();
-  this._mapService = GUI.getComponent('map').getService();
+  this._mapService = GUI.getService('map');
   this._map = this._mapService.viewer.map;
   this.state.print = this._project.state.print || [];
   this.state.visible = this.state.print.length > 0;

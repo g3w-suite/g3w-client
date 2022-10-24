@@ -55,13 +55,6 @@ export default Vue.extend({
     },
     isValid() {
       return this.state.valid;
-    },
-    _enterEventHandler(evt) {
-      if (evt.which === 13) {
-        evt.preventDefault();
-        const domEL = $(this.$el);
-        if (domEL.is(':visible') && this.isValid() && this.active) domEL.find('button').click();
-      }
     }
   },
   watch: {
@@ -74,13 +67,6 @@ export default Vue.extend({
   },
   deactivated() {
     this.active = false;
-  },
-  async mounted() {
-    await this.$nextTick();
-    document.addEventListener('keydown', this._enterEventHandler);
-  },
-  beforeDestroy() {
-    document.removeEventListener('keydown', this._enterEventHandler)
   }
 });
 </script>
