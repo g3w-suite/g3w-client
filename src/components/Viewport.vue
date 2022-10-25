@@ -9,6 +9,7 @@
               v-if="usermessage.show"
               @close-usermessage="closeUserMessage"
               :title="usermessage.title"
+              :subtitle="usermessage.subtitle"
               :id="usermessage.id"
               :message="usermessage.message"
               :draggable="usermessage.draggable"
