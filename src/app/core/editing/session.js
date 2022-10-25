@@ -15,7 +15,7 @@ function Session(options={}) {
       return this._getFeatures(options);
     },
     stop() {
-      this._stop();
+      return this._stop();
     },
     saveChangesOnServer(commitItems){} // hook to get informed that are saved on server
   };
