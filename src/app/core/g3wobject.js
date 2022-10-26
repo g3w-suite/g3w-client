@@ -73,20 +73,23 @@ proto.un = function(setter, key) {
   type=sync|async
 */
 proto._onsetter = function(when, setter, listener, async, priority=0, once=false) {
-  const settersListeners = this.settersListeners[when];
-  const listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
+  let listenerKey;
+  const settersListeners = this.settersListeners[when] || {};
   const settersListeneres = settersListeners[setter];
-  settersListeneres.push({
-    key: listenerKey,
-    fnc: listener,
-    async,
-    priority,
-    once
-  });
-  // reader array based on priority
-  settersListeners[setter] = _.sortBy(settersListeneres, setterListener => setterListener.priority);
+  if (settersListeneres) {
+    listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
+    settersListeneres.push({
+      key: listenerKey,
+      fnc: listener,
+      async,
+      priority,
+      once
+    });
+    // reader array based on priority
+    settersListeners[setter] = _.sortBy(settersListeneres, setterListener => setterListener.priority);
+  }
   // return key
-  return listenerKey;
+  return listenerKey // in case of no setter register return undefined listerKey
 };
 
 proto._setupListenersChain = function(setters) {

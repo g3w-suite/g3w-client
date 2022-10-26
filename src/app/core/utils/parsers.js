@@ -113,13 +113,15 @@ const utils = {
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
     const parser = new ol.format.WMSGetFeatureInfo();
     const features = this.transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-    const geometryType = layer.getGeometryType();
+    if (layer.isGeoLayer()) {
+      const geometryType = layer.getGeometryType();
 
-    // Need to remove Z values due a incorrect addition when using
-    // ol.format.WMSGetFeatureInfo readFeatures method from XML
-    // (eg. WMS getFeatureInfo);
-    if (!is3DGeometry(geometryType)){
-      features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      // Need to remove Z values due a incorrect addition when using
+      // ol.format.WMSGetFeatureInfo readFeatures method from XML
+      // (eg. WMS getFeatureInfo);
+      if (!is3DGeometry(geometryType)){
+        features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      }
     }
 
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
