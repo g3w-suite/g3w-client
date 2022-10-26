@@ -53,7 +53,6 @@
         immediate: false,
         handler(map_theme){
           this.$emit('change-map-theme', map_theme);
-          $(this.$refs['g3w-map-theme-ancor']).click();
         }
       }
     }
