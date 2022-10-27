@@ -5,8 +5,9 @@ const G3WObject = require('core/g3wobject');
 function FeaturesStore(options={}) {
   this._features = options.features || [];
   this._provider = options.provider || null;
-  this._loadedIds = []; // store loeckedids
+  this._loadedIds = []; // store locked ids
   this._lockIds = []; // store locked features
+  this.hasFeatureLockByOtherUser = false; // property tath i set to true if some feature are locked by other user
   this.setters = {
     addFeatures(features) {
       features.forEach(feature => {
@@ -34,7 +35,10 @@ function FeaturesStore(options={}) {
     /**
      * setter to know when some feature are locked
      */
-    featuresLockedByOtherUser(){}
+    featuresLockedByOtherUser(){
+      //set to true
+      this.hasFeatureLockByOtherUser = true;
+    }
   };
 
   base(this);
@@ -60,7 +64,11 @@ proto.getProvider = function() {
 proto.unlock = function() {
   const d = $.Deferred();
   this._provider.unlock()
-    .then(response=> d.resolve(response))
+    .then(response => {
+      // set to false when featuresstore is unlocked
+      this.hasFeatureLockByOtherUser = false;
+      d.resolve(response)
+    })
     .fail(err => d.reject(err));
   return d.promise();
 };
@@ -87,7 +95,12 @@ proto._filterFeaturesResponse = function(options={}) {
    * If featurelocks are less that a features, it means that other user is editing these feature
    * @type {*[]}
    */
-  const {features=[], featurelocks=[]} = options;
+  /**
+   * get features returned from server and feature that are current locked.
+   * If featurelocks are less that a features, it means that other user is editing these feature
+   * @type {*[]}
+   */
+  const {features=[], featurelocks=[], count} = options;
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
     const added = this._loadedIds.indexOf(featureId) !== -1;
@@ -95,7 +108,7 @@ proto._filterFeaturesResponse = function(options={}) {
     return !added
   });
   this._filterLockIds(featurelocks);
-  if (featurelocks.length < features.length) this.featuresLockedByOtherUser();
+  if (features.length < count && !this.hasFeatureLockByOtherUser) this.featuresLockedByOtherUser();
   return featuresToAdd;
 };
 
