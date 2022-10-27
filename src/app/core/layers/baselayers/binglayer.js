@@ -1,4 +1,3 @@
-import { BING_API_KEY } from 'config/keys';
 import ApplicationState from 'core/applicationstate'
 const {base, inherit} = require('core/utils/utils');
 const BaseLayer = require('core/layers/baselayers/baselayer');
@@ -14,7 +13,7 @@ const proto = BingLayer.prototype;
 
 proto._makeOlLayer = function(){
   let olLayer;
-  const key = ApplicationState.keys.vendorkeys.bing || BING_API_KEY;
+  const key = ApplicationState.keys.vendorkeys.bing;
   const subtype = this.config.source ? this.config.source.subtype : null;
   switch(subtype) {
     case 'streets':

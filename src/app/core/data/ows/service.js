@@ -1,34 +1,11 @@
-const {base, inherit} = require('core/utils/utils');
-const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
-function OWSService(){
-  base(this);
-  /**
-   *
-   * @param params
-   * @returns {Promise<{data: string, response: *}>}
-   */
-  this.wmsCapabilities = async function({url} ={}){
-    const ApplicationService = require('core/applicationservice');
-    const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
-    try {
-      const params = {
-        url,
-        service: "wms"
-      };
-      const data = JSON.stringify(params);
-      const response = await XHR.post({
-        url: owsUrl,
-        contentType: 'application/json',
-        data
-      });
-      return response;
-    } catch(err){
-      return;
-    }
-  };
-}
+/**
+ * DEPRECATED: this file will be removed after v3.4 (use "services/data-ows.js" instead)
+ */
+import OWSService from 'services/data-ows';
 
-inherit(OWSService, BaseService);
+/**
+ * FIXME: application is broken using like the following line
+ */
+// import { OWSService } from 'services';
 
-module.exports = new OWSService;
+module.exports = OWSService;

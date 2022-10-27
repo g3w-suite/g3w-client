@@ -252,7 +252,7 @@ proto.getFeatures = function(options={}, params={}) {
     promise.then(response => {
         const {vector, result, featurelocks} = response;
         if (result) {
-          const {data, geometrytype} = vector;
+          const {data, geometrytype, count} = vector;
           const parser = Parsers[layerType].get({
             type: 'json'
           });
@@ -272,8 +272,9 @@ proto.getFeatures = function(options={}, params={}) {
           });
           // resolve with features locked and requested
           d.resolve({
-            features,
-            featurelocks
+            count, // real number of feature that request will return
+            features, // feature object returned
+            featurelocks // features locked
           });
         } else {// case when server responde with result false (error)
           d.reject({

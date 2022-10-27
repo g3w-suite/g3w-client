@@ -1,6 +1,7 @@
+import ProjectCatalog from 'components/MetadataProject.vue'
+
 const {inherit, base} = require('core/utils/utils');
 const Component = require('gui/component/component');
-import ProjectCatalog from './project.vue'
 
 function ProjectMetadataComponent({state = {}, service} = {}) {
   base(this);

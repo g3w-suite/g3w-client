@@ -1,6 +1,6 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
-import DownloadFormats from './vue/components/actiontools/downloadformats.vue';
-import QueryPolygonCsvAttributesComponent from './vue/components/actiontools/querypolygoncsvattributes.vue';
+import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
+import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const DataRouterService = require('core/data/routerservice');
@@ -612,7 +612,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         },
         cbk: this.copyZoomToFidUrl.bind(this)
       });
-      layer.editable && this.state.layersactions[layer.id].push({
+      layer.editable && !layer.inediting && this.state.layersactions[layer.id].push({
         id: 'editing',
         class: GUI.getFontClass('pencil'),
         hint: 'Editing',
@@ -933,6 +933,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let extractRelations = false;
     let external = false;
     let editable = false;
+    let inediting = false;
     const layer = featuresForLayer.layer;
     let downloads = [];
     let infoformats = [];
@@ -941,6 +942,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let selection ={};
     if (layer instanceof Layer) {
       editable = layer.isEditable();
+      inediting = layer.isInEditing();
       source = layer.getSource();
       infoformats = layer.getInfoFormats(); // add infoformats property
       infoformat = layer.getInfoFormat();
@@ -1023,6 +1025,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       },
       external,
       editable,
+      inediting,
       selection,
       expandable: true,
       hasImageField: false,
@@ -1145,7 +1148,8 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
+        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1),
+        type: 'varchar'
       }
     })
   }
@@ -1559,7 +1563,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
       layer.addOlSelectionFeature({
         id: fid,
-        geometry: feature.geometry
+        feature
       })
     }
   }
@@ -1609,7 +1613,6 @@ proto.addQueryResultsLayerToMap = function({feature, timeout=1500}){
   try {
     const center = ol.extent.getCenter(feature.getGeometry().getExtent());
     this.mapService.getMap().getView().setCenter(center);
-    console.log(center)
   } catch(err){
 
   }

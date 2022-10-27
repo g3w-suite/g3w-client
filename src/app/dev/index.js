@@ -2,6 +2,7 @@ const {
   createProject = {},
     setCurrentProject = {},
     plugins = {},
+    keys = {}
 } = require('../../../config');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const ApplicationService = require('core/applicationservice');
@@ -11,13 +12,20 @@ const ApplicationService = require('core/applicationservice');
 // ApplicationService.once('ready', () => {});
 
 ApplicationService.once('initconfig', () => {
-  // TODO: make use of a recursive merge utility function for: "initConfig->group->plugins"
+  // sets "initConfig->group->plugins"
   Object.keys(plugins).forEach((plugin) => {
+    // TODO: make use of a recursive merge utility function ?
     window.initConfig.group.plugins[plugin] = window.initConfig.group.plugins[plugin] ? {
       ...window.initConfig.group.plugins[plugin],
       ...plugins[plugin],
     } : plugins[plugin];
   });
+  // sets "initConfig->group->vendorkeys"
+  if (Object.keys(keys).length > 0) {
+    window.initConfig.group.vendorkeys = window.initConfig.group.vendorkeys || {};
+    Object.keys(keys).forEach((key) => { window.initConfig.group.vendorkeys[key] = keys[key]; });
+    ApplicationService.setVendorKeys(keys);
+  }
 });
 
 if (createProject.before) {

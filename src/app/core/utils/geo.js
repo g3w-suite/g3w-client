@@ -6,108 +6,7 @@ const {response: responseParser} = require('core/utils/parsers');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const GUI = require('gui/gui');
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID} = CONSTANT;
-
-const GeometryTypes = {
-  POINT: "Point",
-  POINTZ: "PointZ",
-  POINTM: "PointM",
-  POINTZM: "PointZM",
-  POINT25D: "Point25D",
-  MULTIPOINT: "MultiPoint",
-  MULTIPOINTZ: "MultiPointZ",
-  MULTIPOINTM: "MutliPointM",
-  MULTIPOINTZM: "MultiPointZM",
-  MULTIPOINT25D: "MultiPoint25D",
-  LINESTRING: "LineString", // QGis definition .GeometryType, Line intead di Linestring.
-  LINESTRINGZ: "LineStringZ",
-  LINESTRINGM: "LineStringM",
-  LINESTRINGZM: "LineStringZM",
-  LINESTRING25D: "LineString25D",
-  LINE: "Line",
-  LINEZ: "LineZ",
-  LINEM: "LineM",
-  LINEZM: "LineZM",
-  LINE25D: "Line25D",
-  MULTILINESTRING: "MultiLineString",
-  MULTILINESTRINGZ: "MultiLineStringZ",
-  MULTILINESTRINGM: "MultiLineStringM",
-  MULTILINESTRINGZM: "MultiLineStringZM",
-  MULTILINESTRING25D: "MultiLineString25D",
-  MULTILINE:"MultiLine",
-  MULTILINEZ:"MultiLineZ",
-  MULTILINEM:"MultiLineM",
-  MULTILINEZM:"MultiLineZM",
-  MULTILINE25D:"MultiLine25D",
-  POLYGON: "Polygon",
-  POLYGONZ: "PolygonZ",
-  POLYGONM: "PolygonM",
-  POLYGONZM: "PolygonZM",
-  POLYGON25D: "Polygon25D",
-  MULTIPOLYGON: "MultiPolygon",
-  MULTIPOLYGONZ: "MultiPolygonZ",
-  MULTIPOLYGONM: "MultiPolygonM",
-  MULTIPOLYGONZM: "MultiPolygonZM",
-  MULTIPOLYGON25D: "MultiPolygon25D",
-  GEOMETRYCOLLECTION: "GeometryCollection",
-  GEOMETRYCOLLECTIONZ: "GeometryCollectionZ",
-  GEOMETRYCOLLECTIONM: "GeometryCollectionM",
-  GEOMETRYCOLLECTIONZM: "GeometryCollectionZM",
-  GEOMETRYCOLLECTION25D: "GeometryCollection25D"
-};
-
-const geom = {
-
-  /**
-   * core/geometry/geom::distance@v3.4
-   */
-  distance(c1,c2){
-    return Math.sqrt(geom.squaredDistance(c1,c2));
-  },
-
-  /**
-   * core/geometry/geom::squaredDistance@v3.4
-   */
-  squaredDistance(c1,c2){
-    const x1 = c1[0];
-    const y1 = c1[1];
-    const x2 = c2[0];
-    const y2 = c2[1];
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return dx * dx + dy * dy;
-  },
-
-  /**
-   * core/geometry/geom::closestOnSegment@v3.4
-   */
-  closestOnSegment(coordinate, segment) {
-    const x0 = coordinate[0];
-    const y0 = coordinate[1];
-    const start = segment[0];
-    const end = segment[1];
-    const x1 = start[0];
-    const y1 = start[1];
-    const x2 = end[0];
-    const y2 = end[1];
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const along = (dx === 0 && dy === 0) ? 0 :
-        ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
-    let x, y;
-    if (along <= 0) {
-      x = x1;
-      y = y1;
-    } else if (along >= 1) {
-      x = x2;
-      y = y2;
-    } else {
-      x = x1 + along * dx;
-      y = y1 + along * dy;
-    }
-    return [x, y];
-  },
-};
+const {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes} = CONSTANT;
 
 const Geometry = {
 
@@ -115,6 +14,64 @@ const Geometry = {
    * core/geometry/geometry::GeometryTypes@v3.4
    */
    GeometryTypes,
+
+  /**
+   * Remove Z values from geometry coordinates
+   */
+   removeZValueToOLFeatureGeometry({feature, geometryType}={}){
+    const geometry = feature.getGeometry();
+    if (geometry) {
+      geometryType = geometryType || geometry.getType();
+      const originalFeatureCoordinates = geometry.getCoordinates();
+      switch (geometryType){
+        // POINT: [x, y]
+        case GeometryTypes.POINT:
+          if (originalFeatureCoordinates.length === 3) {
+            originalFeatureCoordinates.splice(2);
+            feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+          }
+          break;
+        // MULTIPOINT: [ [x1, y1], [x2, y2] ]
+        case GeometryTypes.MULTIPOINT:
+        // LINE: [ [x1, y1], [x2, y2] ]
+        case GeometryTypes.LINESTRING:
+        case GeometryTypes.LINE:
+          originalFeatureCoordinates.forEach(coordinates => coordinates.splice(2));
+          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+          break;
+        // MULTILINE: [
+        //   [ [x1, y1], [x2, y2] ],
+        //   [ [x3, y3], [x4, y4] ]
+        // ]
+        case GeometryTypes.MULTILINESTRING:
+        case GeometryTypes.MULTILINE:
+          originalFeatureCoordinates.forEach(singleLine => {
+            singleLine.forEach(coordinates => coordinates.splice(2))
+          });
+          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+          break;
+        // POLYGON: [
+        //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ]
+        // ]
+        case GeometryTypes.POLYGON:
+          originalFeatureCoordinates[0].forEach(coordinates => coordinates.splice(2));
+          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+          break;
+        // MULTIPOLYGON:[
+        //   [ [x1, y1], [x2, y2], [x3, y3], [x1, y1] ],
+        //   [ [xa, ya], [xb, yb], [xc, yc], [xa, ya] ]
+        // ]
+        case GeometryTypes.MULTIPOLYGON:
+          originalFeatureCoordinates.forEach(singlePolygon => {
+            singlePolygon[0].forEach(coordinates => coordinates.splice(2))
+          });
+          feature.getGeometry().setCoordinates(originalFeatureCoordinates);
+          break;
+      }
+    }
+
+    return feature;
+  },
 
    /**
     * core/geometry/geometry::addZValueToOLFeatureGeometry@v3.4
@@ -398,7 +355,9 @@ const Geometry = {
 };
 
 const geoutils = {
+
   geometryFields,
+
   coordinatesToGeometry(geometryType, coordinates) {
     let geometryClass;
     switch (geometryType) {
@@ -460,6 +419,7 @@ const geoutils = {
     const geometry = new geometryClass(coordinates);
     return geometry
   },
+
   getDefaultLayerStyle(geometryType, options={}){
     const {color} = options;
     switch (geometryType) {
@@ -625,6 +585,23 @@ const geoutils = {
       id && feature.setId(id);
       return feature;
     }
+  },
+
+  /**
+   * in case of feature object
+   * {
+   *   id: X,
+   *   attributes: {key:value}
+   *   geometry: geometry
+   * }
+   * @param id
+   * @param feature
+   */
+  createFeatureFromFeatureObject({id, feature={}}){
+    const {geometry, attributes} = feature;
+    feature = geoutils.createFeatureFromGeometry({id,geometry})
+    Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
+    return feature;
   },
 
   createOlLayer(options = {}) {
@@ -1543,10 +1520,6 @@ const geoutils = {
     return !Geometry.isMultiGeometry(geometry.getType());
   },
 
-  isMultiGeometry(geometry) {
-    return !Geometry.isMultiGeometry(geometry.getType());
-  },
-
   singleGeometriesToMultiGeometry(geometries=[]) {
     const geometryType = geometries[0] && geometries[0].getType();
     return geometryType && new ol.geom[`Multi${geometryType}`](geometries.map(geometry => geometry.getCoordinates()))
@@ -1577,7 +1550,7 @@ const geoutils = {
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
       if (toGeometryType){
-        const isFromGeometryMulti = geoutils.isMultiGeometry(geometry);
+        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
         const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
         if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
         else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
@@ -1839,16 +1812,59 @@ const geoutils = {
     return response;
   },
 
+
   /**
-   * core/geometry/geom@v3.4
+   * core/geometry/geom::distance@v3.4
    */
-  ...geom,
+  distance(c1,c2){
+    return Math.sqrt(geom.squaredDistance(c1,c2));
+  },
+
+  /**
+   * * core/geometry/geom::squaredDistance@v3.4
+   */
+  squaredDistance(c1,c2){
+    const x1 = c1[0];
+    const y1 = c1[1];
+    const x2 = c2[0];
+    const y2 = c2[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return dx * dx + dy * dy;
+  },
+
+  /**
+   * core/geometry/geom::closestOnSegment@v3.4
+   */
+  closestOnSegment(coordinate, segment) {
+    const x0 = coordinate[0];
+    const y0 = coordinate[1];
+    const start = segment[0];
+    const end = segment[1];
+    const x1 = start[0];
+    const y1 = start[1];
+    const x2 = end[0];
+    const y2 = end[1];
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const along = (dx === 0 && dy === 0) ? 0 :
+      ((dx * (x0 - x1)) + (dy * (y0 - y1))) / ((dx * dx + dy * dy) || 0);
+    let x, y;
+    if (along <= 0) {
+      x = x1;
+      y = y1;
+    } else if (along >= 1) {
+      x = x2;
+      y = y2;
+    } else {
+      x = x1 + along * dx;
+      y = y1 + along * dy;
+    }
+    return [x, y];
+  },
 
   /**
    * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)
-   * 
-   * - core/geometry/geometry::isMultiGeometry@v3.4
-   * - core/utils/geo::isMultiGeometry@v3.4
    */
   Geometry
 
