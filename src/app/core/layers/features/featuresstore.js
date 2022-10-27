@@ -96,6 +96,12 @@ proto._filterFeaturesResponse = function(options={}) {
    * @type {*[]}
    */
   const {features=[], featurelocks=[], count} = options;
+  /**
+   * get features returned from server and feature that are current locked.
+   * If featurelocks are less that a features, it means that other user is editing these feature
+   * @type {*[]}
+   */
+  const {features=[], featurelocks=[]} = options;
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
     const added = this._loadedIds.indexOf(featureId) !== -1;
