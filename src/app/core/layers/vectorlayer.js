@@ -2,7 +2,7 @@ const {base, inherit, mixin} = require('core/utils/utils');
 const Layer = require('./layer');
 const TableLayer = require('./tablelayer');
 const GeoLayerMixin = require('./geolayermixin');
-const VectorMapLayer = require('./map/vectorlayer');
+const VectoMapLayer = require('./map/vectorlayer');
 
 function VectorLayer(config={}, options) {
   base(this, config, options);
@@ -10,7 +10,7 @@ function VectorLayer(config={}, options) {
   this.type = Layer.LayerTypes.VECTOR;
   // need a ol layer for add to map
   this.setup(config, options);
-  this.onafter('setColor', color => {});
+  this.onafter('setColor', color => {})
 }
 
 inherit(VectorLayer, TableLayer);
@@ -43,7 +43,7 @@ proto.getMapLayer = function() {
   const color = this.getColor();
   const style = this.isEditingLayer() ? this.getEditingStyle() : this.getCustomStyle();
   const provider = this.getProvider('data');
-  this._mapLayer = new VectorMapLayer({
+  this._mapLayer = new VectoMapLayer({
     id,
     geometryType,
     color,
@@ -53,5 +53,6 @@ proto.getMapLayer = function() {
   });
   return this._mapLayer;
 };
+
 
 module.exports = VectorLayer;
