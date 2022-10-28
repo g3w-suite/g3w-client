@@ -78,6 +78,7 @@ export default {
   async mounted(){
     const toolbarOptions = [
       [{ header: [1, 2, 3, 4, 5, 6,  false] }],
+      [{ 'align': ''}, {'align': 'center'}, {'align': 'right'}, {'align': 'justify'}],
       [{ 'color': [] }, { 'background': [] }],
       ['bold', 'italic', 'underline', { 'list': 'ordered' }, { 'list': 'bullet' }, 'link', 'clean', 'html'],
       ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
