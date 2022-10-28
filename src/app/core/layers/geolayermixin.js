@@ -1,7 +1,7 @@
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
+const { createFeatureFromFeatureObject } = require('core/utils/geo');
 const { sanitizeUrl } = require('core/utils/utils');
-const {createFeatureFromGeometry} = require('core/utils/geo');
 const GUI = require('gui/gui');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
@@ -64,17 +64,11 @@ proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
 
-proto.updateOlSelectionFeature = function({id, geometry}={}){
+proto.updateOlSelectionFeature = function({id, feature}={}){
   const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
-    geometry = new ol.geom[geometry.type](geometry.coordinates);
-    const feature = featureObject.feature;
-    /**
-     * add a property of feature __layerId used whe we work with selected Layer features
-     */
-    feature.__layerId = this.getId();
+    featureObject.feature = feature;
     const mapService = GUI.getService('map');
-    feature.setGeometry(geometry);
     mapService.setSelectionFeatures('update', {
       feature
     })
@@ -103,9 +97,9 @@ proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
-proto.addOlSelectionFeature = function({id, geometry}={}){
+proto.addOlSelectionFeature = function({id, feature}={}){
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromGeometry({id, geometry}),
+    feature: createFeatureFromFeatureObject({id, feature}),
     added: false
   };
   return this.olSelectionFeatures[id];

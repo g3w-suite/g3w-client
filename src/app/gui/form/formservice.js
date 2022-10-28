@@ -43,14 +43,16 @@ function FormService() {
   };
   // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    const {fields, feature, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
+    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
     this.layer = layer;
-    this.feature = feature;
+    // need to be cloned
+    this.feature = feature.clone();
     this.title = title;
     this.formId = formId;
     this.name = name;
     this.buttons = buttons;
     this.context_inputs = context_inputs;
+    this.parentData = parentData;
     this.state = {
       layerid: layer.getId(),
       loading:false,
@@ -62,6 +64,7 @@ function FormService() {
       fields: null,
       buttons: this.buttons,
       disabled: false,
+      isnew,
       valid: true, // global form validation state. True at beginning
       // when input change will be update
       tovalidate: {},
@@ -70,7 +73,8 @@ function FormService() {
       footer,
       ready: false
     };
-    this.expression_fields_dependencies = {};
+    this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
+    this.default_expression_fields_dependencies = {};
     this.setFormFields(fields);
     if (this.layer && options.formStructure) {
       const formstructure = this.layer.getLayerEditingFormStructure(fields);
@@ -89,28 +93,108 @@ proto.setReady = function(bool=false){
 };
 
 /**
+ * Method called when an input change value
+ * @param input
+ */
+proto.changeInput = function(input){
+  this.evaluateFilterExpressionFields(input);
+  this.evaluateDefaultExpressionFields(input);
+  this.isValid(input);
+};
+
+/**
+ * Method to evaluate filter expression
+ * @param input
+ */
+proto.evaluateDefaultExpressionFields = function(input={}) {
+  const default_expression_fields_dependencies = this.default_expression_fields_dependencies[input.name];
+  if (default_expression_fields_dependencies) {
+    this.feature.set(input.name, input.value);
+    default_expression_fields_dependencies.forEach(expression_dependency_field =>{
+      const field = this._getField(expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleDefaultExpressionFormInput({
+        parentData: this.parentData,
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature: this.feature //feature to transform in form_data
+      })
+    })
+  }
+};
+
+/**
+ * Method to evaluate filter expression
+ * @param input
+ */
+proto.evaluateFilterExpressionFields = function(input={}) {
+  const filter_expression_fields_dependencies = this.filter_expression_fields_dependencies[input.name];
+  if (filter_expression_fields_dependencies) {
+    //need in case of init form service where filter_expression option has
+    //referencing_fields or referenced_columns from another layer
+    const fieldForm = this._getField(input.name);
+    fieldForm && this.feature.set(fieldForm.name, fieldForm.value);
+    filter_expression_fields_dependencies.forEach(expression_dependency_field => {
+      const field = this._getField(expression_dependency_field);
+      const qgs_layer_id = this.layer.getId();
+      inputService.handleFilterExpressionFormInput({
+        parentData: this.parentData,
+        qgs_layer_id, // the owner of feature
+        field, // field related
+        feature: this.feature //feature to transform in form_data
+      })
+    })
+  }
+};
+
+/**
  * Method to handle expression on
  * @param fields
  */
 proto.handleFieldsWithExpression = function(fields=[]){
   fields.forEach(field => {
     const {options={}} = field.input;
-    if (options.filter_expression){
-      const {referencing_fields=[]} = options.filter_expression;
-      referencing_fields.forEach(referencing_field =>{
-        if (referencing_field) {
-          if (this.expression_fields_dependencies[referencing_field] === undefined)
-            this.expression_fields_dependencies[referencing_field] = [];
-          this.expression_fields_dependencies[referencing_field].push(field.name);
-        }
-      })
+    /**
+     * Case of a field that has a filter_expression value object
+     */
+    if (options.filter_expression) {
+      const filter_expression_dependency_fields = new Set();
+      const {referencing_fields=[], referenced_columns=[]} = options.filter_expression;
+      [...referenced_columns, ...referencing_fields].forEach(dependency_field => filter_expression_dependency_fields.add(dependency_field))
+      filter_expression_dependency_fields.forEach(dependency_field => {
+        if (this.filter_expression_fields_dependencies[dependency_field] === undefined)
+          this.filter_expression_fields_dependencies[dependency_field] = [];
+        this.filter_expression_fields_dependencies[dependency_field].push(field.name);
+      });
+
+    }
+    /**
+     * Case of a field that has a default_value object and check if apply_on_update only
+     */
+    if (options.default_expression) {
+      const {referencing_fields=[], referenced_columns=[], apply_on_update=false} = options.default_expression;
+      /**
+       * In case on apply_on_update true always listend dependenencies change
+       * otherwise only for new Feature
+       */
+      if (apply_on_update || this.state.isnew) {
+        const default_expression_dependency_fields = new Set();
+        [...referenced_columns, ...referencing_fields].forEach(dependency_field => default_expression_dependency_fields.add(dependency_field));
+        default_expression_dependency_fields.forEach(dependency_field => {
+          if (this.default_expression_fields_dependencies[dependency_field] === undefined)
+            this.default_expression_fields_dependencies[dependency_field] = [];
+          this.default_expression_fields_dependencies[dependency_field].push(field.name);
+        });
+      }
     }
   });
-  // start to evaluate field
-  Object.keys(this.expression_fields_dependencies).forEach(name =>{
-    const field = this.state.fields.find(field => field.name === name);
-    field && this.evaluateExpression(field);
-  })
+  // start to evaluate filter expression field
+  Object.keys(this.filter_expression_fields_dependencies).forEach(name =>{
+    this.evaluateFilterExpressionFields({
+      name
+    });
+  });
+
 };
 
 proto.setCurrentFormPercentage = function(perc){
@@ -130,29 +214,7 @@ proto.getValidComponent = function(id) {
   return this.state.componentstovalidate[id];
 };
 
-proto.changeInput = function(input){
-  this.evaluateExpression(input);
-  this.isValid(input);
-};
-
-proto.evaluateExpression = function(input){
-  const expression_fields_dependencies = this.expression_fields_dependencies[input.name];
-  if (expression_fields_dependencies) {
-    const feature = this.feature.clone();
-    feature.set(input.name, input.value);
-    expression_fields_dependencies.forEach(expression_dependency_field =>{
-      const field = this.state.fields.find(field => field.name === expression_dependency_field);
-      const qgs_layer_id = this.layer.getId();
-      inputService.handleFormInput({
-        qgs_layer_id, // the owner of feature
-        field, // field related
-        feature //featute to tranform in form_data
-      })
-    })
-  }
-};
-
-// Every input send to form it valid value that will change the genaral state of form
+// Every input send to form it valid value that will change the general state of form
 proto.isValid = function(input) {
   if (input) {
     // check mutually
@@ -195,7 +257,6 @@ proto.isValid = function(input) {
         if (input.validate.valid) this.state.tovalidate[input_name].validate.valid = true
     }
   }
-
   this.state.valid = Object.values(this.state.tovalidate).reduce((previous, input) => {
     return previous && input.validate.valid;
   }, true) && Object.values(this.state.componentstovalidate).reduce((previous, valid) => {
@@ -220,7 +281,7 @@ proto.addComponent = function(component) {
       valid
     });
   }
-  // we can set a component cthat can be part of headeres (tabs or not)
+  // we can set a component that can be part of headers (tabs or not)
   if (header) {
     this.state.headers.push({title, name, id, icon});
     this.state.currentheaderid = this.state.currentheaderid || id;

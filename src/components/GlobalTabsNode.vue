@@ -184,9 +184,9 @@
     border-radius: 2px;
   }
   .node-row {
-    margin-bottom: 5px;
+    margin-bottom: 0;
     column-gap: 2px;
-    margin-top: 5px;
+    margin-top: 0;
     display: grid;
     grid-auto-columns: minmax(0, 1fr);
     grid-auto-flow: column;

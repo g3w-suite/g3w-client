@@ -162,7 +162,8 @@ const utils = {
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
     }
-    const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
+    // add match numeric value integer or float
+    const arrayQGS = [...response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
     arrayQGS.forEach((find, idx) => {
       if (idx%2 === 0) {
         if (!this.hasFieldsStartWithNotPermittedKey) this.hasFieldsStartWithNotPermittedKey = {};
