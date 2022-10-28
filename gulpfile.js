@@ -228,6 +228,8 @@ gulp.task('datatable-images', function () {
 gulp.task('fonts', function () {
   return gulp.src([
       `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+      `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
+      `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
       `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
       `!${g3w.pluginsFolder}/**/node_modules/**`,
     ])
