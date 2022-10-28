@@ -117,8 +117,8 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
           })
             .catch(()=> forminput.options.values = [])// in case of error
             .finally(()=> {
+              forminput.loading = false;
               resolve();
-              forminput.loading = false
             })
         }
       });

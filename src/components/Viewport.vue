@@ -81,6 +81,7 @@
   import downloadNotify from 'components/NotifyDownload.vue';
   import pluginsNotify from 'components/NotifyPlugins.vue';
   import {viewport as viewportConstraints} from 'gui/constraints';
+  import {ZINDEXES} from "../app/constant";
   import viewportService from 'services/viewport';
   const GUI = require('gui/gui');
 
@@ -141,6 +142,7 @@
           content: {
             width: `${this.state.content.sizes.width}px`,
             height: `${this.state.content.sizes.height}px`,
+            zIndex: ZINDEXES.usermessage.tool + 1,
             minHeight: this.state.split === 'v' ? `${viewportConstraints.resize.content.min}px` : null
           }
         }

@@ -27,6 +27,8 @@
 </template>
 
 <script>
+  import {ZINDEXES} from "../app/constant";
+
   const GUI = require('gui/gui');
   const COLORS = {
     success: {
@@ -55,6 +57,22 @@
       fontWeight: "bold"
     },
   };
+  /**
+   * Add custom style to handle different type of usermessage
+   * @type {{alert: {}, success: {}, warning: {}, loading: {}, tool: {"z-index": string}, info: {}}}
+   */
+  const STYLES = {
+    success: {},
+    info: {},
+    warning: {},
+    alert: {},
+    tool: {
+      "z-index": ZINDEXES.usermessage.tool,
+      left: "40px"
+    },
+    loading: {},
+  };
+
   export default {
     name: "usermessage",
     props: {
@@ -161,8 +179,9 @@
         }
       }
       this.style = {
-      ...COLORS[this.type],
-      ...position,
+        ...COLORS[this.type],
+        ...position,
+        ...STYLES[this.type]
       }
     },
     async mounted(){
@@ -212,9 +231,9 @@
     font-size: 1.1em;
   }
 
- .usermessage-header-title, .usermessage-header-title h4 {
+  .usermessage-header-title, .usermessage-header-title h4 {
     font-weight: bold;
-   text-align: center;
+    text-align: center;
   }
 
   .usermessage-content.mobile  .usermessage-header-title h4 {
@@ -226,7 +245,7 @@
     margin: 5px;
   }
 
- .usermessage-header-right {
+  .usermessage-header-right {
     padding: 5px;
   }
 

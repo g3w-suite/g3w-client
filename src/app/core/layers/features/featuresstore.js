@@ -95,7 +95,12 @@ proto._filterFeaturesResponse = function(options={}) {
    * If featurelocks are less that a features, it means that other user is editing these feature
    * @type {*[]}
    */
-  const {features=[], featurelocks=[]} = options;
+  /**
+   * get features returned from server and feature that are current locked.
+   * If featurelocks are less that a features, it means that other user is editing these feature
+   * @type {*[]}
+   */
+  const {features=[], featurelocks=[], count} = options;
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
     const added = this._loadedIds.indexOf(featureId) !== -1;
@@ -103,7 +108,7 @@ proto._filterFeaturesResponse = function(options={}) {
     return !added
   });
   this._filterLockIds(featurelocks);
-  if (featurelocks.length < features.length && !this.hasFeatureLockByOtherUser) this.featuresLockedByOtherUser();
+  if (features.length < count && !this.hasFeatureLockByOtherUser) this.featuresLockedByOtherUser();
   return featuresToAdd;
 };
 
