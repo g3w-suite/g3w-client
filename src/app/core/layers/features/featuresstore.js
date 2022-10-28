@@ -95,11 +95,6 @@ proto._filterFeaturesResponse = function(options={}) {
    * If featurelocks are less that a features, it means that other user is editing these feature
    * @type {*[]}
    */
-  /**
-   * get features returned from server and feature that are current locked.
-   * If featurelocks are less that a features, it means that other user is editing these feature
-   * @type {*[]}
-   */
   const {features=[], featurelocks=[], count} = options;
   const featuresToAdd = features.filter(feature => {
     const featureId = feature.getId();
