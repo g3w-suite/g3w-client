@@ -207,7 +207,7 @@ gulp.task('images', function () {
   return gulp.src([
       `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
       `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
-      '!./src/**/node_modules/**/'
+      `!${g3w.pluginsFolder}/**/node_modules/**`
     ])
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/images/'))
@@ -216,7 +216,7 @@ gulp.task('images', function () {
 /**
  * Deploy datatables images (src/assets/vendors/datatables)
  */
- gulp.task('datatable-images', function () {
+gulp.task('datatable-images', function () {
   return gulp.src(`${g3w.assetsFolder}/vendors/datatables/DataTables-1.10.16/images/*`)
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/css/DataTables-1.10.16/images/'));
@@ -225,13 +225,11 @@ gulp.task('images', function () {
 /**
  * Deploy client and vendor fonts
  */
- gulp.task('fonts', function () {
+gulp.task('fonts', function () {
   return gulp.src([
       `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/bootstrap/fonts/**/*.{eot,ttf,woff,woff2}`,
-      `${g3w.assetsFolder}/vendors/font-awesome-5.15.4/webfonts/**/*.{eot,ttf,woff,woff2}`,
       `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
-      '!./src/**/node_modules/**/'
+      `!${g3w.pluginsFolder}/**/node_modules/**`,
     ])
     .pipe(flatten())
     .pipe(gulp.dest(outputFolder + '/static/client/fonts/'))
