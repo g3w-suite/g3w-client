@@ -67,26 +67,30 @@ proto.un = function(setter, key) {
   });
 };
 
-// base function to handle onafter or before listeners
+// base function to register and handle on<before/after> setter listeners
 /*
   when=before|after,
   type=sync|async
 */
 proto._onsetter = function(when, setter, listener, async, priority=0, once=false) {
-  const settersListeners = this.settersListeners[when];
-  const listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
-  const settersListeneres = settersListeners[setter];
-  settersListeneres.push({
-    key: listenerKey,
-    fnc: listener,
-    async,
-    priority,
-    once
-  });
-  // reader array based on priority
-  settersListeners[setter] = _.sortBy(settersListeneres, setterListener => setterListener.priority);
+  let listenerKey;
+  // check if setter function is register.
+  if (typeof this.settersListeners[when][setter] !== "undefined") {
+    // set unique listenerKey value
+    listenerKey = `${Math.floor(Math.random()*1000000) + Date.now()}`;
+    // add info object to setters listeners
+    this.settersListeners[when][setter].push({
+      key: listenerKey,
+      fnc: listener,
+      async,
+      priority,
+      once
+    });
+    // set lineners base on priority
+    this.settersListeners[when][setter] = _.sortBy(this.settersListeners[when][setter], setterListener => setterListener.priority);
+  }
   // return key
-  return listenerKey;
+  return listenerKey // in case of no setter register return undefined listerKey
 };
 
 proto._setupListenersChain = function(setters) {
