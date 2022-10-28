@@ -7,8 +7,9 @@
       <i class="usermessage-header-icontype" :class="g3wtemplate.getFontClass(type)"></i>
       <div class="usermessage-header-title">
         <slot name="header">
-          <h4 v-if="title" v-t="title"></h4>
-          <h4 v-else> {{ type.toUpperCase() }}</h4>
+          <h4  v-if="title" v-t="title"></h4>
+          <h4  v-else> {{ type.toUpperCase() }}</h4>
+          <h5 class="usermessage-header-subtitle" v-if="subtitle" v-t="subtitle"></h5>
         </slot>
       </div>
       <div class="usermessage-header-right">
@@ -81,6 +82,10 @@
         default: 'info' // info, warning, alert, tool
       },
       title: {
+        type: String,
+        default: null,
+      },
+      subtitle: {
         type: String,
         default: null,
       },
@@ -232,7 +237,12 @@
   }
 
   .usermessage-content.mobile  .usermessage-header-title h4 {
-    margin: 3px;
+    margin: 0;
+  }
+
+  .usermessage-header-subtitle {
+    font-weight: bold;
+    margin: 5px;
   }
 
   .usermessage-header-right {

@@ -23,6 +23,10 @@
             <bar-loader v-if ="forminput.options.dependance" :loading="state.loading[forminput.options.dependance] || forminput.loading"></bar-loader>
             <select2 :forminput="forminput" :autocompleteRequest="autocompleteRequest" @select-change="changeInput"></select2>
           </div>
+           <div v-if="forminput.type === 'datetimefield'" class="form-group text" v-disabled="state.loading[forminput.options.dependance] || false">
+             <search-panel-label :forminput="forminput"></search-panel-label>
+             <search-datetime :forminput="forminput" @change="changeInput"></search-datetime>
+          </div>
           <div v-if="forminput.logicop" class="search-logicop skin-border-color">
             <h4>{{ forminput.logicop }}</h4>
           </div>
@@ -37,11 +41,14 @@
 </template>
 
 <script>
-import Select2 from 'components/SearchSelect2.vue'
+import Select2 from 'components/SearchSelect2.vue';
+import SearchDatetime from 'components/SearchDatetime.vue';
 import SearchPanelLabel from "./SearchPanelLabel.vue";
+
 export default {
   components:{
     Select2,
+    SearchDatetime,
     SearchPanelLabel
   },
   data() {
