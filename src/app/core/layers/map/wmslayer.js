@@ -92,12 +92,39 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
   if (visibleLayers.length > 0) {
-    const STYLES = visibleLayers.map(layer => layer.getStyle()).join(',');
+    const CATEGORIES_LAYERS_ON = {};
+    const CATEGORIES_LAYERS_OFF = {};
+    const STYLES = visibleLayers.map(layer => {
+      const layerId = layer.getId();
+      CATEGORIES_LAYERS_ON[layerId] = [];
+      CATEGORIES_LAYERS_OFF[layerId] = [];
+      layer.getCategories().forEach(({checked, ruleKey}) =>{
+        if (checked) CATEGORIES_LAYERS_ON[layerId].push(ruleKey);
+        else CATEGORIES_LAYERS_OFF[layerId].push(ruleKey);
+      });
+      return layer.getStyle()
+    }).join(',');
+    let LEGEND_ON;
+    let LEGEND_OFF;
+    Object.keys(CATEGORIES_LAYERS_OFF).forEach(layerId => {
+      if (CATEGORIES_LAYERS_OFF[layerId].length) {
+        if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = '';
+        else  LEGEND_OFF = `${LEGEND_OFF};`;
+        if (CATEGORIES_LAYERS_ON[layerId].length) {
+          if (typeof LEGEND_ON === 'undefined') LEGEND_ON = '';
+          else LEGEND_ON = `${LEGEND_ON};`;
+          LEGEND_ON = `${LEGEND_ON}${layerId}:${CATEGORIES_LAYERS_ON[layerId].join(',')}`;
+        }
+        LEGEND_OFF = `${LEGEND_OFF}${layerId}:${CATEGORIES_LAYERS_OFF[layerId].join(',')}`;
+      }
+    });
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
      params = {
       ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
       STYLES,
+      LEGEND_ON,
+      LEGEND_OFF,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {
         return layer.getWMSLayerName();
       }).join(',')}`

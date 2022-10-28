@@ -3,13 +3,13 @@
 
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
-    <bar-loader :loading="legend.loading"></bar-loader>
+    <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
     <figure>
-      <template v-for="legendurl in legend.url" >
-        <div style="display: flex; align-items: center; width: 100%">
-          <span @click.stop.prevent="showHideLayerCategory(legendurl)" v-if="showCategoriesCheckBox" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.show ? 'check': 'uncheck')"></span>
-          <img :src="legendurl.icon" @error="setError()" @load="urlLoaded()">
-          <span class="new_line_too_long_text" style="padding-left: 3px;">{{legendurl.title}}</span>
+      <template v-for="(legendurl, index) in legend.url" >
+        <div style="display: flex; align-items: center; width: 100%" >
+          <span v-didabled="!legendurl.ruleKey" v-if="layer.categories.length" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
+          <img v-if ="legendplace === 'toc'" :src="legendurl.icon" @error="setError()" @load="urlLoaded()">
+          <span v-if="showCategoriesCheckBox" class="new_line_too_long_text" style="padding-left: 3px;">{{legendurl.title}}</span>
           <span class="divider"></span>
         </div>
       </template>
@@ -28,6 +28,9 @@
   export default {
     name: "layerlegend",
     props: {
+      legendplace: {
+        type: 'String'
+      },
       layer: {
         type: Object
       }
@@ -47,8 +50,9 @@
       }
     },
     methods: {
-      showHideLayerCategory(legendurl) {
-        legendurl.show = !legendurl.show;
+      showHideLayerCategory(index) {
+        this.layer.categories[index].checked = this.legend.url[index].checked = !this.legend.url[index].checked;
+       CatalogLayersStoresRegistry.getLayerById(this.layer.id).change()
       },
       setError() {
         this.legend.error = true;
@@ -62,114 +66,54 @@
         layerId === this.layer.id && this.getLegendSrc(this.layer);
       },
       getSingleLayerLegendCategories(layer) {
-        let legendurl;
-        const layerStore = CatalogLayersStoresRegistry.getLayersStores().find(layerStore => layerStore.getLayerById(layer.id));
-        legendurl = layerStore && layerStore.getLayerById(layer.id).getLegendUrl(this.legendParams, {
+        const legendurl = CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams, {
           categories: true
         });
         return XHR.get({
           url: legendurl
         })
-
       },
       getLegendUrl(layer) {
-        let legendurl;
-        const layerStore = CatalogLayersStoresRegistry.getLayersStores().find(layerStore => layerStore.getLayerById(layer.id));
-        legendurl = layerStore && layerStore.getLayerById(layer.id).getLegendUrl(this.legendParams);
-        return legendurl;
+        return CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams);
       },
       async getLegendSrc(layer) {
-        if (!layer.categories) {
-          try {
-            const {nodes=[]} = await this.getSingleLayerLegendCategories(layer);
-            nodes.forEach(({icon, title, symbols=[]}) => {
-              if (icon) this.legend.url = [{
+        try {
+          const {nodes=[]} = await this.getSingleLayerLegendCategories(layer);
+          nodes.forEach(({icon, title, symbols=[]}) => {
+            //just icon no categories
+            if (icon) {
+              this.layer.categories = [];
+              this.legend.url = [{
                 icon: `data:image/png;base64,${icon}`,
                 title,
-                show: true
+                checked: true
               }];
-              else {
-                this.legend.url = symbols.map(({icon, title}) => ({
+            }
+            else {
+              this.layer.categories = [];
+              this.legend.url = symbols.map(({icon, title, checked=true, ruleKey}) => {
+                this.layer.categories.push({
+                  checked,
+                  ruleKey
+                });
+                return {
                   icon:`data:image/png;base64,${icon}`,
                   title,
-                  show: true
-                }))
-              }
-            })
-          } catch(err) {
-
-          }
-        } else {
-          const urlMethodsLayersName = {
-            GET: {},
-            POST: {}
-          };
-          const self = this;
-          await this.$nextTick();
-          const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
-          const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
-          const url = `${this.getLegendUrl(layer)}`;
-          if (layer.source && layer.source.url) urlLayersName[url] = [];
-          else {
-            const [prefix, layerName] = url.split('LAYER=');
-            if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
-            urlLayersName[prefix].unshift({
-              layerName,
-              style: style && style.name
-            });
-          }
-          for (const method in urlMethodsLayersName) {
-            const urlLayersName = urlMethodsLayersName[method];
-            if (method === 'GET') {
-              for (const url in urlLayersName) {
-                const updated_url_legend  = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : ''}` : url;
-                /*
-                  Check if previous url is changed
-                 */
-                if (this.legend.url !== updated_url_legend) {
-                  this.legend.url = updated_url_legend;
-                  this.legend.loading = true;
+                  checked,
+                  ruleKey
                 }
-              }
-            } else {
-              for (const url in urlLayersName) {
-                const xhr = new XMLHttpRequest();
-                let [_url, params] = url.split('?');
-                params = params.split('&');
-                const econdedParams = [];
-                params.forEach(param => {
-                  const [key, value] = param.split('=');
-                  econdedParams.push(`${key}=${encodeURIComponent(value)}`);
-                });
-                params = econdedParams.join('&');
-                params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
-                params += `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
-                params += `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : ''}`;
-                xhr.open('POST', _url);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-                xhr.responseType = 'blob';
-                self.legend.loading = true;
-                xhr.onload = function () {
-                  const data = this.response;
-                  if (data !== undefined)
-                    self.legend.url = window.URL.createObjectURL(data);
-                  self.legend.loading = false;
-                };
-                xhr.onerror = function () {
-                  self.legend.loading = false;
-                };
-                xhr.send(params);
-              }
+              })
             }
-          }
-        }
 
+          })
+        } catch(err) {}
       }
     },
     created() {
       this.legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
       this.mapReady = false;
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
+      this.show && this.getLegendSrc(this.layer);
     },
     async mounted() {
       await this.$nextTick();
@@ -178,7 +122,6 @@
         this.mapReady = true;
         this.getLegendSrc(this.layer);
       });
-      this.show && this.getLegendSrc(this.layer);
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);

@@ -41,11 +41,20 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+    categories: []
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
+};
+
+/**
+ * Return eventually categories of layers legend
+ * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
+ */
+proto.getCategories = function(){
+  return this.state.categories;
 };
 
 /**
