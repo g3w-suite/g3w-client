@@ -42,7 +42,7 @@ proto.setup = function(config={}, options={}) {
     maxscale: config.maxscale,
     ows_method: config.ows_method,
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
-    categories: []
+    categories: null
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
@@ -55,6 +55,10 @@ proto.setup = function(config={}, options={}) {
  */
 proto.getCategories = function(){
   return this.state.categories;
+};
+
+proto.clearCategories = function(){
+  this.state.categories = null;
 };
 
 /**

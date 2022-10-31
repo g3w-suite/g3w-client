@@ -7,7 +7,7 @@
     <figure>
       <template v-for="(legendurl, index) in legend.url" >
         <div style="display: flex; align-items: center; width: 100%" >
-          <span v-didabled="!legendurl.ruleKey" v-if="layer.categories.length" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
+          <span v-didabled="!legendurl.ruleKey" v-if="layer.categories" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
           <img v-if ="legendplace === 'toc'" :src="legendurl.icon" @error="setError()" @load="urlLoaded()">
           <span v-if="showCategoriesCheckBox" class="new_line_too_long_text" style="padding-left: 3px;">{{legendurl.title}}</span>
           <span class="divider"></span>
@@ -52,7 +52,7 @@
     methods: {
       showHideLayerCategory(index) {
         this.layer.categories[index].checked = this.legend.url[index].checked = !this.legend.url[index].checked;
-       CatalogLayersStoresRegistry.getLayerById(this.layer.id).change()
+        CatalogLayersStoresRegistry.getLayerById(this.layer.id).change();
       },
       setError() {
         this.legend.error = true;
@@ -65,48 +65,83 @@
         const { layerId } = options;
         layerId === this.layer.id && this.getLegendSrc(this.layer);
       },
-      getSingleLayerLegendCategories(layer) {
-        const legendurl = CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams, {
-          categories: true
-        });
-        return XHR.get({
-          url: legendurl
-        })
+      async getSingleLayerLegendCategories(layer) {
+        const responseObject = {
+          type: null,
+          data: null
+        };
+        try {
+          const legendurl = CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams, {
+            categories: true
+          });
+          const legendGraphics = await XHR.get({
+            url: legendurl
+          });
+          const {nodes=[]} = legendGraphics;
+          nodes.forEach(({icon, title, symbols=[]}) => {
+            if (icon) {
+              responseObject.type = 'icon';
+              responseObject.data = {
+                icon,
+                title
+              }
+            } else {
+              if (layer.categories) {
+                symbols.forEach(symbol =>{
+                  const findSymbol = layer.categories.find(({icon, title}) => symbol.icon === icon && symbol.title === title);
+                  if (!findSymbol) {
+                    symbol._checked = symbol.checked;
+                    layer.categories.push(symbol);
+                  }
+                });
+              } else layer.categories = symbols.map(symbol => ({
+                ...symbol,
+                _checked: symbol.checked
+              }));
+              responseObject.type = 'categories';
+              responseObject.data = {
+                categories: layer.categories
+              }
+            }
+          });
+        } catch(err){
+          responseObject.type = 'error';
+          responseObject.data = err;
+        }
+        return responseObject;
       },
       getLegendUrl(layer) {
         return CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams);
       },
       async getLegendSrc(layer) {
         try {
-          const {nodes=[]} = await this.getSingleLayerLegendCategories(layer);
-          nodes.forEach(({icon, title, symbols=[]}) => {
-            //just icon no categories
-            if (icon) {
-              this.layer.categories = [];
+          const layerLegendCategories = await this.getSingleLayerLegendCategories(layer);
+          const {type, data={}} = layerLegendCategories;
+          switch(type) {
+            case 'icon':
+              const {icon, title} = data;
               this.legend.url = [{
                 icon: `data:image/png;base64,${icon}`,
                 title,
                 checked: true
               }];
-            }
-            else {
-              this.layer.categories = [];
-              this.legend.url = symbols.map(({icon, title, checked=true, ruleKey}) => {
-                this.layer.categories.push({
-                  checked,
-                  ruleKey
-                });
+              break;
+            case 'categories':
+              const {categories=[]} = data;
+              this.legend.url = categories.map(({icon, title, checked=true, ruleKey}) => {
                 return {
                   icon:`data:image/png;base64,${icon}`,
                   title,
                   checked,
                   ruleKey
                 }
-              })
-            }
+              });
+              break;
+          }
 
-          })
-        } catch(err) {}
+        } catch(err) {
+          console.log(err)
+        }
       }
     },
     created() {

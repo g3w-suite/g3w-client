@@ -140,6 +140,8 @@ export default {
         if (changes.layers[layerId].style) {
           if (!changes.layers[layerId].visible){
             const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+            // clear categories
+            layer.clearCategories();
             layer.change();
           }
           return true
