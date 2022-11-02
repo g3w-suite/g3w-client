@@ -4,8 +4,6 @@ const {t} = require('core/i18n/i18n.service');
 function Service(options = {}) {
   // set state of input
   this.state = options.state || {};
-  // in case is set default input value to input
-  this.has_default_value = false;
   // type of input
   //this.state.validate.required && this.setValue(this.state.value);
   /*
@@ -43,8 +41,11 @@ proto.setValue = function(value) {
         }
       }
     } else {
-      this.state.value = this.state.input.options.default;
-      this.has_default_value = true;
+      //check if we can state.check get_default_value from input.options.default is set
+      if ( this.state.get_default_value && typeof this.state.input.options.default !== "undefined" && this.state.input.options.default !== null) {
+        this.state.value = this.state.input.options.default;
+        this.state.value_from_default_value = true;
+      }
     }
   }
 };
@@ -90,11 +91,8 @@ proto.validate = function() {
         this.state.validate.valid = !this.state.validate.required;
       } else this.state.validate.valid = this._validator.validate(this.state.value);
     }
-    if (this.state.validate.exclude_values && this.state.validate.exclude_values.length) {
-      if (this.state.validate.exclude_values.indexOf(this.state.value) !== -1) {
-        this.state.validate.valid = false;
-        this.state.validate.unique = false;
-      } else this.state.validate.unique = true;
+    if (this.state.validate.exclude_values && this.state.validate.exclude_values.size) {
+      this.state.validate.valid = !this.state.validate.exclude_values.has(this.state.value);
     } else this.state.validate.valid = this._validator.validate(this.state.value);
   }
   return this.state.validate.valid;
@@ -108,7 +106,7 @@ proto.setErrorMessage = function(input) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-  else if (!input.validate.unique && input.validate.exclude_values)
+  else if (input.validate.unique && input.validate.exclude_values.size)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
