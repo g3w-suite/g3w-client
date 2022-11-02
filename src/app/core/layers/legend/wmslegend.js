@@ -1,3 +1,5 @@
+const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
+
 function WMSLegend({layer, params, options={}}) {
   const {
     width,
@@ -27,35 +29,14 @@ function WMSLegend({layer, params, options={}}) {
   const LAYER = layer.getWMSLayerName({
     type: 'legend'
   });
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+  /*
+   to check if used or passed
+   */
   const {categories=false} = options;
   let url = layer.getWmsUrl({type: 'legend'});
-  let LEGEND_ON;
-  let LEGEND_OFF;
-  /*
-  * add and check legend categories parameter only if set dynamic legend
-   */
-  if (dynamicLegend && layer.getCategories()) {
-    /**
-     * checked: current status
-     * _checked: original status
-     * handle only difference (diff) from original checked status and current chenge by toc categories
-     */
-    layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
-      if (checked !== _checked) {
-        if (checked) {
-          if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
-          else LEGEND_ON = `${LEGEND_ON},`;
-          LEGEND_ON = `${LEGEND_ON}${ruleKey}`
-        } else {
-          if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
-          else  LEGEND_OFF = `${LEGEND_OFF},`;
-          LEGEND_OFF = `${LEGEND_OFF}${ruleKey}`;
-        }
-      }
-    });
-  }
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+  const {LEGEND_ON, LEGEND_OFF} = dynamicLegend ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
     `${width ? '&WIDTH=' + width: ''}`,

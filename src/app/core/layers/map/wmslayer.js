@@ -91,38 +91,26 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   //check disabled layers
   !force && this.checkLayersDisabled(mapState.resolution, mapState.mapUnits);
   const visibleLayers = this._getVisibleLayers(mapState) || [];
+  const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
   if (visibleLayers.length > 0) {
     const CATEGORIES_LAYERS = {};
     const STYLES = visibleLayers.map(layer => {
       const layerId = layer.getWMSLayerName();
       CATEGORIES_LAYERS[layerId] = {
-        ON: [],
-        OFF: []
+        ...get_LEGEND_ON_LEGEND_OFF_Params(layer)
       };
-      if (layer.getCategories()) {
-        /**
-         * checked: current status
-         * _checked: original status
-         * handle only difference (diff) from original checked status and current chenge by toc categories
-         */
-        layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
-          (checked !== _checked) && CATEGORIES_LAYERS[layerId][checked ? 'ON' : 'OFF'].push(ruleKey);
-        });
-      }
       return layer.getStyle()
     }).join(',');
     let LEGEND_ON;
     let LEGEND_OFF;
     Object.keys(CATEGORIES_LAYERS).forEach(layerId => {
-      if (CATEGORIES_LAYERS[layerId].OFF.length) {
-        if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = '';
-        else  LEGEND_OFF = `${LEGEND_OFF};`;
-        LEGEND_OFF = `${LEGEND_OFF}${layerId}:${CATEGORIES_LAYERS[layerId].OFF.join(',')}`;
+      if (CATEGORIES_LAYERS[layerId].LEGEND_OFF) {
+        if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = CATEGORIES_LAYERS[layerId].LEGEND_OFF;
+        else LEGEND_OFF = `${LEGEND_OFF};${CATEGORIES_LAYERS[layerId].LEGEND_OFF}`;
       }
-      if (CATEGORIES_LAYERS[layerId].ON.length) {
-        if (typeof LEGEND_ON === 'undefined') LEGEND_ON = '';
-        else LEGEND_ON = `${LEGEND_ON};`;
-        LEGEND_ON = `${LEGEND_ON}${layerId}:${CATEGORIES_LAYERS[layerId].ON.join(',')}`;
+      if (CATEGORIES_LAYERS[layerId].LEGEND_ON) {
+        if (typeof LEGEND_ON === 'undefined') LEGEND_ON = CATEGORIES_LAYERS[layerId].LEGEND_ON;
+        else LEGEND_ON = `${LEGEND_ON};${CATEGORIES_LAYERS[layerId].LEGEND_ON}`;
       }
     });
     const prefix = visibleLayers[0].isArcgisMapserver() ? 'show:' : '';
