@@ -1,6 +1,7 @@
 const InputsServices = {
   'text': require('./service'),
   'textarea': require('./service'),
+  'texthtml': require('./service'),
   'integer': require('./integer/service'),
   'string':require('./service'),
   'float': require('./float/service'),
