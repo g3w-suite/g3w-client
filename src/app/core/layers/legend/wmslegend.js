@@ -27,11 +27,16 @@ function WMSLegend({layer, params, options={}}) {
   const LAYER = layer.getWMSLayerName({
     type: 'legend'
   });
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
   const {categories=false} = options;
   let url = layer.getWmsUrl({type: 'legend'});
   let LEGEND_ON;
   let LEGEND_OFF;
-  if (layer.getCategories()) {
+  /*
+  * add and check legend categories parameter only if set dynamic legend
+   */
+  if (dynamicLegend && layer.getCategories()) {
     /**
      * checked: current status
      * _checked: original status
@@ -42,7 +47,7 @@ function WMSLegend({layer, params, options={}}) {
         if (checked) {
           if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
           else LEGEND_ON = `${LEGEND_ON};`;
-          LEGEND_ON = `${LEGEND_ON}${ruleKey}`;
+          LEGEND_ON = `${LEGEND_ON}${ruleKey}`
         } else {
           if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
           else  LEGEND_OFF = `${LEGEND_OFF},`;
@@ -77,8 +82,8 @@ function WMSLegend({layer, params, options={}}) {
     `${layerfontitalic ? '&LAYERFONTITALIC=' + layerfontitalic : ''}`,
     `${itemfontitalic ? '&ITEMFONTITALIC=' + itemfontitalic : ''}`,
     `${rulelabel ? '&RULELABEL=' + rulelabel : ''}`,
-    `${LEGEND_ON ? '&LEGEND_ON='+LEGEND_ON : ''}`,
-    `${LEGEND_OFF ? '&LEGEND_OFF='+LEGEND_OFF : ''}`,
+    `${LEGEND_ON ? '&LEGEND_ON=' + LEGEND_ON : ''}`,
+    `${LEGEND_OFF ? '&LEGEND_OFF='+ LEGEND_OFF : ''}`,
     `&LAYER=${LAYER}`
   ].join('');
 }
