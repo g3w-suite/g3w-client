@@ -6,7 +6,7 @@
     <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
     <figure>
       <template v-for="(legendurl, index) in legend.url" >
-        <div style="display: flex; align-items: center; width: 100%" >
+        <div style="display: flex; align-items: center; width: 100%" v-disabled="isDisabled(index)">
           <span v-didabled="!legendurl.ruleKey" v-if="layer.categories" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
           <img v-if ="legendplace === 'toc'" :src="legendurl.icon" @error="setError()" @load="urlLoaded()">
           <span v-if="showCategoriesCheckBox" class="new_line_too_long_text" style="padding-left: 3px;">{{legendurl.title}}</span>
@@ -50,10 +50,16 @@
       }
     },
     methods: {
+      isDisabled(index){
+        return this.layer.categories ? this.layer.categories[index].disabled : false;
+      },
       showHideLayerCategory(index) {
         this.layer.categories[index].checked = this.legend.url[index].checked = !this.legend.url[index].checked;
         CatalogLayersStoresRegistry.getLayerById(this.layer.id).change();
-        this.legendplace === 'tab' && CatalogEventHub.$emit('layer-change-categories', this.layer);
+        if (this.legendplace === 'tab') CatalogEventHub.$emit('layer-change-categories', this.layer);
+        else if (this.layer.categories[index].checked && this.mapReady) {
+          this.disableCategories(this.layer);
+        }
       },
       setError() {
         this.legend.error = true;
@@ -65,6 +71,40 @@
       handlerChangeLegend(options={}){
         const { layerId } = options;
         layerId === this.layer.id && this.getLegendSrc(this.layer);
+      },
+      async disableCategories(layer){
+        try {
+          const legendurl = CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams, {
+            categories: true
+          });
+          const legendGraphics = await XHR.get({
+            url: legendurl
+          });
+          const {nodes=[]} = legendGraphics;
+          if (nodes.length) {
+            nodes.forEach(({icon, title, symbols=[]}) => {
+              if (layer.categories) {
+                if (symbols.length < layer.categories.length){
+                  /**
+                   * In case of only one symbol, getLegendGraphic return icon and title
+                   */
+                  if (icon && symbols.length === 0) symbols.push({
+                    title,
+                    icon
+                  });
+                  layer.categories.forEach(category => {
+                    if (category.checked) {
+                      const findCategory = symbols.find(symbol => symbol.title === category.title && symbol.icon === category.icon);
+                      category.disabled = !findCategory;
+                    }
+                  })
+                  /*
+                  * */
+                } else layer.categories.forEach(category => category.disabled = false);
+              }
+            });
+          } else if (layer.categories) layer.categories.forEach(category => category.disabled = category.checked);
+        } catch(err){}
       },
       async getSingleLayerLegendCategories(layer) {
         const responseObject = {
@@ -92,12 +132,14 @@
                   const findSymbol = layer.categories.find(({icon, title}) => symbol.icon === icon && symbol.title === title);
                   if (!findSymbol) {
                     symbol._checked = symbol.checked;
+                    symbol.disabled = false;
                     layer.categories.push(symbol);
                   }
                 });
               } else layer.categories = symbols.map(symbol => ({
                 ...symbol,
-                _checked: symbol.checked
+                _checked: symbol.checked,
+                disabled: false
               }));
               responseObject.type = 'categories';
               responseObject.data = {
@@ -139,10 +181,7 @@
               });
               break;
           }
-
-        } catch(err) {
-          console.log(err)
-        }
+        } catch(err) {}
       }
     },
     created() {
@@ -154,9 +193,9 @@
     async mounted() {
       await this.$nextTick();
       const mapService = GUI.getService('map');
-      mapService.on('change-map-legend-params', () => {
+      mapService.on('change-map-legend-params', async () => {
         this.mapReady = true;
-        this.getLegendSrc(this.layer);
+        this.disableCategories(this.layer);
       });
     },
     beforeDestroy() {
