@@ -46,7 +46,7 @@ function WMSLegend({layer, params, options={}}) {
       if (checked !== _checked) {
         if (checked) {
           if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
-          else LEGEND_ON = `${LEGEND_ON};`;
+          else LEGEND_ON = `${LEGEND_ON},`;
           LEGEND_ON = `${LEGEND_ON}${ruleKey}`
         } else {
           if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
