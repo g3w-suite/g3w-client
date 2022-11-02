@@ -106,7 +106,7 @@ export default {
       return !!this.layerstree.nodes
     },
     legendlayerposition(){
-      return !this.layerstree.exclude_from_legend && this.layerstree.visible && this.layerstree.legend ? this.legendplace : 'tab';
+      return !this.layerstree.exclude_from_legend && this.layerstree.legend ? this.legendplace : 'tab';
     },
     showscalevisibilityclass(){
       return !this.isGroup && this.layerstree.scalebasedvisibility
