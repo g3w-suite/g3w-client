@@ -53,6 +53,7 @@
       showHideLayerCategory(index) {
         this.layer.categories[index].checked = this.legend.url[index].checked = !this.legend.url[index].checked;
         CatalogLayersStoresRegistry.getLayerById(this.layer.id).change();
+        this.legendplace === 'tab' && CatalogEventHub.$emit('layer-change-categories', this.layer);
       },
       setError() {
         this.legend.error = true;

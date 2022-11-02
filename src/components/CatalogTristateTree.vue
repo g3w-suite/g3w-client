@@ -35,7 +35,7 @@
           @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
           :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
         </span>
-        <span :style="{paddingLeft: legendlayerposition === 'toc' || !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
+        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '10px' : (!layerstree.legend && layerstree.external) ? '0' :
           (legendplace === 'toc' || layerstree.categories) ? '18px' : '23px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
