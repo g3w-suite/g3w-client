@@ -8,7 +8,7 @@
     </li>
     <li style="display: flex; flex-direction: column; justify-content: space-between; background: transparent !important; margin-bottom: 10px;">
       <div class="wms_url_input_content">
-        <label for="add_custom_name_url_wms_input">ID</label>
+        <label for="add_custom_name_url_wms_input" v-t="'sidebar.wms.panel.label.name'"></label>
         <input id="add_custom_name_url_wms_input" v-model="id" class="form-control" style="width: 100%; color:#000000;">
       </div>
       <div class="wms_url_input_content">
