@@ -205,5 +205,7 @@
 </script>
 
 <style scoped>
-
+  .layer-legend {
+    padding-left: 38px;
+  }
 </style>

@@ -4,7 +4,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{paddingLeft: !isGroup ? '5px' : '2px'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -19,11 +19,11 @@
     </span>
     <span v-else-if="isTable"
           v-show="!layerstree.hidden"
-          :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '22px'}"
+          :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '18px'}"
           :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
     </span>
     <template v-else>
-      <span style="color: red" v-if="layerstree.external && layerstree.removable"
+      <span style="color: red; padding-left: 1px;" v-if="layerstree.external && layerstree.removable"
         :class="g3wtemplate.getFontClass('trash')" @click="removeExternalLayer(layerstree.name, layerstree._type)">
       </span>
       <span style="color: #ffffff; margin-left: 5px;" v-if="layerstree.external && layerstree.download"
@@ -35,8 +35,8 @@
           @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
           :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
         </span>
-        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '10px' : (!layerstree.legend && layerstree.external) ? '0' :
-          (legendplace === 'toc' || layerstree.categories) ? '18px' : '23px'}" @click.stop="toggle()"
+        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
+          (legendplace === 'toc' || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
       </span>
@@ -58,7 +58,7 @@
         </div>
     </div>
     <layerlegend v-if="showLayerTocLegend" :legendplace="legendplace" :layer="layerstree"></layerlegend>
-    <ul v-if="isGroup" class="tree-content-items root" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
+    <ul v-if="isGroup" class="tree-content-items group" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
         <tristate-tree
           :root="false"
