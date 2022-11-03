@@ -1660,7 +1660,7 @@ proto._setupViewer = function(width, height) {
     const basemap =  layer.get('basemap');
     const position = layer.get('position');
     let zindex = basemap && 0;
-    if (position && position === 'bottom') zindex =  1;
+    if (position && position === 'bottom') zindex = 0;
     this.setLayerZIndex({
       layer,
       zindex
@@ -2492,7 +2492,7 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
       layer.setZIndex(this.layersCount);
       break;
     case 'bottom':
-      layer.setZIndex(1);
+      layer.setZIndex(0);
       break
   }
   this.emit('change-layer-position-map', {id, position});
