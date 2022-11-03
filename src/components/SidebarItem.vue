@@ -21,11 +21,8 @@
 </template>
 
 <script>
-  /*
-  * Temporaney
-   */
   import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
-  import SidebarItemAction from "./SidebarItemAction.vue";
+  import SidebarItemAction from 'components/SidebarItemAction.vue';
 
   export default {
     name: "SidebarItem",

@@ -1,18 +1,32 @@
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import { G3W_FID, LIST_OF_RELATIONS_TITLE } from 'app/constant';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-const ApplicationService = require('core/applicationservice');
-const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
-const DataRouterService = require('core/data/routerservice');
-const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
-const {t} = require('core/i18n/i18n.service');
-const ProjectsRegistry = require('core/project/projectsregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
+const {
+  base,
+  inherit,
+  noop,
+  downloadFile,
+  throttle,
+  getUniqueDomId,
+  copyUrl
+} = require('core/utils/utils');
+const {
+  getAlphanumericPropertiesFromFeature,
+  createFeatureFromGeometry,
+  createFeatureFromBBOX,
+  createFeatureFromCoordinates
+} = require('core/utils/geo');
+const { t } = require('core/i18n/i18n.service');
 const Layer = require('core/layers/layer');
-const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const VectorLayer = require('core/layers/vectorlayer');
 const PrintService = require('core/print/printservice');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const RelationsPage = require('gui/relations/vue/relationspage');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 

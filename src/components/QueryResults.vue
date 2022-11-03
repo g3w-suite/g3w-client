@@ -182,12 +182,13 @@
   import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
 
-  const {throttle} = require('core/utils/utils');
-  const {fieldsMixin} = require('gui/vue/vue.mixins');
+  const { throttle } = require('core/utils/utils');
+  const { fieldsMixin } = require('gui/vue/vue.mixins');
+
   const maxSubsetLength = 3;
   const headerExpandActionCellWidth = 10;
   const headerActionsCellWidth = 10;
-  const HEADERTYPESFIELD =  ['varchar', 'integer', 'float', 'date'];
+  const HEADERTYPESFIELD = ['varchar', 'integer', 'float', 'date'];
 
   export default {
     data() {

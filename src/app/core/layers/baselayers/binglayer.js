@@ -1,5 +1,6 @@
 import ApplicationState from 'core/applicationstate'
-const {base, inherit} = require('core/utils/utils');
+
+const { base, inherit } = require('core/utils/utils');
 const BaseLayer = require('core/layers/baselayers/baselayer');
 const BasesLayers = require('g3w-ol/layers/bases');
 

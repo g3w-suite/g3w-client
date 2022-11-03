@@ -1,11 +1,11 @@
 /**
  * ORIGINAL SOURCE: src/app/core/relations/relationsservice.js@v3.4
  */
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
-const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
-const {sanitizeFidFeature, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+const { inherit, XHR, base, createSingleFieldParameter } = require('core/utils/utils');
+const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function RelationsService(options={}) {
   base(this);

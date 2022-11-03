@@ -2,7 +2,7 @@
  * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
  */
 import ApplicationState from 'core/applicationstate';
-import resizeMixin from "mixins/resize";
+import resizeMixin from 'mixins/resize';
 
 export default {
   mixins: [resizeMixin],

@@ -261,7 +261,7 @@ Below an excerpt from [g3w-suite/g3w-client-plugin-base-template/index.js#L3-L4]
 
 ```js
 import pluginConfig from './config';
-import Service from "./service";
+import Service from './service';
 
 const { base, inherit }      = g3wsdk.core.utils;
 const { Plugin: BasePlugin } = g3wsdk.core.plugin;

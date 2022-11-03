@@ -1,10 +1,20 @@
-import { ALLVALUE }  from '../../constants';
-const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
-const DataRouterService = require('core/data/routerservice');
-const GUI = require('gui/gui');
+import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import GUI from 'services/gui';
+
+const {
+  base,
+  inherit,
+  toRawType,
+  getUniqueDomId,
+  createFilterFormInputs,
+  createSingleFieldParameter,
+  isEmptyObject
+} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
-const ProjectsRegistry = require('core/project/projectsregistry');
+
 const NONVALIDVALUES = [null, undefined, ALLVALUE];
 
 function SearchService(config={}) {
@@ -56,9 +66,9 @@ function SearchService(config={}) {
   this.type = type || 'search';
   this.return = options.return || 'data';
   this.show = this.return === 'data' && this.type === 'search';
-  this.searchLayer = CatalogLayersStorRegistry.getLayerById(layerid);
+  this.searchLayer = CatalogLayersStoresRegistry.getLayerById(layerid);
   // store layers that will be searchable for that form search. First one is layer owner of the search setted on admin
-  this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStorRegistry.getLayerById(layerid));
+  this.searchLayers = [layerid, ...otherquerylayerids].map(layerid => CatalogLayersStoresRegistry.getLayerById(layerid));
   // stat to create the form search structure
   this.createInputsFormFromFilter({filter});
 }
@@ -211,7 +221,7 @@ proto.getValuesFromField = async function(field){
       field,
       unique: field.attribute
     });
-    const layer = CatalogLayersStorRegistry.getLayerById(field.options.layer_id);
+    const layer = CatalogLayersStoresRegistry.getLayerById(field.options.layer_id);
     const filter = createFilterFormInputs({
       layer,
       search_endpoint: this.getSearchEndPoint(),
@@ -233,7 +243,7 @@ proto.getValuesFromField = async function(field){
 
 proto.getValueRelationValues = async function(field, filter){
   const {layer_id, key, value} =  field.options;
-  const layer = CatalogLayersStorRegistry.getLayerById(layer_id);
+  const layer = CatalogLayersStoresRegistry.getLayerById(layer_id);
   try {
     const {data=[]} = await DataRouterService.getData('search:features', {
       inputs:{

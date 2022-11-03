@@ -1,4 +1,4 @@
-const Projection = require('./projection');
+const Projection = require('g3w-ol/projection/projection');
 const ADDEDPROJECTIONS = ['EPSG:4326', 'EPSG:3857'];
 
 const Projections = {

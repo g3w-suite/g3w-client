@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-import {QUERY_POINT_TOLERANCE} from 'constant';
-const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
+import { QUERY_POINT_TOLERANCE } from 'app/constant';
+
+const { base, inherit, appendParams, XHR, getTimeoutPromise } = require('core/utils/utils');
 const geoutils = require('core/utils/ol');
 const DataProvider = require('core/layers/providers/provider');
 

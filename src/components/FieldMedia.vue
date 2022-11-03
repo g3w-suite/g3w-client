@@ -14,7 +14,7 @@
 </template>
 
 <script>
-const {mediaMixin} = require('gui/vue/vue.mixins');
+const { mediaMixin } = require('gui/vue/vue.mixins');
 
 export default {
   name: "g3w-media",

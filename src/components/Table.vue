@@ -29,14 +29,14 @@
 </template>
 
 <script>
-import TableBody from "components/TableBody.vue";
+import TableBody from 'components/TableBody.vue';
 import SelectRow from 'components/TableSelectRow.vue';
 import G3wTableToolbar from 'components/TableToolbar.vue';
 import Field from 'components/FieldG3W.vue';
+import GUI from 'services/gui';
 
-const {debounce} = require('core/utils/utils');
-const {resizeMixin} = require('gui/vue/vue.mixins');
-const GUI = require('gui/gui');
+const { debounce } = require('core/utils/utils');
+const { resizeMixin } = require('gui/vue/vue.mixins');
 
 let dataTable;
 let fieldsComponents = [];

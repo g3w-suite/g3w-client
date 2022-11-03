@@ -1,4 +1,5 @@
-const Control = require('./control');
+const Control = require('g3w-ol/controls/control');
+
 function OnClickControl(options = {}) {
   this._originalonlick = null;
   this._onclick = options.onclick;

@@ -29,7 +29,7 @@
 </template>
 
 <script>
-  const {baseInputMixin:BaseInputMixin} = require('gui/vue/vue.mixins');
+  const { baseInputMixin: BaseInputMixin } = require('gui/vue/vue.mixins');
 
   export default {
     name: "InputBase",

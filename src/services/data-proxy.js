@@ -2,9 +2,8 @@
  * ORIGINAL SOURCE: src/app/core/data/proxy/service.js@v3.4
  */
 
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit, XHR } = require('core/utils/utils');
 const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
 
 function ProxyService(){
   base(this);

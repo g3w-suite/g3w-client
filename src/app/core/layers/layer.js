@@ -1,9 +1,10 @@
 import ApplicationState from 'core/applicationstate';
-import {DOWNLOAD_FORMATS} from './../../constant';
-const {t} = require('core/i18n/i18n.service');
-const {inherit, base, XHR} = require('core/utils/utils');
+import { DOWNLOAD_FORMATS } from 'app/constant';
+
+const { t } = require('core/i18n/i18n.service');
+const { inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const {geometryFields, parseAttributes} =  require('core/utils/geo');
+const { geometryFields, parseAttributes } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 

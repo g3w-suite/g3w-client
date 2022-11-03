@@ -1,11 +1,11 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/map/control/registry.js@v3.4
  */
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
-const ApplicationService = require('core/applicationservice');
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 
 function ControlsRegistry() {
   this._controls = {};

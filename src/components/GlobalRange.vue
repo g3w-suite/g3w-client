@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  const {debounce} = require('core/utils/utils');
+  const { debounce } = require('core/utils/utils');
 
   export default {
     name: "range",

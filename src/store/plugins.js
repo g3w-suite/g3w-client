@@ -1,9 +1,9 @@
 /**
  * ORIGINAL SOURCE: src/app/core/plugin/pluginsregistry.js@v3.4
  */
+import ProjectsRegistry from 'store/projects';
 
-const {base, inherit} = require('core/utils/utils');
-const ProjectsRegistry = require('core/project/projectsregistry');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**

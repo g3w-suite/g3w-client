@@ -1,5 +1,5 @@
-const Validators = require('core/validators/inputs/validators');
-const {t} = require('core/i18n/i18n.service');
+const Validators = require('core/utils/validators');
+const { t } = require('core/i18n/i18n.service');
 
 function Service(options = {}) {
   // set state of input

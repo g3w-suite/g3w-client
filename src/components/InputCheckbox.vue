@@ -20,8 +20,8 @@
 
 <script>
 const Input = require('gui/inputs/input');
-const widgetMixins = require('gui/inputs/widgetmixins');
-const {getUniqueDomId} = require('core/utils/utils');
+const { widgetMixins } = require('gui/vue/vue.mixins');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   mixins: [Input, widgetMixins],

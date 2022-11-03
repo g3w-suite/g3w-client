@@ -1,12 +1,12 @@
-const {base, inherit, mixin } = require('core/utils/utils');
+const { base, inherit, mixin } = require('core/utils/utils');
 const Layer = require('core/layers/layer');
-const VectorLayer = require('./vectorlayer');
-const WMSLayer = require('./map/wmslayer');
-const WMSTLayer = require('./map/wmstlayer');
-const ARCGISMAPSERVERLayer = require('./map/arcgismapserverlayer');
-const XYZLayer = require('./map/xyzlayer');
-const LegendService = require('./legend/legendservice');
-const GeoLayerMixin = require('./geolayermixin');
+const VectorLayer = require('core/layers/vectorlayer');
+const WMSLayer = require('core/layers/map/wmslayer');
+const WMSTLayer = require('core/layers/map/wmstlayer');
+const ARCGISMAPSERVERLayer = require('core/layers/map/arcgismapserverlayer');
+const XYZLayer = require('core/layers/map/xyzlayer');
+const LegendService = require('core/layers/legend/legendservice');
+const GeoLayerMixin = require('core/layers/geolayermixin');
 
 function ImageLayer(config={}, options={}) {
   /*{

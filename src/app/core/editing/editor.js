@@ -1,10 +1,11 @@
 import Applicationstate from 'core/applicationstate';
-const {inherit, base} = require('core/utils/utils');
+import ChangesManager from 'services/editing';
+
+const { inherit, base } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
 const Layer = require('core/layers/layer');
-const ChangesManager = require('./changesmanager');
 
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {

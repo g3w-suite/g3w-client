@@ -1,15 +1,15 @@
 /**
  * ORIGINAL SOURCE: src/app/core/data/routerservice.js@v3.4
  */
+import ExpressionService from 'services/data-expression';
+import OWSService from 'services/data-ows';
+import ProxyService from 'services/data-proxy';
+import QueryService from 'services/data-query';
+import SearchService from 'services/data-search';
+import IFrameRouterService from 'services/iframe-plugin';
+import GUI from 'services/gui';
 
-const queryService = require('core/data/query/service');
-const searchService = require('core/data/search/service');
-const expressionService = require('core/data/expression/service');
-const proxyService = require('core/data/proxy/service');
-const owsService = require('core/data/ows/service');
-const IFrameRouterService = require('core/iframe/routerservice');
-const {splitContextAndMethod} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { splitContextAndMethod } = require('core/utils/utils');
 
 function Routerservice() {
   //set deafult outputplace
@@ -47,11 +47,11 @@ function Routerservice() {
    */
   this.init = async function(){
     this.services = {
-      query: queryService,
-      search: searchService,
-      expression: expressionService,
-      proxy: proxyService,
-      ows: owsService
+      query: QueryService,
+      search: SearchService,
+      expression: ExpressionService,
+      proxy: ProxyService,
+      ows: OWSService
     };
   };
 

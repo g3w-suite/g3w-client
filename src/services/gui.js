@@ -1,11 +1,11 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/gui.js@v3.4
  */
+import RouterService from 'services/router';
+import ComponentsRegistry from 'store/components';
 
-const {base, inherit, noop} = require('core/utils/utils');
+const { base, inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const RouterService = require('core/router');
-const ComponentsRegistry = require('gui/component/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application

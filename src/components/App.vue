@@ -162,14 +162,14 @@
 </template>
 
 <script>
-import CookieLaw from "vue-cookie-law";
+import CookieLaw from 'vue-cookie-law';
 import HeaderItem from 'components/HeaderItem.vue';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const { uniqueId } = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const GUI = require('gui/gui');
+const { t } = require('core/i18n/i18n.service');
 const { resizeMixin } = require('gui/vue/vue.mixins');
 
 //Make sure jQuery has been loaded before app.js

@@ -25,10 +25,10 @@
 <script>
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import { G3W_FID, LIST_OF_RELATIONS_TITLE } from 'app/constant';
+import GUI from 'services/gui';
 
-const GUI = require('gui/gui');
-const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
+const { getFeaturesFromResponseVectorApi } = require('core/utils/geo');
 const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 
 export default {

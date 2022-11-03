@@ -1,9 +1,9 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/floatbar/floatbar.js@v3.4
  */
+import GUI from 'services/gui';
 
-const {barstack:Stack} = require('gui/utils/utils');
-const GUI = require('gui/gui');
+const { barstack:Stack } = require('gui/utils/utils');
 
 function FloatbarService(){
   this.stack = new Stack();

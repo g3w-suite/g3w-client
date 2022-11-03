@@ -1,7 +1,8 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
  */
-const GUI = require('gui/gui');
+import GUI from 'services/gui';
+
 const { throttle, debounce } = require('core/utils/utils');
 
 const DELAY_TYPE = {

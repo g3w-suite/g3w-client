@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
+import ApplicationService from 'services/application';
+
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function PluginService(options={}) {

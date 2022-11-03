@@ -1,6 +1,6 @@
 const utils = require('core/utils/ol');
-const InteractionControl = require('./interactioncontrol');
-const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
 
 const QueryControl = function(options={}){
   const _options = {

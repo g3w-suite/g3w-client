@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import { watch, unwatch, trigger } from 'directives/utils';
-const {t, tPlugin} = require('core/i18n/i18n.service');
+
+const { t, tPlugin } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-tooltip-id';
 

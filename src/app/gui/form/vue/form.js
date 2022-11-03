@@ -1,10 +1,10 @@
 import * as vueComponentOptions from 'components/Form.vue';
 import BodyFormComponent from 'components/FormBody.vue';
+import GUI from 'services/gui';
 
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { base, inherit } = require('core/utils/utils');
 const Component = require('gui/component/component');
-const Service = require('../formservice');
+const Service = require('gui/form/formservice');
 
 function FormComponent(options = {}) {
   const {id='form', name, title} = options;

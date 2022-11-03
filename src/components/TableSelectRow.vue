@@ -11,7 +11,7 @@
 </template>
 
 <script>
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   name: "select-row",

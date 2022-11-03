@@ -1,12 +1,12 @@
 /**
  * ORIGINAL SOURCE: src/app/core/project/projectsregistry.js@v3.4
  */
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import MapLayersStoresRegistry from 'store/map-layers';
 
-const {base, inherit}= require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const MapLayersStoresRegistry = require('core/map/maplayersstoresregistry');
 
 /* service
     setup: init method

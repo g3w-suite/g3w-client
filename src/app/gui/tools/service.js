@@ -1,5 +1,6 @@
-const {base, inherit} = require('core/utils/utils');
-const ProjectRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
+
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function Service(options={}){
@@ -34,7 +35,7 @@ function Service(options={}){
 
   base(this);
 
-  const project = ProjectRegistry.getCurrentProject();
+  const project = ProjectsRegistry.getCurrentProject();
   const {tools={}} = project.getState();
   for (let toolName in tools) {
     const groupName = toolName.toUpperCase();

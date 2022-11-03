@@ -23,7 +23,7 @@
 </template>
 
 <script>
-  import floatbarService from "services/floatbar";
+  import floatbarService from 'services/floatbar';
 
   export default {
     name: "Floatbar",

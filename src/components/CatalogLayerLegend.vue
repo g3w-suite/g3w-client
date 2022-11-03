@@ -13,10 +13,9 @@
 
 <script>
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
-
-  const ApplicationService = require('core/applicationservice');
-  const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-  const GUI = require('gui/gui');
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import ApplicationService from 'services/application';
+  import GUI from 'services/gui';
 
   export default {
     name: "layerlegend",

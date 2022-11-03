@@ -1,25 +1,36 @@
-import {MAP_SETTINGS} from '../../constant';
-import wms from "../wms/vue/wms";
-const {t}= require('core/i18n/i18n.service');
-const {inherit, base, copyUrl, uniqueId, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
+import { MAP_SETTINGS } from 'app/constant';
+import wms from 'gui/wms/vue/wms';
+import DataRouterService from 'services/data';
+import MapLayersStoresRegistry from 'store/map-layers';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import ControlsRegistry from 'store/map-controls';
+import GUI from 'services/gui';
+
+const { t } = require('core/i18n/i18n.service');
+const {
+  inherit,
+  base,
+  copyUrl,
+  uniqueId,
+  throttle,
+  toRawType,
+  createFilterFromString
+} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
-  getGeoTIFFfromServer} = require('core/utils/geo');
-const DataRouterService = require('core/data/routerservice');
-const GUI = require('gui/gui');
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+  getGeoTIFFfromServer
+} = require('core/utils/geo');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
+const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
-const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
+
 const SETTINGS = {
   zoom : {
     maxScale: 1000,
@@ -271,15 +282,15 @@ function MapService(options={}) {
 
   this.once('viewerset', ()=> {
     //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoreRegistry.getLayersStores().forEach(layersStore => {
+    MapLayersStoresRegistry.getLayersStores().forEach(layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
     // LISTEN ON EVERY ADDED LAYERSSTORE
-    MapLayersStoreRegistry.onafter('addLayersStore', layersStore => {
+    MapLayersStoresRegistry.onafter('addLayersStore', layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
     // LISTENER ON REMOVE LAYERSTORE
-    MapLayersStoreRegistry.onafter('removeLayersStore', layerStore => {
+    MapLayersStoresRegistry.onafter('removeLayersStore', layerStore => {
       this._removeEventsKeysToLayersStore(layerStore);
     });
   });
@@ -328,7 +339,7 @@ proto.clear = function() {
     }
   });
   this._keyEvents = null;
-  MapLayersStoreRegistry.getLayersStores().forEach(layerStore => {
+  MapLayersStoresRegistry.getLayersStores().forEach(layerStore => {
     this._removeEventsKeysToLayersStore(layerStore);
   })
 };
@@ -707,7 +718,7 @@ proto._setupControls = function() {
           if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
               options: {
-                layers: MapLayersStoreRegistry.getLayers(),
+                layers: MapLayersStoresRegistry.getLayers(),
                 onclick: async () => {
                   // Start download show Image
                   const caller_download_id = ApplicationService.setDownload(true);
@@ -1540,7 +1551,7 @@ proto.getMapLayerForLayer = function(layer) {
 };
 
 proto.getProjectLayer = function(layerId) {
-  return MapLayersStoreRegistry.getLayerById(layerId);
+  return MapLayersStoresRegistry.getLayerById(layerId);
 };
 
 proto._setSettings = function(){

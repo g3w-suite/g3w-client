@@ -1,14 +1,14 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/querybuilder/service.js@v3.4
  */
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
-const DataRouterService = require('core/data/routerservice');
-const {t} = require('core/i18n/i18n.service');
-const {uniqueId, createFilterFromString, XHR} = require('core/utils/utils');
-const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const GUI = require('gui/gui');
+const { t } = require('core/i18n/i18n.service');
+const { uniqueId, createFilterFromString, XHR } = require('core/utils/utils');
 
 const QUERYBUILDERSEARCHES = 'QUERYBUILDERSEARCHES';
 
@@ -32,7 +32,7 @@ proto.getItems = function(projectId) {
 };
 
 proto._getLayerById = function(layerId){
-  return CatalogLayersStorRegistry.getLayerById(layerId);
+  return CatalogLayersStoresRegistry.getLayerById(layerId);
 };
 
 proto.getValues = async function({layerId, field}={}){

@@ -25,7 +25,7 @@ const mixins = {
   widgetMixins,
   metadataMixin,
   baseInputMixin,
-}
+};
 
 export { mixins };
 export default mixins;

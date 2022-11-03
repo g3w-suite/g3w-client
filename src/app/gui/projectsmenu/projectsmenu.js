@@ -1,6 +1,7 @@
-const {base, inherit} = require('core/utils/utils');
-const ProjectRegistry = require('core/project/projectsregistry');
-const MenuComponent = require('./menu');
+import ProjectsRegistry from 'store/projects';
+
+const { base, inherit } = require('core/utils/utils');
+const MenuComponent = require('gui/projectsmenu/menu');
 
 function ProjectsMenuComponent(options={}) {
   options.id = 'projectsmenu';
@@ -8,7 +9,7 @@ function ProjectsMenuComponent(options={}) {
   this.state.menuitems = [];
   const host = options.host;
   const ApplicationService = require('core/applicationservice');
-  const projects = options.projects || ProjectRegistry.getListableProjects();
+  const projects = options.projects || ProjectsRegistry.getListableProjects();
   this.state.menuitems = projects.map(project => ({
     title: project.title,
     description: project.description,

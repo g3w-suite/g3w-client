@@ -1,4 +1,4 @@
-const ProjectsRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
 
 function BaseService(){
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);

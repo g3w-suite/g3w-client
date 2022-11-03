@@ -1,4 +1,4 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 
 function RadioService(options={}) {

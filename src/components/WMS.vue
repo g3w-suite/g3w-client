@@ -41,7 +41,7 @@
 </template>
 
 <script>
-  const {isURL} = require('core/utils/utils');
+  const { isURL } = require('core/utils/utils');
 
   export default {
     name: "sidebaritem",

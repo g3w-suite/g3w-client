@@ -2,10 +2,11 @@
  * ORIGINAL SOURCE: src/app/gui/viewport/viewport.js@v3.4
  */
 import ApplicationState from 'core/applicationstate';
-import {viewport as viewportConstraints} from 'gui/constraints';
-const {base, inherit, uniqueId} = require('core/utils/utils');
+import { VIEWPORT as viewportConstraints } from 'app/constant';
+import GUI from 'services/gui';
+
+const { base, inherit, uniqueId } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 
 const ViewportService = function() {
   // state of viewport

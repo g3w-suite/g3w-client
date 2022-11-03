@@ -14,10 +14,9 @@
 
 <script>
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
-
-const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
 export default {
   props: {

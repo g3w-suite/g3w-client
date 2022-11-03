@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
-const {base, inherit} = require('core/utils/utils');
-const WMSLayer = require('./wmslayer');
+
+const { base, inherit } = require('core/utils/utils');
+const WMSLayer = require('core/layers/map/wmslayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 
 function WMSTLayer(options={}, extraParams={}, method='GET') {

@@ -1,12 +1,13 @@
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+// import GUI from 'services/gui';
+
 const {
   createProject = {},
     setCurrentProject = {},
     plugins = {},
     keys = {}
 } = require('../../../config');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const ApplicationService = require('core/applicationservice');
-// const GUI = require('gui/gui');
 
 
 // ApplicationService.once('ready', () => {});

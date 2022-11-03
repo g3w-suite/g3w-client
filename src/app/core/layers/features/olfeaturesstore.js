@@ -1,5 +1,5 @@
-const {inherit, base} = require('core/utils/utils');
-const FeaturesStore = require('./featuresstore');
+const { inherit, base } = require('core/utils/utils');
+const FeaturesStore = require('core/layers/features/featuresstore');
 
 // Storage of the feature in vector layer
 function OlFeaturesStore(options={}) {

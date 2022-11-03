@@ -25,7 +25,7 @@
 
 <script>
 import AddLayerComponent from 'components/MapAddLayer.vue';
-import MapFooter from "./MapFooter.vue";
+import MapFooter from 'components/MapFooter.vue';
 
 export default {
   data() {

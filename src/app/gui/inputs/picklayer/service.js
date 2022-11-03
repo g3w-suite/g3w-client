@@ -1,8 +1,9 @@
+import MapLayersStoresRegistry from 'store/map-layers';
+import GUI from 'services/gui';
+
 const PickFeatureInteraction = require('g3w-ol/interactions/pickfeatureinteraction');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
-const MapCatalogLayersRegistry = require('core/map/maplayersstoresregistry');
-const {getQueryLayersPromisesByCoordinates} = require('core/utils/geo');
-const GUI = require('gui/gui');
+const { getQueryLayersPromisesByCoordinates } = require('core/utils/geo');
 
 function PickLayerService(options={}) {
   this.pick_type = options.pick_type || 'wms';
@@ -57,7 +58,7 @@ proto.pick = function() {
         const feature = event.feature;
         afterPick(feature);
       } else if (this.pick_type === 'wms'){
-        const layer = MapCatalogLayersRegistry.getLayerById(this.layerId);
+        const layer = MapLayersStoresRegistry.getLayerById(this.layerId);
         if (layer) {
           getQueryLayersPromisesByCoordinates(
             [layer],

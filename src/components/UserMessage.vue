@@ -27,9 +27,9 @@
 </template>
 
 <script>
-  import {ZINDEXES} from "../app/constant";
+  import { ZINDEXES } from 'app/constant';
+  import GUI from 'services/gui';
 
-  const GUI = require('gui/gui');
   const COLORS = {
     success: {
       backgroundColor: '#62ac62',

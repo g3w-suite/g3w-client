@@ -27,11 +27,12 @@
 </template>
 
 <script>
+import GUI from 'services/gui';
+
 const InputMixins = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const {media_field:MediaField} = require('gui/fields/fields');
-const GUI = require('gui/gui');
+const { getUniqueDomId } = require('core/utils/utils');
+const { t } = require('core/i18n/i18n.service');
+const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
   mixins: [InputMixins],

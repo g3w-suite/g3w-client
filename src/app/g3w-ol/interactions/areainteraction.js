@@ -1,4 +1,5 @@
-const MeasureInteraction = require('./measureinteraction');
+const MeasureInteraction = require('g3w-ol/interactions/measureinteraction');
+
 // Area
 const AreaIteraction = function(options={}) {
   options.geometryType = "Polygon";
