@@ -303,6 +303,12 @@ export const VIEWPORT = {
   }
 };
 
+export const ZINDEXES = {
+  usermessage: {
+    tool: 2
+  }
+};
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -321,4 +327,5 @@ export default {
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
+  ZINDEXES
 };

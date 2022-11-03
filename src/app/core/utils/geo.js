@@ -587,6 +587,23 @@ const geoutils = {
     }
   },
 
+  /**
+   * in case of feature object
+   * {
+   *   id: X,
+   *   attributes: {key:value}
+   *   geometry: geometry
+   * }
+   * @param id
+   * @param feature
+   */
+  createFeatureFromFeatureObject({id, feature={}}){
+    const {geometry, attributes} = feature;
+    feature = geoutils.createFeatureFromGeometry({id,geometry})
+    Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
+    return feature;
+  },
+
   createOlLayer(options = {}) {
     const id = options.id;
     const features = options.features;

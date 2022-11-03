@@ -105,6 +105,12 @@ const ProvidersForServerTypes = {
       filter: null,
       data: null,
       search: null
+    },
+    'mdal': {
+      query: Providers.wms,
+      filter: null,
+      data: null,
+      search: null
     }
   },
   'OGC': {
