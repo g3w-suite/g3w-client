@@ -7,7 +7,7 @@
     <figure>
       <template v-for="(legendurl, index) in legend.url" >
         <div style="display: flex; align-items: center; width: 100%" v-disabled="isDisabled(index)">
-          <span v-didabled="!legendurl.ruleKey" v-if="layer.categories" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
+          <span v-if="legendurl.ruleKey" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(legendurl.checked ? 'check': 'uncheck')"></span>
           <img v-if ="legendplace === 'toc'" :src="legendurl.icon" @error="setError()" @load="urlLoaded()">
           <span v-if="showCategoriesCheckBox" class="new_line_too_long_text" style="padding-left: 3px;">{{legendurl.title}}</span>
           <span class="divider"></span>
@@ -21,6 +21,7 @@
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 
   const ApplicationService = require('core/applicationservice');
+  const ProjectsRegistry = require('core/project/projectsregistry');
   const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
   const {XHR} = require('core/utils/utils');
   const GUI = require('gui/gui');
@@ -51,7 +52,7 @@
     },
     methods: {
       isDisabled(index){
-        return this.layer.categories ? this.layer.categories[index].disabled : false;
+        return this.legend.url[index].disabled;
       },
       showHideLayerCategory(index) {
         this.layer.categories[index].checked = this.legend.url[index].checked = !this.legend.url[index].checked;
@@ -94,6 +95,7 @@
                   });
                   layer.categories.forEach(category => {
                     if (category.checked) {
+                    //if (typeof category.checked === "undefined" || category.checked) {
                       const findCategory = symbols.find(symbol => symbol.title === category.title && symbol.icon === category.icon);
                       category.disabled = !findCategory;
                     }
@@ -101,6 +103,12 @@
                   /*
                   * */
                 } else layer.categories.forEach(category => category.disabled = false);
+                this.createLegendUrl({
+                  type: 'categories',
+                  data: {
+                    categories: this.layer.categories
+                  }
+                })
               } else {
                 // in case of double legend per layer
                 // it is possible that a legend (charts) is associated to layer
@@ -134,7 +142,7 @@
          * it mean that is coming from a categories (for example charts associated)
          * that is not the categories legend associated to layer
          */
-        symbols = symbols.filter(symbol => typeof symbol.checked !== "undefined").map(symbol => ({
+        symbols.map(symbol => ({
           ...symbol,
           _checked: symbol.checked,
           disabled: false
@@ -201,20 +209,22 @@
       createLegendUrl({type, data={}}){
         switch(type) {
           case 'icon':
-            const {icon, title} = data;
+            const {icon, title, disabled=false} = data;
             this.legend.url = [{
               icon: `data:image/png;base64,${icon}`,
               title,
+              disabled,
               checked: true
             }];
             break;
           case 'categories':
             const {categories=[]} = data;
-            this.legend.url = categories.map(({icon, title, checked=true, ruleKey}) => {
+            this.legend.url = categories.map(({icon, title, checked=true, disabled, ruleKey}) => {
               return {
-                icon:`data:image/png;base64,${icon}`,
+                icon: icon && `data:image/png;base64,${icon}`,
                 title,
                 checked,
+                disabled,
                 ruleKey
               }
             });
@@ -232,7 +242,13 @@
         } catch(err) {}
       }
     },
+    watch: {
+      'layer.visible'(visible){
+        if (visible && this.dynamic) this.disableAddCategories(this.layer);
+      }
+    },
     created() {
+      this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
       this.legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
       this.mapReady = false;
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
@@ -241,9 +257,9 @@
     async mounted() {
       await this.$nextTick();
       const mapService = GUI.getService('map');
-      mapService.on('change-map-legend-params', async () => {
+      this.dynamic && mapService.on('change-map-legend-params', async () => {
         this.mapReady = true;
-        this.disableAddCategories(this.layer);
+        this.layer.visible && this.disableAddCategories(this.layer);
       });
     },
     beforeDestroy() {
