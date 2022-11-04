@@ -58,7 +58,7 @@
         CatalogLayersStoresRegistry.getLayerById(this.layer.id).change();
         if (this.legendplace === 'tab') CatalogEventHub.$emit('layer-change-categories', this.layer);
         else if (this.layer.categories[index].checked && this.mapReady) {
-          this.disableCategories(this.layer);
+          this.disableAddCategories(this.layer);
         }
       },
       setError() {
@@ -72,7 +72,7 @@
         const { layerId } = options;
         layerId === this.layer.id && this.getLegendSrc(this.layer);
       },
-      async disableCategories(layer){
+      async disableAddCategories(layer){
         try {
           const legendurl = CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams, {
             categories: true
@@ -156,10 +156,21 @@
           const {nodes=[]} = legendGraphics;
           nodes.forEach(({icon, title, symbols=[]}) => {
             if (icon) {
-              responseObject.type = 'icon';
-              responseObject.data = {
-                icon,
-                title
+              /**
+               * if exist categories on layer and return only one icon,
+               * then need to return all categories
+               */
+              if (layer.categories) {
+                responseObject.type = 'categories';
+                responseObject.data = {
+                  categories: layer.categories
+                }
+              } else {
+                responseObject.type = 'icon';
+                responseObject.data = {
+                  icon,
+                  title
+                }
               }
             } else {
               if (layer.categories) {
@@ -225,14 +236,14 @@
       this.legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
       this.mapReady = false;
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
-      this.show && this.getLegendSrc(this.layer);
+      this.getLegendSrc(this.layer);
     },
     async mounted() {
       await this.$nextTick();
       const mapService = GUI.getService('map');
       mapService.on('change-map-legend-params', async () => {
         this.mapReady = true;
-        this.disableCategories(this.layer);
+        this.disableAddCategories(this.layer);
       });
     },
     beforeDestroy() {
