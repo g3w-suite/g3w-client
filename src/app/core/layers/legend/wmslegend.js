@@ -1,4 +1,6 @@
-function WMSLegend({layer, params}) {
+const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
+
+function WMSLegend({layer, params, options={}}) {
   const {
     width,
     height,
@@ -27,12 +29,19 @@ function WMSLegend({layer, params}) {
   const LAYER = layer.getWMSLayerName({
     type: 'legend'
   });
+  /*
+   to check if used or passed
+   */
+  const {categories=false} = options;
   let url = layer.getWmsUrl({type: 'legend'});
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+  const {LEGEND_ON, LEGEND_OFF} = dynamicLegend ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
     `${width ? '&WIDTH=' + width: ''}`,
     `${height ? '&HEIGHT=' + height: ''}`,
-    `&FORMAT=image/png`,
+    `&FORMAT=${categories ? 'application/json' : 'image/png'}`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
     `&LAYERFONTCOLOR=${color}`,
@@ -54,7 +63,9 @@ function WMSLegend({layer, params}) {
     `${layerfontitalic ? '&LAYERFONTITALIC=' + layerfontitalic : ''}`,
     `${itemfontitalic ? '&ITEMFONTITALIC=' + itemfontitalic : ''}`,
     `${rulelabel ? '&RULELABEL=' + rulelabel : ''}`,
-    `&LAYER=${LAYER}`,
+    `${LEGEND_ON ? '&LEGEND_ON=' + LEGEND_ON : ''}`,
+    `${LEGEND_OFF ? '&LEGEND_OFF='+ LEGEND_OFF : ''}`,
+    `&LAYER=${LAYER}`
   ].join('');
 }
 

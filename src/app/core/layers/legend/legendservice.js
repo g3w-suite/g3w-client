@@ -4,11 +4,12 @@ const TYPES = {
 };
 
 const Legendservice = {
-  get({layer, params}={}) {
+  get({layer, params, options={}}={}) {
     const type = layer.isArcgisMapserver() ? 'argismapserver': 'wms';
     return TYPES[type]({
       layer,
-      params
+      params,
+      options
     })
   }
 };

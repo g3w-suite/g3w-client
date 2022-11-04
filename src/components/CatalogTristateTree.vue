@@ -4,7 +4,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{paddingLeft: !isGroup ? '5px' : '2px'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -19,11 +19,11 @@
     </span>
     <span v-else-if="isTable"
           v-show="!layerstree.hidden"
-          :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '18px' : '22px'}"
+          :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '18px'}"
           :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
     </span>
     <template v-else>
-      <span style="color: red" v-if="layerstree.external && layerstree.removable"
+      <span style="color: red; padding-left: 1px;" v-if="layerstree.external && layerstree.removable"
         :class="g3wtemplate.getFontClass('trash')" @click="removeExternalLayer(layerstree.name, layerstree._type)">
       </span>
       <span style="color: #ffffff; margin-left: 5px;" v-if="layerstree.external && layerstree.download"
@@ -31,12 +31,12 @@
             @click="downloadExternalLayer(layerstree.download)">
       </span>
       <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
-        <span class="collapse-expande-collapse-icon" v-if="this.legendlayerposition === 'toc'"
+        <span class="collapse-expande-collapse-icon" v-if="legendlayerposition === 'toc' || !isGroup && layerstree.categories"
           @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
           :class="g3wtemplate.getFontClass(layerstree.legend.show ? 'caret-down' : 'caret-right')">
         </span>
-        <span :style="{paddingLeft: this.legendlayerposition === 'toc' ? '5px' : (!layerstree.legend && layerstree.external) ? '0' :
-          (legendplace === 'toc') ? '18px' : '23px'}" @click.stop="toggle()"
+        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
+          (legendplace === 'toc' || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
       </span>
@@ -57,8 +57,8 @@
           <span v-if="layerstree.selection.active || layerstree.filter.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
         </div>
     </div>
-    <layerlegend v-if="this.legendlayerposition === 'toc'" :layer="layerstree"></layerlegend>
-    <ul v-if="isGroup" class="tree-content-items root" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
+    <layerlegend v-if="showLayerTocLegend" :legendplace="legendplace" :layer="layerstree"></layerlegend>
+    <ul v-if="isGroup" class="tree-content-items group" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
       <span v-for="_layerstree in layerstree.nodes" :key="_layerstree.id || _layerstree.groupId">
         <tristate-tree
           :root="false"
@@ -99,11 +99,14 @@ export default {
     }
   },
   computed: {
+    showLayerTocLegend(){
+      return !this.isGroup && this.layerstree.geolayer;
+    },
     isGroup() {
       return !!this.layerstree.nodes
     },
     legendlayerposition(){
-      return !this.layerstree.exclude_from_legend && this.legendplace === 'toc' && this.layerstree.visible && this.layerstree.legend ? 'toc' : 'tab';
+      return !this.layerstree.exclude_from_legend && this.layerstree.legend ? this.legendplace : 'tab';
     },
     showscalevisibilityclass(){
       return !this.isGroup && this.layerstree.scalebasedvisibility
