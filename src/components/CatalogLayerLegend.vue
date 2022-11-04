@@ -101,10 +101,45 @@
                   /*
                   * */
                 } else layer.categories.forEach(category => category.disabled = false);
+              } else {
+                // in case of double legend per layer
+                // it is possible that a legend (charts) is associated to layer
+                // but only one icon legend is used
+                if (icon) {
+                  this.createLegendUrl({
+                    type: 'icon',
+                    data: {
+                      icon,
+                      title
+                    }
+                  })
+                } else {
+                  // case of double legend
+                  this.setLayerCategoriesBySymbols(symbols);
+                  this.createLegendUrl({
+                    type: 'categories',
+                    data: {
+                      categories: this.layer.categories
+                    }
+                  })
+                }
               }
             });
           } else if (layer.categories) layer.categories.forEach(category => category.disabled = category.checked);
         } catch(err){}
+      },
+      setLayerCategoriesBySymbols(symbols){
+        /**
+         * filter symbol without checked property (undefined)
+         * it mean that is coming from a categories (for example charts associated)
+         * that is not the categories legend associated to layer
+         */
+        symbols = symbols.filter(symbol => typeof symbol.checked !== "undefined").map(symbol => ({
+          ...symbol,
+          _checked: symbol.checked,
+          disabled: false
+        }));
+        this.layer.categories = symbols.length ? symbols : null;
       },
       async getSingleLayerLegendCategories(layer) {
         const responseObject = {
@@ -136,11 +171,7 @@
                     layer.categories.push(symbol);
                   }
                 });
-              } else layer.categories = symbols.map(symbol => ({
-                ...symbol,
-                _checked: symbol.checked,
-                disabled: false
-              }));
+              } else this.setLayerCategoriesBySymbols(symbols);
               responseObject.type = 'categories';
               responseObject.data = {
                 categories: layer.categories
@@ -156,31 +187,37 @@
       getLegendUrl(layer) {
         return CatalogLayersStoresRegistry.getLayerById(layer.id).getLegendUrl(this.legendParams);
       },
+      createLegendUrl({type, data={}}){
+        switch(type) {
+          case 'icon':
+            const {icon, title} = data;
+            this.legend.url = [{
+              icon: `data:image/png;base64,${icon}`,
+              title,
+              checked: true
+            }];
+            break;
+          case 'categories':
+            const {categories=[]} = data;
+            this.legend.url = categories.map(({icon, title, checked=true, ruleKey}) => {
+              return {
+                icon:`data:image/png;base64,${icon}`,
+                title,
+                checked,
+                ruleKey
+              }
+            });
+            break;
+        }
+      },
       async getLegendSrc(layer) {
         try {
           const layerLegendCategories = await this.getSingleLayerLegendCategories(layer);
           const {type, data={}} = layerLegendCategories;
-          switch(type) {
-            case 'icon':
-              const {icon, title} = data;
-              this.legend.url = [{
-                icon: `data:image/png;base64,${icon}`,
-                title,
-                checked: true
-              }];
-              break;
-            case 'categories':
-              const {categories=[]} = data;
-              this.legend.url = categories.map(({icon, title, checked=true, ruleKey}) => {
-                return {
-                  icon:`data:image/png;base64,${icon}`,
-                  title,
-                  checked,
-                  ruleKey
-                }
-              });
-              break;
-          }
+          this.createLegendUrl({
+            type,
+            data
+          })
         } catch(err) {}
       }
     },
