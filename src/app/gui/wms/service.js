@@ -103,17 +103,14 @@ proto.getRequestStatusObject = function({error=false, added=false}={}){
  * @returns {*}
  */
 proto.addNewUrl = async function({id, url} = {}){
-  const find = this.state.localwmsurls.find(({id:localid, url:localurl}) => {
-    console.log((localurl == url || localid == id))
-    return localurl == url || localid == id;
-  });
+  const find = this.state.localwmsurls.find(({id:localid, url:localurl}) => localurl == url || localid == id);
   const status = this.getRequestStatusObject({
     added: !!find
   });
   if (!find) {
     try {
       const response = await this.getWMSLayers(url);
-      // if result (meaning reponse in done right)
+      // if result (meaning response in done right)
       if (response.result) {
         const data = this.getLocalWMSData();
         this.state.localwmsurls.push({
@@ -122,7 +119,7 @@ proto.addNewUrl = async function({id, url} = {}){
         });
         data.urls = this.state.localwmsurls;
         this.updateLocalWMSData(data);
-        response.wmsurl = wmsurl;
+        response.wmsurl = url;
         this.showWmsLayersPanel(response);
       } else status.error = true;
     }
