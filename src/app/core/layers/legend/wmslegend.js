@@ -1,7 +1,7 @@
 const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
 
 function WMSLegend({layer, params, options={}}) {
-  const {
+  let {
     width,
     height,
     color="white",
@@ -34,6 +34,11 @@ function WMSLegend({layer, params, options={}}) {
    */
   const {categories=false} = options;
   let url = layer.getWmsUrl({type: 'legend'});
+  const STYLES = categories && encodeURIComponent(layer.getCurrentStyle().name);
+  if (categories) {
+    //set 16 for symbol of chart or other legend symbol
+    symbolwidth = symbolheight = 16;
+  }
   const ProjectsRegistry = require('core/project/projectsregistry');
   const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
   const {LEGEND_ON, LEGEND_OFF} = dynamicLegend ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
@@ -65,6 +70,7 @@ function WMSLegend({layer, params, options={}}) {
     `${rulelabel ? '&RULELABEL=' + rulelabel : ''}`,
     `${LEGEND_ON ? '&LEGEND_ON=' + LEGEND_ON : ''}`,
     `${LEGEND_OFF ? '&LEGEND_OFF='+ LEGEND_OFF : ''}`,
+    `${STYLES ? '&STYLES=' + STYLES : ''}`,
     `&LAYER=${LAYER}`
   ].join('');
 }
