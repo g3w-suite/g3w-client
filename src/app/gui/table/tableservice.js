@@ -395,7 +395,10 @@ proto.addFeature = function(feature) {
   if (this.geolayer && feature.geometry) {
     this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
       id: tableFeature.id,
-      geometry: this._returnGeometry(feature)
+      feature: {
+        attributes: feature.attributes ? feature.attributes : feature.properties,
+        geometry: this._returnGeometry(feature)
+      }
     });
     tableFeature.geometry = feature.geometry;
   }
