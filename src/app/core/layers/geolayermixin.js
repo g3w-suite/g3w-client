@@ -49,12 +49,17 @@ proto.setup = function(config={}, options={}) {
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
 
+proto.setCategories = function(categories=[]) {
+  if (this.state.categories === null) this.state.categories = {};
+  this.state.categories[this.getCurrentStyle().name] = categories;
+};
+
 /**
  * Return eventually categories of layers legend
  * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
  */
 proto.getCategories = function(){
-  return this.state.categories;
+  return this.state.categories && this.state.categories[this.getCurrentStyle().name];
 };
 
 proto.clearCategories = function(){
