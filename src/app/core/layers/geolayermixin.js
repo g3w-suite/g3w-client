@@ -259,6 +259,10 @@ proto.setCurrentStyle = function(currentStyleName){
   return changed;
 };
 
+proto.getCurrentStyle = function(){
+  return this.config.styles.find(style => style.current);
+};
+
 /**
  * Disable layer by check scalevisibility configuration value
  * @param resolution
