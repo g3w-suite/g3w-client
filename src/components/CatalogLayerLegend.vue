@@ -22,6 +22,12 @@
   const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
   const {XHR} = require('core/utils/utils');
   const GUI = require('gui/gui');
+  /**
+   * store legend url icons base on current style of layer
+   * It use to cache all symbol of a style without get a new request to server
+   * @type {{}}
+   */
+  const STYLES_GETLEGENDGRAPHIC_URLS = {};
 
   export default {
     name: "layerlegend",
@@ -64,9 +70,12 @@
       async urlLoaded() {
         this.legend.loading = false;
       },
-      handlerChangeLegend(options={}){
+      async handlerChangeLegend(options={}){
         const { layerId } = options;
-        layerId === this.layer.id && this.getLegendSrc();
+        if (layerId === this.layer.id) {
+          await this.getLegendSrc(true);
+          this.dynamic && this.disableAddCategories();
+        }
       },
       async disableAddCategories(){
         try {
@@ -116,14 +125,16 @@
           disabled: false
         })) : null;
       },
-      async getSingleLayerLegendCategories() {
+      async getSingleLayerLegendCategories(all=false) {
         const responseObject = {
           type: null,
           data: null
         };
+        const projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
         try {
-          const legendurl = CatalogLayersStoresRegistry.getLayerById(this.layer.id).getLegendUrl(this.legendParams, {
-            categories: true
+          const legendurl = projectLayer.getLegendUrl(this.legendParams, {
+            categories: true,
+            all
           });
           const legendGraphics = await XHR.get({
             url: legendurl
@@ -188,15 +199,23 @@
             this.legend.url = this.layer.categories;
             break;
         }
+        const projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+        if (typeof STYLES_GETLEGENDGRAPHIC_URLS[projectLayer.getCurrentStyle().name] === "undefined")
+          STYLES_GETLEGENDGRAPHIC_URLS[projectLayer.getCurrentStyle().name] = this.legend.url;
       },
-      async getLegendSrc() {
+      async getLegendSrc(all=false) {
         try {
-          const layerLegendCategories = await this.getSingleLayerLegendCategories();
-          const {type, data={}} = layerLegendCategories;
-          this.createLegendUrl({
-            type,
-            data
-          })
+          const projectLayer = CatalogLayersStoresRegistry.getLayerById(this.layer.id);
+          if (all && STYLES_GETLEGENDGRAPHIC_URLS[projectLayer.getCurrentStyle().name]) {
+            this.leged.url = STYLES_GETLEGENDGRAPHIC_URLS[projectLayer.getCurrentStyle().name]
+          } else {
+            const layerLegendCategories = await this.getSingleLayerLegendCategories(all);
+            const {type, data={}} = layerLegendCategories;
+            this.createLegendUrl({
+              type,
+              data
+            })
+          }
         } catch(err) {}
       }
     },
@@ -213,7 +232,7 @@
       /**
        * Get all legend graphics of a layer when start
        */
-      this.getLegendSrc();
+      this.getLegendSrc(true);
     },
     async mounted() {
       await this.$nextTick();

@@ -32,7 +32,8 @@ function WMSLegend({layer, params, options={}}) {
   /*
    to check if used or passed
    */
-  const {categories=false} = options;
+  const {categories=false, all=false} = options;
+  bbox = all ? null : bbox;
   let url = layer.getWmsUrl({type: 'legend'});
   const STYLES = categories && encodeURIComponent(layer.getCurrentStyle().name);
   if (categories) {
