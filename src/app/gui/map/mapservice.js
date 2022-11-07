@@ -1509,8 +1509,9 @@ proto._setupCustomMapParamsToLegendUrl = function(bool=true){
         bbox
       })
     });
+    this.emit('change-map-legend-params')
   }
-  this.emit('change-map-legend-params')
+
 };
 
 proto.addMapLayer = function(mapLayer) {
