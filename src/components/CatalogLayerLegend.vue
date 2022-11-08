@@ -86,9 +86,9 @@
             url: legendurl
           });
           const {nodes=[]} = legendGraphics;
+          const categories = projectLayer.getCategories();
           if (nodes.length) {
             nodes.forEach(({icon, title, symbols=[]}) => {
-              const categories = projectLayer.getCategories();
               if (categories) {
                 if (symbols.length < categories.length){
                   /**
