@@ -42,7 +42,7 @@
         return this.layer.legend;
       },
       show(){
-        return this.layer.visible && this.legend.show;
+        return this.layer.visible && this.legend.show && (this.legendplace === 'toc' || this.legendplace === 'tab' && this.layer.categories);
       },
       showCategoriesCheckBox(){
         return this.categories.length > 1;
