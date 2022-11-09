@@ -57,15 +57,16 @@ export default {
     }
   },
   async mounted() {
+    const {formats=[], layout={vertical:"top", horizontal: "left"}} = this.state.input.options;
     await this.$nextTick();
-    const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
+    const fielddatetimeformat =  formats[0].fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
     this.service.setValidatorOptions({
       fielddatetimeformat
     });
     const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     const locale = this.service.getLocale();
-    const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].displayformat);
-    const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(this.state.input.options.formats[0].fieldformat);
+    const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(formats[0].displayformat);
+    const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(formats[0].fieldformat);
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
       format: datetimedisplayformat,
@@ -74,8 +75,8 @@ export default {
       toolbarPlacement: 'top',
       widgetParent: $(this.$refs.datimewidget_container),
       widgetPositioning: {
-        vertical: 'top',
-        horizontal: 'left'
+        vertical: layout.vertical || 'top',
+        horizontal: layout.horizontal || 'left'
       },
       showClose: true,
       locale
@@ -90,7 +91,7 @@ export default {
       await this.$nextTick();
       const {top, left, width} = this.$refs.datetimepicker_body.getBoundingClientRect();
       this.widget_container.top = top;
-      this.widget_container.left = left - width;
+      this.widget_container.left = left - width + 10;
       this.$emit('datetimepickershow');
     });
     $(`#${this.iddatetimepicker}`).on("dp.hide", evt => {
