@@ -33,21 +33,26 @@ function WMSLegend({layer, params, options={}}) {
    to check if used or passed
    */
   const {categories=false, all=false} = options;
-  bbox = all ? null : bbox;
+  bbox = all ? null : bbox; // all=true meas no filter parameters as BBOX
   let url = layer.getWmsUrl({type: 'legend'});
-  const STYLES = categories && encodeURIComponent(layer.getCurrentStyle().name);
+  let STYLES;
+  let FORMAT = 'image/png';
   if (categories) {
     //set 16 for symbol of chart or other legend symbol
     symbolwidth = symbolheight = 16;
+    STYLES = encodeURIComponent(layer.getCurrentStyle().name);
+    FORMAT = 'application/json'
   }
   const ProjectsRegistry = require('core/project/projectsregistry');
   const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
-  const {LEGEND_ON, LEGEND_OFF} = dynamicLegend ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
+  // in case of GetLegendGraphic of format application/json LEGEND_ON and LEGEND_OFF need to be undefined
+  // because it create some strange behaviour on wms getMap when switch between style of layer
+  const {LEGEND_ON, LEGEND_OFF} = dynamicLegend && !categories ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
     `${width ? '&WIDTH=' + width: ''}`,
     `${height ? '&HEIGHT=' + height: ''}`,
-    `&FORMAT=${categories ? 'application/json' : 'image/png'}`,
+    `&FORMAT=${FORMAT}`,
     `&TRANSPARENT=${transparent}`,
     `&ITEMFONTCOLOR=${color}`,
     `&LAYERFONTCOLOR=${color}`,
