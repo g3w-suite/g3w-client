@@ -1297,6 +1297,19 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
 };
 
 proto.getExternalWMSLayerFeaturesFromQueryRequest = function(layer, query){
+  try {
+    DataRouterService.getData('proxy:wmsgetfeatureinfo',
+      {
+        inputs: {
+          url: 'http://www502.regione.toscana.it/ows_ofc/com.rt.wms.RTmap/wms?map=owsofc&',
+          params: query
+        },
+        outputs: null
+      });
+  } catch(err) {
+    console.log(err)
+  }
+
   return {
     layer,
     features: []
@@ -1322,6 +1335,7 @@ proto._addExternalLayersDataToQueryResponse = function(){
        */
       this._externalWMSLayers.forEach(layer => {
         const responseObj = this.getExternalWMSLayerFeaturesFromQueryRequest(layer, query);
+        console.log(responseObj)
         if (!queryResponse.data) queryResponse.data = [];
         queryResponse.data.push(responseObj);
       })

@@ -2555,7 +2555,10 @@ proto.addExternalWMSLayer = function({url, layers, name, epsg=this.getEpsg(), po
     this.addExternalLayer(olLayer,  {
       position,
       opacity,
-      visible
+      visible,
+      epsg,
+      layers,
+      info_formats
     });
 
     /**
@@ -2643,6 +2646,11 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     externalLayer.position = position;
     externalLayer.external = true;
     externalLayer.checked = visible;
+    externalLayer.GetFeatureInfo = {
+      crs: options.epsg,
+      layers: options.layers,
+      info_formats: options.info_formats
+    }
   } else {
     name = externalLayer.name;
     type = externalLayer.type;
