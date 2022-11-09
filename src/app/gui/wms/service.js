@@ -241,13 +241,14 @@ proto.getWMSLayers = async function(url){
   return response;
 };
 
-proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=true, layers=[]}={}){
+proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=true, layers=[], info_formats=[]}={}){
   const mapService = GUI.getService('map');
   return mapService.addExternalWMSLayer({
     url,
     name,
     layers,
     epsg,
+    info_formats,
     position,
     visible,
     opacity
@@ -263,16 +264,17 @@ proto.loadWMSLayerToMap = function({url, name, epsg, position, opacity, visible=
  * @param layers
  * @returns {Promise<void>}
  */
-proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true}={}){
+proto.addWMSlayer = async function({url, name=`wms_${uniqueId()}`, epsg, position, layers=[], opacity=1, visible=true, info_formats=[]}={}){
   const data = this.getLocalWMSData();
   const wmsLayerConfig = {
     url,
     name,
     layers,
     epsg,
+    info_formats,
     position,
     visible,
-    opacity
+    opacity,
   };
   if (data.wms[url] === undefined) data.wms[url] = [wmsLayerConfig];
   else data.wms[url].push(wmsLayerConfig);

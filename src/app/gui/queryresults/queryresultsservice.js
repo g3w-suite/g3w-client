@@ -81,7 +81,8 @@ function QueryResultsService() {
     source: new ol.source.Vector()
   });
 
-  this._vectorLayers = [];
+  this._vectorLayers = []; // external wms layer
+  this._externalWMSLayers = []; // external wms layer;
   this._addFeaturesLayerResultInteraction = {
     id: null, // reference to current layer
     interaction: null, // interaction bind to layer,
@@ -188,7 +189,7 @@ function QueryResultsService() {
 
   this._setRelations(project);
   this._setAtlasActions(project);
-  this._addVectorLayersDataToQueryResponse();
+  this._addExternalLayersDataToQueryResponse();
   this._asyncFnc = {
     todo: noop,
     zoomToLayerFeaturesExtent: {
@@ -1179,6 +1180,51 @@ proto.triggerLayerAction = async function(action,layer,feature, index, container
   }
 };
 
+proto.registerExternalLayer = function({type='vector', layer}) {
+  switch(type){
+    case 'wms':
+      this.registerExternalWMSLayer(layer);
+      break;
+    case 'vector':
+    default:
+      this.registerVectorLayer(layer)
+  }
+};
+
+proto.unregisterExternalLayer = function({type='vector', layer}) {
+  switch(type){
+    case 'wms':
+      this.unregisterExternalWMSLayer(layer);
+      break;
+    case 'vector':
+    default:
+      this.unregisterVectorLayer(layer)
+  }
+};
+
+/**
+ * External Wms Layer
+ */
+
+proto.registerExternalWMSLayer = function(wmslayer){
+  this._externalWMSLayers.indexOf(wmslayer) === -1 && this._externalWMSLayers.push(wmslayer);
+};
+
+proto.unregisterExternalWmsLayer = function(wmslayer) {
+  this._externalWMSLayers = this._externalWMSLayers.filter(layer => {
+    this.state.layers = this.state.layers && this.state.layers.filter(layer => layer.id !== vectorLayer.get('id'));
+    return layer !== wmslayer;
+  });
+};
+
+/**
+ * End External Wms Layer
+ */
+
+/**
+ * External Vector Layer
+ */
+
 proto.registerVectorLayer = function(vectorLayer) {
   this._vectorLayers.indexOf(vectorLayer) === -1 && this._vectorLayers.push(vectorLayer);
 };
@@ -1189,6 +1235,11 @@ proto.unregisterVectorLayer = function(vectorLayer) {
     return layer !== vectorLayer;
   });
 };
+
+/**
+ * End External Vector Layer
+ */
+
 
 proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
   let isVisible = false;
@@ -1245,6 +1296,43 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
   };
 };
 
+proto.getExternalWMSLayerFeaturesFromQueryRequest = function(layer, query){
+  return {
+    layer,
+    features: []
+  }
+};
+
+proto._addExternalLayersDataToQueryResponse = function(){
+  this.onbefore('setQueryResponse', (queryResponse, options={}) => {
+    const {query={}} = queryResponse;
+    const {add=false}= options;
+    if (!add) {
+      /**
+       * Check external Vector layer
+       */
+      this._vectorLayers.forEach(layer => {
+        const responseObj = this.getVectorLayerFeaturesFromQueryRequest(layer, query);
+        if (!queryResponse.data) queryResponse.data = [];
+        queryResponse.data.push(responseObj);
+      });
+
+      /*
+      * check external Wms layers
+       */
+      this._externalWMSLayers.forEach(layer => {
+        const responseObj = this.getExternalWMSLayerFeaturesFromQueryRequest(layer, query);
+        if (!queryResponse.data) queryResponse.data = [];
+        queryResponse.data.push(responseObj);
+      })
+    }
+  });
+};
+
+/**
+ * Leave maybe used from plugins
+ * @private
+ */
 proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, options={}) => {
     const {query={}} = queryResponse;

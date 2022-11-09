@@ -37,7 +37,6 @@ export default {
       title: null,
       abstract: null,
       map_formats: [],
-      info_formats: [],
       layers: [],
       selectedlayers: [],
       projections: [],
@@ -52,7 +51,8 @@ export default {
         name: this.name && this.name.trim() || undefined,
         layers: this.selectedlayers,
         epsg: this.epsg,
-        position: this.position
+        position: this.position,
+        info_formats: this.info_formats
       };
       ///pre
       this.added = this.$options.service.checkIfWMSAlreadyAdded(config);
@@ -96,9 +96,10 @@ export default {
     }
   },
   async created() {
-    const {layers, title, abstract, wmsurl:url} = this.$options.config;
+    const {layers, title, abstract, wmsurl:url, info_formats=[]} = this.$options.config;
     this.layerProjections = {};
     this.url = url;
+    this.info_formats = info_formats;
     layers.forEach(layer => {
       // store for each layer projection epsg with title that i use
       this.layerProjections[layer.name] = {
