@@ -113,13 +113,15 @@ const utils = {
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
     const parser = new ol.format.WMSGetFeatureInfo();
     const features = this.transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
-    const geometryType = layer.getGeometryType();
+    if (layer.isGeoLayer()) {
+      const geometryType = layer.getGeometryType();
 
-    // Need to remove Z values due a incorrect addition when using
-    // ol.format.WMSGetFeatureInfo readFeatures method from XML
-    // (eg. WMS getFeatureInfo);
-    if (!is3DGeometry(geometryType)){
-      features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      // Need to remove Z values due a incorrect addition when using
+      // ol.format.WMSGetFeatureInfo readFeatures method from XML
+      // (eg. WMS getFeatureInfo);
+      if (!is3DGeometry(geometryType)){
+        features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      }
     }
 
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
@@ -160,7 +162,8 @@ const utils = {
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
     }
-    const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
+    // add match numeric value integer or float
+    const arrayQGS = [...response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
     arrayQGS.forEach((find, idx) => {
       if (idx%2 === 0) {
         if (!this.hasFieldsStartWithNotPermittedKey) this.hasFieldsStartWithNotPermittedKey = {};
@@ -231,7 +234,7 @@ const contenttypes = {
       const featureId = feature.getId();
       const g3w_fid = sanitizeFidFeature(featureId);
       // in case of wms getfeature without filter return string contain layerName or layerid
-      const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
+      const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
       if (index !== -1) {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
         const properties = feature.getProperties();
