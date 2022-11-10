@@ -116,6 +116,19 @@ http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
 http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 ```
 
+### Plugins
+
+If you want develop custom plugins you need to place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder, below you can see some examples:
+
+- [base-template](https://github.com/g3w-suite/g3w-client-plugin-base-template)
+- [editing](https://github.com/g3w-suite/g3w-client-plugin-editing)
+- [eleprofile](https://github.com/g3w-suite/g3w-client-plugin-elevation-profile)
+- [openrouteservice](https://github.com/g3w-suite/g3w-client-plugin-openrouteservice)
+- [qplotly](https://github.com/g3w-suite/g3w-client-plugin-qplotly)
+- [qtimeseries](https://github.com/g3w-suite/g3w-client-plugin-qtimeseries)
+- [queryresult-template](https://github.com/g3w-suite/g3w-client-plugin-queryresult-template)
+- [sidebar-template](https://github.com/g3w-suite/g3w-client-plugin-sidebar-template)
+
 ---
 
 ### FAQ
@@ -211,8 +224,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.4.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.4.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.5-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.5.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.5-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.5.x)
 
 ---
 
