@@ -113,6 +113,7 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/d3/js/d3.min.js",
       g3w.assetsFolder + "/vendors/c3/js/c3.min.js",
       g3w.assetsFolder + "/vendors/wps/js/wps-js-all.min.js",
+      g3w.assetsFolder + "/vendors/quill/js/quill.min.js"
       ]),
       browserify(
         /* Uncomment the following in next ESM release (v4.x) */
@@ -282,6 +283,7 @@ gulp.task('concatenate:vendor_css', function() {
     g3w.assetsFolder + "/vendors/c3/css/c3.min.css",
     g3w.assetsFolder + "/vendors/datatables/DataTables-1.10.16/css/jquery.dataTables.min.css",
     g3w.assetsFolder + "/vendors/font-awesome-5.15.4/css/all.min.css",
+    g3w.assetsFolder + "/vendors/quill/css/quill.snow.min.css"
   ])
     .pipe(concat('vendor.min.css'))
     .pipe(replace(/\w+fonts/g, 'fonts')) // eg. "../webfonts/fa-regular-400.woff2" --> ""../fonts/fa-regular-400.woff2"
