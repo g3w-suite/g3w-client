@@ -143,15 +143,20 @@
       /**
        * Get all legend graphics of a layer when start
        */
-      this.layer.visible && this.setLayerCategories(true);
+      this.layer.visible && this.setLayerCategories(true).then(()=>{
+        const mapService = GUI.getService('map');
+        this.dynamic && mapService.on('change-map-legend-params', async () => {
+          this.mapReady = true;
+          this.layer.visible &&
+          (this.legendplace === 'toc' || this.layer.categories) &&
+          this.setLayerCategories(false);
+        });
+      })
     },
     async mounted() {
       await this.$nextTick();
-      const mapService = GUI.getService('map');
-      this.dynamic && mapService.on('change-map-legend-params', async () => {
-        this.mapReady = true;
-        this.layer.visible && this.setLayerCategories(false);
-      });
+
+
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
