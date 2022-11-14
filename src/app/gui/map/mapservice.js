@@ -1,7 +1,7 @@
 import {MAP_SETTINGS} from '../../constant';
 import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
-const {inherit, base, copyUrl, uniqueId, debounce, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
+const {inherit, base, copyUrl, uniqueId, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
@@ -18,7 +18,6 @@ const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/g3w.ol').helpers;
 const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
-const StreetViewService = require('gui/streetview/streetviewservice');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
 const SETTINGS = {
@@ -948,43 +947,7 @@ proto._setupControls = function() {
           break;
         case 'streetview':
           // streetview
-          let active = false;
-          const streetViewService = new StreetViewService();
           control = this.createMapControl(controlType, {});
-          streetViewService.init()
-            .then(()=> {
-              control.setProjection(this.getProjection());
-              this.viewer.map.addLayer(control.getLayer());
-              const position = {
-                lat: null,
-                lng: null
-              };
-              const closeContentFnc = () => {
-                control.clearMarker();
-                active = false;
-              };
-              streetViewService.onafter('postRender', position => control.setPosition(position));
-              if (control) {
-                this._setMapControlVisible({
-                  control,
-                  visible: true
-                });
-                control.on('picked', throttle(e => {
-                  GUI.off('closecontent', closeContentFnc);
-                  active = true;
-                  const coordinates = e.coordinates;
-                  const lonlat = ol.proj.transform(coordinates, this.getProjection().getCode(), 'EPSG:4326');
-                  position.lat = lonlat[1];
-                  position.lng = lonlat[0];
-                  streetViewService.showStreetView(position);
-                  GUI.on('closecontent', closeContentFnc);
-                }));
-                control.on('disabled', () => {
-                  active && GUI.closeContent();
-                  GUI.off('closecontent', closeContentFnc);
-                })
-              }
-            }).catch(() => this.removeControl(controlType));
           break;
         case 'scaleline':
           control = this.createMapControl(controlType, {
@@ -1044,21 +1007,6 @@ proto._setupControls = function() {
               notresponseserver: "mapcontrols.nominatim.notresponseserver",
             }
           });
-          /**
-           * event emit when an address location is clicked
-           */
-          control.on('address', evt => {
-            const coordinate = evt.coordinate;
-            const geometry =  new ol.geom.Point(coordinate);
-            this.highlightGeometry(geometry);
-          });
-
-          control.on('lonlat', ({lonlat}={}) => {
-            const coordinates = ol.proj.transform(lonlat, 'EPSG:4326', mapCrs);
-            this.zoomToExtent([...coordinates, ...coordinates]);
-            setTimeout(() => this.showMarker(coordinates), 1000);
-          });
-
           break;
         case 'geolocation':
           control = this.createMapControl(controlType);
@@ -1162,11 +1110,13 @@ proto.zoomToFid = async function(zoom_to_fid='', separator='|'){
  */
 proto.handleZoomToFeaturesUrlParameter = async function({zoom_to_features='', search_endpoint='api'} = {}) {
   try {
-    const [layerNameorId, fieldsValuesSearch] = zoom_to_features.split(':');
-    if (layerNameorId && fieldsValuesSearch) {
-      const projectLayer = this.project.getLayers().find(layer => {
-        return layer.id === layerNameorId || layer.name === layerNameorId;
-      });
+    const [layerNameorIdorOrigname, fieldsValuesSearch] = zoom_to_features.split(':');
+    if (layerNameorIdorOrigname && fieldsValuesSearch) {
+      const projectLayer = this.project.getLayers().find(layer =>
+        layer.id === layerNameorIdorOrigname ||
+        layer.name === layerNameorIdorOrigname ||
+        layer.origname === layerNameorIdorOrigname
+      );
       if (projectLayer) {
         const layer = this.project.getLayerById(projectLayer.id);
         const filter = createFilterFromString({
@@ -1316,7 +1266,7 @@ proto.setMapControlsContainer = function(mapControlDom) {
 
 proto._updateMapControlsLayout = function({width, height}={}) {
   // case mobile open keyboard
-  (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 100);
+  (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 1);
   // update only when all control are ready
   if (this.state.mapcontrolready && this.state.mapControl.update) {
     const changedAndMoreSpace = {
@@ -1559,8 +1509,9 @@ proto._setupCustomMapParamsToLegendUrl = function(bool=true){
         bbox
       })
     });
+    this.emit('change-map-legend-params')
   }
-  this.emit('change-map-legend-params')
+
 };
 
 proto.addMapLayer = function(mapLayer) {
@@ -1710,7 +1661,7 @@ proto._setupViewer = function(width, height) {
     const basemap =  layer.get('basemap');
     const position = layer.get('position');
     let zindex = basemap && 0;
-    if (position && position === 'bottom') zindex =  1;
+    if (position && position === 'bottom') zindex = 0;
     this.setLayerZIndex({
       layer,
       zindex
@@ -1957,7 +1908,7 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parametter to force request of map layer from server
+  // if force add g3w_time parameter to force request of map layer from server
   if (options.force) options.g3w_time = Date.now();
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
@@ -2156,17 +2107,17 @@ proto.zoomToFeatures = function(features, options={highlight: false}) {
   let {geometry, extent} = this.getGeometryAndExtentFromFeatures(features);
   const {highlight} = options;
   if (highlight && extent) options.highLightGeometry = geometry;
-  extent && this.zoomToExtent(extent, options);
+  return extent && this.zoomToExtent(extent, options) || Promise.resolve();
 };
 
 proto.zoomToExtent = function(extent, options={}) {
   const center = ol.extent.getCenter(extent);
   const resolution = this.getResolutionForZoomToExtent(extent);
   this.goToRes(center, resolution);
-  options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
+  return options.highLightGeometry && this.highlightGeometry(options.highLightGeometry, {
     zoom: false,
     duration: options.duration
-  });
+  }) || Promise.resolve();
 };
 
 proto.zoomToProjectInitExtent = function(){
@@ -2231,11 +2182,13 @@ let animatingHighlight = false;
 * action: add, clear, remove :
 *                             add: feature/features to selectionLayer. If selectionLayer doesn't exist create a  new vector layer.
 *                             clear: remove selectionLayer
-*                             remove: remove feature from selectionlayer. If no more feature are in selectionLayer it will be removed
+*                             remove: remove feature from selection layer. If no more feature are in selectionLayer it will be removed
 * */
 proto.setSelectionFeatures = function(action='add', options={}){
   const {feature, color} = options;
-  color && this.setDefaultLayerStyle('selectionLayer', {color});
+  color && this.setDefaultLayerStyle('selectionLayer', {
+    color
+  });
   const source = this.defaultsLayers.selectionLayer.getSource();
   switch (action) {
     case 'add':
@@ -2540,7 +2493,7 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
       layer.setZIndex(this.layersCount);
       break;
     case 'bottom':
-      layer.setZIndex(1);
+      layer.setZIndex(0);
       break
   }
   this.emit('change-layer-position-map', {id, position});

@@ -1,7 +1,7 @@
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
-const { sanitizeUrl } = require('core/utils/utils');
-const {createFeatureFromGeometry} = require('core/utils/geo');
+const { createFeatureFromFeatureObject } = require('core/utils/geo');
+const { XHR, sanitizeUrl } = require('core/utils/utils');
 const GUI = require('gui/gui');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
@@ -19,6 +19,7 @@ proto.setup = function(config={}, options={}) {
   const { project } = options;
   this.config.map_crs = project.getProjection().getCode();
   this.config.multilayerid = config.multilayer;
+  this.legendCategories = {};
   // Features that contain
   this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
@@ -41,12 +42,56 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+    categories: false // has more than one categories legend
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
+
+/**
+ * Legend Graphic section
+ */
+proto.getLegendGraphic = function({all=true}={}){
+  const ApplicationService = require('core/applicationservice');
+  const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
+  const legendurl = this.getLegendUrl(legendParams, {
+    categories: true,
+    all // true meaning no bbox no filter just all referred to
+  });
+  return XHR.get({
+    url: legendurl
+  });
+};
+
+/**
+ * Set layer categories legend
+ * @param categories
+ */
+proto.setCategories = function(categories=[]) {
+  this.legendCategories[this.getCurrentStyle().name] = categories;
+  //set categories state attribute to true only if exist at least a rule key
+  // meaning that layer has at least more than one has a
+  this.state.categories = categories.length > 1 && categories.filter(category => category.ruleKey).length > 1;
+};
+
+/**
+ * Return eventually categories of layers legend
+ * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
+ */
+proto.getCategories = function(){
+  return this.legendCategories[this.getCurrentStyle().name];
+};
+
+proto.clearCategories = function(){
+  this.legendCategories = {};
+  this.state.categories = false;
+};
+
+/**
+ * End Legend Graphic section
+ */
 
 /**
  * Clear all selection openlayer features
@@ -64,13 +109,11 @@ proto.getOlSelectionFeature = function(id){
   return this.olSelectionFeatures[id];
 };
 
-proto.updateOlSelectionFeature = function({id, geometry}={}){
+proto.updateOlSelectionFeature = function({id, feature}={}){
   const featureObject = this.getOlSelectionFeature(id);
   if (featureObject) {
-    geometry = new ol.geom[geometry.type](geometry.coordinates);
-    const feature = featureObject.feature;
-    const mapService = GUI.getComponent('map').getService();
-    feature.setGeometry(geometry);
+    featureObject.feature = feature;
+    const mapService = GUI.getService('map');
     mapService.setSelectionFeatures('update', {
       feature
     })
@@ -99,16 +142,16 @@ proto.getOlSelectionFeatures = function(){
   return this.olSelectionFeatures;
 };
 
-proto.addOlSelectionFeature = function({id, geometry}={}){
+proto.addOlSelectionFeature = function({id, feature}={}){
   this.olSelectionFeatures[id] = this.olSelectionFeatures[id] || {
-    feature: createFeatureFromGeometry({id, geometry}),
+    feature: createFeatureFromFeatureObject({id, feature}),
     added: false
   };
   return this.olSelectionFeatures[id];
 };
 
 proto.showAllOlSelectionFeatures = function(){
-  const mapService = GUI.getComponent('map').getService();
+  const mapService = GUI.getService('map');
   Object.values(this.olSelectionFeatures).forEach(featureObject =>{
     !featureObject.added && mapService.setSelectionFeatures('add', {
       feature: featureObject.feature
@@ -144,10 +187,16 @@ proto.setOlSelectionFeatures = function(feature, action='add'){
   } else {
     const featureObject = this.olSelectionFeatures[feature.id] || this.addOlSelectionFeature(feature);
     if (action === 'add') {
-      !featureObject.added && mapService.setSelectionFeatures(action, {
-        feature: featureObject.feature
-      });
-      featureObject.added = true;
+      if (!featureObject.added) {
+        /**
+         * add a property of feature __layerId used whe we work with selected Layer features
+         */
+        featureObject.feature.__layerId = this.getId();
+        mapService.setSelectionFeatures(action, {
+          feature: featureObject.feature,
+        });
+        featureObject.added = true;
+      }
     } else {
       mapService.setSelectionFeatures(action, {
         feature: featureObject.feature
@@ -240,6 +289,10 @@ proto.setCurrentStyle = function(currentStyleName){
     style.current = style.name === currentStyleName;
   });
   return changed;
+};
+
+proto.getCurrentStyle = function(){
+  return this.config.styles.find(style => style.current);
 };
 
 /**

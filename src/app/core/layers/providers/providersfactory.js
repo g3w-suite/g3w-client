@@ -94,7 +94,19 @@ const ProvidersForServerTypes = {
       data: null,
       search: null
     },
+    'vectortile': {
+      query: Providers.wms,
+      filter: null,
+      data: null,
+      search: null
+    },
     'arcgismapserver': {
+      query: Providers.wms,
+      filter: null,
+      data: null,
+      search: null
+    },
+    'mdal': {
       query: Providers.wms,
       filter: null,
       data: null,

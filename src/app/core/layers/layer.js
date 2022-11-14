@@ -421,13 +421,19 @@ proto.isWmsUseLayerIds = function() {
   return this.config.wms_use_layer_ids;
 };
 
+proto.getFilterToken = function (){
+  const ApplicationService = require('core/applicationservice');
+  return ApplicationService.getFilterToken();
+};
+
 /**
  *
  * DOWNLOAD METHODS
  */
 
-proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
+proto.getDownloadFilefromDownloadDataType = function(type, {data={}, options}){
   let promise;
+  data.filtertoken = this.getFilterToken();
   switch (type) {
     case 'shapefile':
       promise = this.getShp({data, options});
@@ -448,13 +454,14 @@ proto.getDownloadFilefromDownloadDataType = function(type, {data, options}){
       promise: this.getGeoTIFF({
         data,
         options
-      })
+      });
       break;
   }
   return promise;
 };
 
 proto.getGeoTIFF = function({data={}}={}){
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('geotiff');
   return XHR.fileDownload({
     url,
@@ -464,6 +471,7 @@ proto.getGeoTIFF = function({data={}}={}){
 };
 
 proto.getXls = function({data={}}={}){
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('xls');
   return XHR.fileDownload({
     url,
@@ -473,6 +481,7 @@ proto.getXls = function({data={}}={}){
 };
 
 proto.getShp = function({data={}}={}) {
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('shp');
   return XHR.fileDownload({
     url,
@@ -482,6 +491,7 @@ proto.getShp = function({data={}}={}) {
 };
 
 proto.getGpx = function({data={}}={}){
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('gpx');
   return XHR.fileDownload({
     url,
@@ -491,6 +501,7 @@ proto.getGpx = function({data={}}={}){
 };
 
 proto.getGpkg = function({data={}}={}){
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('gpkg');
   return XHR.fileDownload({
     url,
@@ -500,6 +511,7 @@ proto.getGpkg = function({data={}}={}){
 };
 
 proto.getCsv = function({data={}}={}){
+  data.filtertoken = this.getFilterToken();
   const url = this.getUrl('csv');
   return XHR.fileDownload({
     url,
@@ -1134,7 +1146,9 @@ Layer.SourceTypes = {
   WMST: "wmst",
   WFS: 'wfs',
   WCS: "wcs",
-  VECTORTILE: "vector-tile",
+  MDAL: "mdal",
+  "VECTOR-TILE": "vector-tile",
+  VECTORTILE: "vectortile",
   ARCGISMAPSERVER: 'arcgismapserver',
   GEOJSON: "geojson"
   /*

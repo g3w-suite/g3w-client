@@ -1,9 +1,14 @@
-import {G3W_FID} from 'constant';
-const {toRawType} = require('core/utils/utils');
+import { G3W_FID } from 'constant';
+const { toRawType } = require('core/utils/utils');
 const Feature = require('core/layers/features/feature');
-const {t} = require('core/i18n/i18n.service');
+const { t } = require('core/i18n/i18n.service');
 const olutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
+
+/**
+ * FIXME: circular dependency (ie. empty object when importing at top level)
+ */
+// const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
 
 /**
  * Response parser (internal utilities)
@@ -99,10 +104,26 @@ const utils = {
     return features;
   },
   parseLayerFeatureCollection({jsonresponse, layer, projections}) {
+    /**
+     * FIXME: circular dependency (ie. empty object when importing at top level)
+     */
+    const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
+
     const x2js = new X2JS();
     const layerFeatureCollectionXML = x2js.json2xml_str(jsonresponse);
     const parser = new ol.format.WMSGetFeatureInfo();
     const features = this.transformFeatures(parser.readFeatures(layerFeatureCollectionXML), projections);
+    if (layer.isGeoLayer()) {
+      const geometryType = layer.getGeometryType();
+
+      // Need to remove Z values due a incorrect addition when using
+      // ol.format.WMSGetFeatureInfo readFeatures method from XML
+      // (eg. WMS getFeatureInfo);
+      if (!is3DGeometry(geometryType)){
+        features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+      }
+    }
+
     if (features.length && this.hasFieldsStartWithNotPermittedKey) {
       const properties = Object.keys(features[0].getProperties());
       const numericFields = properties.filter(property => property.indexOf(WORD_NUMERIC_FIELD_ESCAPE) !== -1);
@@ -141,7 +162,8 @@ const utils = {
       const reg = new RegExp(`qgs:${sanitizeLayerName}`, "g");
       response = response.replace(reg, `qgs:layer${i}`);
     }
-    const arrayQGS = [...response.matchAll(/qgs:(\d+)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
+    // add match numeric value integer or float
+    const arrayQGS = [...response.matchAll(/qgs:(\d+(?:\.\d+)?)(\w+)/g), ...response.matchAll(/qgs:(\w+):(\w+)/g)];
     arrayQGS.forEach((find, idx) => {
       if (idx%2 === 0) {
         if (!this.hasFieldsStartWithNotPermittedKey) this.hasFieldsStartWithNotPermittedKey = {};
@@ -212,7 +234,7 @@ const contenttypes = {
       const featureId = feature.getId();
       const g3w_fid = sanitizeFidFeature(featureId);
       // in case of wms getfeature without filter return string contain layerName or layerid
-      const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
+      const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
       if (index !== -1) {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
         const properties = feature.getProperties();

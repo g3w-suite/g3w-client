@@ -12,6 +12,7 @@ import ApplicationState from 'core/applicationstate';
  */
 import G3WInput from 'components/InputG3W.vue';
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
+import inputService from 'core/expression/inputservice';
 /**
  * Form components
  */
@@ -199,6 +200,9 @@ module.exports = {
       Flow,
       Workflow,
       WorkflowsStack
+    },
+    input: {
+      inputService
     }
   },
 
