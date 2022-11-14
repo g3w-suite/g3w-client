@@ -1146,6 +1146,7 @@ Layer.SourceTypes = {
   WMST: "wmst",
   WFS: 'wfs',
   WCS: "wcs",
+  MDAL: "mdal",
   "VECTOR-TILE": "vector-tile",
   VECTORTILE: "vectortile",
   ARCGISMAPSERVER: 'arcgismapserver',

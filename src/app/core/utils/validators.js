@@ -7,7 +7,7 @@ const InputValidators = {
       this.options = options;
       this.validate = function(value) {
         const float = Number(1 * value);
-        return !Number.isNaN(float) && float <= 2147483647;
+        return !Number.isNaN(float);
       }
     },
 

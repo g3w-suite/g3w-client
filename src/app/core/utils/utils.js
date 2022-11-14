@@ -474,16 +474,27 @@ const utils = {
       })
     }
   },
-  createSingleFieldParameter({field, value, operator='eq', logicop=null}){
-    logicop = logicop && `|${logicop}`;
-    if (Array.isArray(value)){
-      let filter = '';
-      const valueLenght = value.length;
-      value.forEach((value, index) =>{
-        filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
-      });
-      return filter
-    } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+  createSingleFieldParameter({field, value, operator='eq', logicop=null, search_endpoint="api"}){
+    if (search_endpoint === 'api') {
+      logicop = logicop && `|${logicop}`;
+      if (Array.isArray(value)){
+        let filter = '';
+        const valueLenght = value.length;
+        value.forEach((value, index) =>{
+          filter+=`${field}|${operator}|${encodeURIComponent(value)}${index < valueLenght - 1 ? `${logicop},` : ''}`
+        });
+        return filter
+      } else return `${field}|${operator.toLowerCase()}|${encodeURIComponent(value)}${logicop || ''}`;
+    } else {
+      if (Array.isArray(value)){
+        let filter = '';
+        const valueLenght = value.length;
+        value.forEach((value, index) =>{
+          filter+=`"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}' ${index < valueLenght - 1 ? `${logicop} ` : ''}`
+        });
+        return filter
+      } else return `"${field}" ${EXPRESSION_OPERATORS[operator]} '${encodeURIComponent(value)}'`;
+    }
   },
   createFilterFromString({layer, search_endpoint='ows', filter=''}){
     let stringFilter = filter;
@@ -592,7 +603,7 @@ const utils = {
     return filter;
   },
   splitContextAndMethod(string=''){
-    const [context, method] = string.split(':')
+    const [context, method] = string.split(':');
     return {
       context,
       method
@@ -610,6 +621,17 @@ const utils = {
     const b = parseInt(color.substr(5,2), 16);
     return [r,g,b]
   },
+  /**
+   * Covert datetime format from Qgis format to Moment
+   * @param datetimeformat
+   * @returns {*}
+   */
+  convertQGISDateTimeFormatToMoment(datetimeformat) {
+    datetimeformat = datetimeformat.replace(/y/g, 'Y');
+    const matchDayInDate = datetimeformat.match(/d/g);
+    if (matchDayInDate && matchDayInDate.length < 3) datetimeformat = datetimeformat.replace(/d/g, 'D');
+    return datetimeformat
+  }
 };
 
 module.exports = utils;

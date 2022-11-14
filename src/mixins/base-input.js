@@ -11,6 +11,12 @@ export default {
     },
     showhelpicon(){
       return this.state.help && this.state.help.message.trim();
+    },
+    disabled(){
+      return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
+    },
+    loadingState() {
+      return this.state.input.options.loading ? this.state.input.options.loading.state : null;
     }
   },
   methods: {
@@ -25,14 +31,11 @@ export default {
     // called when input value change
     change() {
       this.service.setEmpty();
-      // validate input
-      this.state.validate.required && this.service.validate();
+      // validate input if is required or need to be unique
+      if (this.state.validate.required || this.state.validate.unique) this.service.validate();
       // emit change input
       this.$emit('changeinput', this.state);
     },
-    isVisible() {},
-  },
-  mounted() {
-    this.service && this.service.has_default_value && this.change();
+    isVisible() {}
   }
 };
