@@ -64,6 +64,15 @@ proto.removeChild = function() {
   this._child = null;
 };
 
+proto.setInput = function({key, value}) {
+  this._inputs[key] = value;
+};
+
+/**
+ * maybe unused method. Remove
+ * @param inputs
+ * @private
+ */
 proto._setInputs = function(inputs) {
  this._inputs = inputs;
 };

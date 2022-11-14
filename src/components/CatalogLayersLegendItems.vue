@@ -102,7 +102,7 @@ export default {
         const urlLayersName = urlMethodsLayersName[method];
         if (method === 'GET')
           for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${urlLayersName[url].map(layerObj => layerObj.layerName).join(',')}&STYLES=${urlLayersName[url].map(layerObj => layerObj.style).join(',')}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
+            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
             const legendUrlObject = {
               loading: true,
               url: legendUrl,
@@ -160,6 +160,9 @@ export default {
       } else changeLayersLegend = this.layers;
       changeLayersLegend.length && this.getLegendSrc(changeLayersLegend);
     });
+    CatalogEventHub.$on('layer-change-categories', layer => {
+      this.getLegendSrc(this.layers);
+    })
   },
   async mounted() {
     await this.$nextTick();

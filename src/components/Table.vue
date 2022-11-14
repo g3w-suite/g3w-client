@@ -23,8 +23,7 @@
       </thead>
       <table-body :headers="state.headers" :filter=state.tools.filter :features="state.features" :addRemoveSelectedFeature="addRemoveSelectedFeature" :zoomAndHighLightFeature="zoomAndHighLightFeature"></table-body>
     </table>
-    <div id="noheaders" v-t="'dataTable.no_data'" v-else>
-    </div>
+    <div id="noheaders" v-t="'dataTable.no_data'" v-else></div>
   </div>
 </template>
 
@@ -188,36 +187,36 @@ export default {
     };
     if (this.state.pagination) {
       //pagination
-      dataTable = $('#open_attribute_table table').DataTable({
-        ...commonDataTableOptions,
-        "columns": this.state.headers,
-        "ajax": debounce((data, callback) => {
-          //remove listeners
-          const trDomeElements = $('#open_attribute_table table tr');
-          trDomeElements.each(element => {
-            $(element).off('click');
-            $(element).off('mouseover');
-          });
-          this.$options.service.getData(data)
-            .then(async serverData => {
-              callback(serverData);
-              await this.$nextTick();
-              this.createdContentBody();
-              this.isMobile() && hideElements();
-            })
-            .catch(error => {
-              console.log(error)
-            })
-        }, 800),
-        "serverSide": true,
-        "deferLoading": this.state.allfeatures
-      });
+      dataTable = $(this.$refs.attribute_table).DataTable({
+          ...commonDataTableOptions,
+          "columns": this.state.headers,
+          "ajax": debounce((data, callback) => {
+            //remove listeners
+            const trDomeElements = $('#open_attribute_table table tr');
+            trDomeElements.each(element => {
+              $(element).off('click');
+              $(element).off('mouseover');
+            });
+            this.$options.service.getData(data)
+              .then(async serverData => {
+                callback(serverData);
+                await this.$nextTick();
+                this.createdContentBody();
+                this.isMobile() && hideElements();
+              })
+              .catch(error => {
+                console.log(error)
+              })
+          }, 800),
+          "serverSide": true,
+          "deferLoading": this.state.allfeatures
+        });
       this.$options.service.on('ajax-reload', dataTable.ajax.reload);
       this.changeColumn = debounce(async (event, index) =>{
         dataTable.columns(index).search(event.target.value.trim()).draw();
       });
     } else { // no pagination all data
-      dataTable = $('#open_attribute_table table').DataTable({
+      dataTable = $(this.$refs.attribute_table).DataTable({
         ...commonDataTableOptions,
         searchDelay: 600
       });
@@ -236,6 +235,7 @@ export default {
     }
 
     this.isMobile() && hideElements();
+
     const G3WTableToolbarClass = Vue.extend(G3wTableToolbar);
     const G3WTableToolbarInstance = new G3WTableToolbarClass({
       propsData: {
@@ -247,7 +247,9 @@ export default {
         getDataFromBBOX: this.getDataFromBBOX
       }
     });
+
     $('#g3w-table-toolbar').html(G3WTableToolbarInstance.$mount().$el);
+
     this.$options.service.on('redraw', data =>{
       dataTable.clear();
       dataTable.draw(false);

@@ -4,9 +4,6 @@
 
 <template>
   <baseinput :state="state">
-    <div style="position:relative; width: 100%" slot="loading" v-if="loadingState === 'loading'">
-      <bar-loader loading="true"></bar-loader>
-    </div>
     <span slot="label-action" data-placement="top" v-t-tooltip="'sdk.form.inputs.tooltips.picklayer'" v-disabled="disabled"
       @click="pickLayerValue" v-if="showPickLayer" style="cursor: pointer; position:relative; top: 2px; font-size: 1.2em"
       :class="g3wtemplate.font['crosshairs']" class="skin-color">
@@ -47,9 +44,7 @@ export default {
     select2NullValue(){
       return this.showNullOption && G3W_SELECT2_NULL_VALUE;
     },
-    disabled(){
-      return !this.editable || this.loadingState === 'loading' || this.loadingState === 'error';
-    }
+
   },
   watch: {
     async 'state.input.options.values'(values) {

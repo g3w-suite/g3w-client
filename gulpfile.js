@@ -20,7 +20,6 @@ const source      = require('vinyl-source-stream');
 // Node.js
 const del         = require('del');
 const fs          = require('fs');
-const md5         = require('md5');
 const path        = require('path');
 
 ///////////////////////////////////////////////////////
@@ -46,26 +45,6 @@ const g3w         = require('./config');
 // TODO: make use of "process.env" instead of setting local variables
 let production = false;
 
-// used to check if changes are done on these files without upload new file with no changes
-const hashtable = {
-  vendor: {
-    js: {
-      hash: null,
-    },
-    css: {
-      hash: null
-    }
-  },
-  app: {
-    js: {
-      hash: null
-    },
-    css: {
-      hash: null
-    }
-  }
-};
-
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
 
@@ -80,30 +59,6 @@ gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true })
 gulp.task('clean:vendor', () => del([`${g3w.clientFolder}/js/vendor.node_modules.min.js`], {force: true}));
 gulp.task('clean:app',    () => del([`${g3w.clientFolder}/js/app.js`, `${g3w.clientFolder}/css/app.css`], { force: true }));
 gulp.task('clean:admin',  () => del([`${g3w.admin_static_folder}/client/js/*`, `${g3w.admin_static_folder}/client/css/*`, `${g3w.admin_templates_folder}/client/index.html`], { force: true }));
-
-/**
- * Build minified hashed versions of js and css files in order to avoid server cache
- * Need to create an async function and not asy a async function task
- */
-
-gulp.task('md5hash', function() {
-  return new Promise(async resolve => {
-    const files = {
-      js: ['app', 'vendor'],
-      css: ['app', 'vendor']
-    };
-    // generate md5 hash
-    for (let type of Object.keys(files)) {
-      for (let name of files[type]) {
-        const originalname = `${g3w.clientFolder}/${type}/${name}.min.${type}`;
-        hashtable[name][type].hash = md5(await fs.promises.readFile(originalname));
-        fs.renameSync(originalname, `${g3w.clientFolder}/${type}/${name}.${hashtable[name][type].hash}.min.${type}`)
-      }
-    }
-    resolve();
-  });
-});
-
 
 gulp.task('browserify:vendor', function() {
   return browserify(
@@ -205,9 +160,9 @@ gulp.task('browserify:app', function() {
 
 gulp.task('fonts', function () {
   return gulp.src([
-      `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
-      '!./src/libs/**/node_modules/**/',
-      `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`
+    `${g3w.assetsFolder}/fonts/**/*.{eot,ttf,woff,woff2}`,
+    `${g3w.pluginsFolder}/**/*.{eot,ttf,woff,woff2}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`,
     ])
     .pipe(flatten())
     .pipe(gulp.dest(`${g3w.clientFolder}/fonts/`))
@@ -215,9 +170,9 @@ gulp.task('fonts', function () {
 
 gulp.task('images', function () {
   return gulp.src([
-      `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
-      '!./src/**/node_modules/**/',
-      `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`
+    `${g3w.assetsFolder}/images/**/*.{png,jpg,gif,svg}`,
+    `${g3w.pluginsFolder}/**/*.{png,jpg,gif,svg}`,
+    `!${g3w.pluginsFolder}/**/node_modules/**`
     ])
     .pipe(flatten())
     .pipe(gulp.dest(g3w.clientFolder + '/images/'))
@@ -297,10 +252,6 @@ gulp.task('html:dev', ['build_external_assets', 'assets'], function() {
  */
 gulp.task('html:prod', function() {
   return gulp.src('./src/index.prod.html')
-    .pipe(replace('{VENDOR_CSS}', 'vendor.' + hashtable.vendor.css.hash + '.min.css'))
-    .pipe(replace('{APP_CSS}',       'app.' + hashtable.app.css.hash    + '.min.css'))
-    .pipe(replace('{VENDOR_JS}',  'vendor.' + hashtable.vendor.js.hash  + '.min.js'))
-    .pipe(replace('{APP_JS}',        'app.' + hashtable.app.js.hash     + '.min.js'))
     .pipe(rename({ basename: 'index', extname: '.html' }))
     .pipe(gulp.dest(g3w.clientFolder));
 });
@@ -379,7 +330,7 @@ gulp.task('watch', function(done) {
  * 5. write django g3w-admin template subtitude suffix .min with current version
  * 6. Remove app.js and app.css from g3w-admin client folder
  */
-gulp.task('dist', done => runSequence('clean:dist', 'production', 'browserify:app', 'browserify:vendor', 'html:dev', 'concatenate:vendor', 'clean:vendor', 'md5hash', 'html:prod', 'clean:app', done));
+gulp.task('dist', done => runSequence('clean:dist', 'production', 'browserify:app', 'browserify:vendor', 'html:dev', 'concatenate:vendor', 'clean:vendor', 'html:prod', 'clean:app', done));
 
 /**
  * Copy all plugins to g3w-admin's plugin folder
@@ -455,18 +406,20 @@ gulp.task('g3w-admin', done => runSequence('dist', 'clean:admin', 'g3w-admin:sta
 /**
  * Run test once and exit
  */
-gulp.task('test', async (done) => {
-  const testPath = `${__dirname}${g3w.test.path}`;
-  const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
-  for (let i = 0; i < testGroupFolders.length; i++) {
-    await new Promise(resolve => {
-      new karma.Server({
-        configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
-        singleRun: true
-      },() => { resolve() }).start();
-    });
-  }
-  done();
+gulp.task('test', function() {
+  return new Promise(async done => {
+    const testPath = `${__dirname}${g3w.test.path}`;
+    const testGroupFolders = fs.readdirSync(testPath).filter(file => file !== 'group_template' && fs.statSync(testPath + '/' +file).isDirectory());
+    for (let i = 0; i < testGroupFolders.length; i++) {
+      await new Promise(resolve => {
+        new karma.Server({
+          configFile: `${testPath}${testGroupFolders[i]}/karma.config.js`,
+          singleRun: true
+        },() => { resolve() }).start();
+      });
+    }
+    done();
+  });
 });
 
 /**
@@ -497,7 +450,7 @@ gulp.task('clean',                               ['clean:dist']);
 gulp.task('clean_vendor_node_modules_min',       ['clean:vendor']);
 gulp.task('cleanup',                             ['clean:app']);
 gulp.task('g3w-admin-client:clear',              ['clean:admin']);
-gulp.task('sethasvalues',                        ['md5hash']);
+gulp.task('sethasvalues',                        []);
 gulp.task('concatenate_node_modules_vendor_min', ['concatenate:vendor']);
 gulp.task('browserify',                          ['browserify:app']);
 gulp.task('add_external_resources_to_main_html', ['build_external_assets']);
