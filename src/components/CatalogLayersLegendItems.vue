@@ -160,6 +160,9 @@ export default {
       } else changeLayersLegend = this.layers;
       changeLayersLegend.length && this.getLegendSrc(changeLayersLegend);
     });
+    CatalogEventHub.$on('layer-change-categories', layer => {
+      this.getLegendSrc(this.layers);
+    })
   },
   async mounted() {
     await this.$nextTick();

@@ -5,13 +5,11 @@ const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
-const StreetViewComponent = function(options) {
+const StreetViewComponent = function(options={}) {
   base(this);
-  options = options || {};
-  const service = options.service;
-  this.setService(service);
+  const {keyError} = options;
   const internalComponent = new InternalComponent({
-    service: service
+    keyError
   });
   this.setInternalComponent(internalComponent);
   this.unmount = function() {

@@ -1,5 +1,6 @@
 import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
-const {base, inherit, XHR} = require('core/utils//utils');
+import ApplicationState from 'core/applicationstate';
+const {base, inherit, XHR} = require('core/utils/utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
@@ -166,6 +167,17 @@ proto._processLayers = function() {
   traverse(this.state.layerstree);
   const ApplicationService = require('core/applicationservice');
   const baseLayerId = ApplicationService.getBaseLayerId();
+
+  /**
+   * Filter base layers bing in case of no bing vendor key is provide
+   */
+
+  this.state.baselayers = this.state.baselayers.filter(baselayer => {
+    return baselayer.servertype === 'Bing' ? ApplicationState.keys.vendorkeys.bing : true
+  });
+
+  /*******************************************************/
+
   for (let i=0; i < this.state.baselayers.length; i++) {
     const baseLayerConfig = this.state.baselayers[i];
     const baseLayerVisibleId = baseLayerId !== null ? baseLayerId : this.state.initbaselayer;
