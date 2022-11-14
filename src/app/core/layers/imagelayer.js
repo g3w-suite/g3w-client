@@ -201,13 +201,14 @@ proto.getIconUrlFromLegend = function() {
   })
 };
 
-proto.getLegendUrl = function(params={}) {
+proto.getLegendUrl = function(params={}, options={}) {
   this.legendUrl = LegendService.get({
     layer: this,
     params: {
       ...params,
       ...this.customParams
-    }
+    },
+    options
   });
   return this.legendUrl;
 };

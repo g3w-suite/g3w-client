@@ -1864,6 +1864,33 @@ const geoutils = {
     }
     return [x, y];
   },
+  get_LEGEND_ON_LEGEND_OFF_Params(layer){
+    let LEGEND_ON, LEGEND_OFF;
+    if (layer.getCategories()) {
+      /**
+       * checked: current status
+       * _checked: original status
+       * handle only difference (diff) from original checked status and current chenge by toc categories
+       */
+      layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
+        if (checked !== _checked) {
+          if (checked) {
+            if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
+            else LEGEND_ON = `${LEGEND_ON},`;
+            LEGEND_ON = `${LEGEND_ON}${ruleKey}`
+          } else {
+            if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
+            else  LEGEND_OFF = `${LEGEND_OFF},`;
+            LEGEND_OFF = `${LEGEND_OFF}${ruleKey}`;
+          }
+        }
+      });
+    }
+    return {
+      LEGEND_ON,
+      LEGEND_OFF
+    }
+  },
 
   /**
    * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)

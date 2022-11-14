@@ -28,7 +28,8 @@ function LayerFactory() {
               Layer.SourceTypes.WFS,
               Layer.SourceTypes.CSV,
               Layer.SourceTypes.ORACLE,
-              Layer.SourceTypes.OGR
+              Layer.SourceTypes.OGR,
+              Layer.SourceTypes.MDAL,
             ].find(sourcetype => sourcetype === config.source.type)) {
               if (config.geometrytype && config.geometrytype === 'NoGeometry') LayerClass = TableLayer;
               else LayerClass = ImageLayer;
@@ -40,6 +41,7 @@ function LayerFactory() {
             Layer.SourceTypes.GDAL,
             Layer.SourceTypes.VECTORTILE,
             Layer.SourceTypes["VECTOR-TILE"],
+            Layer.SourceTypes.MDAL,
           ].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
         }
         break;

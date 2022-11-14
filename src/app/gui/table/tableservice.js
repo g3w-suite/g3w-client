@@ -80,9 +80,7 @@ const TableService = function(options = {}) {
     let data = [];
     // emit redraw if in_bbox filter or not select all
     const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-    if (!this.state.pagination) {
-      data = emitRedraw ? await this.reloadData() : [];
-    }
+    if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
     emitRedraw && this.emit('redraw', data);
   };
   this.layer.on('filtertokenchange', this.filterChangeHandler);
@@ -148,6 +146,13 @@ proto.addRemoveSelectedFeature = function(feature){
   }
 };
 
+proto.createFeatureForSelection = function(feature){
+  return {
+    attributes: feature.attributes ? feature.attributes : feature.properties,
+    geometry: this._returnGeometry(feature)
+  }
+};
+
 proto.getAllFeatures = function(params){
   GUI.setLoadingContent(true);
   return new Promise((resolve, reject) =>{
@@ -161,7 +166,7 @@ proto.getAllFeatures = function(params){
               if (LoadedFeaturesId.indexOf(feature.id) === -1) {
                 feature.geometry && this.layer.addOlSelectionFeature({
                   id: feature.id,
-                  geometry: this._returnGeometry(feature)
+                  feature: this.createFeatureForSelection(feature)
                 });
               }
             });
@@ -254,7 +259,7 @@ proto.selectAllFeatures = async function(){
         features.forEach(feature =>{
           !this.getAll && this.geolayer && feature.geometry && this.layer.addOlSelectionFeature({
             id: feature.id,
-            geometry: this._returnGeometry(feature)
+            feature: this.createFeatureForSelection(feature)
           });
           this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
         })
@@ -397,7 +402,7 @@ proto.addFeature = function(feature) {
   if (this.geolayer && feature.geometry) {
     this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
       id: tableFeature.id,
-      geometry: this._returnGeometry(feature)
+      feature: this.createFeatureForSelection(feature)
     });
     tableFeature.geometry = feature.geometry;
   }

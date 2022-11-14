@@ -1277,7 +1277,7 @@ proto.setMapControlsContainer = function(mapControlDom) {
 
 proto._updateMapControlsLayout = function({width, height}={}) {
   // case mobile open keyboard
-  (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 100);
+  (width == 0 || height == 0) ? this.state.mapcontrolDOM.css('z-index', 0) : this.state.mapcontrolDOM.css('z-index', 1);
   // update only when all control are ready
   if (this.state.mapcontrolready && this.state.mapControl.update) {
     const changedAndMoreSpace = {
@@ -1520,8 +1520,9 @@ proto._setupCustomMapParamsToLegendUrl = function(bool=true){
         bbox
       })
     });
+    this.emit('change-map-legend-params')
   }
-  this.emit('change-map-legend-params')
+
 };
 
 proto.addMapLayer = function(mapLayer) {
@@ -1671,7 +1672,7 @@ proto._setupViewer = function(width, height) {
     const basemap =  layer.get('basemap');
     const position = layer.get('position');
     let zindex = basemap && 0;
-    if (position && position === 'bottom') zindex =  1;
+    if (position && position === 'bottom') zindex = 0;
     this.setLayerZIndex({
       layer,
       zindex
@@ -1918,7 +1919,7 @@ proto.getOverviewMapLayers = function(project) {
  * @param options
  */
 proto.updateMapLayer = function(mapLayer, options={force:false}, {showSpinner=true} = {}) {
-  // if force add g3w_time parametter to force request of map layer from server
+  // if force add g3w_time parameter to force request of map layer from server
   if (options.force) options.g3w_time = Date.now();
   if (showSpinner !== mapLayer.showSpinnerWhenLoading) {
     mapLayer.showSpinnerWhenLoading = showSpinner;
@@ -2503,7 +2504,7 @@ proto.changeLayerMapPosition = function({id, position=MAP_SETTINGS.LAYER_POSITIO
       layer.setZIndex(this.layersCount);
       break;
     case 'bottom':
-      layer.setZIndex(1);
+      layer.setZIndex(0);
       break
   }
   this.emit('change-layer-position-map', {id, position});

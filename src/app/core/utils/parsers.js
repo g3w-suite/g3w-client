@@ -235,7 +235,7 @@ const contenttypes = {
       const featureId = feature.getId();
       const g3w_fid = sanitizeFidFeature(featureId);
       // in case of wms getfeature without filter return string contain layerName or layerid
-      const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
+      const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
       if (index !== -1) {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
         const properties = feature.getProperties();
