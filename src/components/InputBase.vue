@@ -3,7 +3,7 @@
 <!-- gui/inputs/baseinput/baseinput.js@v3.4 -->
 
 <template>
-  <div class="form-group">
+  <div class="form-group" v-if="state.visible">
     <slot name="label">
       <label :for="state.name" class="col-sm-12 control-label">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
@@ -12,7 +12,11 @@
       </label>
     </slot>
     <div class="col-sm-12">
-      <slot name="loading"></slot>
+      <slot name="loading">
+        <div style="position:relative; width: 100%" slot="loading" v-if="loadingState === 'loading'">
+          <bar-loader loading="true"></bar-loader>
+        </div>
+      </slot>
       <slot name="body"></slot>
       <slot name="message">
         <p v-if="notvalid" class="error-input-message" style="margin: 0" v-html="state.validate.message"></p>
@@ -37,6 +41,7 @@
 <style scoped>
   .control-label {
     text-align: left !important;
-    margin-bottom: 10px;
+    padding-top: 0 !important;
+    margin-bottom: 3px;
   }
 </style>

@@ -1148,7 +1148,8 @@ proto._parseAttributes = function(layerAttributes, feature, sourceType) {
       return {
         name: featureAttributesName,
         label: featureAttributesName,
-        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1)
+        show: featureAttributesName !== G3W_FID && (sourceType === undefined || showSourcesTypes.indexOf(sourceType) !== -1),
+        type: 'varchar'
       }
     })
   }
@@ -1562,7 +1563,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
     if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
       layer.addOlSelectionFeature({
         id: fid,
-        geometry: feature.geometry
+        feature
       })
     }
   }
