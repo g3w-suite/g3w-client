@@ -5,7 +5,7 @@ const ProjectsRegistry = require('core/project/projectsregistry');
 const {uniqueId} = require('core/utils/utils');
 const DataRouteService = require('core/data/routerservice');
 const GUI = require('gui/gui');
- function Service(options={}){
+function Service(options={}){
   const {wmsurls=[]} = options;
   this.projectId = ProjectsRegistry.getCurrentProject().getId(); // get current project id used to store data or get data to current project
   this.panel;

@@ -315,6 +315,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     const PrintComponent = require('gui/print/vue/print');
     const MetadataComponent = require('gui/metadata/vue/metadata');
     const ToolsComponent = require('gui/tools/vue/tools');
+    const QTimeseriesComponent = require('gui/qtimeseries/vue/qtimeseries');
     const WMSComponent = require('gui/wms/vue/wms');
     const MapComponent = require('gui/map/vue/map');
     const QueryResultsComponent = require('gui/queryresults/vue/queryresults');
@@ -372,6 +373,13 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: true,
               icon: G3WTemplate.getFontClass('tools'),
+              mobile: true
+            }),
+            new QTimeseriesComponent({
+              id: 'qtimeseries',
+              open: false,
+              collapsible: true,
+              icon: G3WTemplate.getFontClass('time'),
               mobile: true
             }),
             new WMSComponent({

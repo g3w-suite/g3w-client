@@ -492,6 +492,30 @@ export default {
       no_data: "Inga uppgifter",
       nodatafilterd: "Inga motsvarande poster hittades",
       infoFiltered: "(filtered from _MAX_ total records)"
+    },
+    qtimeseries: {
+      title: "Time Series",
+      current_date: 'Current Date',
+      steps: 'Steps',
+      step: 'Step',
+      startdate:"Start Date",
+      enddate: "End Date",
+      stepsunit: {
+        label: "Step Unit",
+        centuries: 'Centuries',
+        decades: 'Decades',
+        years: 'Years',
+        months: 'Months',
+        weeks: 'Weeks',
+        days: 'Days',
+        hours: 'Hours',
+        minutes: 'Minutes',
+        seconds: 'Seconds',
+        milliseconds: "Milliseconds"
+      },
+      tooltips: {
+        showcharts: "Show Charts"
+      }
     }
-  },
+  }
 };
