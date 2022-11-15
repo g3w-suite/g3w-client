@@ -162,7 +162,7 @@ function QueryResultsService() {
     /**
      *  setter hook to relation table
      */
-    editFeature({layerId, featureId}={}){},
+    editFeature({layer, feature}={}){},
     /**
      * Method to listen open/close feature info data content.
      * @param open
@@ -617,15 +617,10 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
         class: GUI.getFontClass('pencil'),
         hint: 'Editing',
         cbk: (layer, feature) => {
-          const layerId = layer.id;
-          const featureId = feature.attributes[G3W_FID];
-          feature.geometry && this.mapService.zoomToGeometry(feature.geometry);
-          setTimeout(()=>{
-            this.editFeature({
-              layerId,
-              featureId
-            });
-          }, 300)
+          this.editFeature({
+            layer,
+            feature
+          })
         }
       });
     });
