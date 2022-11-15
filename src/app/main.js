@@ -231,7 +231,8 @@ Vue.use({
         'fast-backward': "fas fa-fast-backward",
         'step-forward': "fas fa-step-forward",
         'fast-forward': "fas fa-fast-forward",
-        crop: "fas fa-crop-alt"
+        crop: "fas fa-crop-alt",
+        description: "fas fa-receipt"
       },
       // TODO: check if deprecated
       get() {},
