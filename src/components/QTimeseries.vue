@@ -83,6 +83,8 @@
         step: 1,
         format: 'YYYY-MM-DD HH:mm:ss',
         step_units: QTIMESERIES.STEP_UNITS,
+        current_step_unit: layers.length ? layers[0].options.stepunit : null,
+        current_step_unit_label: layers.length ? STEP_UNITS.find(step_unit => step_unit.moment === layers[0].options.stepunit).label : null,
         change_step_unit: false,
         changed_layer: false,
         currentLayerDateTimeIndex: null,
@@ -107,12 +109,6 @@
       },
       max_date() {
         return this.layer && this.layer.end_date;
-      },
-      current_step_unit() {
-        return this.layer && this.layer.options.stepunit
-      },
-      current_step_unit_label() {
-        return this.layer && QTIMESERIES.STEP_UNITS.find(step_unit => step_unit.moment === this.layer.options.stepunit).label
       },
       formDisabled(){
         return this.status !== 0 || this.showCharts;
