@@ -380,6 +380,7 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: true,
               icon: G3WTemplate.getFontClass('time'),
+              iconColor: '#25bce9',
               mobile: true
             }),
             new WMSComponent({

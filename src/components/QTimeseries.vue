@@ -1,7 +1,7 @@
-<template>
+<template >
   <ul id="g3w_raster_timeseries_content" class="treeview-menu" style="position:relative; padding: 10px;color:#FFFFFF">
     <li>
-      <div v-disabled="status !== 0" v-if="layer.type === 'raster'" v-t-tooltip.create="'qtimeseries.tooltips.showcharts'" data-placement="top" data-toggle="tooltip" style="padding: 5px; border:1px solid" class="skin-border skin-tooltip-top">
+      <div v-disabled="status !== 0" v-if="chartLayer" v-t-tooltip.create="'qtimeseries.tooltips.showcharts'" data-placement="top" data-toggle="tooltip" style="padding: 5px; border:1px solid" class="skin-border skin-tooltip-top">
         <button  class="sidebar-button skin-button btn btn-block" :class="{toggled: showCharts}" style="margin: 2px;" @click.stop="showRasterLayerCharts">
           <span :class="g3wtemplate.getFontClass('chart-line')"></span>
         </button>
@@ -12,7 +12,7 @@
           <select class="form-control" id="timeseriesrasterlayer" v-select2="'current_layer_index'" :search="false">
             <option v-for="(layer, index) in layers" :value="index" :key="layer.id">{{layer.name}}</option>
           </select>
-          <div v-if="!changed_layer">
+          <div v-if="layer && !changed_layer">
             <datetime :label="'qtimeseries.startdate'" :format="format" :enabledDates="layer.options.dates" :minDate="min_date" :maxDate="layer.end_date" :type="'datetime'" :value="layer.start_date" @change="changeStartDateTime"></datetime>
             <datetime :label="'qtimeseries.enddate'" :format="format" :enabledDates="layer.options.dates" :minDate="layer.start_date" :maxDate="max_date" :type="'datetime'" :value="layer.end_date" @change="changeEndDateTime"></datetime>
             <label  v-if="!change_step_unit"  v-t:pre="'qtimeseries.step'">[<span v-t="`qtimeseries.stepsunit.${current_step_unit_label}`"></span> ]</label>
@@ -54,13 +54,25 @@
 </template>
 
 <script>
-  import Service from 'services/qtimeseries';
   import {QTIMESERIES} from "constant";
+  const {toRawType, getRandomColor} = require('core/utils/utils');
+  const GUI = require('gui/gui');
+  const ProjectsRegistry = require('core/project/projectsregistry');
+  const ComponentsFactory = require('gui/component/componentsfactory');
+  const DataRouterService = require('core/data/routerservice');
+  const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+  const ChartsFactory = require('gui/charts/chartsfactory');
+  const {WMS_PARAMETER, STEP_UNITS} = QTIMESERIES;
+  const project =ProjectsRegistry.getCurrentProject();
+
+  const UPDATE_MAPLAYER_OPTIONS = {
+    showSpinner: false
+  };
 
   export default {
     name: 'Qtimeseries',
     data(){
-      const layers = Service.getLayers();
+      const layers = this.$options.layers;
       return {
         layers,
         range: {
@@ -70,12 +82,8 @@
         },
         step: 1,
         format: 'YYYY-MM-DD HH:mm:ss',
-        min_date: layers[0].start_date,
-        max_date: layers[0].end_date,
         step_units: QTIMESERIES.STEP_UNITS,
-        current_step_unit: layers[0].options.stepunit,
         change_step_unit: false,
-        current_step_unit_label: QTIMESERIES.STEP_UNITS.find(step_unit => step_unit.moment === layers[0].options.stepunit).label,
         changed_layer: false,
         currentLayerDateTimeIndex: null,
         showCharts: false,
@@ -84,20 +92,39 @@
       }
     },
     computed: {
+      layer(){
+        if (this.layers.length) {
+          this.changed_layer = true;
+          setTimeout(()=> this.changed_layer = false);
+          return this.layers[this.current_layer_index];
+        }
+      },
+      chartLayer(){
+        return this.layer && this.layer.type === 'raster';
+      },
+      min_date() {
+        return this.layer && this.layer.start_date;
+      },
+      max_date() {
+        return this.layer && this.layer.end_date;
+      },
+      current_step_unit() {
+        return this.layer && this.layer.options.stepunit
+      },
+      current_step_unit_label() {
+        return this.layer && QTIMESERIES.STEP_UNITS.find(step_unit => step_unit.moment === this.layer.options.stepunit).label
+      },
       formDisabled(){
         return this.status !== 0 || this.showCharts;
-      },
-      layer(){
-        this.changed_layer = true;
-        setTimeout(()=> this.changed_layer = false);
-        return this.layers[this.current_layer_index];
       },
       disablerun(){
         return this.status === 0 && (!this.layer.start_date || !this.layer.end_date) ;
       },
       validRangeDates(){
-        const {multiplier, step_unit} = this.getMultiplierAndStepUnit();
-        return this.validateStartDateEndDate() && moment(this.layer.end_date).diff(moment(this.layer.start_date), step_unit) / multiplier >= this.getStepValue();
+        if (this.layer) {
+          const {multiplier, step_unit} = this.getMultiplierAndStepUnit();
+          return this.validateStartDateEndDate() && moment(this.layer.end_date).diff(moment(this.layer.start_date), step_unit) / multiplier >= this.getStepValue();
+        } else return false;
       },
     },
     methods:{
@@ -136,31 +163,84 @@
          Method to extract step unit and eventuallY multiply factor (10, 100) in case es: decade e centrury for moment purpose
        */
       getMultiplierAndStepUnit(){
-        return Service.getMultiplierAndStepUnit(this.layer);
+        return this.getMultiplierAndStepUnit();
       },
       /**
        * Reset time layer to original map layer no filter by time or band
        * @param layer
        * @returns {Promise<void>}
        */
-      async resetTimeLayer(layer=this.layer){
+      async resetTimeLayer(){
         this.pause();
-        await Service.resetTimeLayer(layer);
-        layer.timed = false;
+        const mapService = GUI.getService('map');
+        const promise = new Promise((resolve, reject) => {
+          if (this.layer.timed) {
+            const mapLayerToUpdate = mapService.getMapLayerByLayerId(this.layer.id);
+            mapLayerToUpdate.once('loadend',  () => {
+              mapService.showMapInfo();
+              resolve();
+            });
+            mapService.updateMapLayer(mapLayerToUpdate, {
+              force: true,
+              [WMS_PARAMETER]: undefined
+            });
+          } else resolve();
+        });
+        await promise;
+        this.layer.timed = false;
       },
       /**
        * Method to call server request image
        * @returns {Promise<void>}
        */
       async getTimeLayer() {
-        await this.$nextTick();
-        try {
-          await Service.getTimeLayer({
-            layer: this.layer,
-            step: this.step,
-            date: this.currentLayerDateTimeIndex
+        console.log('qui')
+        let findDate;
+        let endDate;
+        const mapService = GUI.getService('map');
+        const projectLayer = project.getLayerById(this.layer.id);
+        const promise = new Promise((resolve, reject) =>{
+          projectLayer.setChecked(true);
+          const mapLayerToUpdate = mapService.getMapLayerByLayerId(this.layer.id);
+          mapLayerToUpdate.once('loadend', ()=> {
+            const info =  endDate ? `${findDate} - ${endDate}` : findDate;
+            mapService.showMapInfo({
+              info,
+              style: {
+                fontSize: '1.2em',
+                color: 'grey',
+                border: '1px solid grey',
+                padding: '10px'
+              }
+            });
+            resolve();
           });
-        } catch(err){}
+          mapLayerToUpdate.once('loaderror', () => {
+            const info =  endDate ? `${findDate} - ${endDate}` : findDate;
+            mapService.showMapInfo({
+              info,
+              style: {
+                fontSize: '1.2em',
+                color: 'red',
+                border: '1px solid red',
+                padding: '10px'
+              }
+            });
+            reject();
+          });
+          const {multiplier, step_unit} = this.getMultiplierAndStepUnit();
+          findDate = moment(this.currentLayerDateTimeIndex).format();
+          endDate = moment(findDate).add(this.step * multiplier, step_unit).format();
+          const isAfter = moment(endDate).isAfter(this.layer.end_date);
+          if (isAfter) endDate = moment(this.layer.end_date).format();
+          const wmsParam = `${findDate}/${endDate}`;
+          mapService.updateMapLayer(mapLayerToUpdate, {
+            force: true,
+            [WMS_PARAMETER]: wmsParam
+          }, UPDATE_MAPLAYER_OPTIONS);
+        });
+
+        await promise;
         this.layer.timed = true;
       },
       /**
@@ -203,7 +283,7 @@
        */
       validateStartDateEndDate(){
         let arevalidstartenddate = false;
-        if (this.layer.start_date && this.layer.end_date){
+        if (this.layer && this.layer.start_date && this.layer.end_date){
           arevalidstartenddate = moment(this.layer.start_date).isValid() &&
             moment(this.layer.end_date).isValid();
         }
@@ -305,15 +385,142 @@
       showRasterLayerCharts(){
         this.showCharts = !this.showCharts;
         this.showCharts ? this.resetTimeLayer() : this.initLayerTimeseries();
-        Service.chartsInteraction({
+        this.chartsInteraction({
           active: this.showCharts,
           layer: this.layer
         })
+      },
+      chartsInteraction({active=false}={}){
+        active ? this.activeChartInteraction(this.layer) : this.deactiveChartInteraction()
+      },
+      getMultiplierAndStepUnit(){
+        const multiplier_step_unit = this.layer.options.stepunit.split(':');
+        return {
+          multiplier: multiplier_step_unit.length > 1 ? 1* multiplier_step_unit[0] : 1,
+          step_unit: multiplier_step_unit.length > 1 ? multiplier_step_unit[1] : this.layer.options.stepunit
+        }
+      },
+      deactiveChartInteraction(){
+        const mapService = GUI.getService('map');
+        if (this.getChartConfig.interaction) {
+          mapService.disableClickMapControls(false);
+          this.getChartConfig.layer.getSource().clear();
+          mapService.getMap().removeLayer(this.getChartConfig.layer);
+          this.getChartConfig.interaction.setActive(false);
+          ol.Observable.unByKey(this.getChartConfig.keyListener);
+          mapService.removeInteraction(this.getChartConfig.interaction);
+          this.getChartConfig.interaction = null;
+          this.getChartConfig.keyListener = null;
+          this.getChartConfig.chart = null;
+          GUI.closeContent();
+        }
+      },
+      activeChartInteraction(){
+        const mapService = GUI.getService('map');
+        mapService.disableClickMapControls(true);
+        const interaction = new PickCoordinatesInteraction();
+        this.getChartConfig.interaction = interaction;
+        mapService.addInteraction(interaction);
+        mapService.getMap().addLayer(this.getChartConfig.layer);
+        interaction.setActive(true);
+        this.getChartConfig.keyListener = interaction.on('picked', async evt =>{
+          const {coordinate} = evt;
+          const color = getRandomColor();
+          const style = new ol.style.Style({
+            image: new ol.style.RegularShape({
+              fill: new ol.style.Fill({
+                color
+              }),
+              stroke: new ol.style.Stroke({
+                color,
+                width: 3
+              }),
+              points: 4,
+              radius: 10,
+              radius2: 0,
+              angle: Math.PI / 4,
+            })
+          });
+          const feature = new ol.Feature(new ol.geom.Point(coordinate));
+          feature.setStyle(style);
+          this.getChartConfig.layer.getSource().addFeature(feature);
+          const {data=[]} = await DataRouterService.getData('query:coordinates', {
+            inputs: {
+              layerIds: [layer.id],
+              coordinates: coordinate,
+              feature_count: 1
+            },
+            outputs: false
+          });
+          const values = [];
+          Object.entries(data[0].features[0].getProperties()).forEach(([attribute, value])=>{
+            if (attribute !== 'geometry' ||  attribute !== 'g3w_fid'){
+              values.push(value);
+            }
+          });
+          if (this.getChartConfig.chart){
+            this.getChartConfig.chart.load({
+              columns: [
+                [coordinate.toString(), ...values]
+              ],
+              colors: {
+                [coordinate.toString()]: color
+              }
+            })
+          } else {
+            const content = ComponentsFactory.build({
+              vueComponentObject: ChartsFactory.build({
+                type: 'c3:lineXY',
+                hooks: {
+                  created(){
+                    this.setConfig({
+                      data: {
+                        x: 'x',
+                        columns: [
+                          ['x', ...layer.options.dates],
+                          [coordinate.toString(), ...values]
+                        ],
+                        colors: {
+                          [coordinate.toString()]: color
+                        }
+                      },
+                      axis: {
+                        x: {
+                          type: 'timeseries',
+                          tick: {
+                            format: '%Y-%m-%d'
+                          }
+                        }
+                      }
+                    });
+                    this.$once('chart-ready', c3chart =>{
+                      self.getChartConfig.chart = c3chart;
+                      setTimeout(()=>{
+                        this.resize();
+                      })
+                    })
+                  }
+                }
+              })
+            });
+            GUI.showContent({
+              title: layer.name,
+              perc: 50,
+              split: 'v',
+              closable: false,
+              content
+            });
+          }
+        })
+      },
+      close(){
+        this.resetTimeLayer(this.layer);
+        this.deactiveChartInteraction();
       }
     },
     watch: {
-      current_step_unit: {
-        async handler(step_unit){
+      async current_step_unit(step_unit, old_step_unit){
+        if (typeof old_step_unit !== "undefined") {
           // set true to change
           this.change_step_unit = true;
           this.layer.options.stepunit = step_unit;
@@ -322,10 +529,9 @@
           await this.$nextTick();
           // set false to see changed translation of label
           this.change_step_unit = false;
-        },
-        immediate: false
+        }
       },
-      /**
+       /**
        * Listen change layer on selection
        * @param new_index_layer
        * @param old_index_layer
@@ -339,14 +545,6 @@
         this.initLayerTimeseries();
       },
       /**
-       * Listener of open close panel
-       * @param bool
-       */
-      'panel.open'(bool){
-        if (bool) this.initLayerTimeseries();
-        else this.resetTimeLayer()
-      },
-      /**
        * Check is range between start date and end date is valid range
        * @param bool
        */
@@ -355,8 +553,21 @@
       }
     },
     created() {
+      this.getChartConfig = {
+        interaction: null,
+        keyListener: null,
+        indexcolor: 0,
+        chart: null,
+        layer: new ol.layer.Vector({
+          source: new ol.source.Vector()
+        })
+      };
       this.intervalEventHandler = null;
-    },
-    async mounted(){},
+
+      this.$on('show', bool => {
+        if (bool) this.initLayerTimeseries();
+        else this.resetTimeLayer()
+      });
+    }
   };
 </script>

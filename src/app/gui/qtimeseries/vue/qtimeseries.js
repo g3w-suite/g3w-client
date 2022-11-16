@@ -1,19 +1,23 @@
 import * as vueComponentOptions from 'components/QTimeseries.vue';
 
-import Service from 'services/qtimeseries';
 const {base, inherit} = require('core/utils/utils');
+const ProjectsRegistry = require('core/project/projectsregistry');
 const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);
 
 function QTimeseriesComponent(options={}) {
+  const layers = ProjectsRegistry.getCurrentProject().getQtimeseriesLayers();
+  // set visible attribute based on qtimelayers
+  options.visible = layers.length > 0;
   base(this, options);
-  this.setVisible(Service.getLayers().length > 0);
   this.title = "qtimeseries.title";
-  const internalComponent = new InternalComponent({});
+  const internalComponent = new InternalComponent({
+    layers
+  });
   this.setInternalComponent(internalComponent);
   this._setOpen = function(bool=false) {
-    this.internalComponent.state.open = bool;
+    this.internalComponent.$emit('show', bool);
   }
 }
 

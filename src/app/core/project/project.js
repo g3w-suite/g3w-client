@@ -1,6 +1,11 @@
-import {QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS} from "../../constant";
+import {
+  QUERY_POINT_TOLERANCE,
+  TOC_LAYERS_INIT_STATUS,
+  TOC_THEMES_INIT_STATUS,
+  QTIMESERIES
+} from "../../constant";
 import ApplicationState from 'core/applicationstate';
-const {base, inherit, XHR} = require('core/utils/utils');
+const {base, inherit, XHR, toRawType} = require('core/utils/utils');
 const {crsToCrsObject} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
 const LayerFactory = require('core/layers/layerfactory');
@@ -454,5 +459,37 @@ proto.getUrl = function(type){
   return this.urls[type];
 };
 
+/**
+ * QTimeseries
+ *
+ */
+proto.getQtimeseriesLayers = function(){
+  const layers = [];
+  this.getConfigLayers().forEach(layerConfig => {
+    if (toRawType(layerConfig.qtimeseries) === 'Object') {
+      const {units='d', start_date=null, end_date=null} = layerConfig.qtimeseries;
+      const stepunit_and_multiplier = QTIMESERIES.STEP_UNITS.find(step_unit => step_unit.qgis === units).moment.split(':');
+      let stepunit = stepunit_and_multiplier.length > 1 ? stepunit_and_multiplier[1]: stepunit_and_multiplier[0];
+      const stepunitmultiplier = stepunit_and_multiplier.length > 1 ? 1*stepunit_and_multiplier[0] : 1;
+      const id = layerConfig.id;
+      const projectLayer = this.getLayerById(id);
+      const name = projectLayer.getName();
+      const wmsname = projectLayer.getWMSLayerName();
+      layers.push({
+        id,
+        name,
+        wmsname,
+        start_date,
+        end_date,
+        options: {
+          range_max: moment(end_date).diff(moment(start_date), stepunit) - 1,
+          stepunit,
+          stepunitmultiplier,
+        }
+      })
+    }
+  });
+  return layers;
+};
 
 module.exports = Project;
