@@ -35,8 +35,17 @@ function GUI() {
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
   this._closeUserMessageBeforeSetContent = true;
+  //property to how result has to be add or close all and show new
+  // false mean create new and close all open
+  this.push_content=false;
   this.addComponent = function(component, placeholder) {};
   this.removeComponent = function(id) {};
+  this.setPushContent = function (bool=false) {
+    this.push_content = bool;
+  };
+  this.getPushContent = function(){
+    return this.push_content;
+  };
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);
   };
