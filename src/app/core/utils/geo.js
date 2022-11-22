@@ -63,7 +63,7 @@ const Geometry = {
         // ]
         case GeometryTypes.MULTIPOLYGON:
           originalFeatureCoordinates.forEach(singlePolygon => {
-            singlePolygon[0].forEach(coordinates => coordinates.splice(2))
+            singlePolygon.forEach(coordinates => coordinates.splice(2))
           });
           feature.getGeometry().setCoordinates(originalFeatureCoordinates);
           break;
