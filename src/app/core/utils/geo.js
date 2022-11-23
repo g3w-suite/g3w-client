@@ -18,10 +18,10 @@ const Geometry = {
   /**
    * Remove Z values from geometry coordinates
    */
-   removeZValueToOLFeatureGeometry({feature, geometryType}={}){
+   removeZValueToOLFeatureGeometry({feature}={}){
     const geometry = feature.getGeometry();
     if (geometry) {
-      geometryType = geometryType || geometry.getType();
+      const geometryType = geometry.getType();
       const originalFeatureCoordinates = geometry.getCoordinates();
       switch (geometryType){
         // POINT: [x, y]
@@ -63,7 +63,7 @@ const Geometry = {
         // ]
         case GeometryTypes.MULTIPOLYGON:
           originalFeatureCoordinates.forEach(singlePolygon => {
-            singlePolygon.forEach(coordinates => coordinates.splice(2))
+            singlePolygon[0].forEach(coordinates => coordinates.splice(2))
           });
           feature.getGeometry().setCoordinates(originalFeatureCoordinates);
           break;
