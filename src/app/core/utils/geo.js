@@ -1549,13 +1549,14 @@ const geoutils = {
    * @returns {*}
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
-      if (toGeometryType){
-        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
-        const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
-        if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
-        else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
-      }
-      return geometry;
+    const fromGeometryType = geometry.getType();
+    if (toGeometryType && (fromGeometryType !== toGeometryType)){
+      const isFromGeometryMulti = Geometry.isMultiGeometry(fromGeometryType);
+      const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
+      if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
+      else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry([geometry]);
+    }
+    return geometry;
   },
 
   dissolve({features=[], index=0, clone=false}={}) {
