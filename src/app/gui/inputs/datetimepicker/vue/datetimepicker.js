@@ -32,7 +32,8 @@ const DateTimePickerInput = Vue.extend({
   async mounted() {
     await this.$nextTick();
     //add min date, max date
-    const {minDate, maxDate} = this.state.input.options.formats[0];
+    const {minDate, maxDate,  enabledDates, disabledDates, useCurrent} = this.state.input.options.formats[0];
+
     const fielddatetimeformat =  this.state.input.options.formats[0].fieldformat.replace('yyyy','YYYY').replace('dd','DD');
     this.service.setValidatorOptions({
       fielddatetimeformat: fielddatetimeformat
@@ -49,6 +50,9 @@ const DateTimePickerInput = Vue.extend({
         allowInputToggle: true,
         minDate,
         maxDate,
+        enabledDates,
+        disabledDates,
+        useCurrent,
         toolbarPlacement: 'top',
         widgetPositioning: {
           vertical: 'auto',
