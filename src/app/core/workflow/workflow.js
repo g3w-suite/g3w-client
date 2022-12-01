@@ -128,7 +128,7 @@ proto.clearMessages = function() {
 
 proto.getLastStep = function() {
   const length = this._steps.length;
-  return length ? this._steps[length] : null;
+  return length ? this._steps[length-1] : null;
 };
 
 proto.getRunningStep = function() {
@@ -204,9 +204,8 @@ proto.start = function(options={}) {
 // stop workflow during flow
 proto.stop = function() {
   this._promise = null;
-  ////console.log('Workflow stopping .... ');
   const d = $.Deferred();
-  // stop child workflow indpendent from father workflow
+  // stop child workflow
   this._stopChild()
     // in every case remove child
     .always(() => {

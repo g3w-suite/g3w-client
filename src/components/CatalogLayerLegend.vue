@@ -128,7 +128,10 @@
     },
     watch: {
       'layer.visible'(visible){
-        this.dynamic && visible && this.setLayerCategories(false);
+        /*
+        * Only when visible show categories layer. In case of dynamic legend check
+        * **/
+        visible && this.setLayerCategories(!this.dynamic);
       }
     },
     async created() {
@@ -155,8 +158,6 @@
     },
     async mounted() {
       await this.$nextTick();
-
-
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
