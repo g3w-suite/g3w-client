@@ -12,6 +12,7 @@
         </div>
         <button v-for="button in state.buttons" class="btn "
                 :class="[button.class]"
+                :update="state.update"
                 @click.stop.prevent="exec(button.cbk)"
                 v-disabled="!btnEnabled(button)" v-t="button.title">
         </button>
@@ -45,17 +46,23 @@ export default Vue.extend({
       show: true
     }
   },
+  computed: {
+    enableSave(){
+      return this.state.valid && this.state.update;
+    }
+  },
   methods: {
     exec(cbk) {
       cbk instanceof Function ? cbk(this.state.fields): (function() { return this.state.fields})();
     },
     btnEnabled(button) {
       const {enabled=true, type} = button;
-      return enabled && (type !== 'save' ||  (type === 'save' && this.isValid()));
+      return enabled && (type !== 'save' ||  (type === 'save' && this.enableSave));
     },
     isValid() {
       return this.state.valid;
-    }
+    },
+
   },
   watch: {
     'state.component'(component){

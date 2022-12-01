@@ -829,6 +829,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",
+        push: GUI.getPushContent(),
         post_title: title
       });
       return queryResultService;

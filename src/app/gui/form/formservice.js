@@ -43,7 +43,7 @@ function FormService() {
   };
   // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
+    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}, headerComponent} = options;
     this.layer = layer;
     // need to be cloned
     this.feature = feature.clone();
@@ -53,6 +53,7 @@ function FormService() {
     this.buttons = buttons;
     this.context_inputs = context_inputs;
     this.parentData = parentData;
+    this.headerComponent = headerComponent;
     this.state = {
       layerid: layer.getId(),
       loading:false,
@@ -66,6 +67,7 @@ function FormService() {
       disabled: false,
       isnew,
       valid: true, // global form validation state. True at beginning
+      update: false,
       // when input change will be update
       tovalidate: {},
       feature,
@@ -100,6 +102,13 @@ proto.changeInput = function(input){
   this.evaluateFilterExpressionFields(input);
   this.evaluateDefaultExpressionFields(input);
   this.isValid(input);
+  this.isUpdated(input);
+};
+
+proto.isUpdated = function(input){
+  this.state.update = !this.state.update
+    ? input.update
+    : !!this.state.fields.find(field => field.update);
 };
 
 /**
@@ -264,7 +273,6 @@ proto.isValid = function(input) {
   }, true);
 };
 
-
 proto.addComponents = function(components = []) {
   for (const component of components) {
     this.addComponent(component);
@@ -272,7 +280,7 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id, title, name, icon, valid, header=true} = component;
+  const {id, title, name, icon, valid, headerComponent, header=true} = component;
   if (valid !== undefined) {
     this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
@@ -283,7 +291,7 @@ proto.addComponent = function(component) {
   }
   // we can set a component that can be part of headers (tabs or not)
   if (header) {
-    this.state.headers.push({title, name, id, icon});
+    this.state.headers.push({title, name, id, icon, component:headerComponent});
     this.state.currentheaderid = this.state.currentheaderid || id;
   }
 

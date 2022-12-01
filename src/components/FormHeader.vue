@@ -4,7 +4,7 @@
 
 <template>
   <div class="g3wform_header box-header with-border">
-    <span style="display:flex;"
+    <span style="display:flex; justify-content: space-between; align-items: baseline"
       class="title"
       :style="{fontSize: isMobile() && '1em !important'}"
       :class="[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
@@ -14,6 +14,7 @@
         <i :class="header.icon"></i>
       </span>
       <span v-t:pre="header.title">{{ header.name }}</span>
+     <component :update="update" :is="header.component"></component>
     </span>
   </div>
 </template>
@@ -28,6 +29,9 @@ export default Vue.extend({
     },
     currentid: {
       type: 'String'
+    },
+    update: {
+      type: Boolean
     }
   },
   methods: {
@@ -38,6 +42,9 @@ export default Vue.extend({
     resizeForm(perc){
       this.$emit('resize-form', perc);
     }
+  },
+  mounted(){
+    console.log(this.update)
   }
 });
 </script>

@@ -8,6 +8,7 @@
     <g3wformheader ref="g3wformheader"
       :currentid="state.currentheaderid"
       :headers="state.headers"
+      :update="state.update"
       @resize-form="resizeForm"
       @clickheader="switchComponent">
     </g3wformheader>

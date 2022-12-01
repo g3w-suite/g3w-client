@@ -9,7 +9,7 @@ const WorkFlowsStack = function() {
       if (this._workflows.indexOf(workflow) === -1) return this._workflows.push(workflow) - 1;
       return this._workflows.indexOf(workflow);
     };
-  
+
     this.getParent = function() {
       const index = this._getCurrentIndex();
       return index > 0 &&  this._workflows[index -1];
