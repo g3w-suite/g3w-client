@@ -303,7 +303,7 @@ proto.setUpMapOlEvents = function(){
   if (dynamicLegend) {
     const keyolmoveeend = this.viewer.map.on("moveend", evt => this.setupCustomMapParamsToLegendUrl());
     this._keyEvents.ol.push(keyolmoveeend);
-  } else this.setupCustomMapParamsToLegendUrl(false);
+  } else this.setupCustomMapParamsToLegendUrl(); //set always to show legend at start
 };
 
 //clear methods to remove all listeners events
@@ -1499,7 +1499,7 @@ proto._setupCustomMapParamsToLegendUrl = function(bool=true){
     const map = this.getMap();
     const size = map && map.getSize().filter(value => value > 0) || null;
     let bbox = size && size.length === 2 ? map.getView().calculateExtent(size) : this.project.state.initextent;
-    // in case of axis orientation inverted i need to iverted the axis
+    // in case of axis orientation inverted i need to inverted the axis
     bbox = map.getView().getProjection().getAxisOrientation() === "neu" ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
     const crs = this.getEpsg();
     //setup initial legend parameter
