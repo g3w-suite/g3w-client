@@ -10,11 +10,12 @@
           * <span  v-t="'sdk.form.footer.required_fields'"></span>
           <div v-if="state.footer.message" :style="[state.footer.style] ">{{ state.footer.message }}</div>
         </div>
-        <button v-for="button in state.buttons" class="btn "
-                :class="[button.class]"
-                :update="state.update"
-                @click.stop.prevent="exec(button.cbk)"
-                v-disabled="!btnEnabled(button)" v-t="button.title">
+        <button v-for="button in state.buttons" class="btn " :key="button.id"
+          :class="[button.class]"
+          :update="state.update"
+          :valid="state.valid"
+          @click.stop.prevent="exec(button.cbk)"
+          v-disabled="!btnEnabled(button)" v-t="button.title">
         </button>
       </slot>
     </template>
@@ -40,6 +41,13 @@ export default Vue.extend({
     }
   },
   data() {
+    /**
+     * need toget a deep copy of buttons
+     * @type {T[]}
+     */
+    this.originalbuttons = this.state.buttons.map(button => ({
+      ...button
+    }));
     return {
       id:"footer",
       active: true,
@@ -62,11 +70,25 @@ export default Vue.extend({
     isValid() {
       return this.state.valid;
     },
-
   },
   watch: {
     'state.component'(component){
       this.show = this.isRootComponent(component)
+    },
+    'state.update': {
+      immediate: true,
+      handler(value) {
+        this.state.buttons.find((button, index) => {
+          if (button.eventButtons && button.eventButtons.update) {
+            if (button.eventButtons.update[value]) {
+              this.state.buttons.splice(index,1, {
+                ...button,
+                ...button.eventButtons.update[value]
+              })
+            } else this.state.buttons.splice(index,1, this.originalbuttons[index]);
+          }
+        });
+      }
     }
   },
   activated(){

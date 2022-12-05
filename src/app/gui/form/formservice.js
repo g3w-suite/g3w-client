@@ -105,10 +105,21 @@ proto.changeInput = function(input){
   this.isUpdated(input);
 };
 
+/**
+ * Method to check if form is updated base on change on input
+ * @param input
+ */
 proto.isUpdated = function(input){
   this.state.update = !this.state.update
     ? input.update
     : !!this.state.fields.find(field => field.update);
+};
+
+/**
+ *
+ */
+proto.setUpdate = function(bool=false){
+  this.state.update = bool;
 };
 
 /**

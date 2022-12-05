@@ -14,7 +14,7 @@
         <i :class="header.icon"></i>
       </span>
       <span v-t:pre="header.title">{{ header.name }}</span>
-     <component :update="update" :is="header.component"></component>
+     <component :valid="valid" :update="update" :is="header.component"></component>
     </span>
   </div>
 </template>
@@ -32,6 +32,9 @@ export default Vue.extend({
     },
     update: {
       type: Boolean
+    },
+    valid: {
+      type: Boolean
     }
   },
   methods: {
@@ -42,9 +45,6 @@ export default Vue.extend({
     resizeForm(perc){
       this.$emit('resize-form', perc);
     }
-  },
-  mounted(){
-    console.log(this.update)
   }
 });
 </script>
