@@ -5,6 +5,15 @@ const G3WObject = require('core/g3wobject');
 function FormService() {
   this.state = null;
   this.eventBus = new Vue();
+  /**
+   * property used to force some state property to force to be a certain value.
+   * It set fro example by child form service to form service parent
+   * @type {{valid: boolean, update: boolean}}
+   */
+  this.force = {
+    update: false,
+    valid: false // NOT USED FOR THE MOMENT
+  };
   this.layer;
   this.setters = {
     setInitForm(options={}) {
@@ -54,6 +63,8 @@ function FormService() {
     this.context_inputs = context_inputs;
     this.parentData = parentData;
     this.headerComponent = headerComponent;
+    // Property used to set forced update state of the service
+    //Used fro example from child form to set update also parent service
     this.state = {
       layerid: layer.getId(),
       loading:false,
@@ -110,16 +121,19 @@ proto.changeInput = function(input){
  * @param input
  */
 proto.isUpdated = function(input){
-  this.state.update = !this.state.update
-    ? input.update
-    : !!this.state.fields.find(field => field.update);
+  this.state.update = this.force.update
+    || (!this.state.update
+      ? input.update
+      : !!this.state.fields.find(field => field.update));
 };
 
 /**
  *
  */
-proto.setUpdate = function(bool=false){
-  this.state.update = bool;
+proto.setUpdate = function(bool=false, options={}){
+  const {force=false} = options;
+  this.force.update = force;
+  this.state.update = this.force.update || bool;
 };
 
 /**
@@ -417,6 +431,5 @@ proto.clearAll = function() {
   this.eventBus.$off('component-validation');
   this.eventBus.$off('disable-component');
 };
-
 
 module.exports = FormService;
