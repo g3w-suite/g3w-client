@@ -57,8 +57,9 @@ export default {
     }
   },
   async mounted() {
+    //if (this.state.name === 'anno_costr') this.state.value = '2022-01-01';
     const {formats=[], layout={vertical:"top", horizontal: "left"}} = this.state.input.options;
-    const {minDate, maxDate, fieldformat, displayformat} = formats[0];
+    const {minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent} = formats[0];
     await this.$nextTick();
     const fielddatetimeformat = fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
     this.service.setValidatorOptions({
@@ -73,6 +74,9 @@ export default {
       format: datetimedisplayformat,
       ignoreReadonly: true,
       allowInputToggle: true,
+      enabledDates,
+      disabledDates,
+      useCurrent,
       toolbarPlacement: 'top',
       minDate,
       maxDate,
@@ -102,7 +106,8 @@ export default {
     });
     ApplicationState.ismobile && setTimeout(()=>{
       $(`#${this.idinputdatetimepiker}`).blur();
-    })
+    });
+
   }
 };
 </script>

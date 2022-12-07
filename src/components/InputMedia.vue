@@ -67,6 +67,7 @@ export default {
     },
     clearMedia() {
       this.data.value = this.data.mime_type = this.state.value = null;
+      this.change();
     }
   },
   created() {

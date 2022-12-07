@@ -31,6 +31,7 @@ export default {
     // called when input value change
     change() {
       this.service.setEmpty();
+      this.service.setUpdate();
       // validate input if is required or need to be unique
       if (this.state.validate.required || this.state.validate.unique) this.service.validate();
       // emit change input
