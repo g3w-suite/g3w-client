@@ -87,7 +87,7 @@ For more info about this project dependencies see:
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up # g3w-admin
+npm run docker:up # g3w-client
 ```
 
 ```sh
