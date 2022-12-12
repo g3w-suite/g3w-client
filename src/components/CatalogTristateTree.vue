@@ -100,7 +100,7 @@ export default {
   },
   computed: {
     showLayerTocLegend(){
-      return !this.isGroup && this.layerstree.geolayer;
+      return !this.isGroup && this.layerstree.geolayer && this.legendplace === 'toc';
     },
     isGroup() {
       return !!this.layerstree.nodes

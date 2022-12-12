@@ -4,7 +4,10 @@
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
     <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
-    <figure>
+    <figure v-if="layer.source.type === 'wms' || layer.source.type === 'wmst'">
+      <img :src="getWmsSourceLayerLegendUrl()" >
+    </figure>
+    <figure v-else>
       <div v-for="(category, index) in categories"  style="display: flex; align-items: center; width: 100%" v-disabled="category.disabled">
         <span v-if="category.ruleKey" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"></span>
         <img v-if ="legendplace === 'toc'" :src="category.icon && `data:image/png;base64,${category.icon}`" @error="setError()" @load="urlLoaded()">
@@ -49,6 +52,9 @@
       }
     },
     methods: {
+      getWmsSourceLayerLegendUrl() {
+        return this.getProjectLayer().getLegendUrl();
+      },
       getProjectLayer(){
         return CatalogLayersStoresRegistry.getLayerById(this.layer.id);
       },
