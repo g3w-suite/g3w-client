@@ -4,7 +4,7 @@
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
     <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
-    <figure v-if="layer.source.type === 'wms' || layer.source.type === 'wmst'">
+    <figure v-if="externallegend">
       <img :src="getWmsSourceLayerLegendUrl()" >
     </figure>
     <figure v-else>
@@ -41,6 +41,9 @@
       }
     },
     computed:{
+      externallegend(){
+        return this.layer.source.type === 'wms';
+      },
       legend(){
         return this.layer.legend;
       },
@@ -76,6 +79,7 @@
         this.legend.loading = false;
       },
       async handlerChangeLegend(options={}){
+        if (this.externallegend) return;
         const { layerId } = options;
         layerId === this.layer.id && await this.setLayerCategories(true);
         this.dynamic && await this.setLayerCategories(false);
@@ -137,7 +141,7 @@
         /*
         * Only when visible show categories layer. In case of dynamic legend check
         * **/
-        visible && this.setLayerCategories(!this.dynamic);
+       !this.externallegend && visible && this.setLayerCategories(!this.dynamic);
       }
     },
     async created() {
@@ -157,8 +161,7 @@
         this.dynamic && mapService.on('change-map-legend-params', async () => {
           this.mapReady = true;
           this.layer.visible &&
-          (this.legendplace === 'toc' || this.layer.categories) &&
-          this.setLayerCategories(false);
+          (!this.externallegend && (this.legendplace === 'toc' || this.layer.categories)) && this.setLayerCategories(false);
         });
       })
     },
