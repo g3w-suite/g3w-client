@@ -214,8 +214,12 @@ export default {
   created() {
     this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
-      const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
-      layer.clearSelectionFids();
+      if (!layerstree.external) {
+        const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
+        layer.clearSelectionFids();
+      } else {
+        GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
+      }
     });
 
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {

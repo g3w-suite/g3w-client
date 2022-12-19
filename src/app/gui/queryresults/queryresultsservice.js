@@ -1,8 +1,10 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
+import select from "../../../mixins/select";
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
+const { createFeatureFromFeatureObject } = require('core/utils/geo');
 const DataRouterService = require('core/data/routerservice');
 const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
 const {t} = require('core/i18n/i18n.service');
@@ -586,8 +588,8 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           hint: 'sdk.mapcontrols.query.actions.add_selection.hint',
           state,
           init: ({feature, index, action}={})=>{
-            layer.selection.active !== void 0 && this.checkFeatureSelection({
-              layerId: layer.id,
+            typeof layer.selection.active !== "undefined" && this.checkFeatureSelection({
+              layer,
               index,
               feature,
               action
@@ -595,6 +597,9 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           },
           cbk: throttle(this.addToSelection.bind(this))
         });
+        /*
+        * In case of external layer don't listen selection event
+        * */
         this.listenClearSelection(layer, 'selection');
         //end selection action
       }
@@ -934,7 +939,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     let infoformats = [];
     let infoformat;
     let filter = {};
-    let selection ={};
+    let selection = {};
     if (layer instanceof Layer) {
       editable = layer.isEditable();
       inediting = layer.isInEditing();
@@ -984,6 +989,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         }
       }
     } else if (layer instanceof ol.layer.Vector){
+      selection = layer.selection;
       layerAttributes = layer.getProperties();
       layerRelationsAttributes =  [];
       layerTitle = layer.get('name');
@@ -1054,12 +1060,13 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         if (attribute.type === 'image') layerObj.hasImageField = true;
       });
       featuresForLayer.features.forEach(feature => {
-        const {id:fid, geometry, properties:attributes} = this.getFeaturePropertiesAndGeometry(feature);
+        const {id:fid, geometry, properties:attributes, selection} = this.getFeaturePropertiesAndGeometry(feature);
         if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
           id: fid,
           attributes,
           geometry,
+          selection,
           show: true
         };
         layerObj.features.push(featureObj);
@@ -1107,13 +1114,15 @@ proto._setSpecialAttributesFeatureProperty = function(layerSpecialAttributesName
 proto.getFeaturePropertiesAndGeometry = function(feature){
   if (feature instanceof ol.Feature){
     return {
+      selection: feature.selection,
       properties:feature.getProperties(),
       geometry: feature.getGeometry(),
       id: feature.getId()
     }
   } else {
-    const {properties, geometry, id} = feature;
+    const {selection, properties, geometry, id} = feature;
     return {
+      selection,
       properties,
       geometry,
       id
@@ -1504,17 +1513,40 @@ proto.downloadXls = function({id:layerId}={}, feature){
 };
 
 proto.listenClearSelection = function(layer, actionId){
-  const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
-  const handler = ()=>{
-    const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
-    layer.features.forEach((feature, index) => action.state.toggled[index] = false);
-  };
-  _layer.on('unselectionall', handler);
-  this.unlistenerlayeractionevents.push({
-    layer:_layer,
-    event:'unselectionall',
-    handler
-  })
+  if (!layer.external) {
+    const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+    const handler = ()=>{
+      const action = this.state.layersactions[layer.id].find(action => action.id === actionId);
+      layer.features.forEach((feature, index) => action.state.toggled[index] = false);
+    };
+    _layer.on('unselectionall', handler);
+    this.unlistenerlayeractionevents.push({
+      layer:_layer,
+      event:'unselectionall',
+      handler
+    })
+  } else {
+    layer.features.forEach(feature => {
+      const selectionFeature = layer.selection.features.find(selectionFeature => feature.id === selectionFeature.get('id'));
+      feature.selection = selectionFeature ? selectionFeature.selection : {
+        selected: false
+      }
+    });
+  }
+};
+
+proto.clearSelectionExtenalLayer = function(layer) {
+  layer.selection.active = false;
+  const action = this.state.layersactions[layer.id] && this.state.layersactions[layer.id].find(action => action.id === 'selection');
+  layer.selection.features.forEach((feature, index) => {
+    if (feature.selection.selected) {
+      feature.selection.selected = false;
+      if (action) action.state.toggled[index] = false;
+      this.mapService.setSelectionFeatures('remove', {
+        feature
+      });
+    }
+  });
 };
 
 proto.unlistenerEventsActions = function(){
@@ -1535,7 +1567,7 @@ proto.selectionFeaturesLayer = function(layer) {
   const layerId = layer.id;
   const action = this.state.layersactions[layerId].find(action => action.id === 'selection');
   const bool = Object.values(action.state.toggled).reduce((acculmulator, value) => acculmulator && value, true);
-  const _layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+  const _layer = !layer.external ? CatalogLayersStoresRegistry.getLayerById(layerId) : layer;
   layer.features.forEach((feature, index) => {
     action.state.toggled[index] = !bool;
     this._addRemoveSelectionFeature(_layer, feature, index, bool ? 'remove' : 'add');
@@ -1552,33 +1584,71 @@ proto.selectionFeaturesLayer = function(layer) {
  * @private
  */
 proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
-  const fid = feature ? feature.attributes[G3W_FID]: null;
-  const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
-  if (!hasAlreadySelectioned) {
-    if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
-      layer.addOlSelectionFeature({
-        id: fid,
-        feature
-      })
+  /**
+   * In case of external layer (vector) added by add external layer tool
+   */
+  if (typeof layer.external !== "undefined" && layer.external){
+    if (typeof layer.selection.features === "undefined") layer.selection.features = {};
+    if (!layer.selection.features.find(selectionFeature => selectionFeature.get('id') === feature.id)) {
+      /***
+       * Feature used in selection tool action
+       */
+      const selectionFeature = createFeatureFromFeatureObject({
+        feature,
+        id: feature.id
+      });
+      selectionFeature.__layerId = layer.id;
+      selectionFeature.selection = feature.selection;
+      layer.selection.features.push(selectionFeature);
     }
-  }
-  if (force === undefined) {
-    layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
-  } else if (!hasAlreadySelectioned && force === 'add') await layer.includeSelectionFid(fid);
+    if ((force === 'add' && feature.selection.selected) || (force === 'remove') && !feature.selection.selected) return;
+    else feature.selection.selected = !feature.selection.selected;
+    this.mapService.setSelectionFeatures(feature.selection.selected ? 'add' : 'remove', {
+      feature: layer.selection.features.find(selectionFeature => feature.id === selectionFeature.get('id'))
+    });
+    /*
+    * Set selection layer active based on features selection selected properties
+     */
+    layer.selection.active = layer.selection.features.reduce((accumulator, feature) => accumulator || feature.selection.selected, false)
+  } else { // case of project layer on TOC
+    const fid = feature ? feature.attributes[G3W_FID]: null;
+    const hasAlreadySelectioned = layer.getFilterActive() || layer.hasSelectionFid(fid);
+    if (!hasAlreadySelectioned) {
+      if (feature && feature.geometry && !layer.getOlSelectionFeature(fid)) {
+        layer.addOlSelectionFeature({
+          id: fid,
+          feature
+        })
+      }
+    }
+    if (force === undefined) layer[hasAlreadySelectioned ? 'excludeSelectionFid': 'includeSelectionFid'](fid);
+    else if (!hasAlreadySelectioned && force === 'add') await layer.includeSelectionFid(fid);
     else if (hasAlreadySelectioned && force === 'remove') await layer.excludeSelectionFid(fid);
-  if (layer.getFilterActive()) {
-    const currentLayer = this.state.layers.find(_layer => _layer.id === layer.getId());
-    layer.getSelectionFids().size > 0 && currentLayer && currentLayer.features.splice(index, 1);
-    this.mapService.clearHighlightGeometry();
-    this.state.layers.length === 1 && !this.state.layers[0].features.length && this.state.layers.splice(0);
+    if (layer.getFilterActive()) {
+      const currentLayer = this.state.layers.find(_layer => _layer.id === layer.getId());
+      layer.getSelectionFids().size > 0 && currentLayer && currentLayer.features.splice(index, 1);
+      this.mapService.clearHighlightGeometry();
+      this.state.layers.length === 1 && !this.state.layers[0].features.length && this.state.layers.splice(0);
+    }
   }
 };
 
-proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
-  const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
-  if (feature) {
-    const fid = feature ? feature.attributes[G3W_FID]: null;
-    action.state.toggled[index] = layer.getFilterActive() || layer.hasSelectionFid(fid);
+/**
+ * Initial check of selection active on layer
+ * @param layer
+ * @param feature
+ * @param index
+ * @param action
+ */
+proto.checkFeatureSelection = function({layer, feature, index, action}={}){
+  if (!layer.external) {
+    const projectLayer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+    if (feature) {
+      const fid = feature ? feature.attributes[G3W_FID]: null;
+      action.state.toggled[index] = projectLayer.getFilterActive() || projectLayer.hasSelectionFid(fid);
+    }
+  } else {
+    action.state.toggled[index] = feature.selection.selected;
   }
 };
 
@@ -1590,8 +1660,9 @@ proto.checkFeatureSelection = function({layerId, feature, index, action}={}){
  * @param index
  */
 proto.addToSelection = function(layer, feature, action, index){
+  const {external=false} = layer;
   action.state.toggled[index] = !action.state.toggled[index];
-  const _layer = CatalogLayersStoresRegistry.getLayerById(layer.id);
+  const _layer = !external ? CatalogLayersStoresRegistry.getLayerById(layer.id) : layer;
   this._addRemoveSelectionFeature(_layer, feature, index);
 };
 
