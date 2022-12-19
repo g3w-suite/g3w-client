@@ -54,6 +54,16 @@ export default {
         let value;
         if (values.length === 0) value = G3W_SELECT2_NULL_VALUE;
         else {
+          //order by key before show
+          values.sort(({key:aKey}, {key:bKey}) => {
+            if (typeof aKey === 'string') {
+              aKey = aKey.toLowerCase();
+              bKey = bKey.toLowerCase()
+            }
+            if (aKey < bKey) return -1;
+            if (aKey > bKey) return 1;
+            return 0;
+          });
           const findvalue = values.find(keyvalue => keyvalue.value == this.state.value);
           if (!findvalue) value = G3W_SELECT2_NULL_VALUE;
           else value = findvalue.value;
