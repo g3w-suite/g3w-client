@@ -2694,10 +2694,8 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
            * need to add id value
            */
           features.forEach(feature => {
-            if (typeof feature.id === "undefined"){
-              feature.setId(feature.get('id') || id);
-              id+=1;
-            };
+            feature.setId(id);
+            id+=1;
           });
           externalLayer.geometryType = features[0].getGeometry().getType();
         }

@@ -1,7 +1,6 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
-import select from "../../../mixins/select";
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const { createFeatureFromFeatureObject } = require('core/utils/geo');
@@ -1063,7 +1062,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
         const {id:fid, geometry, properties:attributes, selection} = this.getFeaturePropertiesAndGeometry(feature);
         if (geometry) layerObj.hasgeometry = true;
         const featureObj = {
-          id: fid,
+          id: layerObj.external ? feature.getId() : fid,
           attributes,
           geometry,
           selection,
@@ -1527,7 +1526,7 @@ proto.listenClearSelection = function(layer, actionId){
     })
   } else {
     layer.features.forEach(feature => {
-      const selectionFeature = layer.selection.features.find(selectionFeature => feature.id === selectionFeature.get('id'));
+      const selectionFeature = layer.selection.features.find(selectionFeature => feature.id === selectionFeature.getId());
       feature.selection = selectionFeature ? selectionFeature.selection : {
         selected: false
       }
@@ -1589,7 +1588,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
    */
   if (typeof layer.external !== "undefined" && layer.external){
     if (typeof layer.selection.features === "undefined") layer.selection.features = {};
-    if (!layer.selection.features.find(selectionFeature => selectionFeature.get('id') === feature.id)) {
+    if (!layer.selection.features.find(selectionFeature => selectionFeature.getId() === feature.id)) {
       /***
        * Feature used in selection tool action
        */
@@ -1604,7 +1603,7 @@ proto._addRemoveSelectionFeature = async function(layer, feature, index, force){
     if ((force === 'add' && feature.selection.selected) || (force === 'remove') && !feature.selection.selected) return;
     else feature.selection.selected = !feature.selection.selected;
     this.mapService.setSelectionFeatures(feature.selection.selected ? 'add' : 'remove', {
-      feature: layer.selection.features.find(selectionFeature => feature.id === selectionFeature.get('id'))
+      feature: layer.selection.features.find(selectionFeature => feature.id === selectionFeature.getId())
     });
     /*
     * Set selection layer active based on features selection selected properties

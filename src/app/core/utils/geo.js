@@ -582,7 +582,7 @@ const geoutils = {
   createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
       const feature = new ol.Feature(geometry);
-      id && feature.setId(id);
+      feature.setId(id);
       return feature;
     }
   },
@@ -599,7 +599,7 @@ const geoutils = {
    */
   createFeatureFromFeatureObject({id, feature={}}){
     const {geometry, attributes} = feature;
-    feature = geoutils.createFeatureFromGeometry({id,geometry})
+    feature = geoutils.createFeatureFromGeometry({id,geometry});
     Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
     return feature;
   },
