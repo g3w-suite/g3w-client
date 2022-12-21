@@ -52,7 +52,21 @@ function FormService() {
   };
   // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}, headerComponent} = options;
+    const {
+      fields,
+      feature,
+      parentData,
+      layer,
+      title= 'Form',
+      formId,
+      name,
+      buttons={},
+      context_inputs,
+      isnew,
+      footer={},
+      headerComponent,
+      breadcrumb=[]
+    } = options;
     this.layer = layer;
     // need to be cloned
     this.feature = feature.clone();
@@ -69,6 +83,7 @@ function FormService() {
       layerid: layer.getId(),
       loading:false,
       components: [],
+      breadcrumb,
       disabledcomponents: [],
       component: null,
       headers: [],
