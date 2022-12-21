@@ -1290,9 +1290,12 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
-          // check if there enought space to expand mapcontrols
-          const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
-          if (freeSpace  > nextHeight) {
+          // check if there enough space to expand map controls
+          /**
+           Add 15 px of offset. Need to find a better solution in future
+           */
+          const nextHeight = 15 + (this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight);
+          if (freeSpace > nextHeight) {
             changedAndMoreSpace.changed = true;
             changedAndMoreSpace.space = true;
             this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
@@ -1304,7 +1307,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
-          changedAndMoreSpace.space && setTimeout(()=>handleVerticalMapControlDOMElements());
+          changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
         }
       };
       handleVerticalMapControlDOMElements();
