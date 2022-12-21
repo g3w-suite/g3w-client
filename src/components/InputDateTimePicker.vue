@@ -9,6 +9,7 @@
       <div class='input-group date'  :id='iddatetimepicker' v-disabled="!editable">
         <input
           :id="idinputdatetimepiker"
+          :tabIndex="tabIndex"
           :readonly="!editable || isMobile() ? 'readonly' : null"
           type='text'
           :class="{'input-error-validation' : notvalid}"

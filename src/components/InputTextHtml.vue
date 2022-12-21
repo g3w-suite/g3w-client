@@ -123,9 +123,13 @@ export default {
       this.change();
       setTimeout(() => this.edit_state.edit = false);
     };
-
     this.quill.on('text-change', this.handler);
     this.quill.container.firstChild.innerHTML = this.state.value;
+    if (!this.editable){
+      for (const child of this.quill.container.children){
+        child.setAttribute('tabindex', -1);
+      }
+    }
   },
   watch: {
     'state.value'(value){
