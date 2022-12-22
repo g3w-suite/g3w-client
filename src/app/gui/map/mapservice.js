@@ -15,19 +15,11 @@ const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const WFSProvider = require('core/layers/providers/wfsprovider');
-const olhelpers = require('g3w-ol/g3w.ol').helpers;
+const {helpers:olhelpers} = require('g3w-ol/g3w.ol');
 const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
 const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
-const SETTINGS = {
-  zoom : {
-    maxScale: 1000,
-  },
-  animation: {
-    duration: 2000
-  }
-};
 
 function MapService(options={}) {
   this.state = {
@@ -229,11 +221,14 @@ function MapService(options={}) {
         this.viewer = null;
       }
       this._setupViewer(width, height);
+
       this.state.bbox = this.viewer.getBBOX();
       this.state.resolution = this.viewer.getResolution();
       this.state.center = this.viewer.getCenter();
+
       this._setupAllLayers();
       this.setUpMapOlEvents();
+
       this.emit('viewerset');
     },
     controlClick(mapcontrol, info={}) {},
@@ -1672,6 +1667,11 @@ proto._setupViewer = function(width, height) {
     this.moveDefaultLayersOnTop(zindex);
   });
 
+  /**
+   *
+   * Register remove addLayer
+   *
+   */
   this.viewer.map.getLayers().on('remove', evt => {
     const {element:layer}= evt;
     const layerZIndex = layer.getZIndex();
@@ -1734,6 +1734,7 @@ proto._setupListeners = function() {
 
 // SETUP ALL LAYERS
 proto._setupAllLayers = function() {
+
   this._setupBaseLayers();
   this._setupMapLayers();
   this._setupVectorLayers();
@@ -1752,6 +1753,7 @@ proto._setupBaseLayers = function(){
     this.mapBaseLayers[layer.getId()] = baseMapLayer;
   });
   const reverseBaseLayers = Object.values(this.mapBaseLayers).reverse();
+
   reverseBaseLayers.forEach(baseMapLayer => {
     baseMapLayer.update(this.state, this.layersExtraParams);
     this.addLayerToMap(baseMapLayer)

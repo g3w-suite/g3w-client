@@ -1,5 +1,5 @@
 import CONSTANT from '../../constant';
-const {toRawType, uniqueId} = require('core/utils/utils');
+const {toRawType, uniqueId, XHR} = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
 const {response: responseParser} = require('core/utils/parsers');
@@ -1641,7 +1641,7 @@ const geoutils = {
   },
 
   crsToCrsObject(crs){
-    if (crs === null || crs === undefined) return crs;
+    if (!crs) return crs;
     if  (toRawType(crs) === 'Object' && crs.epsg) crs.epsg = geoutils.normalizeEpsg(crs.epsg);
     else
       crs = {
@@ -1895,7 +1895,6 @@ const geoutils = {
    * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)
    */
   Geometry
-
 };
 
 module.exports = geoutils;

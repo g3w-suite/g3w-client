@@ -1,15 +1,3 @@
-const GENERIC_GRID_EXTENT =  [0,0,8388608,8388608];
-const GRID_EXTENT_3857 = ol.proj.get('EPSG:3857').getExtent();
-const GENERIC_GRID_EXTENT_DEGREE = [-180,-90, 180, 90];
-/**
- * BACK COMPATIBILITY  < v3.5
- */
-const CUSTOM_PROJECTIONS_EXTENT = {
-  'EPSG:3876': [18835101.07,4367049.45,22702879.51,9383109.87],
-  'EPSG:32733': GRID_EXTENT_3857,
-  'EPSG:25833': [-2465144.8,3638055.41,2885759.28, 9493779.8]
-};
-
 const Projection = function(options={}) {
   if (!options.crs) return null;
   const {epsg, proj4:proj4def, geographic=false, axisinverted=false, extent} = options.crs; // new structure of information crs from server
@@ -19,7 +7,7 @@ const Projection = function(options={}) {
   ol.proj.Projection.call(this, {
     code: epsg,
     //FOR NOW FORCE TO GET EXTENT
-    extent: false ? extent : degrees ? GENERIC_GRID_EXTENT_DEGREE: CUSTOM_PROJECTIONS_EXTENT[epsg] || GENERIC_GRID_EXTENT,
+    extent,
     axisOrientation: this._axisOrientation,
     units: degrees ? 'degrees' : 'm'
   });
