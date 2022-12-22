@@ -1,4 +1,4 @@
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 const ApplicationService = require('core/applicationservice');
@@ -1791,6 +1791,7 @@ proto.showQueryRelations = function(layer, feature, action) {
     }),
     backonclose: true,
     title: LIST_OF_RELATIONS_TITLE,
+    id: LIST_OF_RELATIONS_ID,
     closable: false
   });
 };

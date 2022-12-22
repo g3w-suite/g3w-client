@@ -1001,6 +1001,10 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.getCurrentContentTitle();
     };
 
+    GUI.getCurrentContentId = function(){
+      return viewport.ViewportService.getCurrentContentId();
+    };
+
     /**
      * change current content title
      * @param title

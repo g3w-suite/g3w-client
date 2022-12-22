@@ -10,13 +10,12 @@
           <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
         </span>
         <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.1em; margin-bottom: 3px">
-          <span v-if="showrelationslist" v-t-tooltip.create="'sdk.relations.back_to_relations'"  class="action-button-icon action-button skin-tooltip-left"
-            data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('arrow-left')" @click="back">
+          <span v-if="showrelationslist" v-t-tooltip:left.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('arrow-left')" @click.stop="back">
           </span>
-          <span v-if="downloadButton" style="padding: 5px;" v-download class="action-button-icon action-button skin-tooltip-left" data-placement="left" data-toggle="tooltip"
-            :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip.create="downloadButton.tooltip"></span>
-          <span v-if="showChartButton" style="padding: 5px;" class="action-button-icon action-button skin-tooltip-bottom" data-placement="bottom" data-toggle="tooltip"
-            :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click="showChart" v-t-tooltip.create="'sdk.tooltips.show_chart'"></span>
+          <span v-if="downloadButton" style="padding: 5px;" v-download class="action-button-icon action-button"
+            :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip:left.create="downloadButton.tooltip"></span>
+          <span v-if="showChartButton" style="padding: 5px;" class="action-button-icon action-button"
+            :class="[g3wtemplate.getFontClass('chart'), chart ? 'toggled-white' : '']" @click.stop="showChart" v-t-tooltip:bottom.create="'sdk.tooltips.show_chart'"></span>
         </div>
       </div>
     </div>
@@ -27,7 +26,7 @@
             <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"></component>
           </div>
         </template>
-        <table ref="relationtable" class="relationtable table table-striped row-border" width="100%" >
+        <table ref="relationtable" class="relationtable table table-striped table-bordered" width="100%" >
           <thead>
             <tr style="height: 0! important">
               <th v-if="table.formStructure || isEditable" :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }"></th>
@@ -38,10 +37,10 @@
           <tr :class="{'selected': table.rowFormStructure === row}">
             <td v-if="table.formStructure || isEditable">
               <span v-if="table.formStructure" @click="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                    class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
-                    data-placement="right" :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
-              <span v-if="isEditable" @click="editFeature(table.rows_fid[index])" class="action-button row-form skin-color skin-tooltip-right" v-t-tooltip="'Edit'"
-                    data-placement="right" :class="g3wtemplate.getFontClass('pencil')"></span>
+                class="action-button row-form skin-color" v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+                :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
+              <span v-if="isEditable" @click="editFeature(table.rows_fid[index])" class="action-button row-form skin-color" v-t-tooltip:right.create="'Edit'"
+                :class="g3wtemplate.getFontClass('pencil')"></span>
             </td>
             <template v-if="table.formStructure && table.rowFormStructure === row">
               <td :colspan="table.columns.length" class="row-wrap-tabs">
@@ -60,7 +59,14 @@
       <g3w-resize :show="chart" :moveFnc="moveFnc" :where="'content'" class="skin-border-color lighten" style="border-style: solid; border-width: 0 1px 0 1px"></g3w-resize>
       <div v-show="chart" id="chart_content" :style="{width: chart ? '30%' : '0', paddingBottom: '5px', marginBottom: '5px', marginLeft: '8px' }" ref="chartcontent"></div>
     </div>
-    <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px;" v-t="'sdk.relations.no_relations_found'"></div>
+    <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px; display: flex; justify-content: space-between">
+      <span v-t="'sdk.relations.no_relations_found'"></span>
+      <div>
+        <span v-if="showrelationslist" v-t-tooltip:left.create="'sdk.relations.back_to_relations'"
+          class="action-button-icon action-button skin-tooltip-left" :class="g3wtemplate.getFontClass('arrow-left')" @click.stop="back">
+       </span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -240,7 +246,6 @@ export default {
         "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
         "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
       });
-      $('.row-form').tooltip();
       this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
       this.resize();
     }

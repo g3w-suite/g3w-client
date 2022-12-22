@@ -5,45 +5,43 @@
 <template>
   <div class="g3w-viewport">
     <transition name="fade" :duration="{ enter: 500, leave: 500 }">
-      <user-message
-              v-if="usermessage.show"
-              @close-usermessage="closeUserMessage"
-              :title="usermessage.title"
-              :subtitle="usermessage.subtitle"
-              :id="usermessage.id"
-              :message="usermessage.message"
-              :draggable="usermessage.draggable"
-              :closable="usermessage.closable"
-              :duration="usermessage.duration"
-              :position="usermessage.position"
-              :autoclose="usermessage.autoclose"
-              :textMessage="usermessage.textMessage"
-              :size="usermessage.size"
-              :type="usermessage.type">
+      <user-message v-if="usermessage.show" @close-usermessage="closeUserMessage"
+        :title="usermessage.title"
+        :subtitle="usermessage.subtitle"
+        :id="usermessage.id"
+        :message="usermessage.message"
+        :draggable="usermessage.draggable"
+        :closable="usermessage.closable"
+        :duration="usermessage.duration"
+        :position="usermessage.position"
+        :autoclose="usermessage.autoclose"
+        :textMessage="usermessage.textMessage"
+        :size="usermessage.size"
+        :type="usermessage.type">
         <template v-if="hooks.header" slot="header">
-          <component :is="hooks.header"></component>
+          <component :is="hooks.header"/>
         </template>
         <template v-if="hooks.body" slot="body">
-          <component :is="hooks.body"></component>
+          <component :is="hooks.body"/>
         </template>
         <template v-if="hooks.footer" slot="footer">
-          <component :is="usermessage.hooks.footer"></component>
+          <component :is="usermessage.hooks.footer"/>
         </template>
       </user-message>
     </transition>
     <div id="g3w-view-map" :class="`split-${state.split}`" class="g3w-view map" :style="styles.map">
-      <g3w-resize id="resize-map-and-content" :show="showresize"
-                  :moveFnc="moveFnc"
-                  :orientation="state.split"
-                  :style="{backgroundColor:'transparent'}"
-                  :class="`split-${state.split}`"></g3w-resize>
+      <g3w-resize id="resize-map-and-content" :show="showresize" :moveFnc="moveFnc" :orientation="state.split"
+        :style="{backgroundColor:'transparent'}" :class="`split-${state.split}`"/>
       <div id="application-notifications">
-        <online-notify></online-notify>
-        <download-notify></download-notify>
-        <plugins-notify></plugins-notify>
+        <online-notify/>
+        <download-notify/>
+        <plugins-notify/>
       </div>
     </div>
     <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content" v-disabled="state.content.disabled">
+      <section class="content_breadcrumb" v-if="breadcrumb.length > 1">
+        <span class="skin-color" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}" v-for="(crumb, index) in breadcrumb" v-t:pre="crumb" :key="crumb"><span v-if="isNotLastCrumb(index)"> / </span></span>
+      </section>
       <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block" style="display: flex; justify-content: space-between">
         <div v-if="previousTitle" class="g3w_contents_back">
           <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
@@ -64,7 +62,7 @@
         </div>
         <div class="g3-content-header-action-tools" style="display: flex">
           <component v-for="tool in state.content.headertools" :is="tool"></component>
-          <resize-icon v-if="showresizeicon" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"></resize-icon>
+          <resize-icon v-if="showresizeicon" :type="state.split" style="font-size: 1em; padding: 0; align-self: center; margin-left: auto" :style="{marginRight: state.content.closable ? '5px': '0px'}"/>
           <span v-if="state.content.closable && state.content.aside" @click="closeContent" :class="{'mobile': isMobile()}" class="action-button" style="display: flex; justify-content: center ">
           <i class="skin-color-dark" :class="g3wtemplate.getFontClass('close')"></i>
         </span>
@@ -108,6 +106,9 @@
       }
     },
     computed: {
+      breadcrumb(){
+        return this.state.content.contentsdata.map(({options}) => options.title);
+      },
       showresize(){
         const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
         return this.state.resized.start && this.state.secondaryPerc > 0 && this.state.secondaryPerc < 100 && currentPerc < 100 && currentPerc > 0;
@@ -168,6 +169,9 @@
       },
     },
     methods: {
+      isNotLastCrumb(index) {
+        return index < this.breadcrumb.length -1;
+      },
       closeContent() {
         GUI.closeContent();
       },

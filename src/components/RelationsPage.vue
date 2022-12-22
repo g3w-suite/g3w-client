@@ -4,20 +4,16 @@
 
 <template>
   <div class="query-relations-page">
-      <component
-          :loading="loading"
-          @save-relation="saveRelations"
-          @show-chart="showChart"
-          @hide-chart="hideChart"
-          :ref="currentview"
-          :previousview="previousview"
-          :is="currentview"
-          :showChartButton="showChartButton"
-          :relations="relations"
-          :relation="relation"
-          :nmRelation="nmRelation"
-          :feature="feature"
-          :table="table">
+      <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
+        :ref="currentview"
+        :previousview="previousview"
+        :is="currentview"
+        :showChartButton="showChartButton"
+        :relations="relations"
+        :relation="relation"
+        :nmRelation="nmRelation"
+        :feature="feature"
+        :table="table">
       </component>
   </div>
 </template>
@@ -25,7 +21,7 @@
 <script>
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_ID} from 'constant';
 
 const GUI = require('gui/gui');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
@@ -73,8 +69,7 @@ export default {
     },
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-      if (GUI.getCurrentContentTitle() === LIST_OF_RELATIONS_TITLE)
-        GUI.changeCurrentContentTitle(relation.name);
+      if (GUI.getCurrentContentId() === LIST_OF_RELATIONS_ID) GUI.changeCurrentContentTitle(relation.name);
       this.loading = true;
       this.relation = relation;
       let relationLayerId = relation.referencingLayer;
@@ -115,6 +110,15 @@ export default {
     if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
   },
   async mounted() {
+    /**
+     * Order relations by name
+     */
+    this.relations.sort(({name:relationName1}, {name:relationName2}) => {
+      if (relationName1 < relationName2) return -1;
+      if (relationName1 > relationName2) return 1;
+      return 0;
+    });
+
     await this.$nextTick();
     if (this.error)
       requestAnimationFrame(() => {

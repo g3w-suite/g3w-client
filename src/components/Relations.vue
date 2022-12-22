@@ -14,8 +14,8 @@
       <thead>
       </thead>
       <tbody>
-      <tr @click="showRelation(relation)" v-for="relation in relations" style="cursor:pointer">
-        <td style="padding: 2px; display: flex; justify-content: space-between; align-items: baseline" class="skin-color">
+      <tr @click="showRelation(relation)" v-for="relation in relations" class="skin-border-color" style="cursor:pointer; border-bottom: 1px solid">
+        <td style="padding: 5px; display: flex; justify-content: space-between; align-items: center" class="skin-color">
           <span>{{ relation.name }}</span>
           <span :class="g3wtemplate.getFontClass('arrow-right')" aria-hidden="true"></span>
         </td>

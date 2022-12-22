@@ -247,6 +247,7 @@ const ViewportService = function() {
     this._immediateComponentsLayout = false;
     // call show view (in this case content (other is map)
     this._showView('content', options);
+    console.log(options)
     this._components.content.setContent(options)
       .then(() => {
         this._immediateComponentsLayout = true;
@@ -317,7 +318,12 @@ const ViewportService = function() {
 
   this.getCurrentContentTitle = function(){
     const currentContent = this.getCurrentContent();
-    return currentContent && currentContent.options.title
+    return currentContent && currentContent.options.title;
+  };
+
+  this.getCurrentContentId = function(){
+    const currentContent = this.getCurrentContent();
+    return currentContent && currentContent.options.id;
   };
 
   this.changeCurrentContentTitle = function(title=''){
