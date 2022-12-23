@@ -93,11 +93,11 @@ cd ./g3w-client
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up # g3w-admin (production)
+npm run docker:up # backend server (g3w-admin)
 ```
 
 ```sh
-npm run dev       # g3w-client (development)
+npm run dev       # frontend server (g3w-client)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
