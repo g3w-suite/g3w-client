@@ -6,14 +6,17 @@
   <div id="menu-projects" class="container">
     <div class="row row-equal">
       <!-- item -->
-      <div v-for="menuitem in state.menuitems"  :key="menuitem.title" @click="trigger(menuitem)" class="col-xs-12 col-sm-4 project-menu">
-        <div class="project-menu-item-image">
+      <div v-for="(menuitem, index) in state.menuitems"  :key="menuitem.title"  class="col-xs-12 col-sm-4 project-menu">
+        <div class="project-menu-item-image" @click="trigger(menuitem)">
           <img :src="logoSrc(menuitem.thumbnail)" class="img-responsive">
         </div>
         <div class="project-menu-item-content">
           <div class="project-menu-item-text">
-            <h4 class="project-menu-item-title">{{ menuitem.title }}</h4>
-            <div v-html="menuitem.description"></div>
+            <h4 class="project-menu-item-title"></h4>
+            <button v-if="menuitem.description"  @click.prevent.stop="toggleDescription(index)" class="btn skin-button"  style="font-weight: bold; color: #ffffff; padding: 10px; width: 100%">
+              <i :class="g3wtemplate.getFontClass('description')"></i>
+            </button>
+            <div class="project-menu-item-description" :ref="`description_${index}`" v-html="menuitem.description"></div>
           </div>
         </div>
       </div>
@@ -25,12 +28,13 @@
 </template>
 
 <script>
-const t = require('core/i18n/i18n.service').t;
-const GUI = require('gui/gui');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const fakeImage = '/static/client/images/FakeProjectThumb.png';
+  import {FAKEIMAGE} from "constant";
 
-export default {
+  const {t} = require('core/i18n/i18n.service');
+  const GUI = require('gui/gui');
+  const ProjectsRegistry = require('core/project/projectsregistry');
+
+  export default {
   data() {
     return {
       state: null,
@@ -38,6 +42,9 @@ export default {
     }
   },
   methods: {
+    toggleDescription(index){
+      this.$refs[`description_${index}`][0].classList.toggle('show');
+    },
     trigger(item) {
       if (item.cbk) {
         //set full screen modal
@@ -66,16 +73,24 @@ export default {
       }
       else if (item.href) window.open(item.href, '_blank');
       else if (item.route) GUI.goto(item.route);
-      else console.log("No action for "+item.title);
     },
     logoSrc(src) {
       let imageSrc;
       if (src) {
         imageSrc= src.indexOf(ProjectsRegistry.config.mediaurl) !== -1 ? src : (src.indexOf('static') === -1 && src.indexOf('media') === -1) ?
-          `${ProjectsRegistry.config.mediaurl}${src}`: fakeImage;
-      } else imageSrc = fakeImage;
+          `${ProjectsRegistry.config.mediaurl}${src}`: FAKEIMAGE;
+      } else imageSrc = FAKEIMAGE;
       return this.$options.host && `${this.$options.host}${imageSrc}` || imageSrc;
     }
   }
 };
 </script>
+<style scoped>
+  .project-menu-item-description {
+    display: none;
+    margin-top: 5px;
+  }
+  .project-menu-item-description.show {
+    display: block;
+  }
+</style>
