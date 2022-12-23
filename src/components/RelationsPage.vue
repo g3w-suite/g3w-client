@@ -21,7 +21,7 @@
 <script>
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_ID} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
 
 const GUI = require('gui/gui');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
@@ -69,7 +69,7 @@ export default {
     },
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-      if (GUI.getCurrentContentId() === LIST_OF_RELATIONS_ID) GUI.changeCurrentContentTitle(relation.name);
+
       this.loading = true;
       this.relation = relation;
       let relationLayerId = relation.referencingLayer;
@@ -92,6 +92,14 @@ export default {
         }
         this.showChartButton = !!this.chartRelationIds.find(chartlayerid => chartlayerid === relationLayerId);
         this.table = this.$options.service.buildRelationTable(relations, relationLayerId);
+
+        GUI.changeCurrentContentOptions({
+          title: relation.name,
+          crumb: {
+            title: relation.name
+          }
+        });
+        await this.$nextTick();
         this.currentview = 'relation';
         this.previousview = 'relations'
       } catch(err){
@@ -103,6 +111,11 @@ export default {
     setRelationsList() {
       this.previousview = 'relation';
       this.currentview = 'relations';
+      GUI.changeCurrentContentOptions({
+        crumb: {
+          title: LIST_OF_RELATIONS_TITLE
+        }
+      });
       this.loading = false;
     }
   },
@@ -118,7 +131,6 @@ export default {
       if (relationName1 > relationName2) return 1;
       return 0;
     });
-
     await this.$nextTick();
     if (this.error)
       requestAnimationFrame(() => {

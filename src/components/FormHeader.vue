@@ -4,9 +4,6 @@
 
 <template>
   <div class="g3wform_header box-header with-border" style="display: flex; flex-direction: column">
-    <section class="g3wform_header_breadcrumb" v-if="breadcrumb.length > 0">
-      <span class="skin-color" @click.stop="triggerCrumbCbk(index)" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}" v-for="(crumb, index) in breadcrumb">{{crumb.title}} <span v-if="isNotLastCrumb(index)"> / </span></span>
-    </section>
     <section class="g3wform_header_content">
       <span style="display:flex; justify-content: space-between; align-items: baseline" class="title" :style="{fontSize: isMobile() && '1em !important'}"
         :class="[{item_selected: currentid === header.id && headers.length > 1},[headers.length > 1 ? 'tabs' : 'one' ]]"
@@ -38,20 +35,9 @@ export default Vue.extend({
     },
     valid: {
       type: Boolean
-    },
-    breadcrumb: {
-      type: Array,
-      default: []
     }
   },
   methods: {
-    triggerCrumbCbk(index){
-      const {cbk} = this.breadcrumb[index];
-      cbk && typeof cbk === 'function' && cbk(index);
-    },
-    isNotLastCrumb(index){
-      return index < this.breadcrumb.length -1;
-    },
     click(id) {
       if (this.currentid !== id)
         this.$emit('clickheader', id);

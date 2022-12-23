@@ -39,8 +39,8 @@
       </div>
     </div>
     <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content" v-disabled="state.content.disabled">
-      <section class="content_breadcrumb" v-if="breadcrumb.length > 1">
-        <span class="skin-color" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}" v-for="(crumb, index) in breadcrumb" v-t:pre="crumb" :key="crumb"><span v-if="isNotLastCrumb(index)"> / </span></span>
+      <section :ref="breadcrumb" class="content_breadcrumb" v-if="breadcrumb.length > 1">
+        <span class="skin-color-dark" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}" v-for="(crumb, index) in breadcrumb" v-t:pre="crumb.title" :key="crumb.title"><span v-if="isNotLastCrumb(index)"> / </span></span>
       </section>
       <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block" style="display: flex; justify-content: space-between">
         <div v-if="previousTitle" class="g3w_contents_back">
@@ -48,7 +48,7 @@
             <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
             <span v-t="'back'"></span>
           </div>
-          <div @click="gotoPreviousContent()" :class="backOrBackTo" v-else>
+          <div @click.stop="gotoPreviousContent()" :class="backOrBackTo" v-else>
             <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
             <span v-t="'backto'"></span>
             <span v-if="!updatePreviousTitle" v-t="previousTitle"></span>
@@ -107,7 +107,7 @@
     },
     computed: {
       breadcrumb(){
-        return this.state.content.contentsdata.map(({options}) => options.title);
+         return this.state.content.contentsdata.map(content => content.options.crumb);
       },
       showresize(){
         const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
@@ -158,7 +158,6 @@
       backOrBackTo(){
         const contentsData = this.state.content.contentsdata;
         return (contentsData.length > 1 && this.state.content.showgoback) ? !(contentsData[contentsData.length - 2].options.title) ? 'back' : 'backto' : false;
-
       },
       previousTitle() {
         const contentsData = this.state.content.contentsdata;
@@ -179,10 +178,10 @@
         viewportService.closeMap();
       },
       gotoPreviousContent() {
-        viewportService.popContent();
+        GUI.popContent();
       },
       closeUserMessage(){
-        viewportService.closeUserMessage();
+        GUI.closeUserMessage();
       },
       moveFnc(evt){
         const size =  this.state.split === 'h' ? 'width' : 'height';
@@ -223,5 +222,9 @@
 </script>
 
 <style scoped>
-
+  .content_breadcrumb {
+    font-size: 1.2em;
+    padding: 3px;
+    border-radius: 3px;
+  }
 </style>

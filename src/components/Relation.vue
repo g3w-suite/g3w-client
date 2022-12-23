@@ -3,15 +3,17 @@
 <!-- gui/relations/vue/relation.js@v3.4 -->
 
 <template>
-  <div class="query-relation" :class="isMobile() ? 'mobile' : null">
+  <div class="query-relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;">
     <div class="header" ref="relation-header">
       <div :style="{fontSize: isMobile() ? '1em' : '1.3em', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }">
-        <span class="relation-tile">
+        <div>
+          <span v-if="showrelationslist" style="font-size: 0.8em;" v-t-tooltip:right.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('exit')" @click.stop="back">
+        </span>
+          <span class="relation-tile">
           <span v-if="!isMobile()" v-t:pre="'sdk.relations.relation_data'">:</span> <b class="skin-color"> {{ relation.name }}</b>
         </span>
+        </div>
         <div class="relations-table-tools" v-if="table.rows.length" style="font-size: 1.1em; margin-bottom: 3px">
-          <span v-if="showrelationslist" v-t-tooltip:left.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('arrow-left')" @click.stop="back">
-          </span>
           <span v-if="downloadButton" style="padding: 5px;" v-download class="action-button-icon action-button"
             :class="[g3wtemplate.getFontClass('download'), {'toggled-white': downloadButton.toggled}]" @click="downloadButton.handler" v-t-tooltip:left.create="downloadButton.tooltip"></span>
           <span v-if="showChartButton" style="padding: 5px;" class="action-button-icon action-button"
@@ -61,11 +63,6 @@
     </div>
     <div v-else class="dataTables_scrollBody" style="font-weight: bold; margin-top: 10px; font-size: 1.1em; background-color: #ffffff; padding: 10px; display: flex; justify-content: space-between">
       <span v-t="'sdk.relations.no_relations_found'"></span>
-      <div>
-        <span v-if="showrelationslist" v-t-tooltip:left.create="'sdk.relations.back_to_relations'"
-          class="action-button-icon action-button skin-tooltip-left" :class="g3wtemplate.getFontClass('arrow-left')" @click.stop="back">
-       </span>
-      </div>
     </div>
   </div>
 </template>

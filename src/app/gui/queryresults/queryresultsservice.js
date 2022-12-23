@@ -1754,7 +1754,7 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 /**
- * method to ahdle show Relation on result
+ * method to handle show Relation on result
  * @param relationId,
  * layerId : current layer fathre id
  * feature: current feature father id
@@ -1776,12 +1776,20 @@ proto.showRelation = function({relation, layerId, feature}={}){
         id: layerId
       }
     }),
+    crumb: {
+      title: layerId
+    },
     title: projectRelation.name,
     closable: false
   })
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
+  GUI.changeCurrentContentOptions({
+    crumb: {
+      title: layer.title
+    }
+  });
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
@@ -1792,6 +1800,10 @@ proto.showQueryRelations = function(layer, feature, action) {
     backonclose: true,
     title: LIST_OF_RELATIONS_TITLE,
     id: LIST_OF_RELATIONS_ID,
+    crumb: {
+      title: LIST_OF_RELATIONS_TITLE,
+      trigger: null
+    },
     closable: false
   });
 };

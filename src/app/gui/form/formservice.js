@@ -65,7 +65,6 @@ function FormService() {
       isnew,
       footer={},
       headerComponent,
-      breadcrumb=[]
     } = options;
     this.layer = layer;
     // need to be cloned
@@ -83,7 +82,6 @@ function FormService() {
       layerid: layer.getId(),
       loading:false,
       components: [],
-      breadcrumb,
       disabledcomponents: [],
       component: null,
       headers: [],
