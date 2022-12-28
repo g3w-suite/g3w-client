@@ -11,7 +11,7 @@
       <div v-for="(category, index) in categories"  style="display: flex; align-items: center; width: 100%" v-disabled="category.disabled">
         <span v-if="category.ruleKey" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"></span>
         <img v-if ="legendplace === 'toc'" :src="category.icon && `data:image/png;base64,${category.icon}`" @error="setError()" @load="urlLoaded()">
-        <span v-if="(legendplace === 'tab' && category.ruleKey) || (legendplace === 'toc' && showCategoriesCheckBox)" class="new_line_too_long_text" style="padding-left: 3px;">{{category.title}}</span>
+        <span v-if="(legendplace === 'tab' && category.ruleKey) || (legendplace === 'toc' && showCategoriesCheckBox)" class="g3w-long-text" style="padding-left: 3px;">{{category.title}}</span>
       </div>
     </figure>
   </div>
