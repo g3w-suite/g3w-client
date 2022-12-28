@@ -122,7 +122,6 @@ export default {
     };
 
     this.quill.on('text-change', this.handler);
-    this.quill.update();
   },
   watch: {
     'state.value'(value){
