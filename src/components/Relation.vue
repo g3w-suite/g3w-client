@@ -3,7 +3,7 @@
 <!-- gui/relations/vue/relation.js@v3.4 -->
 
 <template>
-  <div class="query-relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;">
+  <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;">
     <div class="header skin-background-color lighten" ref="relation-header" style="padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <div style="border-radius: 3px;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}" class="g3w-long-text">
         <span v-if="showrelationslist" style="font-size: 0.8em;" v-t-tooltip:right.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('exit')" @click.stop="back"></span>
@@ -23,7 +23,7 @@
             <component :is="headercomponent" :layer="downloadLayer.state" :config="downloadLayer.config"/>
           </div>
         </template>
-        <table ref="relationtable" class="hover relationtable table table-striped row-border">
+        <table ref="relationtable" class="hover relationtable table table-striped row-border" style="width:100%">
           <thead>
             <tr style="height: 0! important">
               <th v-if="table.formStructure || isEditable" :style="{minWidth: `${((1*!!table.formStructure) + (1*isEditable))*30}px`, padding: '0 !important' }"></th>
@@ -106,25 +106,22 @@ export default {
   },
   methods: {
     async resize(){
-      await this.$nextTick();
       const tableHeight = $(".content").height();
-      setTimeout(()=>{
-        const datatableBody = $('.query-relation div.dataTables_scrollBody').last();
-        const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
-        const OtherElementHeight = breadcrumbHeight +
-          $('.navbar-header').outerHeight() +
-          $('.close-panel-block').outerHeight() +
-          $(this.$refs['relation-header']).outerHeight() +
-          $('.dataTables_filter').last().outerHeight() +
-          $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
-          $('.dataTables_scrollHead').last().outerHeight() +
-          (this.isMobile() ? 50 : 30);
-        datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
-        if (this.table.rowFormStructure) {
-          const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
-          $('.row-wrap-tabs > .tabs-wrapper').width(width);
-        }
-      });
+      const datatableBody = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+      const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
+      const OtherElementHeight = breadcrumbHeight +
+        $('.navbar-header').outerHeight() +
+        $('.close-panel-block').outerHeight() +
+        $(this.$refs['relation-header']).outerHeight() +
+        $('.dataTables_filter').last().outerHeight() +
+        $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
+        $('.dataTables_scrollHead').last().outerHeight() +
+        (this.isMobile() ? 50 : 30);
+      datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+      if (this.table.rowFormStructure) {
+        const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
+        $('.row-wrap-tabs > .tabs-wrapper').width(width);
+      }
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
     saveRelation(type){
