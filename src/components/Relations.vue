@@ -12,7 +12,7 @@
     </div>
     <div class="query-relations-content" style="display: grid; grid-template-columns: repeat(2, auto); grid-column-gap: 5px; grid-row-gap: 5px;">
       <div @click="showRelation(relation)" v-for="relation in relations" class="skin-border-color relation-grid-item">
-        <span style="font-weight: bold; padding: 5px;" class="skin-color">{{ relation.name }}</span>
+        <span style="font-weight: bold; padding: 5px;" class="skin-color g3w-long-text">{{ relation.name }}</span>
       </div>
     </div>
   </div>
@@ -20,10 +20,10 @@
 
 <script>
 export default {
-  props: ['relations', 'feature','loading'],
+  props: ['relations', 'feature', 'loading'],
   methods: {
-    showRelation(relation) {
-      this.$parent.showRelation(relation);
+    async showRelation(relation) {
+      await this.$parent.showRelation(relation);
     },
     featureInfo() {
       let infoFeatures = [];
@@ -41,11 +41,11 @@ export default {
       return infoFeatures
     }
   },
-  mounted() {
+  async mounted() {
     if (this.relations.length === 1) {
       const relation = this.relations[0];
       relation.noback = true;
-      this.showRelation(relation);
+      await this.showRelation(relation);
     }
   },
   beforeDestroy() {
@@ -57,12 +57,17 @@ export default {
 </script>
 <style scoped>
   .relation-grid-item {
+    min-width: 0;
     min-height: 80px;
-    border: 1px solid;
+    border: 2px solid;
     cursor:pointer;
     border-radius: 2px;
     background-color: #ffffff;
     display: flex;
     align-items: center;
   }
+  .relation-grid-item:hover {
+    background-color: transparent;
+  }
+
 </style>

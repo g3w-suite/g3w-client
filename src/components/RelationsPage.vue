@@ -4,17 +4,16 @@
 
 <template>
   <div class="query-relations-page">
-      <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
-        :ref="currentview"
-        :previousview="previousview"
-        :is="currentview"
-        :showChartButton="showChartButton"
-        :relations="relations"
-        :relation="relation"
-        :nmRelation="nmRelation"
-        :feature="feature"
-        :table="table">
-      </component>
+    <component :loading="loading" @save-relation="saveRelations" @show-chart="showChart" @hide-chart="hideChart"
+      :ref="currentview"
+      :previousview="previousview"
+      :is="currentview"
+      :showChartButton="showChartButton"
+      :relations="relations"
+      :relation="relation"
+      :nmRelation="nmRelation"
+      :feature="feature"
+      :table="table"/>
   </div>
 </template>
 
@@ -29,19 +28,28 @@ const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 
 export default {
   data() {
-    this. chartRelationIds = this.$options.chartRelationIds || [];
+    this.chartRelationIds = this.$options.chartRelationIds || [];
+    const {
+      table,
+      relation=null,
+      relations,
+      nmRelation,
+      feature,
+      currentview,
+      service
+    } = this.$options;
     return {
       loading: false,
       state: null,
       error: false,
-      table: this.$options.table ? this.$options.service.buildRelationTable(this.$options.table) : null,
-      relation: this.$options.relation || null,
-      relations: this.$options.relations,
-      nmRelation: this.$options.nmRelation,
+      table: table ? service.buildRelationTable(table) : null,
+      relation,
+      relations,
+      nmRelation,
       showChartButton: false,
-      feature: this.$options.feature,
-      currentview: this.$options.currentview,
-      previousview: this.$options.currentview
+      feature,
+      currentview,
+      previousview: currentview
     }
   },
   provide() {
@@ -119,8 +127,8 @@ export default {
       this.loading = false;
     }
   },
-  beforeMount() {
-    if (this.relations.length === 1 && this.relations[0].type === 'ONE')  this.showRelation(this.relations[0])
+  async beforeMount() {
+    if (this.relations.length === 1 && this.relations[0].type === 'ONE')  await this.showRelation(this.relations[0])
   },
   async mounted() {
     /**
