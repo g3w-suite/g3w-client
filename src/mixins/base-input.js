@@ -3,6 +3,9 @@
  */
 export default {
   computed: {
+    tabIndex(){
+      return this.editable ? 0 : -1;
+    },
     notvalid() {
       return this.state.validate.valid === false;
     },

@@ -12,6 +12,7 @@
         @blur="checkValue"
         style="width:100%; padding-right: 5px;"
         class="form-control"
+        :tabIndex="tabIndex"
         v-disabled="!editable"
         :class="{'input-error-validation' : notvalid}"
         v-model="state.value"

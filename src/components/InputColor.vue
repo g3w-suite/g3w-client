@@ -9,6 +9,7 @@
       type="color"
       slot="body"
       @change="change"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :field="state.name"
       class="form-control"

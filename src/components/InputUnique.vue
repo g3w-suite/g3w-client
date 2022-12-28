@@ -8,6 +8,7 @@
       :id="id"
       slot="body"
       style="width:100%"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       class="form-control">
       <option value="null"></option>
