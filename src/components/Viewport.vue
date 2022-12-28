@@ -40,10 +40,13 @@
     </div>
     <div id="g3w-view-content" :class="`split-${state.split}`" class="g3w-view content" :style="styles.content" v-disabled="state.content.disabled">
       <section :ref="breadcrumb" class="content_breadcrumb" v-if="breadcrumb.length > 1">
-        <span class="skin-color-dark" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}" v-for="(crumb, index) in breadcrumb" v-t:pre="crumb.title" :key="crumb.title"><span v-if="isNotLastCrumb(index)"> / </span></span>
+        <span v-for="(crumb, index) in breadcrumb" :key="crumb.title">
+          <span class="skin-color-dark" :style="{fontWeight: isNotLastCrumb(index) ? 'bold' : 'normal'}"  v-t="crumb.title" ></span>
+          <span style="font-weight: bold; margin: 3px 0" v-if="isNotLastCrumb(index)">/</span>
+        </span>
       </section>
       <div v-if="(showtitle && contentTitle) || previousTitle || (state.content.closable && state.content.aside)" class="close-panel-block" style="display: flex; justify-content: space-between">
-        <div v-if="previousTitle" class="g3w_contents_back">
+        <div v-if="previousTitle" class="g3w_contents_back g3w-long-text">
           <div :class="backOrBackTo" v-if ="backOrBackTo === 'back'">
             <span class="action-button" :class="g3wtemplate.getFontClass('back')"></span>
             <span v-t="'back'"></span>
@@ -169,7 +172,7 @@
     },
     methods: {
       isNotLastCrumb(index) {
-        return index < this.breadcrumb.length -1;
+        return index < this.breadcrumb.length - 1;
       },
       closeContent() {
         GUI.closeContent();
@@ -224,7 +227,7 @@
 <style scoped>
   .content_breadcrumb {
     font-size: 1.2em;
-    padding: 3px;
+    padding: 0 3px;
     border-radius: 3px;
   }
 </style>
