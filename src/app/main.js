@@ -786,9 +786,13 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
-    GUI.closeForm = function() {
+    /**
+     *
+     * @param pop remove or not content or pop
+     */
+    GUI.closeForm = function({pop=false}={}) {
       this.emit('closeform', false);
-      viewport.ViewportService.removeContent();
+      pop ? GUI.popContent() : viewport.ViewportService.removeContent();
       // force set modal to false
       GUI.setModal(false);
     };

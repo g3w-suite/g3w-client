@@ -110,7 +110,9 @@
     },
     computed: {
       breadcrumb(){
-         return this.state.content.contentsdata.map(content => content.options.crumb);
+         return this.state.content.contentsdata
+           .filter(content => content.options.crumb)
+           .map(content => content.options.crumb);
       },
       showresize(){
         const currentPerc = viewportService.getCurrentContentLayout()[this.state.split === 'h' ? 'width' : 'height'];
