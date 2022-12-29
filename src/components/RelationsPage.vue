@@ -77,7 +77,6 @@ export default {
     },
     async showRelation(relation) {
       GUI.setLoadingContent(true);
-
       this.loading = true;
       this.relation = relation;
       let relationLayerId = relation.referencingLayer;
@@ -108,8 +107,8 @@ export default {
           }
         });
         await this.$nextTick();
+        this.previousview = this.currentview;
         this.currentview = 'relation';
-        this.previousview = 'relations'
       } catch(err){
         // manage error here
       }
@@ -127,8 +126,8 @@ export default {
       this.loading = false;
     }
   },
-  async beforeMount() {
-    if (this.relations.length === 1 && this.relations[0].type === 'ONE')  await this.showRelation(this.relations[0])
+  beforeMount() {
+    if (this.currentview === 'relation' || (this.relations.length === 1 && this.relations[0].type === 'ONE')) this.showRelation(this.relations[0])
   },
   async mounted() {
     /**

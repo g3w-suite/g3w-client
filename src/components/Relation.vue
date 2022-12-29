@@ -3,7 +3,7 @@
 <!-- gui/relations/vue/relation.js@v3.4 -->
 
 <template>
-  <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;">
+  <div class="query-relation" ref="query_relation" :class="isMobile() ? 'mobile' : null" style="margin-top: 3px;" v-if="table">
     <div class="header skin-background-color lighten" ref="relation-header" style="padding: 3px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
       <div style="border-radius: 3px;" :style="{fontSize: isMobile() ? '1em' : '1.3em'}" class="g3w-long-text">
         <span v-if="showrelationslist" style="font-size: 0.8em;" v-t-tooltip:right.create="'sdk.relations.back_to_relations'" class="action-button-icon action-button" :class="g3wtemplate.getFontClass('exit')" @click.stop="back"></span>
@@ -30,7 +30,7 @@
               <th v-for="column in table.columns">{{ column }}</th>
             </tr>
           </thead>
-          <tbody >
+          <tbody>
           <tr v-for="(row, index) in table.rows" :key="table.rows_fid[index]" :class="{'selected': table.rowFormStructure === row}">
             <td v-if="table.formStructure || isEditable">
               <span v-if="table.formStructure" @click="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
@@ -105,22 +105,84 @@ export default {
     }
   },
   methods: {
+    async createTable(){
+      const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
+      this.isEditable =  layer.isEditable() && !layer.isInEditing();
+      const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
+      const downloadformatsLength = downloadformats.length;
+      if (downloadformatsLength > 0){
+        this.downloadButton = {
+          toggled: false,
+          tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
+          handler: downloadformatsLength > 1 ? async ()=> {
+            this.downloadButton.toggled = !this.downloadButton.toggled;
+            this.downloadLayer.state = this.downloadLayer.state || layer.state;
+            this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
+              {
+                id: format,
+                format,
+                cbk: () => {
+                  this.saveRelation(layer.getDownloadUrl(format));
+                  this.headercomponent = null;
+                },
+                download: true
+              })
+            );
+            this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
+          } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
+        }
+      }
+      RelationPageEventBus.$on('reload', () => {
+        this.reloadLayout();
+      });
+      this.showChart = throttle(async ()=> {
+        this.chart = !this.chart;
+        await this.$nextTick();
+        this.chartContainer = this.chartContainer ||  $('#chart_content');
+        const relationData = {
+          relations: [this.relation],
+          fid: this.feature.attributes[G3W_FID],
+        };
+        this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
+      });
+      await this.$nextTick();
+      SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
+      this.relation.title = this.relation.name;
+
+      if (!this.one) {
+        this.relationDataTable = $(this.$refs.relationtable).DataTable( {
+          "pageLength": 10,
+          "bLengthChange": true,
+          "scrollResize": true,
+          "scrollCollapse": true,
+          "scrollX": true,
+          "responsive": true,
+          "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
+          "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
+        });
+        this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
+        this.resize();
+      }
+    },
     async resize(){
-      const tableHeight = $(".content").height();
-      const datatableBody = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
-      const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
-      const OtherElementHeight = breadcrumbHeight +
-        $('.navbar-header').outerHeight() +
-        $('.close-panel-block').outerHeight() +
-        $(this.$refs['relation-header']).outerHeight() +
-        $('.dataTables_filter').last().outerHeight() +
-        $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
-        $('.dataTables_scrollHead').last().outerHeight() +
-        (this.isMobile() ? 50 : 30);
-      datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
-      if (this.table.rowFormStructure) {
-        const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
-        $('.row-wrap-tabs > .tabs-wrapper').width(width);
+      // in case of waiting table
+      if (this.$refs.query_relation) {
+        const tableHeight = $(".content").height();
+        const datatableBody = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
+        const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
+        const OtherElementHeight = breadcrumbHeight +
+          $('.navbar-header').outerHeight() +
+          $('.close-panel-block').outerHeight() +
+          $(this.$refs['relation-header']).outerHeight() +
+          $('.dataTables_filter').last().outerHeight() +
+          $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
+          $('.dataTables_scrollHead').last().outerHeight() +
+          (this.isMobile() ? 50 : 30);
+        datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
+        if (this.table.rowFormStructure) {
+          const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
+          $('.row-wrap-tabs > .tabs-wrapper').width(width);
+        }
       }
       this.relationDataTable && this.relationDataTable.columns.adjust();
     },
@@ -177,6 +239,13 @@ export default {
     }
   },
   watch: {
+    // in case of show relation directly
+    table: {
+      immediate: true,
+      handler(table) {
+        table && this.createTable();
+      }
+    },
     async chart(){
       await this.$nextTick();
       this.resize();
@@ -188,67 +257,6 @@ export default {
   },
   beforeCreate() {
     this.delayType = 'debounce';
-  },
-  created() {
-    const layer = CatalogLayersStoresRegistry.getLayerById(this.table.layerId);
-    this.isEditable =  layer.isEditable() && !layer.isInEditing();
-    const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
-    const downloadformatsLength = downloadformats.length;
-    if (downloadformatsLength > 0){
-      this.downloadButton = {
-        toggled: false,
-        tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
-        handler: downloadformatsLength > 1 ? async ()=> {
-          this.downloadButton.toggled = !this.downloadButton.toggled;
-          this.downloadLayer.state = this.downloadLayer.state || layer.state;
-          this.downloadLayer.config.downloads = this.downloadLayer.config.downloads.length ? this.downloadLayer.config.downloads : downloadformats.map(format =>(
-            {
-              id: format,
-              format,
-              cbk: () => {
-                this.saveRelation(layer.getDownloadUrl(format));
-                this.headercomponent = null;
-              },
-              download: true
-            })
-          );
-          this.headercomponent = this.downloadButton.toggled ? DownloadFormats : null;
-        } : () => this.saveRelation(layer.getDownloadUrl(downloadformats[0]))
-      }
-    }
-    RelationPageEventBus.$on('reload', () => {
-      this.reloadLayout();
-    });
-    this.showChart = throttle(async ()=> {
-      this.chart = !this.chart;
-      await this.$nextTick();
-      this.chartContainer = this.chartContainer ||  $('#chart_content');
-      const relationData = {
-        relations: [this.relation],
-        fid: this.feature.attributes[G3W_FID],
-      };
-      this.$emit(this.chart ? 'show-chart': 'hide-chart', this.chartContainer, relationData);
-    });
-  },
-  async mounted() {
-    SIDEBARWIDTH = GUI.getSize({element:'sidebar', what:'width'});
-    this.relation.title = this.relation.name;
-
-    if (!this.one) {
-      this.relationDataTable = $(this.$refs.relationtable).DataTable( {
-        "pageLength": 10,
-        "bLengthChange": true,
-        "scrollResize": true,
-        "scrollCollapse": true,
-        "scrollX": true,
-        "responsive": true,
-        "order": [ this.table.formStructure ? 1 : 0, 'asc' ],
-        "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
-      });
-      this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-      await this.$nextTick();
-      this.resize();
-    }
   },
   beforeDestroy(){
     this.relationDataTable.destroy();

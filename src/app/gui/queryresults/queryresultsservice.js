@@ -1765,9 +1765,10 @@ proto.showRelation = function({relation, layerId, feature}={}){
   const projectRelation = this._project.getRelationById(relationId);
   const nmRelation = this._project.getRelationById(nmRelationId);
   this.findPlotId(projectRelation.referencingLayer) && chartRelationIds.push(projectRelation.referencingLayer);
+
   GUI.pushContent({
     content: new RelationsPage({
-      currentview: 'relations',
+      currentview: 'relation',
       relations: [projectRelation],
       chartRelationIds,
       nmRelation,
@@ -1777,7 +1778,7 @@ proto.showRelation = function({relation, layerId, feature}={}){
       }
     }),
     crumb: {
-      title: layerId
+      title: projectRelation.name
     },
     title: projectRelation.name,
     closable: false
@@ -1785,11 +1786,13 @@ proto.showRelation = function({relation, layerId, feature}={}){
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
+
   GUI.changeCurrentContentOptions({
     crumb: {
       title: layer.title
     }
   });
+
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
