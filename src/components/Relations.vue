@@ -61,7 +61,7 @@ export default {
     min-height: 80px;
     border: 2px solid;
     cursor:pointer;
-    border-radius: 2px;
+    border-radius: 4px;
     background-color: #ffffff;
     display: flex;
     align-items: center;

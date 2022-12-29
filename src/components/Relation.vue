@@ -33,7 +33,7 @@
           <tbody>
           <tr v-for="(row, index) in table.rows" :key="table.rows_fid[index]" :class="{'selected': table.rowFormStructure === row}">
             <td v-if="table.formStructure || isEditable">
-              <span v-if="table.formStructure" @click="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
+              <span v-if="table.formStructure" @click.stop="showFormStructureRow($event, row)" style="cursor: pointer" :current-tooltip="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                 class="action-button row-form skin-color" v-t-tooltip:right.create="table.rowFormStructure === row ? 'sdk.tooltips.relations.form_to_row': 'sdk.tooltips.relations.row_to_form'"
                 :class="[table.rowFormStructure === row ? g3wtemplate.getFontClass('minus') :  g3wtemplate.getFontClass('table')]"></span>
               <span v-if="isEditable" @click.stop="editFeature(index)" class="action-button row-form skin-color" v-t-tooltip:right.create="'Edit'"
@@ -110,7 +110,7 @@ export default {
       this.isEditable =  layer.isEditable() && !layer.isInEditing();
       const downloadformats = layer.isDownloadable() ? layer.getDownloadableFormats() : [];
       const downloadformatsLength = downloadformats.length;
-      if (downloadformatsLength > 0){
+      if (downloadformatsLength > 0) {
         this.downloadButton = {
           toggled: false,
           tooltip: downloadformatsLength > 1 ? 'Downloads' : `sdk.tooltips.download_${downloadformats[0]}`,
@@ -161,12 +161,14 @@ export default {
           "columnDefs": [{"orderable":  !this.table.formStructure, "targets": 0}]
         });
         this.tableHeaderHeight = $('.query-relation  div.dataTables_scrollHeadInner').height();
-        this.resize();
+        //this.resize();
       }
+      //In case of pop child relation need to resize
+      GUI.on('pop-content', this.resize);
     },
     async resize(){
       // in case of waiting table
-      if (this.$refs.query_relation) {
+      if (this.$refs.query_relation && this.$refs.query_relation.parentNode.style.display !== 'none') {
         const tableHeight = $(".content").height();
         const datatableBody = $(this.$refs.query_relation).find('div.dataTables_scrollBody');
         const breadcrumbHeight = $('.content_breadcrumb').outerHeight();
@@ -176,15 +178,14 @@ export default {
           $(this.$refs['relation-header']).outerHeight() +
           $('.dataTables_filter').last().outerHeight() +
           $('.dataTables_paginate.paging_simple_numbers').outerHeight() +
-          $('.dataTables_scrollHead').last().outerHeight() +
-          (this.isMobile() ? 50 : 30);
+          $('.dataTables_scrollHead').last().outerHeight();
         datatableBody.height(tableHeight - this.tableHeaderHeight - OtherElementHeight );
         if (this.table.rowFormStructure) {
           const width = datatableBody.width() - $(this.$refs.relationtable).find('tr.selected > td').outerWidth() - 20;
           $('.row-wrap-tabs > .tabs-wrapper').width(width);
         }
+        this.reloadLayout();
       }
-      this.relationDataTable && this.relationDataTable.columns.adjust();
     },
     saveRelation(type){
       this.$emit('save-relation', type);
@@ -193,7 +194,6 @@ export default {
     async showFormStructureRow(event, row){
       this.table.rowFormStructure = this.table.rowFormStructure === row ? null : row;
       this.fields = this.getRowFields(row);
-      this.resize();
       await this.$nextTick();
       $('#relationtable_wrapper div.dataTables_scrollBody').css('overflow-x', this.table.rowFormStructure  ? 'hidden' : 'auto');
       this.resize();
@@ -243,7 +243,7 @@ export default {
     table: {
       immediate: true,
       handler(table) {
-        table && this.createTable();
+        table && table.rows.length && this.createTable();
       }
     },
     async chart(){
@@ -258,12 +258,15 @@ export default {
   beforeCreate() {
     this.delayType = 'debounce';
   },
-  beforeDestroy(){
-    this.relationDataTable.destroy();
-    this.relationDataTable = null;
-    this.chartContainer && this.$emit('hide-chart', this.chartContainer);
-    this.chartContainer = null;
-    this.tableHeaderHeight = null;
+  async beforeDestroy(){
+    if (this.relationDataTable){
+      this.relationDataTable.destroy();
+      this.relationDataTable = null;
+      this.chartContainer && this.$emit('hide-chart', this.chartContainer);
+      this.chartContainer = null;
+      this.tableHeaderHeight = null;
+      GUI.off('pop-content', this.resize);
+    }
   }
 };
 </script>
