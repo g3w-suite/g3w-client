@@ -237,7 +237,7 @@ function MapService(options={}) {
       this.emit('viewerset');
     },
     controlClick(mapcontrol, info={}) {},
-    loadExternalLayer(layer){}, // used in general to alert exteexternal layer is  load
+    loadExternalLayer(layer){}, // used in general to alert external layer is  loaded
     unloadExternalLayer(layer){}
   };
 
@@ -1060,7 +1060,7 @@ proto._setupControls = function() {
 /**
  *  Set ZIndex layer from fa stack
  */
-proto.setZIndexLayer = function({layer, zindex=map.getLayers().getLength()}={}){
+proto.setZIndexLayer = function({layer, zindex=this.getMap().getLayers().getLength()}={}){
   layer && layer.setZIndex(zindex);
 };
 
@@ -1290,9 +1290,12 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
-          // check if there enought space to expand mapcontrols
-          const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
-          if (freeSpace  > nextHeight) {
+          // check if there enough space to expand map controls
+          /**
+           Add 15 px of offset. Need to find a better solution in future
+           */
+          const nextHeight = 15 + (this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight);
+          if (freeSpace > nextHeight) {
             changedAndMoreSpace.changed = true;
             changedAndMoreSpace.space = true;
             this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
@@ -1304,7 +1307,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
-          changedAndMoreSpace.space && setTimeout(()=>handleVerticalMapControlDOMElements());
+          changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
         }
       };
       handleVerticalMapControlDOMElements();
@@ -1662,10 +1665,11 @@ proto._setupViewer = function(width, height) {
     const position = layer.get('position');
     let zindex = basemap && 0;
     if (position && position === 'bottom') zindex = 0;
-    this.setLayerZIndex({
+    zindex = this.setLayerZIndex({
       layer,
       zindex
-    })
+    });
+    this.moveDefaultLayersOnTop(zindex);
   });
 
   this.viewer.map.getLayers().on('remove', evt => {
@@ -1820,6 +1824,17 @@ proto._setUpDefaultLayers = function(){
   this.getMap().addLayer(this.defaultsLayers.selectionLayer);
 };
 
+proto.moveDefaultLayersOnTop = function(zindex){
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.highlightLayer,
+    zindex: zindex+1
+  });
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.selectionLayer,
+    zindex: zindex + 2
+  });
+};
+
 proto.removeDefaultLayers = function(){
   this.defaultsLayers.highlightLayer.getSource().clear();
   this.defaultsLayers.selectionLayer.getSource().clear();
@@ -1851,6 +1866,7 @@ proto.removeAllLayers = function(){
 //set ad increase layerIndex
 proto.setLayerZIndex = function({layer, zindex=this.layersCount+=1}){
   layer.setZIndex(zindex);
+  return zindex;
 };
 
 /**
@@ -2599,13 +2615,29 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
   const catalogService = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
   if (externalLayer instanceof ol.layer.Vector) {
+    let color;
+    /**
+     * Used to selection query result purpose
+     * @type {{active: boolean}}
+     */
+    const filter = {
+      active: false // AT MOMENT NOT USED
+    };
+    const selection = {
+      active: false,
+      features: []
+    };
+    /**
+     * end selection query result purpose properties
+     */
     let id = externalLayer.get('id');
     if (id === undefined) {
       id = uniqueId();
       externalLayer.set('id', id);
     }
     vectorLayer = externalLayer;
-    let color;
+    vectorLayer.filter = filter;
+    vectorLayer.selection = selection;
     try {
       const style = externalLayer.getStyle();
       color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
@@ -2629,7 +2661,9 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       checked: true,
       position,
       opacity,
-      color
+      color,
+      filter,
+      selection
     };
   } else if (externalLayer instanceof ol.layer.Image){
     type = 'wms';
@@ -2657,7 +2691,17 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     if (layer) {
       if (type === 'vector') {
         const features = layer.getSource().getFeatures();
-        if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
+        if (features.length) {
+          let id= 0;
+          /**
+           * need to add id value
+           */
+          features.forEach(feature => {
+            feature.setId(id);
+            id+=1;
+          });
+          externalLayer.geometryType = features[0].getGeometry().getType();
+        }
         extent = layer.getSource().getExtent();
         externalLayer.bbox = {
           minx: extent[0],

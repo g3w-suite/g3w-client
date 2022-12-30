@@ -4,7 +4,10 @@
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
     <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
-    <figure>
+    <figure v-if="externallegend">
+      <img :src="getWmsSourceLayerLegendUrl()" >
+    </figure>
+    <figure v-else>
       <div v-for="(category, index) in categories"  style="display: flex; align-items: center; width: 100%" v-disabled="category.disabled">
         <span v-if="category.ruleKey" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"></span>
         <img v-if ="legendplace === 'toc'" :src="category.icon && `data:image/png;base64,${category.icon}`" @error="setError()" @load="urlLoaded()">
@@ -38,6 +41,9 @@
       }
     },
     computed:{
+      externallegend(){
+        return this.layer.source.type === 'wms';
+      },
       legend(){
         return this.layer.legend;
       },
@@ -49,6 +55,9 @@
       }
     },
     methods: {
+      getWmsSourceLayerLegendUrl() {
+        return this.getProjectLayer().getLegendUrl();
+      },
       getProjectLayer(){
         return CatalogLayersStoresRegistry.getLayerById(this.layer.id);
       },
@@ -70,6 +79,7 @@
         this.legend.loading = false;
       },
       async handlerChangeLegend(options={}){
+        if (this.externallegend) return;
         const { layerId } = options;
         layerId === this.layer.id && await this.setLayerCategories(true);
         this.dynamic && await this.setLayerCategories(false);
@@ -131,7 +141,7 @@
         /*
         * Only when visible show categories layer. In case of dynamic legend check
         * **/
-        visible && this.setLayerCategories(!this.dynamic);
+       !this.externallegend && visible && this.setLayerCategories(!this.dynamic);
       }
     },
     async created() {
@@ -151,8 +161,7 @@
         this.dynamic && mapService.on('change-map-legend-params', async () => {
           this.mapReady = true;
           this.layer.visible &&
-          (this.legendplace === 'toc' || this.layer.categories) &&
-          this.setLayerCategories(false);
+          (!this.externallegend && (this.legendplace === 'toc' || this.layer.categories)) && this.setLayerCategories(false);
         });
       })
     },

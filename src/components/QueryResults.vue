@@ -42,15 +42,15 @@
                     </template>
                     <!--        DOWNLOAD        -->
                   </template>
-                  <span v-if="!layer.source || layer.source.type !== 'wms'" @click.stop="addLayerFeaturesToResults(layer)" class="action-button" :class="{'toggled': layer.addfeaturesresults.active}"
+                  <span v-if="layer.external || (layer.source && layer.source.type !== 'wms')" @click.stop="addLayerFeaturesToResults(layer)" class="action-button" :class="{'toggled': layer.addfeaturesresults.active}"
                         v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_features_to_results.hint'">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('plus-square')"></span>
                   </span>
-                  <span v-if="layer.features.length > 1 && layer.source.type !== 'wms'" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
+                  <span v-if="layer.features.length > 1 && (layer.external || (layer.source && layer.source.type !== 'wms'))" @click.stop="selectionFeaturesLayer(layer)" class="action-button skin-tooltip-left"
                         v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.add_selection.hint'"  :class="{'toggled': layer.selection.active}">
                     <span class="action-button-icon" :class="g3wtemplate.getFontClass('success')"></span>
                   </span>
-                  <span v-show="layer.selection.active" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
+                  <span v-show="layer.selection.active && !layer.external" @click.stop="addRemoveFilter(layer)" class="action-button skin-tooltip-left" :class="{'toggled': layer.filter.active}"
                         v-t-tooltip:left.create="'layer_selection_filter.tools.filter'">
                   <span class="action-button-icon" :class="g3wtemplate.getFontClass('filter')"></span>
                 </span>
@@ -475,7 +475,7 @@
            if (feature.attributes.relations) {
               const relations = feature.attributes.relations;
               relations.forEach(relation => {
-                const boxid = layer.id + '_' + feature.id + '_' + relation.name;
+                const boxid = `${layer.id}_${feature.id}_${relation.name}`;
                 const elements = relation.elements;
                 elements.forEach((element, index) =>{
                   this.layersFeaturesBoxes[boxid+index] = {

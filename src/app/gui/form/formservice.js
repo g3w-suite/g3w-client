@@ -78,7 +78,7 @@ function FormService() {
       disabled: false,
       isnew,
       valid: true, // global form validation state. True at beginning
-      update: false,
+      update: feature.isNew(), // set update in case or not is a new feature
       // when input change will be update
       tovalidate: {},
       feature,
@@ -86,6 +86,7 @@ function FormService() {
       footer,
       ready: false
     };
+    this.force.update = feature.isNew();
     this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
     this.default_expression_fields_dependencies = {};
     this.setFormFields(fields);
@@ -228,7 +229,6 @@ proto.handleFieldsWithExpression = function(fields=[]){
       name
     });
   });
-
 };
 
 proto.setCurrentFormPercentage = function(perc){

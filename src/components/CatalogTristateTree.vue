@@ -41,21 +41,17 @@
         </span>
       </span>
     </template>
-    <div v-show="!layerstree.hidden || isGroup"
-      class="tree-node-title"
-      :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
-        <span
-          :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}"
-          class="skin-tooltip-top new_line_too_long_text"
-          data-placement="top"
-          :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
-          v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
-          {{ layerstree.title }}
-        </span>
-        <div v-if="(!isGroup && !layerstree.external)">
-          <span v-if="layerstree.selection.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" @click.caputure.prevent.stop="clearSelection" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
-          <span v-if="layerstree.selection.active || layerstree.filter.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
-        </div>
+    <div v-show="!layerstree.hidden || isGroup" class="tree-node-title" :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
+      <span :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}" class="skin-tooltip-top new_line_too_long_text"
+        data-placement="top"
+        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
+        {{ layerstree.title }}
+      </span>
+      <div v-if="(!isGroup && layerstree.selection)">
+        <span v-if="layerstree.selection.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" @click.caputure.prevent.stop="clearSelection" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
+        <span v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
+      </div>
     </div>
     <layerlegend v-if="showLayerTocLegend" :legendplace="legendplace" :layer="layerstree"></layerlegend>
     <ul v-if="isGroup" class="tree-content-items group" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
@@ -100,7 +96,7 @@ export default {
   },
   computed: {
     showLayerTocLegend(){
-      return !this.isGroup && this.layerstree.geolayer;
+      return !this.isGroup && this.layerstree.geolayer && this.legendplace === 'toc';
     },
     isGroup() {
       return !!this.layerstree.nodes
