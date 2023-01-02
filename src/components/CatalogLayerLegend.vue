@@ -66,7 +66,7 @@
       },
       showHideLayerCategory(index) {
         const projectLayer = this.getProjectLayer();
-        this.categories[index].checked = this.categories[index].checked = !this.categories[index].checked;
+        this.categories[index].checked = !this.categories[index].checked;
         projectLayer.change();
         if (this.legendplace === 'tab') CatalogEventHub.$emit('layer-change-categories', this.layer);
         else if (this.categories[index].checked && this.mapReady) this.setLayerCategories(false);
@@ -164,9 +164,6 @@
           (!this.externallegend && (this.legendplace === 'toc' || this.layer.categories)) && this.setLayerCategories(false);
         });
       })
-    },
-    async mounted() {
-      await this.$nextTick();
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
