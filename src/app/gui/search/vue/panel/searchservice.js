@@ -95,7 +95,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
         if (forminput.options.values === undefined) forminput.options.values = [];
-        else if (dependance){ // in case of dependence load rigth now
+        else if (dependance){ // in case of dependence load right now
           if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
             forminput.options.values = values;
@@ -286,10 +286,11 @@ proto.getUniqueValuesFromField = async function({field, value, unique}){
   return data;
 };
 
-proto.autocompleteRequest = async function({field, value}={}){
+proto.autocompleteRequest = async function({field, value}={}, options={}){
   let data = [];
   try {
     data = await this.searchLayer.getFilterData({
+      ...options,
       suggest: `${field}|${value}`,
       unique: field
     })
@@ -498,6 +499,7 @@ proto.getCurrentFieldDependance = function(field) {
   } || null;
 };
 
+
 // check the current value of dependance
 proto.getDependanceCurrentValue = function(field) {
   const dependance = this.inputdependance[field];
@@ -510,24 +512,23 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
   //check id inpute father is valid to search on subscribers
   const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
+    //loop over dependencies fields inputs
     subscribers.forEach(subscribe => {
-      // in case of atuocomplete reset values to empty array
+      // in case of autocomplete reset values to empty array
       if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
       else {
         //set starting all values
-        if (subscribe.options._allvalues === undefined)
-          subscribe.options._allvalues = [...subscribe.options.values];
-        //case of father is set an empty invalid value (all value exmaple)
+        if (subscribe.options._allvalues === undefined) subscribe.options._allvalues = [...subscribe.options.values];
+        //case of father is set an empty invalid value (all value example)
         if (invalidValue) {
           //subscribe has to set all valaues
           subscribe.options.values.splice(0);
-          setTimeout(()=>{
-            subscribe.options.values = [...subscribe.options._allvalues]
-          });
+          setTimeout(()=>subscribe.options.values = [...subscribe.options._allvalues]);
         } else subscribe.options.values.splice(1); //otherwise has to get first __ALL_VALUE
       }
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
     });
+    // check i cache field values are set
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
     const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
@@ -555,7 +556,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
               subscribe.options.values.push(values[i]);
             }
           }
-          // set disabled false to dependance field
+          // set disabled false to dependence field
           subscribe.options.disabled = false;
           resolve()
         }
@@ -607,9 +608,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                     try {
                       const values = await this.getValueRelationValues(subscribe, filter);
                       values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err){
-                      console.log(err)
-                    }
+                    } catch(err){console.log(err)}
                   }
                 }
               else {
@@ -632,6 +631,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             resolve();
           })
         } else {
+          subscribers.forEach(subscribe => subscribe.options.disabled = false)
           this.state.loading[field] = false;
           resolve();
         }
