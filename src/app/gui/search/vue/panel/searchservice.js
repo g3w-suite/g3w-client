@@ -286,15 +286,17 @@ proto.getUniqueValuesFromField = async function({field, value, unique}){
   return data;
 };
 
-proto.autocompleteRequest = async function({field, value}={}, options={}){
+proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
   try {
     data = await this.searchLayer.getFilterData({
-      ...options,
+      field: this.getAutoFieldDependeciesParamField(field),
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {}
+  } catch(error) {
+    console.log(error)
+  }
   return data.map(value => ({
     id:value,
     text:value
@@ -499,6 +501,14 @@ proto.getCurrentFieldDependance = function(field) {
   } || null;
 };
 
+proto.getAutoFieldDependeciesParamField = function(field, fieldParam) {
+  const fieldDependency = this.getCurrentFieldDependance(field);
+  if (fieldDependency) {
+    const [attribute, value] = Object.entries(fieldDependency)[0];
+    fieldParam = this.getAutoFieldDependeciesParamField(attribute, `${attribute}|eq|${encodeURIComponent(value)}${fieldParam ? '|and,'+fieldParam: ''}`)
+  }
+  return fieldParam;
+};
 
 // check the current value of dependance
 proto.getDependanceCurrentValue = function(field) {
@@ -631,13 +641,16 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             resolve();
           })
         } else {
-          subscribers.forEach(subscribe => subscribe.options.disabled = false)
+          //set disable
+          subscribers.forEach(subscribe => {
+            if (subscribe.options.dependance_strict) subscribe.options.disabled = false;
+          });
           this.state.loading[field] = false;
           resolve();
         }
       }
     } else {
-      notAutocompleteSubscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
+      subscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
       resolve();
     }
   })
