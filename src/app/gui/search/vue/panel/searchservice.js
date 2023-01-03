@@ -176,6 +176,14 @@ proto.setReturnType = function(returnType='data'){
   this.show = this.return === 'data';
 };
 
+proto.getAutoFieldDependeciesParamField = function(field) {
+  const fieldDependency = this.getCurrentFieldDependance(field);
+  if (fieldDependency) {
+    const [field, value] = Object.entries(fieldDependency)[0];
+    return this.createFieldsDependenciesAutocompleteParameter({field, value})
+  }
+};
+
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
   if (value !== undefined) {
@@ -186,12 +194,11 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
     });
     fields.push(fieldParam);
   }
-
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
     // need to set to lower case for api purpose
-    const operator = this.getFilterInputFromField(field).op.toLowerCase();
-    fields.unshift(`${field}|${operator}|${encodeURI(value)}`);
+    const {op, logicop} = this.getFilterInputFromField(field);
+    fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|${logicop.toLowerCase()}`);
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
@@ -498,16 +505,7 @@ proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
   return dependance && this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE && {
    [dependance]: this.cachedependencies[dependance]._currentValue
-  } || null;
-};
-
-proto.getAutoFieldDependeciesParamField = function(field, fieldParam) {
-  const fieldDependency = this.getCurrentFieldDependance(field);
-  if (fieldDependency) {
-    const [attribute, value] = Object.entries(fieldDependency)[0];
-    fieldParam = this.getAutoFieldDependeciesParamField(attribute, `${attribute}|eq|${encodeURIComponent(value)}${fieldParam ? '|and,'+fieldParam: ''}`)
-  }
-  return fieldParam;
+  } || undefined;
 };
 
 // check the current value of dependance
