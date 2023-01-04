@@ -79,8 +79,8 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, info
     WIDTH: size[0],
     HEIGHT: size[1],
     //LEGEND_ON / LEGEND_OFF parameter
-    LEGEND_ON: LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(): undefined,
-    LEGEND_OFF: LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(): undefined,
+    LEGEND_ON: LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(';'): undefined,
+    LEGEND_OFF: LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(';'): undefined,
   };
   if (!('STYLES' in params)) params['STYLES'] = '';
   const bbox = this._projections.map.getAxisOrientation().substr(0, 2) === 'ne' ? [extent[1], extent[0], extent[3], extent[2]] : extent;
