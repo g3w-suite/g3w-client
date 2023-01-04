@@ -438,6 +438,7 @@ export default {
     },
     info: {
       title: "Risultati",
+      list_of_relations: "Lista delle relazioni",
       open_link: "Apri documento allegato",
       server_error: "Si è verificato un errore nella richiesta al server",
       no_results: "Nessun risultato per questa interrogazione/ricerca ",

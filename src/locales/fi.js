@@ -436,6 +436,7 @@ export default {
     },
     info: {
       title: "Tulokset",
+      list_of_relations: "List of Relations",
       open_link: "Avaa liitetiedosto",
       server_error: "Palvelimella tapahtui virhe.",
       no_results: "Ei tuloksia haulle/kyselylle.",
