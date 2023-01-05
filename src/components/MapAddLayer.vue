@@ -244,9 +244,15 @@ export default {
         const {crs} = this.layer;
         try {
           /**
-           * waiting to register a epsg choose
+           * waiting to register a epsg choose if all go right
            */
-          await Projections.registerProjection(crs);
+          try {
+            await Projections.registerProjection(crs);
+          } catch(error) {
+            this.setError(error);
+            return;
+          }
+
           this.loading = true;
           this.vectorLayer = await createVectorLayerFromFile(this.layer);
           this.vectorLayer.setStyle(createStyleFunctionToVectorLayer({
