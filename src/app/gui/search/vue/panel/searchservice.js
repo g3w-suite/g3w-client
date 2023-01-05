@@ -196,9 +196,13 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
   }
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
-    // need to set to lower case for api purpose
-    const {op, logicop} = this.getFilterInputFromField(field);
-    fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|${logicop.toLowerCase()}`);
+    // In case of some input dependeny are not filled
+    if (typeof value !== "undefined") {
+      // need to set to lower case for api purpose
+      const {op, logicop} = this.getFilterInputFromField(field);
+      if (fields.length) fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|${logicop.toLowerCase()}`);
+      else fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}`);
+    }
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
@@ -501,11 +505,26 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
   return dependencies
 };
 
+/**
+ * Check if a field has a dependance
+ * @param field
+ * @returns {{}}
+ */
 proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
-  return dependance && this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE && {
-   [dependance]: this.cachedependencies[dependance]._currentValue
-  } || undefined;
+  // found a dependance
+  if (dependance) {
+    // check if as value
+    if (this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE)
+      return {
+        [dependance]: this.cachedependencies[dependance]._currentValue
+      };
+    // otherwise se value of dependance undefined so it no add on list o field dependance
+    else return {
+      [dependance]: undefined
+    }
+  }
+  return dependance
 };
 
 // check the current value of dependance
