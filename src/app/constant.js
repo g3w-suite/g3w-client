@@ -310,6 +310,10 @@ export const ZINDEXES = {
   }
 };
 
+const API_BASE_URLS = {
+  CRS: '/crs/'  //Example /crs/<epsg_code>
+};
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -329,5 +333,6 @@ export default {
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
-  ZINDEXES
+  ZINDEXES,
+  API_BASE_URLS
 };

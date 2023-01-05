@@ -1,7 +1,7 @@
+import {API_BASE_URLS} from 'constant';
 const Projection = require('./projection');
 const {XHR} = require('core/utils/utils');
 const {normalizeEpsg} = require('core/utils/geo');
-const CRS_BASE_URL = '/crs/'; //Example /crs/<epsg_code>
 
 const Projections = {
   isRegistered(epsg) {
@@ -28,7 +28,7 @@ const Projections = {
       // check if already register
       if (projection) resolve(projection);
       else {
-        XHR.get({url: `${CRS_BASE_URL}${epsg.split(':')[1]}`})
+        XHR.get({url: `${API_BASE_URLS.CRS}${epsg.split(':')[1]}`})
           .then(({result, data}) => {
             if (result)  {
               data.epsg = normalizeEpsg(data.epsg);
