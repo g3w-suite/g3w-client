@@ -1,6 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import {QUERY_POINT_TOLERANCE} from 'constant';
-const {base, inherit, appendParams, XHR, getTimeoutPromise} = require('core/utils/utils');
+const {base, inherit, appendParams, XHR} = require('core/utils/utils');
+const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
 const geoutils = require('core/utils/ol');
 const DataProvider = require('core/layers/providers/provider');
 
@@ -45,6 +46,23 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, info
       J: y,
     }
   }
+  /**
+   * Add LEGEND_ON and/or LEGEND_OFF in case of layer that has categories
+   * It used to solve issue related to GetFeatureInfo feature layer categories
+   * that are unchecked (not visisble) at QGIS project setting
+   */
+  const LEGEND_PARAMS = {
+    LEGEND_ON: [],
+    LEGEND_OFF: []
+  };
+  layers.forEach(layer => {
+    if (layer.getCategories()){
+      const {LEGEND_ON, LEGEND_OFF} = get_LEGEND_ON_LEGEND_OFF_Params(layer);
+      LEGEND_ON && LEGEND_PARAMS.LEGEND_ON.push(LEGEND_ON);
+      LEGEND_OFF && LEGEND_PARAMS.LEGEND_OFF.push(LEGEND_OFF);
+    }
+  });
+
   const params = {
     SERVICE: 'WMS',
     VERSION: '1.3.0',
@@ -60,6 +78,9 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, info
     ...PARAMS_TOLERANCE,
     WIDTH: size[0],
     HEIGHT: size[1],
+    //LEGEND_ON / LEGEND_OFF parameter
+    LEGEND_ON: LEGEND_PARAMS.LEGEND_ON.length ? LEGEND_PARAMS.LEGEND_ON.join(';'): undefined,
+    LEGEND_OFF: LEGEND_PARAMS.LEGEND_OFF.length ? LEGEND_PARAMS.LEGEND_OFF.join(';'): undefined,
   };
   if (!('STYLES' in params)) params['STYLES'] = '';
   const bbox = this._projections.map.getAxisOrientation().substr(0, 2) === 'ne' ? [extent[1], extent[0], extent[3], extent[2]] : extent;

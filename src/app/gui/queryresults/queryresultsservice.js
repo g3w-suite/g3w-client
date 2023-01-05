@@ -1,4 +1,4 @@
-import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 const ApplicationService = require('core/applicationservice');
@@ -1754,7 +1754,7 @@ proto.clearHighlightGeometry = function(layer) {
 };
 
 /**
- * method to ahdle show Relation on result
+ * method to handle show Relation on result
  * @param relationId,
  * layerId : current layer fathre id
  * feature: current feature father id
@@ -1765,9 +1765,10 @@ proto.showRelation = function({relation, layerId, feature}={}){
   const projectRelation = this._project.getRelationById(relationId);
   const nmRelation = this._project.getRelationById(nmRelationId);
   this.findPlotId(projectRelation.referencingLayer) && chartRelationIds.push(projectRelation.referencingLayer);
+
   GUI.pushContent({
     content: new RelationsPage({
-      currentview: 'relations',
+      currentview: 'relation',
       relations: [projectRelation],
       chartRelationIds,
       nmRelation,
@@ -1776,12 +1777,22 @@ proto.showRelation = function({relation, layerId, feature}={}){
         id: layerId
       }
     }),
+    crumb: {
+      title: projectRelation.name
+    },
     title: projectRelation.name,
     closable: false
   })
 };
 
 proto.showQueryRelations = function(layer, feature, action) {
+
+  GUI.changeCurrentContentOptions({
+    crumb: {
+      title: layer.title
+    }
+  });
+
   GUI.pushContent({
     content: new RelationsPage({
       relations: action.relations,
@@ -1791,6 +1802,11 @@ proto.showQueryRelations = function(layer, feature, action) {
     }),
     backonclose: true,
     title: LIST_OF_RELATIONS_TITLE,
+    id: LIST_OF_RELATIONS_ID,
+    crumb: {
+      title: LIST_OF_RELATIONS_TITLE,
+      trigger: null
+    },
     closable: false
   });
 };

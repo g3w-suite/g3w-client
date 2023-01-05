@@ -42,7 +42,7 @@
       </span>
     </template>
     <div v-show="!layerstree.hidden || isGroup" class="tree-node-title" :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
-      <span :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}" class="skin-tooltip-top new_line_too_long_text"
+      <span :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}" class="skin-tooltip-top g3w-long-text"
         data-placement="top"
         :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
         v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">

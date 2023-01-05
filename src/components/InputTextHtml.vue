@@ -1,9 +1,8 @@
 <template>
   <baseinput :state="state" v-disabled="!editable">
-    <div  @keydown.stop="" slot="body"
-      class="form-control"
-      :style="{border: novalid ? '1px solid reed' : '1px solid #ccc'}"
-      :id="id"></div>
+    <div @keydown.stop="" ref="quill_editor" slot="body" class="form-control"
+      :style="{border: novalid ? '1px solid reed' : '1px solid #ccc'}">
+    </div>
   </baseinput>
 </template>
 
@@ -60,10 +59,7 @@ export default {
     }
   },
   created(){
-    /**
-     * Need to create an unique id and not use a state.name of field in case on duplicate field on form
-     */
-    this.id = `texthtml_input_${getUniqueDomId()}`;
+
     /**
      * edit_state is need if this input is repeated in different form tab
      */
@@ -84,8 +80,7 @@ export default {
       ['table', 'column-left', 'column-right', 'column-remove', 'row-above', 'row-below', 'row-remove'],
     ];
     await this.$nextTick();
-
-    this.quill = new Quill(`#${this.id}`, {
+    this.quill = new Quill(this.$refs.quill_editor, {
       modules: {
         table: true,
         toolbar: {
@@ -114,22 +109,19 @@ export default {
       },
       theme: 'snow'
     });
+    this.quill.container.firstChild.innerHTML = this.state.value;
 
     this.table = this.quill.getModule('table');
     this.setupTableCustomTools();
-    this.handler =  () => {
+
+    this.handler = () => {
       this.state.value = this.edit_state.show_html ? this.quill.container.firstChild.innerText : this.quill.container.firstChild.innerHTML;
       this.edit_state.edit = true;
       this.change();
-      setTimeout(() => this.edit_state.edit = false);
+      setTimeout(() => this.edit_state.edit = false)
     };
+
     this.quill.on('text-change', this.handler);
-    this.quill.container.firstChild.innerHTML = this.state.value;
-    if (!this.editable){
-      for (const child of this.quill.container.children){
-        child.setAttribute('tabindex', -1);
-      }
-    }
   },
   watch: {
     'state.value'(value){
@@ -139,7 +131,6 @@ export default {
       }
     }
   },
-
   beforeDestroy(){
     this.quill.off('text-change', this.handler);
     this.handler = null;
