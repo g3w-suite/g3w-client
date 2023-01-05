@@ -1,8 +1,7 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/querybuilder/service.js@v3.4
  */
-
-const DataRouterService = require('core/data/routerservice');
+import DataRouterService from 'services/data';
 const {t} = require('core/i18n/i18n.service');
 const {uniqueId, createFilterFromString, XHR} = require('core/utils/utils');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');

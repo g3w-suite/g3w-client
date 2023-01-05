@@ -28,6 +28,8 @@ import C3XYLine from 'components/C3XYLine.vue';
 /**
  * CORE modules
  */
+import DataRouterService from 'services/data';
+
 const G3WObject = require('core/g3wobject');
 const utils = require('core/utils/utils');
 const geoutils = require('core/utils/geo');
@@ -36,7 +38,6 @@ const ApiService = require('core/apiservice');
 const Router = require('core/router');
 const i18n = require('core/i18n/i18n.service');
 const TaskService = require('core/task/service');
-const DataRouterService = require('core/data/routerservice');
 const IFrameRouterService = require('core/iframe/routerservice');
 const Server = require('core/errors/parser/servererrorparser');
 const Session = require('core/editing/session');

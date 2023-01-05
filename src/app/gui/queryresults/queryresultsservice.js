@@ -1,10 +1,10 @@
 import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
+import DataRouterService from 'services/data';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
 import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQueryPolygonCSVAttributes.vue';
 const ApplicationService = require('core/applicationservice');
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
 const { createFeatureFromFeatureObject } = require('core/utils/geo');
-const DataRouterService = require('core/data/routerservice');
 const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
 const {t} = require('core/i18n/i18n.service');
 const ProjectsRegistry = require('core/project/projectsregistry');

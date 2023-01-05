@@ -1,5 +1,7 @@
 import ApplicationState from 'core/applicationstate';
 import {DOWNLOAD_FORMATS} from './../../constant';
+import DataRouterService from 'services/data';
+
 const {t} = require('core/i18n/i18n.service');
 const {inherit, base, XHR} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -154,7 +156,6 @@ proto.clearProxyData = function(type){
 };
 
 proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
-  const DataRouterService = require('core/data/routerservice');
   try {
     const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,

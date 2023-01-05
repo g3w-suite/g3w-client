@@ -1,6 +1,6 @@
 import { ALLVALUE }  from '../../constants';
+import DataRouterService from 'services/data';
 const { base, inherit, toRawType , getUniqueDomId, createFilterFormInputs, createSingleFieldParameter, isEmptyObject} = require('core/utils/utils');
-const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStorRegistry = require('core/catalog/cataloglayersstoresregistry');

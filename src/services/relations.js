@@ -1,7 +1,7 @@
 /**
  * ORIGINAL SOURCE: src/app/core/relations/relationsservice.js@v3.4
  */
-
+import DataRouterService from 'services/data';
 const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
 const {sanitizeFidFeature, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
@@ -43,7 +43,6 @@ proto.getRelations = function(options={}) {
  * @returns {Promise<[]>}
  */
 proto.getRelationsNM = async function({nmRelation, features=[]}={}){
-  const DataRouterService = require('core/data/routerservice');
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
   let relationsNM = []; // start with empty relations result
   if (features.length) {

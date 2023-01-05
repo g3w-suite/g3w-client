@@ -1,6 +1,6 @@
+import DataRouterService from 'services/data';
 const {base, inherit, createFilterFormField } = require('core/utils/utils');
 const ProjectsRegistry = require('core/project/projectsregistry');
-const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 
 const G3WObject = require('core/g3wobject');

@@ -1,4 +1,4 @@
-const DataRouterService = require('core/data/routerservice');
+import DataRouterService from 'services/data';
 const {getFormDataExpressionRequestFromFeature, convertFeatureToGEOJSON} = require('core/utils/geo');
 
 export default {

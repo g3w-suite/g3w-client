@@ -5,12 +5,12 @@
 import appConfig from 'config';
 import {TIMEOUT, APP_VERSION} from "app/constant";
 import ApplicationState from 'core/applicationstate';
+import DataRouterService from 'services/data';
 const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
 const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const ApiService = require('core/apiservice');
 const RouterService = require('core/router');
-const RouterDataService =  require('core/data/routerservice');
 const ProjectsRegistry = require('core/project/projectsregistry');
 const PluginsRegistry = require('core/plugin/pluginsregistry');
 const ClipboardService = require('core/clipboardservice');
@@ -509,8 +509,8 @@ const ApplicationService = function() {
           ApplicationState.iframe && this.startIFrameService({
             project
           });
-          // initialize routerdataservice
-          RouterDataService.init();
+          // initialize data router service
+          DataRouterService.init();
           resolve(true);
         }).fail(error => reject(error))
       }

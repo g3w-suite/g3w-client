@@ -1,4 +1,5 @@
 import {MAP_SETTINGS} from '../../constant';
+import DataRouterService from 'services/data';
 import wms from "../wms/vue/wms";
 const {t}= require('core/i18n/i18n.service');
 const {inherit, base, copyUrl, uniqueId, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
@@ -9,7 +10,6 @@ const {
   createSelectedStyle,
   getMapLayersByFilter,
   getGeoTIFFfromServer} = require('core/utils/geo');
-const DataRouterService = require('core/data/routerservice');
 const GUI = require('gui/gui');
 const ApplicationService = require('core/applicationservice');
 const ProjectsRegistry = require('core/project/projectsregistry');

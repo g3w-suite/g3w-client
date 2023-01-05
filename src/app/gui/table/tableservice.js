@@ -1,5 +1,5 @@
+import DataRouterService from 'services/data';
 const {inherit, noop } = require('core/utils/utils');
-const DataRouterService = require('core/data/routerservice');
 const G3WObject = require('core/g3wobject');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const GUI = require('gui/gui');

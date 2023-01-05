@@ -1,7 +1,3 @@
-/**
- * ORIGINAL SOURCE: src/app/core/data/routerservice.js@v3.4
- */
-
 const queryService = require('core/data/query/service');
 const searchService = require('core/data/search/service');
 const expressionService = require('core/data/expression/service');

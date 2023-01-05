@@ -1,10 +1,10 @@
 /**
  * ORIGINAL SOURCE: src/app/core/iframe/services/app/service.js@v3.4
  */
+import DataRouterService from 'services/data';
 
 const {base, inherit } = require('core/utils/utils');
 const BaseService = require('core/iframe/services/baseservice');
-const DataRouterService = require('core/data/routerservice');
 
 function AppService(){
   base(this);
