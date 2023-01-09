@@ -12,6 +12,7 @@ const replace     = require('gulp-replace');
 const uglify      = require('gulp-uglify');
 const gutil       = require('gulp-util');
 const useref      = require('gulp-useref'); // used to parse index.dev.html
+const sourcemaps   = require('gulp-sourcemaps');// used to create source map file
 
 // Gulp vinyl (virtual memory filesystem stuff)
 const buffer      = require('vinyl-buffer');
@@ -145,8 +146,16 @@ gulp.task('browserify:app', function() {
       })
       .pipe(source('build.js'))
       .pipe(buffer())
+      .pipe(gulpif(production, sourcemaps.init({ loadMaps: true })))
       .pipe(gulpif(production, uglify({ compress: { drop_console: true } }).on('error', gutil.log)))
       .pipe(rename('app.js'))
+      .pipe(gulpif(production, sourcemaps.write(`./`, {
+          mapFile(mapFilePath) {
+            // source map files are named *.min.js.map instead of *.js.map
+            return mapFilePath.replace('.js.map', '.min.js.map');
+          }
+        }
+      )))
       .pipe(gulp.dest(`${g3w.clientFolder}/js/`));
 
   if (production) {
