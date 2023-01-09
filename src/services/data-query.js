@@ -35,7 +35,7 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({feature, feature_count=this.getProject().getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
     const polygonLayer = excludeLayers[0];
     const fid = feature.get(G3W_FID);
     const geometry = feature.getGeometry();
@@ -60,7 +60,7 @@ function QueryService(){
         multilayers,
         feature_count,
         filterConfig,
-        projection: this.getProject().getProjection()
+        projection: this.project.getProjection()
       });
       return this.handleRequest(request, {
         fid,
@@ -79,7 +79,7 @@ function QueryService(){
    * @param layersFilterObject
    * @returns {Promise<unknown>}
    */
-  this.bbox = function({ bbox, feature_count=this.getProject().getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
+  this.bbox = function({ bbox, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, layersFilterObject = {SELECTEDORALL: true, FILTERABLE: true, VISIBLE: true}}={}) {
     const layers = getMapLayersByFilter(layersFilterObject, condition);
     const request = getQueryLayersPromisesByBBOX(layers, {
       bbox,

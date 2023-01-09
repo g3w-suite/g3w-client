@@ -1,16 +1,11 @@
 import ProjectsRegistry from 'store/projects';
 
-function BaseService(){}
+function BaseService(){
+  ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
+  this.project = ProjectsRegistry.getCurrentProject();
+}
 
 const proto = BaseService.prototype;
-
-/**
- * @returns current Project
- */
-proto.getProject = function(){
-  return ProjectsRegistry.getCurrentProject();
-};
-
 /**
  *
  * @param request is a Promise(jquery promise at moment
