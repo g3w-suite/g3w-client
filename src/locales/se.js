@@ -437,6 +437,7 @@ export default {
     },
     info: {
       title: "Resultat",
+      list_of_relations: "List of Relations",
       open_link: "Öppna filbilaga",
       server_error: "Ett fel uppstod på servern.",
       no_results: "Inga resultat för sökningen/förfrågan.",

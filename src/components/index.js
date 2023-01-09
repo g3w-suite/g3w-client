@@ -56,7 +56,6 @@ import InputTableBody from './InputTableBody.vue';
 import InputTableHeader from './InputTableHeader.vue';
 import InputText from './InputText.vue';
 import InputTextArea from './InputTextArea.vue';
-import InputText from './InputText.vue';
 import InputHtml from './InputTextHtml.vue';
 import InputUnique from './InputUnique.vue';
 import Map from './Map.vue';

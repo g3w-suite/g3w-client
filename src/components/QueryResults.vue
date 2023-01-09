@@ -19,16 +19,16 @@
                   <span class="query-layer-feature-count" v-show="!layer.rawdata">({{layer.features.length}})</span>
                 </div>
                 <div class="box-features-action" @click.stop="">
-                  <infoformats :layer="layer"></infoformats>
+                  <infoformats :layer="layer"/>
                   <template v-if="layer.features.length > 1">
                     <span v-if="layer.hasgeometry" @click.stop="zoomToLayerFeaturesExtent(layer)" class="action-button"
-                          v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
-                  </span>
+                      v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.zoom_to_features_extent.hint'">
+                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('marker')"></span>
+                    </span>
                     <span v-if="layer.atlas.length" v-download @click.stop="printAtlas(layer)" class="action-button"
-                          v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.atlas.hint'">
-                    <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
-                  </span>
+                      v-t-tooltip:left.create="'sdk.mapcontrols.query.actions.atlas.hint'">
+                      <span class="action-button-icon" :class="g3wtemplate.getFontClass('print')"></span>
+                    </span>
                     <!--        DOWNLOAD        -->
                     <template v-if="layer.downloads.length === 1">
                       <span v-download class="action-button" :class="{'toggled': layer[layer.downloads[0]].active}" v-t-tooltip:left.create="`sdk.mapcontrols.query.actions.download_features_${layer.downloads[0]}.hint`">
@@ -61,11 +61,11 @@
               </div>
               <template v-if="state.layeractiontool[layer.id].component">
                 <div class="g3w-layer-action-tools with-border" style="padding: 5px" :class="{'mobile': isMobile()}">
-                  <component :is="state.layeractiontool[layer.id].component" :layer="layer" :config="state.layeractiontool[layer.id].config"></component>
+                  <component :is="state.layeractiontool[layer.id].component" :layer="layer" :config="state.layeractiontool[layer.id].config"/>
                 </div>
               </template>
               <!--     Add Custom layer components      -->
-              <component v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')" :is="component" :layer="layer"></component>
+              <component v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'before')" :is="component" :layer="layer"/>
               <!--   End custom layer component         -->
               <div class="box-body" :class="{'mobile': isMobile()}">
                 <template v-if="layer.rawdata">
@@ -84,18 +84,18 @@
                       <template v-if="feature.show" v-for="(feature, index) in layer.features">
                         <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
                           :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                          :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset" :getLayerField="getLayerField">
-                        </header-feature-body>
+                          :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                          :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
                         <tr class="g3w-feature-result-action-tools">
                           <template v-if="state.currentactiontools[layer.id][index]">
                             <td :colspan="getColSpan(layer)">
-                              <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                              <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
                             </td>
                           </template>
                         </tr>
                         <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                           <td :colspan="getColSpan(layer)">
-                            <component :is="component" :layer="layer" :feature="feature"></component>
+                            <component :is="component" :layer="layer" :feature="feature"/>
                           </td>
                         </tr>
                         <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
@@ -105,7 +105,7 @@
                         </tr>
                         <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                           <td :colspan="getColSpan(layer)">
-                            <component :is="component" :layer="layer" :feature="feature"></component>
+                            <component :is="component" :layer="layer" :feature="feature"/>
                           </td>
                         </tr>
                       </template>
@@ -123,18 +123,18 @@
                   <tbody v-if="feature.show" v-for="(feature, index) in layer.features" :key="feature.id">
                     <header-feature-body :actions="state.layersactions[layer.id]" :layer="layer" :feature="feature" :index="index" :onelayerresult="onelayerresult"
                     :trigger="trigger" :toggleFeatureBoxAndZoom="toggleFeatureBoxAndZoom" :hasLayerOneFeature="hasLayerOneFeature"
-                    :boxLayerFeature="getLayerFeatureBox(layer, feature)" :attributesSubset="attributesSubset" :getLayerField="getLayerField">
-                    </header-feature-body>
+                    :boxLayerFeature="getLayerFeatureBox(layer, feature)"
+                    :attributesSubset="attributesSubset" :getLayerField="getLayerField"/>
                     <tr class="g3w-feature-result-action-tools">
                       <template v-if="state.currentactiontools[layer.id][index]">
                         <td :colspan="getColSpan(layer)">
-                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"></component>
+                          <component :is="state.currentactiontools[layer.id][index]" :colspan="getColSpan(layer)" :layer="layer" :feature="feature" :featureIndex="index" :config="state.actiontools[state.currentactiontools[layer.id][index].name][layer.id]"/>
                         </td>
                       </template>
                     </tr>
                     <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'before')">
                       <td colspan="getColSpan(layer)">
-                        <component class="box-body" :is="component" :layer="layer" :feature="feature"></component>
+                        <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
                       </td>
                     </tr>
                     <tr v-show="!collapsedFeatureBox(layer,feature) || hasOneLayerAndOneFeature(layer)" :id="`${layer.id}_${index}`" class="featurebox-body">
@@ -143,7 +143,7 @@
                             <tr v-for="attribute in layer.attributes.filter(attribute => attribute.show)">
                               <td class="attr-label">{{ attribute.label }}</td>
                               <td class="attr-value" :attribute="attribute.name">
-                                <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"></table-attribute-field-value>
+                                <table-attribute-field-value :feature="feature" :field="getLayerField({layer, feature, fieldName: attribute.name})"/>
                               </td>
                             </tr>
                           </table>
@@ -151,7 +151,7 @@
                     </tr>
                     <tr v-for="({component}) in getLayerCustomComponents(layer.id, 'feature', 'after')">
                       <td colspan="getColSpan(layer)">
-                        <component class="box-body" :is="component" :layer="layer" :feature="feature"></component>
+                        <component class="box-body" :is="component" :layer="layer" :feature="feature"/>
                       </td>
                     </tr>
                   </tbody>
@@ -159,12 +159,12 @@
                 </table>
               </div>
               <div class="box-body"  :class="{'mobile': isMobile()}" v-for="({component}) in getLayerCustomComponents(layer.id, 'layer', 'after')">
-                <component :is="component" :layer="layer"></component>
+                <component :is="component" :layer="layer"/>
               </div>
             </div>
           </li>
           <li v-for="component in state.components">
-            <component @showresults="showResults()" :is="component"></component>
+            <component @showresults="showResults()" :is="component"/>
           </li>
         </ul>
       </template>

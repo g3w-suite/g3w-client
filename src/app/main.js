@@ -231,7 +231,8 @@ Vue.use({
         'fast-backward': "fas fa-fast-backward",
         'step-forward': "fas fa-step-forward",
         'fast-forward': "fas fa-fast-forward",
-        crop: "fas fa-crop-alt"
+        crop: "fas fa-crop-alt",
+        exit: "fas fa-door-open"
       },
       // TODO: check if deprecated
       get() {},
@@ -766,17 +767,18 @@ const ApplicationTemplate = function({ApplicationService}) {
 
 
     GUI.showForm = function(options={}) {
-      const {perc, split='h', push, showgoback} = options;
+      const {perc, split='h', push, showgoback, crumb} = options;
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
       const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
       //get service
       const formService = formComponent.getService();
-      // parameters : [content, title, push, perc, split, closable]
+      // parameters : [content, title, push, perc, split, closable, crumb]
       GUI.setContent({
         perc,
         content: formComponent,
         split,
+        crumb,
         push: !!push, //only one( if other delete previous component)
         showgoback: !!showgoback,
         closable: false
@@ -784,9 +786,13 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
-    GUI.closeForm = function() {
+    /**
+     *
+     * @param pop remove or not content or pop
+     */
+    GUI.closeForm = function({pop=false}={}) {
       this.emit('closeform', false);
-      viewport.ViewportService.removeContent();
+      pop ? GUI.popContent() : viewport.ViewportService.removeContent();
       // force set modal to false
       GUI.setModal(false);
     };
@@ -829,6 +835,10 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",
+        crumb: {
+          title: "info.title",
+          trigger: null
+        },
         push: GUI.getPushContent(),
         post_title: title
       });
@@ -1001,12 +1011,23 @@ const ApplicationTemplate = function({ApplicationService}) {
       return viewport.ViewportService.getCurrentContentTitle();
     };
 
+    GUI.getCurrentContentId = function(){
+      return viewport.ViewportService.getCurrentContentId();
+    };
+
     /**
      * change current content title
      * @param title
      */
     GUI.changeCurrentContentTitle = function(title){
       viewport.ViewportService.changeCurrentContentTitle(title);
+    };
+    /**
+     * change current content options
+     * @param options: {title, crumb}
+     */
+    GUI.changeCurrentContentOptions= function(options={}) {
+      viewport.ViewportService.changeCurrentContentOptions(options);
     };
 
     /**
