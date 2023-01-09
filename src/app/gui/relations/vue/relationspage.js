@@ -9,8 +9,7 @@ const InternalComponent = Vue.extend(vueComponentOptions);
 const RelationsPage = function(options={}) {
   base(this, options);
   const service = options.service || new Service();
-  const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[], nmRelation} = options;
-  const currentview = options.currentview || 'relations';
+  const {layer, relation=null, relations=[], feature=null, table=null, chartRelationIds=[], nmRelation, currentview="relations"} = options;
   this.setService(service);
   const internalComponent = new InternalComponent({
     previousview: currentview,

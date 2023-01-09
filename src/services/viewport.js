@@ -318,7 +318,21 @@ const ViewportService = function() {
 
   this.getCurrentContentTitle = function(){
     const currentContent = this.getCurrentContent();
-    return currentContent && currentContent.options.title
+    return currentContent && currentContent.options.title;
+  };
+
+  this.getCurrentContentId = function(){
+    const currentContent = this.getCurrentContent();
+    return currentContent && currentContent.options.id;
+  };
+
+  this.changeCurrentContentOptions = function(options={}){
+    const currentContent = this.getCurrentContent();
+    if (currentContent) {
+      const {title, crumb} = options;
+      if (title) currentContent.options.title = title;
+      if (crumb) currentContent.options.crumb = crumb;
+    }
   };
 
   this.changeCurrentContentTitle = function(title=''){

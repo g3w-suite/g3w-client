@@ -38,7 +38,7 @@ export default {
   watch: {
     layers: {
       handler(layers){
-        // used to preved duplicate legend
+        // used to prevent duplicate legend
         setTimeout(()=>{
           this.mapReady && this.getLegendSrc(layers)
         })
@@ -169,7 +169,7 @@ export default {
     mapService.on('change-map-legend-params', ()=>{
       this.mapReady = true;
       this.getLegendSrc(this.layers);
-    })
+    });
   },
 };
 </script>

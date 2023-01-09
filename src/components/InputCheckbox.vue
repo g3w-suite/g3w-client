@@ -7,6 +7,7 @@
     <div v-disabled="!editable" style="height: 20px; margin-top:8px;" slot="body">
       <input
         @change="changeCheckBox"
+        :tabIndex="tabIndex"
         style="width:100%"
         :class="{'input-error-validation' : notvalid}"
         class="magic-checkbox"

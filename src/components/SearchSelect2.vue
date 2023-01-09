@@ -37,7 +37,7 @@
       },
       _initSelect2Element() {
         const { type, attribute, options } = this.forminput;
-        // get numgigaut and validate it
+        // get numdigaut and validate it
         const numdigaut = options.numdigaut && !Number.isNaN(1*options.numdigaut) && 1*options.numdigaut > 0 && 1*options.numdigaut || 2;
         const isAutocomplete = type === 'autocompletefield';
         this.select2 = $(this.$el).select2({

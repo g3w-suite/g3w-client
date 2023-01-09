@@ -26,22 +26,22 @@ inherit(ContentsViewerComponent, Component);
 const proto = ContentsViewerComponent.prototype;
 
 proto.setContent = function(options={}) {
+  const {push=false, content, crumb} = options;
   const d = $.Deferred();
-  const push = options.push || false;
-  const content = options.content;
   // clean the stack every time, sure to have just one component.
   // Use barstack because it handle the logic og mounting component on DOM
-  if (!push) {
+  if (push) {
+    this.addContent(content,options)
+      .then(() => d.resolve(options));
+  } else {
     // clear stack
     this.clearContents()
-    .then(() => {
-      this.addContent(content, options)
-      .then(() => d.resolve(options));
-    })
-  } else {
-    this.addContent(content,options)
-    .then(() => d.resolve(options));
+      .then(() => {
+        this.addContent(content, options)
+          .then(() => d.resolve(options));
+      })
   }
+
   this.setOpen(true);
   return d.promise();
 };
@@ -140,7 +140,9 @@ proto.layout = function(parentWidth, parentHeight) {
   Vue.nextTick(() => {
     const contentsdata = this.stack.state.contentsdata;
     // el.parent() is div g3w-view-content
-    const height = el.parent().height() - el.siblings('.close-panel-block').outerHeight(true) - 10; // margin 10 from bottom
+    const height = el.parent().height()
+      - el.siblings('.close-panel-block').outerHeight(true)
+      - el.siblings('.content_breadcrumb').outerHeight(true) - 10; // margin 10 from bottom
     el.height(height);
     el.children().first().height(height);
     contentsdata.forEach(data => {

@@ -105,7 +105,7 @@ proto.createInputsFormFromFilter = async function({filter=[]}={}) {
       forminput.loading = forminput.type !== 'autocompletefield';
       const promise = new Promise((resolve, reject) =>{
         if (forminput.options.values === undefined) forminput.options.values = [];
-        else if (dependance){ // in case of dependence load rigth now
+        else if (dependance){ // in case of dependence load right now
           if (!dependance_strict) this.getValuesFromField(forminput).then(values => { // return array of values
             values = this.valuesToKeysValues(values); // set values for select
             forminput.options.values = values;
@@ -186,6 +186,14 @@ proto.setReturnType = function(returnType='data'){
   this.show = this.return === 'data';
 };
 
+proto.getAutoFieldDependeciesParamField = function(field) {
+  const fieldDependency = this.getCurrentFieldDependance(field);
+  if (fieldDependency) {
+    const [field, value] = Object.entries(fieldDependency)[0];
+    return this.createFieldsDependenciesAutocompleteParameter({field, value})
+  }
+};
+
 proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field, value}={}) {
   const dependendency = this.getCurrentFieldDependance(field);
   if (value !== undefined) {
@@ -196,12 +204,15 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
     });
     fields.push(fieldParam);
   }
-
   if (dependendency) {
     const [field, value] = Object.entries(dependendency)[0];
-    // need to set to lower case for api purpose
-    const operator = this.getFilterInputFromField(field).op.toLowerCase();
-    fields.unshift(`${field}|${operator}|${encodeURI(value)}`);
+    // In case of some input dependeny are not filled
+    if (typeof value !== "undefined") {
+      // need to set to lower case for api purpose
+      const {op, logicop} = this.getFilterInputFromField(field);
+      if (fields.length) fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}|${logicop.toLowerCase()}`);
+      else fields.unshift(`${field}|${op.toLowerCase()}|${encodeURI(value)}`);
+    }
     return this.createFieldsDependenciesAutocompleteParameter({
       fields,
       field
@@ -300,10 +311,13 @@ proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
   try {
     data = await this.searchLayer.getFilterData({
+      field: this.getAutoFieldDependeciesParamField(field),
       suggest: `${field}|${value}`,
       unique: field
     })
-  } catch(error) {}
+  } catch(error) {
+    console.log(error)
+  }
   return data.map(value => ({
     id:value,
     text:value
@@ -501,11 +515,26 @@ proto._getCascadeDependanciesFilter = function(field, dependencies=[]) {
   return dependencies
 };
 
+/**
+ * Check if a field has a dependance
+ * @param field
+ * @returns {{}}
+ */
 proto.getCurrentFieldDependance = function(field) {
   const dependance = this.inputdependance[field];
-  return dependance && this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE && {
-   [dependance]: this.cachedependencies[dependance]._currentValue
-  } || null;
+  // found a dependance
+  if (dependance) {
+    // check if as value
+    if (this.cachedependencies[dependance] && this.cachedependencies[dependance]._currentValue !== ALLVALUE)
+      return {
+        [dependance]: this.cachedependencies[dependance]._currentValue
+      };
+    // otherwise se value of dependance undefined so it no add on list o field dependance
+    else return {
+      [dependance]: undefined
+    }
+  }
+  return dependance
 };
 
 // check the current value of dependance
@@ -520,24 +549,23 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
   //check id inpute father is valid to search on subscribers
   const invalidValue = value===ALLVALUE || value === null || value === undefined || value.toString().trim() === '';
   return new Promise((resolve, reject) => {
+    //loop over dependencies fields inputs
     subscribers.forEach(subscribe => {
-      // in case of atuocomplete reset values to empty array
+      // in case of autocomplete reset values to empty array
       if (subscribe.type === 'autocompletefield') subscribe.options.values.splice(0);
       else {
         //set starting all values
-        if (subscribe.options._allvalues === undefined)
-          subscribe.options._allvalues = [...subscribe.options.values];
-        //case of father is set an empty invalid value (all value exmaple)
+        if (subscribe.options._allvalues === undefined) subscribe.options._allvalues = [...subscribe.options.values];
+        //case of father is set an empty invalid value (all value example)
         if (invalidValue) {
           //subscribe has to set all valaues
           subscribe.options.values.splice(0);
-          setTimeout(()=>{
-            subscribe.options.values = [...subscribe.options._allvalues]
-          });
+          setTimeout(()=>subscribe.options.values = [...subscribe.options._allvalues]);
         } else subscribe.options.values.splice(1); //otherwise has to get first __ALL_VALUE
       }
       subscribe.value =  subscribe.type !== 'selectfield' ? ALLVALUE : null;
     });
+    // check i cache field values are set
     this.cachedependencies[field] = this.cachedependencies[field] || {};
     this.cachedependencies[field]._currentValue = value;
     const notAutocompleteSubscribers = subscribers.filter(subscribe => subscribe.type !== 'autocompletefield');
@@ -565,7 +593,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
               subscribe.options.values.push(values[i]);
             }
           }
-          // set disabled false to dependance field
+          // set disabled false to dependence field
           subscribe.options.disabled = false;
           resolve()
         }
@@ -617,9 +645,7 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
                     try {
                       const values = await this.getValueRelationValues(subscribe, filter);
                       values.forEach(value =>  subscribe.options.values.push(value));
-                    } catch(err){
-                      console.log(err)
-                    }
+                    } catch(err){console.log(err)}
                   }
                 }
               else {
@@ -642,12 +668,16 @@ proto.fillDependencyInputs = function({field, subscribers=[], value=ALLVALUE}={}
             resolve();
           })
         } else {
+          //set disable
+          subscribers.forEach(subscribe => {
+            if (subscribe.options.dependance_strict) subscribe.options.disabled = false;
+          });
           this.state.loading[field] = false;
           resolve();
         }
       }
     } else {
-      notAutocompleteSubscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
+      subscribers.forEach(subscribe => subscribe.options.disabled = subscribe.options.dependance_strict);
       resolve();
     }
   })

@@ -697,8 +697,13 @@ proto.getEditingFields = function() {
   return this.config.editing.fields;
 };
 
+/**
+ * Return only show fields
+ * @returns {T[]}
+ */
 proto.getTableFields = function() {
-  return this.config.fields.filter(field => field.show);
+  const fields = this.config.fields || [];
+  return fields.filter(field => field.show);
 };
 
 proto.getTableHeaders = function(){
@@ -1054,7 +1059,7 @@ proto.canShowTable = function() {
         Layer.SourceTypes.MSSQL,
         Layer.SourceTypes.SPATIALITE
       ].indexOf(this.config.source.type) > -1) && this.isQueryable()) {
-        return true
+        return this.getTableFields().length > 0;
       }
     } else if (this.getServerType() === Layer.ServerTypes.G3WSUITE) {
       if (this.get('source').type === "geojson")

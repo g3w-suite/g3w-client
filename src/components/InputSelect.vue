@@ -8,7 +8,7 @@
       @click="pickLayerValue" v-if="showPickLayer" style="cursor: pointer; position:relative; top: 2px; font-size: 1.2em"
       :class="g3wtemplate.font['crosshairs']" class="skin-color">
     </span>
-    <div slot="body" v-disabled="disabled">
+    <div slot="body" v-disabled="disabled" :tabIndex="tabIndex">
       <select ref="select" style="width:100%;"  class="form-control">
         <option v-if="showNullOption" :value="select2NullValue"></option>
         <option :value="getValue(value.value)" v-for="value in state.input.options.values" :key="getValue(value.value)">{{ value.key }}</option>

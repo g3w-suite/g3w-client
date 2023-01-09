@@ -113,6 +113,19 @@ proto.getWMSLayerName = function({type='map'}={}) {
   return layerName;
 };
 
+// values: map, legend
+proto.getWmsUrl = function({type='map'}={}) {
+  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
+  const wmsUrl = (legendMapBoolean &&
+    this.config.source &&
+    (type === 'legend' || this.config.source.external) &&
+    (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
+    this.config.source.url) ?
+    this.config.source.url :
+    this.config.wmsUrl;
+  return wmsUrl
+};
+
 proto.getWFSLayerName = function(){
   return this.getQueryLayerName().replace(/[/\s]/g, '_')
 };
@@ -163,18 +176,6 @@ proto.getCatalogWfsUrl = function(){
   return `${this.getWfsUrl()}?service=WFS&version=1.1.0&request=GetCapabilities`;
 };
 
-// values: map, legend
-proto.getWmsUrl = function({type='map'}={}) {
-  const legendMapBoolean = type === 'map' ? this.isExternalWMS() && this.isLayerProjectionASMapProjection() : true;
-  const wmsUrl = (legendMapBoolean &&
-    this.config.source &&
-    (type === 'legend' || this.config.source.external) &&
-    (this.config.source.type === 'wms' || this.config.source.type === 'wmst') &&
-    this.config.source.url) ?
-    this.config.source.url :
-    this.config.wmsUrl;
-  return wmsUrl
-};
 
 proto.getWfsUrl = function() {
   const ProjectsRegistry = require('core/project/projectsregistry');

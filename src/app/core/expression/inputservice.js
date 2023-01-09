@@ -36,12 +36,27 @@ export default {
         switch (field.input.type){
           case 'select_autocomplete':
             field.input.options.values = [];
+            /**
+             * Use a temporary array to sort the keys
+             * @type {*[]}
+             */
+            const values = [];
             for (let i = 0; i < features.length; i++) {
-              field.input.options.values.push({
+              values.push({
                 key: features[i].properties[key],
                 value: features[i].properties[value]
               })
             }
+            values.sort(({key:aKey}, {key:bKey}) => {
+              if (typeof aKey === 'string') {
+                aKey = aKey.toLowerCase();
+                bKey = bKey.toLowerCase()
+              }
+              if (aKey < bKey) return -1;
+              if (aKey > bKey) return 1;
+              return 0;
+            });
+            field.input.options.values = values;
             break;
         }
         return features

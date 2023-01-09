@@ -38,6 +38,15 @@ function GUI() {
   this.showUserMessage = noop;
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
+  //property to how result has to be add or close all and show new
+  // false mean create new and close all open
+  this.push_content=false;
+  this.setPushContent = function (bool=false) {
+    this.push_content = bool;
+  };
+  this.getPushContent = function(){
+    return this.push_content;
+  };
   this._closeUserMessageBeforeSetContent = true;
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);

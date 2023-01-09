@@ -458,6 +458,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
     fields.forEach(field => {
 
       field.value = attributes[field.name];
+      // store original value
+      field._value = attributes[field.name];
+      // at beginning set update false. Used to form
+      field.update = false;
       if (field.input) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
         const options = _configField.input.options;

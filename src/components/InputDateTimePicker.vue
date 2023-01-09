@@ -9,6 +9,7 @@
       <div class='input-group date'  :id='iddatetimepicker' v-disabled="!editable">
         <input
           :id="idinputdatetimepiker"
+          :tabIndex="tabIndex"
           :readonly="!editable || isMobile() ? 'readonly' : null"
           type='text'
           :class="{'input-error-validation' : notvalid}"
@@ -57,22 +58,29 @@ export default {
     }
   },
   async mounted() {
+    //if (this.state.name === 'anno_costr') this.state.value = '2022-01-01';
     const {formats=[], layout={vertical:"top", horizontal: "left"}} = this.state.input.options;
+    const {minDate, maxDate, fieldformat, enabledDates, disabledDates, displayformat, useCurrent} = formats[0];
     await this.$nextTick();
-    const fielddatetimeformat =  formats[0].fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
+    const fielddatetimeformat = fieldformat.replace(/y/g,'Y').replace(/d/g, 'D');
     this.service.setValidatorOptions({
       fielddatetimeformat
     });
     const date = moment(this.state.value, fielddatetimeformat, true).isValid() ? moment(this.state.value, fielddatetimeformat).toDate() : null;
     const locale = this.service.getLocale();
-    const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(formats[0].displayformat);
-    const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(formats[0].fieldformat);
+    const datetimedisplayformat = this.service.convertQGISDateTimeFormatToMoment(displayformat);
+    const datetimefieldformat = this.service.convertQGISDateTimeFormatToMoment(fieldformat);
     $(`#${this.iddatetimepicker}`).datetimepicker({
       defaultDate: date,
       format: datetimedisplayformat,
       ignoreReadonly: true,
       allowInputToggle: true,
+      enabledDates,
+      disabledDates,
+      useCurrent,
       toolbarPlacement: 'top',
+      minDate,
+      maxDate,
       widgetParent: $(this.$refs.datimewidget_container),
       widgetPositioning: {
         vertical: layout.vertical || 'top',
@@ -99,7 +107,8 @@ export default {
     });
     ApplicationState.ismobile && setTimeout(()=>{
       $(`#${this.idinputdatetimepiker}`).blur();
-    })
+    });
+
   }
 };
 </script>

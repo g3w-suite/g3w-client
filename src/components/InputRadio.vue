@@ -11,6 +11,7 @@
           :name="name"
           :value="value.value"
           style="width:100%"
+          :tabIndex="tabIndex"
           v-disabled="!editable"
           :class="{'input-error-validation' : notvalid}"
           class="magic-radio"
