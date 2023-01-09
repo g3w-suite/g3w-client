@@ -12,8 +12,7 @@
 <script>
   import Link from 'components/FieldLink.vue';
   import VueField from 'components/FieldVue.vue';
-
-  const { fieldsMixin } = require('gui/vue/vue.mixins');
+  import { fieldsMixin } from 'mixins';
 
   export default {
     name: "tableattributefieldvalue",

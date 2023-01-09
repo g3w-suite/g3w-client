@@ -167,10 +167,10 @@ import HeaderItem from 'components/HeaderItem.vue';
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
+import { resizeMixin } from 'mixins';
 
 const { uniqueId } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
-const { resizeMixin } = require('gui/vue/vue.mixins');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {

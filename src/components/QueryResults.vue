@@ -178,12 +178,12 @@
 </template>
 
 <script>
+  import { fieldsMixin } from 'mixins';
   import TableAttributeFieldValue from 'components/QueryResultsTableAttributeFieldValue.vue';
   import InfoFormats from 'components/QueryResultsActionInfoFormats.vue';
   import HeaderFeatureBody from 'components/QueryResultsHeaderFeatureBody.vue';
 
   const { throttle } = require('core/utils/utils');
-  const { fieldsMixin } = require('gui/vue/vue.mixins');
 
   const maxSubsetLength = 3;
   const headerExpandActionCellWidth = 10;

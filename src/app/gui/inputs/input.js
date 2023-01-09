@@ -1,7 +1,6 @@
 import ApplicationState  from 'store/application-state';
 import BaseInputComponent from 'components/InputBase.vue'
-
-const { baseInputMixin: BaseInputMixin } = require('gui/vue/vue.mixins');
+import { baseInputMixin as BaseInputMixin } from 'mixins';
 
 const InputServices = {
   'text': require('./service'),

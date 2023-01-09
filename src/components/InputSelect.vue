@@ -22,11 +22,11 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 import GUI from 'services/gui';
+import { selectMixin, select2Mixin } from 'mixins';
 
 const PickLayerInputService = require('gui/inputs/picklayer/service');
 const Layer = require('core/layers/layer');
 const InputMixin = require('gui/inputs/input');
-const { selectMixin, select2Mixin } = require('gui/vue/vue.mixins');
 
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 

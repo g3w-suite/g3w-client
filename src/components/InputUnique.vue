@@ -18,8 +18,8 @@
 </template>
 
 <script>
+import { selectMixin } from 'mixins';
 const Input = require('gui/inputs/input');
-const { selectMixin } = require('gui/vue/vue.mixins');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {

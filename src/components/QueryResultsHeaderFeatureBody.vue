@@ -21,8 +21,7 @@
 
 <script>
   import Actions from 'components/QueryResultsActions.vue';
-
-  const { fieldsMixin } = require('gui/vue/vue.mixins');
+  import { fieldsMixin } from 'mixins';
   
   export default {
     name: "headerfeaturebody",

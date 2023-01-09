@@ -20,8 +20,9 @@
 </template>
 
 <script>
+import { widgetMixins } from 'mixins';
+
 const Input = require('gui/inputs/input');
-const { widgetMixins } = require('gui/vue/vue.mixins');
 const { getUniqueDomId } = require('core/utils/utils');
 
 export default {

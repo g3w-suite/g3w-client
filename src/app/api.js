@@ -35,6 +35,8 @@ import ApplicationService from 'services/application';
 import RouterService from 'services/router';
 
 import GUI from 'services/gui';
+//MIXINS
+import Mixins from 'mixins';
 
 const G3WObject = require('core/g3wobject');
 const utils = require('core/utils/utils');
@@ -89,7 +91,6 @@ const FormService = require('gui/form/formservice');
 const InputsComponents = require('gui/inputs/inputs');
 const ChartsFactory = require('gui/charts/chartsfactory');
 const Fields = require('gui/fields/fields');
-const Mixins = require('gui/vue/vue.mixins');
 const SearchPanelService = require('gui/search/vue/panel/searchservice');
 
 /**
