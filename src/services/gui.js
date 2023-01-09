@@ -1,6 +1,3 @@
-/**
- * ORIGINAL SOURCE: src/app/gui/gui.js@v3.4
- */
 import RouterService from 'services/router';
 import ComponentsRegistry from 'store/components';
 

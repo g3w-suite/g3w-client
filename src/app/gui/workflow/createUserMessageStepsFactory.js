@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import GUI from 'services/gui';
 
 module.exports = function({steps={}}={}) {

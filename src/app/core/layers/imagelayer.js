@@ -1,3 +1,6 @@
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+
 const { base, inherit, mixin } = require('core/utils/utils');
 const Layer = require('core/layers/layer');
 const VectorLayer = require('core/layers/vectorlayer');
@@ -59,7 +62,7 @@ const proto = ImageLayer.prototype;
 
 proto.getLayerForEditing = async function({force=false, vectorurl, project_type, project}={}) {
   if (this.isEditable() || force) {
-    const project = project || require('core/project/projectsregistry').getCurrentProject();
+    const project = project || ProjectsRegistry.getCurrentProject();
     const editableLayer = new VectorLayer(this.config, {
       vectorurl,
       project_type,
@@ -158,14 +161,12 @@ proto.isWfsActive = function(){
  * @returns {*}
  */
 proto.getFullWmsUrl = function() {
-  const ProjectsRegistry = require('core/project/projectsregistry');
   const metadata_wms_url = ProjectsRegistry.getCurrentProject().getState().metadata.wms_url;
   return this.isExternalWMS() || !metadata_wms_url ? this.getWmsUrl() : metadata_wms_url ;
 };
 
 //used to Catalog layer menu to show wms url
 proto.getCatalogWmsUrl = function(){
-  const ProjectsRegistry = require('core/project/projectsregistry');
   const metadata_wms_url = ProjectsRegistry.getCurrentProject().getMetadata().wms_url;
   const catalogWmsUrl = this.isExternalWMS() || !metadata_wms_url ? `${this.getWmsUrl()}?service=WMS&version=1.3.0&request=GetCapabilities` : metadata_wms_url ;
   return catalogWmsUrl;
@@ -178,7 +179,6 @@ proto.getCatalogWfsUrl = function(){
 
 
 proto.getWfsUrl = function() {
-  const ProjectsRegistry = require('core/project/projectsregistry');
   return ProjectsRegistry.getCurrentProject().getMetadata().wms_url || this.config.wmsUrl;
 };
 
@@ -227,7 +227,6 @@ proto.getWfsCapabilities = function() {
 };
 
 proto.getMapLayer = function(options={}, extraParams) {
-  const ApplicationService = require('core/applicationservice');
   const iframe_internal = ApplicationService.isIframe() && !this.isExternalWMS();
   options.iframe_internal = iframe_internal;
   let mapLayer;

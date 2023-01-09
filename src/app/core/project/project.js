@@ -1,5 +1,6 @@
 import { QUERY_POINT_TOLERANCE, TOC_LAYERS_INIT_STATUS, TOC_THEMES_INIT_STATUS } from 'app/constant';
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
+import ApplicationService from 'services/application';
 
 const { base, inherit, XHR } = require('core/utils/utils');
 const { crsToCrsObject } = require('core/utils/geo');
@@ -167,7 +168,6 @@ proto._processLayers = function() {
   };
   // call trasverse function to
   traverse(this.state.layerstree);
-  const ApplicationService = require('core/applicationservice');
   const baseLayerId = ApplicationService.getBaseLayerId();
 
   /**

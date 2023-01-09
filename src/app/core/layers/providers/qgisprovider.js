@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import RelationsService from 'services/relations';
 
 const { base, inherit, XHR } = require('core/utils/utils');

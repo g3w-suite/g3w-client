@@ -11,7 +11,7 @@ const Project = require('core/project/project');
 /* service
     setup: init method
     getLayersState: returnLayersState
-    getLayersTree: retunr  array of layersTree from LayersState
+    getLayersTree: return  array of layersTree from LayersState
 */
 
 // Public interface

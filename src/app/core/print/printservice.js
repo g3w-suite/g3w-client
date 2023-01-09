@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import ProjectsRegistry from 'store/projects';
 
 const { base, inherit, convertObjectToUrlParams } = require('core/utils/utils');

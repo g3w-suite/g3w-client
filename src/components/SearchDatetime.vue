@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
+  import ApplicationState from 'store/application-state';
 
   const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
 

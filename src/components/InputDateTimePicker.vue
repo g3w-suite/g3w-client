@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 
 const Input = require('gui/inputs/input');
 const { getUniqueDomId } = require('core/utils/utils');

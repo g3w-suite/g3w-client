@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
 
 const { tPlugin } = require('core/i18n/i18n.service');

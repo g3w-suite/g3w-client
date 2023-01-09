@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate'
+import ApplicationState from 'store/application-state'
 
 const { base, inherit } = require('core/utils/utils');
 const BaseLayer = require('core/layers/baselayers/baselayer');

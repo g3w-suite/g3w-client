@@ -4,7 +4,7 @@
 
 import appConfig from 'config';
 import { TIMEOUT, APP_VERSION } from 'app/constant';
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
 import ProjectsRegistry from 'store/projects';

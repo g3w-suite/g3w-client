@@ -2,6 +2,7 @@
  * ORIGINAL SOURCE: src/app/core/plugin/pluginsregistry.js@v3.4
  */
 import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
 
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
@@ -57,12 +58,10 @@ function PluginsRegistry() {
   };
 
   this.addLoadingPlugins = function(){
-    const ApplicationService = require('core/applicationservice');
     Object.keys(this.pluginsConfigs).forEach(plugin => ApplicationService.loadingPlugin(plugin));
   };
 
   this.removeLoadingPlugin = function(plugin, ready){
-    const ApplicationService = require('core/applicationservice');
     ApplicationService.loadedPlugin(plugin, ready);
   };
 

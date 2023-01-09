@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import ApplicationService from 'services/application';
 
 const { base, inherit } = require('core/utils/utils');

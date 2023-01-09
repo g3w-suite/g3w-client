@@ -1,8 +1,10 @@
+import GUI from 'services/gui';
+import ApplicationService from 'services/application';
+
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
 const { createFeatureFromFeatureObject } = require('core/utils/geo');
 const { XHR, sanitizeUrl } = require('core/utils/utils');
-const GUI = require('gui/gui');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };
@@ -54,7 +56,6 @@ proto.setup = function(config={}, options={}) {
  * Legend Graphic section
  */
 proto.getLegendGraphic = function({all=true}={}){
-  const ApplicationService = require('core/applicationservice');
   const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
   const legendurl = this.getLegendUrl(legendParams, {
     categories: true,

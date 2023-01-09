@@ -11,7 +11,7 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI from 'services/gui';
 
-const responseParser = require('core/parsers/response/parser');
+const {response:responseParser} = require('core/utils/parsers');
 const { getAlphanumericPropertiesFromFeature, query } = require('core/utils/geo');
 
 export default {

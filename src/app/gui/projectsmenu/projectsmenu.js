@@ -1,4 +1,5 @@
 import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
 
 const { base, inherit } = require('core/utils/utils');
 const MenuComponent = require('gui/projectsmenu/menu');
@@ -8,7 +9,6 @@ function ProjectsMenuComponent(options={}) {
   base(this, options);
   this.state.menuitems = [];
   const host = options.host;
-  const ApplicationService = require('core/applicationservice');
   const projects = options.projects || ProjectsRegistry.getListableProjects();
   this.state.menuitems = projects.map(project => ({
     title: project.title,

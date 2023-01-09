@@ -4,7 +4,7 @@
 
 import G3W_CONSTANT from 'constant';
 
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 
 /**
  * Single File Components
@@ -259,10 +259,6 @@ module.exports = {
     controls: {},
     utils: g3wolutils
   },
-
-  // DEPRECATED: will be removed after version 3.4
-  test: {},
-
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };
