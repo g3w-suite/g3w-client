@@ -1,11 +1,15 @@
 import ProjectsRegistry from 'store/projects';
 
-function BaseService(){
-  ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
-  this.project = ProjectsRegistry.getCurrentProject();
-}
+function BaseService(){}
 
 const proto = BaseService.prototype;
+
+/**
+ * @returns current Project
+ */
+proto.getProject = function(){
+  return ProjectsRegistry.getCurrentProject();
+};
 
 /**
  *

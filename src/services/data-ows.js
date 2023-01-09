@@ -1,6 +1,7 @@
 /**
  * ORIGINAL SOURCE: src/app/core/data/ows/service.js@v3.4
  */
+import ApplicationService from 'services/application';
 
 const { base, inherit, XHR } = require('core/utils/utils');
 const BaseService = require('core/data/service');
@@ -13,7 +14,6 @@ function OWSService(){
    * @returns {Promise<{data: string, response: *}>}
    */
   this.wmsCapabilities = async function({url} ={}){
-    const ApplicationService = require('core/applicationservice');
     const owsUrl = `${ApplicationService.getInterfaceOwsUrl()}`;
     try {
       const params = {
