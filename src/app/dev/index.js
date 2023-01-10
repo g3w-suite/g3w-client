@@ -43,10 +43,8 @@ if (setCurrentProject.before) {
 if (setCurrentProject.after) {
   ProjectsRegistry.onafter('setCurrentProject', (project) => setCurrentProject.after(project));
 }
-/**
- * Comment because we leave g3w-admin to setup the skin color of current user type (es: admin, etc...)
- * In this way also development environment has the same skin color of production
- */
+
+/** @TODO find a better way to visually distinguish production and development environments (ie. even for logged in users) */
 //GUI.once('ready', () => { document.body.classList.replace('skin-yellow', 'skin-blue'); });
 
 devConfig.call();
