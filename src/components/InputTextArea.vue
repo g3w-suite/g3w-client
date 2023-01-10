@@ -12,6 +12,7 @@
       slot="body"
       style="max-width: 100%; min-width: 100%"
       rows="3"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       v-model="state.value"></textarea>
