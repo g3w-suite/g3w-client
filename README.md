@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.7.0-alpha.1
+# G3W-CLIENT v3.7.2
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -84,14 +84,20 @@ For more info about this project dependencies see:
 
 ## How to develop
 
+From within your [g3w-client](https://github.com/g3w-suite/g3w-client) local repository:
+
+```sh
+cd ./g3w-client
+```
+
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up # g3w-admin
+npm run docker:up # backend server (g3w-admin)
 ```
 
 ```sh
-npm run dev       # g3w-client
+npm run dev       # frontend server (g3w-client)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:

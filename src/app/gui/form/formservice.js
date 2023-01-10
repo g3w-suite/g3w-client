@@ -5,6 +5,15 @@ const G3WObject = require('core/g3wobject');
 function FormService() {
   this.state = null;
   this.eventBus = new Vue();
+  /**
+   * property used to force some state property to force to be a certain value.
+   * It set fro example by child form service to form service parent
+   * @type {{valid: boolean, update: boolean}}
+   */
+  this.force = {
+    update: false,
+    valid: false // NOT USED FOR THE MOMENT
+  };
   this.layer;
   this.setters = {
     setInitForm(options={}) {
@@ -43,7 +52,20 @@ function FormService() {
   };
   // init form options passed for example by editor
   this._setInitForm = function(options = {}) {
-    const {fields, feature, parentData, layer, title= 'Form', formId, name, buttons={}, context_inputs, isnew, footer={}} = options;
+    const {
+      fields,
+      feature,
+      parentData,
+      layer,
+      title= 'Form',
+      formId,
+      name,
+      buttons={},
+      context_inputs,
+      isnew,
+      footer={},
+      headerComponent,
+    } = options;
     this.layer = layer;
     // need to be cloned
     this.feature = feature.clone();
@@ -53,6 +75,9 @@ function FormService() {
     this.buttons = buttons;
     this.context_inputs = context_inputs;
     this.parentData = parentData;
+    this.headerComponent = headerComponent;
+    // Property used to set forced update state of the service
+    //Used fro example from child form to set update also parent service
     this.state = {
       layerid: layer.getId(),
       loading:false,
@@ -66,6 +91,7 @@ function FormService() {
       disabled: false,
       isnew,
       valid: true, // global form validation state. True at beginning
+      update: feature.isNew(), // set update in case or not is a new feature
       // when input change will be update
       tovalidate: {},
       feature,
@@ -73,6 +99,7 @@ function FormService() {
       footer,
       ready: false
     };
+    this.force.update = feature.isNew();
     this.filter_expression_fields_dependencies = {}; // expression fields dependencies from filter_expression
     this.default_expression_fields_dependencies = {};
     this.setFormFields(fields);
@@ -100,6 +127,27 @@ proto.changeInput = function(input){
   this.evaluateFilterExpressionFields(input);
   this.evaluateDefaultExpressionFields(input);
   this.isValid(input);
+  this.isUpdated(input);
+};
+
+/**
+ * Method to check if form is updated base on change on input
+ * @param input
+ */
+proto.isUpdated = function(input){
+  this.state.update = this.force.update
+    || (!this.state.update
+      ? input.update
+      : !!this.state.fields.find(field => field.update));
+};
+
+/**
+ *
+ */
+proto.setUpdate = function(bool=false, options={}){
+  const {force=false} = options;
+  this.force.update = force;
+  this.state.update = this.force.update || bool;
 };
 
 /**
@@ -194,7 +242,6 @@ proto.handleFieldsWithExpression = function(fields=[]){
       name
     });
   });
-
 };
 
 proto.setCurrentFormPercentage = function(perc){
@@ -264,7 +311,6 @@ proto.isValid = function(input) {
   }, true);
 };
 
-
 proto.addComponents = function(components = []) {
   for (const component of components) {
     this.addComponent(component);
@@ -272,7 +318,7 @@ proto.addComponents = function(components = []) {
 };
 
 proto.addComponent = function(component) {
-  const {id, title, name, icon, valid, header=true} = component;
+  const {id, title, name, icon, valid, headerComponent, header=true} = component;
   if (valid !== undefined) {
     this.state.componentstovalidate[id] = valid;
     this.state.valid = this.state.valid && valid;
@@ -283,7 +329,7 @@ proto.addComponent = function(component) {
   }
   // we can set a component that can be part of headers (tabs or not)
   if (header) {
-    this.state.headers.push({title, name, id, icon});
+    this.state.headers.push({title, name, id, icon, component:headerComponent});
     this.state.currentheaderid = this.state.currentheaderid || id;
   }
 
@@ -398,6 +444,5 @@ proto.clearAll = function() {
   this.eventBus.$off('component-validation');
   this.eventBus.$off('disable-component');
 };
-
 
 module.exports = FormService;
