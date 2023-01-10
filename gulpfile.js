@@ -51,7 +51,7 @@ const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !==
 // production const to set environmental variable
 function setNODE_ENV() {
   process.env.NODE_ENV = production ? 'production' : 'development';
-  outputFolder         = production ? g3w.admin_folder + '/client' : g3w.admin_overrides_folder;
+  outputFolder         = production ? g3w.admin_plugins_folder + '/client' : g3w.admin_overrides_folder;
   console.log('[G3W-CLIENT] environment: ' + process.env.NODE_ENV);
   console.log('[G3W-CLIENT] output folder: ' + outputFolder + '\n');
 }
@@ -60,10 +60,7 @@ setNODE_ENV();
 
 // gulp.task('clean:dist',   () => del([`${g3w.distFolder}/**/*`], { force: true }));
 gulp.task('clean:dist',      () => del([`${outputFolder}/static/*`, `${outputFolder}/templates/*`], { force: true }));
-/**
- * delete client static and template folder
- */
-gulp.task('clean:admin',     () => del([`${g3w.admin_folder}/client/static/*`, `${g3w.admin_folder}/client/templates/*`], { force: true }));
+gulp.task('clean:admin',     () => del([`${g3w.admin_plugins_folder}/client/static/*`, `${g3w.admin_plugins_folder}/client/templates/*`], { force: true }));
 gulp.task('clean:overrides', () => del([`${g3w.admin_overrides_folder}/static/*`, `${g3w.admin_overrides_folder}/templates/*`], { force: true }));
 
 gulp.task('html',            () => gulp.src('./src/index.html').pipe(gulp.dest(outputFolder + '/templates/client')));
@@ -373,7 +370,7 @@ gulp.task('select-plugins', function() {
 gulp.task('deploy-plugins', function() {
   const pluginNames  = process.env.G3W_PLUGINS.split(',');
   const nodePath     = path;
-  const outputFolder = production ? g3w.admin_folder : g3w.admin_overrides_folder + '/static';
+  const outputFolder = production ? g3w.admin_plugins_folder : g3w.admin_overrides_folder + '/static';
   return gulp.src(pluginNames.map(pluginName => `${g3w.pluginsFolder}/${pluginName}/plugin.js`))
     .pipe(rename((path, file) => {
         const pluginName   = nodePath.basename(file.base);
@@ -398,7 +395,7 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
  * [PROD] Compile and deploy client application
  * 
  * production   = true,
- * outputFolder = g3w.admin_folder + '/client'
+ * outputFolder = g3w.admin_plugins_folder + '/client'
  */
 gulp.task('build', done => runSequence(
   'production',
