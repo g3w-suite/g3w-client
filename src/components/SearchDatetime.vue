@@ -45,7 +45,7 @@
           horizontal: 'left'
         },
         showClose: true,
-        locale: ApplicationState.lng || 'en'
+        locale: ApplicationState.language || 'en'
       });
 
       $(`#${this.id}`).on("dp.change", () => {
