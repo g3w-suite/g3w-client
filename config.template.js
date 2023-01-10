@@ -19,7 +19,7 @@ const G3W_KEYS = {
 let conf = {
   assetsFolder:  './src/assets',                                            // path to G3W-CLIENT assets folder
   pluginsFolder: './src/plugins',                                           // path to G3W-CLIENT plugins folder
-  admin_plugins_folder:   '../g3w-admin/g3w-admin',                         // path to G3W-ADMIN plugins folder
+  admin_folder:   '../g3w-admin/g3w-admin',                                 // path to G3W-ADMIN code folder
   admin_overrides_folder: '../g3w-suite-docker/config/g3w-suite/overrides', // path to G3W-SUITE overrides folder
   host: G3W_HOST,
   port: G3W_CLIENT_PORT,
@@ -48,8 +48,8 @@ if (version < '4') {
   conf.assetsFolder           = (version < '3.7' ? './assets' : conf.assetsFolder);
   conf.distFolder             = './dist';
   conf.clientFolder           = './dist/client';
-  conf.admin_static_folder    = `${conf.admin_plugins_folder}/client/static`;
-  conf.admin_templates_folder = `${conf.admin_plugins_folder}/client/templates`;
+  conf.admin_static_folder    = `${conf.admin_folder}/client/static`;
+  conf.admin_templates_folder = `${conf.admin_folder}/client/templates`;
   conf.createProject          = { before() {}, after() {} };
   conf.setCurrentProject      = { before() {}, after() {} };
   conf.plugins                = conf.plugins.reduce((a, v) => ({ ...a, [v]: { gid: 'qdjango:1', baseurl: `.${conf.distFolder}` }}), {});
@@ -58,7 +58,7 @@ if (version < '4') {
   conf.localServerPort        = conf.port;
   conf.g3w_admin_paths        = {
     dev: {
-      g3w_admin_plugins_basepath:     conf.admin_plugins_folder.replace(/\/?$/, '/'),
+      g3w_admin_plugins_basepath:     conf.admin_folder.replace(/\/?$/, '/'),
       g3w_admin_client_dest_static:   conf.admin_static_folder,
       g3w_admin_client_dest_template: conf.admin_templates_folder
     }
