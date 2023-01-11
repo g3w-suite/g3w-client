@@ -1,11 +1,11 @@
+import SearchService from 'services/data-search';
 const {assert, expect} = require('chai');
-const SearchService = require('gui/search/vue/panel/searchservice');
 export default function TestSearches({searches=[], testConfig={}}={}) {
   describe('#Test searches', function() {
     const count = testConfig.count;
     it(`count searches`, function() {
       expect(searches).to.be.length(count)
-    })
+    });
     count > 0 && testConfig.searches.forEach(searchTest => {
       const {id, count, forminput} = searchTest;
       const search = searches.find(search => search.id === searchTest.id);
