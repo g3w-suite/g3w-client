@@ -48,6 +48,8 @@ const GUI = require('gui/gui');
  */
 window.g3wsdk = require('api');
 
+require('app/dev');
+
 /**
  * EXPERIMENTAL: not yet implemented
  *

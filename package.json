@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "preinstall": "npx npm-force-resolutions",
-    "build": "gulp version && gulp g3w-admin --max-old-space-size=2048",
-    "build:plugins": "gulp version && gulp g3w-admin:plugins",
+    "build": "gulp version && gulp build --max-old-space-size=2048",
+    "build:plugins": "gulp version && gulp build:plugins",
     "dev": "gulp dev --max-old-space-size=2048",
     "docker": "docker compose --env-file ../g3w-suite-docker/.env --file ../g3w-suite-docker/docker-compose-dev.yml --project-name g3w-suite-docker --project-directory ../g3w-suite-docker",
     "docker:pull": "npm run docker pull",
