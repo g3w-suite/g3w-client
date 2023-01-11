@@ -374,17 +374,29 @@ const ApplicationService = function() {
     if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
     else this.clearInitConfig();
 
-    // if exist a global initiConfig
+    // if exist a global initConfig
     this._initConfig = window.initConfig;
 
+
     let projectPath;
+
+    // DEPRECATED: will be removed after v4.0
+
     const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
 
     if (locationsearch) {
       //check if exist project in url
+      /**
+       * The way to extract project group,type and id
+       * Example http:localhost:3000/?project=3003/qdjango/1
+       * is deprecate
+       */
       locationsearch.split('&').forEach(queryTuple => {
         projectPath = queryTuple.indexOf("project") > -1 ? queryTuple.split("=")[1] : projectPath;
       });
+
+    ///////////////////////////////////////////////////////////////////
+
     } else if (this._gid) {
       projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
     }
