@@ -4,9 +4,11 @@ const {XHR} = require('core/utils/utils');
 const {normalizeEpsg} = require('core/utils/geo');
 
 const Projections = {
+
   isRegistered(epsg) {
     return ol.proj.get(epsg);
   },
+
   get(crs={}) {
     const cachedProjection = this.isRegistered(crs.epsg);
     if (cachedProjection) return cachedProjection;
@@ -17,10 +19,13 @@ const Projections = {
     ol.proj.proj4.register(proj4);
     return projection;
   },
+
   /**
    * Check and register epsg
+   * 
    * @param epsg : "EPSG:<CODE>" Ex. "EPSG:4326"
    * @returns {Promise<unknown>}
+   * @since v3.8
    */
   registerProjection(epsg) {
     return new Promise((resolve, reject) => {
@@ -41,6 +46,7 @@ const Projections = {
       }
     })
   }
+
 };
 
 module.exports = Projections;
