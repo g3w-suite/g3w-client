@@ -4,7 +4,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '2px'}"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '0'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -36,7 +36,7 @@
           :class="g3wtemplate.getFontClass(layerstree.legend.show && layerstree.visible ? 'caret-down' : 'caret-right')">
         </span>
         <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
-          (legendplace === 'toc' || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
+          (showLayerTocLegend || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
       </span>
@@ -95,14 +95,17 @@ export default {
     }
   },
   computed: {
+    showLegendLayer(){
+      return !this.layerstree.exclude_from_legend;
+    },
     showLayerTocLegend(){
-      return !this.isGroup && this.layerstree.geolayer && this.legendplace === 'toc';
+      return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer && this.legendplace === 'toc';
     },
     isGroup() {
       return !!this.layerstree.nodes
     },
     legendlayerposition(){
-      return !this.layerstree.exclude_from_legend && this.layerstree.legend ? this.legendplace : 'tab';
+      return this.showLegendLayer && this.layerstree.legend ? this.legendplace : 'tab';
     },
     showscalevisibilityclass(){
       return !this.isGroup && this.layerstree.scalebasedvisibility
