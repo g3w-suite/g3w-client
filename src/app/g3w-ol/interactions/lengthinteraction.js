@@ -1,4 +1,4 @@
-const MeasureInteraction = require('./measureinteraction');
+const MeasureInteraction = require('g3w-ol/interactions/measureinteraction');
 
 // LenghtInteracion
 const LengthIteraction = function(options={}) {

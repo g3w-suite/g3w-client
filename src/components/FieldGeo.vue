@@ -10,7 +10,7 @@
 </template>
 
 <script>
-const {geoMixin} = require('gui/vue/vue.mixins');
+import { geoMixin } from 'mixins';
 
 export default {
   name: "g3w-geospatial",

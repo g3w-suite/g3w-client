@@ -1,15 +1,18 @@
-import ApplicationState from 'core/applicationstate';
-import {DOWNLOAD_FORMATS} from './../../constant';
-const {t} = require('core/i18n/i18n.service');
-const {inherit, base, XHR} = require('core/utils/utils');
+import ApplicationState from 'store/application-state';
+import { DOWNLOAD_FORMATS } from 'app/constant';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+
+const { t } = require('core/i18n/i18n.service');
+const { inherit, base, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const {geometryFields, parseAttributes} =  require('core/utils/geo');
+const { geometryFields, parseAttributes } =  require('core/utils/geo');
 const Relations = require('core/relations/relations');
 const ProviderFactory = require('core/layers/providers/providersfactory');
 
 // Base Class of all Layer
 function Layer(config={}, options={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
   this.config = config;
   // assign some attribute
   config.id = config.id || 'Layer';
@@ -154,7 +157,6 @@ proto.clearProxyData = function(type){
 };
 
 proto.getDataProxyFromServer = async function(type= 'wms', proxyParams={}){
-  const DataRouterService = require('core/data/routerservice');
   try {
     const {response, data} = await DataRouterService.getData(`proxy:${type}`, {
       inputs: proxyParams,
@@ -301,7 +303,6 @@ proto.activeFilterToken = async function(bool){
 };
 
 proto.deleteFilterToken = async function(){
-  const ApplicationService = require('core/applicationservice');
   if (this.providers['filtertoken']){
     try {
       await this.providers['filtertoken'].deleteFilterToken();
@@ -316,7 +317,6 @@ proto.deleteFilterToken = async function(){
 };
 
 proto.createFilterToken = async function(){
-  const ApplicationService = require('core/applicationservice');
   if (this.providers['filtertoken']){
     let filtertoken = null;
     try {
@@ -422,7 +422,6 @@ proto.isWmsUseLayerIds = function() {
 };
 
 proto.getFilterToken = function (){
-  const ApplicationService = require('core/applicationservice');
   return ApplicationService.getFilterToken();
 };
 

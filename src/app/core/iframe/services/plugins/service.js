@@ -1,6 +1,7 @@
+import PluginsRegistry from 'store/plugins';
+
 const { base, inherit } = require('core/utils/utils');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
-const BaseService = require('../baseservice');
+const BaseService = require('core/iframe/services/baseservice');
 
 function BasePluginService(){
   base(this);

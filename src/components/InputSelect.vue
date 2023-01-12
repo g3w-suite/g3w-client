@@ -19,13 +19,14 @@
 </template>
 
 <script>
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import MapLayersStoresRegistry from 'store/map-layers';
+import GUI from 'services/gui';
+import { selectMixin, select2Mixin } from 'mixins';
+
 const PickLayerInputService = require('gui/inputs/picklayer/service');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const Layer = require('core/layers/layer');
 const InputMixin = require('gui/inputs/input');
-const {selectMixin, select2Mixin} = require('gui/vue/vue.mixins');
-const GUI = require('gui/gui');
 
 const G3W_SELECT2_NULL_VALUE = null; // neede to set nul value instead of empty string
 
@@ -106,7 +107,7 @@ export default {
     if (this.state.input.type === 'select_autocomplete') {
       const dependencyLayerId = this.state.input.options.layer_id;
       try {
-        const dependencyLayer = MapLayersStoreRegistry.getLayerById(dependencyLayerId).getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
+        const dependencyLayer = MapLayersStoresRegistry.getLayerById(dependencyLayerId).getEditingLayer() || CatalogLayersStoresRegistry.getLayerById(dependencyLayerId);
         this.showPickLayer = dependencyLayer ? dependencyLayer.getType() !== Layer.LayerTypes.TABLE : false;
         const {value:field, layer_id} = this.state.input.options;
         const options = {

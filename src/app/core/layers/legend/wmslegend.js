@@ -1,3 +1,4 @@
+import ProjectsRegistry from 'store/projects';
 const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
 
 function WMSLegend({layer, params, options={}}) {
@@ -43,7 +44,6 @@ function WMSLegend({layer, params, options={}}) {
     STYLES = encodeURIComponent(layer.getCurrentStyle().name);
     FORMAT = 'application/json'
   }
-  const ProjectsRegistry = require('core/project/projectsregistry');
   const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
   // in case of GetLegendGraphic of format application/json LEGEND_ON and LEGEND_OFF need to be undefined
   // because it create some strange behaviour on wms getMap when switch between style of layer

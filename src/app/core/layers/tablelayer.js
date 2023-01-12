@@ -1,14 +1,15 @@
-import {DEFAULT_EDITING_CAPABILITIES} from 'constant';
-const {base, inherit} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const Layer = require('./layer');
+import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry from 'store/projects';
+
+const { base, inherit } = require('core/utils/utils');
+const Layer = require('core/layers/layer');
 const Editor = require('core/editing/editor');
-const FeaturesStore = require('./features/featuresstore');
-const Feature = require('./features/feature');
+const FeaturesStore = require('core/layers/features/featuresstore');
+const Feature = require('core/layers/features/feature');
 
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
     // delete all features

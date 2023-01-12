@@ -77,10 +77,10 @@
 </template>
 
 <script>
-import Service from "gui/querybuilder/service";
-import {OPERATORS} from 'core/layers/filter/operators';
+import QueryBuilderService from 'services/querybuilder';
+import { FILTER_OPERATORS as OPERATORS } from 'app/constant';
+import ProjectsRegistry from 'store/projects';
 
-const ProjectsRegistry = require('core/project/projectsregistry');
 const operators = Object.values(OPERATORS);
 
 export default {
@@ -137,7 +137,7 @@ export default {
     async all(){
       this.loading.values = true;
       try {
-        this.values = await Service.getValues({
+        this.values = await QueryBuilderService.getValues({
           layerId: this.currentlayer.id,
           field: this.select.field
         });
@@ -159,7 +159,7 @@ export default {
       this.loading.test = true;
       let number_of_features;
       try {
-        number_of_features = await Service.test({
+        number_of_features = await QueryBuilderService.test({
           layerId,
           filter: this.filter
         });
@@ -174,7 +174,7 @@ export default {
       const layerId = this.currentlayer.id;
       this.loading.test = true;
       try {
-        const response = await Service.run({
+        const response = await QueryBuilderService.run({
           layerId,
           filter: this.filter
         });
@@ -182,7 +182,7 @@ export default {
       this.loading.test = false;
     },
     save() {
-      Service.save({
+      QueryBuilderService.save({
         layerId: this.currentlayer.id,
         filter: this.filter,
         projectId: this.projectId,

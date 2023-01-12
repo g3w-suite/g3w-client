@@ -1,5 +1,6 @@
-const DataRouterService = require('core/data/routerservice');
-const {convertFeatureToGEOJSON} = require('core/utils/geo');
+import DataRouterService from 'services/data';
+
+const { convertFeatureToGEOJSON } = require('core/utils/geo');
 
 export default {
   /**

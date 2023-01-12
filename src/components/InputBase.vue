@@ -29,13 +29,13 @@
 </template>
 
 <script>
-  const {baseInputMixin:BaseInputMixin} = require('gui/vue/vue.mixins');
+import { baseInputMixin as BaseInputMixin } from 'mixins';
 
-  export default {
-    name: "InputBase",
-    props: ['state'],
-    ...BaseInputMixin
-  }
+export default {
+  name: "InputBase",
+  props: ['state'],
+  ...BaseInputMixin
+}
 </script>
 
 <style scoped>

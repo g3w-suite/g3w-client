@@ -18,12 +18,12 @@
 </template>
 
 <script>
+  import GUI from 'services/gui';
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import ProjectsRegistry from 'store/projects';
 
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
   const {XHR} = require('core/utils/utils');
-  const GUI = require('gui/gui');
 
   export default {
     name: "layerlegend",

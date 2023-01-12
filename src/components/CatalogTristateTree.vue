@@ -75,10 +75,10 @@
 <script>
 import LayerLegend from 'components/CatalogLayerLegend.vue';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import GUI from 'services/gui';
 
-const {downloadFile} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const { downloadFile } = require('core/utils/utils');
 
 export default {
   props : ['layerstree', 'storeid', 'legend', 'legendplace', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],

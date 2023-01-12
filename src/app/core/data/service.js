@@ -1,4 +1,4 @@
-const ProjectsRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
 
 function BaseService(){
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
@@ -6,7 +6,6 @@ function BaseService(){
 }
 
 const proto = BaseService.prototype;
-
 /**
  *
  * @param request is a Promise(jquery promise at moment

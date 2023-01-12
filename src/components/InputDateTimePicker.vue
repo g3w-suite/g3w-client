@@ -23,11 +23,11 @@
 </template>
 
 <script>
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
+import { resizeMixin, widgetMixins } from 'mixins';
 
 const Input = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const {resizeMixin, widgetMixins} = require('gui/vue/vue.mixins');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   mixins: [Input, widgetMixins, resizeMixin],

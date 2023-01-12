@@ -1,10 +1,12 @@
-const {base, inherit, resolve}= require('core/utils/utils');
+import WorkflowsStack from 'services/workflows';
+import GUI from 'services/gui';
+
+const { base, inherit, resolve } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const Flow = require('./flow');
-const WorkflowsStack = require('./workflowsstack');
-const {MESSAGES} = require('./step');
+const Flow = require('core/workflow/flow');
+const { MESSAGES } = require('core/workflow/step');
 const createUserMessageStepsFactory = require('gui/workflow/createUserMessageStepsFactory');
-const GUI = require('gui/gui');
+
 //Class to manage flow of steps
 function Workflow(options={}) {
   const {inputs=null, context=null, flow=new Flow(), steps=[], runOnce=false} = options;

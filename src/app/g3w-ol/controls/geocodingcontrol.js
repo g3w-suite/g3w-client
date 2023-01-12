@@ -1,8 +1,8 @@
-import ApplicationState from "core/applicationstate";
+import ApplicationState from "store/application-state";
+import GUI from 'services/gui';
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
 const Projections = require('g3w-ol/projection/projections');
-const GUI = require('gui/gui');
 /**
  * Classes for all element of dom control
  * @type {{country: string, hidden: string, city: string, road: string, spin: string, namespace: string, inputText: {container: string, result: string, input: string, reset: string, control: string}, olControl: string, inputResetId: string, inputQueryId: string}}

@@ -11,12 +11,12 @@
 </template>
 
 <script>
-  import { ALLVALUE }  from 'gui/search/constants';
+  import { SEARCH_ALLVALUE as ALLVALUE } from 'app/constant';
+  import { select2Mixin } from 'mixins';
 
   const autocompleteOptions = require('gui/external/select2/options/autocomplete');
   const { t } = require('core/i18n/i18n.service');
   const { debounce } = require('core/utils/utils');
-  const {select2Mixin} = require('gui/vue/vue.mixins');
 
   export default {
     name: "select2",
