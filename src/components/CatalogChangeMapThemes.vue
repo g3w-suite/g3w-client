@@ -7,7 +7,7 @@
       <a href="#" ref="g3w-map-theme-ancor" style="display: flex; align-items: center; padding: 5px 5px 5px 2px;">
         <i style="padding: 3px;" :class="g3wtemplate.getFontClass('caret-down')"></i>
         <i style="padding: 0 0 0 4px;" :class="g3wtemplate.getFontClass('eye')"></i>
-        <span v-show="current_map_theme " class="treeview-label new_line_too_long_text" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">
+        <span v-show="current_map_theme " class="treeview-label g3w-long-text" style="overflow: hidden; white-space: normal;text-overflow: ellipsis;">
           <span style="color: #cccccc !important;" v-t:pre="'sdk.catalog.current_map_theme_prefix'">:</span>
           <span class="skin-color" style="font-size: 1.1em;">{{ current_map_theme }}</span>
         </span>
@@ -20,7 +20,7 @@
           <div v-for="(map_theme, index) in map_themes" :key="map_theme.theme">
             <input type="radio" name="radio" :id="`g3w-map_theme-${index}`" :value="map_theme.theme" v-model="current_map_theme" class="magic-radio" :checked="map_theme.default">
             <label :for="`g3w-map_theme-${index}`" class="" style="display: flex; justify-content: space-between;">
-              <span class="new_line_too_long_text">{{ map_theme.theme }}</span>
+              <span class="g3w-long-text">{{ map_theme.theme }}</span>
             </label>
           </div>
         </li>

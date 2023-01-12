@@ -29,5 +29,5 @@ export const unwatch = ({el, attr}) => {
   }
 };
 
-export const trigger = ({el, attr, data}) => directives[el.getAttribute(attr)](data);
+export const trigger = ({el, attr, data}) => directives[el.getAttribute(attr)].handler(data);
 

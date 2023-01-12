@@ -11,6 +11,7 @@
             :id="mediaid"
             style="display:none"
             :name="state.name"
+            :tabIndex="tabIndex"
             :data-url="state.input.options.uploadurl"
             :class="{'input-error-validation' : notvalid}"
             type="file">
@@ -67,6 +68,7 @@ export default {
     },
     clearMedia() {
       this.data.value = this.data.mime_type = this.state.value = null;
+      this.change();
     }
   },
   created() {

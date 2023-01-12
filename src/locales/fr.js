@@ -437,6 +437,7 @@ export default {
     },
     info: {
       title: "Résultats",
+      list_of_relations: "List of Relations",
       open_link: "Ouvrir le document joint",
       server_error: "Une erreur s'est produite dans la requête au serveur",
       no_results: "Aucun résultat pour cette requête/recherche",

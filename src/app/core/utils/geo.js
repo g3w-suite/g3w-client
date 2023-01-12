@@ -18,10 +18,10 @@ const Geometry = {
   /**
    * Remove Z values from geometry coordinates
    */
-   removeZValueToOLFeatureGeometry({feature, geometryType}={}){
+   removeZValueToOLFeatureGeometry({feature}={}){
     const geometry = feature.getGeometry();
     if (geometry) {
-      geometryType = geometryType || geometry.getType();
+      const geometryType = geometry.getType();
       const originalFeatureCoordinates = geometry.getCoordinates();
       switch (geometryType){
         // POINT: [x, y]
@@ -582,7 +582,7 @@ const geoutils = {
   createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
       const feature = new ol.Feature(geometry);
-      id && feature.setId(id);
+      feature.setId(id);
       return feature;
     }
   },
@@ -599,7 +599,7 @@ const geoutils = {
    */
   createFeatureFromFeatureObject({id, feature={}}){
     const {geometry, attributes} = feature;
-    feature = geoutils.createFeatureFromGeometry({id,geometry})
+    feature = geoutils.createFeatureFromGeometry({id,geometry});
     Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
     return feature;
   },
@@ -1549,13 +1549,14 @@ const geoutils = {
    * @returns {*}
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
-      if (toGeometryType){
-        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
-        const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
-        if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
-        else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
-      }
-      return geometry;
+    const fromGeometryType = geometry.getType();
+    if (toGeometryType && (fromGeometryType !== toGeometryType)){
+      const isFromGeometryMulti = Geometry.isMultiGeometry(fromGeometryType);
+      const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
+      if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
+      else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry([geometry]);
+    }
+    return geometry;
   },
 
   dissolve({features=[], index=0, clone=false}={}) {
