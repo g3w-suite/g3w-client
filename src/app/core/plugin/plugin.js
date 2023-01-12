@@ -1,11 +1,13 @@
+import PluginsRegistry from 'store/plugins';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
 const { base, inherit, toRawType } = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
 const G3WObject = require('core/g3wobject');
-const GUI = require('gui/gui');
 const ComponentsFactory = require('gui/component/componentsfactory');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
 const { addI18nPlugin } = require('core/i18n/i18n.service');
+
 const TIMEOUT = 10000;
 
 const Plugin = function({

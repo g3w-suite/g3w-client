@@ -8,10 +8,11 @@
 </template>
 
 <script>
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const responseParser = require('core/parsers/response/parser');
-const {getAlphanumericPropertiesFromFeature, query} = require('core/utils/geo');
-const GUI = require('gui/gui');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import GUI from 'services/gui';
+
+const {response:responseParser} = require('core/utils/parsers');
+const { getAlphanumericPropertiesFromFeature, query } = require('core/utils/geo');
 
 export default {
     name: 'Infoformats',

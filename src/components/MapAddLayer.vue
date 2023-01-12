@@ -72,9 +72,10 @@
 </template>
 
 <script>
-import {EPSG} from 'app/constant';
+import { EPSG } from 'app/constant';
 
-const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
+const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
+
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 

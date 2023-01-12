@@ -25,9 +25,11 @@
 </template>
 
 <script>
+import ProjectsRegistry from 'store/projects';
+import GUI from 'services/gui';
+
 const t = require('core/i18n/i18n.service').t;
-const GUI = require('gui/gui');
-const ProjectsRegistry = require('core/project/projectsregistry');
+
 const fakeImage = '/static/client/images/FakeProjectThumb.png';
 
 export default {

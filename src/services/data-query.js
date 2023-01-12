@@ -2,15 +2,17 @@
  * ORIGINAL SOURCE: src/app/core/data/query/service.js@v3.4
  */
 
-import {G3W_FID, QUERY_POINT_TOLERANCE} from 'constant';
-const {base, inherit} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
+import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';
+
+const { base, inherit } = require('core/utils/utils');
+const { t } = require('core/i18n/i18n.service');
 const BaseService = require('core/data/service');
 const {
   getQueryLayersPromisesByCoordinates,
   getQueryLayersPromisesByGeometry,
   getQueryLayersPromisesByBBOX,
-  getMapLayersByFilter} = require('core/utils/geo');
+  getMapLayersByFilter
+} = require('core/utils/geo');
 
 function QueryService(){
   base(this);

@@ -1,4 +1,5 @@
-import {EXPRESSION_OPERATORS as OPERATORS} from './operators';
+import { FILTER_EXPRESSION_OPERATORS as OPERATORS } from 'app/constant';
+
 //Expression
 function Expression(options={}) {
   this._layerName = options.layerName;

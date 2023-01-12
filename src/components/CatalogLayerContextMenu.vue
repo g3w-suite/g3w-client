@@ -144,11 +144,11 @@
 
 <script>
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import ApplicationService from 'services/application';
+  import GUI from 'services/gui';
 
-  const ApplicationService = require('core/applicationservice');
-  const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-  const GUI = require('gui/gui');
-  const {t} = require('core/i18n/i18n.service');
+  const { t } = require('core/i18n/i18n.service');
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
 

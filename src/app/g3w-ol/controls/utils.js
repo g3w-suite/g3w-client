@@ -1,5 +1,7 @@
-const GUI = require('gui/gui');
+import GUI from 'services/gui';
+
 const TOPOFFSET = 35;
+
 module.exports = {
   layout({map, position, element}) {},
   changeLayoutBottomControl({map, position, element, isMobile=false}) {

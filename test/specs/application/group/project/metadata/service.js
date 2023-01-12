@@ -1,4 +1,4 @@
-const GUI = require('gui/gui');
+import GUI from 'services/gui';
 
 export function init(){
   const metadataComponent = GUI.getComponent('metadata');

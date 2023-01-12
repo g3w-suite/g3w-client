@@ -1,8 +1,7 @@
-const appService = require('./app/service');
-//return an object contains key plugin name  and related service
-const pluginsServices = require('./plugins/index');
+import AppService from 'services/iframe-app';
+import EditingService from 'services/iframe-editing';
 
 module.exports =  {
-  app: appService,
-  ...pluginsServices
+  app: AppService,
+  editing: EditingService
 };

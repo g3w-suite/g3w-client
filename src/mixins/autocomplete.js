@@ -1,7 +1,7 @@
 /**
  * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
  */
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
 
 export default {
   methods: {

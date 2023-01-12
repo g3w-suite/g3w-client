@@ -10,8 +10,9 @@
 </template>
 
 <script>
-  import MapFooterRight from "./MapFooterRight.vue";
-  import MapFooterLeft from "./MapFooterLeft.vue";
+  import MapFooterRight from 'components/MapFooterRight.vue';
+  import MapFooterLeft from 'components/MapFooterLeft.vue';
+
   export default {
     name: 'Mapfooter',
     props: {

@@ -111,7 +111,7 @@
 </template>
 
 <script>
-  import MetadataMixin from 'gui/metadata/vue/components/metadatamixin';
+  import { metadataMixin as MetadataMixin } from 'mixins';
 
   export default {
     name: "layer",

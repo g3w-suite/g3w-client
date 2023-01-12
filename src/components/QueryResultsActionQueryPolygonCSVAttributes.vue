@@ -16,9 +16,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate'
+  import ApplicationState from 'store/application-state'
   
-  const {t}= require('core/i18n/i18n.service');
+  const { t } = require('core/i18n/i18n.service');
 
   export default {
     name: "querypolygonaddattributes",

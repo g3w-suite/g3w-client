@@ -16,9 +16,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
+  import ApplicationState from 'store/application-state';
 
-  const {getUniqueDomId} = require('core/utils/utils');
+  const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
     name: "datetime",

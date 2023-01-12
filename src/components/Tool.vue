@@ -30,8 +30,10 @@
 </template>
 
 <script>
-const AppState = require('core/applicationservice').getState();
-const GUI = require('gui/gui');
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
+const AppState = ApplicationService.getState();
 
 const TOOLSTATE = {
   alert: {

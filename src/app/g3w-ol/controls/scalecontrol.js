@@ -1,5 +1,6 @@
 const t = require('core/i18n/i18n.service').t;
-const {getResolutionFromScale, getScaleFromResolution} = require('core/utils/ol');
+const { getResolutionFromScale, getScaleFromResolution } = require('core/utils/ol');
+
 const SCALES = [1000000,5000000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 2000, 1000];
 
 const ScaleControl = function(options= {}) {

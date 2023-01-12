@@ -31,7 +31,7 @@
 </template>
 
 <script>
-const ProjectsRegistry = require('core/project/projectsregistry');
+import ProjectsRegistry from 'store/projects';
 
 export default {
   name: "g3w-images-gallery",

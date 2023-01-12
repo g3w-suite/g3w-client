@@ -1,5 +1,5 @@
-const BaseLayers = require('../layers/bases');
-const Projections = require('../projection/projections');
+const BaseLayers = require('g3w-ol/layers/bases');
+const Projections = require('g3w-ol/projection/projections');
 
 const MapHelpers = {
   createViewer(opts={}){

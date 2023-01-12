@@ -14,10 +14,9 @@
 
 <script>
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
-
-const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
 
 export default {
   props: {
@@ -39,7 +38,7 @@ export default {
   watch: {
     layers: {
       handler(layers){
-        // used to preved duplicate legend
+        // used to prevent duplicate legend
         setTimeout(()=>{
           this.mapReady && this.getLegendSrc(layers)
         })
@@ -170,7 +169,7 @@ export default {
     mapService.on('change-map-legend-params', ()=>{
       this.mapReady = true;
       this.getLegendSrc(this.layers);
-    })
+    });
   },
 };
 </script>
