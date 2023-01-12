@@ -7,25 +7,57 @@ const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Relation = require('./relation');
 
-// class Relations
 function Relations(options={}) {
+
   const {relations} = options;
-  //store relations
+
+  /**
+   * Store relations
+   * @type {object}
+   */
   this._relations = {};
+
+  /**
+   * Number of relations
+   * @type {number} 
+   */
   this._length = relations ? relations.length : 0;
-  // to build relations between layers
+
+  /**
+   * Build relations between layers
+   * @type {object}
+   */
   this._relationsInfo = {
-    children: {}, // array child (unique ids)
-    fathers: {}, // array father (unique ids)
-    father_child: {} // info parent child
+
+    /**
+     * array child (unique ids)
+     * @type {object}
+     */
+    children: {},
+
+    /**
+     * array father (unique ids)
+     * @type {object}
+     */
+    fathers: {},
+
+    /**
+     * info parent child
+     * @type {object}
+     */
+    father_child: {}
+
   };
+
   let relation;
   relations.forEach(relationConfig => {
     relation = new Relation(relationConfig);
     this._relations[relation.getId()] = relation;
   });
+
   this._createRelationsInfo();
   base(this);
+
 }
 
 inherit(Relations, G3WObject);
@@ -59,26 +91,37 @@ proto._reloadRelationsInfo = function() {
   this._createRelationsInfo();
 };
 
-// number of relations
+/**
+ * @returns {number} number of relations
+ */
 proto.getLength = function() {
   return this._length
 };
 
+/**
+ * @param {{type: string}} relation relation type used to filter current stored relations
+ * @returns {object} relations between layers
+ */
 proto.getRelations = function({type=null}={}) {
-  if (!type) return this._relations;
-  else {
+  if (type) {
+    const relations = {};
     if (['ONE','MANY'].indexOf(type) !== -1) {
-      const relations = {};
       for (const name in this._relations) {
         const relation = this._relations[name];
-        if (relation.getType() === type) relations[name] = relation;
+        if (relation.getType() === type) {
+          relations[name] = relation;
+        }
       }
-      return relations;
-    } else return {};
+    }
+    return relations;
+  } else {
+    return this._relations;
   }
 };
 
-// array of relation
+/**
+ * @returns {Relation[]} array of relation
+ */
 proto.getArray = function() {
   const relations = [];
   Object.entries(this._relations).forEach(([relName, relation]) => {
@@ -87,19 +130,36 @@ proto.getArray = function() {
   return relations;
 };
 
+/**
+ * @param {Relation[]} relations array of relations 
+ * @returns {void}
+ */
 proto.setRelations = function(relations) {
   this._relations = Array.isArray(relations) ? relations : [];
 };
 
+/**
+ * 
+ * @param {string} id relation identifier
+ * @returns {Relation}
+ */
 proto.getRelationById = function(id) {
   return this._relations[id];
 };
 
+/**
+ * @param {string} father father identifier
+ * @param {string} child child identifier
+ * @returns {Relation}
+ */
 proto.getRelationByFatherChildren = function(father, child) {
-  const relationId = this._relationsInfo.father_child[father+child];
-  return this.getRelationById(relationId);
+  return this.getRelationById(this._relationsInfo.father_child[father+child]);
 };
 
+/**
+ * @param {Relation} relation relation to be added
+ * @returns {void}
+ */
 proto.addRelation = function(relation) {
   if (relation instanceof Relation) {
     this._relations[relation.getId()] = relation;
@@ -107,6 +167,10 @@ proto.addRelation = function(relation) {
   }
 };
 
+/**
+ * @param {Relation} relation relation to be deleted
+ * @returns {void}
+ */
 proto.removeRelation = function(relation) {
   let relationId;
   if (relation instanceof Relation) {
@@ -116,32 +180,58 @@ proto.removeRelation = function(relation) {
   }
 };
 
+/**
+ * @param {string} fatherId relation identifier
+ * @returns {boolean}
+ */
 proto.hasChildren = function(childId) {
   const children = this.getChildren(childId);
-  return  children ? !!children.length: false;
+  return children ? !!children.length : false;
 };
 
+/**
+ * @param {string} fatherId relation identifier
+ * @returns {boolean}
+ */
 proto.hasFathers = function(fatherId) {
   const fathers = this.getFathers(fatherId);
   return fathers ? !!fathers.length : false;
 };
 
-// get children based on father id
+/**
+ * Get children based on father id
+ * 
+ * @param {string} fatherId relation identifier
+ * @returns {object} children
+ */
 proto.getChildren = function(fatherId) {
   if (!this.isFather(fatherId)) return null;
   return this._relationsInfo.fathers[fatherId];
 };
 
-// get fathers based on childId
+/**
+ * Get fathers based on childId
+ * 
+ * @prop {string} childId relation identifier
+ * @returns {object} fathers
+ */
 proto.getFathers = function(childId) {
   if (!this.isChild(childId)) return null;
   return this._relationsInfo.children[childId];
 };
 
+/**
+ * @prop {string} id relation identifier
+ * @returns {boolean}
+ */
 proto.isChild = function(id) {
   return !!this._relationsInfo.children[id];
 };
 
+/**
+ * @prop {string} id relation identifier
+ * @returns {boolean}
+ */
 proto.isFather = function(id) {
   return !!this._relationsInfo.fathers[id];
 };
