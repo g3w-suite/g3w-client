@@ -19,6 +19,5 @@ package-lock.json
 /src/assets/style/less/g3w-skins-custom/
 /src/libs/sdk/config/dev/
 /src/libs/sdk/g3w-ol3/config/config.js
-/src/index.html
 /src/plugins/**
 !/src/plugins/README.md

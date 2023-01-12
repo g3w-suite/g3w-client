@@ -374,50 +374,46 @@ const ApplicationService = function() {
   this.obtainInitConfig = async function({initConfigUrl, url, host}={}) {
     if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
     else this.clearInitConfig();
-    // if exist a global initiConfig (in production)
-    if (window.initConfig) {
-      this._initConfig = window.initConfig;
-      this.setInitVendorKeys(initConfig);
-      this.emit('initconfig', initConfig);
-      return window.initConfig;
-      // case development need to ask to api
-    } else {
-      // LOAD DEVELOPMENT CONFIGURATION
-      require('app/dev/index');
-      let projectPath;
-      let queryTuples;
-      const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
-      if (locationsearch) {
-        queryTuples = locationsearch.split('&');
-        queryTuples.forEach(queryTuple => {
-          //check if exist project in url
-          if( queryTuple.indexOf("project") > -1) {
-            projectPath = queryTuple.split("=")[1];
-          }
-        });
-      } else {
-        const type_id = this._gid.split(':').join('/');
-        projectPath = `${this._groupId}/${type_id}`;
-      }
+
+    // if exist a global initConfig
+    this._initConfig = window.initConfig;
+
+
+    let projectPath;
+
+    // DEPRECATED: will be removed after v4.0
+
+    const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
+
+    if (locationsearch) {
+      //check if exist project in url
+      /**
+       * The way to extract project group,type and id
+       * Example http:localhost:3000/?project=3003/qdjango/1
+       * is deprecate
+       */
+      locationsearch.split('&').forEach(queryTuple => {
+        projectPath = queryTuple.indexOf("project") > -1 ? queryTuple.split("=")[1] : projectPath;
+      });
+
+    ///////////////////////////////////////////////////////////////////
+
+    } else if (this._gid) {
+      projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
+    }
+
+    try {
       if (projectPath) {
-        const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
-        // get configuration from server (return a promise)
-        try {
-          const initConfig =  await this.getInitConfig(url);
-          //group, mediaurl, staticurl, user
-          initConfig.staticurl = "../dist/"; // in development force  asset
-          initConfig.clienturl = "../dist/"; // in development force  asset
-          this._initConfig = initConfig;
-          // set initConfig
-          window.initConfig = initConfig;
-          this.setInitVendorKeys(initConfig);
-          return initConfig;
-        } catch(error) {
-          return Promise.reject(error);
-        } finally {
-          this.emit('initconfig', initConfig)
-        }
+        // get configuration from server
+        this._initConfig = await this.getInitConfig(`${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`);
       }
+    } catch(error) {
+      return Promise.reject(error);
+    } finally {
+      window.initConfig = this._initConfig;
+      this.emit('initconfig', this._initConfig);
+      this.setInitVendorKeys(this._initConfig);
+      return Promise.resolve(this._initConfig);
     }
   };
 
