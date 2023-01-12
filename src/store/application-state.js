@@ -11,7 +11,8 @@ const STATE = Vue.observable({
   download: false, // true if there is a downloaded that is waiting
   upload: false, // upload
   baseLayerId: null,
-  lng: 'en', // DEPRECATED: this property will be removed on v4 version. Leave for backward compatibility
+  /** @deprecated since v4.0 */
+  lng: 'en',
   language: 'en', // language default
   changeProjectview: false,
   plugins: [],

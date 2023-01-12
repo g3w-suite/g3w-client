@@ -153,7 +153,8 @@ const ApplicationService = function() {
 
   this.changeLanguage = function(language){
     changeLanguage(language);
-    ApplicationState.lng = language; // DEPRECATED: this property will be removed on v4 version. Leave for backward compatibility
+    /** @deprecated since v4.0 */
+    ApplicationState.lng = language;
     ApplicationState.language = language;
     const pathname = window.location.pathname;
     const pathArray = pathname.split('/');
@@ -202,7 +203,8 @@ const ApplicationService = function() {
   };
 
   this.setApplicationLanguage = function(language='en') {
-    ApplicationState.lng = language; // DEPRECATED: this property will be removed on v4 version. Leave for backward compatibility
+    /** @deprecated since v4.0 */
+    ApplicationState.lng = language;
     ApplicationState.language = language;
   };
 
