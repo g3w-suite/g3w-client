@@ -5,6 +5,9 @@ const {normalizeEpsg} = require('core/utils/geo');
 
 const Projections = {
 
+  /**
+   * @since v3.8
+   */
   isRegistered(epsg) {
     return ol.proj.get(epsg);
   },
