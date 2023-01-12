@@ -1,7 +1,3 @@
-import ProjectsRegistry from 'store/projects';
-import ApplicationService from 'services/application';
-// import GUI from 'services/gui';
-
 const {
   createProject = {},
   setCurrentProject = {},
