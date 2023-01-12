@@ -1,12 +1,13 @@
-/**
- * @file handle QGIS Relations Properties: one (1-N) and many to many (N-M)
- * @see https://docs.qgis.org/3.22/en/docs/user_manual/introduction/qgis_configuration.html?highlight=relation#relations-properties
- */
-
 const {base, inherit} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Relation = require('./relation');
 
+/**
+ * Handle QGIS Relations Properties: one (1-N) and many to many (N-M)
+ * 
+ * @class 
+ * @see https://docs.qgis.org/3.22/en/docs/user_manual/introduction/qgis_configuration.html?highlight=relation#relations-properties
+ */
 function Relations(options={}) {
 
   const {relations} = options;
