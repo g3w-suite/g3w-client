@@ -1,10 +1,10 @@
 /**
  * ORIGINAL SOURCE: src/app/core/data/proxy/service.js@v3.4
  */
+import ApplicationService from 'services/application';
 
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit, XHR } = require('core/utils/utils');
 const BaseService = require('core/data/service');
-const {XHR} = require('core/utils/utils');
 
 function ProxyService(){
   base(this);
@@ -14,7 +14,6 @@ function ProxyService(){
    * @returns {Promise<{data: string, response: *}>}
    */
   this.wms = async function({url, method='GET', params={}, headers={}}={}){
-    const ApplicationService = require('core/applicationservice');
     let proxyUrl = `${ApplicationService.getProxyUrl()}`;
     if (method === 'GET') {
       url = new URL(url);

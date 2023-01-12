@@ -38,7 +38,7 @@
 </template>
 
 <script>
-  import Service from 'gui/querybuilder/service';
+  import QueryBuilderService from 'services/querybuilder';
 
   const QueryBuilderUIFactory = require('gui/querybuilder/querybuilderuifactory');
 
@@ -58,7 +58,7 @@
     methods: {
       async remove(){
         try {
-          await Service.delete(this.querybuildersearch);
+          await QueryBuilderService.delete(this.querybuildersearch);
           this.$emit('delete');
         } catch(err){}
 
@@ -75,7 +75,7 @@
       },
       run() {
         this.loading = true;
-        Service.run({
+        QueryBuilderService.run({
           layerId: this.querybuildersearch.layerId,
           filter:  this.querybuildersearch.filter
         }).finally(()=>{

@@ -18,11 +18,11 @@
 </template>
 
 <script>
+import GUI from 'services/gui';
 import RelationsComponent from 'components/Relations.vue';
 import RelationComponent from 'components/Relation.vue';
-import {G3W_FID, LIST_OF_RELATIONS_TITLE, LIST_OF_RELATIONS_ID} from 'constant';
+import {G3W_FID, LIST_OF_RELATIONS_TITLE} from 'constant';
 
-const GUI = require('gui/gui');
 const {getFeaturesFromResponseVectorApi} = require('core/utils/geo');
 const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
 

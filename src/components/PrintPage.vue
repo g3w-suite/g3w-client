@@ -25,10 +25,10 @@
 </template>
 
 <script>
-import {TIMEOUT} from "app/constant";
+import { TIMEOUT } from 'app/constant';
+import GUI from 'services/gui';
 
-const {imageToDataURL} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { imageToDataURL } = require('core/utils/utils');
 
 export default {
   data() {

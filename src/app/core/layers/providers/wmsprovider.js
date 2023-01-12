@@ -1,4 +1,4 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import {QUERY_POINT_TOLERANCE} from 'constant';
 const {base, inherit, appendParams, XHR} = require('core/utils/utils');
 const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');

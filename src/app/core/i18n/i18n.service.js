@@ -1,3 +1,5 @@
+import ApplicationService from 'services/application';
+
 // main object content for i18n
 const plugins18nConfig = {};
 
@@ -32,7 +34,6 @@ function init(config) {
 
 }
 const getAppLanguage = function() {
-  const ApplicationService = require('core/applicationservice');
   const config = ApplicationService.getConfig();
   return config.user.i18n || "en";
 };

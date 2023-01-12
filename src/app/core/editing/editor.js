@@ -1,10 +1,12 @@
-import Applicationstate from 'core/applicationstate';
-const {inherit, base} = require('core/utils/utils');
+import Applicationstate from 'store/application-state';
+import ChangesManager from 'services/editing';
+import SessionsRegistry from 'store/sessions';
+
+const { inherit, base } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
 const Layer = require('core/layers/layer');
-const ChangesManager = require('./changesmanager');
 
 // class Editor bind editor to layer to do main actions
 function Editor(options={}) {
@@ -161,7 +163,6 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
 };
 
 proto.setFieldValueToRelationField = function({relationId, ids, field, values=[]}={}){
-  const SessionsRegistry = require('./sessionsregistry');
   const editingLayerSource = SessionsRegistry.getSession(relationId).getEditor().getEditingSource();
   ids.forEach(id => {
     const feature = editingLayerSource.getFeatureById(id);

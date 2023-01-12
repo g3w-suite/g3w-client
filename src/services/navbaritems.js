@@ -1,7 +1,7 @@
 /**
  * ORIGINAL SOURCE: gui/navbar/navbaritems.js@v3.4
  */
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // service sidebar

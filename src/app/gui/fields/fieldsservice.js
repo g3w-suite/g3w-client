@@ -1,8 +1,11 @@
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+
 const Fields = require('./fields');
-const {toRawType} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const { toRawType } = require('core/utils/utils');
+
 const URLPattern = /^(https?:\/\/[^\s]+)/g;
 const PhotoPattern = /[^\s]+.(png|jpg|jpeg|gif)$/g;
+
 const FieldType = {
   SIMPLE:'simple',
   GEO:'geo',

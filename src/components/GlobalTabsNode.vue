@@ -42,10 +42,10 @@
 
 <script>
   import G3wInput from 'components/InputG3W.vue';
+  import ProjectsRegistry from 'store/projects';
+  import GUI from 'services/gui';
 
   const Fields = require('gui/fields/fields');
-  const ProjectRegistry = require('core/project/projectsregistry');
-  const GUI = require('gui/gui');
 
   export default {
     name: "node",
@@ -99,7 +99,7 @@
     },
     methods: {
       loadingRelation(relation){
-        const layer = ProjectRegistry.getCurrentProject().getLayerById(this.layerid);
+        const layer = ProjectsRegistry.getCurrentProject().getLayerById(this.layerid);
         const relation_project = layer.getRelationById(relation.name);
         return relation_project.state;
       },
@@ -108,13 +108,13 @@
         //return this.getRelationName(relation.name) === undefined || (this.contenttype === 'editing' && (relation.nmRelationId || this.isRelationChildLayerNotEditable(relation.name)));
       },
       getRelationName(relationId) {
-        const relation = ProjectRegistry.getCurrentProject().getRelationById(relationId);
+        const relation = ProjectsRegistry.getCurrentProject().getRelationById(relationId);
         return relation && relation.name;
       },
       isRelationChildLayerNotEditable(relation){
         const {nmRelationId, name} = relation;
         ///TEMPORARY HANDLE N:M RELATION AS 1:N RELATION
-        const currentProject = ProjectRegistry.getCurrentProject();
+        const currentProject = ProjectsRegistry.getCurrentProject();
         const projectRelation = currentProject.getRelationById(name);
         const relationLayerId = projectRelation.referencingLayer;
         const relationLayer = currentProject.getLayerById(relationLayerId);
@@ -122,7 +122,7 @@
         return !relationLayer.isEditable();
         // if (nmRelationId) return true;
         // else {
-        //   const currentProject = ProjectRegistry.getCurrentProject();
+        //   const currentProject = ProjectsRegistry.getCurrentProject();
         //   const projectRelation = currentProject.getRelationById(name);
         //   const relationLayerId = projectRelation.referencingLayer;
         //   const relationLayer = currentProject.getLayerById(relationLayerId);
@@ -130,7 +130,7 @@
         //   return !relationLayer.isEditable();
         // }
         // const relationId = nmRelationId || name;
-        // const currentProject = ProjectRegistry.getCurrentProject();
+        // const currentProject = ProjectsRegistry.getCurrentProject();
         // const projectRelation = currentProject.getRelationById(relationId);
         // const relationLayerId = nmRelationId ? projectRelation.referencedLayer : projectRelation.referencingLayer;
         // const relationLayer = currentProject.getLayerById(relationLayerId);

@@ -20,9 +20,10 @@
 </template>
 
 <script>
+import { widgetMixins } from 'mixins';
+
 const Input = require('gui/inputs/input');
-const widgetMixins = require('gui/inputs/widgetmixins');
-const {getUniqueDomId} = require('core/utils/utils');
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   mixins: [Input, widgetMixins],

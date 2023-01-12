@@ -1,4 +1,4 @@
-const InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const ZoomBoxControl = function(options){
   this._startCoordinate = null;

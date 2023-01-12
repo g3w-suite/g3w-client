@@ -1,8 +1,10 @@
-const {inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
+import ProjectsRegistry from 'store/projects';
+import GUI from 'services/gui';
+
+const { inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const ProjectMetadataComponent = require('./vue/components/project/project');
+const ProjectMetadataComponent = require('gui/metadata/vue/components/project/project');
+
 const METADATAGROUPS = {
   general: [
     'title',

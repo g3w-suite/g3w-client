@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  const {t} = require('core/i18n/i18n.service');
+  const { t } = require('core/i18n/i18n.service');
 
   export default {
     name: "action",

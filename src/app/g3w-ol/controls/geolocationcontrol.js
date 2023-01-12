@@ -1,4 +1,5 @@
-const InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+
 function GeolocationControl() {
   const options = {
     visible: false, // set initial to false. Is set visible if is autorized

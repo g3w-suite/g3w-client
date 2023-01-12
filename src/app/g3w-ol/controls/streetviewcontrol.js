@@ -1,7 +1,8 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
+import GUI from 'services/gui';
+
 const { XHR } = require('core/utils/utils');
 const utils = require('core/utils/ol');
-const GUI = require('gui/gui');
 const StreetViewComponent = require('gui/streetview/vue/streetview');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');

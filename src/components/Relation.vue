@@ -63,15 +63,16 @@
 </template>
 
 <script>
-import {G3W_FID} from 'constant';
+import { G3W_FID } from 'app/constant';
 import Field from 'components/FieldG3W.vue';
 import DownloadFormats from 'components/QueryResultsActionDownloadFormats.vue';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import GUI from 'services/gui';
+import { fieldsMixin, resizeMixin } from 'mixins';
 
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const GUI = require('gui/gui');
-const {throttle} = require('core/utils/utils');
+const { throttle } = require('core/utils/utils');
 const RelationPageEventBus = require('gui/relations/vue/relationeventbus');
-const {fieldsMixin, resizeMixin} = require('gui/vue/vue.mixins');
+
 let SIDEBARWIDTH;
 
 export default {

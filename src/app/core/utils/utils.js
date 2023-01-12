@@ -1,7 +1,8 @@
-import {TIMEOUT} from "../../constant";
-import {EXPRESSION_OPERATORS} from '../layers/filter/operators'
+import { TIMEOUT, FILTER_EXPRESSION_OPERATORS as EXPRESSION_OPERATORS } from 'app/constant';
+
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
+
 /**
  * Decimal adjustment of a number.
  *

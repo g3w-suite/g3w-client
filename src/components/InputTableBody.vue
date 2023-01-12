@@ -15,7 +15,7 @@
 </template>
 
 <script>
-const Validators = require('core/validators/inputs/validators');
+const Validators = require('core/utils/validators');
 
 export default {
   props: {

@@ -39,10 +39,11 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
+  import ApplicationState from 'store/application-state';
   import SIDEBAREVENTBUS from 'gui/sidebar/eventbus';
   import sidebarService from 'services/sidebar';
-  const {t} = require('core/i18n/i18n.service');
+
+  const { t } = require('core/i18n/i18n.service');
 
   export default {
     name: "Sidebar",

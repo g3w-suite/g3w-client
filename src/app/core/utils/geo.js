@@ -1,12 +1,14 @@
-import CONSTANT from '../../constant';
-const {toRawType, uniqueId} = require('core/utils/utils');
+import CONSTANT from 'app/constant';
+import MapLayersStoresRegistry from 'store/map-layers';
+import GUI from 'services/gui';
+
+const { toRawType, uniqueId } = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
-const {response: responseParser} = require('core/utils/parsers');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const GUI = require('gui/gui');
+const { response: responseParser } = require('core/utils/parsers');
+
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes} = CONSTANT;
+const { QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes } = CONSTANT;
 
 const Geometry = {
 
@@ -1168,7 +1170,7 @@ const geoutils = {
   },
 
   getMapLayerById(layerId) {
-    return MapLayersStoreRegistry.getLayerById(layerId);
+    return MapLayersStoresRegistry.getLayerById(layerId);
   },
 
   //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
@@ -1179,7 +1181,7 @@ const geoutils = {
       ...filter
     };
     let layers = [];
-    MapLayersStoreRegistry.getQuerableLayersStores().forEach(layerStore => {
+    MapLayersStoresRegistry.getQuerableLayersStores().forEach(layerStore => {
       layers = layerStore.getLayers(filter, options);
     });
     return layers || [];

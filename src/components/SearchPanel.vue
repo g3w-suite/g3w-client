@@ -43,7 +43,7 @@
 <script>
 import Select2 from 'components/SearchSelect2.vue';
 import SearchDatetime from 'components/SearchDatetime.vue';
-import SearchPanelLabel from "./SearchPanelLabel.vue";
+import SearchPanelLabel from 'components/SearchPanelLabel.vue';
 
 export default {
   components:{

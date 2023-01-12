@@ -1,8 +1,8 @@
 import * as vueComponentOptions from 'components/WMS.vue';
+import Service from 'gui/wms/service';
+import GUI from 'services/gui';
 
-import Service from '../service';
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { base, inherit } = require('core/utils/utils');
 const Component = require('gui/component/component');
 
 const InternalComponent = Vue.extend(vueComponentOptions);

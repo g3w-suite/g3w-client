@@ -1,10 +1,10 @@
 import Table from 'components/Table.vue';
+import GUI from 'services/gui';
 
-const {t} = require('core/i18n/i18n.service');
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { t } = require('core/i18n/i18n.service');
+const { base, inherit } = require('core/utils/utils');
 const Component = require('gui/component/component');
-const TableService = require('../tableservice');
+const TableService = require('gui/table/tableservice');
 
 const InternalComponent = Vue.extend(Table);
 
