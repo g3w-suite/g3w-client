@@ -1,26 +1,7 @@
 import ApplicationState  from 'store/application-state';
 import BaseInputComponent from 'components/InputBase.vue'
 import { baseInputMixin as BaseInputMixin } from 'mixins';
-
-const InputServices = {
-  'text': require('./service'),
-  'textarea': require('./service'),
-  'integer': require('./integer/service'),
-  'string':require('./service'),
-  'float': require('./float/service'),
-  'radio': require('./radio/service'),
-  'check': require('./checkbox/service'),
-  'range': require('./range/service'),
-  'datetimepicker': require('./datetimepicker/service'),
-  'unique': require('./unique/service'),
-  'select': require('./select/service'),
-  'media': require('./media/service'),
-  'select_autocomplete': require('./select/service'),
-  'picklayer': require('./service'),
-  'color': require('./service'),
-  'slider': require('./sliderrange/service'),
-  'lonlat': require('./lonlat/service')
-};
+const InputServices = require('./services');
 
 const Input = {
   props: ['state'],
