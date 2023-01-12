@@ -173,6 +173,6 @@
 
 <style scoped>
   .layer-legend {
-    padding-left: 38px;
+    padding-left: 36px;
   }
 </style>
