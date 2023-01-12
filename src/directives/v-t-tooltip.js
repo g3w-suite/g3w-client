@@ -25,7 +25,7 @@ export default {
       el: _el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         ({el = _el}) => {
           let value = el.getAttribute('current-tooltip');
           if (value === null) { value = binding.value; }

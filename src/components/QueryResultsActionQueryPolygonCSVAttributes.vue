@@ -37,7 +37,7 @@
       }
     },
     created() {
-      this.unwatch =  this.$watch(()=>ApplicationState.lng, ()=>{
+      this.unwatch =  this.$watch(()=>ApplicationState.language, ()=>{
         this.config.choices.forEach(choice => $(this.$refs[choice.type]).text(t(choice.label)));
         $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
       })

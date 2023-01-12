@@ -391,7 +391,7 @@ function GeocodingControl(options={}) {
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
-    lang: ApplicationState.lng || 'it-IT',
+    lang: ApplicationState.language || 'it-IT',
     limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,

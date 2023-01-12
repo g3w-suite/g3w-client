@@ -69,7 +69,7 @@
         enabledDates: this.enabledDates,
         showClose: true,
         format: this.format,
-        locale: ApplicationState.lng,
+        locale: ApplicationState.language,
         toolbarPlacement: 'top',
         widgetPositioning: {
           horizontal: 'right'

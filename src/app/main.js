@@ -450,8 +450,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         self._setUpServices();
         // create templateConfig
         self.templateConfig = self._createTemplateConfig();
-        // listen lng change and reset datatable lng
-        this.$watch(()=> ApplicationState.lng, ()=>{
+        // listen lng change and reset datatable language
+        this.$watch(()=> ApplicationState.language, ()=>{
           self._setDataTableLanguage();
         });
       },
@@ -493,7 +493,7 @@ const ApplicationTemplate = function({ApplicationService}) {
 
   // dataTable Translations and custom extentions
   this._setDataTableLanguage = function(dataTable=null) {
-    const lngOptions = {
+    const languageOptions = {
       "language": {
         "sSearch": '',
         "searchPlaceholder": t("dosearch"),
@@ -511,7 +511,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     $.extend( $.fn.dataTableExt.oStdClasses, {
       "sFilterInput": "form-control search"
     });
-    !dataTable ? $.extend( true, $.fn.dataTable.defaults, lngOptions) : dataTable.dataTable( {"oLanguage": lngOptions});
+    !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
   };
 
   // route setting att beginning (is an example)
