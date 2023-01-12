@@ -304,9 +304,6 @@ export const VIEWPORT = {
   }
 };
 
-/**
- * @since v3.8
- */
 export const ZINDEXES = {
   usermessage: {
     tool: 2
