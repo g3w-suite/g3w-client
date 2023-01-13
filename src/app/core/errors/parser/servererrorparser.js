@@ -31,10 +31,8 @@ proto.parse = function({type='responseJSON'}={}) {
     }
   }
   if (type === 'responseJSON') {
-    if (this._error){
-      if (this._error.responseJSON && this._error.responseJSON.error.message) return this._error.responseJSON.error.message
-      else if (this._error.errors)return traverseErrorMessage(this._error.errors);
-    }
+    if (this._error && this._error.responseJSON && this._error.responseJSON.error.message) return this._error.responseJSON.error.message
+    else if (this._error && this._error.errors)return traverseErrorMessage(this._error.errors);
   } else if (type === 'String') {
     if (typeof this._error === 'string') return this._error;
     else return traverseErrorMessage(this._error);
