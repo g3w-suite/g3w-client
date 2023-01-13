@@ -300,6 +300,7 @@ proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
 /**
  * Based on layer response check if features layer are to add or remove to current state.layers results
  * @param layer
+ * @since v3.8.0
  */
 proto.updateLayerResultFeatures = function(layer){
   //extract features from layer object
