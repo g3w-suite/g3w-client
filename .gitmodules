@@ -1,0 +1,9 @@
+[submodule "src/plugins/qplotly"]
+	path = src/plugins/qplotly
+	url = https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
+[submodule "src/plugins/qtimeseries"]
+	path = src/plugins/qtimeseries
+	url = https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
+[submodule "src/plugins/editing"]
+	path = src/plugins/editing
+	url = https://github.com/g3w-suite/g3w-client-plugin-editing.git

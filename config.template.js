@@ -6,9 +6,16 @@ const G3W_ADMIN_PORT   = '8000';      // G3W-ADMIN development server
 const G3W_CLIENT_PORT  = '3000';      // G3W-CLIENT development server
 
 const G3W_PLUGINS = [                 // override "initConfig->group->plugins" attribute for custom plugin development
-  // "your-plugin-folder-name-1",
-  // "your-plugin-folder-name-2",
-  // "your-plugin-folder-name-3",
+  // "<plugin-name>": {
+  //    <custom plugin configuration>
+  // }
+  /**
+   * Example:
+   * 'editing': {
+   *    baseurl: '../dist',
+   *    gid: 'qdjango:1'
+   * }
+   */
 ];
 
 const G3W_KEYS = {
