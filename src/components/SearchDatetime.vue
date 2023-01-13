@@ -9,8 +9,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
-  const {getUniqueDomId, convertQGISDateTimeFormatToMoment} = require('core/utils/utils');
+  import ApplicationState from 'store/application-state';
+
+  const { getUniqueDomId, convertQGISDateTimeFormatToMoment } = require('core/utils/utils');
 
   export default {
     name: 'Searchdatetime',
@@ -45,7 +46,7 @@
           horizontal: 'left'
         },
         showClose: true,
-        locale: ApplicationState.lng || 'en'
+        locale: ApplicationState.language || 'en'
       });
 
       $(`#${this.id}`).on("dp.change", () => {

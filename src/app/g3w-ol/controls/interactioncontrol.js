@@ -1,7 +1,8 @@
-import {SPATIALMETHODS} from "../constants";
-const {t} = require('core/i18n/i18n.service');
-const Control = require('./control');
-const GUI = require('gui/gui');
+import { SPATIALMETHODS } from 'g3w-ol/constants';
+import GUI from 'services/gui';
+
+const { t } = require('core/i18n/i18n.service');
+const Control = require('g3w-ol/controls/control');
 
 const InteractionControl = function(options={}) {
   const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,

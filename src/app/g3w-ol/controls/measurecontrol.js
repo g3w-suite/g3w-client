@@ -1,4 +1,4 @@
-const InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const MeasureControl = function(options={}) {
   this._map = null;

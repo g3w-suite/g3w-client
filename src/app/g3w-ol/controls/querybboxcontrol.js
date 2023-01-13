@@ -1,6 +1,7 @@
-import {SPATIALMETHODS, VM} from '../constants';
-const {merge} = require('core/utils/ol');
-const InteractionControl = require('./interactioncontrol');
+import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+
+const { merge } = require('core/utils/ol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const QueryBBoxControl = function(options = {}){
   const {spatialMethod=SPATIALMETHODS[0]} = options;

@@ -1,54 +1,53 @@
-// api file interface for external plugins
-import G3W_CONSTANT from './constant';
-
-import ApplicationState from 'core/applicationstate';
-
 /**
- * Vue Single Components
+ * @file api file interface for external plugins
  */
 
+import G3W_CONSTANT from 'constant';
+
+import ApplicationState from 'store/application-state';
+
 /**
- * Inputs
+ * Single File Components
  */
 import G3WInput from 'components/InputG3W.vue';
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
 import inputService from 'core/expression/inputservice';
-/**
- * Form components
- */
 import FormBody from 'components/FormBody.vue';
 import FormFooter from 'components/FormFooter.vue';
-/**
- * Chart Line component
- */
 import C3XYLine from 'components/C3XYLine.vue';
-
-
 
 /**
  * CORE modules
  */
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
+import ChangesManager from 'services/editing';
+import SessionsRegistry from 'store/sessions';
+import IFrameRouterService from 'services/iframe-plugin';
+import MapLayersStoresRegistry from 'store/map-layers';
+import PluginsRegistry from 'store/plugins';
+import ProjectsRegistry from 'store/projects';
+import RelationsService from 'services/relations';
+import TaskService from 'services/tasks';
+import WorkflowsStack from 'services/workflows';
+import ApiService from 'services/api';
+import ApplicationService from 'services/application';
+import RouterService from 'services/router';
+
+import GUI from 'services/gui';
+//MIXINS
+import Mixins from 'mixins';
+
 const G3WObject = require('core/g3wobject');
 const utils = require('core/utils/utils');
 const geoutils = require('core/utils/geo');
-const ApplicationService = require('core/applicationservice');
-const ApiService = require('core/apiservice');
-const Router = require('core/router');
 const i18n = require('core/i18n/i18n.service');
-const TaskService = require('core/task/service');
-const DataRouterService = require('core/data/routerservice');
-const IFrameRouterService = require('core/iframe/routerservice');
 const Server = require('core/errors/parser/servererrorparser');
 const Session = require('core/editing/session');
-const SessionsRegistry = require('core/editing/sessionsregistry');
 const Editor = require('core/editing/editor');
-const ChangesManager = require('core/editing/changesmanager');
 const Geom = require('core/utils/geo');
 const { Geometry } = require('core/utils/geo');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const Project = require('core/project/project');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 const LayersStoreRegistry = require('core/layers/layersstoresregistry');
 const LayersStore = require('core/layers/layersstore');
 const Layer = require('core/layers/layer');
@@ -64,20 +63,16 @@ const FeaturesStore = require('core/layers/features/featuresstore');
 const OlFeaturesStore = require('core/layers/features/olfeaturesstore');
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
-const RelationsService = require('core/relations/relationsservice');
 const Plugin = require('core/plugin/plugin');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
 const PluginService = require('core/plugin/pluginservice');
 const Task = require('core/workflow/task');
 const Step = require('core/workflow/step');
 const Flow = require('core/workflow/flow');
 const Workflow = require('core/workflow/workflow');
-const WorkflowsStack = require('core/workflow/workflowsstack');
 
 /**
  * GUI modules
  */
-const GUI = require('gui/gui');
 const Panel = require('gui/panel');
 const ControlFactory = require('gui/map/control/factory');
 const ComponentsFactory = require('gui/component/componentsfactory');
@@ -96,7 +91,6 @@ const FormService = require('gui/form/formservice');
 const InputsComponents = require('gui/inputs/inputs');
 const ChartsFactory = require('gui/charts/chartsfactory');
 const Fields = require('gui/fields/fields');
-const Mixins = require('gui/vue/vue.mixins');
 const SearchPanelService = require('gui/search/vue/panel/searchservice');
 
 /**
@@ -122,7 +116,7 @@ module.exports = {
     ApplicationService,
     ApplicationState,
     ApiService,
-    Router,
+    Router: RouterService,
     i18n,
     task: {
       TaskService
@@ -153,7 +147,7 @@ module.exports = {
       Project
     },
     map: {
-      MapLayersStoreRegistry
+      MapLayersStoreRegistry: MapLayersStoresRegistry
     },
     catalog: {
       CatalogLayersStoresRegistry
@@ -266,10 +260,6 @@ module.exports = {
     controls: {},
     utils: g3wolutils
   },
-
-  // DEPRECATED: will be removed after version 3.4
-  test: {},
-
   // G3W-CLIENT version
   version: G3W_CONSTANT.APP_VERSION
 };

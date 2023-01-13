@@ -1,5 +1,5 @@
-const {inherit, base} = require('core/utils/utils');
-const MapLayer = require('./maplayer');
+const { inherit, base } = require('core/utils/utils');
+const MapLayer = require('core/layers/map/maplayer');
 const RasterLayers = require('g3w-ol/layers/rasters');
 
 function WMSTLayer(options={}, extraParams={}, method='GET') {

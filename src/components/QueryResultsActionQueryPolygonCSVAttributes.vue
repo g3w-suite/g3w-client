@@ -16,9 +16,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate'
+  import ApplicationState from 'store/application-state'
   
-  const {t}= require('core/i18n/i18n.service');
+  const { t } = require('core/i18n/i18n.service');
 
   export default {
     name: "querypolygonaddattributes",
@@ -37,7 +37,7 @@
       }
     },
     created() {
-      this.unwatch =  this.$watch(()=>ApplicationState.lng, ()=>{
+      this.unwatch =  this.$watch(()=>ApplicationState.language, ()=>{
         this.config.choices.forEach(choice => $(this.$refs[choice.type]).text(t(choice.label)));
         $(this.$refs.g3w_select_feature_featurepolygon).select2().trigger('change');
       })

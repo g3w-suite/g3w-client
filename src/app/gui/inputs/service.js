@@ -1,4 +1,4 @@
-const Validators = require('core/validators/inputs/validators');
+const Validators = require('core/utils/validators');
 const {toRawType} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 

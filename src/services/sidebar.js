@@ -2,8 +2,9 @@
  * ORIGINAL SOURCE: src/app/gui/sidebar/sidebar.js@v3.4
  */
 import SidebarItemComponent from 'components/SidebarItem.vue';
-const {base, inherit} = require('core/utils/utils');
-const {barstack:Stack} = require('gui/utils/utils');
+
+const { base, inherit } = require('core/utils/utils');
+const { barstack: Stack } = require('gui/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /**

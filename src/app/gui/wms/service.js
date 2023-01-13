@@ -1,11 +1,13 @@
-import WMSLayersPanel from './vue/panel/wmslayerspanel';
-import {LOCALSTORAGE_EXTERNALWMS_ITEM} from '../../constant';
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const {uniqueId} = require('core/utils/utils');
-const DataRouteService = require('core/data/routerservice');
-const GUI = require('gui/gui');
- function Service(options={}){
+import WMSLayersPanel from 'gui/wms/vue/panel/wmslayerspanel';
+import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
+const { uniqueId } = require('core/utils/utils');
+
+function Service(options={}){
   const {wmsurls=[]} = options;
   this.projectId = ProjectsRegistry.getCurrentProject().getId(); // get current project id used to store data or get data to current project
   this.panel;
@@ -228,7 +230,7 @@ proto.getWMSLayers = async function(url){
     title: null
   };
   try {
-    response = await DataRouteService.getData('ows:wmsCapabilities', {
+    response = await DataRouterService.getData('ows:wmsCapabilities', {
       inputs: {
         url
       },

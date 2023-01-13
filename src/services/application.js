@@ -3,18 +3,19 @@
  */
 
 import appConfig from 'config';
-import {TIMEOUT, APP_VERSION} from "app/constant";
-import ApplicationState from 'core/applicationstate';
-const {init:i18ninit, changeLanguage} = require('core/i18n/i18n.service');
-const {base, inherit, XHR, uniqueId}= require('core/utils/utils');
+import { TIMEOUT, APP_VERSION } from 'app/constant';
+import ApplicationState from 'store/application-state';
+import DataRouterService from 'services/data';
+import PluginsRegistry from 'store/plugins';
+import ProjectsRegistry from 'store/projects';
+import ApiService from 'services/api';
+import ClipboardService from 'services/clipboard';
+import RouterService from 'services/router';
+import GUI from 'services/gui';
+
+const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
+const { base, inherit, XHR, uniqueId } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const ApiService = require('core/apiservice');
-const RouterService = require('core/router');
-const RouterDataService =  require('core/data/routerservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const PluginsRegistry = require('core/plugin/pluginsregistry');
-const ClipboardService = require('core/clipboardservice');
-const GUI = require('gui/gui');
 
 //Manage Application
 const ApplicationService = function() {
@@ -62,8 +63,8 @@ const ApplicationService = function() {
       this.setLayout('app', config.layout);
       return await this.bootstrap();
     } catch(error) {
-      const browserLng = navigator && navigator.language || 'en';
-      const language = appConfig.supportedLng.find(lng => browserLng.indexOf(lng) !== -1);
+      const browserLanguage = navigator && navigator.language || 'en';
+      const language = appConfig.supportedLanguages.find(language => browserLanguage.indexOf(language) !== -1);
       return Promise.reject({
         error,
         language
@@ -76,11 +77,11 @@ const ApplicationService = function() {
    * setup Internationalization
    */
   this.setupI18n = function() {
-    const lngConfig = this._config._i18n;
-    lngConfig.appLanguages = this._config.i18n.map(lngLabel => lngLabel[0]);
-    this.setApplicationLanguage(lngConfig.lng);
+    const languageConfig = this._config._i18n;
+    languageConfig.appLanguages = this._config.i18n.map(languageLabel => languageLabel[0]);
+    this.setApplicationLanguage(languageConfig.language);
     //setup internationalization for translation
-    i18ninit(lngConfig);
+    i18ninit(languageConfig);
     this._groupId = this._config.group.slug || this._config.group.name.replace(/\s+/g, '-').toLowerCase();
     // set accept-language reuest header based on config language
     const userLanguage = this._config.user.i18n || 'en';
@@ -150,12 +151,16 @@ const ApplicationService = function() {
    *  filter token methods
    */
 
-  this.changeLanguage = function(lng){
-    changeLanguage(lng);
-    ApplicationState.lng = lng;
+  this.changeLanguage = function(language){
+    changeLanguage(language);
+    /**
+     * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
+     */
+    ApplicationState.lng = language;
+    ApplicationState.language = language;
     const pathname = window.location.pathname;
     const pathArray = pathname.split('/');
-    pathArray[1] = lng;
+    pathArray[1] = language;
     history.replaceState(null, null, pathArray.join('/'));
   };
 
@@ -199,12 +204,16 @@ const ApplicationService = function() {
     ApplicationState.gui.app.disabled = bool;
   };
 
-  this.setApplicationLanguage = function(lng='en') {
-    ApplicationState.lng = lng;
+  this.setApplicationLanguage = function(language='en') {
+    /**
+     * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
+     */
+    ApplicationState.lng = language;
+    ApplicationState.language = language;
   };
 
   this.getApplicationLanguage = function() {
-    return ApplicationState.lng;
+    return ApplicationState.language;
   };
 
   this.setOnline = function() {
@@ -319,7 +328,7 @@ const ApplicationService = function() {
       config.credits = initConfig.credits;
       config.i18n = initConfig.i18n;
       // get language from server
-      config._i18n.lng = config.user.i18n;
+      config._i18n.language = config.user.i18n;
       // create application configuration
       // check if is inside a iframe
       config.group.layout.iframe = window.top !== window.self;
@@ -373,50 +382,46 @@ const ApplicationService = function() {
   this.obtainInitConfig = async function({initConfigUrl, url, host}={}) {
     if (!this._initConfigUrl) this._initConfigUrl = initConfigUrl;
     else this.clearInitConfig();
-    // if exist a global initiConfig (in production)
-    if (window.initConfig) {
-      this._initConfig = window.initConfig;
-      this.setInitVendorKeys(initConfig);
-      this.emit('initconfig', initConfig);
-      return window.initConfig;
-      // case development need to ask to api
-    } else {
-      // LOAD DEVELOPMENT CONFIGURATION
-      require('app/dev/index');
-      let projectPath;
-      let queryTuples;
-      const locationsearch = url ? url.split('?')[1] : location.search ? location.search.substring(1) : null;
-      if (locationsearch) {
-        queryTuples = locationsearch.split('&');
-        queryTuples.forEach(queryTuple => {
-          //check if exist project in url
-          if( queryTuple.indexOf("project") > -1) {
-            projectPath = queryTuple.split("=")[1];
-          }
-        });
-      } else {
-        const type_id = this._gid.split(':').join('/');
-        projectPath = `${this._groupId}/${type_id}`;
-      }
+
+    // if exist a global initConfig
+    this._initConfig = window.initConfig;
+
+
+    let projectPath;
+
+    // DEPRECATED: will be removed after v4.0
+
+    const locationsearch = url ? url.split('?')[1] : location.search.substring(1);
+
+    if (locationsearch) {
+      //check if exist project in url
+      /**
+       * The way to extract project group,type and id
+       * Example http:localhost:3000/?project=3003/qdjango/1
+       * is deprecate
+       */
+      locationsearch.split('&').forEach(queryTuple => {
+        projectPath = queryTuple.indexOf("project") > -1 ? queryTuple.split("=")[1] : projectPath;
+      });
+
+    ///////////////////////////////////////////////////////////////////
+
+    } else if (this._gid) {
+      projectPath = `${this._groupId}/${this._gid.split(':').join('/')}`;
+    }
+
+    try {
       if (projectPath) {
-        const url =  `${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`;
-        // get configuration from server (return a promise)
-        try {
-          const initConfig =  await this.getInitConfig(url);
-          //group, mediaurl, staticurl, user
-          initConfig.staticurl = "../dist/"; // in development force  asset
-          initConfig.clienturl = "../dist/"; // in development force  asset
-          this._initConfig = initConfig;
-          // set initConfig
-          window.initConfig = initConfig;
-          this.setInitVendorKeys(initConfig);
-          return initConfig;
-        } catch(error) {
-          return Promise.reject(error);
-        } finally {
-          this.emit('initconfig', initConfig)
-        }
+        // get configuration from server
+        this._initConfig = await this.getInitConfig(`${host || ''}${this.baseurl}${this._initConfigUrl}/${projectPath}`);
       }
+    } catch(error) {
+      return Promise.reject(error);
+    } finally {
+      window.initConfig = this._initConfig;
+      this.emit('initconfig', this._initConfig);
+      this.setInitVendorKeys(this._initConfig);
+      return Promise.resolve(this._initConfig);
     }
   };
 
@@ -509,8 +514,8 @@ const ApplicationService = function() {
           ApplicationState.iframe && this.startIFrameService({
             project
           });
-          // initialize routerdataservice
-          RouterDataService.init();
+          // initialize data router service
+          DataRouterService.init();
           resolve(true);
         }).fail(error => reject(error))
       }

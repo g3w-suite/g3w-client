@@ -1,4 +1,5 @@
-const { layout } = require('./utils');
+const { layout } = require('g3w-ol/controls/utils');
+
 const Control = function(options={}) {
   const {name="", visible=true, enabled=false} = options;
   this._enabled = enabled;

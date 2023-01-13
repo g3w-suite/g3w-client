@@ -70,6 +70,35 @@ export const EPSG = [
 export const G3W_FID = 'g3w_fid'; 
 
 /**
+ * ORIGINAL SOURCE: core/layers/filter/operators::OPERATORS@v3.6
+ */
+export const FILTER_OPERATORS =  {
+  gte: '>=',
+  lte: '<=',
+  NOT: '!=',
+  eq: '=',
+  gt: '>',
+  lt: '<',
+  IN: 'IN',
+  'NOT IN': 'NOT IN',
+  LIKE: 'LIKE',
+  ILIKE: 'ILIKE',
+  AND: 'AND',
+  OR: 'OR',
+};
+
+/**
+ * ORIGINAL SOURCE: core/layers/filter/operators::EXPRESSION_OPERATORS@v3.6
+ */
+export const FILTER_EXPRESSION_OPERATORS = {
+  lte: '<=',
+  ltgt: '!=',
+  ilike: 'ILIKE',
+  like: 'LIKE',
+  ...FILTER_OPERATORS,
+};
+
+/**
  * Geometry fields used to exclude or get geometry information from server request
  */
  export const GEOMETRY_FIELDS = [
@@ -276,19 +305,29 @@ export const PRINT_SCALES = [
  * Point tolerance when clicking on map
  * @type {{unit: string, value: number}}
  */
- export const QUERY_POINT_TOLERANCE = {
+export const QUERY_POINT_TOLERANCE = {
   unit: 'pixel',
   value: 10
 };
 
 /**
+ * ORIGINAL SOURCE: gui/search/vue/constants::ALLVALUE@v3.6
+ */
+export const SEARCH_ALLVALUE = '__G3W_ALL__';
+
+/**
+ * ORIGINAL SOURCE: gui/search/vue/constants::RETURN_TYPES@v3.6
+ */
+export const SEARCH_RETURN_TYPES = ['data', 'search'];
+
+/**
  * TIMEOUT (1 minute = 60000)
  */
- export const TIMEOUT = 60000;
+export const TIMEOUT = 60000;
 
- export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
+export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
  
- export const TOC_THEMES_INIT_STATUS = 'collapsed';
+export const TOC_THEMES_INIT_STATUS = 'collapsed';
 
 /**
  * ORIGINAL SOURCE: gui/constraints::viewport@v3.4
@@ -318,6 +357,8 @@ export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
   DOWNLOAD_FORMATS,
+  FILTER_OPERATORS,
+  FILTER_EXPRESSION_OPERATORS,
   G3W_FID,
   GEOMETRY_FIELDS,
   GEOMETRY_TYPES,
@@ -329,6 +370,8 @@ export default {
   PRINT_RESOLUTIONS,
   PRINT_SCALES,
   QUERY_POINT_TOLERANCE,
+  SEARCH_ALLVALUE,
+  SEARCH_RETURN_TYPES,
   TIMEOUT,
   TOC_LAYERS_INIT_STATUS,
   TOC_THEMES_INIT_STATUS,

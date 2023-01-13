@@ -15,8 +15,9 @@
 </template>
 
 <script>
-  import {MAP_SETTINGS} from "app/constant";
-  const {getUniqueDomId} = require('core/utils/utils');
+  import { MAP_SETTINGS } from 'app/constant';
+
+  const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
     name: "layerspositions",

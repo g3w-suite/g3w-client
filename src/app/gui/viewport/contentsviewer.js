@@ -1,7 +1,7 @@
 import * as vueComponentOptions from 'components/ViewportContentsViewer.vue';
 
-const { base, inherit }= require('core/utils/utils');
-const {barstack:Stack} = require('gui/utils/utils');
+const { base, inherit } = require('core/utils/utils');
+const { barstack: Stack } = require('gui/utils/utils');
 const Component = require('gui/component/component');
 
 // Internal Component (VUE) of the content of the  viewport

@@ -6,7 +6,8 @@
 </template>
 
 <script>
-  import {EXPRESSION_OPERATORS} from 'core/layers/filter/operators';
+  import { FILTER_EXPRESSION_OPERATORS as EXPRESSION_OPERATORS } from 'app/constant';
+
   export default {
     name: 'Searchpanellabel',
     props: {

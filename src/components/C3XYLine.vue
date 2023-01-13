@@ -24,8 +24,9 @@
 </template>
 
 <script>
-const {getUniqueDomId} = require('core/utils/utils');
-const GUI = require('gui/gui');
+import GUI from 'services/gui';
+
+const { getUniqueDomId } = require('core/utils/utils');
 
 export default {
   props: {

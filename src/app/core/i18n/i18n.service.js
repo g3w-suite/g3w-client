@@ -1,16 +1,18 @@
+import ApplicationService from 'services/application';
+
 // main object content for i18n
 const plugins18nConfig = {};
 
 function init(config) {
-  config.appLanguages.forEach(lng =>{
-    plugins18nConfig[lng] = {
+  config.appLanguages.forEach(language =>{
+    plugins18nConfig[language] = {
       plugins: {}
     }
   });
   i18next
   .use(i18nextXHRBackend)
   .init({
-      lng: config.lng,
+      lng: config.language,
       ns: 'app',
       fallbackLng: 'en',
       resources: config.resources
@@ -32,7 +34,6 @@ function init(config) {
 
 }
 const getAppLanguage = function() {
-  const ApplicationService = require('core/applicationservice');
   const config = ApplicationService.getConfig();
   return config.user.i18n || "en";
 };
@@ -56,23 +57,23 @@ const tPrefix = function(filter) {
 
 const addI18nPlugin = function({name, config}) {
   for (const language in config) {
-    const pluginLng = plugins18nConfig[language];
-    if (pluginLng) pluginLng.plugins[name] = config[language];
+    const pluginLanguage = plugins18nConfig[language];
+    if (pluginLanguage) pluginLanguage.plugins[name] = config[language];
   }
   addI18n(plugins18nConfig);
 };
 
 const addI18n = function(i18nObject) {
-  for (const lng in i18nObject) {
-    const lngObj = i18nObject[lng];
-    for (const key in lngObj)  {
-      i18next.addResource(lng, 'translation', key, lngObj[key])
+  for (const language in i18nObject) {
+    const languageObj = i18nObject[language];
+    for (const key in languageObj)  {
+      i18next.addResource(language, 'translation', key, languageObj[key])
     }
   }
 };
 
-const changeLanguage = function(lng){
-  i18next.changeLanguage(lng);
+const changeLanguage = function(language){
+  i18next.changeLanguage(language);
 };
 
 module.exports = {

@@ -1,5 +1,6 @@
-const RasterLayers = {};
 const DPI = require('core/utils/ol').getDPI();
+
+const RasterLayers = {};
 
 const loadImageTileFunction = function({method='GET', type='image', sourceOptions={}}) {
   window.URL = window.URL || window.webkitURL;

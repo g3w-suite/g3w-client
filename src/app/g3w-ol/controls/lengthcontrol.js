@@ -1,6 +1,6 @@
 const utils = require('core/utils/ol');
-const LenghtIteraction = require('../interactions/lengthinteraction');
-const MeasureControl = require('./measurecontrol');
+const LenghtIteraction = require('g3w-ol/interactions/lengthinteraction');
+const MeasureControl = require('g3w-ol/controls/measurecontrol');
 
 const LengthControl = function(options={}) {
   const _options = {

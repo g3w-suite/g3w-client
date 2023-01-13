@@ -1,6 +1,8 @@
-import CONSTANT from '../../../constant';
+import CONSTANT from 'app/constant';
+
+const { uniqueId } = require('core/utils/utils');
+
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {uniqueId} = require('core/utils/utils');
 
 const Feature = function(options={}) {
   ol.Feature.call(this);

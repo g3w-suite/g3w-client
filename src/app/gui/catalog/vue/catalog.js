@@ -4,12 +4,13 @@ import * as catalogTristateTreeComponentOptions from 'components/CatalogTristate
 import * as catalogLayersLegendComponentOptions from 'components/CatalogLayersLegend.vue';
 import * as catalogLayersLegendItemsComponentOptions from 'components/CatalogLayersLegendItems.vue';
 
-const {inherit, base} = require('core/utils/utils');
-const Component = require('gui/component/component');
-const ComponentsRegistry = require('gui/component/componentsregistry');
-const GUI = require('gui/gui');
-const Service = require('../catalogservice');
+import ComponentsRegistry from 'store/components';
+import GUI from 'services/gui';
 
+
+const { inherit, base } = require('core/utils/utils');
+const Component = require('gui/component/component');
+const Service = require('gui/catalog/catalogservice');
 
 const InternalComponent = Vue.extend(catalogComponentOptions);
 

@@ -1,4 +1,4 @@
-const RasterLayers = require('./rasters');
+const RasterLayers = require('g3w-ol/layers/rasters');
 const BaseLayers = {};
 
 BaseLayers.OSM = {};

@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import { watch, unwatch, trigger } from 'directives/utils';
-const {t, tPlugin} = require('core/i18n/i18n.service');
+
+const { t, tPlugin } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-tooltip-id';
 
@@ -24,7 +25,7 @@ export default {
       el: _el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         ({el = _el}) => {
           let value = el.getAttribute('current-tooltip');
           if (value === null) { value = binding.value; }

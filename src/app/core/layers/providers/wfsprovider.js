@@ -1,4 +1,4 @@
-const {base, inherit, toRawType} = require('core/utils/utils');
+const { base, inherit, toRawType } = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 

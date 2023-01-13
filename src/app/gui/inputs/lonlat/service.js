@@ -1,6 +1,7 @@
-const {base, inherit} = require('core/utils/utils');
+import GUI from 'services/gui';
+
+const { base, inherit } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
-const GUI = require('gui/gui');
 
 function LonLatService(options={}) {
   base(this, options);

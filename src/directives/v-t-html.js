@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
-const {t} = require('core/i18n/i18n.service');
+
+const { t } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-html-id';
 
@@ -13,7 +14,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => { el.innerHTML = `${t(binding.value)}`; }
       ]
     });

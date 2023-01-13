@@ -1,11 +1,13 @@
-import ApplicationState  from 'core/applicationstate';
+import ApplicationState  from 'store/application-state';
+import BaseInputComponent from 'components/InputBase.vue'
+import { baseInputMixin as BaseInputMixin } from 'mixins';
 const InputServices = require('./services');
-const {BaseInput, BaseInputMixin}  = require('./baseinput/baseinput');
+
 const Input = {
   props: ['state'],
   mixins: [BaseInputMixin],
   components: {
-    'baseinput': BaseInput
+    'baseinput': BaseInputComponent
   },
   watch: {
     'notvalid'(notvalid){
@@ -19,7 +21,7 @@ const Input = {
     this.service = new InputServices[this.state.input.type]({
       state: this.state,
     });
-    this.$watch(() => ApplicationState.lng, () => this.service.setErrorMessage(this.state));
+    this.$watch(() => ApplicationState.language, () => this.service.setErrorMessage(this.state));
     this.state.editable && this.state.validate.required && this.service.validate();
     this.$emit('addinput', this.state);
     /**

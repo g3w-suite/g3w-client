@@ -81,10 +81,9 @@
   import onlineNotify from 'components/NotifyOnline.vue';
   import downloadNotify from 'components/NotifyDownload.vue';
   import pluginsNotify from 'components/NotifyPlugins.vue';
-  import {viewport as viewportConstraints} from 'gui/constraints';
-  import {ZINDEXES} from "../app/constant";
+  import { ZINDEXES, VIEWPORT as viewportConstraints } from 'app/constant';
   import viewportService from 'services/viewport';
-  const GUI = require('gui/gui');
+  import GUI from 'services/gui';
 
   export default {
     name: "Viewport",
