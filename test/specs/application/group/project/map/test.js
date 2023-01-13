@@ -1,14 +1,11 @@
-import MapControlsTest from './controls/test'
-const Service = require('./service');
-const GUI = require('gui/gui');
-const {assert, expect} = require('chai');
+import MapControlsTest from './controls/test';
+import GUI from 'services/gui';
 
 export default function MapTest ({mapcontrols=[], testConfig={}}={}) {
   describe('#Map', function() {
     this.timeout(0);
     const mapService = GUI.getComponent('map').getService();
-    before(async ()=>{
-    })
+    before(async ()=>{});
     MapControlsTest({
       mapcontrols,
       mapService,

@@ -1,11 +1,13 @@
 /**
  * ORIGINAL SOURCE: src/app/core/relations/relationsservice.js@v3.4
  */
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry from 'store/projects';
+import DataRouterService from 'services/data';
 
-const {inherit, XHR, base, createSingleFieldParameter} = require('core/utils/utils');
-const {sanitizeFidFeature, getAlphanumericPropertiesFromFeature} = require('core/utils/geo');
+const { inherit, XHR, base, createSingleFieldParameter } = require('core/utils/utils');
+const { sanitizeFidFeature, getAlphanumericPropertiesFromFeature } = require('core/utils/geo');
 const G3WObject = require('core/g3wobject');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function RelationsService(options={}) {
   base(this);
@@ -16,7 +18,6 @@ inherit(RelationsService, G3WObject);
 const proto = RelationsService.prototype;
 
 proto.createUrl = function(options={}){
-  const ProjectsRegistry = require('core/project/projectsregistry');
   const currentProject = ProjectsRegistry.getCurrentProject();
   // type : <editing, data, xls>
   const {layer={}, relation={}, fid, type='data', formatter=1} = options;
@@ -43,7 +44,6 @@ proto.getRelations = function(options={}) {
  * @returns {Promise<[]>}
  */
 proto.getRelationsNM = async function({nmRelation, features=[]}={}){
-  const DataRouterService = require('core/data/routerservice');
   const {referencedLayer, referencingLayer, fieldRef: {referencingField, referencedField} } = nmRelation;
   let relationsNM = []; // start with empty relations result
   if (features.length) {

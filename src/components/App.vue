@@ -162,15 +162,15 @@
 </template>
 
 <script>
-import CookieLaw from "vue-cookie-law";
+import CookieLaw from 'vue-cookie-law';
 import HeaderItem from 'components/HeaderItem.vue';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+import { resizeMixin } from 'mixins';
 
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
 const { uniqueId } = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const GUI = require('gui/gui');
-const { resizeMixin } = require('gui/vue/vue.mixins');
+const { t } = require('core/i18n/i18n.service');
 
 //Make sure jQuery has been loaded before app.js
 if (typeof jQuery === "undefined") {
@@ -1052,9 +1052,9 @@ export default {
     }
   },
   watch: {
-    'language'(lng, currentlng) {
-      if (currentlng) {
-        ApplicationService.changeLanguage(lng);
+    'language'(language, currentlanguage) {
+      if (currentlanguage) {
+        ApplicationService.changeLanguage(language);
         this.cookie_law_buttonText = t('cookie_law.buttonText');
       }
     }
@@ -1064,7 +1064,7 @@ export default {
     this.delayTime = 0;
   },
   created() {
-    this.language = this.appconfig._i18n.lng;
+    this.language = this.appconfig._i18n.language;
     this.custom_modals = [];
     this.custom_header_items_position = {
       0: [],

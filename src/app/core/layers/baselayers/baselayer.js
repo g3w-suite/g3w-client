@@ -1,6 +1,6 @@
-const {base, inherit} = require('core/utils/utils');
+const { base, inherit } = require('core/utils/utils');
 const Projections = require('g3w-ol/projection/projections');
-const WMSLayer = require('../map/wmslayer');
+const WMSLayer = require('core/layers/map/wmslayer');
 const ImageLayer = require('core/layers/imagelayer');
 
 function BaseLayer(config = {}, options={}) {

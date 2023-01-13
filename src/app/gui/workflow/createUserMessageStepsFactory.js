@@ -1,5 +1,6 @@
-import ApplicationState from 'core/applicationstate';
-const GUI = require('gui/gui');
+import ApplicationState from 'store/application-state';
+import GUI from 'services/gui';
+
 module.exports = function({steps={}}={}) {
   return {
     data() {

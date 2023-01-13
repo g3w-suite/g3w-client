@@ -1,7 +1,8 @@
-import ApplicationState from "core/applicationstate";
+import ApplicationState from "store/application-state";
+import GUI from 'services/gui';
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
-const GUI = require('gui/gui');
+const Projections = require('g3w-ol/projection/projections');
 /**
  * Classes for all element of dom control
  * @type {{country: string, hidden: string, city: string, road: string, spin: string, namespace: string, inputText: {container: string, result: string, input: string, reset: string, control: string}, olControl: string, inputResetId: string, inputQueryId: string}}
@@ -390,7 +391,7 @@ function GeocodingControl(options={}) {
     placeholder: options.placeholder || 'Città, indirizzo ... ',
     noresults: options.noresults || 'Nessun risultato ',
     notresponseserver: options.notresponseserver || 'Il server non risponde',
-    lang: ApplicationState.lng || 'it-IT',
+    lang: ApplicationState.language || 'it-IT',
     limit: options.limit || 5,
     keepOpen: true,
     preventDefault: false,
@@ -520,9 +521,10 @@ function GeocodingControl(options={}) {
     mapClick: false
   };
 
-  this.showMarker = function(coordinates) {
+  this.showMarker = function(coordinates, options={transform: true}) {
+    const {transform} = options;
     this.hideMarker();
-    coordinates = ol.proj.transform(coordinates, 'EPSG:4326', this.getMap().getView().getProjection());
+    coordinates = transform ? ol.proj.transform(coordinates, 'EPSG:4326', this.getMap().getView().getProjection()) : coordinates;
     const geometry =  new ol.geom.Point(coordinates);
     const feature = new ol.Feature(geometry);
     this.layer.getSource().addFeature(feature);
@@ -578,13 +580,27 @@ function GeocodingControl(options={}) {
     this.hideMarker();
     return new Promise(async (resolve, reject) => {
       const isNumber = value => toRawType(value) === 'Number' && !Number.isNaN(value);
-      let lonlat = null;
-      if (q && q.split(',').length === 2) {
-        lonlat = q.split(',');
-        lonlat = isNumber(1*lonlat[0]) && isNumber(1*lonlat[1]) ? lonlat.map(coordinate => 1*coordinate) : null;
+      let coordinates = null;
+      let transform = false;
+      if (q) {
+        const [x, y, epsg] = q.split(',');
+        coordinates = isNumber(1*x) && isNumber(1*y) ? [1*x, 1*y] : null;
+        try {
+          /**
+           * check if is sett epsg code and if is register on project
+           */
+          if (epsg && Projections.get(`EPSG:${epsg.trim()}`)) {
+            coordinates = ol.proj.transform(coordinates, Projections.get(`EPSG:${epsg.trim()}`), 'EPSG:4326');
+            transform = true;
+          }
+        } catch(err){}
       }
-      if (lonlat) this.showMarker(coordinates);
-      else {
+      if (coordinates) {
+        this.showMarker(coordinates, {
+          transform
+        });
+        resolve(coordinates);
+      } else {
         if (this.lastQuery === q && this.result.firstChild) { return; }
         const promises = [];
         /**

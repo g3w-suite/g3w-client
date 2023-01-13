@@ -1,8 +1,9 @@
-const {base, inherit} = require('core/utils/utils');
-const ApplicationService = require('core/applicationservice');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+
+const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
 
 function CatalogService() {
   this.state = {

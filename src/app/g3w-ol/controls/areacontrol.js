@@ -1,6 +1,6 @@
 const utils = require('core/utils/ol');
-const AreaIteraction = require('../interactions/areainteraction');
-const MeasureControl = require('./measurecontrol');
+const AreaIteraction = require('g3w-ol/interactions/areainteraction');
+const MeasureControl = require('g3w-ol/controls/measurecontrol');
 
 const AreaControl = function(options={}) {
   const _options = {

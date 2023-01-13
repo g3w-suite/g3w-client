@@ -1,8 +1,8 @@
-const {base, inherit, createFilterFormField } = require('core/utils/utils');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const DataRouterService = require('core/data/routerservice');
-const GUI = require('gui/gui');
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import GUI from 'services/gui';
 
+const { base, inherit, createFilterFormField } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 function BaseIframeService(options={}){

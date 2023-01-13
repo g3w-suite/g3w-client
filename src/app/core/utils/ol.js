@@ -1,5 +1,5 @@
 // FIXME: remove weird import (utility functions should be stateles)
-import ApplicationState from "core/applicationstate";
+import ApplicationState from 'store/application-state';
 
 // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
 // const { Geometry } = require('core/utils/geo');

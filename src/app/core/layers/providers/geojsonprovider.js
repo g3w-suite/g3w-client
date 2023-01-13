@@ -1,4 +1,4 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const Provider = require('core/layers/providers/provider');
 
 function GEOJSONDataProvider(options = {}) {

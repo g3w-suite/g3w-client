@@ -5,7 +5,7 @@
 <template>
   <div class="form-group" v-if="state.visible">
     <slot name="label">
-      <label :for="state.name" class="col-sm-12 control-label">{{ state.label }}
+      <label :for="state.name" v-disabled="!editable" class="col-sm-12 control-label">{{ state.label }}
         <span v-if="state.validate && state.validate.required">*</span>
         <i v-if="showhelpicon" :class="g3wtemplate.font['info']" class="skin-color" style="margin-left: 3px; cursor: pointer" @click="showHideHelp"></i>
         <slot name="label-action"></slot>
@@ -29,13 +29,13 @@
 </template>
 
 <script>
-  const {baseInputMixin:BaseInputMixin} = require('gui/vue/vue.mixins');
+import { baseInputMixin as BaseInputMixin } from 'mixins';
 
-  export default {
-    name: "InputBase",
-    props: ['state'],
-    ...BaseInputMixin
-  }
+export default {
+  name: "InputBase",
+  props: ['state'],
+  ...BaseInputMixin
+}
 </script>
 
 <style scoped>

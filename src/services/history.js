@@ -2,7 +2,7 @@
  * ORIGINAL SOURCE: src/app/core/history_router.js@v3.4
  */
 
-const {inherit, base, Base64} = require('core/utils/utils');
+const { inherit, base, Base64 } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 /*

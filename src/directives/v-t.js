@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
-const {t} = require('core/i18n/i18n.service');
+
+const { t } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-id';
 
@@ -14,7 +15,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => {
           const value = binding.value !== null ? t(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {

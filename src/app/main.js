@@ -1,14 +1,30 @@
 // TODO: check if this still useful nowdays (IE 11 ?)
 // add babel runtime support for compiled/transpiled async functions
 import "regenerator-runtime";
+
+//import core
+import ApplicationState from 'store/application-state';
+
+//import services
+import ApplicationService from 'services/application';
+import viewport from "services/viewport";
+import GUI from 'services/gui';
+import FloatbarService from "services/floatbar";
+import NavbarItemsService from 'services/navbaritems';
+import SidebarService from 'services/sidebar';
+import ViewportService from 'services/viewport';
+
+// import store
+import ComponentsRegistry from 'store/components';
+
 //components
 import App from 'components/App.vue';
 import ImageComponent from 'components/GlobalImage.vue';
 import GalleryImagesComponent from 'components/GlobalGallery.vue';
-import GeospatialComponet  from 'components/GlobalGeo.vue';
+import GeospatialComponet from 'components/GlobalGeo.vue';
 import Skeleton from 'components/GlobalSkeleton.vue';
-import BarLoader from 'components/GlobalBarLoader.js';
-import Progressbar from 'components/GlobalProgressBar.js';
+import BarLoader from 'components/GlobalBarLoader';
+import Progressbar from 'components/GlobalProgressBar';
 import HelpDiv from 'components/GlobalHelpDiv.vue';
 import Resize from 'components/GlobalResize.vue'
 import LayerPositions from 'components/GlobalLayerPositions.vue';
@@ -17,6 +33,12 @@ import Range from 'components/GlobalRange.vue';
 import ResizeIcon from 'components/GlobalResizeIcon.vue';
 import Tabs from 'components/GlobalTabs.vue';
 import Divider from 'components/GlobalDivider.vue';
+import FloatbarComponent from "components/Floatbar.vue";
+import NavbaritemsLeftComponent from 'components/NavbaritemsLeft.vue';
+import NavbaritemsRightComponent from 'components/NavbaritemsRight.vue';
+import SidebarComponent from 'components/Sidebar.vue';
+import ViewportComponent from 'components/Viewport.vue';
+
 //directives
 import vDisabled from 'directives/v-disabled';
 import vChecked from 'directives/v-checked';
@@ -32,14 +54,10 @@ import vPlugins from 'directives/v-plugins';
 import vOnline from 'directives/v-online';
 import vDownload from 'directives/v-download';
 
-import ApplicationState from 'core/applicationstate';
-const ApplicationService = require('core/applicationservice');
 const {base, inherit, toRawType} = require('core/utils/utils');
 const {t, tPlugin} = require('core/i18n/i18n.service');
 const G3WObject = require('core/g3wobject');
 const ProjectsMenuComponent = require('gui/projectsmenu/projectsmenu');
-const ComponentsRegistry = require('gui/component/componentsregistry');
-const GUI = require('gui/gui');
 
 /**
  * Expose "g3wsdk" variable globally
@@ -47,6 +65,8 @@ const GUI = require('gui/gui');
  * used by plugins to load sdk class and instances
  */
 window.g3wsdk = require('api');
+
+require('app/dev');
 
 /**
  * EXPERIMENTAL: not yet implemented
@@ -231,7 +251,8 @@ Vue.use({
         'fast-backward': "fas fa-fast-backward",
         'step-forward': "fas fa-step-forward",
         'fast-forward': "fas fa-fast-forward",
-        crop: "fas fa-crop-alt"
+        crop: "fas fa-crop-alt",
+        exit: "fas fa-door-open"
       },
       // TODO: check if deprecated
       get() {},
@@ -263,12 +284,6 @@ Vue.use({
 }, {});
 
 Vue.mixin({ inheritAttrs: false });  // set mixins inheriAttrs to avoid tha unused props are setted as attrs
-
-// get all items needed by application
-const sidebar = require('gui/sidebar/sidebar');
-const floatbar = require('gui/floatbar/floatbar');
-const viewport = require('gui/viewport/viewport');
-const navbaritems = require('gui/navbar/navbaritems');
 
 /**
  * @requires components/App.vue
@@ -435,8 +450,8 @@ const ApplicationTemplate = function({ApplicationService}) {
         self._setUpServices();
         // create templateConfig
         self.templateConfig = self._createTemplateConfig();
-        // listen lng change and reset datatable lng
-        this.$watch(()=> ApplicationState.lng, ()=>{
+        // listen lng change and reset datatable language
+        this.$watch(()=> ApplicationState.language, ()=>{
           self._setDataTableLanguage();
         });
       },
@@ -467,18 +482,18 @@ const ApplicationTemplate = function({ApplicationService}) {
       "}</style>").appendTo("head");
     }
     // Inizialization of the components of the application
-    Vue.component('sidebar', sidebar.SidebarComponent);
+    Vue.component('sidebar', SidebarComponent);
     //Navbar custom items
-    Vue.component('navbarleftitems', navbaritems.components.left);
-    Vue.component('navbarrightitems', navbaritems.components.right);
-    Vue.component('viewport', viewport.ViewportComponent);
-    Vue.component('floatbar', floatbar.FloatbarComponent);
+    Vue.component('navbarleftitems', NavbaritemsLeftComponent);
+    Vue.component('navbarrightitems', NavbaritemsRightComponent);
+    Vue.component('viewport', ViewportComponent);
+    Vue.component('floatbar', FloatbarComponent);
     Vue.component('app', App);
   };
 
   // dataTable Translations and custom extentions
   this._setDataTableLanguage = function(dataTable=null) {
-    const lngOptions = {
+    const languageOptions = {
       "language": {
         "sSearch": '',
         "searchPlaceholder": t("dosearch"),
@@ -496,7 +511,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     $.extend( $.fn.dataTableExt.oStdClasses, {
       "sFilterInput": "form-control search"
     });
-    !dataTable ? $.extend( true, $.fn.dataTable.defaults, lngOptions) : dataTable.dataTable( {"oLanguage": lngOptions});
+    !dataTable ? $.extend( true, $.fn.dataTable.defaults, languageOptions) : dataTable.dataTable( {"oLanguage": languageOptions});
   };
 
   // route setting att beginning (is an example)
@@ -529,7 +544,7 @@ const ApplicationTemplate = function({ApplicationService}) {
   };
   // build template function
   this._buildTemplate = function() {
-    floatbar.FloatbarService.init(layout);
+    FloatbarService.init(layout);
     const placeholdersConfig = this.templateConfig.placeholders;
     Object.entries(placeholdersConfig).forEach(([placeholder, options]) => {
       this._addComponents(options.components, placeholder);
@@ -673,9 +688,9 @@ const ApplicationTemplate = function({ApplicationService}) {
     /* Metodos to define */
     GUI.getResourcesUrl = ()=>ApplicationService.getConfig().resourcesurl;
     //LIST
-    GUI.showList = floatbar.FloatbarService.showPanel.bind(floatbar.FloatbarService);
-    GUI.closeList = floatbar.FloatbarService.closePanel.bind(floatbar.FloatbarService);
-    GUI.hideList = floatbar.FloatbarService.hidePanel.bind(floatbar.FloatbarService);
+    GUI.showList = FloatbarService.showPanel.bind(FloatbarService);
+    GUI.closeList = FloatbarService.closePanel.bind(FloatbarService);
+    GUI.hideList = FloatbarService.hidePanel.bind(FloatbarService);
     // TABLE
     GUI.showTable = function() {};
     GUI.closeTable = function() {};
@@ -766,17 +781,18 @@ const ApplicationTemplate = function({ApplicationService}) {
 
 
     GUI.showForm = function(options={}) {
-      const {perc, split='h', push, showgoback} = options;
+      const {perc, split='h', push, showgoback, crumb} = options;
       const FormComponent = require('gui/form/vue/form');
       // new isnstace every time
       const formComponent = options.formComponent ? new options.formComponent(options) :  new FormComponent(options);
       //get service
       const formService = formComponent.getService();
-      // parameters : [content, title, push, perc, split, closable]
+      // parameters : [content, title, push, perc, split, closable, crumb]
       GUI.setContent({
         perc,
         content: formComponent,
         split,
+        crumb,
         push: !!push, //only one( if other delete previous component)
         showgoback: !!showgoback,
         closable: false
@@ -784,9 +800,13 @@ const ApplicationTemplate = function({ApplicationService}) {
       // return service
       return formService;
     };
-    GUI.closeForm = function() {
+    /**
+     *
+     * @param pop remove or not content or pop
+     */
+    GUI.closeForm = function({pop=false}={}) {
       this.emit('closeform', false);
-      viewport.ViewportService.removeContent();
+      pop ? GUI.popContent() : ViewportService.removeContent();
       // force set modal to false
       GUI.setModal(false);
     };
@@ -796,7 +816,7 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
 
     GUI.disableContent = function(disable) {
-      viewport.ViewportService.disableContent(disable);
+      ViewportService.disableContent(disable);
     };
 
     GUI.disablePanel = function(disable=false) {
@@ -808,12 +828,12 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // hide content
     GUI.hideContent = function(bool, perc) {
-      return viewport.ViewportService.hideContent(bool, perc);
+      return ViewportService.hideContent(bool, perc);
     };
 
     GUI.closeContent = function() {
       this.emit('closecontent', false);
-      return viewport.ViewportService.closeContent();
+      return ViewportService.closeContent();
     };
 
     GUI.closeOpenSideBarComponent = function(){
@@ -829,16 +849,21 @@ const ApplicationTemplate = function({ApplicationService}) {
       GUI.showContextualContent({
         content: queryResultsComponent,
         title: "info.title",
+        crumb: {
+          title: "info.title",
+          trigger: null
+        },
+        push: GUI.getPushContent(),
         post_title: title
       });
       return queryResultService;
     };
     GUI.addNavbarItem = function(item) {
-      navbaritems.NavbarItemsService.addItem(item)
+      NavbarItemsService.addItem(item)
     };
     GUI.removeNavBarItem = function() {};
-    GUI.showPanel = sidebar.SidebarService.showPanel.bind(sidebar.SidebarService);
-    GUI.closePanel = sidebar.SidebarService.closePanel.bind(sidebar.SidebarService);
+    GUI.showPanel = SidebarService.showPanel.bind(SidebarService);
+    GUI.closePanel = SidebarService.closePanel.bind(SidebarService);
     ///
     GUI.disableApplication = function(bool=false){
       ApplicationService.disableApplication(bool);
@@ -846,11 +871,11 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     //showusermessage
     GUI.showUserMessage = function(options={}) {
-      return viewport.ViewportService.showUserMessage(options);
+      return ViewportService.showUserMessage(options);
     };
 
     GUI.closeUserMessage = function() {
-      viewport.ViewportService.closeUserMessage();
+      ViewportService.closeUserMessage();
     };
     /* ------------------ */
     GUI.notify = {
@@ -911,10 +936,10 @@ const ApplicationTemplate = function({ApplicationService}) {
     /*  */
     // FLOATBAR //
     GUI.showFloatbar = function() {
-      floatbar.FloatbarService.open();
+      FloatbarService.open();
     };
     GUI.hideFloatbar = function() {
-      floatbar.FloatbarService.close();
+      FloatbarService.close();
     };
     // SIDEBAR //
     GUI.showSidebar = this._showSidebar.bind(this);
@@ -937,26 +962,26 @@ const ApplicationTemplate = function({ApplicationService}) {
 
     // VIEWPORT //
     GUI.setPrimaryView = function(viewName) {
-      viewport.ViewportService.setPrimaryView(viewName);
+      ViewportService.setPrimaryView(viewName);
     };
     // only map
     GUI.showMap = function() {
-      viewport.ViewportService.showMap();
+      ViewportService.showMap();
     };
 
     GUI.showContextualMap = function(perc=30, split) {
-      viewport.ViewportService.showContextualMap({
+      ViewportService.showContextualMap({
         perc,
         split
       })
     };
 
     GUI.setContextualMapComponent = function(mapComponent) {
-      viewport.ViewportService.setContextualMapComponent(mapComponent);
+      ViewportService.setContextualMapComponent(mapComponent);
     };
 
     GUI.resetContextualMapComponent = function() {
-      viewport.ViewportService.resetContextualMapComponent();
+      ViewportService.resetContextualMapComponent();
     };
 
     //  (100%) content
@@ -989,15 +1014,19 @@ const ApplicationTemplate = function({ApplicationService}) {
     };
     // remove last content from stack
     GUI.popContent = function() {
-      viewport.ViewportService.popContent();
+      ViewportService.popContent();
     };
     //return number of component of stack
     GUI.getContentLength = function() {
-      return viewport.ViewportService.contentLength();
+      return ViewportService.contentLength();
     };
 
     GUI.getCurrentContentTitle = function(){
-      return viewport.ViewportService.getCurrentContentTitle();
+      return ViewportService.getCurrentContentTitle();
+    };
+
+    GUI.getCurrentContentId = function(){
+      return ViewportService.getCurrentContentId();
     };
 
     /**
@@ -1005,22 +1034,29 @@ const ApplicationTemplate = function({ApplicationService}) {
      * @param title
      */
     GUI.changeCurrentContentTitle = function(title){
-      viewport.ViewportService.changeCurrentContentTitle(title);
+      ViewportService.changeCurrentContentTitle(title);
+    };
+    /**
+     * change current content options
+     * @param options: {title, crumb}
+     */
+    GUI.changeCurrentContentOptions= function(options={}) {
+      ViewportService.changeCurrentContentOptions(options);
     };
 
     /**
      * Method to get current content
      */
     GUI.getCurrentContent = function(){
-      return viewport.ViewportService.getCurrentContent();
+      return ViewportService.getCurrentContent();
     };
 
     GUI.toggleFullViewContent = function(){
-      viewport.ViewportService.toggleFullViewContent();
+      ViewportService.toggleFullViewContent();
     };
 
     GUI.resetToDefaultContentPercentage = function(){
-      viewport.ViewportService.resetToDefaultContentPercentage();
+      ViewportService.resetToDefaultContentPercentage();
     };
 
     GUI.getProjectMenuDOM = function({projects, host, cbk}={}) {
@@ -1046,7 +1082,7 @@ const ApplicationTemplate = function({ApplicationService}) {
       options.split = options.split || 'h';
       options.backonclose = _.isBoolean(options.backonclose) ? options.backonclose : false;
       options.showtitle = _.isBoolean(options.showtitle) ? options.showtitle : true;
-      viewport.ViewportService.showContent(options);
+      ViewportService.showContent(options);
     };
 
     GUI.hideClientMenu = function() {
@@ -1107,9 +1143,9 @@ ApplicationTemplate.PLACEHOLDERS = [
 // service know by the applications (standard)
 ApplicationTemplate.Services = {
   navbar: null,
-  sidebar: sidebar.SidebarService,
-  viewport: viewport.ViewportService,
-  floatbar: sidebar.FloatbarService
+  sidebar: SidebarService,
+  viewport: ViewportService,
+  floatbar: null
 };
 
 ApplicationTemplate.fail = function({language='en', error }) {

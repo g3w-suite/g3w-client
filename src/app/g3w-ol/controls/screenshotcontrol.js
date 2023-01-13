@@ -1,4 +1,5 @@
-const OnClickControl = require('./onclickcontrol');
+const OnClickControl = require('g3w-ol/controls/onclickcontrol');
+
 function ScreenshotControl(options = {}) {
   this.layers = options.layers || [];
   const visible = this.checkVisible(this.layers);

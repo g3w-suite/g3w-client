@@ -16,9 +16,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
+  import ApplicationState from 'store/application-state';
 
-  const {getUniqueDomId} = require('core/utils/utils');
+  const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
     name: "datetime",
@@ -69,7 +69,7 @@
         enabledDates: this.enabledDates,
         showClose: true,
         format: this.format,
-        locale: ApplicationState.lng,
+        locale: ApplicationState.language,
         toolbarPlacement: 'top',
         widgetPositioning: {
           horizontal: 'right'

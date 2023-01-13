@@ -436,6 +436,7 @@ export default {
     },
     info: {
       title: "Rezultate",
+      list_of_relations: "List of Relations",
       open_link: "Deschide document atașat",
       server_error: "Serverul a întâmpinat o eroare",
       no_results: "Niciun rezultat",

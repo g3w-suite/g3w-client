@@ -1,14 +1,15 @@
-import {DEFAULT_EDITING_CAPABILITIES} from 'constant';
-const {base, inherit} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const Layer = require('./layer');
+import { DEFAULT_EDITING_CAPABILITIES } from 'app/constant';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ProjectsRegistry from 'store/projects';
+
+const { base, inherit } = require('core/utils/utils');
+const Layer = require('core/layers/layer');
 const Editor = require('core/editing/editor');
-const FeaturesStore = require('./features/featuresstore');
-const Feature = require('./features/feature');
+const FeaturesStore = require('core/layers/features/featuresstore');
+const Feature = require('core/layers/features/feature');
 
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
-  const ProjectsRegistry = require('core/project/projectsregistry');
   // setters
   this.setters = {
     // delete all features
@@ -457,6 +458,10 @@ proto.getFieldsWithValues = function(obj, options={}) {
     fields.forEach(field => {
 
       field.value = attributes[field.name];
+      // store original value
+      field._value = attributes[field.name];
+      // at beginning set update false. Used to form
+      field.update = false;
       if (field.input) {
         const _configField = this.getEditingFields().find(_field => _field.name === field.name);
         const options = _configField.input.options;

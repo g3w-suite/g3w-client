@@ -18,9 +18,9 @@ export default function TestGroup({groupId, testConfig={}}={}) {
       const url = `${urls.initconfig}${type}/${id}`;
       const applicationConfig = await Service.getProjetsRegistry(url);
       mapcontrols = applicationConfig.mapcontrols;
-      plugins = applicationConfig.plugins
+      plugins = applicationConfig.plugins;
       Service.setPluginsConfig(plugins);
-    })
+    });
 
     projects.forEach(projectTestConfig => {
       it('project of group', () => {

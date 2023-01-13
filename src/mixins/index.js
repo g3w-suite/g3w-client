@@ -25,7 +25,18 @@ const mixins = {
   widgetMixins,
   metadataMixin,
   baseInputMixin,
-}
+};
+export {fieldsMixin};
+export {mediaMixin};
+export {geoMixin};
+export {resizeMixin};
+export {selectMixin};
+export {select2Mixin};
+export {formInputsMixins};
+export {widgetMixins};
+export {metadataMixin};
+export {baseInputMixin};
+export {autocompleteMixin};
 
-export { mixins };
+export {mixins};
 export default mixins;

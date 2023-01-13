@@ -1,10 +1,11 @@
+import SessionsRegistry from 'store/sessions';
+import MapLayersStoresRegistry from 'store/map-layers';
+
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const History = require('./history');
+const History = require('core/editing/history');
 const Layer = require('core/layers/layer');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
 const { is3DGeometry } = require('core/utils/geo').Geometry;
-const SessionsRegistry = require('./sessionsregistry');
 
 function Session(options={}) {
   this.setters = {
@@ -359,7 +360,7 @@ proto.getCommitItems = function() {
  */
 proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
   const {relations} = commitItems;
-  const editingLayer = MapLayersStoreRegistry.getLayerById(layerId).getEditingLayer();
+  const editingLayer = MapLayersStoresRegistry.getLayerById(layerId).getEditingLayer();
   // check id there is a editing layer and if is a vector layer
   if (editingLayer && editingLayer.getType() === Layer.LayerTypes.VECTOR){
     // get Geometry type layer

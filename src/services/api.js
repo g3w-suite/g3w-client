@@ -2,7 +2,7 @@
  * ORIGINAL SOURCE: src/app/core/apiservice.js@v3.4
  */
 
-const {base, inherit, reject} = require('core/utils/utils');
+const { base, inherit, reject } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Class Api Service

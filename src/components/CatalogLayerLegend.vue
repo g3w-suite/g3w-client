@@ -4,23 +4,26 @@
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
     <bar-loader v-if="legend" :loading="legend.loading"></bar-loader>
-    <figure>
+    <figure v-if="externallegend">
+      <img :src="getWmsSourceLayerLegendUrl()" >
+    </figure>
+    <figure v-else>
       <div v-for="(category, index) in categories"  style="display: flex; align-items: center; width: 100%" v-disabled="category.disabled">
         <span v-if="category.ruleKey" @click.stop.prevent="showHideLayerCategory(index)" style="padding-right: 3px;" :class="g3wtemplate.getFontClass(category.checked ? 'check': 'uncheck')"></span>
         <img v-if ="legendplace === 'toc'" :src="category.icon && `data:image/png;base64,${category.icon}`" @error="setError()" @load="urlLoaded()">
-        <span v-if="(legendplace === 'tab' && category.ruleKey) || (legendplace === 'toc' && showCategoriesCheckBox)" class="new_line_too_long_text" style="padding-left: 3px;">{{category.title}}</span>
+        <span v-if="(legendplace === 'tab' && category.ruleKey) || (legendplace === 'toc' && showCategoriesCheckBox)" class="g3w-long-text" style="padding-left: 3px;">{{category.title}}</span>
       </div>
     </figure>
   </div>
 </template>
 
 <script>
+  import GUI from 'services/gui';
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+  import CatalogLayersStoresRegistry from 'store/catalog-layers';
+  import ProjectsRegistry from 'store/projects';
 
-  const ProjectsRegistry = require('core/project/projectsregistry');
-  const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
   const {XHR} = require('core/utils/utils');
-  const GUI = require('gui/gui');
 
   export default {
     name: "layerlegend",
@@ -38,6 +41,9 @@
       }
     },
     computed:{
+      externallegend(){
+        return this.layer.source.type === 'wms';
+      },
       legend(){
         return this.layer.legend;
       },
@@ -49,6 +55,9 @@
       }
     },
     methods: {
+      getWmsSourceLayerLegendUrl() {
+        return this.getProjectLayer().getLegendUrl();
+      },
       getProjectLayer(){
         return CatalogLayersStoresRegistry.getLayerById(this.layer.id);
       },
@@ -57,7 +66,7 @@
       },
       showHideLayerCategory(index) {
         const projectLayer = this.getProjectLayer();
-        this.categories[index].checked = this.categories[index].checked = !this.categories[index].checked;
+        this.categories[index].checked = !this.categories[index].checked;
         projectLayer.change();
         if (this.legendplace === 'tab') CatalogEventHub.$emit('layer-change-categories', this.layer);
         else if (this.categories[index].checked && this.mapReady) this.setLayerCategories(false);
@@ -70,6 +79,7 @@
         this.legend.loading = false;
       },
       async handlerChangeLegend(options={}){
+        if (this.externallegend) return;
         const { layerId } = options;
         layerId === this.layer.id && await this.setLayerCategories(true);
         this.dynamic && await this.setLayerCategories(false);
@@ -128,7 +138,10 @@
     },
     watch: {
       'layer.visible'(visible){
-        this.dynamic && visible && this.setLayerCategories(false);
+        /*
+        * Only when visible show categories layer. In case of dynamic legend check
+        * **/
+       !this.externallegend && visible && this.setLayerCategories(!this.dynamic);
       }
     },
     async created() {
@@ -148,15 +161,9 @@
         this.dynamic && mapService.on('change-map-legend-params', async () => {
           this.mapReady = true;
           this.layer.visible &&
-          (this.legendplace === 'toc' || this.layer.categories) &&
-          this.setLayerCategories(false);
+          (!this.externallegend && (this.legendplace === 'toc' || this.layer.categories)) && this.setLayerCategories(false);
         });
       })
-    },
-    async mounted() {
-      await this.$nextTick();
-
-
     },
     beforeDestroy() {
       CatalogEventHub.$off('layer-change-style', this.handlerChangeLegend);
@@ -166,6 +173,6 @@
 
 <style scoped>
   .layer-legend {
-    padding-left: 38px;
+    padding-left: 36px;
   }
 </style>

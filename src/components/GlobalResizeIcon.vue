@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  const GUI = require('gui/gui');
+  import GUI from 'services/gui';
 
   export default {
       name: 'resize-icon',

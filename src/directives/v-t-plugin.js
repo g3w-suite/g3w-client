@@ -1,6 +1,7 @@
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
-const {tPlugin} = require('core/i18n/i18n.service');
+
+const { tPlugin } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-plugin-id';
 
@@ -14,7 +15,7 @@ export default {
       el,
       attr,
       watcher: [
-        () => ApplicationState.lng,
+        () => ApplicationState.language,
         () => {
           const value = binding.value !== null ? tPlugin(binding.value) : '';
           switch(binding.arg ? binding.arg : 'post') {

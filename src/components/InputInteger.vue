@@ -10,6 +10,7 @@
       @input="change"
       class="form-control"
       style="width:100%"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :class="{'input-error-validation' : notvalid}"
       v-model="state.value"

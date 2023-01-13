@@ -30,14 +30,14 @@
     <li class="skin-border-color" style="background: transparent !important; border-top: 2px solid">
       <div style="max-height: 200px; overflow-y: auto;">
         <div v-for="({id, url}) in state.adminwmsurls" :key="wmsurl" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cccccc; padding-bottom: 3px;">
-          <span style="flex-grow: 1; margin-right: 15px;" class="new_line_too_long_text">{{ id }}</span>
+          <span style="flex-grow: 1; margin-right: 15px;" class="g3w-long-text">{{ id }}</span>
           <span class="skin-color" style="padding: 5px;" @click.stop="showWmsLayersPanel(id)">
             <i style="font-weight: bold; font-size: 1.3em;" :class="g3wtemplate.getFontClass('plus-square')"></i>
           </span>
         </div>
         <div v-for="({id, url}) in state.localwmsurls" :key="id" style="border-bottom: 1px solid #cccccc; padding-bottom: 3px;">
           <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 3px">
-            <span style="flex-grow: 1; margin-right: 15px; font-weight: bold" class="new_line_too_long_text" >{{ id }}</span>
+            <span style="flex-grow: 1; margin-right: 15px; font-weight: bold" class="g3w-long-text" >{{ id }}</span>
             <span class="skin-color" style="padding: 3px; margin: 2px;" @click.stop="showWmsLayersPanel(url)" v-t-tooltip:top.create="'sidebar.wms.add_wms_layer'">
               <i class="wms-icon-action" :class="g3wtemplate.getFontClass('plus-square')"></i>
             </span>
@@ -45,7 +45,7 @@
               <i style="color: red" class="wms-icon-action" :class="g3wtemplate.getFontClass('trash')" ></i>
             </span>
           </div>
-          <div style="font-size: 0.7em; " class="new_line_too_long_text" :title="url">{{url}}</div>
+          <div style="font-size: 0.7em; " class="g3w-long-text" :title="url">{{url}}</div>
         </div>
       </div>
     </li>
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-  const {isURL} = require('core/utils/utils');
+  const { isURL } = require('core/utils/utils');
 
   export default {
     name: "sidebaritem",

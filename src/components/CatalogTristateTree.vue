@@ -4,7 +4,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '2px'}"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '0'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -33,29 +33,25 @@
       <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
         <span class="collapse-expande-collapse-icon" v-if="legendlayerposition === 'toc' || !isGroup && layerstree.categories"
           @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
-          :class="g3wtemplate.getFontClass(layerstree.legend.show && layerstree.checked ? 'caret-down' : 'caret-right')">
+          :class="g3wtemplate.getFontClass(layerstree.legend.show && layerstree.visible ? 'caret-down' : 'caret-right')">
         </span>
         <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
-          (legendplace === 'toc' || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
+          (showLayerTocLegend || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
       </span>
     </template>
-    <div v-show="!layerstree.hidden || isGroup"
-      class="tree-node-title"
-      :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
-        <span
-          :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}"
-          class="skin-tooltip-top new_line_too_long_text"
-          data-placement="top"
-          :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
-          v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
-          {{ layerstree.title }}
-        </span>
-        <div v-if="(!isGroup && !layerstree.external)">
-          <span v-if="layerstree.selection.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" @click.caputure.prevent.stop="clearSelection" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
-          <span v-if="layerstree.selection.active || layerstree.filter.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
-        </div>
+    <div v-show="!layerstree.hidden || isGroup" class="tree-node-title" :class="{disabled: !layerstree.external && (layerstree.disabled || (layerstree.id && !layerstree.visible)) , bold: isGroup}">
+      <span :class="{highlightlayer: isHighLight, scalevisibility: showscalevisibilityclass}" class="skin-tooltip-top g3w-long-text"
+        data-placement="top"
+        :current-tooltip="showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale: ${layerstree.maxscale}` : ''"
+        v-t-tooltip.text = "showScaleVisibilityToolip ? `minscale:${layerstree.minscale} - maxscale:${layerstree.maxscale}` : ''">
+        {{ layerstree.title }}
+      </span>
+      <div v-if="(!isGroup && layerstree.selection)">
+        <span v-if="layerstree.selection.active" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="g3wtemplate.getFontClass('success')" @click.caputure.prevent.stop="clearSelection" v-t-tooltip.create="'layer_selection_filter.tools.clear'"></span>
+        <span v-if="!layerstree.external && (layerstree.selection.active || layerstree.filter.active)" class="action-button skin-tooltip-left selection-filter-icon" data-placement="left" data-toggle="tooltip" :class="[g3wtemplate.getFontClass('filter'), layerstree.filter.active ? 'active' : '']" @click.caputure.prevent.stop="toggleFilterLayer" v-t-tooltip.create="'layer_selection_filter.tools.filter'"></span>
+      </div>
     </div>
     <layerlegend v-if="showLayerTocLegend" :legendplace="legendplace" :layer="layerstree"></layerlegend>
     <ul v-if="isGroup" class="tree-content-items group" :class="[`g3w-lendplace-${legendplace}`]" v-show="layerstree.expanded">
@@ -79,10 +75,10 @@
 <script>
 import LayerLegend from 'components/CatalogLayerLegend.vue';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import GUI from 'services/gui';
 
-const {downloadFile} = require('core/utils/utils');
-const GUI = require('gui/gui');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+const { downloadFile } = require('core/utils/utils');
 
 export default {
   props : ['layerstree', 'storeid', 'legend', 'legendplace', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
@@ -99,14 +95,17 @@ export default {
     }
   },
   computed: {
+    showLegendLayer(){
+      return !this.layerstree.exclude_from_legend;
+    },
     showLayerTocLegend(){
-      return !this.isGroup && this.layerstree.geolayer;
+      return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer && this.legendplace === 'toc';
     },
     isGroup() {
       return !!this.layerstree.nodes
     },
     legendlayerposition(){
-      return !this.layerstree.exclude_from_legend && this.layerstree.legend ? this.legendplace : 'tab';
+      return this.showLegendLayer && this.layerstree.legend ? this.legendplace : 'tab';
     },
     showscalevisibilityclass(){
       return !this.isGroup && this.layerstree.scalebasedvisibility

@@ -1,25 +1,36 @@
-import {MAP_SETTINGS} from '../../constant';
-import wms from "../wms/vue/wms";
-const {t}= require('core/i18n/i18n.service');
-const {inherit, base, copyUrl, uniqueId, throttle, toRawType, createFilterFromString} = require('core/utils/utils');
+import { MAP_SETTINGS } from 'app/constant';
+import wms from 'gui/wms/vue/wms';
+import DataRouterService from 'services/data';
+import MapLayersStoresRegistry from 'store/map-layers';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import ControlsRegistry from 'store/map-controls';
+import GUI from 'services/gui';
+
+const { t } = require('core/i18n/i18n.service');
+const {
+  inherit,
+  base,
+  copyUrl,
+  uniqueId,
+  throttle,
+  toRawType,
+  createFilterFromString
+} = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const {
   createVectorLayerFromFile,
   createWMSLayer,
   createSelectedStyle,
   getMapLayersByFilter,
-  getGeoTIFFfromServer} = require('core/utils/geo');
-const DataRouterService = require('core/data/routerservice');
-const GUI = require('gui/gui');
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
+  getGeoTIFFfromServer
+} = require('core/utils/geo');
 const WFSProvider = require('core/layers/providers/wfsprovider');
 const olhelpers = require('g3w-ol/g3w.ol').helpers;
-const {getScaleFromResolution, getResolutionFromScale} = require('core/utils/ol');
+const { getScaleFromResolution, getResolutionFromScale } = require('core/utils/ol');
 const ControlsFactory = require('gui/map/control/factory');
-const ControlsRegistry = require('gui/map/control/registry');
 const VectorLayer = require('core/layers/vectorlayer');
+
 const SETTINGS = {
   zoom : {
     maxScale: 1000,
@@ -237,7 +248,7 @@ function MapService(options={}) {
       this.emit('viewerset');
     },
     controlClick(mapcontrol, info={}) {},
-    loadExternalLayer(layer){}, // used in general to alert exteexternal layer is  load
+    loadExternalLayer(layer){}, // used in general to alert external layer is  loaded
     unloadExternalLayer(layer){}
   };
 
@@ -271,15 +282,15 @@ function MapService(options={}) {
 
   this.once('viewerset', ()=> {
     //CHECK IF MAPLAYESRSTOREREGISTRY HAS LAYERSTORE
-    MapLayersStoreRegistry.getLayersStores().forEach(layersStore => {
+    MapLayersStoresRegistry.getLayersStores().forEach(layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
     // LISTEN ON EVERY ADDED LAYERSSTORE
-    MapLayersStoreRegistry.onafter('addLayersStore', layersStore => {
+    MapLayersStoresRegistry.onafter('addLayersStore', layersStore => {
       this._setUpEventsKeysToLayersStore(layersStore);
     });
     // LISTENER ON REMOVE LAYERSTORE
-    MapLayersStoreRegistry.onafter('removeLayersStore', layerStore => {
+    MapLayersStoresRegistry.onafter('removeLayersStore', layerStore => {
       this._removeEventsKeysToLayersStore(layerStore);
     });
   });
@@ -303,7 +314,7 @@ proto.setUpMapOlEvents = function(){
   if (dynamicLegend) {
     const keyolmoveeend = this.viewer.map.on("moveend", evt => this.setupCustomMapParamsToLegendUrl());
     this._keyEvents.ol.push(keyolmoveeend);
-  } else this.setupCustomMapParamsToLegendUrl(false);
+  } else this.setupCustomMapParamsToLegendUrl(); //set always to show legend at start
 };
 
 //clear methods to remove all listeners events
@@ -328,7 +339,7 @@ proto.clear = function() {
     }
   });
   this._keyEvents = null;
-  MapLayersStoreRegistry.getLayersStores().forEach(layerStore => {
+  MapLayersStoresRegistry.getLayersStores().forEach(layerStore => {
     this._removeEventsKeysToLayersStore(layerStore);
   })
 };
@@ -707,7 +718,7 @@ proto._setupControls = function() {
           if (!isMobile.any ) {
             control = this.createMapControl(controlType, {
               options: {
-                layers: MapLayersStoreRegistry.getLayers(),
+                layers: MapLayersStoresRegistry.getLayers(),
                 onclick: async () => {
                   // Start download show Image
                   const caller_download_id = ApplicationService.setDownload(true);
@@ -1060,7 +1071,7 @@ proto._setupControls = function() {
 /**
  *  Set ZIndex layer from fa stack
  */
-proto.setZIndexLayer = function({layer, zindex=map.getLayers().getLength()}={}){
+proto.setZIndexLayer = function({layer, zindex=this.getMap().getLayers().getLength()}={}){
   layer && layer.setZIndex(zindex);
 };
 
@@ -1290,9 +1301,12 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === this.state.mapControl.grid.length - 1 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex +1;
           changedAndMoreSpace.changed = true;
         } else {
-          // check if there enought space to expand mapcontrols
-          const nextHeight = this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight;
-          if (freeSpace  > nextHeight) {
+          // check if there enough space to expand map controls
+          /**
+           Add 15 px of offset. Need to find a better solution in future
+           */
+          const nextHeight = 15 + (this.state.mapControl.currentIndex > 0 ? (this.state.mapControl.grid[this.state.mapControl.currentIndex -1].columns * this.state.mapcontrolSizes.minWidth) - mapControslHeight : mapControslHeight);
+          if (freeSpace > nextHeight) {
             changedAndMoreSpace.changed = true;
             changedAndMoreSpace.space = true;
             this.state.mapControl.currentIndex = this.state.mapControl.currentIndex === 0 ? this.state.mapControl.currentIndex : this.state.mapControl.currentIndex  - 1;
@@ -1304,7 +1318,7 @@ proto._updateMapControlsLayout = function({width, height}={}) {
           this.state.mapcontrolDOM.css('height', `${mapControslHeight}px`);
           this.state.mapcontrolDOM.css('width', `${mapControlsWidth}px`);
           changedAndMoreSpace.changed = false;
-          changedAndMoreSpace.space && setTimeout(()=>handleVerticalMapControlDOMElements());
+          changedAndMoreSpace.space && setTimeout(()=> handleVerticalMapControlDOMElements());
         }
       };
       handleVerticalMapControlDOMElements();
@@ -1499,7 +1513,7 @@ proto._setupCustomMapParamsToLegendUrl = function(bool=true){
     const map = this.getMap();
     const size = map && map.getSize().filter(value => value > 0) || null;
     let bbox = size && size.length === 2 ? map.getView().calculateExtent(size) : this.project.state.initextent;
-    // in case of axis orientation inverted i need to iverted the axis
+    // in case of axis orientation inverted i need to inverted the axis
     bbox = map.getView().getProjection().getAxisOrientation() === "neu" ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
     const crs = this.getEpsg();
     //setup initial legend parameter
@@ -1541,7 +1555,7 @@ proto.getMapLayerForLayer = function(layer) {
 };
 
 proto.getProjectLayer = function(layerId) {
-  return MapLayersStoreRegistry.getLayerById(layerId);
+  return MapLayersStoresRegistry.getLayerById(layerId);
 };
 
 proto._setSettings = function(){
@@ -1662,10 +1676,11 @@ proto._setupViewer = function(width, height) {
     const position = layer.get('position');
     let zindex = basemap && 0;
     if (position && position === 'bottom') zindex = 0;
-    this.setLayerZIndex({
+    zindex = this.setLayerZIndex({
       layer,
       zindex
-    })
+    });
+    this.moveDefaultLayersOnTop(zindex);
   });
 
   this.viewer.map.getLayers().on('remove', evt => {
@@ -1820,6 +1835,17 @@ proto._setUpDefaultLayers = function(){
   this.getMap().addLayer(this.defaultsLayers.selectionLayer);
 };
 
+proto.moveDefaultLayersOnTop = function(zindex){
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.highlightLayer,
+    zindex: zindex+1
+  });
+  this.setZIndexLayer({
+    layer: this.defaultsLayers.selectionLayer,
+    zindex: zindex + 2
+  });
+};
+
 proto.removeDefaultLayers = function(){
   this.defaultsLayers.highlightLayer.getSource().clear();
   this.defaultsLayers.selectionLayer.getSource().clear();
@@ -1851,6 +1877,7 @@ proto.removeAllLayers = function(){
 //set ad increase layerIndex
 proto.setLayerZIndex = function({layer, zindex=this.layersCount+=1}){
   layer.setZIndex(zindex);
+  return zindex;
 };
 
 /**
@@ -2599,13 +2626,29 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
   const catalogService = GUI.getService('catalog');
   const QueryResultService = GUI.getService('queryresults');
   if (externalLayer instanceof ol.layer.Vector) {
+    let color;
+    /**
+     * Used to selection query result purpose
+     * @type {{active: boolean}}
+     */
+    const filter = {
+      active: false // AT MOMENT NOT USED
+    };
+    const selection = {
+      active: false,
+      features: []
+    };
+    /**
+     * end selection query result purpose properties
+     */
     let id = externalLayer.get('id');
     if (id === undefined) {
       id = uniqueId();
       externalLayer.set('id', id);
     }
     vectorLayer = externalLayer;
-    let color;
+    vectorLayer.filter = filter;
+    vectorLayer.selection = selection;
     try {
       const style = externalLayer.getStyle();
       color = style._g3w_options ? style._g3w_options.color : 'blue'; //setted by geo utils create style function
@@ -2629,7 +2672,9 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
       checked: true,
       position,
       opacity,
-      color
+      color,
+      filter,
+      selection
     };
   } else if (externalLayer instanceof ol.layer.Image){
     type = 'wms';
@@ -2657,7 +2702,17 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
     if (layer) {
       if (type === 'vector') {
         const features = layer.getSource().getFeatures();
-        if (features.length) externalLayer.geometryType = features[0].getGeometry().getType();
+        if (features.length) {
+          let id= 0;
+          /**
+           * need to add id value
+           */
+          features.forEach(feature => {
+            feature.setId(id);
+            id+=1;
+          });
+          externalLayer.geometryType = features[0].getGeometry().getType();
+        }
         extent = layer.getSource().getExtent();
         externalLayer.bbox = {
           minx: extent[0],

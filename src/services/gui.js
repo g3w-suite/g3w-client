@@ -1,11 +1,8 @@
-/**
- * ORIGINAL SOURCE: src/app/gui/gui.js@v3.4
- */
+import RouterService from 'services/router';
+import ComponentsRegistry from 'store/components';
 
-const {base, inherit, noop} = require('core/utils/utils');
+const { base, inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const RouterService = require('core/router');
-const ComponentsRegistry = require('gui/component/componentsregistry');
 
 // API della GUI.
 // methods have be defined by application
@@ -38,6 +35,15 @@ function GUI() {
   this.showUserMessage = noop;
   this.closeUserMessage = noop;
   this.showModalDialog = noop;
+  //property to how result has to be add or close all and show new
+  // false mean create new and close all open
+  this.push_content=false;
+  this.setPushContent = function (bool=false) {
+    this.push_content = bool;
+  };
+  this.getPushContent = function(){
+    return this.push_content;
+  };
   this._closeUserMessageBeforeSetContent = true;
   this.setComponent = function(component) {
     ComponentsRegistry.registerComponent(component);

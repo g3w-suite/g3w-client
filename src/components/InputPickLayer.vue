@@ -14,6 +14,7 @@
         :style="{cursor: editable ? 'pointer': null}"
         class="form-control"
         readonly="readonly"
+        :tabIndex="tabIndex"
         v-disabled="!editable"
         :class="{'input-error-validation' : notvalid}"
         v-model="state.value">
