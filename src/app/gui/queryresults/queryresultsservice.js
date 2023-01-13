@@ -125,7 +125,7 @@ function QueryResultsService() {
         // in case of a new request query
         if (!add) this.state.layers.push(layer);
         //get features from add pick layer
-        else this.addRemoveFeaturesToLayerResult(layer);
+        else this.updateLayerResultFeatures(layer);
       });
       this.setActionsForLayers(layers, {add});
       this.state.changed = true;
@@ -270,7 +270,7 @@ proto.addFeatureLayerToResult = function(layer, feature){
  */
 proto.removeFeatureLayerFromResult = function(layer, feature){
   const {id, external} = layer;
-  this.addRemoveFeaturesToLayerResult({
+  this.updateLayerResultFeatures({
     id,
     external,
     features: [feature]
@@ -301,7 +301,7 @@ proto.downloadApplicationWrapper = async function(downloadFnc, options={}){
  * Based on layer response check if features layer are to add or remove to current state.layers results
  * @param layer
  */
-proto.addRemoveFeaturesToLayerResult = function(layer){
+proto.updateLayerResultFeatures = function(layer){
   //extract features from layer object
   let {features=[]} = layer;
   // get layer from current state.layers showed on result
@@ -345,6 +345,11 @@ proto.addRemoveFeaturesToLayerResult = function(layer){
   this.state.layers.length === 1 && this.highlightFeaturesPermanently(this.state.layers[0]);
   this.changeLayerResult(findLayer);
 };
+
+/**
+ * @deprecated since v3.8. Will be deleted in 4.x. Use QueryResultsService::updateLayerResultFeatures(layer) instead
+ */
+proto.addRemoveFeaturesToLayerResult = proto.updateLayerResultFeatures;
 
 /**
  * Method called when layer result features for example is changed
