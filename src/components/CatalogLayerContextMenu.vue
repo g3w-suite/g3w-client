@@ -143,6 +143,8 @@
 </template>
 
 <script>
+  import { Chrome as ChromeComponent } from 'vue-color';
+  
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ApplicationService from 'services/application';
@@ -152,7 +154,6 @@
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
 
-  const ChromeComponent = VueColor.Chrome;
   const OFFSETMENU = {
     top: 50,
     left: 15

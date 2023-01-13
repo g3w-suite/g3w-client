@@ -72,6 +72,8 @@
 </template>
 
 <script>
+import { Chrome as ChromeComponent } from 'vue-color';
+
 import { EPSG } from 'app/constant';
 
 const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
@@ -80,7 +82,6 @@ const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML
 const CSV_SEPARATORS = [',', ';'];
 
 //Vue color componet
-const ChromeComponent = VueColor.Chrome;
 ChromeComponent.mounted = async function() {
   await this.$nextTick();    // remove all the tihing that aren't useful
   $('.vue-color__chrome__toggle-btn').remove();

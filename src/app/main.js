@@ -1,3 +1,6 @@
+// Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
+import '../deprecated';
+
 // TODO: check if this still useful nowdays (IE 11 ?)
 // add babel runtime support for compiled/transpiled async functions
 import "regenerator-runtime";
@@ -105,7 +108,7 @@ Vue.filter('t', value => t(value));
 Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
 
 /**
- * Install gloabl directives
+ * Install global directives
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
@@ -122,6 +125,12 @@ Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
+
+
+/**
+ * Install global plugins
+ */
+Vue.use(window.VueCookie);
 
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue
