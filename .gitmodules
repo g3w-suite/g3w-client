@@ -1,0 +1,3 @@
+[submodule "src/plugins/editing"]
+	path = src/plugins/editing
+	url = https://github.com/g3w-suite/g3w-client-plugin-editing.git

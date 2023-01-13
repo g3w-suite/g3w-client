@@ -20,4 +20,9 @@ package-lock.json
 /src/libs/sdk/config/dev/
 /src/libs/sdk/g3w-ol3/config/config.js
 /src/plugins/**
+#exlude submodules folder of g3w-client default plugins
+!/src/plugins/editing
+!/src/plugins/qplotly
+!/src/plugins/qtimeseries
+
 !/src/plugins/README.md
