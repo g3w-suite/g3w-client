@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/workflow/workflowsstack.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 // Store all workflow activated

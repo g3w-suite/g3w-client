@@ -4,7 +4,7 @@
 import IframePluginService from 'services/iframe-plugin';
 
 /**
- * FIXME: application is broken using like the following line
+ * @FIXME: application is broken using like the following line
  */
 // import { IframePluginService } from 'services';
 

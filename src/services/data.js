@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/data/routerservice.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import ExpressionService from 'services/data-expression';
 import OWSService from 'services/data-ows';
 import ProxyService from 'services/data-proxy';

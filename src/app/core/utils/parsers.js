@@ -7,7 +7,7 @@ const olutils = require('core/utils/ol');
 const WORD_NUMERIC_FIELD_ESCAPE = 'GIS3W_ESCAPE_NUMERIC_FIELD_';
 
 /**
- * FIXME: circular dependency (ie. empty object when importing at top level)
+ * @FIXME circular dependency (ie. empty object when importing at top level)
  */
 // const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
 
@@ -106,7 +106,7 @@ const utils = {
   },
   parseLayerFeatureCollection({jsonresponse, layer, projections}) {
     /**
-     * FIXME: circular dependency (ie. empty object when importing at top level)
+     * @FIXME circular dependency (ie. empty object when importing at top level)
      */
     const { Geometry : { is3DGeometry, removeZValueToOLFeatureGeometry } } = require('core/utils/geo');
 
@@ -414,7 +414,9 @@ const TableParser = function() {
 const Parsers = {
   vector: new VectorParser(),
   table: new TableParser(),
-  // TODO: wrap within dedicated class (ie. new ResponseParser())
+  /**
+   * @TODO wrap within dedicated class (ie. new ResponseParser())
+   */
   response: {
     get(type){
       return contenttypes[type] || contenttypes.not_supported_format;

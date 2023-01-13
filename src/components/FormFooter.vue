@@ -26,7 +26,9 @@
 </template>
 
 <script>
-// TODO: remove "Vue.extend" from module export
+/**
+ * @TODO remove "Vue.extend" from module export
+ */
 export default Vue.extend({
   props: {
     state: {

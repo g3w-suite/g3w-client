@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/data/search/service.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 const { base, inherit } = require('core/utils/utils');
