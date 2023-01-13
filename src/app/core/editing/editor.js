@@ -169,11 +169,13 @@ proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
 };
 
 /**
- * Handel multi fields relations
+ * Handle multi fields relations
+ * 
  * @param relationId
  * @param ids
  * @param fields
  * @param values
+ * @since v3.8
  */
 proto.setFieldValueToRelationFields = function({relationId, ids, fields, values=[]}={}){
   const SessionsRegistry = require('./sessionsregistry');
