@@ -77,15 +77,14 @@
 </template>
 
 <script>
-import {MAP_SETTINGS} from "app/constant";
+import { MAP_SETTINGS } from 'app/constant';
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 import ChangeMapThemesComponent from 'components/CatalogChangeMapThemes.vue';
 import CatalogLayerContextMenu from 'components/CatalogLayerContextMenu.vue';
-
-const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
-const ControlsRegistry = require('gui/map/control/registry');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationService from 'services/application';
+import ControlsRegistry from 'store/map-controls';
+import GUI from 'services/gui';
 
 const DEFAULT_ACTIVE_TAB = 'layers';
 
@@ -140,6 +139,8 @@ export default {
         if (changes.layers[layerId].style) {
           if (!changes.layers[layerId].visible){
             const layer = CatalogLayersStoresRegistry.getLayerById(layerId);
+            // clear categories
+            layer.clearCategories();
             layer.change();
           }
           return true
@@ -212,8 +213,12 @@ export default {
   created() {
     this.layerpositions = MAP_SETTINGS.LAYER_POSITIONS.getPositions();
     CatalogEventHub.$on('unselectionlayer', (storeid, layerstree) => {
-      const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
-      layer.clearSelectionFids();
+      if (!layerstree.external) {
+        const layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(layerstree.id);
+        layer.clearSelectionFids();
+      } else {
+        GUI.getService('queryresults').clearSelectionExtenalLayer(layerstree);
+      }
     });
 
     CatalogEventHub.$on('activefiltertokenlayer', async (storeid, layerstree) => {

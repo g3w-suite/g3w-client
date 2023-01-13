@@ -1,5 +1,5 @@
 const utils = require('core/utils/ol');
-const InteractionControl = require('./interactioncontrol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 const ResetControl = function(options){
   this._toggled = true;

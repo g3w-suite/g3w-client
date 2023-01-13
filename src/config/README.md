@@ -1,1 +1,0 @@
-# 🚨 `src/config` folder will be removed in the next major release!

@@ -1,9 +1,9 @@
 /**
  * ORIGINAL SOURCE: src/app/core/iframe/services/routerservice.js@v3.4
  */
+import GUI from 'services/gui';
 
 const { splitContextAndMethod, uniqueId } = require('core/utils/utils');
-const GUI = require('gui/gui');
 
 function IframePluginService(options={}) {
   //project is current project send by application service

@@ -1,4 +1,5 @@
-import { G3W_FID } from 'constant';
+import { G3W_FID } from 'app/constant';
+
 const { toRawType } = require('core/utils/utils');
 const Feature = require('core/layers/features/feature');
 const { t } = require('core/i18n/i18n.service');
@@ -120,7 +121,7 @@ const utils = {
       // ol.format.WMSGetFeatureInfo readFeatures method from XML
       // (eg. WMS getFeatureInfo);
       if (!is3DGeometry(geometryType)){
-        features.forEach(feature => removeZValueToOLFeatureGeometry({ feature, geometryType }));
+        features.forEach(feature => removeZValueToOLFeatureGeometry({ feature }));
       }
     }
 
@@ -234,7 +235,7 @@ const contenttypes = {
       const featureId = feature.getId();
       const g3w_fid = sanitizeFidFeature(featureId);
       // in case of wms getfeature without filter return string contain layerName or layerid
-      const index = featureId == g3w_fid ? 0 : layersId.indexOf(currentLayerId);
+      const index = featureId == g3w_fid ? 0 : layersId.indexOf(featureId);
       if (index !== -1) {
         const fields = layersFeatures[index].layer.getFields().filter(field => field.show);
         const properties = feature.getProperties();

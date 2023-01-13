@@ -1,8 +1,10 @@
-import {SPATIALMETHODS, VM} from '../constants';
-const {merge} = require('core/utils/ol');
-const InteractionControl = require('./interactioncontrol');
-const PickCoordinatesInteraction = require('../interactions/pickcoordinatesinteraction');
-const {getAllPolygonGeometryTypes} = require('core/utils/geo').Geometry;
+import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+
+const { merge } = require('core/utils/ol');
+const InteractionControl = require('g3w-ol/controls/interactioncontrol');
+const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
+const { getAllPolygonGeometryTypes } = require('core/utils/geo').Geometry;
+
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {

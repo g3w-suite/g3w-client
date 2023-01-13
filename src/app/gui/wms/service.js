@@ -1,17 +1,19 @@
-import WMSLayersPanel from './vue/panel/wmslayerspanel';
-import {LOCALSTORAGE_EXTERNALWMS_ITEM} from '../../constant';
-const ApplicationService = require('core/applicationservice');
-const ProjectsRegistry = require('core/project/projectsregistry');
-const {uniqueId} = require('core/utils/utils');
-const DataRouteService = require('core/data/routerservice');
-const GUI = require('gui/gui');
- function Service(options={}){
+import WMSLayersPanel from 'gui/wms/vue/panel/wmslayerspanel';
+import { LOCALSTORAGE_EXTERNALWMS_ITEM } from 'app/constant';
+import DataRouterService from 'services/data';
+import ProjectsRegistry from 'store/projects';
+import ApplicationService from 'services/application';
+import GUI from 'services/gui';
+
+const { uniqueId } = require('core/utils/utils');
+
+function Service(options={}){
   const {wmsurls=[]} = options;
   this.projectId = ProjectsRegistry.getCurrentProject().getId(); // get current project id used to store data or get data to current project
   this.panel;
   this.state = {
     adminwmsurls: wmsurls, // coming from admin wmsurls
-    localwmsurls: []
+    localwmsurls: [] // contain array of object {id, url}
   };
   this.loadClientWmsUrls()
     .then(urls => this.state.localwmsurls = urls);
@@ -102,21 +104,24 @@ proto.getRequestStatusObject = function({error=false, added=false}={}){
  * @param wmsurl
  * @returns {*}
  */
-proto.addNewWmsUrl = async function(wmsurl){
-  const findwmsurl = this.state.localwmsurls.find(url => url == wmsurl);
+proto.addNewUrl = async function({id, url} = {}){
+  const find = this.state.localwmsurls.find(({id:localid, url:localurl}) => localurl == url || localid == id);
   const status = this.getRequestStatusObject({
-    added: !!findwmsurl
+    added: !!find
   });
-  if (!findwmsurl) {
+  if (!find) {
     try {
-      const response = await this.getWMSLayers(wmsurl);
-      // if result (meaning reponse in done right)
+      const response = await this.getWMSLayers(url);
+      // if result (meaning response in done right)
       if (response.result) {
         const data = this.getLocalWMSData();
-        this.state.localwmsurls.push(wmsurl);
+        this.state.localwmsurls.push({
+          id,
+          url
+        });
         data.urls = this.state.localwmsurls;
         this.updateLocalWMSData(data);
-        response.wmsurl = wmsurl;
+        response.wmsurl = url;
         this.showWmsLayersPanel(response);
       } else status.error = true;
     }
@@ -169,8 +174,8 @@ proto.checkIfWMSAlreadyAdded = function({url, layers=[]}={}){
  * Delete url from local storage
  * @param wmsurl
  */
-proto.deleteWmsUrl = function(wmsurl){
-  this.state.localwmsurls = this.state.localwmsurls.filter(url => url !== wmsurl);
+proto.deleteWmsUrl = function(id){
+  this.state.localwmsurls = this.state.localwmsurls.filter(({id:localid}) => id !== localid );
   const data = this.getLocalWMSData();
   data.urls = this.state.localwmsurls;
   this.updateLocalWMSData(data);
@@ -181,13 +186,13 @@ proto.deleteWmsUrl = function(wmsurl){
  * @param wmsurl
  * @returns {Promise<{added: boolean, error: boolean}>}
  */
-proto.loadWMSDataAndShowWmsLayersPanel = async function(wmsurl){
+proto.loadWMSDataAndShowWmsLayersPanel = async function(url){
   const status = this.getRequestStatusObject();
   try {
-    const response = await this.getWMSLayers(wmsurl);
+    const response = await this.getWMSLayers(url);
     status.error = !response.result;
     if (response.result){
-      response.wmsurl = wmsurl;
+      response.wmsurl = url;
       this.showWmsLayersPanel(response);
     }
   } catch(err){
@@ -225,7 +230,7 @@ proto.getWMSLayers = async function(url){
     title: null
   };
   try {
-    response = await DataRouteService.getData('ows:wmsCapabilities', {
+    response = await DataRouterService.getData('ows:wmsCapabilities', {
       inputs: {
         url
       },

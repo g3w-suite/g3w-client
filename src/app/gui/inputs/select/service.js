@@ -1,5 +1,6 @@
-const {inherit, base} = require('core/utils/utils');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+
+const { inherit, base } = require('core/utils/utils');
 const Service = require('gui/inputs/service');
 
 function SelectService(options={}) {

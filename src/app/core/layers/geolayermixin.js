@@ -1,8 +1,10 @@
+import GUI from 'services/gui';
+import ApplicationService from 'services/application';
+
 const Projections = require('g3w-ol/projection/projections');
 const { getScaleFromResolution } = require('core/utils/ol');
 const { createFeatureFromFeatureObject } = require('core/utils/geo');
-const { sanitizeUrl } = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { XHR, sanitizeUrl } = require('core/utils/utils');
 const RESERVERDPARAMETRS = {
   wms: ['VERSION', 'REQUEST', 'BBOX', 'LAYERS', 'WIDTH', 'HEIGHT', 'DPI', 'FORMAT', 'CRS']
 };
@@ -19,6 +21,7 @@ proto.setup = function(config={}, options={}) {
   const { project } = options;
   this.config.map_crs = project.getProjection().getCode();
   this.config.multilayerid = config.multilayer;
+  this.legendCategories = {};
   // Features that contain
   this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
@@ -41,12 +44,55 @@ proto.setup = function(config={}, options={}) {
     minscale: config.minscale,
     maxscale: config.maxscale,
     ows_method: config.ows_method,
-    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true
+    exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
+    categories: false // has more than one categories legend
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
   config.source && config.source.url && this._sanitizeSourceUrl()
 };
+
+/**
+ * Legend Graphic section
+ */
+proto.getLegendGraphic = function({all=true}={}){
+  const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
+  const legendurl = this.getLegendUrl(legendParams, {
+    categories: true,
+    all // true meaning no bbox no filter just all referred to
+  });
+  return XHR.get({
+    url: legendurl
+  });
+};
+
+/**
+ * Set layer categories legend
+ * @param categories
+ */
+proto.setCategories = function(categories=[]) {
+  this.legendCategories[this.getCurrentStyle().name] = categories;
+  //set categories state attribute to true only if exist at least a rule key
+  // meaning that layer has at least more than one has a
+  this.state.categories = categories.length > 1 && categories.filter(category => category.ruleKey).length > 1;
+};
+
+/**
+ * Return eventually categories of layers legend
+ * @returns {string[] | string | [] | *[] | boolean | {default: {level: *, appenders: string[]}}}
+ */
+proto.getCategories = function(){
+  return this.legendCategories[this.getCurrentStyle().name];
+};
+
+proto.clearCategories = function(){
+  this.legendCategories = {};
+  this.state.categories = false;
+};
+
+/**
+ * End Legend Graphic section
+ */
 
 /**
  * Clear all selection openlayer features
@@ -244,6 +290,10 @@ proto.setCurrentStyle = function(currentStyleName){
     style.current = style.name === currentStyleName;
   });
   return changed;
+};
+
+proto.getCurrentStyle = function(){
+  return this.config.styles.find(style => style.current);
 };
 
 /**

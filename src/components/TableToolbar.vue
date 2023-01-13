@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import ApplicationState from 'core/applicationstate';
+import ApplicationState from 'store/application-state';
 
 export default {
   name: "g3w-table-toolbar",

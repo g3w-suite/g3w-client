@@ -1,9 +1,9 @@
-const Layer = require('./layer');
-const TableLayer = require('./tablelayer');
-const VectorLayer = require('./vectorlayer');
-const ImageLayer = require('./imagelayer');
-const BaseLayers = require('./baselayers/baselayers');
-const GeojsonLayer = require('./geojson');
+const Layer = require('core/layers/layer');
+const TableLayer = require('core/layers/tablelayer');
+const VectorLayer = require('core/layers/vectorlayer');
+const ImageLayer = require('core/layers/imagelayer');
+const BaseLayers = require('core/layers/baselayers/baselayers');
+const GeojsonLayer = require('core/layers/geojson');
 
 // Class to build layer based on configuration
 function LayerFactory() {
@@ -28,7 +28,8 @@ function LayerFactory() {
               Layer.SourceTypes.WFS,
               Layer.SourceTypes.CSV,
               Layer.SourceTypes.ORACLE,
-              Layer.SourceTypes.OGR
+              Layer.SourceTypes.OGR,
+              Layer.SourceTypes.MDAL,
             ].find(sourcetype => sourcetype === config.source.type)) {
               if (config.geometrytype && config.geometrytype === 'NoGeometry') LayerClass = TableLayer;
               else LayerClass = ImageLayer;
@@ -40,6 +41,7 @@ function LayerFactory() {
             Layer.SourceTypes.GDAL,
             Layer.SourceTypes.VECTORTILE,
             Layer.SourceTypes["VECTOR-TILE"],
+            Layer.SourceTypes.MDAL,
           ].find(sourcetype => sourcetype === config.source.type)) LayerClass = ImageLayer;
         }
         break;

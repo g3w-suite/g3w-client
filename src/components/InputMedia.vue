@@ -11,6 +11,7 @@
             :id="mediaid"
             style="display:none"
             :name="state.name"
+            :tabIndex="tabIndex"
             :data-url="state.input.options.uploadurl"
             :class="{'input-error-validation' : notvalid}"
             type="file">
@@ -27,11 +28,12 @@
 </template>
 
 <script>
+import GUI from 'services/gui';
+
 const InputMixins = require('gui/inputs/input');
-const {getUniqueDomId} = require('core/utils/utils');
-const {t} = require('core/i18n/i18n.service');
-const {media_field:MediaField} = require('gui/fields/fields');
-const GUI = require('gui/gui');
+const { getUniqueDomId } = require('core/utils/utils');
+const { t } = require('core/i18n/i18n.service');
+const { media_field: MediaField } = require('gui/fields/fields');
 
 export default {
   mixins: [InputMixins],
@@ -67,6 +69,7 @@ export default {
     },
     clearMedia() {
       this.data.value = this.data.mime_type = this.state.value = null;
+      this.change();
     }
   },
   created() {

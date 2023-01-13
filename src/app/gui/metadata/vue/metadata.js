@@ -1,8 +1,9 @@
 import * as vueComponentOptions from 'components/Metadata.vue';
 
-const {inherit, base} = require('core/utils/utils');
+import GUI from 'services/gui';
+
+const { inherit, base } = require('core/utils/utils');
 const Component = require('gui/component/component');
-const GUI = require('gui/gui');
 const MetadataService = require('gui/metadata/metadataservice');
 
 const InternalComponent = Vue.extend(vueComponentOptions);

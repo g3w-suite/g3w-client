@@ -2,7 +2,7 @@
  * TODO: refactor stateful directives (eg. "v-t") in order to delete this file: "src/directives/utils.js"
  */
 
-const {uniqueId} = require('core/utils/utils');
+const { uniqueId } = require('core/utils/utils');
 
 /**
  * Internal state
@@ -29,5 +29,5 @@ export const unwatch = ({el, attr}) => {
   }
 };
 
-export const trigger = ({el, attr, data}) => directives[el.getAttribute(attr)](data);
+export const trigger = ({el, attr, data}) => directives[el.getAttribute(attr)].handler(data);
 

@@ -16,9 +16,9 @@
 </template>
 
 <script>
-  import ApplicationState from 'core/applicationstate';
+  import ApplicationState from 'store/application-state';
 
-  const {getUniqueDomId} = require('core/utils/utils');
+  const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
     name: "datetime",
@@ -51,21 +51,6 @@
       }
     },
     methods: {
-      play(){
-
-      },
-      pause(){
-
-      },
-      stop(){
-
-      },
-      back(step=1){
-
-      },
-      forward(step=1){
-
-      },
       changeInput(evt){},
       change(value) {
         const date = moment(value).format(this.format);
@@ -84,7 +69,7 @@
         enabledDates: this.enabledDates,
         showClose: true,
         format: this.format,
-        locale: ApplicationState.lng,
+        locale: ApplicationState.language,
         toolbarPlacement: 'top',
         widgetPositioning: {
           horizontal: 'right'
@@ -94,20 +79,23 @@
         this.change(date);
       });
       this.datetimeinputelement.on("dp.hide", evt => {
+        /**
+         * for developement purpose. It used to leave open datimepicker open
+         */
         //$(this.$refs.iddatetimepicker).data("DateTimePicker").show();
       });
-      ApplicationState.ismobile && setTimeout(()=>datetimeinputelement.blur());
+      ApplicationState.ismobile && setTimeout(() => datetimeinputelement.blur());
     },
     watch: {
       value(datetime){
         this.datetimevalue = datetime;
         this.datetimeinputelement.data("DateTimePicker").date(datetime)
       },
-      async minDate(datetime){
-        this.datetimeinputelement.data("DateTimePicker").minDate(datetime);
+      async minDate(mindatetime){
+        this.datetimeinputelement.data("DateTimePicker").minDate(mindatetime);
       },
-      async maxDate(datetime){
-        this.datetimeinputelement.data("DateTimePicker").maxDate(datetime);
+      async maxDate(maxdatetime){
+        this.datetimeinputelement.data("DateTimePicker").maxDate(maxdatetime);
       },
       enabledDates(dates){
         this.datetimeinputelement.data("DateTimePicker").enabledDates(dates);

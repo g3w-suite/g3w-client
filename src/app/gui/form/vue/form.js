@@ -1,13 +1,13 @@
 import * as vueComponentOptions from 'components/Form.vue';
 import BodyFormComponent from 'components/FormBody.vue';
+import GUI from 'services/gui';
 
-const {base, inherit} = require('core/utils/utils');
-const GUI = require('gui/gui');
+const { base, inherit } = require('core/utils/utils');
 const Component = require('gui/component/component');
-const Service = require('../formservice');
+const Service = require('gui/form/formservice');
 
 function FormComponent(options = {}) {
-  const {id='form', name, title} = options;
+  const {id='form', name, title, headerComponent} = options;
   base(this, options);
   options.service = options.service ? new options.service : new Service;
   options.vueComponentObject = options.vueComponentObject  || vueComponentOptions;
@@ -18,7 +18,8 @@ function FormComponent(options = {}) {
       title,
       name,
       root: true,
-      component: BodyFormComponent
+      component: BodyFormComponent,
+      headerComponent
     }
   ];
   options.perc = options.layer.getFormPercentage() !== null ? options.layer.getFormPercentage() : options.perc;

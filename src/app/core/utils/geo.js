@@ -1,12 +1,14 @@
-import CONSTANT from '../../constant';
-const {toRawType, uniqueId} = require('core/utils/utils');
+import CONSTANT from 'app/constant';
+import MapLayersStoresRegistry from 'store/map-layers';
+import GUI from 'services/gui';
+
+const { toRawType, uniqueId } = require('core/utils/utils');
 const WMSLayer = require('core/layers/map/wmslayer');
 const Filter = require('core/layers/filter/filter');
-const {response: responseParser} = require('core/utils/parsers');
-const MapLayersStoreRegistry = require('core/map/maplayersstoresregistry');
-const GUI = require('gui/gui');
+const { response: responseParser } = require('core/utils/parsers');
+
 const geometryFields = CONSTANT.GEOMETRY_FIELDS;
-const {QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes} = CONSTANT;
+const { QUERY_POINT_TOLERANCE, G3W_FID, GEOMETRY_TYPES: GeometryTypes } = CONSTANT;
 
 const Geometry = {
 
@@ -18,10 +20,10 @@ const Geometry = {
   /**
    * Remove Z values from geometry coordinates
    */
-   removeZValueToOLFeatureGeometry({feature, geometryType}={}){
+   removeZValueToOLFeatureGeometry({feature}={}){
     const geometry = feature.getGeometry();
     if (geometry) {
-      geometryType = geometryType || geometry.getType();
+      const geometryType = geometry.getType();
       const originalFeatureCoordinates = geometry.getCoordinates();
       switch (geometryType){
         // POINT: [x, y]
@@ -582,7 +584,7 @@ const geoutils = {
   createFeatureFromGeometry({id,geometry}={}){
     if (geometry) {
       const feature = new ol.Feature(geometry);
-      id && feature.setId(id);
+      feature.setId(id);
       return feature;
     }
   },
@@ -599,7 +601,7 @@ const geoutils = {
    */
   createFeatureFromFeatureObject({id, feature={}}){
     const {geometry, attributes} = feature;
-    feature = geoutils.createFeatureFromGeometry({id,geometry})
+    feature = geoutils.createFeatureFromGeometry({id,geometry});
     Object.keys(attributes).forEach(attribute => feature.set(attribute, attributes[attribute]));
     return feature;
   },
@@ -1168,7 +1170,7 @@ const geoutils = {
   },
 
   getMapLayerById(layerId) {
-    return MapLayersStoreRegistry.getLayerById(layerId);
+    return MapLayersStoresRegistry.getLayerById(layerId);
   },
 
   //return mapLayer based on filter (properties of layer. Es GEOLAYER etc..)
@@ -1179,7 +1181,7 @@ const geoutils = {
       ...filter
     };
     let layers = [];
-    MapLayersStoreRegistry.getQuerableLayersStores().forEach(layerStore => {
+    MapLayersStoresRegistry.getQuerableLayersStores().forEach(layerStore => {
       layers = layerStore.getLayers(filter, options);
     });
     return layers || [];
@@ -1549,13 +1551,14 @@ const geoutils = {
    * @returns {*}
    */
   convertSingleMultiGeometry(geometry, toGeometryType){
-      if (toGeometryType){
-        const isFromGeometryMulti = Geometry.isMultiGeometry(geometry);
-        const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
-        if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
-        else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry(geometry);
-      }
-      return geometry;
+    const fromGeometryType = geometry.getType();
+    if (toGeometryType && (fromGeometryType !== toGeometryType)){
+      const isFromGeometryMulti = Geometry.isMultiGeometry(fromGeometryType);
+      const isToGeometryMulti = Geometry.isMultiGeometry(toGeometryType);
+      if (isFromGeometryMulti && !isToGeometryMulti) return geoutils.multiGeometryToSingleGeometries(geometry);
+      else if (!isFromGeometryMulti && isToGeometryMulti) return geoutils.singleGeometriesToMultiGeometry([geometry]);
+    }
+    return geometry;
   },
 
   dissolve({features=[], index=0, clone=false}={}) {
@@ -1861,6 +1864,33 @@ const geoutils = {
       y = y1 + along * dy;
     }
     return [x, y];
+  },
+  get_LEGEND_ON_LEGEND_OFF_Params(layer){
+    let LEGEND_ON, LEGEND_OFF;
+    if (layer.getCategories()) {
+      /**
+       * checked: current status
+       * _checked: original status
+       * handle only difference (diff) from original checked status and current chenge by toc categories
+       */
+      layer.getCategories().forEach(({checked, _checked, ruleKey}) => {
+        if (checked !== _checked) {
+          if (checked) {
+            if (typeof LEGEND_ON === 'undefined') LEGEND_ON = `${layer.getWMSLayerName()}:`;
+            else LEGEND_ON = `${LEGEND_ON},`;
+            LEGEND_ON = `${LEGEND_ON}${ruleKey}`
+          } else {
+            if (typeof LEGEND_OFF === 'undefined') LEGEND_OFF = `${layer.getWMSLayerName()}:`;
+            else  LEGEND_OFF = `${LEGEND_OFF},`;
+            LEGEND_OFF = `${LEGEND_OFF}${ruleKey}`;
+          }
+        }
+      });
+    }
+    return {
+      LEGEND_ON,
+      LEGEND_OFF
+    }
   },
 
   /**

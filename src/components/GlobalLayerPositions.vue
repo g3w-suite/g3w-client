@@ -3,8 +3,7 @@
 
 <template>
   <div class="g3w-layer-positions" :id="ids.layerpositions">
-    <div class="g3w-layer-positions-info-message">
-      <helpdiv :message="`layer_position.message`"></helpdiv>
+    <div class="g3w-layer-positions-info-message" v-t="`layer_position.message`">
     </div>
     <div class="g3w-layer-positions-checkboxes">
       <div v-for="layerposition in layerpositions" :key="layerposition">
@@ -16,8 +15,9 @@
 </template>
 
 <script>
-  import {MAP_SETTINGS} from "app/constant";
-  const {getUniqueDomId} = require('core/utils/utils');
+  import { MAP_SETTINGS } from 'app/constant';
+
+  const { getUniqueDomId } = require('core/utils/utils');
 
   export default {
     name: "layerspositions",
@@ -54,9 +54,9 @@
     margin: 5px 0 5px 0;
   }
   .g3w-layer-positions-info-message{
-    margin-bottom: 3px;
+    margin-bottom: 5px;
+    font-weight: bold;
   }
-
   .g3w-layer-positions-checkboxes {
     display: flex;
     justify-content: space-between;

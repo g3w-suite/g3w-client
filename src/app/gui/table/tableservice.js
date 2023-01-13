@@ -1,11 +1,13 @@
-const {inherit, noop } = require('core/utils/utils');
-const DataRouterService = require('core/data/routerservice');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import DataRouterService from 'services/data';
+import GUI from 'services/gui';
+
+const { inherit, noop } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
-const GUI = require('gui/gui');
-const {t} = require('core/i18n/i18n.service');
-const {coordinatesToGeometry} =  require('core/utils/geo');
+const { t } = require('core/i18n/i18n.service');
+const { coordinatesToGeometry } =  require('core/utils/geo');
 const { SELECTION_STATE } = require('core/layers/layer');
+
 const PAGELENGTHS = [10, 25, 50];
 
 const TableService = function(options = {}) {
@@ -78,9 +80,7 @@ const TableService = function(options = {}) {
     let data = [];
     // emit redraw if in_bbox filter or not select all
     const emitRedraw = type === 'in_bbox' || !this.selectedfeaturesfid.has(SELECTION_STATE.ALL);
-    if (!this.state.pagination) {
-      data = emitRedraw ? await this.reloadData() : [];
-    }
+    if (!this.state.pagination) data = emitRedraw ? await this.reloadData() : [];
     emitRedraw && this.emit('redraw', data);
   };
   this.layer.on('filtertokenchange', this.filterChangeHandler);
@@ -146,6 +146,13 @@ proto.addRemoveSelectedFeature = function(feature){
   }
 };
 
+proto.createFeatureForSelection = function(feature){
+  return {
+    attributes: feature.attributes ? feature.attributes : feature.properties,
+    geometry: this._returnGeometry(feature)
+  }
+};
+
 proto.getAllFeatures = function(params){
   GUI.setLoadingContent(true);
   return new Promise((resolve, reject) =>{
@@ -159,7 +166,7 @@ proto.getAllFeatures = function(params){
               if (LoadedFeaturesId.indexOf(feature.id) === -1) {
                 feature.geometry && this.layer.addOlSelectionFeature({
                   id: feature.id,
-                  geometry: this._returnGeometry(feature)
+                  feature: this.createFeatureForSelection(feature)
                 });
               }
             });
@@ -252,7 +259,7 @@ proto.selectAllFeatures = async function(){
         features.forEach(feature =>{
           !this.getAll && this.geolayer && feature.geometry && this.layer.addOlSelectionFeature({
             id: feature.id,
-            geometry: this._returnGeometry(feature)
+            feature: this.createFeatureForSelection(feature)
           });
           this.layer[this.state.selectAll ? 'includeSelectionFid' : 'excludeSelectionFid'](feature.id);
         })
@@ -395,7 +402,7 @@ proto.addFeature = function(feature) {
   if (this.geolayer && feature.geometry) {
     this.layer.getOlSelectionFeature(tableFeature.id) || this.layer.addOlSelectionFeature({
       id: tableFeature.id,
-      geometry: this._returnGeometry(feature)
+      feature: this.createFeatureForSelection(feature)
     });
     tableFeature.geometry = feature.geometry;
   }

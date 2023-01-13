@@ -1,4 +1,4 @@
-const {inherit, base} = require('core/utils/utils');
+const { inherit, base } = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 
 function KMLDataProvider(options = {}) {

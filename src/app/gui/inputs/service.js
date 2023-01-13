@@ -1,4 +1,5 @@
-const Validators = require('core/validators/inputs/validators');
+const Validators = require('core/utils/validators');
+const {toRawType} = require('core/utils/utils');
 const {t} = require('core/i18n/i18n.service');
 
 function Service(options = {}) {
@@ -106,7 +107,7 @@ proto.setErrorMessage = function(input) {
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_max_field")} (${input.validate.max_field})`;
   else if (input.validate.min_field)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_min_field")} (${input.validate.min_field})`;
-  else if (input.validate.unique && input.validate.exclude_values.size)
+  else if (input.validate.unique && input.validate.exclude_values && input.validate.exclude_values.size)
     this.state.validate.message = `${t("sdk.form.inputs.input_validation_exclude_values")}`;
   else if (input.validate.required) {
     message = `${t("sdk.form.inputs.input_validation_error")} ( ${t("sdk.form.inputs." + input.type)} )`;
@@ -119,6 +120,16 @@ proto.setErrorMessage = function(input) {
     }
     this.state.validate.message = this.state.info || message;
   } else this.state.validate.message = this.state.info;
+};
+/**
+ * Method to set update
+ */
+proto.setUpdate = function(){
+  const {value, _value} = this.state;
+  if (this.state.input.type === 'media' && toRawType(value) !== 'Object' && toRawType(_value) !== 'Object') {
+    this.state.update = value.value != _value.value;
+  }
+  else this.state.update = value != _value;
 };
 
 module.exports = Service;

@@ -8,6 +8,7 @@
       :placeholder="state.default"
       slot="body"
       @keyup="isMobile() ? mobileChange($event) : change()"
+      :tabIndex="tabIndex"
       v-disabled="!editable"
       :field="state.name"
       class="form-control"

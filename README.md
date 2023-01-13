@@ -1,4 +1,4 @@
-# G3W-CLIENT v3.7.0-alpha.1
+# G3W-CLIENT v3.8.0-alpha.0
 
 [![License](https://img.shields.io/badge/license-MPL%202-blue.svg?style=flat)](LICENSE)
 
@@ -84,14 +84,20 @@ For more info about this project dependencies see:
 
 ## How to develop
 
+From within your [g3w-client](https://github.com/g3w-suite/g3w-client) local repository:
+
+```sh
+cd ./g3w-client
+```
+
 You can start the built-in development servers by using the following:
 
 ```sh
-npm run docker:up # g3w-admin
+npm run docker:up # backend server (g3w-admin)
 ```
 
 ```sh
-npm run dev       # g3w-client
+npm run dev       # frontend server (g3w-client)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
@@ -102,8 +108,8 @@ If everything went fine, you can now visit you local development server URL to s
 # project_type  = "qdjango";
 # project_id    = "1"
 
-http://localhost:8000/en/map/countries/qdjango/1   # g3w-admin  (production)
-http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
+http://localhost:8000/en/map/countries/qdjango/1 # g3w-admin  (production)
+http://localhost:3000/en/map/countries/qdjango/1 # g3w-client (development)
 ```
 
 ```sh
@@ -112,9 +118,22 @@ http://localhost:3000/?project=countries/qdjango/1 # g3w-client (development)
 # project_type  = "qdjango";
 # project_id    = "2"
 
-http://localhost:8000/en/map/eleprofile/qdjango/2   # g3w-admin  (production)
-http://localhost:3000/?project=eleprofile/qdjango/2 # g3w-client (development)
+http://localhost:8000/en/map/eleprofile/qdjango/2 # g3w-admin  (production)
+http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 ```
+
+### Plugins
+
+If you want develop custom plugins you need to place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder, below you can see some examples:
+
+- [base-template](https://github.com/g3w-suite/g3w-client-plugin-base-template)
+- [editing](https://github.com/g3w-suite/g3w-client-plugin-editing)
+- [eleprofile](https://github.com/g3w-suite/g3w-client-plugin-elevation-profile)
+- [openrouteservice](https://github.com/g3w-suite/g3w-client-plugin-openrouteservice)
+- [qplotly](https://github.com/g3w-suite/g3w-client-plugin-qplotly)
+- [qtimeseries](https://github.com/g3w-suite/g3w-client-plugin-qtimeseries)
+- [queryresult-template](https://github.com/g3w-suite/g3w-client-plugin-queryresult-template)
+- [sidebar-template](https://github.com/g3w-suite/g3w-client-plugin-sidebar-template)
 
 ---
 
@@ -211,8 +230,8 @@ All notable changes to this project are documented in the [releases](https://git
 ---
 
 **Compatibile with:**
-[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.4.x)
-[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.4-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.4.x)
+[![g3w-admin version](https://img.shields.io/badge/g3w--admin-3.5-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-admin/tree/v.3.5.x)
+[![g3w-suite-docker version](https://img.shields.io/badge/g3w--suite--docker-3.5-1EB300.svg?style=flat)](https://github.com/g3w-suite/g3w-suite-docker/tree/v3.5.x)
 
 ---
 
