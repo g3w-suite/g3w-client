@@ -349,6 +349,9 @@ export const ZINDEXES = {
   }
 };
 
+/**
+ * @since v3.8
+ */
 const API_BASE_URLS = {
   CRS: '/crs/'  //Example /crs/<epsg_code>
 };
