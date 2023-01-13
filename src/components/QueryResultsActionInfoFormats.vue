@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/actiontools/infoformats.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <select v-if="infoformats.length" class="skin-color" v-select2="'infoformat'" :select2_value="infoformat" :search="false">

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/panel/searchpanel.html@v3.4 -->
-<!-- gui/search/vue/panel/searchpanel.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3w-search-panel form-group" v-disabled="state.searching">

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/panel/select2.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <select :name="forminput.attribute" class="form-control" :id="forminput.id" v-disabled="forminput.options.disabled || forminput.loading">

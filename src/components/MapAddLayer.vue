@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/map/vue/components/addlayer.html@v3.4 -->
-<!-- gui/map/vue/components/addlayer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <!-- Modal -->

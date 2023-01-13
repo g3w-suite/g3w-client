@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/footer/vue/footer.html@v3.4 -->
-<!-- gui/form/components/footer/vue/footer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="form-group g3wform_footer">

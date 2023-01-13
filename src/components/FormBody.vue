@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/body/vue/body.html@v3.4 -->
-<!-- gui/form/components/body/vue/body.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
 <div>

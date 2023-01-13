@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/header/vue/header.html@v3.4 -->
-<!-- gui/form/components/header/vue/header.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3wform_header box-header with-border" style="display: flex; flex-direction: column">

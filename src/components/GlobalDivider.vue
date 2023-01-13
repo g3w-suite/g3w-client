@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/divider.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <span class="divider"></span>

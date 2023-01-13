@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/headerfeaturebody.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <tr @click="toggleFeatureBoxAndZoom(layer,feature)"

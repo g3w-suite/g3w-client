@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/tools/vue/tools.html@v3.4 -->
-<!-- gui/tools/vue/tools.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="g3w-tools treeview-menu">

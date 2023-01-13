@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/actions.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <td v-if="actions.length" class="g3w-feature-actions">
