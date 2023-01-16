@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/addons/vue/addons.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <span class="form-addons">

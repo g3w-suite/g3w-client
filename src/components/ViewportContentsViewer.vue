@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/viewport/contentsviewer.html@v3.4 -->
-<!-- gui/viewport/contentsviewer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="contents" class="contents"></div>

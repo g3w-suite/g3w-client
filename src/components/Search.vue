@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/search/vue/search.html@v3.4 -->
-<!-- gui/search/vue/search.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul id="g3w-search" class="treeview-menu g3w-search g3w-tools menu-items" v-if="show">

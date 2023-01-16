@@ -1,7 +1,11 @@
-// FIXME: remove weird import (utility functions should be stateles)
+/**
+ * @FIXME remove weird import (utility functions should be stateles)
+ */
 import ApplicationState from 'store/application-state';
 
-// FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+/**
+ * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+ */
 // const { Geometry } = require('core/utils/geo');
 
 const INCHES_PER_UNIT = {
@@ -90,7 +94,9 @@ const utils = {
       //return projection.getUnits() === 'degrees';
     },
     getLengthMessageText({unit, projection, geometry}={}){
-      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+      /**
+       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+       */
       const { Geometry } = require('core/utils/geo');
       //
       const geometryType = geometry.getType();
@@ -139,7 +145,9 @@ const utils = {
       return message;
     },
     formatMeasure({geometry, projection}={}, options={}){
-      // FIXME: circular dependency (ie. empty object when importing at top level), ref: #130
+      /**
+       * @FIXME circular dependency (ie. empty object when importing at top level), ref: #130
+       */
       const { Geometry, multiGeometryToSingleGeometries } = require('core/utils/geo');
       //
       const geometryType = geometry.getType();
@@ -194,7 +202,9 @@ const utils = {
         unbyKey
       }
     },
-    // FIXME: utility functions should be stateles (move it elsewhere)
+    /**
+     * @FIXME utility functions should be stateles (move it elsewhere)
+     */
     getCurrentMapUnit(){
       return ApplicationState.map.unit;
     },

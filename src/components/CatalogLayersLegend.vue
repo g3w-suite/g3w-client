@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/catalog/vue/legend.html@v3.4 -->
-<!-- gui/catalog/vue/catalog.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div role="tabpanel" class="tab-pane" :class="{active:active}" id="legend">

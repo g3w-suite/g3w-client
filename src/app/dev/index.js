@@ -44,7 +44,10 @@ if (setCurrentProject.after) {
   ProjectsRegistry.onafter('setCurrentProject', (project) => setCurrentProject.after(project));
 }
 
-/** @TODO find a better way to visually distinguish production and development environments (ie. even for logged in users) */
+/**
+ * @TODO find a better way to visually distinguish production
+ * and development environments (ie. even for logged in users)
+ */
 //GUI.once('ready', () => { document.body.classList.replace('skin-yellow', 'skin-blue'); });
 
 devConfig.call();

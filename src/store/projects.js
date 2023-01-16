@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/project/projectsregistry.js@v3.4
+ * @file Store QGIS project configurations (enabled map controls / plugins / layers / ...)
+ * @since v3.6
  */
+
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 

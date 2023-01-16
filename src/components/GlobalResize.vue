@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/vue/global-components/resize.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div v-show="show" :id="$attrs.id" :style="style" @mousedown.stop="start" ></div>

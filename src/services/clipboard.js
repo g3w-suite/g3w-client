@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/clipboardservice.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 function ClipboardService() {

@@ -1,5 +1,5 @@
 /**
- * TODO: consolidate configuration parameters in a single location
+ * @TODO consolidate configuration parameters in a single location
  * (eg. appConfig, ApplicationState, Constants, ...)
  */
 

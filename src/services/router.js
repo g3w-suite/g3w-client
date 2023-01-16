@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/router.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 const { base,inherit, Base64 } = require('core/utils/utils');

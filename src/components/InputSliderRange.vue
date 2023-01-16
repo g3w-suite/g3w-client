@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/sliderrange/vue/sliderrange.html@v3.4 -->
-<!-- gui/inputs/sliderrange/vue/sliderrange.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">

@@ -1894,7 +1894,7 @@ const geoutils = {
   },
 
   /**
-   * TODO: remove "Geometry" sub-property (ie. find out how to merge the following functions)
+   * @TODO remove "Geometry" sub-property (ie. find out how to merge the following functions)
    */
   Geometry
 

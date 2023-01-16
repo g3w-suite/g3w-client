@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/components/body/vue/body.html@v3.4 -->
-<!-- gui/form/components/body/vue/body.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
 <div>
@@ -40,7 +41,9 @@
 <script>
 import G3wFormInputs from 'components/InputG3WFormInputs.vue';
 
-// TODO: remove "Vue.extend" from module export
+/**
+ * @TODO remove "Vue.extend" from module export
+ */
 export default Vue.extend({
   props: ['state', 'handleRelation'],
   data() {

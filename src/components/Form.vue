@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/form/vue/form.html@v3.4 -->
-<!-- gui/form/vue/form.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="g3wform_content" style="position: relative">

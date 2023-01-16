@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/baseinput/baseinput.html@v3.4 -->
-<!-- gui/inputs/baseinput/baseinput.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="form-group" v-if="state.visible">

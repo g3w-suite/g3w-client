@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/checkbox/vue/checkbox.html@v3.4 -->
-<!-- gui/inputs/checkbox/vue/checkbox.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">

@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/data/query/service.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 import { G3W_FID, QUERY_POINT_TOLERANCE } from 'app/constant';

@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/iframe/services/app/service.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import DataRouterService from 'services/data';
 
 const { base, inherit } = require('core/utils/utils');

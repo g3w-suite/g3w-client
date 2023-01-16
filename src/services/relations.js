@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/relations/relationsservice.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import ProjectsRegistry from 'store/projects';
 import DataRouterService from 'services/data';

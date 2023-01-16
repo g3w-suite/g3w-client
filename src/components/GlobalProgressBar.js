@@ -1,5 +1,7 @@
-// ORIGINAL SOURCE:
-// gui/vue/global-components/progressbar.js@v3.4
+/**
+ * @file
+ * @since v3.7
+ */
 
 export default {
   name: "progressbar",
