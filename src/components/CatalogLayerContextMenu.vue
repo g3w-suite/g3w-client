@@ -528,7 +528,7 @@
           const elem = $(evt.target);
           this.layerMenu.stylesMenu.top = elem.offset().top;
           this.layerMenu.stylesMenu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
-          const contextmenu = $('#layer-menu');
+          const contextmenu = $(this.$refs['layer-menu']);
           const menuentry = $(evt.target);
           const submenu = menuentry.children('ul');
           const height = submenu.height();
@@ -554,7 +554,7 @@
       showColorMenu(bool, evt) {
         if (bool) {
           const elem = $(evt.target);
-          const contextmenu = $('#layer-menu');
+          const contextmenu = $(this.$refs['layer-menu']);
           this.layerMenu.colorMenu.top = contextmenu.offset().top;
           this.layerMenu.colorMenu.left = elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) / 2) - OFFSETMENU.left;
         }
