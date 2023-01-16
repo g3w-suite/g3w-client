@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/print/vue/print.html@v3.4 -->
-<!-- gui/print/vue/print.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul id="print" class="treeview-menu">

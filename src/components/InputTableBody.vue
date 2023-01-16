@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/table/vue/components/input-table-body.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <tbody>

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/table/vue/components/tablebody.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <tbody id="table_body_attributes" >

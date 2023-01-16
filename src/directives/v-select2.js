@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/vue/directives/v-select2.js@v3.6
+ * @file
+ * @since v3.7
  */
+
 export default {
   inserted(el, binding, vnode){
     const {

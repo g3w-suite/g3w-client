@@ -1,11 +1,13 @@
+/**
+ * @file
+ * @since v3.7
+ */
+
 import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
 
 const attr = 'g3w-v-offline-id';
 
-/**
- * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
- */
 export default {
   bind(el, binding) {
     // show if online

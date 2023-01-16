@@ -165,7 +165,7 @@ module.exports = {
       MapLayer,
       geometry: {
         Geometry,
-        geom: Geom // FIXME: capitalize first letter (ie. "Geom")
+        geom: Geom /** @FIXME capitalize first letter (ie. "Geom") */
       },
       features: {
         Feature,

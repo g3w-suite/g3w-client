@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- catalog/vue/legend_items.html@v3.4 -->
-<!-- gui/catalog/vue/catalog.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="legend-item">

@@ -1,54 +1,139 @@
 /**
- * ORIGINAL SOURCE: src/app/core/applicationstate.js@v3.4
+ * @file State and methods to query the STATE of application
+ * @since v3.6
  */
 
-// state of application reactive
+/**
+ * State of application reactive
+ * @type {object}
+ */
 const STATE = Vue.observable({
-  ready: false, // true whe application is ready
-  iframe: false, // true if is loaded inside an iframe
-  online: false, // true if is connected
-  ismobile: false, // true if application is loaded on mobile device
-  download: false, // true if there is a downloaded that is waiting
-  upload: false, // upload
+
+  /**
+   * true = application is ready
+   */
+  ready: false,
+
+  /**
+   * true = application is loaded inside an iframe
+   */
+  iframe: false,
+
+  /**
+   * true = application is connected
+   */
+  online: false,
+
+  /**
+   * true = application is loaded on mobile device
+   */
+  ismobile: false,
+  
+  /**
+   * true = there is a pending download 
+   */
+  download: false,
+
+  /**
+   * true = there is a pending upload
+   */
+  upload: false,
+
+  /**
+   * @FIXME add description
+   */
   baseLayerId: null,
+
+  /**
+   * en = default language
+   */
+  language: 'en',
+
   /**
    * @deprecated Since v3.8. Will be deleted in v4.x. Use ApplicationState.language instead
    */
   lng: 'en',
-  language: 'en', // language default
+
+  /**
+   * @FIXME add description
+   */
   changeProjectview: false,
+
+  /**
+   * @FIXME add description
+   */
   plugins: [],
+
+  /**
+   * @FIXME add description
+   */
   user: null,
+
+  /**
+   * @FIXME add description
+   */
   map: {
     epsg: '',
     unit: 'metric'
   },
+
+  /**
+   * @FIXME add description
+   */
   gui: {
+
     app: {
-      disabled: false // if application is disable non cliccable (in waiting)
+      /**
+       * true = application is disabled and unclickable (waiting)
+       */
+      disabled: false
     },
+
     sidebar: {
-      disabled: false // true if sidebar is disabled (not responsive)
+      /**
+       * true = sidebar is disabled (not responsive)
+       */
+      disabled: false // 
     },
+
     layout: {
-      __current: 'app', // store the current layout owner (app at beginning)
+      /**
+       * store the current layout owner ("app" = default)
+       */
+      __current: 'app',
+
+      /**
+       * @FIXME add description
+       */
       app: {}
+
     }
+
   },
+
+  /**
+   * @FIXME add description
+   */
   keys: {
     vendorkeys: {
       google: undefined,
       bing: undefined
     }
   },
+
+  /**
+   * @FIXME add description
+   */
   tokens: {
     filtertoken: undefined
   }
+
 });
 
 /**
- * Object that store method to query STATE OF application
- * @type {{getCurrentLayout()}}
+ * Store methods to query STATE of application
+ * 
+ * @type {object}
  */
 export const STATE_METHODS = {};
 

@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/viewport/viewport.js@v3.4
+ * @file
+ * @since v3.7
  */
+
 import ApplicationState from 'store/application-state';
 import { VIEWPORT as viewportConstraints } from 'app/constant';
 import GUI from 'services/gui';

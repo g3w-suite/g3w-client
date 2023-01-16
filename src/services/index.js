@@ -20,7 +20,7 @@ import TaskService from './tasks';
 import WorkFlowsStack from './workflows';
 
 /**
- * FIXME: importing directly from this file breaks application
+ * @FIXME importing directly from this file breaks application
  * (maybe related to: https://github.com/Raruto/g3w-client/commit/c83d99934d00ea5c6047c215c6eba54fd2d5aefa)
  */
 export {

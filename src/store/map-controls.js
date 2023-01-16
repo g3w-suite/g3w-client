@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/map/control/registry.js@v3.4
+ * @file Store Open Layers controls (zoom, streetrview, screnshoot, ruler, ...)
+ * @since v3.6
  */
+
 import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 

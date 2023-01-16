@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/vue/vue.mixins.js@v3.6
+ * @file
+ * @since v3.7
  */
+
 export default {
   data() {
     return {
