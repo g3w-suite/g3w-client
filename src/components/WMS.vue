@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/wms/vue/wms.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="treeview-menu g3w-tools menu-items">

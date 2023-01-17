@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/action.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
    <span v-if="show" @contextmenu.prevent.stop="" @click.stop="clickAction(action, layer, feature, featureIndex, $event)" v-download="action.download"

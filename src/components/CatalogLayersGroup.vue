@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/catalog/vue/layersgroup.html@v3.4 -->
-<!-- gui/catalog/vue/catalog.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div style="border: 1px solid #ffffff33; margin: 5px">

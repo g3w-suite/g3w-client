@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/querybuilder/service.js@v3.4
+ * @file
+ * @since v3.6
  */
+
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import DataRouterService from 'services/data';
 import ProjectsRegistry from 'store/projects';

@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/catalog/vue/catalog.html@v3.4 -->
-<!-- gui/catalog/vue/catalog.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <!-- item template -->

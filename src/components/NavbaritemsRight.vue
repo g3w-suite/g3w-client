@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/navbar/navbarrightitems.html@v3.4 -->
-<!-- gui/navbar/navbaritems.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <ul class="nav navbar-nav navbar-right">

@@ -1,8 +1,11 @@
 // Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
 import '../deprecated';
 
-// TODO: check if this still useful nowdays (IE 11 ?)
-// add babel runtime support for compiled/transpiled async functions
+/**
+ * Add babel runtime support for compiled/transpiled async functions
+ * 
+ * @TODO check if this still useful nowdays (IE 11 ?)
+ */
 import "regenerator-runtime";
 
 //import core
@@ -263,7 +266,9 @@ Vue.use({
         crop: "fas fa-crop-alt",
         exit: "fas fa-door-open"
       },
-      // TODO: check if deprecated
+      /**
+       * @TODO check if deprecated
+       */
       get() {},
       getInfo() {
         return {
@@ -275,7 +280,9 @@ Vue.use({
         if (added) this.font[name] = className;
         return added;
       },
-      // TODO: check if deprecated
+      /**
+       * @TODO check if deprecated
+       */
       getInfoString() {},
       getFontClass(type) {
         return typeof this.font[type] !== "undefined" ? this.font[type] : '';

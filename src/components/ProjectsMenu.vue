@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/projectsmenu/menu.html@v3.4 -->
-<!-- gui/projectsmenu/menu.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="menu-projects" class="container">

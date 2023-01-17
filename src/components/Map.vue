@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/map/vue/map.html@v3.4 -->
-<!-- gui/map/vue/map.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
 <div :id="maps_container">

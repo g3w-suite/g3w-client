@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/queryresults.html@v3.4 -->
-<!-- gui/queryresults/vue/queryresults.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="search-results" class="queryresults-wrapper">

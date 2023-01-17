@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/core/plugin/pluginsregistry.js@v3.4
+ * @file Store G3W-CLIENT plugins (editing, qplotly, qtimeseries, ...)
+ * @since v3.6
  */
+
 import ProjectsRegistry from 'store/projects';
 import ApplicationService from 'services/application';
 

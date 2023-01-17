@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/querybuilder/vue/querybuilder.html@v3.4 -->
-<!-- gui/querybuilder/vue/querybuilder.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div id="query_builder" class="form-group" style="flex-wrap: nowrap !important">

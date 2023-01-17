@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/app/app.html@v3.4 -->
-<!-- gui/app/app.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
 <div class="wrapper" v-disabled="app.disabled">

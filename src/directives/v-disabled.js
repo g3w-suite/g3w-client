@@ -1,6 +1,8 @@
 /**
- * ORIGINAL SOURCE: src/app/gui/vue/directives/v-disabled.js@v3.6
+ * @file
+ * @since v3.7
  */
+
 export default (el, binding) => {
   const className = 'g3w-disabled';
   if (binding.value) {
