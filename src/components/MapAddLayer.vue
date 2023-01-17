@@ -23,9 +23,8 @@
           <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
           <chrome-picker
             v-model="layer.color"
-            @change-color="onChangeColor"
-            style="width:100%;
-            margin:auto"
+            @input="onChangeColor"
+            style="width:100%; margin:auto"
           ></chrome-picker>
           <bar-loader :loading="loading"></bar-loader>
           <form id="addcustomlayer">

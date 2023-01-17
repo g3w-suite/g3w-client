@@ -51,7 +51,7 @@
             @click.prevent.stop=""
             @hook:beforeDestroy="onbeforeDestroyChangeColor"
             v-model="layerMenu.colorMenu.color"
-            @change-color="onChangeColor"
+            @input="onChangeColor"
             style="width: 100%"
           ></chrome-picker>
         </li>
