@@ -301,13 +301,14 @@ proto.createLayersTree = function(groupName, options={}) {
           // case group
           if (layer.nodes !== null && layer.nodes !== undefined) {
             lightlayer.title = layer.name;
-            lightlayer.expanded = layer.expanded;
             lightlayer.groupId = uniqueId();
             lightlayer.nodes = [];
             lightlayer.checked = layer.checked;
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes, lightlayer.nodes)
           }
+          /** set expanded property - It used for group and layer that has legend to show on TOC **/
+          lightlayer.expanded = layer.expanded;
           lightlayer && newobj.push(lightlayer);
         });
       };
