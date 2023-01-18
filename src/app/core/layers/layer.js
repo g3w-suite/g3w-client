@@ -528,43 +528,43 @@ proto.isGeoLayer = function() {
 };
 
 proto.getDataTable = function({page = null, page_size=null, ordering=null, search=null, field, suggest=null, formatter=0 , in_bbox, custom_params={}} = {}) {
-  const d = $.Deferred();
-  let provider;
-  const params = {
-    ...custom_params,
-    field,
-    page,
-    page_size,
-    ordering,
-    search,
-    formatter,
-    suggest,
-    in_bbox,
-    filtertoken: ApplicationState.tokens.filtertoken
-  };
-  if (!(this.getProvider('filter') || this.getProvider('data'))) {
-   d.reject();
-  } else {
-    provider = this.getProvider('data');
-    provider.getFeatures({editing: false}, params)
-      .done(response => {
-        const data = response.data;
-        const count = response.count;
-        const title = this.getTitle();
-        const features = data.features && data.features || [];
-        let headers = features.length ? features[0].properties : [];
-        headers = parseAttributes(this.getAttributes(), headers);
-        const dataTableObject = {
-          headers,
-          features,
-          title,
-          count
-        };
-        d.resolve(dataTableObject)
-      })
-      .fail(err => d.reject(err))
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    let provider;
+    const params = {
+      ...custom_params,
+      field,
+      page,
+      page_size,
+      ordering,
+      search,
+      formatter,
+      suggest,
+      in_bbox,
+      filtertoken: ApplicationState.tokens.filtertoken
+    };
+    if (!(this.getProvider('filter') || this.getProvider('data'))) {
+      reject();
+    } else {
+      provider = this.getProvider('data');
+      provider.getFeatures({editing: false}, params)
+        .done(response => {
+          const data = response.data;
+          const count = response.count;
+          const title = this.getTitle();
+          const features = data.features && data.features || [];
+          let headers = features.length ? features[0].properties : [];
+          headers = parseAttributes(this.getAttributes(), headers);
+          const dataTableObject = {
+            headers,
+            features,
+            title,
+            count
+          };
+          resolve(dataTableObject)
+        })
+        .fail(err => reject(err))
+    }
+  })
 };
 
 /**
@@ -650,27 +650,27 @@ proto.search = function(options={}, params={}) {
     ...this.config.searchParams,
     ...params
     };
-  const d = $.Deferred();
-  const provider = this.getProvider('search');
-  if (provider)
-    provider.query(options)
-      .done(response => d.resolve(response))
-      .fail(err => d.reject(err));
-  else d.reject(t('sdk.search.layer_not_searchable'));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const provider = this.getProvider('search');
+    if (provider)
+      provider.query(options)
+        .done(response => resolve(response))
+        .fail(err => reject(err));
+    else reject(t('sdk.search.layer_not_searchable'));
+  })
 };
 
 //Info from layer (only for querable layers)
 proto.query = function(options={}) {
-  const d = $.Deferred();
-  const {filter} = options;
-  const provider = this.getProvider(filter ? 'filter' : 'query');
-  if (provider)
-    provider.query(options)
-      .done(response => d.resolve(response))
-      .fail(err => d.reject(err));
-  else d.reject(t('sdk.search.layer_not_querable'));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const {filter} = options;
+    const provider = this.getProvider(filter ? 'filter' : 'query');
+    if (provider)
+      provider.query(options)
+        .done(response => resolve(response))
+        .fail(err => reject(err));
+    else reject(t('sdk.search.layer_not_querable'));
+  })
 };
 
 // generel way to get an attribute
