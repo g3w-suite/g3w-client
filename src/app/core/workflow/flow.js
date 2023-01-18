@@ -16,21 +16,26 @@ function Flow() {
   };
   //start workflow
   this.start = function(workflow) {
-    d = $.Deferred();
-    if (counter > 0) {
-      console.log("reset workflow before restarting");
-    }
-    _workflow = workflow;
-    inputs = workflow.getInputs();
-    context = workflow.getContext();
-    steps = workflow.getSteps();
-    // check if there are steps
-    if (steps && steps.length) {
-      //run step (first)
-      this.runStep(steps[0], inputs, context);
-    }
-    // return a promise that will be reolved if all step go right
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      //** Assign d module variable to an object having resolve, reject methods used on other module method
+      d = {
+        resolve,
+        reject
+      };
+      if (counter > 0) {
+        console.log("reset workflow before restarting");
+      }
+      _workflow = workflow;
+      inputs = workflow.getInputs();
+      context = workflow.getContext();
+      steps = workflow.getSteps();
+      // check if there are steps
+      if (steps && steps.length) {
+        //run step (first)
+        this.runStep(steps[0], inputs, context);
+      }
+      // return a promise that will be reolved if all step go right
+    })
   };
 
   //run step
@@ -68,19 +73,19 @@ function Flow() {
 
   // stop flow
   this.stop = function() {
-    const d = $.Deferred();
-    steps[counter].isRunning() ? steps[counter].stop() : null;
-    this.clearQueques();
-    if (counter > 0) {
-      // set counter to 0
-      counter = 0;
-      // reject flow
-      d.reject();
-    } else {
-      //reject to force rollback session
-      d.resolve();
-    }
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      steps[counter].isRunning() ? steps[counter].stop() : null;
+      this.clearQueques();
+      if (counter > 0) {
+        // set counter to 0
+        counter = 0;
+        // reject flow
+        reject();
+      } else {
+        //reject to force rollback session
+        resolve();
+      }
+    })
   };
   base(this)
 }
