@@ -89,27 +89,27 @@ proto._getRequestParameters = function({layers, feature_count, coordinates, info
 };
 
 proto.query = function(options={}) {
-  const d = $.Deferred();
-  const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
-  const layerProjection = this._layer.getProjection();
-  this._projections.map = this._layer.getMapProjection() || layerProjection;
-  const {layers=[this._layer], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
-  const layer = layers[0];
-  let url = layer.getQueryUrl();
-  const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
-  const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
-  const query = {
-    coordinates,
-    resolution
-  };
-  const timeoutKey = this.getQueryResponseTimeoutKey({
-    layers,
-    resolve: d.resolve,
-    query
-  });
+  return new Promise((resolve, reject) => {
+    const infoFormat = this._layer.getInfoFormat() || 'application/vnd.ogc.gml';
+    const layerProjection = this._layer.getProjection();
+    this._projections.map = this._layer.getMapProjection() || layerProjection;
+    const {layers=[this._layer], feature_count=10, size=GETFEATUREINFO_IMAGE_SIZE, coordinates=[], resolution, query_point_tolerance} = options;
+    const layer = layers[0];
+    let url = layer.getQueryUrl();
+    const METHOD = layer.isExternalWMS() || !/^\/ows/.test(url) ? 'GET' : layer.getOwsMethod();
+    const params = this._getRequestParameters({layers, feature_count, coordinates, infoFormat, query_point_tolerance, resolution, size});
+    const query = {
+      coordinates,
+      resolution
+    };
+    const timeoutKey = this.getQueryResponseTimeoutKey({
+      layers,
+      resolve,
+      query
+    });
 
-  if (layer.useProxy()) {
-    layer.getDataProxyFromServer('wms', {
+    if (layer.useProxy()) {
+      layer.getDataProxyFromServer('wms', {
         url,
         params,
         method: METHOD,
@@ -118,22 +118,22 @@ proto.query = function(options={}) {
         }
       }).then(response =>{
         const data = this.handleQueryResponseFromServer(response, this._projections, layers);
-        d.resolve({
+        resolve({
           data,
           query
         })
-    })
-  } else this[METHOD]({url, layers, params})
-    .then(response => {
-      const data = this.handleQueryResponseFromServer(response, this._projections, layers);
-      d.resolve({
-        data,
-        query
-      });
-    })
-    .catch(err => d.reject(err))
-    .finally(()=> clearTimeout(timeoutKey));
-  return d.promise();
+      })
+    } else this[METHOD]({url, layers, params})
+      .then(response => {
+        const data = this.handleQueryResponseFromServer(response, this._projections, layers);
+        resolve({
+          data,
+          query
+        });
+      })
+      .catch(err => reject(err))
+      .finally(()=> clearTimeout(timeoutKey));
+  })
 };
 
 proto.GET = function({url, params}={}) {
