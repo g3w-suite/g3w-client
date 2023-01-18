@@ -518,7 +518,7 @@ const ApplicationService = function() {
           // initialize data router service
           DataRouterService.init();
           resolve(true);
-        }).fail(error => reject(error))
+        }).catch(error => reject(error))
       }
     });
   };

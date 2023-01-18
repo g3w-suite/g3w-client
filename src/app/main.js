@@ -1164,7 +1164,7 @@ ApplicationTemplate.Services = {
   floatbar: null
 };
 
-ApplicationTemplate.fail = function({language='en', error }) {
+ApplicationTemplate.catch = function({language='en', error }) {
   layout.loading(false);
   const error_page =  {
     it: {
@@ -1205,7 +1205,7 @@ ApplicationService.init()
       if (error.responseJSON && error.responseJSON.error.data) error = error.responseJSON.error.data;
       else if (error.statusText) error = error.statusText;
     }
-    ApplicationTemplate.fail({
+    ApplicationTemplate.catch({
       language,
       error
     });

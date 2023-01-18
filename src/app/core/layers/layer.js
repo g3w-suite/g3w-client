@@ -562,7 +562,7 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
           };
           resolve(dataTableObject)
         })
-        .fail(err => reject(err))
+        .catch(err => reject(err))
     }
   })
 };
@@ -599,7 +599,7 @@ proto.searchFeatures = function(options={}, params={}){
               data: results
             };
             resolve(results);
-          }).fail(error => reject(error));
+          }).catch(error => reject(error));
         break;
       case 'api':
         const {raw=false, filter:field, suggest={}, unique, queryUrl, ordering} = options;
@@ -655,7 +655,7 @@ proto.search = function(options={}, params={}) {
     if (provider)
       provider.query(options)
         .done(response => resolve(response))
-        .fail(err => reject(err));
+        .catch(err => reject(err));
     else reject(t('sdk.search.layer_not_searchable'));
   })
 };
@@ -668,7 +668,7 @@ proto.query = function(options={}) {
     if (provider)
       provider.query(options)
         .done(response => resolve(response))
-        .fail(err => reject(err));
+        .catch(err => reject(err));
     else reject(t('sdk.search.layer_not_querable'));
   })
 };

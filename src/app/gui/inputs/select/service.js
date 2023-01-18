@@ -55,7 +55,7 @@ proto.getData = function({layer_id= this.state.input.options.layer_id, key=this.
         })
       }
       resolve(values);
-    }).fail(err => reject(err));
+    }).catch(err => reject(err));
   });
 };
 

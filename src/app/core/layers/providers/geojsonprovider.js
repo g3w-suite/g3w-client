@@ -40,7 +40,7 @@ proto.getFeatures = function(options = {}) {
           const features = parseFeatures(response.results);
           resolve(features)
         })
-        .fail(err => reject(err));
+        .catch(err => reject(err));
     }
   })
 };
@@ -51,7 +51,7 @@ proto.getDataTable = function({ page } = {}) {
       .then(() => {
         resolve(this._features)
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

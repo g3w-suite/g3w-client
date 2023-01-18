@@ -175,8 +175,8 @@ proto.getAllFeatures = function(params){
           resolve(features);
         }
       })
-      .fail(()=> reject())
-      .always(()=>GUI.setLoadingContent(false))
+      .catch(()=> reject())
+      .finally(()=>GUI.setLoadingContent(false))
   })
 };
 
@@ -353,10 +353,10 @@ proto.getData = function({start = 0, order = [], length = this.state.pageLength,
             recordsTotal: data.count
           });
         })
-        .fail(err => {
+        .catch(err => {
           GUI.notify.error(t("info.server_error"));
           reject(err);
-        }).always(()=>{
+        }).finally(()=>{
           GUI.setLoadingContent(false);
         })
     }

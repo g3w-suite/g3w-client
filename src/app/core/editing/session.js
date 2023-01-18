@@ -71,7 +71,7 @@ proto._start = function(options={}) {
         this.state.started = true;
         resolve(features);
       })
-      .fail(err => {
+      .catch(err => {
         reject(err);
       });
   });
@@ -87,7 +87,7 @@ proto._getFeatures = function(options={}) {
           promise.then(features => {
             this.state.getfeatures = true;
             resolve(features);
-          }).fail(err => reject(err));
+          }).catch(err => reject(err));
         });
     } else resolve([]);
   })
@@ -408,7 +408,7 @@ proto.commit = function({ids=null, items, relations=true}={}) {
             resolve(commitItems, response)
           } else reject(response);
         })
-        .fail(err => reject(err));
+        .catch(err => reject(err));
     }
   })
 };
@@ -426,7 +426,7 @@ proto._stop = function() {
           this.clear();
           resolve();
         })
-        .fail(err =>  reject(err));
+        .catch(err =>  reject(err));
     else resolve();
   })
 };

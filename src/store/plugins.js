@@ -156,7 +156,7 @@ function PluginsRegistry() {
           depedencypluginlibrariespromises.push(new Promise((resolve, reject) => {
             this._loadScript(script)
               .done(() => resolve())
-              .fail(() => reject())
+              .catch(() => reject())
           }));
         }
         try {
@@ -169,7 +169,7 @@ function PluginsRegistry() {
               this._loadedPluginUrls.push(scriptUrl);
               resolve();
             })
-            .fail(()=>{
+            .catch(()=>{
               this.removeLoadingPlugin(name, false);
               reject();
             })

@@ -82,7 +82,7 @@ proto.init = function(config={}) {
           this.initialized = true;
           resolve(project);
         })
-        .fail(error => reject(error))
+        .catch(error => reject(error))
     } else {
       const project = this.getCurrentProject();
       resolve(project);
@@ -193,7 +193,7 @@ proto.getProject = function(projectGid, options={ reload:false}) {
           // add to project
           resolve(project);
         })
-        .fail(error => reject(error))
+        .catch(error => reject(error))
     }
   })
 };
@@ -258,14 +258,14 @@ proto._getProjectFullConfig = function(projectBaseConfig, options={}) {
                 find_map_theme.layetstree = layerstree;
                 find_map_theme.default = true;
               }
-            }).always(()=>{
+            }).finally(()=>{
               resolve(projectFullConfig)
             })
           }
 
         } else resolve(projectFullConfig);
       })
-      .fail(error => reject(error));
+      .catch(error => reject(error));
   })
 };
 

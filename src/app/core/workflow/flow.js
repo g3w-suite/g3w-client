@@ -50,7 +50,7 @@ function Flow() {
         runMicroTasks && this.queques.micro.run();
         this.onDone(outputs);
       })
-      .fail(error => this.onError(error));
+      .catch(error => this.onError(error));
   };
 
   //check if all step are resolved

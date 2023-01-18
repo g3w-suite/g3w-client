@@ -69,7 +69,7 @@ proto.unlock = function() {
         this.hasFeatureLockByOtherUser = false;
         resolve(response)
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -83,7 +83,7 @@ proto._getFeatures = function(options={}) {
           this.addFeatures(features);
           resolve(features);
         })
-        .fail(err => reject(err))
+        .catch(err => reject(err))
     } else resolve(this._readFeatures());
   })
 };
@@ -138,7 +138,7 @@ proto._commit = function(commitItems) {
       commitItems.lockids = this._lockIds;
       this._provider.commit(commitItems)
         .then(response => resolve(response))
-        .fail(err => reject(err))
+        .catch(err => reject(err))
     } else reject();
   })
 };

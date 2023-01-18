@@ -192,11 +192,11 @@ proto.start = function(options={}) {
           resolve(outputs)
         }, 500) || resolve(outputs);
       })
-      .fail(error => {
+      .catch(error => {
         showUserMessage && this.clearUserMessagesSteps();
         reject(error);
       })
-      .always(()=>{
+      .finally(()=>{
         this.runOnce && this.stop();
       });
     this.emit('start');
@@ -212,14 +212,14 @@ proto.stop = function() {
     // stop child workflow
     this._stopChild()
       // in every case remove child
-      .always(() => {
+      .finally(() => {
         this.removeChild();
         WorkflowsStack.removeAt(this.getStackIndex());
         // call stop flow
         this._flow.stop()
           .then(() => resolve())
-          .fail(err => reject(err))
-          .always(() => this.clearMessages())
+          .catch(err => reject(err))
+          .finally(() => this.clearMessages())
       });
     this.emit('stop');
   })

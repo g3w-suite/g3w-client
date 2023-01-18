@@ -160,9 +160,9 @@ const utils = {
         request.then((response) => {
           DoneRespones.push(response)
         })
-          .fail((err) => {
+          .catch((err) => {
             FailedResponses.push(err)
-          }).always(() => {
+          }).finally(() => {
           requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
           if (requestsLenght === 0)
             resolve({
@@ -385,7 +385,7 @@ const utils = {
             .then(response => {
               resolve(response)
             })
-            .fail(error => reject(error))
+            .catch(error => reject(error))
         : reject('No url')
       })
     },
@@ -409,7 +409,7 @@ const utils = {
                 request
               }) : resolve(response)
             })
-            .fail(error => {
+            .catch(error => {
               reject(error);
             })
         } else if (contentType) {
@@ -426,7 +426,7 @@ const utils = {
               request
             }) : resolve(response)
           })
-            .fail(error => {
+            .catch(error => {
               reject(error);
             })
         } else {
@@ -438,7 +438,7 @@ const utils = {
                 request
               }) : resolve(response)
             })
-            .fail(error => {
+            .catch(error => {
               reject(error)
             })
         }
@@ -464,8 +464,8 @@ const utils = {
         }, TIMEOUT);
         downloadPromise
           .done(()=>resolve())
-          .fail(()=> reject())
-          .always(()=>{
+          .catch(()=> reject())
+          .finally(()=>{
             clearTimeout(timeoutId)
           });
       })

@@ -42,11 +42,11 @@ function ApiService(){
         this.emit(api+'queryend',response);
         return response;
       })
-      .fail(error => {
+      .catch(error => {
         this.emit(api+'queryfail', error);
         return error;
       })
-      .always(() => this._decrementLoaders());
+      .finally(() => this._decrementLoaders());
     }
     else return reject();
   };

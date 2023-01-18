@@ -37,9 +37,9 @@ function TableLayer(config={}, options={}) {
             promise.then(features => {
               this.emit('getFeatures', features);
               return resolve(features);
-            }).fail(err => reject(err))
+            }).catch(err => reject(err))
           })
-          .fail(err => reject(err));
+          .catch(err => reject(err));
       });
     },
     commit(commitItems) {
@@ -51,9 +51,9 @@ function TableLayer(config={}, options={}) {
                 response && response.result && this.syncSelectionFilterFeatures(commitItems);
                 resolve(response)
               })
-              .fail(err => reject(err))
+              .catch(err => reject(err))
           })
-          .fail((err) => reject(err));
+          .catch((err) => reject(err));
       })
     },
     setColor(color) {
@@ -106,7 +106,7 @@ function TableLayer(config={}, options={}) {
           resolve(this);
           this.setReady(true);
         })
-        .fail(err => {
+        .catch(err => {
           reject(this);
           this.setReady(false);
         })
@@ -241,7 +241,7 @@ proto.unlock = function() {
   return new Promise((resolve, reject) => {
     this._featuresstore.unlock()
       .then(() => resolve())
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   });
 };
 
@@ -303,7 +303,7 @@ proto.getEditingConfig = function(options={}) {
     const provider = this.getProvider('data');
     provider.getConfig(options)
       .then(config => resolve(config))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   });
 };
 
@@ -318,7 +318,7 @@ proto.getWidgetData = function(options) {
   return new Promise((resolve, reject) => {
     provider.getWidgetData(options)
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

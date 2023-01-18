@@ -145,7 +145,7 @@ proto.getConfig = function() {
     }
     $.get(url)
       .then(config => resolve(config))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -164,7 +164,7 @@ proto.unlock = function() {
   return new Promise((resolve, reject) => {
     $.post(unlockUrl)
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -180,7 +180,7 @@ proto.commit = function(commitItems) {
       contentType: "application/json"
     })
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   });
 };
 
@@ -300,7 +300,7 @@ proto.getFeatures = function(options={}, params={}) {
             count: vector.count
           })
         })
-        .fail(err => reject(err))
+        .catch(err => reject(err))
     }
   })
 };
@@ -323,14 +323,14 @@ proto._loadLayerData = function(mode, customUrlParameters) {
             this.emit('loadingvectorlayersend');
             this.setReady(true);
           })
-          .fail(() =>  {
+          .catch(() =>  {
             this._layers.forEach(layer => layer.vector = null);
             reject();
             this.emit('errorloadingvectorlayersend');
             this.setReady(false);
           })
       })
-      .fail(() => {
+      .catch(() => {
         this.setReady(false);
         this.emit('errorloadingvectorlayersend');
         reject();
@@ -382,7 +382,7 @@ proto.loadAllVectorsData = function(layerCodes) {
 
     $.when.apply(this, vectorDataRequests)
       .then(() => resolve(layerCodes))
-      .fail(() => reject());
+      .catch(() => reject());
   })
 };
 
@@ -429,7 +429,7 @@ proto._createVectorLayerFromConfig = function(layerCode) {
         if (layerConfig.style) vectorLayer.setStyle(layerConfig.style);
         resolve(vectorLayer);
       })
-      .fail(() => reject());
+      .catch(() => reject());
   })
 };
 
@@ -441,7 +441,7 @@ proto._setupVectorLayer = function(layerCode) {
         layerConfig.vector = vectorLayer;
         resolve(layerCode);
       })
-      .fail(() => reject());
+      .catch(() => reject());
   })
 };
 
@@ -455,7 +455,7 @@ proto._loadVectorData = function(vectorLayer, bbox) {
       vectorLayer.setData(vectorDataResponse.vector.data);
       if (this._) return vectorDataResponse;
     })
-    .fail(() => {
+    .catch(() => {
       return false;
     })
 };
@@ -492,7 +492,7 @@ proto.lockFeatures = function(layerName) {
         this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
         resolve(data);
       })
-      .fail(() => reject());
+      .catch(() => reject());
   })
 };
 
@@ -500,7 +500,7 @@ proto._getVectorLayerConfig = function(layerApiField) {
   return new Promise((resolve, reject)=> {
     $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
       .done(data => resolve(data))
-      .fail(() => reject());
+      .catch(() => reject());
   })
 };
 
@@ -510,7 +510,7 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
    const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
    $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
      .done(data => resolve(data))
-     .fail(() => reject());
+     .catch(() => reject());
  })
 };
 

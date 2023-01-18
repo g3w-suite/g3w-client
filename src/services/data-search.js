@@ -44,7 +44,7 @@ function SearchService(){
           resolve({
             data
           })
-        }).fail(reject)
+        }).catch(reject)
       });
       promisesSearch.push(promise);
     }

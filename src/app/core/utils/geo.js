@@ -1003,8 +1003,8 @@ const geoutils = {
             feature_count
           }).then(response => {
             queryResponses.push(response)
-          }).fail(error => queryErrors.push(error))
-            .always(() => {
+          }).catch(error => queryErrors.push(error))
+            .finally(() => {
               layersLenght -= 1;
               if (layersLenght === 0)
                 queryErrors.length === layers.length ? reject(queryErrors) : resolve(queryResponses)
@@ -1050,8 +1050,8 @@ const geoutils = {
             layers,
             feature_count
           }).then(response => queryResponses.push(response))
-            .fail(error => queryErrors.push(error))
-            .always(() => {
+            .catch(error => queryErrors.push(error))
+            .finally(() => {
               layersLength -= 1;
               if (layersLength === 0)
                 queryErrors.length === numberRequestd ? reject(queryErrors) : resolve(queryResponses)
@@ -1069,8 +1069,8 @@ const geoutils = {
               filterConfig,
               feature_count
             }).then(response => queryResponses.push(response))
-              .fail(error => queryErrors.push(error))
-              .always(() => {
+              .catch(error => queryErrors.push(error))
+              .finally(() => {
                 layersLenght -= 1;
                 if (layersLenght === 0){
                   queryErrors.length === layers.length ? reject(queryErrors) : resolve(queryResponses)
@@ -1115,8 +1115,8 @@ const geoutils = {
             size,
             layers
           }).then(response => queryResponses.push(response))
-            .fail(error => queryErrors.push(error))
-            .always(() => {
+            .catch(error => queryErrors.push(error))
+            .finally(() => {
               layersLength -= 1;
               if (layersLength === 0) {
                 queryErrors.length === numberOfRequests ? reject(queryErrors) : resolve(queryResponses);
@@ -1136,10 +1136,10 @@ const geoutils = {
             resolution,
           }).then(response => {
             queryResponses.push(response)
-          }).fail(error =>{
+          }).catch(error =>{
             rejectedResponses+=1;
             queryErrors.push(error);
-          }).always(() => {
+          }).finally(() => {
             layersLength -= 1;
             if (layersLength === 0) {
               rejectedResponses < layers.length ? resolve(queryResponses) : reject(queryErrors)

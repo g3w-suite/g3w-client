@@ -555,7 +555,7 @@ proto.getQueryLayerByCoordinates = function({layer, coordinates} = {}) {
       mapProjection,
       resolution
     }).then((response) => resolve(response))
-      .fail(err => reject(err))
+      .catch(err => reject(err))
   })
 };
 
@@ -569,7 +569,7 @@ proto.getQueryLayerPromiseByCoordinates = function({layer, coordinates} = {}) {
       resolution
     }).then((response) => {
       resolve(response)
-    }).fail((error)=> {
+    }).catch((error)=> {
       reject(error);
     })
   })

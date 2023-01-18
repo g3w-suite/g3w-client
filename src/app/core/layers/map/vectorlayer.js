@@ -92,7 +92,7 @@ proto.getFeatures = function(options={}) {
         this.addFeatures(features);
         resolve(features);
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

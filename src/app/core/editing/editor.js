@@ -124,9 +124,9 @@ proto._getFeatures = function(options={}) {
             this._addFeaturesFromServer(features);
             this._allfeatures = !options.filter;
             return resolve(features);
-          }).fail(err => reject(err))
+          }).catch(err => reject(err))
         })
-        .fail(err => reject(err));
+        .catch(err => reject(err));
   });
 };
 
@@ -229,9 +229,9 @@ proto.commit = function(commitItems) {
             this.applyCommitResponse(response, relations);
             resolve(response);
           })
-          .fail(err => reject(err))
+          .catch(err => reject(err))
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -248,10 +248,10 @@ proto.start = function(options={}) {
             //if all ok set to started
             this._started = true;
           })
-          .fail(err => reject(err))
+          .catch(err => reject(err))
 
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -289,7 +289,7 @@ proto.stop = function() {
         this.clear();
         resolve(response);
       })
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

@@ -55,11 +55,11 @@ export default {
             //changeProject is a setter so it return a promise
             promise
               .then(project=>document.title = project.state.html_page_title)
-              .fail(() => {
+              .catch(() => {
                 GUI.notify.error("<h4>" + t("error_map_loading") + "</h4>" +
                   "<h5>"+ t("check_internet_connection_or_server_admin") + "</h5>");
               })
-              .always(() => {
+              .finally(() => {
                 GUI.showFullModal({
                   show: false
                 });

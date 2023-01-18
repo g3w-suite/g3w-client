@@ -49,8 +49,8 @@ proto.query = function(options={}, params = {}) {
           data: featuresForLayers
         });
       })
-      .fail(e => reject(e))
-      .always(()=> {
+      .catch(e => reject(e))
+      .finally(()=> {
         clearTimeout(timeoutKey)
       });
   })
@@ -61,7 +61,7 @@ proto._post = function(url, params) {
   return new Promise((resolve, reject) => {
     $.post(url, params)
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -74,7 +74,7 @@ proto._get = function(url, params) {
     url = url + '?' + urlParams;
     $.get(url)
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 
@@ -135,7 +135,7 @@ proto._doRequest = function(filter, params = {}, layers, reproject=true) {
       const queryPromise = httpMethod === 'GET' && filterType !== 'geometry' ? this._get(url, params) : this._post(url, params);
       queryPromise.then(response => {
         resolve(response)
-      }).fail(err => {
+      }).catch(err => {
         if (err.status === 200) resolve(err.responseText);
         else reject(err)
       })

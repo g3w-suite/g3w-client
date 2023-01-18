@@ -171,7 +171,7 @@ const ViewportService = function() {
             // check if view name is map
             if (viewName === 'map') this._defaultMapComponent = component; // set de default component to map
           })
-          .fail(err => console.log(err));
+          .catch(err => console.log(err));
       }
     })
   };

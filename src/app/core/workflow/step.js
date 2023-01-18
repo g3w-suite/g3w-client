@@ -70,7 +70,7 @@ proto.run = function(inputs, context, queques) {
             this.stop();
             resolve(outputs);
           })
-          .fail(err => {
+          .catch(err => {
             this.stop();
             reject(err);
           })
