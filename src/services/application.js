@@ -494,12 +494,12 @@ const ApplicationService = function() {
       }, TIMEOUT);
       //first time l'application service is not ready
       if (!ApplicationState.ready) {
-        $.when(
-          // register project
-          ProjectsRegistry.init(this._config),
-          // inizialize api service
-          ApiService.init(this._config)
-        ).then(() => {
+       Promise.allSettled([
+         // register project
+         ProjectsRegistry.init(this._config),
+         // initialize api service
+         ApiService.init(this._config)
+       ]).then(() => {
           // clear TIMEOUT
           clearTimeout(timeout);
           //clear
