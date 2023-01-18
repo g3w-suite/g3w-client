@@ -62,30 +62,30 @@ proto.getProvider = function() {
 
 // method unlock features
 proto.unlock = function() {
-  const d = $.Deferred();
-  this._provider.unlock()
-    .then(response => {
-      // set to false when featuresstore is unlocked
-      this.hasFeatureLockByOtherUser = false;
-      d.resolve(response)
-    })
-    .fail(err => d.reject(err));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._provider.unlock()
+      .then(response => {
+        // set to false when featuresstore is unlocked
+        this.hasFeatureLockByOtherUser = false;
+        resolve(response)
+      })
+      .fail(err => reject(err));
+  })
 };
 
 // method get all features from server or attribute _features
 proto._getFeatures = function(options={}) {
-  const d = $.Deferred();
-  if (this._provider) {
-    this._provider.getFeatures(options)
-      .then(options => {
-        const features = this._filterFeaturesResponse(options);
-        this.addFeatures(features);
-        d.resolve(features);
-      })
-      .fail(err => d.reject(err))
-  } else d.resolve(this._readFeatures());
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (this._provider) {
+      this._provider.getFeatures(options)
+        .then(options => {
+          const features = this._filterFeaturesResponse(options);
+          this.addFeatures(features);
+          resolve(features);
+        })
+        .fail(err => reject(err))
+    } else resolve(this._readFeatures());
+  })
 };
 
 //filter features to add
@@ -133,14 +133,14 @@ proto._readFeatures = function() {
 };
 
 proto._commit = function(commitItems) {
-  const d = $.Deferred();
-  if (commitItems && this._provider) {
-    commitItems.lockids = this._lockIds;
-    this._provider.commit(commitItems)
-      .then(response => d.resolve(response))
-      .fail(err => d.reject(err))
-  } else d.reject();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (commitItems && this._provider) {
+      commitItems.lockids = this._lockIds;
+      this._provider.commit(commitItems)
+        .then(response => resolve(response))
+        .fail(err => reject(err))
+    } else reject();
+  })
 };
 
 // get feature from id
