@@ -65,33 +65,32 @@ proto.unregister = function(){
 };
 
 proto._start = function(options={}) {
-  const d = $.Deferred();
-  this._editor.start(options)
-    .then(features => {
-      this.state.started = true;
-      d.resolve(features);
-    })
-    .fail(err => {
-      d.reject(err);
-    });
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._editor.start(options)
+      .then(features => {
+        this.state.started = true;
+        resolve(features);
+      })
+      .fail(err => {
+        reject(err);
+      });
+  });
 };
 
 //method to getFeature from server by editor
 proto._getFeatures = function(options={}) {
-  const d = $.Deferred();
-  if (!this._allfeatures) {
-    this._allfeatures = !options.filter;
-    this._editor.getFeatures(options)
-      .then(promise => {
-        promise.then(features => {
-          this.state.getfeatures = true;
-          d.resolve(features);
-        }).fail(err => d.reject(err));
-      });
-  } else d.resolve([]);
-
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (!this._allfeatures) {
+      this._allfeatures = !options.filter;
+      this._editor.getFeatures(options)
+        .then(promise => {
+          promise.then(features => {
+            this.state.getfeatures = true;
+            resolve(features);
+          }).fail(err => reject(err));
+        });
+    } else resolve([]);
+  })
 };
 
 proto.isStarted = function() {
@@ -110,21 +109,21 @@ proto.setEditor = function(editor) {
 // in history instance and feature store
 proto.save = function(options={}) {
   //fill history
-  const d = $.Deferred();
-  // add temporary modify to history
-  if (this._temporarychanges.length) {
-    const uniqueId = options.id || Date.now();
-    this._history.add(uniqueId, this._temporarychanges)
-      .then(() => {
-        // clear to temporary changes
-        this._temporarychanges = [];
-        // resolve if uniqeu id
-        d.resolve(uniqueId);
-      });
-  } else {
-    d.resolve(null);
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    // add temporary modify to history
+    if (this._temporarychanges.length) {
+      const uniqueId = options.id || Date.now();
+      this._history.add(uniqueId, this._temporarychanges)
+        .then(() => {
+          // clear to temporary changes
+          this._temporarychanges = [];
+          // resolve if uniqeu id
+          resolve(uniqueId);
+        });
+    } else {
+      resolve(null);
+    }
+  })
 };
 
 proto.updateTemporaryChanges = function(feature) {
@@ -213,12 +212,12 @@ proto.push = function(New, Old) {
 
 // method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
-  const d = $.Deferred();
-  this._editor.revert().then(()=>{
-    this._history.clear();
-    d.resolve();
-  });
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._editor.revert().then(()=>{
+      this._history.clear();
+      resolve();
+    });
+  })
 };
 
 // handle temporary changes of layer
@@ -244,17 +243,17 @@ proto._filterChanges = function() {
 proto.rollback = function(changes) {
   if (changes) return this._editor.rollback(changes);
   else {
-    const d = $.Deferred();
-    const changes = this._filterChanges();
-    this._editor.rollback(changes.own).then(()=>{
-      const {dependencies} = changes;
-      for (const id in dependencies) {
-        SessionsRegistry.getSession(id).rollback(dependencies[id]);
-      }
-      d.resolve(dependencies);
-    });
-    this._temporarychanges = [];
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      const changes = this._filterChanges();
+      this._editor.rollback(changes.own).then(()=>{
+        const {dependencies} = changes;
+        for (const id in dependencies) {
+          SessionsRegistry.getSession(id).rollback(dependencies[id]);
+        }
+        resolve(dependencies);
+      });
+      this._temporarychanges = [];
+    })
   }
 };
 
@@ -380,39 +379,38 @@ proto.set3DGeometryType = function({layerId=this.getId(), commitItems}={}){
 };
 
 proto.commit = function({ids=null, items, relations=true}={}) {
-  const d = $.Deferred();
-  let commitItems;
-  if (ids) {
-    commitItems = this._history.commit(ids);
-    this._history.clear(ids);
-  } else {
-    if (items) commitItems = items;
-    else {
-      commitItems = this._history.commit();
-      commitItems = this._serializeCommit(commitItems);
+  return new Promise((resolve, reject) => {
+    let commitItems;
+    if (ids) {
+      commitItems = this._history.commit(ids);
+      this._history.clear(ids);
+    } else {
+      if (items) commitItems = items;
+      else {
+        commitItems = this._history.commit();
+        commitItems = this._serializeCommit(commitItems);
+      }
+      if (!relations) commitItems.relations = {};
+      this._editor.commit(commitItems)
+        .then(response => {
+          if (response && response.result) {
+            const {response:data} = response;
+            const {new_relations={}} = data;
+            for (const id in new_relations) {
+              const session = SessionsRegistry.getSession(id);
+              session.getEditor().applyCommitResponse({
+                response: new_relations[id],
+                result: true
+              })
+            }
+            this._history.clear();
+            this.saveChangesOnServer(commitItems);
+            resolve(commitItems, response)
+          } else reject(response);
+        })
+        .fail(err => reject(err));
     }
-    if (!relations) commitItems.relations = {};
-    this._editor.commit(commitItems)
-      .then(response => {
-        if (response && response.result) {
-          const {response:data} = response;
-          const {new_relations={}} = data;
-          for (const id in new_relations) {
-            const session = SessionsRegistry.getSession(id);
-            session.getEditor().applyCommitResponse({
-              response: new_relations[id],
-              result: true
-            })
-          }
-          this._history.clear();
-          this.saveChangesOnServer(commitItems);
-          d.resolve(commitItems, response)
-        } else d.reject(response);
-      })
-      .fail(err => d.reject(err));
-  }
-  return d.promise();
-
+  })
 };
 
 proto._canStop = function() {
@@ -421,16 +419,16 @@ proto._canStop = function() {
 
 //stop session
 proto._stop = function() {
-  const d = $.Deferred();
-  if (this._canStop())
-    this._editor.stop()
-      .then(() => {
-        this.clear();
-        d.resolve();
-      })
-      .fail(err =>  d.reject(err));
-  else d.resolve();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (this._canStop())
+      this._editor.stop()
+        .then(() => {
+          this.clear();
+          resolve();
+        })
+        .fail(err =>  reject(err));
+    else resolve();
+  })
 };
 
 // clear all things bind to session
