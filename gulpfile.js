@@ -322,6 +322,29 @@ gulp.task('browser-sync', function() {
 });
 
 /**
+ * Make sure that core client plugins are there
+ * 
+ * [submodule "src/plugins/qplotly"]     <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
+ * [submodule "src/plugins/qtimeseries"] <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
+ * [submodule "src/plugins/editing"]     <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
+ */
+gulp.task('clone:default_plugins', function() {
+  const { execSync } = require('child_process');
+  return new Promise(async done => {
+    for (const pluginName of ['editing', 'qplotly', 'qtimeseries']) {
+      if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
+        execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`);
+      }
+      /** @TODO understand why the terminal hangs here (now you must run this 3 times to make it work) */
+      // if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
+      //   execSync(`npx gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js browserify`);  
+      // }
+    }
+    done();
+  });
+});
+
+/**
  * Ask the developer which plugins wants to deploy
  */
 gulp.task('select-plugins', function() {
@@ -382,7 +405,7 @@ gulp.task('deploy-plugins', function() {
 /**
  * Deploy local developed plugins (src/plugins)
  */
-gulp.task('build:plugins', (done) => runSequence('select-plugins', 'deploy-plugins', done));
+gulp.task('build:plugins', (done) => runSequence('clone:default_plugins', 'select-plugins', 'deploy-plugins', done));
 
 /**
  * Compile and deploy local developed client file assets (static and templates)
@@ -399,6 +422,7 @@ gulp.task('build', done => runSequence(
   'production',
   'clean:admin',
   'clean:overrides',
+  'clone:default_plugins',
   'build:client',
   done
   )
@@ -413,6 +437,7 @@ gulp.task('build', done => runSequence(
 gulp.task('dev', done => runSequence(
   'clean:admin',
   'clean:overrides',
+  'clone:default_plugins',
   'build:client',
   'browser-sync',
   done
