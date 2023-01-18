@@ -141,15 +141,11 @@ const utils = {
   falsefnc(){return true},
 
   resolve(value){
-    const d = $.Deferred();
-    d.resolve(value);
-    return d.promise();
+    return Promise.resolve(value);
   },
 
   reject(value){
-    const d = $.Deferred();
-    d.reject(value);
-    return d.promise();
+    return Promise.reject(value)
   },
 
   getValueFromG3WObjectEvent() {
@@ -157,25 +153,25 @@ const utils = {
   },
   getAjaxResponses(listRequests = []) {
     let requestsLenght = listRequests.length;
-    const d = $.Deferred();
-    const DoneRespones = [];
-    const FailedResponses = [];
-    listRequests.forEach((request) => {
-      request.then((response) => {
-        DoneRespones.push(response)
-      })
-      .fail((err) => {
-        FailedResponses.push(err)
-      }).always(() => {
-        requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
-        if (requestsLenght === 0)
-          d.resolve({
-            done: DoneRespones,
-            fail: FailedResponses
-          })
-      })
-    });
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      const DoneRespones = [];
+      const FailedResponses = [];
+      listRequests.forEach((request) => {
+        request.then((response) => {
+          DoneRespones.push(response)
+        })
+          .fail((err) => {
+            FailedResponses.push(err)
+          }).always(() => {
+          requestsLenght = requestsLenght > 0 ? requestsLenght - 1: requestsLenght;
+          if (requestsLenght === 0)
+            resolve({
+              done: DoneRespones,
+              fail: FailedResponses
+            })
+        })
+      });
+    })
   },
   trimValue: value => value.replace(/ /g,''),
   /**
