@@ -409,9 +409,7 @@ const utils = {
                 request
               }) : resolve(response)
             })
-            .catch(error => {
-              reject(error);
-            })
+            .fail(error => reject(error))
         } else if (contentType) {
           $.ajax({
             type: 'POST',
@@ -425,10 +423,7 @@ const utils = {
               status,
               request
             }) : resolve(response)
-          })
-            .catch(error => {
-              reject(error);
-            })
+          }).fail(error => reject(error))
         } else {
           $.post(url, data)
             .then((response, status, request) => {
@@ -438,9 +433,7 @@ const utils = {
                 request
               }) : resolve(response)
             })
-            .catch(error => {
-              reject(error)
-            })
+            .fail(error => reject(error))
         }
       })
     },
