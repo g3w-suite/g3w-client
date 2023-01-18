@@ -11,13 +11,13 @@ function ApiService(){
   this._config = null;
   this._baseUrl = null;
   this.init = function(config={}) {
-    const d = $.Deferred();
-    this._config = config;
-    // prende l'url base delle api dal config dell'applicazione
-    this._baseUrl = config.urls.api;
-    this._apiEndpoints = config.urls.apiEndpoints;
-    d.resolve();
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      this._config = config;
+      // prende l'url base delle api dal config dell'applicazione
+      this._baseUrl = config.urls.api;
+      this._apiEndpoints = config.urls.apiEndpoints;
+      resolve();
+    })
   };
   let howManyAreLoading = 0;
   this._incrementLoaders = function(){
