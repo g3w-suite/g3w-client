@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: gui/navbar/navbaritems.js@v3.4
+ * @file
+ * @since v3.7
  */
 const { base, inherit } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');

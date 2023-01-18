@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/map/vue/components/addlayer.html@v3.4 -->
-<!-- gui/map/vue/components/addlayer.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <!-- Modal -->
@@ -21,7 +22,11 @@
           </div>
           <layerspositions @layer-position-change="setLayerMapPosition($event)"></layerspositions>
           <p v-t="'mapcontrols.add_layer_control.select_color'" style="font-weight: 700;"></p>
-          <chrome-picker v-model="layer.color" @change-color="onChangeColor" style="width:100%; margin:auto"></chrome-picker>
+          <chrome-picker
+            v-model="layer.color"
+            @input="onChangeColor"
+            style="width:100%; margin:auto"
+          ></chrome-picker>
           <bar-loader :loading="loading"></bar-loader>
           <form id="addcustomlayer">
             <input ref="input_file" type="file" title=" " @change="onAddLayer($event)" :accept="accepted_extension">
@@ -72,15 +77,16 @@
 </template>
 
 <script>
-import {EPSG} from 'app/constant';
-const {XHR} = require('core/utils/utils');
-const Projections = require('g3w-ol/projection/projections');
-const {createVectorLayerFromFile, createStyleFunctionToVectorLayer} = require('core/utils/geo');
+import { Chrome as ChromeComponent } from 'vue-color';
+
+import { EPSG } from 'app/constant';
+
+const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
+
 const SUPPORTED_FORMAT = ['zip','geojson', 'GEOJSON',  'kml', 'kmz', 'KMZ', 'KML', 'json', 'gpx', 'gml', 'csv'];
 const CSV_SEPARATORS = [',', ';'];
 
 //Vue color componet
-const ChromeComponent = VueColor.Chrome;
 ChromeComponent.mounted = async function() {
   await this.$nextTick();    // remove all the tihing that aren't useful
   $('.vue-color__chrome__toggle-btn').remove();

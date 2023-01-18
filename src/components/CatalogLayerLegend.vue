@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- app/gui/catalog/vue/components/layerlegend.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div v-show="show" class="layer-legend" @click.stop.prevent="">
@@ -48,7 +50,7 @@
         return this.layer.legend;
       },
       show(){
-        return this.layer.visible && this.legend.show && (this.legendplace === 'toc' || this.legendplace === 'tab' && this.layer.categories);
+        return this.layer.expanded && this.layer.visible && (this.legendplace === 'toc' || this.legendplace === 'tab' && this.layer.categories);
       },
       showCategoriesCheckBox(){
         return this.categories.length > 1;

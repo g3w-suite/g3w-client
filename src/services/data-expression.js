@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/data/expression/service.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 const { base, inherit, XHR } = require('core/utils/utils');

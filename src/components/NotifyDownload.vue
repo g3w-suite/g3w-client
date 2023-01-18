@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/notifications/download/vue/download.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template functional>
   <div id="download_notification" v-download.show title="DOWNLOAD" class="skin-color">

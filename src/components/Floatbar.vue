@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/floatbar/floatbar.html@v3.4 -->
-<!-- gui/floatbar/floatbar.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <aside class="control-sidebar control-sidebar-light" >

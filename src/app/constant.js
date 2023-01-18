@@ -1,9 +1,9 @@
 /**
- * This file contains all contants values used on application
+ * @file all contants values used on application
  */
 
 /**
- * TODO: we can safely import "version" from "package.json" when we will use native ES Modules
+ * @TODO we can safely import "version" from "package.json" when we will use native ES Modules
  */
 // import { version } from '../../package.json';
 import version from '../version';
@@ -70,7 +70,7 @@ export const EPSG = [
 export const G3W_FID = 'g3w_fid'; 
 
 /**
- * ORIGINAL SOURCE: core/layers/filter/operators::OPERATORS@v3.6
+ * @since v3.5
  */
 export const FILTER_OPERATORS =  {
   gte: '>=',
@@ -88,7 +88,7 @@ export const FILTER_OPERATORS =  {
 };
 
 /**
- * ORIGINAL SOURCE: core/layers/filter/operators::EXPRESSION_OPERATORS@v3.6
+ * @since v3.5
  */
 export const FILTER_EXPRESSION_OPERATORS = {
   lte: '<=',
@@ -185,7 +185,7 @@ export const MAP_SETTINGS = {
 };
 
 /**
- * ORIGINAL SOURCE: gui/print/formats::scale@v3.4
+ * @since v3.5
  */
 export const PRINT_FORMATS = [
   {
@@ -199,12 +199,12 @@ export const PRINT_FORMATS = [
 ];
 
 /**
- * ORIGINAL SOURCE: gui/print/dpis::scale@v3.4
+ * @since v3.5
  */
 export const PRINT_RESOLUTIONS = [150, 300];
 
 /**
- * ORIGINAL SOURCE: gui/print/printconfig::scale@v3.4
+ * @since v3.5
  */
 export const PRINT_SCALES = [
   {
@@ -311,12 +311,12 @@ export const QUERY_POINT_TOLERANCE = {
 };
 
 /**
- * ORIGINAL SOURCE: gui/search/vue/constants::ALLVALUE@v3.6
+ * @since v3.5
  */
 export const SEARCH_ALLVALUE = '__G3W_ALL__';
 
 /**
- * ORIGINAL SOURCE: gui/search/vue/constants::RETURN_TYPES@v3.6
+ * @since v3.5
  */
 export const SEARCH_RETURN_TYPES = ['data', 'search'];
 
@@ -330,7 +330,7 @@ export const TOC_LAYERS_INIT_STATUS = 'not_collapsed';
 export const TOC_THEMES_INIT_STATUS = 'collapsed';
 
 /**
- * ORIGINAL SOURCE: gui/constraints::viewport@v3.4
+ * @since v3.5
  */
 export const VIEWPORT = {
   resize: {

@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/querybuilder/vue/g3w-search-querybuilder.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <li>

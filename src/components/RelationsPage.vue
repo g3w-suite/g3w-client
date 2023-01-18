@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/relations/vue/relationspage.html@v3.4 -->
-<!-- gui/relations/vue/relationspage.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="query-relations-page">

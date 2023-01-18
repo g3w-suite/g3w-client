@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @since v3.7
+ */
+
 import ApplicationState from 'store/application-state';
 import { watch, unwatch } from 'directives/utils';
 
@@ -5,9 +10,6 @@ const { tPlugin } = require('core/i18n/i18n.service');
 
 const attr = 'g3w-v-t-plugin-id';
 
-/**
- * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
- */
 export default {
   bind(el, binding) {
     const innerHTML = el.innerHTML;

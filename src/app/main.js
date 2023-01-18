@@ -1,5 +1,11 @@
-// TODO: check if this still useful nowdays (IE 11 ?)
-// add babel runtime support for compiled/transpiled async functions
+// Backward compatibilies with old G3W-CLIENT plugins (eg. window variables)
+import '../deprecated';
+
+/**
+ * Add babel runtime support for compiled/transpiled async functions
+ * 
+ * @TODO check if this still useful nowdays (IE 11 ?)
+ */
 import "regenerator-runtime";
 
 //import core
@@ -105,7 +111,7 @@ Vue.filter('t', value => t(value));
 Vue.filter('tPlugin', value => value !== null ? tPlugin(value) : '');
 
 /**
- * Install gloabl directives
+ * Install global directives
  *
  * ORIGINAL SOURCE: src/app/gui/vue/vue.directives.js@v3.6
  */
@@ -122,6 +128,12 @@ Vue.directive("t-plugin", vTPlugin);
 Vue.directive("plugins", vPlugins);
 Vue.directive("online", vOnline);
 Vue.directive("download", vDownload);
+
+
+/**
+ * Install global plugins
+ */
+Vue.use(window.VueCookie);
 
 /**
  * Vue 2 Plugin used to add global-level functionality to Vue
@@ -254,7 +266,9 @@ Vue.use({
         crop: "fas fa-crop-alt",
         exit: "fas fa-door-open"
       },
-      // TODO: check if deprecated
+      /**
+       * @TODO check if deprecated
+       */
       get() {},
       getInfo() {
         return {
@@ -266,7 +280,9 @@ Vue.use({
         if (added) this.font[name] = className;
         return added;
       },
-      // TODO: check if deprecated
+      /**
+       * @TODO check if deprecated
+       */
       getInfoString() {},
       getFontClass(type) {
         return typeof this.font[type] !== "undefined" ? this.font[type] : '';

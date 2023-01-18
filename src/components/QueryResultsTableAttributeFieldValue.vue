@@ -1,5 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/queryresults/vue/components/tableattributefieldvalue.vue@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
     <g3w-vue v-if="isVue(field)" :feature="feature" :state="field"></g3w-vue>

@@ -1,5 +1,6 @@
 /**
- * ORIGINAL SOURCE: src/app/core/history_router.js@v3.4
+ * @file
+ * @since v3.6
  */
 
 const { inherit, base, Base64 } = require('core/utils/utils');

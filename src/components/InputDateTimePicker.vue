@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- gui/inputs/datetimepicker/vue/datetimepicker.html@v3.4 -->
-<!-- gui/inputs/datetimepicker/vue/datetimepicker.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <baseinput :state="state">
