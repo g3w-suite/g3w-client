@@ -58,32 +58,31 @@ proto.run = function(inputs, context, queques) {
     inputs,
     context
   });
-  const d = $.Deferred();
-  if (this._task) {
-    try {
-      // change state to running
-      this.state.running = true;
-      this._task.setInputs(inputs);
-      this._task.setContext(context);
-      this._task.run(inputs, context, queques)
-        .then(outputs => {
-          this.stop();
-          d.resolve(outputs);
-        })
-        .fail(err => {
-          this.stop();
-          d.reject(err);
-        })
+  return new Promise((resolve, reject) => {
+    if (this._task) {
+      try {
+        // change state to running
+        this.state.running = true;
+        this._task.setInputs(inputs);
+        this._task.setContext(context);
+        this._task.run(inputs, context, queques)
+          .then(outputs => {
+            this.stop();
+            resolve(outputs);
+          })
+          .fail(err => {
+            this.stop();
+            reject(err);
+          })
+      }
+      catch(err) {
+        this.state.error = err;
+        this.state.error = 'Problem ..';
+        this.stop();
+        reject(err);
+      }
     }
-    catch(err) {
-      console.log(err)
-      this.state.error = err;
-      this.state.error = 'Problem ..';
-      this.stop();
-      d.reject(err);
-    }
-  }
-  return d.promise();
+  })
 };
 
 // stop step
