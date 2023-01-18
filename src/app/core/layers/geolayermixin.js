@@ -25,14 +25,14 @@ proto.setup = function(config={}, options={}) {
   // Features that contain
   this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
-  // and adding informations of bbox
+  // and adding information of bbox
   _.extend(this.state, {
     geolayer: config.geometrytype !== "NoGeometry",
     legend: {
       url: null,
       loading: false,
       error: false,
-      show: true
+      show: true /**@deprecated since 3.7. Use expanded attribute instead**/
     },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
