@@ -27,39 +27,38 @@ const proto = ContentsViewerComponent.prototype;
 
 proto.setContent = function(options={}) {
   const {push=false, content, crumb} = options;
-  const d = $.Deferred();
-  // clean the stack every time, sure to have just one component.
-  // Use barstack because it handle the logic og mounting component on DOM
-  if (push) {
-    this.addContent(content,options)
-      .then(() => d.resolve(options));
-  } else {
-    // clear stack
-    this.clearContents()
-      .then(() => {
-        this.addContent(content, options)
-          .then(() => d.resolve(options));
-      })
-  }
-
-  this.setOpen(true);
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    // clean the stack every time, sure to have just one component.
+    // Use barstack because it handle the logic og mounting component on DOM
+    if (push) {
+      this.addContent(content,options)
+        .then(() => resolve(options));
+    } else {
+      // clear stack
+      this.clearContents()
+        .then(() => {
+          this.addContent(content, options)
+            .then(() => resolve(options));
+        })
+    }
+    this.setOpen(true);
+  })
 };
 
 proto.addContent = function(content, options={}) {
-  const d = $.Deferred();
-  // parent element is the internal element
-  options.parent = this.internalComponent.$el;
-  options.append = true;
-  const promise = this.stack.push(content, options);
-  promise.then(() => {
-    // get stack content
-    this.contentsdata = this.stack.state.contentsdata;
-    // update the visibility of the others components
-    this.updateContentVisibility();
-    d.resolve();
-  });
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    // parent element is the internal element
+    options.parent = this.internalComponent.$el;
+    options.append = true;
+    const promise = this.stack.push(content, options);
+    promise.then(() => {
+      // get stack content
+      this.contentsdata = this.stack.state.contentsdata;
+      // update the visibility of the others components
+      this.updateContentVisibility();
+      resolve();
+    });
+  })
 };
 
 // remove content from stack
