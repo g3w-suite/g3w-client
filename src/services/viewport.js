@@ -291,23 +291,23 @@ const ViewportService = function() {
 
   // pull the last element of contentStack
   this.popContent = function() {
-    const d = $.Deferred();
-    // check if content exist compontentStack
-    if (this.state.content.contentsdata.length) {
-      this.recoverDefaultMap();
-      const data = this._components.content.getPreviousContentData();
-      this._prepareContentView(data.options);
-      this._immediateComponentsLayout = false;
-      this._showView('content', data.options);
-      this._components.content.popContent()
-        .then(() => {
-          this.state.secondaryPerc = data.options.perc;
-          this._immediateComponentsLayout = true;
-          this._layout('pop-content');
-          d.resolve(this._components.contentgetCurrentContentData)
-        })
-    } else d.reject();
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      // check if content exist compontentStack
+      if (this.state.content.contentsdata.length) {
+        this.recoverDefaultMap();
+        const data = this._components.content.getPreviousContentData();
+        this._prepareContentView(data.options);
+        this._immediateComponentsLayout = false;
+        this._showView('content', data.options);
+        this._components.content.popContent()
+          .then(() => {
+            this.state.secondaryPerc = data.options.perc;
+            this._immediateComponentsLayout = true;
+            this._layout('pop-content');
+            resolve(this._components.contentgetCurrentContentData)
+          })
+      } else reject();
+    })
   };
 
   /**
@@ -348,22 +348,22 @@ const ViewportService = function() {
 
   // close  content
   this.closeContent = function() {
-    const d = $.Deferred();
-    if (this.isContentOpen()) {
-      //.setFullViewContent(false);
-      this._components.content.removeContent();
-      // close secondary view( return a promise)
-      this.closeSecondaryView('close-content')
-        .then(() => {
-          //recover default map
-          const mapComponent = this.recoverDefaultMap();
-          d.resolve(mapComponent);
-        });
-    } else {
-      const mapComponent = this.recoverDefaultMap();
-      d.resolve(mapComponent);
-    }
-    return d.promise()
+    return new Promise((resolve, reject) => {
+      if (this.isContentOpen()) {
+        //.setFullViewContent(false);
+        this._components.content.removeContent();
+        // close secondary view( return a promise)
+        this.closeSecondaryView('close-content')
+          .then(() => {
+            //recover default map
+            const mapComponent = this.recoverDefaultMap();
+            resolve(mapComponent);
+          });
+      } else {
+        const mapComponent = this.recoverDefaultMap();
+        resolve(mapComponent);
+      }
+    })
   };
 
   this.disableContent = function(disabled){
@@ -402,22 +402,22 @@ const ViewportService = function() {
 
   // close secondary view
   this.closeSecondaryView = function(event=null) {
-    const d = $.Deferred();
-    const secondaryViewComponent = this._components[this._otherView(this.state.primaryView)];
-    if (secondaryViewComponent.clearContents) {
-      secondaryViewComponent.clearContents()
-        .then(() => {
-          this.state.secondaryVisible = false;
-          this.state.secondaryPerc = 0;
-          this._layout(event);
-          Vue.nextTick(() => d.resolve());
-        });
-    } else {
-      this.state.secondaryVisible = false;
-      this._layout(event);
-      Vue.nextTick(() => d.resolve());
-    }
-    return d.promise();
+    return new Promise((resolve, reject) => {
+      const secondaryViewComponent = this._components[this._otherView(this.state.primaryView)];
+      if (secondaryViewComponent.clearContents) {
+        secondaryViewComponent.clearContents()
+          .then(() => {
+            this.state.secondaryVisible = false;
+            this.state.secondaryPerc = 0;
+            this._layout(event);
+            Vue.nextTick(() => resolve());
+          });
+      } else {
+        this.state.secondaryVisible = false;
+        this._layout(event);
+        Vue.nextTick(() => resolve());
+      }
+    })
   };
 
   this.getDefaultViewPerc = function(viewName) {
