@@ -114,36 +114,36 @@ proto._doGetFeaturesRequest = function(options={}) {
 
 // get features from server method
 proto._getFeatures = function(options={}) {
-  const d = $.Deferred();
-  const doRequest = this._doGetFeaturesRequest(options);
-  if (!doRequest) d.resolve();
-  else
-    this._layer.getFeatures(options)
-      .then(promise => {
-        promise.then(features => {
-          this._addFeaturesFromServer(features);
-          this._allfeatures = !options.filter;
-          return d.resolve(features);
-        }).fail(err => d.reject(err))
-      })
-      .fail(err => d.reject(err));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const doRequest = this._doGetFeaturesRequest(options);
+    if (!doRequest) resolve();
+    else
+      this._layer.getFeatures(options)
+        .then(promise => {
+          promise.then(features => {
+            this._addFeaturesFromServer(features);
+            this._allfeatures = !options.filter;
+            return resolve(features);
+          }).fail(err => reject(err))
+        })
+        .fail(err => reject(err));
+  });
 };
 
 // method to revert (cancel) all changes in history and clean session
 proto.revert = function() {
-  const d = $.Deferred();
-  const features  = this._cloneFeatures(this._layer.readFeatures());
-  this._featuresstore.setFeatures(features);
-  d.resolve();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const features  = this._cloneFeatures(this._layer.readFeatures());
+    this._featuresstore.setFeatures(features);
+    resolve();
+  })
 };
 
 proto.rollback = function(changes=[]) {
-  const d = $.Deferred();
-  this._applyChanges(changes, true);
-  d.resolve();
-  return d.promise()
+  return new Promise((resolve, reject) => {
+    this._applyChanges(changes, true);
+    resolve();
+  })
 };
 
 proto.applyChangesToNewRelationsAfterCommit = function(relationsResponse) {
@@ -208,51 +208,51 @@ proto.getLockIds = function(){
 
 // run after server apply changed to origin resource
 proto.commit = function(commitItems) {
-  const d = $.Deferred();
-  // in case of relations bind to new feature
-  const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
-    const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
-    const updates = commitItems.relations[relationId].update.map(relation => relation.id);
-    const add = commitItems.relations[relationId].add.map(relation => relation.id);
-    return {
-      [relationId]:{
-        ids: [...add, ...updates],
-        fatherField: layerRelation.getFatherField(),
-        childField: layerRelation.getChildField()
+  return new Promise((resolve, reject) => {
+    // in case of relations bind to new feature
+    const relations = commitItems.add.length ? Object.keys(commitItems.relations).map(relationId => {
+      const layerRelation = this._layer.getRelations().getRelationByFatherChildren(this._layer.getId(), relationId);
+      const updates = commitItems.relations[relationId].update.map(relation => relation.id);
+      const add = commitItems.relations[relationId].add.map(relation => relation.id);
+      return {
+        [relationId]:{
+          ids: [...add, ...updates],
+          fatherField: layerRelation.getFatherField(),
+          childField: layerRelation.getChildField()
+        }
       }
-    }
-  }) : [];
-  this._layer.commit(commitItems)
-    .then(promise => {
-      promise
-        .then(response => {
-          this.applyCommitResponse(response, relations);
-          d.resolve(response);
-        })
-        .fail(err => d.reject(err))
-    })
-    .fail(err => d.reject(err));
-  return d.promise();
+    }) : [];
+    this._layer.commit(commitItems)
+      .then(promise => {
+        promise
+          .then(response => {
+            this.applyCommitResponse(response, relations);
+            resolve(response);
+          })
+          .fail(err => reject(err))
+      })
+      .fail(err => reject(err));
+  })
 };
 
 //start editing function
 proto.start = function(options={}) {
-  const d = $.Deferred();
-  // load features of layer based on filter type
-  this.getFeatures(options)
-    .then(promise => {
-      promise
-        .then(features => {
-          // the features are already inside featuresstore
-          d.resolve(features);
-          //if all ok set to started
-          this._started = true;
-        })
-        .fail(err => d.reject(err))
+  return new Promise((resolve, reject) => {
+    // load features of layer based on filter type
+    this.getFeatures(options)
+      .then(promise => {
+        promise
+          .then(features => {
+            // the features are already inside featuresstore
+            resolve(features);
+            //if all ok set to started
+            this._started = true;
+          })
+          .fail(err => reject(err))
 
-    })
-    .fail(err => d.reject(err));
-  return d.promise()
+      })
+      .fail(err => reject(err));
+  })
 };
 
 //action to layer
@@ -283,14 +283,14 @@ proto.readEditingFeatures = function(){
 
 // stop editor
 proto.stop = function() {
-  const d = $.Deferred();
-  this._layer.unlock()
-    .then(response => {
-      this.clear();
-      d.resolve(response);
-    })
-    .fail(err => d.reject(err));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._layer.unlock()
+      .then(response => {
+        this.clear();
+        resolve(response);
+      })
+      .fail(err => reject(err));
+  })
 };
 
 //run save layer
