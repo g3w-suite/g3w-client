@@ -32,7 +32,10 @@ proto.setup = function(config={}, options={}) {
       url: null,
       loading: false,
       error: false,
-      show: true /**@deprecated since 3.7. Use expanded attribute instead**/
+     /**
+      * @deprecated since 3.8. Will be removed in 4.x. Use expanded attribute instead
+      */
+      show: true
     },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
