@@ -46,9 +46,7 @@ proto.cleanSearchPanels = function() {
 };
 
 proto.stop = function(){
-  const d = $.Deferred();
-  d.resolve();
-  return d.promise();
+  return Promise.resolve();
 };
 
 proto.addTool = function(searchTool) {
