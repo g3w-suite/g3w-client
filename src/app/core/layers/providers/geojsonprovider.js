@@ -12,51 +12,47 @@ inherit(GEOJSONDataProvider, Provider);
 const proto = GEOJSONDataProvider.prototype;
 
 proto.query = function(options = {}) {
-  const d = $.Deferred();
-  d.resolve([]);
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    resolve([]);
+  })
 };
 
 proto.getFeatures = function(options = {}) {
-  const d = $.Deferred();
-  const url = options.url || this.getLayer().get('source').url;
-  const data = options.data;
-  const projection = options.projection || "EPSG:4326";
-  const mapProjection = options.mapProjection;
-  const parseFeatures = data => {
-    const parser = new ol.format.GeoJSON();
-    return parser.readFeatures(data, {
-      featureProjection: mapProjection,
-      //defaultDataProjection: projection // ol v. 4.5
-      dataProjection: projection
-    });
-  };
-  if (data) {
-    const features = parseFeatures(data);
-    d.resolve(features)
-  } else {
-    $.get({url})
-      .then((response) => {
-        const features = parseFeatures(response.results);
-        d.resolve(features)
-      })
-      .fail((err) => {
-        d.reject(err)
+  return new Promise((resolve, reject) => {
+    const url = options.url || this.getLayer().get('source').url;
+    const data = options.data;
+    const projection = options.projection || "EPSG:4326";
+    const mapProjection = options.mapProjection;
+    const parseFeatures = data => {
+      const parser = new ol.format.GeoJSON();
+      return parser.readFeatures(data, {
+        featureProjection: mapProjection,
+        //defaultDataProjection: projection // ol v. 4.5
+        dataProjection: projection
       });
-  }
-  return d.promise()
+    };
+    if (data) {
+      const features = parseFeatures(data);
+      resolve(features)
+    } else {
+      $.get({url})
+        .then((response) => {
+          const features = parseFeatures(response.results);
+          resolve(features)
+        })
+        .fail(err => reject(err));
+    }
+  })
 };
 
 proto.getDataTable = function({ page } = {}) {
-  const d = $.Deferred();
-  this.getFeatures()
-    .then(() => {
-      d.resolve(this._features)
-    })
-    .fail((err) => {
-      d.reject(err)
-    });
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this.getFeatures()
+      .then(() => {
+        resolve(this._features)
+      })
+      .fail(err => reject(err));
+  })
 };
 
 proto.digestFeaturesForTable = function() {
@@ -64,9 +60,7 @@ proto.digestFeaturesForTable = function() {
     headers : [],
     features: []
   }
-
 };
-
 
 module.exports = GEOJSONDataProvider;
 
