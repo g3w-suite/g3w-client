@@ -31,32 +31,30 @@ function TableLayer(config={}, options={}) {
     // get data from every sources (server, wms, etc..)
     // throught provider related to featuresstore
     getFeatures(options={}) {
-      const d = $.Deferred();
-      this._featuresstore.getFeatures(options)
-        .then(promise => {
-          promise.then(features => {
-            this.emit('getFeatures', features);
-            return d.resolve(features);
-          }).fail(err => d.reject(err))
-        })
-        .fail(err => d.reject(err));
-      return d.promise();
+      return new Promise((resolve, reject) => {
+        this._featuresstore.getFeatures(options)
+          .then(promise => {
+            promise.then(features => {
+              this.emit('getFeatures', features);
+              return resolve(features);
+            }).fail(err => reject(err))
+          })
+          .fail(err => reject(err));
+      });
     },
     commit(commitItems) {
-      const d = $.Deferred();
-      this._featuresstore.commit(commitItems)
-        .then(promise => {
-          promise
-            .then(response => {
-              response && response.result && this.syncSelectionFilterFeatures(commitItems);
-              d.resolve(response)
-            })
-            .fail(err => d.reject(err))
-        })
-        .fail((err)  => {
-          d.reject(err);
-        });
-      return d.promise();
+      return new Promise((resolve, reject) => {
+        this._featuresstore.commit(commitItems)
+          .then(promise => {
+            promise
+              .then(response => {
+                response && response.result && this.syncSelectionFilterFeatures(commitItems);
+                resolve(response)
+              })
+              .fail(err => reject(err))
+          })
+          .fail((err) => reject(err));
+      })
     },
     setColor(color) {
       this._setColor(color)
@@ -240,11 +238,11 @@ proto.isFieldRequired = function(fieldName) {
 
 // unlock editng features
 proto.unlock = function() {
-  const d = $.Deferred();
-  this._featuresstore.unlock()
-    .then(() => d.resolve())
-    .fail(err => d.reject(err));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    this._featuresstore.unlock()
+      .then(() => resolve())
+      .fail(err => reject(err));
+  });
 };
 
 proto._setOtherConfigParameters = function(config) {
@@ -301,12 +299,12 @@ proto.setReady = function(bool=false) {
 
 // get configuration from server
 proto.getEditingConfig = function(options={}) {
-  const d = $.Deferred();
-  const provider = this.getProvider('data');
-  provider.getConfig(options)
-    .then(config => d.resolve(config))
-    .fail(err => d.reject(err));
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const provider = this.getProvider('data');
+    provider.getConfig(options)
+      .then(config => resolve(config))
+      .fail(err => reject(err));
+  });
 };
 
 proto.addEditingConfigFieldOption = function({field, key, value} = {}) {
@@ -317,11 +315,11 @@ proto.addEditingConfigFieldOption = function({field, key, value} = {}) {
 
 proto.getWidgetData = function(options) {
   const provider = this.getProvider('data');
-  const d = $.Deferred();
-  provider.getWidgetData(options)
-    .then(response => d.resolve(response))
-    .fail(err => d.reject(err));
-  return d.promise()
+  return new Promise((resolve, reject) => {
+    provider.getWidgetData(options)
+      .then(response => resolve(response))
+      .fail(err => reject(err));
+  })
 };
 
 proto.getCommitUrl = function() {
