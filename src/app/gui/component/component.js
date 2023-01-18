@@ -264,20 +264,20 @@ proto._setVisible = function() {};
 proto._reload = function() {};
 
 proto.mount = function(parent, append) {
-  const d = $.Deferred();
-  if (!this.internalComponent) this.setInternalComponent();
-  if (append) {
-    const iCinstance = this.internalComponent.$mount();
-    $(parent).append(iCinstance.$el);
-  } else this.internalComponent.$mount(parent);
-  this.internalComponent.$nextTick(() => {
-    $(parent).localize();
-    this.emit('ready');
-    d.resolve(true);
-  });
-  // emit mount event
-  this.emit('mount');
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (!this.internalComponent) this.setInternalComponent();
+    if (append) {
+      const iCinstance = this.internalComponent.$mount();
+      $(parent).append(iCinstance.$el);
+    } else this.internalComponent.$mount(parent);
+    this.internalComponent.$nextTick(() => {
+      $(parent).localize();
+      this.emit('ready');
+      resolve(true);
+    });
+    // emit mount event
+    this.emit('mount');
+  })
 };
 
 proto.unmount = function() {
