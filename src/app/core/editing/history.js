@@ -42,33 +42,33 @@ const proto = History.prototype;
 
 proto.add = function(uniqueId, items) {
   //state object is an array of feature/features changed in a transaction
-  const d = $.Deferred();
-  // before insert an item into the history
-  // check if are at last state step (no redo was done)
-  // in this way avoid starge barch in the history
-  //If we are in the middle of undo, delete all changes in the histroy from the current "state"
-  // so i can create a new history
+  return new Promise((resolve, reject) => {
+      // before insert an item into the history
+      // check if are at last state step (no redo was done)
+      // in this way avoid starge barch in the history
+      //If we are in the middle of undo, delete all changes in the histroy from the current "state"
+      // so i can create a new history
 
-  if (this._current === null) {
-    this._states = [{
-      id: uniqueId,
-      items
-    }]
-  } else {
-    if (this._states.length && this._current < this.getLastState().id)
-      this._states = this._states.filter(state => state.id <= this._current);
-    this._states.push({
-      id: uniqueId,
-      items
-    });
-  }
+      if (this._current === null) {
+        this._states = [{
+          id: uniqueId,
+          items
+        }]
+      } else {
+        if (this._states.length && this._current < this.getLastState().id)
+          this._states = this._states.filter(state => state.id <= this._current);
+        this._states.push({
+          id: uniqueId,
+          items
+        });
+      }
 
-  this._current = uniqueId;
-  this._setState();
-  // return unique id key
-  // it can be used in save relation
-  d.resolve(uniqueId);
-  return d.promise();
+      this._current = uniqueId;
+      this._setState();
+      // return unique id key
+      // it can be used in save relation
+      resolve(uniqueId);
+  })
 };
 
 proto.getRelationStates = function(layerId, {clear=false}={}) {
