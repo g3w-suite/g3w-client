@@ -28,32 +28,32 @@ proto.push = function(content, options={}) {
 
 // remove last component from stack
 proto.pop = function() {
-  const d = $.Deferred();
-  if (this.state.contentsdata.length) {
-    const content = this.state.contentsdata.slice(-1)[0].content;
-    this._unmount(content).then(() => {
-      const content = this.state.contentsdata.pop();
-      d.resolve(content)
-    })
-  } else d.resolve();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (this.state.contentsdata.length) {
+      const content = this.state.contentsdata.slice(-1)[0].content;
+      this._unmount(content).then(() => {
+        const content = this.state.contentsdata.pop();
+        resolve(content)
+      })
+    } else resolve();
+  })
 };
 
 // clear all stack
 proto.clear = function() {
-  const d = $.Deferred();
-  if (this.state.contentsdata.length) {
-    let unmountRequests = [];
-    this.state.contentsdata.forEach((data) => {
-      unmountRequests.push(this._unmount(data.content));
-    });
-    $.when(unmountRequests).then(() => {
-      this.state.contentsdata.splice(0, this.state.contentsdata.length);
-      d.resolve();
-    });
-  }
-  else d.resolve();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (this.state.contentsdata.length) {
+      let unmountRequests = [];
+      this.state.contentsdata.forEach((data) => {
+        unmountRequests.push(this._unmount(data.content));
+      });
+      $.when(unmountRequests).then(() => {
+        this.state.contentsdata.splice(0, this.state.contentsdata.length);
+        resolve();
+      });
+    }
+    else resolve();
+  })
 };
 
 proto.getContentData = function() {
@@ -110,21 +110,21 @@ proto._setDOMContent = function(content, options) {
 
 // Mount component to parent
 proto._setVueContent = function(content, options={}) {
-  const d = $.Deferred();
-  const append = options.append || false;
-  content.mount(this._parent, append)
-  .then(() => {
-    $(this._parent).localize();
-    // Insert the content into the array with the following attributes:
-    // content: component object
-    // options: es. title, perc etc ...
-    this.state.contentsdata.push({
-      content,
-      options
-    });
-    d.resolve(content);
-  });
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const append = options.append || false;
+    content.mount(this._parent, append)
+      .then(() => {
+        $(this._parent).localize();
+        // Insert the content into the array with the following attributes:
+        // content: component object
+        // options: es. title, perc etc ...
+        this.state.contentsdata.push({
+          content,
+          options
+        });
+        resolve(content);
+      });
+  })
 };
 
 // Check duplicate Vue Content
@@ -143,16 +143,16 @@ proto._checkDuplicateVueContent = function(content) {
 
 // unmount component
 proto._unmount = function(content) {
-  const d = $.Deferred();
-  if (content instanceof Component || content instanceof Panel) {
-    content.unmount()
-    .then(() => d.resolve());
-  }
-  else {
-    $(this._parent).empty();
-    d.resolve();
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    if (content instanceof Component || content instanceof Panel) {
+      content.unmount()
+        .then(() => resolve());
+    }
+    else {
+      $(this._parent).empty();
+      resolve();
+    }
+  })
 };
 
 proto.forEach = function(cbk) {
