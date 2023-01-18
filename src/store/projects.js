@@ -63,31 +63,31 @@ const proto = ProjectsRegistry.prototype;
 
 //Inizialize configuration for all project belong to group
 proto.init = function(config={}) {
-  const d = $.Deferred();
-  //check if already initialized
-  if (!this.initialized) {
-    this.config = config;
-    this.overviewproject = config.overviewproject;
-    this.setupState();
-    // get current configuration
-    const searchParams = new URLSearchParams(location.search);
-    const map_theme = searchParams.get('map_theme');
-    this.getProject(config.initproject, {
-      map_theme
-    })
-    .then(project => {
-      // set current project
+  return new Promise((resolve, reject) => {
+    //check if already initialized
+    if (!this.initialized) {
+      this.config = config;
+      this.overviewproject = config.overviewproject;
+      this.setupState();
+      // get current configuration
+      const searchParams = new URLSearchParams(location.search);
+      const map_theme = searchParams.get('map_theme');
+      this.getProject(config.initproject, {
+        map_theme
+      })
+        .then(project => {
+          // set current project
 
-      this.setCurrentProject(project);
-      this.initialized = true;
-      d.resolve(project);
-    })
-    .fail(error => d.reject(error))
-  } else {
-    const project = this.getCurrentProject();
-    d.resolve(project);
-  }
-  return d.promise();
+          this.setCurrentProject(project);
+          this.initialized = true;
+          resolve(project);
+        })
+        .fail(error => reject(error))
+    } else {
+      const project = this.getCurrentProject();
+      resolve(project);
+    }
+  })
 };
 
 proto.clear = function(){
@@ -170,33 +170,32 @@ proto.getCurrentProject = function() {
 // method to get project configuration - added reload to force to get configuratn project from server
 proto.getProject = function(projectGid, options={ reload:false}) {
   const {reload, map_theme} = options;
-  const d = $.Deferred();
-  const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
-  if (!pendingProject) {
-    d.reject("Project doesn't exist");
-    return d.promise();
-  }
-  const projectConfig = !reload && this._projectConfigs[projectGid];
-  if (projectConfig) {
-    const project = new Project(projectConfig);
-    d.resolve(project);
-  } else {
-    this._getProjectFullConfig(pendingProject, {map_theme})
-      .then(projectFullConfig => {
-        const projectConfig = _.merge(pendingProject, projectFullConfig);
-        projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
-        // setupu project relations
-        projectConfig.relations = this._setProjectRelations(projectConfig);
-        this._projectConfigs[projectConfig.gid] = projectConfig;
-        // instance of Project
-        this.createProject(projectConfig);
-        const project = new Project(projectConfig);
-        // add to project
-        d.resolve(project);
-      })
-      .fail(error => d.reject(error))
-  }
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    const pendingProject = this._groupProjects.find(project => project.gid === projectGid);
+    if (!pendingProject) {
+      reject("Project doesn't exist");
+    }
+    const projectConfig = !reload && this._projectConfigs[projectGid];
+    if (projectConfig) {
+      const project = new Project(projectConfig);
+      resolve(project);
+    } else {
+      this._getProjectFullConfig(pendingProject, {map_theme})
+        .then(projectFullConfig => {
+          const projectConfig = _.merge(pendingProject, projectFullConfig);
+          projectConfig.WMSUrl = this.config.getWmsUrl(projectConfig);
+          // setupu project relations
+          projectConfig.relations = this._setProjectRelations(projectConfig);
+          this._projectConfigs[projectConfig.gid] = projectConfig;
+          // instance of Project
+          this.createProject(projectConfig);
+          const project = new Project(projectConfig);
+          // add to project
+          resolve(project);
+        })
+        .fail(error => reject(error))
+    }
+  })
 };
 
 proto._setProjectRelations = function(projectConfig) {
@@ -243,31 +242,31 @@ proto.getProjectUrl = function(gid) {
 // method to call server to get project configuration
 proto._getProjectFullConfig = function(projectBaseConfig, options={}) {
   const {map_theme} = options;
-  const d = $.Deferred();
-  const url = this.config.getProjectConfigUrl(projectBaseConfig);
-  $.get(url)
-    .done(projectFullConfig => {
-      if (map_theme) {
-        const {type, id} = projectBaseConfig;
-        const {map_themes} = projectFullConfig;
-        const find_map_theme = map_themes.find(({theme}) => theme === map_theme);
-        if (find_map_theme) {
-          const url_theme = `/${type}/api/prjtheme/${id}/${map_theme}`;
-          $.get(url_theme).done(({result, data:layerstree}) =>{
-            if (result){
-              projectFullConfig.layerstree = layerstree;
-              find_map_theme.layetstree = layerstree;
-              find_map_theme.default = true;
-            }
-          }).always(()=>{
-            d.resolve(projectFullConfig)
-          })
-        }
+  return new Promise((resolve, reject) => {
+    const url = this.config.getProjectConfigUrl(projectBaseConfig);
+    $.get(url)
+      .done(projectFullConfig => {
+        if (map_theme) {
+          const {type, id} = projectBaseConfig;
+          const {map_themes} = projectFullConfig;
+          const find_map_theme = map_themes.find(({theme}) => theme === map_theme);
+          if (find_map_theme) {
+            const url_theme = `/${type}/api/prjtheme/${id}/${map_theme}`;
+            $.get(url_theme).done(({result, data:layerstree}) =>{
+              if (result){
+                projectFullConfig.layerstree = layerstree;
+                find_map_theme.layetstree = layerstree;
+                find_map_theme.default = true;
+              }
+            }).always(()=>{
+              resolve(projectFullConfig)
+            })
+          }
 
-      } else d.resolve(projectFullConfig);
-    })
-    .fail(error => d.reject(error));
-  return d.promise();
+        } else resolve(projectFullConfig);
+      })
+      .fail(error => reject(error));
+  })
 };
 
 export default new ProjectsRegistry();
