@@ -89,8 +89,6 @@ gulp.task('concatenate:vendor_js', function() {
       g3w.assetsFolder + "/vendors/slimScroll/jquery.slimscroll.min.js",
       g3w.assetsFolder + "/vendors/fastclick/fastclick.js",
       g3w.assetsFolder + "/vendors/vue/vue.min.js",
-      g3w.assetsFolder + "/vendors/vue/cookie/vue-cookie.js",
-      g3w.assetsFolder + "/vendors/vue-color/vue-color.js",
       g3w.assetsFolder + "/vendors/jquery-file-upload/jquery.fileupload.js",
       g3w.assetsFolder + "/vendors/jquery-fileDownload/jquery.fileDownload.js",
       g3w.assetsFolder + "/vendors/bootstrap-filestyle/bootstrap-filestyle.min.js",

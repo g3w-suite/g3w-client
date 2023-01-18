@@ -44,10 +44,16 @@
     <li @click.prevent.stop="" v-if="!layerMenu.layer.projectLayer && layerMenu.layer._type !== 'wms'" @mouseleave.self="showColorMenu(false,$event)" @mouseover.self="showColorMenu(true,$event)">
       <span class="item-text" v-t="'catalog_items.contextmenu.vector_color_menu'"></span>
       <span class="menu-icon skin-color-dark" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
-      <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left +   'px' }">
+      <ul v-if="layerMenu.colorMenu.show" style="position:fixed" :style="{ top: layerMenu.colorMenu.top + 'px', left: layerMenu.colorMenu.left + 'px' }">
         <li style="padding:0;">
-          <chrome-picker ref="color_picker" @click.prevent.stop="" @hook:beforeDestroy="onbeforeDestroyChangeColor" v-model="layerMenu.colorMenu.color" @change-color="onChangeColor" style="width: 100%">
-          </chrome-picker>
+          <chrome-picker
+            ref="color_picker"
+            @click.prevent.stop=""
+            @hook:beforeDestroy="onbeforeDestroyChangeColor"
+            v-model="layerMenu.colorMenu.color"
+            @input="onChangeColor"
+            style="width: 100%"
+          ></chrome-picker>
         </li>
       </ul>
     </li>
@@ -143,6 +149,8 @@
 </template>
 
 <script>
+  import { Chrome as ChromeComponent } from 'vue-color';
+  
   import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
   import CatalogLayersStoresRegistry from 'store/catalog-layers';
   import ApplicationService from 'services/application';
@@ -152,7 +160,6 @@
   const shpwrite = require('shp-write');
   const TableComponent = require('gui/table/vue/table');
 
-  const ChromeComponent = VueColor.Chrome;
   const OFFSETMENU = {
     top: 50,
     left: 15
