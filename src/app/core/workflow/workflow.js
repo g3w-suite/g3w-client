@@ -156,71 +156,73 @@ proto.resolve = function(){
 
 // start workflow
 proto.start = function(options={}) {
-  const d = $.Deferred();
-  this._promise = d;
-  this._inputs = options.inputs;
-  this._context = options.context || {};
-  const isChild = this._context.isChild || false;
-  //check if are workflow running and if need to stop child
-  if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
-    !isChild && WorkflowsStack.getCurrent().addChild(this)
-  }
-  this._stackIndex = WorkflowsStack.push(this);
-  this._flow = options.flow || this._flow;
-  this._steps = options.steps || this._steps;
-  const showUserMessage = this._isThereUserMessaggeSteps();
-  if (showUserMessage) {
-    const stepsComponent = createUserMessageStepsFactory({
-      steps: this._userMessageSteps
-    });
-    GUI.showUserMessage({
-      title: 'sdk.workflow.steps.title',
-      type: 'tool',
-      position: 'left',
-      size: 'small',
-      closable: false,
-      hooks: {
-        body: stepsComponent
-      }
-    });
-  }
 
-  this._flow.start(this)
-    .then(outputs => {
-      showUserMessage && setTimeout(()=>{
-        this.clearUserMessagesSteps();
-        d.resolve(outputs)
-      }, 500) || d.resolve(outputs);
-    })
-    .fail(error => {
-      showUserMessage && this.clearUserMessagesSteps();
-      d.reject(error);
-    })
-    .always(()=>{
-      this.runOnce && this.stop();
-    });
-  this.emit('start');
-  return d.promise();
+  this._promise = new Promise((resolve, reject) => {
+    this._inputs = options.inputs;
+    this._context = options.context || {};
+    const isChild = this._context.isChild || false;
+    //check if are workflow running and if need to stop child
+    if (WorkflowsStack.getLength() && WorkflowsStack.getCurrent() !== this) {
+      !isChild && WorkflowsStack.getCurrent().addChild(this)
+    }
+    this._stackIndex = WorkflowsStack.push(this);
+    this._flow = options.flow || this._flow;
+    this._steps = options.steps || this._steps;
+    const showUserMessage = this._isThereUserMessaggeSteps();
+    if (showUserMessage) {
+      const stepsComponent = createUserMessageStepsFactory({
+        steps: this._userMessageSteps
+      });
+      GUI.showUserMessage({
+        title: 'sdk.workflow.steps.title',
+        type: 'tool',
+        position: 'left',
+        size: 'small',
+        closable: false,
+        hooks: {
+          body: stepsComponent
+        }
+      });
+    }
+
+    this._flow.start(this)
+      .then(outputs => {
+        showUserMessage && setTimeout(()=>{
+          this.clearUserMessagesSteps();
+          resolve(outputs)
+        }, 500) || resolve(outputs);
+      })
+      .fail(error => {
+        showUserMessage && this.clearUserMessagesSteps();
+        reject(error);
+      })
+      .always(()=>{
+        this.runOnce && this.stop();
+      });
+    this.emit('start');
+  });
+
+  return this._promise;
 };
 
 // stop workflow during flow
 proto.stop = function() {
   this._promise = null;
-  const d = $.Deferred();
-  // stop child workflow
-  this._stopChild()
-    // in every case remove child
-    .always(() => {
-      this.removeChild();
-      WorkflowsStack.removeAt(this.getStackIndex());
-      // call stop flow
-      this._flow.stop()
-        .then(() => d.resolve())
-        .fail(err => d.reject(err))
-        .always(() => this.clearMessages())
-  });
-  this.emit('stop');
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    // stop child workflow
+    this._stopChild()
+      // in every case remove child
+      .always(() => {
+        this.removeChild();
+        WorkflowsStack.removeAt(this.getStackIndex());
+        // call stop flow
+        this._flow.stop()
+          .then(() => resolve())
+          .fail(err => reject(err))
+          .always(() => this.clearMessages())
+      });
+    this.emit('stop');
+  })
 };
 
 proto.clearUserMessagesSteps = function(){
