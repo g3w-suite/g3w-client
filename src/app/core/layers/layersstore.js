@@ -307,7 +307,7 @@ proto.createLayersTree = function(groupName, options={}) {
             lightlayer.mutually_exclusive = layer["mutually-exclusive"];
             traverse(layer.nodes, lightlayer.nodes)
           }
-          /** set expanded property - It used for group and layer that has legend to show on TOC **/
+          /** toggle expanded property for legend item (TOC) **/
           lightlayer.expanded = layer.expanded;
           lightlayer && newobj.push(lightlayer);
         });
