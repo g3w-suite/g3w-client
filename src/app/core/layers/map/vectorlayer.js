@@ -86,14 +86,14 @@ proto._makeStyle = function(styleConfig) {
 };
 
 proto.getFeatures = function(options={}) {
-  const d = $.Deferred();
-  this.provider.getFeatures(options)
-    .then(features => {
-      this.addFeatures(features);
-      d.resolve(features);
-    })
-    .fail(err => d.reject(err));
-  return d.promise()
+  return new Promise((resolve, reject) =>{
+    this.provider.getFeatures(options)
+      .then(features => {
+        this.addFeatures(features);
+        resolve(features);
+      })
+      .fail(err => reject(err));
+  })
 };
 
 proto.addFeatures = function(features=[]) {
