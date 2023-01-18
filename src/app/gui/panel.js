@@ -59,13 +59,13 @@ proto.mount = function(parent) {
 
 proto.unmount = function() {
   const panel = this.internalPanel;
-  const d = $.Deferred();
-  panel.$destroy(true);
-  $(panel.$el).remove();
-  panel.onClose && panel.onClose();
-  this.internalComponent = null;
-  d.resolve();
-  return d.promise();
+  return new Promise((resolve, reject) => {
+    panel.$destroy(true);
+    $(panel.$el).remove();
+    panel.onClose && panel.onClose();
+    this.internalComponent = null;
+    resolve();
+  })
 };
 
 proto.onResize = function(parentWidth,parentHeight){};
