@@ -258,14 +258,14 @@ proto._getProjectFullConfig = function(projectBaseConfig, options={}) {
                 find_map_theme.layetstree = layerstree;
                 find_map_theme.default = true;
               }
-            }).finally(()=>{
+            }).always(()=>{
               resolve(projectFullConfig)
             })
           }
 
         } else resolve(projectFullConfig);
       })
-      .catch(error => reject(error));
+      .fail(error => reject(error));
   })
 };
 

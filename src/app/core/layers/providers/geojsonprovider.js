@@ -40,7 +40,7 @@ proto.getFeatures = function(options = {}) {
           const features = parseFeatures(response.results);
           resolve(features)
         })
-        .catch(err => reject(err));
+        .fail(err => reject(err));
     }
   })
 };

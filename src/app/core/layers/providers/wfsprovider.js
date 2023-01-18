@@ -74,7 +74,7 @@ proto._get = function(url, params) {
     url = url + '?' + urlParams;
     $.get(url)
       .then(response => resolve(response))
-      .catch(err => reject(err));
+      .fail(err => reject(err));
   })
 };
 

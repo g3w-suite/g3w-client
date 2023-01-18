@@ -145,7 +145,7 @@ proto.getConfig = function() {
     }
     $.get(url)
       .then(config => resolve(config))
-      .catch(err => reject(err));
+      .fail(err => reject(err));
   })
 };
 
@@ -300,7 +300,7 @@ proto.getFeatures = function(options={}, params={}) {
             count: vector.count
           })
         })
-        .catch(err => reject(err))
+        .fail(err => reject(err))
     }
   })
 };
@@ -492,7 +492,7 @@ proto.lockFeatures = function(layerName) {
         this.setVectorFeaturesLock(vectorLayer, data.featurelocks);
         resolve(data);
       })
-      .catch(() => reject());
+      .fail(() => reject());
   })
 };
 
@@ -500,7 +500,7 @@ proto._getVectorLayerConfig = function(layerApiField) {
   return new Promise((resolve, reject)=> {
     $.get(this._baseUrl+layerApiField+"/?config"+ this._customUrlParameters)
       .done(data => resolve(data))
-      .catch(() => reject());
+      .fail(() => reject());
   })
 };
 
@@ -510,7 +510,7 @@ proto._getVectorLayerData = function(vectorLayer, bbox) {
    const apiUrl = lock ? this._baseUrl+vectorLayer[this._editingApiField]+"/?editing" : this._baseUrl+vectorLayer[this._editingApiField]+"/?";
    $.get(apiUrl + this._customUrlParameters+"&in_bbox=" + bbox[0]+","+bbox[1]+","+bbox[2]+","+bbox[3])
      .done(data => resolve(data))
-     .catch(() => reject());
+     .fail(() => reject());
  })
 };
 

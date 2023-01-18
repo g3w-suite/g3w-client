@@ -385,7 +385,7 @@ const utils = {
             .then(response => {
               resolve(response)
             })
-            .catch(error => reject(error))
+            .fail(error => reject(error))
         : reject('No url')
       })
     },
