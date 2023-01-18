@@ -11,9 +11,7 @@ inherit(KMLDataProvider, DataProvider);
 const proto = KMLDataProvider.prototype;
 
 proto.getData = function() {
-  const d = $.Deferred();
-  return d.promise();
+  return new Promise((resolve, reject) => {})
 };
-
 
 module.exports = KMLDataProvider;
