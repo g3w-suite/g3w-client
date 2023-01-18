@@ -113,73 +113,73 @@ proto._setupListenersChain = function(setters) {
     this.settersListeners.before[setter] = [];
     // assign the property settern name to the object as own method
     this[setter] = function(...args) {
-      const deferred = $.Deferred();
-      let returnVal = null;
-      let counter = 0;
-      // function to call original function(setter function)
-      const callSetter = () => {
-        // run setter function
-        returnVal = setterFnc.apply(this, args);
-        // resolve promise
-        deferred.resolve(returnVal);
-        //call all subscribed methods afet setter
-        const onceListenerKeys = [];
-        const afterListeners = this.settersListeners.after[setter];
-        afterListeners.forEach(listener => {
-          listener.fnc.apply(this, args);
-          listener.once && onceListenerKeys.push(listener.key);
-        });
-        onceListenerKeys.forEach(key => this.un(setter, key));
-      };
-      //  abort function
-      const abort = () => {
-        setterFallback.apply(this, args);
-        deferred.reject();
-      };
-      // get all before listeners functions of setter
-      const beforeListeners = this.settersListeners['before'][setter];
-      // listener counter
-      counter = 0;
-      const next = bool => {
-        // initilize cont to true (continue)
-        let cont = true;
-        // check if bool is Boolean
-        if (_.isBoolean(bool)) cont = bool;
-        // check if count is false or we are arrived to the end of onbefore subscriber
-        if (cont === false) {
+      return new Promise((resolve, reject) => {
+        let returnVal = null;
+        let counter = 0;
+        // function to call original function(setter function)
+        const callSetter = () => {
+          // run setter function
+          returnVal = setterFnc.apply(this, args);
+          // resolve promise
+          resolve(returnVal);
+          //call all subscribed methods afet setter
+          const onceListenerKeys = [];
+          const afterListeners = this.settersListeners.after[setter];
+          afterListeners.forEach(listener => {
+            listener.fnc.apply(this, args);
+            listener.once && onceListenerKeys.push(listener.key);
+          });
+          onceListenerKeys.forEach(key => this.un(setter, key));
+        };
+        //  abort function
+        const abort = () => {
+          setterFallback.apply(this, args);
+          reject();
+        };
+        // get all before listeners functions of setter
+        const beforeListeners = this.settersListeners['before'][setter];
+        // listener counter
+        counter = 0;
+        const next = bool => {
+          // initilize cont to true (continue)
+          let cont = true;
+          // check if bool is Boolean
+          if (_.isBoolean(bool)) cont = bool;
+          // check if count is false or we are arrived to the end of onbefore subscriber
+          if (cont === false) {
             // found an error so we can abort
             abort.apply(this, args);
-        } else if (counter === beforeListeners.length) {
-          // call complete method methods
-          const completed = callSetter();
-          //verifico che cosa ritorna
-          if (completed === undefined || completed === true) {
-            this.emitEvent(`set:${setter}`,args);
+          } else if (counter === beforeListeners.length) {
+            // call complete method methods
+            const completed = callSetter();
+            //verifico che cosa ritorna
+            if (completed === undefined || completed === true) {
+              this.emitEvent(`set:${setter}`,args);
+            }
+          } else if (cont) {
+            const listenerObj = beforeListeners[counter];
+            const currentCounter = counter;
+            // if is async functtion
+            if (beforeListeners[counter].async) {
+              //add function next to argument of listnerFunction
+              args.push(next);
+              // update counter
+              counter += 1;
+              listenerObj.fnc.apply(this, args)
+            } else {
+              // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
+              const bool = listenerObj.fnc.apply(this, args);
+              //update counter
+              counter += 1;
+              next(bool);
+            }
+            listenerObj.once && beforeListeners.splice(currentCounter, 1);
           }
-        } else if (cont) {
-          const listenerObj = beforeListeners[counter];
-          const currentCounter = counter;
-          // if is async functtion
-          if (beforeListeners[counter].async) {
-            //add function next to argument of listnerFunction
-            args.push(next);
-            // update counter
-            counter += 1;
-            listenerObj.fnc.apply(this, args)
-          } else {
-            // return or undefine or a boolen to tell if ok(true) can conitnue or not (false)
-            const bool = listenerObj.fnc.apply(this, args);
-            //update counter
-            counter += 1;
-            next(bool);
-          }
-          listenerObj.once && beforeListeners.splice(currentCounter, 1);
-        }
-      };
-      // run next to start to run all the subscribers and setrer its self
-      next();
-      // retun a promise
-      return deferred.promise();
+        };
+        // run next to start to run all the subscribers and setrer its self
+        next();
+        // return a promise
+      })
     }
   }
   return this.settersListeners
