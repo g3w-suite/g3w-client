@@ -421,6 +421,7 @@ gulp.task('build', done => runSequence(
   'production',
   // 'clean:admin',
   'clean:overrides',
+  'clone:default_plugins',
   'build:client',
   done
   )
@@ -435,6 +436,7 @@ gulp.task('build', done => runSequence(
 gulp.task('dev', done => runSequence(
   // 'clean:admin',
   'clean:overrides',
+  'clone:default_plugins',
   'build:client',
   'browser-sync',
   done
