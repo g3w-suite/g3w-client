@@ -22,13 +22,13 @@ $.Deferred = function() {
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.catch' instead
    */
-  d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Defferred() is deprecated, use native Promise() instead');
-  d.catch = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Defferred() is deprecated, use native Promise() instead');
+  d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.catch = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.finally' instead
    */
-  d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Defferred() is deprecated, use native Promise() instead');
-  d.finally = deprecate(d.always, '[G3W-CLIENT] jQuery $.Defferred() is deprecated, use native Promise() instead');
+  d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.finally = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
   return d;
 }
 
