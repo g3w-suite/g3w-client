@@ -83,12 +83,11 @@ proto._getFeatures = function(options={}) {
     if (!this._allfeatures) {
       this._allfeatures = !options.filter;
       this._editor.getFeatures(options)
-        .then(promise => {
-          promise.then(features => {
-            this.state.getfeatures = true;
-            resolve(features);
-          }).catch(err => reject(err));
-        });
+        .then(features => {
+          this.state.getfeatures = true;
+          resolve(features);
+        })
+        .catch(err => reject(err));
     } else resolve([]);
   })
 };

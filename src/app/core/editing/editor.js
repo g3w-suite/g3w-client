@@ -119,14 +119,12 @@ proto._getFeatures = function(options={}) {
     if (!doRequest) resolve();
     else
       this._layer.getFeatures(options)
-        .then(promise => {
-          promise.then(features => {
-            this._addFeaturesFromServer(features);
-            this._allfeatures = !options.filter;
-            return resolve(features);
-          }).catch(err => reject(err))
+        .then(features => {
+          this._addFeaturesFromServer(features);
+          this._allfeatures = !options.filter;
+          return resolve(features);
         })
-        .catch(err => reject(err));
+        .catch(err => reject(err))
   });
 };
 
@@ -223,15 +221,11 @@ proto.commit = function(commitItems) {
       }
     }) : [];
     this._layer.commit(commitItems)
-      .then(promise => {
-        promise
-          .then(response => {
-            this.applyCommitResponse(response, relations);
-            resolve(response);
-          })
-          .catch(err => reject(err))
+      .then(response => {
+        this.applyCommitResponse(response, relations);
+        resolve(response);
       })
-      .catch(err => reject(err));
+      .catch(err => reject(err))
   })
 };
 
@@ -240,18 +234,13 @@ proto.start = function(options={}) {
   return new Promise((resolve, reject) => {
     // load features of layer based on filter type
     this.getFeatures(options)
-      .then(promise => {
-        promise
-          .then(features => {
-            // the features are already inside featuresstore
-            resolve(features);
-            //if all ok set to started
-            this._started = true;
-          })
-          .catch(err => reject(err))
-
+      .then(features => {
+        // the features are already inside featuresstore
+        resolve(features);
+        //if all ok set to started
+        this._started = true;
       })
-      .catch(err => reject(err));
+      .catch(err => reject(err))
   })
 };
 

@@ -29,31 +29,24 @@ function TableLayer(config={}, options={}) {
       this._setFeatures(features);
     },
     // get data from every sources (server, wms, etc..)
-    // throught provider related to featuresstore
+    // through provider related to featuresstore
     getFeatures(options={}) {
       return new Promise((resolve, reject) => {
         this._featuresstore.getFeatures(options)
-          .then(promise => {
-            promise.then(features => {
-              this.emit('getFeatures', features);
-              return resolve(features);
-            }).catch(err => reject(err))
-          })
-          .catch(err => reject(err));
-      });
+          .then(features => {
+            this.emit('getFeatures', features);
+            resolve(features);
+          }).catch(err => reject(err))
+      })
     },
     commit(commitItems) {
       return new Promise((resolve, reject) => {
         this._featuresstore.commit(commitItems)
-          .then(promise => {
-            promise
-              .then(response => {
-                response && response.result && this.syncSelectionFilterFeatures(commitItems);
-                resolve(response)
-              })
-              .catch(err => reject(err))
+          .then(response => {
+            response && response.result && this.syncSelectionFilterFeatures(commitItems);
+            resolve(response)
           })
-          .catch((err) => reject(err));
+          .catch(err => reject(err))
       })
     },
     setColor(color) {
