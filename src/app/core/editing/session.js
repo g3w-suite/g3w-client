@@ -404,7 +404,10 @@ proto.commit = function({ids=null, items, relations=true}={}) {
             }
             this._history.clear();
             this.saveChangesOnServer(commitItems);
-            resolve(commitItems, response)
+            resolve({
+              commitItems,
+              response
+            })
           } else reject(response);
         })
         .catch(err => reject(err));
