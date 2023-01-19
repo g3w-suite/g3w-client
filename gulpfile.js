@@ -420,9 +420,8 @@ gulp.task('build:client', ['browserify:app', 'concatenate:vendor_js', 'concatena
  */
 gulp.task('build', done => runSequence(
   'production',
-  'clean:admin',
+  // 'clean:admin',
   'clean:overrides',
-  'clone:default_plugins',
   'build:client',
   done
   )
@@ -435,9 +434,8 @@ gulp.task('build', done => runSequence(
  * outputFolder = g3w.admin_overrides_folder
  */
 gulp.task('dev', done => runSequence(
-  'clean:admin',
+  // 'clean:admin',
   'clean:overrides',
-  'clone:default_plugins',
   'build:client',
   'browser-sync',
   done
