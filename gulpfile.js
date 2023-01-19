@@ -336,9 +336,9 @@ gulp.task('clone:default_plugins', function() {
         execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`);
       }
       /** @TODO understand why the terminal hangs here (now you must run this 3 times to make it work) */
-      // if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
-      //   execSync(`npx gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js browserify`);  
-      // }
+      if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
+        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js --task watch`);
+      }
     }
     done();
   });
