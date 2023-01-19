@@ -164,7 +164,7 @@ proto.unlock = function() {
   return new Promise((resolve, reject) => {
     $.post(unlockUrl)
       .then(response => resolve(response))
-      .catch(err => reject(err));
+      .fail(err => reject(err));
   })
 };
 
@@ -180,7 +180,7 @@ proto.commit = function(commitItems) {
       contentType: "application/json"
     })
       .then(response => resolve(response))
-      .catch(err => reject(err));
+      .fail(err => reject(err));
   });
 };
 

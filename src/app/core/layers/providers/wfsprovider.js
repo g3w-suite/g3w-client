@@ -61,7 +61,7 @@ proto._post = function(url, params) {
   return new Promise((resolve, reject) => {
     $.post(url, params)
       .then(response => resolve(response))
-      .catch(err => reject(err));
+      .fail(err => reject(err));
   })
 };
 
