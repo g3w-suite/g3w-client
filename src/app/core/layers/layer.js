@@ -547,7 +547,7 @@ proto.getDataTable = function({page = null, page_size=null, ordering=null, searc
     } else {
       provider = this.getProvider('data');
       provider.getFeatures({editing: false}, params)
-        .done(response => {
+        .then(response => {
           const data = response.data;
           const count = response.count;
           const title = this.getTitle();
@@ -654,7 +654,7 @@ proto.search = function(options={}, params={}) {
     const provider = this.getProvider('search');
     if (provider)
       provider.query(options)
-        .done(response => resolve(response))
+        .then(response => resolve(response))
         .catch(err => reject(err));
     else reject(t('sdk.search.layer_not_searchable'));
   })
@@ -667,7 +667,7 @@ proto.query = function(options={}) {
     const provider = this.getProvider(filter ? 'filter' : 'query');
     if (provider)
       provider.query(options)
-        .done(response => resolve(response))
+        .then(response => resolve(response))
         .catch(err => reject(err));
     else reject(t('sdk.search.layer_not_querable'));
   })
