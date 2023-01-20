@@ -155,7 +155,9 @@ proto.getWidgetData = function(options={}) {
   const url = widgetUrls[type];
   return XHR.get({
     url,
-    params: fields
+    params: {
+      fields
+    }
   });
 };
 
