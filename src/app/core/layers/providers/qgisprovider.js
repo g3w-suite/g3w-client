@@ -314,7 +314,7 @@ proto._loadLayerData = function(mode, customUrlParameters) {
     });
     const vectorLayersSetup = noVectorlayerCodes.map(layerCode => this._setupVectorLayer(layerCode));
     this.emit('loadingvectorlayersstart');
-    $.when.apply(this, vectorLayersSetup)
+    Promise.all(vectorLayersSetup)
       .then(() => {
         const vectorLayersCodes = Array.prototype.slice.call(arguments);
         this.emit('loadingvectolayersdatastart');
@@ -382,7 +382,7 @@ proto.loadAllVectorsData = function(layerCodes) {
     }
     const vectorDataRequests = layers.map(Layer => this._loadVectorData(Layer.vector, bbox));
 
-    $.when.apply(this, vectorDataRequests)
+    Promise.all(vectorDataRequests)
       .then(() => resolve(layerCodes))
       .catch(() => reject());
   })

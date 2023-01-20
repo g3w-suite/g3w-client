@@ -47,12 +47,12 @@ proto.clear = function() {
       this.state.contentsdata.forEach((data) => {
         unmountRequests.push(this._unmount(data.content));
       });
-      $.when(unmountRequests).then(() => {
-        this.state.contentsdata.splice(0, this.state.contentsdata.length);
-        resolve();
-      });
-    }
-    else resolve();
+      Promise.all(unmountRequests)
+        .then(() => {
+          this.state.contentsdata.splice(0, this.state.contentsdata.length);
+          resolve();
+        });
+    } else resolve();
   })
 };
 
