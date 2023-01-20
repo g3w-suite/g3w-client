@@ -311,7 +311,7 @@ proto.getWidgetData = function(options) {
   return new Promise((resolve, reject) => {
     provider.getWidgetData(options)
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

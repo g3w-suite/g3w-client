@@ -170,7 +170,7 @@ import ApplicationService from 'services/application';
 import GUI from 'services/gui';
 import { resizeMixin } from 'mixins';
 
-const { uniqueId } = require('core/utils/utils');
+const { uniqueId, XHR } = require('core/utils/utils');
 const { t } = require('core/i18n/i18n.service');
 
 //Make sure jQuery has been loaded before app.js
@@ -1089,7 +1089,9 @@ export default {
       return false;
     }): [];
 
-    !!this.appconfig.credits && $.get(this.appconfig.credits).then(credits=> this.customcredits = credits !== 'None' && credits);
+    !!this.appconfig.credits && XHR
+      .get({url: this.appconfig.credits})
+      .then(credits=> this.customcredits = credits !== 'None' && credits);
   },
   async mounted() {
     this.logoWidth = 0;

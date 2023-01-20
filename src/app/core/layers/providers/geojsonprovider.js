@@ -1,4 +1,4 @@
-const { inherit, base } = require('core/utils/utils');
+const { inherit, base, XHR } = require('core/utils/utils');
 const Provider = require('core/layers/providers/provider');
 
 function GEOJSONDataProvider(options = {}) {
@@ -35,12 +35,12 @@ proto.getFeatures = function(options = {}) {
       const features = parseFeatures(data);
       resolve(features)
     } else {
-      $.get({url})
+      XHR.get({url})
         .then((response) => {
           const features = parseFeatures(response.results);
           resolve(features)
         })
-        .fail(err => reject(err));
+        .catch(err => reject(err));
     }
   })
 };

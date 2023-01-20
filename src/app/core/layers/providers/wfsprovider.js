@@ -1,4 +1,4 @@
-const { base, inherit, toRawType } = require('core/utils/utils');
+const { base, inherit, toRawType, XHR } = require('core/utils/utils');
 const DataProvider = require('core/layers/providers/provider');
 const Filter = require('core/layers/filter/filter');
 
@@ -59,22 +59,24 @@ proto.query = function(options={}, params = {}) {
 proto._post = function(url, params) {
   url = url.match(/\/$/) ? url : `${url}/`;
   return new Promise((resolve, reject) => {
-    $.post(url, params)
-      .then(response => resolve(response))
-      .fail(err => reject(err));
+    XHR.post({
+      url,
+      data:params
+    }).then(response => resolve(response))
+      .catch(err => reject(err));
   })
 };
 
 // get request
 proto._get = function(url, params) {
-  // trasform parameters
+  // transform parameters
   url = url.match(/\/$/) ? url : `${url}/`;
   return new Promise((resolve, reject) => {
     const urlParams = $.param(params);
     url = url + '?' + urlParams;
-    $.get(url)
+    XHR.get({url})
       .then(response => resolve(response))
-      .fail(err => reject(err));
+      .catch(err => reject(err));
   })
 };
 

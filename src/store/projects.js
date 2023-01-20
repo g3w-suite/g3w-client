@@ -6,7 +6,7 @@
 import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import MapLayersStoresRegistry from 'store/map-layers';
 
-const { base, inherit } = require('core/utils/utils');
+const { base, inherit, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 const Project = require('core/project/project');
 
@@ -244,28 +244,28 @@ proto._getProjectFullConfig = function(projectBaseConfig, options={}) {
   const {map_theme} = options;
   return new Promise((resolve, reject) => {
     const url = this.config.getProjectConfigUrl(projectBaseConfig);
-    $.get(url)
-      .done(projectFullConfig => {
+    XHR.get({url})
+      .then(projectFullConfig => {
         if (map_theme) {
           const {type, id} = projectBaseConfig;
           const {map_themes} = projectFullConfig;
           const find_map_theme = map_themes.find(({theme}) => theme === map_theme);
           if (find_map_theme) {
             const url_theme = `/${type}/api/prjtheme/${id}/${map_theme}`;
-            $.get(url_theme).done(({result, data:layerstree}) =>{
+            XHR.get({url:url_theme}).then(({result, data:layerstree}) =>{
               if (result){
                 projectFullConfig.layerstree = layerstree;
                 find_map_theme.layetstree = layerstree;
                 find_map_theme.default = true;
               }
-            }).always(()=>{
+            }).finally(()=>{
               resolve(projectFullConfig)
             })
           }
 
         } else resolve(projectFullConfig);
       })
-      .fail(error => reject(error));
+      .catch(error => reject(error));
   })
 };
 

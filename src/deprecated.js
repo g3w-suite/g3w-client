@@ -17,20 +17,20 @@ const deprecate = require('util-deprecate');
  * Monkey patch $.Deferred constructor in order to ensure backward compatibility
  */
 const _Deferred = $.Deferred;
-$.Deferred = function() {
-  const d = new _Deferred(...arguments);
-  /**
-   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.catch' instead
-   */
-  d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
-  d.catch = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
-  /**
-   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.finally' instead
-   */
-  d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
-  d.finally = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
-  return d;
-}
+// $.Deferred = function() {
+//   const d = new _Deferred(...arguments);
+//   /**
+//    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.catch' instead
+//    */
+//   d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+//   d.catch = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+//   /**
+//    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.finally' instead
+//    */
+//   d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+//   d.finally = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+//   return d;
+// }
 
 /**
  * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.catch' instead

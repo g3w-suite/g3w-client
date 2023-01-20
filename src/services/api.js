@@ -3,7 +3,7 @@
  * @since v3.6
  */
 
-const { base, inherit, reject } = require('core/utils/utils');
+const { base, inherit, reject, XHR } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
 // Class Api Service
@@ -37,16 +37,19 @@ function ApiService(){
       const params = options.params || {};
       this.emit(api+'querystart');
       this._incrementLoaders();
-      return $.get(completeUrl,params)
-      .done(response => {
+      return XHR.get({
+        url:completeUrl,
+        params
+      })
+      .then(response => {
         this.emit(api+'queryend',response);
         return response;
       })
-      .fail(error => {
+      .catch(error => {
         this.emit(api+'queryfail', error);
         return error;
       })
-      .always(() => this._decrementLoaders());
+      .finally(() => this._decrementLoaders());
     }
     else return reject();
   };
