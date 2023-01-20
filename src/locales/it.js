@@ -24,6 +24,10 @@ export default {
       message: "Posizione rispetto ai layers della TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Segnalibro Spaziale",
+        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi"
+      },
       search: {
         all: 'TUTTE',
         no_results: "Nessun valore trovato",

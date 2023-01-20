@@ -24,6 +24,10 @@ export default {
       message: "Poziție relativă la straturile din TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi"
+      },
       search: {
         all: 'Toate',
         no_results: "Fără rezultat",

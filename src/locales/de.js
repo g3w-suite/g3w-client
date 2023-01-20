@@ -24,6 +24,10 @@ export default {
       message: "Position relativ zu den Layern im TOC"
     },
     sdk: {
+      spatialbookmarks: {
+        title: "Spatial Bookmarks",
+        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi"
+      },
       search: {
         all: 'ALLE',
         no_results: "Keine Ergebnisse",
