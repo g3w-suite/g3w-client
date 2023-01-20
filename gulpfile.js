@@ -494,11 +494,7 @@ gulp.task('version', function () {
 // Backward compatibilities (v3.x)
 gulp.task('g3w-admin',                           ['build']);
 gulp.task('g3w-admin-plugins-select',            ['build:plugins']);
-gulp.task('g3w-admin-client:static',             ['build:static']);
-gulp.task('g3w-admin-client:template',           ['build:templates']);
 gulp.task('g3w-admin-client',                    ['g3w-admin']);
 gulp.task('g3w-admin:plugins',                   ['build:plugins']);
-gulp.task('g3w-admin:static',                    ['build:static']);
-gulp.task('g3w-admin:templates',                 ['build:templates']);
 gulp.task('serve',                               ['dev']);
 gulp.task('default',                             ['dev']);
