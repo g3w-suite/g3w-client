@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Anslutningsfel",
+      at_moment: "För närvarande är inte möjligt visa karta",
+      f5: "Tryck på Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"

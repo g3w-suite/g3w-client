@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Eroare de conexiune",
+      at_moment: "Momentan nu este posibil să afișați harta",
+      f5: "Apăsați Ctrl+F5"
+    },
     cookie_law: {
       message: "Acest website foloseste cookie-uri pentru a furniza vizitatorilor o experiență mult mai bună de navigare",
       buttonText: "Am înțeles!"

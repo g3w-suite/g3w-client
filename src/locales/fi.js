@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Yhteysvirhe",
+      at_moment: "Tällä hetkellä ei ole mahdollista näyttää karttaa",
+      f5: "Paina Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"

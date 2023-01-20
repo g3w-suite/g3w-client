@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Errore di connessione",
+      at_moment: "Al momento non è possibile caricare la mappa",
+      f5: "Premi Ctrl+F5"
+    },
     cookie_law: {
       message: "Questo sito utilizza i cookie per garantire una buona usabilità all'utilizzatore finale.",
       buttonText: "Ho capito!"
@@ -494,6 +499,6 @@ export default {
       info: "Visualizzazione _START_ a _END_ su _TOTAL_ righe",
       nodatafilterd: "Nessun risultato trovato",
       infoFiltered: "(Filtrati da _MAX_ total righe)"
-    }
+    },
   },
 };

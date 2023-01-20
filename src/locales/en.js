@@ -1,5 +1,10 @@
 export default {
   translation: {
+    error_page: {
+      error: "Connection error",
+      at_moment: "At the moment is not possible show map",
+      f5: "Press Ctrl+F5"
+    },
     cookie_law: {
       message: "This website uses cookies to ensure you get the best experience on our website.",
       buttonText: "Got It!"
