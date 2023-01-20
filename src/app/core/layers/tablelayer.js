@@ -8,6 +8,9 @@ const Editor = require('core/editing/editor');
 const FeaturesStore = require('core/layers/features/featuresstore');
 const Feature = require('core/layers/features/feature');
 
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
+
 // Base Layer that support editing
 function TableLayer(config={}, options={}) {
   // setters
@@ -154,7 +157,7 @@ proto.getFormPercentage = function(){
 };
 
 proto.clone = function() {
-  return _.cloneDeep(this);
+  return _cloneDeep(this);
 };
 
 proto.cloneFeatures = function() {
@@ -445,7 +448,7 @@ proto.setFieldsWithValues = function(feature, fields) {
 
 proto.getFieldsWithValues = function(obj, options={}) {
   const {exclude=[], get_default_value=true}  = options;
-  let fields = JSON.parse(JSON.stringify(this.getEditingFields()));
+  let fields = _cloneDeep(this.getEditingFields());
   let feature;
   if (obj instanceof Feature) feature = obj;
   else if (obj instanceof ol.Feature) feature = new Feature({

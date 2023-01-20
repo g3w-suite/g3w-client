@@ -18,6 +18,9 @@ const { init: i18ninit, changeLanguage } = require('core/i18n/i18n.service');
 const { base, inherit, XHR, uniqueId } = require('core/utils/utils');
 const G3WObject = require('core/g3wobject');
 
+/** @deprecated */
+const _cloneDeep = require('lodash.clonedeep');
+
 //Manage Application
 const ApplicationService = function() {
   this.version = APP_VERSION;
@@ -647,7 +650,7 @@ const ApplicationService = function() {
   };
 
   this.cloneLayout = function(which='app'){
-    return JSON.parse(JSON.stringify(ApplicationState.gui.layout[which]))
+    return _cloneDeep(ApplicationState.gui.layout[which])
   };
 
   /**
