@@ -13,6 +13,7 @@
       </div>
       <span class="min-max-label">{{max}}</span>
     </section>
+    <span v-if="showValue">{{value}}</span>
   </div>
 </template>
 
@@ -46,6 +47,10 @@
         default: 0
       },
       sync:{
+        type: Boolean,
+        default: false
+      },
+      showValue: {
         type: Boolean,
         default: false
       }
