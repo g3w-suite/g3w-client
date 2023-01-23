@@ -54,7 +54,14 @@ proto.setup = function(config={}, options={}) {
      *
      * @since v3.8
      */
-    expanded: config.expanded
+    expanded: config.expanded,
+    /**
+     *  Transparency
+     *
+     * @since v3.8
+     *
+     */
+    transparency: config.transparency || 255,
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
@@ -284,6 +291,15 @@ proto.getStyles = function(){
 
 proto.getStyle = function(){
   return this.config.source.external ? this.config.source.styles : this.config.styles ? this.config.styles.find(style => style.current).name : '';
+};
+
+/**
+ * Get transparency property
+ * @since v3.8
+ */
+
+proto.getTransparency = function() {
+  return this.state.transparency;
 };
 
 /**

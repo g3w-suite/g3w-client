@@ -95,13 +95,17 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
   const {get_LEGEND_ON_LEGEND_OFF_Params} = require('core/utils/geo');
   if (visibleLayers.length > 0) {
     const CATEGORIES_LAYERS = {};
-    const STYLES = visibleLayers.map(layer => {
+    const STYLES = [];
+    const OPACITIES = [];
+    visibleLayers.map(layer => {
       const layerId = layer.getWMSLayerName();
       CATEGORIES_LAYERS[layerId] = {
         ...get_LEGEND_ON_LEGEND_OFF_Params(layer)
       };
-      return layer.getStyle()
-    }).join(',');
+      STYLES.push(layer.getStyle());
+      OPACITIES.push(layer.getTransparency())
+    });
+
     let LEGEND_ON;
     let LEGEND_OFF;
     Object.keys(CATEGORIES_LAYERS).forEach(layerId => {
@@ -118,7 +122,8 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
      params = {
       ...params,
       filtertoken: ApplicationState.tokens.filtertoken,
-      STYLES,
+      STYLES: STYLES.join(','),
+      OPACITIES: OPACITIES.join(','),
       LEGEND_ON,
       LEGEND_OFF,
       LAYERS: `${prefix}${visibleLayers.map((layer) => {

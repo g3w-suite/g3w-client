@@ -264,7 +264,8 @@ Vue.use({
         'step-forward': "fas fa-step-forward",
         'fast-forward': "fas fa-fast-forward",
         crop: "fas fa-crop-alt",
-        exit: "fas fa-door-open"
+        exit: "fas fa-door-open",
+        slider: "fas fa-sliders-h"
       },
       /**
        * @TODO check if deprecated

@@ -32,6 +32,32 @@
         </li>
       </ul>
     </li>
+
+    <li v-if="layerMenu.layer.geolayer" @mouseleave.self="showLayerTransparencyMenu(false,$event)" @mouseover.self="showLayerTransparencyMenu(true,$event)" class="menu-icon">
+      <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
+      <span class="item-text" v-t="'catalog_items.contextmenu.layer_transparency'"></span>
+      <span class="menu-icon" style="position: absolute; right: 0; margin-top: 3px" :class="g3wtemplate.getFontClass('arrow-right')"></span>
+      <ul v-show="layerMenu.layerTransparencyMenu.show" style="position:fixed; padding-left: 0; background-color: #FFFFFF; color:#000000"
+        :style="{
+          top: layerMenu.layerTransparencyMenu.top + 'px',
+          left: `${layerMenu.layerTransparencyMenu.left}px`,
+          maxHeight: layerMenu.layerTransparencyMenu.maxHeight + 'px',
+          overflowY: layerMenu.layerTransparencyMenu.overflowY
+        }">
+        <li>
+          <range :value="layerMenu.layer.transparency"
+            :min="0"
+            :max="1"
+            :step="0.1"
+            :sync="false"
+            @changed="closeLayerMenu(layerMenu.layerTransparencyMenu)"
+            @change-range="setLayerTransparency">
+          </range>
+          <span style="font-weight: bold">{{layerMenu.layer.transparency}}</span>
+        </li>
+      </ul>
+    </li>
+
     <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
@@ -205,6 +231,14 @@
             style: null,
             default: null
           },
+          //layer Transparency Menu
+          layerTransparencyMenu: {
+            show: false,
+            top:0,
+            left:0,
+            style: null,
+            default: null
+          },
           //metadataInfo
           metadatainfoMenu: {
             show: false,
@@ -244,10 +278,10 @@
         this.layerMenu.loading.xls = false;
         this.layerMenu.loading.geotiff = false;
       },
-      closeLayerMenu() {
+      closeLayerMenu(menu) {
         this._hideMenu();
         this.showColorMenu(false);
-        this.layerMenu.stylesMenu.show = false;
+        menu.show = false;
       },
       onbeforeDestroyChangeColor(){
         this.$refs.color_picker.$off();
@@ -411,6 +445,20 @@
           opacity
         });
       },
+      setLayerTransparency( {id=this.layerMenu.layer.id, value:transparency}){
+        transparency = parseInt(transparency * 255);
+        const changed = this.layerMenu.layer.transparency != transparency;
+        if (changed) {
+          this.layerMenu.layer.transparency = transparency;
+          const layer = CatalogLayersStoresRegistry.getLayerById(id);
+          if (layer) {
+            CatalogEventHub.$emit('layer-change-transparency', {
+              layerId: id
+            });
+            layer.change();
+          }
+        }
+      },
       zoomToLayer() {
         const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
         const mapService = GUI.getService('map');
@@ -525,28 +573,45 @@
             layer.change();
           }
         }
-        this.closeLayerMenu();
+        this.closeLayerMenu(this.layerMenu.stylesMenu);
       },
-      /**
-       * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
-       */
-      async showStylesMenu(bool, evt) {
+      async showSubMenuContext({menu, bool, evt}) {
         if (bool) {
           const elem = $(evt.target);
-          this.layerMenu.stylesMenu.top = elem.offset().top;
-          this.layerMenu.stylesMenu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
+          menu.top = elem.offset().top;
+          menu.left = (elem.offset().left + elem.width() + ((elem.outerWidth() - elem.width()) /2) + OFFSETMENU.left);
           const contextmenu = $(this.$refs['layer-menu']);
           const menuentry = $(evt.target);
           const submenu = menuentry.children('ul');
           const height = submenu.height();
           const maxH = contextmenu.height();
-          this.layerMenu.stylesMenu.maxHeight = height >= maxH ? maxH : null;
-          this.layerMenu.stylesMenu.overflowY = height >= maxH ? 'scroll' : null;
-          this.layerMenu.stylesMenu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
-          this.layerMenu.stylesMenu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
+          menu.maxHeight = height >= maxH ? maxH : null;
+          menu.overflowY = height >= maxH ? 'scroll' : null;
+          menu.top = (height >= maxH ? contextmenu : menuentry).offset().top;
+          menu.left = this.isMobile() ? 0 :  menuentry.offset().left + menuentry.width() + ((menuentry.outerWidth() - menuentry.width()) /2) + OFFSETMENU.left;
           await this.$nextTick();
         }
-        this.layerMenu.stylesMenu.show = bool;
+        menu.show = bool;
+      },
+      /**
+       * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+       */
+      async showStylesMenu(bool, evt) {
+        this.showSubMenuContext({
+          menu: this.layerMenu.stylesMenu,
+          bool,
+          evt
+        });
+      },
+      /**
+       * Context menu: toggle "transparency layer" submenu handling its correct horizontal and vertical alignment
+       */
+      async showLayerTransparencyMenu(bool, evt) {
+        this.showSubMenuContext({
+          menu: this.layerMenu.layerTransparencyMenu,
+          bool,
+          evt
+        });
       },
       //showmetadatainfo
       async showMetadataInfo(bool, evt){
