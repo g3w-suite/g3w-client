@@ -61,7 +61,7 @@ proto.setup = function(config={}, options={}) {
      * @since v3.8
      *
      */
-    transparency: config.transparency || 255,
+    transparency: config.transparency || 1,
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;

@@ -50,10 +50,10 @@
             :max="1"
             :step="0.1"
             :sync="false"
+            :showValue="true"
             @changed="closeLayerMenu(layerMenu.layerTransparencyMenu)"
             @change-range="setLayerTransparency">
           </range>
-          <span style="font-weight: bold">{{layerMenu.layer.transparency}}</span>
         </li>
       </ul>
     </li>
@@ -446,7 +446,6 @@
         });
       },
       setLayerTransparency( {id=this.layerMenu.layer.id, value:transparency}){
-        transparency = parseInt(transparency * 255);
         const changed = this.layerMenu.layer.transparency != transparency;
         if (changed) {
           this.layerMenu.layer.transparency = transparency;
