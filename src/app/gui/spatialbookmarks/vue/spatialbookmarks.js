@@ -12,6 +12,13 @@ const SpatialBookMarksComponent = function(options = {}) {
   this.title = "sdk.spatialbookmarks.title";
   this.setInternalComponent = function () {
     this.internalComponent = new InternalComponent();
+    this.internalComponent.$on('add', ()=> {
+      if (!this.getOpen()) {
+        this.click({
+          open: true
+        });
+      }
+    });
     return this.internalComponent;
   };
   GUI.on('closecontent', ()=>{

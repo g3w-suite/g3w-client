@@ -3,7 +3,7 @@
     <template v-if="add">
       <li>
         <helpdiv message="sdk.spatialbookmarks.helptext"></helpdiv>
-        <div>
+        <div style="padding: 5px;">
           <button class="sidebar-button-run btn btn-block" v-t="'add'"></button>
         </div>
       </li>
@@ -49,6 +49,7 @@
     },
     methods: {
       addBookMark(){
+        this.$emit('add');
         this.add = true;
         setTimeout(()=> {
           this.add = false
