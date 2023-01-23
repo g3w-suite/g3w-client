@@ -4,9 +4,15 @@
 -->
 
 <template>
-  <div style="display: flex; flex-direction: column">
-    <label :for="id" style="display: block" v-t="label"></label>
-    <input :id="id" ref="range-input" @change="change" v-model="value" type="range" :min="min" :max="max" :step="step">
+  <div>
+    <section style="display: flex; justify-content: space-between; font-weight: bold;">
+      <span class="min-max-label">{{min}}</span>
+      <div style="display: flex; flex-direction: column; margin: 0 3px">
+        <label :for="id" style="display: block" class="skin-color" v-t="label"></label>
+        <input :id="id" ref="range-input" @change="change" v-model="value" type="range" :min="min" :max="max" :step="step">
+      </div>
+      <span class="min-max-label">{{max}}</span>
+    </section>
   </div>
 </template>
 
@@ -86,5 +92,8 @@
 </script>
 
 <style scoped>
-
+  .min-max-label {
+    align-self: end;
+    font-weight: bold;
+  }
 </style>
