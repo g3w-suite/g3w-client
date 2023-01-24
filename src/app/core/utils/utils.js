@@ -3,6 +3,8 @@ import { TIMEOUT, FILTER_EXPRESSION_OPERATORS as EXPRESSION_OPERATORS } from 'ap
 const Filter = require('core/layers/filter/filter');
 const Expression = require('core/layers/filter/expression');
 
+const deprecate = require('util-deprecate');
+
 /**
  * Decimal adjustment of a number.
  *
@@ -140,12 +142,18 @@ const utils = {
 
   falsefnc(){return true},
 
-  resolve(value){
-    return Promise.resolve(value);
+  /**
+   * @deprecated since v3.8. Will be deleted in v4.x. Use native `Promise.resolve(value)` instead.
+   */
+  resolve(value) {
+    return deprecate(Promise.resolve, '[G3W-CLIENT] g3wsdk.core.utils.resolve(value) is deprecated')(value);
   },
 
-  reject(value){
-    return Promise.reject(value)
+  /**
+   * @deprecated since v3.8. Will be deleted in v4.x. Use native `Promise.reject(value)` instead.
+   */
+  reject(value) {
+    return deprecate(Promise.reject, '[G3W-CLIENT] g3wsdk.core.utils.reject(value) is deprecated')(value);
   },
 
   getValueFromG3WObjectEvent() {
