@@ -253,6 +253,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
+        },
         querybybbox: {
           tooltip: 'BBox Layer abfragen',
           nolayers_visible: 'Es sind keine abfragbaren Layer sichtbar. Bitte setzen Sie mindestens einen sichtbaren wfs Layer, um die Abfrage zu starten',

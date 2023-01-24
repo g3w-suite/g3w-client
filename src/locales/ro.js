@@ -253,6 +253,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
+        },
         querybybbox: {
           tooltip: 'Interogare BBox strat',
           nolayers_visible: 'Nu este vizibil niciun strat de interogare. Trebuie setat cel puțin un strat WFS vizibil pentru a efectua interogarea',

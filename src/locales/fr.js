@@ -252,6 +252,9 @@ export default {
                 </ul>`
           }
         },
+        querybydrawpolygon: {
+          tooltip: "Query by Draw Polygon "
+        },
         querybybbox: {
           tooltip: 'Requête pour BBOX',
           nolayers_visible: "Aucun layer requêtable n'est visible. Assurez-vous qu'au moins un layer wfs est visible pour exécuter la requête",

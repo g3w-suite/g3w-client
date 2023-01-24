@@ -637,7 +637,6 @@ proto._setupControls = function() {
     });
     this.getMap().addControl(attributionControl);
   }
-
   if (this.config && this.config.mapcontrols) {
     const mapcontrols = this.config.mapcontrols;
     const feature_count = this.project.getQueryFeatureCount();
@@ -882,6 +881,66 @@ proto._setupControls = function() {
               const eventKey = control.on('picked', runQuery);
               control.setEventKey({
                 eventType: 'picked',
+                eventKey
+              });
+            }
+          }
+          break;
+        case 'querybydrawpolygon':
+          if (!isMobile.any) {
+            const condition = {
+              filtrable: {
+                ows: 'WFS'
+              }
+            };
+            const getControlLayers = () => {
+              return this.filterableLayersAvailable({
+                FILTERABLE: true,
+                SELECTEDORALL: true
+              }, condition);
+            };
+            const spatialMethod = 'intersects';
+            control = this.createMapControl(controlType, {
+              options: {
+                spatialMethod,
+                layers: getControlLayers(),
+                help: {
+                  title: "sdk.mapcontrols.querybypolygon.help.title",
+                  message: "sdk.mapcontrols.querybypolygon.help.message",
+                }
+              }
+            });
+            if (control) {
+              const change = {
+                control,
+                getLayers: getControlLayers
+              };
+              this._changeMapMapControls.push(change);
+              const runQuery = throttle(async ({feature}) => {
+                GUI.closeOpenSideBarComponent();
+                // ask for coordinates
+                try {
+                  const {data=[]} = await DataRouterService.getData('query:polygon', {
+                    inputs: {
+                      feature,
+                      filterConfig:{
+                        spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                      },
+                      multilayers: this.project.isQueryMultiLayers(controlType)
+                    },
+                    outputs: {
+                      show({error=false}){
+                        return !error;
+                      }
+                    }
+                  });
+                } catch(err) {
+                  console.log(err)
+                }
+              });
+              const eventKey = control.on('drawend', runQuery);
+              control.setEventKey({
+                eventType: 'drawend',
                 eventKey
               });
             }
