@@ -37,7 +37,11 @@ function QueryService(){
    * @returns {Promise<unknown>}
    */
   this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
-    const polygonLayer = excludeLayers[0];
+    /**
+     * In case of Polygon coming from feature of Layer. If a draw feature excludeLayers is empty Array
+     * case QueryByDrawPolygon map control
+     */
+    const polygonLayer = excludeLayers.length ? excludeLayers[0] : null;
     const fid = feature.get(G3W_FID);
     const geometry = feature.getGeometry();
     // in case no geometry on polygon layer response
