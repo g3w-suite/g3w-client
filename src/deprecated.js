@@ -79,16 +79,9 @@ $.Deferred = function() {
   const d = new _Deferred(...arguments);
 
   /**
-   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.resolve' instead
-   * 
-   * In case you need similar behavior, you can implement it on you own in vanilla JavaScript:
-   * 
-   *   let _resolve, _reject;
-   *   let promise = new Promise((resolve, reject) => { _resolve = resolve; _reject = reject; });
-   *   promise.resolve() = _resolve;
-   *   promise.resolve() = _reject;
+   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise' instead
    */
-  d.resolve = deprecate(d.reject, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.promise = deprecate(d.promise, '[G3W-CLIENT] jQuery $.Deferred::promise() is deprecated, use native Promise() instead');
 
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.resolve' instead
@@ -100,18 +93,35 @@ $.Deferred = function() {
    *   promise.resolve() = _resolve;
    *   promise.resolve() = _reject;
    */
-  d.reject = deprecate(d.reject, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.resolve = deprecate(d.reject, '[G3W-CLIENT] jQuery $.Deferred::resolve() is deprecated, use native Promise() instead');
+
+  /**
+   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.resolve' instead
+   * 
+   * In case you need similar behavior, you can implement it on you own in vanilla JavaScript:
+   * 
+   *   let _resolve, _reject;
+   *   let promise = new Promise((resolve, reject) => { _resolve = resolve; _reject = reject; });
+   *   promise.resolve() = _resolve;
+   *   promise.resolve() = _reject;
+   */
+  d.reject = deprecate(d.reject, '[G3W-CLIENT] jQuery $.Deferred::reject() is deprecated, use native Promise() instead');
+
+  /**
+   * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.then' instead
+   */
+  d.done = deprecate(d.done, '[G3W-CLIENT] jQuery $.Deferred::done() is deprecated, use native Promise() instead');
 
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.catch' instead
    */
-  d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.fail = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred::fail() is deprecated, use native Promise() instead');
   d.catch = deprecate(d.fail, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
 
   /**
    * @deprecated since v3.8. Will be removed in v4.x. Use native 'Promise.finally' instead
    */
-  d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
+  d.always = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred::always() is deprecated, use native Promise() instead');
   d.finally = deprecate(d.always, '[G3W-CLIENT] jQuery $.Deferred() is deprecated, use native Promise() instead');
 
   return d;
