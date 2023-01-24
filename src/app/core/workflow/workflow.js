@@ -13,13 +13,6 @@ function Workflow(options={}) {
   base(this);
   //current promise working
   this._promise = null;
-  /** Object contain resolve and reject method of current running pending promise *
-   *  It used for example in reject method Workflow instance to reject current pending Promise
-   * */
-  this._promise_methods = {
-    resolve: null,
-    reject: null
-  };
   // inputs mandatory to work with editing
   this._inputs = inputs;
   this._context = context;
@@ -154,21 +147,21 @@ proto._isThereUserMessaggeSteps = function() {
   return Object.keys(this._userMessageSteps).length;
 };
 
-proto.reject  = function(){
-  this._promise && this._promise_methods.reject();
+proto.reject  = function() {
+  this._promise && this._promise.reject();
 };
 
-proto.resolve = function(){
-  this._promise && this._promise_methods.resolve();
+proto.resolve = function() {
+  this._promise && this._promise.resolve();
 };
 
 // start workflow
 proto.start = function(options={}) {
+  let _resolve, _reject;
 
   this._promise = new Promise((resolve, reject) => {
-    /** Set reject  and resolve method of current Promise to handle in resolve, reject Workflow instance **/
-    this._promise_methods.resolve = resolve;
-    this._promise_methods.reject = reject;
+    _resolve = resolve; 
+    _reject = reject;
     this._inputs = options.inputs;
     this._context = options.context || {};
     const isChild = this._context.isChild || false;
@@ -213,15 +206,17 @@ proto.start = function(options={}) {
     this.emit('start');
   });
 
+  // save an internal reference to current resolve() and reject() methods
+  this._promise.resolve = _resolve;
+  this._promise.reject = _reject;
+
   return this._promise;
 };
 
 // stop workflow during flow
 proto.stop = function() {
-  /** Reset promise and methods **/
+  // reset promise
   this._promise = null;
-  this._promise_methods.resolve = null;
-  this._promise_methods.reject = null;
   return new Promise((resolve, reject) => {
     // stop child workflow
     this._stopChild()
