@@ -236,7 +236,12 @@
             info.action = ()=>this.$options.queryResultsService.showBBOX(query.bbox);
           } else if (query.type === "polygon") {
             info.icon =  'draw';
-            info.message =  `${query.layer.getName()} - Feature Id: ${query.fid}`;
+            /**
+             * In case of polygon feature coming from Feature layer show feature id info
+             * otherwise is is polygon feature draw temporary, no message is show other then symbol
+             * @type {string}
+             */
+            info.message =  query.layer ? `${query.layer.getName()} - Feature Id: ${query.fid}` : ' ';
             info.action = () => query.geometry && this.$options.queryResultsService.showGeometry(query.geometry);
           }
         } else if (search){}
