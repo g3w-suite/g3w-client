@@ -32,6 +32,9 @@
   {% endif %}
 </head>
 <body class="hold-transition skin-{{ skin_class|default:'blue' }} fixed {% if sidebar_collapse %} sidebar-collapse {% endif %}" >
+  {% if SETTINGS.SENTRY_JS %}
+    {{ SETTINGS.SENTRY_JS | safe }}
+  {% endif %}
   <div id="app">
     <app></app>
   </div>
