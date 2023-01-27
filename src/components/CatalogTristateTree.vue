@@ -243,7 +243,9 @@ export default {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
     select() {
-      if (!this.isGroup && !this.layerstree.external && !this.isTable) {
+      if (this.layerstree.external && typeof this.layerstree.selected !== "undefined") {
+        CatalogEventHub.$emit('treenodeexternalselected', this.layerstree);
+      } else if (!this.isGroup && !this.isTable) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },

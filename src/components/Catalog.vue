@@ -240,10 +240,41 @@ export default {
      */
     CatalogEventHub.$on('treenodeselected', function (storeid, node) {
       const mapservice = GUI.getService('map');
+      const catalogService = GUI.getService('catalog');
       let layer = CatalogLayersStoresRegistry.getLayersStore(storeid).getLayerById(node.id);
-      CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
       // emit signal of select layer from catalog
-      mapservice.emit('cataloglayerselected', layer);
+      !layer.isSelected() && catalogService.setSelectedExternalLayer({
+        layer: null,
+        type: 'vector',
+        selected: false
+      });
+      setTimeout(()=> {
+        CatalogLayersStoresRegistry.getLayersStore(storeid).selectLayer(node.id, !layer.isSelected());
+        // emit signal of select layer from catalog
+        mapservice.emit('cataloglayerselected', layer);
+      });
+    });
+
+    /**
+     * @since v3.8 For external layer add temporary
+     */
+    CatalogEventHub.$on('treenodeexternalselected', layer =>  {
+      const catalogService = GUI.getService('catalog');
+
+      // emit signal of select layer from catalog
+      catalogService.setSelectedExternalLayer({
+        layer,
+        type: 'vector',
+        selected: !layer.selected
+      });
+
+      /**
+       * Loop to all layersstores and set all layers to selected false
+       *
+       */
+      layer.selected && CatalogLayersStoresRegistry.getLayersStores().forEach(layerStore => {
+        layerStore.selectLayer(null, false);
+      });
     });
 
 

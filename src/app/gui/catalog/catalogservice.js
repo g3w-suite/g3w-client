@@ -16,7 +16,36 @@ function CatalogService() {
     layerstrees: [],
     layersgroups: []
   };
-  this.setters = {};
+  this.setters = {
+    /**
+     * @since v3.8: Moved from method to setter method
+     * @param layer
+     * @param type
+     */
+    addExternalLayer({layer, type='vector'}={}) {
+      layer.removable = true;
+      this.state.external[type].push(layer);
+    },
+    /**
+     * @since v3.8: Moved from method to setter method
+     * @param layer
+     * @param type
+     */
+    removeExternalLayer({name, type='vector'}={}) {
+      this.state.external[type].filter((layer, index) => {
+        if (layer.name === name) {
+          this.state.external[type].splice(index, 1);
+          return true
+        }
+      });
+    },
+    setSelectedExternalLayer({layer, type, selected}){
+      this.state.external[type].forEach(externalLayer => {
+        if (typeof externalLayer.selected != "undefined")
+          externalLayer.selected = (layer === externalLayer) ? selected : false;
+      })
+    }
+  };
   base(this);
   const layersStores = CatalogLayersStoresRegistry.getLayersStores();
 
@@ -65,20 +94,6 @@ proto.addLayersGroup = function(layersGroup) {
   this.state.layersgroups.push(layersGroup);
 };
 
-proto.addExternalLayer = function({layer, type='vector'}={}) {
-  layer.removable = true;
-  this.state.external[type].push(layer);
-};
-
-proto.removeExternalLayer = function({name, type='vector'}={}) {
-  this.state.external[type].find((layer, index) => {
-    if (layer.name === name) {
-      this.state.external[type].splice(index, 1);
-      return true
-    }
-  });
-};
-
 proto.addLayersStoreToLayersTrees = function(layersStore) {
   this.state.layerstrees.push({
     tree: layersStore.getLayersTree(),
@@ -100,6 +115,29 @@ proto.changeMapTheme = async function(map_theme){
   });
   ApplicationService.changeProjectView(false);
   return changeMapThemeProjectObj;
+};
+
+/**
+ * @since v3.8
+ */
+proto.getExternalLayers = function({type="vector"}){
+  return this.state.external[type];
+};
+
+proto.getExternalSelectedLayers = function({type="vector"}){
+  return this.getExternalLayers({type}).filter(layer => layer.selected);
+};
+
+proto.getExternalLayerById = function({id, type="vector"}){
+  return this.state.external[type].find(layer => layer.id === id);
+};
+
+proto.isExternalLayerSelected = function({id, type}){
+  const externalLayer = this.getExternalLayerById({
+    id,
+    type
+  });
+  return externalLayer && externalLayer.selected;
 };
 
 module.exports = CatalogService;
