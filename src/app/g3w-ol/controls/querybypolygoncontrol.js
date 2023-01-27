@@ -1,15 +1,21 @@
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
+import GUI from 'services/gui';
 
 const { merge } = require('core/utils/ol');
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 const PickCoordinatesInteraction = require('g3w-ol/interactions/pickcoordinatesinteraction');
-const { getAllPolygonGeometryTypes } = require('core/utils/geo').Geometry;
+const { Geometry : {
+    getAllPolygonGeometryTypes,
+    isPolygonGeometryType
+  }
+} = require('core/utils/geo');
 
 const VALIDGEOMETRIES = getAllPolygonGeometryTypes();
 
 const QueryByPolygonControl = function(options={}) {
   const {spatialMethod=SPATIALMETHODS[0]} = options;
   this.layers = options.layers || [];
+  this.externalLayer = [];
   this.unwatches = [];
   this.listenPolygonLayersChange();
   options.visible = this.checkVisibile(this.layers);
@@ -24,6 +30,7 @@ const QueryByPolygonControl = function(options={}) {
       const geometryType = selectedLayer.getGeometryType();
       const querable = selectedLayer.isQueryable();
       if (selected){
+        console.log('qua')
         if (this.getGeometryTypes().indexOf(geometryType) !== -1) {
           this.setEnable(querable ? selectedLayer.isVisible(): querable);
         } else this.setEnable(false, false);
@@ -43,6 +50,25 @@ const QueryByPolygonControl = function(options={}) {
   InteractionControl.call(this, options);
   //starting disabled
   this.setEnable(false);
+  /**
+   * @since v3.8 Add listen event to handle external vector layer
+   * with Polygon or Multipolygon Geometry type add temporary to the project
+   */
+  const CatalogService = GUI.getService('catalog');
+  CatalogService.onafter('addExternalLayer', ({layer, type})=> {
+    if (type === 'vector' && isPolygonGeometryType(layer.geometryType)){
+      this.externalLayer.push(layer);
+      this.unwatches.push(VM.$watch(() =>  layer.selected, selected => {
+        // need to be visible or selected
+        console.log('qui')
+        this.setEnable(selected);
+      }));
+
+    }
+  });
+  CatalogService.onafter('removeExternalLayer', ({name, type})=> {
+    if (type === 'vector') this.externalLayer = this.externalLayer.filter(layer => name !== layer.name);
+  });
 };
 
 ol.inherits(QueryByPolygonControl, InteractionControl);
