@@ -2712,6 +2712,7 @@ proto.addExternalLayer = async function(externalLayer, options={}) {
             id+=1;
           });
           externalLayer.geometryType = features[0].getGeometry().getType();
+          externalLayer.selected = false;
         }
         extent = layer.getSource().getExtent();
         externalLayer.bbox = {
