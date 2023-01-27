@@ -1610,6 +1610,34 @@ const geoutils = {
     }
     return dissolvedFeature;
   },
+  /**
+   * @since 3.8 Add methods within and intersects
+   */
+  /**
+   *
+   * Check if geometryToCheck is within geometry
+   * @param geometry: Geometry
+   * @param geometryToCheck: Geometry
+   * @returns Boolean
+   */
+  within(geometry, geometryToCheck){
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsGeometry = olFromJsts.read(geometry);
+    const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
+    return jstsGeometryToCheck.within(jstsGeometry)
+  },
+  /**
+   * Check if geometry intersect with geometryCheck
+   * @param geometry
+   * @param geometryToCheck
+   * @returns Boolean
+   */
+  intersects(geometry, geometryToCheck){
+    const olFromJsts = new jsts.io.OL3Parser();
+    const jstsGeometry = olFromJsts.read(geometry);
+    const jstsGeometryToCheck = olFromJsts.read(geometryToCheck);
+    return jstsGeometry.intersects(jstsGeometryToCheck)
+  },
 
   /**
    * Method to find Self Intersection
