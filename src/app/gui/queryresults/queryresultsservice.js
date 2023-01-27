@@ -8,7 +8,11 @@ import QueryPolygonCsvAttributesComponent from 'components/QueryResultsActionQue
 import ApplicationService from 'services/application';
 
 const {base, inherit, noop, downloadFile, throttle, getUniqueDomId, copyUrl } = require('core/utils/utils');
-const { createFeatureFromFeatureObject } = require('core/utils/geo');
+const {
+  createFeatureFromFeatureObject,
+  intersects,
+  within
+} = require('core/utils/geo');
 const {getAlphanumericPropertiesFromFeature, createFeatureFromGeometry, createFeatureFromBBOX, createFeatureFromCoordinates} = require('core/utils/geo');
 const {t} = require('core/i18n/i18n.service');
 const Layer = require('core/layers/layer');
@@ -1202,7 +1206,7 @@ proto.unregisterVectorLayer = function(vectorLayer) {
 
 proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
   let isVisible = false;
-  const {coordinates, bbox, geometry} = query; // extract information about query type
+  const {coordinates, bbox, geometry, filterConfig={}} = query; // extract information about query type
   let features = [];
   switch (vectorLayer.constructor) {
     case VectorLayer:
@@ -1225,6 +1229,7 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
     });
     //case bbox
   } else if (bbox && Array.isArray(bbox)) {
+    const {spatialMethod} = filterConfig;
     const geometry = ol.geom.Polygon.fromExtent(bbox);
     switch (vectorLayer.constructor) {
       case VectorLayer:
@@ -1232,7 +1237,18 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
         break;
       case ol.layer.Vector:
         vectorLayer.getSource().getFeatures().forEach(feature => {
-          geometry.intersectsExtent(feature.getGeometry().getExtent()) && features.push(feature);
+          let add = false;
+          if (spatialMethod) {
+            switch (spatialMethod) {
+              case 'intersects':
+                add = intersects(geometry, feature.getGeometry());
+                break;
+              case 'within':
+                add = within(geometry, feature.getGeometry());
+                break;
+            }
+          } else add = geometry.intersectsExtent(feature.getGeometry().getExtent());
+          add && features.push(feature);
         });
         break;
     }
@@ -1257,13 +1273,33 @@ proto.getVectorLayerFeaturesFromQueryRequest = function(vectorLayer, query={}){
 
 proto._addVectorLayersDataToQueryResponse = function() {
   this.onbefore('setQueryResponse', (queryResponse, options={}) => {
-    const {query={}} = queryResponse;
+    const catalogService = GUI.getService('catalog');
     const {add=false}= options;
-    !add && this._vectorLayers.forEach(vectorLayer => {
-      const responseObj = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, query);
-      if(!queryResponse.data) queryResponse.data = [];
-      queryResponse.data.push(responseObj);
-    })
+    const {query={}} = queryResponse;
+    if (!add) {
+      let addVectorLayersToQueryResponse = [];
+      if (query.type === 'coordinates' || query.type === 'bbox'){
+        const selectedVectorLayers = this._vectorLayers.filter(vectorLayer => {
+          return catalogService.isExternalLayerSelected({
+            id: vectorLayer.get('id'),
+            type: 'vector'
+          });
+        });
+        addVectorLayersToQueryResponse = selectedVectorLayers.length ? selectedVectorLayers: this._vectorLayers;
+      } else if (query.type === 'polygon') {
+        addVectorLayersToQueryResponse = this._vectorLayers.filter(vectorLayer => {
+          return !catalogService.isExternalLayerSelected({
+            id: vectorLayer.get('id'),
+            type: 'vector'
+          });
+        });
+      }
+      addVectorLayersToQueryResponse.forEach(vectorLayer => {
+        const responseObj = this.getVectorLayerFeaturesFromQueryRequest(vectorLayer, query);
+        if(!queryResponse.data) queryResponse.data = [];
+        queryResponse.data.push(responseObj);
+      });
+    }
   });
 };
 
