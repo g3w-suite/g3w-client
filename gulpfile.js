@@ -18,6 +18,8 @@ const buffer      = require('vinyl-buffer');
 const source      = require('vinyl-source-stream');
 
 // Node.js
+const exec        = require('child_process').exec;
+const execSync    = require('child_process').execSync;
 const del         = require('del');
 const fs          = require('fs');
 const path        = require('path');
@@ -55,12 +57,16 @@ const __H1 = __INFO + "\n";
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
 
-// Bult-in client plugins
+// Built-in client plugins
 const default_plugins = [
   'editing',
   'qplotly',
   'qtimeseries'
 ];
+// Locally developed client plugins = [ default_plugins ] + [ g3w.plugins ]
+const dev_plugins = Array.from(new Set(
+  default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))
+));
 
 // production const to set environmental variable
 function setNODE_ENV() {
@@ -343,19 +349,15 @@ gulp.task('browser-sync', function() {
  * [submodule "src/plugins/qtimeseries"] <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
  */
 gulp.task('clone:default_plugins', function() {
-  const { execSync } = require('child_process');
-  return new Promise(async done => {
-    console.log(H1__ + `Cloning default plugins` + __H1);
-    for (const pluginName of default_plugins) {
-      if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
-        execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
-      }
-      if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
-        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
-      }
+  console.log(H1__ + `Cloning default plugins` + __H1);
+  for (const pluginName of default_plugins) {
+    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
+      execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
     }
-    done();
-  });
+    if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
+      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
+    }
+  }
 });
 
 /**
@@ -371,41 +373,28 @@ gulp.task('clone:default_plugins', function() {
  * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
  */
 gulp.task('build:dev_plugins', function() {
-  const { execSync } = require('child_process');
-  const dev_plugins = Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))));
-  return new Promise(async done => {
-    for (const pluginName of dev_plugins) {
-      console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
-      try {
-        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
-      } catch(e) { /* fails silently */ }
-    }
-    done();
-  });
+  for (const pluginName of dev_plugins) {
+    console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
+    try {
+      execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
+    } catch(e) { /* soft fails on missing `gulp default` task */ }
+  }
 });
 
 /**
- * Run `gulp watch` on each g3w.plugin folder
+ * Run `gulp watch` on each g3w.plugins folder
  */
 gulp.task('watch:plugins', function() {
-  const { exec } = require('child_process');
-  const dev_plugins = Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))));
-  return new Promise(async done => {
-    for (const pluginName of dev_plugins) {
-      console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
-      exec(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js watch`,
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-          }
-          console.log(`stdout: ${stdout}`);
-          console.error(`stderr: ${stderr}`);
-        }
-      );
-    }
-    // done();
-  });
+  for (const pluginName of dev_plugins) {
+    console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
+    exec(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js watch`,
+      (error, stdout, stderr) => {
+        if (error) { console.error(`exec error: ${error}`); return; }
+        console.log(`stdout: ${stdout}`);
+        console.error(`stderr: ${stderr}`);
+      }
+    );
+  }
 });
 
 /**
