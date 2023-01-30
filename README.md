@@ -101,7 +101,7 @@ npm run dev            # frontend server  (g3w-client)
 ```
 
 ```sh
-npm run watch:plugins  # built-in plugins (editing, qplotly, qtimeseries)
+npm run watch:plugins  # watch built-in plugins (editing, qplotly, qtimeseries)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
@@ -128,7 +128,7 @@ http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 
 ### Plugins
 
-If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder and then update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
+If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder:
 
 ```sh
 .
@@ -139,6 +139,8 @@ If you want develop client plugins you need place them in the [`src/plugins`](ht
         ├── sidebar
         └── ...
 ```
+
+Update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
 
 ```js
 // overrides global `window.initConfig.group.plugins` property for custom plugin development
@@ -156,7 +158,7 @@ And then start again the development servers:
 ```sh
 npm run docker:up      # backend server (g3w-admin)
 npm run dev            # frontend server (g3w-client)
-npm run watch:plugins  # built-in plugins + custom plugins (base, eleprofile, sidebar)
+npm run watch:plugins  # watch built-in plugins + any custom plugin (eg. base, eleprofile, sidebar)
 ```
 
 For further information about plugin development, see also: [`src/plugins/README.md`](https://github.com/g3w-suite/g3w-client/blob/dev/src/src/plugins/README.md)
