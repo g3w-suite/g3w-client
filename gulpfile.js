@@ -45,8 +45,19 @@ const g3w         = require('./config');
 let production   = false;
 let outputFolder = g3w.admin_overrides_folder;
 
+// ANSI color codes
+const H1__ = "\n\n\033[0;32m\#\#\# ";
+const __H1 = " \#\#\# \033[0m\n";
+
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
+
+// Bult-in client plugins
+const default_plugins = [
+  'editing',
+  'qplotly',
+  'qtimeseries'
+];
 
 // production const to set environmental variable
 function setNODE_ENV() {
@@ -324,20 +335,47 @@ gulp.task('browser-sync', function() {
 /**
  * Make sure that core client plugins are there
  * 
+ * [submodule "src/plugins/editing"]     <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
  * [submodule "src/plugins/qplotly"]     <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
  * [submodule "src/plugins/qtimeseries"] <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
- * [submodule "src/plugins/editing"]     <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
  */
 gulp.task('clone:default_plugins', function() {
   const { execSync } = require('child_process');
   return new Promise(async done => {
-    for (const pluginName of ['editing', 'qplotly', 'qtimeseries']) {
+    console.log(H1__ + `Cloning default plugins` + __H1);
+    for (const pluginName of default_plugins) {
       if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/.git`)) {
-        execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`);
+        execSync(`git clone https://github.com/g3w-suite/g3w-client-plugin-${pluginName}.git ${g3w.pluginsFolder}/${pluginName}`, {stdio: 'inherit'});
       }
       if (!fs.existsSync(`${g3w.pluginsFolder}/${pluginName}/plugin.js`)) {
-        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js --task watch`);
+        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
       }
+    }
+    done();
+  });
+});
+
+/**
+ * Make sure that all g3w.plugins bundles are there
+ * 
+ * CORE PLUGINS:
+ * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
+ * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
+ * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
+ * 
+ * CUSTOM PLUGINS:
+ * - [submodule "src/plugins/eleprofile"]  --> src/plugins/eleprofile/plugin.js
+ * - [submodule "src/plugins/sidebar"]     --> src/plugins/sidebar/plugin.js
+ */
+gulp.task('build:dev_plugins', function() {
+  const { execSync } = require('child_process');
+  const dev_plugins = Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))));
+  return new Promise(async done => {
+    for (const pluginName of dev_plugins) {
+      console.log(H1__ + `Building plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __H1);
+      try {
+        execSync(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js default`, {stdio: 'inherit'});
+      } catch(e) { /* fails silently */ }
     }
     done();
   });
@@ -437,6 +475,7 @@ gulp.task('dev', done => runSequence(
   // 'clean:admin',
   'clean:overrides',
   'clone:default_plugins',
+  'build:dev_plugins',
   'build:client',
   'browser-sync',
   done
