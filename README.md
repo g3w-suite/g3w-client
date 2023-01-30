@@ -94,7 +94,13 @@ You can start the built-in development servers by using the following:
 
 ```sh
 npm run docker:up      # backend server   (g3w-admin)
+```
+
+```sh
 npm run dev            # frontend server  (g3w-client)
+```
+
+```sh
 npm run watch:plugins  # built-in plugins (editing, qplotly, qtimeseries)
 ```
 
@@ -122,7 +128,7 @@ http://localhost:3000/en/map/eleprofile/qdjango/2 # g3w-client (development)
 
 ### Plugins
 
-If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder and then update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordinly:
+If you want develop client plugins you need place them in the [`src/plugins`](https://github.com/g3w-suite/g3w-client/blob/dev/src/plugins) folder and then update your [`config.js`](https://github.com/g3w-suite/g3w-client/blob/dev/config.template.js) file accordingly:
 
 ```sh
 .
@@ -135,10 +141,17 @@ If you want develop client plugins you need place them in the [`src/plugins`](ht
 ```
 
 ```js
-const G3W_PLUGINS = [ 'base', 'eleprofile', 'sidebar', /* ... */ ]; // overrides `window.initConfig.group.plugins`
+// overrides global `window.initConfig.group.plugins` property for custom plugin development
+
+const G3W_PLUGINS = [
+  'base',
+  'eleprofile',
+  'sidebar',
+  ...
+];
 ```
 
-And then restart client development servers:
+And then start again the development servers:
 
 ```sh
 npm run docker:up      # backend server (g3w-admin)
@@ -234,9 +247,21 @@ Currently the built-in and custom plugins are managed with several "independent"
 You can use the following commands to get the latest changes of built-in plugins:
 
 ```sh
-cd /g3w-client/src/plugins/editing && git pull editing
-cd /g3w-client/src/plugins/qplotly && git pull qplotly
-cd /g3w-client/src/plugins/qtimeseries && git pull qtimeseries
+cd /g3w-client/src/plugins/editing
+
+git pull editing
+```
+
+```sh
+cd /g3w-client/src/plugins/qplotly
+
+git pull qplotly
+```
+
+```sh
+cd /g3w-client/src/plugins/qtimeseries
+
+git pull qtimeseries
 ```
 
 If you are looking for an alternative workflow, also try to take a look at [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) or [git subtrees](https://www.atlassian.com/git/tutorials/git-subtree)
