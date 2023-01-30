@@ -1,6 +1,7 @@
-<!-- ORIGINAL SOURCE: -->
-<!-- catalog/vue/legend_items.html@v3.4 -->
-<!-- gui/catalog/vue/catalog.js@v3.4 -->
+<!--
+  @file
+  @since v3.7
+-->
 
 <template>
   <div class="legend-item">
@@ -14,10 +15,10 @@
 
 <script>
 import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
-
-const ApplicationService = require('core/applicationservice');
-const GUI = require('gui/gui');
-const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+import CatalogLayersStoresRegistry from 'store/catalog-layers';
+import ApplicationService from 'services/application';
+import ProjectsRegistry from 'store/projects';
+import GUI from 'services/gui';
 
 export default {
   props: {
@@ -37,19 +38,19 @@ export default {
     }
   },
   watch: {
+    /**
+     * It change when check/uncheck layer on toc
+     */
     layers: {
-      handler(layers){
-        // used to prevent duplicate legend
-        setTimeout(()=>{
-          this.mapReady && this.getLegendSrc(layers)
-        })
+      handler(){
+       //reset the legend urls array
+       this.legendurls = [];
       },
       immediate: false
     },
     active(bool) {
-      if (bool && this.waitinglegendsurls.length) {
-        this.legendurls = [...this.waitinglegendsurls];
-        this.waitinglegendsurls = [];
+      if (bool && (this.dynamic || this.legendurls.length === 0)) {
+        this.getLegendSrc(this.layers);
       }
     }
   },
@@ -73,84 +74,91 @@ export default {
       return legendurl;
     },
     async getLegendSrc(_layers) {
-      const urlMethodsLayersName = {
-        GET: {},
-        POST: {}
-      };
-      const self = this;
-      this.legendurls = [];
-      this.waitinglegendsurls = [];
-      await this.$nextTick();
-      // need to filter geolayer
-      const layers = _layers.filter(layer => layer.geolayer);
-      for (let i=0; i< layers.length; i++) {
-        const layer = layers[i];
-        const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
-        const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
-        const url = `${this.getLegendUrl(layer, this.legend.config)}`;
-        if (layer.source && layer.source.url) urlLayersName[url] = [];
-        else {
-          const [prefix, layerName] = url.split('LAYER=');
-          if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
-          urlLayersName[prefix].unshift({
-            layerName,
-            style: style && style.name
-          });
-        }
-      }
-      for (const method in urlMethodsLayersName) {
-        const urlLayersName = urlMethodsLayersName[method];
-        if (method === 'GET')
-          for (const url in urlLayersName ) {
-            const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
-            const legendUrlObject = {
-              loading: true,
-              url: legendUrl,
-              error: false
-            };
-            this.active ? this.legendurls.push(legendUrlObject) : this.waitinglegendsurls.push(legendUrlObject);
-          }
-        else {
-          for (const url in urlLayersName ) {
-            const xhr = new XMLHttpRequest();
-            let [_url, params] = url.split('?');
-            params = params.split('&');
-            const econdedParams = [];
-            params.forEach(param => {
-              const [key, value] = param.split('=');
-              econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+      //need to be active
+      if (this.active) {
+        const urlMethodsLayersName = {
+          GET: {},
+          POST: {}
+        };
+        const self = this;
+        this.legendurls = [];
+        await this.$nextTick();
+        // need to filter geolayer
+        const layers = _layers.filter(layer => layer.geolayer);
+        for (let i=0; i< layers.length; i++) {
+          const layer = layers[i];
+          const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
+          const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
+          const url = `${this.getLegendUrl(layer, this.legend.config)}`;
+          if (layer.source && layer.source.url) urlLayersName[url] = [];
+          else {
+            const [prefix, layerName] = url.split('LAYER=');
+            if (!urlLayersName[prefix]) urlLayersName[prefix] = [];
+            urlLayersName[prefix].unshift({
+              layerName,
+              style: style && style.name
             });
-            params = econdedParams.join('&');
-            params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
-            params+= `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
-            params+= `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
-            xhr.open('POST', _url);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-            xhr.responseType = 'blob';
-            const legendUrlObject = {
-              loading: true,
-              url: null,
-              error: false
-            };
-            self.active ? self.legendurls.push(legendUrlObject): self.waitinglegendsurls.push(legendUrlObject);
-            xhr.onload = function() {
-              const data = this.response;
-              if (data !== undefined)
-                legendUrlObject.url = window.URL.createObjectURL(data);
-              legendUrlObject.loading = false;
-            };
-            xhr.onerror = function() {
-              legendUrlObject.loading = false;
-            };
-            xhr.send(params);
+          }
+        }
+        for (const method in urlMethodsLayersName) {
+          const urlLayersName = urlMethodsLayersName[method];
+          if (method === 'GET')
+            for (const url in urlLayersName ) {
+              const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
+              const legendUrlObject = {
+                loading: true,
+                url: legendUrl,
+                error: false
+              };
+              this.legendurls.push(legendUrlObject)
+            }
+          else {
+            for (const url in urlLayersName ) {
+              const xhr = new XMLHttpRequest();
+              let [_url, params] = url.split('?');
+              params = params.split('&');
+              const econdedParams = [];
+              params.forEach(param => {
+                const [key, value] = param.split('=');
+                econdedParams.push(`${key}=${encodeURIComponent(value)}`);
+              });
+              params = econdedParams.join('&');
+              params = `${params}&LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}`;
+              params+= `&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}`;
+              params+= `${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`;
+              const legendUrlObject = {
+                loading: true,
+                url: null,
+                error: false
+              };
+
+              xhr.open('POST', _url);
+              xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+              xhr.responseType = 'blob';
+              self.legendurls.push(legendUrlObject);
+
+              xhr.onload = function() {
+                const data = this.response;
+                if (data !== undefined)
+                  legendUrlObject.url = window.URL.createObjectURL(data);
+                legendUrlObject.loading = false;
+              };
+              xhr.onerror = function() {
+                legendUrlObject.loading = false;
+              };
+              xhr.send(params);
+            }
           }
         }
       }
     }
   },
   created(){
+    /**
+     * check if has a dynamic legend
+     */
+    this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
     this.mapReady = false;
-    this.waitinglegendsurls = []; // urls that are waiting to be loaded
     CatalogEventHub.$on('layer-change-style', (options={}) => {
       const {layerId} = options;
       let changeLayersLegend =[];
@@ -167,10 +175,13 @@ export default {
   async mounted() {
     await this.$nextTick();
     const mapService = GUI.getService('map');
-    mapService.on('change-map-legend-params', ()=>{
-      this.mapReady = true;
-      this.getLegendSrc(this.layers);
-    });
+    /** In case of dynamic legend **/
+    if (this.dynamic) {
+      mapService.on('change-map-legend-params', ()=>{
+        this.mapReady = true;
+        this.getLegendSrc(this.layers);
+      });
+    } else this.mapReady = true;
   },
 };
 </script>
