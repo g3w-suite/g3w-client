@@ -46,8 +46,11 @@ let production   = false;
 let outputFolder = g3w.admin_overrides_folder;
 
 // ANSI color codes
-const H1__ = "\n\n\033[0;32m\#\#\# ";
-const __H1 = " \#\#\# \033[0m\n";
+const INFO__ = "\033[0;32m\#\#\# ";
+const __INFO = " \#\#\# \033[0m";
+const H1__ = "\n\n" + INFO__;
+const __H1 = __INFO + "\n";
+
 
 // Retrieve project dependencies ("g3w-client")
 const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !== 'vue');
@@ -356,7 +359,7 @@ gulp.task('clone:default_plugins', function() {
 });
 
 /**
- * Make sure that all g3w.plugins bundles are there
+ * Make sure that all g3w.plugins bundles are there (NB: without watching them)
  * 
  * CORE PLUGINS:
  * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
@@ -378,6 +381,30 @@ gulp.task('build:dev_plugins', function() {
       } catch(e) { /* fails silently */ }
     }
     done();
+  });
+});
+
+/**
+ * Run `gulp watch` on each g3w.plugin folder
+ */
+gulp.task('watch:plugins', function() {
+  const { exec } = require('child_process');
+  const dev_plugins = Array.from(new Set(default_plugins.concat(g3w.plugins instanceof Array ? plugins : Object.keys(g3w.plugins))));
+  return new Promise(async done => {
+    for (const pluginName of dev_plugins) {
+      console.log(INFO__ + `Watching plugin: ${g3w.pluginsFolder}/${pluginName}/plugin.js` + __INFO);
+      exec(`gulp --gulpfile ${g3w.pluginsFolder}/${pluginName}/gulpfile.js watch`,
+        (error, stdout, stderr) => {
+          if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+          }
+          console.log(`stdout: ${stdout}`);
+          console.error(`stderr: ${stderr}`);
+        }
+      );
+    }
+    // done();
   });
 });
 
