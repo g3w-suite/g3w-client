@@ -33,8 +33,8 @@
       </span>
       <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
         <span class="collapse-expande-collapse-icon" v-if="legendlayerposition === 'toc' || !isGroup && layerstree.categories"
-          @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
-          :class="g3wtemplate.getFontClass(layerstree.legend.show && layerstree.visible ? 'caret-down' : 'caret-right')">
+          @click.self.stop="expandCollapse"
+          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')">
         </span>
         <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
           (showLayerTocLegend || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
