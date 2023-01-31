@@ -244,9 +244,9 @@ For more info:
 
 <summary>3. How can I keep client plugins updated ?</summary>
 
-Currently the built-in and custom plugins are managed with several "independent" git repositories, so there is currently no automated task to achieve this.
+Currently built-in and custom plugins are managed with several "independent" git repositories, so there is currently no automated task to achieve this.
 
-You can use the following commands to get the latest changes of built-in plugins:
+You can use the following commands to fetch the latest changes of built-in plugins:
 
 ```sh
 cd /g3w-client/src/plugins/editing
