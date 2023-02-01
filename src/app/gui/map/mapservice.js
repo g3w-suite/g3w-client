@@ -1062,6 +1062,11 @@ proto._setupControls = function() {
             });
           }
           break;
+        case 'zoomhistory':
+          console.log(controlType)
+          control = this.createMapControl(controlType, {});
+          break;
+
       }
     });
     return this.getMapControls()
