@@ -5,7 +5,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '0'}"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.stop="selectorZoom" :style="{marginLeft: !isGroup ? '5px' : '0'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -80,6 +80,10 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
+const CLICKSELECTZOOMEVENT = {
+  count: 0,
+  timeout: null
+};
 
 export default {
   props : ['layerstree', 'storeid', 'legend', 'legendplace', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
@@ -242,9 +246,33 @@ export default {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
-    select() {
-      if (!this.isGroup && !this.layerstree.external && !this.isTable) {
+    select(){
+      if (!this.layerstree.external) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
+      }
+    },
+    selectorZoom() {
+      if (!this.isTable && !this.isGroup) {
+        CLICKSELECTZOOMEVENT.count+=1;
+        if (!CLICKSELECTZOOMEVENT.timeout) {
+          CLICKSELECTZOOMEVENT.timeout = setTimeout(()=>{
+            if (CLICKSELECTZOOMEVENT.count === 1) {
+              this.select();
+            } else if (CLICKSELECTZOOMEVENT.count === 2){
+              if (this.layerstree.bbox) {
+                const bbox = [
+                  this.layerstree.bbox.minx,
+                  this.layerstree.bbox.miny,
+                  this.layerstree.bbox.maxx,
+                  this.layerstree.bbox.maxy
+                ] ;
+                GUI.getService('map').goToBBox(bbox, this.layerstree.epsg);
+              }
+            }
+            CLICKSELECTZOOMEVENT.timeout = null;
+            CLICKSELECTZOOMEVENT.count = 0;
+          }, 300)
+        }
       }
     },
     triClass () {
