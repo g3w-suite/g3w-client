@@ -32,7 +32,7 @@
         </li>
       </ul>
     </li>
-    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer">
+    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer(layerMenu.layer)">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('search')"></span>
       <span class="item-text" v-t="'catalog_items.contextmenu.zoomtolayer'"></span>
     </li>
@@ -411,10 +411,10 @@
           opacity
         });
       },
-      zoomToLayer() {
-        const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
+      zoomToLayer(layer) {
+        const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
         const mapService = GUI.getService('map');
-        mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
+        mapService.goToBBox(bbox, layer.epsg);
         this._hideMenu();
       },
       canZoom(layer) {

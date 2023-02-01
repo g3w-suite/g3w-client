@@ -5,7 +5,7 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.stop="selectorZoom" :style="{marginLeft: !isGroup ? '5px' : '0'}"
+    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.stop="clickDoubleclick" :style="{marginLeft: !isGroup ? '5px' : '0'}"
     :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
     <span v-if="isGroup"
       style="padding-right: 2px;"
@@ -80,9 +80,14 @@ import CatalogLayersStoresRegistry from 'store/catalog-layers';
 import GUI from 'services/gui';
 
 const { downloadFile } = require('core/utils/utils');
-const CLICKSELECTZOOMEVENT = {
-  count: 0,
-  timeout: null
+
+/**
+ * @since v3.8
+ *
+ */
+const CLICKDOUBLECLICKEVENT = {
+  count: 0, // count click event
+  timeoutID: null // timeoutID return by setTimeout Function
 };
 
 export default {
@@ -251,26 +256,39 @@ export default {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
-    selectorZoom() {
+    /**
+     * @since v3.8 (duplicate in CatalogLayerContextMenu.vue)
+     */
+    zoomToLayer(layer) {
+      const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
+      const mapService = GUI.getService('map');
+      mapService.goToBBox(bbox, layer.epsg);
+    },
+    /**
+     * @since v3.8 (duplicate in CatalogLayerContextMenu.vue)
+     */
+    canZoom(layer) {
+      let canZoom = false;
+      if (layer.bbox) {
+        const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
+        canZoom = bbox.find(coordinate => coordinate > 0);
+      }
+      return canZoom;
+    },
+    clickDoubleclick() {
       if (!this.isTable && !this.isGroup) {
-        CLICKSELECTZOOMEVENT.count+=1;
-        if (!CLICKSELECTZOOMEVENT.timeout) {
-          CLICKSELECTZOOMEVENT.timeout = setTimeout(()=>{
-            if (CLICKSELECTZOOMEVENT.count === 1) {
+        CLICKDOUBLECLICKEVENT.count+=1;
+        if (!CLICKDOUBLECLICKEVENT.timeoutID) {
+          CLICKDOUBLECLICKEVENT.timeoutID = setTimeout(()=>{
+            if (CLICKDOUBLECLICKEVENT.count === 1) {
               this.select();
-            } else if (CLICKSELECTZOOMEVENT.count === 2){
-              if (this.layerstree.bbox) {
-                const bbox = [
-                  this.layerstree.bbox.minx,
-                  this.layerstree.bbox.miny,
-                  this.layerstree.bbox.maxx,
-                  this.layerstree.bbox.maxy
-                ] ;
-                GUI.getService('map').goToBBox(bbox, this.layerstree.epsg);
+            } else if (CLICKDOUBLECLICKEVENT.count === 2){
+              if (this.canZoom(this.layerstree)) {
+                this.zoomToLayer(this.layerstree)
               }
             }
-            CLICKSELECTZOOMEVENT.timeout = null;
-            CLICKSELECTZOOMEVENT.count = 0;
+            CLICKDOUBLECLICKEVENT.timeoutID = null;
+            CLICKDOUBLECLICKEVENT.count = 0;
           }, 300)
         }
       }
