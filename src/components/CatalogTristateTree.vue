@@ -4,8 +4,12 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.prevent="select" :style="{marginLeft: !isGroup ? '5px' : '0'}"
-    :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
+    class="tree-item"
+    @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
+    @click.stop="onTreeItemClick"
+    :style="{marginLeft: !isGroup ? '5px' : '0'}"
+    :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }"
+  >
     <span v-if="isGroup"
       style="padding-right: 2px;"
       :class="[{bold : isGroup}, layerstree.expanded ? g3wtemplate.getFontClass('caret-down') : g3wtemplate.getFontClass('caret-right')]"
@@ -32,8 +36,8 @@
       </span>
       <span v-show="!layerstree.hidden" class="checkbox-layer" :class="parentFolder ? 'child' : 'root'">
         <span class="collapse-expande-collapse-icon" v-if="legendlayerposition === 'toc' || !isGroup && layerstree.categories"
-          @click.self.stop="()=> layerstree.legend.show = !layerstree.legend.show"
-          :class="g3wtemplate.getFontClass(layerstree.legend.show && layerstree.visible ? 'caret-down' : 'caret-right')">
+          @click.self.stop="expandCollapse"
+          :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')">
         </span>
         <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
           (showLayerTocLegend || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
@@ -79,6 +83,30 @@ import CatalogEventHub from 'gui/catalog/vue/catalogeventhub';
 const {downloadFile} = require('core/utils/utils');
 const GUI = require('gui/gui');
 const CatalogLayersStoresRegistry = require('core/catalog/cataloglayersstoresregistry');
+
+
+/**
+ * Store `click` and `doubleclick` events on a single vue element.
+ *
+ * @see https://stackoverflow.com/q/41303982
+ */
+const CLICK_EVENT = {
+  count: 0,                                   // count click events
+  timeoutID: null,                            // timeoutID return by setTimeout Function
+  handleClick(callback, context) {
+    CLICK_EVENT.count += 1;                   // increment click count
+    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+      CLICK_EVENT.timeoutID = setTimeout(() => {
+        callback.call(context);
+        CLICK_EVENT.reset();
+      }, 300);
+    }
+  },
+  reset() {
+    CLICK_EVENT.count = 0;
+    CLICK_EVENT.timeoutID = null;
+  }
+};
 
 export default {
   props : ['layerstree', 'storeid', 'legend', 'legendplace', 'highlightlayers', 'parent_mutually_exclusive', 'parentFolder', 'externallayers', 'root', 'parent'],
@@ -241,11 +269,55 @@ export default {
     expandCollapse() {
       this.layerstree.expanded = !this.layerstree.expanded;
     },
-    select() {
-      if (!this.isGroup && !this.layerstree.external && !this.isTable) {
+    select(){
+      if (!this.layerstree.external) {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
+
+    /**
+     * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
+     *
+     * @since v3.8
+     */
+    zoomToLayer(layer) {
+      GUI
+        .getService('map')
+        .goToBBox(
+          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+          layer.epsg
+        );
+    },
+
+    /**
+     * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
+     *
+     * @since v3.8
+     */
+    canZoom(layer) {
+      return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
+    },
+
+    /**
+     * Handle `click` and `doubleclick` click events on a single tree item (TOC).
+     *
+     * 1 = select legend item
+     * 2 = zoom to layer bounds
+     *
+     * @since v3.8
+     */
+     onTreeItemClick() {
+      if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
+        return;
+      }
+      CLICK_EVENT.handleClick(() => {
+        switch(CLICK_EVENT.count) {
+          case 1: this.select(); break;
+          case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
+        }
+      }, this);
+    },
+
     triClass () {
       return this.layerstree.checked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
     },
