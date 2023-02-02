@@ -1,12 +1,12 @@
 const Projection = function(options={}) {
   if (!options.crs) return null;
-  const {epsg, proj4:proj4def, geographic=false, axisinverted=false, extent} = options.crs; // new structure of information crs from server
+  // structure of information crs from server set on each layer and base layer
+  const {epsg, proj4:proj4def, geographic=false, axisinverted=false, extent} = options.crs;
   proj4def && proj4.defs(epsg, proj4def);
   this._axisOrientation = axisinverted ? 'neu' : 'enu';
   const degrees = geographic;
   ol.proj.Projection.call(this, {
     code: epsg,
-    //FOR NOW FORCE TO GET EXTENT
     extent,
     axisOrientation: this._axisOrientation,
     units: degrees ? 'degrees' : 'm'
