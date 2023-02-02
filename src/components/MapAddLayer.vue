@@ -81,9 +81,6 @@ import { Chrome as ChromeComponent } from 'vue-color';
 
 import { EPSG } from 'app/constant';
 
-/**
- * @since v3.8
- */
 const Projections = require('g3w-ol/projection/projections');
 
 const { createVectorLayerFromFile, createStyleFunctionToVectorLayer } = require('core/utils/geo');
