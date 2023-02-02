@@ -82,8 +82,7 @@ import GUI from 'services/gui';
 const { downloadFile } = require('core/utils/utils');
 
 /**
- * @since v3.8
- *
+ * Use to store count click event and a timeoutID filled by setTimeout native method
  */
 const CLICKDOUBLECLICKEVENT = {
   count: 0, // count click event
@@ -265,7 +264,8 @@ export default {
       mapService.goToBBox(bbox, layer.epsg);
     },
     /**
-     * @since v3.8 (duplicate in CatalogLayerContextMenu.vue)
+     * Check if layer has bbox property
+     * (duplicate in CatalogLayerContextMenu.vue)
      */
     canZoom(layer) {
       let canZoom = false;
@@ -275,18 +275,27 @@ export default {
       }
       return canZoom;
     },
+    /**
+     * Method call on Toc item
+     * */
     clickDoubleclick() {
+      /**
+       * Check if TOC item is not a table layer or a group
+       * **/
       if (!this.isTable && !this.isGroup) {
+        // add 1 to click event on TOC item
         CLICKDOUBLECLICKEVENT.count+=1;
+        // in case of already call setTimeout method just wait
         if (!CLICKDOUBLECLICKEVENT.timeoutID) {
           CLICKDOUBLECLICKEVENT.timeoutID = setTimeout(()=>{
-            if (CLICKDOUBLECLICKEVENT.count === 1) {
+            if (CLICKDOUBLECLICKEVENT.count === 1) {// case single click
               this.select();
-            } else if (CLICKDOUBLECLICKEVENT.count === 2){
-              if (this.canZoom(this.layerstree)) {
+            } else if (CLICKDOUBLECLICKEVENT.count === 2) {// case double click
+              if (this.canZoom(this.layerstree)) { // check if it possible to zoom to layer
                 this.zoomToLayer(this.layerstree)
               }
             }
+            // reset property values of CLICKDOUBLECLICKEVENT
             CLICKDOUBLECLICKEVENT.timeoutID = null;
             CLICKDOUBLECLICKEVENT.count = 0;
           }, 300)
