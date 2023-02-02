@@ -5,8 +5,12 @@
 
 <template>
   <li
-    class="tree-item" @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)" @click.stop="clickDoubleclick" :style="{marginLeft: !isGroup ? '5px' : '0'}"
-    :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }">
+    class="tree-item"
+    @contextmenu.prevent.stop="showLayerMenu(layerstree, $event)"
+    @click.stop="onTreeItemClick"
+    :style="{marginLeft: !isGroup ? '5px' : '0'}"
+    :class="{selected: !isGroup || !isTable ? layerstree.selected : false, itemmarginbottom: !isGroup,  disabled: isInGrey, group: isGroup  }"
+  >
     <span v-if="isGroup"
       style="padding-right: 2px;"
       :class="[{bold : isGroup}, layerstree.expanded ? g3wtemplate.getFontClass('caret-down') : g3wtemplate.getFontClass('caret-right')]"
@@ -82,11 +86,26 @@ import GUI from 'services/gui';
 const { downloadFile } = require('core/utils/utils');
 
 /**
- * Use to store count click event and a timeoutID filled by setTimeout native method
+ * Store `click` and `doubleclick` events on a single vue element.
+ * 
+ * @see https://stackoverflow.com/q/41303982
  */
-const CLICKDOUBLECLICKEVENT = {
-  count: 0, // count click event
-  timeoutID: null // timeoutID return by setTimeout Function
+const CLICK_EVENT = {
+  count: 0,                                   // count click events
+  timeoutID: null,                            // timeoutID return by setTimeout Function
+  handleClick(callback, context) {
+    CLICK_EVENT.count += 1;                   // increment click count
+    if (!CLICK_EVENT.timeoutID) {             // skip and wait for timeout in order to detect double click
+      CLICK_EVENT.timeoutID = setTimeout(() => {
+        callback.call(context);
+        CLICK_EVENT.reset();
+      }, 300);
+    }
+  },
+  reset() {
+    CLICK_EVENT.count = 0;
+    CLICK_EVENT.timeoutID = null;
+  }
 };
 
 export default {
@@ -255,53 +274,50 @@ export default {
         CatalogEventHub.$emit('treenodeselected',this.storeid, this.layerstree);
       }
     },
+
     /**
-     * @since v3.8 (duplicate in CatalogLayerContextMenu.vue)
+     * @TODO refactor this, almost the Same as `CatalogLayerContextMenu.vue::zoomToLayer(layer)`
+     * 
+     * @since v3.8 
      */
     zoomToLayer(layer) {
-      const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-      const mapService = GUI.getService('map');
-      mapService.goToBBox(bbox, layer.epsg);
+      GUI
+        .getService('map')
+        .goToBBox(
+          [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+          layer.epsg
+        );
     },
+
     /**
-     * Check if layer has bbox property
-     * (duplicate in CatalogLayerContextMenu.vue)
+     * @TODO refactor this, almost the same as: `CatalogLayerContextMenu.vue::canZoom(layer))`
+     * 
+     * @since v3.8
      */
     canZoom(layer) {
-      let canZoom = false;
-      if (layer.bbox) {
-        const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-        canZoom = bbox.find(coordinate => coordinate > 0);
-      }
-      return canZoom;
+      return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
     },
+    
     /**
-     * Method call on Toc item
-     * */
-    clickDoubleclick() {
-      /**
-       * Check if TOC item is not a table layer or a group
-       * **/
-      if (!this.isTable && !this.isGroup) {
-        // add 1 to click event on TOC item
-        CLICKDOUBLECLICKEVENT.count+=1;
-        // in case of already call setTimeout method just wait
-        if (!CLICKDOUBLECLICKEVENT.timeoutID) {
-          CLICKDOUBLECLICKEVENT.timeoutID = setTimeout(()=>{
-            if (CLICKDOUBLECLICKEVENT.count === 1) {// case single click
-              this.select();
-            } else if (CLICKDOUBLECLICKEVENT.count === 2) {// case double click
-              if (this.canZoom(this.layerstree)) { // check if it possible to zoom to layer
-                this.zoomToLayer(this.layerstree)
-              }
-            }
-            // reset property values of CLICKDOUBLECLICKEVENT
-            CLICKDOUBLECLICKEVENT.timeoutID = null;
-            CLICKDOUBLECLICKEVENT.count = 0;
-          }, 300)
-        }
+     * Handle `click` and `doubleclick` click events on a single tree item (TOC).
+     * 
+     * 1 = select legend item
+     * 2 = zoom to layer bounds
+     * 
+     * @since v3.8
+     */
+     onTreeItemClick() {
+      if (!this.isGroup || !this.isTable) { // Skip if TOC item is a Group or Table layer.
+        return;
       }
+      CLICK_EVENT.onClick(() => {
+        switch(CLICK_EVENT.count) {
+          case 1: this.select(); break;
+          case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
+        }
+      }, this);
     },
+
     triClass () {
       return this.layerstree.checked ? this.g3wtemplate.getFontClass('check') : this.g3wtemplate.getFontClass('uncheck');
     },

@@ -411,20 +411,35 @@
           opacity
         });
       },
+
+      /**
+       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
+       * 
+       * @FIXME add description
+       * 
+       * @param layer 
+       */
       zoomToLayer(layer) {
-        const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-        const mapService = GUI.getService('map');
-        mapService.goToBBox(bbox, layer.epsg);
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
         this._hideMenu();
       },
+
+      /**
+       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::canZoom(layer))`
+       * 
+       * Check if layer has bbox property
+       * 
+       * @param layer 
+       */
       canZoom(layer) {
-        let canZoom = false;
-        if (layer.bbox) {
-          const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-          canZoom = bbox.find(coordinate => coordinate > 0);
-        }
-        return canZoom;
+        return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
       },
+
       getGeometryType(layerId, external=false){
         let geometryType;
         if (external){
