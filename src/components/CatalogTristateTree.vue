@@ -307,10 +307,10 @@ export default {
      * @since v3.8
      */
      onTreeItemClick() {
-      if (!this.isGroup || !this.isTable) { // Skip if TOC item is a Group or Table layer.
+      if (this.isGroup || this.isTable) { // Skip if TOC item is a Group or Table layer.
         return;
       }
-      CLICK_EVENT.onClick(() => {
+      CLICK_EVENT.handleClick(() => {
         switch(CLICK_EVENT.count) {
           case 1: this.select(); break;
           case 2: this.canZoom(this.layerstree) && this.zoomToLayer(this.layerstree); break;
