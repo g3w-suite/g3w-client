@@ -571,17 +571,17 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
   
   layers.forEach(layer => {
 
-    // set eventually layer action tool and need to be reactive
-    this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
-    this.state.currentactiontools[layer.id]        = Vue.observable(currentactiontoolslayer);
-    this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
-
     const currentactiontoolslayer = {};
     const currentationfeaturelayer = {};
     layer.features.forEach((_, idx) => {
       currentactiontoolslayer[idx] = null;
       currentationfeaturelayer[idx] = null;
     });
+
+    // set eventually layer action tool and need to be reactive
+    this.state.layeractiontool[layer.id]           = Vue.observable({ component: null, config: null });
+    this.state.currentactiontools[layer.id]        = Vue.observable(currentactiontoolslayer);
+    this.state.currentactionfeaturelayer[layer.id] = Vue.observable(currentationfeaturelayer);
 
     const is_external_layer_or_wms = (layer.external) || (layer.source ? layer.source.type === 'wms' : false);
     
@@ -702,7 +702,7 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
           downloads.push({
             id: `download_${format}_feature`,
             download: true,
-            format: format,
+            format,
             class: GUI.getFontClass(format),
             hint: `sdk.tooltips.download_${format}`,
             cbk: (layer, feature, action, index)=> {
@@ -719,7 +719,6 @@ proto.setActionsForLayers = function(layers, options={add: false}) {
       // set actionstools configs
       this.state.actiontools[DownloadFormats.name] = this.state.actiontools[DownloadFormats.name] || {};
       this.state.actiontools[DownloadFormats.name][layer.id] = { downloads };
-
       // check if has download actions
       this.state.layersactions[layer.id]
         .push({
@@ -1207,8 +1206,7 @@ proto.reset = function() {
  * 
  * @returns {[]}
  */
-proto._digestFeaturesForLayers = function(featuresForLayers) {
-  featuresForLayers = featuresForLayers || [];
+proto._digestFeaturesForLayers = function(featuresForLayers=[]) {
   let id = 0;
   const layers = [];
   let layerAttributes,
@@ -1216,7 +1214,7 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
     layerTitle,
     layerId;
 
-  // converter
+  // convert response from server
   const _handleFeatureFoLayer = featuresForLayer => {
     const layerObj = {
       editable: false,
@@ -1245,7 +1243,6 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       rawdata: null, // rawdata response
       loading: false,
     };
-
     const layer = featuresForLayer.layer;
     let sourceType;
     let extractRelations = false;
@@ -1346,10 +1343,10 @@ proto._digestFeaturesForLayers = function(featuresForLayers) {
       layerObj.attributes = this._parseAttributes(layerAttributes, featuresForLayer.features[0], sourceType);
       layerObj.attributes
         .forEach(attribute => {
-          if (formStructure) {
+          if (layerObj.formStructure) {
             const relationField = layer.getFields().find(field => field.name === attribute.name); // need to check all field also show false
             if (!relationField) {
-             formStructure.fields.push(attribute);
+              layerObj.formStructure.fields.push(attribute);
             }
           }
           if (attribute.type === 'image') {
