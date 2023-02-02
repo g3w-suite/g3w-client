@@ -23,13 +23,16 @@ proto.setup = function(config={}, options={}) {
   // Features that contain
   this.olSelectionFeatures = {}; // key id / fid of feature and values is an object with feature and added
   // state extend of layer setting geolayer property to true
-  // and adding informations of bbox
+  // and adding information of bbox
   _.extend(this.state, {
     geolayer: config.geometrytype !== "NoGeometry",
     legend: {
       url: null,
       loading: false,
       error: false,
+     /**
+      * @deprecated since 3.8. Will be removed in 4.x. Use expanded attribute instead
+      */
       show: true
     },
     external: config.source && config.source.external || false,
@@ -43,7 +46,13 @@ proto.setup = function(config={}, options={}) {
     maxscale: config.maxscale,
     ows_method: config.ows_method,
     exclude_from_legend: (typeof config.exclude_from_legend == 'boolean') ? config.exclude_from_legend : true,
-    categories: false // has more than one categories legend
+    categories: false, // has more than one categories legend,
+    /**
+     *  Expand or collapse legend item in catalog layers (TOC)
+     *
+     * @since v3.8
+     */
+    expanded: config.expanded
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
