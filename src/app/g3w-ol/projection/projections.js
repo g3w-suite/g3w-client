@@ -27,7 +27,7 @@ const Projections = {
    * Check and register epsg
    * 
    * @param epsg : "EPSG:<CODE>" Ex. "EPSG:4326"
-   * @returns {Promise<unknown>}
+   * @returns {Promise<Projection>}
    * @since v3.8
    */
   registerProjection(epsg) {
@@ -49,7 +49,6 @@ const Projections = {
       }
     })
   }
-
 };
 
 module.exports = Projections;
