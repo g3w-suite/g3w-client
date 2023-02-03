@@ -29,7 +29,7 @@ const VM = new Vue();
 function QueryResultsService() {
 
   /**
-   * @FIXME add description
+   * Service used to work with atlas (print functionality) action tool
    */
   this.printService = new PrintService();
 
@@ -39,7 +39,8 @@ function QueryResultsService() {
   this._currentLayerIds = [];
 
   /**
-   * @FIXME add description
+   * @deprecated since 3.8
+   * It used to register change project from Change map button
    */
   ProjectsRegistry.onafter('setCurrentProject', project => {
     this._project = project;
@@ -64,7 +65,7 @@ function QueryResultsService() {
   };
 
   /**
-   * @FIXME add description
+   * <Array> to store relations
    */
   this._relations = [];
 
@@ -79,7 +80,7 @@ function QueryResultsService() {
   this.plotLayerIds = [];
 
   /**
-   * @FIXME add description
+   * Current project <Project>
    */
   this._project = ProjectsRegistry.getCurrentProject();
 
@@ -197,7 +198,8 @@ function QueryResultsService() {
   });
 
   /**
-   * @FIXME add description
+   *
+   * <Array> where are store vector layer add on runtime
    */
   this._vectorLayers = [];
 
@@ -229,7 +231,7 @@ function QueryResultsService() {
   };
 
   /**
-   * @FIXME add description
+   * Core methods that used from other object to react before or after its call
    */
   this.setters = {
 
@@ -272,7 +274,7 @@ function QueryResultsService() {
     },
 
     /**
-     * @FIXME add description
+     * Method used to add custom component
      * 
      * @param component
      */
