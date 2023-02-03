@@ -128,6 +128,16 @@ $.Deferred = function() {
 }
 
 /**
+ * @deprecated since v3.8. Will be removed in v4.x. Use native 'fetch' instead
+ */
+$.get = deprecate($.get, '[G3W-CLIENT] $.get() is deprecated');
+
+/**
+ * @deprecated since v3.8. Will be removed in v4.x. Use native 'fetch' instead
+ */
+$.post = deprecate($.post, '[G3W-CLIENT] $.post() is deprecated');
+
+/**
  * @deprecated since v3.8. Will be removed in v4.x. Use ESM imports from 'vue-color' instead
  */
 globalThis.VueColor = VueColor;
