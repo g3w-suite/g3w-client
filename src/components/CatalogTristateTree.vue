@@ -24,7 +24,7 @@
     </span>
     <span v-else-if="isTable"
           v-show="!layerstree.hidden"
-          :style="{paddingLeft: !layerstree.exclude_from_legend && legendplace === 'toc' ? '17px' : '18px'}"
+          style="padding-left: 18px"
           :class="[parentFolder ? 'child' : 'root', g3wtemplate.getFontClass('table')]">
     </span>
     <template v-else>
@@ -40,8 +40,7 @@
           @click.self.stop="expandCollapse"
           :class="g3wtemplate.getFontClass(layerstree.visible && layerstree.expanded ? 'caret-down' : 'caret-right')">
         </span>
-        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :
-          (showLayerTocLegend || layerstree.categories) ? '13px' : '18px'}" @click.stop="toggle()"
+        <span :style="{paddingLeft: legendlayerposition === 'toc' ? '5px' : !isGroup && layerstree.categories ? '5px' : (!layerstree.legend && layerstree.external) ? '1px' :'18px'}" @click.stop="toggle()"
           :class="[g3wtemplate.getFontClass(layerstree.checked ? 'check': 'uncheck'), {'toc-added-external-layer':(!layerstree.legend && layerstree.external)}]">
         </span>
       </span>
@@ -127,7 +126,7 @@ export default {
       return !this.layerstree.exclude_from_legend;
     },
     showLayerTocLegend(){
-      return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer && this.legendplace === 'toc';
+      return !this.isGroup && this.showLegendLayer && this.layerstree.geolayer;
     },
     isGroup() {
       return !!this.layerstree.nodes
