@@ -31,23 +31,27 @@ function WMSLegend({layer, params, options={}}) {
     type: 'legend'
   });
   /*
-   to check if used or passed
+   categories: <Boolean> if layer has categories or not
+   all: <Boolean> all categories. No filter by BBOX of map
+   format: <mime_type> it used to set format of legend.
+      if request from layers categories (icon and label) is in application/json
+      else if request from legend tab is on image/png
    */
-  const {categories=false, all=false} = options;
+  const {categories=false, all=false, format='image/png'} = options;
   bbox = all ? null : bbox; // all=true meas no filter parameters as BBOX
   let url = layer.getWmsUrl({type: 'legend'});
   let STYLES;
-  let FORMAT = 'image/png';
-  if (categories) {
+  const FORMAT = format ;
+  const currentProject = ProjectsRegistry.getCurrentProject();
+  if (categories && FORMAT === 'application/json') {
     //set 16 for symbol of chart or other legend symbol
     symbolwidth = symbolheight = 16;
     STYLES = encodeURIComponent(layer.getCurrentStyle().name);
-    FORMAT = 'application/json'
   }
-  const dynamicLegend = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
+  const dynamicLegend = currentProject.getContextBaseLegend();
   // in case of GetLegendGraphic of format application/json LEGEND_ON and LEGEND_OFF need to be undefined
   // because it create some strange behaviour on wms getMap when switch between style of layer
-  const {LEGEND_ON, LEGEND_OFF} = dynamicLegend && categories ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
+  const {LEGEND_ON, LEGEND_OFF} = (dynamicLegend || FORMAT=== 'image/png') && categories ? get_LEGEND_ON_LEGEND_OFF_Params(layer) : {};
   const sep = (url.indexOf('?') > -1) ? '&' : '?';
   return [`${url}${sep}SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&SLD_VERSION=${sld_version}`,
     `${width ? '&WIDTH=' + width: ''}`,
