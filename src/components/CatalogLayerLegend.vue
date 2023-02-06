@@ -70,7 +70,7 @@
         const projectLayer = this.getProjectLayer();
         this.categories[index].checked = !this.categories[index].checked;
         projectLayer.change();
-        if (this.legendplace === 'tab') CatalogEventHub.$emit('layer-change-categories', this.layer);
+        if (this.legendplace === 'tab') this.layer.legend.change = true;
         else if (this.categories[index].checked && this.mapReady) this.setLayerCategories(false);
       },
       setError() {

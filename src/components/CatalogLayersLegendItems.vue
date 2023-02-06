@@ -48,9 +48,13 @@ export default {
       },
       immediate: false
     },
-    active(bool) {
-      if (bool && (this.dynamic || this.legendurls.length === 0)) {
-        this.getLegendSrc(this.layers);
+    async active(bool) {
+      if (bool) {
+        const changeLayersLegend = this.layers.filter(layer => layer.legend.change);
+        if (this.legendurls.length === 0 || this.dynamic || changeLayersLegend.length) {
+          await this.getLegendSrc(this.layers);
+          changeLayersLegend.forEach(layer => layer.legend.change = false);
+        }
       }
     }
   },
@@ -67,7 +71,10 @@ export default {
       const catalogLayers = CatalogLayersStoresRegistry.getLayersStores();
       catalogLayers.forEach(layerStore => {
         if (layerStore.getLayerById(layer.id)) {
-          legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params);
+          legendurl = layerStore.getLayerById(layer.id).getLegendUrl(params, {
+            format: 'image/png', // need to be
+            categories: layer.categories
+          });
           return false
         }
       });
@@ -85,7 +92,7 @@ export default {
         await this.$nextTick();
         // need to filter geolayer
         const layers = _layers.filter(layer => layer.geolayer);
-        for (let i=0; i< layers.length; i++) {
+        for (let i=0; i < layers.length; i++) {
           const layer = layers[i];
           const style = Array.isArray(layer.styles) && layer.styles.find(style => style.current);
           const urlLayersName = (layer.source && layer.source.url) || layer.external ? urlMethodsLayersName.GET : urlMethodsLayersName[layer.ows_method];
@@ -104,7 +111,12 @@ export default {
           const urlLayersName = urlMethodsLayersName[method];
           if (method === 'GET')
             for (const url in urlLayersName ) {
-              const legendUrl = urlLayersName[url].length ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken(): '' }`: url;
+              const legendUrl = urlLayersName[url].length ?
+                `${url}&LAYER=${encodeURIComponent(urlLayersName[url]
+                  .map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url]
+                    .map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ?
+                  '&filtertoken=' + ApplicationService.getFilterToken(): '' }`:
+                url;
               const legendUrlObject = {
                 loading: true,
                 url: legendUrl,
@@ -168,9 +180,6 @@ export default {
       } else changeLayersLegend = this.layers;
       changeLayersLegend.length && this.getLegendSrc(changeLayersLegend);
     });
-    CatalogEventHub.$on('layer-change-categories', layer => {
-      this.getLegendSrc(this.layers);
-    })
   },
   async mounted() {
     await this.$nextTick();
