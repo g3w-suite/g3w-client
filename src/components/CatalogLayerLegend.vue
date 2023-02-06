@@ -176,9 +176,9 @@
                   nodes.forEach(({icon, title, symbols = []}) => {
                     if (icon) symbols = [{icon, title}];
                     categories.forEach(category  => {
-                      category.disabled =
-                        ("undefined" !== typeof category.checked ? category.checked : true) &&
-                        false == symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
+                      const find = symbols.find(symbol => symbol.icon === category.icon && symbol.title === category.title);
+                      const disabled = "undefined" !== typeof category.checked  ? category.checked : true;
+                      category.disabled = disabled && !find;
                     });
                   })
                 } else {
@@ -228,7 +228,7 @@
       CatalogEventHub.$on('layer-change-style', this.handlerChangeLegend);
 
       // Get all legend graphics of a layer when start
-      if(this.layer.visible) {
+      if (this.layer.visible) {
         this.setLayerCategories(true).then(() => {
           if (this.dynamic) {
             GUI.getService('map').on('change-map-legend-params', async () => {
