@@ -222,7 +222,7 @@ proto.createFieldsDependenciesAutocompleteParameter = function({fields=[], field
 };
 
 /**
- * Request to server value for a specific select select field
+ * Request to server value for a specific select field
  * @param field (form input)
  * @returns {Promise<*[]>}
  */
@@ -289,6 +289,38 @@ proto.getValueMapValues = async function(field){
 };
 
 /**
+ *
+ * @param layer
+ * @returns {Promise}
+ */
+proto.getLayerFilterData = function(layer, {suggest, unique, ordering}) {
+  return layer.getFilterData({
+    suggest,
+    unique,
+    ordering
+  })
+};
+
+/**
+ *
+ * @param layers
+ * @param options
+ * @returns {Promise<*>}
+ */
+proto.getLayersFilterData = async function(layers, options={}){
+  const data_promises = await Promise.allSettled(layers.map(layer => this.getLayerFilterData(layer, options)));
+  const data = data_promises
+    .filter(({status}) => status === 'fulfilled')
+    .reduce((accumulator, {value=[]}) => [...accumulator, ...value]
+    , []);
+  return data.sort((a, b) => {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  })
+};
+
+/**
  * Method to get unique values from field
  * @param field
  * @param value
@@ -298,11 +330,19 @@ proto.getValueMapValues = async function(field){
 proto.getUniqueValuesFromField = async function({field, value, unique}){
   let data = [];
   try {
-    data = await this.searchLayer.getFilterData({
+    const options = {
       suggest: value !== undefined ? `${field}|${value}` : undefined,
       unique,
       ordering: field.attribute
-    })
+    };
+    /**
+     * In case of single layer to search
+     */
+    if (this.searchLayers.length === 1) {
+      data = await this.getLayerFilterData(this.searchLayer, options);
+    } else { /** In case other then single layer are set Other searching layers **/
+      data = await this.getLayersFilterData(this.searchLayers, options);
+    }
   } catch(err){}
   return data;
 };
@@ -310,11 +350,16 @@ proto.getUniqueValuesFromField = async function({field, value, unique}){
 proto.autocompleteRequest = async function({field, value}={}){
   let data = [];
   try {
-    data = await this.searchLayer.getFilterData({
+    const options = {
       field: this.getAutoFieldDependeciesParamField(field),
       suggest: `${field}|${value}`,
       unique: field
-    })
+    };
+    if (this.searchLayers.length === 1) {
+      data = await this.getLayerFilterData(this.searchLayer, options);
+    } else {
+      data = await this.getLayersFilterData(this.searchLayers, options);
+    }
   } catch(error) {
     console.log(error)
   }
