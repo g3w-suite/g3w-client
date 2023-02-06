@@ -86,17 +86,9 @@ export default {
     },
 
     getLegendUrl(layer, params={}) {
-      let legendurl;
-      CatalogLayersStoresRegistry
-        .getLayersStores()
-        .forEach(layerStore => {
-          const layer = layerStore.getLayerById(layer.id);
-          if (layer) {
-            legendurl = layer.getLegendUrl(params, { format: 'image/png', categories: layer.categories });
-            return false
-          }
-        });
-      return legendurl;
+      const catalogLayer = CatalogLayersStoresRegistry
+        .getLayerById(layer.id);
+      return catalogLayer && catalogLayer.getLegendUrl(params, { format: 'image/png', categories: layer.categories });
     },
 
     async getLegendSrc(_layers) {
