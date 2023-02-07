@@ -32,6 +32,7 @@
         </li>
       </ul>
     </li>
+    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer(layerMenu.layer)">
 
     <li v-if="layerMenu.layer.geolayer" @mouseleave.self="showLayerTransparencyMenu(false,$event)" @mouseover.self="showLayerTransparencyMenu(true,$event)" class="menu-icon">
       <span class="menu-icon skin-color-dark" :class="g3wtemplate.getFontClass('slider')"></span>
@@ -458,20 +459,50 @@
           }
         }
       },
-      zoomToLayer() {
-        const bbox = [this.layerMenu.layer.bbox.minx, this.layerMenu.layer.bbox.miny, this.layerMenu.layer.bbox.maxx, this.layerMenu.layer.bbox.maxy] ;
-        const mapService = GUI.getService('map');
-        mapService.goToBBox(bbox, this.layerMenu.layer.epsg);
+      /**
+       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
+       *
+       * @FIXME add description
+       *
+       * @param layer
+       */
+      zoomToLayer(layer) {
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
         this._hideMenu();
       },
-      canZoom(layer) {
-        let canZoom = false;
-        if (layer.bbox) {
-          const bbox = [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy] ;
-          canZoom = bbox.find(coordinate => coordinate > 0);
-        }
-        return canZoom;
+      /**
+       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::zoomToLayer(layer))`
+       *
+       * @FIXME add description
+       *
+       * @param layer
+       */
+      zoomToLayer(layer) {
+        GUI
+          .getService('map')
+          .goToBBox(
+            [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy],
+            layer.epsg
+          );
+        this._hideMenu();
       },
+
+      /**
+       * @TODO refactor this, almost the same as: `CatalogTristateTree.vue::canZoom(layer))`
+       *
+       * Check if layer has bbox property
+       *
+       * @param layer
+       */
+      canZoom(layer) {
+        return (layer.bbox && [layer.bbox.minx, layer.bbox.miny, layer.bbox.maxx, layer.bbox.maxy].find(coordinate => coordinate > 0));
+      },
+
       getGeometryType(layerId, external=false){
         let geometryType;
         if (external){
@@ -574,6 +605,9 @@
         }
         this.closeLayerMenu(this.layerMenu.stylesMenu);
       },
+      /**
+       * Context menu: toggle "styles" submenu handling its correct horizontal and vertical alignment
+       */
       async showSubMenuContext({menu, bool, evt}) {
         if (bool) {
           const elem = $(evt.target);
