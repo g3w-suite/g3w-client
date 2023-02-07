@@ -60,6 +60,7 @@ const dependencies = Object.keys(packageJSON.dependencies).filter(dep => dep !==
 // Built-in client plugins
 const default_plugins = [
   'editing',
+  'openrouteservice',
   'qplotly',
   'qtimeseries'
 ];
@@ -344,9 +345,10 @@ gulp.task('browser-sync', function() {
 /**
  * Make sure that core client plugins are there
  * 
- * [submodule "src/plugins/editing"]     <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
- * [submodule "src/plugins/qplotly"]     <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
- * [submodule "src/plugins/qtimeseries"] <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
+ * [submodule "src/plugins/editing"]          <-- https://github.com/g3w-suite/g3w-client-plugin-editing.git
+ * [submodule "src/plugins/openrouteservice"] <-- https://github.com/g3w-suite/g3w-client-plugin-openrouteservice.git
+ * [submodule "src/plugins/qplotly"]          <-- https://github.com/g3w-suite/g3w-client-plugin-qplotly.git
+ * [submodule "src/plugins/qtimeseries"]      <-- https://github.com/g3w-suite/g3w-client-plugin-qtimeseries.git
  */
 gulp.task('clone:default_plugins', function() {
   console.log(H1__ + `Cloning default plugins` + __H1);
@@ -365,6 +367,7 @@ gulp.task('clone:default_plugins', function() {
  * 
  * CORE PLUGINS:
  * - [submodule "src/plugins/editing"]     --> src/plugins/editing/plugin.js
+ * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
  * - [submodule "src/plugins/qplotly"]     --> src/plugins/qplotly/plugin.js
  * - [submodule "src/plugins/qtimeseries"] --> src/plugins/qtimeseries/plugin.js
  * 

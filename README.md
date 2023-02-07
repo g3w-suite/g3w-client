@@ -101,7 +101,7 @@ npm run dev            # frontend server  (g3w-client)
 ```
 
 ```sh
-npm run watch:plugins  # watch built-in plugins (editing, qplotly, qtimeseries)
+npm run watch:plugins  # watch built-in plugins (editing, openrouteservice, qplotly, qtimeseries)
 ```
 
 If everything went fine, you can now visit you local development server URL to see changes, the following rules are applied:
@@ -252,6 +252,12 @@ You can use the following commands to fetch the latest changes of built-in plugi
 cd /g3w-client/src/plugins/editing
 
 git pull editing
+```
+
+```sh
+cd /g3w-client/src/plugins/openrouteservice
+
+git pull openrouteservice
 ```
 
 ```sh
