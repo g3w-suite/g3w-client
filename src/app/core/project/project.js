@@ -456,5 +456,17 @@ proto.getUrl = function(type){
   return this.urls[type];
 };
 
+/**
+ *
+ * @returns {<Array> spatail bookmarks saved on QGIS project}
+ */
+proto.getSpatialBookmarks = function(){
+  return [{
+    name: 'Projects',
+    removable: false,
+    extent: [1252097.387694235,5433142.813076063,1252149.7035237015,5433203.120668952]
+  }];
+};
+
 
 module.exports = Project;

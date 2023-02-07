@@ -9,11 +9,17 @@
       </li>
     </template>
     <template v-else>
-      <li v-for="spatialbookmark in spatialbookmarks" @click.stop="gotoSpatialBookmark(spatialbookmark)" class="spatial-bookmark">
+      <li v-for="spatialbookmark in spatialbookmarks.project" @click.stop="gotoSpatialBookmark(spatialbookmark)" class="spatial-bookmark">
         <span>{{spatialbookmark.name}}</span>
         <span v-if="spatialbookmark.removable">
-        <i :class="g3wtemplate.getFontClass('trash')"></i>
-      </span>
+          <i :class="g3wtemplate.getFontClass('trash')"></i>
+        </span>
+      </li>
+      <li v-for="spatialbookmark in spatialbookmarks.user" @click.stop="gotoSpatialBookmark(spatialbookmark)" class="spatial-bookmark">
+        <span v-if="spatialbookmark.removable" style="color: red;">
+          <i :class="g3wtemplate.getFontClass('trash')"></i>
+        </span>
+        <span>{{spatialbookmark.name}}</span>
       </li>
     </template>
   </ul>
@@ -21,6 +27,7 @@
 
 <script>
   import GUI from 'services/gui';
+  import ProjectsRegistry from 'store/projects'
 
   export default {
     data() {
@@ -33,18 +40,20 @@
          *   extent: <Array> Contain the map bbox coordinates
          * }
          */
-        spatialbookmarks: [{
-          name: 'Test',
-          removable: true,
-          extent: [1252097.387694235,5433142.813076063,1252149.7035237015,5433203.120668952]
-        }]
+        spatialbookmarks: {
+          project: ProjectsRegistry.getCurrentProject().getSpatialBookmarks(),
+          user: [{
+            name: 'Test',
+            removable: true,
+            extent: [1252097.387694235,5433142.813076063,1252149.7035237015,5433203.120668952]
+          }]
+        }
       }
     },
-    components: {
-    },
+    components: {},
     computed: {
       show(){
-        return this.spatialbookmarks.length > 0;
+        return this.spatialbookmarks.user.length > 0;
       }
     },
     methods: {
@@ -67,6 +76,5 @@
 <style scoped>
   .spatial-bookmark {
     display: flex;
-    justify-content: space-between;
   }
 </style>
