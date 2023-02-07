@@ -27,10 +27,8 @@ function PluginsRegistry() {
       if (!this._plugins[plugin.name]) this._plugins[plugin.name] = plugin;
     }
   };
-  /**
-   * CHECK IF STILL USEFUL. IT RELATED TO CHANGE MAP OLD BEHAVIOR (PREVIOUS VERSION 3.4).
-   * NOW WHEN CHANGE MAP IS TRIGGER, PAGE IS RELOADED.
-   */
+
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onafter('setCurrentProject', project =>{
     this.gidProject = project.getGid();
   });

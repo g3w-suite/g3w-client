@@ -22,10 +22,22 @@ function ProjectsRegistry() {
   this.initialized = false;
   this.projectType = null;
   this.overviewproject;
+
   this.setters = {
-    createProject(projectConfig){
-      //hook to get project config and modify it
+
+    /**
+     * Hook mainly used to override current project configuration while developing locally.
+     * 
+     * @deprecated since v3.5
+     */
+    createProject(projectConfig) {
     },
+
+    /**
+     * Prior to v3.4 a change map hook was always triggered, now the page is simply reloaded.
+     * 
+     * @deprecated since v3.5
+     */
     setCurrentProject(project) {
       if (this.state.currentProject !== project) {
         CatalogLayersStoresRegistry.removeLayersStores();
@@ -40,6 +52,7 @@ function ProjectsRegistry() {
       //set in first position (map)
       MapLayersStoresRegistry.addLayersStore(projectLayersStore, 0);
     }
+
   };
 
   this.state = {
@@ -76,9 +89,10 @@ proto.init = function(config={}) {
       map_theme
     })
     .then(project => {
-      // set current project
 
-      this.setCurrentProject(project);
+      /** @deprecated since v3.5 */
+      this.setCurrentProject(project); // set current project
+
       this.initialized = true;
       d.resolve(project);
     })
@@ -188,8 +202,10 @@ proto.getProject = function(projectGid, options={ reload:false}) {
         // setupu project relations
         projectConfig.relations = this._setProjectRelations(projectConfig);
         this._projectConfigs[projectConfig.gid] = projectConfig;
-        // instance of Project
-        this.createProject(projectConfig);
+        
+        /** @deprecated since v3.5 */
+        this.createProject(projectConfig); // instance of Project
+
         const project = new Project(projectConfig);
         // add to project
         d.resolve(project);

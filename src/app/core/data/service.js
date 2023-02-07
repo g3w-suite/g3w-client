@@ -1,7 +1,10 @@
 import ProjectsRegistry from 'store/projects';
 
 function BaseService(){
+  
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onbefore('setCurrentProject' , project => this.project = project);
+
   this.project = ProjectsRegistry.getCurrentProject();
 }
 

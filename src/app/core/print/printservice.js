@@ -120,7 +120,10 @@ const POST = function({url, params, mime_type}) {
  */
 function PrintService(options = {}) {
   this._currentLayerStore =  ProjectsRegistry.getCurrentProject().getLayersStore();
+
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onbefore('setCurrentProject', project=> this._currentLayerStore = project.getLayersStore());
+
   base(this);
 }
 

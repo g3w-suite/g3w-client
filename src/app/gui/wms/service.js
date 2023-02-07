@@ -17,11 +17,14 @@ function Service(options={}){
   };
   this.loadClientWmsUrls()
     .then(urls => this.state.localwmsurls = urls);
+
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onafter('setCurrentProject', async project => {
     this.projectId = project.getId();
     this.state.adminwmsurls = project.wmsurls || [];
     this.state.localwmsurls = await this.loadClientWmsUrls();
-  })
+  });
+
 }
 
 const proto = Service.prototype;

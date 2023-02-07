@@ -24,22 +24,22 @@ ApplicationService.once('initconfig', () => {
   });
 });
 
-/** @deprecated */
+/** @deprecated since v3.5 */
 if (createProject.before) {
   ProjectsRegistry.onbefore('createProject', (projectConfig) => createProject.before(projectConfig));
 }
 
-/** @deprecated */
+/** @deprecated since v3.5 */
 if (createProject.after) {
   ProjectsRegistry.onafter('createProject', (projectConfig) => createProject.after(projectConfig));
 }
 
-/** @deprecated */
+/** @deprecated since v3.5 */
 if (setCurrentProject.before) {
   ProjectsRegistry.onbefore('setCurrentProject', (project) => setCurrentProject.before(project));
 }
 
-/** @deprecated */
+/** @deprecated since v3.5 */
 if (setCurrentProject.after) {
   ProjectsRegistry.onafter('setCurrentProject', (project) => setCurrentProject.after(project));
 }

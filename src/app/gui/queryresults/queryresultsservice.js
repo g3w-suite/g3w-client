@@ -25,6 +25,7 @@ function QueryResultsService() {
   this.printService = new PrintService();
   this._currentLayerIds = [];
 
+  /** @deprecated since v3.5 */
   ProjectsRegistry.onafter('setCurrentProject', project => {
     this._project = project;
     this._setRelations(project);
@@ -32,6 +33,7 @@ function QueryResultsService() {
     this.state.download_data = false;
     this.plotLayerIds = [];
   });
+
   this.unlistenerlayeractionevents = [];
   this._actions = {
     'zoomto': QueryResultsService.zoomToElement,
