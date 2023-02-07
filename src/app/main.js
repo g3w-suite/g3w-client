@@ -371,15 +371,6 @@ const ApplicationTemplate = function({ApplicationService}) {
               open: false,
               collapsible: true,
               icon: G3WTemplate.getFontClass('bookmark'),
-              actions: [{
-                id:"addspatialbookmarks",
-                class: `${G3WTemplate.getFontClass('plus')} sidebar-button sidebar-button-icon`,
-                tooltip: '',
-                /** pass as argument the owner component **/
-                fnc(component) {
-                  component.addBookMark();
-                }
-              }],
               mobile: true
             }),
             new PrintComponent({
