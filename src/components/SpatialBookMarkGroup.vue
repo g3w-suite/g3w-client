@@ -1,7 +1,14 @@
 <template>
-  <div>
-    <spatial-book-mark-item></spatial-book-mark-item>
-  </div>
+  <li>
+    <div style="font-weight: bold; width: 100%;" :style="{borderBottom: group.expanded ? '2px solid #2c3b41' : 'none'}"
+      @click.stop="group.expanded = !group.expanded">
+      <span :class="[g3wtemplate.getFontClass(group.expanded ? 'caret-down' : 'caret-right')]" style="margin-right: 5px;"></span>
+      <span>{{group.name}}</span>
+    </div>
+    <ul style="margin-left: 5px;" v-show="group.expanded">
+      <spatial-book-mark-item v-for="node in group.nodes" :bookmark="node"/>
+    </ul>
+  </li>
 </template>
 
 <script>
@@ -9,12 +16,15 @@
 
   export default {
     props: {
-      bookmark: {
+      group: {
         type: Object,
-        required: true,
-        default: {
-          name: '',
-        }
+        /**
+         * {
+         *  name: <String>
+         *  nodes: <Array [spatial bookmark items]> see -> SpatialBookMarkItem.vue
+         * }
+         */
+        required: true
       }
     },
     components: {
