@@ -356,6 +356,16 @@ export const API_BASE_URLS = {
   CRS: '/crs/'  //Example /crs/<epsg_code>
 };
 
+/**
+ * LOCAL STORAGE ITEM IDS
+ * Used to storage local storage id used by application
+ * @since v3.8
+ */
+
+export const LOCALSTORAGE_IDS = {
+  SPATIALBOOKMARKS: 'SPATIALBOOKMARKS'
+};
+
 export default {
   APP_VERSION,
   DEFAULT_EDITING_CAPABILITIES,
@@ -380,5 +390,6 @@ export default {
   TOC_THEMES_INIT_STATUS,
   VIEWPORT,
   ZINDEXES,
-  API_BASE_URLS
+  API_BASE_URLS,
+  LOCALSTORAGE_IDS
 };
