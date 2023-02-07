@@ -9,25 +9,15 @@
       </li>
     </template>
     <template v-else>
-      <li v-for="spatialbookmark in spatialbookmarks.project" @click.stop="gotoSpatialBookmark(spatialbookmark)" class="spatial-bookmark">
-        <span>{{spatialbookmark.name}}</span>
-        <span v-if="spatialbookmark.removable">
-          <i :class="g3wtemplate.getFontClass('trash')"></i>
-        </span>
-      </li>
-      <li v-for="spatialbookmark in spatialbookmarks.user" @click.stop="gotoSpatialBookmark(spatialbookmark)" class="spatial-bookmark">
-        <span v-if="spatialbookmark.removable" style="color: red;">
-          <i :class="g3wtemplate.getFontClass('trash')"></i>
-        </span>
-        <span>{{spatialbookmark.name}}</span>
-      </li>
+      <spatial-book-mark-item v-for="spatialbookmark in spatialbookmarks.project" :bookmark="spatialbookmark"/>
+      <spatial-book-mark-item v-for="spatialbookmark in spatialbookmarks.user" :bookmark="spatialbookmark"/>
     </template>
   </ul>
 </template>
 
 <script>
-  import GUI from 'services/gui';
-  import ProjectsRegistry from 'store/projects'
+  import ProjectsRegistry from 'store/projects';
+  import SpatialBookMarkItem from "components/SpatialBookMarkItem.vue";
 
   export default {
     data() {
@@ -50,7 +40,9 @@
         }
       }
     },
-    components: {},
+    components: {
+      SpatialBookMarkItem
+    },
     computed: {
       show(){
         return this.spatialbookmarks.user.length > 0;
@@ -63,10 +55,6 @@
         setTimeout(()=> {
           this.add = false
         }, 2000)
-      },
-      removeBookMark(){},
-      gotoSpatialBookmark({extent}){
-        GUI.getService('map').zoomToExtent(extent)
       }
     },
     async mounted() {}
@@ -74,7 +62,4 @@
 </script>
 
 <style scoped>
-  .spatial-bookmark {
-    display: flex;
-  }
 </style>
