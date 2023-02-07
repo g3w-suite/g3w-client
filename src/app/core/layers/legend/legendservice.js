@@ -1,11 +1,11 @@
 const TYPES = {
   'wms': require('./wmslegend'),
-  'argismapserver': require('./arcgismapserverlegend')
+  'arcgismapserver': require('./arcgismapserverlegend')
 };
 
 const Legendservice = {
   get({layer, params, options={}}={}) {
-    const type = layer.isArcgisMapserver() ? 'argismapserver': 'wms';
+    const type = layer.isArcgisMapserver() ? 'arcgismapserver': 'wms';
     return TYPES[type]({
       layer,
       params,
