@@ -15,7 +15,7 @@ BaseLayers.OSM.get = function({title, id, url}={}){
 };
 
 BaseLayers.TMS =  {
-  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions}={}) {
+  get({visible=false, url=null, source_type="xyz", minZoom, maxZoom, projection, attributions, crossOrigin='anonymous'}={}) {
     let layer;
     switch(source_type) {
       case 'xyz':
@@ -25,15 +25,17 @@ BaseLayers.TMS =  {
           minZoom,
           maxZoom,
           attributions,
-          projection
+          projection,
+          crossOrigin
         });
         break;
       case 'arcgismapserver':
-        layer = TiledArgisMapServer({
+        layer = RasterLayers.TiledArgisMapServer({
           url,
           visible,
           projection,
-          attributions
+          attributions,
+          crossOrigin
         });
         break;
       default:
@@ -43,20 +45,21 @@ BaseLayers.TMS =  {
 };
 
 BaseLayers.WMS = {
-  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
+  get({url, projection, attributions, layers, singleTile=false, opacity=1, crossOrigin='anonymous'}){
     return RasterLayers.WMSLayer({
       url,
       projection,
       attributions,
       layers,
       tiled: singleTile,
-      opacity
+      opacity,
+      crossOrigin
     })
   }
 };
 
 BaseLayers.WMTS = {
-  get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
+  get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7, crossOrigin='anonymous'} = {}) {
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;
@@ -81,7 +84,8 @@ BaseLayers.WMTS = {
           resolutions: resolutions,
           matrixIds: matrixIds
         }),
-        style
+        style,
+        crossOrigin
       })
     });
   }
