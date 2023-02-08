@@ -357,13 +357,21 @@ export const API_BASE_URLS = {
 };
 
 /**
- * LOCAL STORAGE ITEM IDS
- * Used to storage local storage id used by application
+ * LOCAL ITEM IDS
+ * Used to store id used by application
+ * Each item has:
+ * {
+ *  id: unique identifier,
+ *  value: initial value
+ *  }
  * @since v3.8
  */
 
-export const LOCALSTORAGE_IDS = {
-  SPATIALBOOKMARKS: 'SPATIALBOOKMARKS'
+export const LOCALITEMSIDS = {
+  SPATIALBOOKMARKS: {
+    id: 'SPATIALBOOKMARKS', // id unique
+    value: {} // initial value
+  }
 };
 
 export default {
@@ -391,5 +399,5 @@ export default {
   VIEWPORT,
   ZINDEXES,
   API_BASE_URLS,
-  LOCALSTORAGE_IDS
+  LOCALITEMSIDS
 };

@@ -39,7 +39,7 @@
     </template>
     <template v-else>
       <div class="content-bookmarks">
-        <span>Project BookMark</span>
+        <span v-t="'sdk.spatialbookmarks.sections.project.title'"></span>
       </div>
       <template v-for="bookmark in project.bookmarks">
         <spatial-book-mark-group
@@ -47,8 +47,15 @@
           :group="bookmark"/>
         <spatial-book-mark-item v-else :bookmark="bookmark"/>
       </template>
-      <div class="content-bookmarks" style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: bold; color: #ffffff">User BookMark</span>
+      <div
+        class="content-bookmarks"
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+
+        <span
+          style="font-weight: bold; color: #ffffff"
+          v-t="'sdk.spatialbookmarks.sections.user.title'">
+        </span>
+
         <span
           @click.stop="showaddform = true"
           style="padding: 5px; cursor: pointer;"
@@ -66,7 +73,7 @@
 </template>
 
 <script>
-  import {LOCALSTORAGE_IDS} from 'app/constant';
+  import {LOCALITEMSIDS} from 'app/constant';
   import GUI from 'services/gui';
   import ApplicationService from 'services/application';
   import ProjectsRegistry from 'store/projects';
@@ -76,6 +83,8 @@
 
   const { uniqueId } = require('core/utils/utils');
 
+  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCALITEMSIDS.SPATIALBOOKMARKS.id);
+
   export default {
     components: {
       SpatialBookMarkGroup,
@@ -83,6 +92,9 @@
       InputText,
     },
     data() {
+      if ("undefined" === typeof SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()]) {
+        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = []
+      }
       return {
         showaddform: false, // property to show or not add dialog menu
         /** bookmark is an array of Object with follow structure:
@@ -99,7 +111,7 @@
         },
         user: {
           show: true,
-          bookmarks: ApplicationService.getLocalItem(LOCALSTORAGE_IDS.SPATIALBOOKMARKS) || []
+          bookmarks: SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()]
         },
         addbookmarkinput: {
           name: 'add-bookmark',
@@ -130,24 +142,24 @@
             epsg: 1*GUI.getService('map').getCrs().split('EPSG:')[1]
           }
         });
-        ApplicationService.setLocalItem({
-          id: LOCALSTORAGE_IDS.SPATIALBOOKMARKS,
-          data: this.user.bookmarks
-        });
-
+        this.saveUserBookMarks();
         this.showaddform = false;
       },
       removeBookMark(id){
         this.user.bookmarks = this.user.bookmarks.filter(bookmark => bookmark.id !== id);
+        this.saveUserBookMarks();
+      },
+      saveUserBookMarks(){
+        SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
         ApplicationService.setLocalItem({
-          id: LOCALSTORAGE_IDS.SPATIALBOOKMARKS,
-          data: this.user.bookmarks
+          id: LOCALITEMSIDS.SPATIALBOOKMARKS.id,
+          data: SPATIAL_BOOKMARKS_LOCALITEMS
         });
       }
     },
     created(){
       this.$on('close', ()=>{
-        this.add = false
+        this.showaddform = false
       })
     },
     async mounted() {}
