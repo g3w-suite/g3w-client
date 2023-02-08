@@ -41,8 +41,8 @@ RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
 };
 
 RasterLayers.WMTSLayer = function(layerObj, extraParams){
- const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
- return new ol.layer.Tile({
+  const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
+  return new ol.layer.Tile({
     opacity: 1,
     source: new ol.source.WMTS(options)
   })
@@ -61,11 +61,12 @@ RasterLayers.ImageArgisMapServer = function(options={}){
 };
 
 RasterLayers.TiledArgisMapServer = function(options={}){
-  const {url, visible=true, extent, projection, attributions} = options;
+  const {url, visible=true, extent, projection, attributions, crossOrigin} = options;
   const source = new ol.source.TileArcGISRest({
     url,
     projection,
-    attributions
+    attributions,
+    crossOrigin
   });
   return  new ol.layer.Tile({
     extent,
@@ -87,6 +88,7 @@ RasterLayers._WMSLayer = function(options={}) {
     visible,
     extent,
     maxResolution,
+    crossOrigin
   } = layerObj;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
@@ -102,7 +104,8 @@ RasterLayers._WMSLayer = function(options={}) {
     url: layerObj.url,
     params,
     ratio: 1,
-    projection
+    projection,
+    crossOrigin
   };
 
   if (iframe_internal || method === 'POST')
@@ -118,7 +121,8 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity,
     visible,
     extent,
-    maxResolution
+    maxResolution,
+    crossOrigin
   };
 
   let imageClass;
@@ -137,13 +141,14 @@ RasterLayers._WMSLayer = function(options={}) {
 
 RasterLayers.XYZLayer = function(options={}, method='GET') {
   const iframe_internal = options.iframe_internal || false;
-  const {url, projection, maxZoom, minZoom, visible=true} = options;
+  const {url, projection, maxZoom, minZoom, visible=true, crossOrigin} = options;
   if (!url) return;
   const sourceOptions = {
     url,
     maxZoom,
     minZoom,
-    projection
+    projection,
+    crossOrigin
   };
   if (iframe_internal)
     loadImageTileFunction({
