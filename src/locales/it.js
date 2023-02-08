@@ -26,7 +26,15 @@ export default {
     sdk: {
       spatialbookmarks: {
         title: "Segnalibro Spaziale",
-        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi"
+        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi",
+        sections: {
+          project:{
+            title: "Segnalibri Progetto"
+          },
+          user: {
+            title: "Segnalibri Utente"
+          }
+        }
       },
       search: {
         all: 'TUTTE',

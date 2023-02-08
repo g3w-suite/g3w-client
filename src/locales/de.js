@@ -26,7 +26,15 @@ export default {
     sdk: {
       spatialbookmarks: {
         title: "Spatial Bookmarks",
-        helptext: "Posizionati sull'area che vuoi salvare e clicca Aggiungi"
+        helptext: "Move on map extent and click Add",
+        sections: {
+          project:{
+            title: "Project Bookmarks"
+          },
+          user: {
+            title: "User Bookmarks"
+          }
+        }
       },
       search: {
         all: 'ALLE',
