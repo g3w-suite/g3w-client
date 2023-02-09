@@ -6,14 +6,34 @@
 <template>
   <div>
     <section style="display: flex; justify-content: space-between; font-weight: bold;">
-      <span class="min-max-label">{{min}}</span>
+      <section style="align-self: flex-end">
+        <span class="min-max-label">{{min}}</span>
+        <span style="font-weight: bold;">{{unit}}</span>
+      </section>
+
       <div style="display: flex; flex-direction: column; margin: 0 3px">
         <label :for="id" style="display: block" class="skin-color" v-t="label"></label>
-        <input :id="id" ref="range-input" @change="change" v-model="value" type="range" :min="min" :max="max" :step="step">
+        <input
+          type="range"
+          ref="range-input"
+          @change="change"
+          v-model="value"
+          :id="id"
+          :min="min"
+          :max="max"
+          :step="step">
       </div>
-      <span class="min-max-label">{{max}}</span>
+
+      <section style="align-self: flex-end">
+        <span class="min-max-label">{{max}}</span>
+        <span style="font-weight: bold;">{{unit}}</span>
+      </section>
+
     </section>
-    <span v-if="showValue">{{value}}</span>
+    <template v-if="showValue">
+      <span>{{value}}</span>
+      <span style="font-weight: bold;">{{unit}}</span>
+    </template>
   </div>
 </template>
 
@@ -50,9 +70,16 @@
         type: Boolean,
         default: false
       },
+      /**
+       * Boolean Show change value
+       */
       showValue: {
         type: Boolean,
         default: false
+      },
+      unit: {
+        type: String,
+        default: ''
       }
     },
     data(){
