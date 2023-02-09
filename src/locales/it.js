@@ -248,7 +248,7 @@ export default {
             title: 'Guida - Interrogazione con Poligono',
             message:`
                 <ul>
-                  <li">Seleziona uno strato poligonale in legenda.</li>
+                  <li>Seleziona uno strato poligonale in legenda.</li>
                   <li>Assicurati che lo strato sia visibile in mappa.</li>
                   <li>Clicca su una geometria dello strato selezionato.</li>
                 </ul>`
