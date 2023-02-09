@@ -34,8 +34,7 @@ BaseLayers.TMS =  {
           url,
           visible,
           projection,
-          attributions,
-          crossOrigin
+          attributions
         });
         break;
       default:
@@ -45,21 +44,20 @@ BaseLayers.TMS =  {
 };
 
 BaseLayers.WMS = {
-  get({url, projection, attributions, layers, singleTile=false, opacity=1, crossOrigin='anonymous'}){
+  get({url, projection, attributions, layers, singleTile=false, opacity=1}){
     return RasterLayers.WMSLayer({
       url,
       projection,
       attributions,
       layers,
       tiled: singleTile,
-      opacity,
-      crossOrigin
+      opacity
     })
   }
 };
 
 BaseLayers.WMTS = {
-  get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7, crossOrigin='anonymous'} = {}) {
+  get({url, layer, visible, attributions, matrixSet, projection, requestEncoding, style='default', format='image/png', opacity=0.7} = {}) {
     const projectionExtent = projection.getExtent();
     const resolutions = new Array(14);
     const size = ol.extent.getWidth(projectionExtent) / 256;
@@ -84,8 +82,7 @@ BaseLayers.WMTS = {
           resolutions: resolutions,
           matrixIds: matrixIds
         }),
-        style,
-        crossOrigin
+        style
       })
     });
   }

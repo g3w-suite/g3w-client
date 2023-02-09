@@ -40,8 +40,8 @@ RasterLayers.WMSLayer = function(layerObj,extraParams={}, method='GET'){
 };
 
 RasterLayers.WMTSLayer = function(layerObj, extraParams){
- const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
- return new ol.layer.Tile({
+  const optionsFromCapabilities = ol.source.WMTS.optionsFromCapabilities;
+  return new ol.layer.Tile({
     opacity: 1,
     source: new ol.source.WMTS(options)
   })
@@ -86,8 +86,7 @@ RasterLayers._WMSLayer = function(options={}) {
     opacity=1.0,
     visible,
     extent,
-    maxResolution,
-    crossOrigin
+    maxResolution
   } = layerObj;
   const projection = layerObj.projection ? layerObj.projection.getCode() : null;
   let params = {
@@ -103,8 +102,7 @@ RasterLayers._WMSLayer = function(options={}) {
     url: layerObj.url,
     params,
     ratio: 1,
-    projection,
-    crossOrigin
+    projection
   };
 
   if (iframe_internal || method === 'POST')
@@ -121,7 +119,6 @@ RasterLayers._WMSLayer = function(options={}) {
     visible,
     extent,
     maxResolution,
-    crossOrigin
   };
 
   let imageClass;
