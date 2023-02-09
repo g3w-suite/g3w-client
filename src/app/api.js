@@ -5,6 +5,7 @@
 import G3W_CONSTANT from 'constant';
 
 import ApplicationState from 'store/application-state';
+import ApplicationService from 'services/application';
 
 /**
  * Single File Components
@@ -31,7 +32,6 @@ import RelationsService from 'services/relations';
 import TaskService from 'services/tasks';
 import WorkflowsStack from 'services/workflows';
 import ApiService from 'services/api';
-import ApplicationService from 'services/application';
 import RouterService from 'services/router';
 
 import GUI from 'services/gui';
