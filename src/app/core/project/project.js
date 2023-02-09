@@ -458,8 +458,8 @@ proto.getUrl = function(type){
 };
 
 /**
- *
- * @returns {<Array> spatail bookmarks saved on QGIS project}
+ * @returns {Array} spatial bookmarks saved on current QGIS project
+ * @since v3.8
  */
 proto.getSpatialBookmarks = function(){
   return this.state.bookmarks || [];
