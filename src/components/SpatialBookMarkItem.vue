@@ -1,3 +1,8 @@
+<!--
+  @file
+  @since v3.8
+-->
+
 <template>
   <li @click.stop="gotoSpatialBookmark(bookmark)" class="spatial-bookmark">
     <div>
