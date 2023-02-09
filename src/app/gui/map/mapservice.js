@@ -89,9 +89,13 @@ function MapService(options={}) {
   this._mapLayers = [];
   this._externalMapLayers = [];
   this._externalLayers = [];
-  // array where store interactions added from plugin or extenal from application
+  // array where store interactions added from plugin or external from application
   this._externalInteractions = [];
   this.mapBaseLayers = {};
+  /**
+   * Default layers are OL layers that are add to map by default.
+   * Are used to show selection Features and/or highlight Layer feature
+   */
   this.defaultsLayers = {
     _style: {
       highlightLayer: {
@@ -1894,6 +1898,10 @@ proto._setUpDefaultLayers = function(){
   this.getMap().addLayer(this.defaultsLayers.selectionLayer);
 };
 
+/**
+ * Method to set Default layers (selectionLayer, and highlightLayer)
+ * always on top of layers stack of map to be always visible
+ */
 proto.moveDefaultLayersOnTop = function(zindex){
   this.setZIndexLayer({
     layer: this.defaultsLayers.highlightLayer,

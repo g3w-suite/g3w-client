@@ -35,7 +35,8 @@ proto.setup = function(config={}, options={}) {
      /**
       * @deprecated since 3.8. Will be removed in 4.x. Use expanded attribute instead
       */
-      show: true
+      show: true,
+      change: false, // used for when categories changed (checkbox on TOC) and legend is on TAB
     },
     external: config.source && config.source.external || false,
     bbox: config.bbox || null,
@@ -68,7 +69,8 @@ proto.getLegendGraphic = function({all=true}={}){
   const legendParams = ApplicationService.getConfig().layout ? ApplicationService.getConfig().layout.legend : {};
   const legendurl = this.getLegendUrl(legendParams, {
     categories: true,
-    all // true meaning no bbox no filter just all referred to
+    all, // true meaning no bbox no filter just all referred to
+    format: 'application/json' // is the format to request categories (icon and label of each category)
   });
   return XHR.get({
     url: legendurl
