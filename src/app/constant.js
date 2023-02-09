@@ -357,16 +357,18 @@ export const API_BASE_URLS = {
 };
 
 /**
- * LOCAL ITEM IDS
- * Used to store id used by application
- * Each item has:
- * {
- *  id: unique identifier,
- *  value: initial value
- *  }
- * @since v3.8
+ * @typedef LocalItem
+ * @property {string} id unique identifier
+ * @property {any} value initial value
  */
 
+/**
+ * LOCAL ITEM IDS - used to store id used by application
+ * 
+ * @type {Object<string, LocalItem>}
+ * 
+ * @since v3.8
+ */
 export const LOCALITEMSIDS = {
   SPATIALBOOKMARKS: {
     id: 'SPATIALBOOKMARKS', // id unique
