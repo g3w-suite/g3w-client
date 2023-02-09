@@ -1,3 +1,8 @@
+<!--
+  @file
+  @since v3.8
+-->
+
 <template>
   <li>
     <div style="font-weight: bold; width: 100%;" :style="{borderBottom: group.expanded ? '2px solid #2c3b41' : 'none'}"
