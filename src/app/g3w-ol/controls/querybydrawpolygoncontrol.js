@@ -1,3 +1,6 @@
+/**
+ * @since v3.8
+ */
 import { SPATIALMETHODS, VM } from 'g3w-ol/constants';
 import GUI from 'services/gui';
 const { merge } = require('core/utils/ol');
