@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @since v3.8
+ */
+ 
 import * as vueComponentOptions from 'components/SpatialBookMarks.vue';
 
 import GUI from 'services/gui';
