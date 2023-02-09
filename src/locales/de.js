@@ -481,7 +481,8 @@ export default {
         open_attribute_table: "Attributtabelle öffnen",
         show_metadata: "Metadaten",
         styles: 'Stile',
-        vector_color_menu:"Farbe einstellen/ändern"
+        vector_color_menu:"Farbe einstellen/ändern",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {

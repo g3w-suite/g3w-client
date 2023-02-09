@@ -482,7 +482,7 @@ export default {
         show_metadata: "Metadata",
         styles: 'Styles',
         vector_color_menu:"Set/Change Color",
-        layer_transparency: "Trasparency"
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {

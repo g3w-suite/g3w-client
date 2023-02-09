@@ -481,7 +481,8 @@ export default {
         open_attribute_table: "Deschide Tabela Atribute",
         show_metadata: "Metadate",
         styles: 'Stiluri',
-        vector_color_menu:"Setează/Schimbă Culoare"
+        vector_color_menu:"Setează/Schimbă Culoare",
+        layer_opacity: "Opacity"
       }
     },
     dataTable: {
