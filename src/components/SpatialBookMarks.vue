@@ -78,7 +78,7 @@
 </template>
 
 <script>
-  import {LOCALITEMSIDS} from 'app/constant';
+  import {LOCAL_ITEM_IDS} from 'app/constant';
   import GUI from 'services/gui';
   import ApplicationService from 'services/application';
   import ProjectsRegistry from 'store/projects';
@@ -88,7 +88,7 @@
 
   const { uniqueId } = require('core/utils/utils');
 
-  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCALITEMSIDS.SPATIALBOOKMARKS.id);
+  const SPATIAL_BOOKMARKS_LOCALITEMS = ApplicationService.getLocalItem(LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id);
 
   export default {
     components: {
@@ -157,7 +157,7 @@
       saveUserBookMarks(){
         SPATIAL_BOOKMARKS_LOCALITEMS[ProjectsRegistry.getCurrentProject().getId()] = this.user.bookmarks;
         ApplicationService.setLocalItem({
-          id: LOCALITEMSIDS.SPATIALBOOKMARKS.id,
+          id: LOCAL_ITEM_IDS.SPATIALBOOKMARKS.id,
           data: SPATIAL_BOOKMARKS_LOCALITEMS
         });
       }

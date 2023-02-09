@@ -4,7 +4,7 @@
  */
 
 import appConfig from 'config';
-import { TIMEOUT, APP_VERSION, LOCALITEMSIDS } from 'app/constant';
+import { TIMEOUT, APP_VERSION, LOCAL_ITEM_IDS } from 'app/constant';
 import ApplicationState from 'store/application-state';
 import DataRouterService from 'services/data';
 import PluginsRegistry from 'store/plugins';
@@ -665,11 +665,11 @@ const ApplicationService = function() {
    * @since v3.8
    */
   this.initLocalItems = function(){
-    Object.keys(LOCALITEMSIDS).forEach(id =>{
+    Object.keys(LOCAL_ITEM_IDS).forEach(id =>{
       if ("undefined" === typeof this.getLocalItem(id)){
         this.setLocalItem({
           id,
-          data: LOCALITEMSIDS[id].value
+          data: LOCAL_ITEM_IDS[id].value
         })
       }
     })

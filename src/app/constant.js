@@ -369,7 +369,7 @@ export const API_BASE_URLS = {
  * 
  * @since v3.8
  */
-export const LOCALITEMSIDS = {
+export const LOCAL_ITEM_IDS = {
   SPATIALBOOKMARKS: {
     id: 'SPATIALBOOKMARKS', // id unique
     value: {} // initial value
@@ -401,5 +401,5 @@ export default {
   VIEWPORT,
   ZINDEXES,
   API_BASE_URLS,
-  LOCALITEMSIDS
+  LOCAL_ITEM_IDS
 };
