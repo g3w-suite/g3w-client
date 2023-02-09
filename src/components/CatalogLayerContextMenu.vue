@@ -32,7 +32,6 @@
         </li>
       </ul>
     </li>
-    <li v-if="canZoom(layerMenu.layer)" @click.prevent.stop="zoomToLayer(layerMenu.layer)">
     <!--
       @since v3.8
     -->
