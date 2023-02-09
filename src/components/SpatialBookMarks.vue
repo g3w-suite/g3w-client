@@ -1,3 +1,8 @@
+<!--
+  @file
+  @since v3.8
+-->
+
 <template>
   <ul
     id="g3w-spatial-bookmarks"
