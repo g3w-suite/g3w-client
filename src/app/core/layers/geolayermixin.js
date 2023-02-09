@@ -57,12 +57,12 @@ proto.setup = function(config={}, options={}) {
      */
     expanded: config.expanded,
     /**
-     *  Transparency
+     *  Opacity
      *
      * @since v3.8
      *
      */
-    transparency: config.transparency || 1,
+    opacity: config.opacity || 100,
   });
   if (config.projection) this.config.projection = config.projection.getCode() === config.crs.epsg ? config.projection :  Projections.get(config.crs);
   if (config.attributions) this.config.attributions = config.attributions;
@@ -300,8 +300,8 @@ proto.getStyle = function(){
  * @since v3.8
  */
 
-proto.getTransparency = function() {
-  return this.state.transparency;
+proto.getOpacity = function() {
+  return this.state.opacity;
 };
 
 /**

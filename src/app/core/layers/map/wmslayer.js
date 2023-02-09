@@ -103,7 +103,10 @@ proto._updateLayers = function(mapState={}, extraParams={}) {
         ...get_LEGEND_ON_LEGEND_OFF_Params(layer)
       };
       STYLES.push(layer.getStyle());
-      OPACITIES.push(parseInt(layer.getTransparency() * 255))
+      /**
+       * @since v3.8
+       */
+      OPACITIES.push(parseInt((layer.getOpacity()/100) * 255))
     });
 
     let LEGEND_ON;
