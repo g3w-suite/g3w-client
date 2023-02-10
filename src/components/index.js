@@ -60,6 +60,8 @@ import InputHtml from './InputTextHtml.vue';
 import InputUnique from './InputUnique.vue';
 import Map from './Map.vue';
 import MapAddLayer from './MapAddLayer.vue';
+import MapControlGeocoding from './MapControlGeocoding.js';
+import MapControlNominatimResults from './MapControlNominatimResults.js';
 import MetadataLayer from './MetadataLayer.vue';
 import MetadataProject from './MetadataProject.vue';
 import MetadataProjectBBoxContent from './MetadataProjectBBoxContent.vue';
@@ -165,6 +167,8 @@ export {
   InputUnique,
   Map,
   MapAddLayer,
+  MapControlGeocoding,
+  MapControlNominatimResults,
   MetadataLayer,
   MetadataProject,
   MetadataProjectBBoxContent,
