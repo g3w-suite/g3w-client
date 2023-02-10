@@ -5,8 +5,21 @@ const { t } = require('core/i18n/i18n.service');
 const Control = require('g3w-ol/controls/control');
 
 const InteractionControl = function(options={}) {
-  const {visible=true, enabled=true, toggled=false, clickmap=false, interactionClass=null, autountoggle=false,
-    geometryTypes=[], onSelectlayer, onhover=false, help=null, toggledTool, interactionClassOptions={}, spatialMethod} = options;
+  const {
+    visible=true,
+    enabled=true,
+    toggled=false,
+    clickmap=false,
+    interactionClass=null,
+    autountoggle=false,
+    geometryTypes=[],
+    onSelectlayer,
+    onhover=false,
+    help=null,
+    toggledTool,
+    interactionClassOptions={},
+    spatialMethod
+  } = options;
   this._visible = visible;
   this._toggled = toggled;
   this.clickmap = clickmap; // check if interact with map
