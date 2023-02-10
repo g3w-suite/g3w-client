@@ -11,7 +11,7 @@ const QueryBBoxControl = function(options = {}){
   options.visible = visible;
   options.enabled = visible && this.checkEnabled(this.layers);
   this.unwatches = [];
-  this.listenLayersVisibleChange();
+  this.listenLayersChange();
   const _options = {
     offline: false,
     name: "querybbox",
@@ -47,7 +47,7 @@ ol.inherits(QueryBBoxControl, InteractionControl);
 
 const proto = QueryBBoxControl.prototype;
 
-proto.listenLayersVisibleChange = function(){
+proto.listenLayersChange = function(){
   this.unwatches.forEach(unwatch => unwatch());
   this.unwatches.splice(0);
   this.layers.forEach(layer => {
@@ -68,7 +68,7 @@ proto.change = function(layers=[]){
   this.setVisible(visible);
   const enabled = this.checkEnabled(layers);
   this.setEnable(enabled);
-  this.listenLayersVisibleChange(this.layers);
+  this.listenLayersChange(this.layers);
 };
 
 proto.checkVisible = function(layers=[]){
