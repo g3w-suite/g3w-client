@@ -98,6 +98,7 @@ import TableToolbar from './TableToolbar.vue';
 import Tool from './Tool.vue';
 import Tools from './Tools.vue';
 import UserMessage from './UserMessage.vue';
+import UserMessageSteps from './UserMessageSteps.js';
 import VieportContentsViewer from './VieportContentsViewer.vue';
 import WMS from './WMS.vue';
 import WMSLatersPanel from './WMSLatersPanel.vue';
@@ -203,6 +204,7 @@ export {
   Tool,
   Tools,
   UserMessage,
+  UserMessageSteps,
   VieportContentsViewer,
   WMS,
   WMSLatersPanel,
