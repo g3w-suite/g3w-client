@@ -1,5 +1,9 @@
-import ApplicationState from "store/application-state";
+import ApplicationState from 'store/application-state';
 import GUI from 'services/gui';
+
+import MapControlGeocoding from 'components/MapControlGeocoding';
+import MapControlNominatimResults from 'components/MapControlNominatimResults';
+
 const Control = require('./control');
 const { toRawType, XHR } = require('core/utils/utils');
 const Projections = require('g3w-ol/projection/projections');
@@ -445,76 +449,13 @@ function GeocodingControl(options={}) {
 
   this.projection;
 
-  const containerClass = `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`;
-  const self = this;
-
-  const GeocoderVueContainer = Vue.extend({
-    functional: true,
-    render(h){
-      return h('div', {class: {[containerClass]: true}}, [
-        h('div', {
-          class: {
-            [cssClasses.inputText.control]: true,
-          }
-        }, [
-          h('input', {
-            attrs: {
-              type: 'text',
-              id: cssClasses.inputQueryId,
-              autocomplete: 'off'
-            },
-            class:{
-              [cssClasses.inputText.input]: true
-            },
-            directives:[
-              {
-                name: 't-placeholder',
-                value: placeholder
-              }
-            ]
-          }),
-          h('button', {
-            attrs: {
-              type: 'button',
-              id: 'search_nominatim'
-            },
-            class:{
-              btn: true
-            },
-            on: {
-              click() {
-                const value = $(`input.${cssClasses.inputText.input}`).val();
-                self.query(value);
-              }
-            }
-          }, [h('i', {
-            attrs: {
-              'aria-hidden': true
-            },
-            style: {
-              color:'#ffffff'
-            },
-            class: {
-              [fontIcon]: true
-            }
-          })]),
-          h('button', {
-            attrs: {
-              type: 'button',
-              id:  cssClasses.inputResetId
-            },
-            class: {
-              [`${cssClasses.inputText.reset}  ${cssClasses.hidden}`]: true
-            }
-          }),
-        ]),
-        h('ul', {
-          class: {
-            [cssClasses.inputText.result]: true
-          }
-        })])
-    }
-  });
+  const GeocoderVueContainer = Vue.extend(MapControlGeocoding({
+    containerClass: `${cssClasses.namespace} ${cssClasses.inputText.container} ${this.options.classMobile}`,
+    cssClasses,
+    fontIcon,
+    placeholder,
+    ctx: this
+  }));
   this.container = new GeocoderVueContainer().$mount().$el;
   this.lastQuery = '';
   this.registeredListeners = {
@@ -653,18 +594,7 @@ function GeocodingControl(options={}) {
         ul.appendChild(li);
       });
     } else {
-      const {noresults} = this.options;
-      const elementVue = Vue.extend({
-        functional: true,
-        render(h){
-          return h('li', {
-            class: {
-              'nominatim-noresult': true
-            },
-            directives:[{name: 't', value: noresults}]
-          })
-        }
-      });
+      const elementVue = Vue.extend(MapControlNominatimResults({noresults: this.options.noresults}));
       const li = new elementVue().$mount().$el;
       ul.appendChild(li);
     }
