@@ -908,6 +908,9 @@ proto._setupControls = function() {
               options: {
                 spatialMethod,
                 layers: getControlLayers(),
+                /**
+                 * @TODO write i18n translation
+                 */
                 help: {
                   title: "sdk.mapcontrols.querybypolygon.help.title",
                   message: "sdk.mapcontrols.querybypolygon.help.message",
@@ -922,13 +925,17 @@ proto._setupControls = function() {
               this._changeMapMapControls.push(change);
               const runQuery = throttle(async ({feature}) => {
                 GUI.closeOpenSideBarComponent();
-                // ask for coordinates
                 try {
                   const {data=[]} = await DataRouterService.getData('query:polygon', {
                     inputs: {
                       feature,
                       filterConfig:{
                         spatialMethod: control.getSpatialMethod() // added spatial method to polygon filter
+                      },
+                      layerFilterObject: {
+                        SELECTEDORALL: true,
+                        FILTERABLE: true,
+                        VISIBLE: true
                       },
                       multilayers: this.project.isQueryMultiLayers(controlType)
                     },
