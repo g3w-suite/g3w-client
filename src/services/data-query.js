@@ -36,7 +36,19 @@ function QueryService(){
    * @param excludeLayers
    * @returns {Promise<unknown>}
    */
-  this.polygon = function({feature, feature_count=this.project.getQueryFeatureCount(), filterConfig={}, multilayers=false, condition=this.condition, excludeLayers=[]}={}) {
+  this.polygon = function({
+    feature,
+    feature_count=this.project.getQueryFeatureCount(),
+    filterConfig={},
+    multilayers=false,
+    condition=this.condition,
+    layerFilterObject = {
+      SELECTED: false,
+      FILTERABLE: true,
+      VISIBLE: true
+    },
+    excludeLayers=[]}={}
+    ) {
     /**
      * In case of Polygon coming from feature of Layer. If a draw feature excludeLayers is empty Array
      * case QueryByDrawPolygon map control
@@ -53,11 +65,7 @@ function QueryService(){
         autoclose: false
       }
     });
-    const layerFilterObject = {
-      SELECTED: false,
-      FILTERABLE: true,
-      VISIBLE: true
-    };
+
     const layers = getMapLayersByFilter(layerFilterObject, condition).filter(layer => excludeLayers.indexOf(layer) === -1);
     const request = getQueryLayersPromisesByGeometry(layers,
       {
