@@ -91,7 +91,7 @@ export default {
 
     /**
      * get legend src for visible layers
-     * @returns {undefined}
+     * @returns {Promise<void>}
      */
     async getLegendSrc() {
       /**
