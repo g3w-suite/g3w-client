@@ -94,9 +94,8 @@ export default {
      * @returns {Promise<void>}
      */
     async getLegendSrc() {
-      /**
-       * need to be reset layers url
-       ***/
+
+      // reset layers url
       this.legendurls = [];
 
       await this.$nextTick();
