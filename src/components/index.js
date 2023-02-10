@@ -29,7 +29,7 @@ import GlobalGallery from './GlobalGallery.vue';
 import GlobalGeo from './GlobalGeo.vue';
 import GlobalImage from './GlobalImage.vue';
 import GlobalLayerPositions from './GlobalLayerPositions.vue';
-import GlobalProgressBar from './GlobalProgressBar.js';
+import GlobalProgressBar from './GlobalProgressBar.vue';
 import GlobalRange from './GlobalRange.vue';
 import GlobalResize from './GlobalResize.vue';
 import GlobalResizeIcon from './GlobalResizeIcon.vue';
