@@ -22,7 +22,7 @@ import FormBody from './FormBody.vue';
 import FormFooter from './FormFooter.vue';
 import FormHeader from './FormHeader.vue';
 import GlobalHelpDiv from './GlobalHelpDiv.vue';
-import GlobalBarLoader from './GlobalBarLoader.js';
+import GlobalBarLoader from './GlobalBarLoader.vue';
 import GlobalDateTime from './GlobalDateTime.vue';
 import GlobalDivider from './GlobalDivider.vue';
 import GlobalGallery from './GlobalGallery.vue';
