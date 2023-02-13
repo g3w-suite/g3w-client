@@ -6,22 +6,21 @@
 <template>
   <div class="legend-item">
 
-    <figure v-for="legendurl in legendurls" :key="legendurl.url">
+    <figure v-for="legendurl in legendurls">
+        <bar-loader
+          :loading="legendurl.loading"
+        />
 
-      <bar-loader
-        :loading="legendurl.loading"
-      ></bar-loader>
+        <img
+          v-show="!legendurl.loading && !legendurl.error"
+          :src="legendurl.url"
+          @error="setError(legendurl)"
+          @load="urlLoaded(legendurl)"
+        >
 
-      <img
-        v-show="!legendurl.loading && !legendurl.error"
-        :src="legendurl.url"
-        @error="setError(legendurl)"
-        @load="urlLoaded(legendurl)"
-      >
+        <span class="divider"></span>
 
-      <span class="divider"></span>
-
-    </figure>
+      </figure>
 
   </div>
 </template>
@@ -53,12 +52,11 @@ export default {
   watch: {
 
     /**
-     * It changes when check/uncheck layer on toc
+     * It changes when change layer visibility
      */
     layers: {
       handler() {
-       //reset the legend urls array
-       this.legendurls = [];
+        this.getLegendSrc();
       },
       immediate: false
     },
@@ -91,22 +89,31 @@ export default {
       return catalogLayer && catalogLayer.getLegendUrl(params, { format: 'image/png', categories: layer.categories });
     },
 
-    async getLegendSrc(_layers) {
+    /**
+     * get legend src for visible layers
+     * @returns {undefined}
+     */
+    async getLegendSrc() {
+      /**
+       * need to be reset layers url
+       ***/
+      this.legendurls = [];
+
+      await this.$nextTick();
+
       // skip if not active
       if (!this.active) {
         return
       }
+
       const urlMethodsLayersName = {
         GET: {},
         POST: {}
       };
       const self = this;
-      this.legendurls = [];
-
-      await this.$nextTick();
 
       // filter geolayer
-      const layers = _layers.filter(layer => layer.geolayer);
+      const layers = this.layers.filter(layer => layer.geolayer);
 
       for (let i=0; i < layers.length; i++) {
         const layer = layers[i];
@@ -136,7 +143,7 @@ export default {
             this.legendurls.push({
               loading: true,
               url: (urlLayersName[url].length)
-                ? `${url}&LAYER=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : '' }`
+                ? `${url}LAYERS=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.layerName).join(','))}&STYLES=${encodeURIComponent(urlLayersName[url].map(layerObj => layerObj.style).join(','))}${ApplicationService.getFilterToken() ? '&filtertoken=' + ApplicationService.getFilterToken() : '' }`
                 : url,
               error: false
             })
@@ -197,19 +204,11 @@ export default {
      */
     this.dynamic = ProjectsRegistry.getCurrentProject().getContextBaseLegend();
     this.mapReady = false;
+    /**
+     * listen when layer has changed style
+     */
     CatalogEventHub.$on('layer-change-style', (options={}) => {
-      let changeLayersLegend =[];
-      if (options.layerId) {
-        const layer = this.layers.find(layer => options.layerId == layer.id);
-        if (layer) {
-          changeLayersLegend.push(layer);
-        }
-      } else {
-        changeLayersLegend = this.layers;
-      }
-      if (changeLayersLegend.length) {
-        this.getLegendSrc(changeLayersLegend);
-      }
+      this.getLegendSrc();
     });
   },
 
@@ -221,7 +220,7 @@ export default {
     if (this.dynamic) {
       GUI.getService('map').on('change-map-legend-params', ()=>{
         this.mapReady = true;
-        this.getLegendSrc(this.layers);
+        this.getLegendSrc();
       });
     } else {
       this.mapReady = true;
