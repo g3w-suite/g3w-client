@@ -2,8 +2,9 @@ const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 function GeolocationControl() {
   const options = {
-    visible: false, // set initial to false. Is set visible if is autorized
+    visible: true,
     offline: false,
+    enabled: false, // set initial to false. Is set enabled if is autorized
     name: "geolocation",
     tipLabel: "sdk.mapcontrols.geolocation.tooltip",
     label: "\ue904"
@@ -68,38 +69,38 @@ proto.setMap = function(map) {
   geolocation.on('change:position', () => {
     const coordinates = geolocation.getPosition();
     if (coordinates) {
-      if (!this.isVisible()) {
-        this.setVisible(true);
+      //firs time.
+      if (!this.getEnable()) {
+        // set enabled to true
+        this.setEnable(true);
+        // register toggled event
+        toggledKeyEvent = this.on('toggled', () => {
+          const coordinates = geolocation.getPosition();
+          this._showMarker({
+            map,
+            coordinates,
+            show: this.isToggled()
+          })
+        });
         $(this.element).removeClass('g3w-ol-disabled');
-        geolocation.dispatchEvent('authorized');
       }
       this._showMarker({
         map,
         coordinates,
         show: this.isToggled()
       })
-    } else this.hideControl(); // remove control from map control flow
+    }
   });
 
   geolocation.once('error', evt => {
-    this.hideControl();
     this._layer = null;
-    evt.code !== 1 && this.dispatchEvent('error');
+    this.dispatchEvent({
+      type: 'error'
+    });
     ol.Observable.unByKey(toggledKeyEvent);
     toggledKeyEvent = null;
+    this.setEnable(false);
   });
-
-  //only when authorized register toogled event
-  geolocation.once('authorized', ()=>{
-    toggledKeyEvent = this.on('toggled', () => {
-      const coordinates = geolocation.getPosition();
-      this._showMarker({
-        map,
-        coordinates,
-        show: this.isToggled()
-      })
-    });
-  })
 };
 
 module.exports = GeolocationControl;
