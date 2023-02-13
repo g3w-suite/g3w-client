@@ -1,3 +1,4 @@
+import GUI from 'services/gui';
 const InteractionControl = require('g3w-ol/controls/interactioncontrol');
 
 function GeolocationControl() {
@@ -94,8 +95,10 @@ proto.setMap = function(map) {
 
   geolocation.once('error', evt => {
     this._layer = null;
-    this.dispatchEvent({
-      type: 'error'
+    GUI.showUserMessage({
+      type: 'warning',
+      message: "mapcontrols.geolocations.error",
+      autoclose: false
     });
     ol.Observable.unByKey(toggledKeyEvent);
     toggledKeyEvent = null;
